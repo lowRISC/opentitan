@@ -215,16 +215,18 @@ static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
                                          size_t index,
                                          const boot_data_t *boot_data,
                                          hardened_bool_t erase) {
-  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
-                                      .read = kHardenedBoolTrue,
-                                      .write = kHardenedBoolTrue,
-                                      .erase = erase,
-                                  });
+  flash_ctrl_info_perms_set(
+      page, (flash_ctrl_perms_t){
+                .read = kMultiBitBool4True,
+                .write = kMultiBitBool4True,
+                .erase = erase == kHardenedBoolTrue ? kMultiBitBool4True
+                                                    : kMultiBitBool4False,
+            });
   rom_error_t error = boot_data_entry_write_impl(page, index, boot_data, erase);
   flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
-                                      .read = kHardenedBoolFalse,
-                                      .write = kHardenedBoolFalse,
-                                      .erase = kHardenedBoolFalse,
+                                      .read = kMultiBitBool4False,
+                                      .write = kMultiBitBool4False,
+                                      .erase = kMultiBitBool4False,
                                   });
   SEC_MMIO_WRITE_INCREMENT(2 * kFlashCtrlSecMmioInfoPermsSet);
   return error;
@@ -255,15 +257,15 @@ static rom_error_t boot_data_entry_invalidate(flash_ctrl_info_page_t page,
       index * sizeof(boot_data_t) + offsetof(boot_data_t, is_valid);
   const uint32_t val[2] = {0, 0};
   flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
-                                      .read = kHardenedBoolFalse,
-                                      .write = kHardenedBoolTrue,
-                                      .erase = kHardenedBoolFalse,
+                                      .read = kMultiBitBool4False,
+                                      .write = kMultiBitBool4True,
+                                      .erase = kMultiBitBool4False,
                                   });
   rom_error_t error = flash_ctrl_info_write(page, offset, 2, val);
   flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
-                                      .read = kHardenedBoolFalse,
-                                      .write = kHardenedBoolFalse,
-                                      .erase = kHardenedBoolFalse,
+                                      .read = kMultiBitBool4False,
+                                      .write = kMultiBitBool4False,
+                                      .erase = kMultiBitBool4False,
                                   });
   SEC_MMIO_WRITE_INCREMENT(2 * kFlashCtrlSecMmioInfoPermsSet);
   return error;
@@ -423,16 +425,16 @@ static rom_error_t boot_data_page_info_update(flash_ctrl_info_page_t page,
                                               active_page_info_t *page_info,
                                               boot_data_t *boot_data) {
   flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
-                                      .read = kHardenedBoolTrue,
-                                      .write = kHardenedBoolFalse,
-                                      .erase = kHardenedBoolFalse,
+                                      .read = kMultiBitBool4True,
+                                      .write = kMultiBitBool4False,
+                                      .erase = kMultiBitBool4False,
                                   });
   rom_error_t error =
       boot_data_page_info_update_impl(page, page_info, boot_data);
   flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
-                                      .read = kHardenedBoolFalse,
-                                      .write = kHardenedBoolFalse,
-                                      .erase = kHardenedBoolFalse,
+                                      .read = kMultiBitBool4False,
+                                      .write = kMultiBitBool4False,
+                                      .erase = kMultiBitBool4False,
                                   });
   SEC_MMIO_WRITE_INCREMENT(2 * kFlashCtrlSecMmioInfoPermsSet);
   return error;

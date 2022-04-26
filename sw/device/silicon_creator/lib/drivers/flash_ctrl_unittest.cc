@@ -105,43 +105,6 @@ struct InitCase {
 class InitTest : public FlashCtrlTest,
                  public testing::WithParamInterface<InitCase> {};
 
-uint32_t CfgToDefaultMp(flash_ctrl_cfg_t cfg) {
-  uint32_t val = bitfield_field32_write(
-      0, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD,
-      cfg.scrambling == kMultiBitBool8True ? kMultiBitBool4True
-                                           : kMultiBitBool4False);
-
-  val = bitfield_field32_write(
-      val, FLASH_CTRL_DEFAULT_REGION_ECC_EN_FIELD,
-      cfg.ecc == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
-
-  val = bitfield_field32_write(
-      val, FLASH_CTRL_DEFAULT_REGION_HE_EN_FIELD,
-      cfg.he == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
-
-  return val;
-}
-
-uint32_t CfgToInfoMp(flash_ctrl_cfg_t cfg) {
-  uint32_t val = bitfield_field32_write(
-      0, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0_FIELD,
-      cfg.scrambling == kMultiBitBool8True ? kMultiBitBool4True
-                                           : kMultiBitBool4False);
-
-  val = bitfield_field32_write(
-      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ECC_EN_0_FIELD,
-      cfg.ecc == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
-
-  val = bitfield_field32_write(
-      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_HE_EN_0_FIELD,
-      cfg.he == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
-
-  val = bitfield_field32_write(
-      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
-
-  return val;
-}
-
 uint32_t CfgToOtp(flash_ctrl_cfg_t cfg) {
   uint32_t val = bitfield_field32_write(0, FLASH_CTRL_OTP_FIELD_SCRAMBLING,
                                         cfg.scrambling);
@@ -161,21 +124,24 @@ TEST_P(InitTest, Initialize) {
   EXPECT_CALL(
       otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET))
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
-  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, 0);
+  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
+                    FLASH_CTRL_DEFAULT_REGION_REG_RESVAL);
   EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
-                     CfgToDefaultMp(GetParam().cfg));
+                     GetParam().data_write_val);
 
   EXPECT_CALL(
       otp_,
       read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET))
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
   info_page = InfoPages().at(kFlashCtrlInfoPageBootData0);
-  EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0);
-  EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, CfgToInfoMp(GetParam().cfg));
+  EXPECT_SEC_READ32(base_ + info_page.cfg_offset,
+                    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_RESVAL);
+  EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, GetParam().info_write_val);
 
   info_page = InfoPages().at(kFlashCtrlInfoPageBootData1);
-  EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0);
-  EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, CfgToInfoMp(GetParam().cfg));
+  EXPECT_SEC_READ32(base_ + info_page.cfg_offset,
+                    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_RESVAL);
+  EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, GetParam().info_write_val);
 
   flash_ctrl_init();
 }
@@ -184,35 +150,35 @@ INSTANTIATE_TEST_SUITE_P(AllCases, InitTest,
                          testing::Values(
                              // Scrambling.
                              InitCase{
-                                 .cfg = {.scrambling = kMultiBitBool8True,
-                                         .ecc = kMultiBitBool8False,
-                                         .he = kMultiBitBool8False},
-                                 .info_write_val = 0x11,
-                                 .data_write_val = 0x8,
+                                 .cfg = {.scrambling = kMultiBitBool4True,
+                                         .ecc = kMultiBitBool4False,
+                                         .he = kMultiBitBool4False},
+                                 .info_write_val = 0x9969996,
+                                 .data_write_val = 0x996999,
                              },
                              // ECC.
                              InitCase{
-                                 .cfg = {.scrambling = kMultiBitBool8False,
-                                         .ecc = kMultiBitBool8True,
-                                         .he = kMultiBitBool8False},
-                                 .info_write_val = 0x21,
-                                 .data_write_val = 0x10,
+                                 .cfg = {.scrambling = kMultiBitBool4False,
+                                         .ecc = kMultiBitBool4True,
+                                         .he = kMultiBitBool4False},
+                                 .info_write_val = 0x9699996,
+                                 .data_write_val = 0x969999,
                              },
                              // High endurance.
                              InitCase{
-                                 .cfg = {.scrambling = kMultiBitBool8False,
-                                         .ecc = kMultiBitBool8False,
-                                         .he = kMultiBitBool8True},
-                                 .info_write_val = 0x41,
-                                 .data_write_val = 0x20,
+                                 .cfg = {.scrambling = kMultiBitBool4False,
+                                         .ecc = kMultiBitBool4False,
+                                         .he = kMultiBitBool4True},
+                                 .info_write_val = 0x6999996,
+                                 .data_write_val = 0x699999,
                              },
                              // Scrambling and ECC.
                              InitCase{
-                                 .cfg = {.scrambling = kMultiBitBool8True,
-                                         .ecc = kMultiBitBool8True,
-                                         .he = kMultiBitBool8False},
-                                 .info_write_val = 0x31,
-                                 .data_write_val = 0x18,
+                                 .cfg = {.scrambling = kMultiBitBool4True,
+                                         .ecc = kMultiBitBool4True,
+                                         .he = kMultiBitBool4False},
+                                 .info_write_val = 0x9669996,
+                                 .data_write_val = 0x966999,
                              }));
 
 class StatusCheckTest : public FlashCtrlTest {};
@@ -401,52 +367,10 @@ class FlashCtrlPermsSetTest : public FlashCtrlTest,
                               public testing::WithParamInterface<PermsSetCase> {
 };
 
-uint32_t PermsToMp(flash_ctrl_perms_t perms) {
-  uint32_t val = bitfield_field32_write(
-      0, FLASH_CTRL_DEFAULT_REGION_RD_EN_FIELD,
-      perms.read == kHardenedBoolTrue ? kMultiBitBool4True
-                                      : kMultiBitBool4False);
-
-  val = bitfield_field32_write(val, FLASH_CTRL_DEFAULT_REGION_PROG_EN_FIELD,
-                               perms.write == kHardenedBoolTrue
-                                   ? kMultiBitBool4True
-                                   : kMultiBitBool4False);
-
-  val = bitfield_field32_write(val, FLASH_CTRL_DEFAULT_REGION_ERASE_EN_FIELD,
-                               perms.erase == kHardenedBoolTrue
-                                   ? kMultiBitBool4True
-                                   : kMultiBitBool4False);
-
-  return val;
-}
-
-uint32_t PermsToInfoMp(flash_ctrl_perms_t perms) {
-  uint32_t val = bitfield_field32_write(
-      0, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0_FIELD,
-      perms.read == kHardenedBoolTrue ? kMultiBitBool4True
-                                      : kMultiBitBool4False);
-
-  val = bitfield_field32_write(
-      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0_FIELD,
-      perms.write == kHardenedBoolTrue ? kMultiBitBool4True
-                                       : kMultiBitBool4False);
-
-  val = bitfield_field32_write(
-      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0_FIELD,
-      perms.erase == kHardenedBoolTrue ? kMultiBitBool4True
-                                       : kMultiBitBool4False);
-
-  val = bitfield_field32_write(
-      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
-
-  return val;
-}
-
 TEST_P(FlashCtrlPermsSetTest, InfoPermsSet) {
   for (const auto &it : InfoPages()) {
     EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().info_read_val);
-    EXPECT_SEC_WRITE32(base_ + it.second.cfg_offset,
-                       PermsToInfoMp(GetParam().perms));
+    EXPECT_SEC_WRITE32(base_ + it.second.cfg_offset, GetParam().info_write_val);
 
     flash_ctrl_info_perms_set(it.first, GetParam().perms);
   }
@@ -456,7 +380,7 @@ TEST_P(FlashCtrlPermsSetTest, DataDefaultPermsSet) {
   EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
                     GetParam().data_read_val);
   EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
-                     PermsToMp(GetParam().perms));
+                     GetParam().data_write_val);
 
   flash_ctrl_data_default_perms_set(GetParam().perms);
 }
@@ -465,79 +389,78 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlPermsSetTest,
                          testing::Values(
                              // Read.
                              PermsSetCase{
-                                 .perms = {.read = kHardenedBoolTrue,
-                                           .write = kHardenedBoolFalse,
-                                           .erase = kHardenedBoolFalse},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0x3,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0x1,
+                                 .perms = {.read = kMultiBitBool4True,
+                                           .write = kMultiBitBool4False,
+                                           .erase = kMultiBitBool4False},
+                                 .info_read_val = 0x9999999,
+                                 .info_write_val = 0x9999966,
+                                 .data_read_val = 0x999999,
+                                 .data_write_val = 0x999996,
                              },
                              PermsSetCase{
-                                 .perms = {.read = kHardenedBoolTrue,
-                                           .write = kHardenedBoolFalse,
-                                           .erase = kHardenedBoolFalse},
-                                 .info_read_val = 0x7f,
-                                 .info_write_val = 0x73,
-                                 .data_read_val = 0x3f,
-                                 .data_write_val = 0x39,
+                                 .perms = {.read = kMultiBitBool4True,
+                                           .write = kMultiBitBool4False,
+                                           .erase = kMultiBitBool4False},
+                                 .info_read_val = 0x6666666,
+                                 .info_write_val = 0x6669966,
+                                 .data_read_val = 0x666666,
+                                 .data_write_val = 0x666996,
                              },
                              // Write.
                              PermsSetCase{
-                                 .perms = {.read = kHardenedBoolFalse,
-                                           .write = kHardenedBoolTrue,
-                                           .erase = kHardenedBoolFalse},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0x5,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0x2,
+                                 .perms = {.read = kMultiBitBool4False,
+                                           .write = kMultiBitBool4True,
+                                           .erase = kMultiBitBool4False},
+                                 .info_read_val = 0x9999999,
+                                 .info_write_val = 0x9999696,
+                                 .data_read_val = 0x999999,
+                                 .data_write_val = 0x999969,
                              },
                              PermsSetCase{
-                                 .perms = {.read = kHardenedBoolFalse,
-                                           .write = kHardenedBoolTrue,
-                                           .erase = kHardenedBoolFalse},
-                                 .info_read_val = 0x7f,
-                                 .info_write_val = 0x75,
-                                 .data_read_val = 0x3f,
-                                 .data_write_val = 0x3a,
+                                 .perms = {.read = kMultiBitBool4False,
+                                           .write = kMultiBitBool4True,
+                                           .erase = kMultiBitBool4False},
+                                 .info_read_val = 0x6666666,
+                                 .info_write_val = 0x6669696,
+                                 .data_read_val = 0x666666,
+                                 .data_write_val = 0x666969,
                              },
                              // Erase.
                              PermsSetCase{
-                                 .perms = {.read = kHardenedBoolFalse,
-                                           .write = kHardenedBoolFalse,
-                                           .erase = kHardenedBoolTrue},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0x9,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0x4,
+                                 .perms = {.read = kMultiBitBool4False,
+                                           .write = kMultiBitBool4False,
+                                           .erase = kMultiBitBool4True},
+                                 .info_read_val = 0x9999999,
+                                 .info_write_val = 0x9996996,
+                                 .data_read_val = 0x999999,
+                                 .data_write_val = 0x999699,
                              },
                              PermsSetCase{
-                                 .perms = {.read = kHardenedBoolFalse,
-                                           .write = kHardenedBoolFalse,
-                                           .erase = kHardenedBoolTrue},
-                                 .info_read_val = 0x7f,
-                                 .info_write_val = 0x79,
-                                 .data_read_val = 0x3f,
-                                 .data_write_val = 0x3c,
+                                 .perms = {.read = kMultiBitBool4False,
+                                           .write = kMultiBitBool4False,
+                                           .erase = kMultiBitBool4True},
+                                 .info_read_val = 0x6666666,
+                                 .info_write_val = 0x6666996,
+                                 .data_read_val = 0x666666,
+                                 .data_write_val = 0x666699,
                              },
                              // Write and erase.
                              PermsSetCase{
-                                 .perms = {.read = kHardenedBoolFalse,
-                                           .write = kHardenedBoolTrue,
-                                           .erase = kHardenedBoolTrue},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0xd,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0x6,
-                             },
+                                 .perms = {.read = kMultiBitBool4False,
+                                           .write = kMultiBitBool4True,
+                                           .erase = kMultiBitBool4True},
+                                 .info_read_val = 0x9999999,
+                                 .info_write_val = 0x9996696,
+                                 .data_read_val = 0x999999,
+                                 .data_write_val = 0x999669},
                              PermsSetCase{
-                                 .perms = {.read = kHardenedBoolFalse,
-                                           .write = kHardenedBoolTrue,
-                                           .erase = kHardenedBoolTrue},
-                                 .info_read_val = 0x7f,
-                                 .info_write_val = 0x7d,
-                                 .data_read_val = 0x3f,
-                                 .data_write_val = 0x3e,
+                                 .perms = {.read = kMultiBitBool4False,
+                                           .write = kMultiBitBool4True,
+                                           .erase = kMultiBitBool4True},
+                                 .info_read_val = 0x6666666,
+                                 .info_write_val = 0x6666696,
+                                 .data_read_val = 0x666666,
+                                 .data_write_val = 0x666669,
                              }));
 
 struct CfgSetCase {
@@ -569,8 +492,7 @@ class FlashCtrlCfgSetTest : public FlashCtrlTest,
 TEST_P(FlashCtrlCfgSetTest, InfoCfgSet) {
   for (const auto &it : InfoPages()) {
     EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().info_read_val);
-    EXPECT_SEC_WRITE32(base_ + it.second.cfg_offset,
-                       CfgToInfoMp(GetParam().cfg));
+    EXPECT_SEC_WRITE32(base_ + it.second.cfg_offset, GetParam().info_write_val);
 
     flash_ctrl_info_cfg_set(it.first, GetParam().cfg);
   }
@@ -580,7 +502,7 @@ TEST_P(FlashCtrlCfgSetTest, DataDefaultCfgSet) {
   EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
                     GetParam().data_read_val);
   EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
-                     CfgToDefaultMp(GetParam().cfg));
+                     GetParam().data_write_val);
 
   flash_ctrl_data_default_cfg_set(GetParam().cfg);
 }
@@ -589,79 +511,79 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
                          testing::Values(
                              // Scrambling.
                              CfgSetCase{
-                                 .cfg = {.scrambling = kMultiBitBool8True,
-                                         .ecc = kMultiBitBool8False,
-                                         .he = kMultiBitBool8False},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0x11,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0x8,
+                                 .cfg = {.scrambling = kMultiBitBool4True,
+                                         .ecc = kMultiBitBool4False,
+                                         .he = kMultiBitBool4False},
+                                 .info_read_val = 0x9999999,
+                                 .info_write_val = 0x9969996,
+                                 .data_read_val = 0x999999,
+                                 .data_write_val = 0x996999,
                              },
                              CfgSetCase{
-                                 .cfg = {.scrambling = kMultiBitBool8True,
-                                         .ecc = kMultiBitBool8False,
-                                         .he = kMultiBitBool8False},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0x1f,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0xf,
+                                 .cfg = {.scrambling = kMultiBitBool4True,
+                                         .ecc = kMultiBitBool4False,
+                                         .he = kMultiBitBool4False},
+                                 .info_read_val = 0x6666666,
+                                 .info_write_val = 0x9966666,
+                                 .data_read_val = 0x666666,
+                                 .data_write_val = 0x996666,
                              },
                              // ECC.
                              CfgSetCase{
-                                 .cfg = {.scrambling = kMultiBitBool8False,
-                                         .ecc = kMultiBitBool8True,
-                                         .he = kMultiBitBool8False},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0x21,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0x10,
+                                 .cfg = {.scrambling = kMultiBitBool4False,
+                                         .ecc = kMultiBitBool4True,
+                                         .he = kMultiBitBool4False},
+                                 .info_read_val = 0x9999999,
+                                 .info_write_val = 0x9699996,
+                                 .data_read_val = 0x999999,
+                                 .data_write_val = 0x969999,
                              },
                              CfgSetCase{
-                                 .cfg = {.scrambling = kMultiBitBool8False,
-                                         .ecc = kMultiBitBool8True,
-                                         .he = kMultiBitBool8False},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0x2f,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0x17,
+                                 .cfg = {.scrambling = kMultiBitBool4False,
+                                         .ecc = kMultiBitBool4True,
+                                         .he = kMultiBitBool4False},
+                                 .info_read_val = 0x6666666,
+                                 .info_write_val = 0x9696666,
+                                 .data_read_val = 0x666666,
+                                 .data_write_val = 0x969666,
                              },
                              // High endurance.
                              CfgSetCase{
-                                 .cfg = {.scrambling = kMultiBitBool8False,
-                                         .ecc = kMultiBitBool8False,
-                                         .he = kMultiBitBool8True},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0x41,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0x20,
+                                 .cfg = {.scrambling = kMultiBitBool4False,
+                                         .ecc = kMultiBitBool4False,
+                                         .he = kMultiBitBool4True},
+                                 .info_read_val = 0x9999999,
+                                 .info_write_val = 0x6999996,
+                                 .data_read_val = 0x999999,
+                                 .data_write_val = 0x699999,
                              },
                              CfgSetCase{
-                                 .cfg = {.scrambling = kMultiBitBool8False,
-                                         .ecc = kMultiBitBool8False,
-                                         .he = kMultiBitBool8True},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0x4f,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0x27,
+                                 .cfg = {.scrambling = kMultiBitBool4False,
+                                         .ecc = kMultiBitBool4False,
+                                         .he = kMultiBitBool4True},
+                                 .info_read_val = 0x6666666,
+                                 .info_write_val = 0x6996666,
+                                 .data_read_val = 0x666666,
+                                 .data_write_val = 0x699666,
                              },
                              // Scrambling and ECC.
                              CfgSetCase{
-                                 .cfg = {.scrambling = kMultiBitBool8True,
-                                         .ecc = kMultiBitBool8True,
-                                         .he = kMultiBitBool8False},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0x31,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0x18,
+                                 .cfg = {.scrambling = kMultiBitBool4True,
+                                         .ecc = kMultiBitBool4True,
+                                         .he = kMultiBitBool4False},
+                                 .info_read_val = 0x9999999,
+                                 .info_write_val = 0x9669996,
+                                 .data_read_val = 0x999999,
+                                 .data_write_val = 0x966999,
                              },
                              CfgSetCase{
-                                 .cfg = {.scrambling = kMultiBitBool8True,
-                                         .ecc = kMultiBitBool8True,
-                                         .he = kMultiBitBool8False},
-                                 .info_read_val = 0x0,
-                                 .info_write_val = 0x3f,
-                                 .data_read_val = 0x0,
-                                 .data_write_val = 0x1f,
+                                 .cfg = {.scrambling = kMultiBitBool4True,
+                                         .ecc = kMultiBitBool4True,
+                                         .he = kMultiBitBool4False},
+                                 .info_read_val = 0x6666666,
+                                 .info_write_val = 0x9666666,
+                                 .data_read_val = 0x666666,
+                                 .data_write_val = 0x966666,
                              }));
 
 TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
