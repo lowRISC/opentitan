@@ -568,8 +568,9 @@ package spid_common;
         end
 
         DirZ: begin
-          // High-Z Explicit float and wait a byte
-          spi_highz(sif, mode);
+          // High-Z Explicit float and wait a cycle
+          // It has no byte concept here.
+          spi_highz(sif);
         end
 
         DirInout: begin
@@ -645,15 +646,11 @@ package spid_common;
     $display("SPI Byte sent!: %x", data);
   endtask: spi_sendbyte
 
-  task automatic spi_highz(virtual spi_if.tb sif, input mode_e mode);
-    automatic int unsigned loop;
-
+  // spi_highz floats the lines for one cycle.
+  task automatic spi_highz(virtual spi_if.tb sif);
     sif.sd_in[3:0] = 4'h z;
 
-    loop = (mode == IoSingle) ? 8 :
-           (mode == IoDual)   ? 4 :
-           (mode == IoQuad)   ? 2 : 8;
-    repeat(loop) @(negedge sif.clk);
+    @(negedge sif.clk);
   endtask : spi_highz
 
   task automatic spi_sendandreceive(
@@ -899,8 +896,10 @@ package spid_common;
       send_data.push_back('{data: addr[8*i+:8], dir: DirNone, mode: IoNone});
     end
 
-    // dummy
-    send_data.push_back('{data: 'z, dir: DirZ, mode: IoNone});
+    // dummy (8 cycles)
+    repeat(8) begin
+      send_data.push_back('{data: 'z, dir: DirZ, mode: IoNone});
+    end
 
     // Receive data
     repeat(size) begin
