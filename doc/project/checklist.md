@@ -176,6 +176,15 @@ Note:
 - For redundantly encoded FSMs, [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py) must be used to generate the encoding (in conjunction with the [`PRIM_FLOP_SPARSE_FSM`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_flop_macros.sv)) macro.
 - For multibit signals, the `mubi` types in [`prim_mubi_pkg`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_mubi_pkg.sv) should be used if possible.
 
+### SEC_CM_NON_RESET_FLOPS
+
+A review of sensitive security-critical storage flops was completed.
+Where appropriate, non-reset flops are used to store secure material.
+
+### SEC_CM_SHADOW_REGS
+
+Shadow registers are implemented for all appropriate storage of critical control functions.
+
 ### SEC_CM_RTL_REVIEWED
 
 If deemed necessary by the security council, an offline review of the RTL code sections pertaining to the assets and countermeasures listed in SEC_CM_ASSETS_LISTED has been performed.
@@ -195,6 +204,7 @@ Any approved new features since D2 have been documented and reviewed with DV/SW/
 ### TODO_COMPLETE
 
 All TODOs are resolved.
+Deferred TODOs have been marked as "iceboxed" in the code and have been attached an issue as follows: `// ICEBOX(#issue-nr)`.
 
 ### LINT_COMPLETE
 
@@ -204,7 +214,14 @@ Any lint waiver files have been reviewed and signed off by the technical steerin
 ### CDC_COMPLETE
 
 The CDC checking flow is clean.
-CDC waiver files have been reviewed and signed off by the technical steering committee.
+CDC waiver files have been reviewed and understood.
+If there is no CDC flow at the block-level, this requirement can be waived.
+
+### RDC_COMPLETE
+
+The RDC checking flow is clean.
+RDC waiver files have been reviewed and understood.
+If there is no RDC flow at the block-level, this requirement can be waived.
 
 ### REVIEW_RTL
 
@@ -213,31 +230,15 @@ A simple design review has been conducted by an independent designer.
 ### REVIEW_DELETED_FF
 
 Any deleted flops have been reviewed and signed off.
-
-### REVIEW_SW_CSR
-
-Any design changes which affect CSRs have been reviewed by the software team.
-
-### REVIEW_SW_FATAL_ERR
-
-Any fatal error mechanisms have been reviewed by the software team.
+If there is no synthesis flow at the block-level, this requirement can be waived.
 
 ### REVIEW_SW_CHANGE
 
-Any other software-visible design changes have been reviewed by the software team.
+Any software-visible design changes have been reviewed by the software team.
 
 ### REVIEW_SW_ERRATA
 
 All known "Won't Fix" bugs and "Errata" have been reviewed by the software team.
-
-### SEC_NON_RESET_FLOPS
-
-A review of sensitive security-critical storage flops was completed.
-Where appropriate, non-reset flops are used to store secure material.
-
-### SEC_SHADOW_REGS
-
-Shadow registers are implemented for all appropriate storage of critical control functions.
 
 ## V1
 
