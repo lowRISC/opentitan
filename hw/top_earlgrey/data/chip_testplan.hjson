@@ -517,7 +517,7 @@
               memories.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_jtag_mem_access"]
     }
     {
       name: chip_rv_dm_cpu_debug_mem_not_accessable
