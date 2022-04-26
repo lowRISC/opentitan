@@ -82,8 +82,8 @@ Security      | [SEC_RND_CNST][]        | NA          |
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
 Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
-Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
-Security      | [SEC_CM_SHADOW_REGS][]       | Not Started |
+Security      | [SEC_CM_NON_RESET_FLOPS][]   | Done        |
+Security      | [SEC_CM_SHADOW_REGS][]       | Done        |
 Security      | [SEC_CM_RTL_REVIEWED][]      | Done        |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Done        |
 
