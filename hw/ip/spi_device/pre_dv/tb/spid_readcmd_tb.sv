@@ -175,6 +175,7 @@ module tb;
 
   static task host();
     spi_queue_t sfdp_data;
+    spi_queue_t read_data; // read_cmd data
     spi_queue_t expected_data;
     bit test_passed;
     bit match;
@@ -223,6 +224,25 @@ module tb;
 
     //=========================================================================
     // Issue Read Cmd: Normal Read Cmd
+    $display("Sending Read Cmd");
+    spiflash_read(
+      tb_sif,         // vif
+      8'h 03,         // opcode
+      32'h 0000_0080, // address
+      1'b 0,          // Addr mode (0: 3B, 1: 4B)
+      0,              // dummy beat
+      1,              // #bytes
+      IoSingle,       // io_mode {IoSingle, IoDual, IoQuad}
+      read_data       // return payload
+      );
+
+    expected_data = get_read_data(SramAw'('h80), 1);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
     //=========================================================================
     // Issue Read Cmd: Fast Read Cmd
     //=========================================================================
@@ -269,6 +289,31 @@ module tb;
     return data;
   endfunction : get_sfdp_data
 
+  // get_read_data reads content from DPSRAM.
+  // It does not handle the buffer management, but just purely read the
+  // content.
+  function automatic spi_queue_t get_read_data(
+    logic [SramAw-1:0] base, // base addr
+    int                size  // #bytes
+  );
+    automatic spi_queue_t data;
+
+    for (int i = base ; i < base + size ; i++) begin
+      automatic logic [SramAw-1:0] addr;
+      automatic int                remainder;
+      automatic logic [SramDw-1+(SramDw/8):0] mem_data; // Parity
+      addr = SramReadBufferIdx + (i/4)%SramMsgDepth;
+      remainder = i%4;
+      mem_data = `DPSRAM_DATA(addr);
+      $display("DPSRAM [0x%3X]: 0x%2x", addr, mem_data);
+      data.push_back(mem_data[9*remainder+:8]);
+    end
+
+    return data;
+
+
+  endfunction : get_read_data
+
   function automatic bit check_data(
     const ref spi_queue_t rcv,
     const ref spi_queue_t exp
@@ -276,10 +321,18 @@ module tb;
     automatic int size = exp.size();
     automatic bit match = 1'b 1;
 
+    if (rcv.size() != exp.size()) begin
+      $display("Received(%d) and Expected(%d) lengths are not same.",
+        rcv.size(), exp.size());
+      match = 1'b 0;
+    end
+
+    // Run checker even if size mismatches, to give more information
     foreach (rcv[i]) begin
       if (rcv[i] != exp[i]) begin
         match = 1'b 0;
-        $display("Data mismatch @ 0x%4x: RCV[%x], EXP[%x]", i, rcv[i], exp[i]);
+        $display("Data mismatch @ 0x%4x: RCV[%x], EXP[%x]",
+          i, rcv[i], exp[i]);
       end
     end
 
