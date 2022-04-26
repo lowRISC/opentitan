@@ -13,8 +13,9 @@ def lint_repos():
 
     http_archive(
         name = "com_github_bazelbuild_buildtools",
-        strip_prefix = "buildtools-main",
-        url = "https://github.com/bazelbuild/buildtools/archive/main.zip",
+        sha256 = "3a2d2890d6a2948adb3040ee555483eeb483f73b839376c0fac60443e9a3d5b2",
+        strip_prefix = "buildtools-c802c3b06ba674e8a76d04c0677d153ab9f660c9",
+        url = "https://github.com/bazelbuild/buildtools/archive/c802c3b06ba674e8a76d04c0677d153ab9f660c9.zip",
     )
 
     http_archive(
