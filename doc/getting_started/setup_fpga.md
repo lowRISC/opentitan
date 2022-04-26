@@ -30,16 +30,16 @@ You can either download the latest bitstream for the ChipWhisperer CW310 board o
 
 ### Download a Pre-built Bitstream
 
-If you are using the ChipWhisperer CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](http://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz). 
+If you are using the ChipWhisperer CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](http://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz).
 
 For example, to download and unpack the bitstream, run the following:
 
 ```console
-$ cd $REPO_TOP
-$ mkdir -p build-bin/hw/top_earlgrey
-$ cd build-bin/hw/top_earlgrey
-$ curl https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz -o bitstream-latest.tar.gz
-$ tar -xvf bitstream-latest.tar.gz
+cd $REPO_TOP
+mkdir -p build-bin/hw/top_earlgrey
+cd build-bin/hw/top_earlgrey
+curl https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz -o bitstream-latest.tar.gz
+tar -xvf bitstream-latest.tar.gz
 ```
 
 By default, the bitstream is built with a version of the boot ROM used for testing (called the _test ROM_; pulled from `sw/device/lib/testing/test_rom`).
@@ -58,16 +58,16 @@ This is pulled in from the `sw/device/lib/testing/test_rom` directory (see the `
 
 To build it:
 ```console
-$ cd $REPO_TOP
-$ ./meson_init.sh
-$ ninja -C build-out all
+cd $REPO_TOP
+./meson_init.sh
+ninja -C build-out all
 ```
 
 Only the ChipWhisperer CW310 board with the Xilinx Kintex 7 XC7K410T FPGA can fit the whole Earl Grey design.
 When working with the Nexys Video FPGA board, the Earl Grey design has to be modified to reduce its size using a script.
 ```console
-$ cd $REPO_TOP
-$ ./hw/top_earlgrey/util/top_earlgrey_reduce.py --build
+cd $REPO_TOP
+./hw/top_earlgrey/util/top_earlgrey_reduce.py --build
 ```
 The `--build` argument is optional and ensures that the boot ROM is rebuilt for the reduced design.
 Alternatively, the boot ROM can be manually regenerated using the previous command.
@@ -77,11 +77,11 @@ In the following example we synthesize the Earl Grey design for the ChipWhispere
 To target the Nexys Video board, replace `cw310` by `nexysvideo` in the instructions below.
 
 ```console
-$ . /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
-$ cd $REPO_TOP
-$ ./meson_init.sh
-$ ninja -C build-out all
-$ fusesoc --cores-root . run --flag=fileset_top --target=synth lowrisc:systems:chip_earlgrey_cw310
+. /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+cd $REPO_TOP
+./meson_init.sh
+ninja -C build-out all
+fusesoc --cores-root . run --flag=fileset_top --target=synth lowrisc:systems:chip_earlgrey_cw310
 ```
 The `fileset_top` flag used above is specific to the OpenTitan project to select the correct fileset.
 
@@ -107,7 +107,13 @@ To this end:
 1. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
 1. Use a USB-C cable to connect your PC with the *USB-C Data* connector (*J8*) in the lower left corner on the board.
 
-You can now use `dmesg` to determine which serial ports have been assigned.
+You can now use the following to monitor output from dmesg:
+```console
+sudo dmesg -Hw
+```
+This should show which serial ports have been assigned, or if the board is having trouble connecting to USB.
+If `dmesg` reports a problem you can trigger a *USB_RST* with *SW5*.
+When properly connected, `dmesg` should identify the board, not show any errors, and the status light should flash.
 They should be named `'/dev/ttyACM*'`, e.g. `/dev/ttyACM1`.
 To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions]({{< relref "install_vivado" >}}).
 
@@ -137,12 +143,12 @@ HW initialisation completed, waiting for SPI input...
 Use the following command to program the FPGA with the `cw310_loader` tool.
 
 ```console
-$ cd $REPO_TOP
+cd $REPO_TOP
 
 # If you downloaded the bitstream:
-$ ./util/fpga/cw310_loader.py --bitstream build-bin/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
+./util/fpga/cw310_loader.py --bitstream build-bin/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
 # If you built the bitstream yourself:
-$ ./util/fpga/cw310_loader.py --bitstream build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
+./util/fpga/cw310_loader.py --bitstream build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
 ```
 
 ### Using the command line for the Nexys Video board
@@ -150,9 +156,9 @@ $ ./util/fpga/cw310_loader.py --bitstream build/lowrisc_systems_chip_earlgrey_cw
 Use the following command to program the FPGA.
 
 ```console
-$ . /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
-$ cd $REPO_TOP
-$ util/opentitan-pgm-fpga/opentitan-pgm-fpga xc7a200tsbg484-1 build/lowrisc_systems_chip_earlgrey_nexysvideo/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit
+. /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+cd $REPO_TOP
+util/opentitan-pgm-fpga/opentitan-pgm-fpga xc7a200tsbg484-1 build/lowrisc_systems_chip_earlgrey_nexysvideo/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit
 ```
 
 If you have having trouble with programming using the command line, try the GUI.
@@ -160,9 +166,9 @@ If you have having trouble with programming using the command line, try the GUI.
 ### Using the Vivado GUI for the Nexys Video board
 
 ```console
-$ . /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
-$ cd $REPO_TOP
-$ make -C build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado build-gui
+. /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+cd $REPO_TOP
+make -C build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado build-gui
 ```
 
 Now the Vivado GUI opens and loads the project.
@@ -188,12 +194,12 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the 
 1. Open a serial console (use the device file determined before) and connect.
    Settings: 115200 baud, 8 bits per byte, no software flow-control for sending and receiving data.
    ```console
-   $ screen /dev/ttyACM1 115200,cs8,-ixon,-ixoff
+   screen /dev/ttyACM1 115200,cs8,-ixon,-ixoff
    ```
 1. Run the loading tool.
    ```console
-   $ cd ${REPO_TOP}
-   $ ./util/fpga/cw310_loader.py --firmware build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin --set-pll-defaults
+   cd ${REPO_TOP}
+   ./util/fpga/cw310_loader.py --firmware build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin --set-pll-defaults
    ```
 
    This should report how the binary is split into frames:
@@ -263,7 +269,7 @@ Please follow the steps shown below.
 * Open a serial console (use the device file determined before) and connect.
   Settings: 115200 baud, 8N1, no hardware or software flow control.
   ```console
-  $ screen /dev/ttyUSB0 115200
+  screen /dev/ttyUSB0 115200
   ```
   Note that the Nexsys Video demo program that comes installed on the board runs the UART at 115200 baud as well;
   expect to see different output if that is running.
@@ -272,11 +278,11 @@ Please follow the steps shown below.
 * You should see the ROM code report its commit ID and build date.
 * Run the loading tool.
   ```console
-  $ cd ${REPO_TOP}
-  $ ./meson_init.sh
-  $ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_nexysvideo
-  $ ninja -C build-out sw/host/spiflash/spiflash_export
-  $ build-bin/sw/host/spiflash/spiflash --input build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin
+  cd ${REPO_TOP}
+  ./meson_init.sh
+  ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_nexysvideo
+  ninja -C build-out sw/host/spiflash/spiflash_export
+  build-bin/sw/host/spiflash/spiflash --input build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin
   ```
 
   which should report how the binary is split into frames:
@@ -323,21 +329,21 @@ But during debugging this behavior is not helpful.
 The `--no-export` option of fusesoc disables copying the source files into the staging area, and `--setup` instructs fusesoc to not start the synthesis process.
 
 ```console
-$ # only create Vivado project directory
-$ cd $REPO_TOP
-$ fusesoc --cores-root . run --flag=fileset_top --target=synth --no-export --setup lowrisc:systems:chip_earlgrey_cw310
+# only create Vivado project directory
+cd $REPO_TOP
+fusesoc --cores-root . run --flag=fileset_top --target=synth --no-export --setup lowrisc:systems:chip_earlgrey_cw310
 ```
 
 You can then navigate to the created project directory, and open Vivado
 ```console
-$ . /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
-$ cd $REPO_TOP/build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/
-$ vivado
+. /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+cd $REPO_TOP/build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/
+vivado
 ```
 
 Finally, using the tcl console, you can kick off the project setup with
 ```console
-$ source lowrisc_systems_chip_earlgrey_cw310_0.1.tcl
+source lowrisc_systems_chip_earlgrey_cw310_0.1.tcl
 ```
 
 ## Connect with OpenOCD and debug
@@ -345,8 +351,8 @@ $ source lowrisc_systems_chip_earlgrey_cw310_0.1.tcl
 To connect the Nexys Video FPGA board with OpenOCD, run the following command
 
 ```console
-$ cd $REPO_TOP
-$ openocd -s util/openocd -f board/lowrisc-earlgrey-nexysvideo.cfg
+cd $REPO_TOP
+openocd -s util/openocd -f board/lowrisc-earlgrey-nexysvideo.cfg
 ```
 
 See the [install instructions]({{< relref "install_openocd" >}}) for guidance on installing OpenOCD.
@@ -358,8 +364,8 @@ To actually debug through OpenOCD, it must either be connected through telnet or
 The following is an example for using telnet
 
 ```console
-$ telnet localhost 4444 // or whatever port that is specificed by the openocd command above
-$ mdw 0x8000 0x10 // read 16 bytes at address 0x8000
+telnet localhost 4444 // or whatever port that is specificed by the openocd command above
+mdw 0x8000 0x10 // read 16 bytes at address 0x8000
 ```
 
 ### Debug with GDB
@@ -367,8 +373,8 @@ $ mdw 0x8000 0x10 // read 16 bytes at address 0x8000
 An example connection with GDB, which prints the registers after the connection to OpenOCD is established
 
 ```console
-$ cd $REPO_TOP
-$ /tools/riscv/bin/riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.elf
+cd $REPO_TOP
+/tools/riscv/bin/riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.elf
 ```
 
 #### Common operations with GDB
