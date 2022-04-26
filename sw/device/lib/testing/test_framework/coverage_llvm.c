@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/test_framework/test_coverage.h"
+#include "sw/device/lib/testing/test_framework/coverage.h"
 #include "sw/device/lib/uart.h"
 #include "sw/vendor/llvm_clang_rt_profile/compiler-rt/lib/profile/InstrProfiling.h"
 

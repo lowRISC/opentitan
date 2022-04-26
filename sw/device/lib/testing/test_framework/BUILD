@@ -8,9 +8,9 @@ load("//rules:linker.bzl", "ld_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "test_coverage",
-    srcs = ["test_coverage_none.c"],
-    hdrs = ["test_coverage.h"],
+    name = "coverage",
+    srcs = ["coverage_none.c"],
+    hdrs = ["coverage.h"],
 )
 
 cc_library(
@@ -88,10 +88,10 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":check",
+        ":coverage",
         ":freertos_port",
         ":ottf_start",
         ":status",
-        ":test_coverage",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:clkmgr",

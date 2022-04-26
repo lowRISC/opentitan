@@ -17,8 +17,8 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/coverage.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "sw/device/lib/testing/test_framework/test_coverage.h"
 
 // TODO: make this toplevel agnostic.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
