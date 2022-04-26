@@ -469,17 +469,11 @@ void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms) {
   // Read first to preserve ECC, scrambling, and high endurance bits.
   uint32_t reg = sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_RD_EN_FIELD,
-                               perms.read == kHardenedBoolTrue
-                                   ? kMultiBitBool4True
-                                   : kMultiBitBool4False);
+                               perms.read);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_PROG_EN_FIELD,
-                               perms.write == kHardenedBoolTrue
-                                   ? kMultiBitBool4True
-                                   : kMultiBitBool4False);
+                               perms.write);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_ERASE_EN_FIELD,
-                               perms.erase == kHardenedBoolTrue
-                                   ? kMultiBitBool4True
-                                   : kMultiBitBool4False);
+                               perms.erase);
   sec_mmio_write32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
 }
 
@@ -493,17 +487,11 @@ void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
   reg = bitfield_field32_write(
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0_FIELD,
-      perms.read == kHardenedBoolTrue ? kMultiBitBool4True
-                                      : kMultiBitBool4False);
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0_FIELD, perms.read);
   reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0_FIELD,
-      perms.write == kHardenedBoolTrue ? kMultiBitBool4True
-                                       : kMultiBitBool4False);
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0_FIELD, perms.write);
   reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0_FIELD,
-      perms.erase == kHardenedBoolTrue ? kMultiBitBool4True
-                                       : kMultiBitBool4False);
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0_FIELD, perms.erase);
   sec_mmio_write32(cfg_addr, reg);
 }
 
@@ -513,15 +501,11 @@ void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg) {
   // Read first to preserve permission bits.
   uint32_t reg = sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD,
-                               cfg.scrambling == kMultiBitBool8True
-                                   ? kMultiBitBool4True
-                                   : kMultiBitBool4False);
-  reg = bitfield_field32_write(
-      reg, FLASH_CTRL_DEFAULT_REGION_ECC_EN_FIELD,
-      cfg.ecc == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
-  reg = bitfield_field32_write(
-      reg, FLASH_CTRL_DEFAULT_REGION_HE_EN_FIELD,
-      cfg.he == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
+                               cfg.scrambling);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_ECC_EN_FIELD,
+                               cfg.ecc);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_HE_EN_FIELD,
+                               cfg.he);
   sec_mmio_write32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
 }
 
@@ -536,14 +520,11 @@ void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0_FIELD,
-      cfg.scrambling == kMultiBitBool8True ? kMultiBitBool4True
-                                           : kMultiBitBool4False);
+      cfg.scrambling);
   reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ECC_EN_0_FIELD,
-      cfg.ecc == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ECC_EN_0_FIELD, cfg.ecc);
   reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_HE_EN_0_FIELD,
-      cfg.he == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_HE_EN_0_FIELD, cfg.he);
   sec_mmio_write32(cfg_addr, reg);
 }
 
