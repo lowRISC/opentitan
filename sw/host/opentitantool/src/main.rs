@@ -26,6 +26,7 @@ enum RootCommandHierarchy {
     Console(command::console::Console),
 
     Gpio(command::gpio::GpioCommand),
+    Emulator(command::emulator::EmuCommand),
 
     I2c(command::i2c::I2cCommand),
     Image(command::image::Image),
