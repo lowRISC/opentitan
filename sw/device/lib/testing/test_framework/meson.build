@@ -19,7 +19,7 @@ sw_lib_testing_test_status = declare_dependency(
 sw_lib_testing_test_coverage = declare_dependency(
   link_with: static_library(
     'test_coverage_none',
-    sources: [files('test_coverage_none.c')],
+    sources: [files('coverage_none.c')],
   ),
 )
 collect_coverage = declare_dependency()
@@ -32,7 +32,7 @@ if coverage
       include_directories: sw_vendor_llvm_clang_rt_inc_dir,
       sources: [
         sw_vendor_llvm_clang_rt_sources,
-        files('test_coverage_llvm.c'),
+        files('coverage_llvm.c'),
       ],
       dependencies: [
         sw_lib_mem,
