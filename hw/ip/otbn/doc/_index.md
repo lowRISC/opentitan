@@ -506,7 +506,7 @@ A `KEY_INVALID` software error is raised if OTBN software accesses any of the `K
 ## Blanking {#blanking}
 
 To reduce side channel leakage OTBN employs a blanking technique on certain control and data paths.
-When a path is blanked it is forced to 0 (by ANDing the path with a blanking signal) preventing sensitive data bits producing a power signature via that path where that path isn't needed for the current instruction.  
+When a path is blanked it is forced to 0 (by ANDing the path with a blanking signal) preventing sensitive data bits producing a power signature via that path where that path isn't needed for the current instruction.
 
 Blanking controls all come directly from flops to prevent glitches in decode logic reducing the effectiveness of the blanking.
 These control signals are determined in the [prefetch stage]({{<relref "#instruction-prefetch">}}) via pre-decode logic.
@@ -1418,4 +1418,4 @@ Code snippets giving examples of 256x256 and 384x384 multiplies can be found in 
 
 <a name="ref-chen08">[CHEN08]</a> L. Chen, "Hsiao-Code Check Matrices and Recursively Balanced Matrices," arXiv:0803.1217 [cs], Mar. 2008 [Online]. Available: http://arxiv.org/abs/0803.1217
 
-<a name="ref-symbiotic21">[SYMBIOTIC21]</a> RISC-V Bitmanip Extension v0.93 Available: https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf 
+<a name="ref-symbiotic21">[SYMBIOTIC21]</a> RISC-V Bitmanip Extension v0.93 Available: https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf

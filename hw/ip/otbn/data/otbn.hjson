@@ -89,10 +89,10 @@
       package: "edn_pkg"
     },
 
-    // OTBN is not performing any operation and can be clock/power-gated. 
+    // OTBN is not performing any operation and can be clock/power-gated.
     { name:    "idle",
       type:    "uni",
-      struct:  "mubi4", 
+      struct:  "mubi4",
       width:   "1",
       act:     "req",
       package: "prim_mubi_pkg"
