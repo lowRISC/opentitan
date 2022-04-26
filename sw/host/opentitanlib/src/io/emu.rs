@@ -6,6 +6,8 @@ use crate::impl_serializable_error;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt;
+use std::path::PathBuf;
 use thiserror::Error;
 
 /// Error related to the `Emulator` trait.
@@ -13,7 +15,7 @@ use thiserror::Error;
 pub enum EmuError {
     #[error("Invalid argument name: {0}")]
     InvalidArgumetName(String),
-    #[error("Argument nmae: {0} has invalid value: {1}")]
+    #[error("Argument name: {0} has invalid value: {1}")]
     InvalidArgumentValue(String, String),
     #[error("Start failed with cause: {0}")]
     StartFailureCause(String),
@@ -30,9 +32,33 @@ impl_serializable_error!(EmuError);
 pub enum EmuValue {
     Empty,
     String(String),
-    FilePath(String),
+    FilePath(PathBuf),
     StringList(Vec<String>),
-    FilePathList(Vec<String>),
+    FilePathList(Vec<PathBuf>),
+}
+
+impl From<String> for EmuValue {
+    fn from(s: String) -> Self {
+        EmuValue::String(s)
+    }
+}
+
+impl From<Vec<String>> for EmuValue {
+    fn from(str_array: Vec<String>) -> Self {
+        EmuValue::StringList(str_array)
+    }
+}
+
+impl From<PathBuf> for EmuValue {
+    fn from(p: PathBuf) -> Self {
+        EmuValue::FilePath(p)
+    }
+}
+
+impl From<Vec<PathBuf>> for EmuValue {
+    fn from(path_array: Vec<PathBuf>) -> Self {
+        EmuValue::FilePathList(path_array)
+    }
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
@@ -41,6 +67,17 @@ pub enum EmuState {
     On,
     Busy,
     Error,
+}
+
+impl fmt::Display for EmuState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            EmuState::Off => write!(f, "Off"),
+            EmuState::On => write!(f, "On"),
+            EmuState::Busy => write!(f, "Busy"),
+            EmuState::Error => write!(f, "Error"),
+        }
+    }
 }
 
 /// A trait which represents a `Emulator` instance
