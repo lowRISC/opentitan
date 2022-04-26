@@ -95,17 +95,6 @@ sudo add-apt-repository ppa:ubuntu-toolchain-r/test \
     error "Failed to set up gcc-9"
   }
 
-# Install bazel from bazel's apt repository.
-sudo $APT_CMD install -y apt-transport-https gnupg \
-  && curl -fsSL https://bazel.build/bazel-release.pub.gpg \
-    | gpg --dearmor > bazel.gpg \
-  && sudo mv bazel.gpg /etc/apt/trusted.gpg.d/ \
-  && echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" \
-    | sudo tee /etc/apt/sources.list.d/bazel.list > /dev/null \
-  && sudo $APT_CMD update && sudo $APT_CMD install -y bazel || {
-    error "Failed to install Bazel"
-  }
-
 # Ensure apt package index is up-to-date.
 sudo $APT_CMD update || {
     error "Failed to run apt update"
