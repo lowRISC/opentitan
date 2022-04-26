@@ -299,18 +299,6 @@ jobs:
         --napoleon-docstrings
     displayName: Execute tests
 
-- template: ci/run-riscv-compliance.yml
-  parameters:
-    rvc_test_suites:
-      - rv32i
-
-- template: ci/run-riscv-compliance.yml
-  parameters:
-    rvc_test_suites:
-      - rv32im
-      - rv32imc
-      - rv32Zicsr
-
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test
   dependsOn: lint
