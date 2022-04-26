@@ -7,12 +7,19 @@ use crate::util::bigint::fixed_size_bigint;
 use crate::util::num_de::HexEncoded;
 use crate::util::parse_int::ParseInt;
 
-use anyhow::{anyhow, Result};
+use anyhow::{bail, Result};
 use serde::Deserialize;
 use std::convert::{TryFrom, TryInto};
 use std::iter::IntoIterator;
+use thiserror::Error;
 
 use zerocopy::AsBytes;
+
+#[derive(Debug, Error)]
+pub enum ManifestError {
+    #[error("Manifest is missing field \"{0}\".")]
+    MissingField(&'static str),
+}
 
 fixed_size_bigint!(ManifestRsa, at_most 3072);
 
@@ -77,10 +84,16 @@ macro_rules! manifest_def {
     }
 }
 
+impl ManifestDef {
+    pub fn overwrite_fields(&mut self, other: ManifestDef) {
+        self.overwrite(other)
+    }
+}
+
 trait ManifestPacked<T> {
     /// The default error for missing fields.
     fn unpack_err(&self, name: &'static str) -> Result<T> {
-        Err(anyhow!("Manifest is missing field {}", name))
+        bail!(ManifestError::MissingField(name))
     }
 
     /// Unpack optional fields in the manifest, and error if the field isn't defined.
@@ -174,16 +187,22 @@ impl TryFrom<ManifestRsa> for SigverifyRsaBuffer {
     type Error = anyhow::Error;
 
     fn try_from(rsa: ManifestRsa) -> Result<SigverifyRsaBuffer> {
-        // Convert between the BigInt byte representation and the manifest word representation.
-        Ok(SigverifyRsaBuffer {
-            data: rsa
-                .to_le_bytes()
-                .chunks(4)
-                .map(|v| Ok(u32::from_le_bytes(v.try_into()?)))
-                .collect::<Result<Vec<u32>>>()?
-                .as_slice()
-                .try_into()?,
-        })
+        if rsa.eq(&ManifestRsa::from_le_bytes([0])?) {
+            // In the case where the BigInt fields are defined but == 0 we should just keep it 0.
+            // Without this the conversion to [u32; 96] would fail.
+            Ok(SigverifyRsaBuffer { data: [0; 96] })
+        } else {
+            // Convert between the BigInt byte representation and the manifest word representation.
+            Ok(SigverifyRsaBuffer {
+                data: rsa
+                    .to_le_bytes()
+                    .chunks(4)
+                    .map(|v| Ok(u32::from_le_bytes(v.try_into()?)))
+                    .collect::<Result<Vec<u32>>>()?
+                    .as_slice()
+                    .try_into()?,
+            })
+        }
     }
 }
 
@@ -215,9 +234,7 @@ impl TryFrom<SigverifyRsaBuffer> for ManifestBigInt {
     type Error = anyhow::Error;
 
     fn try_from(o: SigverifyRsaBuffer) -> Result<ManifestBigInt> {
-        let buf: [u32; 96] = o.data.try_into()?;
-        let rsa = ManifestRsa::from_le_bytes(buf.as_bytes())?;
-        Ok(ManifestBigInt(Some(HexEncoded(rsa))))
+        (&o).try_into()
     }
 }
 
@@ -225,13 +242,15 @@ impl TryFrom<&SigverifyRsaBuffer> for ManifestBigInt {
     type Error = anyhow::Error;
 
     fn try_from(o: &SigverifyRsaBuffer) -> Result<ManifestBigInt> {
-        let buf: [u32; 96] = o.data.try_into()?;
-        let rsa = ManifestRsa::from_le_bytes(buf.as_bytes())?;
+        let rsa = ManifestRsa::from_le_bytes(o.data.as_bytes())?;
         Ok(ManifestBigInt(Some(HexEncoded(rsa))))
     }
 }
 
-impl<T> From<&T> for ManifestSmallInt<T> where T: ParseInt + Copy {
+impl<T> From<&T> for ManifestSmallInt<T>
+where
+    T: ParseInt + Copy,
+{
     fn from(o: &T) -> ManifestSmallInt<T> {
         ManifestSmallInt(Some(HexEncoded(*o)))
     }
