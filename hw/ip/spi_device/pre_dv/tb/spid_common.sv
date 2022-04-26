@@ -920,16 +920,51 @@ package spid_common;
 
   endtask : spiflash_readsfdp
 
-  task automatic spiflash_fastreadcmd(
-    virtual spi_if sif,
+  task automatic spiflash_read(
+    virtual spi_if.tb  sif,
     input spi_data_t   opcode,
     input logic [31:0] addr,
-    input int          size,       // #bytes
-    input logic        addr_mode,  // 0: addr_3b, 1: addr_4b
-    input mode_e       io_mode,    // IoSingle, IoDual, IoQuad
-    ref   spi_queue_t  payload     // return data
+    input bit          addr_mode,
+    input int unsigned dummy,
+    input int unsigned size,
+    input mode_e       io_mode,
+    ref spi_queue_t    payload
   );
-  endtask : spiflash_fastreadcmd
+    automatic spi_fifo_t  send_data [$];
+    automatic spi_queue_t rcv_data;
+
+    // opcode
+    send_data.push_back('{data: opcode, dir: DirIn, mode: IoSingle});
+
+    // address
+    for (int i = 2 + addr_mode ; i >= 0 ; i--) begin : address
+      send_data.push_back('{data: addr[8*i+:8], dir: DirNone, mode: IoNone});
+    end
+
+    // dummy
+    for (int i = dummy ; i > 0 ; i--) begin : dummy_logic
+      send_data.push_back('{data: 'z, dir: DirZ, mode: IoNone});
+    end
+
+    // receive data
+    repeat(size) begin
+      send_data.push_back('{data: '0, dir: DirOut, mode: io_mode});
+    end
+
+    spi_transaction(sif, send_data, rcv_data);
+
+    assert(rcv_data.size() == size);
+
+    $display("Read Cmd [0x%8x + 0x%4x]", addr, size);
+
+    assert(payload.size() == 0);
+
+    // OR, push_back foreach?
+    foreach (rcv_data[i]) begin
+      payload.push_back(rcv_data[i]);
+    end
+
+  endtask : spiflash_read
 
   //===========================================================================
   // SW-side functions/ tasks
