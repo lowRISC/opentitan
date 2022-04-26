@@ -2,17 +2,31 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::image::manifest::Manifest;
+use crate::image::manifest_def::ManifestDef;
 use crate::util::parse_int::ParseInt;
 use anyhow::{ensure, Result};
+use std::convert::TryInto;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
+use std::mem::size_of;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
+
+use zerocopy::LayoutVerified;
 
 #[derive(Debug, Error)]
 pub enum ImageError {
     #[error("Incomplete read: expected to read {0} bytes but read {1} bytes")]
     IncompleteRead(usize, usize),
+    #[error("Failed to parse image manifest.")]
+    Parse,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct Image {
+    bytes: Vec<u8>,
 }
 
 #[derive(Debug)]
@@ -26,6 +40,56 @@ pub struct ImageAssembler {
     pub size: usize,
     pub mirrored: bool,
     pub chunks: Vec<ImageChunk>,
+}
+
+impl Image {
+    /// Creates an `Image` from a given input binary.
+    pub fn read_from_file(path: &Path) -> Result<Image> {
+        let file_len = path.metadata()?.len() as usize;
+        // Create a buffer with the same alignment as Manifest that's as least as long as the input
+        // file.
+        let mut aligned: Vec<Manifest> =
+            Vec::with_capacity((0..file_len).step_by(size_of::<Manifest>()).len());
+
+        // Convert the aligned buffer to a Vec<u8> with the same capacity, but length equal to the
+        // size of the input file.
+        let vec_ptr = aligned.as_mut_ptr() as *mut u8;
+        let vec_cap = aligned.capacity() * size_of::<Manifest>();
+
+        // Forget `aligned` so we don't double free.
+        std::mem::forget(aligned);
+
+        // Convert our `aligned` Vec<Manifest> to a Vec<u8> with the same capacity and len equal to
+        // the size of the input image. This should mean that the new Vec<u8> has the same
+        // alignment as Manifest so we can successfully use LayoutVerified later to reinterpret the
+        // head of the image as a Manifest.
+        let mut buf: Vec<u8> = unsafe { Vec::from_raw_parts(vec_ptr, file_len, vec_cap) };
+
+        // Read the image into our buffer.
+        let mut file = File::open(path)?;
+        file.read(&mut *buf)?;
+
+        Ok(Image { bytes: buf })
+    }
+
+    /// Write out the `Image` to a file at the given `path`.
+    pub fn write_to_file(self, path: &Path) -> Result<()> {
+        let mut file = File::create(path)?;
+        file.write(self.bytes.as_slice())?;
+        Ok(())
+    }
+
+    /// Overwrites all fields in the image's manifest that are defined in `other`.
+    pub fn overwrite_manifest(&mut self, other: ManifestDef) -> Result<()> {
+        let (manifest_slice, _) = self.bytes.split_at_mut(size_of::<Manifest>());
+        let manifest_layout: LayoutVerified<&mut [u8], Manifest> =
+            LayoutVerified::new(&mut *manifest_slice).ok_or(ImageError::Parse)?;
+        let manifest: &mut Manifest = manifest_layout.into_mut();
+        let mut manifest_def: ManifestDef = (&*manifest).try_into()?;
+        manifest_def.overwrite_fields(other);
+        *manifest = manifest_def.try_into()?;
+        Ok(())
+    }
 }
 
 impl ImageAssembler {
@@ -156,5 +220,26 @@ mod tests {
             "Incomplete read: expected to read 5 bytes but read 3 bytes"
         );
         Ok(())
+    }
+
+    #[test]
+    fn test_load_image() {
+        // Read and write back image.
+        let image = Image::read_from_file(&testdata!("test_image.bin")).unwrap();
+        image
+            .write_to_file(&testdata!("test_image_out.bin"))
+            .unwrap();
+
+        // Ensure the result is identical to the original.
+        let (mut orig_bytes, mut res_bytes) = (Vec::<u8>::new(), Vec::<u8>::new());
+        File::open(&testdata!("test_image.bin"))
+            .unwrap()
+            .read_to_end(&mut orig_bytes)
+            .unwrap();
+        File::open(&testdata!("test_image_out.bin"))
+            .unwrap()
+            .read_to_end(&mut res_bytes)
+            .unwrap();
+        assert_eq!(orig_bytes, res_bytes);
     }
 }
