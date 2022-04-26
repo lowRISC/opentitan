@@ -13,9 +13,13 @@ interface pattgen_cov_if (
   `include "dv_fcov_macros.svh"
   `include "uvm_macros.svh"
 
+  parameter uint NO_DATA_BINS = 10;
+  parameter uint NO_PREDIV_BINS = 10;
+  parameter uint NO_REPS_BINS = 5;
+  parameter uint NO_LEN_BINS = 5;
+
   `define CH0_PATH u_pattgen_core.chan0
   `define CH1_PATH u_pattgen_core.chan1
-
 
   wire rep_cnt_en_ch0 = `CH0_PATH.rep_cnt_en;
   wire rep_cnt_en_ch1 = `CH1_PATH.rep_cnt_en;
@@ -41,9 +45,9 @@ interface pattgen_cov_if (
   bit en_intg_cov_loc;
   assign en_intg_cov_loc = en_full_cov | en_intg_cov;
 
-  covergroup contr_cg @(posedge clk_i);
+  covergroup ctrl_cg @(posedge clk_i);
 
-    option.name         = "contr_cg";
+    option.name         = "ctrl_cg";
     option.comment      = "Enable and polarity coverage";
 
     cp_enable_ch0: coverpoint `CH0_PATH.enable;
@@ -54,9 +58,9 @@ interface pattgen_cov_if (
     cross_contr: cross cp_enable_ch0, cp_enable_ch1,
                        cp_polarity_ch0, cp_polarity_ch1;
 
-  endgroup : contr_cg
+  endgroup : ctrl_cg
 
- `DV_FCOV_INSTANTIATE_CG(contr_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(ctrl_cg, en_full_cov)
 
     wire ch0_cnt_match_prediv = (prediv_q0 == clk_cnt_q0);
     wire ch0_cnt_reset = (clk_cnt_q0 == 0);
@@ -72,7 +76,7 @@ interface pattgen_cov_if (
     wire ch1_cnt_match_reps = (reps_q1 == rep_cnt_q1);
     wire ch1_cnt_reset_reps = (rep_cnt_q1 == 0);
 
-  covergroup ch0_cnt_reset_cg @(posedge clk_i);
+  covergroup pattgen_ch0_cnt_reset_cg @(posedge clk_i);
 
     option.name         = "ch0_cnt_reset_cg";
     option.comment      = "Counters reset after match";
@@ -115,11 +119,11 @@ interface pattgen_cov_if (
       bins one2zero = (1'b1 => 1'b0);
     }
 
-  endgroup : ch0_cnt_reset_cg
+  endgroup : pattgen_ch0_cnt_reset_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch0_cnt_reset_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_ch0_cnt_reset_cg, en_full_cov)
 
-  covergroup ch1_cnt_reset_cg @(posedge clk_i);
+  covergroup pattgen_ch1_cnt_reset_cg @(posedge clk_i);
 
     option.name         = "ch1_cnt_reset_cg";
     option.comment      = "Counters reset after match";
@@ -162,13 +166,13 @@ interface pattgen_cov_if (
       bins one2zero = (1'b1 => 1'b0);
     }
 
-  endgroup : ch1_cnt_reset_cg
+  endgroup : pattgen_ch1_cnt_reset_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch1_cnt_reset_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_ch1_cnt_reset_cg, en_full_cov)
 
-  covergroup intr_cg @(posedge clk_i);
+  covergroup inter_cg @(posedge clk_i);
 
-    option.name         = "intr_cg";
+    option.name         = "inter_cg";
     option.comment      = "Interrupts checking";
 
     cp_intr_enab_ch0: coverpoint
@@ -180,165 +184,211 @@ interface pattgen_cov_if (
 
     intr_cross: cross cp_intr_enab_ch0, cp_intr_state_ch0, cp_intr_test_ch0;
 
+  endgroup : inter_cg
 
-  endgroup : intr_cg
-
- `DV_FCOV_INSTANTIATE_CG(intr_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(inter_cg, en_full_cov)
 
   //NOTE upper and lower parts of data cannot be accessed with CHAN* macro
   //because channels receive merged 64 bit data.
 
-  covergroup ch0_data_word0_cg @(posedge clk_i);
+  covergroup pattgen_data_ch0_0_cg @(posedge clk_i);
 
-    option.name         = "ch0_data_word0_cg";
+    option.name         = "pattgen_data_ch0_0_cg";
     option.comment      = "Data coverage in LSB Chan0";
 
-    cp_data_ch0: coverpoint {tb.dut.u_pattgen_core.ch0_ctrl.data[31:0]}{
+    cp_data_ch00: coverpoint {tb.dut.u_pattgen_core.ch0_ctrl.data[31:0]}{
       bins maxim = {DataMax};
-      bins mid = {[DataMin + 1:DataMax - 1]};
+      bins mid[NO_DATA_BINS] = {[DataMin + 1:DataMax - 1]};
       bins minim = {DataMin};
     }
 
-  endgroup : ch0_data_word0_cg
+  endgroup : pattgen_data_ch0_0_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch0_data_word0_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_data_ch0_0_cg, en_full_cov)
 
-  covergroup ch0_data_word1_cg @(posedge clk_i);
+  covergroup pattgen_data_ch0_1_cg @(posedge clk_i);
 
-    option.name         = "ch0_data_word1_cg";
+    option.name         = "pattgen_data_ch0_1_cg";
     option.comment      = "Data coverage in MSB Chan0";
 
-    cp_data_ch1: coverpoint {tb.dut.u_pattgen_core.ch0_ctrl.data[63:32]}{
+    cp_data_ch01: coverpoint {tb.dut.u_pattgen_core.ch0_ctrl.data[63:32]}{
       bins maxim = {DataMax};
-      bins mid = {[DataMin +1:DataMax - 1]};
+      bins mid[NO_DATA_BINS] = {[DataMin +1:DataMax - 1]};
       bins minim = {DataMin};
     }
 
-  endgroup : ch0_data_word1_cg
+  endgroup : pattgen_data_ch0_1_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch0_data_word1_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_data_ch0_1_cg, en_full_cov)
 
-  covergroup ch1_data_word0_cg @(posedge clk_i);
+  covergroup pattgen_data_ch1_0_cg @(posedge clk_i);
 
-    option.name         = "ch1_data_word0_cg";
+    option.name         = "pattgen_data_ch1_0_cg";
     option.comment      = "Data coverage in LSB Chan1";
 
     cp_data_ch10: coverpoint {tb.dut.u_pattgen_core.ch1_ctrl.data[31:0]}{
       bins maxim = {DataMax};
-      bins mid = {[DataMin +1 : DataMax - 1]};
+      bins mid[NO_DATA_BINS] = {[DataMin +1 : DataMax - 1]};
       bins minim = {DataMin};
     }
 
-  endgroup : ch1_data_word0_cg
+  endgroup : pattgen_data_ch1_0_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch1_data_word0_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_data_ch1_0_cg, en_full_cov)
 
-  covergroup ch1_data_word1_cg @(posedge clk_i);
+  covergroup pattgen_data_ch1_1_cg @(posedge clk_i);
 
-    option.name         = "ch1_data_word1_cg";
+    option.name         = "pattgen_data_ch1_1_cg";
     option.comment      = "Data coverage in MSB Chan1";
 
-    cp_data_ch1: coverpoint {tb.dut.u_pattgen_core.ch1_ctrl.data[63:32]}{
+    cp_data_ch11: coverpoint {tb.dut.u_pattgen_core.ch1_ctrl.data[63:32]}{
       bins maxim = {DataMax};
-      bins mid = {[DataMin + 1:DataMax - 1]};
+      bins mid[NO_DATA_BINS] = {[DataMin + 1:DataMax - 1]};
       bins minim = {DataMin};
     }
 
-  endgroup : ch1_data_word1_cg
+  endgroup : pattgen_data_ch1_1_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch1_data_word1_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_data_ch1_1_cg, en_full_cov)
 
-  covergroup ch0_prediv_cg @(posedge clk_i);
+  covergroup pattgen_prediv_ch0_cg @(posedge clk_i);
 
-    option.name         = "ch0_prediv_cg";
+    option.name         = "pattgen_prediv_ch0_cg";
     option.comment      = "Chan0 Pre-divide clock coefficient coverage";
 
     cp_prediv_ch0: coverpoint {prediv_q0}{
       bins maxim = {PredivMaxValue};
-      bins mid = {[PredivMinValue + 1:PredivMaxValue - 1]};
+      bins mid[NO_PREDIV_BINS] = {[PredivMinValue + 1:PredivMaxValue - 1]};
       bins minim = {PredivMinValue};
     }
 
-  endgroup : ch0_prediv_cg
+  endgroup : pattgen_prediv_ch0_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch0_prediv_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_prediv_ch0_cg, en_full_cov)
 
-  covergroup ch1_prediv_cg @(posedge clk_i);
+  covergroup pattgen_prediv_ch1_cg @(posedge clk_i);
 
-    option.name         = "ch1_prediv_cg";
+    option.name         = "pattgen_prediv_ch1_cg";
     option.comment      = "Chan1 Pre-divide clock coefficient coverage";
 
     cp_prediv_ch1: coverpoint {prediv_q1}{
       bins maxim = {PredivMaxValue};
-      bins mid = {[PredivMinValue + 1:PredivMaxValue - 1]};
+      bins mid[NO_PREDIV_BINS] = {[PredivMinValue + 1:PredivMaxValue - 1]};
       bins minim = {PredivMinValue};
     }
 
-  endgroup : ch1_prediv_cg
+  endgroup : pattgen_prediv_ch1_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch1_prediv_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_prediv_ch1_cg, en_full_cov)
 
-  covergroup ch0_reps_cg @(posedge clk_i);
+  covergroup pattgen_reps_ch0_cg @(posedge clk_i);
 
-    option.name         = "ch0_reps_cg";
+    option.name         = "pattgen_reps_ch0_cg";
     option.comment      = "Chan0 repetition coefficient coverage";
 
     cp_reps_ch0: coverpoint {reps_q0}{
       bins maxim = {RepsMaxValue};
-      bins mid = {[RepsMinValue + 1:RepsMaxValue - 1]};
+      bins mid[NO_REPS_BINS] = {[RepsMinValue + 1:RepsMaxValue - 1]};
       bins minim = {RepsMinValue};
     }
 
-  endgroup : ch0_reps_cg
+  endgroup : pattgen_reps_ch0_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch0_reps_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_reps_ch0_cg, en_full_cov)
 
-  covergroup ch1_reps_cg @(posedge clk_i);
+  covergroup pattgen_reps_ch1_cg @(posedge clk_i);
 
-    option.name         = "ch1_reps_cg";
+    option.name         = "pattgen_reps_ch1_cg";
     option.comment      = "Chan1 repetition coefficient coverage";
 
     cp_reps_ch1: coverpoint {reps_q1}{
       bins maxim_1 = {RepsMaxValue};
-      bins mid_1 = {[RepsMinValue + 1:RepsMaxValue - 1]};
+      bins mid_1[NO_REPS_BINS] = {[RepsMinValue + 1:RepsMaxValue - 1]};
       bins minim_1 = {RepsMinValue};
 
     }
 
-  endgroup : ch1_reps_cg
+  endgroup : pattgen_reps_ch1_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch1_reps_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_reps_ch1_cg, en_full_cov)
 
-  covergroup ch0_len_cg @(posedge clk_i);
+  covergroup pattgen_len_ch0_cg @(posedge clk_i);
 
-    option.name         = "ch0_len_cg";
+    option.name         = "pattgen_len_ch0_cg";
     option.comment      = "Chan0 length coverage";
 
     cp_len_ch0: coverpoint {len_q0}{
       bins maxim = {LenMaxValue};
-      bins middle = {[LenMinValue + 1:LenMaxValue - 1]};
+      bins middle[NO_LEN_BINS] = {[LenMinValue + 1:LenMaxValue - 1]};
       bins minim = {LenMinValue};
     }
 
-  endgroup : ch0_len_cg
+  endgroup : pattgen_len_ch0_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch0_len_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_len_ch0_cg, en_full_cov)
 
-  covergroup ch1_len_cg @(posedge clk_i);
+  covergroup pattgen_len_ch1_cg @(posedge clk_i);
 
-    option.name         = "ch1_len_cg";
+    option.name         = "pattgen_len_ch1_cg";
     option.comment      = "Chan1 length coverage";
 
     cp_len_ch1: coverpoint {len_q1}{
       bins maxim_1 = {LenMaxValue};
-      bins middle_1 = {[LenMinValue + 1:LenMaxValue - 1]};
+      bins middle_1[NO_LEN_BINS] = {[LenMinValue + 1:LenMaxValue - 1]};
       bins minim_1 = {LenMinValue};
-
     }
 
-  endgroup : ch1_len_cg
+  endgroup : pattgen_len_ch1_cg
 
- `DV_FCOV_INSTANTIATE_CG(ch1_len_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(pattgen_len_ch1_cg, en_full_cov)
+
+ covergroup roll_cg @(posedge clk_i);
+
+    option.name         = "roll_cg";
+    option.comment      = "Cover max/min values of counters";
+
+    cp_prediv_cnt_ch0: coverpoint {prediv_q0}{
+      bins maxim_0 = {'hffffffff};
+      bins mid_range_0[NO_PREDIV_BINS] = {[1:'hfffffffe]};
+      bins minim_0 = {0};
+    }
+
+    cp_prediv_cnt_ch1: coverpoint {prediv_q1}{
+      bins maxim_1 = {'hffffffff};
+      bins mid_range_1[NO_PREDIV_BINS] = {[1:'hfffffffe]};
+      bins minim_1 = {0};
+    }
+
+    cp_len_cnt_ch0: coverpoint {len_q0}{
+      bins maxim_0 = {'h3f};
+      bins mid_range_0[NO_LEN_BINS] = {[1:'h3e]};
+      bins minim_0 = {0};
+    }
+
+    cp_len_cnt_ch1: coverpoint {len_q1}{
+      bins maxim_1 = {'h3f};
+      bins mid_range_1[NO_LEN_BINS] = {[1:'h3e]};
+      bins minim_1 = {0};
+    }
+
+    cp_reps_cnt_ch0: coverpoint {reps_q0}{
+      bins maxim_0 = {'h3ff};
+      bins mid_range_0[NO_REPS_BINS] = {[1:'h3fe]};
+      bins minim_0 = {0};
+    }
+
+    cp_reps_cnt_ch1: coverpoint {reps_q1}{
+      bins maxim_1 = {'h3ff};
+      bins mid_range_1[NO_REPS_BINS] = {[1:'h3fe]};
+      bins minim_1 = {0};
+    }
+
+    cross_rollover_cnt_ch0: cross cp_prediv_cnt_ch0, cp_len_cnt_ch0, cp_reps_cnt_ch0;
+    cross_rollover_cnt_ch1: cross cp_prediv_cnt_ch1, cp_len_cnt_ch1, cp_reps_cnt_ch1;
+
+  endgroup : roll_cg
+
+ `DV_FCOV_INSTANTIATE_CG(roll_cg, en_full_cov)
 
   covergroup pattgen_op_cg @(posedge clk_i);
     option.name         = "pattgen_op_cg";
