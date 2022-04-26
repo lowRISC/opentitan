@@ -6,7 +6,7 @@
 sw_lib_testing_test_status = declare_dependency(
   link_with: static_library(
     'test_status_ot',
-    sources: ['test_status.c'],
+    sources: ['status.c'],
     dependencies: [
       sw_lib_mmio,
       sw_lib_runtime_log,

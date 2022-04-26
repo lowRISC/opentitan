@@ -261,6 +261,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_start",
+        "//sw/device/lib/testing/test_framework:status",
     ],
 )
 
@@ -345,6 +346,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_rom:linker_script",
         "//sw/device/lib/testing/test_rom:test_rom_lib",
     ],
@@ -793,6 +795,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
     ],
 )
 
@@ -831,9 +834,9 @@ opentitan_functest(
     name = "sensor_ctrl_alert_test",
     srcs = ["sensor_ctrl_alerts.c"],
     deps = [
-        "//sw/device/lib:irq",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib:irq",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -856,9 +859,9 @@ opentitan_functest(
     name = "sensor_ctrl_wakeup_test",
     srcs = ["sensor_ctrl_wakeup.c"],
     deps = [
-        "//sw/device/lib:irq",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib:irq",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
