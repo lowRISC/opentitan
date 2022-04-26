@@ -22,8 +22,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-#define GPIO_BOOTSTRAP_BIT_MASK 0x00020000u
-
 /**
  * Check if flash is blank to determine if bootstrap is needed.
  */
@@ -32,55 +30,51 @@ static bool bootstrap_requested(void) {
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
 
-  dif_gpio_state_t gpio_in;
-  CHECK_DIF_OK(dif_gpio_read_all(&gpio, &gpio_in));
-  return (gpio_in & GPIO_BOOTSTRAP_BIT_MASK) != 0;
+  bool state;
+  CHECK_DIF_OK(dif_gpio_read(&gpio, 17, &state));
+  return state;
 }
 
 /**
- * Check that flash data partitions are all blank.
+ * Check that flash data partitions are all blank, i.e., all ones.
  */
 static bool flash_is_empty(void) {
   dif_flash_ctrl_device_info_t flash_info = dif_flash_ctrl_get_device_info();
   const uint32_t flash_size_bytes =
       flash_info.num_banks * flash_info.bytes_per_page * flash_info.data_pages;
-  uint32_t *const limit =
-      (uint32_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + flash_size_bytes);
-  uint32_t mask = UINT32_MAX;
-  uint32_t *p = (uint32_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
-  for (; p < limit;) {
-    mask &= *p++;
-    mask &= *p++;
-    mask &= *p++;
-    mask &= *p++;
-    mask &= *p++;
-    mask &= *p++;
-    mask &= *p++;
-    mask &= *p++;
-    if (mask != -1u) {
-      return false;
+
+  volatile uint32_t *flash = (uint32_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  volatile uint32_t *end = flash + flash_size_bytes / sizeof(uint32_t);
+
+  uint32_t nor_of_all_words = 0;
+  while (flash < end && nor_of_all_words == 0) {
+    for (int i = 0; i < 8; ++i) {
+      nor_of_all_words |= ~*flash;
+      ++flash;
     }
   }
-  return true;
+
+  return nor_of_all_words == 0;
 }
 
 /**
  * Erase all flash, and verify blank.
  */
-static int erase_flash(dif_flash_ctrl_state_t *flash_ctrl) {
+static bootstrap_status_t erase_flash(dif_flash_ctrl_state_t *flash_ctrl) {
   if (flash_ctrl_testutils_bank_erase(flash_ctrl, /*bank=*/0,
                                       /*data_only=*/true)) {
-    return E_BS_ERASE;
+    return kBootstrapStatusEraseFailed;
   }
   if (flash_ctrl_testutils_bank_erase(flash_ctrl, /*bank=*/1,
                                       /*data_only=*/true)) {
-    return E_BS_ERASE;
-  }
-  if (!flash_is_empty()) {
-    return E_BS_NOTEMPTY;
+    return kBootstrapStatusEraseFailed;
   }
 
-  return 0;
+  if (!flash_is_empty()) {
+    return kBootstrapStatusNonemptyFlash;
+  }
+
+  return kBootstrapStatusOk;
 }
 
 /**
@@ -93,6 +87,7 @@ static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
       .message_endianness = kDifHmacEndiannessLittle,
   };
   CHECK_DIF_OK(dif_hmac_mode_sha256_start(hmac, config));
+
   const char *data8 = (const char *)data;
   size_t data_left = len;
   while (data_left > 0) {
@@ -102,7 +97,7 @@ static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
     if (result == kDifOk) {
       break;
     }
-    CHECK(result == kDifIpFifoFull, "Error while pushing to FIFO.");
+    CHECK(result == kDifIpFifoFull, "Status while pushing to FIFO.");
     data8 += bytes_sent;
     data_left -= bytes_sent;
   }
@@ -200,7 +195,7 @@ static int bootstrap_flash(const dif_spi_device_t *spi,
                                        /*partition_id=*/0, frame.data,
                                        kDifFlashCtrlPartitionTypeData,
                                        SPIFLASH_FRAME_DATA_WORDS)) {
-          return E_BS_WRITE;
+          return kBootstrapStatusWriteFailed;
         }
 
         LOG_INFO("Frame #%d processed done", expected_frame_num);
@@ -219,9 +214,9 @@ static int bootstrap_flash(const dif_spi_device_t *spi,
   }
 }
 
-int bootstrap(dif_flash_ctrl_state_t *flash_ctrl) {
+bootstrap_status_t bootstrap(dif_flash_ctrl_state_t *flash_ctrl) {
   if (!bootstrap_requested()) {
-    return 0;
+    return kBootstrapStatusOk;
   }
 
   // SPI device is only initialized in bootstrap mode.
@@ -248,7 +243,7 @@ int bootstrap(dif_flash_ctrl_state_t *flash_ctrl) {
 
   LOG_INFO("HW initialisation completed, waiting for SPI input...");
   int error = bootstrap_flash(&spi, &spi_config, &hmac, flash_ctrl);
-  if (error != 0) {
+  if (error != kBootstrapStatusOk) {
     error |= erase_flash(flash_ctrl);
     LOG_ERROR("Bootstrap error: 0x%x", error);
   }
