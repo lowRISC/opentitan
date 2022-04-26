@@ -77,11 +77,15 @@ Security      | [SEC_RND_CNST][]        | NA          |
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
 Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
+Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
+Security      | [SEC_CM_SHADOW_REGS][]       | Not Started |
 Security      | [SEC_CM_RTL_REVIEWED][]      | Done        |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Done        |
 
 [SEC_CM_ASSETS_LISTED]:    {{<relref "/doc/project/checklist.md#sec_cm_assets_listed" >}}
 [SEC_CM_IMPLEMENTED]:      {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+[SEC_CM_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_cm_non_reset_flops" >}}
+[SEC_CM_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_cm_shadow_regs" >}}
 [SEC_CM_RTL_REVIEWED]:     {{<relref "/doc/project/checklist.md#sec_cm_rtl_reviewed" >}}
 [SEC_CM_COUNCIL_REVIEWED]: {{<relref "/doc/project/checklist.md#sec_cm_council_reviewed" >}}
 
@@ -93,14 +97,11 @@ Documentation | [NEW_FEATURES_D3][]     | Not Started |
 RTL           | [TODO_COMPLETE][]       | Not Started |
 Code Quality  | [LINT_COMPLETE][]       | Not Started |
 Code Quality  | [CDC_COMPLETE][]        | Not Started |
+Code Quality  | [RDC_COMPLETE][]        | Not Started |
 Review        | [REVIEW_RTL][]          | Not Started |
 Review        | [REVIEW_DELETED_FF][]   | Not Started |
-Review        | [REVIEW_SW_CSR][]       | Not Started |
-Review        | [REVIEW_SW_FATAL_ERR][] | Not Started |
 Review        | [REVIEW_SW_CHANGE][]    | Not Started |
 Review        | [REVIEW_SW_ERRATA][]    | Not Started |
-Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
-Security      | [SEC_SHADOW_REGS][]     | Not Started |
 Review        | Reviewer(s)             | Not Started |
 Review        | Signoff date            | Not Started |
 
@@ -108,15 +109,11 @@ Review        | Signoff date            | Not Started |
 [TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo_complete" >}}
 [LINT_COMPLETE]:        {{<relref "/doc/project/checklist.md#lint_complete" >}}
 [CDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#cdc_complete" >}}
+[RDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#rdc_complete" >}}
 [REVIEW_RTL]:           {{<relref "/doc/project/checklist.md#review_rtl" >}}
-[REVIEW_DBG]:           {{<relref "/doc/project/checklist.md#review_dbg" >}}
 [REVIEW_DELETED_FF]:    {{<relref "/doc/project/checklist.md#review_deleted_ff" >}}
-[REVIEW_SW_CSR]:        {{<relref "/doc/project/checklist.md#review_sw_csr" >}}
-[REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review_sw_fatal_err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
-[SEC_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
-[SEC_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
 
 ## Verification Checklist
 

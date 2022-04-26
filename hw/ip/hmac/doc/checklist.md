@@ -81,11 +81,15 @@ Security      | [SEC_RND_CNST][]        | N/A         |
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
 Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
+Security      | [SEC_CM_NON_RESET_FLOPS][]   | N/A         |
+Security      | [SEC_CM_SHADOW_REGS][]       | N/A         |
 Security      | [SEC_CM_RTL_REVIEWED][]      | N/A         |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only contains the bus-integrity CM.
 
 [SEC_CM_ASSETS_LISTED]:    {{<relref "/doc/project/checklist.md#sec_cm_assets_listed" >}}
 [SEC_CM_IMPLEMENTED]:      {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+[SEC_CM_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_cm_non_reset_flops" >}}
+[SEC_CM_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_cm_shadow_regs" >}}
 [SEC_CM_RTL_REVIEWED]:     {{<relref "/doc/project/checklist.md#sec_cm_rtl_reviewed" >}}
 [SEC_CM_COUNCIL_REVIEWED]: {{<relref "/doc/project/checklist.md#sec_cm_council_reviewed" >}}
 
@@ -97,14 +101,11 @@ Documentation | [NEW_FEATURES_D3][]     | Done        | [#1014][]
 RTL           | [TODO_COMPLETE][]       | Done        | Resolved: [#761][] [#762][]
 Code Quality  | [LINT_COMPLETE][]       | Done        |
 Code Quality  | [CDC_COMPLETE][]        | N/A         |
+Code Quality  | [RDC_COMPLETE][]        | Not Started |
 Review        | [REVIEW_RTL][]          | Done        | @tjaychen
 Review        | [REVIEW_DELETED_FF][]   | N/A         |
-Review        | [REVIEW_SW_CSR][]       | Done        | @moidx
-Review        | [REVIEW_SW_FATAL_ERR][] | Done        | @moidx
 Review        | [REVIEW_SW_CHANGE][]    | N/A         |
 Review        | [REVIEW_SW_ERRATA][]    | N/A         |
-Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
-Security      | [SEC_SHADOW_REGS][]     | Not Started |
 Review        | Reviewer(s)             | Done        | @sjgitty @cindychip
 Review        | Signoff date            | Done        | 2019-11-22
 
@@ -116,11 +117,9 @@ Review        | Signoff date            | Done        | 2019-11-22
 [TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo_complete" >}}
 [LINT_COMPLETE]:        {{<relref "/doc/project/checklist.md#lint_complete" >}}
 [CDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#cdc_complete" >}}
+[RDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#rdc_complete" >}}
 [REVIEW_RTL]:           {{<relref "/doc/project/checklist.md#review_rtl" >}}
-[REVIEW_DBG]:           {{<relref "/doc/project/checklist.md#review_dbg" >}}
 [REVIEW_DELETED_FF]:    {{<relref "/doc/project/checklist.md#review_deleted_ff" >}}
-[REVIEW_SW_CSR]:        {{<relref "/doc/project/checklist.md#review_sw_csr" >}}
-[REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review_sw_fatal_err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
 [SEC_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
@@ -284,4 +283,3 @@ Review        | Signoff date                      | Done        | 2019-11-22
 [TB_LINT_COMPLETE]:              {{<relref "/doc/project/checklist.md#tb_lint_complete" >}}
 [PRE_VERIFIED_SUB_MODULES_V3]:   {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v3" >}}
 [NO_ISSUES_PENDING]:             {{<relref "/doc/project/checklist.md#no_issues_pending" >}}
-

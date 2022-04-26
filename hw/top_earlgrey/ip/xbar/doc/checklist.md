@@ -100,30 +100,23 @@ Documentation | [NEW_FEATURES_D3][]     | N/A         |
 RTL           | [TODO_COMPLETE][]       | Done        | Resolved: [#837][]
 Code Quality  | [LINT_COMPLETE][]       | Done        |
 Code Quality  | [CDC_COMPLETE][]        | N/A         |
+Code Quality  | [RDC_COMPLETE][]        | Not Started |
 Review        | [REVIEW_RTL][]          | Done        | 1st @tjaychen / 2nd @martin-lueker
 Review        | [REVIEW_DELETED_FF][]   | N/A         |
-Review        | [REVIEW_SW_CSR][]       | N/A         |
-Review        | [REVIEW_SW_FATAL_ERR][] | Done        |
 Review        | [REVIEW_SW_CHANGE][]    | N/A         |
 Review        | [REVIEW_SW_ERRATA][]    | Done        |
-Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
-Security      | [SEC_SHADOW_REGS][]     | Not Started |
 Review        | Reviewer(s)             | Done        | @weicaiyang @tjaychen
 Review        | Signoff date            | Done        | 2019-11-07
 
-[NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new-features-d3" >}}
-[TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo-complete" >}}
-[LINT_COMPLETE]:        {{<relref "/doc/project/checklist.md#lint-complete" >}}
-[CDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#cdc-complete" >}}
-[REVIEW_RTL]:           {{<relref "/doc/project/checklist.md#review-rtl" >}}
-[REVIEW_DBG]:           {{<relref "/doc/project/checklist.md#review-dbg" >}}
-[REVIEW_DELETED_FF]:    {{<relref "/doc/project/checklist.md#review-deleted-ff" >}}
-[REVIEW_SW_CSR]:        {{<relref "/doc/project/checklist.md#review-sw-csr" >}}
-[REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review-sw-fatal-err" >}}
-[REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review-sw-change" >}}
-[REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review-sw-errata" >}}
-[SEC_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
-[SEC_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
+[NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new_features_d3" >}}
+[TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo_complete" >}}
+[LINT_COMPLETE]:        {{<relref "/doc/project/checklist.md#lint_complete" >}}
+[CDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#cdc_complete" >}}
+[RDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#rdc_complete" >}}
+[REVIEW_RTL]:           {{<relref "/doc/project/checklist.md#review_rtl" >}}
+[REVIEW_DELETED_FF]:    {{<relref "/doc/project/checklist.md#review_deleted_ff" >}}
+[REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
+[REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
 
 ## Verification Checklist
 
