@@ -4,7 +4,7 @@
 
 class otbn_common_vseq extends otbn_base_vseq;
   `uvm_object_utils(otbn_common_vseq)
-
+  bit sb_setting;
   constraint num_trans_c {
     num_trans inside {[1:2]};
   }
@@ -117,11 +117,11 @@ class otbn_common_vseq extends otbn_base_vseq;
     if (enable) begin
       $asserton(0, "tb.dut.u_otbn_core.u_otbn_controller.ControllerStateValid");
       $asserton(0, "tb.MatchingStatus_A");
-      $asserton(0, "tb.dut.u_otbn_core.u_otbn_start_stop_control.StartStopStateValid");
+      $asserton(0, "tb.dut.u_otbn_core.u_otbn_start_stop_control.StartStopStateValid_A");
     end else begin
       $assertoff(0, "tb.dut.u_otbn_core.u_otbn_controller.ControllerStateValid");
       $assertoff(0, "tb.MatchingStatus_A");
-      $assertoff(0, "tb.dut.u_otbn_core.u_otbn_start_stop_control.StartStopStateValid");
+      $assertoff(0, "tb.dut.u_otbn_core.u_otbn_start_stop_control.StartStopStateValid_A");
     end
   endfunction: sec_cm_fi_ctrl_svas
 
@@ -137,5 +137,15 @@ class otbn_common_vseq extends otbn_base_vseq;
       end
     join
   endtask : sec_cm_inject_fault
+
+  virtual task pre_run_sec_cm_fi_vseq();
+    sb_setting = cfg.en_scb;
+    cfg.en_scb = 1;
+  endtask : pre_run_sec_cm_fi_vseq
+
+  virtual task post_run_sec_cm_fi_vseq();
+    cfg.en_scb = sb_setting;
+  endtask : post_run_sec_cm_fi_vseq
+
 
 endclass

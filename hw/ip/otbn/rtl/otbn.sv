@@ -1076,10 +1076,10 @@ module otbn
   `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnStartStopFsmCheck_A,
-    u_otbn_core.u_otbn_start_stop_control.u_state_regs, alert_tx_o[1])
+    u_otbn_core.u_otbn_start_stop_control.u_state_regs, alert_tx_o[AlertFatal])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnControllerFsmCheck_A,
-    u_otbn_core.u_otbn_controller.u_state_regs, alert_tx_o[1])
+    u_otbn_core.u_otbn_controller.u_state_regs, alert_tx_o[AlertFatal])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnScrambleCtrlFsmCheck_A,
-    u_otbn_scramble_ctrl.u_state_regs, alert_tx_o[1])
+    u_otbn_scramble_ctrl.u_state_regs, alert_tx_o[AlertFatal])
 
 endmodule
