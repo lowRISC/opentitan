@@ -16,15 +16,21 @@ class pattgen_cnt_rollover_vseq extends pattgen_base_vseq;
 
   // override this function for pattgen_cnt_rollover test
   function pattgen_channel_cfg get_random_channel_config(uint channel);
+    bit [1:0] is_max;
     pattgen_channel_cfg ch_cfg;
     ch_cfg = pattgen_channel_cfg::type_id::create($sformatf("channel_cfg_%0d", channel));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(ch_cfg,
-      ch_cfg.prediv dist {[0 : 'h4fe] :/ 1, 'h4ff :/ 1};
-      ch_cfg.len    dist {[0 : 'he] :/ 1, 'hf :/ 1};
-      ch_cfg.reps   dist {[0 : 'h3f] :/ 1, 'h3f :/ 1};
+      polarity dist {
+        1'b0 :/ cfg.seq_cfg.pattgen_low_polarity_pct,
+        1'b1 :/ (100 - cfg.seq_cfg.pattgen_low_polarity_pct)
+      };
+      prediv dist {0 :/ 1, [1 : 'hfffe] :/ 1, 'hffff :/ 1};
+      len    dist {0 :/ 1, [1 : 'he] :/ 1, 'hf :/ 1};
+      reps   dist {0 :/ 1, [1 : 'h3e] :/ 1, 'h3f :/ 1};
+      ((prediv+1) * (len+1) * (reps+1)) <= 'h1_0000;
       // dependent constraints
-      solve ch_cfg.len before ch_cfg.data;
-      ch_cfg.data inside {[0 : (1 << (ch_cfg.len + 1)) - 1]};
+      solve len before data;
+      data inside {[0 : (1 << (len + 1)) - 1]};
     )
     return ch_cfg;
   endfunction : get_random_channel_config
