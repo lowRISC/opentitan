@@ -147,7 +147,15 @@ module otbn_rf_base
 
     .pop_i         (pop_stack),
     .top_data_o    (stack_data_intg),
-    .top_valid_o   (stack_data_valid)
+    .top_valid_o   (stack_data_valid),
+
+    .stack_wr_idx_o(),
+    .stack_write_o (),
+    .stack_rd_idx_o(),
+    .stack_read_o  (),
+
+    .next_top_data_o (),
+    .next_top_valid_o()
   );
 
   logic spurious_we_err;

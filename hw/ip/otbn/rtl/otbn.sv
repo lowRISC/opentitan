@@ -1060,6 +1060,13 @@ module otbn
 
 
   // Asserts ===================================================================
+  for (genvar i = 0;i < LoopStackDepth; ++i) begin : gen_loop_stack_cntr_asserts
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+      LoopStackCntAlertCheck_A,
+      u_otbn_core.u_otbn_controller.u_otbn_loop_controller.g_loop_counters[i].u_loop_count,
+      alert_tx_o[AlertFatal]
+    )
+  end
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
