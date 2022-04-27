@@ -28,6 +28,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    cfg.otp_vendor_test_status = 0;
     cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.trst_n = 0;
     super.apply_resets_concurrently(reset_duration_ps);
     cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.trst_n = 1;
