@@ -321,12 +321,14 @@ module tb;
     // Issue Read Cmd: Fast Read Buffer Flip
 
 
-    //=========================================================================
-    // Issue Read Cmd: Fast Read to Mailbox
-
     // Switch PassThrough mode
     ->flashmode_done;
 
+    // Wait till configuration done from SW side
+    repeat(20) @(negedge tb_sif.clk);
+
+    //=========================================================================
+    // Issue Read Cmd: Fast Read to Mailbox
     $display("Sending Fast Read Command to Mailbox");
     mbx_offset = $urandom_range(0, MailboxSpace -1);
     // Check mbx_offset and determine size
@@ -348,6 +350,31 @@ module tb;
     if (match == 1'b 0) test_passed = 1'b 0;
     read_data.delete();
     expected_data.delete();
+
+    //=========================================================================
+    // Issue Read Cmd to Read buffer space in PassThrough
+    //
+    //   Expected: return high-z or X or '0
+    $display("Sending Fast Read to Read Buffer while in PassThrough");
+    spiflash_read(
+      tb_sif,
+      8'h 0B,
+      $urandom_range(0, MailboxHostAddr-1),
+      1'b 1,
+      8,
+      1,
+      IoSingle,
+      read_data
+    );
+
+    if (! (read_data[0] inside {'hx, 'hz, 'h0}) ) begin
+      $display("Received data is not expected: %x", read_data[0]);
+      match = 1'b 0;
+    end else begin
+      $display("Expected data has been received [%x]", read_data[0]);
+    end
+
+    read_data.delete();
 
     //=========================================================================
     // Issue Read Cmd: Fast Read Mailbox Boundary Crossing
