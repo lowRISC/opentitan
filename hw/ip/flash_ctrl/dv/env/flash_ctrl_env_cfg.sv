@@ -59,7 +59,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     list_of_alerts = flash_ctrl_env_pkg::LIST_OF_ALERTS;
     has_shadowed_regs = 1;
-    tl_intg_alert_name = "fatal_intg_err";
+    tl_intg_alert_name = "fatal_std_err";
 
     // Set up second RAL model for Flash memory
     ral_model_names.push_back(flash_ral_name);
@@ -69,6 +69,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
     super.initialize(csr_base_addr);
 
+    tl_intg_alert_fields[ral.std_fault_status.reg_intg_err] = 1;
     shadow_update_err_status_fields[ral.err_code.update_err] = 1;
     shadow_storage_err_status_fields[ral.std_fault_status.storage_err] = 1;
 
