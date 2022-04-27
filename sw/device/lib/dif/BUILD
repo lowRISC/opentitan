@@ -1007,6 +1007,7 @@ cc_library(
     srcs = [
         "autogen/dif_sysrst_ctrl_autogen.c",
         "autogen/dif_sysrst_ctrl_autogen.h",
+        "dif_sysrst_ctrl.c",
     ],
     hdrs = [
         "dif_sysrst_ctrl.h",
@@ -1026,6 +1027,7 @@ cc_test(
     name = "sysrst_ctrl_unittest",
     srcs = [
         "autogen/dif_sysrst_ctrl_autogen_unittest.cc",
+        "dif_sysrst_ctrl_unittest.cc",
     ],
     deps = [
         ":sysrst_ctrl",
