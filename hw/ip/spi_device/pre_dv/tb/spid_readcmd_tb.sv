@@ -162,7 +162,7 @@ module tb;
 
     fork
       begin
-        #20us
+        #40us
         $display("TEST TIMED OUT!!");
         $finish();
       end
@@ -288,6 +288,26 @@ module tb;
 
     //=========================================================================
     // Issue Read Cmd: Fast Read Quad Output
+    $display("Sending Fast Read Quad Command");
+    spiflash_read(
+      tb_sif,
+      8'h 6B,         // opcode
+      32'h 0000_05F3, // address (at the end of a buffer)
+      1'b 0,          // address mode
+      3,              // dummy beat (3 cycles) : non power-of-2
+      32,             // Read 32 bytes
+      IoQuad,         // io_mode
+      read_data
+    );
+
+    expected_data = get_read_data(SramAw'('h5F3), 32);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+
     //=========================================================================
     // Issue Read Cmd: Fast Read Dual Mis-aligned
     //=========================================================================
