@@ -55,8 +55,9 @@ if {$env(DUT_TOP) == "prim_count_tb"} {
   elaborate -top $env(DUT_TOP) -enable_sva_isunknown -disable_auto_bbox
 }
 
-if {$env(STOPATS) ne ""} {
-  stopat -env $env(STOPATS)
+set stopat [regexp -all -inline {[^\s\']+} $env(STOPATS)]
+if {$stopat ne ""} {
+  stopat -env $stopat
 }
 
 #-------------------------------------------------------------------------
