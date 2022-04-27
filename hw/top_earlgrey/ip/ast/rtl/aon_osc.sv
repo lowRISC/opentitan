@@ -76,7 +76,7 @@ assign clk = 1'b0;
 
 logic en_osc_re;
 assign en_osc_re = vcore_pok_h_i && aon_en_i;
-`endif  // of SYBTHESIS
+`endif  // of SYNTHESIS
 `else  // of AST_BYPASS_CLK
 // VERILATOR/FPGA
 ///////////////////////////////////////
