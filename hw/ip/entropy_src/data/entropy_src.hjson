@@ -1157,7 +1157,7 @@
       hwext: "false",
       fields: [
         { bits: "0",
-          name: "FW_OV_DR_FIFO_OVERFLOW",
+          name: "FW_OV_RD_FIFO_OVERFLOW",
           desc: '''
                 This bit is set by hardware whenever RNG data is lost due to an overflow condition
                 in the Observe FIFO. The RNG data rate is slow enough that firmware should always
