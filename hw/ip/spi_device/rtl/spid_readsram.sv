@@ -408,8 +408,18 @@ module spid_readsram
   // SRAM data should return in next cycle
   `ASSUME(SramDataReturnRequirement_M, sram_l2m_o.req && !sram_l2m_o.we |=> sram_m2l_i.rvalid)
 
-  // in fifo_pop, FIFO should not be empty.
-  `ASSERT(FifoNotEmpty_A, fifo_rready_i |-> unused_fifo_depth != 0)
+  // in fifo_pop, FIFO should not be empty for permitted operations.
+  `ASSERT(FifoNotEmpty_A,
+          fifo_rready_i && permitted |-> unused_fifo_depth != 0)
+
+  // fifo_rready_i asserts even when FIFO is empty (!permitted case).
+  // So, make sure that the FIFO depth won't be changed in this case.
+  `ASSERT(FifoDepthStayZero_A,
+          fifo_rready_i && ~|unused_fifo_depth |=> unused_fifo_depth == 0)
+
+  // fifo pop, when depth is 0, happens ONLY WHEN the operation is not permitted
+  `ASSERT(FifoPopWhenEmtpy_A,
+          fifo_rready_i && ~|unused_fifo_depth |-> !permitted)
 
   // strb_set is asserted together with sram_req or follows the req
   `ASSUME(ReqStrbRelation_M, sram_read_req_i |-> ##[0:2] addr_latched_i)
