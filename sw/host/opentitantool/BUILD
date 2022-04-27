@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
-load("//third_party/cargo:crates.bzl", "all_crate_deps")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -26,22 +25,22 @@ rust_binary(
     ],
     deps = [
         "//sw/host/opentitanlib",
-        "//third_party/cargo:anyhow",
-        "//third_party/cargo:directories",
-        "//third_party/cargo:env_logger",
-        "//third_party/cargo:erased_serde",
-        "//third_party/cargo:hex",
-        "//third_party/cargo:humantime",
-        "//third_party/cargo:indicatif",
-        "//third_party/cargo:log",
-        "//third_party/cargo:nix",
-        "//third_party/cargo:raw_tty",
-        "//third_party/cargo:regex",
-        "//third_party/cargo:serde",
-        "//third_party/cargo:serde_json",
-        "//third_party/cargo:shellwords",
-        "//third_party/cargo:structopt",
-        "//third_party/cargo:thiserror",
+        "//third_party/rust/crates:anyhow",
+        "//third_party/rust/crates:directories",
+        "//third_party/rust/crates:env_logger",
+        "//third_party/rust/crates:erased_serde",
+        "//third_party/rust/crates:hex",
+        "//third_party/rust/crates:humantime",
+        "//third_party/rust/crates:indicatif",
+        "//third_party/rust/crates:log",
+        "//third_party/rust/crates:nix",
+        "//third_party/rust/crates:raw_tty",
+        "//third_party/rust/crates:regex",
+        "//third_party/rust/crates:serde",
+        "//third_party/rust/crates:serde_json",
+        "//third_party/rust/crates:shellwords",
+        "//third_party/rust/crates:structopt",
+        "//third_party/rust/crates:thiserror",
     ],
 )
 

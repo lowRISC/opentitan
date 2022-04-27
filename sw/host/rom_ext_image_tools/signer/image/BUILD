@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
-load("//third_party/cargo:crates.bzl", "all_crate_deps")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -15,9 +14,9 @@ rust_library(
         "src/manifest.rs",
     ],
     deps = [
-        "//third_party/cargo:memoffset",
-        "//third_party/cargo:thiserror",
-        "//third_party/cargo:zerocopy",
+        "//third_party/rust/crates:memoffset",
+        "//third_party/rust/crates:thiserror",
+        "//third_party/rust/crates:zerocopy",
     ],
 )
 
