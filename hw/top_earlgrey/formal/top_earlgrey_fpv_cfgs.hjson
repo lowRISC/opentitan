@@ -96,7 +96,7 @@
                build_opts: ["-define OutSelDnCnt 0", "-define CntStyle DupCnt"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
                cov: false
-               stopats: "*.up_cnt_q[0]"
+               stopats: ["*.up_cnt_q[0]"]
              }
              {
                name: prim_dup_up_count_stopat_cnt1_fpv
@@ -106,7 +106,7 @@
                build_opts: ["-define OutSelDnCnt 0", "-define CntStyle DupCnt"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
                cov: false
-               stopats: "*.up_cnt_q[1]"
+               stopats: ["*.up_cnt_q[1]"]
              }
              {
                name: prim_cross_up_count_stopat_upcnt_fpv
@@ -116,7 +116,7 @@
                build_opts: ["-define OutSelDnCnt 0",  "-define CntStyle CrossCnt"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
                cov: false
-               stopats: "*.up_cnt_q[0]"
+               stopats: ["*.up_cnt_q[0]"]
              }
              {
                name: prim_cross_up_count_stopat_downcnt_fpv
@@ -126,7 +126,7 @@
                build_opts: ["-define OutSelDnCnt 0",  "-define CntStyle CrossCnt"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
                cov: false
-               stopats: "*.down_cnt"
+               stopats: ["*.down_cnt"]
              }
              {
                name: prim_cross_down_count_stopat_upcnt_fpv
@@ -135,7 +135,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                build_opts: ["-define OutSelDnCnt 1", "-define CntStyle CrossCnt"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               stopats: "*.up_cnt_q[0]"
+               stopats: ["*.up_cnt_q[0]"]
                cov: false
              }
              {
@@ -145,7 +145,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                build_opts: ["-define OutSelDnCnt 1", "-define CntStyle CrossCnt"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               stopats: "*.down_cnt"
+               stopats: ["*.down_cnt"]
                cov: false
              }
              {
@@ -419,7 +419,7 @@
                rel_path: "hw/ip/aes/{sub_flow}/{tool}"
                cov: false
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_state_regs.state_o"]
              }
              // TODO: alert_handler does not fire alerts.
              /*
@@ -439,7 +439,7 @@
                rel_path: "hw/ip/csrng/{sub_flow}/{tool}"
                cov: false
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_state_regs.state_o"]
              }
              {
                name: edn_sec_cm
@@ -449,7 +449,7 @@
                rel_path: "hw/ip/edn/{sub_flow}/{tool}"
                cov: false
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_state_regs.state_o"]
              }
              {
                name: entropy_src_sec_cm
@@ -459,7 +459,7 @@
                rel_path: "hw/ip/entropy_src/{sub_flow}/{tool}"
                cov: false
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_state_regs.state_o"]
              }
              {
                name: flash_ctrl_sec_cm
@@ -475,7 +475,7 @@
                  }
                ]
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_state_regs.state_o"]
              }
              {
                name: keymgr_sec_cm
@@ -485,7 +485,8 @@
                rel_path: "hw/ip/keymgr/{sub_flow}/{tool}"
                cov: false
                task: "FpvSecCm"
-               stopats: "{*u_state_regs.state_o} {*u_ctrl.u_data_state_regs.state_o}"
+               stopats: ["{*u_state_regs.state_o}",
+                         "{*u_ctrl.u_data_state_regs.state_o}"]
              }
              {
                name: kmac_sec_cm
@@ -495,7 +496,7 @@
                rel_path: "hw/ip/kmac/{sub_flow}/{tool}"
                cov: false
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_state_regs.state_o"]
              }
              {
                name: lc_ctrl_sec_cm
@@ -505,7 +506,10 @@
                rel_path: "hw/ip/lc_ctrl/{sub_flow}/{tool}"
                cov: false
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_lc_ctrl_fsm.u_fsm_state_regs.state_o",
+                         "*u_lc_ctrl_fsm.u_state_regs.state_o",
+                         "*u_lc_ctrl_fsm.u_cnt_regs.state_o",
+                         "*u_lc_ctrl_kmac_if.u_state_regs.state_o"]
              }
              {
                name: otp_ctrl_sec_cm
@@ -515,7 +519,7 @@
                rel_path: "hw/ip/otp_ctrl/{sub_flow}/{tool}"
                cov: false
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_state_regs.state_o"]
              }
              {
                name: otbn_sec_cm
@@ -525,7 +529,7 @@
                rel_path: "hw/ip/otbn/{sub_flow}/{tool}"
                cov: false
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_state_regs.state_o"]
              }
              {
                name: pwrmgr_sec_cm
@@ -541,7 +545,7 @@
                  }
                ]
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_state_regs.state_o"]
              }
              {
                name: rom_ctrl_sec_cm
@@ -551,7 +555,7 @@
                rel_path: "hw/ip/rom_ctrl/{sub_flow}/{tool}"
                cov: false
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_state_regs.state_o"]
              }
              {
                name: rstmgr_sec_cm
@@ -567,7 +571,7 @@
                  }
                ]
                task: "FpvSecCm"
-               stopats: "*u_state_regs.state_o"
+               stopats: ["*u_state_regs.state_o"]
              }
              {
                name: sram_ctrl_sec_cm
