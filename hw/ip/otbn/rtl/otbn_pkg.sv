@@ -40,6 +40,8 @@ package otbn_pkg;
 
   parameter int SideloadKeyWidth = 384;
 
+  parameter int unsigned LoopStackDepth = 8;
+
 
   // Toplevel constants ============================================================================
 

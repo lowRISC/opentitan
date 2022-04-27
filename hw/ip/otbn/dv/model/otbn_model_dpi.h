@@ -111,6 +111,9 @@ void otbn_model_reset(OtbnModel *model);
 // Take loop warps from an OtbnMemUtil
 void otbn_take_loop_warps(OtbnModel *model, OtbnMemUtil *memutil);
 
+// Returns non-zero if an OtbnMemUtil contains loop warps
+int otbn_has_loop_warps(OtbnMemUtil *memutil);
+
 // React to an error escalation. Returns 0 on success or -1 on failure.
 int otbn_model_send_err_escalation(OtbnModel *model,
                                    svBitVecVal *err_val /* bit [31:0] */);
