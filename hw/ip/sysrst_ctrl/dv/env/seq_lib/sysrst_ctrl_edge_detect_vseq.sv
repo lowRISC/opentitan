@@ -13,6 +13,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
    rand uvm_reg_data_t set_input;
    rand uint16_t set_timer;
    uvm_reg_data_t rdata;
+   rand bit is_core_clk_stop;
 
    constraint set_timer_c {
     set_timer dist {
@@ -126,6 +127,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
      cfg.clk_aon_rst_vif.wait_clks(3);
 
      csr_rd(ral.key_intr_ctl, get_input);
+
      // start monitor edge
      fork begin  // isolation fork
        for (int i = 0; i < NumInputs; i++) begin
@@ -139,8 +141,11 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
        end
 
        csr_rd(ral.key_intr_debounce_ctl, get_timer_val);
+
        for (int j = 0; j < num_trans; j++) begin
          int wait_cycles;
+         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(is_core_clk_stop)
+         if (is_core_clk_stop) cfg.clk_rst_vif.stop_clk();
          cfg.clk_aon_rst_vif.wait_clks(1);
          cfg.vif.randomize_input();
          cfg.clk_aon_rst_vif.wait_clks(1);
@@ -154,6 +159,9 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
          cfg.clk_aon_rst_vif.wait_clks(get_timer_val+5);
 
          cfg.clk_aon_rst_vif.wait_clks(5);
+
+         // Enable the bus clock to read the status register
+         if (is_core_clk_stop) cfg.clk_rst_vif.start_clk();
 
          csr_rd(ral.key_intr_status, rdata);
          foreach (edge_detect_h2l_array[i]) begin
