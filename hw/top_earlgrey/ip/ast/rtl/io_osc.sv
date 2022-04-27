@@ -66,7 +66,7 @@ always_latch begin
 end
 
 assign clk = clk_osc && en_clk;
-`else  // of SYBTHESIS
+`else  // of SYNTHESIS
 // SYNTHESIS/LINTER
 ///////////////////////////////////////
 logic en_osc_re;
@@ -74,7 +74,7 @@ assign en_osc_re = vcore_pok_h_i && io_en_i;
 
 logic clk, en_osc;
 assign clk = 1'b0;
-`endif  // of SYBTHESIS
+`endif  // of SYNTHESIS
 `else  // of AST_BYPASS_CLK
 // VERILATOR/FPGA
 ///////////////////////////////////////

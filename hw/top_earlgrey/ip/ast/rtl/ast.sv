@@ -245,7 +245,13 @@ assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_lat;
 assign ast_pwst_o.aon_pok = vcaon_pok_por;
 
 logic clk_aon_n;
-assign clk_aon_n = !clk_aon;
+prim_clock_inv #(
+  .HasScanMode(0)
+) u_prim_clock_inv (
+  .clk_i     (clk_aon),
+  .scanmode_i(1'b0),
+  .clk_no    (clk_aon_n)
+);
 
 logic por_sync_n;
 
