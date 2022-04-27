@@ -38,7 +38,25 @@ enum {
    * LSB of the 2-byte device ID.
    */
   kSpiDeviceJedecDensity = 0x0a,
-  // TODO(#11740): Auto-generated macros for SFDP offset and size.
+  /**
+   * Size of the JEDEC Basic Flash Parameter Table (BFPT) in words.
+   */
+  kSpiDeviceBfptNumWords = 23,
+  /**
+   * Size of the SFDP table in words.
+   */
+  kSpiDeviceSfdpTableNumWords = 27,
+  /**
+   * Address value used when a command does not have an address.
+   *
+   * Since the spi_device is configured to support only the 3-byte addressing
+   * mode this value is not a valid address.
+   */
+  kSpiDeviceNoAddress = UINT32_MAX,
+};
+
+// TODO(#11740): Auto-generated macros for HW constants.
+enum {
   /**
    * Size of the SFDP area in spi_device buffer in bytes.
    *
@@ -62,22 +80,9 @@ enum {
    */
   kSpiDevicePayloadAreaNumWords = 64,
   /**
-   * Size of the JEDEC Basic Flash Parameter Table (BFPT) in words.
-   *
-   * Note: JESD261F 6.4.1 states that this
+   * Index of the WEL bit in flash status register.
    */
-  kSpiDeviceBfptNumWords = 23,
-  /**
-   * Size of the SFDP table in words.
-   */
-  kSpiDeviceSfdpTableNumWords = 27,
-  /**
-   * Address value used when a command does not have an address.
-   *
-   * Since the spi_device is configured to support only the 3-byte addressing
-   * mode this value is not a valid address.
-   */
-  kSpiDeviceNoAddress = UINT32_MAX,
+  kSpiDeviceWelBit = 1,
 };
 
 /**
@@ -326,6 +331,11 @@ void spi_device_cmd_get(spi_device_cmd_t *cmd);
  * to clear the WIP (busy) and WEL (write enable latch) bits.
  */
 void spi_device_flash_status_clear(void);
+
+/**
+ * Gets the SPI flash status register.
+ */
+uint32_t spi_device_flash_status_get(void);
 
 #ifdef __cplusplus
 }

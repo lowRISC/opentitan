@@ -19,6 +19,7 @@ class MockSpiDevice : public global_mock::GlobalMock<MockSpiDevice> {
   MOCK_METHOD(void, Init, ());
   MOCK_METHOD(void, CmdGet, (spi_device_cmd_t *));
   MOCK_METHOD(void, FlashStatusClear, ());
+  MOCK_METHOD(uint32_t, FlashStatusGet, ());
 };
 
 }  // namespace internal
@@ -36,6 +37,10 @@ void spi_device_cmd_get(spi_device_cmd_t *cmd) {
 
 void spi_device_flash_status_clear(void) {
   MockSpiDevice::Instance().FlashStatusClear();
+}
+
+uint32_t spi_device_flash_status_get(void) {
+  return MockSpiDevice::Instance().FlashStatusGet();
 }
 
 }  // extern "C"
