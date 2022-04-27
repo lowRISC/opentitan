@@ -495,6 +495,13 @@
       run_opts: ["+sw_test_timeout_ns=18000000"]
     }
     {
+      name: chip_sw_adc_ctrl_sleep_debug_cable_wakeup
+      uvm_test_seq: chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq
+      sw_images: ["sw/device/tests/adc_ctrl_sleep_debug_cable_wakeup_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=18000000"]
+    }
+    {
       name: chip_sw_otbn_randomness
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/otbn_randomness_test:1"]
