@@ -49,7 +49,7 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
           `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateInvalid &&
                             cfg.pwrmgr_vif.pwr_ast_req.pwr_clamp == 1 &&
                             cfg.pwrmgr_vif.pwr_ast_req.main_pd_n == 0);,
-                       msg, 5000)
+                       msg, 50000)
         end
         if (!uvm_re_match("*.u_fsm.*", if_proxy.path)) begin
           `uvm_info(`gfn, "detect unknown fast state", UVM_MEDIUM)
