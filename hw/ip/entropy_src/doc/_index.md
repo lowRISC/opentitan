@@ -112,8 +112,27 @@ This block will compress the bits such that the entropy bits/physical bits, or m
 The compression operation, by default, will compress every 2048 tested bits into 384 full-entropy bits.
 
 The hardware conditioning can also be bypassed and replaced in normal operation with a firmware-defined conditioning algorithm.
-This firmware conditioning algorithm, can be disabled on boot for security purposes.
-The exact mechanism for this functionality will be described in a future update to this document (TBD).
+This firmware conditioning algorithm can be disabled on boot for security purposes.
+
+The firmware override function has the capability to completely override the hardware health tests and the conditioner paths.
+In the case of health tests, firmware can turn off one or all of the health tests and perform the tests in firmware.
+A data path is provided in the hardware such that the inbound entropy can be trapped in the pre-conditioner FIFO.
+Once a pre-determined threshold of entropy has been reached in this FIFO, the firmware can then read the entropy bits out of the FIFO.
+The exact mechanism for this functionality starts with setting the `FW_OV_MODE` field in the {{< regref "FW_OV_CONTROL" >}} register.
+This will enable firmware to monitor post-health test entropy bits by reading from the {{< regref "FW_OV_RD_DATA" >}} register.
+Firmware can use the {{< regref "OBSERVE_FIFO_THRESH" >}} and  {{< regref "OBSERVE_FIFO_DEPTH" >}} to determine the state of the OBSERVE FIFO.
+At this point, firmware can do additional health checks on the entropy.
+Optionally, firmware can do the conditioning function, assuming the hardware is configured to bypass the conditioner block.
+Once firmware has processed the entropy,  it can then write the results back into the {{< regref "FW_OV_WR_DATA" >}} register (pre-conditioner FIFO).
+The `FW_OV_ENTROPY_INSERT` in the {{< regref "FW_OV_CONTROL" >}} register will enable inserting entropy bits back into the entropy flow.
+The firmware override control fields will be set such that the new entropy will resume normal flow operation.
+
+An additional feature of the firmware override function is to insert entropy bits into the flow and still use the condtioning function in the hardware.
+Setting the `FW_OV_INSERT_START` field in the {{< regref "FW_OV_SHA3_START" >}} register will prepare the hardware for this flow.
+Once this field is set true, the {{< regref "FW_OV_WR_DATA" >}} register can be written with entropy bits.
+The {{< regref "FW_OV_WR_FIFO_FULL" >}} register should be monitored after each write to ensure data is not dropped.
+Once all of the data has been written, the `FW_OV_INSERT_START` field should be set to false.
+The normal SHA3 processing will continue and finally push the conditioned entropy through the module.
 
 Health checks are performed on the input raw data from the PTRNG noise source when in that mode.
 There are four health tests that will be performed: repetitive count, adaptive proportion, bucket, and Markov tests.
@@ -129,15 +148,6 @@ The above example for the adaptive proportion test also applies to the other hea
 See the timing diagrams below for more details on how the health tests work.
 It should be noted that for all error counter registers, they are sized for 16 bits, which prevents any case where counters might wrap.
 
-
-The firmware override function has the capability to completely override the hardware health tests and the conditioner paths.
-In the case of health tests, firwmare can turn off one or all of the health tests and perform the tests in firmware.
-A data path is provided in the hardware such that the inbound entropy can be trapped in the pre-conditioner FIFO.
-Once a pre-determined threshold of entropy has been reached in this FIFO, the firmware can then read the entropy bits out of the FIFO.
-At this point, firmware can do additional health checks on the entropy.
-Optionally, firmware can do the conditioning function, assuming the the hardware is configured to bypass the conditioner block.
-Once firmware has processed the entropy, it will write the entropy back into the pre-conditioner FIFO.
-The firmware override control bits will be set such that the new entropy will resume normal flow operation.
 
 Vendor-specific tests are supported through an external health test interface (xht).
 This is the same interface that is used for the internal health tests.
