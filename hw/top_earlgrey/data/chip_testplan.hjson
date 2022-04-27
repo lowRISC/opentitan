@@ -402,6 +402,12 @@
             Verify pinmux can select the life_cycle, RISC-V, and DFT taps after reset.
             Verify that in TEST_UNLOCKED* and RMA states, pinmux can switch between the three TAPs
             without issuing reset.
+            Verify in PROD state, only the LC tap can be selected.
+            Verify in DEV state, only the LC tap and RISC-V taps can be selected.
+            Verify DFT test mode straps are sampled and output to AST via
+            top_earlgrey.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
+            Verify top_earlgrey.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED*
+            and RMA, regardless of the value on DFT SW straps.
             '''
       milestone: V2
       tests: []
