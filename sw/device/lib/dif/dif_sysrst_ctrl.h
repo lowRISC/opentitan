@@ -70,6 +70,10 @@ typedef enum dif_sysrst_ctrl_key {
    * AC power preset key.
    */
   kDifSysrstCtrlKeyAcPowerPresent = 1U << 4,
+  /**
+   * All keys ORed together.
+   */
+  kDifSysrstCtrlKeyAll = (1U << 5) - 1,
 } dif_sysrst_ctrl_key_t;
 
 /**
@@ -92,6 +96,10 @@ typedef enum dif_sysrst_ctrl_key_combo_action {
    * Issue a reset request to the reset manager block.
    */
   kDifSysrstCtrlKeyComboActionSelfReset = 1U << 3,
+  /**
+   * All actions.
+   */
+  kDifSysrstCtrlKeyComboActionAll = (1U << 4) - 1,
 } dif_sysrst_ctrl_key_combo_action_t;
 
 /**
@@ -99,10 +107,6 @@ typedef enum dif_sysrst_ctrl_key_combo_action {
  * detection feature.
  */
 typedef struct dif_sysrst_ctrl_key_combo_config {
-  /**
-   * A key combination to configure.
-   */
-  dif_sysrst_ctrl_key_combo_t key_combo;
   /**
    * The keys that comprise the key combination to detect (i.e., one or more
    * `dif_sysrst_ctrl_key_t`s ORed together).
@@ -127,7 +131,7 @@ typedef struct dif_sysrst_ctrl_key_combo_config {
    *
    * Units: increments of 5us; [0, 2^16) represents [10, 200) milliseconds.
    */
-  uint32_t embedded_controller_reset_duration;
+  uint16_t embedded_controller_reset_duration;
 } dif_sysrst_ctrl_key_combo_config_t;
 
 /**
@@ -386,12 +390,13 @@ typedef struct dif_sysrst_ctrl_ulp_wakeup_config_t {
  * Configures a System Reset Controller's key combination detection feature.
  *
  * @param sysrst_ctrl A System Reset Controller handle.
+ * @param key_combo Key combination to configure.
  * @param config Runtime configuration parameters.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sysrst_ctrl_key_combo_detect_configure(
-    const dif_sysrst_ctrl_t *sysrst_ctrl,
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_key_combo_t key_combo,
     dif_sysrst_ctrl_key_combo_config_t config);
 
 /**
