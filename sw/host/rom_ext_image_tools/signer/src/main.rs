@@ -36,8 +36,7 @@ use object::read::ObjectSection;
 use object::Object;
 
 // Type aliases for convenience.
-type ImageSignature =
-    mundane::public::rsa::RsaSignature<B3072, RsaPkcs1v15, Sha256>;
+type ImageSignature = mundane::public::rsa::RsaSignature<B3072, RsaPkcs1v15, Sha256>;
 type PrivateKey = mundane::public::rsa::RsaPrivKey<B3072>;
 
 #[derive(Copy, Clone)]
@@ -72,15 +71,18 @@ impl Args {
         let args = args.skip(1).collect::<Vec<_>>();
         match args.as_slice() {
             [image_type, input_image, priv_key, elf_file, output_image] => Ok(Args {
-                    image_type: ImageType::from_str(&image_type.to_string_lossy())?,
-                    input_image: PathBuf::from(input_image),
-                    priv_key: PathBuf::from(priv_key),
-                    elf_file: PathBuf::from(elf_file),
-                    output_image: PathBuf::from(output_image),
-                }),
-            args => bail!("Expected exactly 5 positional arguments: \
+                image_type: ImageType::from_str(&image_type.to_string_lossy())?,
+                input_image: PathBuf::from(input_image),
+                priv_key: PathBuf::from(priv_key),
+                elf_file: PathBuf::from(elf_file),
+                output_image: PathBuf::from(output_image),
+            }),
+            args => bail!(
+                "Expected exactly 5 positional arguments: \
                           image type, input image, private key, elf file, and output image, \
-                          got: {}.", args.len()),
+                          got: {}.",
+                args.len()
+            ),
         }
     }
 }
@@ -89,9 +91,7 @@ impl Args {
 /// Parses an unsigned big-endian hex string into a little-endian byte vector.
 fn _parse_hex_str(hex_str: &str) -> Result<Vec<u8>> {
     ensure!(
-        hex_str.starts_with("0x")
-            && hex_str.len() > 2
-            && hex_str.len() % 2 == 0,
+        hex_str.starts_with("0x") && hex_str.len() > 2 && hex_str.len() % 2 == 0,
         "Invalid hex string: {}",
         hex_str
     );
@@ -147,9 +147,7 @@ fn update_image_manifest(
             let section = elf
                 .section_by_name(".shutdown")
                 .or(elf.section_by_name(".text"))
-                .context(
-                    "Could not find the `.shutdown` or `.text` section.",
-                )?;
+                .context("Could not find the `.shutdown` or `.text` section.")?;
             let addr = u32::try_from(
                 section
                     .address()
@@ -191,18 +189,15 @@ fn update_image_manifest(
         "`entry_point` is not word aligned."
     );
     ensure!(
-        (manifest::MANIFEST_SIZE..image.manifest.code_end)
-            .contains(&image.manifest.code_start),
+        (manifest::MANIFEST_SIZE..image.manifest.code_end).contains(&image.manifest.code_start),
         "`code_start` is outside the allowed range."
     );
     ensure!(
-        (manifest::MANIFEST_SIZE..=image.manifest.length)
-            .contains(&image.manifest.code_end),
+        (manifest::MANIFEST_SIZE..=image.manifest.length).contains(&image.manifest.code_end),
         "`code_end` is outside the allowed range."
     );
     ensure!(
-        (image.manifest.code_start..image.manifest.code_end)
-            .contains(&image.manifest.entry_point),
+        (image.manifest.code_start..image.manifest.code_end).contains(&image.manifest.entry_point),
         "`entry_point` is outside the code region."
     );
     ensure!(
@@ -214,19 +209,13 @@ fn update_image_manifest(
 }
 
 /// Calculates the signature for the signed portion of an image.
-fn calculate_image_signature(
-    image: &Image,
-    private_key: &PrivateKey,
-) -> Result<ImageSignature> {
+fn calculate_image_signature(image: &Image, private_key: &PrivateKey) -> Result<ImageSignature> {
     ImageSignature::sign(&private_key, &image.signed_bytes())
         .context("Failed to calculate image signature.")
 }
 
 /// Updates the signature of an image.
-fn update_image_signature(
-    image: &mut Image,
-    sig: ImageSignature,
-) -> Result<()> {
+fn update_image_signature(image: &mut Image, sig: ImageSignature) -> Result<()> {
     let dest = image.manifest.signature.as_bytes_mut().iter_mut();
     let src = sig.bytes().iter().rev().copied();
     ensure!(dest.len() == src.len(), "Unexpected signature length.");
@@ -245,17 +234,15 @@ fn main() -> Result<()> {
     // We use a separate buffer for manifest because it must have the same alignment as `Manifest`
     // to be able to use `LayoutVerified::new()` and the approach we use to ensure this requires
     // its size to be known at compile time.
-    let payload = &fs::read(&args.input_image).with_context(|| {
-        format!("Failed to read {}", args.input_image.display())
-    })?[size_of::<Manifest>()..];
+    let payload = &fs::read(&args.input_image)
+        .with_context(|| format!("Failed to read {}", args.input_image.display()))?
+        [size_of::<Manifest>()..];
     let mut manifest_buffer = ManifestBuffer::new();
     let mut image = Image::new(&mut manifest_buffer, payload)?;
 
-    let key = fs::read(&args.priv_key).with_context(|| {
-        format!("Failed to read the key from `{}`.", args.priv_key.display())
-    })?;
-    let key =
-        PrivateKey::parse_from_der(&key).context("Failed to parse the key.")?;
+    let key = fs::read(&args.priv_key)
+        .with_context(|| format!("Failed to read the key from `{}`.", args.priv_key.display()))?;
+    let key = PrivateKey::parse_from_der(&key).context("Failed to parse the key.")?;
 
     let elf = fs::read(&args.elf_file)?;
     let elf = ElfFile32::parse(elf.as_slice())?;
