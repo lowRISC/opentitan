@@ -138,6 +138,10 @@ module tb;
   // Test Sequence //
   ///////////////////
   event init_done; // SW to host
+  event flashmode_done; // Host -> SW
+
+  localparam logic [31:0] MailboxHostAddr = 32'h FEEC_D000;
+  localparam int unsigned MailboxSpace    = 1024; // bytes
   initial begin
     sck_clk.set_period_ps(SckPeriod);
     sck_clk.set_active();
@@ -162,7 +166,7 @@ module tb;
 
     fork
       begin
-        #40us
+        #1ms
         $display("TEST TIMED OUT!!");
         $finish();
       end
@@ -179,6 +183,9 @@ module tb;
     spi_queue_t expected_data;
     bit test_passed;
     bit match;
+
+    automatic logic [$clog2(MailboxSpace)-1:0] mbx_offset;
+    automatic int unsigned                     mbx_reqsize;
 
     test_passed = 1'b 1;
 
@@ -309,15 +316,41 @@ module tb;
 
 
     //=========================================================================
-    // Issue Read Cmd: Fast Read Dual Mis-aligned
-    //=========================================================================
-    // Issue Read Cmd: Fast Read to Mailbox
-    //=========================================================================
-    // Issue Read Cmd: Fast Read Mailbox Boundary Crossing
-    //=========================================================================
     // Issue Read Cmd: Fast Read Buffer Threshold
     //=========================================================================
     // Issue Read Cmd: Fast Read Buffer Flip
+
+
+    //=========================================================================
+    // Issue Read Cmd: Fast Read to Mailbox
+
+    // Switch PassThrough mode
+    ->flashmode_done;
+
+    $display("Sending Fast Read Command to Mailbox");
+    mbx_offset = $urandom_range(0, MailboxSpace -1);
+    // Check mbx_offset and determine size
+    mbx_reqsize = $urandom_range(1, MailboxSpace - mbx_offset);
+    spiflash_read(
+      tb_sif,
+      8'h 0B,         // opcode
+      MailboxHostAddr + mbx_offset,
+      1'b 1,          // address mode
+      8,              // dummy beat (8 cycles)
+      mbx_reqsize,    // Read random bytes
+      IoSingle,       // io_mode
+      read_data
+    );
+
+    expected_data = get_mbx_data(SramMailboxIdx + mbx_offset, mbx_reqsize);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+    //=========================================================================
+    // Issue Read Cmd: Fast Read Mailbox Boundary Crossing
 
     // Complete the simulation
     if (test_passed) begin
@@ -329,8 +362,8 @@ module tb;
   endtask : host
 
   function automatic spi_queue_t get_sfdp_data(
-    logic [SramAw-1:0] base, // base addr
-    int                size  // #bytes
+    logic [SramAw+OffsetW-1:0] base, // base addr
+    int                        size  // #bytes
   );
     automatic spi_queue_t data;
 
@@ -352,8 +385,8 @@ module tb;
   // It does not handle the buffer management, but just purely read the
   // content.
   function automatic spi_queue_t get_read_data(
-    logic [SramAw-1:0] base, // base addr
-    int                size  // #bytes
+    logic [SramAw+OffsetW-1:0] base, // base addr
+    int                        size  // #bytes
   );
     automatic spi_queue_t data;
 
@@ -365,6 +398,7 @@ module tb;
       remainder = i%4;
       mem_data = `DPSRAM_DATA(addr);
       $display("DPSRAM [0x%3X]: 0x%2x", addr, mem_data);
+      // parity added per byte
       data.push_back(mem_data[9*remainder+:8]);
     end
 
@@ -372,6 +406,29 @@ module tb;
 
 
   endfunction : get_read_data
+
+  // get_mbx_data reads content from Mailbox Buffer in DPSRAM.
+  function automatic spi_queue_t get_mbx_data(
+    logic [SramAw+OffsetW-1:0] addr,
+    int unsigned               size
+  );
+    automatic spi_queue_t data;
+
+    for (int i = addr ; i < addr + size ; i++) begin
+      automatic logic [SramAw-1:0] idx;
+      automatic int                remainder;
+      automatic logic [SramDw-1+(SramDw/8):0] mem_data; // Parity
+      idx = SramMailboxIdx + (i/4)%SramMailboxDepth;
+      remainder = i%4;
+      mem_data = `DPSRAM_DATA(idx);
+      $display("MBX [0x%3X]: 0x%2x", i, mem_data[9*remainder+:8]);
+      // parity added per byte
+      data.push_back(mem_data[9*remainder+:8]);
+    end
+
+    return data;
+
+  endfunction : get_mbx_data
 
   function automatic bit check_data(
     const ref spi_queue_t rcv,
@@ -414,6 +471,17 @@ module tb;
     // Configure
 
     #100ns ->init_done;
+
+
+    wait(flashmode_done.triggered);
+    // FlashMode commands are completed.
+    // Switch Passthrough mode to test Mailbox.
+    spi_mode = PassThrough;
+
+    cfg_mailbox_en       = 1'b 1;
+    cfg_intercept_en_mbx = 1'b 1;
+    cfg_mailbox_addr     = 32'h FEEC_D000; // 1kB starting from FEEC_D000
+    cfg_addr_4b_en       = 1'b 1;          // to issue FEEC_D000
 
     forever begin
       @(posedge clk);
