@@ -10,6 +10,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -57,6 +58,30 @@ static rom_error_t check_offset_len(uint32_t offset_bytes, size_t num_words,
   return kErrorOk;
 }
 
+/**
+ * Helper function for writing to OTBN's DMEM or IMEM.
+ *
+ * @param dest_addr Destination address.
+ * @param src Source buffer.
+ * @param num_words Number of words to copy.
+ */
+static void otbn_write(uint32_t dest_addr, const uint32_t *src,
+                       size_t num_words) {
+  // Start from a random index less than `num_words`.
+  size_t i = ((uint64_t)rnd_uint32() * (uint64_t)num_words) >> 32;
+  enum { kStep = 1 };
+  size_t iter_cnt = 0;
+  for (; launder32(iter_cnt) < num_words; ++iter_cnt) {
+    abs_mmio_write32(dest_addr + i * sizeof(uint32_t), src[i]);
+    i += kStep;
+    if (launder32(i) >= num_words) {
+      i -= num_words;
+    }
+    HARDENED_CHECK_LT(i, num_words);
+  }
+  HARDENED_CHECK_EQ(iter_cnt, num_words);
+}
+
 void otbn_execute(void) {
   abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
 }
@@ -74,15 +99,7 @@ rom_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
                             size_t num_words) {
   RETURN_IF_ERROR(
       check_offset_len(offset_bytes, num_words, kOtbnIMemSizeBytes));
-
-  size_t i = 0;
-  for (; launder32(i) < num_words; ++i) {
-    abs_mmio_write32(
-        kBase + OTBN_IMEM_REG_OFFSET + offset_bytes + i * sizeof(uint32_t),
-        src[i]);
-  }
-  HARDENED_CHECK_EQ(i, num_words);
-
+  otbn_write(kBase + OTBN_IMEM_REG_OFFSET + offset_bytes, src, num_words);
   return kErrorOk;
 }
 
@@ -90,15 +107,7 @@ rom_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
                             size_t num_words) {
   RETURN_IF_ERROR(
       check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
-
-  size_t i = 0;
-  for (; launder32(i) < num_words; ++i) {
-    abs_mmio_write32(
-        kBase + OTBN_DMEM_REG_OFFSET + offset_bytes + i * sizeof(uint32_t),
-        src[i]);
-  }
-  HARDENED_CHECK_EQ(i, num_words);
-
+  otbn_write(kBase + OTBN_DMEM_REG_OFFSET + offset_bytes, src, num_words);
   return kErrorOk;
 }
 

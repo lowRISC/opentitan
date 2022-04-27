@@ -499,6 +499,7 @@ sw_silicon_creator_lib_driver_otbn = declare_dependency(
     ],
     dependencies: [
       sw_lib_abs_mmio,
+      sw_silicon_creator_lib_driver_rnd,
     ],
   ),
 )
