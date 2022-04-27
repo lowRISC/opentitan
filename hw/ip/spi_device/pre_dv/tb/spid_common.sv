@@ -368,7 +368,7 @@ package spid_common;
       addr_swap_en:     1'b 1,
       mbyte_en:         1'b 0,
       dummy_en:         1'b 1,
-      dummy_size:        'h 1,
+      dummy_size:        'h 2,
       payload_en:       4'b 1111, // MISO
       payload_dir:      PayloadOut,
       payload_swap_en:  1'b 0,
