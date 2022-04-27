@@ -856,4 +856,7 @@ module keymgr_ctrl
   // id operation
   `ASSERT(DataEn_A, data_en_o |-> (id_en_o | gen_en_o) & ~adv_en_o)
 
+  // Check that the FSM is linear and does not contain any loops
+  `ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, state_q, state_e)
+
 endmodule

@@ -591,5 +591,13 @@
                rel_path: "hw/ip/lc_ctrl/fsm/{sub_flow}/{tool}"
                cov: false
              }
+             {
+               name: keymgr_sec_cm_fsm
+               dut: keymgr_ctrl
+               fusesoc_core: lowrisc:ip:keymgr
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/keymgr/fsm/{sub_flow}/{tool}"
+               cov: false
+             }
             ]
 }
