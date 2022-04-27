@@ -170,22 +170,13 @@ module spi_p2s
 
   // io_mode
   // io_mode reset value is SingleIO (as described in assumption)
-  // Then, every byte sent, the logic updates its value to `io_mode_i`
-  // This makes the logic safer than direct use of `io_mode_i`.
-  // If `io_mode_i` value is changed within a byte, it affects to `last_beat`
-  // then, the incorrect `last_beat` affects `cnt`, which could break
-  // the data operation.
+  // Previously, logic updated io_mode at every byte. It was to make io_mode
+  // safer. However, as `io_mode_i` is updated at @iSCK (from spi_device top),
+  // and also spi_p2s logic runs only when `data_valid_i` is high, the need of
+  // latching logic disapears.
   //
-  // Following logic has high chance to break the rule. As there's no
-  // indication of the end of a byte. `data_sent_o` is not a valid indicator
-  // as the signal asserted one cycle earlier than the last beat.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      io_mode <= SingleIO;
-    end else if (last_beat) begin
-      io_mode <= io_mode_i;
-    end
-  end
+  // Now, the logic uses `io_mode_i` directly.
+  assign io_mode = io_mode_i;
 
   // cnt
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -193,7 +184,7 @@ module spi_p2s
       cnt <= BitWidth'(0);
     end else if (last_beat) begin
       cnt <= BitWidth'(0);
-    end else if (tx_state != TxIdle || cpha_i == 1'b 0) begin
+    end else if (data_valid_i && (tx_state != TxIdle || cpha_i == 1'b 0)) begin
       cnt <= cnt + 1'b 1;
     end
   end
