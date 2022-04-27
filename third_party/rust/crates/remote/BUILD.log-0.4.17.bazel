@@ -38,12 +38,11 @@ load(
 )
 
 cargo_build_script(
-    name = "num_integer_build_script",
+    name = "log_build_script",
     srcs = glob(["**/*.rs"]),
     build_script_env = {
     },
     crate_features = [
-        "i128",
         "std",
     ],
     crate_root = "build.rs",
@@ -56,24 +55,18 @@ cargo_build_script(
         "cargo-raze",
         "manual",
     ],
-    version = "0.1.44",
+    version = "0.4.17",
     visibility = ["//visibility:private"],
     deps = [
-        "@raze__autocfg__1_1_0//:autocfg",
     ],
 )
 
-# Unsupported target "average" with type "bench" omitted
-
-# Unsupported target "gcd" with type "bench" omitted
-
-# Unsupported target "roots" with type "bench" omitted
+# Unsupported target "value" with type "bench" omitted
 
 rust_library(
-    name = "num_integer",
+    name = "log",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "i128",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -84,17 +77,17 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=num-integer",
+        "crate-name=log",
         "manual",
     ],
-    version = "0.1.44",
+    version = "0.4.17",
     # buildifier: leave-alone
     deps = [
-        ":num_integer_build_script",
-        "@raze__num_traits__0_2_14//:num_traits",
+        ":log_build_script",
+        "@raze__cfg_if__1_0_0//:cfg_if",
     ],
 )
 
-# Unsupported target "average" with type "test" omitted
+# Unsupported target "filters" with type "test" omitted
 
-# Unsupported target "roots" with type "test" omitted
+# Unsupported target "macros" with type "test" omitted
