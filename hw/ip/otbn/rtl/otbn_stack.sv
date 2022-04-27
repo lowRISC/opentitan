@@ -12,12 +12,20 @@
  * the data will be dropped, for a pop no empty there is no valid data to pop. The exception is
  * a combined push & pop on full, here the top is popped off and replaced with what is pushed, no
  * data is dropped.
+ *
+ * The read and write pointers and read and write signals are exposed as `stack_rd_idx_i,
+ * `stack_wr_idx_o`, `stack_write_o` and `stack_read_o`. `next_top_data_o` and `next_top_valid_o`
+ * provide the top_data_o and top_valid_o output that will be seen in the following cycle. This is
+ * to enable users to extend the stack in case where it's not a simple matter of adding extra data
+ * bits (e.g. where this is a prim_count instance per stack entry).
  */
 module otbn_stack
   import otbn_pkg::*;
 #(
   parameter int unsigned StackWidth = 32,
-  parameter int unsigned StackDepth = 4
+  parameter int unsigned StackDepth = 4,
+
+  localparam int unsigned StackDepthW = prim_util_pkg::vbits(StackDepth)
 ) (
   input clk_i,
   input rst_ni,
@@ -33,14 +41,21 @@ module otbn_stack
 
   input  logic                  pop_i,       // Pop top of the stack
   output logic [StackWidth-1:0] top_data_o,  // Data on top of the stack
-  output logic                  top_valid_o  // Stack is non empty (`top_data_o` is valid)
+  output logic                  top_valid_o, // Stack is non empty (`top_data_o` is valid)
+
+  output logic [StackDepthW-1:0] stack_wr_idx_o,
+  output logic                   stack_write_o,
+  output logic [StackDepthW-1:0] stack_rd_idx_o,
+  output logic                   stack_read_o,
+
+  output logic [StackWidth-1:0]  next_top_data_o,
+  output logic                   next_top_valid_o
 );
-
-  localparam int unsigned StackDepthW = prim_util_pkg::vbits(StackDepth);
-
   logic [StackWidth-1:0]  stack_storage [StackDepth];
   logic [StackDepthW:0]   stack_wr_ptr;
   logic [StackDepthW-1:0] stack_top_idx, stack_rd_idx, stack_wr_idx;
+  logic [StackDepthW-1:0] next_stack_rd_idx, next_stack_top_idx;
+  logic [StackDepthW-1:0] stack_top_idx_step;
 
   logic stack_empty;
   logic stack_full;
@@ -128,8 +143,36 @@ module otbn_stack
     end
   end
 
+
   assign full_o      = stack_full;
   assign top_data_o  = stack_storage[stack_rd_idx];
   assign top_valid_o = ~stack_empty;
   assign cnt_err_o   = stack_wr_ptr_err | stack_wr_ptr_step_err_q;
+
+  assign stack_wr_idx_o = stack_wr_idx;
+  assign stack_rd_idx_o = stack_rd_idx;
+  assign stack_write_o  = stack_write;
+  assign stack_read_o   = stack_read;
+
+  always_comb begin
+    next_stack_top_idx = '0;
+    stack_top_idx_step = '0;
+
+    if (clear_i) begin
+      next_stack_top_idx = '0;
+    end else begin
+      if (stack_wr_ptr_en) begin
+        stack_top_idx_step = stack_wr_ptr_step[StackDepthW-1:0];
+      end
+
+      next_stack_top_idx = stack_top_idx + stack_top_idx_step;
+    end
+  end
+
+  assign next_stack_rd_idx = next_stack_top_idx - 1'b1;
+
+  assign next_top_data_o = stack_write ? push_data_i : stack_storage[next_stack_rd_idx];
+  assign next_top_valid_o = next_stack_top_idx != '0;
+
+  `ASSERT(next_stack_top_idx_correct, stack_top_idx == $past(next_stack_top_idx))
 endmodule

@@ -163,6 +163,13 @@ module tb;
   bind dut.u_otbn_core otbn_tracer #(.SecWipeEn(SecWipeEn))
     u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
+  logic [31:0] otbn_loop_count_max_vals [otbn_pkg::LoopStackDepth];
+
+  for (genvar i = 0; i < otbn_pkg::LoopStackDepth; ++i) begin : gen_otbn_loop_count_max_vals
+    assign otbn_loop_count_max_vals[i] = dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.
+        g_loop_counters[i].u_loop_count.max_val;
+  end
+
   bind dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller
     otbn_loop_if i_otbn_loop_if (
       .clk_i,
@@ -171,7 +178,7 @@ module tb;
       // 32-bit address here to avoid having to parameterise the type of the interface.
       .insn_addr_i (32'(insn_addr_i)),
       .at_current_loop_end_insn,
-      .loop_active_q,
+      .current_loop_valid,
       .loop_stack_full,
       .current_loop_finish,
       .next_loop_valid,
@@ -183,13 +190,16 @@ module tb;
       // These addresses are start/end addresses for entries in the loop stack. As with insn_addr_i,
       // we expand them to 32 bits. Also the loop stack entries have a type that's not exposed
       // outside of the loop controller module so we need to extract the fields here.
-      .current_loop_start (32'(current_loop_q.loop_start)),
-      .current_loop_end   (32'(current_loop_q.loop_end)),
-      .next_loop_end      (32'(next_loop.loop_end)),
+      .current_loop_start (32'(current_loop.loop_addr_info.loop_start)),
+      .current_loop_end   (32'(current_loop.loop_addr_info.loop_end)),
+      .next_loop_end      (32'(prefetch_loop_end_addr_o)),
 
       // These counts are used by the loop warping code.
-      .current_loop_d_iterations (current_loop_d.loop_iterations),
-      .current_loop_q_iterations (current_loop_q.loop_iterations)
+      .current_loop_d_iterations (prefetch_loop_iterations_o),
+      .current_loop_q_iterations (current_loop.loop_iterations),
+
+      .loop_stack_rd_idx,
+      .loop_count_max_vals($root.tb.otbn_loop_count_max_vals)
     );
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);

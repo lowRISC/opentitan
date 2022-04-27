@@ -84,6 +84,14 @@ class otbn_base_vseq extends cip_base_vseq #(
     // Pass loop warp rules that we've just loaded into otbn_memutil into the model.
     cfg.model_agent_cfg.vif.take_loop_warps(cfg.mem_util);
 
+    if (cfg.model_agent_cfg.vif.has_loop_warps(cfg.mem_util)) begin
+      // Where loop warps are present an assertion within prim_count must be disabled.
+      cfg.loop_vif.control_loop_counters_out_set_assertion(1'b0);
+    end else begin
+      // Otherwise enable the assertions as they may have been disabled by a prior elf execution.
+      cfg.loop_vif.control_loop_counters_out_set_assertion(1'b1);
+    end
+
     // We're loading a new program, so the tracking that we've been doing for how long runs take is
     // no longer valid.
     longest_run_ = 0;
@@ -422,6 +430,7 @@ class otbn_base_vseq extends cip_base_vseq #(
   protected task _run_loop_warps();
     logic [31:0] addr, old_iters, old_count;
     bit [31:0]   new_count, new_iters;
+    bit [31:0]   loop_stack_rd_idx;
 
     forever begin
       // Run on the negative edge of the clock: we want to force a "_d" value, so should make sure
@@ -445,27 +454,77 @@ class otbn_base_vseq extends cip_base_vseq #(
       if (!OtbnMemUtilGetLoopWarp(cfg.mem_util, addr, old_count, new_count))
         continue;
 
-      // Convert this back to the "RTL view"
+      // Loop warping assumes we're not manipulating the loop stack (i.e. no new loop starting or
+      // current loop finishing the same cycle we warp).
+      `DV_CHECK_FATAL(!(cfg.loop_vif.loop_stack_push || cfg.loop_vif.loop_stack_pop))
+
+      // Convert loop warp's remaining iteration count to "RTL view"
       new_iters = cfg.loop_vif.loop_count_to_iters(new_count);
 
-      // We want to use this value to override the _d signal, but there's one more wrinkle: if the
-      // current address matches the loop end, it will already have been decremented and we need to
-      // decrement it one more time to match.
-      if (cfg.loop_vif.current_loop_q_iterations != cfg.loop_vif.current_loop_d_iterations) begin
-        `DV_CHECK_EQ_FATAL(cfg.loop_vif.current_loop_q_iterations,
-                           cfg.loop_vif.current_loop_d_iterations + 1)
-        `DV_CHECK_FATAL(new_iters > 0)
-        new_iters--;
-      end
-
-      // Override the _d signal
-      if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
-                           "u_otbn_loop_controller.current_loop_d.loop_iterations"},
-                          new_iters) != 1) begin
-        `dv_fatal("Failed to override loop_iterations for loop warp.")
-      end
+      _set_loop_counter(cfg.loop_vif.loop_stack_rd_idx, new_iters);
     end
   endtask
+
+  // Set a counter in the loop stack to a specified value
+  protected function _set_loop_counter(bit [31:0] loop_counter_idx, bit [31:0] new_count);
+    bit [31:0] new_up_cnt_q;
+    bit [31:0] new_up_cnt_d;
+    bit [31:0] new_past_cnt;
+    string counter_path;
+
+    counter_path = $sformatf("u_otbn_loop_controller.g_loop_counters[%d].u_loop_count",
+                             cfg.loop_vif.loop_stack_rd_idx);
+
+    // The counters have a down and up count. The down count gives us the remaining iterations;
+    // the up count is the inverse. So down and up must always sum to a constant which is given by
+    // loop_count_max_vals (each time you set the counter within the RTL the constant is changed).
+    // This calculates the appropriate up count values from the desired new down count.
+    // Both _d and _q need to be provided and be consistent to avoid glitches on the error signal.
+    new_up_cnt_q = cfg.loop_vif.loop_count_max_vals[loop_counter_idx] - new_count;
+    if (cfg.loop_vif.current_loop_q_iterations != cfg.loop_vif.current_loop_d_iterations) begin
+      // When iterations are being incremented the up count increases, so set _d appropriately
+      `DV_CHECK_EQ_FATAL(cfg.loop_vif.current_loop_q_iterations,
+                         cfg.loop_vif.current_loop_d_iterations + 1)
+
+      new_up_cnt_d = new_up_cnt_q + 1;
+    end else begin
+      // No iteration count change so _d == _q
+      new_up_cnt_d = new_up_cnt_q;
+    end
+
+    // prim_count contains some aux logic used by the assertions. This also needs updating with
+    // the warped value.
+    new_past_cnt = new_count + 1;
+
+    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
+                         counter_path,
+                         ".up_cnt_d[0]"},
+                         new_up_cnt_d) != 1) begin
+      `dv_fatal("Failed to override up_cnt_d for loop warp.")
+    end
+
+    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
+                         counter_path,
+                         ".up_cnt_q[0]"},
+                         new_up_cnt_q) != 1) begin
+      `dv_fatal("Failed to override up_cnt_q for loop warp.")
+    end
+
+    // down_cnt has no seperate _d and _q so just update the single `down_cnt` signal.
+    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
+                         counter_path,
+                         ".gen_cross_cnt_hardening.down_cnt"},
+                        new_count) != 1) begin
+      `dv_fatal("Failed to override down_cnt for loop warp.")
+    end
+
+    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
+                         counter_path,
+                         ".past_cnt_o"},
+                        new_past_cnt) != 1) begin
+      `dv_fatal("Failed to override past_cnt_o for loop warp.")
+    end
+  endfunction
 
   // Run the correct key sideload sequence
   protected task _run_sideload_sequence();
