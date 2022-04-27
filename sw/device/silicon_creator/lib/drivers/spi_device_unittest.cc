@@ -165,6 +165,12 @@ TEST_F(SpiDeviceTest, FlashStatusClear) {
   spi_device_flash_status_clear();
 }
 
+TEST_F(SpiDeviceTest, FlashStatusGet) {
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0xa5);
+
+  EXPECT_EQ(0xa5, spi_device_flash_status_get());
+}
+
 struct CmdGetTestCase {
   spi_device_opcode_t opcode;
   uint32_t address;

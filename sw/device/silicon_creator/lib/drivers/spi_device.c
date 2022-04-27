@@ -636,3 +636,7 @@ void spi_device_cmd_get(spi_device_cmd_t *cmd) {
 void spi_device_flash_status_clear(void) {
   abs_mmio_write32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
 }
+
+uint32_t spi_device_flash_status_get(void) {
+  return abs_mmio_read32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET);
+}
