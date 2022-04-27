@@ -51,8 +51,8 @@ logic [9-1:0] dly_cnt, hc2lc_val, lc2hc_val;  // upto 255 aon clock (1275us)
 logic [1:0] dv_hook, dft_sel;
 assign dv_hook = 2'd0;
 
-localparam int HC2LCOC = ast_pkg::Hc2LcTrCyc;
-localparam int LC2HCOC = ast_pkg::Lc2HcTrCyc;
+localparam int unsigned HC2LCOC = ast_pkg::Hc2LcTrCyc;
+localparam int unsigned LC2HCOC = ast_pkg::Lc2HcTrCyc;
 
 // Force 2'b11 to reduce LDOs time & double LDOs start-up time
 assign dft_sel = dv_hook;
@@ -94,7 +94,13 @@ assign rgls_rst_h_n = vcc_pok_str_h_o;
 logic vcc_pok_fe_h, vcc_pok_s_h;
 
 logic clk_src_aon_h_n;
-assign clk_src_aon_h_n = !clk_src_aon_h_i;
+prim_clock_inv #(
+  .HasScanMode(0)
+) u_prim_clock_inv (
+  .clk_i     (clk_src_aon_h_i),
+  .scanmode_i(1'b0),
+  .clk_no    (clk_src_aon_h_n)
+);
 
 always_ff @( posedge clk_src_aon_h_n, negedge rgls_rst_h_n ) begin
   if ( !rgls_rst_h_n ) begin
@@ -129,7 +135,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
     //
     rgls_sm          <= RGLS_CLDPU;  // Power VCMAIN (Cold)
   end else begin
-    case ( rgls_sm )
+    unique case ( rgls_sm )
       RGLS_CLDPU: begin
         vcmain_pok_h       <= 1'b0;        // VCMAIN Rail Disabled
         vcaon_pok_h        <= 1'b0;        // VCAON Rail Disabled

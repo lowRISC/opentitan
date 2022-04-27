@@ -396,11 +396,13 @@ assign extfreq_is_96m = sw_exfr_is_96m;
 logic sys_clk_byp_sel, io_clk_byp_sel, usb_clk_byp_sel, aon_clk_byp_sel;
 
 always_latch begin
-  if ( !scan_mode_i ) sys_clk_byp_sel <= sys_clk_byp;
-  if ( !scan_mode_i ) io_clk_byp_sel  <= io_clk_byp;
-  if ( !scan_mode_i ) usb_clk_byp_sel <= usb_clk_byp;
-  if ( !scan_mode_i ) aon_clk_byp_sel <= aon_clk_byp;
-  if ( !scan_mode_i ) ext_freq_is_96m <= extfreq_is_96m;
+  if (!scan_mode_i) begin
+    sys_clk_byp_sel = sys_clk_byp;
+    io_clk_byp_sel  = io_clk_byp;
+    usb_clk_byp_sel = usb_clk_byp;
+    aon_clk_byp_sel = aon_clk_byp;
+    ext_freq_is_96m = extfreq_is_96m;
+  end
 end
 
 
