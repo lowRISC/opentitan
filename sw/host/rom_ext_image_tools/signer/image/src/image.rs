@@ -35,8 +35,7 @@ impl<'a> Image<'a> {
         manifest_buffer: &'a mut ManifestBuffer,
         payload: &'a [u8],
     ) -> Result<Image<'a>, ImageError> {
-        let manifest = LayoutVerified::new(&mut **manifest_buffer)
-            .ok_or(ImageError::Parse)?;
+        let manifest = LayoutVerified::new(&mut **manifest_buffer).ok_or(ImageError::Parse)?;
         Ok(Self { manifest, payload })
     }
 
