@@ -6,6 +6,7 @@
 
 namespace mask_rom_test {
 extern "C" {
+
 void spi_device_init(void) { MockSpiDevice::Instance().Init(); }
 
 void spi_device_cmd_get(spi_device_cmd_t *cmd) {
@@ -15,5 +16,10 @@ void spi_device_cmd_get(spi_device_cmd_t *cmd) {
 void spi_device_flash_status_clear(void) {
   MockSpiDevice::Instance().FlashStatusClear();
 }
+
+uint32_t spi_device_flash_status_get(void) {
+  return MockSpiDevice::Instance().FlashStatusGet();
+}
+
 }  // extern "C"
 }  // namespace mask_rom_test
