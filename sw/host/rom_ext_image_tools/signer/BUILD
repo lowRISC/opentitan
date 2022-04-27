@@ -13,10 +13,10 @@ rust_binary(
     ],
     deps = [
         "//sw/host/rom_ext_image_tools/signer/image:rom_ext_image",
-        "//third_party/cargo:anyhow",
-        "//third_party/cargo:object",
-        "//third_party/cargo:thiserror",
-        "//third_party/cargo:zerocopy",
+        "//third_party/rust/crates:anyhow",
+        "//third_party/rust/crates:object",
+        "//third_party/rust/crates:thiserror",
+        "//third_party/rust/crates:zerocopy",
         "@mundane",
     ],
 )
