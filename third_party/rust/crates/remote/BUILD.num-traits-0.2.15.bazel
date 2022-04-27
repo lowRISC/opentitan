@@ -38,14 +38,13 @@ load(
 )
 
 cargo_build_script(
-    name = "serde_build_script",
+    name = "num_traits_build_script",
     srcs = glob(["**/*.rs"]),
     build_script_env = {
     },
     crate_features = [
         "default",
-        "derive",
-        "serde_derive",
+        "i128",
         "std",
     ],
     crate_root = "build.rs",
@@ -58,38 +57,37 @@ cargo_build_script(
         "cargo-raze",
         "manual",
     ],
-    version = "1.0.136",
+    version = "0.2.15",
     visibility = ["//visibility:private"],
     deps = [
+        "@raze__autocfg__1_1_0//:autocfg",
     ],
 )
 
 rust_library(
-    name = "serde",
+    name = "num_traits",
     srcs = glob(["**/*.rs"]),
     crate_features = [
         "default",
-        "derive",
-        "serde_derive",
+        "i128",
         "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2015",
-    proc_macro_deps = [
-        "@raze__serde_derive__1_0_136//:serde_derive",
-    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=serde",
+        "crate-name=num-traits",
         "manual",
     ],
-    version = "1.0.136",
+    version = "0.2.15",
     # buildifier: leave-alone
     deps = [
-        ":serde_build_script",
+        ":num_traits_build_script",
     ],
 )
+
+# Unsupported target "cast" with type "test" omitted

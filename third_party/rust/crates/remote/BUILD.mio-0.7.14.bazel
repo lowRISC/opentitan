@@ -60,13 +60,13 @@ rust_library(
     version = "0.7.14",
     # buildifier: leave-alone
     deps = [
-        "@raze__log__0_4_16//:log",
+        "@raze__log__0_4_17//:log",
     ] + selects.with_or({
         # cfg(unix)
         (
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
         ): [
-            "@raze__libc__0_2_124//:libc",
+            "@raze__libc__0_2_125//:libc",
         ],
         "//conditions:default": [],
     }),

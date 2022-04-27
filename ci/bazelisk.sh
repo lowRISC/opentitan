@@ -7,6 +7,12 @@
 # but adds various flags to produce CI-friendly output. It does so by prociding a
 # command-line specified .bazelrc (that is applied alongside //.bazelrc).
 
+if [[ -n "$PWD_OVERRIDE" ]]; then
+    cd "$PWD_OVERRIDE"
+fi
+
+echo "Running bazelisk in $(pwd)."
+
 # An additional bazelrc must be synthesized to specify precisely how to use the
 # GCP bazel cache.
 GCP_BAZELRC="$(mktemp /tmp/XXXXXX.bazelrc)"
