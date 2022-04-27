@@ -8,6 +8,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/testing/mock_abs_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -16,11 +17,13 @@
 namespace otbn_unittest {
 namespace {
 using ::testing::ElementsAre;
+using ::testing::Return;
 
 class OtbnTest : public mask_rom_test::MaskRomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_OTBN_BASE_ADDR;
   mask_rom_test::MockAbsMmio mmio_;
+  mask_rom_test::MockRnd rnd_;
 };
 
 class StartTest : public OtbnTest {};
@@ -76,6 +79,7 @@ TEST_F(ImemWriteTest, SuccessWithoutOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[1]);
 
@@ -88,6 +92,7 @@ TEST_F(ImemWriteTest, SuccessWithOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 8, test_data[1]);
 
@@ -102,6 +107,7 @@ TEST_F(DmemWriteTest, SuccessWithoutOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[1]);
 
@@ -114,6 +120,7 @@ TEST_F(DmemWriteTest, SuccessWithOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 8, test_data[1]);
 
