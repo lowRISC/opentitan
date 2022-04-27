@@ -38,11 +38,13 @@ load(
 )
 
 cargo_build_script(
-    name = "log_build_script",
+    name = "libc_build_script",
     srcs = glob(["**/*.rs"]),
     build_script_env = {
     },
     crate_features = [
+        "default",
+        "extra_traits",
         "std",
     ],
     crate_root = "build.rs",
@@ -55,18 +57,18 @@ cargo_build_script(
         "cargo-raze",
         "manual",
     ],
-    version = "0.4.16",
+    version = "0.2.125",
     visibility = ["//visibility:private"],
     deps = [
     ],
 )
 
-# Unsupported target "value" with type "bench" omitted
-
 rust_library(
-    name = "log",
+    name = "libc",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "default",
+        "extra_traits",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -77,17 +79,14 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=log",
+        "crate-name=libc",
         "manual",
     ],
-    version = "0.4.16",
+    version = "0.2.125",
     # buildifier: leave-alone
     deps = [
-        ":log_build_script",
-        "@raze__cfg_if__1_0_0//:cfg_if",
+        ":libc_build_script",
     ],
 )
 
-# Unsupported target "filters" with type "test" omitted
-
-# Unsupported target "macros" with type "test" omitted
+# Unsupported target "const_fn" with type "test" omitted

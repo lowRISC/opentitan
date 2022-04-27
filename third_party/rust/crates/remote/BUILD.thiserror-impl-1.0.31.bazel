@@ -47,11 +47,11 @@ rust_proc_macro(
         "crate-name=thiserror-impl",
         "manual",
     ],
-    version = "1.0.30",
+    version = "1.0.31",
     # buildifier: leave-alone
     deps = [
-        "@raze__proc_macro2__1_0_37//:proc_macro2",
+        "@raze__proc_macro2__1_0_38//:proc_macro2",
         "@raze__quote__1_0_18//:quote",
-        "@raze__syn__1_0_91//:syn",
+        "@raze__syn__1_0_92//:syn",
     ],
 )
