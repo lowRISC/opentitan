@@ -123,10 +123,10 @@ module otbn_controller
   output ispr_e                       ispr_addr_o,
   output logic [31:0]                 ispr_base_wdata_o,
   output logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en_o,
-  output logic [WLEN-1:0]             ispr_bignum_wdata_o,
+  output logic [ExtWLEN-1:0]          ispr_bignum_wdata_intg_o,
   output logic                        ispr_bignum_wr_en_o,
   output logic                        ispr_wr_commit_o,
-  input  logic [WLEN-1:0]             ispr_rdata_i,
+  input  logic [ExtWLEN-1:0]          ispr_rdata_intg_i,
   output logic                        ispr_rd_en_o,
 
   // RND interface
@@ -280,6 +280,8 @@ module otbn_controller
   // anyway.
   logic ignore_bignum_rf_errs;
   logic rf_bignum_rf_err;
+
+  logic ispr_rdata_intg_err;
 
   logic [31:0] insn_cnt_d, insn_cnt_q;
   logic        insn_cnt_clear;
@@ -475,7 +477,7 @@ module otbn_controller
 
   assign fatal_software_err       = software_err & software_errs_fatal_i;
   assign bad_internal_state_err   = state_error | loop_hw_err | rf_base_call_stack_hw_err_i;
-  assign reg_intg_violation_err   = rf_bignum_rf_err;
+  assign reg_intg_violation_err   = rf_bignum_rf_err | ispr_rdata_intg_err;
   assign key_invalid_err          = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
   assign illegal_insn_err         = illegal_insn_static | rf_indirect_err;
   assign bad_data_addr_err        = dmem_addr_err;
@@ -938,17 +940,18 @@ module otbn_controller
 
   always_comb begin
     // Write data mux for anything that needs integrity computing during register write
-    // TODO: ISPR data will go via direct mux below once integrity has been implemented for
-    // them.
     unique case (insn_dec_bignum_i.rf_wdata_sel)
       RfWdSelEx:   rf_bignum_wr_data_no_intg_o = alu_bignum_operation_result_i;
-      RfWdSelIspr: rf_bignum_wr_data_no_intg_o = ispr_rdata_i;
       RfWdSelMac:  rf_bignum_wr_data_no_intg_o = mac_bignum_rf_wr_data;
       default:     rf_bignum_wr_data_no_intg_o = alu_bignum_operation_result_i;
     endcase
 
     // Write data mux for anything that provides its own integrity
     unique case (insn_dec_bignum_i.rf_wdata_sel)
+      RfWdSelIspr: begin
+        rf_bignum_wr_data_intg_sel_o = 1'b1;
+        rf_bignum_wr_data_intg_o     = ispr_rdata_intg_i;
+      end
       RfWdSelMovSel: begin
         rf_bignum_wr_data_intg_sel_o = 1'b1;
         rf_bignum_wr_data_intg_o     = selection_result;
@@ -1028,10 +1031,65 @@ module otbn_controller
     assign ispr_word_sel_base[i_word] = ispr_word_addr_base == i_word;
   end
 
+  // Decode wide ISPR read data.
+  logic [WLEN-1:0]                ispr_rdata;
+  logic [2*BaseWordsPerWLEN-1:0]  ispr_rdata_intg_err_wide;
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_ispr_rdata_dec
+    prim_secded_inv_39_32_dec i_secded_dec (
+      .data_i     (ispr_rdata_intg_i[i_word*39+:39]),
+      .data_o     (/* unused because we abort on any integrity error */),
+      .syndrome_o (/* unused */),
+      .err_o      (ispr_rdata_intg_err_wide[i_word*2+:2])
+    );
+    assign ispr_rdata[i_word*32+:32] = ispr_rdata_intg_i[i_word*39+:32];
+  end
+
+  // Propagate integrity error only if wide ISPR is used.
+
+  // `ispr_rdata` conditionally flows into `ispr_bignum_wdata_intg_o`.
+  logic ispr_rdata_into_ispr_bignum_wdata;
+  assign ispr_rdata_into_ispr_bignum_wdata = insn_dec_shared_i.ispr_rs_insn;
+
+  logic csr_rdata_mux_into_ispr_base_wdata;
+  assign csr_rdata_mux_into_ispr_base_wdata =
+      // `csr_rdata_mux` flows into `csr_rdata_raw`, which flows into `csr_rdata` except in one
+      // case.
+      (csr_addr != CsrRndPrefetch)
+      // `csr_rdata` conditionally flows into `csr_wdata_raw`.  `csr_wdata_raw` then flows into
+      // `csr_wdata`, which flows into `ispr_base_wdata_o`.
+      & insn_dec_shared_i.ispr_rs_insn;
+
+  // Words of `ispr_rdata` flow into `ispr_base_wdata_o` through `csr_rdata_mux` conditional to the
+  // word-wise selection by `ispr_word_sel_base`.
+  logic [BaseWordsPerWLEN-1:0] ispr_rdata_into_ispr_base_wdata;
+  assign ispr_rdata_into_ispr_base_wdata  = csr_rdata_mux_into_ispr_base_wdata ? ispr_word_sel_base
+                                                                               : '0;
+
+  logic [BaseWordsPerWLEN-1:0] ispr_rdata_used;
+  // `ispr_rdata_intg_i` is only valid for valid instructions that read from the ISPR.
+  assign ispr_rdata_used = {BaseWordsPerWLEN{insn_valid_i & ispr_rd_insn & ~ispr_stall}} & (
+      // `ispr_rdata` then flows into `ispr_base_wdata_o` or into `ispr_bignum_wdata_intg_o`
+      ispr_rdata_into_ispr_base_wdata | {BaseWordsPerWLEN{ispr_rdata_into_ispr_bignum_wdata}}
+  );
+
+  `ASSERT_KNOWN(IsprRdataUsed_A, ispr_rdata_used)
+
+  // Determine if a used word had an integrity error.
+  logic [BaseWordsPerWLEN-1:0] ispr_rdata_intg_err_narrow;
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_ispr_rdata_err
+    assign ispr_rdata_intg_err_narrow[i_word] = |(ispr_rdata_intg_err_wide[i_word*2+:2]);
+  end
+
+  logic [BaseWordsPerWLEN-1:0] ispr_rdata_used_intg_err;
+  assign ispr_rdata_used_intg_err = ispr_rdata_used & ispr_rdata_intg_err_narrow;
+  assign ispr_rdata_intg_err      = |(ispr_rdata_used_intg_err);
+
+  `ASSERT_KNOWN(IsprRdataIntgErrKnown_A, ispr_rdata_intg_err)
+
   for (genvar i_bit = 0; i_bit < 32; i_bit++) begin : g_csr_rdata_mux
     for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_csr_rdata_mux_inner
       assign csr_rdata_mux[i_bit][i_word] =
-          ispr_rdata_i[i_word*32 + i_bit] & ispr_word_sel_base[i_word];
+          ispr_rdata[i_word*32 + i_bit] & ispr_word_sel_base[i_word];
     end
 
     assign csr_rdata_raw[i_bit] = |csr_rdata_mux[i_bit];
@@ -1104,7 +1162,7 @@ module otbn_controller
     endcase
   end
 
-  assign wsr_wdata = insn_dec_shared_i.ispr_rs_insn ? ispr_rdata_i | rf_bignum_rd_data_a_no_intg :
+  assign wsr_wdata = insn_dec_shared_i.ispr_rs_insn ? ispr_rdata | rf_bignum_rd_data_a_no_intg :
                                                       rf_bignum_rd_data_a_no_intg;
 
   assign ispr_illegal_addr = insn_dec_shared_i.subset == InsnSubsetBase ? csr_illegal_addr :
@@ -1130,7 +1188,12 @@ module otbn_controller
   assign ispr_base_wr_en_o   = {BaseWordsPerWLEN{ispr_wr_base_insn & insn_valid_i}} &
                                ispr_word_sel_base;
 
-  assign ispr_bignum_wdata_o = wsr_wdata;
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_ispr_bignum_wdata_enc
+    prim_secded_inv_39_32_enc i_secded_enc (
+      .data_i(wsr_wdata[i_word*32+:32]),
+      .data_o(ispr_bignum_wdata_intg_o[i_word*39+:39])
+    );
+  end
   assign ispr_bignum_wr_en_o = ispr_wr_bignum_insn & insn_valid_i;
 
   assign ispr_wr_commit_o = ispr_wr_insn & insn_executing;

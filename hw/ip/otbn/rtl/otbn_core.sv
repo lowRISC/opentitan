@@ -179,6 +179,7 @@ module otbn_core
   logic                  alu_bignum_operation_commit;
   logic [WLEN-1:0]       alu_bignum_operation_result;
   logic                  alu_bignum_selection_flag;
+  logic                  alu_bignum_reg_intg_violation_err;
 
   mac_bignum_operation_t mac_bignum_operation;
   logic [WLEN-1:0]       mac_bignum_operation_result;
@@ -186,17 +187,18 @@ module otbn_core
   flags_t                mac_bignum_operation_flags_en;
   logic                  mac_bignum_en;
   logic                  mac_bignum_commit;
+  logic                  mac_bignum_reg_intg_violation_err;
 
   ispr_e                       ispr_addr;
   logic [31:0]                 ispr_base_wdata;
   logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en;
-  logic [WLEN-1:0]             ispr_bignum_wdata;
+  logic [ExtWLEN-1:0]          ispr_bignum_wdata_intg;
   logic                        ispr_bignum_wr_en;
   logic                        ispr_wr_commit;
-  logic [WLEN-1:0]             ispr_rdata;
+  logic [ExtWLEN-1:0]          ispr_rdata_intg;
   logic                        ispr_rd_en;
-  logic [WLEN-1:0]             ispr_acc;
-  logic [WLEN-1:0]             ispr_acc_wr_data;
+  logic [ExtWLEN-1:0]          ispr_acc_intg;
+  logic [ExtWLEN-1:0]          ispr_acc_wr_data_intg;
   logic                        ispr_acc_wr_en;
   logic                        ispr_init;
 
@@ -471,14 +473,14 @@ module otbn_core
     .lsu_bignum_rdata_i(lsu_bignum_rdata),
 
     // Isprs read/write (base and bignum)
-    .ispr_addr_o        (ispr_addr),
-    .ispr_base_wdata_o  (ispr_base_wdata),
-    .ispr_base_wr_en_o  (ispr_base_wr_en),
-    .ispr_bignum_wdata_o(ispr_bignum_wdata),
-    .ispr_bignum_wr_en_o(ispr_bignum_wr_en),
-    .ispr_wr_commit_o   (ispr_wr_commit),
-    .ispr_rdata_i       (ispr_rdata),
-    .ispr_rd_en_o       (ispr_rd_en),
+    .ispr_addr_o             (ispr_addr),
+    .ispr_base_wdata_o       (ispr_base_wdata),
+    .ispr_base_wr_en_o       (ispr_base_wr_en),
+    .ispr_bignum_wdata_intg_o(ispr_bignum_wdata_intg),
+    .ispr_bignum_wr_en_o     (ispr_bignum_wr_en),
+    .ispr_wr_commit_o        (ispr_wr_commit),
+    .ispr_rdata_intg_i       (ispr_rdata_intg),
+    .ispr_rd_en_o            (ispr_rd_en),
 
     // RND interface
     .rnd_req_o         (rnd_req),
@@ -527,6 +529,8 @@ module otbn_core
                            urnd_all_zero,
                            predec_error},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
+                           alu_bignum_reg_intg_violation_err,
+                           mac_bignum_reg_intg_violation_err,
                            rf_base_rf_err},
     dmem_intg_violation: lsu_rdata_err,
     imem_intg_violation: insn_fetch_err,
@@ -559,7 +563,8 @@ module otbn_core
   assign controller_escalate_en =
       mubi4_or_hi(escalate_en_i,
                   mubi4_bool_to_mubi(|{start_stop_state_error, urnd_all_zero, predec_error,
-                                       rf_base_rf_err, lsu_rdata_err, insn_fetch_err}));
+                                       rf_base_rf_err, lsu_rdata_err, insn_fetch_err,
+                                       err_bits_d.reg_intg_violation}));
 
   // Similarly for the start/stop controller
   assign start_stop_escalate_en =
@@ -733,19 +738,21 @@ module otbn_core
     .alu_predec_bignum_i (alu_predec_bignum),
     .ispr_predec_bignum_i(ispr_predec_bignum),
 
-    .ispr_addr_i        (ispr_addr),
-    .ispr_base_wdata_i  (ispr_base_wdata),
-    .ispr_base_wr_en_i  (ispr_base_wr_en),
-    .ispr_bignum_wdata_i(ispr_bignum_wdata),
-    .ispr_bignum_wr_en_i(ispr_bignum_wr_en),
-    .ispr_wr_commit_i   (ispr_wr_commit),
-    .ispr_init_i        (ispr_init),
-    .ispr_rdata_o       (ispr_rdata),
-    .ispr_rd_en_i       (ispr_rd_en),
+    .ispr_addr_i             (ispr_addr),
+    .ispr_base_wdata_i       (ispr_base_wdata),
+    .ispr_base_wr_en_i       (ispr_base_wr_en),
+    .ispr_bignum_wdata_intg_i(ispr_bignum_wdata_intg),
+    .ispr_bignum_wr_en_i     (ispr_bignum_wr_en),
+    .ispr_wr_commit_i        (ispr_wr_commit),
+    .ispr_init_i             (ispr_init),
+    .ispr_rdata_intg_o       (ispr_rdata_intg),
+    .ispr_rd_en_i            (ispr_rd_en),
 
-    .ispr_acc_i        (ispr_acc),
-    .ispr_acc_wr_data_o(ispr_acc_wr_data),
-    .ispr_acc_wr_en_o  (ispr_acc_wr_en),
+    .ispr_acc_intg_i        (ispr_acc_intg),
+    .ispr_acc_wr_data_intg_o(ispr_acc_wr_data_intg),
+    .ispr_acc_wr_en_o       (ispr_acc_wr_en),
+
+    .reg_intg_violation_err_o(alu_bignum_reg_intg_violation_err),
 
     .sec_wipe_mod_urnd_i(sec_wipe_mod_urnd),
     .sec_wipe_zero_i    (sec_wipe_zero),
@@ -766,10 +773,11 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
-    .operation_i         (mac_bignum_operation),
-    .operation_result_o  (mac_bignum_operation_result),
-    .operation_flags_o   (mac_bignum_operation_flags),
-    .operation_flags_en_o(mac_bignum_operation_flags_en),
+    .operation_i                    (mac_bignum_operation),
+    .operation_result_o             (mac_bignum_operation_result),
+    .operation_flags_o              (mac_bignum_operation_flags),
+    .operation_flags_en_o           (mac_bignum_operation_flags_en),
+    .operation_intg_violation_err_o (mac_bignum_reg_intg_violation_err),
 
     .mac_predec_bignum_i(mac_predec_bignum),
     .predec_error_o     (mac_bignum_predec_error),
@@ -781,9 +789,9 @@ module otbn_core
     .mac_en_i    (mac_bignum_en),
     .mac_commit_i(mac_bignum_commit),
 
-    .ispr_acc_o        (ispr_acc),
-    .ispr_acc_wr_data_i(ispr_acc_wr_data),
-    .ispr_acc_wr_en_i  (ispr_acc_wr_en)
+    .ispr_acc_intg_o        (ispr_acc_intg),
+    .ispr_acc_wr_data_intg_i(ispr_acc_wr_data_intg),
+    .ispr_acc_wr_en_i       (ispr_acc_wr_en)
   );
 
   otbn_rnd #(
