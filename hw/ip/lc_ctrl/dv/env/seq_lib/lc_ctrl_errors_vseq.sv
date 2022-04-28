@@ -25,9 +25,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   rand int unsigned state_err_inj_period;
   rand int unsigned count_err_inj_delay;
   rand int unsigned count_err_inj_period;
-
-  rand int unsigned security_escalation_err_inj_delay;
   rand bit [1:0] security_escalation_err_inj_channels;
+  // Escalate injection trigger state
+  rand lc_ctrl_pkg::fsm_state_e security_escalation_err_inj_state;
+  // Additional delay from trigger state
+  rand uint security_escalation_err_inj_delay;
 
 
   bit fatal_prog_alert_received;
@@ -77,8 +79,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   constraint security_escalation_c {
     err_inj.security_escalation_err == 0;
-    security_escalation_err_inj_delay == 0;
     security_escalation_err_inj_channels == 0;
+    security_escalation_err_inj_state == IdleSt;
+    security_escalation_err_inj_delay == 0;
   }
 
   constraint invalid_states_bin_c {
@@ -160,8 +163,14 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     // Kill sub processes
     disable handle_alerts;
     disable handle_escalate;
+    disable security_escalation_inject;
     disable run_clk_byp_rsp;
     disable run_flash_rma_rsp;
+
+    // Clear escalates
+    cfg.escalate_injected = 0;
+    clear_escalate(0);
+    clear_escalate(1);
 
     // Make sure OTP response queue is cleared
     cfg.m_otp_prog_pull_agent_cfg.clear_d_user_data();
@@ -172,6 +181,16 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     // Align cfg.err_inj with the sequence before body starts
     update_err_inj_cfg();
     mubi_assertion_controls();
+    // Random escalation
+    if (err_inj.security_escalation_err) begin
+      fork
+        security_escalation_inject();
+      join_none
+    end else begin
+      clear_escalate(0);
+      clear_escalate(1);
+      cfg.escalate_injected = 0;
+    end
     super.pre_start();
   endtask
 
@@ -203,6 +222,19 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         `DV_CHECK_RANDOMIZE_FATAL(this)
         update_err_inj_cfg();
         mubi_assertion_controls();
+
+        // Random escalation
+        disable security_escalation_inject;
+        if (err_inj.security_escalation_err) begin
+          fork
+            security_escalation_inject();
+          join_none
+        end else begin
+          clear_escalate(0);
+          clear_escalate(1);
+          cfg.escalate_injected = 0;
+        end
+
         dut_init();
       end
       cfg.set_test_phase(LcCtrlDutInitComplete);
@@ -238,7 +270,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
       // Randomly check for ready - but not when a non transition state
       // or an illegal state will be driven via the OTP
-      if ($urandom_range(0, 1)) begin
+      // or if we are randomly injecting escalate
+      if ($urandom_range(0, 1) && !err_inj.security_escalation_err) begin
         if (valid_state_for_trans(
                 lc_state
             ) && !err_inj.state_err && !err_inj.count_err && !err_inj.state_illegal_err &&
@@ -351,6 +384,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
       cfg.set_test_phase(LcCtrlPostTransition);
 
+      // Delay a few extra cycles if we are doing escalate injection
+      if (err_inj.security_escalation_err) begin
+        cfg.clk_rst_vif.wait_clks(security_escalation_err_inj_delay + 10);
+      end
+
       // Attempt a second transition post transition if enabled
       // verilog_format: off - avoid bad formatting
       if (err_inj.post_trans_err) begin
@@ -387,8 +425,10 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     // Make sure escalates and alert flags are cleared
-    clear_escalate(0);
-    clear_escalate(1);
+    if (!err_inj.security_escalation_err) begin
+      clear_escalate(0);
+      clear_escalate(1);
+    end
     fatal_prog_alert_received = 0;
     fatal_state_alert_received = 0;
     fatal_bus_integ_alert_received = 0;
@@ -551,6 +591,12 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       lc_cnt   = LcCnt0;
     end
 
+    if (err_inj.security_escalation_err && (security_escalation_err_inj_state == ScrapSt)) begin
+      // Force scrap state
+      lc_state = LcStScrap;
+      lc_cnt   = LcCnt24;
+    end
+
     cfg.lc_ctrl_vif.init(
         .lc_state(lc_state), .lc_cnt(lc_cnt),
         .otp_lc_data_i_valid(!err_inj.otp_lc_data_i_valid_err),
@@ -601,24 +647,14 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       csr_rd(ral.otp_vendor_test_status, val);
     end
 
-    fork
-      begin : transition_process
-        csr_wr(ral.transition_cmd, 'h01);
-        // Wait for status done or terminal errors
-        `DV_SPINWAIT(wait_status(trigger_alert, terminate_wait_status);)
-        // always on alert, set time delay to make sure alert triggered
-        // for at least for one  handshake cycle
-        if (trigger_alert) cfg.clk_rst_vif.wait_clks($urandom_range(50, 20));
-      end
-      begin : inject_escalate_process
-        if (err_inj.security_escalation_err) begin
-          security_escalation_inject();
-          cfg.clk_rst_vif.wait_clks($urandom_range(50, 100));
-          // Do not bother waiting for completion status
-          terminate_wait_status = 1;
-        end
-      end
-    join
+    ->cfg.transition_cmd_wr_ev;
+    csr_wr(ral.transition_cmd, 'h01);
+    // Wait for status done or terminal errors
+    `DV_SPINWAIT(wait_status(trigger_alert, cfg.escalate_injected);)
+    // always on alert, set time delay to make sure alert triggered
+    // for at least for one  handshake cycle
+    if (trigger_alert) cfg.clk_rst_vif.wait_clks($urandom_range(50, 20));
+
   endtask
 
   // Wait for status done or terminal errors
@@ -771,6 +807,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // Otherwise leave asserted
   protected virtual task send_escalate(int index, int assert_clocks = 0);
     // TODO - replace with calls to escalate agent when driver implemented
+    `uvm_info(`gfn, $sformatf("send_escalate: index=%0d assert_clocks=%0d", index, assert_clocks),
+              UVM_LOW)
+    cfg.escalate_injected = 1;
     unique case (index)
       0: begin
         cfg.m_esc_scrap_state0_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b10;
@@ -956,8 +995,31 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   // Security escalation injection task
   virtual task security_escalation_inject();
+    // Clear escalates
+    cfg.escalate_injected = 0;
+    clear_escalate(0);
+    clear_escalate(1);
+    // Wait for FSM to reach state we want to inject the error
+    `uvm_info(`gfn, $sformatf(
+              "security_escalation_inject: waiting for FSM state %s",
+              security_escalation_err_inj_state.name()
+              ), UVM_LOW)
+    wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state == security_escalation_err_inj_state);
+    // If IdleSt also wait for write to transition_cmd register
+    if (security_escalation_err_inj_state == IdleSt) @(cfg.transition_cmd_wr_ev);
+    // If TokenHashSt randomly wait for token_hash_ack_i
+    if (security_escalation_err_inj_state == TokenHashSt && $urandom_range(0, 1)) begin
+      wait(cfg.lc_ctrl_vif.token_hash_ack_i == 1);
+    end
+
+    `uvm_info(`gfn, $sformatf(
+              "security_escalation_inject: FSM state %s escalate after %0d cycles",
+              security_escalation_err_inj_state.name(),
+              security_escalation_err_inj_delay
+              ), UVM_LOW)
     cfg.clk_rst_vif.wait_clks(security_escalation_err_inj_delay);
     cfg.set_test_phase(LcCtrlRandomEscalate);
+    cfg.security_escalation_err_inj_state = security_escalation_err_inj_state;
     fork
       if (security_escalation_err_inj_channels[0]) send_escalate(0);
       if (security_escalation_err_inj_channels[1]) send_escalate(1);
