@@ -47,6 +47,9 @@ class alert_esc_agent extends dv_base_agent#(
     end
 
     super.build_phase(phase);
+    void'($value$plusargs("bypass_alert_ready_to_end_check=%0b",
+          cfg.bypass_alert_ready_to_end_check));
+
     // get alert_esc_if handle
     if (!uvm_config_db#(virtual alert_esc_if)::get(this, "", "vif", cfg.vif)) begin
       `uvm_fatal(`gfn, "failed to get alert_esc_if handle from uvm_config_db")

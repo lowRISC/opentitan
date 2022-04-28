@@ -495,7 +495,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     // - 20 cycles includes ack response and ack stable time.
     // - 10 is the max difference between alert clock and dut clock.
     int max_alert_handshake_cycles = 20 * 10;
-    if (cfg.list_of_alerts.size() > 0) begin
+
+    // Please only use `bypass_alert_ready_to_end_check` in top-level test.
+    // Because in top-level issuing an reset takes a large amount of simulation time.
+    // For IP level test, please set `exp_fatal_alert` in post_start() instead.
+    bit bypass_alert_ready_to_end_check;
+    void'($value$plusargs("bypass_alert_ready_to_end_check=%0b",
+          bypass_alert_ready_to_end_check));
+    if (cfg.list_of_alerts.size() > 0 && !bypass_alert_ready_to_end_check) begin
       int check_cycles = $urandom_range(max_alert_handshake_cycles,
                                         max_alert_handshake_cycles * 3);
 
