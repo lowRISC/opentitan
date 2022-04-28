@@ -248,10 +248,12 @@ class alert_monitor extends alert_esc_base_monitor;
 
   // end phase when no alert is triggered
   virtual task monitor_ready_to_end();
-    forever begin
-      @(cfg.vif.monitor_cb.alert_tx_final.alert_p);
-      ok_to_end = !cfg.vif.monitor_cb.alert_tx_final.alert_p &&
-                  cfg.vif.monitor_cb.alert_tx_final.alert_n;
+    if (!cfg.bypass_alert_ready_to_end_check) begin
+      forever begin
+        @(cfg.vif.monitor_cb.alert_tx_final.alert_p);
+        ok_to_end = !cfg.vif.monitor_cb.alert_tx_final.alert_p &&
+                    cfg.vif.monitor_cb.alert_tx_final.alert_n;
+      end
     end
   endtask
 
