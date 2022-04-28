@@ -223,6 +223,27 @@ name:
       reseed: 5
     }
 
+    {
+      name: "otbn_alu_bignum_mod_err"
+      uvm_test_seq: "otbn_alu_bignum_mod_err_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 5
+    }
+
+    {
+      name: "otbn_controller_ispr_rdata_err"
+      uvm_test_seq: "otbn_controller_ispr_rdata_err_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 5
+    }
+
+    {
+      name: "otbn_mac_bignum_acc_err"
+      uvm_test_seq: "otbn_mac_bignum_acc_err_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 5
+    }
+
     // This test runs several sequences back-to-back. Unlike otbn_multi, these
     // sequences can include imem or dmem error sequences. We shouldn't need
     // many seeds here because each test runs several operations.

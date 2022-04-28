@@ -16,3 +16,7 @@
 `include "otbn_zero_state_err_urnd_vseq.sv"
 `include "otbn_illegal_mem_acc_vseq.sv"
 `include "otbn_sw_errs_fatal_chk_vseq.sv"
+`include "otbn_intg_err_vseq.sv"
+`include "otbn_alu_bignum_mod_err_vseq.sv"
+`include "otbn_controller_ispr_rdata_err_vseq.sv"
+`include "otbn_mac_bignum_acc_err_vseq.sv"
