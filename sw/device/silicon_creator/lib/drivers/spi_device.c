@@ -355,7 +355,7 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
 /**
  * BFPT 20th Word
  * --------------
- * [31,  0]: Max (8S-8S-8S) (4D-4D-4D) (4S-4S-4S) speed 
+ * [31,  0]: Max (8S-8S-8S) (4D-4D-4D) (4S-4S-4S) speed
  *           (not supported, 0xffffffff)
  */
 #define BFPT_WORD_20(X) \
