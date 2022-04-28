@@ -135,8 +135,8 @@ def _parse_module_header_verible(generic_impl_filepath, module_name):
     parameters_list = header.find({"tag": "kFormalParameterList"})
     parameters = set()
     if parameters_list:
-        for parameter in parameters_list.iter_find_all(
-                {"tag": "kParamDeclaration"}):
+        for parameter in sorted(
+                parameters_list.iter_find_all({"tag": "kParamDeclaration"})):
             if parameter.find({"tag": "parameter"}):
                 parameter_id = parameter.find(
                     {"tag": ["SymbolIdentifier", "EscapedIdentifier"]})
