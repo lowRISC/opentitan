@@ -20,7 +20,7 @@ load(
 package(default_visibility = [
     # Public for visibility by "@raze__crate__version//" targets.
     #
-    # Prefer access through "//third_party/cargo", which limits external
+    # Prefer access through "//third_party/rust/crates", which limits external
     # visibility to explicit Cargo.toml dependencies.
     "//visibility:public",
 ])
