@@ -149,7 +149,7 @@ module spid_readbuffer #(
     end
   end
 
-  assign event_watermark_o = !watermark_crossed && watermark_cross ;
+  assign event_watermark_o = active && !watermark_crossed && watermark_cross ;
 
   ///////////////////
   // State Machine //
