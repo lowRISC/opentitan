@@ -194,6 +194,10 @@ typedef enum dif_sysrst_ctrl_input_change {
    * Flash write protect input signal low-to-high.
    */
   kDifSysrstCtrlInputFlashWriteProtectL2H = 1U << 14,
+  /**
+   * All input signal transitions.
+   */
+  kDifSysrstCtrlInputAll = ((1U << 15) - 1) & ~(1U << 7),
 } dif_sysrst_ctrl_input_change_t;
 
 /**
@@ -315,7 +319,7 @@ typedef enum dif_sysrst_ctrl_pin {
   /**
    * Flash write protect inout.
    */
-  kDifSysrstCtrlPinFlashWriteProtectInOut = 1U << 12,
+  kDifSysrstCtrlPinFlashWriteProtectInOut = 1U << 13,
 } dif_sysrst_ctrl_pin_t;
 
 /**
@@ -324,13 +328,9 @@ typedef enum dif_sysrst_ctrl_pin {
  */
 typedef struct dif_sysrst_ctrl_pin_config_t {
   /**
-   * The output pin whose override feature to configure.
-   */
-  dif_sysrst_ctrl_pin_t output_pin;
-  /**
    * The enablement of the output pin's override feature.
    */
-  dif_toggle_t output_override_enabled;
+  dif_toggle_t enabled;
   /**
    * Whether to allow overriding the output pin with a value of 0.
    */
@@ -364,6 +364,10 @@ typedef struct dif_sysrst_ctrl_pin_config_t {
  */
 typedef struct dif_sysrst_ctrl_ulp_wakeup_config_t {
   /**
+   * The enablement of the ULP wakeup feature.
+   */
+  dif_toggle_t enabled;
+  /**
    * The time to allow the AC Power present signal to stabilize before
    * reevaluating its value to decide whether it was activated.
    *
@@ -376,7 +380,7 @@ typedef struct dif_sysrst_ctrl_ulp_wakeup_config_t {
    *
    * Units: increments of 5us; [0, 2^16) represents [10, 200) milliseconds.
    */
-  uint16_t lib_open_debounce_time_threshold;
+  uint16_t lid_open_debounce_time_threshold;
   /**
    * The time to allow the Power Button signal to stabilize before reevaluating
    * its value to decide whether it was pressed.
@@ -416,28 +420,29 @@ dif_result_t dif_sysrst_ctrl_input_change_detect_configure(
  *
  * Note, only output (or inout) pins may be overriden, i.e., set to a specific
  * value. Attempting to configure the override feature for input pins will
- * return `kDifError`.
+ * return `kDifBadArg`.
  *
  * @param sysrst_ctrl A System Reset Controller handle.
+ * @param output_pin Output pin to configure.
  * @param config Output pin override configuration parameters.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sysrst_ctrl_output_pin_override_configure(
-    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_config_t config);
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t output_pin,
+    dif_sysrst_ctrl_pin_config_t config);
 
 /**
  * Configures a System Reset Controller's ultra-low-power (ULP) wakeup feature.
  *
  * @param sysrst_ctrl A System Reset Controller handle.
  * @param config Runtime configuration parameters.
- * @param enabled The enablement state to configure the ULP wakeup feature in.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sysrst_ctrl_ulp_wakeup_configure(
     const dif_sysrst_ctrl_t *sysrst_ctrl,
-    dif_sysrst_ctrl_ulp_wakeup_config_t config, dif_toggle_t enabled);
+    dif_sysrst_ctrl_ulp_wakeup_config_t config);
 
 /**
  * Sets the enablement state of a System Reset Controller's ultra-low-power

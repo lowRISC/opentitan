@@ -956,6 +956,7 @@ sw_lib_dif_sysrst_ctrl = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_dif_autogen_sysrst_ctrl,
+      sw_lib_dif_base,
     ],
   )
 )
@@ -965,6 +966,7 @@ test('dif_sysrst_ctrl_unittest', executable(
     sources: [
       'dif_sysrst_ctrl_unittest.cc',
       'autogen/dif_sysrst_ctrl_autogen_unittest.cc',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
       meson.project_source_root() / 'sw/device/lib/dif/dif_sysrst_ctrl.c',
       meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_sysrst_ctrl_autogen.c',
       hw_ip_sysrst_ctrl_reg_h,
