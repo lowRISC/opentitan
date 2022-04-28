@@ -4,22 +4,22 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
-import sys
-
-# Make vendored packages available in the search path.
-sys.path.append(os.path.join(os.path.dirname(__file__), 'vendor'))
-
 import re
 import shutil
+import sys
 
 import yaml
 from mako.template import Template
 
+# Make vendored packages available in the search path.
+sys.path.append(os.path.join(os.path.dirname(__file__), 'vendor'))
 
 try:
-    from yaml import CSafeLoader as YamlLoader, CSafeDumper as YamlDumper
+    from yaml import CSafeDumper as YamlDumper
+    from yaml import CSafeLoader as YamlLoader
 except ImportError:
-    from yaml import SafeLoader as YamlLoader, SafeDumper as YamlDumper
+    from yaml import SafeDumper as YamlDumper
+    from yaml import SafeLoader as YamlLoader
 
 
 def _split_vlnv(core_vlnv):
@@ -38,6 +38,7 @@ def _prim_cores(cores, prim_name=None):
     If prim_name is given, only primitives with the given name are returned.
     Otherwise, all primitives are returned, independent of their name.
     """
+
     def _filter_primitives(core):
         """ Filter a list of cores to find the primitives we're interested in
 
@@ -49,7 +50,7 @@ def _prim_cores(cores, prim_name=None):
         vlnv = _split_vlnv(core[0])
         if (vlnv['vendor'] == 'lowrisc' and
                 vlnv['library'].startswith('prim_') and
-            (prim_name is None or vlnv['name'] == prim_name)):
+                (prim_name is None or vlnv['name'] == prim_name)):
 
             return core
         return None
@@ -100,15 +101,18 @@ def _parse_module_header_verible(generic_impl_filepath, module_name):
     See _parse_module_header() for API details.
     """
 
-    from google_verible_verilog_syntax_py.verible_verilog_syntax import VeribleVerilogSyntax, PreOrderTreeIterator
+    from google_verible_verilog_syntax_py.verible_verilog_syntax import (
+        PreOrderTreeIterator, VeribleVerilogSyntax)
 
     parser = VeribleVerilogSyntax()
 
-    data = parser.parse_file(generic_impl_filepath, options={"skip_null": True})
+    data = parser.parse_file(generic_impl_filepath,
+                             options={"skip_null": True})
     if data.errors:
         for err in data.errors:
-            print(f'Verible: {err.phase} error in line {err.line} column {err.column}'
-                  + (': {err.message}' if err.message else '.'))
+            print(
+                f'Verible: {err.phase} error in line {err.line} column {err.column}' +
+                (': {err.message}' if err.message else '.'))
         # Intentionally not raising an exception here.
         # There are chances that Verible recovered from errors.
     if not data.tree:
@@ -131,11 +135,11 @@ def _parse_module_header_verible(generic_impl_filepath, module_name):
     parameters_list = header.find({"tag": "kFormalParameterList"})
     parameters = set()
     if parameters_list:
-        for parameter in parameters_list.iter_find_all({"tag":
-                                                        "kParamDeclaration"}):
+        for parameter in parameters_list.iter_find_all(
+                {"tag": "kParamDeclaration"}):
             if parameter.find({"tag": "parameter"}):
-                parameter_id = parameter.find({"tag": ["SymbolIdentifier",
-                                                       "EscapedIdentifier"]})
+                parameter_id = parameter.find(
+                    {"tag": ["SymbolIdentifier", "EscapedIdentifier"]})
                 parameters.add(parameter_id.text)
 
     ports = header.find({"tag": "kPortDeclarationList"})
@@ -143,8 +147,7 @@ def _parse_module_header_verible(generic_impl_filepath, module_name):
     return {
         'module_header': header.text,
         'package_import_declaration': '\n'.join([i.text for i in imports]),
-        'parameter_port_list':
-            parameters_list.text if parameters_list else '',
+        'parameter_port_list': parameters_list.text if parameters_list else '',
         'ports': ports.text if ports else '',
         'parameters': parameters,
         'parser': 'Verible'
@@ -179,9 +182,10 @@ def _parse_module_header_fallback(generic_impl_filepath, module_name):
         r'(?:\s|^)'
         r'(?P<module_header>'  # start: capture the whole module header
         r'module\s+'  # module_keyword
-        r'(?:(?:static|automatic)\s+)?'  # lifetime (optional)
-        + module_name +  # module_identifier
-        r'\s*(?P<package_import_declaration>(?:import\s+[^;]+;)+)?'  # package_import_declaration (optional, skipped)
+        r'(?:(?:static|automatic)\s+)?' +  # lifetime (optional)
+        module_name +  # module_identifier
+        # package_import_declaration (optional, skipped)
+        r'\s*(?P<package_import_declaration>(?:import\s+[^;]+;)+)?'
         r'\s*(?:#\s*\((?P<parameter_port_list>[^;]+)\))?'  # parameter_port_list (optional)
         r'\s*\(\s*(?P<ports>[^;]+)\s*\)'  # list_of_port_declarations or list_of_ports
         r'\s*;'  # trailing semicolon
@@ -209,7 +213,8 @@ def _parse_module_header_fallback(generic_impl_filepath, module_name):
         matches.group('ports').strip() or '',
         'parameters':
         _parse_parameter_port_list(parameter_port_list),
-        'parser': 'Fallback (regex)'
+        'parser':
+        'Fallback (regex)'
     }
 
 
@@ -217,9 +222,15 @@ def test_parse_parameter_port_list():
     assert _parse_parameter_port_list("parameter enum_t P") == {'P'}
     assert _parse_parameter_port_list("parameter integer P") == {'P'}
     assert _parse_parameter_port_list("parameter logic [W-1:0] P") == {'P'}
-    assert _parse_parameter_port_list("parameter logic [W-1:0] P = '0") == {'P'}
-    assert _parse_parameter_port_list("parameter logic [W-1:0] P = 'b0") == {'P'}
-    assert _parse_parameter_port_list("parameter logic [W-1:0] P = 2'd0") == {'P'}
+    assert _parse_parameter_port_list("parameter logic [W-1:0] P = '0") == {
+        'P'
+    }
+    assert _parse_parameter_port_list("parameter logic [W-1:0] P = 'b0") == {
+        'P'
+    }
+    assert _parse_parameter_port_list("parameter logic [W-1:0] P = 2'd0") == {
+        'P'
+    }
 
 
 def _parse_parameter_port_list(parameter_port_list):
@@ -267,8 +278,9 @@ def _parse_module_header(generic_impl_filepath, module_name):
         return _parse_module_header_verible(generic_impl_filepath, module_name)
     except Exception as e:
         print(e)
-        print(f"Verible parser failed, using regex fallback instead.")
-        return _parse_module_header_fallback(generic_impl_filepath, module_name)
+        print("Verible parser failed, using regex fallback instead.")
+        return _parse_module_header_fallback(generic_impl_filepath,
+                                             module_name)
 
 
 def _check_gapi(gapi):
@@ -331,9 +343,8 @@ def _create_instances(prim_name, techlibs, parameters):
 
     # Sort list of technology libraries to produce a stable ordering in the
     # generated wrapper.
-    techlibs_wo_generic = sorted([
-        techlib for techlib in techlibs if techlib != 'generic'
-    ])
+    techlibs_wo_generic = sorted(
+        [techlib for techlib in techlibs if techlib != 'generic'])
     techlibs_generic_last = techlibs_wo_generic + ['generic']
 
     if not techlibs_wo_generic:
@@ -454,10 +465,7 @@ def _generate_abstract_impl(gapi):
         # to be used everywhere, which is annoying syntax-wise on Python <3.7,
         # where native dicts are not sorted.
         f.write('CAPI=2:\n')
-        yaml.dump(abstract_prim_core,
-                  f,
-                  encoding="utf-8",
-                  Dumper=YamlDumper)
+        yaml.dump(abstract_prim_core, f, encoding="utf-8", Dumper=YamlDumper)
     print("Core file written to %s" % (abstract_prim_core_filepath, ))
 
 
