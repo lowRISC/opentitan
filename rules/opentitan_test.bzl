@@ -55,6 +55,7 @@ def dv_params(
     required_args = [
         "-i",
         "chip_sw_{name}",
+        "--",
     ]
     required_data = [
         dvsim_config,
@@ -63,7 +64,7 @@ def dv_params(
     ]
     required_tags = ["dv"]
     kwargs.update(
-        args = required_args + args,
+        args = args + required_args,
         data = required_data + data,
         local = local,
         otp = otp,
