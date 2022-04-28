@@ -45,8 +45,6 @@ module spid_readsram
   input clk_i,      // SCK
   input rst_ni,     // CSb
 
-  input spi_mode_e spi_mode_i,
-
   input sram_read_req_i, // from FSM
 
   // addr_latched_i
@@ -104,7 +102,7 @@ module spid_readsram
   ////////////
 
   // mailbox_hit: it compares the next_address with mailbox space.
-  logic permitted, mailbox_hit;
+  logic mailbox_hit;
 
   // State Machine output
 
@@ -151,27 +149,6 @@ module spid_readsram
   // Datapath //
   //////////////
 
-  // Permitted operation
-  // FlashMode:   all requests (sfdp, mailbox, readbuffer)
-  // PassThrough: sfdp and mailbox
-  always_comb begin : permitted_logic
-    permitted = 1'b 0;
-
-    unique case (spi_mode_i)
-      FlashMode: begin
-        permitted = 1'b 1;
-      end
-
-      PassThrough: begin
-          permitted = (sfdp_hit_i || mailbox_hit);
-      end
-
-      default: begin
-        permitted = 1'b 0;
-      end
-    endcase
-  end
-
   // Mailbox hit detection
   // mailbox_hit_i only checks current_address_i.
   // SRAM logic sends request to the next address based on the condition.
@@ -189,8 +166,6 @@ module spid_readsram
     if (!rst_ni) sram_latched <= 1'b 0;
     else if (sram_req) sram_latched <= 1'b 1;
   end
-  `ASSERT(NotPermitted_A, sram_req |-> permitted)
-  `ASSERT(NoLatchIfNotPermitted_A, !permitted |=> !sram_latched)
 
   logic [1:0] strb;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -266,20 +241,14 @@ module spid_readsram
       StIdle: begin
         addr_sel = AddrInput;
 
-        // Send request only when it is permitted. Refer the logic to check
-        // the conditions.
-        if (sram_read_req_i && permitted) begin
+        if (sram_read_req_i) begin
           sram_req = 1'b 1;
         end
 
         if ((sram_read_req_i || sram_latched) && strb_set) begin
-          // Move to StActive if the address is not permitted.
-          // In this case, FSM waits in StActive until the address hits the
-          // permitted area.
-          // This is to cover the boundary crossing from the readbuffer to the
-          // mailbox.
-          if (permitted) st_d = StPush;
-          else           st_d = StActive;
+          // Regardless of permitted or not, FSM moves to StPush.
+          // If not permitted, FSM will psh garbage data to the FIFO
+          st_d = StPush;
         end else begin
           st_d = StIdle;
         end
@@ -306,19 +275,7 @@ module spid_readsram
         // Assume the SRAM logic is faster than update of current_address_i.
         // TODO: Put assertion.
         addr_sel = AddrContinuous; // Pointing to next_address to check mailbox hit
-        if (!sram_fifo_full && permitted) begin
-          // If the address is not permitted, the logic does not send request to SRAM.
-          // Case should be considered:
-          // 1. From Readbuffer to the mailbox space
-          // 2. From mailbox space to the read buffer
-          //
-          // 1. Since, the readbuffer the logic does not send requests. The
-          //    FSM directly moves to StActive state and waits the permitted.
-          //    If the address crosses the readbuffer, it then sends the SRAM
-          //    request and push to the FIFO.
-          // 2. If it hits mailbox first, then the state waits here to push
-          //    more bytes into the FIFO. Then when the next_address points to
-          //    the readbuffer, the FSM waits here until CSb release.
+        if (!sram_fifo_full) begin
           st_d = StPush;
 
           sram_req = 1'b 1;
@@ -410,16 +367,7 @@ module spid_readsram
 
   // in fifo_pop, FIFO should not be empty for permitted operations.
   `ASSERT(FifoNotEmpty_A,
-          fifo_rready_i && permitted |-> unused_fifo_depth != 0)
-
-  // fifo_rready_i asserts even when FIFO is empty (!permitted case).
-  // So, make sure that the FIFO depth won't be changed in this case.
-  `ASSERT(FifoDepthStayZero_A,
-          fifo_rready_i && ~|unused_fifo_depth |=> unused_fifo_depth == 0)
-
-  // fifo pop, when depth is 0, happens ONLY WHEN the operation is not permitted
-  `ASSERT(FifoPopWhenEmtpy_A,
-          fifo_rready_i && ~|unused_fifo_depth |-> !permitted)
+          fifo_rready_i |-> unused_fifo_depth != 0)
 
   // strb_set is asserted together with sram_req or follows the req
   `ASSUME(ReqStrbRelation_M, sram_read_req_i |-> ##[0:2] addr_latched_i)
