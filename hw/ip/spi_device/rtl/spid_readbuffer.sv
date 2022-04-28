@@ -124,7 +124,7 @@ module spid_readbuffer #(
   logic flip_q;
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) flip_q <= 1'b 0;
-    else             flip_q <= flip;
+    else if (active) flip_q <= flip;
   end
 
   assign event_flip_o = active && flip && !flip_q;
