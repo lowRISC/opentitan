@@ -314,12 +314,68 @@ module tb;
     read_data.delete();
     expected_data.delete();
 
+    // Make sure to trigger the flip event (for the buffer test)
+    spiflash_read(
+      tb_sif,
+      8'h 6B,         // opcode
+      32'h 0000_07FF, // address (at the end of a buffer)
+      1'b 0,          // address mode
+      3,              // dummy beat (3 cycles) : non power-of-2
+      4,              // Read 4 bytes
+      IoQuad,         // io_mode
+      read_data
+    );
+    read_data.delete();
 
     //=========================================================================
     // Issue Read Cmd: Fast Read Buffer Threshold
+    //
+    // Threshold is set to 524 Byte per buffer.
+    // Issue from 512 -> 544 to test the threshold event
+    //
+    // It is better to create scoreboard to check the threshold event as the
+    // signal is not a persistent signal. It needs overhaul of this pre_dv.
+    // I don't think it is worth to do that as the full SPIFlash/ Passthrough
+    // test environment is imminent. I've checked the event is triggered in
+    // the waveform.
+    $display("Sending a Read access reaching threshold");
+    spiflash_read(
+      tb_sif,
+      8'h 0B,
+      32'h 0000_0200, // from 512B
+      1'b 0,
+      8,
+      32,             // 32 Byte read
+      IoSingle,
+      read_data
+    );
+
+    expected_data = get_read_data('h 200, 32);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+
     //=========================================================================
     // Issue Read Cmd: Fast Read Buffer Flip
+    //
+    // Same to the Buffer Threshold test, checked in the waveform for the flip
+    // event.
+    $display("Sending a read access crossing a buffer, creating a flip event.");
+    spiflash_read(
+      tb_sif,
+      8'h 6B,
+      32'h 0000_03FF,
+      1'b 0,
+      3,
+      4,
+      IoQuad,
+      read_data
+    );
 
+    read_data.delete();
 
     // Switch PassThrough mode
     ->flashmode_done;
@@ -550,6 +606,10 @@ module tb;
     end
 
     // Configure
+
+    // Readbuffer config
+    //   threshold: SramDw granularity. 8bit (1024 Bytes)
+    cfg_readbuf_threshold = 8'h 83;
 
     #100ns ->init_done;
 
