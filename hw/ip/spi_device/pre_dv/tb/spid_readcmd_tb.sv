@@ -332,7 +332,8 @@ module tb;
     $display("Sending Fast Read Command to Mailbox");
     mbx_offset = $urandom_range(0, MailboxSpace -1);
     // Check mbx_offset and determine size
-    mbx_reqsize = $urandom_range(1, MailboxSpace - mbx_offset);
+    mbx_reqsize = $urandom_range(1, 255);
+    //mbx_reqsize = $urandom_range(1, MailboxSpace - mbx_offset);
     spiflash_read(
       tb_sif,
       8'h 0B,         // opcode
@@ -403,6 +404,34 @@ module tb;
     if (match == 1'b 0) test_passed = 1'b 0;
     read_data.delete();
     expected_data.delete();
+
+    // 2. Mailbox -> Read buffer
+    $display("Sending Fast Read to Mailbox space crosses the boundary");
+    mbx_offset  = $urandom_range(0, 32);
+    mbx_reqsize = $urandom_range(0, 32);
+    spiflash_read(
+      tb_sif,
+      8'h 0B,
+      MailboxHostAddr + MailboxSpace - mbx_offset,
+      1'b 1,
+      8,
+      mbx_offset + mbx_reqsize,
+      IoSingle,
+      read_data
+    );
+
+    // Drop the end part, Compare MBX only
+    read_data = read_data[0:mbx_offset-1];
+
+    expected_data = get_read_data({SramMailboxIdx, 2'b 00}
+                                  + (MailboxSpace - mbx_offset), mbx_offset);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+    // TODO: Check if flip/ threshold event happens.
 
     // Complete the simulation
     if (test_passed) begin
