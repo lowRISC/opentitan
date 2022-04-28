@@ -11,6 +11,7 @@ use anyhow::{bail, Result};
 use serde::Deserialize;
 use std::convert::{TryFrom, TryInto};
 use std::iter::IntoIterator;
+use std::path::Path;
 use thiserror::Error;
 
 use zerocopy::AsBytes;
@@ -85,6 +86,10 @@ macro_rules! manifest_def {
 }
 
 impl ManifestDef {
+    pub fn read_from_file(path: &Path) -> Result<ManifestDef> {
+        Ok(deser_hjson::from_str(&std::fs::read_to_string(path)?)?)
+    }
+
     pub fn overwrite_fields(&mut self, other: ManifestDef) {
         self.overwrite(other)
     }
