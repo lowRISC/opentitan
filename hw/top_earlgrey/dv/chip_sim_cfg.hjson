@@ -246,7 +246,7 @@
       // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
       name: "chip_csr_bit_bash"
       // Don't test over 512 randomly picked CSRs at a time.
-      run_opts: ["+test_timeout_ns=120000000", "+num_test_csrs=512"]
+      run_opts: ["+test_timeout_ns=120_000_000", "+num_test_csrs=512"]
     }
     {
       name: chip_sw_example_flash
@@ -310,6 +310,7 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=80_000_000"]
       reseed: 20
     }
     {
@@ -317,7 +318,7 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=80000000", "+use_otp_image=LcStRma",
+      run_opts: ["+sw_test_timeout_ns=80_000_000", "+use_otp_image=LcStRma",
                  "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1"]
       reseed: 5
     }
@@ -326,7 +327,7 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=80000000", "+use_otp_image=LcStRma",
+      run_opts: ["+sw_test_timeout_ns=80_000_000", "+use_otp_image=LcStRma",
                  "+ext_clk_type=ExtClkLowSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
       reseed: 5
     }
@@ -340,7 +341,7 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=80000000", "+use_otp_image=LcStRma",
+      run_opts: ["+sw_test_timeout_ns=80_000_000", "+use_otp_image=LcStRma",
                  "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
       reseed: 5
     }
@@ -361,7 +362,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/flash_ctrl_ops_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=7000000"]
+      run_opts: ["+sw_test_timeout_ns=7000_000"]
     }
     {
       name: chip_sw_flash_ctrl_lc_rw_en
@@ -386,7 +387,7 @@
       uvm_test_seq: chip_sw_flash_rma_unlocked_vseq
       sw_images: ["sw/device/tests/flash_rma_unlocked_test:0"]
       en_run_modes: ["sw_test_mode_common"]
-      run_opts: ["+sw_test_timeout_ns=200000000"]
+      run_opts: ["+sw_test_timeout_ns=200_000_000"]
     }
     {
       name: chip_sw_flash_ctrl_clock_freqs
