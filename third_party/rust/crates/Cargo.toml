@@ -55,7 +55,7 @@ zerocopy = "0.5.0"
 safe-ftdi = { git = "https://github.com/cr1901/safe-ftdi" }
 
 [workspace.metadata.raze]
-workspace_path = "//third_party/cargo"
+workspace_path = "//third_party/rust/crates"
 experimental_api = true
 package_aliases_dir = "."
 genmode = "Remote"
@@ -67,6 +67,6 @@ targets = [
 [package.metadata.raze.crates.libudev-sys.'0.1.4']
 gen_buildrs = true
 patches = [
-    "@//third_party/cargo/patches:libudev-sys-0.1.4.patch"
+    "@//third_party/rust/crates/patches:libudev-sys-0.1.4.patch"
 ]
 patch_args = ["-p1"]
