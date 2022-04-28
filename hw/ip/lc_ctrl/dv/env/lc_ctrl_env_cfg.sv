@@ -50,8 +50,11 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
 
   // Token mux error inject FSM state
   fsm_state_e token_mux_ctrl_redun_err_inj_state;
-
-
+  // Security escalation error injection state
+  fsm_state_e security_escalation_err_inj_state;
+  // ecscalate has been injected
+  bit escalate_injected = 0;
+  event transition_cmd_wr_ev;
 
   `uvm_object_utils_begin(lc_ctrl_env_cfg)
   `uvm_object_utils_end

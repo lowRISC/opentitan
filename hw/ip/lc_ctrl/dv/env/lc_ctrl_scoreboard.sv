@@ -84,8 +84,18 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
           exp_lc_o.lc_creator_seed_sw_rw_en_o = ~cfg.otp_secrets_valid;
         end
 
-        ->check_lc_output_ev;
-        check_lc_outputs(exp_lc_o, {$sformatf("Called from line: %0d, ", `__LINE__), err_msg});
+        if (cfg.escalate_injected) begin
+          exp_lc_o = EXP_LC_OUTPUTS[int'(EscalateSt)];
+        end
+
+        fork
+          begin
+            // Delay a some of cycles to allow escalate to be recognised
+            if (cfg.escalate_injected) cfg.clk_rst_vif.wait_clks(5);
+            ->check_lc_output_ev;
+            check_lc_outputs(exp_lc_o, {$sformatf("Called from line: %0d, ", `__LINE__), err_msg});
+          end
+        join_none
 
         if (cfg.err_inj.state_err || cfg.err_inj.count_err ||
             cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err ||
@@ -305,6 +315,15 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
                           .value(predict_otp_vendor_test_status()), .kind(UVM_PREDICT_READ)))
         end
 
+        "hw_rev": begin
+          `DV_CHECK_FATAL(
+              ral.hw_rev.chip_rev.predict(
+              .value(LcCtrlChipRev[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]), .kind(UVM_PREDICT_READ)))
+          `DV_CHECK_FATAL(
+              ral.hw_rev.chip_gen.predict(
+              .value(LcCtrlChipGen[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]), .kind(UVM_PREDICT_READ)))
+        end
+
         default: begin
           // `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
         end
@@ -318,7 +337,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
             "device_id_3",  "device_id_4", "device_id_5",
             "device_id_6",  "device_id_7", "manuf_state_0",  "manuf_state_1", "manuf_state_2",
             "manuf_state_3",  "manuf_state_4", "manuf_state_5",
-            "manuf_state_6",  "manuf_state_7", "otp_vendor_test_status"
+            "manuf_state_6",  "manuf_state_7", "otp_vendor_test_status", "hw_rev"
           })
         do_read_check = 1;
 
@@ -342,18 +361,21 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
 
-      if (cfg.test_phase inside {[LcCtrlRandomEscalate : LcCtrlPostStart]}) begin
-        if (cfg.err_inj.security_escalation_err) begin
-          // Expect escalate to be asserted
-          exp.lc_escalate_en_o = lc_ctrl_pkg::On;
-        end
+      if (cfg.err_inj.security_escalation_err) begin
+        // Expect escalate to be asserted
+        exp.lc_escalate_en_o = lc_ctrl_pkg::On;
       end
 
       // when lc successfully req a transition, all outputs are turned off.
       if (ral.status.transition_successful.get()) begin
-        check_lc_outputs(exp, $sformatf("Called from line: %0d", `__LINE__));
+        fork
+          begin
+            // Wait for escalate to be recognise
+            if (cfg.err_inj.security_escalation_err) cfg.clk_rst_vif.wait_clks(5);
+            check_lc_outputs(exp, $sformatf("Called from line: %0d", `__LINE__));
+          end
+        join_none
       end
-
     end
   endtask
 
@@ -413,6 +435,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
             ))
       end
     endcase
+
+    if (cfg.escalate_injected) lc_state_single_exp = DecLcStEscalate;
 
     // repeat state to fill the word for hardness
     lc_state_exp = {DecLcStateNumRep{lc_state_single_exp}};
@@ -514,7 +538,9 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     if ((LcStateIn inside {LC_CTRL_OTP_TEST_REG_ENABLED_STATES}) &&
         (LcCntIn inside {LC_CTRL_OTP_TEST_REG_ENABLED_COUNTS}) &&
         (cfg.test_phase < LcCtrlPostTransition) &&
-        !cfg.err_inj.otp_secrets_valid_mubi_err) begin
+        !cfg.err_inj.otp_secrets_valid_mubi_err &&
+        !cfg.escalate_injected
+        ) begin
       return cfg.otp_vendor_test_status;
     end else return 0;
   endfunction
