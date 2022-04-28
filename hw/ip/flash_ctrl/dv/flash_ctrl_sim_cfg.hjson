@@ -34,20 +34,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"],
 
-  // TODO, #11245. Remove this when the VCS issue is fixed
-  build_modes: [
-    {
-      name: vcs_ip_build_opts
-      build_opts: ["-xprop=mmsopt"]
-    }
-    {
-      name: xcelium_ip_build_opts
-    }
-  ]
-
-  en_build_modes: ["{tool}_crypto_dpi_prince_build_opts",
-                   "{tool}_ip_build_opts"]
-
+  en_build_modes: ["{tool}_crypto_dpi_prince_build_opts"]
   // Flash references pwrmgr directly, need to reference the top version
   overrides: [
     {
