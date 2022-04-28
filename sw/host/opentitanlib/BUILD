@@ -19,6 +19,7 @@ rust_library(
         "src/backend/ti50emulator.rs",
         "src/backend/ultradebug.rs",
         "src/backend/verilator.rs",
+        "src/bootstrap/eeprom.rs",
         "src/bootstrap/legacy.rs",
         "src/bootstrap/mod.rs",
         "src/bootstrap/primitive.rs",
