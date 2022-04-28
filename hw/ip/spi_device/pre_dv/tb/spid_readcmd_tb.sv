@@ -379,6 +379,31 @@ module tb;
     //=========================================================================
     // Issue Read Cmd: Fast Read Mailbox Boundary Crossing
 
+    // 1. Read buffer -> Mailbox
+    $display("Sending Fast Read to Read Buffer that crosses Passthrough");
+    mbx_offset = $urandom_range(0, 32);
+    mbx_reqsize = $urandom_range(0, 32);
+    spiflash_read(
+      tb_sif,
+      8'h 0B,
+      MailboxHostAddr - mbx_offset,
+      1'b 1,
+      8,
+      mbx_offset + mbx_reqsize,
+      IoSingle,
+      read_data
+    );
+
+    // Drop first part in readbuffer, Compare MBX only
+    read_data = read_data[mbx_offset:read_data.size()];
+
+    expected_data = get_read_data({SramMailboxIdx, 2'b 00}, mbx_reqsize);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
     // Complete the simulation
     if (test_passed) begin
       $display("TEST PASSED CHECKS");
