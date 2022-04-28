@@ -63,7 +63,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task pre_start();
     `uvm_create_on(callback_vseq, p_sequencer);
-    //otp_model();  // Start OTP Model
+    otp_model();  // Start OTP Model
     super.pre_start();
   endtask : pre_start
 
@@ -455,38 +455,60 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask : lc_ctrl_if_rst
 
   // Simple Model For The OTP Key Seeds
+  // Communicates with the TB via the flash_ctrl_vif
   virtual task otp_model();
 
-    `uvm_info(`gfn, "Starting OTP Model", UVM_LOW)
+    `uvm_info(`gfn, "Starting OTP Model ...", UVM_LOW)
+
+    // Initial Values
+    cfg.flash_ctrl_vif.otp_rsp.addr_ack   = 1'b0;
+    cfg.flash_ctrl_vif.otp_rsp.data_ack   = 1'b0;
+    cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b0;
+    cfg.flash_ctrl_vif.otp_rsp.key        = '0;
+    cfg.flash_ctrl_vif.otp_rsp.rand_key   = '0;
+
+    // Note 'some values' appear in both branches of this fork, this is OK because the
+    // branches never run together by design.
+    // The order is always 'addr' followed by 'data'.
 
     fork
-      forever begin
+      forever begin  // addr
         @(posedge cfg.clk_rst_vif.rst_n);
         @(posedge cfg.flash_ctrl_vif.otp_req.addr_req);
-        otp_addr_key                          = {$urandom, $urandom, $urandom, $urandom};
-        otp_addr_rand_key                     = {$urandom, $urandom, $urandom, $urandom};
-        cfg.flash_ctrl_vif.otp_rsp.key        = otp_addr_key;
-        cfg.flash_ctrl_vif.otp_rsp.rand_key   = otp_addr_rand_key;
+        otp_addr_key = {$urandom, $urandom, $urandom, $urandom};
+        otp_addr_rand_key = {$urandom, $urandom, $urandom, $urandom};
+        `uvm_info(`gfn, $sformatf("OTP Addr Key Applied to DUT : otp_addr_key : %0x",
+          otp_addr_key), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("OTP Addr Rand Key Applied to DUT : otp_addr_rand_key : %0x",
+          otp_addr_rand_key), UVM_MEDIUM)
+        cfg.flash_ctrl_vif.otp_rsp.key = otp_addr_key;
+        cfg.flash_ctrl_vif.otp_rsp.rand_key = otp_addr_rand_key;
         cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b1;
-        #1ns;
+        #1ns;  // Positive Hold
         cfg.flash_ctrl_vif.otp_rsp.addr_ack = 1'b1;
         @(negedge cfg.flash_ctrl_vif.otp_req.addr_req);
-        #1ns;
+        #1ns;  // Positive Hold
         cfg.flash_ctrl_vif.otp_rsp.addr_ack = 1'b0;
+        cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b0;
       end
-      forever begin
+      forever begin  // data
         @(posedge cfg.clk_rst_vif.rst_n);
         @(posedge cfg.flash_ctrl_vif.otp_req.data_req);
-        otp_data_key                          = {$urandom, $urandom, $urandom, $urandom};
-        otp_data_rand_key                     = {$urandom, $urandom, $urandom, $urandom};
-        cfg.flash_ctrl_vif.otp_rsp.key        = otp_data_key;
-        cfg.flash_ctrl_vif.otp_rsp.rand_key   = otp_data_rand_key;
+        otp_data_key = {$urandom, $urandom, $urandom, $urandom};
+        otp_data_rand_key = {$urandom, $urandom, $urandom, $urandom};
+        cfg.flash_ctrl_vif.otp_rsp.key = otp_data_key;
+        cfg.flash_ctrl_vif.otp_rsp.rand_key = otp_data_rand_key;
+        `uvm_info(`gfn, $sformatf("OTP Data Key Applied to DUT : otp_data_key : %0x",
+          otp_data_key), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("OTP Data Rand Key Applied to DUT : otp_data_rand_key : %0x",
+          otp_data_rand_key), UVM_MEDIUM)
         cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b1;
-        #1ns;
+        #1ns;  // Positive Hold
         cfg.flash_ctrl_vif.otp_rsp.data_ack = 1'b1;
         @(negedge cfg.flash_ctrl_vif.otp_req.data_req);
-        #1ns;
+        #1ns;  // Positive Hold
         cfg.flash_ctrl_vif.otp_rsp.data_ack = 1'b0;
+        cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b0;
       end
     join_none
 
