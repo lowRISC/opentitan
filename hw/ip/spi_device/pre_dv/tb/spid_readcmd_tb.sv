@@ -363,6 +363,10 @@ module tb;
     //
     // Same to the Buffer Threshold test, checked in the waveform for the flip
     // event.
+    // This won't trigger the flip event. The reason is, flip checks the upper
+    // read address with the expected read address. In above quad test, the
+    // page already reached to 'h 800 (page 2). So, the address triggers the
+    // flip event is in 'h C00:'hFFF.
     $display("Sending a read access crossing a buffer, creating a flip event.");
     spiflash_read(
       tb_sif,
@@ -376,6 +380,22 @@ module tb;
     );
 
     read_data.delete();
+    // assert (!event_flip)
+
+    // Issue the correct read address
+    $display("Sending a correct read access crossing the buffer");
+    spiflash_read(
+      tb_sif,
+      8'h 6B,
+      32'h 0000_0CFF,
+      1'b 0,
+      3,
+      4,
+      IoQuad,
+      read_data
+    );
+    read_data.delete();
+    // assert (event_flip)
 
     // Switch PassThrough mode
     ->flashmode_done;
