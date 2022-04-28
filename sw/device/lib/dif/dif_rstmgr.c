@@ -9,6 +9,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_base.h"
 
 #include "rstmgr_regs.h"  // Generated.
@@ -377,8 +378,8 @@ dif_result_t dif_rstmgr_software_device_reset(const dif_rstmgr_t *handle) {
     return kDifBadArg;
   }
 
-  // TODO, convert to MultiBitBool when available
-  mmio_region_write32(handle->base_addr, RSTMGR_RESET_REQ_REG_OFFSET, 0xa);
+  mmio_region_write32(handle->base_addr, RSTMGR_RESET_REQ_REG_OFFSET,
+                      kMultiBitBool4True);
 
   return kDifOk;
 }
