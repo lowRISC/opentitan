@@ -40,6 +40,9 @@ module tb;
   assign lc_ctrl_if.otp_vendor_test_ctrl_o = otp_vendor_test_ctrl;
   assign otp_vendor_test_status = lc_ctrl_if.otp_vendor_test_status_i;
 
+  // HW revision
+  lc_hw_rev_t hw_rev_o;
+
   // interfaces
   clk_rst_if clk_rst_if (
     .clk  (clk),
@@ -95,7 +98,9 @@ module tb;
     // Random netlist constants
     .RndCnstLcKeymgrDivInvalid(RndCnstLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcKeymgrDivTestDevRma),
-    .RndCnstLcKeymgrDivProduction(RndCnstLcKeymgrDivProduction)
+    .RndCnstLcKeymgrDivProduction(RndCnstLcKeymgrDivProduction),
+    .ChipGen(LcCtrlChipGen[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]),
+    .ChipRev(LcCtrlChipRev[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0])
   ) dut (
     .clk_i (clk),
     .rst_ni(rst_n),
@@ -158,7 +163,7 @@ module tb;
     .otp_device_id_i(lc_ctrl_if.otp_device_id_i),
 
     .otp_manuf_state_i(lc_ctrl_if.otp_manuf_state_i),
-    .hw_rev_o()
+    .hw_rev_o(hw_rev_o)
   );
 
   //
@@ -229,6 +234,14 @@ module tb;
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
+
+  // Assertions
+  // HW Revision
+  `ASSERT(HWChipGen_A, hw_rev_o.chip_gen == LcCtrlChipGen[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0],
+          clk, ~rst_n)
+  `ASSERT(HWChipRev_A, hw_rev_o.chip_rev == LcCtrlChipRev[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0],
+          clk, ~rst_n)
+
 
   // Assertion controls
   `DV_ASSERT_CTRL("OtpProgH_DataStableWhenBidirectionalAndReq_A",

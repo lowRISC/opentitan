@@ -43,6 +43,10 @@ package lc_ctrl_env_pkg;
   // KMAC FSM state width
   parameter uint KMAC_FSM_WIDTH = 8;
 
+  // Revision registers
+  parameter uint LcCtrlChipGen = `BUILD_SEED;
+  parameter uint LcCtrlChipRev = {LcCtrlChipGen[30:0], (LcCtrlChipGen[31] ^ LcCtrlChipGen[30])};
+
   typedef struct packed {
     lc_ctrl_pkg::lc_tx_t lc_dft_en_o;
     lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_o;
