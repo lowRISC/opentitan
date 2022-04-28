@@ -499,6 +499,13 @@ module spi_readcmd
     else if (sram_req && mailbox_en_i && cfg_intercept_en_mbx_i
             && addr_in_mailbox) begin
       mailbox_assumed_o <= 1'b 1;
+    end else if (mailbox_en_i && cfg_intercept_en_mbx_i
+                && addr_in_mailbox && (bitcnt == 3'h 0)) begin
+      // Keep checking if the next byte falls into the mailbox region
+      mailbox_assumed_o <= 1'b 1;
+    end else if (!addr_in_mailbox && (bitcnt == 3'h 0)) begin
+      // At every byte, Check the address goes out of mailbox region.
+      mailbox_assumed_o <= 1'b 0;
     end
   end
   //- END:   SRAM Datapath ----------------------------------------------------
@@ -711,8 +718,6 @@ module spi_readcmd
   ) u_readsram (
     .clk_i,
     .rst_ni,
-
-    .spi_mode_i,
 
     .sram_read_req_i   (sram_req),
     .addr_latched_i    (addr_latched),
