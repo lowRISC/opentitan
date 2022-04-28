@@ -231,6 +231,14 @@ impl SpiFlash {
         Ok(())
     }
 
+    /// Erase the entire EEPROM via the CHIP_ERASE opcode.
+    pub fn chip_erase(&self, spi: &dyn Target) -> Result<()> {
+        Self::set_write_enable(spi)?;
+        spi.run_transaction(&mut [Transfer::Write(&[Self::CHIP_ERASE])])?;
+        Self::wait_for_busy_clear(spi)?;
+        Ok(())
+    }
+
     /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
     /// The address and length must be sector aligned.
     pub fn erase(&self, spi: &dyn Target, address: u32, length: u32) -> Result<()> {
@@ -309,6 +317,13 @@ impl SpiFlash {
             remain -= chunk;
             progress(address, chunk as u32);
         }
+        Ok(())
+    }
+
+    /// Send the software reset sequence to the `spi` target.
+    pub fn chip_reset(spi: &dyn Target) -> Result<()> {
+        spi.run_transaction(&mut [Transfer::Write(&[Self::RESET_ENABLE])])?;
+        spi.run_transaction(&mut [Transfer::Write(&[Self::RESET])])?;
         Ok(())
     }
 }

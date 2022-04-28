@@ -18,6 +18,7 @@ use crate::io::spi::SpiParams;
 use crate::io::uart::UartParams;
 use crate::transport::Capability;
 
+mod eeprom;
 mod legacy;
 mod primitive;
 mod rescue;
@@ -133,9 +134,7 @@ impl<'a> Bootstrap<'a> {
             BootstrapProtocol::Primitive => Box::new(primitive::Primitive::new(&options)),
             BootstrapProtocol::Legacy => Box::new(legacy::Legacy::new(&options)),
             BootstrapProtocol::Rescue => Box::new(rescue::Rescue::new(&options)),
-            BootstrapProtocol::Eeprom => {
-                unimplemented!();
-            }
+            BootstrapProtocol::Eeprom => Box::new(eeprom::Eeprom::new()),
             BootstrapProtocol::Emulator => {
                 // Not intended to be implemented by this struct.
                 unimplemented!();
