@@ -229,10 +229,12 @@ interface otbn_trace_if
 
   assign ispr_write[IsprMod] = |u_otbn_alu_bignum.mod_wr_en & ~ispr_init;
 
-  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_mod_words
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_mod_and_acc_words
     assign ispr_write_data[IsprMod][i_word*32+:32] =
-      u_otbn_alu_bignum.mod_wr_en[i_word] ? u_otbn_alu_bignum.mod_d[i_word*32+:32] :
-                                            u_otbn_alu_bignum.mod_q[i_word*32+:32];
+      u_otbn_alu_bignum.mod_wr_en[i_word] ? u_otbn_alu_bignum.mod_intg_d[i_word*39+:32] :
+                                            u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
+    assign ispr_read_data[IsprMod][i_word*32+:32] = u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
+    assign ispr_write_data[IsprAcc][i_word*32+:32] = u_otbn_mac_bignum.acc_intg_d[i_word*39+:32];
   end
 
   assign ispr_read[IsprMod] =
@@ -240,16 +242,13 @@ interface otbn_trace_if
     (insn_fetch_resp_valid &
      (alu_bignum_operation.op inside {AluOpBignumAddm, AluOpBignumSubm}));
 
-  assign ispr_read_data[IsprMod] = u_otbn_alu_bignum.mod_q;
-
   assign ispr_write[IsprAcc] = u_otbn_mac_bignum.acc_en & ~ispr_init;
-  assign ispr_write_data[IsprAcc] = u_otbn_mac_bignum.acc_d;
 
   assign ispr_read[IsprAcc] = (any_ispr_read & (ispr_addr == IsprAcc)) | mac_bignum_en;
   // For ISPR reads look at the ACC flops directly. For other ACC reads look at the `acc_blanked`
   // signal in order to read ACC as 0 for the BN.MULQACC.Z instruction variant.
   assign ispr_read_data[IsprAcc] =
-      (any_ispr_read & (ispr_addr == IsprAcc)) ? u_otbn_mac_bignum.acc_q       :
+      (any_ispr_read & (ispr_addr == IsprAcc)) ? u_otbn_mac_bignum.acc_no_intg_q  :
                                                  u_otbn_mac_bignum.acc_blanked;
 
   assign ispr_write[IsprRnd] = 1'b0;

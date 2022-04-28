@@ -203,6 +203,7 @@ module tb;
     );
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);
+  bind dut.u_otbn_core.u_otbn_controller otbn_controller_if i_otbn_controller_if (.*);
   bind dut.u_otbn_core.u_otbn_mac_bignum otbn_mac_bignum_if i_otbn_mac_bignum_if (.*);
   bind dut.u_otbn_core.u_otbn_rf_base otbn_rf_base_if i_otbn_rf_base_if (.*);
 
@@ -331,6 +332,9 @@ module tb;
     uvm_config_db#(virtual otbn_alu_bignum_if)::set(
       null, "*.env", "alu_bignum_vif",
       dut.u_otbn_core.u_otbn_alu_bignum.i_otbn_alu_bignum_if);
+    uvm_config_db#(virtual otbn_controller_if)::set(
+      null, "*.env", "controller_vif",
+      dut.u_otbn_core.u_otbn_controller.i_otbn_controller_if);
     uvm_config_db#(virtual otbn_mac_bignum_if)::set(
       null, "*.env", "mac_bignum_vif",
       dut.u_otbn_core.u_otbn_mac_bignum.i_otbn_mac_bignum_if);
