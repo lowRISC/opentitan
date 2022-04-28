@@ -52,6 +52,19 @@
     return unused_bit[0];                                     \
   endfunction
 
+// FPV assertion that proves that the FSM control flow is linear (no loops)
+// The sequence triggers whenever the state changes and stores initial state as initial_state.
+// Then thereafter we must never see that state again until reset.
+`define ASSERT_FPV_LINEAR_FSM(__name, __state, __type, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+  `ifdef INC_ASSERT                                                                                              \
+      property __name``_p;                                                                                       \
+        __type initial_state;                                                                                    \
+        (!$stable(__state), initial_state = $past(__state)) |->                                                  \
+            always (__state != initial_state);                                                                   \
+      endproperty                                                                                                \
+    `ASSERT(__name, __name``_p, __clk, __rst)                                                                    \
+  `endif
+
 // The basic helper macros are actually defined in "implementation headers". The macros should do
 // the same thing in each case (except for the dummy flavour), but in a way that the respective
 // tools support.
