@@ -702,18 +702,7 @@ module lc_ctrl_fsm
       |=>
       fsm_state_q inside {InvalidSt, EscalateSt})
 
-`ifdef INC_ASSERT
-    //verilog_format: off
-    property sec_cm_cfi_linear_p;
-      fsm_state_e initial_state;
-      // Trigger whenever state changes and stores initial state as initial_state
-      // Then thereafter we must never see that state again until reset
-      (!$stable(fsm_state_q), initial_state = $past(fsm_state_q)) |->
-          always (fsm_state_q != initial_state);
-    endproperty
-    //verilog_format: on
-
-  `ASSERT(SecCmCFILinear_A, sec_cm_cfi_linear_p)
-`endif
+  // Check that the FSM is linear and does not contain any loops
+  `ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, fsm_state_q, fsm_state_e)
 
 endmodule : lc_ctrl_fsm
