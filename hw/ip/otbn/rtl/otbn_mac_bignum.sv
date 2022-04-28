@@ -17,6 +17,7 @@ module otbn_mac_bignum
   output logic [WLEN-1:0] operation_result_o,
   output flags_t          operation_flags_o,
   output flags_t          operation_flags_en_o,
+  output logic            operation_intg_violation_err_o,
 
   input  mac_predec_bignum_t mac_predec_bignum_i,
   output logic               predec_error_o,
@@ -25,9 +26,9 @@ module otbn_mac_bignum
   input logic            sec_wipe_acc_urnd_i,
   input logic            sec_wipe_zero_i,
 
-  output logic [WLEN-1:0] ispr_acc_o,
-  input  logic [WLEN-1:0] ispr_acc_wr_data_i,
-  input  logic            ispr_acc_wr_en_i
+  output logic [ExtWLEN-1:0] ispr_acc_intg_o,
+  input  logic [ExtWLEN-1:0] ispr_acc_wr_data_intg_i,
+  input  logic               ispr_acc_wr_en_i
 );
   // The MAC operates on quarter-words, QWLEN gives the number of bits in a quarter-word.
   localparam int unsigned QWLEN = WLEN / 4;
@@ -42,10 +43,10 @@ module otbn_mac_bignum
   logic [WLEN/2-1:0] mul_res;
   logic [WLEN-1:0]   mul_res_shifted;
 
-  logic [WLEN-1:0] acc_d;
-  logic [WLEN-1:0] acc_q;
-  logic [WLEN-1:0] acc_blanked;
-  logic            acc_en;
+  logic [ExtWLEN-1:0] acc_intg_d;
+  logic [ExtWLEN-1:0] acc_intg_q;
+  logic [WLEN-1:0]    acc_blanked;
+  logic               acc_en;
 
   logic [WLEN-1:0] operand_a_blanked, operand_b_blanked;
 
@@ -109,12 +110,38 @@ module otbn_mac_bignum
 
   `ASSERT_KNOWN_IF(PreAccShiftImmKnown, operation_i.pre_acc_shift_imm, mac_en_i)
 
+  // ECC encode and decode of accumulator register
+  logic [WLEN-1:0]                acc_no_intg_d;
+  logic [WLEN-1:0]                acc_no_intg_q;
+  logic [ExtWLEN-1:0]             acc_intg_calc;
+  logic [2*BaseWordsPerWLEN-1:0]  acc_intg_err;
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_acc_words
+    prim_secded_inv_39_32_enc i_secded_enc (
+      .data_i (acc_no_intg_d[i_word*32+:32]),
+      .data_o (acc_intg_calc[i_word*39+:39])
+    );
+    prim_secded_inv_39_32_dec i_secded_dec (
+      .data_i     (acc_intg_q[i_word*39+:39]),
+      .data_o     (/* unused because we abort on any integrity error */),
+      .syndrome_o (/* unused */),
+      .err_o      (acc_intg_err[i_word*2+:2])
+    );
+    assign acc_no_intg_q[i_word*32+:32] = acc_intg_q[i_word*39+:32];
+  end
+
+  // Propagate integrity error only if accumulator register is used: `acc_intg_q` flows into
+  // `operation_result_o` via `acc`, `adder_op_b`, and `adder_result` iff the MAC is enabled and the
+  // current operation does not zero the accumulation register.
+  logic acc_used;
+  assign acc_used = mac_en_i & ~operation_i.zero_acc;
+  assign operation_intg_violation_err_o = acc_used & |(acc_intg_err);
+
   // Accumulator logic
 
   // SEC_CM: DATA_REG_SW.SCA
   // acc_rd_en is so if .Z set in MULQACC (zero_acc) so accumulator reads as 0
   prim_blanker #(.Width(WLEN)) u_acc_blanker (
-    .in_i (acc_q),
+    .in_i (acc_no_intg_q),
     .en_i (mac_predec_bignum_i.acc_rd_en),
     .out_o(acc_blanked)
   );
@@ -158,15 +185,27 @@ module otbn_mac_bignum
   assign operation_flags_en_o.C = 1'b0;
 
   always_comb begin
+    acc_no_intg_d = '0;
     unique case (1'b1)
-    sec_wipe_acc_urnd_i: acc_d = urnd_data_i;
-    sec_wipe_zero_i:     acc_d = '0;
-    // If performing an ACC ISPR write the next accumulator value is taken from the ISPR write data,
-    // otherwise it is drawn from the adder result. The new accumulator can be optionally shifted
-    // right by one half-word (shift_acc).
-    default:  acc_d = ispr_acc_wr_en_i      ? ispr_acc_wr_data_i                                :
-                      operation_i.shift_acc ? {{QWLEN*2{1'b0}}, adder_result[QWLEN*2+:QWLEN*2]} :
-                                              adder_result;
+      // Non-encoded inputs have to be encoded before writing to the register.
+      sec_wipe_acc_urnd_i: begin
+        acc_no_intg_d = urnd_data_i;
+        acc_intg_d = acc_intg_calc;
+      end
+      // Pre-encoded values can be written directly to the register.
+      sec_wipe_zero_i: acc_intg_d = EccWideZeroWord;
+      default: begin
+        // If performing an ACC ISPR write the next accumulator value is taken from the ISPR write
+        // data, otherwise it is drawn from the adder result. The new accumulator can be optionally
+        // shifted right by one half-word (shift_acc).
+        if (ispr_acc_wr_en_i) begin
+          acc_intg_d = ispr_acc_wr_data_intg_i;
+        end else begin
+          acc_no_intg_d = operation_i.shift_acc ? {{QWLEN*2{1'b0}}, adder_result[QWLEN*2+:QWLEN*2]}
+                                                : adder_result;
+          acc_intg_d = acc_intg_calc;
+        end
+      end
     endcase
   end
 
@@ -177,13 +216,13 @@ module otbn_mac_bignum
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      acc_q <= '0;
+      acc_intg_q <= EccWideZeroWord;
     end else if (acc_en) begin
-      acc_q <= acc_d;
+      acc_intg_q <= acc_intg_d;
     end
   end
 
-  assign ispr_acc_o = acc_q;
+  assign ispr_acc_intg_o = acc_intg_q;
 
   // The operation result is taken directly from the adder, shift_acc only applies to the new value
   // written to the accumulator.
