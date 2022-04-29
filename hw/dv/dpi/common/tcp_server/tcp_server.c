@@ -178,7 +178,10 @@ static int client_tryaccept(struct tcp_server_ctx *ctx) {
   int rv;
 
   assert(ctx->sfd > 0);
-  assert(ctx->cfd == 0);
+
+  // assume a connection has been lost if ctx->cfd > 0
+  if (ctx->cfd > 0)
+    tcp_server_client_close(ctx);
 
   int cfd = accept(ctx->sfd, NULL, NULL);
 
