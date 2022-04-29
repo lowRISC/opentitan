@@ -198,7 +198,7 @@ def gen_pinmux_docs(top, c_helper, out_path):
                              headers="firstrow",
                              tablefmt="pipe",
                              colalign=colalign)
-    summary_table = TABLE_HEADER + gencmd + "-->\n\n" + summary_table
+    summary_table = TABLE_HEADER + gencmd + "-->\n\n" + summary_table + "\n"
 
     target_table_path = doc_path / "targets.md"
     with open(target_table_path, 'w') as target_outfile:
