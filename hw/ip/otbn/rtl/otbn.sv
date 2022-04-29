@@ -733,14 +733,24 @@ module otbn
 
   // Only certain combinations of the state variable {locking, busy_execute_d,
   // otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy} are possible. Most of the
-  // time, we'd expect it to be onehot0. The only time this is relaxed is when we are in the locking
-  // state, in which case the scrambling signals may also be set.
+  // time, we'd expect it to be onehot0.
+  //
+  // The only time this is relaxed is when we are in the locking state. If we were running an
+  // operation when we start locking, busy_execute_d will remain set until the secure wipe finishes.
+  // Similarly, in this case the *_scramble_key_req_busy signals actually go high at the same as
+  // locking. But none of these signals should ever rise again after we've become locked. Nor should
+  // they be asserted if we weren't running.
   `ASSERT(ValidUnlockedStateCombinations_A,
           ((!locking) |-> $onehot0({busy_execute_d,
                                     otbn_dmem_scramble_key_req_busy,
                                     otbn_imem_scramble_key_req_busy})))
   `ASSERT(ValidLockedStateCombinations_A,
-          locking |-> !busy_execute_d)
+          locking |=> !$rose(|{busy_execute_d,
+                               otbn_dmem_scramble_key_req_busy,
+                               otbn_imem_scramble_key_req_busy}))
+  `ASSERT(OnlyRotateKeysOnLockIfRunning_A,
+          (locking && !busy_execute_d) |-> !$rose({otbn_dmem_scramble_key_req_busy,
+                                                   otbn_imem_scramble_key_req_busy}))
 
   // CTRL register
   assign software_errs_fatal_d =
