@@ -94,7 +94,9 @@ enum module_ {
   X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnExecutionFailed,        ERROR_(3, kModuleOtbn, kInternal)), \
-  X(kErrorOtbnUnavailable,            ERROR_(4, kModuleOtbn, kInternal)), \
+  X(kErrorOtbnSecWipeImemFailed,      ERROR_(4, kModuleOtbn, kInternal)), \
+  X(kErrorOtbnSecWipeDmemFailed,      ERROR_(5, kModuleOtbn, kInternal)), \
+  X(kErrorOtbnUnavailable,            ERROR_(6, kModuleOtbn, kInternal)), \
   X(kErrorFlashCtrlDataRead,          ERROR_(1, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlInfoRead,          ERROR_(2, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlDataWrite,         ERROR_(3, kModuleFlashCtrl, kInternal)), \
