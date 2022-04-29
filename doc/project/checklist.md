@@ -34,6 +34,11 @@ The unit `.sv` exists and meets comportability requirements.
 The unit is able to be instantiated and connected in top level RTL files.
 The design must compile and elaborate cleanly without errors.
 The unit must not break top level functionality such as propagating X through TL-UL interfaces, continuously asserting alerts or interrupts, or creating undesired TL-UL transactions.
+To that end, the unit must fulfill the following V1 checklist requirements:
+- TB_TOP_CREATED
+- SIM_RAL_MODEL_GEN_AUTOMATED
+- CSR_CHECK_GEN_AUTOMATED
+- SIM_CSR_MEM_TEST_SUITE_PASSING
 
 ### PHYSICAL_MACROS_DEFINED_80
 
@@ -259,14 +264,14 @@ A testplan has been written (in Hjson format) indicating:
 
 If the DUT has a CPU for which a ROM firmware is developed (burnt-in during manufacturing):
 - A detailed ROM firmware testplan has been written to adequately verify all functions of the ROM firmware in a pre-silicon simulation environment (i.e. a DV testbench).
-- The testing framework may validate each functionality of the ROM firmware discretetly as an individual unit test.
+- The testing framework may validate each functionality of the ROM firmware discretely as an individual unit test.
 - Depending on the ROM firmware development progress, this may be postponed for V2.
 
 ### TB_TOP_CREATED
 
 A top level testbench has been created with the DUT instantiated.
-The following interfaces are connected (as applicable): TileLink, clocks and resets, interrupts and major DUT interfaces.
-Some minor interfaces may not be connected at this point.
+The following interfaces are connected (as applicable): TileLink, clocks and resets, interrupts and alerts.
+Other interfaces may not be connected at this point (connecting these is part of SIM_TB_ENV_CREATED).
 Inputs for which interfaces have not yet been created are tied off to 0.
 
 ### PRELIMINARY_ASSERTION_CHECKS_ADDED
@@ -299,7 +304,7 @@ These requirements are captured when the testplan is reviewed by the key stakeho
 
 ### SIM_CSR_MEM_TEST_SUITE_PASSING
 
-CSR test suites have been added for ALL interfaces (including, but not limited to the DUT's SW device acess port, JTAG access port etc.) that have access to the system memory map:
+CSR test suites have been added for ALL interfaces (including, but not limited to the DUT's SW device access port, JTAG access port etc.) that have access to the system memory map:
 - HW reset test (test all resets)
 - CSR read/write
 - Bit Bash
@@ -497,7 +502,7 @@ The DV document and testplan are complete and have been reviewed by key stakehol
 - Chip DV lead
 - Security architect
 
-This review will focus on the design deltas captured in the tesplan since the last review.
+This review will focus on the design deltas captured in the testplan since the last review.
 In addition, the fully implemented functional coverage plan, the observed coverage and the coverage exclusions are expected to be scrutinized to ensure there are no verification holes or any gaps in achieving the required stimulus quality, before the work towards progressing to V3 can commence.
 
 ### V3_CHECKLIST_SCOPED
