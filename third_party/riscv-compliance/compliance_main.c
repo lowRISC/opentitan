@@ -24,7 +24,7 @@ bool test_main(void) {
   run_rvc_test();
 
   ptrdiff_t words = end_signature - begin_signature;
-  CHECK_BUFFER_EQbegin_signature, kExpectedSignature, (size_t)words);
+  CHECK_BUFFER_EQ(begin_signature, kExpectedSignature, (size_t)words);
 
   return true;
 }
