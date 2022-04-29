@@ -17,10 +17,15 @@ ${gencmd}
       word = num & mask
       width = min(256, bits_left)
 
-      acc.append("{nbits}'h{word:0{num_nibbles}X}"
-                 .format(word=word,
-                         nbits=width,
-                         num_nibbles=(width + 3) // 4))
+      num_nibbles = (width + 3) // 4
+      string = "{word:0{num_nibbles}X}".format(word=word, num_nibbles=num_nibbles)
+      # Separate 32-bit words for readability.
+      for i in range(num_nibbles-1, 0, -1):
+            if (num_nibbles - i) % 8 == 0:
+                string = string[:i] + "_" + string[i:]
+      acc.append("{nbits}'h{string}"
+                 .format(string=string,
+                         nbits=width))
       bits_left -= width
       num >>= width
 
