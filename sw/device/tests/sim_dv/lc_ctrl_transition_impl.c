@@ -58,12 +58,16 @@ static void check_lc_state_transition_count(uint8_t exp_lc_count) {
  * 3). `TestLocked1` state disabled CPU, so external testbench will drive JTAG
  * interface to transit to `TestUnlocked2` state and increment the LC_CNT.
  * 4). When LC_CTRL is ready, check LC_CNT and LC_STATE register.
- * 5). Program LC state transition request to advance to `Prod` state.
+ * 5). Program LC state transition request to advance to `Dev` state.
  * 6). Issue hard reset.
  * 7). Wait for LC_CTRL is ready, then check if LC_STATE advanced to `Dev`
  * state, and lc_count advanced to `9`.
  * 8). Issue hard reset and override OTP's LC partition, and reset LC state to
- * `TestUnlocked2` state.
+ * `TestLocked1` state.
+ * 9). Repeat the steps above in a few iterations.
+ *
+ * In summary, this sequence walks through the following LC states:
+ * "TestLocked1" -> "TestUnlocked2" -> "Dev"
  */
 
 bool execute_lc_ctrl_transition_test(bool use_ext_clk) {
