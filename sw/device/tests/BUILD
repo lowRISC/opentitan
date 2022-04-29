@@ -329,7 +329,10 @@ opentitan_functest(
 opentitan_functest(
     name = "example_test_from_rom",
     srcs = ["example_test_from_rom.c"],
-    targets = ["verilator"],  # Can only run in verilator right now.
+    targets = [
+        "dv",
+        "verilator",
+    ],
     # This test is designed to run and complete entirely in the ROM boot stage.
     # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
     # of this, and instructs it to load the test image into ROM (rather than

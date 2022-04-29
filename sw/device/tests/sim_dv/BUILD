@@ -27,8 +27,11 @@ opentitan_functest(
 opentitan_functest(
     name = "flash_rma_unlocked_test",
     srcs = ["flash_rma_unlocked_test.c"],
-    # This test doesn't use the OTTF.
-    targets = ["verilator"],  # Can only run in verilator right now.
+    # Can only run in DV / Verilator right now (FPGA requires ROM splicing).
+    targets = [
+        "dv",
+        "verilator",
+    ],
     # This test is designed to run and complete entirely in the ROM boot stage.
     # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
     # of this, and instructs it to load the test image into ROM (rather than

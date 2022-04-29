@@ -265,4 +265,3 @@ sw_lib_testing_keymgr_testutils = declare_dependency(
 )
 
 subdir('autogen')
-subdir('test_rom')

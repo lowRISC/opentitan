@@ -23,7 +23,6 @@ sw_tests = {
   #   'dv_frames':        true/false, # (can be omitted, defaults to `false`)
   #   'sign':             true/false, # (can be omitted, defaults to `false`)
   #   'ottf_start_only':  true/false, # (can be omitted, defaults to `false`)
-  #   'run_at_rom_stage': true/false, # (can be omitted, defaults to `false`)
   # },
 }
 
@@ -44,32 +43,6 @@ example_test_from_flash_lib = declare_dependency(
 sw_tests += {
   'example_test_from_flash': {
     'library': example_test_from_flash_lib,
-  }
-}
-
-# A few chip-level tests need to run at the ROM stage. These may not rely on the
-# OTTF, and therefore must do all required initializations within the test.
-example_test_from_rom_lib = declare_dependency(
-  link_with: static_library(
-    'example_test_from_rom_lib',
-    sources: [
-      'example_test_from_rom.c',
-    ],
-    dependencies: [
-      sw_lib_dif_uart,
-      sw_lib_mmio,
-      sw_lib_runtime_hart,
-      sw_lib_runtime_print,
-      sw_lib_runtime_log,
-      sw_lib_testing_pinmux_testutils,
-      sw_lib_testing_test_status,
-    ],
-  ),
-)
-sw_tests += {
-  'example_test_from_rom': {
-    'library': example_test_from_rom_lib,
-    'run_at_rom_stage': true,
   }
 }
 
@@ -1348,94 +1321,47 @@ foreach sw_test_name, sw_test_info : sw_tests
     targets_to_export = []
     shared_test_deps = [device_lib]
 
-    if 'run_at_rom_stage' in sw_test_info and sw_test_info['run_at_rom_stage']
+    if 'ottf_start_only' in sw_test_info and sw_test_info['ottf_start_only']
+      # Explicitly ONLY pull in the OTTF startup library since these tests need
+      # to run right after ottf_start.S is done executing. Additionally, the
+      # startup library contains default OTTF ISRs. While these tests may not
+      # override any of the default ISR symbols, they should be linked in since
+      # the `mtvec` is set to point to these in the `ottf_start.S`
+      # initialization assembly (contained in the ottf_start_lib target below).
+      shared_test_deps += [
+        ottf_start_lib,
+      ]
+    else
+      shared_test_deps += [
+        ottf_lib,
+      ]
+    endif
 
-      # Build the test ELF for ROM.
+    # Build the test ELF for flash.
+    if (get_option('closed_source_dir') != '') and \
+      'link_with_closed_configs' in sw_test_info and \
+      sw_test_info['link_with_closed_configs']
       sw_test_elf = executable(
         sw_test_name + '_' + device_name,
         name_suffix: 'elf',
-        link_args: test_rom_link_args,
-        link_depends: test_rom_link_deps,
-        sources: [
-          hw_ip_ast_reg_h,
-          hw_ip_clkmgr_reg_h,
-          hw_ip_csrng_reg_h,
-          hw_ip_edn_reg_h,
-          hw_ip_entropy_src_reg_h,
-          hw_ip_otp_ctrl_reg_h,
-          hw_ip_sram_ctrl_reg_h,
-          hw_ip_sensor_ctrl_reg_h,
-          meson.project_source_root() / 'sw/device/lib/testing/test_rom/test_rom_start.S',
-          meson.project_source_root() / 'sw/device/lib/testing/test_rom/test_rom.c',
-          meson.project_source_root() / 'sw/device/lib/testing/test_rom/bootstrap.c',
-        ],
+        # Need to force the linker to examine (strong) symbols that may have a
+        # weak implementation in the (static) test library.
+        link_whole: closed_source_config_hooks_lib,
         dependencies: [
-          chip_info_h,
-          sw_lib_crt,
-          sw_lib_runtime_hart,
-          sw_lib_runtime_print,
-          sw_lib_ibex,
-          sw_lib_dif_flash_ctrl,
-          sw_lib_dif_gpio,
-          sw_lib_dif_hmac,
-          sw_lib_dif_pinmux,
-          sw_lib_dif_spi_device,
-          sw_lib_dif_uart,
-          sw_lib_mmio,
-          sw_lib_runtime_log,
-          top_earlgrey,
-          device_lib,
-          sw_lib_testing_flash_ctrl_testutils,
-          sw_lib_testing_pinmux_testutils,
-          sw_lib_testing_test_status,
           shared_test_deps,
-          sw_lib_crt,
-          sw_test_info['library'].as_link_whole(),
+          sw_test_info['library'],
+          closed_source_config_hooks_dep,
         ],
       )
     else
-      if 'ottf_start_only' in sw_test_info and sw_test_info['ottf_start_only']
-        # Explicitly ONLY pull in the OTTF startup library since these tests need
-        # to run right after ottf_start.S is done executing. Additionally, the
-        # startup library contains default OTTF ISRs. While these tests may not
-        # override any of the default ISR symbols, they should be linked in since
-        # the `mtvec` is set to point to these in the `ottf_start.S`
-        # initialization assembly (contained in the ottf_start_lib target below).
-        shared_test_deps += [
-          ottf_start_lib,
-        ]
-      else
-        shared_test_deps += [
-          ottf_lib,
-        ]
-      endif
-
-      # Build the test ELF for flash.
-      if (get_option('closed_source_dir') != '') and \
-        'link_with_closed_configs' in sw_test_info and \
-        sw_test_info['link_with_closed_configs']
-        sw_test_elf = executable(
-          sw_test_name + '_' + device_name,
-          name_suffix: 'elf',
-          # Need to force the linker to examine (strong) symbols that may have a
-          # weak implementation in the (static) test library.
-          link_whole: closed_source_config_hooks_lib,
-          dependencies: [
-            shared_test_deps,
-            sw_test_info['library'],
-            closed_source_config_hooks_dep,
-          ],
-        )
-      else
-        sw_test_elf = executable(
-          sw_test_name + '_' + device_name,
-          name_suffix: 'elf',
-          dependencies: [
-            shared_test_deps,
-            sw_test_info['library'],
-          ],
-        )
-      endif
+      sw_test_elf = executable(
+        sw_test_name + '_' + device_name,
+        name_suffix: 'elf',
+        dependencies: [
+          shared_test_deps,
+          sw_test_info['library'],
+        ],
+      )
     endif
 
     target_name = sw_test_name + '_@0@_' + device_name
@@ -1458,92 +1384,75 @@ foreach sw_test_name, sw_test_info : sw_tests
       sw_test_bin,
     ]
 
-    if 'run_at_rom_stage' in sw_test_info and sw_test_info['run_at_rom_stage']
-      # Test image is destined for ROM.
-      sw_test_scr_vmem32 = custom_target(
-        target_name.format('scr_vmem32'),
-        command: scramble_image_command,
-        env: {'PYTHONPATH': meson.project_source_root()},
-        depend_files: scramble_image_depend_files,
-        input: sw_test_elf,
-        output: scramble_image_outputs,
-        build_by_default: true,
-      )
+    # Unsigned test image destined for flash, loaded with the test ROM.
+    sw_test_vmem64 = custom_target(
+      target_name.format('vmem64'),
+      input: sw_test_bin,
+      kwargs: bin_to_vmem64_custom_target_args,
+    )
 
-      targets_to_export += [
-        sw_test_scr_vmem32,
-      ]
-    else
-      # Unsigned test image destined for flash, loaded with the test ROM.
-      sw_test_vmem64 = custom_target(
-        target_name.format('vmem64'),
-        input: sw_test_bin,
-        kwargs: bin_to_vmem64_custom_target_args,
-      )
+    sw_test_scr_vmem64 = custom_target(
+      target_name.format('scr_vmem64'),
+      input: sw_test_vmem64,
+      output: flash_image_outputs,
+      command: flash_image_command,
+      depend_files: flash_image_depend_files,
+      build_by_default: true,
+    )
 
-      sw_test_scr_vmem64 = custom_target(
-        target_name.format('scr_vmem64'),
-        input: sw_test_vmem64,
-        output: flash_image_outputs,
-        command: flash_image_command,
-        depend_files: flash_image_depend_files,
-        build_by_default: true,
-      )
+    targets_to_export += [
+      sw_test_vmem64,
+      sw_test_scr_vmem64,
+    ]
 
-      targets_to_export += [
-        sw_test_vmem64,
-        sw_test_scr_vmem64,
-      ]
+    # Signed test image destined for flash, loaded with the mask ROM.
+    if 'sign' in sw_test_info and sw_test_info['sign']
+      foreach key_name, key_info : signing_keys
+        signed_target_name = '_'.join([
+          'signed',
+          sw_test_name,
+          key_name,
+          '@0@',
+          device_name,
+        ])
 
-      # Signed test image destined for flash, loaded with the mask ROM.
-      if 'sign' in sw_test_info and sw_test_info['sign']
-        foreach key_name, key_info : signing_keys
-          signed_target_name = '_'.join([
-            'signed',
-            sw_test_name,
-            key_name,
-            '@0@',
-            device_name,
-          ])
+        sw_test_signed_bin = custom_target(
+          signed_target_name.format('bin'),
+          input: sw_test_bin,
+          output: '@BASENAME@.@0@.signed.bin'.format(key_name),
+          command: [
+            rom_ext_signer_export.full_path(),
+            'rom_ext',
+            '@INPUT@',
+            key_info['path'],
+            sw_test_elf.full_path(),
+            '@OUTPUT@',
+          ],
+          depends: rom_ext_signer_export,
+          build_by_default: true,
+        )
 
-          sw_test_signed_bin = custom_target(
-            signed_target_name.format('bin'),
-            input: sw_test_bin,
-            output: '@BASENAME@.@0@.signed.bin'.format(key_name),
-            command: [
-              rom_ext_signer_export.full_path(),
-              'rom_ext',
-              '@INPUT@',
-              key_info['path'],
-              sw_test_elf.full_path(),
-              '@OUTPUT@',
-            ],
-            depends: rom_ext_signer_export,
-            build_by_default: true,
-          )
+        sw_test_signed_vmem64 = custom_target(
+          signed_target_name.format('vmem64'),
+          input: sw_test_signed_bin,
+          kwargs: bin_to_vmem64_custom_target_args,
+        )
 
-          sw_test_signed_vmem64 = custom_target(
-            signed_target_name.format('vmem64'),
-            input: sw_test_signed_bin,
-            kwargs: bin_to_vmem64_custom_target_args,
-          )
+        sw_test_signed_scr_vmem64 = custom_target(
+          signed_target_name.format('scrambled'),
+          input: sw_test_signed_vmem64,
+          output: flash_image_outputs,
+          command: flash_image_command,
+          depend_files: flash_image_depend_files,
+          build_by_default: true,
+        )
 
-          sw_test_signed_scr_vmem64 = custom_target(
-            signed_target_name.format('scrambled'),
-            input: sw_test_signed_vmem64,
-            output: flash_image_outputs,
-            command: flash_image_command,
-            depend_files: flash_image_depend_files,
-            build_by_default: true,
-          )
-
-          targets_to_export += [
-            sw_test_signed_bin,
-            sw_test_signed_vmem64,
-            sw_test_signed_scr_vmem64,
-          ]
-        endforeach
-      endif
+        targets_to_export += [
+          sw_test_signed_bin,
+          sw_test_signed_vmem64,
+          sw_test_signed_scr_vmem64,
+        ]
+      endforeach
 
       # DV sim bootstrap image (for loading flash images via bootstrap).
       if device_name == 'sim_dv' and \

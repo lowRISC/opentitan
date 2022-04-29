@@ -237,8 +237,6 @@ def opentitan_functest(
       @param data: Extra data dependencies (in addition to those defined in the
                    target-specific parameter dictionary) needed while executing
                    the test.
-      @param ottf: Default dependencies for OTTF tests. Set to empty list if
-                   your test doesn't use the OTTF.
       @param test_in_rom: Whether to run the test from ROM, runs from flash by
                           default.
       @param signed: Whether to sign the test image. Unsigned by default.
