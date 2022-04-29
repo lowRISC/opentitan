@@ -32,7 +32,7 @@ set_branch_scoring
 
 // Scores statements within a block.
 set_statement_scoring
-
+//
 // Enables expression coverage for expression containing structs (packed and unpacked).
 set_expr_scoring -struct
 
@@ -46,9 +46,6 @@ set_fsm_reset_scoring
 // Enables scoring of immediate assertions inside a class in a package and assertions inside AMS
 // modules.
 select_functional  -ams_control  -imm_asrt_class_package
-
-// Improve the scoping and naming of covergroup instances.
-set_covergroup -new_instance_reporting
 
 // Enable toggle coverage only on ports.
 set_toggle_portsonly
