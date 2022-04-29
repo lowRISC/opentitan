@@ -240,6 +240,10 @@ dif_result_t dif_aes_start(const dif_aes_t *aes,
   }
 
   if (transaction->mode != kDifAesModeEcb) {
+    // Make sure AES is idle before providing the IV. Depending on the
+    // configuration, updating the key might cause the AES to become non-idle
+    // and reseed the internal PRNGs.
+    AES_WAIT_FOR_STATUS(aes, AES_STATUS_IDLE_BIT, true);
     aes_set_multireg(aes, &iv->iv[0], AES_IV_MULTIREG_COUNT,
                      AES_IV_0_REG_OFFSET);
   }

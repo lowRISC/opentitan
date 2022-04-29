@@ -44,6 +44,7 @@ class AesTest : public testing::Test, public mock_mmio::MmioTest {
   }
 
   void ExpectIv(const dif_aes_iv_t &iv, const uint32_t kIvSize = 4) {
+    EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
     ExpectWriteMultreg(AES_IV_0_REG_OFFSET, iv.iv, kIvSize);
   }
 
