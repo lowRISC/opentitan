@@ -200,20 +200,12 @@ rom_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
 /**
  * Start the OTBN application.
  *
- * Use `otbn_busy_wait_for_done()` to wait for the function call to complete.
+ * This function blocks until OTBN is idle.
  *
  * @param ctx The context object.
  * @return The result of the operation.
  */
 rom_error_t otbn_execute_app(otbn_t *ctx);
-
-/**
- * Busy waits for OTBN to be done with its operation.
- *
- * @param ctx The context object.
- * @return The result of the operation.
- */
-rom_error_t otbn_busy_wait_for_done(otbn_t *ctx);
 
 /**
  * Copies data from the CPU memory to OTBN data memory.

@@ -28,7 +28,7 @@ extern const size_t kOtbnIMemSizeBytes;
 /**
  * OTBN commands
  */
-typedef enum dif_otbn_cmd {
+typedef enum otbn_cmd {
   kOtbnCmdExecute = 0xd8,
   kOtbnCmdSecWipeDmem = 0xc3,
   kOtbnCmdSecWipeImem = 0x1e,
@@ -47,8 +47,12 @@ typedef enum otbn_status {
 
 /**
  * Start the execution of the application loaded into OTBN.
+ *
+ * This function blocks until OTBN is idle.
+ *
+ * @return Result of the operation.
  */
-void otbn_execute(void);
+rom_error_t otbn_execute(void);
 
 /**
  * Is OTBN busy executing an application?
@@ -92,6 +96,7 @@ typedef enum otbn_err_bits {
   kOtbnErrBitsLifecycleEscalation = (1 << 22),
   /** A FATAL_SOFTWARE error was observed. */
   kOtbnErrBitsFatalSoftware = (1 << 23),
+  kOtbnErrBitsLast = kOtbnErrBitsFatalSoftware,
 } otbn_err_bits_t;
 
 /**
@@ -100,6 +105,15 @@ typedef enum otbn_err_bits {
  * @param[out] err_bits The error bits returned by the hardware.
  */
 void otbn_get_err_bits(otbn_err_bits_t *err_bits);
+
+/**
+ * Wipe IMEM securely.
+ *
+ * This function blocks until OTBN is idle.
+ *
+ * @return Result of the operation.
+ */
+rom_error_t otbn_imem_sec_wipe(void);
 
 /**
  * Write an OTBN application into its instruction memory (IMEM)
@@ -114,6 +128,15 @@ void otbn_get_err_bits(otbn_err_bits_t *err_bits);
  */
 rom_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
                             size_t len);
+
+/**
+ * Wipe DMEM securely.
+ *
+ * This function blocks until OTBN is idle.
+ *
+ * @return Result of the operation.
+ */
+rom_error_t otbn_dmem_sec_wipe(void);
 
 /**
  * Write to OTBN's data memory (DMEM)
