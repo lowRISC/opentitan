@@ -410,6 +410,14 @@
       reseed: 15
     }
     {
+      name: chip_sw_lc_walkthrough
+      uvm_test_seq: chip_sw_lc_walkthrough_vseq
+      sw_images: ["sw/device/tests/lc_walkthrough_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+use_otp_image=LcStRaw"]
+      reseed: 1
+    }
+    {
       name: chip_sw_rstmgr_sw_req
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/rstmgr_sw_req_test:1"]
