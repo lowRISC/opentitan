@@ -352,7 +352,7 @@ module kmac_entropy
   );
 
   assign lfsr_seed_done =
-      (seed_idx == SeedIdxWidth'(NumSeedsEntropyLfsr - 1)) &
+      (seed_idx == SeedIdxWidth'(unsigned'(NumSeedsEntropyLfsr - 1))) &
       |lfsr_seed_en;
 
   // Seed selection - The reduced seed enable signal `lfsr_seed_en_red` is
