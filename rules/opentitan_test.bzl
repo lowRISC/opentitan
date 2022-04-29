@@ -31,6 +31,7 @@ def dv_params(
         rom = _BASE_PARAMS["rom"].format("sim_dv"),
         tags = _BASE_PARAMS["tags"],
         timeout = _BASE_PARAMS["timeout"],
+        test_runner = "//util:dvsim_test_runner.sh",
         # DV-specific Parameters
         bootstrap_sw = False,  # Default to backdoor loading.
         dvsim_config = "//hw/top_earlgrey/dv:chip_sim_cfg.hjson",
@@ -68,7 +69,7 @@ def dv_params(
         otp = otp,
         rom = rom,
         tags = required_tags + tags,
-        test_runner = "//util:dvsim_test_runner.sh",
+        test_runner = test_runner,
         timeout = timeout,
         bootstrap_sw = bootstrap_sw,
         dvsim_config = dvsim_config,
@@ -89,6 +90,7 @@ def verilator_params(
         rom = _BASE_PARAMS["rom"].format("sim_verilator"),
         tags = _BASE_PARAMS["tags"] + ["cpu:4"],
         timeout = _BASE_PARAMS["timeout"],
+        test_runner = _BASE_PARAMS["test_runner"],
         # Verilator-specific Parameters
         # None
         **kwargs):
@@ -128,7 +130,7 @@ def verilator_params(
         otp = otp,
         rom = rom,
         tags = required_tags + tags,
-        test_runner = _BASE_PARAMS["test_runner"],
+        test_runner = test_runner,
         timeout = timeout,
     )
     return kwargs
@@ -149,6 +151,7 @@ def cw310_params(
         rom = _BASE_PARAMS["rom"].format("fpga_cw310"),
         tags = _BASE_PARAMS["tags"] + ["cpu:4"],
         timeout = _BASE_PARAMS["timeout"],
+        test_runner = _BASE_PARAMS["test_runner"],
         # CW310-specific Parameters
         bitstream = "//hw/bitstream:test_rom",
         rom_kind = None,
@@ -188,7 +191,7 @@ def cw310_params(
         otp = otp,
         rom = rom,
         tags = required_tags + tags,
-        test_runner = _BASE_PARAMS["test_runner"],
+        test_runner = test_runner,
         timeout = timeout,
         bitstream = bitstream,
         rom_kind = rom_kind,
