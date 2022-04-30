@@ -320,6 +320,10 @@ typedef enum dif_sysrst_ctrl_pin {
    * Flash write protect inout.
    */
   kDifSysrstCtrlPinFlashWriteProtectInOut = 1U << 13,
+  /**
+   * All non open drain pins.
+   */
+  kDifSysrstCtrlPinAllNonOpenDrain = (1U << 12) - 1,
 } dif_sysrst_ctrl_pin_t;
 
 /**
