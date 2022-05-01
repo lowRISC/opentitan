@@ -92,6 +92,12 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
           cfg.pwrmgr_vif.update_resets(resets);
           if (power_glitch_reset) begin
             `uvm_info(`gfn, "Sending power glitch", UVM_MEDIUM)
+            // create glitch by 'glitch_power_reset' only possible
+            // when main power is up
+            if (control_enables.main_pd_n) begin
+              expect_fatal_alerts = 1;
+              cfg.exp_alert_q.push_back(1);
+            end
             cfg.pwrmgr_vif.glitch_power_reset();
           end
           if (escalation_reset) send_escalation_reset();
@@ -118,13 +124,16 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
         begin
           // At lowpower state, wait for clock comes back before check any csr
           @cfg.clk_rst_vif.cb;
-          cfg.slow_clk_rst_vif.wait_clks(3);
           // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
           // This read will not work in the chip, since the processor will be asleep.
-
-          check_wake_status(enabled_wakeups);
+          // After tighten reset status window, it is not possible to verify
+          // reset status by csr rd.
+          // Replace with a direct probe
+          fork
+            fast_check_reset_status(enabled_resets);
+            fast_check_wake_status(enabled_wakeups);
+          join
           `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
-          check_reset_status(enabled_resets);
         end
         twirl_rom_response();
       join
@@ -137,6 +146,9 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
 
       if (mubi_mode == PwrmgrMubiRomCtrl) begin
         add_rom_rsp_noise();
+        cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+        cfg.clk_rst_vif.wait_clks(5);
+        cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
       end
 
       // This is the expected side-effect of the low power entry reset, since the source of the

@@ -512,10 +512,37 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                  .err_msg("reset_status"));
   endtask
 
+
+  task fast_check_reset_status(resets_t expected_resets);
+    logic [pwrmgr_reg_pkg::NumRstReqs-1:0] init_reset_status;
+    `uvm_info(`gfn, "init reset status", UVM_HIGH);
+    init_reset_status = cfg.pwrmgr_vif.reset_status;
+
+    if (expected_resets != init_reset_status) begin
+      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.reset_status != init_reset_status);,
+                   $sformatf("reset_status wait timeout exp:%x  init:%x",
+                             expected_resets, init_reset_status), 1500)
+    end
+    `DV_CHECK_EQ(cfg.pwrmgr_vif.reset_status, expected_resets)
+  endtask
+
   // Checks the wake_status CSR matches expectations.
   task check_wake_status(wakeups_t expected_wakeups);
     csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(expected_wakeups),
                  .err_msg("wake_status"));
+  endtask
+
+  task fast_check_wake_status(wakeups_t expected_wakeups);
+    logic [pwrmgr_reg_pkg::NumWkups-1:0] init_wakeup_status;
+    `uvm_info(`gfn, "init wakeup", UVM_HIGH);
+    init_wakeup_status = cfg.pwrmgr_vif.wakeup_status;
+
+    if (expected_wakeups != init_wakeup_status) begin
+      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.wakeup_status != init_wakeup_status);,
+                   $sformatf("wakeup_status wait timeout exp:%x init:%x",
+                             expected_wakeups, init_wakeup_status), 1500)
+    end
+    `DV_CHECK_EQ(cfg.pwrmgr_vif.wakeup_status, expected_wakeups)
   endtask
 
   // Checks the wake_info CSR matches expectations depending on capture disable.

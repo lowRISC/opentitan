@@ -24,6 +24,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
     check_reset_status('0);
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
+      expect_fatal_alerts = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       setup_interrupt(.enable(en_intr));
       enabled_resets = resets_en & resets;
@@ -43,6 +44,9 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       // it will cause a separate reset after the externals, which complicates the checks.
       if (power_glitch_reset) begin
         `uvm_info(`gfn, "Sending power glitch", UVM_MEDIUM)
+        // expected alerts
+        expect_fatal_alerts = 1;
+        cfg.exp_alert_q.push_back(1);
         cfg.pwrmgr_vif.glitch_power_reset();
       end
       cfg.clk_rst_vif.wait_clks(cycles_before_reset);

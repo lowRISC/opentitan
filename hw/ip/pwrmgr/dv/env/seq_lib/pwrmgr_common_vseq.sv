@@ -8,12 +8,27 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
   constraint num_trans_c {num_trans inside {[1 : 2]};}
   `uvm_object_new
 
+
+  virtual task pre_start();
+    csr_excl_item csr_excl = ral.get_excl_item();
+    super.pre_start();
+    // In pwrmgr, random reset event can be regarded as power glitch in tb.
+    // Since glitch is marked as fatal and creates alert after PR#12072,
+    // exclude pwrmgr_reg_block.fault_status from the random reset tests
+    // to avoid spurious test failure.
+    if (common_seq_type inside {"csr_mem_rw_with_rand_reset", "stress_all_with_rand_reset"}) begin
+      csr_excl.add_excl("pwrmgr_reg_block.fault_status", CsrExclCheck);
+      expect_fatal_alerts = 1;
+    end
+
+  endtask
+
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
-  // pwrmgr has only two alert events
-  // REG_INTG_ERR and ESC_TIMEOUT
+  // pwrmgr has three alert events
+  // REG_INTG_ERR, ESC_TIMEOUT and MAIN_PD_GLITCH
   // all others will trigger only reset.
   // So disable wait_alert by skipping super.check_sec_cm_fi_resp()
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
