@@ -13,8 +13,10 @@ class pwrmgr_glitch_vseq extends pwrmgr_base_vseq;
   constraint num_trans_c {num_trans inside {[1 : 5]};}
 
   virtual task body();
+    expect_fatal_alerts = 1;
     for (int i = 0; i < num_trans; ++i) begin
       wait_for_fast_fsm_active();
+      cfg.exp_alert_q.push_back(1);
 
       fork
         cfg.pwrmgr_vif.glitch_power_reset();
