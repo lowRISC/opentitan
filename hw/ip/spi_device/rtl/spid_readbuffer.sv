@@ -57,9 +57,18 @@ module spid_readbuffer
   // start: data Output phase indicator. Either pulse or level are fine.
   input start_i,
 
+  // The Buffer logic updates its status only at the last beat of the byte.
+  // The time is when the address is updated.
+  // It is expected that the address is updated at the end of beat of a byte.
+  input address_update_i,
+
   output logic event_watermark_o,
   output logic event_flip_o
 );
+
+  // FIXME: Update logic
+  logic unused_address_update;
+  assign unused_address_update = address_update_i;
 
   ////////////////
   // Definition //
