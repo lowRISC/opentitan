@@ -17,5 +17,9 @@ uint32_t lifecycle_raw_state_get(void) {
 void lifecycle_device_id_get(lifecycle_device_id_t *device_id) {
   MockLifecycle::Instance().DeviceId(device_id);
 }
+
+void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
+  MockLifecycle::Instance().HwRev(hw_rev);
+}
 }  // extern "C"
 }  // namespace mask_rom_test
