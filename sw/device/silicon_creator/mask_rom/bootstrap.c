@@ -226,7 +226,7 @@ static rom_error_t bootstrap_handle_erase(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateErase);
 
   spi_device_cmd_t cmd;
-  spi_device_cmd_get(&cmd);
+  RETURN_IF_ERROR(spi_device_cmd_get(&cmd));
   // Erase requires WREN, ignore if WEL is not set.
   if (!bitfield_bit32_read(spi_device_flash_status_get(), kSpiDeviceWelBit)) {
     return kErrorOk;
@@ -290,7 +290,7 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateProgram);
 
   spi_device_cmd_t cmd;
-  spi_device_cmd_get(&cmd);
+  RETURN_IF_ERROR(spi_device_cmd_get(&cmd));
   // Erase and program require WREN, ignore if WEL is not set.
   if (cmd.opcode != kSpiDeviceOpcodeReset &&
       !bitfield_bit32_read(spi_device_flash_status_get(), kSpiDeviceWelBit)) {

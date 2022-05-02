@@ -9,8 +9,8 @@ extern "C" {
 
 void spi_device_init(void) { MockSpiDevice::Instance().Init(); }
 
-void spi_device_cmd_get(spi_device_cmd_t *cmd) {
-  MockSpiDevice::Instance().CmdGet(cmd);
+rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
+  return MockSpiDevice::Instance().CmdGet(cmd);
 }
 
 void spi_device_flash_status_clear(void) {

@@ -619,7 +619,7 @@ void spi_device_init(void) {
   abs_mmio_write32(kBase + SPI_DEVICE_CONTROL_REG_OFFSET, reg);
 }
 
-void spi_device_cmd_get(spi_device_cmd_t *cmd) {
+rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
   uint32_t reg = 0;
   bool cmd_pending = false;
   // TODO(#11871): When should sw read cmd, addr, and payload?
@@ -637,7 +637,12 @@ void spi_device_cmd_get(spi_device_cmd_t *cmd) {
         abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET);
   }
 
-  // TODO: Handle the case of non-zero PAYLOAD_START_IDX.
+  reg = abs_mmio_read32(kBase + SPI_DEVICE_INTR_STATE_REG_OFFSET);
+  if (bitfield_bit32_read(reg,
+                          SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_OVERFLOW_BIT)) {
+    return kErrorSpiDevicePayloadOverflow;
+  }
+
   cmd->payload_byte_count =
       abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET);
   uint32_t src =
@@ -646,6 +651,8 @@ void spi_device_cmd_get(spi_device_cmd_t *cmd) {
   for (size_t i = 0; i < cmd->payload_byte_count; i += sizeof(uint32_t)) {
     write_32(abs_mmio_read32(src + i), dest + i);
   }
+
+  return kErrorOk;
 }
 
 void spi_device_flash_status_clear(void) {
