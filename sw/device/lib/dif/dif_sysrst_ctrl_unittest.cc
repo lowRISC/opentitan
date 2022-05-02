@@ -564,6 +564,133 @@ TEST_F(InputPinReadTest, Success) {
   EXPECT_FALSE(value);
 }
 
+class AutoOverrideConfigTest : public SysrstCtrlTest {
+ protected:
+  dif_sysrst_ctrl_auto_override_config_t config_ = {
+      .debounce_time_threshold = 0x150,
+      .override_key_0 = kDifToggleEnabled,
+      .key_0_override_value = false,
+      .override_key_1 = kDifToggleDisabled,
+      .key_1_override_value = true,
+      .override_key_2 = kDifToggleEnabled,
+      .key_2_override_value = true,
+  };
+};
+
+TEST_F(AutoOverrideConfigTest, NullArgs) {
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_configure(nullptr, config_,
+                                                            kDifToggleEnabled));
+}
+
+TEST_F(AutoOverrideConfigTest, BadArgs) {
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_configure(
+      &sysrst_ctrl_, config_, static_cast<dif_toggle_t>(2)));
+
+  config_.override_key_0 = static_cast<dif_toggle_t>(2);
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_configure(
+      &sysrst_ctrl_, config_, kDifToggleEnabled));
+  config_.override_key_0 = kDifToggleEnabled;
+
+  config_.override_key_1 = static_cast<dif_toggle_t>(2);
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_configure(
+      &sysrst_ctrl_, config_, kDifToggleEnabled));
+  config_.override_key_1 = kDifToggleDisabled;
+
+  config_.override_key_2 = static_cast<dif_toggle_t>(2);
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_configure(
+      &sysrst_ctrl_, config_, kDifToggleEnabled));
+  config_.override_key_2 = kDifToggleEnabled;
+}
+
+TEST_F(AutoOverrideConfigTest, Locked) {
+  EXPECT_READ32(SYSRST_CTRL_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(dif_sysrst_ctrl_auto_override_configure(&sysrst_ctrl_, config_,
+                                                    kDifToggleEnabled),
+            kDifLocked);
+}
+
+TEST_F(AutoOverrideConfigTest, Success) {
+  EXPECT_READ32(SYSRST_CTRL_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(
+      SYSRST_CTRL_AUTO_BLOCK_DEBOUNCE_CTL_REG_OFFSET,
+      {{SYSRST_CTRL_AUTO_BLOCK_DEBOUNCE_CTL_AUTO_BLOCK_ENABLE_BIT, true},
+       {SYSRST_CTRL_AUTO_BLOCK_DEBOUNCE_CTL_DEBOUNCE_TIMER_OFFSET,
+        config_.debounce_time_threshold}});
+  EXPECT_WRITE32(SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_REG_OFFSET,
+                 {{SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY0_OUT_SEL_BIT, true},
+                  {SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY1_OUT_SEL_BIT, false},
+                  {SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY2_OUT_SEL_BIT, true},
+                  {SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY0_OUT_VALUE_BIT, false},
+                  {SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY1_OUT_VALUE_BIT, true},
+                  {SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY2_OUT_VALUE_BIT, true}});
+  EXPECT_DIF_OK(dif_sysrst_ctrl_auto_override_configure(&sysrst_ctrl_, config_,
+                                                        kDifToggleEnabled));
+}
+
+class AutoOverrideSetEnabledTest : public SysrstCtrlTest {};
+
+TEST_F(AutoOverrideSetEnabledTest, NullArgs) {
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_set_enabled(
+      nullptr, kDifSysrstCtrlKey1, kDifToggleEnabled));
+}
+
+TEST_F(AutoOverrideSetEnabledTest, BadArgs) {
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_set_enabled(
+      &sysrst_ctrl_, kDifSysrstCtrlKeyPowerButton, kDifToggleEnabled));
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_set_enabled(
+      &sysrst_ctrl_, kDifSysrstCtrlKey2, static_cast<dif_toggle_t>(2)));
+}
+
+TEST_F(AutoOverrideSetEnabledTest, Locked) {
+  EXPECT_READ32(SYSRST_CTRL_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(dif_sysrst_ctrl_auto_override_set_enabled(
+                &sysrst_ctrl_, kDifSysrstCtrlKey2, kDifToggleEnabled),
+            kDifLocked);
+}
+
+TEST_F(AutoOverrideSetEnabledTest, Success) {
+  EXPECT_READ32(SYSRST_CTRL_REGWEN_REG_OFFSET, 1);
+  EXPECT_READ32(SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_REG_OFFSET,
+                {{SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY0_OUT_SEL_BIT, true},
+                 {SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY1_OUT_SEL_BIT, false},
+                 {SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY2_OUT_SEL_BIT, true}});
+  EXPECT_WRITE32(SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_REG_OFFSET,
+                 {{SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY0_OUT_SEL_BIT, true},
+                  {SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY1_OUT_SEL_BIT, false},
+                  {SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY2_OUT_SEL_BIT, false}});
+  EXPECT_DIF_OK(dif_sysrst_ctrl_auto_override_set_enabled(
+      &sysrst_ctrl_, kDifSysrstCtrlKey2, kDifToggleDisabled));
+}
+
+class AutoOverrideGetEnabledTest : public SysrstCtrlTest {};
+
+TEST_F(AutoOverrideGetEnabledTest, NullArgs) {
+  dif_toggle_t is_enabled;
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_get_enabled(
+      nullptr, kDifSysrstCtrlKey1, &is_enabled));
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_get_enabled(
+      &sysrst_ctrl_, kDifSysrstCtrlKey1, nullptr));
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_get_enabled(
+      nullptr, kDifSysrstCtrlKey1, nullptr));
+}
+
+TEST_F(AutoOverrideGetEnabledTest, BadKey) {
+  dif_toggle_t is_enabled;
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_auto_override_get_enabled(
+      &sysrst_ctrl_, kDifSysrstCtrlKeyPowerButton, &is_enabled));
+}
+
+TEST_F(AutoOverrideGetEnabledTest, Success) {
+  dif_toggle_t is_enabled;
+  EXPECT_READ32(SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_REG_OFFSET,
+                {{SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY0_OUT_SEL_BIT, true},
+                 {SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY1_OUT_SEL_BIT, false},
+                 {SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY2_OUT_SEL_BIT, true}});
+  EXPECT_DIF_OK(dif_sysrst_ctrl_auto_override_get_enabled(
+      &sysrst_ctrl_, kDifSysrstCtrlKey2, &is_enabled));
+  EXPECT_EQ(is_enabled, kDifToggleEnabled);
+}
+
 class UlpWakeupGetStatusTest : public SysrstCtrlTest {};
 
 TEST_F(UlpWakeupGetStatusTest, NullArgs) {
