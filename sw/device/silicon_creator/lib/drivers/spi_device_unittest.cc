@@ -119,6 +119,20 @@ TEST_F(InitTest, Init) {
           {SPI_DEVICE_CMD_INFO_14_VALID_14_BIT, 1},
       });
 
+  EXPECT_ABS_WRITE32(
+      base_ + SPI_DEVICE_CMD_INFO_WREN_REG_OFFSET,
+      {
+          {SPI_DEVICE_CMD_INFO_WREN_OPCODE_OFFSET, kSpiDeviceOpcodeWriteEnable},
+          {SPI_DEVICE_CMD_INFO_WREN_VALID_BIT, 1},
+      });
+
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_CMD_INFO_WRDI_REG_OFFSET,
+                     {
+                         {SPI_DEVICE_CMD_INFO_WRDI_OPCODE_OFFSET,
+                          kSpiDeviceOpcodeWriteDisable},
+                         {SPI_DEVICE_CMD_INFO_WRDI_VALID_BIT, 1},
+                     });
+
   std::array<uint32_t, kSpiDeviceSfdpAreaNumBytes / sizeof(uint32_t)>
       sfdp_buffer;
   sfdp_buffer.fill(std::numeric_limits<uint32_t>::max());
