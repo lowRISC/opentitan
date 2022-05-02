@@ -133,6 +133,7 @@ class flash_ctrl_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg        csr;
+    string         csr_wr_name = "";
     bit            do_read_check = 1'b1;
     bit            write = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
@@ -141,6 +142,8 @@ class flash_ctrl_scoreboard #(
     bit            addr_phase_write = (write && channel == AddrChannel);
     bit            data_phase_read = (!write && channel == DataChannel);
     bit            data_phase_write = (write && channel == DataChannel);
+    flash_op_t     flash_op_cov;
+    bit            erase_req;
 
     // if access was to a valid csr, get the csr handle
     if ((is_mem_addr(
@@ -179,9 +182,10 @@ class flash_ctrl_scoreboard #(
         end else if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
           csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
           `DV_CHECK_NE_FATAL(csr, null)
+          csr_wr_name = csr.get_name();
           void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
           `uvm_info(`gfn, $sformatf("SCB EXP FLASH REG: 0x%0h", csr_addr), UVM_HIGH)
-          if ((csr.get_name() == "control") && cfg.scb_check) begin
+          if ((csr_wr_name == "control") && cfg.scb_check) begin
             csr_rd(.ptr(ral.control), .value(data), .backdoor(1'b1));
             curr_op = get_field_val(ral.control.op, data);
             if (curr_op == 2) begin  //erase op
@@ -214,6 +218,34 @@ class flash_ctrl_scoreboard #(
               end
             end
           end
+          // coverage collection
+          case (csr_wr_name)
+            "control": begin
+               csr_rd(.ptr(ral.control), .value(data), .backdoor(1'b1));
+               curr_op = get_field_val(ral.control.op, data);
+               erase_sel = get_field_val(ral.control.erase_sel, data);
+               part_sel = get_field_val(ral.control.partition_sel, data);
+               info_sel = get_field_val(ral.control.info_sel, data);
+               part = calc_part(part_sel, info_sel);
+               flash_op_cov.partition  = part;
+               flash_op_cov.erase_type = erase_sel;
+               flash_op_cov.op = curr_op;
+               if (cfg.en_cov) begin
+                 cov.control_cg.sample(flash_op_cov);
+               end
+            end
+            "erase_suspend": begin
+               csr_rd(.ptr(ral.erase_suspend), .value(data), .backdoor(1'b1));
+               erase_req = get_field_val(ral.erase_suspend.req, data);
+               if (cfg.en_cov) begin
+                 cov.erase_susp_cg.sample(erase_req);
+               end
+            end
+            default: begin
+            // TODO: Uncomment once func cover is implemented
+            // `uvm_info(`gfn, $sformatf("Not for func coverage: %0s", csr.get_full_name()))
+            end
+          endcase
         end
       end
 

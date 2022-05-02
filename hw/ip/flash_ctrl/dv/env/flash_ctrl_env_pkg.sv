@@ -75,12 +75,12 @@ package flash_ctrl_env_pkg;
   parameter uint FlashFullDataWidth = flash_ctrl_pkg::DataWidth + 4;
 
   // params for words
-  parameter uint NUM_PAGE_WORDS    = FlashNumBusWordsPerPage;
+  parameter uint NUM_PAGE_WORDS = FlashNumBusWordsPerPage;
   parameter uint NUM_BK_DATA_WORDS = FlashNumBusWordsPerBank;  // 256 pages
-  parameter uint NUM_BK_INFO_WORDS = InfoTypeBusWords[0];      // 10 pages
+  parameter uint NUM_BK_INFO_WORDS = InfoTypeBusWords[0];  // 10 pages
 
   // params for num of pages
-  parameter uint NUM_PAGE_PART_DATA  = flash_ctrl_pkg::PagesPerBank;
+  parameter uint NUM_PAGE_PART_DATA = flash_ctrl_pkg::PagesPerBank;
   parameter uint NUM_PAGE_PART_INFO0 = flash_ctrl_pkg::InfoTypeSize[0];
   parameter uint NUM_PAGE_PART_INFO1 = flash_ctrl_pkg::InfoTypeSize[1];
   parameter uint NUM_PAGE_PART_INFO2 = flash_ctrl_pkg::InfoTypeSize[2];
@@ -155,21 +155,21 @@ package flash_ctrl_env_pkg;
   } flash_sec_part_e;
 
   typedef enum {
-    AllOnes,       // All 1s
-    AllZeros,      // All 0s
-    CustomVal      // Custom Value
+    AllOnes,   // All 1s
+    AllZeros,  // All 0s
+    CustomVal  // Custom Value
   } flash_scb_wr_e;
 
   typedef struct packed {
-    mubi4_t  en;           // enable this region
-    mubi4_t  read_en;      // enable reads
-    mubi4_t  program_en;   // enable write
-    mubi4_t  erase_en;     // enable erase
-    mubi4_t  scramble_en;  // enable scramble
-    mubi4_t  ecc_en;       // enable ecc
-    mubi4_t  he_en;        // enable high endurance
-    uint num_pages;        // 0:NumPages % start_page
-    uint start_page;       // 0:NumPages-1
+    mubi4_t en;           // enable this region
+    mubi4_t read_en;      // enable reads
+    mubi4_t program_en;   // enable write
+    mubi4_t erase_en;     // enable erase
+    mubi4_t scramble_en;  // enable scramble
+    mubi4_t ecc_en;       // enable ecc
+    mubi4_t he_en;        // enable high endurance
+    uint    num_pages;    // 0:NumPages % start_page
+    uint    start_page;   // 0:NumPages-1
   } flash_mp_region_cfg_t;
 
   typedef struct packed {
@@ -197,7 +197,7 @@ package flash_ctrl_env_pkg;
   typedef bit [TL_AW-1:0] addr_t;
 
   parameter uint ALL_ZEROS = 32'h0000_0000;
-  parameter uint ALL_ONES  = 32'hffff_ffff;
+  parameter uint ALL_ONES = 32'hffff_ffff;
 
   // Parameter for Probing into the DUT RMA FSM
   parameter string PRB_RMA_FSM = "tb.dut.u_flash_hw_if.state_q";
