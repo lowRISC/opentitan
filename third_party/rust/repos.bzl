@@ -12,9 +12,9 @@ def rust_repos(rules_rust = None, safe_ftdi = None):
     http_archive_or_local(
         name = "rules_rust",
         local = rules_rust,
-        sha256 = "5e2f59778ee496064b2d96182bc8aa916a0e34921124a359f740f51e5e5afc38",
-        strip_prefix = "rules_rust-be0d6ca492f64cc8d460f54f467925ef2753ed89",
-        url = "https://github.com/lowRISC/rules_rust/archive/be0d6ca492f64cc8d460f54f467925ef2753ed89.tar.gz",
+        sha256 = "7ee424554cce89befd439b553ef9094d68ccbcbf33013194bd0effa1d4463a9b",
+        strip_prefix = "rules_rust-repo-cache-20220601_01",
+        url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/repo-cache-20220601_01.tar.gz",
     )
 
     http_archive_or_local(
