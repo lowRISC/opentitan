@@ -617,6 +617,7 @@
           name: "threshold"
           desc: '''If 0, disable the watermark. If non-zero, when the host
             access above or equal to the threshold, it reports an interrupt.
+            The value is byte-granularity not SRAM index.
             '''
         } // f: threshold
       ]

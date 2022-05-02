@@ -37,14 +37,9 @@ multiple times, the event won't be notified to the SW after the first report.
 
 `include "prim_assert.sv"
 
-module spid_readbuffer #(
-  // Buffer size: # of indices assigned to Read Buffer.
-  //    This is used to calculate double buffering and threshold.
-  parameter int unsigned ReadBufferDepth = spi_device_pkg::SramMsgDepth,
-
-  // Derived parameters
-  localparam int unsigned BufferAw = $clog2(ReadBufferDepth)
-) (
+module spid_readbuffer
+  import spi_device_pkg::SramBufferAw, spi_device_pkg::FlashMode;
+(
   input clk_i,
   input rst_ni,
 
@@ -52,8 +47,8 @@ module spid_readbuffer #(
 
   input spi_device_pkg::spi_mode_e spi_mode_i,
 
-  input [31:0]       current_address_i,
-  input [BufferAw:0] threshold_i, // A buffer size among two buffers (in bytes)
+  input [31:0]             current_address_i,
+  input [SramBufferAw-1:0] threshold_i,
 
   input sfdp_hit_i,
   input mailbox_hit_i,
@@ -69,11 +64,6 @@ module spid_readbuffer #(
   ////////////////
   // Definition //
   ////////////////
-
-  localparam int unsigned BufferSize    = ReadBufferDepth
-                                          * spi_device_pkg::SramDw / 8; // bytes
-  localparam int unsigned OneBufferSize = BufferSize / 2;
-  localparam int unsigned OneBufferAw   = $clog2(OneBufferSize);
 
   typedef enum logic {
     StIdle,
@@ -95,7 +85,7 @@ module spid_readbuffer #(
   //
   // ICEBOX(#10038): If the device goes sleep, the next_buffer_addr should be
   //                 recoverable.
-  logic [31-OneBufferAw:0] next_buffer_addr;
+  logic [31-SramBufferAw:0] next_buffer_addr;
 
   logic active;
 
@@ -109,14 +99,14 @@ module spid_readbuffer #(
   // Flip event handling
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
-      next_buffer_addr <= (32-OneBufferAw)'(1); // pointing to next buffer
+      next_buffer_addr <= (32-SramBufferAw)'(1); // pointing to next buffer
     end else if (active && flip) begin
       next_buffer_addr <= next_buffer_addr + 1'b 1;
     end
   end
 
-  logic [31-OneBufferAw:0] current_buffer_idx;
-  assign current_buffer_idx = current_address_i[31:OneBufferAw];
+  logic [31-SramBufferAw:0] current_buffer_idx;
+  assign current_buffer_idx = current_address_i[31:SramBufferAw];
   assign flip = current_buffer_idx == next_buffer_addr;
 
   // make flip event single cycle pulse signal
@@ -136,7 +126,7 @@ module spid_readbuffer #(
   //                 recover `next_buffer_addr`?
 
   // Watermark event: Threshold should not be 0 to enable the event
-  assign watermark_cross = (current_address_i[BufferAw:0] >= threshold_i)
+  assign watermark_cross = (current_address_i[SramBufferAw-1:0] >= threshold_i)
                          && |threshold_i;
 
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
