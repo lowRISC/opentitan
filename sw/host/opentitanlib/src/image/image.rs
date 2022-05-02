@@ -16,7 +16,6 @@ use zerocopy::LayoutVerified;
 
 use crate::image::manifest::Manifest;
 use crate::image::manifest_def::ManifestDef;
-use crate::util::bigint;
 use crate::util::parse_int::ParseInt;
 
 #[derive(Debug, Error)]
@@ -92,14 +91,27 @@ impl Image {
 
     /// Overwrites all fields in the image's manifest that are defined in `other`.
     pub fn overwrite_manifest(&mut self, other: ManifestDef) -> Result<()> {
-        let manifest_slice = &mut self.data.bytes[0..size_of::<Manifest>()];
-        let manifest_layout: LayoutVerified<&mut [u8], Manifest> =
-            LayoutVerified::new(&mut *manifest_slice).ok_or(ImageError::Parse)?;
-        let manifest: &mut Manifest = manifest_layout.into_mut();
+        let manifest = self.borrow_manifest_mut()?;
         let mut manifest_def: ManifestDef = (&*manifest).try_into()?;
         manifest_def.overwrite_fields(other);
         *manifest = manifest_def.try_into()?;
         Ok(())
+    }
+
+    pub fn borrow_manifest(&self) -> Result<&Manifest> {
+        let manifest_slice = &self.data.bytes[0..size_of::<Manifest>()];
+        let manifest_layout: LayoutVerified<&[u8], Manifest> =
+            LayoutVerified::new(manifest_slice).ok_or(ImageError::Parse)?;
+        let manifest: &Manifest = manifest_layout.into_ref();
+        Ok(manifest)
+    }
+
+    pub fn borrow_manifest_mut(&mut self) -> Result<&mut Manifest> {
+        let manifest_slice = &mut self.data.bytes[0..size_of::<Manifest>()];
+        let manifest_layout: LayoutVerified<&mut [u8], Manifest> =
+            LayoutVerified::new(&mut *manifest_slice).ok_or(ImageError::Parse)?;
+        let manifest: &mut Manifest = manifest_layout.into_mut();
+        Ok(manifest)
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.

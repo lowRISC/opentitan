@@ -18,9 +18,9 @@ use std::path::Path;
 
 #[derive(Deserialize, Debug)]
 struct OtpMapConfig {
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     width: usize,
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     depth: usize,
 }
 
@@ -39,11 +39,11 @@ struct OtpMapDigest {
 
 #[derive(Deserialize, Debug)]
 struct OtpMapScrambling {
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     key_size: usize,
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     iv_size: usize,
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     cnst_size: usize,
     keys: Vec<OtpMapKey>,
     digests: Vec<OtpMapDigest>,
@@ -52,7 +52,7 @@ struct OtpMapScrambling {
 #[derive(Deserialize, Debug)]
 struct OtpMapItem {
     name: String,
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     size: usize,
     #[serde(default)]
     #[allow(dead_code)]
@@ -66,7 +66,7 @@ pub struct OtpMapPartition {
     name: String,
     #[allow(dead_code)]
     secret: bool,
-    #[serde(default, with = "num_de")]
+    #[serde(default, deserialize_with = "num_de::deserialize")]
     size: usize,
     sw_digest: bool,
     hw_digest: bool,

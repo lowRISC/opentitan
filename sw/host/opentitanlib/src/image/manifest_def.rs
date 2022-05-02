@@ -8,8 +8,9 @@ use crate::util::num_de::HexEncoded;
 use crate::util::parse_int::ParseInt;
 
 use anyhow::{bail, Result};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
+use std::fmt;
 use std::iter::IntoIterator;
 use std::path::Path;
 use thiserror::Error;
@@ -24,11 +25,17 @@ pub enum ManifestError {
 
 fixed_size_bigint!(ManifestRsa, at_most 3072);
 
-#[derive(Clone, Default, Debug, Deserialize)]
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
 struct ManifestBigInt(Option<HexEncoded<ManifestRsa>>);
 
-#[derive(Clone, Default, Debug, Deserialize)]
-struct ManifestSmallInt<T: ParseInt>(Option<HexEncoded<T>>);
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
+struct ManifestSmallInt<T: ParseInt + fmt::UpperHex>(Option<HexEncoded<T>>);
+
+impl fmt::UpperHex for ManifestRsa {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        fmt::UpperHex::fmt(&self.as_biguint(), f)
+    }
+}
 
 /// A macro for wrapping manifest struct definitions that parse from HJSON.
 ///
@@ -42,7 +49,7 @@ macro_rules! manifest_def {
             $field_name:ident: $field_type:ty,
         )*
     }, $out_type:ident) => {
-        #[derive(Clone, Default, Deserialize, Debug)]
+        #[derive(Clone, Default, Deserialize, Serialize, Debug)]
         $access struct $name {
             $(
                 $(#[$doc])?
@@ -123,7 +130,7 @@ impl ManifestPacked<ManifestRsa> for ManifestBigInt {
     }
 }
 
-impl<T: ParseInt> ManifestPacked<T> for ManifestSmallInt<T> {
+impl<T: ParseInt + fmt::UpperHex> ManifestPacked<T> for ManifestSmallInt<T> {
     fn unpack(self, name: &'static str) -> Result<T> {
         match self.0 {
             Some(v) => Ok(v.0),
@@ -138,7 +145,9 @@ impl<T: ParseInt> ManifestPacked<T> for ManifestSmallInt<T> {
     }
 }
 
-impl<T: ParseInt, const N: usize> ManifestPacked<[T; N]> for [ManifestSmallInt<T>; N] {
+impl<T: ParseInt + fmt::UpperHex, const N: usize> ManifestPacked<[T; N]>
+    for [ManifestSmallInt<T>; N]
+{
     fn unpack(self, name: &'static str) -> Result<[T; N]> {
         let results = self.map(|e| e.unpack(name));
         if let Some(err_idx) = results.iter().position(Result::is_err) {
@@ -254,7 +263,7 @@ impl TryFrom<&SigverifyRsaBuffer> for ManifestBigInt {
 
 impl<T> From<&T> for ManifestSmallInt<T>
 where
-    T: ParseInt + Copy,
+    T: ParseInt + fmt::UpperHex + Copy,
 {
     fn from(o: &T) -> ManifestSmallInt<T> {
         ManifestSmallInt(Some(HexEncoded(*o)))
