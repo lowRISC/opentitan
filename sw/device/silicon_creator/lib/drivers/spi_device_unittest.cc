@@ -203,6 +203,25 @@ struct CmdGetTestCase {
 class CmdGetTest : public SpiDeviceTest,
                    public testing::WithParamInterface<CmdGetTestCase> {};
 
+TEST_F(CmdGetTest, PayloadOverflow) {
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET, 0);
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET,
+                    {
+                        {SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_NOTEMPTY_BIT, 1},
+                        {SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT, 1},
+                    });
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET,
+                    kSpiDeviceOpcodePageProgram);
+
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET, 0);
+
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                    {{SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_OVERFLOW_BIT, 1}});
+
+  spi_device_cmd_t cmd;
+  EXPECT_EQ(spi_device_cmd_get(&cmd), kErrorSpiDevicePayloadOverflow);
+}
+
 TEST_P(CmdGetTest, CmdGet) {
   bool has_address = GetParam().address != kSpiDeviceNoAddress;
 
@@ -221,6 +240,8 @@ TEST_P(CmdGetTest, CmdGet) {
                       GetParam().address);
   }
 
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET, 0);
+
   std::vector<uint32_t> payload_area(kSpiDevicePayloadAreaNumWords,
                                      std::numeric_limits<uint32_t>::max());
   std::memcpy(payload_area.data(), GetParam().payload.data(),
@@ -234,8 +255,7 @@ TEST_P(CmdGetTest, CmdGet) {
   }
 
   spi_device_cmd_t cmd;
-  spi_device_cmd_get(&cmd);
-
+  EXPECT_EQ(spi_device_cmd_get(&cmd), kErrorOk);
   EXPECT_EQ(cmd.opcode, GetParam().opcode);
   EXPECT_EQ(cmd.address, GetParam().address);
   EXPECT_EQ(cmd.payload_byte_count, GetParam().payload.size());

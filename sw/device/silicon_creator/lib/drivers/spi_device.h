@@ -336,7 +336,7 @@ typedef struct spi_device_cmd {
  *
  * @param[out] cmd SPI flash command.
  */
-void spi_device_cmd_get(spi_device_cmd_t *cmd);
+rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd);
 
 /**
  * Clears the SPI flash status register.
