@@ -599,5 +599,34 @@ TEST_F(UlpWakeupClearStatusTest, Success) {
   EXPECT_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_clear_status(&sysrst_ctrl_));
 }
 
+class LockTest : public SysrstCtrlTest {};
+
+TEST_F(LockTest, NullArgs) { EXPECT_DIF_BADARG(dif_sysrst_ctrl_lock(nullptr)); }
+
+TEST_F(LockTest, Success) {
+  EXPECT_WRITE32(SYSRST_CTRL_REGWEN_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_sysrst_ctrl_lock(&sysrst_ctrl_));
+}
+
+class IsLockedTest : public SysrstCtrlTest {};
+
+TEST_F(IsLockedTest, NullArgs) {
+  bool is_locked;
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_is_locked(nullptr, &is_locked));
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_is_locked(&sysrst_ctrl_, nullptr));
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_is_locked(nullptr, nullptr));
+}
+
+TEST_F(IsLockedTest, Success) {
+  bool is_locked;
+  EXPECT_READ32(SYSRST_CTRL_REGWEN_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_sysrst_ctrl_is_locked(&sysrst_ctrl_, &is_locked));
+  EXPECT_TRUE(is_locked);
+
+  EXPECT_READ32(SYSRST_CTRL_REGWEN_REG_OFFSET, 1);
+  EXPECT_DIF_OK(dif_sysrst_ctrl_is_locked(&sysrst_ctrl_, &is_locked));
+  EXPECT_FALSE(is_locked);
+}
+
 }  // namespace
 }  // namespace dif_sysrst_ctrl_unittest
