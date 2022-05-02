@@ -24,6 +24,26 @@
             ],
         }
         {
+            name:  "HW_CFG",
+            // If set to true, this computes the HW digest value
+            // and locks the partition.
+            lock:  "False",
+            items: [
+                {
+                    name:  "EN_CSRNG_SW_APP_READ",
+                    value: false,
+                },
+                {
+                    name:  "EN_ENTROPY_SRC_FW_READ",
+                    value: false,
+                },
+                {
+                    name: "EN_ENTROPY_SRC_FW_OVER",
+                    value: false,
+                }
+            ],
+        }
+        {
             name:  "LIFE_CYCLE",
             // Can be one of the following strings:
             // RAW, TEST_UNLOCKED0-3, TEST_LOCKED0-2, DEV, PROD, PROD_END, RMA, SCRAP
