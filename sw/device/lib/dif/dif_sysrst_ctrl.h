@@ -437,6 +437,22 @@ dif_result_t dif_sysrst_ctrl_output_pin_override_configure(
     dif_sysrst_ctrl_pin_config_t config);
 
 /**
+ * Configures a System Reset Controller's key signal auto-override feature.
+ *
+ * Upon detection of a Power Button high-to-low transition, the signals from
+ * generic keys 0 through 2 may be overriden with specified values.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param config Runtime configuration parameters.
+ * @param enabled Whether to enable the feature or not.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_auto_override_configure(
+    const dif_sysrst_ctrl_t *sysrst_ctrl,
+    dif_sysrst_ctrl_auto_override_config_t config, dif_toggle_t enabled);
+
+/**
  * Configures a System Reset Controller's ultra-low-power (ULP) wakeup feature.
  *
  * @param sysrst_ctrl A System Reset Controller handle.
@@ -582,9 +598,6 @@ dif_result_t dif_sysrst_ctrl_output_pin_override_get_enabled(
  * value. Attempting to set the override value of an input pin will return
  * `kDifBadArg`.
  *
- * Additionally, this will return `kDifError` if an output pin's override
- * fuction is disabled, or the override value is not allowed.
- *
  * @param sysrst_ctrl A System Reset Controller handle.
  * @param pin The output pin to override.
  * @param value The override value to set on the pin.
@@ -634,44 +647,40 @@ dif_result_t dif_sysrst_ctrl_input_pin_read(
     bool *value);
 
 /**
- * Configures a System Reset Controller's key signal auto-override feature.
- *
- * Upon detection of a Power Button high-to-low transition, the signals from
- * generic keys 0 through 2 may be overriden with specified values.
- *
- * @param sysrst_ctrl A System Reset Controller handle.
- * @param config Runtime configuration parameters.
- * @param enabled Whether to enable the feature or not.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_sysrst_ctrl_auto_override_configure(
-    const dif_sysrst_ctrl_t *sysrst_ctrl,
-    dif_sysrst_ctrl_auto_override_config_t config, dif_toggle_t enabled);
-
-/**
  * Sets the enablement of a System Reset Controller's key signal auto-override
  * feature.
  *
+ * Note, this feature is only available for keys 0, 1, and 2. Attempting to
+ * enable the auto-override feature on non-supported keys will return
+ * `kDifBadArg`.
+ *
  * @param sysrst_ctrl A System Reset Controller handle.
+ * @param key The key to enable the override feature for.
  * @param enabled Whether to enable the feature or not.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sysrst_ctrl_auto_override_set_enabled(
-    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_toggle_t enabled);
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_key_t key,
+    dif_toggle_t enabled);
 
 /**
  * Gets the enablement of a System Reset Controller's key signal auto-override
  * feature.
  *
+ * Note, this feature is only available for keys 0, 1, and 2. Attempting to
+ * check whether the auto-override feature is enabled non-supported keys will
+ * return `kDifBadArg`.
+ *
  * @param sysrst_ctrl A System Reset Controller handle.
+ * @param key The key the override feature is enabled for.
  * @param[out] is_enabled Whether the feature is enabled or not.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sysrst_ctrl_auto_override_get_enabled(
-    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_toggle_t *is_enabled);
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_key_t key,
+    dif_toggle_t *is_enabled);
 
 /**
  * Gets the cause(s) of a key combination detection IRQ.

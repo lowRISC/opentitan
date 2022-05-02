@@ -581,6 +581,125 @@ dif_result_t dif_sysrst_ctrl_input_pin_read(
   return kDifOk;
 }
 
+dif_result_t dif_sysrst_ctrl_auto_override_configure(
+    const dif_sysrst_ctrl_t *sysrst_ctrl,
+    dif_sysrst_ctrl_auto_override_config_t config, dif_toggle_t enabled) {
+  if (sysrst_ctrl == NULL || !dif_is_valid_toggle(config.override_key_0) ||
+      !dif_is_valid_toggle(config.override_key_1) ||
+      !dif_is_valid_toggle(config.override_key_2) ||
+      !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+
+  if (!mmio_region_read32(sysrst_ctrl->base_addr,
+                          SYSRST_CTRL_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  // Configure Auto Block Debounce Control register.
+  uint32_t auto_block_ctl_reg = bitfield_bit32_write(
+      0, SYSRST_CTRL_AUTO_BLOCK_DEBOUNCE_CTL_AUTO_BLOCK_ENABLE_BIT,
+      dif_toggle_to_bool(enabled));
+  auto_block_ctl_reg = bitfield_field32_write(
+      auto_block_ctl_reg,
+      SYSRST_CTRL_AUTO_BLOCK_DEBOUNCE_CTL_DEBOUNCE_TIMER_FIELD,
+      config.debounce_time_threshold);
+  mmio_region_write32(sysrst_ctrl->base_addr,
+                      SYSRST_CTRL_AUTO_BLOCK_DEBOUNCE_CTL_REG_OFFSET,
+                      auto_block_ctl_reg);
+
+  // Configure Auto Block Output Control register.
+  auto_block_ctl_reg =
+      bitfield_bit32_write(0, SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY0_OUT_SEL_BIT,
+                           dif_toggle_to_bool(config.override_key_0));
+  auto_block_ctl_reg = bitfield_bit32_write(
+      auto_block_ctl_reg, SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY0_OUT_VALUE_BIT,
+      dif_toggle_to_bool(config.key_0_override_value));
+  auto_block_ctl_reg = bitfield_bit32_write(
+      auto_block_ctl_reg, SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY1_OUT_SEL_BIT,
+      dif_toggle_to_bool(config.override_key_1));
+  auto_block_ctl_reg = bitfield_bit32_write(
+      auto_block_ctl_reg, SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY1_OUT_VALUE_BIT,
+      dif_toggle_to_bool(config.key_1_override_value));
+  auto_block_ctl_reg = bitfield_bit32_write(
+      auto_block_ctl_reg, SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY2_OUT_SEL_BIT,
+      dif_toggle_to_bool(config.override_key_2));
+  auto_block_ctl_reg = bitfield_bit32_write(
+      auto_block_ctl_reg, SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY2_OUT_VALUE_BIT,
+      dif_toggle_to_bool(config.key_2_override_value));
+  mmio_region_write32(sysrst_ctrl->base_addr,
+                      SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_REG_OFFSET,
+                      auto_block_ctl_reg);
+
+  return kDifOk;
+}
+
+static bool get_key_auto_override_en_bit_index(dif_sysrst_ctrl_key_t key,
+                                               uint32_t *en_bit_index) {
+  switch (key) {
+    case kDifSysrstCtrlKey0:
+      *en_bit_index = SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY0_OUT_SEL_BIT;
+      break;
+    case kDifSysrstCtrlKey1:
+      *en_bit_index = SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY1_OUT_SEL_BIT;
+      break;
+    case kDifSysrstCtrlKey2:
+      *en_bit_index = SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY2_OUT_SEL_BIT;
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+
+dif_result_t dif_sysrst_ctrl_auto_override_set_enabled(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_key_t key,
+    dif_toggle_t enabled) {
+  if (sysrst_ctrl == NULL || !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+
+  uint32_t en_bit_index;
+  if (!get_key_auto_override_en_bit_index(key, &en_bit_index)) {
+    return kDifBadArg;
+  }
+
+  if (!mmio_region_read32(sysrst_ctrl->base_addr,
+                          SYSRST_CTRL_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  uint32_t auto_block_ctl_reg = mmio_region_read32(
+      sysrst_ctrl->base_addr, SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_REG_OFFSET);
+  auto_block_ctl_reg = bitfield_bit32_write(auto_block_ctl_reg, en_bit_index,
+                                            dif_toggle_to_bool(enabled));
+  mmio_region_write32(sysrst_ctrl->base_addr,
+                      SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_REG_OFFSET,
+                      auto_block_ctl_reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_sysrst_ctrl_auto_override_get_enabled(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_key_t key,
+    dif_toggle_t *is_enabled) {
+  if (sysrst_ctrl == NULL || is_enabled == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t en_bit_index;
+  if (!get_key_auto_override_en_bit_index(key, &en_bit_index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t auto_block_ctl_reg = mmio_region_read32(
+      sysrst_ctrl->base_addr, SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_REG_OFFSET);
+  *is_enabled =
+      dif_bool_to_toggle(bitfield_bit32_read(auto_block_ctl_reg, en_bit_index));
+
+  return kDifOk;
+}
+
 dif_result_t dif_sysrst_ctrl_ulp_wakeup_get_status(
     const dif_sysrst_ctrl_t *sysrst_ctrl, bool *wakeup_detected) {
   if (sysrst_ctrl == NULL || wakeup_detected == NULL) {
