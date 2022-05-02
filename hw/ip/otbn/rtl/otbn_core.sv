@@ -175,6 +175,7 @@ module otbn_core
   logic               rf_bignum_rf_err;
 
   alu_bignum_operation_t alu_bignum_operation;
+  logic                  alu_bignum_operation_valid;
   logic                  alu_bignum_operation_commit;
   logic [WLEN-1:0]       alu_bignum_operation_result;
   logic                  alu_bignum_selection_flag;
@@ -445,6 +446,7 @@ module otbn_core
 
     // To/from bignum ALU
     .alu_bignum_operation_o       (alu_bignum_operation),
+    .alu_bignum_operation_valid_o (alu_bignum_operation_valid),
     .alu_bignum_operation_commit_o(alu_bignum_operation_commit),
     .alu_bignum_operation_result_i(alu_bignum_operation_result),
     .alu_bignum_selection_flag_i  (alu_bignum_selection_flag),
@@ -723,6 +725,7 @@ module otbn_core
     .rst_ni,
 
     .operation_i       (alu_bignum_operation),
+    .operation_valid_i (alu_bignum_operation_valid),
     .operation_commit_i(alu_bignum_operation_commit),
     .operation_result_o(alu_bignum_operation_result),
     .selection_flag_o  (alu_bignum_selection_flag),
