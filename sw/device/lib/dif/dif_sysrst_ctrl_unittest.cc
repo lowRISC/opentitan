@@ -476,5 +476,128 @@ TEST_F(PinOverrideGetEnabledTest, Success) {
   EXPECT_EQ(is_enabled, kDifToggleDisabled);
 }
 
+class PinSetOverrideTest : public SysrstCtrlTest {};
+
+TEST_F(PinSetOverrideTest, NullArgs) {
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_output_pin_set_override(
+      nullptr, kDifSysrstCtrlPinKey1Out, true));
+}
+
+TEST_F(PinSetOverrideTest, BadPin) {
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_output_pin_set_override(
+      &sysrst_ctrl_, kDifSysrstCtrlPinKey1In, true));
+}
+
+TEST_F(PinSetOverrideTest, Success) {
+  EXPECT_READ32(SYSRST_CTRL_PIN_OUT_VALUE_REG_OFFSET,
+                {{SYSRST_CTRL_PIN_OUT_VALUE_FLASH_WP_L_BIT, 1}});
+  EXPECT_WRITE32(SYSRST_CTRL_PIN_OUT_VALUE_REG_OFFSET,
+                 {{SYSRST_CTRL_PIN_OUT_VALUE_KEY1_OUT_BIT, 1},
+                  {SYSRST_CTRL_PIN_OUT_VALUE_FLASH_WP_L_BIT, 1}});
+  EXPECT_DIF_OK(dif_sysrst_ctrl_output_pin_set_override(
+      &sysrst_ctrl_, kDifSysrstCtrlPinKey1Out, true));
+}
+
+class PinGetOverrideTest : public SysrstCtrlTest {};
+
+TEST_F(PinGetOverrideTest, NullArgs) {
+  bool value;
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_output_pin_get_override(
+      nullptr, kDifSysrstCtrlPinKey1Out, &value));
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_output_pin_get_override(
+      &sysrst_ctrl_, kDifSysrstCtrlPinKey1Out, nullptr));
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_output_pin_get_override(
+      nullptr, kDifSysrstCtrlPinKey1Out, nullptr));
+}
+
+TEST_F(PinGetOverrideTest, BadPin) {
+  bool value;
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_output_pin_get_override(
+      &sysrst_ctrl_, kDifSysrstCtrlPinKey1In, &value));
+}
+
+TEST_F(PinGetOverrideTest, Success) {
+  bool value;
+  EXPECT_READ32(SYSRST_CTRL_PIN_OUT_VALUE_REG_OFFSET,
+                {{SYSRST_CTRL_PIN_OUT_VALUE_KEY1_OUT_BIT, 1}});
+  EXPECT_DIF_OK(dif_sysrst_ctrl_output_pin_get_override(
+      &sysrst_ctrl_, kDifSysrstCtrlPinKey1Out, &value));
+  EXPECT_TRUE(value);
+
+  EXPECT_READ32(SYSRST_CTRL_PIN_OUT_VALUE_REG_OFFSET,
+                {{SYSRST_CTRL_PIN_OUT_VALUE_KEY1_OUT_BIT, 1}});
+  EXPECT_DIF_OK(dif_sysrst_ctrl_output_pin_get_override(
+      &sysrst_ctrl_, kDifSysrstCtrlPinKey2Out, &value));
+  EXPECT_FALSE(value);
+}
+
+class InputPinReadTest : public SysrstCtrlTest {};
+
+TEST_F(InputPinReadTest, NullArgs) {
+  bool value;
+  EXPECT_DIF_BADARG(
+      dif_sysrst_ctrl_input_pin_read(nullptr, kDifSysrstCtrlPinKey2In, &value));
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_input_pin_read(
+      &sysrst_ctrl_, kDifSysrstCtrlPinKey2In, nullptr));
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_input_pin_read(
+      nullptr, kDifSysrstCtrlPinKey2In, nullptr));
+}
+
+TEST_F(InputPinReadTest, BadPin) {
+  bool value;
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_input_pin_read(
+      &sysrst_ctrl_, kDifSysrstCtrlPinKey2Out, &value));
+}
+
+TEST_F(InputPinReadTest, Success) {
+  bool value;
+  EXPECT_READ32(SYSRST_CTRL_PIN_IN_VALUE_REG_OFFSET,
+                {{SYSRST_CTRL_PIN_IN_VALUE_KEY1_IN_BIT, 1}});
+  EXPECT_DIF_OK(dif_sysrst_ctrl_input_pin_read(
+      &sysrst_ctrl_, kDifSysrstCtrlPinKey1In, &value));
+  EXPECT_TRUE(value);
+
+  EXPECT_READ32(SYSRST_CTRL_PIN_IN_VALUE_REG_OFFSET,
+                {{SYSRST_CTRL_PIN_IN_VALUE_KEY1_IN_BIT, 1}});
+  EXPECT_DIF_OK(dif_sysrst_ctrl_input_pin_read(
+      &sysrst_ctrl_, kDifSysrstCtrlPinKey2In, &value));
+  EXPECT_FALSE(value);
+}
+
+class UlpWakeupGetStatusTest : public SysrstCtrlTest {};
+
+TEST_F(UlpWakeupGetStatusTest, NullArgs) {
+  bool wakeup_detected;
+  EXPECT_DIF_BADARG(
+      dif_sysrst_ctrl_ulp_wakeup_get_status(nullptr, &wakeup_detected));
+  EXPECT_DIF_BADARG(
+      dif_sysrst_ctrl_ulp_wakeup_get_status(&sysrst_ctrl_, nullptr));
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_ulp_wakeup_get_status(nullptr, nullptr));
+}
+
+TEST_F(UlpWakeupGetStatusTest, Success) {
+  bool wakeup_detected;
+  EXPECT_READ32(SYSRST_CTRL_WKUP_STATUS_REG_OFFSET, 1);
+  EXPECT_DIF_OK(
+      dif_sysrst_ctrl_ulp_wakeup_get_status(&sysrst_ctrl_, &wakeup_detected));
+  EXPECT_TRUE(wakeup_detected);
+
+  EXPECT_READ32(SYSRST_CTRL_WKUP_STATUS_REG_OFFSET, 0);
+  EXPECT_DIF_OK(
+      dif_sysrst_ctrl_ulp_wakeup_get_status(&sysrst_ctrl_, &wakeup_detected));
+  EXPECT_FALSE(wakeup_detected);
+}
+
+class UlpWakeupClearStatusTest : public SysrstCtrlTest {};
+
+TEST_F(UlpWakeupClearStatusTest, NullArgs) {
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_ulp_wakeup_clear_status(nullptr));
+}
+
+TEST_F(UlpWakeupClearStatusTest, Success) {
+  EXPECT_WRITE32(SYSRST_CTRL_WKUP_STATUS_REG_OFFSET, 1);
+  EXPECT_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_clear_status(&sysrst_ctrl_));
+}
+
 }  // namespace
 }  // namespace dif_sysrst_ctrl_unittest

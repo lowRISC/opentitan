@@ -621,15 +621,17 @@ dif_result_t dif_sysrst_ctrl_output_pin_get_override(
  * Reads a System Reset Controller's input pin (like a GPIO pin).
  *
  * Note, only input (or inout) pins may be read. Attempting to read the value of
- * an output pin will return `kDifError`.
+ * an output pin will return `kDifBadArg`.
  *
  * @param sysrst_ctrl A System Reset Controller handle.
  * @param pin The pin to read.
+ * @param[out] value The value set on the pin.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sysrst_ctrl_input_pin_read(
-    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin);
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin,
+    bool *value);
 
 /**
  * Configures a System Reset Controller's key signal auto-override feature.
