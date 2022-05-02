@@ -5,6 +5,7 @@
 use anyhow::{ensure, Result};
 use erased_serde::Serialize;
 use std::any::Any;
+use std::convert::TryInto;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
@@ -78,7 +79,9 @@ impl CommandDispatch for ManifestShowCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        Ok(None)
+        let image = image::Image::read_from_file(&self.image)?;
+        let manifest_def: ManifestDef = image.borrow_manifest()?.try_into()?;
+        Ok(Some(Box::new(manifest_def)))
     }
 }
 
