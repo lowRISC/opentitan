@@ -42,6 +42,10 @@ module chip_earlgrey_cw310 #(
   inout IO_USB_SUSPEND, // Manual Pad
   inout IO_CLKOUT, // Manual Pad
   inout IO_TRIGGER, // Manual Pad
+  inout SPI_DEV_DBG_CLK, // Manual Pad
+  inout SPI_DEV_DBG_CS_L, // Manual Pad
+  inout SPI_DEV_DBG_D0, // Manual Pad
+  inout SPI_DEV_DBG_D1, // Manual Pad
 
   // Muxed Pads
   inout IOA0, // MIO Pad 0
@@ -209,6 +213,10 @@ module chip_earlgrey_cw310 #(
   logic manual_in_io_usb_suspend, manual_out_io_usb_suspend, manual_oe_io_usb_suspend;
   logic manual_in_io_clkout, manual_out_io_clkout, manual_oe_io_clkout;
   logic manual_in_io_trigger, manual_out_io_trigger, manual_oe_io_trigger;
+  logic manual_in_spi_dev_dbg_clk, manual_out_spi_dev_dbg_clk, manual_oe_spi_dev_dbg_clk;
+  logic manual_in_spi_dev_dbg_cs_l, manual_out_spi_dev_dbg_cs_l, manual_oe_spi_dev_dbg_cs_l;
+  logic manual_in_spi_dev_dbg_d0, manual_out_spi_dev_dbg_d0, manual_oe_spi_dev_dbg_d0;
+  logic manual_in_spi_dev_dbg_d1, manual_out_spi_dev_dbg_d1, manual_oe_spi_dev_dbg_d1;
 
   pad_attr_t manual_attr_por_n;
   pad_attr_t manual_attr_io_clk;
@@ -224,6 +232,10 @@ module chip_earlgrey_cw310 #(
   pad_attr_t manual_attr_io_usb_suspend;
   pad_attr_t manual_attr_io_clkout;
   pad_attr_t manual_attr_io_trigger;
+  pad_attr_t manual_attr_spi_dev_dbg_clk;
+  pad_attr_t manual_attr_spi_dev_dbg_cs_l;
+  pad_attr_t manual_attr_spi_dev_dbg_d0;
+  pad_attr_t manual_attr_spi_dev_dbg_d1;
 
   /////////////////////////
   // Stubbed pad tie-off //
@@ -297,6 +309,23 @@ module chip_earlgrey_cw310 #(
   assign mio_in_raw[46] = 1'b0;
   assign unused_sig[69] = mio_out[46] ^ mio_oe[46];
 
+  //////////////////////////////
+  // SPI device debug signals //
+  //////////////////////////////
+
+  assign manual_oe_spi_dev_dbg_clk = 1'b1;
+  assign manual_in_spi_dev_dbg_clk = 1'b0;
+  assign manual_out_spi_dev_dbg_clk = dio_in[DioSpiDeviceSck];
+  assign manual_oe_spi_dev_dbg_cs_l = 1'b1;
+  assign manual_in_spi_dev_dbg_cs_l = 1'b0;
+  assign manual_out_spi_dev_dbg_cs_l = dio_in[DioSpiDeviceCsb];
+  assign manual_oe_spi_dev_dbg_d0 = 1'b1;
+  assign manual_in_spi_dev_dbg_d0 = 1'b0;
+  assign manual_out_spi_dev_dbg_d0 = dio_in[DioSpiDeviceSd0];
+  assign manual_oe_spi_dev_dbg_d1 = 1'b1;
+  assign manual_in_spi_dev_dbg_d1 = 1'b0;
+  assign manual_out_spi_dev_dbg_d1 = dio_out[DioSpiDeviceSd1];
+
   //////////////////////
   // Padring Instance //
   //////////////////////
@@ -307,9 +336,13 @@ module chip_earlgrey_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(24),
+    .NDioPads(28),
     .NMioPads(28),
     .DioPadType ({
+      BidirStd, // SPI_DEV_DBG_D1
+      BidirStd, // SPI_DEV_DBG_D0
+      BidirStd, // SPI_DEV_DBG_CS_L
+      BidirStd, // SPI_DEV_DBG_CLK
       BidirStd, // IO_TRIGGER
       BidirStd, // IO_CLKOUT
       BidirStd, // IO_USB_SUSPEND
@@ -372,6 +405,10 @@ module chip_earlgrey_cw310 #(
     .dio_in_raw_o ( ),
     // Chip IOs
     .dio_pad_io ({
+      SPI_DEV_DBG_D1,
+      SPI_DEV_DBG_D0,
+      SPI_DEV_DBG_CS_L,
+      SPI_DEV_DBG_CLK,
       IO_TRIGGER,
       IO_CLKOUT,
       IO_USB_SUSPEND,
@@ -431,6 +468,10 @@ module chip_earlgrey_cw310 #(
 
     // Core-facing
     .dio_in_o ({
+        manual_in_spi_dev_dbg_d1,
+        manual_in_spi_dev_dbg_d0,
+        manual_in_spi_dev_dbg_cs_l,
+        manual_in_spi_dev_dbg_clk,
         manual_in_io_trigger,
         manual_in_io_clkout,
         manual_in_io_usb_suspend,
@@ -457,6 +498,10 @@ module chip_earlgrey_cw310 #(
         manual_in_por_n
       }),
     .dio_out_i ({
+        manual_out_spi_dev_dbg_d1,
+        manual_out_spi_dev_dbg_d0,
+        manual_out_spi_dev_dbg_cs_l,
+        manual_out_spi_dev_dbg_clk,
         manual_out_io_trigger,
         manual_out_io_clkout,
         manual_out_io_usb_suspend,
@@ -483,6 +528,10 @@ module chip_earlgrey_cw310 #(
         manual_out_por_n
       }),
     .dio_oe_i ({
+        manual_oe_spi_dev_dbg_d1,
+        manual_oe_spi_dev_dbg_d0,
+        manual_oe_spi_dev_dbg_cs_l,
+        manual_oe_spi_dev_dbg_clk,
         manual_oe_io_trigger,
         manual_oe_io_clkout,
         manual_oe_io_usb_suspend,
@@ -509,6 +558,10 @@ module chip_earlgrey_cw310 #(
         manual_oe_por_n
       }),
     .dio_attr_i ({
+        manual_attr_spi_dev_dbg_d1,
+        manual_attr_spi_dev_dbg_d0,
+        manual_attr_spi_dev_dbg_cs_l,
+        manual_attr_spi_dev_dbg_clk,
         manual_attr_io_trigger,
         manual_attr_io_clkout,
         manual_attr_io_usb_suspend,

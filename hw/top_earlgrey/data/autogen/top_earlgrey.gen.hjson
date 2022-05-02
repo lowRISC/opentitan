@@ -12386,6 +12386,34 @@
             connection: manual
             desc: Manual trigger output for SCA setup
           }
+          {
+            name: SPI_DEV_DBG_CLK
+            type: BidirStd
+            bank: VIOA
+            connection: manual
+            desc: SPI device debug clock
+          }
+          {
+            name: SPI_DEV_DBG_CS_L
+            type: BidirStd
+            bank: VIOA
+            connection: manual
+            desc: SPI device debug chip select
+          }
+          {
+            name: SPI_DEV_DBG_D0
+            type: BidirStd
+            bank: VIOA
+            connection: manual
+            desc: SPI device debug data
+          }
+          {
+            name: SPI_DEV_DBG_D1
+            type: BidirStd
+            bank: VIOA
+            connection: manual
+            desc: SPI device debug data
+          }
         ]
       }
       pinmux:
