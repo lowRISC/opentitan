@@ -372,11 +372,17 @@ package spi_device_pkg;
   } spi_cmd_e;
 
   // Sram parameters
-  parameter int unsigned SramDw    = 32;
-  parameter int unsigned SramStrbW = SramDw/8;
+  parameter int unsigned SramDw      = 32;
+  parameter int unsigned SramStrbW   = SramDw/8;
+  parameter int unsigned SramOffsetW = $clog2(SramStrbW);
 
   // Msg region is used for read cmd in Flash and Passthrough region
   parameter int unsigned SramMsgDepth = 512; // 2kB
+  parameter int unsigned SramMsgBytes = SramMsgDepth * SramStrbW;
+
+  // Address Width of a Buffer in bytes
+  parameter int unsigned SramBufferBytes = SramMsgBytes / 2; // Double Buffer
+  parameter int unsigned SramBufferAw    = $clog2(SramBufferBytes);
 
   parameter int unsigned SramMailboxDepth = 256; // 1kB for mailbox
 

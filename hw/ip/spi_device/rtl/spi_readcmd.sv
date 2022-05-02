@@ -105,9 +105,7 @@ module spi_readcmd
   // SFDP Base Addr: the beginning index of the SFDP region in DPSRAM
   // SFDP Depth: The size of the SFDP buffer (64 fixed in the spi_device_pkg)
   parameter sram_addr_t  SfdpBaseAddr    = spi_device_pkg::SramSfdpIdx,
-  parameter int unsigned SfdpDepth       = spi_device_pkg::SramSfdpDepth,
-
-  localparam int unsigned BufferAw = $clog2(ReadBufferDepth)
+  parameter int unsigned SfdpDepth       = spi_device_pkg::SramSfdpDepth
 ) (
   input clk_i,
   input rst_ni,
@@ -145,7 +143,7 @@ module spi_readcmd
   input logic [CmdInfoIdxW-1:0] cmd_info_idx_i,
 
   // Double buffering in bytes
-  input [BufferAw:0] readbuf_threshold_i,
+  input [SramBufferAw-1:0] readbuf_threshold_i,
 
   // The command mode is 4B mode. Every read command receives 4B address
   input addr_4b_en_i,
@@ -738,9 +736,7 @@ module spi_readcmd
   );
 
   // Double Buffer Management logic
-  spid_readbuffer #(
-    .ReadBufferDepth (ReadBufferDepth)
-  ) u_readbuffer (
+  spid_readbuffer u_readbuffer (
     .clk_i,
     .rst_ni,
 
