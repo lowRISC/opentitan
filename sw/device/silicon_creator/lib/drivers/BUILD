@@ -600,6 +600,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            ":lifecycle",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:memory",
             "//sw/device/silicon_creator/lib:error",

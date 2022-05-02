@@ -9,6 +9,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/testing/mock_abs_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
@@ -17,11 +18,14 @@
 
 namespace spi_device_unittest {
 namespace {
+using ::testing::NotNull;
+using ::testing::SetArgPointee;
 
 class SpiDeviceTest : public mask_rom_test::MaskRomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR;
   mask_rom_test::MockAbsMmio mmio_;
+  mask_rom_test::MockLifecycle lifecycle_;
 };
 
 class InitTest : public SpiDeviceTest {};
@@ -44,12 +48,17 @@ TEST_F(InitTest, Init) {
           {SPI_DEVICE_JEDEC_CC_CC_OFFSET, kSpiDeviceJedecContCode},
           {SPI_DEVICE_JEDEC_CC_NUM_CC_OFFSET, kSpiDeviceJedecContCodeCount},
       });
+  lifecycle_hw_rev_t hw_rev{
+      .chip_gen = 1,
+      .chip_rev = 3,
+  };
+  EXPECT_CALL(lifecycle_, HwRev(NotNull())).WillOnce(SetArgPointee<0>(hw_rev));
   EXPECT_ABS_WRITE32(
       base_ + SPI_DEVICE_JEDEC_ID_REG_OFFSET,
       {
-          {SPI_DEVICE_DEV_ID_CHIP_REV_FIELD.index, 0},
+          {SPI_DEVICE_DEV_ID_CHIP_REV_FIELD.index, hw_rev.chip_rev},
           {SPI_DEVICE_DEV_ID_ROM_BOOTSTRAP_BIT, 1},
-          {SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD.index, 0},
+          {SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD.index, hw_rev.chip_gen},
           {SPI_DEVICE_DEV_ID_DENSITY_FIELD.index, kSpiDeviceJedecDensity},
           {SPI_DEVICE_JEDEC_ID_MF_OFFSET, kSpiDeviceJedecManufId},
       });

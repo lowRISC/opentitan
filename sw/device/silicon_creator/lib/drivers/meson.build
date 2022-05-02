@@ -595,6 +595,7 @@ sw_silicon_creator_lib_driver_spi_device = declare_dependency(
     dependencies: [
       sw_lib_abs_mmio,
       sw_lib_mem,
+      sw_silicon_creator_lib_driver_lifecycle,
     ],
   ),
 )
