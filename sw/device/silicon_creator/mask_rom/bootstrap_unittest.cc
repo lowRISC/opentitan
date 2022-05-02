@@ -27,6 +27,7 @@ bool operator==(flash_ctrl_perms_t lhs, flash_ctrl_perms_t rhs) {
 namespace bootstrap_unittest {
 namespace {
 
+using ::testing::DoAll;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArgPointee;
@@ -59,7 +60,8 @@ class BootstrapTest : public mask_rom_test::MaskRomTest {
    * @param cmd Command struct to output.
    */
   void ExpectSpiCmd(spi_device_cmd_t cmd) {
-    EXPECT_CALL(spi_device_, CmdGet(NotNull())).WillOnce(SetArgPointee<0>(cmd));
+    EXPECT_CALL(spi_device_, CmdGet(NotNull()))
+        .WillOnce(DoAll(SetArgPointee<0>(cmd), Return(kErrorOk)));
   }
 
   /**
@@ -238,6 +240,32 @@ spi_device_cmd_t ResetCmd() {
       .payload_byte_count = 0,
       .payload = {},
   };
+}
+
+TEST_F(BootstrapTest, PayloadOverflowErase) {
+  ExpectBootstrapRequestCheck(true);
+  EXPECT_CALL(spi_device_, Init());
+  EXPECT_CALL(spi_device_, CmdGet(NotNull()))
+      .WillOnce(Return(kErrorSpiDevicePayloadOverflow));
+
+  EXPECT_EQ(bootstrap(), kErrorSpiDevicePayloadOverflow);
+}
+
+TEST_F(BootstrapTest, PayloadOverflowProgram) {
+  // Erase
+  ExpectBootstrapRequestCheck(true);
+  EXPECT_CALL(spi_device_, Init());
+  ExpectSpiCmd(ChipEraseCmd());
+  ExpectSpiFlashStatusGet(true);
+  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  // Verify
+  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  EXPECT_CALL(spi_device_, FlashStatusClear());
+  // Program
+  EXPECT_CALL(spi_device_, CmdGet(NotNull()))
+      .WillOnce(Return(kErrorSpiDevicePayloadOverflow));
+
+  EXPECT_EQ(bootstrap(), kErrorSpiDevicePayloadOverflow);
 }
 
 TEST_F(BootstrapTest, BootstrapSimple) {
