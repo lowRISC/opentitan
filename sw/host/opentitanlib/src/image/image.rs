@@ -25,8 +25,24 @@ pub enum ImageError {
 
 #[repr(C)]
 #[derive(Debug)]
+pub struct ImageData {
+    pub bytes: [u8; Image::MAX_SIZE],
+    _align: [Manifest; 0],
+}
+
+impl Default for ImageData {
+    fn default() -> Self {
+        ImageData {
+            bytes: [0xFF; Image::MAX_SIZE],
+            _align: [],
+        }
+    }
+}
+
+#[derive(Debug, Default)]
 pub struct Image {
-    bytes: Vec<u8>,
+    data: Box<ImageData>,
+    size: usize,
 }
 
 #[derive(Debug)]
@@ -43,45 +59,33 @@ pub struct ImageAssembler {
 }
 
 impl Image {
+    const MAX_SIZE: usize = 512 * 1024;
     /// Creates an `Image` from a given input binary.
+    pub fn from_reader(mut r: impl Read) -> Result<Self> {
+        let mut image = Image::default();
+        image.size = r.read(&mut image.data.bytes)?;
+        Ok(image)
+    }
+
+    pub fn to_writer(&self, w: &mut impl Write) -> Result<()> {
+        w.write_all(&self.data.bytes[..self.size])?;
+        Ok(())
+    }
+
     pub fn read_from_file(path: &Path) -> Result<Image> {
-        let file_len = path.metadata()?.len() as usize;
-        // Create a buffer with the same alignment as Manifest that's as least as long as the input
-        // file.
-        let mut aligned: Vec<Manifest> =
-            Vec::with_capacity((0..file_len).step_by(size_of::<Manifest>()).len());
-
-        // Convert the aligned buffer to a Vec<u8> with the same capacity, but length equal to the
-        // size of the input file.
-        let vec_ptr = aligned.as_mut_ptr() as *mut u8;
-        let vec_cap = aligned.capacity() * size_of::<Manifest>();
-
-        // Forget `aligned` so we don't double free.
-        std::mem::forget(aligned);
-
-        // Convert our `aligned` Vec<Manifest> to a Vec<u8> with the same capacity and len equal to
-        // the size of the input image. This should mean that the new Vec<u8> has the same
-        // alignment as Manifest so we can successfully use LayoutVerified later to reinterpret the
-        // head of the image as a Manifest.
-        let mut buf: Vec<u8> = unsafe { Vec::from_raw_parts(vec_ptr, file_len, vec_cap) };
-
-        // Read the image into our buffer.
-        let mut file = File::open(path)?;
-        file.read(&mut *buf)?;
-
-        Ok(Image { bytes: buf })
+        let file = File::open(path)?;
+        Self::from_reader(file)
     }
 
     /// Write out the `Image` to a file at the given `path`.
     pub fn write_to_file(self, path: &Path) -> Result<()> {
         let mut file = File::create(path)?;
-        file.write(self.bytes.as_slice())?;
-        Ok(())
+        self.to_writer(&mut file)
     }
 
     /// Overwrites all fields in the image's manifest that are defined in `other`.
     pub fn overwrite_manifest(&mut self, other: ManifestDef) -> Result<()> {
-        let (manifest_slice, _) = self.bytes.split_at_mut(size_of::<Manifest>());
+        let manifest_slice = &mut self.data.bytes[0..size_of::<Manifest>()];
         let manifest_layout: LayoutVerified<&mut [u8], Manifest> =
             LayoutVerified::new(&mut *manifest_slice).ok_or(ImageError::Parse)?;
         let manifest: &mut Manifest = manifest_layout.into_mut();
