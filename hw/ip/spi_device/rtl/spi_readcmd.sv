@@ -290,6 +290,11 @@ module spi_readcmd
   // readbuf_addr is to track the Read command address which does not fall
   // into SFDP, Mailbox.
   logic [31:0] readbuf_addr;
+  // Read Buffer update: addr_latch_en at the last addr beat & addr_inc
+  logic readbuf_update;
+  // When FSM is about to move to Output state, FSM triggers readbuf to operate.
+  logic readbuf_start;
+
 
   // Dummy counter
   logic dummycnt_eq_zero;
@@ -324,9 +329,6 @@ module spi_readcmd
 
   logic sfdp_hit;
   assign sfdp_hit = sel_dp_i == DpReadSFDP;
-
-  // Indication of data output phase
-  logic output_start;
 
   // Events: watermark, flip
   logic read_watermark, read_flip;
@@ -582,7 +584,8 @@ module spi_readcmd
 
     io_mode_o = SingleIO;
 
-    output_start = 1'b 0;
+    readbuf_start  = 1'b 0;
+    readbuf_update = 1'b 0;
 
     unique case (main_st)
       MainReset: begin
@@ -616,6 +619,8 @@ module spi_readcmd
             2'b 00: begin
               // Moves to Output directly
               main_st_d = MainOutput;
+              readbuf_start  = 1'b 1;
+              readbuf_update = 1'b 1;
             end
 
             2'b 01: begin
@@ -650,13 +655,13 @@ module spi_readcmd
       MainDummy: begin
         if (dummycnt_eq_zero) begin
           main_st_d = MainOutput;
+          readbuf_start  = 1'b 1;
+          readbuf_update = 1'b 1;
         end
       end
 
       MainOutput: begin
         bitcnt_dec = 1'b 1;
-
-        output_start = 1'b 1;
 
         // Note: p2s accepts the byte and latch inside at the first beat.
         // So, it is safe to change the data at the next cycle.
@@ -675,6 +680,9 @@ module spi_readcmd
         if (bitcnt == 3'h 0) begin
           // Increase addr by 1 byte
           addr_inc = 1'b 1;
+
+          // When address is begin updated, ask readbuf to update the state too
+          readbuf_update = 1'b 1;
 
           // sent all words
           bitcnt_update = 1'b 1;
@@ -751,7 +759,9 @@ module spi_readcmd
     .mailbox_hit_i (addr_in_mailbox),
     .mailbox_en_i  (mailbox_en_i),
 
-    .start_i (output_start),
+    .start_i (readbuf_start),
+
+    .address_update_i (readbuf_update),
 
     .event_watermark_o (read_watermark),
     .event_flip_o      (read_flip)
