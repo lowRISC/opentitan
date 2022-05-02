@@ -195,6 +195,30 @@ sw_tests += {
   }
 }
 
+rstmgr_cpu_info_test_lib = declare_dependency(
+  link_with: static_library(
+    'rstmgr_cpu_info_test_lib',
+    sources: ['rstmgr_cpu_info_test.c'],
+    dependencies: [
+      sw_lib_dif_rstmgr,
+      sw_lib_dif_pwrmgr,
+      sw_lib_mmio,
+      sw_lib_abs_mmio,
+      sw_lib_runtime_ibex,
+      sw_lib_runtime_log,
+      sw_lib_testing_rstmgr_testutils,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_flash_ctrl_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'rstmgr_cpu_info_test': {
+    'library': rstmgr_cpu_info_test_lib,
+  }
+}
+
 rstmgr_sw_req_test_lib = declare_dependency(
   link_with: static_library(
     'rstmgr_sw_req_lib',

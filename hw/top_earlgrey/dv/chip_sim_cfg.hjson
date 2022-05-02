@@ -496,6 +496,12 @@
       run_opts: ["+sw_test_timeout_ns=18_000_000", "+en_scb_tl_err_chk=0"]
     }
     {
+      name: chip_sw_rstmgr_cpu_info
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/rstmgr_cpu_info_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_pwrmgr_usbdev_wakeup
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/sim_dv/pwrmgr_usbdev_smoketest:1"]

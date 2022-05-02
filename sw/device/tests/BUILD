@@ -947,6 +947,32 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "rstmgr_cpu_info_test",
+    srcs = ["rstmgr_cpu_info_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
+    verilator = verilator_params(
+        timeout = "long",
+        tags = ["failing_verilator"],
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "rstmgr_sw_req_test",
     srcs = ["rstmgr_sw_req_test.c"],
     deps = [
