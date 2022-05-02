@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"
@@ -501,10 +502,16 @@ void spi_device_init(void) {
   reg = bitfield_field32_write(reg, SPI_DEVICE_JEDEC_CC_NUM_CC_FIELD,
                                kSpiDeviceJedecContCodeCount);
   abs_mmio_write32(kBase + SPI_DEVICE_JEDEC_CC_REG_OFFSET, reg);
-  // TODO(#11605): Use the HW revision register when available.
-  reg = bitfield_field32_write(0, SPI_DEVICE_DEV_ID_CHIP_REV_FIELD, 0);
+  // Note: The code below assumes that chip revision and generation numbers
+  // from the life cycle controller (16-bits each) will fit in the revision and
+  // generation fields of the device ID (3 and 4 bits, respectively).
+  lifecycle_hw_rev_t hw_rev;
+  lifecycle_hw_rev_get(&hw_rev);
+  reg = bitfield_field32_write(0, SPI_DEVICE_DEV_ID_CHIP_REV_FIELD,
+                               hw_rev.chip_rev);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_DEV_ID_ROM_BOOTSTRAP_BIT, true);
-  reg = bitfield_field32_write(reg, SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD, 0);
+  reg = bitfield_field32_write(reg, SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD,
+                               hw_rev.chip_gen);
   reg = bitfield_field32_write(reg, SPI_DEVICE_DEV_ID_DENSITY_FIELD,
                                kSpiDeviceJedecDensity);
   reg = bitfield_field32_write(reg, SPI_DEVICE_JEDEC_ID_MF_FIELD,
