@@ -57,7 +57,7 @@
   ]
 
   // Add additional tops for simulation.
-  sim_tops: ["flash_ctrl_bind"]
+  sim_tops: ["flash_ctrl_bind","flash_ctrl_cov_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

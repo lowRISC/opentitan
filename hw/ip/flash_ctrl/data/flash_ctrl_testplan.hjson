@@ -292,30 +292,14 @@
       desc: '''
             Covers that all operations READ/PROGRAM/ERASE/UNKNOWN have been tested.
             Covers that ERASE operation is performed on a page and on entire bank.
-            Covers data and info partition selection.
-            Covers types of informational partitions.
-            Covers if request of erase suspension occured.
-            Covers High Endurance feature.
-            Covers scramble feature.
-            Covers ECC feature.
+            Covers data and info partitions selection.
             All valid combinations of the above will also be crossed.
             '''
     }
     {
-      name: flash_words_len_cg
+      name: erase_susp_cg
       desc: '''
-            Covers number of flash words for operations READ/PROGRAM.
-            The minimum tested number of words is 0 and the maximum length is 2^12-1.
-            Cover an acceptable distribution of lengths has been seen including corner cases
-            (length 0 and length 2^12-1).
-            '''
-    }
-    {
-      name: region_range_cg
-      desc: '''
-            Covers all possible numbers of region base pages abd region size pages which are given
-            in pages. Cover an acceptable distribution of lengths has been seen including corner
-            cases (value 0 and maximum value for which it makes sense to test it).
+            Covers if request of erase suspension occured.
             '''
     }
     {
