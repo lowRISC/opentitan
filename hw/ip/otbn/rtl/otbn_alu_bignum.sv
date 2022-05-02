@@ -81,6 +81,7 @@ module otbn_alu_bignum
   input logic rst_ni,
 
   input  alu_bignum_operation_t operation_i,
+  input  logic                  operation_valid_i,
   input  logic                  operation_commit_i,
   output logic [WLEN-1:0]       operation_result_o,
   output logic                  selection_flag_o,

@@ -95,6 +95,7 @@ module otbn_controller
 
   // Bignum ALU
   output alu_bignum_operation_t alu_bignum_operation_o,
+  output logic                  alu_bignum_operation_valid_o,
   output logic                  alu_bignum_operation_commit_o,
   input  logic [WLEN-1:0]       alu_bignum_operation_result_i,
   input  logic                  alu_bignum_selection_flag_i,
@@ -827,6 +828,7 @@ module otbn_controller
   assign alu_bignum_operation_o.alu_flag_en = insn_dec_bignum_i.alu_flag_en & insn_valid_i;
   assign alu_bignum_operation_o.mac_flag_en = insn_dec_bignum_i.mac_flag_en & insn_valid_i;
 
+  assign alu_bignum_operation_valid_o  = insn_valid_i;
   assign alu_bignum_operation_commit_o = insn_executing;
 
   assign mac_bignum_operation_o.operand_a         = rf_bignum_rd_data_a_no_intg;
