@@ -135,13 +135,29 @@ module spid_readbuffer
     if (!sys_rst_ni) begin
       watermark_crossed <= 1'b 0;
     end else if (active && watermark_cross) begin
+      // When `watermark_cross` and `flip` both are 1, the watermark_crossed
+      // should remain 1. The event will be reported in this case.
       watermark_crossed <= 1'b 1;
     end else if (active && flip) begin
       watermark_crossed <= 1'b 0;
     end
   end
 
-  assign event_watermark_o = active && !watermark_crossed && watermark_cross ;
+  always_comb begin : watermark_event_logic
+    event_watermark_o = 1'b 0;
+
+    if (active && watermark_cross) begin
+      if (!watermark_crossed) begin
+        event_watermark_o = 1'b 1;
+      end else if (flip) begin
+        // if flip is set and previous watermark_crossed is set, the event
+        // should be reported also. This means the host issues the next buffer
+        // address pointing above the threshold. This scenario, flip event and
+        // watermark event both should be reported.
+        event_watermark_o = 1'b 1;
+      end
+    end
+  end : watermark_event_logic
 
   ///////////////////
   // State Machine //
