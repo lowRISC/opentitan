@@ -66,10 +66,6 @@ module spid_readbuffer
   output logic event_flip_o
 );
 
-  // FIXME: Update logic
-  logic unused_address_update;
-  assign unused_address_update = address_update_i;
-
   ////////////////
   // Definition //
   ////////////////
@@ -101,9 +97,6 @@ module spid_readbuffer
   //////////////
   // Datapath //
   //////////////
-
-  assign active = (st_q == StActive)
-                && (spi_mode_i == spi_device_pkg::FlashMode);
 
   // Flip event handling
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
@@ -165,16 +158,23 @@ module spid_readbuffer
   always_comb begin
     st_d = st_q;
 
+    active = 1'b 0;
+
     unique case (st_q)
       StIdle: begin
-        if (start_i && !sfdp_hit_i && !(mailbox_en_i && mailbox_hit_i)) begin
+        if (start_i && (spi_mode_i == spi_device_pkg::FlashMode)
+           && !sfdp_hit_i && !(mailbox_en_i && mailbox_hit_i)) begin
           st_d = StActive;
+
+          active = 1'b 1; // Assume address_update_i is high
         end
       end
 
       StActive: begin
         // Deadend waiting CSb de-assertion
         st_d = StActive;
+
+        active = address_update_i;
       end
 
       default: begin
@@ -182,5 +182,7 @@ module spid_readbuffer
       end
     endcase
   end
+
+  `ASSERT(StartWithAddressUpdate_A, start_i |-> address_update_i)
 
 endmodule : spid_readbuffer
