@@ -78,13 +78,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       // continuously issue LC JTAG read until it returns valid value.
       // In the meantime, TAP selection could happen in between a transaction and might return an
       // error. This error is permitted and can be ignored.
-      cfg.m_jtag_riscv_agent_cfg.allow_errors = 1;
-
-      // Wait until LC_CTRL is ready.
-      wait_lc_status(LcReady);
-
-      // Once TAP selection finishes, does not expect any JTAG errors.
-      cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
+      wait_lc_ready(.allow_err(1));
 
       // Use JTAG interface to transit LC_CTRL from TestLock to TestUnlock state.
       `uvm_info(`gfn, "Start LC transition request to TestUnlock state", UVM_LOW)
@@ -125,30 +119,6 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       wait (cfg.sw_test_status_vif.sw_test_status inside {SwTestStatusPassed,
                                                           SwTestStatusFailed});
       `uvm_info(`gfn, $sformatf("Sequence %0d/%0d finished!", trans_i, num_trans), UVM_LOW)
-    end
-  endtask
-
-  virtual task wait_lc_status(lc_ctrl_status_e expect_status, int max_attemp = 5000);
-    int i;
-    for (i = 0; i < max_attemp; i++) begin
-      bit [TL_DW-1:0]  status_val;
-      lc_ctrl_status_e dummy;
-      cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
-      jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.status.get_offset(),
-                                          p_sequencer.jtag_sequencer_h,
-                                          status_val);
-
-      // Ensure that none of the other status bits are set.
-      `DV_CHECK_EQ(status_val >> dummy.num(), 0,
-                   $sformatf("Unexpected status error %0h", status_val))
-      if (status_val[expect_status]) begin
-        `uvm_info(`gfn, $sformatf("LC status %0s.", expect_status.name), UVM_LOW)
-        break;
-      end
-    end
-
-    if (i > max_attemp) begin
-      `uvm_fatal(`gfn, $sformatf("max attempt reached to get lc status %0s!", expect_status.name))
     end
   endtask
 
