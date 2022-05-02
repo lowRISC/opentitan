@@ -7,7 +7,9 @@ class i2c_rx_oversample_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_rx_oversample_vseq)
   `uvm_object_new
 
-  // increase num_trans to cover all transaction types
+  constraint num_trans_c {
+    num_trans == cfg.seq_cfg.i2c_max_num_trans;
+  }
   constraint timing_val_c {
     thigh   == 1;
     t_r     == 1;
@@ -41,5 +43,22 @@ class i2c_rx_oversample_vseq extends i2c_rx_tx_vseq;
     }
   }
 
+  virtual task body();
+    initialization(.mode(Host));
+    for(int i = 0; i < num_runs; i++) begin
+      bit do_interrupt = 1'b1;
+      `uvm_info(`gfn, "\n--> start of sequence", UVM_DEBUG)
+      fork
+        begin
+          while (!cfg.under_reset && do_interrupt) process_interrupts();
+        end
+        begin
+          host_send_trans(num_trans);
+          do_interrupt = 1'b0; // gracefully stop process_interrupts
+        end
+      join
+      `uvm_info(`gfn, "\n--> end of sequence", UVM_DEBUG)
+    end
+  endtask : body
 
 endclass : i2c_rx_oversample_vseq

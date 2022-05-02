@@ -449,4 +449,14 @@ class i2c_base_vseq extends cip_base_vseq #(
     `DV_CHECK_LE(x, high_bound);
   endfunction : bound_check
 
+  task reset_rx_fifo();
+    csr_wr(.ptr(ral.fifo_ctrl.rxrst), .value(1'b1));
+    csr_wr(.ptr(ral.fifo_ctrl.rxrst), .value(1'b0));
+  endtask : reset_rx_fifo
+
+  task reset_fmt_fifo();
+    csr_wr(.ptr(ral.fifo_ctrl.fmtrst), .value(1'b1));
+    csr_wr(.ptr(ral.fifo_ctrl.fmtrst), .value(1'b0));
+  endtask : reset_fmt_fifo
+
 endclass : i2c_base_vseq

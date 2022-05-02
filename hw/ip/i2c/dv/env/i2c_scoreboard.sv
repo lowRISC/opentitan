@@ -272,6 +272,14 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           // check in test
           do_read_check = 1'b0;
         end
+        "fifo_status": begin
+          // check in test
+          do_read_check = 1'b0;
+        end
+        default: begin
+          // check in test
+          do_read_check = 1'b0;
+        end
       endcase
 
       if (do_read_check) begin
