@@ -454,3 +454,153 @@ dif_result_t dif_sysrst_ctrl_output_pin_override_get_enabled(
 
   return kDifOk;
 }
+
+static bool get_output_pin_value_bit_index(dif_sysrst_ctrl_pin_t pin,
+                                           uint32_t *pin_out_value_bit_index) {
+  switch (pin) {
+    case kDifSysrstCtrlPinKey0Out:
+      *pin_out_value_bit_index = SYSRST_CTRL_PIN_OUT_VALUE_KEY0_OUT_BIT;
+      break;
+    case kDifSysrstCtrlPinKey1Out:
+      *pin_out_value_bit_index = SYSRST_CTRL_PIN_OUT_VALUE_KEY1_OUT_BIT;
+      break;
+    case kDifSysrstCtrlPinKey2Out:
+      *pin_out_value_bit_index = SYSRST_CTRL_PIN_OUT_VALUE_KEY2_OUT_BIT;
+      break;
+    case kDifSysrstCtrlPinPowerButtonOut:
+      *pin_out_value_bit_index = SYSRST_CTRL_PIN_OUT_VALUE_PWRB_OUT_BIT;
+      break;
+    case kDifSysrstCtrlPinBatteryDisableOut:
+      *pin_out_value_bit_index = SYSRST_CTRL_PIN_OUT_VALUE_BAT_DISABLE_BIT;
+      break;
+    case kDifSysrstCtrlPinZ3WakeupOut:
+      *pin_out_value_bit_index = SYSRST_CTRL_PIN_OUT_VALUE_Z3_WAKEUP_BIT;
+      break;
+    case kDifSysrstCtrlPinEcResetInOut:
+      *pin_out_value_bit_index = SYSRST_CTRL_PIN_OUT_VALUE_EC_RST_L_BIT;
+      break;
+    case kDifSysrstCtrlPinFlashWriteProtectInOut:
+      *pin_out_value_bit_index = SYSRST_CTRL_PIN_OUT_VALUE_FLASH_WP_L_BIT;
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+
+dif_result_t dif_sysrst_ctrl_output_pin_set_override(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin,
+    bool value) {
+  if (sysrst_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t pin_out_value_bit_index;
+  if (!get_output_pin_value_bit_index(pin, &pin_out_value_bit_index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t pin_out_value_reg = mmio_region_read32(
+      sysrst_ctrl->base_addr, SYSRST_CTRL_PIN_OUT_VALUE_REG_OFFSET);
+  pin_out_value_reg =
+      bitfield_bit32_write(pin_out_value_reg, pin_out_value_bit_index, value);
+  mmio_region_write32(sysrst_ctrl->base_addr,
+                      SYSRST_CTRL_PIN_OUT_VALUE_REG_OFFSET, pin_out_value_reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_sysrst_ctrl_output_pin_get_override(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin,
+    bool *value) {
+  if (sysrst_ctrl == NULL || value == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t pin_out_value_bit_index;
+  if (!get_output_pin_value_bit_index(pin, &pin_out_value_bit_index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t pin_out_value_reg = mmio_region_read32(
+      sysrst_ctrl->base_addr, SYSRST_CTRL_PIN_OUT_VALUE_REG_OFFSET);
+  *value = bitfield_bit32_read(pin_out_value_reg, pin_out_value_bit_index);
+
+  return kDifOk;
+}
+
+static bool get_input_pin_value_bit_index(dif_sysrst_ctrl_pin_t pin,
+                                          uint32_t *pin_in_value_bit_index) {
+  switch (pin) {
+    case kDifSysrstCtrlPinKey0In:
+      *pin_in_value_bit_index = SYSRST_CTRL_PIN_IN_VALUE_KEY0_IN_BIT;
+      break;
+    case kDifSysrstCtrlPinKey1In:
+      *pin_in_value_bit_index = SYSRST_CTRL_PIN_IN_VALUE_KEY1_IN_BIT;
+      break;
+    case kDifSysrstCtrlPinKey2In:
+      *pin_in_value_bit_index = SYSRST_CTRL_PIN_IN_VALUE_KEY2_IN_BIT;
+      break;
+    case kDifSysrstCtrlPinPowerButtonIn:
+      *pin_in_value_bit_index = SYSRST_CTRL_PIN_IN_VALUE_PWRB_IN_BIT;
+      break;
+    case kDifSysrstCtrlPinAcPowerPresentIn:
+      *pin_in_value_bit_index = SYSRST_CTRL_PIN_IN_VALUE_AC_PRESENT_BIT;
+      break;
+    case kDifSysrstCtrlPinLidOpenIn:
+      *pin_in_value_bit_index = SYSRST_CTRL_PIN_IN_VALUE_LID_OPEN_BIT;
+      break;
+    case kDifSysrstCtrlPinEcResetInOut:
+      *pin_in_value_bit_index = SYSRST_CTRL_PIN_IN_VALUE_EC_RST_L_BIT;
+      break;
+    case kDifSysrstCtrlPinFlashWriteProtectInOut:
+      *pin_in_value_bit_index = SYSRST_CTRL_PIN_IN_VALUE_FLASH_WP_L_BIT;
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+
+dif_result_t dif_sysrst_ctrl_input_pin_read(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin,
+    bool *value) {
+  if (sysrst_ctrl == NULL || value == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t pin_in_value_bit_index;
+  if (!get_input_pin_value_bit_index(pin, &pin_in_value_bit_index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t pin_in_value_reg = mmio_region_read32(
+      sysrst_ctrl->base_addr, SYSRST_CTRL_PIN_IN_VALUE_REG_OFFSET);
+  *value = bitfield_bit32_read(pin_in_value_reg, pin_in_value_bit_index);
+
+  return kDifOk;
+}
+
+dif_result_t dif_sysrst_ctrl_ulp_wakeup_get_status(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, bool *wakeup_detected) {
+  if (sysrst_ctrl == NULL || wakeup_detected == NULL) {
+    return kDifBadArg;
+  }
+
+  *wakeup_detected = mmio_region_read32(sysrst_ctrl->base_addr,
+                                        SYSRST_CTRL_WKUP_STATUS_REG_OFFSET);
+
+  return kDifOk;
+}
+
+dif_result_t dif_sysrst_ctrl_ulp_wakeup_clear_status(
+    const dif_sysrst_ctrl_t *sysrst_ctrl) {
+  if (sysrst_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(sysrst_ctrl->base_addr,
+                      SYSRST_CTRL_WKUP_STATUS_REG_OFFSET, 1);
+
+  return kDifOk;
+}
