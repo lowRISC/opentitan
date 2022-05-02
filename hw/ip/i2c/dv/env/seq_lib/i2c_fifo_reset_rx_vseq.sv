@@ -78,10 +78,4 @@ class i2c_fifo_reset_rx_vseq extends i2c_rx_tx_vseq;
       if (rx_empty)  `DV_CHECK_EQ(rx_lvl, 0);
     end
   endtask : process_fifo_full_status
-
-  task reset_rx_fifo();
-    csr_wr(.ptr(ral.fifo_ctrl.rxrst), .value(1'b1));
-    csr_wr(.ptr(ral.fifo_ctrl.rxrst), .value(1'b0));
-  endtask : reset_rx_fifo
-
 endclass : i2c_fifo_reset_rx_vseq
