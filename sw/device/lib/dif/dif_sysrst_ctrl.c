@@ -604,3 +604,25 @@ dif_result_t dif_sysrst_ctrl_ulp_wakeup_clear_status(
 
   return kDifOk;
 }
+
+dif_result_t dif_sysrst_ctrl_lock(const dif_sysrst_ctrl_t *sysrst_ctrl) {
+  if (sysrst_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(sysrst_ctrl->base_addr, SYSRST_CTRL_REGWEN_REG_OFFSET, 0);
+
+  return kDifOk;
+}
+
+dif_result_t dif_sysrst_ctrl_is_locked(const dif_sysrst_ctrl_t *sysrst_ctrl,
+                                       bool *is_locked) {
+  if (sysrst_ctrl == NULL || is_locked == NULL) {
+    return kDifBadArg;
+  }
+
+  *is_locked = !mmio_region_read32(sysrst_ctrl->base_addr,
+                                   SYSRST_CTRL_REGWEN_REG_OFFSET);
+
+  return kDifOk;
+}
