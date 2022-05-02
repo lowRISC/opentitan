@@ -567,6 +567,14 @@ void spi_device_init(void) {
       .dummy_cycles = 0,
       .handled_in_sw = true,
   });
+  // Configure the WRITE_ENABLE and WRITE_DISABLE commands.
+  reg = bitfield_field32_write(0, SPI_DEVICE_CMD_INFO_WREN_OPCODE_FIELD,
+                               kSpiDeviceOpcodeWriteEnable);
+  reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_WREN_VALID_BIT, true);
+  abs_mmio_write32(kBase + SPI_DEVICE_CMD_INFO_WREN_REG_OFFSET, reg);
+  reg = bitfield_field32_write(reg, SPI_DEVICE_CMD_INFO_WRDI_OPCODE_FIELD,
+                               kSpiDeviceOpcodeWriteDisable);
+  abs_mmio_write32(kBase + SPI_DEVICE_CMD_INFO_WRDI_REG_OFFSET, reg);
 
   // Write SFDP table to the reserved region in spi_device buffer.
   uint32_t dest = kSfdpAreaStartAddr;

@@ -152,6 +152,20 @@ typedef enum spi_device_opcode {
    * the chip should be reset.
    */
   kSpiDeviceOpcodeReset = 0xf0,
+  /**
+   * WRITE_ENABLE command.
+   *
+   * This command is handled by the spi_device. Upon receiving this command,
+   * spi_device sets the WEL (write enable latch) bit of the status register.
+   */
+  kSpiDeviceOpcodeWriteEnable = 0x06,
+  /**
+   * WRITE_DISABLE command.
+   *
+   * This command is handled by the spi_device. Upon receiving this command,
+   * spi_device clears the WEL (write enable latch) bit of the status register.
+   */
+  kSpiDeviceOpcodeWriteDisable = 0x04,
 
 } spi_device_opcode_t;
 
