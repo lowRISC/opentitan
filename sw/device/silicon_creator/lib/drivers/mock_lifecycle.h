@@ -20,6 +20,7 @@ class MockLifecycle : public global_mock::GlobalMock<MockLifecycle> {
   MOCK_METHOD(lifecycle_state_t, State, ());
   MOCK_METHOD(uint32_t, RawState, ());
   MOCK_METHOD(void, DeviceId, (lifecycle_device_id_t * device_id));
+  MOCK_METHOD(void, HwRev, (lifecycle_hw_rev_t * hw_rev));
 };
 
 }  // namespace internal
@@ -39,6 +40,10 @@ uint32_t lifecycle_raw_state_get(void) {
 
 void lifecycle_device_id_get(lifecycle_device_id_t *device_id) {
   MockLifecycle::Instance().DeviceId(device_id);
+}
+
+void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
+  MockLifecycle::Instance().HwRev(hw_rev);
 }
 
 }  // extern "C"

@@ -87,4 +87,12 @@ void lifecycle_device_id_get(lifecycle_device_id_t *device_id) {
   }
 }
 
+void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
+  uint32_t reg = sec_mmio_read32(kBase + LC_CTRL_HW_REV_REG_OFFSET);
+  *hw_rev = (lifecycle_hw_rev_t){
+      .chip_gen = bitfield_field32_read(reg, LC_CTRL_HW_REV_CHIP_GEN_FIELD),
+      .chip_rev = bitfield_field32_read(reg, LC_CTRL_HW_REV_CHIP_REV_FIELD),
+  };
+}
+
 #endif
