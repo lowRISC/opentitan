@@ -71,11 +71,7 @@ _mask_rom_interrupt_vector_asm:
 
   /**
    * Post C runtime initialization RISC-V vectored exception/interrupt handlers.
-   *
-   * This vector is placed into the .crt section so that .vectors doesn't need to
-   * be padded to a 256 byte boundary.
    */
-  .section .crt, "ax"
   .balign 256
   .global _mask_rom_interrupt_vector_c
   .type _mask_rom_interrupt_vector_c, @function
