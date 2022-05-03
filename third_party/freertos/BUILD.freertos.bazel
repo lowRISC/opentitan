@@ -8,7 +8,7 @@ cc_library(
     name = "portmacro",
     hdrs = ["portable/GCC/RISC-V/portmacro.h"],
     includes = ["portable/GCC/RISC-V"],
-    target_compatible_with = ["@bazel_embedded//constraints/cpu:riscv32"],
+    target_compatible_with = ["@platforms//cpu:riscv32"],
 )
 
 cc_library(
