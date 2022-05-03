@@ -182,7 +182,7 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
 
   data_q_t flash_rd_data;
   uvm_reg_data_t data;
-  localparam bit [TL_DW-1:0] ALL_ONES = {TL_DW{1'b1}};
+  localparam data_t ALL_ONES = {TL_DW{1'b1}};
 
   virtual task body();
     repeat (cfg.seq_cfg.max_num_trans) begin

@@ -20,8 +20,8 @@ class flash_ctrl_smoke_hw_vseq extends flash_ctrl_base_vseq;
   endfunction
 
   task body();
-    logic [TL_DW-1:0] rdata;
-    logic [TL_DW-1:0] exp_data[$];
+    data_4s_t rdata;
+    data_q_t exp_data;
 
     int flash_depth = flash_ctrl_reg_pkg::BytesPerBank / 4;
 

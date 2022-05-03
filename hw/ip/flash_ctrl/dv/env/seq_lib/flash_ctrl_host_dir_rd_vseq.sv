@@ -52,7 +52,7 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
   rand data_q_t flash_op_data;
 
   // Single direct read data
-  bit [TL_DW-1:0] flash_rd_one_data;
+  data_t flash_rd_one_data;
 
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
@@ -138,7 +138,7 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
   constraint default_region_ecc_en_c {default_region_ecc_en == MuBi4False;}
 
   bit   [TL_AW-1:0] read_addr;
-  logic [TL_DW-1:0] rdata;
+  data_4s_t rdata;
   virtual task body();
     repeat (num_trans) begin
       // Randomize self
