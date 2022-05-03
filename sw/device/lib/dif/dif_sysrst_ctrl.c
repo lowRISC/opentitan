@@ -12,6 +12,13 @@
 
 #include "sysrst_ctrl_regs.h"  // Generated.
 
+static_assert(SYSRST_CTRL_PARAM_NUM_COMBO == 4,
+              "Number of key combinations has changed. Update the "
+              "dif_sysrst_ctrl_key_combo_t enum.");
+static_assert(SYSRST_CTRL_KEY_INTR_STATUS_FLASH_WP_L_L2H_BIT == 13,
+              "Flash write-protect key interrupt bit has changed. Update the "
+              "dif_sysrst_ctrl_input_change_irq_get_causes() DIF.");
+
 dif_result_t dif_sysrst_ctrl_key_combo_detect_configure(
     const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_key_combo_t key_combo,
     dif_sysrst_ctrl_key_combo_config_t config) {
@@ -697,6 +704,54 @@ dif_result_t dif_sysrst_ctrl_auto_override_get_enabled(
   *is_enabled =
       dif_bool_to_toggle(bitfield_bit32_read(auto_block_ctl_reg, en_bit_index));
 
+  return kDifOk;
+}
+
+dif_result_t dif_sysrst_ctrl_key_combo_irq_get_causes(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, uint32_t *causes) {
+  if (sysrst_ctrl == NULL || causes == NULL) {
+    return kDifBadArg;
+  }
+
+  *causes = mmio_region_read32(sysrst_ctrl->base_addr,
+                               SYSRST_CTRL_COMBO_INTR_STATUS_REG_OFFSET);
+
+  return kDifOk;
+}
+
+dif_result_t dif_sysrst_ctrl_key_combo_irq_clear_causes(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, uint32_t causes) {
+  if (sysrst_ctrl == NULL || causes >= (1U << SYSRST_CTRL_PARAM_NUM_COMBO)) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(sysrst_ctrl->base_addr,
+                      SYSRST_CTRL_COMBO_INTR_STATUS_REG_OFFSET, causes);
+
+  return kDifOk;
+}
+
+dif_result_t dif_sysrst_ctrl_input_change_irq_get_causes(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, uint32_t *causes) {
+  if (sysrst_ctrl == NULL || causes == NULL) {
+    return kDifBadArg;
+  }
+
+  *causes = mmio_region_read32(sysrst_ctrl->base_addr,
+                               SYSRST_CTRL_KEY_INTR_STATUS_REG_OFFSET);
+
+  return kDifOk;
+}
+
+dif_result_t dif_sysrst_ctrl_input_change_irq_clear_causes(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, uint32_t causes) {
+  if (sysrst_ctrl == NULL ||
+      causes >= (1U << (SYSRST_CTRL_KEY_INTR_STATUS_FLASH_WP_L_L2H_BIT + 1))) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(sysrst_ctrl->base_addr,
+                      SYSRST_CTRL_KEY_INTR_STATUS_REG_OFFSET, causes);
   return kDifOk;
 }
 
