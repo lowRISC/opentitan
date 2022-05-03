@@ -138,7 +138,7 @@ def _elf_to_disassembly_impl(ctx):
                 ctx.file._cleanup_script.path,
                 disassembly.path,
             ],
-            command = "$1 --disassemble --headers --line-numbers --source $2 | $3 > $4",
+            command = "$1 --disassemble --headers --line-numbers --disassemble-zeroes --source $2 | $3 > $4",
         )
         return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
 
