@@ -121,13 +121,13 @@ module otbn_idle_checker
           (idle_o_i == prim_mubi_pkg::MuBi4True))
 
   `ASSERT(NoStartKeyRotationWhenLocked_A,
-          (status_q_i == otbn_pkg::StatusLocked) |-> !$rose(keys_busy))
+          (status_q_i == otbn_pkg::StatusLocked) |=> !$rose(keys_busy))
 
   `ASSERT(OnlyKeyRotationWhenRunningOrLocked_A,
           keys_busy |-> (running_q || (status_q_i == otbn_pkg::StatusLocked)))
 
   `ASSERT(NotRunningWhenLocked_A,
-          !((status_q_i == otbn_pkg::StatusLocked) && running_q))
+          !((status_q_i == otbn_pkg::StatusLocked) && running_d))
 
   `ASSERT(NoMemRdataWhenBusy_A, running_q |-> imem_rdata_bus == 'b0 && dmem_rdata_bus == 'b0)
 
