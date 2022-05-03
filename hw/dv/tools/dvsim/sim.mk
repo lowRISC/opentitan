@@ -88,28 +88,8 @@ ifneq (${sw_images},)
 			cp ${proj_root}/$$image* $$target_dir/.; \
 		else \
 			echo "Building SW image \"$$image\"."; \
-			if [[ $$index == "0" ]]; then \
-				target="$$image""_${sw_build_device}"; \
-				image_basename="$$(basename $${target}).scr.39.vmem"; \
-				if [[ -z $${BAZEL_PYTHON_WHEELS_REPO} ]]; then \
-					echo "Building \"//$$(dirname $$image)\" with bazel on network-connected machine."; \
-					./bazelisk.sh build //$$(dirname $$image); \
-					bazel_image_path=$$(find -L $$(./bazelisk.sh info output_path)/ -type f -name "$${image_basename}"); \
-				else \
-					echo "Building \"//$$(dirname $$image)\" with bazel on air-gapped machine."; \
-					bazel build \
-						--distdir=$$BAZEL_DISTDIR \
-						--repository_cache=$$BAZEL_CACHE \
-						//$$(dirname $$image); \
-					bazel_image_path=$$(find -L $$(bazel info output_path)/ -type f -name "$${image_basename}"); \
-				fi; \
-				target_dir="${sw_build_dir}/build-bin/$$(dirname $${target})"; \
-				mkdir -p $$target_dir; \
-				cp $$bazel_image_path $$target_dir/; \
-			else \
-				target="$$image""_export_${sw_build_device}"; \
-				${LOCK_SW_BUILD_DIR} "ninja -C ${sw_build_dir}/build-out $$target"; \
-			fi; \
+			target="$$image""_export_${sw_build_device}"; \
+			${LOCK_SW_BUILD_DIR} "ninja -C ${sw_build_dir}/build-out $$target"; \
 		fi; \
 	done;
 endif
