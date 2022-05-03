@@ -691,6 +691,78 @@ TEST_F(AutoOverrideGetEnabledTest, Success) {
   EXPECT_EQ(is_enabled, kDifToggleEnabled);
 }
 
+class KeyComboIrqGetCausesTest : public SysrstCtrlTest {};
+
+TEST_F(KeyComboIrqGetCausesTest, NullArgs) {
+  uint32_t causes;
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_key_combo_irq_get_causes(nullptr, &causes));
+  EXPECT_DIF_BADARG(
+      dif_sysrst_ctrl_key_combo_irq_get_causes(&sysrst_ctrl_, nullptr));
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_key_combo_irq_get_causes(nullptr, nullptr));
+}
+
+TEST_F(KeyComboIrqGetCausesTest, Success) {
+  uint32_t causes;
+  EXPECT_READ32(SYSRST_CTRL_COMBO_INTR_STATUS_REG_OFFSET, 0xf);
+  EXPECT_DIF_OK(
+      dif_sysrst_ctrl_key_combo_irq_get_causes(&sysrst_ctrl_, &causes));
+  EXPECT_EQ(causes, 0xf);
+}
+
+class KeyComboIrqClearCausesTest : public SysrstCtrlTest {};
+
+TEST_F(KeyComboIrqClearCausesTest, NullArgs) {
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_key_combo_irq_clear_causes(nullptr, 0xf));
+}
+
+TEST_F(KeyComboIrqClearCausesTest, BadCauses) {
+  EXPECT_DIF_BADARG(
+      dif_sysrst_ctrl_key_combo_irq_clear_causes(&sysrst_ctrl_, 0x1f));
+}
+
+TEST_F(KeyComboIrqClearCausesTest, Success) {
+  EXPECT_WRITE32(SYSRST_CTRL_COMBO_INTR_STATUS_REG_OFFSET, 0xf);
+  EXPECT_DIF_OK(dif_sysrst_ctrl_key_combo_irq_clear_causes(&sysrst_ctrl_, 0xf));
+}
+
+class InputChangeIrqGetCausesTest : public SysrstCtrlTest {};
+
+TEST_F(InputChangeIrqGetCausesTest, NullArgs) {
+  uint32_t causes;
+  EXPECT_DIF_BADARG(
+      dif_sysrst_ctrl_input_change_irq_get_causes(nullptr, &causes));
+  EXPECT_DIF_BADARG(
+      dif_sysrst_ctrl_input_change_irq_get_causes(&sysrst_ctrl_, nullptr));
+  EXPECT_DIF_BADARG(
+      dif_sysrst_ctrl_input_change_irq_get_causes(nullptr, nullptr));
+}
+
+TEST_F(InputChangeIrqGetCausesTest, Success) {
+  uint32_t causes;
+  EXPECT_READ32(SYSRST_CTRL_KEY_INTR_STATUS_REG_OFFSET, 0x3f);
+  EXPECT_DIF_OK(
+      dif_sysrst_ctrl_input_change_irq_get_causes(&sysrst_ctrl_, &causes));
+  EXPECT_EQ(causes, 0x3f);
+}
+
+class InputChangeIrqClearCausesTest : public SysrstCtrlTest {};
+
+TEST_F(InputChangeIrqClearCausesTest, NullArgs) {
+  EXPECT_DIF_BADARG(
+      dif_sysrst_ctrl_input_change_irq_clear_causes(nullptr, 0xf));
+}
+
+TEST_F(InputChangeIrqClearCausesTest, BadCauses) {
+  EXPECT_DIF_BADARG(
+      dif_sysrst_ctrl_input_change_irq_clear_causes(&sysrst_ctrl_, 0x4000));
+}
+
+TEST_F(InputChangeIrqClearCausesTest, Success) {
+  EXPECT_WRITE32(SYSRST_CTRL_KEY_INTR_STATUS_REG_OFFSET, 0xff);
+  EXPECT_DIF_OK(
+      dif_sysrst_ctrl_input_change_irq_clear_causes(&sysrst_ctrl_, 0xff));
+}
+
 class UlpWakeupGetStatusTest : public SysrstCtrlTest {};
 
 TEST_F(UlpWakeupGetStatusTest, NullArgs) {
