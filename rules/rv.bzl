@@ -4,7 +4,7 @@
 
 """Helpers for transitioning to the RISC-V target."""
 
-OPENTITAN_CPU = "@bazel_embedded//constraints/cpu:riscv32"
+OPENTITAN_CPU = "@platforms//cpu:riscv32"
 OPENTITAN_PLATFORM = "@bazel_embedded//platforms:opentitan_rv32imc"
 
 # This constant holds a dictionary of per-device dependencies which are used to
