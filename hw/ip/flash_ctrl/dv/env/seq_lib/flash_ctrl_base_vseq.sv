@@ -316,10 +316,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Task to perform a direct Flash read at the specified location
   virtual task do_direct_read(
-      input bit [TL_AW-1:0] addr, input bit [TL_DBW-1:0] mask = get_rand_contiguous_mask(),
+      input addr_t addr, input bit [TL_DBW-1:0] mask = get_rand_contiguous_mask(),
       input bit blocking = $urandom_range(0, 1), input bit check_rdata = 0,
-      input bit [TL_DW-1:0] exp_rdata = '0, input mubi4_t instr_type = MuBi4False,
-      output logic [TL_DW-1:0] rdata, input bit exp_err_rsp = 1'b0);
+      input data_t exp_rdata = '0, input mubi4_t instr_type = MuBi4False,
+      output data_4s_t rdata, input bit exp_err_rsp = 1'b0);
     tl_access(.addr(addr), .write(1'b0), .data(rdata), .mask(mask), .blocking(blocking),
               .check_exp_data(check_rdata), .exp_data(exp_rdata), .compare_mask(mask),
               .instr_type(instr_type), .exp_err_rsp(exp_err_rsp),
@@ -336,7 +336,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     // Local Signals
     bit               poll_fifo_status;
-    logic [TL_DW-1:0] exp_data[$];
+    data_q_t          exp_data;
     flash_op_t        flash_op;
 
     // Flash Operation Assignments
@@ -455,7 +455,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask : lc_ctrl_if_rst
 
   // Simple Model For The OTP Key Seeds
-  // Communicates with the TB via the flash_ctrl_vif
   virtual task otp_model();
 
     `uvm_info(`gfn, "Starting OTP Model ...", UVM_LOW)
@@ -581,7 +580,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     // Local Variables
     bit               poll_fifo_status;
-    logic [TL_DW-1:0] exp_data[$];
+    data_q_t          exp_data;
     flash_op_t        flash_op;
     data_q_t          flash_op_rdata;
     int               match_cnt;
@@ -721,9 +720,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     int                      num;
     int                      num_full;
     int                      num_part;
-    logic [TL_DW-1:0]        fifo_data;
-    logic [TL_AW-1:0]        flash_addr;
-    logic [TL_DW-1:0]        exp_data[$];
+    data_4s_t                fifo_data;
+    addr_t                   flash_addr;
+    data_q_t                 exp_data;
     flash_op_t               flash_op_copy;
     data_q_t                 data_copy;
 

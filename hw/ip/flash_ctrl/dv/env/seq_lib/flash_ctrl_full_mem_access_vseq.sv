@@ -20,7 +20,7 @@ class flash_ctrl_full_mem_access_vseq extends flash_ctrl_base_vseq;
 
   rand flash_op_t flash_op;
   rand bit        selected_bank;
-  bit [TL_AW-1:0] bank_start_addr;
+  addr_t bank_start_addr;
 
   // Memory protection regions settings.
   flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
@@ -182,7 +182,7 @@ class flash_ctrl_full_mem_access_vseq extends flash_ctrl_base_vseq;
   virtual task do_direct_rd();
     bit   [TL_AW-1:0] read_addr;
     bit   [TL_AW-1:0] start_addr;
-    logic [TL_DW-1:0] rdata;
+    data_4s_t rdata;
     start_addr = bank_start_addr;
     cfg.dir_rd_in_progress = 1'b1;
     for (int i = 0; i < NUM_BK_DATA_WORDS; i++) begin

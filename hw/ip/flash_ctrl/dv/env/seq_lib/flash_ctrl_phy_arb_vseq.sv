@@ -233,12 +233,12 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
 
   constraint default_region_ecc_en_c {default_region_ecc_en == MuBi4False;}
 
-  bit [TL_AW-1:0] read_addr;
+  addr_t read_addr;
 
   // Single direct read data
-  bit [TL_DW-1:0] flash_rd_one_data;
+  data_t flash_rd_one_data;
 
-  localparam bit [TL_DW-1:0] ALL_ONES = {TL_DW{1'b1}};
+  localparam data_t ALL_ONES = {TL_DW{1'b1}};
 
   virtual task body();
 
@@ -276,7 +276,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
       cfg.flash_mem_bkdr_init(flash_op_host_rd.partition, FlashMemInitInvalidate);
       if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
-      end else begin
+      end else if (flash_op.op == flash_ctrl_pkg::FlashOpRead) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
       end
       cfg.flash_mem_bkdr_write(.flash_op(flash_op_host_rd), .scheme(FlashMemInitRandomize));
@@ -301,7 +301,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
       cfg.flash_mem_bkdr_init(flash_op_host_rd.partition, FlashMemInitInvalidate);
       if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
-      end else begin
+      end else if (flash_op.op == flash_ctrl_pkg::FlashOpRead) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
       end
       cfg.flash_mem_bkdr_write(.flash_op(flash_op_host_rd), .scheme(FlashMemInitRandomize));
@@ -350,34 +350,34 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
     fork
       begin
         // host read data and init of selected chunk of memory
-        host_read_op_data(flash_op_host_rd);
+        host_read_data(flash_op_host_rd);
       end
       begin
         // controller read, program or erase
         if (flash_op.op == flash_ctrl_pkg::FlashOpRead) begin
-          controller_read_op_data(flash_op);
+          controller_read_data(flash_op);
         end else if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
           controller_program_data(flash_op, flash_op_data);
         end else begin  //flash_op.op == flash_ctrl_pkg::FlashOpErase
-          controller_program_erase(flash_op);
+          controller_erase_data(flash_op);
         end
       end
     join;
   endtask : do_operations
 
   // host read data.
-  virtual task host_read_op_data(flash_op_t flash_op);
-    logic [TL_DW-1:0] rdata;
+  virtual task host_read_data(flash_op_t flash_op);
+    data_4s_t rdata;
     for (int j = 0; j < flash_op.num_words; j++) begin
       read_addr = flash_op.addr + 4 * j;
       do_direct_read(.addr(read_addr), .mask('1), .blocking(cfg.block_host_rd), .check_rdata(0),
                      .rdata(rdata));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
     end
-  endtask : host_read_op_data
+  endtask : host_read_data
 
   // Controller read data.
-  virtual task controller_read_op_data(flash_op_t flash_op);
+  virtual task controller_read_data(flash_op_t flash_op);
     flash_rd_data.delete();
     flash_ctrl_start_op(flash_op);
     flash_ctrl_read(flash_op.num_words, flash_rd_data, poll_fifo_status);
@@ -385,7 +385,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
     `uvm_info(`gfn, $sformatf("FLASH OP READ DATA: %0p", flash_rd_data), UVM_HIGH)
     cfg.flash_mem_bkdr_read_check(flash_op, flash_rd_data);
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
-  endtask : controller_read_op_data
+  endtask : controller_read_data
 
   // Controller program data.
   virtual task controller_program_data(flash_op_t flash_op, data_q_t flash_op_data);
@@ -400,17 +400,17 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
   endtask : controller_program_data
 
   // Controller erase data.
-  virtual task controller_program_erase(flash_op_t flash_op);
+  virtual task controller_erase_data(flash_op_t flash_op);
     data_q_t exp_data;
     exp_data = cfg.calculate_expected_data(flash_op, flash_op_data);
     flash_ctrl_start_op(flash_op);
     wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
     `uvm_info(`gfn, $sformatf("FLASH OP ERASE DATA DONE"), UVM_HIGH)
     cfg.flash_mem_bkdr_erase_check(flash_op, exp_data);
-  endtask : controller_program_erase
+  endtask : controller_erase_data
 
   virtual task do_arb();
-    logic [TL_DW-1:0] rdata;
+    data_4s_t rdata;
     data_q_t exp_data;
 
     // setting non blocking host reads

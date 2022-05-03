@@ -5,25 +5,25 @@
 // Provides abstraction for mapping a flash memory address in flash organization.
 class flash_mem_addr_attrs;
 
-    bit [TL_AW-1:0] addr;               // Input addr, bus-word aligned.
-    bit [TL_AW-1:0] bank_addr;          // Addr within the bank, bus-word aligned.
-    bit [TL_AW-1:0] word_addr;          // Addr within the bank, flash word aligned.
+    addr_t addr;               // Input addr, bus-word aligned.
+    addr_t bank_addr;          // Addr within the bank, bus-word aligned.
+    addr_t word_addr;          // Addr within the bank, flash word aligned.
     int             offset;             // Byte offset within the flash word.
 
-    bit [TL_AW-1:0] bank_start_addr;    // Start addr of the bank (bus word aligned).
-    bit [TL_AW-1:0] page_start_addr;    // Start addr of the page within the bank.
+    addr_t bank_start_addr;    // Start addr of the bank (bus word aligned).
+    addr_t page_start_addr;    // Start addr of the page within the bank.
 
     uint            bank;               // The bank the address belongs to.
     uint            page;               // The page within the bank.
     uint            line;               // The word line within the page.
     uint            byte_offset;        // Byte offset within the flash word.
 
-  function new(bit [TL_AW-1:0] addr = 0);
+  function new(addr_t addr = 0);
     set_attrs(addr);
   endfunction
 
   // Set attributes from a sample input addr.
-  function void set_attrs(bit [TL_AW-1:0] addr);
+  function void set_attrs(addr_t addr);
     this.addr = {addr[TL_AW-1:TL_SZW], {TL_SZW{1'b0}}};
     bank_addr = this.addr[FlashMemAddrPageMsbBit : 0];
     word_addr = {bank_addr[TL_AW-1:FlashDataByteWidth], {FlashDataByteWidth{1'b0}}};
@@ -38,7 +38,7 @@ class flash_mem_addr_attrs;
     byte_offset = addr[FlashDataByteWidth-1 : 0];
   endfunction
 
-  function void incr(bit [TL_AW-1:0] offset);
+  function void incr(addr_t offset);
     // TODO: Check for overflow
     set_attrs(addr + offset);
   endfunction

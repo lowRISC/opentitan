@@ -182,19 +182,28 @@ package flash_ctrl_env_pkg;
     mubi4_t he_en;        // enable high endurance
   } flash_bank_mp_info_page_cfg_t;
 
+  // 2-states flash data type
+  typedef bit [TL_DW-1:0] data_t;
+  // 4-states flash data type
+  typedef logic [TL_DW-1:0] data_4s_t;
+  // flash address type
+  typedef bit [TL_AW-1:0] addr_t;
+  // Queue of 4-states data words
+  typedef data_4s_t data_q_t[$];
+  // Queue of 2-states data words
+  typedef data_t data_b_t[$];
+  // Array of 2-states data words indexed with flash addresses.
+  // Useful for the flash model.
+  typedef data_t data_model_t[addr_t];
+
   typedef struct packed {
     flash_dv_part_e partition;   // data or one of the info partitions
     flash_erase_e   erase_type;  // erase page or the whole bank
     flash_op_e      op;          // read / program or erase
     uint            num_words;   // number of words to read or program (TL_DW)
-    bit [TL_AW-1:0] addr;        // starting addr for the op
+    addr_t addr;        // starting addr for the op
   } flash_op_t;
 
-  // Data queue for flash transactions
-  typedef logic [TL_DW-1:0] data_q_t[$];
-  typedef bit [TL_DW-1:0] data_b_t[$];
-  typedef bit [TL_DW-1:0] data_t;
-  typedef bit [TL_AW-1:0] addr_t;
 
   parameter uint ALL_ZEROS = 32'h0000_0000;
   parameter uint ALL_ONES = 32'hffff_ffff;
