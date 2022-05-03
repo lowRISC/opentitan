@@ -425,6 +425,30 @@ module tb;
     //=========================================================================
     // Issue Read Cmd starting at the last byte in front of the Mailbox then
     // cross
+    $display("Sending a read command starting at the end of read buffer and crossing Mailbox");
+    mbx_reqsize = $urandom_range(2,36);
+    spiflash_read(
+      tb_sif,
+      8'h 3B,
+      32'h 0000_17FF, // end of read buffer
+      1'b 0,
+      4,
+      mbx_reqsize, // min value 2 that crosses the mailbox boundary
+      IoDual,
+      read_data
+    );
+
+    expected_data = get_read_data('h 7FF, 1);
+    if (read_data.pop_front() != expected_data.pop_front()) begin
+      test_passed = 1'b 0;
+    end
+    expected_data.delete();
+    expected_data = get_mbx_data(SramMailboxIdx, mbx_reqsize -1);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
 
     // Switch PassThrough mode
     ->flashmode_done;
