@@ -397,6 +397,35 @@ module tb;
     read_data.delete();
     // assert (event_flip)
 
+    //=========================================================================
+    // Issue Read Cmd ending at the last byte in front of the Mailbox
+
+    // TODO: Force the next page address to mailbox space
+    $display("Sending a read command ending at the mailbox");
+    mbx_offset = $urandom_range(1, 16);
+    mbx_reqsize = mbx_offset;
+    spiflash_read(
+      tb_sif,
+      8'h 0B,      // opcode
+      32'h 0000_1800 - mbx_offset,
+      1'b 0,       // address mode
+      8,           // dummy beat
+      mbx_reqsize, // Ending at the last byte of read buffer
+      IoSingle,
+      read_data
+    );
+
+    expected_data = get_read_data('h 800 - mbx_offset, mbx_reqsize);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+    //=========================================================================
+    // Issue Read Cmd starting at the last byte in front of the Mailbox then
+    // cross
+
     // Switch PassThrough mode
     ->flashmode_done;
 
@@ -630,6 +659,12 @@ module tb;
     // Readbuffer config
     //   threshold: SramDw granularity. 8bit (1024 Bytes)
     cfg_readbuf_threshold = 8'h 83;
+
+    // Mailbox config for Flash mode
+    cfg_mailbox_en       = 1'b 1;
+    cfg_intercept_en_mbx = 1'b 0;
+    cfg_mailbox_addr     = 32'h 0000_1800; // 1kB starting from 0x1800
+    cfg_addr_4b_en       = 1'b 0;          // to issue FEEC_D000
 
     #100ns ->init_done;
 
