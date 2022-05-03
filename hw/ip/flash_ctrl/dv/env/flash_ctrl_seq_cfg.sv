@@ -36,12 +36,6 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint mp_region_he_en_pc;
   uint mp_region_max_pages;
 
-  // mem for scoreboard
-  data_t                 scb_flash_data  [addr_t]  = '{default: 1};
-  data_t                 scb_flash_info  [addr_t]  = '{default: 1};
-  data_t                 scb_flash_info1 [addr_t]  = '{default: 1};
-  data_t                 scb_flash_info2 [addr_t]  = '{default: 1};
-
   // Knob to control bank level erasability.
   uint bank_erase_en_pc;
 
@@ -87,7 +81,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Chances to start flash with all 1s and not with random values (default is 30%).
   uint flash_init_set_pc;
 
-  //  Set by a higher level vseq that invokes this vseq 
+  //  Set by a higher level vseq that invokes this vseq.
   bit external_cfg;
 
   // If pre-transaction back-door memory preperation isn't needed, set do_tran_prep_mem to 0.

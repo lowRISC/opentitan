@@ -54,7 +54,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   data_q_t flash_rd_data;
 
   // Single host read data
-  bit [TL_DW-1:0] flash_rd_one_data;
+  data_t flash_rd_one_data;
 
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
@@ -130,9 +130,9 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
     };
   }
 
-  bit [TL_AW-1:0] read_addr;
-  logic [TL_DW-1:0] exp_data[$];
-  logic [TL_DW-1:0] all_ones = {TL_DW{1'b1}};
+  addr_t read_addr;
+  data_q_t exp_data;
+  data_4s_t all_ones = {TL_DW{1'b1}};
 
   task body();
 
@@ -389,7 +389,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
 
   // host read data.
   virtual task host_read_op_data(flash_op_t flash_op);
-    logic [TL_DW-1:0] rdata;
+    data_4s_t rdata;
     exp_data.delete();
     for (int j = 0; j < flash_op.num_words; j++) begin
       read_addr = flash_op.addr + 4 * j;

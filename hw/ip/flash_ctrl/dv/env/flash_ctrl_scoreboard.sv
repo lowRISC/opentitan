@@ -40,7 +40,7 @@ class flash_ctrl_scoreboard #(
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_d_chan_fifo;
 
   // utility function to word-align an input TL address
-  function bit [TL_AW-1:0] word_align_addr(bit [TL_AW-1:0] addr);
+  function addr_t word_align_addr(addr_t addr);
     return {addr[TL_AW-1:2], 2'b00};
   endfunction
 
@@ -172,7 +172,7 @@ class flash_ctrl_scoreboard #(
           write_allowed(part, wr_addr);
           `uvm_info(`gfn, $sformatf("wr_access: 0x%0b wr_addr: 0x%0h", wr_access, wr_addr), UVM_LOW)
           if (wr_access) begin
-            cfg.write_data_all_part(part, wr_addr, item.a_data);
+            cfg.write_data_all_part(.part(part), .addr(wr_addr), .data(item.a_data));
           end
           if (idx_wr == num_wr) begin
             idx_wr = 0;
@@ -348,8 +348,8 @@ class flash_ctrl_scoreboard #(
     end
   endfunction
 
-  virtual function void check_rd_data(flash_dv_part_e part, bit [TL_AW-1:0] addr,
-                                      ref bit [TL_DW-1:0] data);
+  virtual function void check_rd_data(flash_dv_part_e part, addr_t addr,
+                                      ref data_t data);
     case (part)
       FlashPartData: begin
         check_rd_part(cfg.scb_flash_data, addr, data);
@@ -367,7 +367,7 @@ class flash_ctrl_scoreboard #(
     endcase
   endfunction
 
-  virtual function void erase_data(flash_dv_part_e part, bit [TL_AW-1:0] addr, bit sel);
+  virtual function void erase_data(flash_dv_part_e part, addr_t addr, bit sel);
     case (part)
       FlashPartData: begin
         erase_page_bank(NUM_BK_DATA_WORDS, addr, sel, cfg.scb_flash_data);
@@ -397,7 +397,7 @@ class flash_ctrl_scoreboard #(
 
   endfunction
 
-  virtual task write_allowed(ref flash_dv_part_e part, ref bit [TL_AW-1:0] in_addr);
+  virtual task write_allowed(ref flash_dv_part_e part, ref addr_t in_addr);
     bit en;
     bit prog_en;
     bit prog_en_def;
@@ -458,7 +458,7 @@ class flash_ctrl_scoreboard #(
     endcase
   endtask
 
-  virtual task read_allowed(ref flash_dv_part_e part, ref bit [TL_AW-1:0] in_rd_addr);
+  virtual task read_allowed(ref flash_dv_part_e part, ref addr_t in_rd_addr);
     bit en;
     bit read_en;
     bit read_en_def;
@@ -519,7 +519,7 @@ class flash_ctrl_scoreboard #(
   endtask
 
   virtual task erase_allowed(ref flash_dv_part_e part, bit erase_sel,
-                             ref bit [TL_AW-1:0] in_erase_addr, bit [1:0] bk_en);
+                             ref addr_t in_erase_addr, bit [1:0] bk_en);
     bit en;
     bit erase_en;
     bit erase_en_def;
@@ -584,8 +584,8 @@ class flash_ctrl_scoreboard #(
     end
   endtask
 
-  virtual function void check_rd_part(const ref data_t exp_data_part[addr_t],
-                                      bit [TL_AW-1:0] addr, ref bit [TL_DW-1:0] data);
+  virtual function void check_rd_part(const ref data_model_t exp_data_part,
+                                      addr_t addr, ref data_t data);
     if (exp_data_part.exists(addr)) begin
       `uvm_info(
           `gfn, $sformatf(
@@ -648,8 +648,8 @@ class flash_ctrl_scoreboard #(
     end
   endtask
 
-  virtual function void erase_page_bank(int num_bk_words, bit [TL_AW-1:0] addr, bit sel,
-                                        ref data_t exp_part[addr_t]);
+  virtual function void erase_page_bank(int num_bk_words, addr_t addr, bit sel,
+                                        ref data_model_t exp_part);
     int num_wr;
     if (sel) begin  // bank sel
       num_wr = num_bk_words;

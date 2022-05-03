@@ -299,9 +299,9 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
   virtual task check_code_access(input bit opt);
 
     // Local Variables
-    bit [TL_AW-1:0] read_addr;
-    bit [TL_DW-1:0] rdata;
-    bit [TL_DW-1:0] rdata_unused;
+    addr_t read_addr;
+    data_t rdata;
+    data_t rdata_unused;
 
     // Note : opt 'CODE_FETCH_ALLOWED' - Access Allowed, 'CODE_FETCH_DENIED' - Access Denied
 
