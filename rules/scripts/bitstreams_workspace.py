@@ -6,6 +6,7 @@
 import argparse
 import datetime
 import io
+import logging
 import os.path
 import re
 import subprocess
@@ -127,7 +128,13 @@ class BitstreamCache(object):
                 with open(self.latest_update) as f:
                     self.available['latest'] = f.read()
             except FileNotFoundError:
-                pass
+                if self.offline:
+                    logging.error(
+                        'Must pre-initialize bitstream cache in offline mode.')
+                else:
+                    logging.error(
+                        f'Bitstream cache missing {self.latest_update}.')
+                sys.exit(1)
             return
         document = self.Get('').decode('utf-8')
         et = xml.etree.ElementTree.fromstring(document)
@@ -173,8 +180,8 @@ class BitstreamCache(object):
         """
         if key == 'latest':
             key = self.available['latest']
-        local_dir = os.path.join('cache', key)
         files = []
+        local_dir = os.path.join('cache', key)
         for (dirname, _, filenames) in os.walk(local_dir):
             files.extend(os.path.join(dirname, f) for f in filenames)
         return files
@@ -280,7 +287,8 @@ def main(argv):
 
     # Do we need a refresh?
     need_refresh = (args.refresh or bitstream != 'latest' or
-                    cache.NeedRefresh(args.refresh_time) and not args.offline)
+                    (cache.NeedRefresh(args.refresh_time) and
+                     not args.offline))
     cache.GetBitstreamsAvailable(need_refresh)
 
     # If commanded to print bitstream availability, do so.
@@ -293,10 +301,12 @@ def main(argv):
     if bitstream != 'latest':
         closest = cache.GetClosest(repo, bitstream)
         if closest is None:
-            print('Cannot find a bitstream close to {}'.format(bitstream))
+            logging.error(
+                'Cannot find a bitstream close to {}'.format(bitstream))
             return 1
         if closest != bitstream:
-            print('Closest bitstream to {} is {}.'.format(bitstream, closest))
+            logging.info('Closest bitstream to {} is {}.'.format(
+                bitstream, closest))
             bitstream = closest
 
     # Write a build file which allows tests to reference the bitstreams with
@@ -305,10 +315,10 @@ def main(argv):
     #   @bitstreams//:bitstream_mask_rom
     configured = cache.WriteBuildFile(args.build_file, bitstream)
     if args.bitstream != configured:
-        print('Configured bitstream "{}" as {}.'.format(
+        logging.info('Configured bitstream "{}" as {}.'.format(
             args.bitstream, configured))
     else:
-        print('Configured bitstream {}.'.format(configured))
+        logging.info('Configured bitstream {}.'.format(configured))
 
     return 0
 
