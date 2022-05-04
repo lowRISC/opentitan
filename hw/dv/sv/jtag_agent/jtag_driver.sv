@@ -63,10 +63,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     cfg.vif.tck_en <= 1'b1;
     @(`HOST_CB); // wait one cycle to ensure clock is stable. TODO: remove.
     if (req.ir_len) begin
-      if (!(req.skip_reselected_ir && req.ir == selected_ir && req.ir_len == selected_ir_len)) begin
-        drive_jtag_ir(req.ir_len, req.ir);
-      end else begin
+      if (req.skip_reselected_ir && req.ir == selected_ir && req.ir_len == selected_ir_len) begin
         `uvm_info(`gfn, $sformatf("UpdateIR for 0x%0h skipped", selected_ir), UVM_HIGH)
+      end else begin
+        drive_jtag_ir(req.ir_len, req.ir);
       end
     end
     if (req.dr_len) drive_jtag_dr(req.dr_len, req.dr, rsp.dout);

@@ -8,7 +8,6 @@
 `include "chip_common_vseq.sv"
 `include "chip_jtag_csr_rw_vseq.sv"
 `include "chip_jtag_mem_vseq.sv"
-`include "chip_tap_straps_vseq.sv"
 // This needs to be listed prior to all sequences that derive from it.
 `include "chip_sw_base_vseq.sv"
 `include "chip_sw_full_aon_reset_vseq.sv"
@@ -32,3 +31,4 @@
 `include "chip_sw_sensor_ctrl_status_intr_vseq.sv"
 `include "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq.sv"
 `include "chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq.sv"
+`include "chip_tap_straps_vseq.sv"

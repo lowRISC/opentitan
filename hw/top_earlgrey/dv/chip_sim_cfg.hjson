@@ -825,21 +825,24 @@
     {
       name: chip_tap_straps_dev
       uvm_test_seq: chip_tap_straps_vseq
-      en_run_modes: ["stub_cpu_mode"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_otp_image=LcStDev",
                  "+create_jtag_riscv_map=1",
                  // select DFT tap
-                 "+uart0_sel=0"]
+                 "+uart0_sel=0",
+                 // test will exit while SW is still running
+                 "+disable_assert_final_checks"]
     }
     {
       name: chip_tap_straps_rma
       uvm_test_seq: chip_tap_straps_vseq
-      en_run_modes: ["stub_cpu_mode"]
+      en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_otp_image=LcStRma",
                  "+create_jtag_riscv_map=1",
                  // select DFT tap
-                 "+uart0_sel=0"]
+                 "+uart0_sel=0",
+                 // test will exit while SW is still running
+                 "+disable_assert_final_checks"]
     }
   ]
 
