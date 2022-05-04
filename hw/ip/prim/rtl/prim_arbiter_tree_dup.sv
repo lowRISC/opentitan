@@ -20,6 +20,9 @@ module prim_arbiter_tree_dup #(
   // EnDataPort: {0, 1}, if 0, input data will be ignored
   parameter bit EnDataPort = 1,
 
+  // if arbiter has fixed priority
+  parameter bit FixedArb = 0,
+
   // Derived parameters
   localparam int IdxW = $clog2(N)
 ) (
@@ -77,22 +80,43 @@ module prim_arbiter_tree_dup #(
       );
     end
 
-    prim_arbiter_tree #(
-      .N(N),
-      .DW(DW),
-      .EnDataPort(EnDataPort)
-    ) u_arb (
-      .clk_i,
-      .rst_ni,
-      .req_chk_i,
-      .req_i(req_buf),
-      .data_i(data_buf),
-      .gnt_o(arb_output_buf[i].gnt),
-      .idx_o(arb_output_buf[i].idx),
-      .valid_o(arb_output_buf[i].valid),
-      .data_o(arb_output_buf[i].data),
-      .ready_i
-    );
+    if (FixedArb) begin : gen_fixed_arbiter
+      prim_arbiter_fixed  #(
+        .N(N),
+        .DW(DW),
+        .EnDataPort(EnDataPort)
+      ) u_arb (
+        .clk_i,
+        .rst_ni,
+        .req_i(req_buf),
+        .data_i(data_buf),
+        .gnt_o(arb_output_buf[i].gnt),
+        .idx_o(arb_output_buf[i].idx),
+        .valid_o(arb_output_buf[i].valid),
+        .data_o(arb_output_buf[i].data),
+        .ready_i
+      );
+      logic unused_req_chk;
+      assign unused_req_chk = req_chk_i;
+
+    end else begin : gen_rr_arbiter
+      prim_arbiter_tree #(
+        .N(N),
+        .DW(DW),
+        .EnDataPort(EnDataPort)
+      ) u_arb (
+        .clk_i,
+        .rst_ni,
+        .req_chk_i,
+        .req_i(req_buf),
+        .data_i(data_buf),
+        .gnt_o(arb_output_buf[i].gnt),
+        .idx_o(arb_output_buf[i].idx),
+        .valid_o(arb_output_buf[i].valid),
+        .data_o(arb_output_buf[i].data),
+        .ready_i
+      );
+    end
   end
 
   // the last buffered position is sent out
