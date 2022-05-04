@@ -4,7 +4,6 @@
 
 """Rules for assembling Tock binaries.
 """
-
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
     "//rules:rv.bzl",
