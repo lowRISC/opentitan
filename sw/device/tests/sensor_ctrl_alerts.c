@@ -50,7 +50,7 @@ const volatile uint32_t events_vector = -1;
 /**
  *  Extracts current event id from the bit-strike counter.
  */
-static uint32_t event_to_test() {
+static uint32_t event_to_test(void) {
   uint32_t addr = (uint32_t)(&events_vector);
   uint32_t val = abs_mmio_read32(addr);
 
