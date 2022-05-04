@@ -68,7 +68,6 @@ class BitstreamCache(object):
         self.bucket_url = bucket_url
         cachedir = os.path.expanduser(cachedir)
         self.cachedir = os.path.join(cachedir, 'cache')
-
         latest_update = os.path.join(cachedir,
                                      os.path.expanduser(latest_update))
         self.latest_update = latest_update
