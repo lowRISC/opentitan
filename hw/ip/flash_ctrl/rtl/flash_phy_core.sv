@@ -236,7 +236,7 @@ module flash_phy_core
   // controller request can only win after the entire read pipeline
   // clears
   logic ctrl_req;
-  assign ctrl_req = req_i & rd_stage_idle & ~host_req &
+  assign ctrl_req = req_i & rd_stage_idle &
                     mubi4_test_false_strict(flash_disable[CtrlDisableIdx]);
 
   logic [1:0] data_tie_off [2];
@@ -245,27 +245,28 @@ module flash_phy_core
   // SEC_CM: PHY_ARBITER.CTRL.REDUN
   logic phy_req;
   logic phy_rdy;
-   
+
   prim_arbiter_tree_dup #(
     .N(2),
     .DW(2),
-    .EnDataPort('0)
+    .EnDataPort('0),
+    .FixedArb(1)
   ) u_host_arb (
     .clk_i,
     .rst_ni,
     .req_chk_i('0),
-    .req_i({host_req, ctrl_req}),
+    .req_i({ctrl_req, host_req}),
     .data_i(data_tie_off),
-    .gnt_o({host_req_rdy_o, ctrl_gnt}),
+    .gnt_o({ctrl_gnt, host_req_rdy_o}),
     .idx_o(),
     .valid_o(phy_req),
     .data_o(),
-    .ready_i(phy_rdy),          
+    .ready_i(phy_rdy),
     .err_o(arb_err_o)
   );
 
   assign phy_rdy = phy_req & host_req ? rd_stage_rdy : rd_stage_idle;
-   
+
 
   // if request happens at the same time as a host grant, increment count
   assign inc_arb_cnt = req_i & host_gnt;
