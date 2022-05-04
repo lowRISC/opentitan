@@ -206,7 +206,7 @@ module otbn_core
   logic            rnd_fips_err;
 
   logic            urnd_reseed_req;
-  logic            urnd_reseed_busy;
+  logic            urnd_reseed_ack;
   logic            urnd_advance;
   logic            urnd_advance_start_stop_control;
   logic [WLEN-1:0] urnd_data;
@@ -262,7 +262,7 @@ module otbn_core
     .controller_start_o(controller_start),
 
     .urnd_reseed_req_o (urnd_reseed_req),
-    .urnd_reseed_busy_i(urnd_reseed_busy),
+    .urnd_reseed_ack_i (urnd_reseed_ack),
     .urnd_advance_o    (urnd_advance_start_stop_control),
 
     .start_secure_wipe_i  (start_secure_wipe),
@@ -795,7 +795,7 @@ module otbn_core
     .rnd_fips_err_o    (rnd_fips_err),
 
     .urnd_reseed_req_i (urnd_reseed_req),
-    .urnd_reseed_busy_o(urnd_reseed_busy),
+    .urnd_reseed_ack_o (urnd_reseed_ack),
     .urnd_advance_i    (urnd_advance),
     .urnd_data_o       (urnd_data),
     .urnd_all_zero_o   (urnd_all_zero),
