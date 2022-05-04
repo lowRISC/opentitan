@@ -94,8 +94,11 @@ module tb;
   // in the agent/interface.
   wire ioc3;
   wire ioc4;
-  wire uart0_sel;
-  assign uart0_sel = 1'b1;
+  bit uart0_sel = 1;
+  initial begin
+    void'($value$plusargs("uart0_sel=%0b", uart0_sel));
+    $display("wcy uart0_sel %0d",uart0_sel );
+  end
   assign ioc3 = (uart0_sel) ? uart_if[0].uart_rx : dft_straps[0];
   assign ioc4 = (uart0_sel) ? 1'bz : dft_straps[1];
   assign uart_if[0].uart_tx = ioc4;
