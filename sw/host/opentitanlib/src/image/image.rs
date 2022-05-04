@@ -23,6 +23,7 @@ pub enum ImageError {
     Parse,
 }
 
+/// A buffer with the same alignment as `Manifest` for storing image data.
 #[repr(C)]
 #[derive(Debug)]
 pub struct ImageData {
@@ -60,18 +61,20 @@ pub struct ImageAssembler {
 
 impl Image {
     const MAX_SIZE: usize = 512 * 1024;
-    /// Creates an `Image` from a given input binary.
+    /// Reads in an `Image`.
     pub fn from_reader(mut r: impl Read) -> Result<Self> {
         let mut image = Image::default();
         image.size = r.read(&mut image.data.bytes)?;
         Ok(image)
     }
 
+    /// Writes out the `Image`.
     pub fn to_writer(&self, w: &mut impl Write) -> Result<()> {
         w.write_all(&self.data.bytes[..self.size])?;
         Ok(())
     }
 
+    /// Creates an `Image` from a given input binary.
     pub fn read_from_file(path: &Path) -> Result<Image> {
         let file = File::open(path)?;
         Self::from_reader(file)
