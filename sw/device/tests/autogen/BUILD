@@ -14,7 +14,7 @@ opentitan_functest(
     name = "plic_all_irqs_test",
     srcs = ["plic_all_irqs_test.c"],
     verilator = verilator_params(
-        timeout = "long",
+        timeout = "eternal",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
