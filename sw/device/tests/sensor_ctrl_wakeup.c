@@ -42,7 +42,7 @@ static bool get_wakeup_status(void) {
  * External interrupt handler.
  */
 void ottf_external_isr(void) {
-  dif_rv_plic_irq_id_t irq_id;
+  dif_pwrmgr_irq_t irq_id;
   top_earlgrey_plic_peripheral_t peripheral;
 
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
