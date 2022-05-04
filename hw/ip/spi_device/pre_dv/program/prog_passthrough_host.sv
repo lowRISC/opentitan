@@ -25,6 +25,19 @@ program prog_passthrough_host
 
     @(posedge rst_n);
 
+    // SW initialization tool 2.8us incl. DPSRAM zerorize.
+    #2us
+
+    @(negedge clk);
+    // Test: Issue Status Read command without intercept
+    spiflash_readstatus(
+      sif.tb,
+      spi_device_pkg::CmdReadStatus1,
+      status
+    );
+
+    $display("Received Status: %2Xh", status);
+
     forever begin
       @(posedge clk);
     end
