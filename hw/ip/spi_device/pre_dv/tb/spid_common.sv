@@ -1016,4 +1016,76 @@ package spid_common;
 
   endtask : sram_writeword
 
+  /////////////////
+  // TL-UL agent //
+  /////////////////
+  task automatic tlul_write(
+    const ref logic clk,
+
+    ref tlul_pkg::tl_h2d_t       h2d,
+    const ref tlul_pkg::tl_d2h_t d2h,
+
+    input logic [31:0] address,
+    input logic [31:0] wdata,
+    input logic [ 3:0] wstrb
+  );
+
+    // Assume always called this task @(posedge clk);
+    h2d.a_valid   = 1'b 1;
+    h2d.a_address = address;
+    h2d.a_opcode  = tlul_pkg::PutFullData;
+    h2d.a_data    = wdata;
+    h2d.a_mask    = wstrb;
+    h2d.a_param   = '0;
+    h2d.a_size    = 2;
+    h2d.a_source  = '0;
+
+    h2d.d_ready   = 1'b 0;
+
+    // Due to interity checker instance, `a_ready` from SW view is delayed.
+    // Need to see the a_ready then wait posedge.
+    // Previously: @(posedge clk iff d2h.a_ready);
+    wait(d2h.a_ready);
+    @(posedge clk);
+    h2d.a_valid = 1'b 0;
+    h2d.d_ready = 1'b 1;
+    wait(d2h.d_valid);
+    @(posedge clk);
+    h2d.d_ready = 1'b 0;
+
+  endtask : tlul_write
+
+  task automatic tlul_read(
+    const ref logic clk,
+
+    ref tlul_pkg::tl_h2d_t       h2d,
+    const ref tlul_pkg::tl_d2h_t d2h,
+
+    input  logic [31:0] address,
+    output logic [31:0] rdata
+  );
+
+    // Assume always called this task @(posedge clk);
+    h2d.a_valid   = 1'b 1;
+    h2d.a_address = address;
+    h2d.a_opcode  = tlul_pkg::Get;
+    h2d.a_data    = '0;
+    h2d.a_mask    = '1;
+    h2d.a_param   = '0;
+    h2d.a_size    = 2;
+    h2d.a_source  = '0;
+
+    h2d.d_ready   = 1'b 0;
+
+    wait(d2h.a_ready);
+    @(posedge clk);
+    h2d.a_valid = 1'b 0;
+    h2d.d_ready = 1'b 1;
+    wait(d2h.d_valid);
+    @(posedge clk);
+    rdata       = d2h.d_data;
+    h2d.d_ready = 1'b 0;
+
+  endtask : tlul_read
+
 endpackage : spid_common
