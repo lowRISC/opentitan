@@ -24,6 +24,8 @@ module otbn_stack
 
   output logic                  full_o,      // Stack is full
 
+  output logic                  cnt_err_o,   // Stack counters are wrong
+
   input logic                   clear_i,     // Clear all data
 
   input  logic                  push_i,      // Push the data
@@ -37,7 +39,7 @@ module otbn_stack
   localparam int unsigned StackDepthW = prim_util_pkg::vbits(StackDepth);
 
   logic [StackWidth-1:0]  stack_storage [StackDepth];
-  logic [StackDepthW:0]   stack_wr_ptr_q, stack_wr_ptr_d;
+  logic [StackDepthW:0]   stack_wr_ptr;
   logic [StackDepthW-1:0] stack_top_idx, stack_rd_idx, stack_wr_idx;
 
   logic stack_empty;
@@ -46,39 +48,44 @@ module otbn_stack
   logic stack_write;
   logic stack_read;
 
-  assign stack_empty = stack_wr_ptr_q == '0;
-  assign stack_full  = stack_wr_ptr_q == StackDepth[StackDepthW:0];
+  assign stack_empty = stack_wr_ptr == '0;
+  assign stack_full  = stack_wr_ptr == StackDepth[StackDepthW:0];
 
   assign stack_write = push_i & (~full_o | pop_i);
   assign stack_read  = top_valid_o & pop_i;
 
-  assign stack_top_idx = stack_wr_ptr_q[StackDepthW-1:0];
+  assign stack_top_idx = stack_wr_ptr[StackDepthW-1:0];
   assign stack_rd_idx = stack_top_idx - 1'b1;
   assign stack_wr_idx = pop_i ? stack_rd_idx : stack_top_idx;
 
+  logic signed [StackDepthW:0] stack_wr_ptr_step;
   always_comb begin
-    stack_wr_ptr_d = stack_wr_ptr_q;
-
-    if (stack_write && !stack_read) begin
-      stack_wr_ptr_d = stack_wr_ptr_q + 1'b1;
-    end
-
-    if (!stack_write && stack_read) begin
-      stack_wr_ptr_d = stack_wr_ptr_q - 1'b1;
-    end
-
-    if (clear_i) begin
-      stack_wr_ptr_d = '0;
-    end
+    unique case ({stack_write, stack_read})
+      2'b10:   stack_wr_ptr_step = 1;
+      2'b01:   stack_wr_ptr_step = -1;
+      default: stack_wr_ptr_step = '0;
+    endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      stack_wr_ptr_q <= '0;
-    end else begin
-      stack_wr_ptr_q <= stack_wr_ptr_d;
-    end
-  end
+  logic stack_wr_ptr_en;
+  assign stack_wr_ptr_en = stack_wr_ptr_step != '0;
+
+  // SEC_CM: STACK_WR_PTR.CTR.REDUN
+  prim_count #(
+    .Width        (StackDepthW+1),
+    .OutSelDnCnt  (0),
+    .CntStyle     (prim_count_pkg::DupCnt)
+  ) u_stack_wr_ptr (
+    .clk_i,
+    .rst_ni,
+    .clr_i      (clear_i),
+    .set_i      (1'b0),
+    .set_cnt_i  ('0),
+    .en_i       (stack_wr_ptr_en),
+    .step_i     (stack_wr_ptr_step),
+    .cnt_o      (stack_wr_ptr),
+    .err_o      (cnt_err_o)
+  );
 
   always_ff @(posedge clk_i) begin
     if (stack_write) begin
