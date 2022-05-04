@@ -78,6 +78,26 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
     // TODO
   endtask
 
+  virtual task wait_rom_check_done();
+    // The CSR tests (handled by this class) need to wait until the rom_ctrl block has finished
+    // running KMAC before they can start issuing reads and writes. Otherwise, they might write to a
+    // KMAC register while KMAC is in operation. This would have no effect and a subsequent read
+    // from the register would show a mismatched value. We handle this by considering rom_ctrl's
+    // operation as "part of reset".
+    // Same for the test that uses jtag to access CSRs. We need to wait until rom check is done.
+    //
+    // Once the base class reset is finished, we're just after a chip reset. In a second, rom_ctrl
+    // is going to start asking KMAC to do an operation. At that point, KMAC's CFG_REGWEN register
+    // will go low. When the operation is finished, it will go high again. Wait until then.
+
+    `uvm_info(`gfn, "waiting for rom_ctrl after reset", UVM_MEDIUM)
+    // Use backdoor, so that this task can be used with or without stub mode enabled
+    csr_spinwait(.ptr(ral.kmac.cfg_regwen), .exp_data(0), .backdoor(1), .spinwait_delay_ns(1000));
+    `uvm_info(`gfn, "rom_ctrl check started", UVM_MEDIUM)
+    csr_spinwait(.ptr(ral.kmac.cfg_regwen), .exp_data(1), .backdoor(1), .spinwait_delay_ns(1000));
+    `uvm_info(`gfn, "rom_ctrl check done after reset", UVM_HIGH)
+  endtask
+
   virtual task pre_start();
     // Do DUT init after some additional settings.
     bit do_dut_init_save = do_dut_init;

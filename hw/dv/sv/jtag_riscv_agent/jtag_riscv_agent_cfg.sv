@@ -17,6 +17,13 @@ class jtag_riscv_agent_cfg extends dv_base_agent_cfg;
   // while RV_DM jtag uses the original DM CSR addresses without the normalization.
   bit is_rv_dm = 0;
 
+  // Indicates the rv_dm jtag is activated or not. Only valid when is_rv_dm = 1.
+  // It can be only updated by driver and sequence shouldn't set this variable.
+  bit rv_dm_activated = 0;
+
+  // Allows activation to fail. Only valid when is_rv_dm = 1.
+  bit allow_rv_dm_activation_fail = 0;
+
   // Max attempts to activate rv_dm.
   int max_rv_dm_activation_attempts = 100;
 
