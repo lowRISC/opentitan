@@ -67,10 +67,43 @@ module otbn_stack
     endcase
   end
 
+  // SEC_CM: STACK_WR_PTR.CTR.GLITCH_DETECT
+  // Detect glitches on the `step_i` input of the stack write pointer.  If a glitch is detected,
+  // latch it until the stack gets cleared (or the module is reset).  Detecting glitches on the
+  // clock edge instead of combinationally is required because the error output drives the control
+  // path, thus feeding the glitch detector output back combinationally would result in
+  // combinational loops.
+  logic stack_wr_ptr_step_err_d, stack_wr_ptr_step_err_q;
+  always_comb begin
+    stack_wr_ptr_step_err_d = stack_wr_ptr_step_err_q;
+    if (clear_i) stack_wr_ptr_step_err_d = 1'b0;
+    if (stack_wr_ptr_step > 1 || stack_wr_ptr_step < -1) stack_wr_ptr_step_err_d = 1'b1;
+    if (stack_wr_ptr_step == 1 && !stack_write) stack_wr_ptr_step_err_d = 1'b1;
+    if (stack_wr_ptr_step == -1 && !stack_read) stack_wr_ptr_step_err_d = 1'b1;
+    if (stack_wr_ptr_step == 0 && (stack_write ^ stack_read)) stack_wr_ptr_step_err_d = 1'b1;
+  end
+
+  logic stack_wr_ptr_step_err_buf;
+  prim_buf #(
+    .Width (1)
+  ) u_stack_wr_ptr_step_err_buf (
+    .in_i   (stack_wr_ptr_step_err_d),
+    .out_o  (stack_wr_ptr_step_err_buf)
+  );
+
+  always_ff @(posedge clk_i, negedge rst_ni) begin
+    if (!rst_ni) begin
+      stack_wr_ptr_step_err_q <= 1'b0;
+    end else begin
+      stack_wr_ptr_step_err_q <= stack_wr_ptr_step_err_buf;
+    end
+  end
+
   logic stack_wr_ptr_en;
   assign stack_wr_ptr_en = stack_wr_ptr_step != '0;
 
   // SEC_CM: STACK_WR_PTR.CTR.REDUN
+  logic stack_wr_ptr_err;
   prim_count #(
     .Width        (StackDepthW+1),
     .OutSelDnCnt  (0),
@@ -84,7 +117,7 @@ module otbn_stack
     .en_i       (stack_wr_ptr_en),
     .step_i     (stack_wr_ptr_step),
     .cnt_o      (stack_wr_ptr),
-    .err_o      (cnt_err_o)
+    .err_o      (stack_wr_ptr_err)
   );
 
   always_ff @(posedge clk_i) begin
@@ -96,4 +129,5 @@ module otbn_stack
   assign full_o      = stack_full;
   assign top_data_o  = stack_storage[stack_rd_idx];
   assign top_valid_o = ~stack_empty;
+  assign cnt_err_o   = stack_wr_ptr_err | stack_wr_ptr_step_err_q;
 endmodule
