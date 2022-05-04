@@ -1,0 +1,91 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:defs.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_proc_macro",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//third_party/tock/crates", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # Apache-2.0 from expression "Apache-2.0 OR MIT"
+])
+
+# Generated Targets
+# buildifier: disable=out-of-order-load
+# buildifier: disable=load-on-top
+load(
+    "@rules_rust//cargo:cargo_build_script.bzl",
+    "cargo_build_script",
+)
+
+cargo_build_script(
+    name = "libtock_runtime_build_script",
+    srcs = glob(["**/*.rs"]),
+    build_script_env = {
+    },
+    crate_features = [
+    ],
+    crate_root = "runtime/build.rs",
+    data = glob(["**"]),
+    edition = "2021",
+    rustc_flags = [
+        "--cap-lints=allow",
+        "--cfg=feature=\"no_auto_layout\"",
+    ],
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+    version = "0.1.0",
+    visibility = ["//visibility:private"],
+    deps = [
+    ],
+)
+
+rust_library(
+    name = "libtock_runtime",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+    ],
+    crate_root = "runtime/src/lib.rs",
+    data = [],
+    compile_data = [
+    "runtime/src/startup/asm_arm.s",
+    "runtime/src/startup/asm_riscv32.s",
+],
+    edition = "2021",
+    rustc_flags = [
+        "--cap-lints=allow",
+        "--cfg=feature=\"no_auto_layout\"",
+    ],
+    tags = [
+        "cargo-raze",
+        "crate-name=libtock_runtime",
+        "manual",
+    ],
+    version = "0.1.0",
+    # buildifier: leave-alone
+    deps = [
+        ":libtock_runtime_build_script",
+        "@raze__libtock_platform__0_1_0//:libtock_platform",
+    ],
+)

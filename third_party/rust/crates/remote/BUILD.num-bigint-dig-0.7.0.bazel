@@ -104,7 +104,7 @@ rust_library(
         "@raze__num_iter__0_1_43//:num_iter",
         "@raze__num_traits__0_2_15//:num_traits",
         "@raze__rand__0_8_5//:rand",
-        "@raze__serde__1_0_144//:serde",
+        "@raze__serde__1_0_145//:serde",
         "@raze__smallvec__1_9_0//:smallvec",
         "@raze__zeroize__1_4_3//:zeroize",
     ],

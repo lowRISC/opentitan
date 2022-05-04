@@ -1,0 +1,57 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:defs.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_proc_macro",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//third_party/tock/crates", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "restricted",  # no license
+])
+
+# Generated Targets
+
+rust_library(
+    name = "kernel",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+    ],
+    crate_root = "kernel/src/lib.rs",
+    data = [],
+    edition = "2021",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "crate-name=kernel",
+        "manual",
+    ],
+    version = "0.1.0",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__tock_cells__0_1_0//:tock_cells",
+        "@raze__tock_registers__0_7_0//:tock_registers",
+        "@raze__tock_tbf__0_1_0//:tock_tbf",
+    ],
+)

@@ -60,13 +60,13 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__rand_chacha__0_3_1//:rand_chacha",
-        "@raze__rand_core__0_6_3//:rand_core",
+        "@raze__rand_core__0_6_4//:rand_core",
     ] + selects.with_or({
         # cfg(unix)
         (
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
         ): [
-            "@raze__libc__0_2_132//:libc",
+            "@raze__libc__0_2_133//:libc",
         ],
         "//conditions:default": [],
     }),
