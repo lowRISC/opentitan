@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+`define DPSRAM_DATA(x) tb.dut.u_memory_2p.u_mem.gen_generic.u_impl_generic.mem[(x)]
+
 program prog_passthrough_sw
   import spid_common::*;
 (
@@ -91,6 +93,8 @@ program prog_passthrough_sw
     // CMD_INFO
     init_cmdinfo_list();
 
+    init_dpsram();
+
   endtask : init_spidevice_passthrough
 
   task automatic init_cmdinfo_list();
@@ -137,5 +141,24 @@ program prog_passthrough_sw
     end
 
   endtask : init_cmdinfo_list
+
+  function automatic void init_dpsram(bit randomness = 1'b 1);
+    // Fill the DPSRAM with random or predefined data
+    // To reduce the sim time, used force value
+    automatic logic [35:0] sram_data;
+    automatic logic [31:0] strip_data;
+    for (int unsigned i = 0; i < spi_device_pkg::SramDepth; i++) begin
+      if (randomness) begin
+        strip_data = $urandom();
+      end else begin
+        strip_data = {8'(i*4+3), 8'(i*4+2), 8'(i*4+1), 8'(i*4)};
+      end
+      // Add Odd Parity
+      for (int unsigned j = 0 ; j < 4 ; j++) begin
+        strip_data[j*9+8] = ~(^strip_data[j*9+:8]);
+      end
+      `DPSRAM_DATA(i) = strip_data;
+    end
+  endfunction : init_dpsram
 
 endprogram : prog_passthrough_sw
