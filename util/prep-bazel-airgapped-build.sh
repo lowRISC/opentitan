@@ -13,7 +13,9 @@ set -euo pipefail
 : "${BAZEL_AIRGAPPED_DIR:=bazel-airgapped}"
 : "${BAZEL_DISTDIR:=bazel-distdir}"
 : "${BAZEL_CACHEDIR:=bazel-cache}"
+: "${BAZEL_BITSTREAMS_CACHEDIR:=bitstreams-cache}"
 : "${BAZEL_PYTHON_WHEEL_REPO:=ot_python_wheels}"
+: "${BAZEL_BITSTREAMS_REPO:=bitstreams}"
 
 LINE_SEP="====================================================================="
 
@@ -152,6 +154,8 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @rust_windows_x86_64_toolchains//...
   cp -R $(${BAZELISK} info output_base)/external/${BAZEL_PYTHON_WHEEL_REPO} \
     ${BAZEL_AIRGAPPED_DIR}/
+  cp -R $(dirname $(readlink -f $(bazel info output_base)/external/${BAZEL_BITSTREAMS_REPO}/cache)) \
+    ${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}
   echo "Done."
 fi
 
