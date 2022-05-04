@@ -52,6 +52,7 @@ cc_library(
         "//sw/device/lib:ibex_peri",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
+        "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
