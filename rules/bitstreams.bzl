@@ -4,7 +4,7 @@
 load("@python3//:defs.bzl", "interpreter")
 
 def _bitstreams_repo_impl(rctx):
-    rctx.execute(
+    result = rctx.execute(
         [
             rctx.path(rctx.attr.python_interpreter),
             rctx.attr._cache_manager,
@@ -15,6 +15,8 @@ def _bitstreams_repo_impl(rctx):
         ],
         quiet = False,
     )
+    if result.return_code != 0:
+        fail("Bitstream cache not initialized properly.")
 
 # The bitstream repo is evaluated on every invocation of bazel.
 # Once the cache is initialized, a typical invocation will find the latest
