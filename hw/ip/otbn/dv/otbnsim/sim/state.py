@@ -30,11 +30,11 @@ class FsmState(IntEnum):
 
         MEM_SEC_WIPE <--\
              |          |
-             \-------> IDLE -> PRE_EXEC -> FETCH_WAIT -> EXEC
-                         ^                       | |
-                         \------- WIPING_GOOD <--/ |
-                                                   |
-                      LOCKED <--  WIPING_BAD  <----/
+             \-------> IDLE -> PRE_EXEC -> EXEC
+                         ^                  | |
+                         \-- WIPING_GOOD <--/ |
+                                              |
+                 LOCKED <--  WIPING_BAD  <----/
 
     IDLE represents the state when nothing is going on but there have been no
     fatal errors. It matches Status.IDLE. LOCKED represents the state when
@@ -46,11 +46,10 @@ class FsmState(IntEnum):
     Status.BUSY_EXECUTE. However, if we are getting a fatal error Status would
     be LOCKED.
 
-    PRE_EXEC, FETCH_WAIT, EXEC, WIPING_GOOD and WIPING_BAD correspond to
+    PRE_EXEC, EXEC, WIPING_GOOD and WIPING_BAD correspond to
     Status.BUSY_EXECUTE. PRE_EXEC is the period after starting OTBN where we're
-    still waiting for an EDN value to seed URND. FETCH_WAIT is the single cycle
-    delay after seeding URND to fill the prefetch stage. EXEC is the period
-    where we start fetching and executing instructions.
+    still waiting for an EDN value to seed URND. EXEC is the period where we
+    start fetching and executing instructions.
 
     WIPING_GOOD and WIPING_BAD represent the time where we're performing a
     secure wipe of internal state (ending in updating the STATUS register to
@@ -64,7 +63,6 @@ class FsmState(IntEnum):
     '''
     IDLE = 0
     PRE_EXEC = 10
-    FETCH_WAIT = 11
     EXEC = 12
     WIPING_GOOD = 13
     WIPING_BAD = 14
@@ -335,7 +333,7 @@ class OTBNState:
         self.ext_regs.commit()
 
         # Pull URND out separately because we also want to commit this in some
-        # "idle-ish" states (FETCH_WAIT)
+        # "idle-ish" states
         self.wsrs.URND.commit()
 
         # In some states, we can get away with just committing external
@@ -426,7 +424,7 @@ class OTBNState:
         # C++ model code that this is a good time to inspect DMEM and check
         # that the RTL and model match. The flag will be cleared again on the
         # next cycle.
-        if self._fsm_state in [FsmState.FETCH_WAIT, FsmState.EXEC]:
+        if self._fsm_state == FsmState.EXEC:
             self.ext_regs.write('WIPE_START', 1, True)
             self.ext_regs.regs['WIPE_START'].commit()
 
