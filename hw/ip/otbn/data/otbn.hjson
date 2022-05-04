@@ -178,6 +178,12 @@
         file by monitoring the one-hot0 property of the individual write-enable strobes.
       '''
     }
+    { name: "STACK_WR_PTR.CTR.REDUN"
+      desc: '''
+        The write pointer of the stack (used for calls and loops) is redundant.  If the two
+        instances of the counter mismatch, an error is emitted.
+      '''
+    }
     { name: "RF_BIGNUM.DATA_REG_SW.GLITCH_DETECT"
       desc: '''
         This countermeasure checks for spurious write-enable signals on the register

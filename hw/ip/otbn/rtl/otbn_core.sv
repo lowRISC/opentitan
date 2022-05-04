@@ -136,6 +136,7 @@ module otbn_core
   logic [BaseIntgWidth-1:0] rf_base_rd_data_b_intg;
   logic                     rf_base_rd_commit;
   logic                     rf_base_call_stack_sw_err;
+  logic                     rf_base_call_stack_hw_err;
   logic                     rf_base_rf_err;
 
   alu_base_operation_t  alu_base_operation;
@@ -414,6 +415,7 @@ module otbn_core
     .rf_base_rd_data_b_intg_i   (rf_base_rd_data_b_intg),
     .rf_base_rd_commit_o        (rf_base_rd_commit),
     .rf_base_call_stack_sw_err_i(rf_base_call_stack_sw_err),
+    .rf_base_call_stack_hw_err_i(rf_base_call_stack_hw_err),
 
     // To/from bignunm register file
     .rf_bignum_wr_addr_o         (rf_bignum_wr_addr_ctrl),
@@ -621,6 +623,7 @@ module otbn_core
     .rd_commit_i     (rf_base_rd_commit),
 
     .call_stack_sw_err_o(rf_base_call_stack_sw_err),
+    .call_stack_hw_err_o(rf_base_call_stack_hw_err),
     .rf_err_o           (rf_base_rf_err)
   );
 

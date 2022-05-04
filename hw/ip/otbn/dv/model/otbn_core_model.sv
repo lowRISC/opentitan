@@ -312,7 +312,7 @@ module otbn_core_model
   bind otbn_rf_base otbn_stack_snooper_if #(.StackIntgWidth(39), .StackWidth(32), .StackDepth(8))
     u_call_stack_snooper (
       .stack_storage(u_call_stack.stack_storage),
-      .stack_wr_ptr_q(u_call_stack.stack_wr_ptr_q)
+      .stack_wr_ptr_q(u_call_stack.stack_wr_ptr)
     );
 
   assign err_o = |{failed_step, failed_check, check_mismatch_q,
