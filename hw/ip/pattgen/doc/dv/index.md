@@ -54,8 +54,8 @@ PATTGEN instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw
 which provides the ability to drive and independently monitor random traffic via TL host interface into PATTGEN device.
 
 ### PATTGEN agent
-PATTGEN agent is configured to work device mode. 
-The agent monitor captures patterns generated in channels then sends to the scoreboard for verification  
+PATTGEN agent is configured to work device mode.
+The agent monitor captures patterns generated in channels then sends to the scoreboard for verification
 Since the DUT does not require any response thus agent driver is fairly simple.
 
 ### UVM RAL Model
@@ -68,7 +68,8 @@ The `pattgen_base_vseq` virtual sequence is extended from `cip_base_vseq` and se
 All test sequences are extended from `pattgen_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* setup_pattgen_channel: test writing configuration values to CSR registers
+* setup_pattgen_channel_0: test writing configuration values to CSR registers for channel 0
+* setup_pattgen_channel_1: test writing configuration values to CSR registers for channel 1
 * start_pattgen_channels: randomly activate data transfer in channels
 * stop_pattgen_channels: terminate data transfer in channels and check for randomly injected errors
 * control_channels: wait for bus availability and program CSR configuration values into channels
@@ -79,15 +80,10 @@ Some of the most commonly used tasks / functions are as follows:
 ### Self-checking strategy
 #### Scoreboard
 The `pattgen_scoreboard` is primarily used for end to end checking.
-It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* analysis port1:
-* analysis port2:
 
 #### Assertions
-* TLUL assertions: The `tb/pattgen_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `sva/pattgen_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* assertion 1
-* assertion 2
 
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
