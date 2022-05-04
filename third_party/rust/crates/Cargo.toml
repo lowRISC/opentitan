@@ -56,6 +56,10 @@ thiserror = "1.0.24"
 typetag = "0.1"
 zerocopy = "0.5.0"
 
+# TODO(cfrantz): clean up and upstream changes to elf2tab so we
+# can use the official repo.
+elf2tab = { git = "https://github.com/cfrantz/elf2tab", branch="libify" }
+
 [workspace.metadata.raze]
 workspace_path = "//third_party/rust/crates"
 experimental_api = true

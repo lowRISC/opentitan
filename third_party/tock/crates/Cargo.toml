@@ -1,0 +1,38 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "tock_deps"
+version = "0.0.0"
+publish = false
+
+[lib]
+path = "empty_file_to_appease_cargo.rs"
+
+# Keep sorted.
+# Please avoid version numbers that only have one component.
+[dependencies]
+# TODO(cfrantz): rework these into stable URIs
+earlgrey-cw310 = { git = "https://github.com/cfrantz/tock", branch="ot2"}
+libtock2 = { git = "https://github.com/tock/libtock-rs" }
+
+[workspace.metadata.raze]
+workspace_path = "//third_party/tock/crates"
+experimental_api = true
+package_aliases_dir = "."
+genmode = "Remote"
+
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "riscv32imc-unknown-none-elf",
+]
+
+[package.metadata.raze.crates.libtock_runtime.'*']
+additional_flags = [
+    "--cfg=feature=\\\"no_auto_layout\\\"",
+]
+compile_data_attr = """[
+    "runtime/src/startup/asm_arm.s",
+    "runtime/src/startup/asm_riscv32.s",
+]"""

@@ -69,6 +69,12 @@ raze_deps()
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
 rules_foreign_cc_dependencies()
 
+# Tock Dependencies
+load("//third_party/tock:repos.bzl", "tock_repos")
+tock_repos()
+load("//third_party/tock:deps.bzl", "tock_deps")
+tock_deps()
+
 # Protobuf Toolchain
 load("//third_party/protobuf:repos.bzl", "protobuf_repos")
 protobuf_repos()
