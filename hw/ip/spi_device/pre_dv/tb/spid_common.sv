@@ -12,6 +12,15 @@ interface spi_if (input clk);
   modport dut (input clk, input  csb, input  sd_in, output sd_out);
 endinterface : spi_if
 
+interface spiflash_if;
+  wire       sck;
+  wire       csb;
+  wire [3:0] sd;
+
+  modport host   (output sck, output csb, inout sd);
+  modport device (input  sck, input  csb, inout sd);
+endinterface : spiflash_if
+
 // spid_common package contains common tasks, functions
 package spid_common;
   import spi_device_pkg::*;

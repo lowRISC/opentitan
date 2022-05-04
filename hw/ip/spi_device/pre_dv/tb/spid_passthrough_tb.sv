@@ -33,6 +33,8 @@ module tb;
 
   spi_if sif(sck);
 
+  spiflash_if spiflash_if();
+
   virtual spi_if.tb  tb_sif  = sif.tb;
   virtual spi_if.dut dut_sif = sif.dut;
 
@@ -61,6 +63,18 @@ module tb;
 
   passthrough_req_t passthrough_h2d;
   passthrough_rsp_t passthrough_d2h;
+
+  // Connect passthrough_h2d/d2h <-> spiflash_if
+  logic  gated_pt_sck; // gated SCK to passthrough device
+  assign spiflash_if.sck = (passthrough_h2d.sck_en) ? gated_pt_sck        : 1'b 0;
+  assign spiflash_if.csb = (passthrough_h2d.csb_en) ? passthrough_h2d.csb : 1'b 1;
+
+  assign passthrough_d2h = '{s: spiflash_if.sd};
+
+  assign spiflash_if.sd[0] = passthrough_h2d.s_en[0] ? passthrough_h2d.s[0] : 1'b z;
+  assign spiflash_if.sd[1] = passthrough_h2d.s_en[1] ? passthrough_h2d.s[1] : 1'b z;
+  assign spiflash_if.sd[2] = passthrough_h2d.s_en[2] ? passthrough_h2d.s[2] : 1'b z;
+  assign spiflash_if.sd[3] = passthrough_h2d.s_en[3] ? passthrough_h2d.s[3] : 1'b z;
 
   prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg; // tied
 
@@ -93,7 +107,11 @@ module tb;
   );
 
   // Passthrough SPI Flash device
-  prog_spiflash spiflash ();
+  spiflash spiflash (
+    .sck (spiflash_if.sck),
+    .csb (spiflash_if.csb),
+    .sd  (spiflash_if.sd)
+  );
 
   // TLUL REQ Intg Gen
   tlul_cmd_intg_gen tlul_cmd_intg (
@@ -163,6 +181,11 @@ module tb;
     .scanmode_i  (prim_mubi_pkg::MuBi4False) // disable scan
   );
 
-  // TODO: Add SPI Flash behavioral model
+  prim_clock_gating u_pt_sck_cg (
+    .clk_i (passthrough_h2d.sck),
+    .en_i  (passthrough_h2d.sck_gate_en),
+    .test_en_i (1'b 0),
+    .clk_o (gated_pt_sck)
+  );
 
 endmodule : tb

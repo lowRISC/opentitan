@@ -19,7 +19,7 @@ filesets:
       - tb/spid_common.sv
       - program/prog_passthrough_host.sv
       - program/prog_passthrough_sw.sv
-      - program/prog_spiflash.sv
+      - program/spiflash.sv
       - tb/spid_passthrough_tb.sv
     file_type: systemVerilogSource
 
