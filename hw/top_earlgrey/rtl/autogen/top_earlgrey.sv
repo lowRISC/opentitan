@@ -30,8 +30,8 @@ module top_earlgrey #(
   // parameters for otp_ctrl
   parameter OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
-  parameter logic [15:0] LcCtrlChipGen = 16'h 00001,
-  parameter logic [15:0] LcCtrlChipRev = 16'h 00001,
+  parameter logic [15:0] LcCtrlChipGen = 16'h 00000,
+  parameter logic [15:0] LcCtrlChipRev = 16'h 00000,
   parameter logic [31:0] LcCtrlIdcodeValue = jtag_id_pkg::JTAG_IDCODE,
   // parameters for alert_handler
   // parameters for spi_host0

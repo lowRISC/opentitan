@@ -1793,8 +1793,8 @@
       }
       param_decl:
       {
-        ChipGen: 16'h 00001
-        ChipRev: 16'h 00001
+        ChipGen: 16'h 00000
+        ChipRev: 16'h 00000
         IdcodeValue: jtag_id_pkg::JTAG_IDCODE
       }
       clock_connections:
@@ -1853,7 +1853,7 @@
           name: ChipGen
           desc: Chip generation number.
           type: logic [15:0]
-          default: 16'h 00001
+          default: 16'h 00000
           expose: "true"
           name_top: LcCtrlChipGen
         }
@@ -1861,7 +1861,7 @@
           name: ChipRev
           desc: Chip revision number.
           type: logic [15:0]
-          default: 16'h 00001
+          default: 16'h 00000
           expose: "true"
           name_top: LcCtrlChipRev
         }
