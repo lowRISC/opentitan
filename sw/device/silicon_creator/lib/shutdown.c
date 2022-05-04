@@ -308,10 +308,10 @@ enum {
   /**
    * Total message length.
    *
-   * This includes 4 character prefix before the hex string '\n' at the end of
+   * This includes 4 character prefix before the hex string '\r\n' at the end of
    * the message.
    */
-  kErrorMsgLen = kHexStrLen + 5,
+  kErrorMsgLen = kHexStrLen + 6,
   /**
    * Base address of UART.
    */
@@ -326,7 +326,7 @@ enum {
  * Prints a fixed-length (`kErrorMsgLen`) error message.
  *
  * The error message is a concatenation of a 4 character `prefix` (encoded as a
- * 32-bit value), the hexadecimal representation of `val`, and '\n'.
+ * 32-bit value), the hexadecimal representation of `val`, and '\r\n'.
  *
  * @param prefix Prefix encoded as a 32-bit value.
  * @param val Integer to print.
@@ -348,6 +348,7 @@ static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
         val, (bitfield_field32_t){.mask = 0xf, .index = (7 - i) * 4});
     abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, kHexTable[nibble]);
   }
+  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, '\r');
   abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, '\n');
 }
 
