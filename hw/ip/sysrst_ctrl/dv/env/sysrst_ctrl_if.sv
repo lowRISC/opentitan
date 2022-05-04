@@ -56,6 +56,19 @@ interface sysrst_ctrl_if (
     flash_wp_l_in = flash_wp;
   endtask
 
+  task automatic randomize_combo_input();
+    // VCS doesn't support randomizing logic variable
+    // so declare bit variable, randomize it and assigned it to logic
+    bit pwrb, key0, key1, key2, ac_prst;
+    `DV_CHECK_FATAL(std::randomize(pwrb, key0, key1, key2, ac_prst), ,
+       "sysrst_ctrl_if")
+    pwrb_in = pwrb;
+    key0_in = key0;
+    key1_in = key1;
+    key2_in = key2;
+    ac_present = ac_prst;
+  endtask
+
   assign sysrst_ctrl_inputs = {flash_wp_l_in, ec_rst_l_in, ac_present, key2_in, key1_in, key0_in,
                                pwrb_in};
 
