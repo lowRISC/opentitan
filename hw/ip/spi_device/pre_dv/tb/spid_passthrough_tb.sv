@@ -18,14 +18,18 @@ module tb;
     .clk,
     .rst_n
   );
-  logic sw_clk;
-  assign sw_clk = clk;
+  logic sw_clk, sw_rst_n;
+  assign sw_clk     = clk;
+  assign sw_rst_n   = rst_n;
 
   wire sck, sck_rst_n;
   clk_rst_if sck_clk (
     .clk   (sck),
     .rst_n (sck_rst_n)
   );
+  logic host_clk, host_rst_n;
+  assign host_clk   = sck;
+  assign host_rst_n = sck_rst_n;
 
   spi_if sif(sck);
 
@@ -68,21 +72,27 @@ module tb;
     main_clk.set_period_ps(ClkPeriod);
     main_clk.set_active();
 
-    #1ms
-    $display("TEST TIMED OUT!!");
-    $finish();
+    sck_clk.apply_reset();
+    main_clk.apply_reset();
+
   end
 
   prog_passthrough_host host (
-    .clk   (sck),
-    .rst_n (sck_rst_n),
+    .clk   (host_clk),
+    .rst_n (host_rst_n),
 
     .sif (sif)
   );
   prog_passthrough_sw sw (
-    .clk,
-    .rst_n
+    .clk   (sw_clk),
+    .rst_n (sw_rst_n),
+
+    // TL ports
+    .h2d (tl_h2d),
+    .d2h (tl_d2h)
   );
+
+  // Passthrough SPI Flash device
   prog_spiflash spiflash ();
 
   // TLUL REQ Intg Gen
@@ -100,7 +110,7 @@ module tb;
 
   // Instances
   spi_device dut (
-    .clk_i  (clk),
+    .clk_i  (sw_clk),
     .rst_ni (rst_n),
 
     .tl_i (tl_h2d_intg),

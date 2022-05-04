@@ -6,13 +6,25 @@
 program prog_passthrough_host
   import spid_common::*;
 (
-  input clk,
-  input rst_n,
+  input logic clk,
+  input logic rst_n,
 
   spi_if sif
 );
 
+  // Timeout
   initial begin
+    #1ms
+    $display("TEST TIMED OUT!!");
+    $finish();
+  end
+
+  initial begin
+    // Default value
+    sif.csb = 1'b 1;
+
+    @(posedge rst_n);
+
     forever begin
       @(posedge clk);
     end
