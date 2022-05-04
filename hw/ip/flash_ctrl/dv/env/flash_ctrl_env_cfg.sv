@@ -189,6 +189,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                                              data_q_t data = {});
     flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
     data_4s_t wr_data;
+    data_b_t mem_data;
+
 
     // Randomize the lower half-word (if Xs) if the first half-word written in the below loop is
     // corresponding upper half-word.
@@ -223,6 +225,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                 addr_attrs.sprint(),
                 loc_data
                 ), UVM_MEDIUM)
+
+      // update the scoreboard on backdoor-programs as well
+      mem_data[0] = loc_data;
+      set_scb_mem(1, flash_op.partition,
+                  addr_attrs.addr, CustomVal, mem_data);
+
+      // increment after all updates are complete
       addr_attrs.incr(TL_DBW);
     end
 
