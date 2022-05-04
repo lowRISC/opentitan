@@ -140,4 +140,48 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
     end
   endfunction
 
+  task test_mem_rw(uvm_mem mem, int max_access = 2048);
+    uvm_reg_data_t rdata;
+    int wdata, exp_data[$]; // cause all data is 32bit wide in this test
+    int offmax = mem.get_size() - 1;
+    int sizemax = offmax / 4;
+    int st, sz;
+    int byte_addr;
+    st = $urandom_range(0, offmax);
+    // set the maximum transaction
+    if (sizemax > max_access) sizemax = max_access;
+
+    sz = $urandom_range(1, sizemax);
+    `uvm_info(`gfn, $sformatf("Mem write to %s  offset:%0d size: %0d",
+                              mem.get_full_name(), st, sz), UVM_MEDIUM)
+
+    for (int i = 0; i < sz; ++i) begin
+      wdata = $urandom();
+      exp_data.push_back(wdata);
+
+      if (mem.get_access() == "RW") begin
+        mem_wr(.ptr(mem), .offset((st + i) % (offmax + 1)), .data(wdata));
+      end else begin // if (mem.get_access() == "RW")
+        // deposit random data to rom
+        byte_addr = ((st + i) % (offmax + 1)) * 4;
+        cfg.mem_bkdr_util_h[Rom].rom_encrypt_write32_integ(.addr(byte_addr), .data(wdata),
+                                                           .key(RndCnstRomCtrlScrKey),
+                                                           .nonce(RndCnstRomCtrlScrNonce),
+                                                           .scramble_data(1));
+      end
+    end
+
+    `uvm_info(`gfn, $sformatf("write to %s is complete, read back start...",
+                                mem.get_full_name()), UVM_MEDIUM)
+    for (int i = 0; i < sz; ++i) begin
+      mem_rd(.ptr(mem), .offset((st + i) % (offmax + 1)), .data(rdata));
+      `DV_CHECK_EQ((int'(rdata)), exp_data[i],
+                   $sformatf("read back check for offset:%0d failed",
+                             ((st + i) % (offmax + 1))))
+    end
+    `uvm_info(`gfn, $sformatf("read check from %s is complete",
+                              mem.get_full_name()), UVM_MEDIUM)
+
+  endtask : test_mem_rw
+
 endclass : chip_base_vseq
