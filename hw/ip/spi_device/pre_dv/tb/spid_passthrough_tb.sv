@@ -47,8 +47,9 @@ module tb;
   assign sck_en = ~sif.csb;
 
   // Signals
-  tlul_pkg::tl_h2d_t tl_h2d; // into DUT
-  tlul_pkg::tl_d2h_t tl_d2h; // from DUT
+  tlul_pkg::tl_h2d_t tl_h2d, tl_h2d_intg; // into DUT
+  tlul_pkg::tl_d2h_t tl_d2h, tl_d2h_intg; // from DUT
+  logic tlul_error;
 
   prim_alert_pkg::alert_rx_t [spi_device_reg_pkg::NumAlerts-1:0] alert_rx;
   prim_alert_pkg::alert_tx_t [spi_device_reg_pkg::NumAlerts-1:0] alert_tx;
@@ -84,14 +85,26 @@ module tb;
   );
   prog_spiflash spiflash ();
 
+  // TLUL REQ Intg Gen
+  tlul_cmd_intg_gen tlul_cmd_intg (
+    .tl_i (tl_h2d     ), // h2d
+    .tl_o (tl_h2d_intg)  // to DUT
+  );
+
+  // TLUL RSP Intg Strip
+  tlul_rsp_intg_chk tlul_rsp_intg (
+    .tl_i  (tl_d2h_intg), // d2h
+    .err_o (tlul_error)
+  );
+  assign tl_d2h = tl_d2h_intg; // direct connection
 
   // Instances
   spi_device dut (
     .clk_i  (clk),
     .rst_ni (rst_n),
 
-    .tl_i (tl_h2d),
-    .tl_o (tl_d2h),
+    .tl_i (tl_h2d_intg),
+    .tl_o (tl_d2h_intg),
 
     .alert_rx_i (alert_rx),
     .alert_tx_o (alert_tx),
