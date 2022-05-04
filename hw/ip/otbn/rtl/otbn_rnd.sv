@@ -38,8 +38,8 @@ module otbn_rnd import otbn_pkg::*;
 
   // Request URND PRNG reseed from the EDN
   input  logic            urnd_reseed_req_i,
-  // Remains asserted whilst reseed is in progress
-  output logic            urnd_reseed_busy_o,
+  // Acknowledge URND PRNG reseed from the EDN
+  output logic            urnd_reseed_ack_o,
   // When asserted PRNG state advances. It is permissible to advance the state whilst
   // reseeding.
   input  logic            urnd_advance_i,
@@ -165,10 +165,13 @@ module otbn_rnd import otbn_pkg::*;
   logic edn_urnd_req_q, edn_urnd_req_d;
 
   assign edn_urnd_req_complete = edn_urnd_req_o & edn_urnd_ack_i;
+
+  // Keep EDN URND request high even if input URND reseed request goes low before the reseed has
+  // completed.
   assign edn_urnd_req_d = (edn_urnd_req_q | urnd_reseed_req_i) & ~edn_urnd_req_complete;
 
   assign edn_urnd_req_o = edn_urnd_req_q;
-  assign urnd_reseed_busy_o = edn_urnd_req_q;
+  assign urnd_reseed_ack_o = edn_urnd_ack_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

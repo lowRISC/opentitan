@@ -38,7 +38,7 @@ module otbn_start_stop_control
   output logic controller_start_o,
 
   output logic urnd_reseed_req_o,
-  input  logic urnd_reseed_busy_i,
+  input  logic urnd_reseed_ack_i,
   output logic urnd_advance_o,
 
   input   logic start_secure_wipe_i,
@@ -118,9 +118,10 @@ module otbn_start_stop_control
         end
       end
       OtbnStartStopStateUrndRefresh: begin
+        urnd_reseed_req_o = 1'b1;
         if (stop) begin
           state_d = OtbnStartStopStateLocked;
-        end else if (!urnd_reseed_busy_i) begin
+        end else if (urnd_reseed_ack_i) begin
           state_d     = OtbnStartStopStateRunning;
         end
       end
@@ -194,7 +195,7 @@ module otbn_start_stop_control
   end
 
   // Logic separate from main FSM code to avoid false combinational loop warning from verilator
-  assign controller_start_o = (state_q == OtbnStartStopStateUrndRefresh) & !urnd_reseed_busy_i;
+  assign controller_start_o = (state_q == OtbnStartStopStateUrndRefresh) & urnd_reseed_ack_i;
 
   assign done_o = ((state_q == OtbnStartStopSecureWipeComplete) ||
                    (stop && (state_q == OtbnStartStopStateUrndRefresh)));
