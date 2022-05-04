@@ -22,22 +22,40 @@ BUCKET_URL = 'https://storage.googleapis.com/opentitan-bitstreams/'
 # The xml document returned by the bucket is in this namespace.
 XMLNS = {'': 'http://doc.s3.amazonaws.com/2006-03-01'}
 
-parser = argparse.ArgumentParser(description='Bitstream Downloader & Cache manager')
+parser = argparse.ArgumentParser(
+    description='Bitstream Downloader & Cache manager')
 parser.add_argument('--cache', default=CACHE_DIR, help='Cache directory name')
-parser.add_argument('--latest-update', default='latest.txt', help='Last time the cache was updated')
+parser.add_argument('--latest-update',
+                    default='latest.txt',
+                    help='Last time the cache was updated')
 parser.add_argument('--bucket-url', default=BUCKET_URL, help='GCP Bucket URL')
-parser.add_argument('--build-file', default='BUILD.bazel', help='Name of the genrated BUILD file')
-parser.add_argument('--list', default=False, action=argparse.BooleanOptionalAction,
+parser.add_argument('--build-file',
+                    default='BUILD.bazel',
+                    help='Name of the genrated BUILD file')
+parser.add_argument('--list',
+                    default=False,
+                    action=argparse.BooleanOptionalAction,
                     help='List GCP Bucket contents')
-parser.add_argument('--offline', default=False, action=argparse.BooleanOptionalAction,
+parser.add_argument('--offline',
+                    default=False,
+                    action=argparse.BooleanOptionalAction,
                     help='Operating in an offline environment')
-parser.add_argument('--refresh', default=False, action=argparse.BooleanOptionalAction,
+parser.add_argument('--refresh',
+                    default=False,
+                    action=argparse.BooleanOptionalAction,
                     help='Force a refresh')
-parser.add_argument('--refresh-time', default=300, type=int,
+parser.add_argument('--refresh-time',
+                    default=300,
+                    type=int,
                     help='How often to check for new bitstreams')
-parser.add_argument('--repo', default='', help="Location of the source git repo")
-parser.add_argument('bitstream', default='latest', nargs='?',
-                    help='Bitstream to retrieve: "latest" or git commit identifier')
+parser.add_argument('--repo',
+                    default='',
+                    help="Location of the source git repo")
+parser.add_argument(
+    'bitstream',
+    default='latest',
+    nargs='?',
+    help='Bitstream to retrieve: "latest" or git commit identifier')
 
 
 class BitstreamCache(object):
@@ -50,7 +68,8 @@ class BitstreamCache(object):
         cachedir = os.path.expanduser(cachedir)
         self.cachedir = os.path.join(cachedir, 'cache')
 
-        latest_update = os.path.join(cachedir, os.path.expanduser(latest_update))
+        latest_update = os.path.join(cachedir,
+                                     os.path.expanduser(latest_update))
         self.latest_update = latest_update
         self.offline = offline
         self.available = {}
@@ -132,13 +151,10 @@ class BitstreamCache(object):
         if key in self.available:
             return key
         commits = []
-        lines = subprocess.check_output([
-            'git',
-            'log',
-            '--oneline',
-            '--no-abbrev-commit',
-            key],
-            universal_newlines=True, cwd=repodir)
+        lines = subprocess.check_output(
+            ['git', 'log', '--oneline', '--no-abbrev-commit', key],
+            universal_newlines=True,
+            cwd=repodir)
         for line in lines.split('\n'):
             commits.append(line.split(' ')[0])
 
@@ -258,12 +274,12 @@ def main(argv):
     else:
         repo = os.path.dirname(argv[0])
 
-    cache = BitstreamCache(args.bucket_url, args.cache, args.latest_update, args.offline)
+    cache = BitstreamCache(args.bucket_url, args.cache, args.latest_update,
+                           args.offline)
     cache.InitRepository()
 
     # Do we need a refresh?
-    need_refresh = (args.refresh or
-                    bitstream != 'latest' or
+    need_refresh = (args.refresh or bitstream != 'latest' or
                     cache.NeedRefresh(args.refresh_time) and not args.offline)
     cache.GetBitstreamsAvailable(need_refresh)
 
@@ -289,7 +305,8 @@ def main(argv):
     #   @bitstreams//:bitstream_mask_rom
     configured = cache.WriteBuildFile(args.build_file, bitstream)
     if args.bitstream != configured:
-        print('Configured bitstream "{}" as {}.'.format(args.bitstream, configured))
+        print('Configured bitstream "{}" as {}.'.format(
+            args.bitstream, configured))
     else:
         print('Configured bitstream {}.'.format(configured))
 
