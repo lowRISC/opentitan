@@ -93,7 +93,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     void'($value$plusargs("en_jitter=%0d", en_jitter));
     if (en_jitter) begin
       bit [7:0] en_jitter_arr[] = {1};
-      sw_symbol_backdoor_overwrite("kJitterEnabled", en_jitter_arr);
+      sw_symbol_backdoor_overwrite("kJitterEnabled", en_jitter_arr, Rom, SwTypeRom);
     end
   endtask
 
