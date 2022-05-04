@@ -13,6 +13,7 @@ fusesoc_build(
         "//:cores",
     ],
     data = ["//hw/ip/otbn:all_files"],
+    flags = ["--verilator_options=--threads 1"],
     systems = ["lowrisc:dv:chip_verilator_sim"],
     target = "sim",
 )
