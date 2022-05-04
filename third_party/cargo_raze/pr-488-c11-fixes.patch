@@ -1,0 +1,39 @@
+diff --git a/third_party/libgit2/BUILD.libgit2.bazel b/third_party/libgit2/BUILD.libgit2.bazel
+index 1e4dc867..dfd33394 100644
+--- a/third_party/libgit2/BUILD.libgit2.bazel
++++ b/third_party/libgit2/BUILD.libgit2.bazel
+@@ -24,7 +24,7 @@ _CACHE_ENTRIES = {
+ }
+ 
+ _LINUX_CACHE_ENTRIES = dict(_CACHE_ENTRIES.items() + {
+-    "CMAKE_C_FLAGS": "-fPIC",
++    "CMAKE_C_FLAGS": "-fPIC -D_GNU_SOURCE=1",
+     "REGEX_BACKEND": "pcre",
+ }.items())
+ 
+diff --git a/third_party/openssl/BUILD.openssl.bazel b/third_party/openssl/BUILD.openssl.bazel
+index 60f81a11..6797bf9d 100644
+--- a/third_party/openssl/BUILD.openssl.bazel
++++ b/third_party/openssl/BUILD.openssl.bazel
+@@ -34,7 +34,7 @@ configure_make(
+     }),
+     env = select({
+         "@rules_rust//rust/platform:darwin": {"AR": ""},
+-        "//conditions:default": {},
++        "//conditions:default": {"CFLAGS": "-Dasm=__asm__ -D_GNU_SOURCE=1"},
+     }),
+     lib_source = ":all_srcs",
+     out_static_libs = [
+diff --git a/third_party/pcre/BUILD.pcre.bazel b/third_party/pcre/BUILD.pcre.bazel
+index b9931e25..1187c391 100644
+--- a/third_party/pcre/BUILD.pcre.bazel
++++ b/third_party/pcre/BUILD.pcre.bazel
+@@ -10,7 +10,7 @@ filegroup(
+ cmake(
+     name = "pcre",
+     cache_entries = {
+-        "CMAKE_C_FLAGS": "-fPIC",
++        "CMAKE_C_FLAGS": "-fPIC -D_GNU_SOURCE=1",
+     },
+     lib_source = ":all",
+     out_static_libs = ["libpcre.a"],

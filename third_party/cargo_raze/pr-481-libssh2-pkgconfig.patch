@@ -1,0 +1,102 @@
+diff --git a/impl/Cargo.toml b/impl/Cargo.toml
+index 58c947e6..a427c7ed 100644
+--- a/impl/Cargo.toml
++++ b/impl/Cargo.toml
+@@ -104,10 +104,15 @@ additional_deps = ["@cargo_raze__libgit2//:libgit2"]
+ [package.metadata.raze.crates.libssh2-sys.'*']
+ # build.rs file: https://github.com/alexcrichton/ssh2-rs/blob/master/libssh2-sys/build.rs
+ build_data_dependencies = [
++    "@cargo_raze__libssh2//:libssh2_gen_dir",
++    "@cargo_raze__libssh2//:fix_pkgconfig",
+     "@cargo_raze__libssh2//:libssh2",
+     "@cargo_raze__openssl//:openssl",
+ ]
+ additional_deps = ["@cargo_raze__libssh2//:libssh2"]
++[package.metadata.raze.crates.libssh2-sys.'*'.buildrs_additional_environment_variables]
++    PKG_CONFIG_PATH = "$(execpath @cargo_raze__libssh2//:libssh2_gen_dir)/pkgconfig"
++    LIBSSH2_SYS_USE_PKG_CONFIG = "true"
+ 
+ [package.metadata.raze.crates.libz-sys.'*']
+ # build.rs file: https://github.com/rust-lang/libz-sys/blob/main/build.rs
+@@ -125,7 +130,7 @@ build_data_dependencies = [
+ ]
+ data_attr = "[\"@cargo_raze__openssl//:openssl\"]"
+ additional_deps = ["@cargo_raze__openssl//:openssl"]
+-    [package.metadata.raze.crates.openssl-sys.'*'.buildrs_additional_environment_variables]
++[package.metadata.raze.crates.openssl-sys.'*'.buildrs_additional_environment_variables]
+         OPENSSL_DIR="$(execpath @cargo_raze__openssl//:gen_dir)"
+         OPENSSL_STATIC="1"
+ 
+diff --git a/third_party/cargo/remote/BUILD.libssh2-sys-0.2.21.bazel b/third_party/cargo/remote/BUILD.libssh2-sys-0.2.21.bazel
+index 7ddca981..f46e4580 100644
+--- a/third_party/cargo/remote/BUILD.libssh2-sys-0.2.21.bazel
++++ b/third_party/cargo/remote/BUILD.libssh2-sys-0.2.21.bazel
+@@ -41,12 +41,16 @@ cargo_build_script(
+     name = "libssh2_sys_build_script",
+     srcs = glob(["**/*.rs"]),
+     build_script_env = {
++        "LIBSSH2_SYS_USE_PKG_CONFIG": "true",
++        "PKG_CONFIG_PATH": "$(execpath @cargo_raze__libssh2//:libssh2_gen_dir)/pkgconfig",
+     },
+     crate_features = [
+     ],
+     crate_root = "build.rs",
+     data = glob(["**"]) + [
++        "@cargo_raze__libssh2//:fix_pkgconfig",
+         "@cargo_raze__libssh2//:libssh2",
++        "@cargo_raze__libssh2//:libssh2_gen_dir",
+         "@cargo_raze__openssl//:openssl",
+     ],
+     edition = "2015",
+diff --git a/third_party/libgit2/BUILD.libgit2.bazel b/third_party/libgit2/BUILD.libgit2.bazel
+index f13b36bf..1e4dc867 100644
+--- a/third_party/libgit2/BUILD.libgit2.bazel
++++ b/third_party/libgit2/BUILD.libgit2.bazel
+@@ -13,9 +13,14 @@ _CACHE_ENTRIES = {
+     "BUILD_EXAMPLES": "off",
+     "BUILD_FUZZERS": "off",
+     "BUILD_SHARED_LIBS": "off",
+-    "CMAKE_PREFIX_PATH": "$EXT_BUILD_DEPS/pcre;$EXT_BUILD_DEPS/openssl;$EXT_BUILD_DEPS/libssh2;$EXT_BUILD_DEPS/zlib",
++    "CMAKE_PREFIX_PATH": "$EXT_BUILD_DEPS/pcre;$EXT_BUILD_DEPS/openssl;$EXT_BUILD_DEPS/zlib",
+     "EMBED_SSH_PATH": "$(execpath @cargo_raze__libssh2//:libssh2)",
+     "USE_HTTPS": "on",
++    # Manually configure libssh2 as cmake gets confused about what pkgconfig reports.
++    "USE_SSH": "off",
++    "LIBSSH2_FOUND": "true",
++    "LIBSSH2_INCLUDE_DIRS": "$EXT_BUILD_DEPS/libssh2/include",
++    "LIBSSH2_LIBRARY_DIRS": "$EXT_BUILD_DEPS/libssh2/lib",
+ }
+ 
+ _LINUX_CACHE_ENTRIES = dict(_CACHE_ENTRIES.items() + {
+diff --git a/third_party/libssh2/BUILD.libssh2.bazel b/third_party/libssh2/BUILD.libssh2.bazel
+index 253ed432..3e26f838 100644
+--- a/third_party/libssh2/BUILD.libssh2.bazel
++++ b/third_party/libssh2/BUILD.libssh2.bazel
+@@ -32,3 +32,27 @@ cmake(
+     visibility = ["//visibility:public"],
+     deps = ["@cargo_raze__openssl//:openssl"],
+ )
++
++filegroup(
++    name = "libssh2_gen_dir",
++    srcs = [":libssh2"],
++    output_group = "gen_dir",
++    visibility = ["//visibility:public"],
++)
++
++genrule(
++    name = "fix_pkgconfig",
++    srcs = [":libssh2"],
++    outs = ["pkgconfig/libssh2.pc"],
++    # Get rid of ${EXT_BUILD_ROOT}/ in the pkgconfig file so it references
++    # libssh2 resources from the root of the project rather than expanding
++    # EXT_BUILD_ROOT to "" and resulting in a pkgconfig that claims to start
++    # at the filesystem root (/).
++    cmd = """
++        mkdir -p $(@D)
++        DIRS=($(locations :libssh2))
++        SRC="$${DIRS[0]}/lib/pkgconfig/libssh2.pc"
++        sed -e "s|.{EXT_BUILD_ROOT}/||g" < $$SRC > $@
++    """,
++    visibility = ["//visibility:public"],
++)

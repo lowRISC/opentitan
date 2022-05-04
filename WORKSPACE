@@ -43,6 +43,20 @@ rust_repos()
 load("//third_party/rust:deps.bzl", "rust_deps")
 rust_deps()
 
+# Cargo Raze dependencies
+load("//third_party/cargo_raze:repos.bzl", "raze_repos")
+raze_repos()
+load("//third_party/cargo_raze:deps.bzl", "raze_deps")
+raze_deps()
+# The raze instructions would have us call `cargo_raze_transitive_deps`, but that
+# wants to re-instantiate rules_rust and mess up our rust configuration.
+# Instead, we perform the single other action that transitive_deps would perform:
+# load and instantiate `rules_foreign_cc_dependencies`.
+#load("@cargo_raze//:transitive_deps.bzl", "cargo_raze_transitive_deps")
+#cargo_raze_transitive_deps()
+load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+rules_foreign_cc_dependencies()
+
 # Protobuf Toolchain
 load("//third_party/protobuf:repos.bzl", "protobuf_repos")
 protobuf_repos()
