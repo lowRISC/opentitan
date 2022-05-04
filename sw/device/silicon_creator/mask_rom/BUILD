@@ -311,7 +311,7 @@ cc_test(
 # MASK ROM E2E TESTS
 
 # Bootup tests
-BOOT_FAILURE_MSG = "BFV_[0-9a-z]{{8}}\nLCV_[0-9a-z]{{8}}\n"
+BOOT_FAILURE_MSG = "BFV:[0-9a-z]{{8}}\r\nLCV:[0-9a-z]{{8}}\r\n"
 
 opentitan_functest(
     name = "e2e_bootup_success",

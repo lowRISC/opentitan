@@ -72,9 +72,9 @@ typedef enum shutdown_error_redact {
 
 /**
  * Helper macro for encoding a 4 character prefix as a 32-bit value. The
- * resulting prefix is the concatenation of the given characters and '_'.
+ * resulting prefix is the concatenation of the given characters and ':'.
  */
-#define LOG_PREFIX_(a_, b_, c_) ('_' << 24 | (c_) << 16 | (b_) << 8 | (a_))
+#define LOG_PREFIX_(a_, b_, c_) (':' << 24 | (c_) << 16 | (b_) << 8 | (a_))
 
 /**
  * Prefixes for error messages printed over UART.
