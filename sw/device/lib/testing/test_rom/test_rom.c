@@ -5,6 +5,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
@@ -41,6 +42,7 @@ extern manifest_t _manifest;
  */
 typedef void ottf_entry(void);
 
+static dif_clkmgr_t clkmgr;
 static dif_flash_ctrl_state_t flash_ctrl;
 static dif_pinmux_t pinmux;
 static dif_uart_t uart0;
@@ -49,9 +51,12 @@ static dif_uart_t uart0;
 // rom tests. By default, it simply jumps into the OTTF's flash.
 OT_WEAK
 bool rom_test_main(void) {
+  // Configure the pinmux.
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
+
+  // Initialize the flash.
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
@@ -60,6 +65,7 @@ bool rom_test_main(void) {
   CHECK_DIF_OK(
       dif_flash_ctrl_set_flash_enablement(&flash_ctrl, kDifToggleEnabled));
 
+  // Setup the UART for printing messages to the console.
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
   CHECK_DIF_OK(
@@ -71,6 +77,7 @@ bool rom_test_main(void) {
                                  }));
   base_uart_stdout(&uart0);
 
+  // Print the chip version information
   LOG_INFO("%s", chip_info);
 
   // Print the FPGA version-id.
@@ -78,6 +85,17 @@ bool rom_test_main(void) {
   uint32_t fpga = fpga_version();
   if (fpga != 0) {
     LOG_INFO("TestROM:%08x", fpga);
+  }
+
+  // Enable clock jitter if requested.
+  // The kJitterEnabled symbol defaults to false across all hardware platforms.
+  // However, in DV simulation, it may be overridden via a backdoor write with
+  // the plusarg: `+en_jitter=1`.
+  if (kJitterEnabled) {
+    CHECK_DIF_OK(dif_clkmgr_init(
+        mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+    CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
+    LOG_INFO("Jitter is enabled");
   }
 
   int bootstrap_err = bootstrap(&flash_ctrl);

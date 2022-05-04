@@ -94,7 +94,6 @@ cc_library(
         ":status",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
