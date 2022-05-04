@@ -150,7 +150,7 @@
 `endif
 
 // FPV assertion that proves that the FSM control flow is linear (no loops)
-// The sequence triggers whenever the state changes and stores initial state as initial_state.
+// The sequence triggers whenever the state changes and stores the current state as "initial_state".
 // Then thereafter we must never see that state again until reset.
 `define ASSERT_FPV_LINEAR_FSM(__name, __state, __type, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
   `ifdef INC_ASSERT                                                                                              \
