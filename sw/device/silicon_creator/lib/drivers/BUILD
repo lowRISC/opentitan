@@ -209,8 +209,10 @@ opentitan_functest(
     # FIXME: currently, the FPGA doesn't wake up from low-power mode.
     # For now, run the test only in verilator.
     targets = ["verilator"],
+    # The verilator test currently fails under Bazel as well (#12486)
     verilator = verilator_params(
         timeout = "long",
+        tags = ["failing_verilator"],
     ),
     deps = [
         ":keymgr",

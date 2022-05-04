@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:opentitan_test.bzl", "opentitan_functest")
+load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 
 opentitan_functest(
     name = "flash_ctrl_lc_rw_en_test",
@@ -35,6 +35,10 @@ opentitan_functest(
     # loading the default test ROM, or any other ROM that may be specified via
     # Verilator or CW310 params).
     test_in_rom = True,
+    # This test currently fails in Verilator when run by Bazel (#12486)
+    verilator = verilator_params(
+        tags = ["failing_verilator"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
