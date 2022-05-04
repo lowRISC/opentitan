@@ -1,0 +1,83 @@
+diff --git a/impl/src/rendering/templates/remote_crates.bzl.template b/impl/src/rendering/templates/remote_crates.bzl.template
+index f30a6b8b..c0bb4cd8 100644
+--- a/impl/src/rendering/templates/remote_crates.bzl.template
++++ b/impl/src/rendering/templates/remote_crates.bzl.template
+@@ -6,39 +6,55 @@ load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")  # buildifier: di
+ {% if experimental_api %}
+ {% include "templates/partials/crates_macro.template" %}
+ {% endif %}
+-def {{workspace.gen_workspace_prefix}}_fetch_remote_crates():
+ {%- if crates %}
++def {{workspace.gen_workspace_prefix}}_fetch_remote_crates(
++        # Each of these may be used to temporarily override the location of
++        # the crate to a path on your local filesystem for local development
++        # of crates you may be using in your project.
++{%- for crate in crates %}
++        {{crate.pkg_name | replace(from="-", to="_")}}__{{crate.pkg_version | slugify | replace(from="-", to="_")}}=None,
++{%  endfor %}
++    ):
+     """This function defines a collection of repos and should be called in a WORKSPACE file"""
+ {%- for crate in crates %}
++    if {{crate.pkg_name | replace(from="-", to="_")}}__{{crate.pkg_version | slugify | replace(from="-", to="_")}}:
++        maybe(
++            native.new_local_repository,
++            name = "{{workspace.gen_workspace_prefix}}__{{crate.pkg_name | replace(from="-", to="_")}}__{{crate.pkg_version | slugify | replace(from="-", to="_")}}",
++            path = {{crate.pkg_name | replace(from="-", to="_")}}__{{crate.pkg_version | slugify | replace(from="-", to="_")}},
++            build_file = "{{workspace.workspace_path}}/remote:BUILD.{{crate.pkg_name}}-{{crate.pkg_version}}.bazel",
++        )
++    else:
+ {%- if crate.source_details.git_data %}
+-    maybe(
+-        new_git_repository,
+-        name = "{{workspace.gen_workspace_prefix}}__{{crate.pkg_name | replace(from="-", to="_")}}__{{crate.pkg_version | slugify | replace(from="-", to="_")}}",
+-        remote = "{{crate.source_details.git_data.remote}}",
+-        commit = "{{crate.source_details.git_data.commit}}",
+-        build_file = Label("{{workspace.workspace_path}}/remote:BUILD.{{crate.pkg_name}}-{{crate.pkg_version}}.bazel"),
+-        init_submodules = True,
+-        {%- include "templates/partials/remote_crates_patch.template" %}
+-    )
++        maybe(
++            new_git_repository,
++            name = "{{workspace.gen_workspace_prefix}}__{{crate.pkg_name | replace(from="-", to="_")}}__{{crate.pkg_version | slugify | replace(from="-", to="_")}}",
++            remote = "{{crate.source_details.git_data.remote}}",
++            commit = "{{crate.source_details.git_data.commit}}",
++            build_file = Label("{{workspace.workspace_path}}/remote:BUILD.{{crate.pkg_name}}-{{crate.pkg_version}}.bazel"),
++            init_submodules = True,
++            {%- include "templates/partials/remote_crates_patch.template" %}
++        )
+ {%- else %}
+-    maybe(
+-        http_archive,
+-        name = "{{workspace.gen_workspace_prefix}}__{{crate.pkg_name | replace(from="-", to="_")}}__{{crate.pkg_version | slugify | replace(from="-", to="_")}}",
+-        url = "{{ crate.source_details.download_url }}",
+-        type = "tar.gz",
+-{%- if crate.sha256 %}
+-        sha256 = "{{crate.sha256}}",
+-{%- endif %}
+-        strip_prefix = "{{crate.pkg_name}}-{{crate.pkg_version}}",
+-        {%- include "templates/partials/remote_crates_patch.template" %}
+-        build_file = Label("{{workspace.workspace_path}}/remote:BUILD.{{crate.pkg_name}}-{{crate.pkg_version}}.bazel"),
+-    )
++        maybe(
++            http_archive,
++            name = "{{workspace.gen_workspace_prefix}}__{{crate.pkg_name | replace(from="-", to="_")}}__{{crate.pkg_version | slugify | replace(from="-", to="_")}}",
++            url = "{{ crate.source_details.download_url }}",
++            type = "tar.gz",
++    {%- if crate.sha256 %}
++            sha256 = "{{crate.sha256}}",
++    {%- endif %}
++            strip_prefix = "{{crate.pkg_name}}-{{crate.pkg_version}}",
++            {%- include "templates/partials/remote_crates_patch.template" %}
++            build_file = Label("{{workspace.workspace_path}}/remote:BUILD.{{crate.pkg_name}}-{{crate.pkg_version}}.bazel"),
++        )
+ {%- endif %}
+ {%  endfor %}
+ {%- else %}
++def {{workspace.gen_workspace_prefix}}_fetch_remote_crates():
+     """No crates were detected in the source Cargo.toml. This is a no-op"""
+     pass
+ {% endif %}
+ {%- else %}
+ {% include "templates/partials/crates_macro.template" %}
+-{% endif %}
++{% endif %}
