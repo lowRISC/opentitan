@@ -84,13 +84,11 @@ package flash_phy_pkg;
 
   // Flash Operations Supported
   typedef enum logic [1:0] {
-    PhyRead      = 2'h0,
-    PhyProg      = 2'h1,
-    PhyPgErase   = 2'h2,
-    PhyBkErase   = 2'h3
+    PhyProg,
+    PhyPgErase,
+    PhyBkErase,
+    PhyLastOp
   } flash_phy_op_e;
-
-  localparam int PhyOps = 4;
 
   // Flash Operations Selected
   typedef enum logic [1:0] {
