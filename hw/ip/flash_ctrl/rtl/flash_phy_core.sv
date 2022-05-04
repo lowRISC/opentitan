@@ -101,7 +101,7 @@ module flash_phy_core
   state_e state_q, state_d;
 
   // request signals to flash macro
-  logic [PhyOps-1:0] reqs;
+  logic [PhyLastOp-1:0] reqs;
 
   // host select for address
   logic host_sel;
@@ -244,6 +244,8 @@ module flash_phy_core
 
   // SEC_CM: PHY_ARBITER.CTRL.REDUN
   logic phy_req;
+  logic phy_rdy;
+   
   prim_arbiter_tree_dup #(
     .N(2),
     .DW(2),
@@ -258,9 +260,12 @@ module flash_phy_core
     .idx_o(),
     .valid_o(phy_req),
     .data_o(),
-    .ready_i(rd_stage_rdy),
+    .ready_i(phy_rdy),          
     .err_o(arb_err_o)
   );
+
+  assign phy_rdy = phy_req & host_req ? rd_stage_rdy : rd_stage_idle;
+   
 
   // if request happens at the same time as a host grant, increment count
   assign inc_arb_cnt = req_i & host_gnt;
