@@ -25,6 +25,7 @@ module otbn_loop_controller
   output [ImemAddrWidth-1:0] loop_jump_addr_o,
 
   output sw_err_o,
+  output hw_err_o,
 
   output                     prefetch_loop_active_o,
   output [31:0]              prefetch_loop_iterations_o,
@@ -198,6 +199,8 @@ module otbn_loop_controller
     .rst_ni,
 
     .full_o(loop_stack_full),
+
+    .cnt_err_o(hw_err_o),
 
     .clear_i(state_reset_i),
 

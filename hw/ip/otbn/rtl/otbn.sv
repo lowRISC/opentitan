@@ -1100,4 +1100,10 @@ module otbn
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnScrambleCtrlFsmCheck_A,
     u_otbn_scramble_ctrl.u_state_regs, alert_tx_o[AlertFatal])
 
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(OtbnCallStackWrPtrAlertCheck_A,
+    u_otbn_core.u_otbn_rf_base.u_call_stack.u_stack_wr_ptr, alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(OtbnLoopInfoStackWrPtrAlertCheck_A,
+    u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.u_stack_wr_ptr,
+    alert_tx_o[AlertFatal])
+
 endmodule

@@ -450,7 +450,10 @@ module otbn_top_sim (
   export "DPI-C" function otbn_base_call_stack_get_size;
 
   function automatic int unsigned otbn_base_call_stack_get_size();
-    return u_otbn_core.u_otbn_rf_base.u_call_stack.stack_wr_ptr_q;
+    // Explicit zero extension required because Verilator (tested with v4.216) otherwise raises
+    // a `WIDTH` warning (which is promoted to an error).
+    return {{(32-$bits(u_otbn_core.u_otbn_rf_base.u_call_stack.stack_wr_ptr)){1'b0}},
+            u_otbn_core.u_otbn_rf_base.u_call_stack.stack_wr_ptr};
   endfunction
 
   export "DPI-C" function otbn_base_call_stack_get_element;

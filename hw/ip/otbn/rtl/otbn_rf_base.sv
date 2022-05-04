@@ -57,6 +57,7 @@ module otbn_rf_base
   input  logic                     rd_commit_i,
 
   output logic                     call_stack_sw_err_o,
+  output logic                     call_stack_hw_err_o,
   output logic                     rf_err_o
 );
   localparam int unsigned CallStackRegIndex = 1;
@@ -136,6 +137,8 @@ module otbn_rf_base
     .rst_ni,
 
     .full_o        (stack_full),
+
+    .cnt_err_o     (call_stack_hw_err_o),
 
     .clear_i       (state_reset),
 

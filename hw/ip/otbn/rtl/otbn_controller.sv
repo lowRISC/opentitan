@@ -60,6 +60,7 @@ module otbn_controller
   output logic                     rf_base_rd_commit_o,
 
   input logic rf_base_call_stack_sw_err_i,
+  input logic rf_base_call_stack_hw_err_i,
 
   // Bignum register file (WDRs)
   output logic [4:0]         rf_bignum_wr_addr_o,
@@ -261,6 +262,7 @@ module otbn_controller
 
   logic [WLEN-1:0] mac_bignum_rf_wr_data;
 
+  logic loop_hw_err;
   logic csr_illegal_addr, wsr_illegal_addr, ispr_illegal_addr;
   logic imem_addr_err, loop_sw_err, ispr_err;
   logic dmem_addr_err_check, dmem_addr_err;
@@ -462,7 +464,7 @@ module otbn_controller
   assign illegal_insn_static = insn_illegal_i | ispr_err;
 
   assign fatal_software_err       = software_err & software_errs_fatal_i;
-  assign bad_internal_state_err   = state_error;
+  assign bad_internal_state_err   = state_error | loop_hw_err | rf_base_call_stack_hw_err_i;
   assign reg_intg_violation_err   = rf_bignum_rf_err;
   assign key_invalid_err          = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
   assign illegal_insn_err         = illegal_insn_static | rf_indirect_err;
@@ -585,6 +587,7 @@ module otbn_controller
     .loop_jump_addr_o(loop_jump_addr),
 
     .sw_err_o (loop_sw_err),
+    .hw_err_o (loop_hw_err),
 
     .jump_or_branch_i(jump_or_branch),
     .otbn_stall_i    (stall),
