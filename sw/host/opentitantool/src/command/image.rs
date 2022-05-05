@@ -5,6 +5,8 @@
 use anyhow::{ensure, Result};
 use erased_serde::Serialize;
 use std::any::Any;
+use std::fs::File;
+use std::io::Write;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -147,6 +149,14 @@ pub struct DigestCommand {
         help = "Filename for the image to calculate the digest for"
     )]
     image: PathBuf,
+    #[structopt(short, long, help = "Filename for an output bin file")]
+    bin: Option<PathBuf>,
+}
+
+/// Response format for the digest command.
+#[derive(serde::Serialize)]
+pub struct DigestResponse {
+    pub digest: String,
 }
 
 impl CommandDispatch for DigestCommand {
@@ -155,7 +165,15 @@ impl CommandDispatch for DigestCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        Ok(None)
+        let image = image::Image::read_from_file(&self.image)?;
+        let digest = image.compute_digest();
+        if let Some(bin) = &self.bin {
+            let mut file = File::create(bin)?;
+            file.write(&digest)?;
+        }
+        Ok(Some(Box::new(DigestResponse {
+            digest: format!("{}", hex::encode(&digest)),
+        })))
     }
 }
 
@@ -171,4 +189,6 @@ pub enum ManifestCommand {
 /// Image manipulation commands.
 pub enum Image {
     Assemble(AssembleCommand),
+    Manifest(ManifestCommand),
+    Digest(DigestCommand),
 }
