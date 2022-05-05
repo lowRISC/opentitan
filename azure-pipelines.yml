@@ -425,7 +425,7 @@ jobs:
 - job: execute_fpga_tests_cw310
   displayName: Execute tests on ChipWhisperer CW310 FPGA board
   pool: FPGA
-  timeoutInMinutes: 8
+  timeoutInMinutes: 16
   dependsOn:
     - chip_earlgrey_cw310
     - sw_build
@@ -438,16 +438,19 @@ jobs:
         - sw_build
   - bash: |
       set -e
-
-      # Install an additional pytest dependency for result upload.
-      pip3 install pytest-azurepipelines
-
+      set -x
       . util/build_consts.sh
-      pytest --version
-      pytest test/systemtest/earlgrey/test_fpga_cw310.py \
-        --log-cli-level=DEBUG \
-        --test-run-title="Run system tests on ChipWhisperer CW310 FPGA board" \
-        --napoleon-docstrings
+      SHA=$(git rev-parse HEAD)
+      BITCACHE_DIR=~/.cache/opentitan-bitstreams/cache/${SHA}
+      mkdir -p $BITCACHE_DIR
+      BITCACHE_FILE=$BITCACHE_DIR/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig
+      cp $BIN_DIR/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit ${BITCACHE_FILE}
+      echo "" >> ${BITCACHE_DIR}/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice
+      BITSTREAM="${SHA} --offline" ci/bazelisk.sh test \
+          --define DISABLE_VERILATOR_BUILD=true \
+          --test_tag_filters=cw310,-broken \
+          --build_tests_only \
+          //sw/...
     displayName: Execute tests
 
 - job: deploy_release_artifacts

@@ -3,15 +3,19 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
 
 opentitan_functest(
     name = "aes_entropy_test",
     srcs = ["aes_entropy_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -29,10 +33,14 @@ opentitan_functest(
 opentitan_functest(
     name = "aes_idle_test",
     srcs = ["aes_idle_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -91,6 +99,10 @@ opentitan_functest(
 opentitan_functest(
     name = "aon_timer_irq_test",
     srcs = ["aon_timer_irq_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
@@ -123,10 +135,14 @@ opentitan_functest(
 opentitan_functest(
     name = "aon_timer_wdog_bite_reset_test",
     srcs = ["aon_timer_wdog_bite_reset_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -146,6 +162,10 @@ opentitan_functest(
 opentitan_functest(
     name = "aon_timer_wdog_lc_escalate_test",
     srcs = ["aon_timer_wdog_lc_escalate_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
@@ -186,10 +206,14 @@ cc_library(
 opentitan_functest(
     name = "clkmgr_external_clk_src_for_sw_fast_test",
     srcs = ["clkmgr_external_clk_src_for_sw_fast_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -201,10 +225,14 @@ opentitan_functest(
 opentitan_functest(
     name = "clkmgr_external_clk_src_for_sw_slow_test",
     srcs = ["clkmgr_external_clk_src_for_sw_slow_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -289,10 +317,14 @@ opentitan_functest(
 opentitan_functest(
     name = "csrng_smoketest",
     srcs = ["csrng_smoketest.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -307,10 +339,14 @@ opentitan_functest(
 opentitan_functest(
     name = "entropy_src_fw_ovr_test",
     srcs = ["entropy_src_fw_ovr_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -326,6 +362,10 @@ opentitan_functest(
 opentitan_functest(
     name = "entropy_src_smoketest",
     srcs = ["entropy_src_smoketest.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         timeout = "long",
         tags = ["failing_verilator"],
@@ -380,10 +420,14 @@ opentitan_functest(
 opentitan_functest(
     name = "flash_ctrl_idle_low_power_test",
     srcs = ["flash_ctrl_idle_low_power_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -408,6 +452,10 @@ opentitan_functest(
 opentitan_functest(
     name = "flash_ctrl_ops_test",
     srcs = ["flash_ctrl_ops_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
@@ -425,6 +473,10 @@ opentitan_functest(
 opentitan_functest(
     name = "flash_ctrl_clock_freqs_test",
     srcs = ["flash_ctrl_clock_freqs_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
@@ -464,8 +516,8 @@ opentitan_functest(
             "--exit-success=PASS",
         ],
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -477,10 +529,14 @@ opentitan_functest(
 opentitan_functest(
     name = "hmac_enc_irq_test",
     srcs = ["hmac_enc_irq_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -648,7 +704,11 @@ opentitan_functest(
     name = "otbn_mem_scramble_test",
     srcs = ["otbn_mem_scramble_test.c"],
     verilator = verilator_params(
-        tags = ["failing_verilator"],
+        tags = ["broken"],
+    ),
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -734,10 +794,15 @@ opentitan_functest(
 opentitan_functest(
     name = "pmp_smoketest_napot",
     srcs = ["pmp_smoketest_napot.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -753,10 +818,15 @@ opentitan_functest(
 opentitan_functest(
     name = "pmp_smoketest_tor",
     srcs = ["pmp_smoketest_tor.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] pmp_smoketest_tor failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
+        # FIXME #12486 [bazel] pmp_smoketest_tor failing on cw310 and verilator when built by bazel
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
@@ -790,7 +860,11 @@ opentitan_functest(
     name = "pwrmgr_sleep_disabled_test",
     srcs = ["pwrmgr_sleep_disabled_test.c"],
     verilator = verilator_params(
-        tags = ["failing_verilator"],
+        tags = ["broken"],
+    ),
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
     ),
     deps = [
         "//sw/device/lib:irq",
@@ -818,6 +892,9 @@ opentitan_functest(
 opentitan_functest(
     name = "rstmgr_sw_req_test",
     srcs = ["rstmgr_sw_req_test.c"],
+    cw310 = cw310_params(
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -831,7 +908,10 @@ opentitan_functest(
     name = "rstmgr_sw_rst_ctrl_test",
     srcs = ["rstmgr_sw_rst_ctrl_test.c"],
     verilator = verilator_params(
-        tags = ["failing_verilator"],
+        tags = ["broken"],
+    ),
+    cw310 = cw310_params(
+        tags = ["broken"],
     ),
     deps = [
         "//hw/ip/i2c/data:i2c_regs",
@@ -906,6 +986,9 @@ opentitan_functest(
     verilator = verilator_params(
         timeout = "eternal",
     ),
+    cw310 = cw310_params(
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -933,6 +1016,10 @@ opentitan_functest(
     srcs = ["sensor_ctrl_wakeup.c"],
     verilator = verilator_params(
         timeout = "long",
+    ),
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
     ),
     deps = [
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
@@ -1038,6 +1125,7 @@ opentitan_functest(
 opentitan_functest(
     name = "usbdev_test",
     srcs = ["usbdev_test.c"],
+    targets = ["verilator"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:usb",
