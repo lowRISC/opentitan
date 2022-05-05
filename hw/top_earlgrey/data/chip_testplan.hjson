@@ -2556,7 +2556,8 @@
                as either recoverable or fatal.
              '''
       milestone: V2
-      tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
+      tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup",
+              "chip_sw_sensor_ctrl_alert"]
     }
     {
       name: chip_sw_sensor_ctrl_ast_status
