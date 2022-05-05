@@ -639,9 +639,19 @@ module spi_passthrough
     else         host_s_en_o <= host_s_en_inclk;
   end
 
-  assign passthrough_o.sck_gate_en = sck_gate_en;
-  assign passthrough_o.sck         = host_sck_i;
-  assign passthrough_o.sck_en      = 1'b 1;
+  logic pt_gated_sck;
+  prim_clock_gating #(
+    .NoFpgaGate    (1'b 0),
+    .FpgaBufGlobal (1'b 1) // Going outside of chip
+  ) u_pt_sck_cg (
+    .clk_i     (host_sck_i  ),
+    .en_i      (sck_gate_en ),
+    .test_en_i (1'b 0       ), // No FF connected to this gated SCK
+    .clk_o     (pt_gated_sck)
+  );
+
+  assign passthrough_o.sck    = pt_gated_sck;
+  assign passthrough_o.sck_en = 1'b 1;
 
   // CSb propagation:  csb_deassert signal should be an output of FF or latch to
   // make CSb glitch-free.
