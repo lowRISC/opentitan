@@ -908,6 +908,7 @@
             '''
       milestone: V2
       tests: ["chip_sw_pwrmgr_smoketest",
+              "chip_sw_pwrmgr_deep_sleep_all_wake_ups",
               "chip_sw_pwrmgr_usbdev_wakeup"]
     }
     {

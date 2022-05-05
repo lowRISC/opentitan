@@ -52,6 +52,8 @@ module tb;
   wire alert_handler_clk = `ALERT_HANDLER_HIER.clk_i;
   wire alert_handler_rst_n = `ALERT_HANDLER_HIER.rst_ni;
 
+  wire iob7, ior13;
+
   // interfaces
   clk_rst_if clk_rst_if(.clk, .rst_n);
   clk_rst_if cpu_clk_rst_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
@@ -62,6 +64,8 @@ module tb;
   pins_if #(2) dft_straps_if(.pins(dft_straps));
   pins_if #(3) sw_straps_if(.pins(sw_straps));
   pins_if #(1) rst_n_mon_if(.pins(cpu_rst_n));
+  pins_if #(1) pinmux_wkup_if(.pins(iob7));
+  pins_if #(1) pwrb_in_if(.pins(ior13));
   spi_if spi_if(.rst_n);
   tl_if cpu_d_tl_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
   uart_if uart_if[NUM_UARTS-1:0]();
@@ -147,7 +151,7 @@ module tb;
     .IOB4(gpio_pins[13]),  // MIO 13
     .IOB5(gpio_pins[14]),  // MIO 14
     .IOB6(gpio_pins[15]),  // MIO 15
-    .IOB7(tie_off[0]),     // MIO 16
+    .IOB7(iob7),           // MIO 16
     // TODO, we probably need to change this when we have the final pinout configuration
     // Connect this to IOB8 to align with SW bootstrap.c
     .IOB8(sw_straps[0]),   // MIO 17
@@ -183,7 +187,7 @@ module tb;
     .IOR10(uart_tx[2]),    // MIO 45
     .IOR11(uart_rx[3]),    // MIO 46
     .IOR12(uart_tx[3]),    // MIO 47
-    .IOR13(tie_off[18]),   // MIO 48
+    .IOR13(ior13),         // MIO 48
     // DCD (VCC domain)
     .CC1(tie_off[19]),
     .CC2(tie_off[20]),
@@ -295,6 +299,11 @@ module tb;
         null, "*.env", "sw_straps_vif", sw_straps_if);
     uvm_config_db#(virtual pins_if #(1))::set(
         null, "*.env", "rst_n_mon_vif", rst_n_mon_if);
+    uvm_config_db#(virtual pins_if #(1))::set(
+        null, "*.env", "pinmux_wkup_vif", pinmux_wkup_if);
+    uvm_config_db#(virtual pins_if #(1))::set(
+        null, "*.env", "pwrb_in_vif", pwrb_in_if);
+
 
     // SW logger and test status interfaces.
     uvm_config_db#(virtual sw_test_status_if)::set(
@@ -499,7 +508,6 @@ module tb;
         csr_seq_type == "mem_walk") begin
       force tb.dut.top_earlgrey.u_otp_ctrl.lc_dft_en_i = lc_ctrl_pkg::On;
     end
-//    void'($value$plusargs("pwm_chk_enable=%0d", pwm_chk_en));
   end
 
   // Control assertions in the DUT with UVM resource string "dut_assert_en".

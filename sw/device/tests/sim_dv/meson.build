@@ -194,6 +194,34 @@ sw_tests += {
   }
 }
 
+pwrmgr_deep_sleep_all_wake_ups_lib = declare_dependency(
+  link_with: static_library(
+    'pwrmgr_deep_sleep_all_wake_ups_lib',
+    sources: [
+      'pwrmgr_deep_sleep_all_wake_ups.c'],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_rv_plic,
+      sw_lib_dif_sysrst_ctrl,
+      sw_lib_dif_adc_ctrl,
+      sw_lib_dif_pinmux,
+      sw_lib_irq,
+      sw_lib_runtime_ibex,
+      sw_lib_runtime_log,
+      sw_lib_testing_isr_testutils,
+      sw_lib_testing_pwrmgr_testutils,
+      sw_lib_testing_rv_plic_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'pwrmgr_deep_sleep_all_wake_ups': {
+    'library': pwrmgr_deep_sleep_all_wake_ups_lib,
+  }
+}
+
 spi_tx_rx_test_lib = declare_dependency(
   link_with: static_library(
     'spi_tx_rx_test_lib',
