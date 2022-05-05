@@ -142,7 +142,7 @@ TEST_F(FilterConfigTest, Success) {
                    filter_config_.min_voltage},
                   {ADC_CTRL_ADC_CHN1_FILTER_CTL_2_MAX_V_2_OFFSET,
                    filter_config_.max_voltage},
-                  {ADC_CTRL_ADC_CHN1_FILTER_CTL_2_COND_2_BIT, true},
+                  {ADC_CTRL_ADC_CHN1_FILTER_CTL_2_COND_2_BIT, false},
                   {ADC_CTRL_ADC_CHN1_FILTER_CTL_2_EN_2_BIT, true}});
   EXPECT_READ32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0);
   EXPECT_WRITE32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET,
@@ -158,7 +158,7 @@ TEST_F(FilterConfigTest, Success) {
                    filter_config_.min_voltage},
                   {ADC_CTRL_ADC_CHN0_FILTER_CTL_6_MAX_V_6_OFFSET,
                    filter_config_.max_voltage},
-                  {ADC_CTRL_ADC_CHN0_FILTER_CTL_6_COND_6_BIT, true},
+                  {ADC_CTRL_ADC_CHN0_FILTER_CTL_6_COND_6_BIT, false},
                   {ADC_CTRL_ADC_CHN0_FILTER_CTL_6_EN_6_BIT, true}});
   EXPECT_READ32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0x4);
   EXPECT_WRITE32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0x44);
