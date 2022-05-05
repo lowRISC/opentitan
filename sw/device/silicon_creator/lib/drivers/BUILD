@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
@@ -593,6 +593,10 @@ cc_test(
 opentitan_functest(
     name = "watchdog_functest",
     srcs = ["watchdog_functest.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
