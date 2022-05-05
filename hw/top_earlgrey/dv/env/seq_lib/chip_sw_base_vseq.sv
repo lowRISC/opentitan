@@ -67,6 +67,13 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
     cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
 
+    // Randomize retention memory.  This is done intentionally with wrong integrity
+    // as early portions of mask ROM will initialize it to the correct value.
+    // The randomization here is just to ensure we do not have x's in the memory.
+    for (int ram_idx = 0; ram_idx < cfg.num_ram_ret_tiles; ram_idx++) begin
+       cfg.mem_bkdr_util_h[RamRet0 + ram_idx].randomize_mem();
+    end
+
     `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
     // Backdoor load memories with sw images.
     cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".scr.39.vmem"});
