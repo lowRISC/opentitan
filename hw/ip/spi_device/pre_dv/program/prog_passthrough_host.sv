@@ -12,6 +12,8 @@ program prog_passthrough_host
   spi_if sif
 );
 
+  // Tracked Flash variables
+  spi_data_t [2:0] status;
   // Timeout
   initial begin
     #1ms
@@ -20,6 +22,7 @@ program prog_passthrough_host
   end
 
   initial begin
+    automatic spi_data_t temp_status;
     // Default value
     sif.csb = 1'b 1;
 
@@ -33,10 +36,11 @@ program prog_passthrough_host
     spiflash_readstatus(
       sif.tb,
       spi_device_pkg::CmdReadStatus1,
-      status
+      temp_status
     );
 
-    $display("Received Status: %2Xh", status);
+    $display("Received Status: %2Xh", temp_status);
+    status[0] = temp_status;
 
     forever begin
       @(posedge clk);
