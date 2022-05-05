@@ -12,7 +12,7 @@
   tb: tb
 
   // Simulator used to sign off this block
-  tool: vcs
+  tool: xcelium
 
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:flash_ctrl_sim:0.1
