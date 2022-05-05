@@ -655,6 +655,27 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "otbn_randomness_test",
+    srcs = ["otbn_randomness_test.c"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib:irq",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:otbn",
+        "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/otbn/code-snippets:randomness",
+    ],
+)
+
+opentitan_functest(
     name = "otbn_rsa_test",
     srcs = ["otbn_rsa_test.c"],
     verilator = verilator_params(
