@@ -538,7 +538,8 @@ module tlul_adapter_sram
   `ASSERT_INIT(DataIntgOptions_A, ~(EnableDataIntgGen & EnableDataIntgPt))
 
   // make sure outputs are defined
-  `ASSERT_KNOWN(TlOutKnown_A,    tl_o   )
+  `ASSERT_KNOWN(TlOutKnown_A,    tl_o.d_valid)
+  `ASSERT_KNOWN_IF(TlOutPayloadKnown_A, tl_o, tl_o.d_valid)
   `ASSERT_KNOWN(ReqOutKnown_A,   req_o  )
   `ASSERT_KNOWN(WeOutKnown_A,    we_o   )
   `ASSERT_KNOWN(AddrOutKnown_A,  addr_o )
