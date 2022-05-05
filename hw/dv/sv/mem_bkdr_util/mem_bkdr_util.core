@@ -15,6 +15,7 @@ filesets:
       - lowrisc:prim:cipher_pkg:0.1
       - lowrisc:prim:secded:0.1
       - lowrisc:ip:otp_ctrl_pkg:1.0
+      - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:dv:digestpp_dpi
       - lowrisc:ip:kmac_pkg
     files:
@@ -25,6 +26,7 @@ filesets:
       - mem_bkdr_util__otp.sv: {is_include_file: true}
       - mem_bkdr_util__rom.sv: {is_include_file: true}
       - mem_bkdr_util__sram.sv: {is_include_file: true}
+      - mem_bkdr_util__flash.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
