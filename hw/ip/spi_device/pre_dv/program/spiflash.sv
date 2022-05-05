@@ -28,6 +28,13 @@ program spiflash #(
     Addr4B
   } addr_mode_e;
 
+  // Return Output mode
+  typedef enum int unsigned {
+    IoSingle,
+    IoDual,
+    IoQuad
+  } io_mode_e;
+
   typedef logic [7:0] spiflash_byte_t;
 
   localparam int unsigned StorageAw = $clog2(FlashSize);
@@ -43,11 +50,15 @@ program spiflash #(
   assign sd[3] = sd_en[3] ? sd_out[3] : 1'b z;
 
   // SPI Flash internal state variables
-  addr_mode_e addr_mode;
+  addr_mode_e     addr_mode;
+  spiflash_byte_t [2:0] status; // 24 bit
   spiflash_byte_t storage[spiflash_addr_t]; // Associative Array to store data
 
   initial begin
     print_banner();
+
+    // Init values
+    status = '0;
     // Should wait ??
     main();
   end
@@ -101,6 +112,7 @@ program spiflash #(
     forever begin
       automatic spiflash_byte_t opcode;
       automatic bit             early_termination;
+      automatic int unsigned    excessive_sck = 0;
       // Big loop. Wait transaction
       sd_en = 4'h 0; // Off the output by default
       wait(csb == 1'b 0);
@@ -116,12 +128,23 @@ program spiflash #(
           // Main
           cmdparse(opcode); // Store incoming into opcod
           process_cmd(opcode);
+
+          // Count remaining edges of SCK. opcode completed command should
+          // have no additional data, or should be discarded
+          forever begin
+            @(posedge sck);
+            excessive_sck++;
+          end
         end
       join_any
       // Determine early termination, if not early terminated, the main block
       // waits CSb de-assertion too
+      // For many Output commands, the logic sends data until host releases
+      // CSb. In this case, early_termination is set too. If the command is
+      // output command, do not process early_termination.
 
       // Process program, etc
+      // If excessive sck, then discard.
 
       // Kill the forked process
       disable fork;
@@ -146,7 +169,69 @@ program spiflash #(
     input spiflash_byte_t opcode
   );
     // Main case block to call subtasks depending on the opcode
+    case (opcode)
+      spi_device_pkg::CmdReadStatus1: begin
+        // Return status data
+        return_status(0); // 0-2
+      end
+    endcase
 
   endtask : process_cmd
+
+  task automatic return_byte(spiflash_byte_t data, io_mode_e io_mode);
+    // Assume the task is called at @(negedge sck);
+    automatic int unsigned rails;
+    automatic logic [7:0]  lines;
+    case (io_mode)
+      IoSingle: begin
+        rails = 1;
+        sd_en = 4'b 0010;
+      end
+      IoDual: begin
+        rails = 2;
+        sd_en = 4'b 0011;
+      end
+      IoQuad: begin
+        rails = 4;
+        sd_en = 4'b 1111;
+      end
+      default: begin
+        rails = 1;
+        sd_en = 4'b 0010;
+      end
+    endcase
+
+    lines = data;
+    repeat(8/rails) begin
+      case (io_mode)
+        IoSingle: begin
+          sd_out[1] = lines[7];
+          lines = {lines[6:0], 1'b 0};
+        end
+        IoDual: begin
+          sd_out[1:0] = lines[7:6];
+          lines = {lines[5:0], 2'b 00};
+        end
+        IoQuad: begin
+          sd_out[3:0] = lines[7:4];
+          lines = {lines[3:0], 4'b 0000};
+        end
+        default: begin
+          sd_out[1] = lines[7];
+          lines = {lines[6:0], 1'b 0};
+        end
+      endcase
+      @(negedge sck);
+    end
+  endtask : return_byte
+
+  task automatic return_status(int unsigned idx);
+    // Starting from the index and wraps %3 until host releases CSb
+    automatic int unsigned s_idx = idx;
+    forever begin
+      return_byte(status[s_idx], IoSingle);
+      s_idx = (s_idx + 1)%3;
+    end
+  endtask : return_status
 
 endprogram : spiflash
