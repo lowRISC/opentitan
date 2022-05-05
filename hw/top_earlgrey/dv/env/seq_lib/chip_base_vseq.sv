@@ -94,6 +94,9 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
       cfg.sw_straps_vif.drive({2'b00, cfg.use_spi_load_bootstrap});
     end
 
+    cfg.pinmux_wkup_vif.drive(1'b0);
+    cfg.pwrb_in_vif.drive(1'b0);
+
     // Now safe to do DUT init.
     if (do_dut_init) dut_init();
   endtask
