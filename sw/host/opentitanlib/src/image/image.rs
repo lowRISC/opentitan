@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::image::manifest::Manifest;
-use crate::image::manifest_def::ManifestDef;
-use crate::util::parse_int::ParseInt;
 use anyhow::{ensure, Result};
+use memoffset::offset_of;
+use sha2::{Digest, Sha256};
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -14,6 +13,11 @@ use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 use zerocopy::LayoutVerified;
+
+use crate::image::manifest::Manifest;
+use crate::image::manifest_def::ManifestDef;
+use crate::util::bigint;
+use crate::util::parse_int::ParseInt;
 
 #[derive(Debug, Error)]
 pub enum ImageError {
@@ -96,6 +100,13 @@ impl Image {
         manifest_def.overwrite_fields(other);
         *manifest = manifest_def.try_into()?;
         Ok(())
+    }
+
+    /// Compute the SHA256 digest for the signed portion of the `Image`.
+    pub fn compute_digest(&self) -> Vec<u8> {
+        let mut hasher = Sha256::new();
+        hasher.update(&self.data.bytes[offset_of!(Manifest, usage_constraints)..self.size]);
+        hasher.finalize().to_vec()
     }
 }
 
