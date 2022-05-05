@@ -6,6 +6,7 @@
 include_ccf ${dv_root}/tools/xcelium/common.ccf
 
 // enable coverage on dut and below
+
 select_coverage -befts -module ${DUT_TOP}...
 
 // Black-box pre-verified IPs from coverage collection.
