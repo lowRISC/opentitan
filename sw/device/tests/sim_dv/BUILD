@@ -81,6 +81,35 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "flash_init_test",
+    srcs = ["flash_init_test.c"],
+    # This test doesn't use the OTTF.
+    targets = ["verilator"],  # Can only run in verilator right now.
+    # This test is designed to run and complete entirely in the ROM boot stage.
+    # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
+    # of this, and instructs it to load the test image into ROM (rather than
+    # loading the default test ROM, or any other ROM that may be specified via
+    # Verilator or CW310 params).
+    test_in_rom = True,
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/lib/testing/test_rom:linker_script",
+        "//sw/device/lib/testing/test_rom:test_rom_lib",
+    ],
+)
+
+opentitan_functest(
     name = "gpio_test",
     srcs = ["gpio_test.c"],
     targets = ["dv"],

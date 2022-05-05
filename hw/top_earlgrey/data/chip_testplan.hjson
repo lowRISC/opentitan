@@ -2404,7 +2404,7 @@
             - This test needs to execute as a boot rom image.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_init"]
     }
     {
       name: chip_sw_flash_host_access
@@ -2468,7 +2468,7 @@
             - Need to understand the bootstrapping requirements.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_init"]
     }
     {
       name: chip_sw_flash_idle_low_power

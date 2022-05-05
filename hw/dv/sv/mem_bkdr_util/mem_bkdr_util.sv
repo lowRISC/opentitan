@@ -571,6 +571,9 @@ class mem_bkdr_util extends uvm_object;
   // Wrapper function for encrypted ROM reads.
   `include "mem_bkdr_util__rom.sv"
 
+  // Wrapper function for encrypted FLASH writes.
+  `include "mem_bkdr_util__flash.sv"
+
   `undef HAS_ECC
   `undef HAS_PARITY
 
