@@ -16,7 +16,6 @@ package spi_device_pkg;
     // Passthrough includes SCK also. The sck_en is pad out enable not CG
     // enable. The CG is placed in SPI_DEVICE IP.
     logic       sck;
-    logic       sck_gate_en; // TBD: place for CG?
     logic       sck_en;
 
     // CSb should be pull-up pad. In passthrough mode, CSb is directly connected
@@ -38,7 +37,6 @@ package spi_device_pkg;
   parameter passthrough_req_t PASSTHROUGH_REQ_DEFAULT = '{
     passthrough_en: 1'b 0,
     sck:            1'b 0,
-    sck_gate_en:    1'b 0,
     sck_en:         1'b 0,
     csb:            1'b 1,
     csb_en:         1'b 0,

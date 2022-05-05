@@ -83,14 +83,12 @@ module tb;
       passthrough_i.sck_en <= 1'b0;
       passthrough_i.csb_en <= 1'b0;
       passthrough_i.s_en   <= 1'b0;
-      passthrough_i.sck_gate_en <= 1'b0;
       passthrough_i.csb    <= 1'b1;
     end else begin
       passthrough_i.passthrough_en <= spi_passthrough_if.passthrough_en;
       passthrough_i.sck_en         <= spi_passthrough_if.sck_en;
       passthrough_i.csb_en         <= spi_passthrough_if.csb_en;
       passthrough_i.s_en           <= spi_passthrough_if.s_en;
-      passthrough_i.sck_gate_en    <= spi_passthrough_if.sck_gate_en;
       passthrough_i.csb            <= spi_passthrough_if.csb;
   end
   end
@@ -98,7 +96,7 @@ module tb;
   assign passthrough_i.s      = spi_passthrough_if.is;
   assign spi_passthrough_if.os = passthrough_o.s;
   assign spi_passthrough_if.cio_sd_o = cio_sd_o;
-  
+
   assign cio_sd_i =  spi_passthrough_if.passthrough_en ? spi_passthrough_if.cio_sd_i : si_pulldown;
 
   // configure spi_if i/o
