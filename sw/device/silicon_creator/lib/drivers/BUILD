@@ -175,6 +175,17 @@ cc_library(
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_test(
+    name = "ibex_unittest",
+    srcs = ["ibex_unittest.cc"],
+    deps = [
+        ":ibex",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest_main",
     ],
 )
 

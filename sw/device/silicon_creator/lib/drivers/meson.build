@@ -489,6 +489,7 @@ test('sw_silicon_creator_lib_driver_watchdog_unittest', executable(
   suite: 'mask_rom',
 )
 
+
 # Mask ROM otbn driver
 sw_silicon_creator_lib_driver_otbn = declare_dependency(
   link_with: static_library(
@@ -613,6 +614,26 @@ sw_silicon_creator_lib_driver_ibex = declare_dependency(
       sw_lib_abs_mmio,
     ],
   ),
+)
+
+
+test('sw_silicon_creator_lib_driver_ibex_unittest', executable(
+    'sw_silicon_creator_lib_driver_ibex_unittest',
+    sources: [
+       hw_ip_ibex_reg_h,
+      'ibex_unittest.cc',
+      'ibex.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_testing_hardened,
+      sw_silicon_creator_lib_base_mock_sec_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],
+  ),
+  suite: 'mask_rom',
 )
 
 test('sw_silicon_creator_lib_driver_spi_device_unittest', executable(
