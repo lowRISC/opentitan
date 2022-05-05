@@ -7,10 +7,6 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  // LC sends two 64-bit msg as input token.
-  localparam uint TokenWidthBit  = kmac_pkg::MsgWidth * 2;
-  localparam uint TokenWidthByte = TokenWidthBit / 8;
-
   rand bit [7:0] lc_exit_token[TokenWidthByte];
   rand bit [7:0] lc_unlock_token[TokenWidthByte];
 
@@ -80,28 +76,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       // error. This error is permitted and can be ignored.
       wait_lc_ready(.allow_err(1));
 
-      // Use JTAG interface to transit LC_CTRL from TestLock to TestUnlock state.
-      `uvm_info(`gfn, "Start LC transition request to TestUnlock state", UVM_LOW)
-      jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
-                                           p_sequencer.jtag_sequencer_h,
-                                           prim_mubi_pkg::MuBi8True);
-      begin
-        bit [TL_DW-1:0] unlock_token_csr_vals[4] = {<< 32 {{<< 8 {lc_unlock_token}}}};
-        foreach (unlock_token_csr_vals[index]) begin
-          jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_token[index].get_offset(),
-                                               p_sequencer.jtag_sequencer_h,
-                                               unlock_token_csr_vals[index]);
-        end
-      end
-      jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_target.get_offset(),
-                                           p_sequencer.jtag_sequencer_h,
-                                           {DecLcStateNumRep{DecLcStTestUnlocked2}});
-      jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_cmd.get_offset(),
-                                           p_sequencer.jtag_sequencer_h,
-                                           1);
-      `uvm_info(`gfn, "Sent LC transition request", UVM_LOW)
-
-      wait_lc_status(LcTransitionSuccessful);
+      jtag_lc_state_transition(DecLcStTestLocked1, DecLcStTestUnlocked2, {<<8{lc_unlock_token}});
 
       // LC state transition requires a chip reset.
       apply_reset();

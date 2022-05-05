@@ -351,25 +351,93 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
   endtask
 
-  // Use JTAG interface to transit LC_CTRL from RAW state to the valid next state.
-  virtual task lc_raw_state_transition(dec_lc_state_e dest_state);
-    if (!(dest_state inside {DecLcStTestUnlocked0, DecLcStTestUnlocked1, DecLcStTestUnlocked2,
-                             DecLcStTestUnlocked3, DecLcStTestUnlocked4, DecLcStTestUnlocked5,
-                             DecLcStTestUnlocked6, DecLcStScrap})) begin
-      `uvm_fatal(`gfn, $sformatf("invalid state transition request from RAW state to %0s",
-                                 dest_state.name))
+  // Use JTAG interface to transit LC_CTRL from one state to the valid next state.
+  // Currently support the following transitions:
+  // 1). RAW state -> test unlock state N
+  //     This transition will use default raw unlock token.
+  // 2). Test lock state N -> test unlock state N+1
+  //     This transition requires user to input the correct test unlock token.
+  virtual task jtag_lc_state_transition(dec_lc_state_e src_state,
+                                        dec_lc_state_e dest_state,
+                                        bit [TokenWidthBit-1:0] test_unlock_token = 0);
+    bit [TL_DW-1:0] actual_src_state;
+    bit valid_transition;
+    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
+                                        p_sequencer.jtag_sequencer_h,
+                                        actual_src_state);
+    `DV_CHECK_EQ({DecLcStateNumRep{src_state}}, actual_src_state)
+
+    // Check if the requested transition is valid.
+    case (src_state)
+      DecLcStRaw: begin
+        if (dest_state inside {DecLcStTestUnlocked0, DecLcStTestUnlocked1, DecLcStTestUnlocked2,
+                               DecLcStTestUnlocked3, DecLcStTestUnlocked4, DecLcStTestUnlocked5,
+                               DecLcStTestUnlocked6, DecLcStTestUnlocked7, DecLcStScrap}) begin
+          valid_transition = 1;
+          test_unlock_token = RndCnstRawUnlockToken;
+        end
+      end
+      DecLcStTestLocked0: begin
+        if (dest_state inside {DecLcStTestUnlocked1, DecLcStTestUnlocked2, DecLcStTestUnlocked3,
+                               DecLcStTestUnlocked4, DecLcStTestUnlocked5, DecLcStTestUnlocked6,
+                               DecLcStTestUnlocked7, DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+      DecLcStTestLocked1: begin
+        if (dest_state inside {DecLcStTestUnlocked2, DecLcStTestUnlocked3, DecLcStTestUnlocked4,
+                               DecLcStTestUnlocked5, DecLcStTestUnlocked6,DecLcStTestUnlocked7,
+                               DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+      DecLcStTestLocked2: begin
+        if (dest_state inside {DecLcStTestUnlocked3, DecLcStTestUnlocked4, DecLcStTestUnlocked5,
+                               DecLcStTestUnlocked6, DecLcStTestUnlocked7, DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+      DecLcStTestLocked3: begin
+        if (dest_state inside {DecLcStTestUnlocked4, DecLcStTestUnlocked5, DecLcStTestUnlocked6,
+                               DecLcStTestUnlocked7, DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+      DecLcStTestLocked4: begin
+        if (dest_state inside {DecLcStTestUnlocked5, DecLcStTestUnlocked6, DecLcStTestUnlocked7,
+                               DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+      DecLcStTestLocked5: begin
+        if (dest_state inside {DecLcStTestUnlocked6, DecLcStTestUnlocked7, DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+       DecLcStTestLocked6: begin
+        if (dest_state inside {DecLcStTestUnlocked7, DecLcStScrap}) valid_transition = 1;
+      end
+     default: `uvm_fatal(`gfn, $sformatf("%0s src state not supported", src_state.name))
+    endcase
+
+    if (!valid_transition) begin
+      `uvm_fatal(`gfn, $sformatf("invalid state transition request from %0s state to %0s",
+                                 src_state.name, dest_state.name))
     end
 
-    `uvm_info(`gfn, "Start LC transition request to TestUnlock state", UVM_LOW)
+    `uvm_info(`gfn, $sformatf("Start LC transition request from %0s staet to %0s state",
+                              src_state.name, dest_state.name), UVM_LOW)
     jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
                                          prim_mubi_pkg::MuBi8True);
+
+    // Write LC state transition token.
     begin
-      bit [TL_DW-1:0] raw_unlock_token_csr_vals[4] = {<< 32 {{>> 8 {RndCnstRawUnlockToken}}}};
-      foreach (raw_unlock_token_csr_vals[index]) begin
+      bit [TL_DW-1:0] token_csr_vals[4] = {<< 32 {{>> 8 {test_unlock_token}}}};
+      foreach (token_csr_vals[index]) begin
         jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_token[index].get_offset(),
                                              p_sequencer.jtag_sequencer_h,
-                                             raw_unlock_token_csr_vals[index]);
+                                             token_csr_vals[index]);
       end
     end
 
@@ -382,5 +450,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `uvm_info(`gfn, "Sent LC transition request", UVM_LOW)
 
     wait_lc_status(LcTransitionSuccessful);
+    `uvm_info(`gfn, "LC transition request succeed!", UVM_LOW)
   endtask
+
 endclass : chip_sw_base_vseq
