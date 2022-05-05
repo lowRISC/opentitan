@@ -448,7 +448,8 @@ module sram_ctrl
   ////////////////
 
   `ASSERT_KNOWN(RegsTlOutKnown_A,  regs_tl_o)
-  `ASSERT_KNOWN(RamTlOutKnown_A,   ram_tl_o)
+  `ASSERT_KNOWN(RamTlOutKnown_A,   ram_tl_o.d_valid)
+  `ASSERT_KNOWN_IF(RamTlOutPayLoadKnown_A, ram_tl_o, ram_tl_o.d_valid)
   `ASSERT_KNOWN(AlertOutKnown_A,   alert_tx_o)
   `ASSERT_KNOWN(SramOtpKeyKnown_A, sram_otp_key_o)
 

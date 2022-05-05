@@ -41,11 +41,12 @@ bool rom_test_main(void) {
     base_uart_stdout(&uart0);
   }
 
-  bool result = false;
-
   /**
    * Place test code here.
    */
 
-  return result;
+  /**
+   * Return true if the test succeeds. Return false if it should fail.
+   */
+  return true;
 }
