@@ -552,7 +552,7 @@
                   Subtract 1 from this value and then right shift by one to obtain 0x7FFF.
                   This value is then logically OR'd with the upper address bits that would select which 64KB to translate.
 
-                  In this exampole, the user wishes to translate the 0x8000-th 64KB block.
+                  In this example, the user wishes to translate the 0x8000-th 64KB block.
                   The value programmed is then 0x8000_7FFF.
 
                   If the user were to translate the 0x8001-th 64KB block, the value programmed would be 0x8001_7FFF.

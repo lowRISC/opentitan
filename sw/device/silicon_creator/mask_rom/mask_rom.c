@@ -10,6 +10,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
@@ -192,6 +193,23 @@ static rom_error_t mask_rom_verify(const manifest_t *manifest,
                               flash_exec);
 }
 
+/* These symbols are defined in
+* `opentitan/sw/device/silicon_creator/mask_rom/mask_rom.ld`, and describes the
+* location of the flash header.
+*/
+extern char _rom_ext_virtual_start_address[];
+extern char _rom_ext_virtual_size[];
+/**
+ * Compute the virtual address corresponding to the physical address `lma_addr`.
+ *
+ * @param manifest Pointer to the current manifest.
+ * @param lma_addr Load address or physical address.
+ * @return the computed virtual address.
+ */
+static inline  uintptr_t rom_ext_vma_get(const manifest_t *manifest, uintptr_t lma_addr){
+  return (lma_addr - (uintptr_t)manifest + (uintptr_t)_rom_ext_virtual_start_address);
+}
+
 /**
  * Boots a ROM_EXT.
  *
@@ -221,22 +239,51 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest,
   // Check cached boot data.
   HARDENED_RETURN_IF_ERROR(boot_data_check(&boot_data));
 
-  sec_mmio_check_values(rnd_uint32());
-  sec_mmio_check_counters(/*expected_check_count=*/3);
+  sec_mmio_check_counters(/*expected_check_count=*/2);
+
+  // Configure address translation, compute the epmp regions and the entry
+  // point for the virtual address in case the address translation is enabled.
+  // Otherwise, compute the epmp regions and the entry point for the load address.
+  epmp_region_t text_region = manifest_code_region_get(manifest);
+  uintptr_t entry_point = manifest_entry_point_get(manifest);
+  switch(launder32(manifest->address_translation)){
+    case kHardenedBoolTrue:
+      HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
+      ibex_addr_remap_0_set((uintptr_t)_rom_ext_virtual_start_address,
+                           (uintptr_t)manifest, (size_t)_rom_ext_virtual_size);
+      SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
+
+      // Unlock read-only for the whole rom_ext virtual memory.
+      HARDENED_RETURN_IF_ERROR(epmp_state_check(&epmp));
+      mask_rom_epmp_unlock_rom_ext_r(&epmp, (epmp_region_t) {
+        .start = (uintptr_t)_rom_ext_virtual_start_address,
+        .end = (uintptr_t)_rom_ext_virtual_start_address + (uintptr_t)_rom_ext_virtual_size});
+
+      // Move the ROM_EXT execution section from the load address to the virtual address.
+      text_region.start = rom_ext_vma_get(manifest, text_region.start);
+      text_region.end = rom_ext_vma_get(manifest, text_region.end);
+      entry_point = rom_ext_vma_get(manifest, entry_point);
+      break;
+    case kHardenedBoolFalse:
+      HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
+      break;
+    default:
+      HARDENED_UNREACHABLE();
+  }
 
   // Unlock execution of ROM_EXT executable code (text) sections.
   HARDENED_RETURN_IF_ERROR(epmp_state_check(&epmp));
-  mask_rom_epmp_unlock_rom_ext_rx(&epmp, manifest_code_region_get(manifest));
+  mask_rom_epmp_unlock_rom_ext_rx(&epmp, text_region);
   HARDENED_RETURN_IF_ERROR(epmp_state_check(&epmp));
 
   // Enable execution of code from flash if signature is verified.
   flash_ctrl_exec_set(flash_exec);
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioExecSet);
 
+  sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/4);
 
   // Jump to ROM_EXT entry point.
-  uintptr_t entry_point = manifest_entry_point_get(manifest);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 2);
   ((rom_ext_entry_point *)entry_point)();
 
