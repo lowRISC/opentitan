@@ -34,6 +34,7 @@ extern "C" {
  */
 typedef struct random_order {
   size_t state;
+  size_t index;
   size_t max;
 } random_order_t;
 

@@ -274,6 +274,19 @@ inline uint32_t bitfield_byteswap32(uint32_t bitfield) {
   return __builtin_bswap32(bitfield);
 }
 
+/**
+ * Next Power of 2
+ *
+ * Returns the smallest power of two greater than `bitfield`.
+ *
+ * @param bitfield Bitfield to find the next power of two of.
+ * @return The next power of two.
+ */
+OT_WARN_UNUSED_RESULT
+inline uint32_t bitfield_next_power_of_two32(uint32_t bitfield) {
+  return (UINT32_MAX >> bitfield_count_leading_zeroes32(bitfield)) + 1;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

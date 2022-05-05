@@ -28,3 +28,4 @@ extern int32_t bitfield_count_trailing_zeroes32(uint32_t bitfield);
 extern int32_t bitfield_popcount32(uint32_t bitfield);
 extern int32_t bitfield_parity32(uint32_t bitfield);
 extern uint32_t bitfield_byteswap32(uint32_t bitfield);
+extern uint32_t bitfield_next_power_of_two32(uint32_t bitfield);
