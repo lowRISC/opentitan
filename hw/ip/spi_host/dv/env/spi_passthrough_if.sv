@@ -9,7 +9,6 @@ interface spi_passthrough_if
 
   bit       passthrough_en;
   bit       sck;
-  bit       sck_gate_en;
   bit       sck_en;
   bit       csb;
   bit       csb_en;
