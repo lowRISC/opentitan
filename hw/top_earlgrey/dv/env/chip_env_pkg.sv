@@ -58,6 +58,11 @@ package chip_env_pkg;
   parameter bit [TL_AW-1:0] SW_DV_TEST_STATUS_ADDR  = SW_DV_START_ADDR + 0;
   parameter bit [TL_AW-1:0] SW_DV_LOG_ADDR          = SW_DV_START_ADDR + 4;
 
+  // LC token paramters
+  // LC sends two 64-bit msg as input token.
+  localparam uint TokenWidthBit  = kmac_pkg::MsgWidth * 2;
+  localparam uint TokenWidthByte = TokenWidthBit / 8;
+
   typedef virtual pins_if #(NUM_GPIOS)  gpio_vif;
   typedef virtual sw_logger_if          sw_logger_vif;
   typedef virtual sw_test_status_if     sw_test_status_vif;
