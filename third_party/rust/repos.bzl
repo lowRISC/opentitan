@@ -15,12 +15,16 @@ def rust_repos():
     # Boring is only used to build Mundane.
     http_archive(
         name = "boringssl",
-        url = "https://boringssl.googlesource.com/boringssl/+archive/4fb158925f7753d80fb858cb0239dff893ef9f15.tar.gz",
+        sha256 = "e168777eb0fc14ea5a65749a2f53c095935a6ea65f38899a289808fb0c221dc4",
+        strip_prefix = "boringssl-4fb158925f7753d80fb858cb0239dff893ef9f15",
+        url = "https://github.com/lowRISC/boringssl/archive/4fb158925f7753d80fb858cb0239dff893ef9f15.tar.gz",
     )
 
     http_archive(
         name = "mundane",
-        url = "https://fuchsia.googlesource.com/mundane/+archive/f516499751b45969ac5a95091b1f68cf5ec23f04.tar.gz",
+        sha256 = "97f54f1e00778da802e983116d639033cffa366d1370348aeb6228a82658b206",
+        strip_prefix = "mundane-f516499751b45969ac5a95091b1f68cf5ec23f04",
+        url = "https://github.com/lowRISC/mundane/archive/f516499751b45969ac5a95091b1f68cf5ec23f04.tar.gz",
         patch_args = ["-p1"],
         patches = ["//sw/vendor/patches/mundane:build_with_bazel.patch"],
     )
