@@ -54,6 +54,9 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
         "tb.dut.top_earlgrey.u_adc_ctrl_aon.u_adc_ctrl_core.u_adc_ctrl_fsm.LpSampleCntCfg_M");
     $assertoff(0,
         "tb.dut.top_earlgrey.u_adc_ctrl_aon.u_adc_ctrl_core.u_adc_ctrl_fsm.NpSampleCntCfg_M");
+    $assertoff(0, "tb.dut.u_ast.u_jitter_en_sync.PrimMubi4SyncCheckTransients_A");
+    $assertoff(0, "tb.dut.u_ast.u_jitter_en_sync.PrimMubi4SyncCheckTransients0_A");
+    $assertoff(0, "tb.dut.u_ast.u_jitter_en_sync.PrimMubi4SyncCheckTransients1_A");
   endtask
 
   virtual task post_start();
@@ -62,5 +65,8 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
         "tb.dut.top_earlgrey.u_adc_ctrl_aon.u_adc_ctrl_core.u_adc_ctrl_fsm.LpSampleCntCfg_M");
     $asserton(0,
         "tb.dut.top_earlgrey.u_adc_ctrl_aon.u_adc_ctrl_core.u_adc_ctrl_fsm.NpSampleCntCfg_M");
+    $asserton(0, "tb.dut.u_ast.u_jitter_en_sync.PrimMubi4SyncCheckTransients_A");
+    $asserton(0, "tb.dut.u_ast.u_jitter_en_sync.PrimMubi4SyncCheckTransients0_A");
+    $asserton(0, "tb.dut.u_ast.u_jitter_en_sync.PrimMubi4SyncCheckTransients1_A");
   endtask
 endclass
