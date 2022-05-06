@@ -472,18 +472,18 @@
           // thresholds which randomized CSR tests will not predict correctly.
           // To provide better CSR coverage we allow writing the threshold
           // fields, but not enabling the counters.
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
+          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
     },
-  <%
-    freq = clocks.all_srcs[src].freq
-    ratio = int(freq / aon_freq)
-    # Add extra bit to width for margin
-    width = ratio.bit_length() + 1
-    max_msb = width - 1
-    min_msb = (max_msb + 1) + width - 1
-  %>
+<%
+  freq = clocks.all_srcs[src].freq
+  ratio = int(freq / aon_freq)
+  # Add extra bit to width for margin
+  width = ratio.bit_length() + 1
+  max_msb = width - 1
+  min_msb = (max_msb + 1) + width - 1
+%>
     { name: "${src.upper()}_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for ${src} measurement.

@@ -543,11 +543,11 @@
           // thresholds which randomized CSR tests will not predict correctly.
           // To provide better CSR coverage we allow writing the threshold
           // fields, but not enabling the counters.
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
+          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
     },
-  
+
     { name: "IO_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for io measurement.
@@ -597,11 +597,11 @@
           // thresholds which randomized CSR tests will not predict correctly.
           // To provide better CSR coverage we allow writing the threshold
           // fields, but not enabling the counters.
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
+          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
     },
-  
+
     { name: "IO_DIV2_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for io_div2 measurement.
@@ -651,11 +651,11 @@
           // thresholds which randomized CSR tests will not predict correctly.
           // To provide better CSR coverage we allow writing the threshold
           // fields, but not enabling the counters.
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
+          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
     },
-  
+
     { name: "IO_DIV4_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for io_div4 measurement.
@@ -705,11 +705,11 @@
           // thresholds which randomized CSR tests will not predict correctly.
           // To provide better CSR coverage we allow writing the threshold
           // fields, but not enabling the counters.
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
+          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
     },
-  
+
     { name: "MAIN_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for main measurement.
@@ -759,11 +759,11 @@
           // thresholds which randomized CSR tests will not predict correctly.
           // To provide better CSR coverage we allow writing the threshold
           // fields, but not enabling the counters.
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
+          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
     },
-  
+
     { name: "USB_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for usb measurement.
