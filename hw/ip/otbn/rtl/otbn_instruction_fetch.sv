@@ -237,31 +237,100 @@ module otbn_instruction_fetch
   );
 
   // Prefetch control
-  always_comb begin
-    // Only prefetch if controller tells us to
-    insn_prefetch = prefetch_en_i;
-    // By default prefetch the next instruction
-    imem_addr_o = insn_prefetch_addr + 'd4;
+  logic prefetch_loop_iterations_gt_one;
+  assign prefetch_loop_iterations_gt_one = prefetch_loop_iterations_i > 1;
+  logic insn_prefetch_addr_is_loop_end_addr;
+  assign insn_prefetch_addr_is_loop_end_addr =
+      {1'b0, insn_prefetch_addr} == prefetch_loop_end_addr_i;
+  otbn_instruction_prefetch_controller #(
+    .AddrWidth  (ImemAddrWidth),
+    .BufOutput  (1'b1)
+  ) u_prefetch_controller (
+    .prefetch_en_i,
+    .insn_prefetch_addr_i                   (insn_prefetch_addr),
+    .insn_prefetch_fail_i                   (insn_prefetch_fail),
+    .insn_fetch_req_addr_i,
+    .insn_fetch_req_valid_i,
+    .imem_rdata_lsb_i                       (imem_rdata_i[6:0]),
+    .prefetch_loop_active_i,
+    .insn_prefetch_addr_is_loop_end_addr_i  (insn_prefetch_addr_is_loop_end_addr),
+    .prefetch_loop_jump_addr_i,
+    .prefetch_loop_iterations_gt_one_i      (prefetch_loop_iterations_gt_one),
+    .insn_prefetch_o                        (insn_prefetch),
+    .imem_addr_o
+  );
 
-    if (!insn_fetch_req_valid_i) begin
-      // Keep prefetching the same instruction when a new one isn't being requested. In this
-      // scenario OTBN is stalled and will eventually want the prefetched instruction.
-      imem_addr_o = insn_prefetch_addr;
-    end else if (insn_prefetch_fail) begin
-      // When prefetching has failed prefetch the requested address
-      imem_addr_o = insn_fetch_req_addr_i;
-    end else if (insn_is_branch(imem_rdata_i[31:0])) begin
-      // For a branch we do not know if it will be taken or untaken. So never prefetch to keep
-      // timing consistent regardless of taken/not-taken.
-      // This also applies to jumps, this avoids the need to calculate the jump address here.
-      insn_prefetch = 1'b0;
-    end else if ({1'b0, insn_prefetch_addr} == prefetch_loop_end_addr_i &&
-                 prefetch_loop_active_i &&
-                 prefetch_loop_iterations_i > 32'd1) begin
-      // When in a loop prefetch the loop beginning when execution reaches the end.
-      imem_addr_o = prefetch_loop_jump_addr_i;
-    end
-  end
+  // Ensure that the prefetch address does not get glitched: flop inputs and outputs of prefetch
+  // controller, replicate the controller on the flopped inputs, and compare the outputs to those of
+  // the previous cycle.
+  // SEC_CM: INSN_PREFETCH.ADDR.GLITCH_DETECT
+
+  typedef struct packed {
+    logic                     prefetch_en;
+    logic [ImemAddrWidth-1:0] insn_prefetch_addr;
+    logic                     insn_prefetch_fail;
+    logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
+    logic                     insn_fetch_req_valid;
+    logic [6:0]               imem_rdata_lsb;
+    logic                     prefetch_loop_active;
+    logic                     insn_prefetch_addr_is_loop_end_addr;
+    logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr;
+    logic                     prefetch_loop_iterations_gt_one;
+
+    logic                     insn_prefetch;
+    logic [ImemAddrWidth-1:0] imem_addr;
+  } prefetch_ctrl_io_t;
+  prefetch_ctrl_io_t prefetch_ctrl_io_d, prefetch_ctrl_io_q;
+
+  assign prefetch_ctrl_io_d = '{
+    prefetch_en:                          prefetch_en_i,
+    insn_prefetch_addr:                   insn_prefetch_addr,
+    insn_prefetch_fail:                   insn_prefetch_fail,
+    insn_fetch_req_addr:                  insn_fetch_req_addr_i,
+    insn_fetch_req_valid:                 insn_fetch_req_valid_i,
+    imem_rdata_lsb:                       imem_rdata_i[6:0],
+    prefetch_loop_active:                 prefetch_loop_active_i,
+    insn_prefetch_addr_is_loop_end_addr:  insn_prefetch_addr_is_loop_end_addr,
+    prefetch_loop_jump_addr:              prefetch_loop_jump_addr_i,
+    prefetch_loop_iterations_gt_one:      prefetch_loop_iterations_gt_one,
+    insn_prefetch:                        insn_prefetch,
+    imem_addr:                            imem_addr_o
+  };
+
+  prim_flop #(
+    .Width      ($bits(prefetch_ctrl_io_t)),
+    .ResetValue ('0)
+  ) u_prefetch_controller_io_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i    (prefetch_ctrl_io_d),
+    .q_o    (prefetch_ctrl_io_q)
+  );
+
+  logic                     insn_prefetch_exp;
+  logic [ImemAddrWidth-1:0] imem_addr_exp;
+  otbn_instruction_prefetch_controller #(
+    .AddrWidth  (ImemAddrWidth),
+    .BufOutput  (1'b0) // expected output does not have to be buffered
+  ) u_prefetch_controller_exp (
+    .prefetch_en_i                        (prefetch_ctrl_io_q.prefetch_en),
+    .insn_prefetch_addr_i                 (prefetch_ctrl_io_q.insn_prefetch_addr),
+    .insn_prefetch_fail_i                 (prefetch_ctrl_io_q.insn_prefetch_fail),
+    .insn_fetch_req_addr_i                (prefetch_ctrl_io_q.insn_fetch_req_addr),
+    .insn_fetch_req_valid_i               (prefetch_ctrl_io_q.insn_fetch_req_valid),
+    .imem_rdata_lsb_i                     (prefetch_ctrl_io_q.imem_rdata_lsb),
+    .prefetch_loop_active_i               (prefetch_ctrl_io_q.prefetch_loop_active),
+    .insn_prefetch_addr_is_loop_end_addr_i(prefetch_ctrl_io_q.insn_prefetch_addr_is_loop_end_addr),
+    .prefetch_loop_jump_addr_i            (prefetch_ctrl_io_q.prefetch_loop_jump_addr),
+    .prefetch_loop_iterations_gt_one_i    (prefetch_ctrl_io_q.prefetch_loop_iterations_gt_one),
+    .insn_prefetch_o                      (insn_prefetch_exp),
+    .imem_addr_o                          (imem_addr_exp)
+  );
+
+  logic insn_prefetch_controller_err;
+  assign insn_prefetch_controller_err =
+      (prefetch_ctrl_io_q.insn_prefetch != insn_prefetch_exp) |
+      (prefetch_ctrl_io_q.imem_addr != imem_addr_exp);
 
   // Check integrity on prefetched instruction
   prim_secded_inv_39_32_dec u_insn_intg_check (
@@ -280,7 +349,8 @@ module otbn_instruction_fetch
 
   assign insn_fetch_err_o = |insn_fetch_resp_intg_error_vec & insn_fetch_resp_valid_q;
   assign state_err_o = |{insn_fetch_resp_addr_err,
-                        insn_prefetch_addr_err};
+                        insn_prefetch_addr_err,
+                        insn_prefetch_controller_err};
 
   assign rf_predec_bignum_o   = rf_predec_bignum_q;
   assign alu_predec_bignum_o  = alu_predec_bignum_q;

@@ -196,6 +196,9 @@
         stored value against glitches.
       '''
     }
+    { name: "INSN_PREFETCH.ADDR.GLITCH_DETECT"
+      desc: "This countermeasure detect glitches on the instruction prefetch address."
+    }
   ]
 
   regwidth: "32"

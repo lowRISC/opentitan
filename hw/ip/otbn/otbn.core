@@ -26,6 +26,7 @@ filesets:
       - rtl/otbn_controller.sv
       - rtl/otbn_decoder.sv
       - rtl/otbn_predecode.sv
+      - rtl/otbn_instruction_prefetch_controller.sv
       - rtl/otbn_instruction_fetch.sv
       - rtl/otbn_rf_base.sv
       - rtl/otbn_rf_bignum.sv

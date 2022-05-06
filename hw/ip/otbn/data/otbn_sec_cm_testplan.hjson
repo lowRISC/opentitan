@@ -125,5 +125,11 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_insn_prefetch_addr_glitch_detect
+      desc: "Verify the countermeasure(s) INSN_PREFETCH.ADDR.GLITCH_DETECT"
+      milestone: V2S
+      tests: []
+    }
   ]
 }
