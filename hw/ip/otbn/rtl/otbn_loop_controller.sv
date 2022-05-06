@@ -23,7 +23,8 @@ module otbn_loop_controller
 
   output                     loop_jump_o,
   output [ImemAddrWidth-1:0] loop_jump_addr_o,
-  output                     loop_err_o,
+
+  output sw_err_o,
 
   output                     prefetch_loop_active_o,
   output [31:0]              prefetch_loop_iterations_o,
@@ -127,10 +128,10 @@ module otbn_loop_controller
   assign loop_stack_overflow_err = loop_stack_push_req & loop_stack_full;
   assign loop_at_end_err         = at_current_loop_end_insn & loop_start_req_i;
 
-  assign loop_err_o = loop_iteration_err      |
-                      loop_branch_err         |
-                      loop_stack_overflow_err |
-                      loop_at_end_err;
+  assign sw_err_o = loop_iteration_err      |
+                    loop_branch_err         |
+                    loop_stack_overflow_err |
+                    loop_at_end_err;
 
   always_comb begin
     loop_active_d  = loop_active_q;
@@ -165,7 +166,7 @@ module otbn_loop_controller
   end
 
   // The OTBN controller must not commit a loop request if it sees a loop error.
-  `ASSERT(NoStartCommitIfLoopErr, loop_start_req_i && loop_start_commit_i |-> !loop_err_o)
+  `ASSERT(NoStartCommitIfLoopErr, loop_start_req_i && loop_start_commit_i |-> !sw_err_o)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
