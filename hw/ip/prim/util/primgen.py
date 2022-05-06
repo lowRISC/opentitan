@@ -259,7 +259,7 @@ def _parse_parameter_port_list(parameter_port_list):
     parameters = set()
     for m in re_params.finditer(parameter_port_list):
         parameters.add(m.group('name'))
-    return parameters
+    return list(sorted(parameters))
 
 
 def _parse_module_header(generic_impl_filepath, module_name):
