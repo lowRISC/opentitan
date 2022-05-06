@@ -122,7 +122,7 @@ static rom_error_t mask_rom_init(void) {
   // retention SRAM and the reset reason register cleared.
   uint32_t reset_reasons = rstmgr_reason_get();
   if (bitfield_bit32_read(reset_reasons, kRstmgrReasonPowerOn)) {
-    retention_sram_clear();
+    retention_sram_init();
   }
 
   // If running on an FPGA, print the FPGA version-id.
