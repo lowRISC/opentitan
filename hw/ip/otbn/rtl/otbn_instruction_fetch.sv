@@ -47,6 +47,7 @@ module otbn_instruction_fetch
   input logic            rf_bignum_indirect_en_i,
 
   output logic insn_fetch_err_o,  // ECC error seen in instruction fetch
+  output logic state_err_o,       // internal state corrupted
 
   input logic                     prefetch_en_i,
   input logic                     prefetch_loop_active_i,
@@ -164,9 +165,28 @@ module otbn_instruction_fetch
   always_ff @(posedge clk_i) begin
     if (insn_fetch_en) begin
       insn_fetch_resp_data_intg_q <= imem_rdata_i;
-      insn_fetch_resp_addr_q      <= insn_prefetch_addr;
     end
   end
+
+  // Duplicate counter (of which only the register part is used) to prevent glitching of
+  // `insn_fetch_resp_addr_q`.
+  // SEC_CM: INSN_FETCH_RESP_ADDR.DATA_REG.REDUN
+  logic insn_fetch_resp_addr_err;
+  prim_count #(
+    .Width        (ImemAddrWidth),
+    .OutSelDnCnt  (1'b0),
+    .CntStyle     (prim_count_pkg::DupCnt)
+  ) u_insn_fetch_resp_addr_cnt (
+    .clk_i,
+    .rst_ni,
+    .clr_i      (1'b0), // unused
+    .set_i      (insn_fetch_en),
+    .set_cnt_i  (insn_prefetch_addr),
+    .en_i       (1'b0), // unused
+    .step_i     ('0),   // unused
+    .cnt_o      (insn_fetch_resp_addr_q),
+    .err_o      (insn_fetch_resp_addr_err)
+  );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -245,6 +265,7 @@ module otbn_instruction_fetch
   assign insn_fetch_resp_data_o  = insn_fetch_resp_data_intg_q[31:0];
 
   assign insn_fetch_err_o = |insn_fetch_resp_intg_error_vec & insn_fetch_resp_valid_q;
+  assign state_err_o = insn_fetch_resp_addr_err;
 
   assign rf_predec_bignum_o   = rf_predec_bignum_q;
   assign alu_predec_bignum_o  = alu_predec_bignum_q;

@@ -184,6 +184,12 @@
         file by monitoring the one-hot0 property of the individual write-enable strobes.
       '''
     }
+    { name: "INSN_FETCH_RESP_ADDR.DATA_REG.REDUN"
+      desc: '''
+        This countermeasure replicates the instruction fetch response address register to protect
+        the stored value against glitches.
+      '''
+    }
   ]
 
   regwidth: "32"

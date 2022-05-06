@@ -98,6 +98,7 @@ module otbn_core
   logic [31:0]              insn_fetch_resp_data;
   logic                     insn_fetch_resp_clear;
   logic                     insn_fetch_err;
+  logic                     insn_fetch_state_err;
 
   rf_predec_bignum_t   rf_predec_bignum;
   alu_predec_bignum_t  alu_predec_bignum;
@@ -313,6 +314,7 @@ module otbn_core
     .insn_fetch_resp_data_o (insn_fetch_resp_data),
     .insn_fetch_resp_clear_i(insn_fetch_resp_clear),
     .insn_fetch_err_o       (insn_fetch_err),
+    .state_err_o            (insn_fetch_state_err),
 
     .rf_predec_bignum_o  (rf_predec_bignum),
     .alu_predec_bignum_o (alu_predec_bignum),
@@ -520,6 +522,7 @@ module otbn_core
     fatal_software:      controller_err_bits.fatal_software,
     bad_internal_state:  |{controller_err_bits.bad_internal_state,
                            start_stop_state_error,
+                           insn_fetch_state_err,
                            urnd_all_zero,
                            predec_error},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,

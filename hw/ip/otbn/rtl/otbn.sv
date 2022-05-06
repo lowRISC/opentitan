@@ -1100,4 +1100,6 @@ module otbn
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnScrambleCtrlFsmCheck_A,
     u_otbn_scramble_ctrl.u_state_regs, alert_tx_o[AlertFatal])
 
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(OtbnInsnFetchRespAddrErrAlertCheck_A,
+    u_otbn_core.u_otbn_instruction_fetch.u_insn_fetch_resp_addr_cnt, alert_tx_o[AlertFatal])
 endmodule
