@@ -24,6 +24,8 @@ module spi_fwmode
   input clk_spi_out_i,
   input rst_txfifo_ni,
 
+  input spi_mode_e spi_mode_i,
+
   // Configurations
   // No sync logic. Configuration should be static when SPI operating
 
@@ -82,6 +84,9 @@ module spi_fwmode
   /////////////
   // Signals //
   /////////////
+  logic active;
+  assign active = (spi_mode_i == FwMode);
+
   // RX Async FIFO Signals
   //  Write: SCK positive edge
   logic      rxf_wvalid, rxf_wready;
@@ -115,12 +120,12 @@ module spi_fwmode
   logic        [1:0] fwm_sram_error [2];
 
 
-
-  assign rxf_wvalid = rx_data_valid_i;
+  // Allow Async FIFO update only when the SpiMode is FwMode
+  assign rxf_wvalid = rx_data_valid_i && active;
   assign rxf_wdata  = rx_data_i;
 
   assign tx_wvalid_o = 1'b 1;
-  assign txf_rready  = tx_wready_i;
+  assign txf_rready  = tx_wready_i; // not updated if !FwMode
   assign tx_data_o   = txf_rdata;
 
   // Generic Mode only uses SingleIO. s_i[0] is MOSI, s_o[1] is MISO.
@@ -199,6 +204,8 @@ module spi_fwmode
     .clk_i,
     .rst_ni,
 
+    .spi_mode_i,
+
     .base_index_i  (sram_rxf_bindex_i),
     .limit_index_i (sram_rxf_lindex_i),
     .timer_v      (timer_v_i),
@@ -230,6 +237,8 @@ module spi_fwmode
   ) u_txf_ctrl (
     .clk_i,
     .rst_ni,
+
+    .spi_mode_i,
 
     .base_index_i  (sram_txf_bindex_i),
     .limit_index_i (sram_txf_lindex_i),

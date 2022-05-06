@@ -1213,6 +1213,9 @@ module spi_device
     .clk_spi_out_i (clk_spi_out_buf),
     .rst_txfifo_ni (rst_txfifo_n),
 
+    // Mode
+    .spi_mode_i (spi_mode),
+
     .rxf_overflow_o  (rxf_overflow),
     .txf_underflow_o (txf_underflow),
 
