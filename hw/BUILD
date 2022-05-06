@@ -14,6 +14,7 @@ fusesoc_build(
     ],
     data = ["//hw/ip/otbn:all_files"],
     systems = ["lowrisc:dv:chip_verilator_sim"],
+    tags = ["verilator"],
     target = "sim",
 )
 
@@ -48,6 +49,7 @@ alias(
         ":disable_verilator_build": ":verilator-stub",
         "//conditions:default": ":verilator_real",
     }),
+    tags = ["verilator"],
     visibility = ["//visibility:public"],
 )
 
