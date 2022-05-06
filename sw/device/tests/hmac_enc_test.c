@@ -92,7 +92,7 @@ bool test_main() {
   CHECK_DIF_OK(dif_hmac_process(&hmac));
   dif_hmac_digest_t key_digest;
   hmac_testutils_finish_polled(&hmac, &key_digest);
-  CHECK_BUFFER_EQ(key_digest.digest, kExpectedShaDigest.digest,
+  CHECK_ARRAYS_EQ(key_digest.digest, kExpectedShaDigest.digest,
                   ARRAYSIZE(key_digest.digest));
 
   // Generate HMAC final digest, using the resulted SHA256 digest over the

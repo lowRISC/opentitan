@@ -109,7 +109,7 @@ bool test_main(void) {
   // Check the ciphertext against the expected value.
   dif_aes_data_t out_data;
   CHECK_DIF_OK(dif_aes_read_output(&aes, &out_data));
-  CHECK_BUFFER_EQ(out_data.data, kCipherTextGold, ARRAYSIZE(kCipherTextGold));
+  CHECK_ARRAYS_EQ(out_data.data, kCipherTextGold, ARRAYSIZE(kCipherTextGold));
 
   // Write the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR trigger bits to 1 and
   // wait for it to complete by polling the status idle bit.

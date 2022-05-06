@@ -88,7 +88,7 @@ static bool access_partitions(bool do_write, bool do_read, int page_id,
         flash_ctrl_testutils_read(&flash, address, kPartitionId, readback_data,
                                   kDifFlashCtrlPartitionTypeInfo, size, 0);
     if (retval == false) {
-      CHECK_BUFFER_EQ(data, readback_data, size);
+      CHECK_ARRAYS_EQ(data, readback_data, size);
     }
   }
   return (!retval);
@@ -157,7 +157,7 @@ bool test_main(void) {
                                            kDifKeymgrStateCreatorRootKey);
 
   if (curr_state == kDifLcCtrlStateDev) {
-    CHECK_BUFFER_EQ(access_checks, kDevExpectedAccess,
+    CHECK_ARRAYS_EQ(access_checks, kDevExpectedAccess,
                     ARRAYSIZE(access_checks));
 
     CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2, 0));
@@ -167,7 +167,7 @@ bool test_main(void) {
     } while (
         !(bitfield_bit32_read(otp_status.codes, kDifOtpCtrlStatusCodeDaiIdle)));
   } else if (curr_state == kDifLcCtrlStateProd) {
-    CHECK_BUFFER_EQ(access_checks, kProdExpectedAccess,
+    CHECK_ARRAYS_EQ(access_checks, kProdExpectedAccess,
                     ARRAYSIZE(access_checks));
   }
 

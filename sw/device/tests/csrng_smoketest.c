@@ -46,10 +46,10 @@ static void check_internal_state(const dif_csrng_t *csrng,
   CHECK(got.reseed_counter == expected->reseed_counter);
   CHECK(got.fips_compliance == expected->fips_compliance);
 
-  CHECK_BUFFER_EQ(got.v, expected->v, ARRAYSIZE(expected->v),
+  CHECK_ARRAYS_EQ(got.v, expected->v, ARRAYSIZE(expected->v),
                   "CSRNG internal V buffer mismatch.");
 
-  CHECK_BUFFER_EQ(got.key, expected->key, ARRAYSIZE(expected->key),
+  CHECK_ARRAYS_EQ(got.key, expected->key, ARRAYSIZE(expected->key),
                   "CSRNG internal K buffer mismatch.");
 }
 
@@ -124,7 +124,7 @@ static void fips_generate_kat(const dif_csrng_t *csrng) {
       0x2581f391, 0x80b1dc2f, 0xdf82ab22, 0x771c619b, 0xd40fccb1, 0x87189e99,
       0xe48bb8cb, 0x1012c84c, 0x5af8a7f1, 0xd1c07cd9};
 
-  CHECK_BUFFER_EQ(got, kExpectedOutput, kExpectedOutputLen,
+  CHECK_ARRAYS_EQ(got, kExpectedOutput, kExpectedOutputLen,
                   "Generate command KAT output mismatch");
 }
 

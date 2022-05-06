@@ -112,9 +112,9 @@ static void read_and_check_info_page_scrambled(bool is_equal,
       &flash_state, address, kPartitionId, readback_data,
       kDifFlashCtrlPartitionTypeInfo, kDataSize, 0));
   if (is_equal) {
-    CHECK_BUFFER_EQ(readback_data, data, kDataSize);
+    CHECK_ARRAYS_EQ(readback_data, data, kDataSize);
   } else {
-    CHECK_BUFFER_NEQ(readback_data, data, kDataSize);
+    CHECK_ARRAYS_NE(readback_data, data, kDataSize);
   }
 }
 
@@ -130,9 +130,9 @@ static void read_and_check_data_page_scrambled(bool is_equal,
       &flash_state, address, kPartitionId, readback_data,
       kDifFlashCtrlPartitionTypeData, kDataSize, 0));
   if (is_equal) {
-    CHECK_BUFFER_EQ(readback_data, data, kDataSize);
+    CHECK_ARRAYS_EQ(readback_data, data, kDataSize);
   } else {
-    CHECK_BUFFER_NEQ(readback_data, data, kDataSize);
+    CHECK_ARRAYS_NE(readback_data, data, kDataSize);
   }
 }
 
