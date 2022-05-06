@@ -76,6 +76,12 @@ def main():
         action='store_true',
         help='Build ROM based on reduced design')
     parser.add_argument(
+        '--delete-only',
+        '-d',
+        default=False,
+        action='store_true',
+        help='Delete previously generated auto-gen files without running topgen')
+    parser.add_argument(
         '--top',
         '-t',
         default='englishbreakfast',
@@ -92,14 +98,18 @@ def main():
 
     # We start by removing any previously generated auto-gen files for the
     # selected non-earlgrey top. These might be stale and confuse topgen.
-    print('Purging earlgrey autogen files')
-    for d in find_dirs(REPO_TOP / 'hw', ['autogen', 'ip_autogen']):
+    print('Purging previously generated auto-gen files')
+    for d in find_dirs(REPO_TOP / 'hw' / topname, ['autogen', 'ip_autogen']):
         delete_path(d)
 
-    delete_path(REPO_TOP / 'hw/ip/ast/rtl')
-    delete_path(REPO_TOP / 'hw/ip/sensor_ctrl/rtl')
-    delete_path(REPO_TOP / 'hw/ip/xbar_main/xbar_main.core')
-    delete_path(REPO_TOP / 'hw/ip/xbar_peri/xbar_peri.core')
+    delete_path(REPO_TOP / 'build' / str(topname + '-autogen'))
+    delete_path(REPO_TOP / 'hw' / topname / 'ip/ast/rtl')
+    delete_path(REPO_TOP / 'hw' / topname / 'ip/sensor_ctrl/rtl')
+    delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_main/xbar_main.core')
+    delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_peri/xbar_peri.core')
+
+    if args.delete_only:
+        return;
 
     # Next, we need to re-run topgen in order to create all auto-generated files.
     shell_out([
