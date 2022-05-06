@@ -6,8 +6,11 @@
 
 program spiflash #(
   parameter int unsigned FlashSize = 1024*1024, // 1MB
-  parameter int unsigned CcNum = 7, // Num of Repeating Continuous Code ('h7F)
-  parameter logic [7:0]  JedecId = 8'h 1F,
+
+  // Num of Repeating Continuous Code ('h7F)
+  parameter int unsigned CcNum    = 7,
+  parameter logic [7:0]  JedecId  = 8'h 1F,
+  parameter logic [15:0] DeviceId = 16'h 1234,
 
   // Command Support
   parameter bit EnFastReadDual = 1'b 1,
@@ -21,6 +24,7 @@ program spiflash #(
   input logic sck,
   input logic csb,
   inout [3:0] sd
+  // TODO: Add WP
 );
 
   typedef enum bit {
@@ -36,6 +40,8 @@ program spiflash #(
   } io_mode_e;
 
   typedef logic [7:0] spiflash_byte_t;
+
+  localparam spiflash_byte_t Cc = 8'h 7F;
 
   localparam int unsigned StorageAw = $clog2(FlashSize);
 
@@ -131,12 +137,16 @@ program spiflash #(
 
           // Count remaining edges of SCK. opcode completed command should
           // have no additional data, or should be discarded
+          sd_en = 4'h 0;
           forever begin
             @(posedge sck);
             excessive_sck++;
           end
         end
       join_any
+      // Float the line
+      sd_en = 4'h 0;
+
       // Determine early termination, if not early terminated, the main block
       // waits CSb de-assertion too
       // For many Output commands, the logic sends data until host releases
@@ -173,6 +183,10 @@ program spiflash #(
       spi_device_pkg::CmdReadStatus1: begin
         // Return status data
         return_status(0); // 0-2
+      end
+
+      spi_device_pkg::CmdJedecId: begin
+        return_jedec();
       end
     endcase
 
@@ -233,5 +247,16 @@ program spiflash #(
       s_idx = (s_idx + 1)%3;
     end
   endtask : return_status
+
+  task automatic return_jedec();
+    // Repeat CcNum then JedecId and DeviceId(MSB to LSB)
+    repeat (CcNum) begin
+      return_byte(Cc, IoSingle);
+    end
+    return_byte(JedecId, IoSingle);
+    return_byte(DeviceId[ 7:0], IoSingle);
+    return_byte(DeviceId[15:8], IoSingle);
+    // Float
+  endtask : return_jedec
 
 endprogram : spiflash
