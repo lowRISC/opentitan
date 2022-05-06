@@ -252,6 +252,10 @@ static size_t write_digits(buffer_sink_t out, uint32_t value, uint32_t width,
   char buffer[kWordBits];
 
   size_t len = 0;
+  if (value == 0) {
+    buffer[kWordBits - 1] = glyphs[0];
+    ++len;
+  }
   while (value > 0) {
     uint32_t digit = value % base;
     value /= base;
