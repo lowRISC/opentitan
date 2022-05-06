@@ -31,21 +31,6 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
   rand bit [7:0] creator_root_key0[KeyWidthByte];
   rand bit [7:0] creator_root_key1[KeyWidthByte];
 
-  // This function takes the token value from LC_CTRL token CSRs, then runs through cshake128 to
-  // get a 768-bit XORed token output.
-  // The first 128 bits of the decoded token should match the OTP's secret2 paritition's
-  // descrambled tokens value.
-  virtual function bit [TokenWidthBit-1:0] get_otp_token(bit [7:0] token_in[TokenWidthByte]);
-    bit [7:0] dpi_digest[kmac_pkg::AppDigestW/8];
-    bit [kmac_pkg::AppDigestW-1:0] digest_bits;
-
-    digestpp_dpi_pkg::c_dpi_cshake128(token_in, "", "LC_CTRL", TokenWidthByte,
-                                      kmac_pkg::AppDigestW / 8, dpi_digest);
-
-    digest_bits = {<<byte{dpi_digest}};
-    return (digest_bits[TokenWidthBit-1:0]);
-  endfunction
-
   virtual function bit [KeyWidthBit-1:0] get_otp_key(bit [7:0] key_in[KeyWidthByte]);
     bit [kmac_pkg::AppDigestW-1:0] digest_bits;
     bit [7:0] dpi_digest[kmac_pkg::AppDigestW/8];
@@ -114,7 +99,7 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     // Second Boot.
     // Override the rma unlock token to match SW test's input token.
     cfg.mem_bkdr_util_h[Otp].otp_write_secret2_partition(
-        .rma_unlock_token(get_otp_token(rma_unlock_token)),
+        .rma_unlock_token(dec_otp_token_from_lc_csrs(rma_unlock_token)),
         .creator_root_key0(get_otp_key(creator_root_key0)),
         .creator_root_key1(get_otp_key(creator_root_key1)));
 

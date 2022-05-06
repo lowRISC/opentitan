@@ -320,6 +320,25 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h --> 0x%0h", addr, prev_data, data), UVM_HIGH)
   endfunction
 
+  // LC state transition tasks
+  // This function takes the token value from the four LC_CTRL token CSRs, then runs through
+  // cshake128 to get a 768-bit XORed token output.
+  // The first 128 bits of the decoded token should match the OTP paritition's descrambled tokens
+  // value.
+  virtual function bit [TokenWidthBit-1:0] dec_otp_token_from_lc_csrs(
+      bit [7:0] token_in[TokenWidthByte]);
+
+    bit [7:0] dpi_digest[kmac_pkg::AppDigestW/8];
+    bit [kmac_pkg::AppDigestW-1:0] digest_bits;
+
+    digestpp_dpi_pkg::c_dpi_cshake128(token_in, "", "LC_CTRL", TokenWidthByte,
+                                      kmac_pkg::AppDigestW/8, dpi_digest);
+
+    digest_bits = {<< byte {dpi_digest}};
+    return (digest_bits[TokenWidthBit-1:0]);
+  endfunction
+
+
   // LC_CTRL JTAG tasks
   virtual task wait_lc_status(lc_ctrl_status_e expect_status, int max_attemp = 5000);
     int i;
