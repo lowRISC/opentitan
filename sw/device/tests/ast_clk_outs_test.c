@@ -6,10 +6,10 @@
 #include "sw/device/lib/dif/dif_sensor_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -66,6 +66,9 @@ static void enable_clk_measure(void) {
         count_info.count - count_info.variability,
         count_info.count + count_info.variability);
   }
+
+  // lock measurement controls
+  CHECK_DIF_OK(dif_clkmgr_measure_ctrl_disable(&clkmgr));
 }
 
 static void check_measurement_counts(const dif_clkmgr_t *clkmgr) {
