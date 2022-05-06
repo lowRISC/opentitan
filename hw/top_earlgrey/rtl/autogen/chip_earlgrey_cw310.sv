@@ -1030,6 +1030,7 @@ module chip_earlgrey_cw310 #(
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
+    .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 
     // Multiplexed I/O

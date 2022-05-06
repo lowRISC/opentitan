@@ -73,6 +73,11 @@ from topgen.lib import Name
   input mubi4_t all_clk_byp_ack_i,
   output mubi4_t hi_speed_sel_o,
 
+  // clock calibration has been done.
+  // If this is signal is 0, assume clock frequencies to be
+  // uncalibrated.
+  input calib_rdy_i,
+
   // jittery enable to ast
   output mubi4_t jitter_en_o,
 
@@ -94,6 +99,7 @@ from topgen.lib import Name
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_true_loose;
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -318,6 +324,17 @@ from topgen.lib import Name
   // SEC_CM: TIMEOUT.CLK.BKGN_CHK, MEAS.CLK.BKGN_CHK
   ////////////////////////////////////////////////////
 
+  // if clocks become uncalibrated, allow the measurement control configurations to change
+  always_comb begin
+    hw2reg.measure_ctrl_regwen.de = '0;
+    hw2reg.measure_ctrl_regwen.d = reg2hw.measure_ctrl_regwen;
+
+    if (!calib_rdy_i) begin
+      hw2reg.measure_ctrl_regwen.de = 1'b1;
+      hw2reg.measure_ctrl_regwen.d = 1'b1;
+    end
+  end
+
   assign hw2reg.recov_err_code.shadow_update_err.d = 1'b1;
   assign hw2reg.recov_err_code.shadow_update_err.de = shadowed_update_err;
   assign hw2reg.fatal_err_code.shadow_storage_err.d = 1'b1;
@@ -342,7 +359,7 @@ from topgen.lib import Name
     .rst_ni(rst_${src}_ni),
     .clk_ref_i(clk_aon_i),
     .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_${src}_en & reg2hw.${src}_meas_ctrl_shadowed.en.q),
+    .en_i(clk_${src}_en & mubi4_test_true_loose(mubi4_t'(reg2hw.${src}_meas_ctrl_en))),
     .max_cnt(reg2hw.${src}_meas_ctrl_shadowed.hi.q),
     .min_cnt(reg2hw.${src}_meas_ctrl_shadowed.lo.q),
     .valid_o(),
@@ -351,6 +368,28 @@ from topgen.lib import Name
     .timeout_clk_ref_o(),
     .ref_timeout_clk_o(${src}_timeout_err)
   );
+
+  logic ${src}_calib_rdy;
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(1)
+  ) u_${src}_calib_lost_sync (
+    .clk_i(clk_${src}_i),
+    .rst_ni(rst_${src}_ni),
+    .d_i(calib_rdy_i),
+    .q_o(${src}_calib_rdy)
+  );
+
+  // if clocks become uncalibrated, switch off measurement controls
+  always_comb begin
+    hw2reg.${src}_meas_ctrl_en.de = '0;
+    hw2reg.${src}_meas_ctrl_en.d = reg2hw.${src}_meas_ctrl_en.q;
+
+    if (!${src}_calib_rdy) begin
+      hw2reg.${src}_meas_ctrl_en.de = 1'b1;
+      hw2reg.${src}_meas_ctrl_en.d = MuBi4False;
+    end
+  end
 
   logic synced_${src}_err;
   prim_pulse_sync u_${src}_err_sync (

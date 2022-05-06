@@ -3303,6 +3303,21 @@
           index: -1
         }
         {
+          name: calib_rdy
+          desc: Indicates clocks are calibrated and frequencies accurate
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          package: ""
+          external: true
+          top_signame: calib_rdy
+          conn_type: false
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -8198,6 +8213,7 @@
       clkmgr_aon.all_clk_byp_ack: all_clk_byp_ack
       clkmgr_aon.hi_speed_sel: hi_speed_sel
       clkmgr_aon.div_step_down_req: div_step_down_req
+      clkmgr_aon.calib_rdy: calib_rdy
       flash_ctrl.flash_alert: flash_alert
       flash_ctrl.flash_bist_enable: flash_bist_enable
       flash_ctrl.flash_power_down_h: flash_power_down_h
@@ -16101,6 +16117,21 @@
         index: -1
       }
       {
+        name: calib_rdy
+        desc: Indicates clocks are calibrated and frequencies accurate
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        package: ""
+        external: true
+        top_signame: calib_rdy
+        conn_type: false
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -19294,6 +19325,18 @@
         conn_type: false
         index: -1
         netname: div_step_down_req
+      }
+      {
+        package: ""
+        struct: logic
+        signame: calib_rdy_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: calib_rdy
       }
       {
         package: ast_pkg
