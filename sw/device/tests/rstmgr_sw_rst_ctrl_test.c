@@ -172,11 +172,11 @@ typedef struct test {
    * Configuration and initialization actions for the device. This
    * will be passed the value of `dif` above.
    *
-   * If `NULL`, the test register will be set to the value of `program_val`.
+   * If `NULL`, the test register will be set to 'reset_vals[]'.
    */
   void (*config)(void *dif);
   /**
-   * The expected test register value after configuration.
+   * Arbitrary test register value before reset.
    */
   uint32_t program_val;
   /**
@@ -293,10 +293,10 @@ bool test_main(void) {
                           kPeripherals[i].offset, kPeripherals[i].program_val);
     }
 
+    // add read back to make sure
+    // all register access complete
     uint32_t got = read_test_reg(&kPeripherals[i]);
-    CHECK(got == kPeripherals[i].program_val,
-          "after configure: reset_val for %s mismatch: want 0x%x, got 0x%x",
-          kPeripherals[i].name, kPeripherals[i].program_val, got);
+    LOG_INFO("programmed value : 0x%x", got);
   }
 
   for (size_t i = 0; i < ARRAYSIZE(kPeripherals); ++i) {
@@ -304,9 +304,9 @@ bool test_main(void) {
                                            kDifRstmgrSoftwareReset));
 
     uint32_t got = read_test_reg(&kPeripherals[i]);
-    CHECK(got == kPeripherals[i].program_val,
+    CHECK(got == reset_vals[i],
           "after configure: reset_val for %s mismatch: want 0x%x, got 0x%x",
-          kPeripherals[i].name, kPeripherals[i].program_val, got);
+          kPeripherals[i].name, reset_vals[i], got);
   }
 
   return true;
