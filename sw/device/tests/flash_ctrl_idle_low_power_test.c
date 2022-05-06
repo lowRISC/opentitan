@@ -117,7 +117,7 @@ bool test_main(void) {
     CHECK(flash_ctrl_testutils_read(
               &flash, address, kPartitionId, readback_data,
               kDifFlashCtrlPartitionTypeData, kNumWords, 0) == 0);
-    CHECK_BUFFER_EQ(data, readback_data, kNumWords);
+    CHECK_ARRAYS_EQ(data, readback_data, kNumWords);
 
     // Setting up low power hint and starting watchdog timer followed by
     // a flash operation (page erase) and WFI. This will create a bite
@@ -155,7 +155,7 @@ bool test_main(void) {
               kDifFlashCtrlPartitionTypeData, kNumWords, 0) == 0);
     uint32_t expected_data[kNumWords];
     memset(expected_data, 0xff, sizeof(expected_data));
-    CHECK_BUFFER_EQ(readback_data, expected_data, kNumWords);
+    CHECK_ARRAYS_EQ(readback_data, expected_data, kNumWords);
 
     CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
   } else {

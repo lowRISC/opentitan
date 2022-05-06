@@ -151,7 +151,7 @@ static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
   for (int i = 0; i < kDataSize; ++i) {
     host_data[i] = mmio_region_read32(flash_addr, i * sizeof(uint32_t));
   }
-  CHECK_BUFFER_EQ(host_data, check_data, kDataSize);
+  CHECK_ARRAYS_EQ(host_data, check_data, kDataSize);
 }
 
 /**
@@ -193,7 +193,7 @@ static void do_info_partition_test(uint32_t partition_number,
 
   compare_and_clear_irq_variables();
 
-  CHECK_BUFFER_EQ(readback_data, test_data, kInfoSize);
+  CHECK_ARRAYS_EQ(readback_data, test_data, kInfoSize);
 }
 
 /**
@@ -275,7 +275,7 @@ static void do_bank1_data_partition_test(void) {
     compare_and_clear_irq_variables();
 
     read_and_check_host_if(kPageSize * page_index, test_data);
-    CHECK_BUFFER_EQ(readback_data, test_data, kDataSize);
+    CHECK_ARRAYS_EQ(readback_data, test_data, kDataSize);
   }
 
   // Erasing the whole of bank 1.
@@ -319,7 +319,7 @@ static void do_bank1_data_partition_test(void) {
     memset(expected_data, 0xff, sizeof(expected_data));
 
     read_and_check_host_if(kPageSize * page_index, expected_data);
-    CHECK_BUFFER_EQ(readback_data, expected_data, kDataSize);
+    CHECK_ARRAYS_EQ(readback_data, expected_data, kDataSize);
   }
 }
 

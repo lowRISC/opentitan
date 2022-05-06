@@ -53,7 +53,7 @@ static void otbn_check_mem(otbn_t *ctx, const uint8_t *addr, size_t mem_size,
     CHECK_DIF_OK(otbn_read(&ctx->dif, offset, local_buf, remainder));
     if (match_expected) {
       CHECK(!has_exception_fired, "Unexpected exception");
-      CHECK_BUFFER_EQ(addr + offset, local_buf, remainder);
+      CHECK_ARRAYS_EQ(addr + offset, local_buf, remainder);
     } else {
       CHECK(has_exception_fired, "Expected exception haven't fired");
       break;

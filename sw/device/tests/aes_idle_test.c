@@ -156,7 +156,7 @@ bool test_main(void) {
   // Finish the ECB encryption transaction.
   CHECK_DIF_OK(dif_aes_end(&aes));
 
-  CHECK_BUFFER_EQ(out_data_cipher.data, kCipherTextGold,
+  CHECK_ARRAYS_EQ(out_data_cipher.data, kCipherTextGold,
                   ARRAYSIZE(kCipherTextGold));
 
   return true;
