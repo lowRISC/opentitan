@@ -194,7 +194,7 @@ module otbn_tracer
 
   function automatic void trace_header();
     if (otbn_trace.insn_valid) begin
-      if (otbn_trace.insn_fetch_err) begin
+      if (otbn_trace.insn_fetch_intg_err) begin
         // This means that we've seen an IMEM integrity error. Squash the reported instruction bits
         // and ignore any stall: this will be the last cycle of the instruction either way.
         output_trace(InsnExecutePrefix,

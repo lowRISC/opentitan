@@ -97,7 +97,7 @@ module otbn_core
   logic [ImemAddrWidth-1:0] insn_fetch_resp_addr;
   logic [31:0]              insn_fetch_resp_data;
   logic                     insn_fetch_resp_clear;
-  logic                     insn_fetch_err;
+  logic                     insn_fetch_intg_err;
   logic                     insn_fetch_state_err;
 
   rf_predec_bignum_t   rf_predec_bignum;
@@ -313,7 +313,7 @@ module otbn_core
     .insn_fetch_resp_valid_o(insn_fetch_resp_valid),
     .insn_fetch_resp_data_o (insn_fetch_resp_data),
     .insn_fetch_resp_clear_i(insn_fetch_resp_clear),
-    .insn_fetch_err_o       (insn_fetch_err),
+    .insn_fetch_err_o       (insn_fetch_intg_err),
     .state_err_o            (insn_fetch_state_err),
 
     .rf_predec_bignum_o  (rf_predec_bignum),
@@ -528,7 +528,7 @@ module otbn_core
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
                            rf_base_rf_err},
     dmem_intg_violation: lsu_rdata_err,
-    imem_intg_violation: insn_fetch_err,
+    imem_intg_violation: insn_fetch_intg_err,
     rnd_fips_chk_fail:   controller_err_bits.rnd_fips_chk_fail,
     rnd_rep_chk_fail:    controller_err_bits.rnd_rep_chk_fail,
     key_invalid:         controller_err_bits.key_invalid,
@@ -558,13 +558,13 @@ module otbn_core
   assign controller_escalate_en =
       mubi4_or_hi(escalate_en_i,
                   mubi4_bool_to_mubi(|{start_stop_state_error, urnd_all_zero, predec_error,
-                                       rf_base_rf_err, lsu_rdata_err, insn_fetch_err}));
+                                       rf_base_rf_err, lsu_rdata_err, insn_fetch_intg_err}));
 
   // Similarly for the start/stop controller
   assign start_stop_escalate_en =
       mubi4_or_hi(escalate_en_i,
                   mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_rf_err, predec_error,
-                                       lsu_rdata_err, insn_fetch_err, controller_fatal_err}));
+                                       lsu_rdata_err, insn_fetch_intg_err, controller_fatal_err}));
 
   assign insn_cnt_o = insn_cnt;
 

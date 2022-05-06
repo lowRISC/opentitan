@@ -58,7 +58,7 @@ interface otbn_trace_if
   input logic [31:0]              insn_fetch_resp_data,
   input logic [ImemAddrWidth-1:0] insn_fetch_resp_addr,
   input logic                     insn_fetch_resp_valid,
-  input logic                     insn_fetch_err,
+  input logic                     insn_fetch_intg_err,
 
   input logic                         dmem_req_o,
   input logic                         dmem_write_o,
