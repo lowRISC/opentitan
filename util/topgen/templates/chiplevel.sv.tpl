@@ -1334,19 +1334,29 @@ module chip_${top["name"]}_${target["name"]} (
     endcase;
   end
   % endif
-  logic trigger, trigger_oe;
-  assign trigger = mio_out[MioOutGpioGpio8] & ~top_${top["name"]}.clkmgr_aon_idle[trigger_sel];
-  assign trigger_oe = mio_oe[MioOutGpioGpio8];
 
-  // Synchronize trigger to manual_in_io_clk.
+  prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
+  assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle[trigger_sel];
+
+  logic clk_io_div4_trigger_en, manual_in_io_clk_trigger_en;
+  logic clk_io_div4_trigger_oe, manual_in_io_clk_trigger_oe;
+  assign clk_io_div4_trigger_en = mio_out[MioOutGpioGpio8];
+  assign clk_io_div4_trigger_oe = mio_oe[MioOutGpioGpio8];
+
+  // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(
-    .Width ( 2 )
+    .Width ($bits(clk_trans_idle) + 2)
   ) u_sync_trigger (
-    .clk_i  ( manual_in_io_clk                              ),
-    .rst_ni ( manual_in_por_n                               ),
-    .d_i    ( {trigger,               trigger_oe}           ),
-    .q_o    ( {manual_out_io_trigger, manual_oe_io_trigger} )
+    .clk_i (manual_in_io_clk),
+    .rst_ni(manual_in_por_n),
+    .d_i   ({clk_trans_idle,        clk_io_div4_trigger_en,      clk_io_div4_trigger_oe}),
+    .q_o   ({manual_in_io_clk_idle, manual_in_io_clk_trigger_en, manual_in_io_clk_trigger_oe})
   );
+
+  // Generate the actual trigger signal.
+  assign manual_oe_io_trigger  = manual_in_io_clk_trigger_oe;
+  assign manual_out_io_trigger = manual_in_io_clk_trigger_en &
+      prim_mubi_pkg::mubi4_test_false_strict(manual_in_io_clk_idle);
 % endif
 ## This separate UART debugging output is needed for the CW305 only.
 % if target["name"] == "cw305":
