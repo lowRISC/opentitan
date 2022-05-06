@@ -216,11 +216,25 @@ module otbn_instruction_fetch
     end
   end
 
-  always_ff @(posedge clk_i) begin
-    if (insn_prefetch) begin
-      insn_prefetch_addr <= imem_addr_o;
-    end
-  end
+  // Duplicate counter (of which only the register part is used) to prevent glitching of
+  // `insn_prefetch_addr`.
+  // SEC_CM: INSN_PREFETCH_ADDR.DATA_REG.REDUN
+  logic insn_prefetch_addr_err;
+  prim_count #(
+    .Width        (ImemAddrWidth),
+    .OutSelDnCnt  (1'b0),
+    .CntStyle     (prim_count_pkg::DupCnt)
+  ) u_insn_prefetch_addr_cnt (
+    .clk_i,
+    .rst_ni,
+    .clr_i      (1'b0), // unused
+    .set_i      (insn_prefetch),
+    .set_cnt_i  (imem_addr_o),
+    .en_i       (1'b0), // unused
+    .step_i     ('0),   // unused
+    .cnt_o      (insn_prefetch_addr),
+    .err_o      (insn_prefetch_addr_err)
+  );
 
   // Prefetch control
   always_comb begin
@@ -265,7 +279,8 @@ module otbn_instruction_fetch
   assign insn_fetch_resp_data_o  = insn_fetch_resp_data_intg_q[31:0];
 
   assign insn_fetch_err_o = |insn_fetch_resp_intg_error_vec & insn_fetch_resp_valid_q;
-  assign state_err_o = insn_fetch_resp_addr_err;
+  assign state_err_o = |{insn_fetch_resp_addr_err,
+                        insn_prefetch_addr_err};
 
   assign rf_predec_bignum_o   = rf_predec_bignum_q;
   assign alu_predec_bignum_o  = alu_predec_bignum_q;

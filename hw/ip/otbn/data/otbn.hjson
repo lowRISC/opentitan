@@ -190,6 +190,12 @@
         the stored value against glitches.
       '''
     }
+    { name: "INSN_PREFETCH_ADDR.DATA_REG.REDUN"
+      desc: '''
+        This countermeasure replicates the instruction prefetch address register to protect the
+        stored value against glitches.
+      '''
+    }
   ]
 
   regwidth: "32"

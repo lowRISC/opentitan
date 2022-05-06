@@ -119,5 +119,11 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_insn_prefetch_addr_data_reg_redun
+      desc: "Verify the countermeasure(s) INSN_PREFETCH_ADDR.DATA_REG.REDUN."
+      milestone: V2S
+      tests: []
+    }
   ]
 }
