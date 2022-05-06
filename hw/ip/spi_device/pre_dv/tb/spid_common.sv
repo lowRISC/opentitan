@@ -129,10 +129,10 @@ package spid_common;
       busy:             1'b 0
     },
 
-    // 23:
+    // 23: Read JEDEC ID
     '{
-      valid:            1'b 0,
-      opcode:           8'h E6,
+      valid:            1'b 1,
+      opcode:           8'h 9F,
       addr_mode:        AddrDisabled,
       addr_swap_en:     1'b 0,
       mbyte_en:         1'b 0,
@@ -775,30 +775,41 @@ package spid_common;
     input logic [7:0]  cc,      // Continuous Code
     ref   logic [23:0] jedec_id // [23:16] Manufacurer ID, [15:0] ID
   );
+    // as the transaction size of Read JEDEC ID depends on the Continuous Code,
+    // This task does not follow the conventional SPI transaction commands.
+    // They use `spi_transaction()` task to send/ receive command and payload.
+    //
+    // This task directly calls `spi_start()`, `spi_sendbyte()`,
+    // `spi_receivebyte()`.
     automatic spi_fifo_t send_data [$];
     automatic spi_data_t rcv_data  [$];
+    automatic spi_data_t rcv_byte;
+    automatic int unsigned cc_cnt = 0;
 
     assert(opcode == 8'h 9F);
 
-    send_data.push_back('{data: opcode, dir: DirIn,  mode: IoSingle});
+    // Assert CSb
+    spi_start(sif);
 
-    // Continuous code handling
-    // Receive 3 bytes from DUT
-    repeat (3+num_cc) begin
-      send_data.push_back('{data: '0, dir: DirOut, mode: IoNone});
-    end
+    // Send opcode
+    spi_sendbyte(sif, opcode, IoSingle);
 
-    spi_transaction(sif, send_data, rcv_data);
+    // Receive a Byte then check if Cc, then repeat
+    do begin
+      spi_receivebyte(sif, rcv_byte, IoSingle);
+      cc_cnt++;
+    end while (rcv_byte == cc);
 
-    assert(rcv_data.size() == (3 + num_cc));
+    // If not matched with CC, then that is the Manufacture ID
+    jedec_id[23:16] = rcv_byte;
 
-    repeat (num_cc) begin
-      assert(rcv_data.pop_front() == cc);
-    end
+    spi_receivebyte(sif, rcv_byte, IoSingle);
+    jedec_id[7:0] = rcv_byte;
+    spi_receivebyte(sif, rcv_byte, IoSingle);
+    jedec_id[15:8] = rcv_byte;
 
-    jedec_id[23:16] = rcv_data.pop_front();
-    jedec_id[7:0]   = rcv_data.pop_front();
-    jedec_id[15:8]  = rcv_data.pop_front();
+    // De-assert CSb
+    spi_end(sif);
 
     $display("Jedec ID Received: Manufacturer ID [%x], JEDEC_ID [%x]",
       jedec_id[23:16], jedec_id[15:0]);

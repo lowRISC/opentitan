@@ -65,9 +65,10 @@ module tb;
   passthrough_rsp_t passthrough_d2h;
 
   // Connect passthrough_h2d/d2h <-> spiflash_if
-  logic  gated_pt_sck; // gated SCK to passthrough device
-  assign spiflash_if.sck = (passthrough_h2d.sck_en) ? gated_pt_sck        : 1'b 0;
-  assign spiflash_if.csb = (passthrough_h2d.csb_en) ? passthrough_h2d.csb : 1'b 1;
+  assign spiflash_if.sck = (passthrough_h2d.passthrough_en & passthrough_h2d.sck_en)
+                         ? passthrough_h2d.sck : 1'b 0;
+  assign spiflash_if.csb = (passthrough_h2d.passthrough_en & passthrough_h2d.csb_en)
+                         ? passthrough_h2d.csb : 1'b 1;
 
   assign passthrough_d2h = '{s: spiflash_if.sd};
 
@@ -179,13 +180,6 @@ module tb;
     .scan_clk_i  (1'b 0),
     .scan_rst_ni (1'b 1),
     .scanmode_i  (prim_mubi_pkg::MuBi4False) // disable scan
-  );
-
-  prim_clock_gating u_pt_sck_cg (
-    .clk_i (passthrough_h2d.sck),
-    .en_i  (passthrough_h2d.sck_gate_en),
-    .test_en_i (1'b 0),
-    .clk_o (gated_pt_sck)
   );
 
 endmodule : tb
