@@ -152,12 +152,14 @@ opentitan_functest(
     srcs = ["pwrmgr_sleep_power_glitch_test.c"],
     targets = ["dv"],
     deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
