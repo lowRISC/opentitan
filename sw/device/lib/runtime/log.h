@@ -135,8 +135,7 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
 #define LOG_MAKE_FIELDS_(_severity, _format, ...)                         \
   {                                                                       \
     .severity = _severity, .file_name = "" __FILE__ "", .line = __LINE__, \
-    .nargs = OT_VA_ARGS_COUNT(_format, ##__VA_ARGS__),                    \
-    .format = "" _format "",                                              \
+    .nargs = OT_VA_ARGS_COUNT(_format, ##__VA_ARGS__), .format = _format, \
   }
 
 /**
