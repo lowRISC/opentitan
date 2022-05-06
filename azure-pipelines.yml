@@ -547,5 +547,6 @@ jobs:
             --build_tests_only=false \
             --define DISABLE_VERILATOR_BUILD=true \
             --test_tag_filters=-broken,-cw310,-verilator,-dv \
+            --build_tag_filters=-verilator,-test_suite \
             //sw/...
       displayName: "Build and Unit Test Software with Bazel"
