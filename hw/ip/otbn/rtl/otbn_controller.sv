@@ -262,7 +262,7 @@ module otbn_controller
   logic [WLEN-1:0] mac_bignum_rf_wr_data;
 
   logic csr_illegal_addr, wsr_illegal_addr, ispr_illegal_addr;
-  logic imem_addr_err, loop_err, ispr_err;
+  logic imem_addr_err, loop_sw_err, ispr_err;
   logic dmem_addr_err_check, dmem_addr_err;
   logic dmem_addr_unaligned_base, dmem_addr_unaligned_bignum, dmem_addr_overflow;
   logic illegal_insn_static;
@@ -474,7 +474,7 @@ module otbn_controller
   // begin fetched it cannot occur if the current instruction has seen an error and failed to
   // execute.
   assign non_insn_addr_software_err = |{key_invalid_err,
-                                        loop_err,
+                                        loop_sw_err,
                                         illegal_insn_err,
                                         call_stack_err,
                                         bad_data_addr_err};
@@ -488,7 +488,7 @@ module otbn_controller
     rnd_fips_chk_fail:  rnd_fips_err_i,
     rnd_rep_chk_fail:   rnd_rep_err_i,
     key_invalid:        key_invalid_err,
-    loop:               loop_err,
+    loop:               loop_sw_err,
     illegal_insn:       illegal_insn_err,
     call_stack:         call_stack_err,
     bad_data_addr:      bad_data_addr_err,
@@ -583,7 +583,8 @@ module otbn_controller
 
     .loop_jump_o     (loop_jump),
     .loop_jump_addr_o(loop_jump_addr),
-    .loop_err_o      (loop_err),
+
+    .sw_err_o (loop_sw_err),
 
     .jump_or_branch_i(jump_or_branch),
     .otbn_stall_i    (stall),
