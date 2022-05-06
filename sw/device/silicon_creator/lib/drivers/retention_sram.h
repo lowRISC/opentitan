@@ -79,6 +79,16 @@ volatile retention_sram_t *retention_sram_get(void);
 void retention_sram_clear(void);
 
 /**
+ * Initialize the retention SRAM with pseudo-random data from the LFSR.
+ *
+ * This function does not request a new scrambling key. See
+ * `retention_sram_scramble()`.
+ *
+ * @return Result of the operation.
+ */
+rom_error_t retention_sram_init(void);
+
+/**
  * Start scrambling the retention SRAM.
  *
  * Requests a new scrambling key for the retention SRAM. This operation

@@ -16,37 +16,51 @@ namespace retention_sram_unittest {
 namespace {
 class RetentionSramTest : public mask_rom_test::MaskRomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_PINMUX_AON_BASE_ADDR;
+  uint32_t base_ = TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR;
   mask_rom_test::MockAbsMmio mmio_;
 };
 
 class ScrambleTest : public RetentionSramTest {};
 
 TEST_F(ScrambleTest, Ok) {
-  uint32_t write_enabled =
-      bitfield_bit32_write(0, SRAM_CTRL_CTRL_REGWEN_CTRL_REGWEN_BIT, true);
-  EXPECT_ABS_READ32(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR +
-                        SRAM_CTRL_CTRL_REGWEN_REG_OFFSET,
-                    write_enabled);
-
-  uint32_t ctrl = 0;
-  ctrl = bitfield_bit32_write(ctrl, SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, true);
-  ctrl = bitfield_bit32_write(ctrl, SRAM_CTRL_CTRL_INIT_BIT, true);
-  EXPECT_ABS_WRITE32(
-      TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR + SRAM_CTRL_CTRL_REG_OFFSET,
-      ctrl);
+  EXPECT_ABS_READ32(base_ + SRAM_CTRL_CTRL_REGWEN_REG_OFFSET,
+                    {
+                        {SRAM_CTRL_CTRL_REGWEN_CTRL_REGWEN_BIT, 1},
+                    });
+  EXPECT_ABS_WRITE32(base_ + SRAM_CTRL_CTRL_REG_OFFSET,
+                     {
+                         {SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, 1},
+                         {SRAM_CTRL_CTRL_INIT_BIT, 1},
+                     });
 
   EXPECT_EQ(retention_sram_scramble(), kErrorOk);
 }
 
 TEST_F(ScrambleTest, Locked) {
-  uint32_t write_enabled =
-      bitfield_bit32_write(0, SRAM_CTRL_CTRL_REGWEN_CTRL_REGWEN_BIT, false);
-  EXPECT_ABS_READ32(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR +
-                        SRAM_CTRL_CTRL_REGWEN_REG_OFFSET,
-                    write_enabled);
+  EXPECT_ABS_READ32(base_ + SRAM_CTRL_CTRL_REGWEN_REG_OFFSET, 0);
 
   EXPECT_EQ(retention_sram_scramble(), kErrorRetSramLocked);
+}
+
+class InitTest : public RetentionSramTest {};
+
+TEST_F(InitTest, Ok) {
+  EXPECT_ABS_READ32(base_ + SRAM_CTRL_CTRL_REGWEN_REG_OFFSET,
+                    {
+                        {SRAM_CTRL_CTRL_REGWEN_CTRL_REGWEN_BIT, 1},
+                    });
+  EXPECT_ABS_WRITE32(base_ + SRAM_CTRL_CTRL_REG_OFFSET,
+                     {
+                         {SRAM_CTRL_CTRL_INIT_BIT, 1},
+                     });
+
+  EXPECT_EQ(retention_sram_init(), kErrorOk);
+}
+
+TEST_F(InitTest, Locked) {
+  EXPECT_ABS_READ32(base_ + SRAM_CTRL_CTRL_REGWEN_REG_OFFSET, 0);
+
+  EXPECT_EQ(retention_sram_init(), kErrorRetSramLocked);
 }
 
 }  // namespace
