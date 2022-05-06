@@ -464,6 +464,7 @@ module chip_earlgrey_verilator (
     .hi_speed_sel_o               ( hi_speed_sel               ),
     .div_step_down_req_i          ( div_step_down_req          ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
+    .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 
     // USB signals
