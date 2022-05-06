@@ -14,16 +14,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-#define CHECK_ARRAYS_EQ(xs, ys, len) \
-  do {                               \
-    uint32_t *xs_ = (xs);            \
-    uint32_t *ys_ = (ys);            \
-    size_t len_ = (len);             \
-    for (int i = 0; i < len_; ++i) { \
-      CHECK(xs_[i] == ys_[i]);       \
-    }                                \
-  } while (false)
-
 #define CHECK_EQZ(x) CHECK((x) == 0)
 #define CHECK_NEZ(x) CHECK((x) != 0)
 
