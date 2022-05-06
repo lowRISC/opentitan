@@ -277,6 +277,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   //   max_delay, we cannot accurately predict if two alerts are merged or not.
   virtual function void set_exp_alert(string alert_name, bit is_fatal = 0, int max_delay = 0);
     if (!(alert_name inside {cfg.list_of_alerts})) begin
+      //tmp
+      foreach(cfg.list_of_alerts[i]) begin
+        $display("JDONDBG:%s",cfg.list_of_alerts[i]);
+      end
       `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
     end
     fork

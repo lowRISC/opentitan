@@ -86,6 +86,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   uint num_ram_main_tiles;
   uint num_ram_ret_tiles;
 
+  // A handle to the scoreboard to add expected errors
+  chip_scoreboard scoreboard;
+
   // ext component cfgs
   rand uart_agent_cfg       m_uart_agent_cfgs[NUM_UARTS];
   rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;

@@ -114,6 +114,8 @@ class chip_env extends cip_base_env #(
                                            cfg.m_pwm_monitor_cfg[i]);
     end
 
+    cfg.scoreboard = scoreboard;
+
     // disable alert_esc_agent's driver and only use its monitor
     foreach (LIST_OF_ALERTS[i]) begin
       cfg.m_alert_agent_cfg[LIST_OF_ALERTS[i]].is_active = 0;
