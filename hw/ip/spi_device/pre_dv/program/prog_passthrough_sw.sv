@@ -90,6 +90,21 @@ program prog_passthrough_sw
       4'b 1111
     );
 
+    // JEDEC ID: Slightly differ from spiflash behavioral model
+    tlul_write(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_JEDEC_CC_OFFSET),
+      '0, // FIXME: Correct CC num and CC
+      4'b 1111
+    );
+    tlul_write(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_JEDEC_ID_OFFSET),
+      '0, // FIXME: Google JEDEC ID here
+      4'b 1111
+    );
+
+
     // CMD_INFO
     init_cmdinfo_list();
 
@@ -121,7 +136,7 @@ program prog_passthrough_sw
         clk,
         h2d,
         d2h,
-        32'(spi_device_reg_pkg::SPI_DEVICE_CMD_INFO_0_OFFSET + i),
+        32'(spi_device_reg_pkg::SPI_DEVICE_CMD_INFO_0_OFFSET + (i<<2)),
         cmdinfo_wdata,
         4'b 1111
       );
@@ -134,7 +149,7 @@ program prog_passthrough_sw
         clk,
         h2d,
         d2h,
-        32'(spi_device_reg_pkg::SPI_DEVICE_CMD_INFO_EN4B_OFFSET+i),
+        32'(spi_device_reg_pkg::SPI_DEVICE_CMD_INFO_EN4B_OFFSET+(i<<2)),
         32'h 8000_0000 | CmdInfo[24+i].opcode,
         4'b 1111
       );
