@@ -377,4 +377,5 @@ def opentitan_functest(
     native.test_suite(
         name = name,
         tests = all_tests,
+        tags = ["test_suite"],
     )
