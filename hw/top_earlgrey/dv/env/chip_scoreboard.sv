@@ -34,6 +34,8 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
     // Disable alert signal integrity check to avoid false alert on low_power_group_en or
     // alert_init. Alert signal integrity can be checked by assertions.
     check_alert_sig_int_err = 0;
+    // Disable individual alert checking in scb. Alerts should be checked in SW or DV sequence.
+    do_alert_check = 0;
     super.run_phase(phase);
     fork
       process_jtag_fifo();

@@ -65,6 +65,7 @@ class alert_esc_agent extends dv_base_agent#(
     // set variables to alert_esc interface
     cfg.vif.is_async = cfg.is_async;
     cfg.vif.is_alert = cfg.is_alert;
+    cfg.vif.is_active = cfg.is_active;
     cfg.vif.if_mode  = cfg.if_mode;
     // set async alert clock frequency
     if (cfg.is_alert && cfg.is_async) begin
