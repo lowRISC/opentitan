@@ -24,7 +24,6 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
     check_reset_status('0);
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
-      expect_fatal_alerts = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       setup_interrupt(.enable(en_intr));
       enabled_resets = resets_en & resets;
