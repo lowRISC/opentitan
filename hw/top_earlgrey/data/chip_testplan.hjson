@@ -1249,13 +1249,17 @@
     }
     {
       name: chip_sw_lc_ctrl_transitions
-      desc: '''Verify the LC ctrl can transition from one state to another valid state.
+      desc: '''Verify the LC ctrl can transit from one state to another valid state with the
+            correct tokens.
 
-            - Initiate an LC ctrl state transition.
+            - Preload OTP image with a LC state and required tokens to transfer to next state.
+            - Initiate an LC ctrl state transition via SW if CPU is enabled, or via JTAG interface
+              if CPU is disable.
             - Ensure that the LC program request is received by the OTP ctrl.
             - Verify the updated data output from OTP ctrl to LC ctrl is correct.
             - Ensure that there is no background or otp_init error.
             - Verify that the LC ctrl has transitioned to the programmed state after a reboot.
+            Re-randomize the lc_transition tokens and repeat the sequence above.
 
             X-ref'ed chip_sw_otp_ctrl_program.
             '''
@@ -2727,8 +2731,13 @@
     }
     {
       name: chip_sw_lc_walkthrough
-      desc: '''Walk through the life cycle stages reseting the chip each time.
+      desc: '''Walk through the life cycle stages from RAW state and reseting the chip each time.
 
+             - Pre-load OTP image with RAW lc_state.
+             - Initiate the LC transition to one of the test unlock state.
+             - Program test_unlock_token, test_exit_token, rma_unlock_token into OTP partitions.
+             - Move forward to next valid LC states via JTAG interface or SW interface if CPU is
+               enabled.
              Verify that the features that should indeed be disabled are indeed disabled.
              '''
       milestone: V2
