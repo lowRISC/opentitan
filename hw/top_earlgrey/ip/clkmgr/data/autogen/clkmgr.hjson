@@ -159,6 +159,15 @@
       package: "prim_mubi_pkg",
       width:   "4"
     },
+
+    { struct:  "logic",
+      desc:    "Indicates clocks are calibrated and frequencies accurate",
+      type:    "uni",
+      name:    "calib_rdy",
+      act:     "rcv",
+      package: "",
+      width:   "1"
+    },
   ],
 
   countermeasures: [
@@ -503,7 +512,7 @@
     { name: "MEASURE_CTRL_REGWEN",
       desc: "Measurement control write enable",
       swaccess: "rw0c",
-      hwaccess: "none",
+      hwaccess: "hrw",
       fields: [
         { bits: "0",
           name: "EN",
@@ -512,6 +521,29 @@
             When 1, the value of the measurement control can be set.  When 0, writes have no
             effect.
           '''
+        },
+      ]
+    },
+    { name: "IO_MEAS_CTRL_EN",
+      desc: '''
+        Enable for measurement control
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_io_i",
+      fields: [
+        {
+          bits: "3:0",
+          name: "EN",
+          desc: "Enable measurement for io",
+          mubi: true,
+          resval: false,
+          // Measurements can cause recoverable errors depending on the
+          // thresholds which randomized CSR tests will not predict correctly.
+          // To provide better CSR coverage we allow writing the threshold
+          // fields, but not enabling the counters.
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
       ]
     },
@@ -532,29 +564,40 @@
       storage_err_alert: "fatal_fault",
       fields: [
         {
-          bits: "0",
-          name: "EN",
-          desc: "Enable measurement for io",
-          resval: "0",
-          // Measurements can cause recoverable errors depending on the
-          // thresholds which randomized CSR tests will not predict correctly.
-          // To provide better CSR coverage we allow writing the threshold
-          // fields, but not enabling the counters.
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
-        },
-
-        {
-          bits: "13:4",
+          bits: "9:0",
           name: "HI",
           desc: "Max threshold for io measurement",
           resval: "490"
         },
 
         {
-          bits: "23:14",
+          bits: "19:10",
           name: "LO",
           desc: "Min threshold for io measurement",
           resval: "470"
+        },
+      ]
+    },
+    { name: "IO_DIV2_MEAS_CTRL_EN",
+      desc: '''
+        Enable for measurement control
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_io_div2_i",
+      fields: [
+        {
+          bits: "3:0",
+          name: "EN",
+          desc: "Enable measurement for io_div2",
+          mubi: true,
+          resval: false,
+          // Measurements can cause recoverable errors depending on the
+          // thresholds which randomized CSR tests will not predict correctly.
+          // To provide better CSR coverage we allow writing the threshold
+          // fields, but not enabling the counters.
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
       ]
     },
@@ -575,29 +618,40 @@
       storage_err_alert: "fatal_fault",
       fields: [
         {
-          bits: "0",
-          name: "EN",
-          desc: "Enable measurement for io_div2",
-          resval: "0",
-          // Measurements can cause recoverable errors depending on the
-          // thresholds which randomized CSR tests will not predict correctly.
-          // To provide better CSR coverage we allow writing the threshold
-          // fields, but not enabling the counters.
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
-        },
-
-        {
-          bits: "12:4",
+          bits: "8:0",
           name: "HI",
           desc: "Max threshold for io_div2 measurement",
           resval: "250"
         },
 
         {
-          bits: "21:13",
+          bits: "17:9",
           name: "LO",
           desc: "Min threshold for io_div2 measurement",
           resval: "230"
+        },
+      ]
+    },
+    { name: "IO_DIV4_MEAS_CTRL_EN",
+      desc: '''
+        Enable for measurement control
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_io_div4_i",
+      fields: [
+        {
+          bits: "3:0",
+          name: "EN",
+          desc: "Enable measurement for io_div4",
+          mubi: true,
+          resval: false,
+          // Measurements can cause recoverable errors depending on the
+          // thresholds which randomized CSR tests will not predict correctly.
+          // To provide better CSR coverage we allow writing the threshold
+          // fields, but not enabling the counters.
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
       ]
     },
@@ -618,29 +672,40 @@
       storage_err_alert: "fatal_fault",
       fields: [
         {
-          bits: "0",
-          name: "EN",
-          desc: "Enable measurement for io_div4",
-          resval: "0",
-          // Measurements can cause recoverable errors depending on the
-          // thresholds which randomized CSR tests will not predict correctly.
-          // To provide better CSR coverage we allow writing the threshold
-          // fields, but not enabling the counters.
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
-        },
-
-        {
-          bits: "11:4",
+          bits: "7:0",
           name: "HI",
           desc: "Max threshold for io_div4 measurement",
           resval: "130"
         },
 
         {
-          bits: "19:12",
+          bits: "15:8",
           name: "LO",
           desc: "Min threshold for io_div4 measurement",
           resval: "110"
+        },
+      ]
+    },
+    { name: "MAIN_MEAS_CTRL_EN",
+      desc: '''
+        Enable for measurement control
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_main_i",
+      fields: [
+        {
+          bits: "3:0",
+          name: "EN",
+          desc: "Enable measurement for main",
+          mubi: true,
+          resval: false,
+          // Measurements can cause recoverable errors depending on the
+          // thresholds which randomized CSR tests will not predict correctly.
+          // To provide better CSR coverage we allow writing the threshold
+          // fields, but not enabling the counters.
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
       ]
     },
@@ -661,29 +726,40 @@
       storage_err_alert: "fatal_fault",
       fields: [
         {
-          bits: "0",
-          name: "EN",
-          desc: "Enable measurement for main",
-          resval: "0",
-          // Measurements can cause recoverable errors depending on the
-          // thresholds which randomized CSR tests will not predict correctly.
-          // To provide better CSR coverage we allow writing the threshold
-          // fields, but not enabling the counters.
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
-        },
-
-        {
-          bits: "13:4",
+          bits: "9:0",
           name: "HI",
           desc: "Max threshold for main measurement",
           resval: "510"
         },
 
         {
-          bits: "23:14",
+          bits: "19:10",
           name: "LO",
           desc: "Min threshold for main measurement",
           resval: "490"
+        },
+      ]
+    },
+    { name: "USB_MEAS_CTRL_EN",
+      desc: '''
+        Enable for measurement control
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_usb_i",
+      fields: [
+        {
+          bits: "3:0",
+          name: "EN",
+          desc: "Enable measurement for usb",
+          mubi: true,
+          resval: false,
+          // Measurements can cause recoverable errors depending on the
+          // thresholds which randomized CSR tests will not predict correctly.
+          // To provide better CSR coverage we allow writing the threshold
+          // fields, but not enabling the counters.
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
       ]
     },
@@ -704,26 +780,14 @@
       storage_err_alert: "fatal_fault",
       fields: [
         {
-          bits: "0",
-          name: "EN",
-          desc: "Enable measurement for usb",
-          resval: "0",
-          // Measurements can cause recoverable errors depending on the
-          // thresholds which randomized CSR tests will not predict correctly.
-          // To provide better CSR coverage we allow writing the threshold
-          // fields, but not enabling the counters.
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
-        },
-
-        {
-          bits: "12:4",
+          bits: "8:0",
           name: "HI",
           desc: "Max threshold for usb measurement",
           resval: "250"
         },
 
         {
-          bits: "21:13",
+          bits: "17:9",
           name: "LO",
           desc: "Min threshold for usb measurement",
           resval: "230"

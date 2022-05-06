@@ -74,9 +74,14 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_clk_hints_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } en;
+    logic        q;
+  } clkmgr_reg2hw_measure_ctrl_regwen_reg_t;
+
+  typedef struct packed {
+    logic [3:0]  q;
+  } clkmgr_reg2hw_io_meas_ctrl_en_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic [9:0] q;
     } hi;
@@ -86,9 +91,10 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } en;
+    logic [3:0]  q;
+  } clkmgr_reg2hw_io_div2_meas_ctrl_en_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic [8:0]  q;
     } hi;
@@ -98,9 +104,10 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_io_div2_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } en;
+    logic [3:0]  q;
+  } clkmgr_reg2hw_io_div4_meas_ctrl_en_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic [7:0]  q;
     } hi;
@@ -110,9 +117,10 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } en;
+    logic [3:0]  q;
+  } clkmgr_reg2hw_main_meas_ctrl_en_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic [9:0] q;
     } hi;
@@ -122,9 +130,10 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } en;
+    logic [3:0]  q;
+  } clkmgr_reg2hw_usb_meas_ctrl_en_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic [8:0]  q;
     } hi;
@@ -167,6 +176,36 @@ package clkmgr_reg_pkg;
       logic        de;
     } clk_main_otbn_val;
   } clkmgr_hw2reg_clk_hints_status_reg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } clkmgr_hw2reg_measure_ctrl_regwen_reg_t;
+
+  typedef struct packed {
+    logic [3:0]  d;
+    logic        de;
+  } clkmgr_hw2reg_io_meas_ctrl_en_reg_t;
+
+  typedef struct packed {
+    logic [3:0]  d;
+    logic        de;
+  } clkmgr_hw2reg_io_div2_meas_ctrl_en_reg_t;
+
+  typedef struct packed {
+    logic [3:0]  d;
+    logic        de;
+  } clkmgr_hw2reg_io_div4_meas_ctrl_en_reg_t;
+
+  typedef struct packed {
+    logic [3:0]  d;
+    logic        de;
+  } clkmgr_hw2reg_main_meas_ctrl_en_reg_t;
+
+  typedef struct packed {
+    logic [3:0]  d;
+    logic        de;
+  } clkmgr_hw2reg_usb_meas_ctrl_en_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -232,23 +271,35 @@ package clkmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    clkmgr_reg2hw_alert_test_reg_t alert_test; // [123:120]
-    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [119:112]
-    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [111:108]
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [107:104]
-    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [103:100]
-    clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t io_meas_ctrl_shadowed; // [99:79]
-    clkmgr_reg2hw_io_div2_meas_ctrl_shadowed_reg_t io_div2_meas_ctrl_shadowed; // [78:60]
-    clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t io_div4_meas_ctrl_shadowed; // [59:43]
-    clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t main_meas_ctrl_shadowed; // [42:22]
-    clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t usb_meas_ctrl_shadowed; // [21:3]
+    clkmgr_reg2hw_alert_test_reg_t alert_test; // [139:136]
+    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [135:128]
+    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [127:124]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [123:120]
+    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [119:116]
+    clkmgr_reg2hw_measure_ctrl_regwen_reg_t measure_ctrl_regwen; // [115:115]
+    clkmgr_reg2hw_io_meas_ctrl_en_reg_t io_meas_ctrl_en; // [114:111]
+    clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t io_meas_ctrl_shadowed; // [110:91]
+    clkmgr_reg2hw_io_div2_meas_ctrl_en_reg_t io_div2_meas_ctrl_en; // [90:87]
+    clkmgr_reg2hw_io_div2_meas_ctrl_shadowed_reg_t io_div2_meas_ctrl_shadowed; // [86:69]
+    clkmgr_reg2hw_io_div4_meas_ctrl_en_reg_t io_div4_meas_ctrl_en; // [68:65]
+    clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t io_div4_meas_ctrl_shadowed; // [64:49]
+    clkmgr_reg2hw_main_meas_ctrl_en_reg_t main_meas_ctrl_en; // [48:45]
+    clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t main_meas_ctrl_shadowed; // [44:25]
+    clkmgr_reg2hw_usb_meas_ctrl_en_reg_t usb_meas_ctrl_en; // [24:21]
+    clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t usb_meas_ctrl_shadowed; // [20:3]
     clkmgr_reg2hw_fatal_err_code_reg_t fatal_err_code; // [2:0]
   } clkmgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    clkmgr_hw2reg_extclk_status_reg_t extclk_status; // [39:36]
-    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [35:28]
+    clkmgr_hw2reg_extclk_status_reg_t extclk_status; // [66:63]
+    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [62:55]
+    clkmgr_hw2reg_measure_ctrl_regwen_reg_t measure_ctrl_regwen; // [54:53]
+    clkmgr_hw2reg_io_meas_ctrl_en_reg_t io_meas_ctrl_en; // [52:48]
+    clkmgr_hw2reg_io_div2_meas_ctrl_en_reg_t io_div2_meas_ctrl_en; // [47:43]
+    clkmgr_hw2reg_io_div4_meas_ctrl_en_reg_t io_div4_meas_ctrl_en; // [42:38]
+    clkmgr_hw2reg_main_meas_ctrl_en_reg_t main_meas_ctrl_en; // [37:33]
+    clkmgr_hw2reg_usb_meas_ctrl_en_reg_t usb_meas_ctrl_en; // [32:28]
     clkmgr_hw2reg_recov_err_code_reg_t recov_err_code; // [27:6]
     clkmgr_hw2reg_fatal_err_code_reg_t fatal_err_code; // [5:0]
   } clkmgr_hw2reg_t;
@@ -264,13 +315,18 @@ package clkmgr_reg_pkg;
   parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_OFFSET = 7'h 1c;
   parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 7'h 20;
   parameter logic [BlockAw-1:0] CLKMGR_MEASURE_CTRL_REGWEN_OFFSET = 7'h 24;
-  parameter logic [BlockAw-1:0] CLKMGR_IO_MEAS_CTRL_SHADOWED_OFFSET = 7'h 28;
-  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_OFFSET = 7'h 2c;
-  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_OFFSET = 7'h 30;
-  parameter logic [BlockAw-1:0] CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET = 7'h 34;
-  parameter logic [BlockAw-1:0] CLKMGR_USB_MEAS_CTRL_SHADOWED_OFFSET = 7'h 38;
-  parameter logic [BlockAw-1:0] CLKMGR_RECOV_ERR_CODE_OFFSET = 7'h 3c;
-  parameter logic [BlockAw-1:0] CLKMGR_FATAL_ERR_CODE_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] CLKMGR_IO_MEAS_CTRL_EN_OFFSET = 7'h 28;
+  parameter logic [BlockAw-1:0] CLKMGR_IO_MEAS_CTRL_SHADOWED_OFFSET = 7'h 2c;
+  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV2_MEAS_CTRL_EN_OFFSET = 7'h 30;
+  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_OFFSET = 7'h 34;
+  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV4_MEAS_CTRL_EN_OFFSET = 7'h 38;
+  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_OFFSET = 7'h 3c;
+  parameter logic [BlockAw-1:0] CLKMGR_MAIN_MEAS_CTRL_EN_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] CLKMGR_USB_MEAS_CTRL_EN_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] CLKMGR_USB_MEAS_CTRL_SHADOWED_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] CLKMGR_RECOV_ERR_CODE_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] CLKMGR_FATAL_ERR_CODE_OFFSET = 7'h 54;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] CLKMGR_ALERT_TEST_RESVAL = 2'h 0;
@@ -291,17 +347,22 @@ package clkmgr_reg_pkg;
     CLKMGR_CLK_HINTS,
     CLKMGR_CLK_HINTS_STATUS,
     CLKMGR_MEASURE_CTRL_REGWEN,
+    CLKMGR_IO_MEAS_CTRL_EN,
     CLKMGR_IO_MEAS_CTRL_SHADOWED,
+    CLKMGR_IO_DIV2_MEAS_CTRL_EN,
     CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED,
+    CLKMGR_IO_DIV4_MEAS_CTRL_EN,
     CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED,
+    CLKMGR_MAIN_MEAS_CTRL_EN,
     CLKMGR_MAIN_MEAS_CTRL_SHADOWED,
+    CLKMGR_USB_MEAS_CTRL_EN,
     CLKMGR_USB_MEAS_CTRL_SHADOWED,
     CLKMGR_RECOV_ERR_CODE,
     CLKMGR_FATAL_ERR_CODE
   } clkmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CLKMGR_PERMIT [17] = '{
+  parameter logic [3:0] CLKMGR_PERMIT [22] = '{
     4'b 0001, // index[ 0] CLKMGR_ALERT_TEST
     4'b 0001, // index[ 1] CLKMGR_EXTCLK_CTRL_REGWEN
     4'b 0001, // index[ 2] CLKMGR_EXTCLK_CTRL
@@ -312,13 +373,18 @@ package clkmgr_reg_pkg;
     4'b 0001, // index[ 7] CLKMGR_CLK_HINTS
     4'b 0001, // index[ 8] CLKMGR_CLK_HINTS_STATUS
     4'b 0001, // index[ 9] CLKMGR_MEASURE_CTRL_REGWEN
-    4'b 0111, // index[10] CLKMGR_IO_MEAS_CTRL_SHADOWED
-    4'b 0111, // index[11] CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED
-    4'b 0111, // index[12] CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED
-    4'b 0111, // index[13] CLKMGR_MAIN_MEAS_CTRL_SHADOWED
-    4'b 0111, // index[14] CLKMGR_USB_MEAS_CTRL_SHADOWED
-    4'b 0011, // index[15] CLKMGR_RECOV_ERR_CODE
-    4'b 0001  // index[16] CLKMGR_FATAL_ERR_CODE
+    4'b 0001, // index[10] CLKMGR_IO_MEAS_CTRL_EN
+    4'b 0111, // index[11] CLKMGR_IO_MEAS_CTRL_SHADOWED
+    4'b 0001, // index[12] CLKMGR_IO_DIV2_MEAS_CTRL_EN
+    4'b 0111, // index[13] CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED
+    4'b 0001, // index[14] CLKMGR_IO_DIV4_MEAS_CTRL_EN
+    4'b 0011, // index[15] CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED
+    4'b 0001, // index[16] CLKMGR_MAIN_MEAS_CTRL_EN
+    4'b 0111, // index[17] CLKMGR_MAIN_MEAS_CTRL_SHADOWED
+    4'b 0001, // index[18] CLKMGR_USB_MEAS_CTRL_EN
+    4'b 0111, // index[19] CLKMGR_USB_MEAS_CTRL_SHADOWED
+    4'b 0011, // index[20] CLKMGR_RECOV_ERR_CODE
+    4'b 0001  // index[21] CLKMGR_FATAL_ERR_CODE
   };
 
 endpackage

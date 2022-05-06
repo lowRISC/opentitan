@@ -1077,6 +1077,7 @@ module chip_${top["name"]}_${target["name"]} (
     .hi_speed_sel_o               ( hi_speed_sel               ),
     .div_step_down_req_i          ( div_step_down_req          ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
+    .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 
     // Flash test mode voltages
@@ -1250,6 +1251,7 @@ module chip_${top["name"]}_${target["name"]} (
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
+    .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 % endif
 
