@@ -94,68 +94,68 @@ interface clkmgr_if (
 
   freq_measurement_t io_freq_measurement;
   logic io_timeout_err;
-  always @(posedge `CLKMGR_HIER.u_io_meas.clk_i) begin
-    if (`CLKMGR_HIER.u_io_meas.valid_o) begin
-      io_freq_measurement = '{valid: `CLKMGR_HIER.u_io_meas.valid_o,
-                              slow: `CLKMGR_HIER.u_io_meas.slow_o,
-                              fast: `CLKMGR_HIER.u_io_meas.fast_o};
+  always @(posedge `CLKMGR_HIER.u_io_meas.u_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_io_meas.u_meas.valid_o) begin
+      io_freq_measurement = '{valid: `CLKMGR_HIER.u_io_meas.u_meas.valid_o,
+                              slow: `CLKMGR_HIER.u_io_meas.u_meas.slow_o,
+                              fast: `CLKMGR_HIER.u_io_meas.u_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf("Sampled coverage for ClkMesrIo as %p", io_freq_measurement),
                 UVM_MEDIUM)
     end
   end
-  always_comb io_timeout_err = `CLKMGR_HIER.io_timeout_err;
+  always_comb io_timeout_err = `CLKMGR_HIER.u_io_meas.timeout_err_o;
 
   freq_measurement_t io_div2_freq_measurement;
   logic io_div2_timeout_err;
-  always @(posedge `CLKMGR_HIER.u_io_div2_meas.clk_i) begin
-    if (`CLKMGR_HIER.u_io_div2_meas.valid_o) begin
-      io_div2_freq_measurement = '{valid: `CLKMGR_HIER.u_io_div2_meas.valid_o,
-                                   slow: `CLKMGR_HIER.u_io_div2_meas.slow_o,
-                                   fast: `CLKMGR_HIER.u_io_div2_meas.fast_o};
+  always @(posedge `CLKMGR_HIER.u_io_div2_meas.u_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_io_div2_meas.u_meas.valid_o) begin
+      io_div2_freq_measurement = '{valid: `CLKMGR_HIER.u_io_div2_meas.u_meas.valid_o,
+                                   slow: `CLKMGR_HIER.u_io_div2_meas.u_meas.slow_o,
+                                   fast: `CLKMGR_HIER.u_io_div2_meas.u_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf(
                 "Sampled coverage for ClkMesrIoDiv2 as %p", io_div2_freq_measurement), UVM_MEDIUM)
     end
   end
-  always_comb io_div2_timeout_err = `CLKMGR_HIER.io_div2_timeout_err;
+  always_comb io_div2_timeout_err = `CLKMGR_HIER.u_io_div2_meas.timeout_err_o;
 
   freq_measurement_t io_div4_freq_measurement;
   logic io_div4_timeout_err;
-  always @(posedge `CLKMGR_HIER.u_io_div4_meas.clk_i) begin
-    if (`CLKMGR_HIER.u_io_div4_meas.valid_o) begin
-      io_div4_freq_measurement = '{valid: `CLKMGR_HIER.u_io_div4_meas.valid_o,
-                                   slow: `CLKMGR_HIER.u_io_div4_meas.slow_o,
-                                   fast: `CLKMGR_HIER.u_io_div4_meas.fast_o};
+  always @(posedge `CLKMGR_HIER.u_io_div4_meas.u_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_io_div4_meas.u_meas.valid_o) begin
+      io_div4_freq_measurement = '{valid: `CLKMGR_HIER.u_io_div4_meas.u_meas.valid_o,
+                                   slow: `CLKMGR_HIER.u_io_div4_meas.u_meas.slow_o,
+                                   fast: `CLKMGR_HIER.u_io_div4_meas.u_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf(
                 "Sampled coverage for ClkMesrIoDiv4 as %p", io_div4_freq_measurement), UVM_MEDIUM)
     end
   end
-  always_comb io_div4_timeout_err = `CLKMGR_HIER.io_div4_timeout_err;
+  always_comb io_div4_timeout_err = `CLKMGR_HIER.u_io_div4_meas.timeout_err_o;
 
   freq_measurement_t main_freq_measurement;
   logic main_timeout_err;
-  always @(posedge `CLKMGR_HIER.u_main_meas.clk_i) begin
-    if (`CLKMGR_HIER.u_main_meas.valid_o) begin
-      main_freq_measurement = '{valid: `CLKMGR_HIER.u_main_meas.valid_o,
-                                slow: `CLKMGR_HIER.u_main_meas.slow_o,
-                                fast: `CLKMGR_HIER.u_main_meas.fast_o};
+  always @(posedge `CLKMGR_HIER.u_main_meas.u_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_main_meas.u_meas.valid_o) begin
+      main_freq_measurement = '{valid: `CLKMGR_HIER.u_main_meas.u_meas.valid_o,
+                                slow: `CLKMGR_HIER.u_main_meas.u_meas.slow_o,
+                                fast: `CLKMGR_HIER.u_main_meas.u_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf(
                 "Sampled coverage for ClkMesrMain as %p", main_freq_measurement), UVM_MEDIUM)
     end
   end
-  always_comb main_timeout_err = `CLKMGR_HIER.main_timeout_err;
+  always_comb main_timeout_err = `CLKMGR_HIER.u_main_meas.timeout_err_o;
 
   freq_measurement_t usb_freq_measurement;
   logic usb_timeout_err;
-  always @(posedge `CLKMGR_HIER.u_usb_meas.clk_i) begin
-    if (`CLKMGR_HIER.u_usb_meas.valid_o) begin
-      usb_freq_measurement = '{valid: `CLKMGR_HIER.u_usb_meas.valid_o,
-                               slow: `CLKMGR_HIER.u_usb_meas.slow_o,
-                               fast: `CLKMGR_HIER.u_usb_meas.fast_o};
+  always @(posedge `CLKMGR_HIER.u_usb_meas.u_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_usb_meas.u_meas.valid_o) begin
+      usb_freq_measurement = '{valid: `CLKMGR_HIER.u_usb_meas.u_meas.valid_o,
+                               slow: `CLKMGR_HIER.u_usb_meas.u_meas.slow_o,
+                               fast: `CLKMGR_HIER.u_usb_meas.u_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf("Sampled coverage for ClkMesrUsb as %p", usb_freq_measurement
                 ), UVM_MEDIUM)
     end
   end
-  always_comb usb_timeout_err = `CLKMGR_HIER.usb_timeout_err;
+  always_comb usb_timeout_err = `CLKMGR_HIER.u_usb_meas.timeout_err_o;
 
   function automatic void update_idle(mubi_hintables_t value);
     idle_i = value;
@@ -209,11 +209,11 @@ interface clkmgr_if (
   function automatic void force_high_starting_count(clk_mesr_e clk);
     `uvm_info("clkmgr_if", $sformatf("Forcing count of %0s to all 1.", clk.name()), UVM_MEDIUM)
     case (clk)
-      ClkMesrIo: `CLKMGR_HIER.u_io_meas.cnt = '1;
-      ClkMesrIoDiv2: `CLKMGR_HIER.u_io_div2_meas.cnt = '1;
-      ClkMesrIoDiv4: `CLKMGR_HIER.u_io_div4_meas.cnt = '1;
-      ClkMesrMain: `CLKMGR_HIER.u_main_meas.cnt = '1;
-      ClkMesrUsb: `CLKMGR_HIER.u_usb_meas.cnt = '1;
+      ClkMesrIo: `CLKMGR_HIER.u_io_meas.u_meas.cnt = '1;
+      ClkMesrIoDiv2: `CLKMGR_HIER.u_io_div2_meas.u_meas.cnt = '1;
+      ClkMesrIoDiv4: `CLKMGR_HIER.u_io_div4_meas.u_meas.cnt = '1;
+      ClkMesrMain: `CLKMGR_HIER.u_main_meas.u_meas.cnt = '1;
+      ClkMesrUsb: `CLKMGR_HIER.u_usb_meas.u_meas.cnt = '1;
       default: ;
     endcase
   endfunction
