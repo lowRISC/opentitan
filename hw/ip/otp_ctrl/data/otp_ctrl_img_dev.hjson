@@ -64,6 +64,10 @@
                     name:  "EN_ENTROPY_SRC_FW_READ",
                     value: true,
                 },
+                {
+                    name: "EN_ENTROPY_SRC_FW_OVER",
+                    value: false,
+                }
             ],
         }
         {
