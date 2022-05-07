@@ -135,7 +135,7 @@ module otbn_core
   logic                     rf_base_rd_en_b;
   logic [BaseIntgWidth-1:0] rf_base_rd_data_b_intg;
   logic                     rf_base_rd_commit;
-  logic                     rf_base_call_stack_err;
+  logic                     rf_base_call_stack_sw_err;
   logic                     rf_base_rf_err;
 
   alu_base_operation_t  alu_base_operation;
@@ -400,20 +400,20 @@ module otbn_core
     .insn_dec_shared_i(insn_dec_shared),
 
     // To/from base register file
-    .rf_base_wr_addr_o         (rf_base_wr_addr_ctrl),
-    .rf_base_wr_en_o           (rf_base_wr_en_ctrl),
-    .rf_base_wr_commit_o       (rf_base_wr_commit_ctrl),
-    .rf_base_wr_data_no_intg_o (rf_base_wr_data_no_intg_ctrl),
-    .rf_base_wr_data_intg_o    (rf_base_wr_data_intg),
-    .rf_base_wr_data_intg_sel_o(rf_base_wr_data_intg_sel_ctrl),
-    .rf_base_rd_addr_a_o       (rf_base_rd_addr_a),
-    .rf_base_rd_en_a_o         (rf_base_rd_en_a),
-    .rf_base_rd_data_a_intg_i  (rf_base_rd_data_a_intg),
-    .rf_base_rd_addr_b_o       (rf_base_rd_addr_b),
-    .rf_base_rd_en_b_o         (rf_base_rd_en_b),
-    .rf_base_rd_data_b_intg_i  (rf_base_rd_data_b_intg),
-    .rf_base_rd_commit_o       (rf_base_rd_commit),
-    .rf_base_call_stack_err_i  (rf_base_call_stack_err),
+    .rf_base_wr_addr_o          (rf_base_wr_addr_ctrl),
+    .rf_base_wr_en_o            (rf_base_wr_en_ctrl),
+    .rf_base_wr_commit_o        (rf_base_wr_commit_ctrl),
+    .rf_base_wr_data_no_intg_o  (rf_base_wr_data_no_intg_ctrl),
+    .rf_base_wr_data_intg_o     (rf_base_wr_data_intg),
+    .rf_base_wr_data_intg_sel_o (rf_base_wr_data_intg_sel_ctrl),
+    .rf_base_rd_addr_a_o        (rf_base_rd_addr_a),
+    .rf_base_rd_en_a_o          (rf_base_rd_en_a),
+    .rf_base_rd_data_a_intg_i   (rf_base_rd_data_a_intg),
+    .rf_base_rd_addr_b_o        (rf_base_rd_addr_b),
+    .rf_base_rd_en_b_o          (rf_base_rd_en_b),
+    .rf_base_rd_data_b_intg_i   (rf_base_rd_data_b_intg),
+    .rf_base_rd_commit_o        (rf_base_rd_commit),
+    .rf_base_call_stack_sw_err_i(rf_base_call_stack_sw_err),
 
     // To/from bignunm register file
     .rf_bignum_wr_addr_o         (rf_bignum_wr_addr_ctrl),
@@ -620,8 +620,8 @@ module otbn_core
     .rd_data_b_intg_o(rf_base_rd_data_b_intg),
     .rd_commit_i     (rf_base_rd_commit),
 
-    .call_stack_err_o(rf_base_call_stack_err),
-    .rf_err_o        (rf_base_rf_err)
+    .call_stack_sw_err_o(rf_base_call_stack_sw_err),
+    .rf_err_o           (rf_base_rf_err)
   );
 
   assign rf_base_wr_addr         = sec_wipe_base ? sec_wipe_addr : rf_base_wr_addr_ctrl;

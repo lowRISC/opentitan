@@ -56,7 +56,7 @@ module otbn_rf_base
 
   input  logic                     rd_commit_i,
 
-  output logic                     call_stack_err_o,
+  output logic                     call_stack_sw_err_o,
   output logic                     rf_err_o
 );
   localparam int unsigned CallStackRegIndex = 1;
@@ -109,7 +109,7 @@ module otbn_rf_base
   // push).
   assign push_stack_err  = push_stack_reqd & stack_full & ~pop_stack_reqd;
 
-  assign call_stack_err_o = pop_stack_a_err | pop_stack_b_err | push_stack_err;
+  assign call_stack_sw_err_o = pop_stack_a_err | pop_stack_b_err | push_stack_err;
 
   // Prevent any write to the stack register from going to the register file,
   // all other committed writes are passed straight through
