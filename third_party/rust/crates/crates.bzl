@@ -5,7 +5,6 @@ cargo-raze generated Bazel file.
 DO NOT EDIT! Replaced on runs of cargo-raze
 """
 
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")  # buildifier: disable=load
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")  # buildifier: disable=load
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")  # buildifier: disable=load
 
@@ -1142,13 +1141,17 @@ def raze_fetch_remote_crates():
         build_file = Label("//third_party/rust/crates/remote:BUILD.ryu-1.0.9.bazel"),
     )
 
+    # TODO(lowRISC/opentitan:#12469): this was manually converted to an
+    # http_archive rule. Need to figure out how to update the Cargo.toml file so
+    # `cargo raze` will generate a (cacheable) http_archive rule to support
+    # air-gapped builds.
     maybe(
-        new_git_repository,
+        http_archive,
         name = "raze__safe_ftdi__0_3_0",
-        remote = "https://github.com/cr1901/safe-ftdi",
-        commit = "2e6ff2b77cee8c0d7c04dcdb0dea678edbd8d56f",
+        url = "https://github.com/cr1901/safe-ftdi/archive/2e6ff2b77cee8c0d7c04dcdb0dea678edbd8d56f.tar.gz",
+        sha256 = "bdc434ac8e1b379d434eec54f0aab7d272101630876bd760730f9dd0599e806c",
+        strip_prefix = "safe-ftdi-2e6ff2b77cee8c0d7c04dcdb0dea678edbd8d56f",
         build_file = Label("//third_party/rust/crates/remote:BUILD.safe-ftdi-0.3.0.bazel"),
-        init_submodules = True,
     )
 
     maybe(
