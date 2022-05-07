@@ -136,7 +136,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     if (flash_op.op == flash_ctrl_pkg::FlashOpErase) begin
       case (flash_op.erase_type)
         flash_ctrl_pkg::FlashErasePage: begin
-          addr_attrs.set_attrs(addr_attrs.page_start_addr);
+          addr_attrs.set_attrs(addr_attrs.bank_start_addr + addr_attrs.page_start_addr);
           flash_op.num_words = FlashNumBusWordsPerPage;
         end
         flash_ctrl_pkg::FlashEraseBank: begin
