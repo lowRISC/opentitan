@@ -59,7 +59,7 @@ module otbn_controller
   input  logic [BaseIntgWidth-1:0] rf_base_rd_data_b_intg_i,
   output logic                     rf_base_rd_commit_o,
 
-  input logic rf_base_call_stack_err_i,
+  input logic rf_base_call_stack_sw_err_i,
 
   // Bignum register file (WDRs)
   output logic [4:0]         rf_bignum_wr_addr_o,
@@ -166,7 +166,7 @@ module otbn_controller
 
   // The specific error signals that go into err_bits_d
   logic fatal_software_err, bad_internal_state_err, reg_intg_violation_err, key_invalid_err;
-  logic illegal_insn_err, bad_data_addr_err, call_stack_err, bad_insn_addr_err;
+  logic illegal_insn_err, bad_data_addr_err, call_stack_sw_err, bad_insn_addr_err;
 
   logic err;
   logic recoverable_err;
@@ -467,7 +467,7 @@ module otbn_controller
   assign key_invalid_err          = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
   assign illegal_insn_err         = illegal_insn_static | rf_indirect_err;
   assign bad_data_addr_err        = dmem_addr_err;
-  assign call_stack_err           = rf_base_call_stack_err_i;
+  assign call_stack_sw_err        = rf_base_call_stack_sw_err_i;
 
   // All software errors that aren't bad_insn_addr. Factored into bad_insn_addr so it is only raised
   // if other software errors haven't ocurred. As bad_insn_addr relates to the next instruction
@@ -476,7 +476,7 @@ module otbn_controller
   assign non_insn_addr_software_err = |{key_invalid_err,
                                         loop_sw_err,
                                         illegal_insn_err,
-                                        call_stack_err,
+                                        call_stack_sw_err,
                                         bad_data_addr_err};
 
   assign bad_insn_addr_err = imem_addr_err & ~non_insn_addr_software_err;
@@ -490,7 +490,7 @@ module otbn_controller
     key_invalid:        key_invalid_err,
     loop:               loop_sw_err,
     illegal_insn:       illegal_insn_err,
-    call_stack:         call_stack_err,
+    call_stack:         call_stack_sw_err,
     bad_data_addr:      bad_data_addr_err,
     bad_insn_addr:      bad_insn_addr_err
   };
@@ -952,12 +952,12 @@ module otbn_controller
 
   assign rf_a_indirect_err = insn_dec_bignum_i.rf_a_indirect    &
                              (|rf_base_rd_data_a_no_intg[31:5]) &
-                             ~rf_base_call_stack_err_i          &
+                             ~rf_base_call_stack_sw_err_i       &
                              rf_base_rd_en_a_o;
 
   assign rf_b_indirect_err = insn_dec_bignum_i.rf_b_indirect    &
                              (|rf_base_rd_data_b_no_intg[31:5]) &
-                             ~rf_base_call_stack_err_i          &
+                             ~rf_base_call_stack_sw_err_i       &
                              rf_base_rd_en_b_o;
 
   assign rf_d_indirect_err = insn_dec_bignum_i.rf_d_indirect    &
@@ -969,7 +969,7 @@ module otbn_controller
 
   assign ignore_bignum_rf_errs = (insn_dec_bignum_i.rf_a_indirect |
                                   insn_dec_bignum_i.rf_b_indirect) &
-                                 rf_base_call_stack_err_i;
+                                 rf_base_call_stack_sw_err_i;
 
   assign rf_bignum_rf_err = rf_bignum_rf_err_i & ~ignore_bignum_rf_errs;
 
