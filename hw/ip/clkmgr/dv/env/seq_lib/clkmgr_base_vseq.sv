@@ -195,19 +195,19 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("Disabling frequency measurement for %0s", which.name), UVM_MEDIUM)
     case (which)
       ClkMesrIo: begin
-        csr_wr(.ptr(ral.io_meas_ctrl_shadowed.en), .value(0));
+        csr_wr(.ptr(ral.io_meas_ctrl_en.en), .value(MuBi4False));
       end
       ClkMesrIoDiv2: begin
-        csr_wr(.ptr(ral.io_div2_meas_ctrl_shadowed.en), .value(0));
+        csr_wr(.ptr(ral.io_div2_meas_ctrl_en.en), .value(MuBi4False));
       end
       ClkMesrIoDiv4: begin
-        csr_wr(.ptr(ral.io_div4_meas_ctrl_shadowed.en), .value(0));
+        csr_wr(.ptr(ral.io_div4_meas_ctrl_en.en), .value(MuBi4False));
       end
       ClkMesrMain: begin
-        csr_wr(.ptr(ral.main_meas_ctrl_shadowed.en), .value(0));
+        csr_wr(.ptr(ral.main_meas_ctrl_en.en), .value(MuBi4False));
       end
       ClkMesrUsb: begin
-        csr_wr(.ptr(ral.usb_meas_ctrl_shadowed.en), .value(0));
+        csr_wr(.ptr(ral.usb_meas_ctrl_en.en), .value(MuBi4False));
       end
       default: ;
     endcase
@@ -223,34 +223,39 @@ class clkmgr_base_vseq extends cip_base_vseq #(
               ), UVM_MEDIUM)
     case (which)
       ClkMesrIo: begin
-        ral.io_meas_ctrl_shadowed.en.set(1);
         ral.io_meas_ctrl_shadowed.lo.set(min_threshold);
         ral.io_meas_ctrl_shadowed.hi.set(max_threshold);
         csr_update(.csr(ral.io_meas_ctrl_shadowed));
+        ral.io_meas_ctrl_en.en.set(MuBi4True);
+        csr_update(.csr(ral.io_meas_ctrl_en));
       end
       ClkMesrIoDiv2: begin
-        ral.io_div2_meas_ctrl_shadowed.en.set(1);
         ral.io_div2_meas_ctrl_shadowed.lo.set(min_threshold);
         ral.io_div2_meas_ctrl_shadowed.hi.set(max_threshold);
         csr_update(.csr(ral.io_div2_meas_ctrl_shadowed));
+        ral.io_div2_meas_ctrl_en.en.set(MuBi4True);
+        csr_update(.csr(ral.io_div2_meas_ctrl_en));
       end
       ClkMesrIoDiv4: begin
-        ral.io_div4_meas_ctrl_shadowed.en.set(1);
         ral.io_div4_meas_ctrl_shadowed.lo.set(min_threshold);
         ral.io_div4_meas_ctrl_shadowed.hi.set(max_threshold);
         csr_update(.csr(ral.io_div4_meas_ctrl_shadowed));
+        ral.io_div4_meas_ctrl_en.en.set(MuBi4True);
+        csr_update(.csr(ral.io_div4_meas_ctrl_en));
       end
       ClkMesrMain: begin
-        ral.main_meas_ctrl_shadowed.en.set(1);
         ral.main_meas_ctrl_shadowed.lo.set(min_threshold);
         ral.main_meas_ctrl_shadowed.hi.set(max_threshold);
         csr_update(.csr(ral.main_meas_ctrl_shadowed));
+        ral.main_meas_ctrl_en.en.set(MuBi4True);
+        csr_update(.csr(ral.main_meas_ctrl_en));
       end
       ClkMesrUsb: begin
-        ral.usb_meas_ctrl_shadowed.en.set(1);
         ral.usb_meas_ctrl_shadowed.lo.set(min_threshold);
         ral.usb_meas_ctrl_shadowed.hi.set(max_threshold);
         csr_update(.csr(ral.usb_meas_ctrl_shadowed));
+        ral.usb_meas_ctrl_en.en.set(MuBi4True);
+        csr_update(.csr(ral.usb_meas_ctrl_en));
       end
       default: ;
     endcase
@@ -259,24 +264,24 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   local function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
     case (clk)
       ClkMesrIo: begin
-        if (enable) $asserton(0, "tb.dut.u_io_meas.u_sync_ref.SrcPulseCheck_M");
-        else $assertoff(0, "tb.dut.u_io_meas.u_sync_ref.SrcPulseCheck_M");
+        if (enable) $asserton(0, "tb.dut.u_io_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        else $assertoff(0, "tb.dut.u_io_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
       end
       ClkMesrIoDiv2: begin
-        if (enable) $asserton(0, "tb.dut.u_io_div2_meas.u_sync_ref.SrcPulseCheck_M");
-        else $assertoff(0, "tb.dut.u_io_div2_meas.u_sync_ref.SrcPulseCheck_M");
+        if (enable) $asserton(0, "tb.dut.u_io_div2_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        else $assertoff(0, "tb.dut.u_io_div2_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
       end
       ClkMesrIoDiv4: begin
-        if (enable) $asserton(0, "tb.dut.u_io_div4_meas.u_sync_ref.SrcPulseCheck_m");
-        else $assertoff(0, "tb.dut.u_io_div4_meas.u_sync_ref.SrcPulseCheck_M");
+        if (enable) $asserton(0, "tb.dut.u_io_div4_meas.u_meas.u_sync_ref.SrcPulseCheck_m");
+        else $assertoff(0, "tb.dut.u_io_div4_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
       end
       ClkMesrMain: begin
-        if (enable) $asserton(0, "tb.dut.u_main_meas.u_sync_ref.SrcPulseCheck_M");
-        else $assertoff(0, "tb.dut.u_main_meas.u_sync_ref.SrcPulseCheck_M");
+        if (enable) $asserton(0, "tb.dut.u_main_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        else $assertoff(0, "tb.dut.u_main_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
       end
       ClkMesrUsb: begin
-        if (enable) $asserton(0, "tb.dut.u_usb_meas.u_sync_ref.SrcPulseCheck_M");
-        else $assertoff(0, "tb.dut.u_usb_meas.u_sync_ref.SrcPulseCheck_M");
+        if (enable) $asserton(0, "tb.dut.u_usb_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        else $assertoff(0, "tb.dut.u_usb_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
       end
       default: `uvm_error(`gfn, $sformatf("unexpected clock index '%0d'", clk))
     endcase

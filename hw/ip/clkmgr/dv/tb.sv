@@ -115,6 +115,9 @@ module tb;
     .jitter_en_o(clkmgr_if.jitter_en_o),
     .clocks_o   (clkmgr_if.clocks_o),
 
+    // assumes calibration is always ready
+    .calib_rdy_i(1'b1),
+
     // TODO: connect and use this interface.
     .hi_speed_sel_o()
   );
