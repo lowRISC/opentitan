@@ -245,6 +245,8 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
     // enable sw rw access
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
 
     //disable polling of fifo status for frontdoor write and read
     poll_fifo_status = 0;
