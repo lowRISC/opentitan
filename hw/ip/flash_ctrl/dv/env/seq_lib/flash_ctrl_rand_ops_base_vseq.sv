@@ -44,6 +44,11 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
       flash_ctrl_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
     };
 
+    flash_op.prog_sel dist {
+      FlashProgSelNormal :/ (100 - cfg.seq_cfg.op_prog_type_repair_pc),
+      FlashProgSelRepair :/ cfg.seq_cfg.op_prog_type_repair_pc
+    };
+
     flash_op.partition dist {
       FlashPartData  :/ cfg.seq_cfg.op_on_data_partition_pc,
       FlashPartInfo  :/ cfg.seq_cfg.op_on_info_partition_pc,
