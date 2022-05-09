@@ -732,25 +732,23 @@ module otbn
   assign hw2reg.status.de = 1'b1;
 
   // Only certain combinations of the state variable {locking, busy_execute_d,
-  // otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy} are possible. Most of the
-  // time, we'd expect it to be onehot0.
+  // otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy} are possible.
   //
-  // The only time this is relaxed is when we are in the locking state. If we were running an
-  // operation when we start locking, busy_execute_d will remain set until the secure wipe finishes.
-  // Similarly, in this case the *_scramble_key_req_busy signals actually go high at the same as
-  // locking. But none of these signals should ever rise again after we've become locked. Nor should
-  // they be asserted if we weren't running.
-  `ASSERT(ValidUnlockedStateCombinations_A,
-          ((!locking) |-> $onehot0({busy_execute_d,
-                                    otbn_dmem_scramble_key_req_busy,
-                                    otbn_imem_scramble_key_req_busy})))
-  `ASSERT(ValidLockedStateCombinations_A,
-          locking |=> !$rose(|{busy_execute_d,
-                               otbn_dmem_scramble_key_req_busy,
-                               otbn_imem_scramble_key_req_busy}))
-  `ASSERT(OnlyRotateKeysOnLockIfRunning_A,
-          (locking && !busy_execute_d) |-> !$rose({otbn_dmem_scramble_key_req_busy,
-                                                   otbn_imem_scramble_key_req_busy}))
+  // (1) When we finish (with a pulse on "done_core", which might stay high in the "locking"
+  //     signal), busy_execute_d is guaranteed to be low. (Assertion: NotBusyAndDone_A)
+  //
+  // (2) There aren't really any other restrictions when locking is low: if there is an error during
+  //     an operation, we'll start rotating memory keys while doing the internal secure wipe, so
+  //     may see all of the signals high except locking.
+  //
+  // (3) Once locking is high, we guarantee never to see a new execution or the start of a key
+  //     rotation. (Assertion: NoStartWhenLocked_A)
+
+  `ASSERT(NotBusyAndDone_A, !((done_core | locking) && busy_execute_d))
+  `ASSERT(NoStartWhenLocked_A,
+          locking |=> !($rose(busy_execute_d) ||
+                        $rose(otbn_dmem_scramble_key_req_busy) ||
+                        $rose(otbn_imem_scramble_key_req_busy)))
 
   // CTRL register
   assign software_errs_fatal_d =
