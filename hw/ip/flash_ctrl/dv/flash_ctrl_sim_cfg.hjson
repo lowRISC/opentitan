@@ -6,7 +6,7 @@
   name: flash_ctrl
 
   // Top level dut name (sv module).
-  dut: flash_ctrl_wrapper
+  dut: flash_ctrl
 
   // Top level testbench name (sv module).
   tb: tb
