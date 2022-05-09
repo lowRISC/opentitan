@@ -514,20 +514,10 @@ module usbdev
     .dst_pulse_o (event_frame)
   );
 
-  logic event_link_reset_q;
-
-  always_ff @(posedge clk_usb_48mhz_i or negedge rst_usb_48mhz_ni) begin
-    if (!rst_usb_48mhz_ni) begin
-      event_link_reset_q <= 0;
-    end else begin
-      event_link_reset_q <= event_link_reset;
-    end
-  end
-
   always_comb begin
     clear_rdybit = '0;
     update_pend  = '0;
-    if (event_link_reset && !event_link_reset_q) begin
+    if (event_link_reset) begin
       clear_rdybit = {NEndpoints{1'b1}};
       update_pend  = {NEndpoints{1'b1}};
     end else begin
