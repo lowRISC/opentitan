@@ -27,16 +27,17 @@ program spiflash #(
   // TODO: Add WP
 );
 
-  typedef enum bit {
+  typedef enum int unsigned {
     Addr3B,
-    Addr4B
+    Addr4B,
+    AddrCfg
   } addr_mode_e;
 
   // Return Output mode
   typedef enum int unsigned {
-    IoSingle,
-    IoDual,
-    IoQuad
+    IoSingle = 1,
+    IoDual   = 2,
+    IoQuad   = 4
   } io_mode_e;
 
   typedef logic [7:0] spiflash_byte_t;
@@ -60,11 +61,17 @@ program spiflash #(
   spiflash_byte_t [2:0] status; // 24 bit
   spiflash_byte_t storage[spiflash_addr_t]; // Associative Array to store data
 
+  spiflash_byte_t sfdp[256]; // SFDP storage 256Byte
+
   initial begin
     print_banner();
 
     // Init values
     status = '0;
+
+    // SFDP initialization
+    // FIXME: Appropriate SFDP table rather than random data
+    foreach(sfdp[i]) sfdp[i] = $urandom_range(0,255);
     // Should wait ??
     main();
   end
@@ -165,12 +172,7 @@ program spiflash #(
     output spiflash_byte_t opcode
   );
     automatic spiflash_byte_t spi_byte = 0;
-    // Receive first 8 beats and decoding the byte, call subsequence tasks.
-    repeat(8) begin
-      @(posedge sck);
-      spi_byte = {spi_byte[6:0], sd[0]};
-    end
-    @(negedge sck); // Wait the data line fully completed
+    get_byte(IoSingle, spi_byte);
     $display("SPIFlash: Command(%2Xh) received", spi_byte);
     opcode = spi_byte;
   endtask : cmdparse
@@ -188,9 +190,66 @@ program spiflash #(
       spi_device_pkg::CmdJedecId: begin
         return_jedec();
       end
+
+      spi_device_pkg::CmdReadSfdp: begin
+        return_sfdp();
+      end
+
+      default: begin
+        $display("Unrecognized Opcode (%2Xh) received", opcode);
+      end
     endcase
 
   endtask : process_cmd
+
+  task automatic get_byte(
+    input  io_mode_e       io_mode,
+    output spiflash_byte_t data
+  );
+    // Receive a byte on SPI
+    // Expected to be called @(negedge sck);
+    automatic spiflash_byte_t spi_byte = 0;
+    // Receive first 8 beats and decoding the byte, call subsequence tasks.
+    repeat(8/io_mode) begin
+      @(posedge sck);
+      case (io_mode)
+        IoSingle: spi_byte = {spi_byte[6:0], sd[  0]};
+        IoDual:   spi_byte = {spi_byte[5:0], sd[1:0]};
+        IoQuad:   spi_byte = {spi_byte[3:0], sd[3:0]};
+        default:  spi_byte = {spi_byte[6:0], sd[  0]};
+      endcase
+    end
+    @(negedge sck); // Wait the data line fully completed
+    data = spi_byte;
+  endtask : get_byte
+
+  task automatic get_address(
+    input  io_mode_e    imode,
+    input  addr_mode_e  amode,
+    output logic [31:0] addr
+  );
+    automatic spiflash_byte_t spi_byte;
+    automatic addr_mode_e mode;
+    case (amode)
+      AddrCfg: mode = addr_mode;
+      Addr3B, Addr4B: mode = amode;
+      default: mode = Addr3B;
+    endcase
+
+    if (mode == Addr4B) begin
+      // Get upper byte
+      get_byte(imode, spi_byte);
+      addr[31:24] = spi_byte;
+    end else begin
+      addr[31:24] = 8'h 0;
+    end
+
+    for(int i = 2 ; i >= 0 ; i--) begin
+      get_byte(imode, spi_byte);
+      addr[8*i+:8] = spi_byte;
+    end
+
+  endtask : get_address
 
   task automatic return_byte(spiflash_byte_t data, io_mode_e io_mode);
     // Assume the task is called at @(negedge sck);
@@ -239,6 +298,12 @@ program spiflash #(
     end
   endtask : return_byte
 
+  task automatic dummy(int unsigned cycle);
+    // Assume the task is called @(negedge sck);
+    sd_en = 4'b 0000;
+    repeat (cycle) @(negedge sck);
+  endtask : dummy
+
   task automatic return_status(int unsigned idx);
     // Starting from the index and wraps %3 until host releases CSb
     automatic int unsigned s_idx = idx;
@@ -258,5 +323,20 @@ program spiflash #(
     return_byte(DeviceId[15:8], IoSingle);
     // Float
   endtask : return_jedec
+
+  task automatic return_sfdp();
+    automatic logic [31:0] address;
+    // Get address field
+    get_address(IoSingle, Addr3B, address);
+    $display("%d] SPIFlash: SFDP Address %6Xh", $time, address);
+
+    // dummy byte
+    dummy(8); // 8 cycle dummy
+
+    // fetch data and return
+    forever begin
+      return_byte(sfdp[address++], IoSingle);
+    end
+  endtask : return_sfdp
 
 endprogram : spiflash
