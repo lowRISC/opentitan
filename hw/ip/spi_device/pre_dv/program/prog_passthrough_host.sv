@@ -29,6 +29,7 @@ program prog_passthrough_host
     automatic spi_data_t temp_status;
     automatic logic [23:0] temp_jedec_id;
     automatic int unsigned num_cc;
+    automatic spi_queue_t  rdata = {};
     // Default value
     sif.csb = 1'b 1;
 
@@ -67,6 +68,17 @@ program prog_passthrough_host
 
     repeat(10) @(negedge clk);
 
+    // Read SFDP from SPIFlash (not inside SPI_DEVICE IP)
+    spiflash_readsfdp(
+      sif.tb,
+      spi_device_pkg::CmdReadSfdp, // 5Ah
+      24'h 00_0000, // addr
+      32,           // size
+      rdata
+    );
+
+    // clean-up for SFDP
+    rdata.delete();
 
     // Finish
     $finish();
