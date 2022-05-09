@@ -55,7 +55,9 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
 
   virtual task dut_init(string reset_kind = "HARD");
     // Initialize gpio pin default states
-    cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});
+    if (!$test$plusargs("disable_gpio_pulldown")) begin
+      cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});
+    end
     // Initialize flash seeds
     cfg.mem_bkdr_util_h[FlashBank0Info].set_mem();
     cfg.mem_bkdr_util_h[FlashBank1Info].set_mem();
