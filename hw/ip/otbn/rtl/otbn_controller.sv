@@ -136,8 +136,8 @@ module otbn_controller
   input  logic rnd_fips_err_i,
 
   // Secure Wipe
-  input  logic secure_wipe_running_i,
   output logic start_secure_wipe_o,
+  input  logic secure_wipe_done_i,
   input  logic sec_wipe_zero_i,
 
   input  logic        state_reset_i,
@@ -285,6 +285,15 @@ module otbn_controller
 
   logic [4:0] insn_bignum_rd_addr_a_q, insn_bignum_rd_addr_b_q, insn_bignum_wr_addr_q;
 
+  logic secure_wipe_running_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      secure_wipe_running_q <= 1'b0;
+    end else begin
+      secure_wipe_running_q <= start_secure_wipe_o | (secure_wipe_running_q & ~secure_wipe_done_i);
+    end
+  end
+
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
   assign mem_stall = lsu_load_req_raw;
@@ -310,8 +319,8 @@ module otbn_controller
   assign executing = (state_q == OtbnStateRun) ||
                      (state_q == OtbnStateStall);
 
-  assign locking_o = (state_d == OtbnStateLocked) & ~secure_wipe_running_i;
-  assign start_secure_wipe_o = executing & (done_complete | err) & ~secure_wipe_running_i;
+  assign locking_o = (state_d == OtbnStateLocked) & ~(start_secure_wipe_o | secure_wipe_running_q);
+  assign start_secure_wipe_o = executing & (done_complete | err) & ~secure_wipe_running_q;
 
   assign jump_or_branch = (insn_valid_i &
                            (insn_dec_shared_i.branch_insn | insn_dec_shared_i.jump_insn));
