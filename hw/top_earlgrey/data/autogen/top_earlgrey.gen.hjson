@@ -13339,6 +13339,12 @@
       module_name: sensor_ctrl
     }
     {
+      name: sensor_ctrl_init_status_change
+      width: 1
+      type: interrupt
+      module_name: sensor_ctrl
+    }
+    {
       name: flash_ctrl_prog_empty
       width: 1
       type: interrupt

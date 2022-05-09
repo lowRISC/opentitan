@@ -24,6 +24,9 @@
     { name: "io_status_change",
       desc: "io power status has changed",
     }
+    { name: "init_status_change",
+      desc: "ast init status has changed",
+    }
   ],
   regwidth: "32",
   param_list: [

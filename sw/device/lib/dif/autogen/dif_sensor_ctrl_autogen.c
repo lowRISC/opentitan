@@ -59,6 +59,9 @@ static bool sensor_ctrl_get_irq_bit_index(dif_sensor_ctrl_irq_t irq,
     case kDifSensorCtrlIrqIoStatusChange:
       *index_out = SENSOR_CTRL_INTR_COMMON_IO_STATUS_CHANGE_BIT;
       break;
+    case kDifSensorCtrlIrqInitStatusChange:
+      *index_out = SENSOR_CTRL_INTR_COMMON_INIT_STATUS_CHANGE_BIT;
+      break;
     default:
       return false;
   }

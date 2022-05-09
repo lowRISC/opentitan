@@ -183,6 +183,10 @@ module rv_core_ibex
   logic [31:0] rvfi_mem_wdata;
 `endif
 
+  // core sleeping
+  logic core_sleep;
+
+
   // errors and core alert events
   logic ibus_intg_err, dbus_intg_err;
   logic alert_minor, alert_major_internal, alert_major_bus;
@@ -447,8 +451,17 @@ module rv_core_ibex
     .alert_minor_o          (alert_minor),
     .alert_major_internal_o (alert_major_internal),
     .alert_major_bus_o      (alert_major_bus),
-    .core_sleep_o           (pwrmgr_o.core_sleeping)
+    .core_sleep_o           (core_sleep)
   );
+
+  prim_buf #(
+    .Width(1)
+  ) u_core_sleeping_buf (
+    .in_i(core_sleep),
+    .out_o(pwrmgr_o.core_sleeping)
+  );
+
+
 
   ibex_pkg::crash_dump_t crash_dump_previous;
   logic previous_valid;

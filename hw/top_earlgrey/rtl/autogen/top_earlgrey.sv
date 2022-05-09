@@ -357,7 +357,7 @@ module top_earlgrey #(
   // rv_core_ibex
 
 
-  logic [186:0]  intr_vector;
+  logic [187:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -488,6 +488,7 @@ module top_earlgrey #(
   logic intr_aon_timer_aon_wkup_timer_expired;
   logic intr_aon_timer_aon_wdog_timer_bark;
   logic intr_sensor_ctrl_io_status_change;
+  logic intr_sensor_ctrl_init_status_change;
   logic intr_flash_ctrl_prog_empty;
   logic intr_flash_ctrl_prog_lvl;
   logic intr_flash_ctrl_rd_full;
@@ -1977,7 +1978,8 @@ module top_earlgrey #(
       .cio_ast_debug_out_en_o (cio_sensor_ctrl_ast_debug_out_en_d2p),
 
       // Interrupt
-      .intr_io_status_change_o (intr_sensor_ctrl_io_status_change),
+      .intr_io_status_change_o   (intr_sensor_ctrl_io_status_change),
+      .intr_init_status_change_o (intr_sensor_ctrl_init_status_change),
       // [30]: recov_alert
       // [31]: fatal_alert
       .alert_tx_o  ( alert_tx[31:30] ),
@@ -2583,32 +2585,33 @@ module top_earlgrey #(
   );
   // interrupt assignments
   assign intr_vector = {
-      intr_edn1_edn_fatal_err, // IDs [186 +: 1]
-      intr_edn1_edn_cmd_req_done, // IDs [185 +: 1]
-      intr_edn0_edn_fatal_err, // IDs [184 +: 1]
-      intr_edn0_edn_cmd_req_done, // IDs [183 +: 1]
-      intr_entropy_src_es_fatal_err, // IDs [182 +: 1]
-      intr_entropy_src_es_observe_fifo_ready, // IDs [181 +: 1]
-      intr_entropy_src_es_health_test_failed, // IDs [180 +: 1]
-      intr_entropy_src_es_entropy_valid, // IDs [179 +: 1]
-      intr_csrng_cs_fatal_err, // IDs [178 +: 1]
-      intr_csrng_cs_hw_inst_exc, // IDs [177 +: 1]
-      intr_csrng_cs_entropy_req, // IDs [176 +: 1]
-      intr_csrng_cs_cmd_req_done, // IDs [175 +: 1]
-      intr_keymgr_op_done, // IDs [174 +: 1]
-      intr_otbn_done, // IDs [173 +: 1]
-      intr_kmac_kmac_err, // IDs [172 +: 1]
-      intr_kmac_fifo_empty, // IDs [171 +: 1]
-      intr_kmac_kmac_done, // IDs [170 +: 1]
-      intr_hmac_hmac_err, // IDs [169 +: 1]
-      intr_hmac_fifo_empty, // IDs [168 +: 1]
-      intr_hmac_hmac_done, // IDs [167 +: 1]
-      intr_flash_ctrl_corr_err, // IDs [166 +: 1]
-      intr_flash_ctrl_op_done, // IDs [165 +: 1]
-      intr_flash_ctrl_rd_lvl, // IDs [164 +: 1]
-      intr_flash_ctrl_rd_full, // IDs [163 +: 1]
-      intr_flash_ctrl_prog_lvl, // IDs [162 +: 1]
-      intr_flash_ctrl_prog_empty, // IDs [161 +: 1]
+      intr_edn1_edn_fatal_err, // IDs [187 +: 1]
+      intr_edn1_edn_cmd_req_done, // IDs [186 +: 1]
+      intr_edn0_edn_fatal_err, // IDs [185 +: 1]
+      intr_edn0_edn_cmd_req_done, // IDs [184 +: 1]
+      intr_entropy_src_es_fatal_err, // IDs [183 +: 1]
+      intr_entropy_src_es_observe_fifo_ready, // IDs [182 +: 1]
+      intr_entropy_src_es_health_test_failed, // IDs [181 +: 1]
+      intr_entropy_src_es_entropy_valid, // IDs [180 +: 1]
+      intr_csrng_cs_fatal_err, // IDs [179 +: 1]
+      intr_csrng_cs_hw_inst_exc, // IDs [178 +: 1]
+      intr_csrng_cs_entropy_req, // IDs [177 +: 1]
+      intr_csrng_cs_cmd_req_done, // IDs [176 +: 1]
+      intr_keymgr_op_done, // IDs [175 +: 1]
+      intr_otbn_done, // IDs [174 +: 1]
+      intr_kmac_kmac_err, // IDs [173 +: 1]
+      intr_kmac_fifo_empty, // IDs [172 +: 1]
+      intr_kmac_kmac_done, // IDs [171 +: 1]
+      intr_hmac_hmac_err, // IDs [170 +: 1]
+      intr_hmac_fifo_empty, // IDs [169 +: 1]
+      intr_hmac_hmac_done, // IDs [168 +: 1]
+      intr_flash_ctrl_corr_err, // IDs [167 +: 1]
+      intr_flash_ctrl_op_done, // IDs [166 +: 1]
+      intr_flash_ctrl_rd_lvl, // IDs [165 +: 1]
+      intr_flash_ctrl_rd_full, // IDs [164 +: 1]
+      intr_flash_ctrl_prog_lvl, // IDs [163 +: 1]
+      intr_flash_ctrl_prog_empty, // IDs [162 +: 1]
+      intr_sensor_ctrl_init_status_change, // IDs [161 +: 1]
       intr_sensor_ctrl_io_status_change, // IDs [160 +: 1]
       intr_aon_timer_aon_wdog_timer_bark, // IDs [159 +: 1]
       intr_aon_timer_aon_wkup_timer_expired, // IDs [158 +: 1]

@@ -20,16 +20,32 @@ package sensor_ctrl_reg_pkg;
   ////////////////////////////
 
   typedef struct packed {
-    logic        q;
+    struct packed {
+      logic        q;
+    } io_status_change;
+    struct packed {
+      logic        q;
+    } init_status_change;
   } sensor_ctrl_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
-    logic        q;
+    struct packed {
+      logic        q;
+    } io_status_change;
+    struct packed {
+      logic        q;
+    } init_status_change;
   } sensor_ctrl_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
-    logic        q;
-    logic        qe;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } io_status_change;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } init_status_change;
   } sensor_ctrl_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -60,8 +76,14 @@ package sensor_ctrl_reg_pkg;
   } sensor_ctrl_reg2hw_fatal_alert_mreg_t;
 
   typedef struct packed {
-    logic        d;
-    logic        de;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_status_change;
+    struct packed {
+      logic        d;
+      logic        de;
+    } init_status_change;
   } sensor_ctrl_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -87,9 +109,9 @@ package sensor_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    sensor_ctrl_reg2hw_intr_state_reg_t intr_state; // [60:60]
-    sensor_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [59:59]
-    sensor_ctrl_reg2hw_intr_test_reg_t intr_test; // [58:57]
+    sensor_ctrl_reg2hw_intr_state_reg_t intr_state; // [64:63]
+    sensor_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [62:61]
+    sensor_ctrl_reg2hw_intr_test_reg_t intr_test; // [60:57]
     sensor_ctrl_reg2hw_alert_test_reg_t alert_test; // [56:53]
     sensor_ctrl_reg2hw_alert_trig_mreg_t [12:0] alert_trig; // [52:40]
     sensor_ctrl_reg2hw_fatal_alert_en_mreg_t [12:0] fatal_alert_en; // [39:27]
@@ -99,7 +121,7 @@ package sensor_ctrl_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    sensor_ctrl_hw2reg_intr_state_reg_t intr_state; // [60:59]
+    sensor_ctrl_hw2reg_intr_state_reg_t intr_state; // [62:59]
     sensor_ctrl_hw2reg_recov_alert_mreg_t [12:0] recov_alert; // [58:33]
     sensor_ctrl_hw2reg_fatal_alert_mreg_t [13:0] fatal_alert; // [32:5]
     sensor_ctrl_hw2reg_status_reg_t status; // [4:0]
@@ -118,8 +140,9 @@ package sensor_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] SENSOR_CTRL_STATUS_OFFSET = 6'h 24;
 
   // Reset values for hwext registers and their fields
-  parameter logic [0:0] SENSOR_CTRL_INTR_TEST_RESVAL = 1'h 0;
+  parameter logic [1:0] SENSOR_CTRL_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] SENSOR_CTRL_INTR_TEST_IO_STATUS_CHANGE_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_INTR_TEST_INIT_STATUS_CHANGE_RESVAL = 1'h 0;
   parameter logic [1:0] SENSOR_CTRL_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_ALERT_RESVAL = 1'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_FATAL_ALERT_RESVAL = 1'h 0;
