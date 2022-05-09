@@ -225,13 +225,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                 addr_attrs.sprint(),
                 loc_data
                 ), UVM_MEDIUM)
-
-      // update the scoreboard on backdoor-programs as well
-      mem_data[0] = loc_data;
-      set_scb_mem(1, flash_op.partition,
-                  addr_attrs.addr, CustomVal, mem_data);
-
-      // increment after all updates are complete
       addr_attrs.incr(TL_DBW);
     end
 
@@ -255,6 +248,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     logic [7:0] intg_data;
     logic is_upper = addr[flash_ctrl_pkg::DataByteWidth-1];
     addr_t aligned_addr = addr;
+
+    // update memory in the scoreboard
+    write_data_all_part(partition, {bank,addr[FlashMemAddrPageMsbBit:0]}, '0, wr_data);
 
     if (is_upper) begin
       aligned_addr = {addr[TL_AW-1:FlashDataByteWidth], {FlashDataByteWidth{1'b0}}};
