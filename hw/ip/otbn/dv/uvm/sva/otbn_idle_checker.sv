@@ -117,7 +117,7 @@ module otbn_idle_checker
           ((status_q_i == otbn_pkg::StatusLocked) && keys_busy) |->
           (idle_o_i == prim_mubi_pkg::MuBi4False))
   `ASSERT(IdleIfLockedAndNotRotatingKeys_A,
-          ((status_q_i == otbn_pkg::StatusLocked) && !keys_busy) |->
+          ((status_q_i == otbn_pkg::StatusLocked) && !keys_busy) |=>
           (idle_o_i == prim_mubi_pkg::MuBi4True))
 
   `ASSERT(NoStartKeyRotationWhenLocked_A,
