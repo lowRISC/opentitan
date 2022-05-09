@@ -66,10 +66,6 @@ hw/top_englishbreakfast/ip/xbar_peri/xbar_peri.core
 # Rust Cargo build system files.
 Cargo.lock
 sw/host/**/target
-# We check this in to ensure the signing tool is built in a reproducible way
-# under meson, however, once the signing tool is integrated into opentitantool,
-# which is built with Bazel, this can be removed. See lowrisc/opentitan#10465.
-!sw/host/rom_ext_image_tools/signer/Cargo.lock
 
 # Bazel-related cache and output directories
 bazel-*
