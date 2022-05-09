@@ -1291,7 +1291,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopEarlgreyPlicPeripheralSensorCtrl;
   for (dif_sensor_ctrl_irq_t irq = kDifSensorCtrlIrqIoStatusChange;
-       irq <= kDifSensorCtrlIrqIoStatusChange; ++irq) {
+       irq <= kDifSensorCtrlIrqInitStatusChange; ++irq) {
     sensor_ctrl_irq_expected = irq;
     LOG_INFO("Triggering sensor_ctrl IRQ %d.", irq);
     CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl, irq));
