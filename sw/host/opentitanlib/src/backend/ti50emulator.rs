@@ -10,13 +10,13 @@ use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 pub struct Ti50EmulatorOpts {
-    #[structopt(long)]
+    #[structopt(long, default_value)]
     executable_directory: String,
 
     #[structopt(long, default_value = "host_emulation")]
     executable: String,
 
-    #[structopt(long)]
+    #[structopt(long, default_value = "ti50")]
     instance_prefix: String,
 }
 
