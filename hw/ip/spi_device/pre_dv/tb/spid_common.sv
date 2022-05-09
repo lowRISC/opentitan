@@ -769,11 +769,11 @@ package spid_common;
   endtask : spiflash_wrdi
 
   task automatic spiflash_readjedec(
-    virtual spi_if.tb  sif,
-    input spi_data_t   opcode,
-    input logic [7:0]  num_cc,
-    input logic [7:0]  cc,      // Continuous Code
-    ref   logic [23:0] jedec_id // [23:16] Manufacurer ID, [15:0] ID
+    virtual spi_if.tb   sif,
+    input  spi_data_t   opcode,
+    input  logic [7:0]  cc,      // Continuous Code
+    output int unsigned num_cc,
+    ref    logic [23:0] jedec_id // [23:16] Manufacurer ID, [15:0] ID
   );
     // as the transaction size of Read JEDEC ID depends on the Continuous Code,
     // This task does not follow the conventional SPI transaction commands.
@@ -799,6 +799,8 @@ package spid_common;
       spi_receivebyte(sif, rcv_byte, IoSingle);
       cc_cnt++;
     end while (rcv_byte == cc);
+
+    num_cc = cc_cnt - 1;
 
     // If not matched with CC, then that is the Manufacture ID
     jedec_id[23:16] = rcv_byte;
