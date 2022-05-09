@@ -72,6 +72,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
   bit op_readonly_on_info1_partition;  // Make info1 partition read-only.
 
   uint op_erase_type_bank_pc;
+  uint op_prog_type_repair_pc;
   uint op_max_words;
   bit op_allow_invalid;
 
@@ -178,6 +179,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
     op_readonly_on_info1_partition = 1;
 
     op_erase_type_bank_pc = 20;
+    op_prog_type_repair_pc = 10;
     op_max_words = 512;
     op_allow_invalid = 1'b0;
 
