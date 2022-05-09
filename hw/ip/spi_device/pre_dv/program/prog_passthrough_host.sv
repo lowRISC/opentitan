@@ -28,6 +28,7 @@ program prog_passthrough_host
   initial begin
     automatic spi_data_t temp_status;
     automatic logic [23:0] temp_jedec_id;
+    automatic int unsigned num_cc;
     // Default value
     sif.csb = 1'b 1;
 
@@ -54,20 +55,21 @@ program prog_passthrough_host
     spiflash_readjedec(
       sif.tb,
       spi_device_pkg::CmdJedecId,
-      8'h 7,
       8'h 7F,
+      num_cc,
       temp_jedec_id
     );
 
     jedec_id  = temp_jedec_id[23:16];
     device_id = temp_jedec_id[15:0];
-    $display("Received Jedec ID: %2Xh, Device ID: %4Xh", jedec_id, device_id);
+    $display("Received Jedec ID: %2Xh (CC: %2d), Device ID: %4Xh",
+      jedec_id, num_cc, device_id);
 
     repeat(10) @(negedge clk);
 
-    forever begin
-      @(posedge clk);
-    end
+
+    // Finish
+    $finish();
   end
 
   // TODO: Do Factory to load proper sequence for the test
