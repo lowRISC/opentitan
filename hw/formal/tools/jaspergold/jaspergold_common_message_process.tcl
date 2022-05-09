@@ -21,6 +21,11 @@ set_message -warning VERI-1348
 # Used for pwrmgr's pwrmgr_clock_enables_sva_if.sv assertion.
 set_message -warning EOBS012
 
+# Downgrade the following error to warning:
+# When two submodules are connected via a wire, there is no need to explicitly declare that wire in
+# the top module.
+set_message -warning VERI-9030
+
 # Disabling warnings:
 # We use parameter instead of localparam in packages to allow redefinition
 # at elaboration time.
