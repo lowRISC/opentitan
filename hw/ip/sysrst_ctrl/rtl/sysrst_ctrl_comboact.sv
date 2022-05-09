@@ -30,10 +30,10 @@ module sysrst_ctrl_comboact
   ///////////////////////////////////////
 
   // mask combo detection pulse with config bits
-  logic combo_bat_disable_pulse, combo_gsc_pulse, combo_ec_rst_pulse;
+  logic combo_bat_disable_pulse, combo_ot_pulse, combo_ec_rst_pulse;
   assign combo_bat_disable_pulse = cfg_bat_disable_en_i & combo_det_pulse_i;
   assign combo_ec_rst_pulse      = cfg_ec_rst_en_i & combo_det_pulse_i;
-  assign combo_gsc_pulse         = cfg_rst_req_en_i & combo_det_pulse_i;
+  assign combo_ot_pulse         = cfg_rst_req_en_i & combo_det_pulse_i;
   assign combo_intr_pulse_o      = cfg_intr_en_i & combo_det_pulse_i;
 
   //ec_rst_l_i high->low detection
@@ -41,7 +41,7 @@ module sysrst_ctrl_comboact
   assign ec_rst_l_det_pulse = ~ec_rst_l_i & ec_rst_l_det_q;
 
   ////////////////////////////////////
-  // Bat / GSC reset pulse latching //
+  // Bat / OT reset pulse latching //
   ////////////////////////////////////
 
   logic bat_disable_q, bat_disable_d;
@@ -49,14 +49,14 @@ module sysrst_ctrl_comboact
   assign bat_disable_o = bat_disable_q;
 
   logic rst_req_q, rst_req_d;
-  assign rst_req_d = rst_req_q | combo_gsc_pulse;
+  assign rst_req_d = rst_req_q | combo_ot_pulse;
   assign rst_req_o = rst_req_q;
 
   ////////////////////
   // EC reset logic //
   ////////////////////
 
-  // GSC reset will also reset EC
+  // OT reset will also reset EC
   logic timer_expired;
   logic ec_rst_l_q, ec_rst_l_d;
   assign ec_rst_l_o = ec_rst_l_q;

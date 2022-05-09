@@ -1396,7 +1396,7 @@
       tests: []
     }
     {
-      name: chip_sw_sysrst_ctrl_sleep_gsc_wakeup
+      name: chip_sw_sysrst_ctrl_sleep_wakeup
       desc: '''Verify the SYSRST ctrl can wake up the chip from deep sleep.
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
@@ -1404,13 +1404,13 @@
               a low power wakeup signal for the pwrmgr.
             - Program the associated detection timer.
             - Program the detection outcome CSR's (com_out_ctl) interrupt bit to 1.
-            - Program the pwrmgr to put the chip in deep sleep state and wake up on GSC wake up
+            - Program the pwrmgr to put the chip in deep sleep state and wake up on chip wake up
               event.
             - Issue a WFI to bring the chip in low power state.
             - After the chip has entered low power mode, set the SYSRST ctrl inputs at the chip IOs
               to the programmed combination for the duration of the detection timer.
             - Read the reset cause register to confirm wake up from low power exit phase.
-            - Read the pwrmgr wake up status register to confirm GSC wake up.
+            - Read the pwrmgr wake up status register to confirm chip wake up.
             - Read the pin input value and the combo_intr_status CSRs to verify the correct
               combination on inputs woke up the chip from sleep.
             '''
@@ -1418,21 +1418,21 @@
       tests: []
     }
     {
-      name: chip_sw_sysrst_ctrl_gsc_reset
+      name: chip_sw_sysrst_ctrl_reset
       desc: '''Verify the SYSRST ctrl can reset the chip from normal state.
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
             - Program one of the com_sel_ctl_* CSRs to choose a set of inputs to be detected as
-              the GSC reset signal.
+              the chip reset signal.
             - Program the associated detection timer.
-            - Program the detection outcome CSR's (com_out_ctl) GSC reset bit to 1.
+            - Program the detection outcome CSR's (com_out_ctl) chip reset bit to 1.
             - After some time, set the SYSRST ctrl inputs at the chip IOs to the programmed
               combination for the duration of the detection timer.
-            - The pwrmgr will power cycle the chip once it receives the GSC reset input.
+            - The pwrmgr will power cycle the chip once it receives the chip reset input.
             - Check that ec_rst_l and flash_wp_l (on pads IOR8 and IOR9) are asserted right after
               the pwrmgr has power cycled the system.
             - Read the reset cause register after boot up to confirm peripheral reset phase.
-            - Read the pwrmgr reset status register to confirm GSC reset.
+            - Read the pwrmgr reset status register to confirm chip reset.
             - Read the com_sel_ctl_* CSR in SYSRST ctrl we programmed earlier - it should have been
               reset.
             '''
@@ -1440,23 +1440,23 @@
       tests: []
     }
     {
-      name: chip_sw_sysrst_ctrl_sleep_gsc_reset
+      name: chip_sw_sysrst_ctrl_sleep_reset
       desc: '''Verify the SYSRST ctrl can reset the chip from deep sleep.
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
             - Program one of the com_sel_ctl_* CSRs to choose a set of inputs to be detected as
-              the GSC reset signal.
+              the chip reset signal.
             - Program the associated detection timer.
-            - Program the detection outcome CSR's (com_out_ctl) GSC reset bit to 1.
-            - Program the pwrmgr to put the chip in deep sleep state and allow it to be reset by GSC
-              reset bit.
+            - Program the detection outcome CSR's (com_out_ctl) chip reset bit to 1.
+            - Program the pwrmgr to put the chip in deep sleep state and allow it to be reset by the
+              chip reset bit.
             - Issue a WFI to bring the chip in low power state.
             - After the chip has entered low power mode, set the SYSRST ctrl inputs at the chip IOs
               to the programmed combination for the duration of the detection timer.
             - The pwrmgr will power cycle the chip from the deep sleep state once it receives the
-              GSC reset input.
+              chip reset input.
             - Read the reset cause register after boot up to confirm peripheral reset phase.
-            - Read the pwrmgr reset status register to confirm GSC reset.
+            - Read the pwrmgr reset status register to confirm chip reset.
             - Read the com_sel_ctl_* CSR in SYSRST ctrl we programmed earlier - it should have been
               reset.
             '''
