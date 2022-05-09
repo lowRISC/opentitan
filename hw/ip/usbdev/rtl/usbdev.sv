@@ -430,7 +430,7 @@ module usbdev
       set_sent_q       <= 1'b0;
       setup_received_q <= 1'b0;
     end else begin
-      set_sent_q       <= set_sent_q;
+      set_sent_q       <= set_sent_d;
       setup_received_q <= setup_received_d;
     end
   end
@@ -549,15 +549,15 @@ module usbdev
       clear_rdybit = {NEndpoints{1'b1}};
       update_pend  = {NEndpoints{1'b1}};
     end else begin
-      if (out_endpoint_val) begin
+      if (out_endpoint_val && setup_received_q) begin
         // Clear pending when a SETUP is received
-        clear_rdybit[out_endpoint] = setup_received_q;
-        update_pend[out_endpoint]  = setup_received_q;
+        clear_rdybit[out_endpoint] = 1'b1;
+        update_pend[out_endpoint]  = 1'b1;
       end
 
-      if (in_endpoint_val) begin
+      if (in_endpoint_val && set_sent_q) begin
         // Clear when a IN transmission was sucessful
-        clear_rdybit[in_endpoint] = set_sent_q;
+        clear_rdybit[in_endpoint] = 1'b1;
       end
     end
   end
