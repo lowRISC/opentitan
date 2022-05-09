@@ -35,6 +35,7 @@ module sensor_ctrl
 
   // Interrutps
   output logic intr_io_status_change_o,
+  output logic intr_init_status_change_o,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -103,14 +104,11 @@ module sensor_ctrl
     .devmode_i(1'b1)
   );
 
-
-  assign hw2reg.status.ast_init_done.d = ast_init_done_i;
-  assign hw2reg.status.ast_init_done.de = 1'b1;
-
-
   ///////////////////////////
   // Interrupt handling
   ///////////////////////////
+
+  // io status change
   logic [NumIoRails-1:0] io_rise;
   logic [NumIoRails-1:0] io_fall;
   prim_edge_detector #(
@@ -127,19 +125,48 @@ module sensor_ctrl
 
   assign hw2reg.status.io_pok.de = 1'b1;
 
-
-  prim_intr_hw #(.Width(1)) u_intr (
+  prim_intr_hw #(.Width(1)) u_io_intr (
     .clk_i,
     .rst_ni,
     .event_intr_i           (|{io_rise, io_fall}),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.d),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.io_status_change.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.io_status_change.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.io_status_change.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.io_status_change.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.io_status_change.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.io_status_change.d),
     .intr_o                 (intr_io_status_change_o)
   );
+
+  // init_done change
+  logic init_rise;
+  logic init_fall;
+  prim_edge_detector #(
+    .Width(1),
+    .EnSync(1)
+  ) u_init_chg (
+    .clk_i,
+    .rst_ni,
+    .d_i(ast_init_done_i),
+    .q_sync_o(hw2reg.status.ast_init_done.d),
+    .q_posedge_pulse_o(init_rise),
+    .q_negedge_pulse_o(init_fall)
+  );
+
+  prim_intr_hw #(.Width(1)) u_init_intr (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (|{init_rise, init_fall}),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.init_status_change.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.init_status_change.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.init_status_change.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.init_status_change.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.init_status_change.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.init_status_change.d),
+    .intr_o                 (intr_init_status_change_o)
+  );
+
+  assign hw2reg.status.ast_init_done.de = 1'b1;
 
   ///////////////////////////
   // Alert Event Handling
