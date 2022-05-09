@@ -25,8 +25,8 @@ static void wait_for_csrng_cmd_ready(const dif_csrng_t *csrng) {
   dif_csrng_cmd_status_t cmd_status;
   do {
     CHECK_DIF_OK(dif_csrng_get_cmd_interface_status(csrng, &cmd_status));
-    CHECK(cmd_status != kDifCsrngCmdStatusError);
-  } while (cmd_status != kDifCsrngCmdStatusReady);
+    CHECK(cmd_status.kind != kDifCsrngCmdStatusError);
+  } while (cmd_status.kind != kDifCsrngCmdStatusReady);
 }
 
 /**
@@ -97,7 +97,7 @@ static void run_generate_cmd(const dif_csrng_t *csrng, uint32_t *output,
     CHECK_DIF_OK(dif_csrng_get_output_status(csrng, &output_status));
   } while (!output_status.valid_data);
 
-  CHECK_DIF_OK(dif_csrng_generate_end(csrng, output, output_len));
+  CHECK_DIF_OK(dif_csrng_generate_read(csrng, output, output_len));
 }
 
 /**

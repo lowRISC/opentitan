@@ -70,7 +70,7 @@ extern "C" {
 /**
  * Enumeration of CSRNG command interface states.
  */
-typedef enum dif_csrng_cmd_status {
+typedef enum dif_csrng_cmd_status_kind {
   /**
    * The command interface is ready to accept commands.
    */
@@ -82,10 +82,94 @@ typedef enum dif_csrng_cmd_status {
   /**
    * The command interface completed with an error.
    */
-  // TODO: How does the command interface recover from an error.
-  // TODO: Add support for decoding ERR_CODE using, probably using
-  // a separate interface.
   kDifCsrngCmdStatusError,
+} dif_csrng_cmd_status_kind_t;
+
+/**
+ * Enumeration of CSRNG FIFOs, which indicates which part of the hardware
+ * produced an error.
+ */
+typedef enum dif_csrng_fifo {
+  kDifCsrngFifoCmd,
+  kDifCsrngFifoGenBits,
+  kDifCsrngFifoCmdReq,
+  kDifCsrngFifoRcStage,
+  kDifCsrngFifoKeyVrc,
+  kDifCsrngFifoUpdateReq,
+  kDifCsrngFifoBencRec,
+  kDifCsrngFifoBencAck,
+  kDifCsrngFifoPData,
+  kDifCsrngFifoFinal,
+  kDifCsrngFifoGBencAck,
+  kDifCsrngFifoGrcStage,
+  kDifCsrngFifoGGenReq,
+  kDifCsrngFifoGadStage,
+  kDifCsrngFifoBlockEnc,
+} dif_csrng_fifo_t;
+
+/**
+ * Enumeration of CSRNG FIFO errors.
+ */
+typedef enum dif_csrng_error {
+  /**
+   * Indicates an error in the command stage state machine.
+   */
+  kDifCsrngErrorCmdStageSm,
+  /**
+   * Indicates an error in the main state machine.
+   */
+  kDifCsrngErrorMainSm,
+  /**
+   * Indicates an error in the DRBG's generator state machine.
+   */
+  kDifCsrngErrorDrbgGenSm,
+  /**
+   * Indicates an error in the DRBG's block encoding state machine.
+   */
+  kDifCsrngErrorDrbgUpdateBlockEncSm,
+  /**
+   * Indicates an error in the DRBG's block output state machine.
+   */
+  kDifCsrngErrorDrbgUpdateOutBlockSm,
+  /**
+   * Indicates an error in the AES state machine.
+   */
+  kDifCsrngErrorAesSm,
+  /**
+   * Indicates an error in the generate command's counter.
+   */
+  kDifCsrngErrorGenerateCmdCounter,
+  /**
+   * Indicates a write to a full FIFO occured.
+   */
+  kDifCsrngErrorFifoWrite,
+  /**
+   * Indicates a read from an empty FIFO occured.
+   */
+  kDifCsrngErrorFifoRead,
+  /**
+   * Indicates a FIFO was somehow both full and empty.
+   */
+  kDifCsrngErrorFifoFullAndEmpty,
+} dif_csrng_error_t;
+
+/**
+ * The status of the CSRNG block at a particular moment in time.
+ */
+typedef struct dif_csrng_cmd_status {
+  /**
+   * The kind of status the CSRNG is in.
+   */
+  dif_csrng_cmd_status_kind_t kind;
+  /**
+   * A bitset of FIFOs in an unhealthy state, with bit indices given by
+   * `dif_csrng_fifo_t`.
+   */
+  uint32_t unhealthy_fifos;
+  /**
+   * A bitset of errors, with bit indices given by `dif_csrng_error_t`.
+   */
+  uint32_t errors;
 } dif_csrng_cmd_status_t;
 
 /**
@@ -130,7 +214,7 @@ typedef struct dif_csrng_seed_material {
 typedef struct dif_csrng_output_status {
   /**
    * Set to true when there is cryptographic entropy data available to
-   * read using `dif_csrng_generate_end()`.
+   * read using `dif_csrng_generate_read()`.
    */
   bool valid_data;
   /**
@@ -185,6 +269,32 @@ typedef struct dif_csrng_internal_state {
    */
   bool fips_compliance;
 } dif_csrng_internal_state_t;
+
+/**
+ * Recoverable alerts emitted by the CSRNG.
+ */
+typedef enum dif_csrng_recoverable_alert {
+  /**
+   * Indicates a bad value was written to the ENABLE field of the control
+   * register.
+   */
+  kDifCsrngRecoverableAlertBadEnable,
+  /**
+   * Indicates a bad value was written to the SW_APP_ENABLE field of the control
+   * register.
+   */
+  kDifCsrngRecoverableAlertBadSwAppEnable,
+  /**
+   * Indicates a bad value was written to the READ_INT_STATE field of the
+   * control register.
+   */
+  kDifCsrngRecoverableAlertBadIntState,
+  /**
+   * Indicates the genbits bus saw two identical values, indicating a possible
+   * attack.
+   */
+  kDifCsrngRecoverableAlertRepeatedGenBits,
+} dif_csrng_recoverable_alert_t;
 
 /**
  * Configures CSRNG.
@@ -263,7 +373,6 @@ dif_result_t dif_csrng_update(const dif_csrng_t *csrng,
  *
  * @param csrng A CSRNG handle.
  * @param len Number of uint32_t words to generate.
- *
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len);
@@ -271,12 +380,13 @@ dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len);
 /**
  * Reads the output of the last CSRNG generate call.
  *
- * This function blocks until all data is read from the CSRNG. The caller is
- * responsible for making sure that the `len` parameter matches the length set
- * in the `dif_csrng_generate_start()` call.
+ * This function reads `len` words out of the CSRNG. This function should be
+ * called repeatedly until the number of words requested in
+ * `dif_csrng_generate_start()` is exhausted. This function will block until
+ * `len` words are read.
  *
  * `dif_csrng_get_output_status()` can be called before this function to ensure
- * there is data availble in the CSRNG output buffer.
+ * there is data available in the CSRNG output buffer.
  *
  * @param csrng A CSRNG handle.
  * @param[out] buf A buffer to fill with words from the pipeline.
@@ -284,8 +394,8 @@ dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_csrng_generate_end(const dif_csrng_t *csrng, uint32_t *buf,
-                                    size_t len);
+dif_result_t dif_csrng_generate_read(const dif_csrng_t *csrng, uint32_t *buf,
+                                     size_t len);
 
 /**
  * Uninstantiates CSRNG
@@ -320,9 +430,64 @@ dif_result_t dif_csrng_get_cmd_interface_status(const dif_csrng_t *csrng,
                                                 dif_csrng_cmd_status_t *status);
 
 /**
+ * Forces the status registers to indicate `fifo` as being in an unhealthy
+ * state.
+ *
+ * @param csrng An CSRNG handle
+ * @param fifo The FIFO to mark as unhealthy.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_get_cmd_force_unhealthy_fifo(const dif_csrng_t *csrng,
+                                                    dif_csrng_fifo_t fifo);
+
+/**
+ * Forces the status registers to indicate a particular error cause.
+ *
+ * @param csrng An CSRNG handle
+ * @param error The error to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_get_cmd_force_error(const dif_csrng_t *csrng,
+                                           dif_csrng_error_t error);
+
+/**
+ * Returns an opaque blob indicating the main state machine's current state.
+ *
+ * @param csrng An CSRNG handle
+ * @param state[out] The state machine state as an opaque blob.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_get_main_state_machine(const dif_csrng_t *csrng,
+                                              uint32_t *state);
+
+/**
+ * Returns a bitset indicating which hardware CSRNGs have encountered
+ * exceptions.
+ *
+ * @param csrng An CSRNG handle
+ * @param exceptions[out] The bitset of exception states.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_get_hw_csrng_exceptions(const dif_csrng_t *csrng,
+                                               uint32_t *exceptions);
+
+/**
+ * Clears recorded hardware CSRNG exceptions.
+ *
+ * @param csrng An CSRNG handle
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_clear_hw_csrng_exceptions(const dif_csrng_t *csrng);
+
+/**
  * Gets the current cryptographic entropy output data status.
  *
- * This function can be used before calling `dif_csrng_generate_end()` to
+ * This function can be used before calling `dif_csrng_generate_read()` to
  * check if there is data available to read.
  *
  * @param csrng A CSRNG handle.
@@ -340,7 +505,6 @@ dif_result_t dif_csrng_get_output_status(const dif_csrng_t *csrng,
  * @param instance_id CSRNG instance ID.
  * @param[out] state The working state of a CSRNG instance.
  * @return The result of the operation.
- *
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_get_internal_state(
@@ -377,6 +541,29 @@ dif_result_t dif_csrng_is_locked(const dif_csrng_t *csrng, bool *is_locked);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_stop(const dif_csrng_t *csrng);
+
+/**
+ * Gets the recoverable alerts currently recorded in the CSRNG block.
+ *
+ * This function returns the alerts in a bitset whose indices are given by
+ * `dif_csrng_recoverable_alert_t`.
+ *
+ * @param csrng A CSRNG handle.
+ * @param[out] alerts Bitset of alerts currently recorded.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_get_recoverable_alerts(const dif_csrng_t *csrng,
+                                              uint32_t *alerts);
+
+/**
+ * Clears all recoverable alerts currently recorded in the CSRNG block.
+ *
+ * @param csrng A CSRNG handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_clear_recoverable_alerts(const dif_csrng_t *csrng);
 
 #ifdef __cplusplus
 }  // extern "C"
