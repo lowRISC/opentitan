@@ -290,9 +290,12 @@ module usbdev
   logic [SizeWidth:0]    usb_in_size [NEndpoints];
   logic [3:0]            usb_in_endpoint;
   logic                  usb_in_endpoint_val;
+  logic [3:0]            in_endpoint;
+  logic                  in_endpoint_val;
   logic [NEndpoints-1:0] usb_in_rdy;
   logic [NEndpoints-1:0] clear_rdybit, set_sentbit, update_pend;
-  logic                  usb_setup_received, setup_received, usb_set_sent, set_sent;
+  logic                  usb_setup_received, usb_set_sent;
+  logic                  set_sent_d, set_sent_q, setup_received_d, setup_received_q;
   logic [NEndpoints-1:0] ep_out_iso, ep_in_iso;
   logic [NEndpoints-1:0] enable_setup, in_ep_stall, out_ep_stall;
   logic [NEndpoints-1:0] usb_enable_setup, usb_enable_out, ep_set_nak_on_out;
@@ -301,6 +304,8 @@ module usbdev
   logic [NEndpoints-1:0] in_rdy_async;
   logic [3:0]            usb_out_endpoint;
   logic                  usb_out_endpoint_val;
+  logic [3:0]            out_endpoint;
+  logic                  out_endpoint_val;
   logic                  usb_use_diff_rcvr, usb_diff_rx_ok;
 
   // Endpoint enables
@@ -413,14 +418,37 @@ module usbdev
     .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_set_sent),
-    .dst_pulse_o (set_sent)
+    .dst_pulse_o (set_sent_d)
+  );
+
+  // Delay set_sent and setup_received by one cycle to make sure
+  // related signals with 2 sync FFs are valid.
+  // This is ensured, as long as the CDC paths are constrained to the
+  // faster clock.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      set_sent_q       <= 1'b0;
+      setup_received_q <= 1'b0;
+    end else begin
+      set_sent_q       <= set_sent_q;
+      setup_received_q <= setup_received_d;
+    end
+  end
+
+  // Synchronize vector signals related to set_sent / setup_received
+  prim_flop_2sync #(
+    .Width (1+1+4+4)
+  ) usbdev_ep_sync (
+    .clk_i  (clk_i),
+    .rst_ni (rst_ni),
+    .d_i    ({usb_in_endpoint_val, usb_out_endpoint_val, usb_in_endpoint, usb_out_endpoint}),
+    .q_o    ({in_endpoint_val, out_endpoint_val, in_endpoint, out_endpoint})
   );
 
   always_comb begin
     set_sentbit = '0;
-    if (set_sent && usb_in_endpoint_val) begin
-      // synchronization of set_sent ensures usb_endpoint is stable
-      set_sentbit[usb_in_endpoint] = 1'b1;
+    if (set_sent_q && in_endpoint_val) begin
+      set_sentbit[in_endpoint] = 1'b1;
     end
   end
 
@@ -475,7 +503,7 @@ module usbdev
     .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_setup_received),
-    .dst_pulse_o (setup_received)
+    .dst_pulse_o (setup_received_d)
   );
 
   prim_pulse_sync sync_usb_event_rx_crc_err (
@@ -521,19 +549,15 @@ module usbdev
       clear_rdybit = {NEndpoints{1'b1}};
       update_pend  = {NEndpoints{1'b1}};
     end else begin
-      if (usb_out_endpoint_val) begin
+      if (out_endpoint_val) begin
         // Clear pending when a SETUP is received
-        // CDC: usb_out_endpoint is synchronized implicitly by
-        // setup_received, as it is stable
-        clear_rdybit[usb_out_endpoint] = setup_received;
-        update_pend[usb_out_endpoint]  = setup_received;
+        clear_rdybit[out_endpoint] = setup_received_q;
+        update_pend[out_endpoint]  = setup_received_q;
       end
 
-      if (usb_in_endpoint_val) begin
+      if (in_endpoint_val) begin
         // Clear when a IN transmission was sucessful
-        // CDC: usb_in_endpoint is synchronzied implicitly by
-        // set_sent
-        clear_rdybit[usb_in_endpoint] = set_sent;
+        clear_rdybit[in_endpoint] = set_sent_q;
       end
     end
   end
@@ -722,14 +746,11 @@ module usbdev
   );
 
   // Clear the stall flag when a SETUP is received
-
-  // CDC: usb_out_endpoint is synchronized implicitly by
-  // setup_received, as it is stable
   always_comb begin : proc_stall_tieoff
     for (int i = 0; i < NEndpoints; i++) begin
       hw2reg.in_stall[i].d  = 1'b0;
       hw2reg.out_stall[i].d  = 1'b0;
-      if (setup_received && usb_out_endpoint_val && usb_out_endpoint == 4'(unsigned'(i))) begin
+      if (setup_received_q && out_endpoint_val && out_endpoint == 4'(unsigned'(i))) begin
         hw2reg.out_stall[i].de = 1'b1;
         hw2reg.in_stall[i].de = 1'b1;
       end else begin
@@ -862,7 +883,7 @@ module usbdev
   prim_intr_hw #(.Width(1)) intr_hw_pkt_sent (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (set_sent),
+    .event_intr_i           (set_sent_q),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.pkt_sent.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.pkt_sent.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.pkt_sent.qe),
