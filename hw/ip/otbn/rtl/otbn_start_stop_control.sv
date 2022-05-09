@@ -42,7 +42,7 @@ module otbn_start_stop_control
   output logic urnd_advance_o,
 
   input   logic start_secure_wipe_i,
-  output  logic secure_wipe_running_o,
+  output  logic secure_wipe_done_o,
   output  logic done_o,
 
   output logic       sec_wipe_wdr_o,
@@ -103,7 +103,7 @@ module otbn_start_stop_control
     sec_wipe_mod_urnd_o    = 1'b0;
     sec_wipe_zero_o        = 1'b0;
     addr_cnt_inc           = 1'b0;
-    secure_wipe_running_o  = 1'b0;
+    secure_wipe_done_o     = 1'b0;
     state_error_o          = 1'b0;
 
     unique case (state_q)
@@ -142,7 +142,6 @@ module otbn_start_stop_control
         addr_cnt_inc          = 1'b1;
         sec_wipe_wdr_o        = 1'b1;
         sec_wipe_wdr_urnd_o   = 1'b1;
-        secure_wipe_running_o = 1'b1;
         if (addr_cnt_q == 5'b11111) begin
           state_d = OtbnStartStopSecureWipeAccModBaseUrnd;
         end
@@ -151,7 +150,6 @@ module otbn_start_stop_control
       // addr_cnt_q wraps around to 0 when first moving to this state, and we need to
       // supress writes to the zero register and the call stack.
        OtbnStartStopSecureWipeAccModBaseUrnd: begin
-        secure_wipe_running_o = 1'b1;
         urnd_advance_o        = 1'b1;
         addr_cnt_inc          = 1'b1;
         // The first two clock cycles are used to write random data to accumulator and modulus.
@@ -167,7 +165,6 @@ module otbn_start_stop_control
       // Writing zeros to the accumulator, modulus and the registers.
       // Resetting stack
        OtbnStartStopSecureWipeAllZero: begin
-        secure_wipe_running_o = 1'b1;
         sec_wipe_zero_o       = (addr_cnt_q == 5'b00000);
         sec_wipe_wdr_o        = 1'b1;
         sec_wipe_base_o       = (addr_cnt_q > 5'b00001);
@@ -178,6 +175,7 @@ module otbn_start_stop_control
       end
       OtbnStartStopSecureWipeComplete: begin
         urnd_advance_o = 1'b1;
+        secure_wipe_done_o = 1'b1;
         state_d = should_lock_d ? OtbnStartStopStateLocked : OtbnStartStopStateHalt;
       end
       OtbnStartStopStateLocked: begin

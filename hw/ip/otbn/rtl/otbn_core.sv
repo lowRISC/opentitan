@@ -219,7 +219,7 @@ module otbn_core
   logic [31:0] insn_cnt;
 
   logic start_secure_wipe;
-  logic secure_wipe_running;
+  logic secure_wipe_done;
 
   logic sec_wipe_wdr_d, sec_wipe_wdr_q;
   logic sec_wipe_wdr_urnd_d, sec_wipe_wdr_urnd_q;
@@ -266,8 +266,8 @@ module otbn_core
     .urnd_reseed_ack_i (urnd_reseed_ack),
     .urnd_advance_o    (urnd_advance_start_stop_control),
 
-    .start_secure_wipe_i  (start_secure_wipe),
-    .secure_wipe_running_o(secure_wipe_running),
+    .start_secure_wipe_i (start_secure_wipe),
+    .secure_wipe_done_o  (secure_wipe_done),
     .done_o,
 
     .sec_wipe_wdr_o      (sec_wipe_wdr_d),
@@ -486,9 +486,9 @@ module otbn_core
     .rnd_fips_err_i    (rnd_fips_err),
 
     // Secure wipe
-    .secure_wipe_running_i(secure_wipe_running),
-    .start_secure_wipe_o  (start_secure_wipe),
-    .sec_wipe_zero_i      (sec_wipe_zero),
+    .start_secure_wipe_o (start_secure_wipe),
+    .secure_wipe_done_i  (secure_wipe_done),
+    .sec_wipe_zero_i     (sec_wipe_zero),
 
     .state_reset_i(state_reset),
     .insn_cnt_o   (insn_cnt),
