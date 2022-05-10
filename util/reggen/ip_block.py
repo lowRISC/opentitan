@@ -12,8 +12,7 @@ from .alert import Alert
 from .bus_interfaces import BusInterfaces
 from .clocking import Clocking, ClockingItem
 from .inter_signal import InterSignal
-from .lib import (check_keys, check_name, check_int, check_bool,
-                  check_list, check_optional_str)
+from .lib import (check_keys, check_name, check_int, check_bool, check_list)
 from .params import ReggenParams, LocalParam
 from .reg_block import RegBlock
 from .signal import Signal
@@ -37,10 +36,6 @@ OPTIONAL_FIELDS = {
     'available_input_list': ['lnw', "list of available peripheral inputs"],
     'available_output_list': ['lnw', "list of available peripheral outputs"],
     'expose_reg_if': ['pb', 'if set, expose reg interface in reg2hw signal'],
-    'hier_path': [
-        None,
-        'additional hierarchy path before the reg block instance'
-    ],
     'interrupt_list': ['lnw', "list of peripheral interrupts"],
     'inter_signal_list': ['l', "list of inter-module signals"],
     'no_auto_alert_regs': [
@@ -85,7 +80,6 @@ class IpBlock:
                  scan: bool,
                  inter_signals: List[InterSignal],
                  bus_interfaces: BusInterfaces,
-                 hier_path: Optional[str],
                  clocking: Clocking,
                  xputs: Tuple[Sequence[Signal],
                               Sequence[Signal],
@@ -117,7 +111,6 @@ class IpBlock:
         self.scan = scan
         self.inter_signals = inter_signals
         self.bus_interfaces = bus_interfaces
-        self.hier_path = hier_path
         self.clocking = clocking
         self.xputs = xputs
         self.wakeups = wakeups
@@ -233,9 +226,6 @@ class IpBlock:
                                    'bus_interfaces field of ' + where))
         inter_signals += bus_interfaces.inter_signals()
 
-        hier_path = check_optional_str(rd.get('hier_path', None),
-                                       'hier_path field of ' + what)
-
         clocking = Clocking.from_raw(rd['clocking'],
                                      'clocking field of ' + what)
 
@@ -280,8 +270,7 @@ class IpBlock:
 
         return IpBlock(name, regwidth, params, reg_blocks,
                        interrupts, no_auto_intr, alerts, no_auto_alert,
-                       scan, inter_signals, bus_interfaces,
-                       hier_path, clocking, xputs,
+                       scan, inter_signals, bus_interfaces, clocking, xputs,
                        wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
                        countermeasures)
 
@@ -321,9 +310,6 @@ class IpBlock:
         ret['scan'] = self.scan
         ret['inter_signal_list'] = self.inter_signals
         ret['bus_interfaces'] = self.bus_interfaces.as_dicts()
-
-        if self.hier_path is not None:
-            ret['hier_path'] = self.hier_path
 
         ret['clocking'] = self.clocking.items
 
