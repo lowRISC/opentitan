@@ -11,7 +11,7 @@ import sys
 import textwrap
 import warnings
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, TextIO
+from typing import Any, Dict, Optional, Set, TextIO
 
 from .ip_block import IpBlock
 from .multi_register import MultiRegister

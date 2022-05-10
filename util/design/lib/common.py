@@ -80,7 +80,7 @@ def blockify(s, size, limit):
         s_incr = int(numbits / 4)
         string = s[str_idx:str_idx + s_incr]
         # Separate 32-bit words for readability.
-        for i in range(s_incr-1, 0, -1):
+        for i in range(s_incr - 1, 0, -1):
             if (s_incr - i) % 8 == 0:
                 string = string[:i] + "_" + string[i:]
         s_list.append("{}'h{}".format(numbits, string))

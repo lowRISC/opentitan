@@ -11,7 +11,6 @@
 
 import argparse
 import sys
-import re
 import subprocess
 
 from pathlib import Path
@@ -20,8 +19,10 @@ from pathlib import Path
 # calls to get back to the top.
 REPO_TOP = Path(__file__).resolve().parent.parent
 
+
 def is_ignored(path):
     return subprocess.run(['git', 'check-ignore', path]).returncode == 0
+
 
 def walk_tree(paths=[REPO_TOP]):
     for path in paths:
@@ -35,6 +36,7 @@ def walk_tree(paths=[REPO_TOP]):
             yield from walk_tree(path.iterdir())
         else:
             yield path
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -92,6 +94,7 @@ def main():
 
     # Pass if we fixed everything or there was nothing to fix.
     return 1 if total_fixable > 0 else 0
+
 
 if __name__ == '__main__':
     sys.exit(main())
