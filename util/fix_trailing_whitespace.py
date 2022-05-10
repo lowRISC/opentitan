@@ -68,7 +68,7 @@ def main():
         path = Path(path).resolve().relative_to(REPO_TOP)
         if not path.is_file() or path.is_symlink():
             continue
-        if 'vendor' in path.parts or path.suffix in ['.patch', '.svg']:
+        if 'vendor' in path.parts or path.suffix in ['.patch', '.svg', '.tpl']:
             continue
         if args.verbose:
             print(f'Checking: "{path}"')
