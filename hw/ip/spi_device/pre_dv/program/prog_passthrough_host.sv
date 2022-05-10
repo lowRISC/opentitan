@@ -52,14 +52,10 @@ program prog_passthrough_host
   end
 
   initial begin
-    automatic spi_data_t   temp_status;
-    automatic logic [23:0] temp_jedec_id;
-    automatic int unsigned num_cc;
-    automatic spi_queue_t  rdata = {};
-    automatic spi_queue_t  rdata_cmp = {};
-
+    automatic string testname;
     automatic bit pass = 1'b 1;
     automatic bit subtask_pass;
+
     // Default value
     sif.csb = 1'b 1;
     addr_mode = Addr3B; // default 3B mode
@@ -70,6 +66,44 @@ program prog_passthrough_host
     #2us
 
     @(negedge clk);
+
+    $value$plusargs("TESTNAME=%s", testname);
+
+    case (testname)
+      "readbasic": begin
+        test_readbasic(subtask_pass);
+      end
+
+      "addr_4b": begin
+        // Test EN4B
+        test_addr_4b(subtask_pass);
+      end
+
+    endcase
+
+    if (subtask_pass == 1'b 0) pass = 1'b 0;
+    wait_trans();
+
+    // Finish
+    if (pass) begin
+      $display("TEST PASSED CHECKS");
+    end
+
+    $finish();
+
+  end
+
+  static task automatic wait_trans();
+    repeat(10) @(negedge clk);
+  endtask : wait_trans
+
+  static task test_readbasic(output bit pass);
+    automatic spi_data_t   temp_status;
+    automatic logic [23:0] temp_jedec_id;
+    automatic int unsigned num_cc;
+    automatic spi_queue_t  rdata = {};
+    automatic spi_queue_t  rdata_cmp = {};
+
     // Test: Issue Status Read command without intercept
     spiflash_readstatus(
       sif.tb,
@@ -80,7 +114,7 @@ program prog_passthrough_host
     $display("Received Status: %2Xh", temp_status);
     status[0] = temp_status;
 
-    repeat(10) @(negedge clk);
+    wait_trans();
 
     // Test: Jedec ID
     // CcNum 7, Cc 'h 7F
@@ -97,7 +131,7 @@ program prog_passthrough_host
     $display("Received Jedec ID: %2Xh (CC: %2d), Device ID: %4Xh",
       jedec_id, num_cc, device_id);
 
-    repeat(10) @(negedge clk);
+    wait_trans();
 
     // Read SFDP from SPIFlash (not inside SPI_DEVICE IP)
     spiflash_readsfdp(
@@ -111,7 +145,7 @@ program prog_passthrough_host
     // clean-up for SFDP
     rdata.delete();
 
-    repeat(10) @(negedge clk);
+    wait_trans();
 
     // Read commands:
     spiflash_read(
@@ -128,7 +162,7 @@ program prog_passthrough_host
     // Update mirrored storage
     update_storage('h 103, 256, rdata);
 
-    repeat(10) @(negedge clk);
+    wait_trans();
 
     // Issue another command to the partial of the address and compare
     spiflash_read(
@@ -143,6 +177,7 @@ program prog_passthrough_host
     );
 
     if (!compare_storage('h 103, 131, rdata_cmp)) pass = 1'b 0;
+    else pass = 1'b 1;
 
     $display("Read Data size: %3d / %3d", rdata.size(), rdata_cmp.size());
     $display("Read Data (1st): %p", rdata);
@@ -151,26 +186,9 @@ program prog_passthrough_host
     rdata.delete();
     rdata_cmp.delete();
 
-    repeat(10) @(negedge clk);
-
-    // Test EN4B
-    test_addr_4b(subtask_pass);
-    if (subtask_pass == 1'b 0) pass = 1'b 0;
-
     wait_trans();
 
-    // Finish
-    if (pass) begin
-      $display("TEST PASSED CHECKS");
-    end
-
-    $finish();
-
-  end
-
-  static task automatic wait_trans();
-    repeat(10) @(negedge clk);
-  endtask : wait_trans
+  endtask : test_readbasic
 
   static task test_addr_4b(output bit pass);
     automatic spi_queue_t rdata;
