@@ -35,17 +35,20 @@ BAZEL_BINARIES = [
     '//sw/device/examples/hello_world',
 ]
 
+
 def find_dirs(root, names):
     """
     Finds all directories under `root` with the given name and
     yields them.
     """
     for p in root.iterdir():
-        if not p.is_dir(): continue
+        if not p.is_dir():
+            continue
         if p.name in names:
             yield p
         else:
             find_dirs(p, names)
+
 
 def delete_path(path):
     """
@@ -59,10 +62,12 @@ def delete_path(path):
     else:
         path.unlink()
 
+
 def shell_out(cmd):
     print(f"Running {cmd}")
     # Let the resulting exception from `check` propagate out.
     subprocess.run(cmd, check=True)
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -109,7 +114,7 @@ def main():
     delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_peri/xbar_peri.core')
 
     if args.delete_only:
-        return;
+        return
 
     # Next, we need to re-run topgen in order to create all auto-generated files.
     shell_out([
@@ -147,7 +152,7 @@ def main():
         (old.parent / new.name).write_text(text)
 
     if not args.build:
-        return;
+        return
 
     # Build the software including test_rom to enable the FPGA build.
     if args.bazel:
@@ -157,6 +162,7 @@ def main():
         ] + BAZEL_BINARIES)
     else:
         shell_out(['ninja', '-C', REPO_TOP / 'build-out'] + BINARIES)
+
 
 if __name__ == "__main__":
     main()
