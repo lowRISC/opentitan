@@ -12,6 +12,7 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/ibex_peri.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
@@ -23,6 +24,8 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "spi_device_regs.h"
+#include "usbdev_regs.h"
 
 /**
  * This symbol is defined in `sw/device/lib/testing/test_rom/test_rom.ld`,
@@ -46,6 +49,38 @@ static dif_clkmgr_t clkmgr;
 static dif_flash_ctrl_state_t flash_ctrl;
 static dif_pinmux_t pinmux;
 static dif_uart_t uart0;
+
+static void clear_addr_range(uint32_t start_addr, size_t word_count) {
+  uint32_t addr = start_addr;
+  for (size_t i = 0; i < word_count; ++i) {
+    *((volatile uint32_t *)addr) = 0;
+    addr += sizeof(uint32_t);
+  }
+}
+
+static void clear_spi_device(void) {
+  clear_addr_range(
+      TOP_EARLGREY_SPI_DEVICE_BASE_ADDR + SPI_DEVICE_BUFFER_REG_OFFSET,
+      SPI_DEVICE_BUFFER_SIZE_WORDS);
+}
+
+static void clear_usbdev(void) {
+  clear_addr_range(TOP_EARLGREY_USBDEV_BASE_ADDR + USBDEV_BUFFER_REG_OFFSET,
+                   USBDEV_BUFFER_SIZE_WORDS);
+}
+
+static void time_it(const char *op_name, void (*op_func)(void)) {
+  uint64_t start = ibex_mcycle_read();
+  op_func();
+  uint64_t end = ibex_mcycle_read();
+  uint32_t cycles = end - start;
+  LOG_INFO("%s took %u cycles", op_name, cycles);
+}
+
+static void clear_device_buffers(void) {
+  time_it("spi_device clear", clear_spi_device);
+  time_it("usbdev clear", clear_usbdev);
+}
 
 // `test_in_rom = True` tests can override this symbol to provide their own
 // rom tests. By default, it simply jumps into the OTTF's flash.
@@ -97,6 +132,8 @@ bool rom_test_main(void) {
     CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
     LOG_INFO("Jitter is enabled");
   }
+
+  clear_device_buffers();
 
   int bootstrap_err = bootstrap(&flash_ctrl);
   if (bootstrap_err != 0) {
