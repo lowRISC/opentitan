@@ -63,6 +63,18 @@ program spiflash #(
 
   localparam int unsigned StorageAw = $clog2(FlashSize);
 
+  // Status Bit Location
+  typedef enum int unsigned {
+    StatusBUSY = 0,
+    StatusWEL  = 1,
+    StatusBP0  = 2,
+    StatusBP1  = 3,
+    StatusBP2  = 4,
+    StatusBP3  = 5,
+    StatusQE   = 6, // Quad Enable
+    StatusSRWD = 7  // Status Register Write Protect
+  } status_bit_e;
+
   // spiflash_addr_t is the smallest address width to represent FlashSize bytes
   typedef logic [StorageAw-1:0] spiflash_addr_t;
 
@@ -216,6 +228,12 @@ program spiflash #(
       spi_device_pkg::CmdReadDual, spi_device_pkg::CmdReadQuad: begin
         read(opcode);
       end
+
+      // TODO: EN4B/ EX4B
+      spi_device_pkg::CmdEn4B, spi_device_pkg::CmdEx4B: begin
+        addr_4b(opcode);
+      end
+      // TODO: WREN/ WRDI
 
       // TODO: PageProgram
       // TODO: SectorErase
@@ -412,5 +430,14 @@ program spiflash #(
       return_byte(storage[address++], io_mode);
     end
   endtask : read
+
+  task automatic addr_4b(spiflash_byte_t opcode);
+    // Set / clear addr_mode
+    case (opcode)
+      spi_device_pkg::CmdEn4B: addr_mode = Addr4B;
+      spi_device_pkg::CmdEx4B: addr_mode = Addr3B;
+      default: $display("addr_4b: Unrecognized Cmd (%2Xh)", opcode);
+    endcase
+  endtask : addr_4b
 
 endprogram : spiflash
