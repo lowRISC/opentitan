@@ -7,6 +7,23 @@
 program spiflash #(
   parameter int unsigned FlashSize = 1024*1024, // 1MB
 
+  // Timing information               s_ ms_ us
+  // Program Latency
+  parameter int unsigned tPPTyp   =       1_000, // us
+  parameter int unsigned tPPMax   =       3_000, // us
+  // Sector Erase(4kB) Latency
+  parameter int unsigned tSETyp   =      45_000, // us
+  parameter int unsigned tSEMax   =     200_000, // us
+  // Block Erase 32kB Latency
+  parameter int unsigned tBE32Typ =     200_000, // us
+  parameter int unsigned tBE32Max =   1_000_000, // us
+  // Block Erase 64kB Latency
+  parameter int unsigned tBE64Typ =     400_000, // us
+  parameter int unsigned tBE64Max =   2_000_000, // us
+  // Chip Erase Latency
+  parameter int unsigned tCETyp   = 200_000_000, // us
+  parameter int unsigned tCEMax   = 320_000_000, // us
+
   // Num of Repeating Continuous Code ('h7F)
   parameter int unsigned CcNum    = 7,
   parameter logic [7:0]  JedecId  = 8'h 1F,
@@ -71,7 +88,7 @@ program spiflash #(
 
     // SFDP initialization
     // FIXME: Appropriate SFDP table rather than random data
-    foreach(sfdp[i]) sfdp[i] = $urandom_range(0,255);
+    foreach(sfdp[i]) sfdp[i] = $urandom_range(255, 0);
     // Should wait ??
     main();
   end
@@ -195,6 +212,15 @@ program spiflash #(
         return_sfdp();
       end
 
+      spi_device_pkg::CmdReadData, spi_device_pkg::CmdReadFast,
+      spi_device_pkg::CmdReadDual, spi_device_pkg::CmdReadQuad: begin
+        read(opcode);
+      end
+
+      // TODO: PageProgram
+      // TODO: SectorErase
+      // TODO: BlockErase32
+      // TODO: BlockErase64
       default: begin
         $display("Unrecognized Opcode (%2Xh) received", opcode);
       end
@@ -338,5 +364,53 @@ program spiflash #(
       return_byte(sfdp[address++], IoSingle);
     end
   endtask : return_sfdp
+
+  task automatic read(
+    input spiflash_byte_t opcode
+  );
+    // Return Read data
+    automatic logic [31:0]    address;
+    automatic spiflash_addr_t spi_addr;
+    automatic io_mode_e       io_mode     = IoSingle;
+    automatic int unsigned    dummy_cycle = 0;
+
+    // get address field
+    get_address(IoSingle, AddrCfg, address);
+    $display("T:%0d] SPIFlash: Read Address %8Xh", $time, address);
+    assert(address[31:StorageAw] == '0)
+      else $display("Out-of-Bound Address received");
+
+    // Dummy cycle?
+    case (opcode)
+      spi_device_pkg::CmdReadData: begin
+        io_mode     = IoSingle;
+        dummy_cycle = 0;
+      end
+
+      spi_device_pkg::CmdReadFast: begin
+        io_mode     = IoSingle;
+        dummy_cycle = DummySizeNormal;
+      end
+
+      spi_device_pkg::CmdReadDual: begin
+        io_mode     = IoDual;
+        dummy_cycle = DummySizeDual;
+      end
+
+      spi_device_pkg::CmdReadQuad: begin
+        io_mode     = IoQuad;
+        dummy_cycle = DummySizeQuad;
+      end
+    endcase
+
+    if (dummy_cycle != 0) dummy(dummy_cycle);
+
+    // fetch from storage and return
+    while (address <= FlashSize) begin
+      // Check if exists, if not fill with random data
+      if (!storage.exists(address)) storage[address] = $urandom_range(255,0);
+      return_byte(storage[address++], io_mode);
+    end
+  endtask : read
 
 endprogram : spiflash
