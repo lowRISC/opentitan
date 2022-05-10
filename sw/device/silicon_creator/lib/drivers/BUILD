@@ -52,6 +52,9 @@ cc_test(
 opentitan_functest(
     name = "alert_functest",
     srcs = ["alert_functest.c"],
+    cw310 = cw310_params(
+        tags = ["broken"],
+    ),
     deps = [
         ":alert",
         ":rstmgr",
@@ -594,7 +597,9 @@ opentitan_functest(
     name = "watchdog_functest",
     srcs = ["watchdog_functest.c"],
     cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        # (lowRISC/opentitan#6965) This test resets the chip and appears to
+        # cause a test failure on FPGA boards.  Restrict this test to
+        # verilator for now.
         tags = ["broken"],
     ),
     verilator = verilator_params(
