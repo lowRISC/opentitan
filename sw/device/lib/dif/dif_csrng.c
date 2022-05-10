@@ -509,6 +509,8 @@ dif_result_t dif_csrng_get_recoverable_alerts(const dif_csrng_t *csrng,
   if (csrng == NULL || alerts == NULL) {
     return kDifBadArg;
   }
+
+  *alerts = 0;
   uint32_t reg =
       mmio_region_read32(csrng->base_addr, CSRNG_RECOV_ALERT_STS_REG_OFFSET);
   BITSET_INSERT(*alerts, CSRNG_RECOV_ALERT_STS_ENABLE_FIELD_ALERT_BIT,
