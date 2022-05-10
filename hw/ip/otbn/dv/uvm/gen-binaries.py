@@ -2,7 +2,6 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
 '''A helper script to generate a default set of binaries for OTBN testing
 
 This is intended for use with dvsim, which should call this script as
@@ -25,8 +24,8 @@ def read_positive(val: str) -> int:
         pass
 
     if ival <= 0:
-        raise argparse.ArgumentTypeError('{!r} is not a positive integer.'
-                                         .format(val))
+        raise argparse.ArgumentTypeError(
+            '{!r} is not a positive integer.'.format(val))
     return ival
 
 
@@ -40,6 +39,7 @@ def read_jobs(val: Optional[str]) -> Optional[Union[str, int]]:
 
 
 class Toolchain:
+
     def __init__(self, env_data: Dict[str, str]) -> None:
         self.otbn_as = self.get_tool(env_data, 'OTBN_AS')
         self.otbn_ld = self.get_tool(env_data, 'OTBN_LD')
@@ -61,8 +61,8 @@ class Toolchain:
         subprocess.run(cmd, env=env)
 
 
-def take_env_line(dst: Dict[str, str],
-                  path: str, line_number: int, line: str) -> None:
+def take_env_line(dst: Dict[str, str], path: str, line_number: int,
+                  line: str) -> None:
     '''Read one line from a .env file, updating dst.'''
     line = line.split('#', 1)[0].strip()
     if not line:
@@ -70,8 +70,8 @@ def take_env_line(dst: Dict[str, str],
 
     parts = line.split('=', 1)
     if len(parts) != 2:
-        raise RuntimeError('{}:{}: No equals sign in line {!r}.'
-                           .format(path, line_number, line))
+        raise RuntimeError('{}:{}: No equals sign in line {!r}.'.format(
+            path, line_number, line))
 
     dst[parts[0]] = parts[1]
 
@@ -103,8 +103,8 @@ def read_toolchain(obj_dir_arg: Optional[str], otbn_dir: str) -> Toolchain:
             return Toolchain(env_dict)
     except OSError as ose:
         raise RuntimeError('Failed to read .env file at {!r} '
-                           '(at a path {}): {}.'
-                           .format(env_path, source, ose)) from None
+                           '(at a path {}): {}.'.format(env_path, source,
+                                                        ose)) from None
 
 
 def main() -> int:
@@ -115,7 +115,8 @@ def main() -> int:
                               'defaults to the OBJ_DIR environment variable '
                               'if set, or build-out at the top of the '
                               'repository if not.'))
-    parser.add_argument('--count', type=read_positive,
+    parser.add_argument('--count',
+                        type=read_positive,
                         help='Number of binaries to generate (default: 10)')
     parser.add_argument('--seed', type=read_positive)
     parser.add_argument('--size', type=read_positive)
@@ -126,13 +127,17 @@ def main() -> int:
                               'given directory. This is useful for building '
                               'the smoke test or other directed tests.'))
     parser.add_argument('--verbose', '-v', action='store_true')
-    parser.add_argument('--jobs', '-j', type=read_jobs, nargs='?',
-                        const='unlimited', help='Number of parallel jobs.')
-    parser.add_argument('--gen-only', action='store_true',
+    parser.add_argument('--jobs',
+                        '-j',
+                        type=read_jobs,
+                        nargs='?',
+                        const='unlimited',
+                        help='Number of parallel jobs.')
+    parser.add_argument('--gen-only',
+                        action='store_true',
                         help="Generate the ninja file but don't run it")
     parser.add_argument('--ninja-suffix', type=str)
-    parser.add_argument('destdir',
-                        help='Destination directory')
+    parser.add_argument('destdir', help='Destination directory')
 
     args = parser.parse_args()
 
@@ -172,8 +177,8 @@ def main() -> int:
 
     with open(os.path.join(args.destdir, ninja_fname), 'w') as ninja_handle:
         if args.src_dir is None:
-            write_ninja_rnd(ninja_handle, toolchain, otbn_dir,
-                            args.count, args.seed, args.size)
+            write_ninja_rnd(ninja_handle, toolchain, otbn_dir, args.count,
+                            args.seed, args.size)
         else:
             write_ninja_fixed(ninja_handle, toolchain, otbn_dir, args.src_dir)
 
@@ -197,12 +202,8 @@ def main() -> int:
     return subprocess.run(cmd, cwd=args.destdir, check=False).returncode
 
 
-def write_ninja_rnd(handle: TextIO,
-                    toolchain: Toolchain,
-                    otbn_dir: str,
-                    count: int,
-                    start_seed: int,
-                    size: int) -> None:
+def write_ninja_rnd(handle: TextIO, toolchain: Toolchain, otbn_dir: str,
+                    count: int, start_seed: int, size: int) -> None:
     '''Write a build.ninja to build random binaries
 
     The rules build everything in the same directory as the build.ninja file.
@@ -215,47 +216,42 @@ def write_ninja_rnd(handle: TextIO,
 
     otbn_rig = os.path.join(otbn_dir, 'dv/rig/otbn-rig')
 
-    handle.write('rule rig-gen\n'
-                 '  command = {rig} gen --size {size} --seed $seed -o $out\n\n'
-                 .format(rig=otbn_rig, size=size))
+    handle.write(
+        'rule rig-gen\n'
+        '  command = {rig} gen --size {size} --seed $seed -o $out\n\n'.format(
+            rig=otbn_rig, size=size))
 
     handle.write('rule rig-asm\n'
-                 '  command = {rig} asm -o $seed $in\n\n'
-                 .format(rig=otbn_rig))
+                 '  command = {rig} asm -o $seed $in\n\n'.format(rig=otbn_rig))
 
-    handle.write('rule as\n'
-                 '  command = RV32_TOOL_AS={rv32_as} {otbn_as} -o $out $in\n\n'
-                 .format(rv32_as=toolchain.rv32_tool_as,
-                         otbn_as=toolchain.otbn_as))
+    handle.write(
+        'rule as\n'
+        '  command = RV32_TOOL_AS={rv32_as} {otbn_as} -o $out $in\n\n'.format(
+            rv32_as=toolchain.rv32_tool_as, otbn_as=toolchain.otbn_as))
 
     handle.write('rule ld\n'
                  '  command = RV32_TOOL_LD={rv32_ld} '
-                 '{otbn_ld} -o $out -T $ldscript $in\n'
-                 .format(rv32_ld=toolchain.rv32_tool_ld,
-                         otbn_ld=toolchain.otbn_ld))
+                 '{otbn_ld} -o $out -T $ldscript $in\n'.format(
+                     rv32_ld=toolchain.rv32_tool_ld,
+                     otbn_ld=toolchain.otbn_ld))
 
     for seed in range(start_seed, start_seed + count):
         # Generate the .s and .ld files.
         handle.write('build {seed}.json: rig-gen\n'
-                     '  seed = {seed}\n'
-                     .format(seed=seed))
+                     '  seed = {seed}\n'.format(seed=seed))
 
         handle.write('build {seed}.s {seed}.ld: rig-asm {seed}.json\n'
-                     '  seed = {seed}\n'
-                     .format(seed=seed))
+                     '  seed = {seed}\n'.format(seed=seed))
 
         # Assemble the asm file to an object
         handle.write('build {seed}.o: as {seed}.s\n'.format(seed=seed))
 
         # Link the object to an ELF, using the relevant LD file
         handle.write('build {seed}.elf: ld {seed}.o\n'
-                     '  ldscript = {seed}.ld\n\n'
-                     .format(seed=seed))
+                     '  ldscript = {seed}.ld\n\n'.format(seed=seed))
 
 
-def write_ninja_fixed(handle: TextIO,
-                      toolchain: Toolchain,
-                      otbn_dir: str,
+def write_ninja_fixed(handle: TextIO, toolchain: Toolchain, otbn_dir: str,
                       src_dir: str) -> None:
     '''Write a build.ninja to build a fixed set of binaries
 
@@ -264,15 +260,15 @@ def write_ninja_fixed(handle: TextIO,
 
     '''
 
-    handle.write('rule as\n'
-                 '  command = RV32_TOOL_AS={rv32_as} {otbn_as} -o $out $in\n\n'
-                 .format(rv32_as=toolchain.rv32_tool_as,
-                         otbn_as=toolchain.otbn_as))
+    handle.write(
+        'rule as\n'
+        '  command = RV32_TOOL_AS={rv32_as} {otbn_as} -o $out $in\n\n'.format(
+            rv32_as=toolchain.rv32_tool_as, otbn_as=toolchain.otbn_as))
 
-    handle.write('rule ld\n'
-                 '  command = RV32_TOOL_LD={rv32_ld} {otbn_ld} -o $out $in\n\n'
-                 .format(rv32_ld=toolchain.rv32_tool_ld,
-                         otbn_ld=toolchain.otbn_ld))
+    handle.write(
+        'rule ld\n'
+        '  command = RV32_TOOL_LD={rv32_ld} {otbn_ld} -o $out $in\n\n'.format(
+            rv32_ld=toolchain.rv32_tool_ld, otbn_ld=toolchain.otbn_ld))
 
     count = 0
     for fname in os.listdir(src_dir):
