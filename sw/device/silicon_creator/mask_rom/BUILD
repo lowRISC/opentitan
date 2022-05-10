@@ -297,6 +297,7 @@ opentitan_functest(
     srcs = ["mask_rom_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:mask_rom",
+        tags = ["broken"],
     ),
     signed = True,
     targets = [
