@@ -1021,6 +1021,31 @@ sw_tests += {
   }
 }
 
+sensor_ctrl_status_test_lib = declare_dependency(
+  link_with: static_library(
+    'sensor_ctrl_status_test_lib',
+    sources: [
+      hw_ip_sensor_ctrl_reg_h,
+      'sensor_ctrl_status.c'],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_rv_plic,
+      sw_lib_dif_sensor_ctrl,
+      sw_lib_irq,
+      sw_lib_runtime_ibex,
+      sw_lib_runtime_log,
+      sw_lib_testing_isr_testutils,
+      sw_lib_testing_rv_plic_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'sensor_ctrl_status_test': {
+    'library': sensor_ctrl_status_test_lib,
+  }
+}
+
 # USB Device Tests
 usbdev_test_lib = declare_dependency(
   link_with: static_library(

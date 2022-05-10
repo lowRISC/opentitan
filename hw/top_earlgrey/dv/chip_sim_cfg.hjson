@@ -639,6 +639,13 @@
       run_opts: ["+sw_test_timeout_ns=40000000"]
     }
     {
+      name: chip_sw_sensor_ctrl_status
+      uvm_test_seq: chip_sw_sensor_ctrl_status_intr_vseq
+      sw_images: ["sw/device/tests/sensor_ctrl_status_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=40000000"]
+    }
+    {
       name: chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/sensor_ctrl_wakeup_test:1"]
