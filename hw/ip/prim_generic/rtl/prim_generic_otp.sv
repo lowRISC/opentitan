@@ -13,8 +13,6 @@ module prim_generic_otp
   parameter  int SizeWidth     = 2,
   // Width of the power sequencing signal.
   parameter  int PwrSeqWidth   = 2,
-  // Number of Test TL-UL words
-  parameter  int TlDepth       = 16,
   // Width of vendor-specific test control signal
   parameter  int TestCtrlWidth   = 32,
   parameter  int TestStatusWidth = 32,
@@ -96,54 +94,22 @@ module prim_generic_otp
   // TL-UL Test Interface Emulation //
   ////////////////////////////////////
 
-  // Put down a register that can be used to test the TL interface.
-  // TODO: this emulation may need to be adjusted, once closed source wrapper is
-  // implemented.
-  localparam int TlAddrWidth = prim_util_pkg::vbits(TlDepth);
-  logic tlul_req, tlul_rvalid_q, tlul_wren;
-  logic [TlDepth-1:0][31:0] tlul_regfile_q;
-  logic [31:0] tlul_wdata, tlul_rdata_q;
-  logic [TlAddrWidth-1:0]  tlul_addr;
-
-  tlul_adapter_sram #(
-    .SramAw      ( TlAddrWidth   ),
-    .SramDw      ( 32            ),
-    .Outstanding ( 1             ),
-    .ByteAccess  ( 0             ),
-    .ErrOnWrite  ( 0             )
-  ) u_tlul_adapter_sram (
+  otp_ctrl_reg_pkg::otp_ctrl_prim_reg2hw_t reg2hw;
+  otp_ctrl_reg_pkg::otp_ctrl_prim_hw2reg_t hw2reg;
+  otp_ctrl_prim_reg_top u_reg_top (
     .clk_i,
     .rst_ni,
-    .tl_i        ( test_tl_i          ),
-    .tl_o        ( test_tl_o          ),
-    .en_ifetch_i ( MuBi4False         ),
-    .req_o       ( tlul_req           ),
-    .gnt_i       ( tlul_req           ),
-    .we_o        ( tlul_wren          ),
-    .addr_o      ( tlul_addr          ),
-    .wdata_o     ( tlul_wdata         ),
-    .wmask_o     (                    ),
-    .intg_error_o(                    ),
-    .rdata_i     ( tlul_rdata_q       ),
-    .rvalid_i    ( tlul_rvalid_q      ),
-    .rerror_i    ( '0                 ),
-    .req_type_o  (                    )
+    .tl_i      (test_tl_i ),
+    .tl_o      (test_tl_o ),
+    .reg2hw    (reg2hw    ),
+    .hw2reg    (hw2reg    ),
+    .intg_err_o(), // TODO: do we need to wire this up?
+    .devmode_i (1'b1)
   );
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlul_testreg
-    if (!rst_ni) begin
-      tlul_rvalid_q  <= 1'b0;
-      tlul_rdata_q   <= '0;
-      tlul_regfile_q <= '0;
-    end else begin
-      tlul_rvalid_q <= tlul_req & ~tlul_wren;
-      if (tlul_req && tlul_wren) begin
-        tlul_regfile_q[tlul_addr] <= tlul_wdata;
-      end else if (tlul_req && !tlul_wren) begin
-        tlul_rdata_q <= tlul_regfile_q[tlul_addr];
-      end
-    end
-  end
+  logic unused_reg_sig;
+  assign unused_reg_sig = ^reg2hw;
+  assign hw2reg = '0;
 
   ///////////////////
   // Control logic //

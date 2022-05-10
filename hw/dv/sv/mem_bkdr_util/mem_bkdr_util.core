@@ -14,7 +14,7 @@ filesets:
       - lowrisc:dv:crypto_dpi_present:0.1
       - lowrisc:prim:cipher_pkg:0.1
       - lowrisc:prim:secded:0.1
-      - lowrisc:ip:otp_ctrl_pkg:0.1
+      - lowrisc:ip:otp_ctrl_pkg:1.0
       - lowrisc:dv:digestpp_dpi
       - lowrisc:ip:kmac_pkg
     files:
