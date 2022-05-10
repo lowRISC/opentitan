@@ -363,6 +363,9 @@ package spi_device_pkg;
     CmdWriteDisable = 8'h 04,
     CmdWriteEnable  = 8'h 06,
 
+    CmdEn4B = 8'h B7,
+    CmdEx4B = 8'h E9,
+
     CmdReadSfdp = 8'h 5A,
 
     CmdEnableReset = 8'h 66,

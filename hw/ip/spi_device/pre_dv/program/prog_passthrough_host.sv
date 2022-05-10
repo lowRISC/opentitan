@@ -20,6 +20,30 @@ program prog_passthrough_host
 
   spi_data_t mirrored_storage[*]; // Mirrored SPIFlash storage
 
+  import spi_device_pkg::Addr3B, spi_device_pkg::Addr4B,
+         spi_device_pkg::addr_mode_e;
+  addr_mode_e addr_mode;
+
+  // FIXME: Make it configurable by ReadSfdp
+  parameter int unsigned FlashSize = 1024*1024;
+
+  import spi_device_pkg::CmdReadStatus1,
+         spi_device_pkg::CmdJedecId,
+         spi_device_pkg::CmdPageProgram,
+         spi_device_pkg::CmdSectorErase,
+         spi_device_pkg::CmdBlockErase32,
+         spi_device_pkg::CmdBlockErase64,
+         spi_device_pkg::CmdReadData,
+         spi_device_pkg::CmdReadFast,
+         spi_device_pkg::CmdReadDual,
+         spi_device_pkg::CmdReadQuad,
+         spi_device_pkg::CmdWriteDisable,
+         spi_device_pkg::CmdWriteEnable,
+         spi_device_pkg::CmdEn4B,
+         spi_device_pkg::CmdEx4B,
+         spi_device_pkg::CmdReadSfdp,
+         spi_device_pkg::CmdResetDevice;
+
   // Timeout
   initial begin
     #1ms
@@ -28,14 +52,17 @@ program prog_passthrough_host
   end
 
   initial begin
-    automatic spi_data_t temp_status;
+    automatic spi_data_t   temp_status;
     automatic logic [23:0] temp_jedec_id;
     automatic int unsigned num_cc;
     automatic spi_queue_t  rdata = {};
     automatic spi_queue_t  rdata_cmp = {};
+
     automatic bit pass = 1'b 1;
+    automatic bit subtask_pass;
     // Default value
     sif.csb = 1'b 1;
+    addr_mode = Addr3B; // default 3B mode
 
     @(posedge rst_n);
 
@@ -46,7 +73,7 @@ program prog_passthrough_host
     // Test: Issue Status Read command without intercept
     spiflash_readstatus(
       sif.tb,
-      spi_device_pkg::CmdReadStatus1,
+      CmdReadStatus1,
       temp_status
     );
 
@@ -59,7 +86,7 @@ program prog_passthrough_host
     // CcNum 7, Cc 'h 7F
     spiflash_readjedec(
       sif.tb,
-      spi_device_pkg::CmdJedecId,
+      CmdJedecId,
       8'h 7F,
       num_cc,
       temp_jedec_id
@@ -75,7 +102,7 @@ program prog_passthrough_host
     // Read SFDP from SPIFlash (not inside SPI_DEVICE IP)
     spiflash_readsfdp(
       sif.tb,
-      spi_device_pkg::CmdReadSfdp, // 5Ah
+      CmdReadSfdp, // 5Ah
       24'h 00_0000, // addr
       32,           // size
       rdata
@@ -89,7 +116,7 @@ program prog_passthrough_host
     // Read commands:
     spiflash_read(
       sif,
-      spi_device_pkg::CmdReadData, // 03h
+      CmdReadData, // 03h
       32'h 0000_0103,              // address
       0,                           // 3B mode
       0,                           // dummy
@@ -106,7 +133,7 @@ program prog_passthrough_host
     // Issue another command to the partial of the address and compare
     spiflash_read(
       sif,
-      spi_device_pkg::CmdReadQuad,
+      CmdReadQuad,
       32'h 0000_103,               // address
       0,                           // 3B mode
       3,                           // dummy
@@ -126,12 +153,104 @@ program prog_passthrough_host
 
     repeat(10) @(negedge clk);
 
+    // Test EN4B
+    test_addr_4b(subtask_pass);
+    if (subtask_pass == 1'b 0) pass = 1'b 0;
+
+    wait_trans();
+
     // Finish
     if (pass) begin
       $display("TEST PASSED CHECKS");
     end
+
     $finish();
+
   end
+
+  static task automatic wait_trans();
+    repeat(10) @(negedge clk);
+  endtask : wait_trans
+
+  static task test_addr_4b(bit pass);
+    automatic spi_queue_t rdata;
+    automatic logic [31:0] address;
+    automatic int unsigned size;
+
+    SpiTransRead trans = new();
+    // Random address and size
+    trans.randomize() with {
+      size < 32;
+      address < FlashSize - size;
+      addr_mode == 0; // 3B only
+    };
+    trans.display();
+
+    if (addr_mode != Addr3B) begin
+      spiflash_addr_4b(sif.tb, CmdEx4B);
+
+      addr_mode = Addr3B;
+
+      wait_trans();
+    end
+
+    // FIXME: Call SPI Driver
+    spiflash_read(
+      sif.tb,
+      trans.cmd,
+      trans.address,
+      trans.addr_mode,
+      trans.dummy,
+      trans.size,
+      trans.io_mode,
+      rdata
+    );
+
+    update_storage(trans.address, trans.size, rdata);
+    rdata.delete();
+
+    wait_trans();
+
+    address = trans.address;
+    size    = trans.size;
+
+    trans = new();
+
+    trans.randomize() with {
+      size      == local::size;
+      address   == local::address;
+      addr_mode == 1; // Addr 4B
+    };
+    trans.display();
+
+    // Issue En4B
+    spiflash_addr_4b(sif.tb, CmdEn4B);
+
+    addr_mode = Addr4B;
+
+    wait_trans();
+
+    $display("Issuing 4B address command");
+
+    spiflash_read(
+      sif.tb,
+      trans.cmd,
+      trans.address,
+      trans.addr_mode,
+      trans.dummy,
+      trans.size,
+      trans.io_mode,
+      rdata
+    );
+
+    wait_trans();
+
+    if (!compare_storage(trans.address, trans.size, rdata)) pass = 1'b 0;
+    else pass = 1'b 1;
+
+    rdata.delete();
+
+  endtask : test_addr_4b
 
   // TODO: Do Factory to load proper sequence for the test
 
