@@ -172,7 +172,7 @@ program prog_passthrough_host
     repeat(10) @(negedge clk);
   endtask : wait_trans
 
-  static task test_addr_4b(bit pass);
+  static task test_addr_4b(output bit pass);
     automatic spi_queue_t rdata;
     automatic logic [31:0] address;
     automatic int unsigned size;
@@ -285,6 +285,8 @@ program prog_passthrough_host
       if (!mirrored_storage.exists(addr+i)) write_byte(addr+i, data[i]);
       else if (read_byte(addr+i) != data[i]) begin
         pass = 1'b 0;
+        $display("Data mismatch: Addr{%8Xh} EXP(%2Xh) / RCV(%2Xh)",
+          addr+i, read_byte(addr+i), data[i]);
       end
     end
     return pass;
