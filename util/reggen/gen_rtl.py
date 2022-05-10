@@ -98,22 +98,29 @@ def gen_rtl(block: IpBlock, outdir: str) -> int:
     reg_pkg_tpl = Template(
         filename=resource_filename('reggen', 'reg_pkg.sv.tpl'))
 
+    # In case the generated package contains alias definitions, we add
+    # the alias implementation identifier to the package name so that it
+    # becomes unique.
+    alias_impl = "_" + block.alias_impl if block.alias_impl else ""
+
     # Generate <block>_reg_pkg.sv
     #
     # This defines the various types used to interface between the *_reg_top
     # module(s) and the block itself.
-    reg_pkg_path = os.path.join(outdir, block.name.lower() + "_reg_pkg.sv")
+    reg_pkg_path = os.path.join(outdir, block.name.lower() + alias_impl +
+                                "_reg_pkg.sv")
     with open(reg_pkg_path, 'w', encoding='UTF-8') as fout:
         try:
-            fout.write(reg_pkg_tpl.render(block=block))
+            fout.write(reg_pkg_tpl.render(block=block,
+                                          alias_impl=alias_impl))
         except:  # noqa F722 for template Exception handling
             log.error(exceptions.text_error_template().render())
             return 1
 
     # Generate the register block implementation(s). For a device interface
-    # with no name we generate the register module "<block>_reg_top" (writing
-    # to <block>_reg_top.sv). In any other case, we also need the interface
-    # name, giving <block>_<ifname>_reg_top.
+    # with no name we generate the register module "<block>_reg_top"
+    # (writing to <block>_reg_top.sv). In any other case, we also need the
+    # interface name, giving <block>_<ifname>_reg_top.
     lblock = block.name.lower()
     for if_name, rb in block.reg_blocks.items():
         if if_name is None:
@@ -121,7 +128,7 @@ def gen_rtl(block: IpBlock, outdir: str) -> int:
         else:
             mod_base = lblock + '_' + if_name.lower()
 
-        mod_name = mod_base + '_reg_top'
+        mod_name = mod_base + alias_impl + '_reg_top'
         reg_top_path = os.path.join(outdir, mod_name + '.sv')
         with open(reg_top_path, 'w', encoding='UTF-8') as fout:
             try:
