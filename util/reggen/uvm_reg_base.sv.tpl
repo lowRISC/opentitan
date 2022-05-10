@@ -102,6 +102,13 @@ ${make_ral_pkg_window_class(dv_base_names.mem, esc_if_name, window)}
       inst_decl = f'{inst_name}[{count}]' if count > 0 else inst_name
 %>\
     rand ${reg_type} ${inst_decl};
+      % if r0.alias_target is not None:
+<%
+        alias_inst_name = r0.alias_target.lower()
+        alias_inst_decl = f'{alias_inst_name}[{count}]' if count > 0 else alias_inst_name
+%>\
+    rand ${reg_type} ${alias_inst_decl}; // aliases to ${inst_decl}
+      % endif
     % endfor
   % endfor
 % endif
@@ -145,14 +152,31 @@ ${make_ral_pkg_window_class(dv_base_names.mem, esc_if_name, window)}
         if r.dv_compact:
           inst_base = r0.name.lower()
           inst_name = f'{inst_base}[{idx}]'
+          if r0.alias_target is not None:
+            alias_inst_base = r0.alias_target.lower()
+            alias_inst_name = f'{alias_inst_base}[{idx}]'
         else:
           inst_name = reg.name.lower()
           reg_type = gen_dv.rcname(esc_if_name, reg)
+          if r0.alias_target is not None:
+            alias_inst_name = reg.alias_target.lower()
 %>\
 ${instantiate_register(reg_width, reg_block_path, reg, reg_type, inst_name)}\
+        % if reg.alias_target is not None:
+      // Assign alias register to generic handle.
+      ${alias_inst_name} = ${inst_name};
+        % endif
       % endfor
     % else:
 ${instantiate_register(reg_width, reg_block_path, r, reg_type, r.name.lower())}\
+    % endif
+    % if r0.alias_target is not None:
+<%
+    inst_name = r0.name.lower()
+    alias_inst_name = r0.alias_target.lower()
+%>\
+      // Assign alias register to generic handle.
+      ${alias_inst_name} = ${inst_name};
     % endif
   % endfor
 <%
@@ -264,6 +288,7 @@ reg_block_path, reg, mr, reg_idx)">\
       is_ext = 1
 
   class_name = gen_dv.rcname(esc_if_name, reg)
+  alias_class_name = gen_dv.alias_rcname(esc_if_name, reg)
 %>\
   class ${class_name} extends ${dv_base_reg_name};
     // fields
@@ -272,6 +297,8 @@ reg_block_path, reg, mr, reg_idx)">\
   start_idx = 0
   add_style_waive = False
   compact_field_inst_name = ""
+  compact_alias_field_inst_name = ""
+
   if mr is None:
       fields = reg.fields
   else:
@@ -280,6 +307,7 @@ reg_block_path, reg, mr, reg_idx)">\
     else:
       fields = mr.regs[reg_idx].fields
       compact_field_inst_name = mr.reg.fields[0].name.lower()
+      compact_alias_field_inst_name = mr.reg.fields[0].alias_target
       if mr.dv_compact:
         # The dv_compact flag means that the fields of the multi-reg divide equally into registers.
         # In this case, there's an array of registers and make_ral_pkg_reg_class() gets called once
@@ -306,9 +334,15 @@ reg_block_path, reg, mr, reg_idx)">\
 % endif
 % if compact_field_inst_name:
     rand ${dv_base_field_name} ${compact_field_inst_name}${suffix};
+%     if compact_alias_field_inst_name:
+    rand ${dv_base_field_name} ${compact_alias_field_inst_name.lower()}${suffix};
+%     endif
 % else:
 %   for f in fields:
     rand ${dv_base_field_name} ${f.name.lower()};
+%     if f.alias_target is not None:
+    rand ${dv_base_field_name} ${f.alias_target.lower()}; // aliases to ${f.name.lower()}
+%     endif
 %   endfor
 % endif
 
@@ -321,22 +355,35 @@ reg_block_path, reg, mr, reg_idx)">\
     endfunction : new
 
     virtual function void build(csr_excl_item csr_excl = null);
+% if alias_class_name is not None:
+      set_alias_name("${alias_class_name}");
+% endif\
       // create fields
 % for idx, field in enumerate(fields):
 <%
+    alias_reg_field_name = ""
     if compact_field_inst_name:
       reg_field_name = compact_field_inst_name
+      if compact_alias_field_inst_name:
+        alias_reg_field_name = compact_alias_field_inst_name
       # If len(fields) > 1, we define generated reg fields as an array and we need an index to
       # refer to the field object
       # If start_idx > 0, the fields cross more than one register, we define an array for the
       # fields even when the last register only contains one field.
       if len(fields) > 1 or start_idx > 0:
         reg_field_name = reg_field_name + f'[{idx + start_idx}]'
+        if compact_alias_field_inst_name:
+          alias_reg_field_name = alias_reg_field_name + f'[{idx + start_idx}]'
     else:
       reg_field_name = field.name.lower()
+      if field.alias_target is not None:
+        alias_reg_field_name = field.alias_target.lower()
 %>\
 ${_create_reg_field(dv_base_field_name, reg_width, reg_block_path, reg.shadowed, reg.hwext,
-reg_field_name, field)}
+reg_field_name, field)}\
+  % if field.alias_target is not None:
+      ${alias_reg_field_name} = ${reg_field_name}; // assign to generic handle
+  % endif
 % endfor
 % if is_ext:
       set_is_ext_reg(1);
@@ -393,6 +440,9 @@ reg_field_name, field)">\
         .is_rand(1),
         .individually_accessible(1));
 
+% if field.alias_target is not None:
+      ${fname}.set_alias_name("${field.alias_target.lower()}");
+% endif
       ${fname}.set_original_access("${field_access}");
 % if field.mubi:
       ${fname}.create_mubi_cov(.mubi_width(${field_size}));
