@@ -163,6 +163,8 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
          // Enable the bus clock to read the status register
          if (is_core_clk_stop) cfg.clk_rst_vif.start_clk();
 
+         cfg.clk_rst_vif.wait_clks(10);
+
          csr_rd(ral.key_intr_status, rdata);
          foreach (edge_detect_h2l_array[i]) begin
            check_h2l_edge_intr(sysrst_input_idx_e'(i), edge_detect_h2l[i], rdata);
