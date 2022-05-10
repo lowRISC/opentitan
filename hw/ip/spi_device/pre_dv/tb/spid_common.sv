@@ -740,32 +740,35 @@ package spid_common;
 
   endtask : spiflash_readstatus
 
-  task automatic spiflash_wel(
+  task automatic spiflash_oponly(
     virtual spi_if.tb sif,
     input spi_byte_t opcode
   );
+    // OPCODE only commands
     automatic spi_fifo_t send_data [$];
     automatic spi_data_t rcv_data [$];
 
     send_data.push_back('{data: opcode, dir: DirIn,  mode: IoSingle});
     spi_transaction(sif, send_data, rcv_data);
 
-    $display("WREN sent!");
-
-  endtask : spiflash_wel
+  endtask : spiflash_oponly
 
   task automatic spiflash_wren(
     virtual spi_if.tb sif,
     input spi_byte_t opcode
   );
-    spiflash_wel(sif, opcode);
+    spiflash_oponly(sif, opcode);
+    $display("WREN sent!");
+
   endtask : spiflash_wren
 
   task automatic spiflash_wrdi(
     virtual spi_if.tb sif,
     input spi_byte_t opcode
   );
-    spiflash_wel(sif, opcode);
+    spiflash_oponly(sif, opcode);
+    $display("WRDI sent!");
+
   endtask : spiflash_wrdi
 
   task automatic spiflash_readjedec(
@@ -991,12 +994,7 @@ package spid_common;
     virtual spi_if.tb  sif,
     input spi_data_t   opcode
   );
-    automatic spi_fifo_t send_data [$];
-    automatic spi_data_t rcv_data  [$];
-
-    send_data.push_back('{data: opcode, dir: DirIn,  mode: IoSingle});
-
-    spi_transaction(sif, send_data, rcv_data);
+    spiflash_oponly(sif, opcode);
 
   endtask : spiflash_addr_4b
 

@@ -15,19 +15,33 @@
 
   tests: [
     {
-      name: spid_passthrough_smoke
-      //build_mode: spid_status_locality_1
+      name: spid_passthrough_readbasic
+      run_opts: [
+        "+TESTNAME=readbasic"
+      ]
+    }
+    {
+      name: spid_passthrough_addr4b
+      run_opts: [
+        "+TESTNAME=addr_4b"
+      ]
     }
   ]
 
   regressions: [
     {
       name: smoke
-      tests: ["spid_passthrough_smoke"]
+      tests: [
+        "spid_passthrough_readbasic",
+        "spid_passthrough_addr4b"
+      ]
     }
     {
       name: nightly
-      tests: ["spid_passthrough_smoke"]
+      tests: [
+        "spid_passthrough_readbasic",
+        "spid_passthrough_addr4b"
+      ]
     }
   ]
 }
