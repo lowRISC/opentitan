@@ -15,7 +15,7 @@ LIMB_SIZE = 64
 # Limbs per WDR.
 LIMBS_PER_WDR = WDR_SIZE // LIMB_SIZE
 # Assert that limb size divides data register size.
-assert(WDR_SIZE % LIMB_SIZE == 0)
+assert (WDR_SIZE % LIMB_SIZE == 0)
 
 
 class Line:
@@ -57,7 +57,6 @@ class Line:
         '''
         insn = self.insn_string()
         dst_str = self.dst_string()
-        shift_str = f', {self.shift}' if self.shift != 0 else ''
         if lhs_align is not None and lhs_align < len(insn) + len(dst_str):
             raise ValueError(
                 f'Cannot align left-hand operand to the index {lhs_align}; '
@@ -67,7 +66,7 @@ class Line:
             padding = ''
         else:
             padding = ' ' * (lhs_align - len(insn) - len(dst_str))
-        return f'{insn}{padding}{dst_str}{self.lhs}, {self.rhs}{shift_str}'
+        return f'{insn}{padding}{dst_str}{self.lhs}, {self.rhs}, {self.shift}'
 
 
 def make_operand(regs: List[str], limb_index: int) -> str:
@@ -125,10 +124,14 @@ def make_block(lhs_bits: int, lhs_regs: List[str], rhs_bits: int,
     # Create the main body of the loop, with half-word writebacks at every 128
     # bits of the result. Track the bounds of the accumulator.
     lines = []
-    acc_max = 0
     for i in range(result_nterms):
-        shift_bits = (i % 2) * 64
+        # Determine if this is the final word of the result, in which case
+        # we'll use a whole-word writeback instead of half-words.
         is_final_word = (i // LIMBS_PER_WDR) == result_nwords - 1
+        if is_final_word:
+            shift_bits = (i % 4) * 64
+        else:
+            shift_bits = (i % 2) * 64
 
         # Gather the partial products for this limb of the result.
         partial_products = []
@@ -140,30 +143,15 @@ def make_block(lhs_bits: int, lhs_regs: List[str], rhs_bits: int,
             raise RuntimeError(f'No partial products for limb {i}!')
 
         for lhs_idx, rhs_idx in partial_products:
-            # Compute the upper bound of the partial product.
-            lhs_max = mask(LIMB_SIZE)
-            if lhs_idx == lhs_nlimbs - 1 and lhs_bits % LIMB_SIZE != 0:
-                lhs_max = mask(lhs_bits % LIMB_SIZE)
-            rhs_max = mask(LIMB_SIZE)
-            if rhs_idx == rhs_nlimbs - 1 and rhs_bits % LIMB_SIZE != 0:
-                rhs_max = mask(rhs_bits % LIMB_SIZE)
-            # Update the accumulator bounds and append the multiplication.
-            acc_max += ((lhs_max * rhs_max) << shift_bits)
             lines.append(
                 Line([], None, make_operand(lhs_regs, lhs_idx),
                      make_operand(rhs_regs, rhs_idx), shift_bits))
-
-        if acc_max > mask(256):
-            raise ValueError(
-                f'Accumulator overflow while computing limb {i} of result!')
 
         # Every second limb (except for the final word), write back a half-word
         # of the result as part of the last instruction.
         if not is_final_word and i % 2 == 1:
             lines[-1].modifiers.append('so')
             lines[-1].dst = make_half_word_writeback(result_regs, i)
-            # Update the accumulator bounds to reflect a half-word shift right.
-            acc_max = mask(max(0, int.bit_length(acc_max) - (WDR_SIZE // 2)))
 
     # It's possible that the last result term crosses a word boundary, so we
     # never will have hit the "final word" condition. If so, we need to add an
