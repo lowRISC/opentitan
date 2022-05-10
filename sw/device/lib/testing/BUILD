@@ -154,6 +154,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
     ],

@@ -7,6 +7,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
@@ -29,4 +30,25 @@ bool lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl) {
     default:
       return false;
   }
+}
+
+/*
+ * LC_CTRL operation status timeout in micro seconds.
+ *
+ * It is not possible to predict the specific cycle count that a LC_CTRL
+ * finishes its operation, thus arbitrary value of 100us is used.
+ */
+const uint8_t kLcOpTimeoutUs = 100;
+
+/**
+ * Checks status is ready.
+ */
+static bool lc_ready(const dif_lc_ctrl_t *lc_ctrl) {
+  dif_lc_ctrl_status_t status;
+  CHECK_DIF_OK(dif_lc_ctrl_get_status(lc_ctrl, &status));
+  return bitfield_bit32_read(status, kDifLcCtrlStatusCodeReady);
+}
+
+void lc_ctrl_testutils_wait_for_idle(const dif_lc_ctrl_t *lc_ctrl) {
+  IBEX_SPIN_FOR(lc_ready(lc_ctrl), kLcOpTimeoutUs);
 }

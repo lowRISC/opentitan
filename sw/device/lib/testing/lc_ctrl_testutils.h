@@ -18,4 +18,9 @@
  */
 bool lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl);
 
+/**
+ * Waits for the LC operation to finish (busy wait).
+ */
+void lc_ctrl_testutils_wait_for_idle(const dif_lc_ctrl_t *lc_ctrl);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_LC_CTRL_TESTUTILS_H_
