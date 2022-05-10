@@ -17,7 +17,8 @@ class BusInterfaces:
                  host_async: Dict[Optional[str], str],
                  has_unnamed_device: bool,
                  named_devices: List[str],
-                 device_async: Dict[Optional[str], str]):
+                 device_async: Dict[Optional[str], str],
+                 device_hier_paths: Dict[Optional[str], str]):
         assert has_unnamed_device or named_devices
         assert len(named_hosts) == len(set(named_hosts))
         assert len(named_devices) == len(set(named_devices))
@@ -28,6 +29,7 @@ class BusInterfaces:
         self.has_unnamed_device = has_unnamed_device
         self.named_devices = named_devices
         self.device_async = device_async
+        self.device_hier_paths = device_hier_paths
 
     @staticmethod
     def from_raw(raw: object, where: str) -> 'BusInterfaces':
@@ -38,12 +40,13 @@ class BusInterfaces:
         has_unnamed_device = False
         named_devices = []
         device_async = {}
+        device_hier_paths = {}
 
         for idx, raw_entry in enumerate(check_list(raw, where)):
             entry_what = 'entry {} of {}'.format(idx + 1, where)
             ed = check_keys(raw_entry, entry_what,
                             ['protocol', 'direction'],
-                            ['name', 'async'])
+                            ['name', 'async', 'hier_path'])
 
             protocol = check_str(ed['protocol'],
                                  'protocol field of ' + entry_what)
@@ -63,6 +66,9 @@ class BusInterfaces:
             async_clk = check_optional_str(ed.get('async'),
                                            'async field of ' + entry_what)
 
+            hier_path = check_optional_str(ed.get('hier_path'),
+                                           'hier_path field of ' + entry_what)
+
             if direction == 'host':
                 if name is None:
                     if has_unnamed_host:
@@ -79,6 +85,10 @@ class BusInterfaces:
 
                 if async_clk is not None:
                     host_async[name] = async_clk
+                if hier_path is not None:
+                    raise ValueError('Hier path is not supported for host'
+                                     'interface with name {!r} at {}'
+                                     .format(name, where))
             else:
                 if name is None:
                     if has_unnamed_device:
@@ -96,11 +106,17 @@ class BusInterfaces:
                 if async_clk is not None:
                     device_async[name] = async_clk
 
+                if hier_path is not None:
+                    device_hier_paths[name] = hier_path
+                else:
+                    device_hier_paths[name] = 'u_reg'
+
         if not (has_unnamed_device or named_devices):
             raise ValueError('No device interface at ' + where)
 
         return BusInterfaces(has_unnamed_host, named_hosts, host_async,
-                             has_unnamed_device, named_devices, device_async)
+                             has_unnamed_device, named_devices,
+                             device_async, device_hier_paths)
 
     def has_host(self) -> bool:
         return bool(self.has_unnamed_host or self.named_hosts)
