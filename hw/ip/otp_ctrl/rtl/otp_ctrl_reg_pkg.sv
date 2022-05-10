@@ -13,7 +13,6 @@ package otp_ctrl_reg_pkg;
   parameter int NumDaiWords = 2;
   parameter int NumDigestWords = 2;
   parameter int NumSwCfgWindowWords = 512;
-  parameter int NumDebugWindowWords = 16;
   parameter int NumPart = 8;
   parameter int VendorTestOffset = 0;
   parameter int VendorTestSize = 64;
@@ -129,7 +128,7 @@ package otp_ctrl_reg_pkg;
 
   // Address widths within the block
   parameter int CoreAw = 13;
-  parameter int PrimAw = 1;
+  parameter int PrimAw = 5;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
@@ -575,6 +574,256 @@ package otp_ctrl_reg_pkg;
     4'b 1111, // index[33] OTP_CTRL_SECRET1_DIGEST_1
     4'b 1111, // index[34] OTP_CTRL_SECRET2_DIGEST_0
     4'b 1111  // index[35] OTP_CTRL_SECRET2_DIGEST_1
+  };
+
+  ///////////////////////////////////////////////
+  // Typedefs for registers for prim interface //
+  ///////////////////////////////////////////////
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } field0;
+    struct packed {
+      logic        q;
+    } field1;
+    struct packed {
+      logic        q;
+    } field2;
+    struct packed {
+      logic [9:0] q;
+    } field3;
+    struct packed {
+      logic [10:0] q;
+    } field4;
+  } otp_ctrl_reg2hw_csr0_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [6:0]  q;
+    } field0;
+    struct packed {
+      logic        q;
+    } field1;
+    struct packed {
+      logic [6:0]  q;
+    } field2;
+    struct packed {
+      logic        q;
+    } field3;
+    struct packed {
+      logic [15:0] q;
+    } field4;
+  } otp_ctrl_reg2hw_csr1_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } otp_ctrl_reg2hw_csr2_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [2:0]  q;
+    } field0;
+    struct packed {
+      logic [9:0] q;
+    } field1;
+    struct packed {
+      logic        q;
+    } field2;
+    struct packed {
+      logic        q;
+    } field3;
+  } otp_ctrl_reg2hw_csr3_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [9:0] q;
+    } field0;
+    struct packed {
+      logic        q;
+    } field1;
+    struct packed {
+      logic        q;
+    } field2;
+    struct packed {
+      logic        q;
+    } field3;
+  } otp_ctrl_reg2hw_csr4_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [5:0]  q;
+    } field0;
+    struct packed {
+      logic [1:0]  q;
+    } field1;
+    struct packed {
+      logic        q;
+    } field2;
+    struct packed {
+      logic [2:0]  q;
+    } field3;
+    struct packed {
+      logic        q;
+    } field4;
+    struct packed {
+      logic        q;
+    } field5;
+    struct packed {
+      logic [15:0] q;
+    } field6;
+  } otp_ctrl_reg2hw_csr5_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [9:0] q;
+    } field0;
+    struct packed {
+      logic        q;
+    } field1;
+    struct packed {
+      logic        q;
+    } field2;
+    struct packed {
+      logic [15:0] q;
+    } field3;
+  } otp_ctrl_reg2hw_csr6_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [5:0]  q;
+    } field0;
+    struct packed {
+      logic [2:0]  q;
+    } field1;
+    struct packed {
+      logic        q;
+    } field2;
+    struct packed {
+      logic        q;
+    } field3;
+  } otp_ctrl_reg2hw_csr7_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [2:0]  d;
+      logic        de;
+    } field0;
+    struct packed {
+      logic [9:0] d;
+      logic        de;
+    } field1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field2;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field3;
+  } otp_ctrl_hw2reg_csr3_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [5:0]  d;
+      logic        de;
+    } field0;
+    struct packed {
+      logic [1:0]  d;
+      logic        de;
+    } field1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field2;
+    struct packed {
+      logic [2:0]  d;
+      logic        de;
+    } field3;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field4;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field5;
+    struct packed {
+      logic [15:0] d;
+      logic        de;
+    } field6;
+  } otp_ctrl_hw2reg_csr5_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [5:0]  d;
+      logic        de;
+    } field0;
+    struct packed {
+      logic [2:0]  d;
+      logic        de;
+    } field1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field2;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field3;
+  } otp_ctrl_hw2reg_csr7_reg_t;
+
+  // Register -> HW type for prim interface
+  typedef struct packed {
+    otp_ctrl_reg2hw_csr0_reg_t csr0; // [153:130]
+    otp_ctrl_reg2hw_csr1_reg_t csr1; // [129:98]
+    otp_ctrl_reg2hw_csr2_reg_t csr2; // [97:97]
+    otp_ctrl_reg2hw_csr3_reg_t csr3; // [96:82]
+    otp_ctrl_reg2hw_csr4_reg_t csr4; // [81:69]
+    otp_ctrl_reg2hw_csr5_reg_t csr5; // [68:39]
+    otp_ctrl_reg2hw_csr6_reg_t csr6; // [38:11]
+    otp_ctrl_reg2hw_csr7_reg_t csr7; // [10:0]
+  } otp_ctrl_prim_reg2hw_t;
+
+  // HW -> register type for prim interface
+  typedef struct packed {
+    otp_ctrl_hw2reg_csr3_reg_t csr3; // [70:52]
+    otp_ctrl_hw2reg_csr5_reg_t csr5; // [51:15]
+    otp_ctrl_hw2reg_csr7_reg_t csr7; // [14:0]
+  } otp_ctrl_prim_hw2reg_t;
+
+  // Register offsets for prim interface
+  parameter logic [PrimAw-1:0] OTP_CTRL_CSR0_OFFSET = 5'h 0;
+  parameter logic [PrimAw-1:0] OTP_CTRL_CSR1_OFFSET = 5'h 4;
+  parameter logic [PrimAw-1:0] OTP_CTRL_CSR2_OFFSET = 5'h 8;
+  parameter logic [PrimAw-1:0] OTP_CTRL_CSR3_OFFSET = 5'h c;
+  parameter logic [PrimAw-1:0] OTP_CTRL_CSR4_OFFSET = 5'h 10;
+  parameter logic [PrimAw-1:0] OTP_CTRL_CSR5_OFFSET = 5'h 14;
+  parameter logic [PrimAw-1:0] OTP_CTRL_CSR6_OFFSET = 5'h 18;
+  parameter logic [PrimAw-1:0] OTP_CTRL_CSR7_OFFSET = 5'h 1c;
+
+  // Register index for prim interface
+  typedef enum int {
+    OTP_CTRL_CSR0,
+    OTP_CTRL_CSR1,
+    OTP_CTRL_CSR2,
+    OTP_CTRL_CSR3,
+    OTP_CTRL_CSR4,
+    OTP_CTRL_CSR5,
+    OTP_CTRL_CSR6,
+    OTP_CTRL_CSR7
+  } otp_ctrl_prim_id_e;
+
+  // Register width information to check illegal writes for prim interface
+  parameter logic [3:0] OTP_CTRL_PRIM_PERMIT [8] = '{
+    4'b 1111, // index[0] OTP_CTRL_CSR0
+    4'b 1111, // index[1] OTP_CTRL_CSR1
+    4'b 0001, // index[2] OTP_CTRL_CSR2
+    4'b 0111, // index[3] OTP_CTRL_CSR3
+    4'b 0011, // index[4] OTP_CTRL_CSR4
+    4'b 1111, // index[5] OTP_CTRL_CSR5
+    4'b 1111, // index[6] OTP_CTRL_CSR6
+    4'b 0011  // index[7] OTP_CTRL_CSR7
   };
 
 endpackage

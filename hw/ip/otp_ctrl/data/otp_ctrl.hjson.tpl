@@ -133,13 +133,7 @@
       type: "int",
       default: "512",
       local: "true"
-    },
-    { name: "NumDebugWindowWords",
-      desc: "Size of the TL-UL window in 32bit words.",
-      type: "int",
-      default: "16",
-      local: "true"
-    },
+    }
 
     // Memory map Info
     { name: "NumPart",
@@ -1032,8 +1026,267 @@
       }
     ],
 
-    // these CSRs are defined in a separate hjson specific to the closed source OTP wrapper.
+    // OTP wrapper-specific registers
     prim: [
+      { name: "CSR0",
+        desc: ""
+        swaccess: "rw",
+        hwaccess: "hro",
+        hwext:    "false",
+        hwqe:     "false",
+        fields: [
+          { bits: "0",
+            name: "field0",
+            desc: "",
+            resval: "0x0",
+          }
+          { bits: "1",
+            name: "field1",
+            desc: "",
+            resval: "0x0",
+          }
+          { bits: "2",
+            name: "field2",
+            desc: "",
+            resval: "0x0",
+          }
+          { bits: "13:4",
+            name: "field3",
+            desc: ""
+            resval: "0x0",
+          }
+          { bits: "26:16",
+            name: "field4",
+            desc: ""
+            resval: "0x0",
+          }
+        ]
+      },
+      { name: "CSR1",
+        desc: ""
+        swaccess: "rw",
+        hwaccess: "hro",
+        hwext:    "false",
+        hwqe:     "false",
+        fields: [
+          { bits: "6:0",
+            name: "field0",
+            desc: ""
+            resval: "0x0",
+          }
+          { bits: "7:7",
+            name: "field1",
+            desc: "",
+            resval: "0x0",
+          }
+          { bits: "14:8",
+            name: "field2",
+            desc: ""
+            resval: "0x0",
+          }
+          { bits: "15:15",
+            name: "field3",
+            desc: "",
+            resval: "0x0",
+          }
+          { bits: "31:16",
+            name: "field4",
+            desc: "",
+            resval: "0x0",
+          }
+        ]
+      },
+      { name: "CSR2",
+        desc: ""
+        swaccess: "rw",
+        hwaccess: "hro",
+        hwext:    "false",
+        hwqe:     "false",
+        fields: [
+          { bits: "0",
+            name: "field0",
+            desc: "",
+            resval: "0x0",
+          }
+        ]
+      },
+      { name: "CSR3",
+        desc: ""
+        swaccess: "rw",
+        hwaccess: "hrw",
+        hwext:    "false",
+        hwqe:     "false",
+        fields: [
+         { bits: "2:0",
+            name: "field0",
+            desc: ""
+            swaccess: "rw1c",
+            resval: "0x0",
+         }
+         { bits: "13:4",
+            name: "field1",
+            desc: "",
+            swaccess: "rw1c",
+            resval: "0x0",
+         }
+         { bits: "16",
+            name: "field2",
+            desc: "",
+            swaccess: "rw1c",
+            resval: "0x0",
+         }
+         { bits: "17",
+            name: "field3",
+            desc: "",
+            swaccess: "rw1c",
+            resval: "0x0",
+         }
+        ]
+      },
+      { name: "CSR4",
+        desc: ""
+        swaccess: "rw",
+        hwaccess: "hro",
+        hwext:    "false",
+        hwqe:     "false",
+        fields: [
+          { bits: "9:0",
+            name: "field0",
+            desc: ""
+            resval: "0x0",
+          }
+          { bits: "12",
+            name: "field1",
+            desc: ""
+            resval: "0x0",
+          }
+          { bits: "13",
+            name: "field2",
+            desc: ""
+            resval: "0x0",
+          }
+          { bits: "14",
+            name: "field3",
+            desc: ""
+            resval: "0x0",
+          }
+        ]
+      },
+      { name: "CSR5",
+        desc: ""
+        swaccess: "rw",
+        hwaccess: "hrw",
+        hwext:    "false",
+        hwqe:     "false",
+        fields: [
+         { bits: "5:0",
+            name: "field0",
+            desc: ""
+            swaccess: "rw",
+            resval: "0x0",
+         }
+         { bits: "7:6",
+            name: "field1",
+            desc: ""
+            swaccess: "rw",
+            resval: "0x0",
+         }
+         { bits: "8",
+            name: "field2",
+            desc: "",
+            swaccess: "ro",
+            resval: "0x0",
+         }
+         { bits: "11:9",
+           name: "field3",
+           desc: ""
+           swaccess: "ro",
+           resval: "0x0",
+         }
+         { bits: "12",
+           name: "field4",
+           desc: ""
+           swaccess: "ro",
+           resval: "0x0",
+         }
+         { bits: "13",
+           name: "field5",
+           desc: ""
+           swaccess: "ro",
+           resval: "0x0",
+         }
+         { bits: "31:16",
+            name: "field6",
+            desc: ""
+            swaccess: "rw",
+            resval: "0x0",
+         }
+        ]
+      },
+      { name: "CSR6",
+        desc: ""
+        swaccess: "rw",
+        hwaccess: "hro",
+        hwext:    "false",
+        hwqe:     "false",
+        fields: [
+          { bits: "9:0",
+            name: "field0",
+            desc: ""
+            resval: "0x0",
+          }
+          { bits: "11",
+            name: "field1",
+            desc: "",
+            swaccess: "rw",
+            resval: "0x0",
+          }
+          { bits: "12",
+            name: "field2",
+            desc: "",
+            swaccess: "rw",
+            resval: "0x0",
+          }
+          { bits: "31:16",
+            name: "field3",
+            desc: ""
+            resval: "0x0",
+          }
+        ]
+      },
+      { name: "CSR7",
+        desc: "",
+        swaccess: "ro",
+        hwaccess: "hrw",
+        hwext:    "false",
+        hwqe:     "false",
+        fields: [
+         { bits: "5:0",
+           name: "field0",
+           desc: ""
+           swaccess: "ro",
+           resval: "0x0",
+         }
+         { bits: "10:8",
+           name: "field1",
+           desc: "",
+           swaccess: "ro",
+           resval: "0x0",
+         }
+         { bits: "14",
+           name: "field2",
+           desc: "",
+           swaccess: "ro",
+           resval: "0x0",
+         }
+         { bits: "15",
+           name: "field3",
+           desc: "",
+           swaccess: "ro",
+           resval: "0x0",
+         }
+        ]
+      },
     ]
   }
 }

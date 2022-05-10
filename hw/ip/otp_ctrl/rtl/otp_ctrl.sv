@@ -752,7 +752,6 @@ module otp_ctrl
     .Depth            ( OtpDepth            ),
     .SizeWidth        ( OtpSizeWidth        ),
     .PwrSeqWidth      ( OtpPwrSeqWidth      ),
-    .TlDepth          ( NumDebugWindowWords ),
     .TestCtrlWidth    ( OtpTestCtrlWidth    ),
     .TestStatusWidth  ( OtpTestStatusWidth  ),
     .TestVectWidth    ( OtpTestVectWidth    ),
