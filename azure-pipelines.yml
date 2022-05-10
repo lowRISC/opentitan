@@ -450,7 +450,8 @@ jobs:
           --define DISABLE_VERILATOR_BUILD=true \
           --test_tag_filters=cw310,-broken \
           --build_tests_only \
-          //sw/...
+          $(./bazelisk.sh query 'rdeps(//sw/...,@bitstreams//:bitstream_test_rom)') \
+          # All the tests that depend on the test rom
     displayName: Execute tests
 
 - job: deploy_release_artifacts
