@@ -430,12 +430,12 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":otp",
+            "//sw/device/lib/base:csr",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:hardened",
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-            "//sw/device/lib/base:abs_mmio",
-            "//sw/device/lib/base:csr",
-            "//sw/device/lib/base:hardened",
         ],
         host = [
             "//sw/device/lib/base/testing:global_mock",
@@ -447,6 +447,23 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib:error",
         ],
     ),
+)
+
+cc_test(
+    name = "rnd_unittest",
+    srcs = ["rnd_unittest.cc"],
+    deps = [
+        dual_cc_device_library_of(":rnd"),
+        ":otp",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:csr",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest_main",
+    ],
 )
 
 opentitan_functest(
