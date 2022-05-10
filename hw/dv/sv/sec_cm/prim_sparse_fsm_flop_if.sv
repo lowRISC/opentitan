@@ -34,7 +34,7 @@ interface prim_sparse_fsm_flop_if #(
 
     logic[Width-1:0] orig_value;
 
-    virtual task inject_fault();
+    virtual task automatic inject_fault();
       logic[Width-1:0] force_value;
 
       @(negedge clk_i);
@@ -53,7 +53,7 @@ interface prim_sparse_fsm_flop_if #(
       @(posedge clk_i);
     endtask
 
-    virtual task restore_fault();
+    virtual task automatic restore_fault();
       `uvm_info(msg_id, $sformatf("Forcing %s to original value %0d", signal_forced, orig_value),
                 UVM_LOW)
       `DV_CHECK(uvm_hdl_deposit(signal_forced, orig_value))
