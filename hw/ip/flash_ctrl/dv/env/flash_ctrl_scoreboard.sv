@@ -543,7 +543,7 @@ class flash_ctrl_scoreboard #(
               base = get_field_val(ral.mp_region[i].base, data);
               size = get_field_val(ral.mp_region[i].size, data);
               if (in_erase_addr
-                  inside {[base*BytesPerPage:base*BytesPerPage+size*BytesPerPage]}) begin
+                  inside {[base*BytesPerPage:base*BytesPerPage+size*BytesPerPage-1]}) begin
                 if (en) begin
                   erase_access       = erase_en;
                   erase_access_found = 1'b1;
