@@ -99,8 +99,8 @@ package spid_common;
     },
     // 25: EX4B
     '{
-      valid:            1'b 0,
-      opcode:           8'h E6,
+      valid:            1'b 1,
+      opcode:           8'h E9,
       addr_mode:        AddrDisabled,
       addr_swap_en:     1'b 0,
       mbyte_en:         1'b 0,
@@ -115,8 +115,8 @@ package spid_common;
 
     // 24: EN4B
     '{
-      valid:            1'b 0,
-      opcode:           8'h E6,
+      valid:            1'b 1,
+      opcode:           8'h B7,
       addr_mode:        AddrDisabled,
       addr_swap_en:     1'b 0,
       mbyte_en:         1'b 0,
