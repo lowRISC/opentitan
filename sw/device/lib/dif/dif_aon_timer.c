@@ -100,6 +100,14 @@ dif_result_t dif_aon_timer_wakeup_restart(const dif_aon_timer_t *aon) {
   return kDifOk;
 }
 
+dif_result_t dif_aon_timer_clear_wakeup_cause(const dif_aon_timer_t *aon) {
+  if (aon == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(aon->base_addr, AON_TIMER_WKUP_CAUSE_REG_OFFSET, 0);
+  return kDifOk;
+}
+
 dif_result_t dif_aon_timer_wakeup_get_count(const dif_aon_timer_t *aon,
                                             uint32_t *count) {
   if (aon == NULL || count == NULL) {

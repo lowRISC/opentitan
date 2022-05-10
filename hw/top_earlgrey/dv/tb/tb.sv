@@ -52,8 +52,6 @@ module tb;
   wire alert_handler_clk = `ALERT_HANDLER_HIER.clk_i;
   wire alert_handler_rst_n = `ALERT_HANDLER_HIER.rst_ni;
 
-  wire iob7, ior13;
-
   // interfaces
   clk_rst_if clk_rst_if(.clk, .rst_n);
   clk_rst_if cpu_clk_rst_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
@@ -64,14 +62,14 @@ module tb;
   pins_if #(2) dft_straps_if(.pins(dft_straps));
   pins_if #(3) sw_straps_if(.pins(sw_straps));
   pins_if #(1) rst_n_mon_if(.pins(cpu_rst_n));
-  pins_if #(1) pinmux_wkup_if(.pins(iob7));
-  pins_if #(1) pwrb_in_if(.pins(ior13));
+
   spi_if spi_if(.rst_n);
   tl_if cpu_d_tl_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
   uart_if uart_if[NUM_UARTS-1:0]();
   jtag_if jtag_if();
   pwm_if pwm_if[NUM_PWM_CHANNELS]();
   pwrmgr_low_power_if pwrmgr_low_power_if(.clk(`CLKMGR_HIER.clocks_o.clk_aon_powerup),
+                      .fast_clk(`CLKMGR_HIER.clocks_o.clk_io_div4_powerup),
                       .rst_n(`RSTMGR_HIER.resets_o.rst_por_io_div4_n[0]));
 
   assign pwrmgr_low_power_if.low_power = `PWRMGR_HIER.low_power_o;
@@ -80,6 +78,18 @@ module tb;
     .clk(top_earlgrey.clk_aon_i),
     .trigger(top_earlgrey.rv_core_ibex_pwrmgr.core_sleeping)
   );
+
+  // POR reset if
+  pins_if #(1) por_rstn_if();
+  assign (weak0, weak1) por_rstn_if.pins = 1;
+
+  // power button if
+  pins_if #(1) pwrb_in_if();
+  assign (weak0, weak1) pwrb_in_if.pins = 1;
+
+  // pinmux wakeup detector trigger
+  pins_if #(1) pinmux_wkup_if();
+  assign (weak0, weak1) pinmux_wkup_if.pins = 0;
 
   // TODO: Replace with correct interfaces once
   // pinmux/padring and pinout have been updated.
@@ -121,7 +131,7 @@ module tb;
 
   chip_earlgrey_asic dut (
     // Clock and Reset (VCC domain)
-    .POR_N(rst_n),
+    .POR_N(rst_n & por_rstn_if.pins),
     // Dedicated SPI Host (VIOA domain)
     .SPI_HOST_D0(spi_host_tie_off[0]),
     .SPI_HOST_D1(spi_host_tie_off[1]),
@@ -154,7 +164,7 @@ module tb;
     .IOB4(uart_rx[1]),     // MIO 13
     .IOB5(uart_tx[1]),     // MIO 14
     .IOB6(tie_off[1]),     // MIO 15
-    .IOB7(iob7),           // MIO 16
+    .IOB7(pinmux_wkup_if.pins),  // MIO 16
     .IOB8(tie_off[2]),     // MIO 17
     .IOB9(tie_off[3]),     // MIO 18
     .IOB10(iob10),         // MIO 19
@@ -188,7 +198,7 @@ module tb;
     .IOR10(uart_tx[2]),    // MIO 45
     .IOR11(uart_rx[3]),    // MIO 46
     .IOR12(uart_tx[3]),    // MIO 47
-    .IOR13(ior13),         // MIO 48
+    .IOR13(pwrb_in_if.pins),   // MIO 48
     // DCD (VCC domain)
     .CC1(tie_off[10]),
     .CC2(tie_off[11]),
@@ -319,6 +329,14 @@ module tb;
     // PWRGMR.low_power_o only
     uvm_config_db#(virtual pwrmgr_low_power_if)::set(
         null, "*.env*", "pwrmgr_low_power_vif", pwrmgr_low_power_if);
+
+
+    // POR reset handle
+    uvm_config_db#(virtual pins_if #(1))::set(
+       null, "*.env", "por_rstn_vif", por_rstn_if);
+
+    uvm_config_db#(virtual pins_if #(1))::set(
+       null, "*.env", "pwrb_in_vif", pwrb_in_if);
 
     // temp disable pinmux assertion AonWkupReqKnownO_A because driving X in spi_device.sdi and
     // WkupPadSel choose IO_DPS1 in MIO will trigger this assertion

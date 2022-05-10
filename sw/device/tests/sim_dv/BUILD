@@ -391,3 +391,26 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_functest(
+    name = "pwrmgr_b2b_sleep_reset_test",
+    srcs = ["pwrmgr_b2b_sleep_reset_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/ip/aon_timer/data:aon_timer_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
