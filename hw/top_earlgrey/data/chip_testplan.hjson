@@ -2544,7 +2544,7 @@
              X-ref'ed with `chip_sensor_ctrl_ast_alerts`.
              '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_sensor_ctrl_alert"]
     }
 
     // SENSOR_CTRL tests:
@@ -2567,10 +2567,12 @@
       name: chip_sw_sensor_ctrl_ast_status
       desc: '''Verify the io power ok status from AST.
 
-             Details TBD.
-             '''
+               Check that when the IO POK status changes, an interrupt is triggered
+               from sensor_ctrl.  After triggering, the IO status can be read
+               from a sensor_ctrl register.
+            '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_sensor_ctrl_status_intr"]
     }
     {
       name: chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup
