@@ -85,15 +85,6 @@ jobs:
   - bash: ci/scripts/whitespace.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check trailing whitespace
-  - bash: ci/scripts/verible-lint.sh rtl
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint RTL Verilog source files with Verible
-  - bash: ci/scripts/verible-lint.sh dv
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint DV Verilog source files with Verible
-  - bash: ci/scripts/verible-lint.sh fpv
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint FPV Verilog source files with Verible
   - bash: ci/scripts/build-docs.sh
     displayName: Render documentation
   - bash: ci/scripts/build-site.sh
@@ -113,6 +104,15 @@ jobs:
     displayName: Use buildifier to check Bazel coding style
   - bash: ci/scripts/check-vendoring.sh
     displayName: Check vendored directories are up-to-date
+  - bash: ci/scripts/verible-lint.sh rtl
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Style-Lint RTL Verilog source files with Verible
+  - bash: ci/scripts/verible-lint.sh dv
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Style-Lint DV Verilog source files with Verible
+  - bash: ci/scripts/verible-lint.sh fpv
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Style-Lint FPV Verilog source files with Verible
 
 - job: sw_build
   displayName: Build Software for Earl Grey toplevel design
