@@ -108,7 +108,9 @@ module tb;
   );
 
   // Passthrough SPI Flash device
-  spiflash spiflash (
+  spiflash #(
+    .DummySizeQuad(3) // to be consistent with other pre_dv
+  ) spiflash (
     .sck (spiflash_if.sck),
     .csb (spiflash_if.csb),
     .sd  (spiflash_if.sd)
