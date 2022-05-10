@@ -48,6 +48,7 @@ module otbn_loop_controller
   typedef struct packed {
     logic [ImemAddrWidth-1:0] loop_start;
     logic [ImemAddrWidth:0]   loop_end;
+    logic [6:0]               loop_addrs_intg;
   } loop_addr_info_t;
 
   typedef struct packed {
@@ -58,13 +59,18 @@ module otbn_loop_controller
   loop_info_t current_loop;
   logic       current_loop_valid;
 
-  logic       at_current_loop_end_insn;
-  logic       current_loop_finish;
-  logic       current_loop_counter_dec;
+  logic        at_current_loop_end_insn;
+  logic        current_loop_finish;
+  logic        current_loop_counter_dec;
+  logic [38:0] current_loop_addrs_padded_intg;
+  logic [1:0]  current_loop_intg_err;
 
   loop_info_t                  new_loop;
   logic [LoopEndAddrWidth-1:0] new_loop_end_addr_full;
   logic [ImemAddrWidth:0]      new_loop_end_addr_imem;
+  logic [31:0]                 new_loop_addrs_padded_no_intg;
+  logic [38:0]                 new_loop_addrs_padded_intg;
+
   loop_addr_info_t             next_loop_addr_info;
   logic                        next_loop_valid;
   logic loop_stack_push_req;
@@ -110,10 +116,23 @@ module otbn_loop_controller
   assign new_loop_end_addr_imem[ImemAddrWidth] =
       |new_loop_end_addr_full[LoopEndAddrWidth-1:ImemAddrWidth];
 
+  assign new_loop_addrs_padded_no_intg = {{(32 - (ImemAddrWidth * 2) - 1){1'b0}},
+                                          next_insn_addr_i,
+                                          new_loop_end_addr_imem};
+
+  prim_secded_inv_39_32_enc u_new_loop_addrs_intg_enc (
+    .data_i(new_loop_addrs_padded_no_intg),
+    .data_o(new_loop_addrs_padded_intg)
+  );
+
+  logic unused_new_loop_addrs_padded_intg;
+  assign unused_new_loop_addrs_padded_intg = ^new_loop_addrs_padded_intg[31:0];
+
   assign new_loop = '{
     loop_addr_info : '{
-        loop_start: next_insn_addr_i,
-        loop_end: new_loop_end_addr_imem
+        loop_start:      next_insn_addr_i,
+        loop_end:        new_loop_end_addr_imem,
+        loop_addrs_intg: new_loop_addrs_padded_intg[38:32]
     },
     loop_iterations: loop_iterations_i
   };
@@ -215,9 +234,23 @@ module otbn_loop_controller
     `ASSERT(NoLoopCountClrAndSet_A, !(state_reset_i & loop_count_set))
   end
 
-  assign hw_err_o = (|loop_counter_err) | loop_stack_cnt_err;
-
   assign current_loop.loop_iterations = loop_counters[loop_stack_rd_idx];
+
+  assign current_loop_addrs_padded_intg =
+    {current_loop.loop_addr_info.loop_addrs_intg,
+     {(32 - (ImemAddrWidth * 2) - 1){1'b0}},
+     current_loop.loop_addr_info.loop_start,
+     current_loop.loop_addr_info.loop_end};
+
+  prim_secded_inv_39_32_dec u_loop_addrs_intg_dec (
+    .data_i     (current_loop_addrs_padded_intg),
+    .data_o     (),
+    .syndrome_o (),
+    .err_o      (current_loop_intg_err)
+  );
+
+  assign hw_err_o =
+    (|loop_counter_err) | loop_stack_cnt_err | ((|current_loop_intg_err) & current_loop_valid);
 
   // Forward info about loop state for next cycle to prefetch stage
   assign prefetch_loop_active_o = next_loop_valid;
@@ -232,6 +265,9 @@ module otbn_loop_controller
     current_loop_counter_dec ? current_loop.loop_iterations - 32'd1    :
     loop_stack_write         ? new_loop.loop_iterations                :
                                current_loop.loop_iterations;
+
+  logic unused_next_loop_addr_info_intg;
+  assign unused_next_loop_addr_info_intg = ^next_loop_addr_info.loop_addrs_intg;
 
   assign prefetch_loop_end_addr_o  = next_loop_addr_info.loop_end;
   assign prefetch_loop_jump_addr_o = next_loop_addr_info.loop_start;
