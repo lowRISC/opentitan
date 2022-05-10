@@ -115,7 +115,9 @@ module otbn_stack
     .set_i      (1'b0),
     .set_cnt_i  ('0),
     .en_i       (stack_wr_ptr_en),
-    .step_i     (stack_wr_ptr_step),
+    // Since this signal has the same width as the counter, negative values will
+    // be correctly be subtracted due to the 2s complement representation.
+    .step_i     (unsigned'(stack_wr_ptr_step)),
     .cnt_o      (stack_wr_ptr),
     .err_o      (stack_wr_ptr_err)
   );
