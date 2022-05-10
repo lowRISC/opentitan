@@ -29,7 +29,7 @@ interface prim_count_if #(
 
     logic[Width-1:0] orig_value;
 
-    virtual task inject_fault();
+    virtual task automatic inject_fault();
       logic[Width-1:0] force_value;
 
       @(negedge clk_i);
@@ -43,7 +43,7 @@ interface prim_count_if #(
       `DV_CHECK(uvm_hdl_release(signal_forced))
     endtask
 
-    virtual task restore_fault();
+    virtual task automatic restore_fault();
       `DV_CHECK(uvm_hdl_deposit(signal_forced, orig_value))
       `uvm_info(msg_id, $sformatf("Forcing %s to original value %0d", signal_forced, orig_value),
                 UVM_LOW)
