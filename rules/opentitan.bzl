@@ -579,7 +579,7 @@ def opentitan_rom_binary(
             name = vmem_name,
             bin = bin_name,
             platform = platform,
-            word_size = 32, 
+            word_size = 32,
         )
 
         # Generate Scrambled ROM VMEM

@@ -31,7 +31,7 @@ BINARIES = [
 BAZEL_BINARIES = [
     '//sw/device/lib/testing/test_rom',
     '//sw/device/sca:aes_serial',
-    '//sw/device/tests:aes_smoketest',
+    '//sw/device/tests:aes_smoketest_prog',
     '//sw/device/examples/hello_world',
 ]
 
@@ -157,7 +157,7 @@ def main():
     # Build the software including test_rom to enable the FPGA build.
     if args.bazel:
         shell_out([
-            'bazel', 'build',
+            REPO_TOP / 'bazelisk.sh', 'build',
             '--copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_',
         ] + BAZEL_BINARIES)
     else:
