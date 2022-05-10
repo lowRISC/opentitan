@@ -61,6 +61,105 @@ class sysrst_ctrl_debounce_timer_obj extends uvm_object;
   endfunction : new
 endclass : sysrst_ctrl_debounce_timer_obj
 
+////////////////////////////////////////////////
+// Combo detect actions register cover points //
+////////////////////////////////////////////////
+class sysrst_ctrl_combo_detect_action_obj extends uvm_object;
+   `uvm_object_utils(sysrst_ctrl_combo_detect_action_obj)
+
+  covergroup sysrst_ctrl_combo_detect_action_cg (int index) with function sample (
+    bit bat_disable,
+    bit interrupt,
+    bit ec_rst,
+    bit rst_req,
+    bit key0_in_sel,
+    bit key1_in_sel,
+    bit key2_in_sel,
+    bit pwrb_in_sel,
+    bit ac_present_sel
+  );
+    option.per_instance = 1;
+    option.name = $sformatf("sysrst_ctrl_combo_detect_action_cg_%0d", index);
+
+    cp_bat_disable: coverpoint bat_disable;
+    cp_interrupt:   coverpoint interrupt;
+    cp_ec_rst:      coverpoint ec_rst;
+    cp_rst_req:     coverpoint rst_req;
+    cp_key0_in_sel:   coverpoint key0_in_sel;
+    cp_key1_in_sel:   coverpoint key1_in_sel;
+    cp_key2_in_sel:   coverpoint key2_in_sel;
+    cp_pwrb_in_sel:   coverpoint pwrb_in_sel;
+    cp_ac_present_sel:coverpoint ac_present_sel;
+    cross_bat_disable_combo_sel: cross cp_bat_disable, cp_key0_in_sel, cp_key1_in_sel,
+         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
+    cross_interrupt_combo_sel: cross cp_interrupt, cp_key0_in_sel, cp_key1_in_sel,
+         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
+    cross_ec_rst_combo_sel: cross cp_ec_rst, cp_key0_in_sel, cp_key1_in_sel,
+         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
+    cross_rst_req_combo_sel: cross cp_rst_req, cp_key0_in_sel, cp_key1_in_sel,
+         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
+  endgroup // sysrst_ctrl_combo_detect_action_cg
+
+  function new(string name = "sysrst_ctrl_combo_detect_action_obj");
+    super.new(name);
+    sysrst_ctrl_combo_detect_action_cg = new(name);
+  endfunction : new
+endclass : sysrst_ctrl_combo_detect_action_obj
+
+/////////////////////////////////////////////
+// Combo intr status register cover points //
+/////////////////////////////////////////////
+class sysrst_ctrl_combo_intr_status_obj extends uvm_object;
+   `uvm_object_utils(sysrst_ctrl_combo_intr_status_obj)
+
+  covergroup sysrst_ctrl_combo_intr_status_cg with function sample (
+    bit combo0_h2l,
+    bit combo1_h2l,
+    bit combo2_h2l,
+    bit combo3_h2l,
+    bit key0_in_sel,
+    bit key1_in_sel,
+    bit key2_in_sel,
+    bit pwrb_in_sel,
+    bit ac_present_sel,
+    bit bat_disable,
+    bit interrupt,
+    bit ec_rst,
+    bit rst_req
+  );
+    option.per_instance = 1;
+    option.name = "sysrst_ctrl_combo_intr_status_cg";
+
+    cp_combo0_h2l: coverpoint combo0_h2l;
+    cp_combo1_h2l: coverpoint combo1_h2l;
+    cp_combo2_h2l: coverpoint combo2_h2l;
+    cp_combo3_h2l: coverpoint combo3_h2l;
+    cp_key0_in_sel:   coverpoint key0_in_sel;
+    cp_key1_in_sel:   coverpoint key1_in_sel;
+    cp_key2_in_sel:   coverpoint key2_in_sel;
+    cp_pwrb_in_sel:   coverpoint pwrb_in_sel;
+    cp_ac_present_sel:coverpoint ac_present_sel;
+    cp_bat_disable: coverpoint bat_disable;
+    cp_interrupt:   coverpoint interrupt;
+    cp_ec_rst:      coverpoint ec_rst;
+    cp_rst_req:     coverpoint rst_req;
+    cross_combo0: cross cp_combo0_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
+    cross_combo1: cross cp_combo1_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
+    cross_combo2: cross cp_combo2_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
+    cross_combo3: cross cp_combo3_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
+
+  endgroup // sysrst_ctrl_combo_intr_status_cg
+
+  function new(string name = "sysrst_ctrl_combo_intr_status_obj");
+    super.new(name);
+    sysrst_ctrl_combo_intr_status_cg = new();
+  endfunction : new
+endclass : sysrst_ctrl_combo_intr_status_obj
+
 class sysrst_ctrl_env_cov extends cip_base_env_cov #(
   .CFG_T(sysrst_ctrl_env_cfg)
 );
@@ -69,6 +168,8 @@ class sysrst_ctrl_env_cov extends cip_base_env_cov #(
 
   sysrst_ctrl_pin_cfgs_obj pin_cfg_cg[string];
   sysrst_ctrl_debounce_timer_obj debounce_timer_cg[string];
+  sysrst_ctrl_combo_detect_action_obj combo_detect_action[int];
+  sysrst_ctrl_combo_intr_status_obj combo_intr_status;
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
@@ -86,7 +187,12 @@ class sysrst_ctrl_env_cov extends cip_base_env_cov #(
     debounce_timer_cg["ulp_ac_debounce_ctl"] = new("ulp_ac_debounce_ctl");
     debounce_timer_cg["ulp_pwrb_debounce_ctl"] = new("ulp_pwrb_debounce_ctl");
     debounce_timer_cg["ulp_lid_debounce_ctl"] = new("ulp_lid_debounce_ctl");
+
+    for (int i = 0; i <= 3; i++) begin
+      combo_detect_action[i] = new(i);
+    end
+
+    combo_intr_status = new();
   endfunction : new
 
 endclass
-
