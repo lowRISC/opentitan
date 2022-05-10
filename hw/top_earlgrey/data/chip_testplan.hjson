@@ -1018,12 +1018,10 @@
     {
       name: chip_sw_pwrmgr_b2b_sleep_reset_req
       desc: '''Verify that the pwrmgr sequences sleep_req and reset req coming in almost at the same
-            time, one after the other.
-
-            Verified at IP level.
+            time, one after the other. Use POR_N PAD to trigger reset.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_pwrmgr_b2b_sleep_reset_req"]
     }
     {
       name: chip_sw_pwrmgr_debug_sleep
