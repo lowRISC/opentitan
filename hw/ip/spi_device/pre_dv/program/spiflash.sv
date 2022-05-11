@@ -6,6 +6,9 @@
 
 program spiflash #(
   parameter int unsigned FlashSize = 1024*1024, // 1MB
+  parameter int unsigned PageSize = 256, // Bytes
+
+  parameter bit EnFastSim = 1'b 1, // Reduce the latencies
 
   // Timing information               s_ ms_ us
   // Program Latency
@@ -43,6 +46,31 @@ program spiflash #(
   inout [3:0] sd
   // TODO: Add WP
 );
+
+  // Local parameter : affected by EnFastSim
+
+  // Timing information               s_ ms_ us
+  localparam int unsigned tPPDiv   = (EnFastSim) ?      1_000 : 1 ;
+  localparam int unsigned tSEDiv   = (EnFastSim) ?      5_000 : 1 ;
+  localparam int unsigned tBE32Div = (EnFastSim) ?     10_000 : 1 ;
+  localparam int unsigned tBE64Div = (EnFastSim) ?    100_000 : 1 ;
+  localparam int unsigned tCEDiv   = (EnFastSim) ? 10_000_000 : 1 ;
+  // Program Latency
+  localparam int unsigned LocalPPTyp   = tPPTyp   / tPPDiv; // us
+  localparam int unsigned LocalPPMax   = tPPMax   / tPPDiv; // us
+  // Sector Erase(4kB) Latency
+  localparam int unsigned LocalSETyp   = tSETyp   / tSEDiv; // us
+  localparam int unsigned LocalSEMax   = tSEMax   / tSEDiv; // us
+  // Block Erase 32kB Latency
+  localparam int unsigned LocalBE32Typ = tBE32Typ / tBE32Div; // us
+  localparam int unsigned LocalBE32Max = tBE32Max / tBE32Div; // us
+  // Block Erase 64kB Latency
+  localparam int unsigned LocalBE64Typ = tBE64Typ / tBE64Div; // us
+  localparam int unsigned LocalBE64Max = tBE64Max / tBE64Div; // us
+  // Chip Erase Latency
+  localparam int unsigned LocalCETyp   = tCETyp   / tCEDiv; // us
+  localparam int unsigned LocalCEMax   = tCEMax   / tCEDiv; // us
+
 
   typedef enum int unsigned {
     Addr3B,
@@ -90,7 +118,13 @@ program spiflash #(
   spiflash_byte_t [2:0] status; // 24 bit
   spiflash_byte_t storage[spiflash_addr_t]; // Associative Array to store data
 
+  spiflash_byte_t page_buffer[PageSize]; // page buffer to be used
+  int unsigned    page_buffer_size;
+
   spiflash_byte_t sfdp[256]; // SFDP storage 256Byte
+
+  mailbox backend_process; // Start delayed process (after CSb release)
+  mailbox backend_data; // Deliver the address to the backend task
 
   initial begin
     print_banner();
@@ -98,11 +132,17 @@ program spiflash #(
     // Init values
     status = '0;
 
+    backend_process = new(1); // Only one process at a time but multiple data
+    backend_data = new(1);
+
     // SFDP initialization
     // FIXME: Appropriate SFDP table rather than random data
     foreach(sfdp[i]) sfdp[i] = $urandom_range(255, 0);
     // Should wait ??
-    main();
+    fork
+      main();
+      backend();
+    join
   end
 
   function automatic void print_banner();
@@ -155,6 +195,8 @@ program spiflash #(
       automatic spiflash_byte_t opcode;
       automatic bit             early_termination;
       automatic int unsigned    excessive_sck = 0;
+      // Indication of process needed after CSb release
+      automatic bit             process_after_csb = 1'b 0;
       // Big loop. Wait transaction
       sd_en = 4'h 0; // Off the output by default
       wait(csb == 1'b 0);
@@ -169,7 +211,7 @@ program spiflash #(
         begin
           // Main
           cmdparse(opcode); // Store incoming into opcod
-          process_cmd(opcode);
+          process_cmd(opcode, process_after_csb);
 
           // Count remaining edges of SCK. opcode completed command should
           // have no additional data, or should be discarded
@@ -189,13 +231,34 @@ program spiflash #(
       // CSb. In this case, early_termination is set too. If the command is
       // output command, do not process early_termination.
 
-      // Process program, etc
-      // If excessive sck, then discard.
-
       // Kill the forked process
       disable fork;
+
+      // Process program, etc
+      // If excessive sck, then discard.
+      if (process_after_csb) begin
+        if (backend_process.num() != 0) begin
+          $display("T+%0d] SPIFlash: Can't handle two backend commands", $time);
+          $display("       Discarding the latter %2Xh", opcode);
+          continue;
+        end
+        backend_process.put(opcode);
+      end
     end
   endtask : main
+
+  static task backend();
+    forever begin
+      automatic spiflash_byte_t opcode;
+      backend_process.get(opcode);
+
+      case (opcode)
+        spi_device_pkg::CmdPageProgram: begin
+          backend_page_program();
+        end
+      endcase
+    end
+  endtask : backend
 
   task automatic cmdparse(
     output spiflash_byte_t opcode
@@ -207,9 +270,11 @@ program spiflash #(
   endtask : cmdparse
 
   task automatic process_cmd(
-    input spiflash_byte_t opcode
+    input spiflash_byte_t opcode,
+    output bit en_backend
   );
     // Main case block to call subtasks depending on the opcode
+    en_backend = 1'b 0;
     case (opcode)
       spi_device_pkg::CmdReadStatus1: begin
         // Return status data
@@ -229,13 +294,19 @@ program spiflash #(
         read(opcode);
       end
 
-      // TODO: EN4B/ EX4B
       spi_device_pkg::CmdEn4B, spi_device_pkg::CmdEx4B: begin
         addr_4b(opcode);
       end
-      // TODO: WREN/ WRDI
 
-      // TODO: PageProgram
+      spi_device_pkg::CmdWriteEnable, spi_device_pkg::CmdWriteDisable: begin
+        wel(opcode);
+      end
+
+      spi_device_pkg::CmdPageProgram: begin
+        page_program(opcode);
+        en_backend = 1'b 1;
+      end
+
       // TODO: SectorErase
       // TODO: BlockErase32
       // TODO: BlockErase64
@@ -245,6 +316,11 @@ program spiflash #(
     endcase
 
   endtask : process_cmd
+
+  task automatic process_cmd_after_csb(
+
+  );
+  endtask : process_cmd_after_csb
 
   task automatic get_byte(
     input  io_mode_e       io_mode,
@@ -351,8 +427,12 @@ program spiflash #(
   task automatic return_status(int unsigned idx);
     // Starting from the index and wraps %3 until host releases CSb
     automatic int unsigned s_idx = idx;
+
+    // Copy the status into internal variable to not be corrupted by on-going
+    // backend tasks.
+    automatic spiflash_byte_t [2:0] committed_status = status;
     forever begin
-      return_byte(status[s_idx], IoSingle);
+      return_byte(committed_status[s_idx], IoSingle);
       s_idx = (s_idx + 1)%3;
     end
   endtask : return_status
@@ -439,5 +519,99 @@ program spiflash #(
       default: $display("addr_4b: Unrecognized Cmd (%2Xh)", opcode);
     endcase
   endtask : addr_4b
+
+  task automatic wel(spiflash_byte_t opcode);
+    // TODO: Set only when CSb is deasserted right after 8th beat
+    case (opcode)
+      spi_device_pkg::CmdWriteEnable:  status[0][StatusWEL] = 1'b 1;
+      spi_device_pkg::CmdWriteDisable: status[0][StatusWEL] = 1'b 0;
+      default: $display("WEL: Unrecognized Cmd (%2Xh)", opcode);
+    endcase
+  endtask : wel
+
+  task automatic page_program(spiflash_byte_t opcode);
+    // Return Read data
+    automatic logic [31:0]    address;
+    automatic logic [7:0]     buffer_idx;
+
+    // Set BUSY
+    status[0][StatusBUSY] = 1'b 1;
+
+    // get address field
+    get_address(IoSingle, AddrCfg, address);
+    $display("T:%0d] SPIFlash: Program Address %8Xh", $time, address);
+    if (address[31:StorageAw] != '0) begin
+      $display("Out-of-Bound Address received");
+      $display("Discarding the contents");
+      return;
+    end
+
+    backend_data.put({opcode, address});
+
+    // Starting with buffer offset and wraps 256B always
+    buffer_idx = address[7:0];
+    page_buffer_size = 0;
+
+    // Stack bytes
+    forever begin
+      automatic spiflash_byte_t data;
+      get_byte(IoSingle, data);
+      page_buffer[buffer_idx % PageSize] = data;
+
+      buffer_idx = (buffer_idx + 1 ) % PageSize;
+
+      if (page_buffer_size != PageSize) page_buffer_size++;
+    end
+
+  endtask : page_program
+
+  task automatic backend_page_program();
+    automatic spiflash_addr_t spi_addr;
+    automatic spiflash_byte_t opcode;
+    automatic logic [39:0] mbx_data;
+    automatic logic [31:0] host_address;
+    automatic logic [7:0]  buffer_offset;
+
+    if (backend_data.num() == 0) begin
+      // The transaction got cancelled before receiving the address.
+      // Skip the backend task
+      status[0][StatusBUSY] = 1'b 0;
+      return;
+    end
+    // Fetch address from mailbox
+    backend_data.get(mbx_data);
+    opcode = mbx_data[39:32];
+    host_address = mbx_data[31:0];
+
+    // if opcode is not PageProgram, somehow mailbox corrupted. Report error and put it back to mailbox
+    if (opcode != spi_device_pkg::CmdPageProgram) begin
+      $display("SPIFlash: Opcode is not PageProgram, putting the data back to backend_data");
+      backend_data.put({opcode, host_address});
+      return;
+    end
+
+    // Write data into storage
+    buffer_offset = host_address[7:0];
+    repeat (page_buffer_size) begin
+      storage[{host_address[31:8], buffer_offset%PageSize}] = page_buffer[buffer_offset%256];
+      buffer_offset = (buffer_offset+1) % PageSize;
+    end
+
+    // Determines delay
+    // Didn't use $dist_normal() as Typ is most likely lower bound.
+    // Maybe Poisson Distribution is appropriate?
+    #($urandom_range(LocalPPTyp*1.1, LocalPPTyp*0.9) * 1us)
+
+    // At the end, clear BUSY
+    status[0][StatusBUSY] = 1'b 0;
+  endtask : backend_page_program
+
+  initial begin
+    assert(PageSize == 256)
+      else begin
+        $display("SPIFlash currently supports 256B Page only");
+        $finish();
+      end
+  end
 
 endprogram : spiflash
