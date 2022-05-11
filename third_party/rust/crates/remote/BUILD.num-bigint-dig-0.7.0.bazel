@@ -45,10 +45,12 @@ cargo_build_script(
     crate_features = [
         "default",
         "i128",
+        "prime",
         "rand",
         "serde",
         "std",
         "u64_digit",
+        "zeroize",
     ],
     crate_root = "build.rs",
     data = glob(["**"]),
@@ -73,10 +75,12 @@ rust_library(
     crate_features = [
         "default",
         "i128",
+        "prime",
         "rand",
         "serde",
         "std",
         "u64_digit",
+        "zeroize",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -102,6 +106,7 @@ rust_library(
         "@raze__rand__0_8_5//:rand",
         "@raze__serde__1_0_137//:serde",
         "@raze__smallvec__1_8_0//:smallvec",
+        "@raze__zeroize__1_4_3//:zeroize",
     ],
 )
 
