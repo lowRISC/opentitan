@@ -51,6 +51,7 @@ module aes_bind;
                             u_aes_control_fsm.block_ctr_expr)
   );
 
+if (`EN_MASKING) begin : gen_prng_bind
   bind aes_prng_masking aes_masking_reseed_if u_aes_masking_reseed_if (
     .clk_i        (clk_i),
     .rst_ni       (rst_ni),
@@ -63,4 +64,5 @@ module aes_bind;
     .lfsr_q_3     (gen_lfsrs[3].u_lfsr_chunk.lfsr_q),
     .lfsr_q_4     (gen_lfsrs[4].u_lfsr_chunk.lfsr_q)
   );
+end
 endmodule
