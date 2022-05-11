@@ -16,6 +16,8 @@ program prog_passthrough_sw
 );
 
   initial begin
+    automatic string testname;
+
     h2d = tlul_pkg::TL_H2D_DEFAULT;
 
     // Wait reset relase
@@ -24,6 +26,25 @@ program prog_passthrough_sw
     @(posedge clk);
     $display("Intializing SPI_DEVICE: PassThrough mode");
     init_spidevice_passthrough();
+
+    $value$plusargs("TESTNAME=%s", testname);
+
+    case (testname)
+      "readbasic": begin
+      end
+
+      "addr_4b": begin
+      end
+
+      "wel": begin
+      end
+
+      "program": begin
+        // Need to disable Status return from SPI_DEVICE and issue directly to
+        // SPIFlash
+        test_program();
+      end
+    endcase
 
     forever begin
       @(posedge clk);
@@ -185,5 +206,25 @@ program prog_passthrough_sw
       `DPSRAM_DATA(i) = strip_data;
     end
   endfunction : init_dpsram
+
+  static task test_program();
+    // Turning off INTERCEPT
+    tlul_write(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_INTERCEPT_EN_OFFSET),
+      32'h 0000_0000, // MBX, STATUS
+      4'b 0001
+    );
+
+    // FILTER
+    // Turn off Read Status / Page Program commands filter
+    tlul_write(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_CMD_FILTER_0_OFFSET),
+      32'h 0000_0000, // [5] := 0 / [2] := 0
+      4'b 1111
+    );
+
+  endtask : test_program
 
 endprogram : prog_passthrough_sw

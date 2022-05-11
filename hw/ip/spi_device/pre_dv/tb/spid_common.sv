@@ -1072,7 +1072,7 @@ package spid_common;
     h2d.a_data    = wdata;
     h2d.a_mask    = wstrb;
     h2d.a_param   = '0;
-    h2d.a_size    = 2;
+    h2d.a_size    = $clog2($countones(wstrb));
     h2d.a_source  = '0;
 
     h2d.d_ready   = 1'b 0;
