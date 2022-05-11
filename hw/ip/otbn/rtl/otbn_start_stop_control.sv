@@ -64,6 +64,10 @@ module otbn_start_stop_control
   logic addr_cnt_inc;
   logic [4:0] addr_cnt_q, addr_cnt_d;
 
+  logic       state_error, spurious_urnd_ack_error;
+  logic       spurious_secure_wipe_req, dropped_secure_wipe_req;
+  logic       secure_wipe_error_q, secure_wipe_error_d;
+
   // There are two ways in which the start/stop controller can be told to stop. Either
   // secure_wipe_req_i comes from the controller (which means "I've run some instructions and I've
   // hit an ECALL or error"). Or escalate_en_i can be asserted (which means "Someone else has told
@@ -86,26 +90,31 @@ module otbn_start_stop_control
     end
   end
 
+  logic allow_secure_wipe, expect_secure_wipe;
+
   // SEC_CM: START_STOP_CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q,
       otbn_start_stop_state_e, OtbnStartStopStateHalt)
 
   always_comb begin
-    urnd_reseed_req_o      = 1'b0;
-    urnd_advance_o         = 1'b0;
-    state_d                = state_q;
-    ispr_init_o            = 1'b0;
-    state_reset_o          = 1'b0;
-    sec_wipe_wdr_o         = 1'b0;
-    sec_wipe_wdr_urnd_o    = 1'b0;
-    sec_wipe_base_o        = 1'b0;
-    sec_wipe_base_urnd_o   = 1'b0;
-    sec_wipe_acc_urnd_o    = 1'b0;
-    sec_wipe_mod_urnd_o    = 1'b0;
-    sec_wipe_zero_o        = 1'b0;
-    addr_cnt_inc           = 1'b0;
-    fatal_error_o          = 1'b0;
-    secure_wipe_ack_o      = 1'b0;
+    urnd_reseed_req_o       = 1'b0;
+    urnd_advance_o          = 1'b0;
+    state_d                 = state_q;
+    ispr_init_o             = 1'b0;
+    state_reset_o           = 1'b0;
+    sec_wipe_wdr_o          = 1'b0;
+    sec_wipe_wdr_urnd_o     = 1'b0;
+    sec_wipe_base_o         = 1'b0;
+    sec_wipe_base_urnd_o    = 1'b0;
+    sec_wipe_acc_urnd_o     = 1'b0;
+    sec_wipe_mod_urnd_o     = 1'b0;
+    sec_wipe_zero_o         = 1'b0;
+    addr_cnt_inc            = 1'b0;
+    secure_wipe_ack_o       = 1'b0;
+    state_error             = 1'b0;
+    allow_secure_wipe       = 1'b0;
+    expect_secure_wipe      = 1'b0;
+    spurious_urnd_ack_error = 1'b0;
 
     unique case (state_q)
       OtbnStartStopStateHalt: begin
@@ -127,17 +136,22 @@ module otbn_start_stop_control
         end
       end
       OtbnStartStopStateRunning: begin
-        urnd_advance_o = 1'b1;
+        urnd_advance_o    = 1'b1;
+        allow_secure_wipe = 1'b1;
+
         if (stop) begin
           state_d = OtbnStartStopSecureWipeWdrUrnd;
         end
       end
       // Writing random numbers to the wide data registers.
        OtbnStartStopSecureWipeWdrUrnd: begin
-        urnd_advance_o        = 1'b1;
-        addr_cnt_inc          = 1'b1;
-        sec_wipe_wdr_o        = 1'b1;
-        sec_wipe_wdr_urnd_o   = 1'b1;
+        urnd_advance_o      = 1'b1;
+        addr_cnt_inc        = 1'b1;
+        sec_wipe_wdr_o      = 1'b1;
+        sec_wipe_wdr_urnd_o = 1'b1;
+        allow_secure_wipe   = 1'b1;
+        expect_secure_wipe  = 1'b1;
+
         if (addr_cnt_q == 5'b11111) begin
           state_d = OtbnStartStopSecureWipeAccModBaseUrnd;
         end
@@ -148,6 +162,8 @@ module otbn_start_stop_control
        OtbnStartStopSecureWipeAccModBaseUrnd: begin
         urnd_advance_o        = 1'b1;
         addr_cnt_inc          = 1'b1;
+        allow_secure_wipe     = 1'b1;
+        expect_secure_wipe    = 1'b1;
         // The first two clock cycles are used to write random data to accumulator and modulus.
         sec_wipe_acc_urnd_o   = (addr_cnt_q == 5'b00000);
         sec_wipe_mod_urnd_o   = (addr_cnt_q == 5'b00001);
@@ -161,10 +177,13 @@ module otbn_start_stop_control
       // Writing zeros to the accumulator, modulus and the registers.
       // Resetting stack
        OtbnStartStopSecureWipeAllZero: begin
-        sec_wipe_zero_o       = (addr_cnt_q == 5'b00000);
-        sec_wipe_wdr_o        = 1'b1;
-        sec_wipe_base_o       = (addr_cnt_q > 5'b00001);
-        addr_cnt_inc = 1'b1;
+        sec_wipe_zero_o    = (addr_cnt_q == 5'b00000);
+        sec_wipe_wdr_o     = 1'b1;
+        sec_wipe_base_o    = (addr_cnt_q > 5'b00001);
+        addr_cnt_inc       = 1'b1;
+        allow_secure_wipe  = 1'b1;
+        expect_secure_wipe = 1'b1;
+
         if (addr_cnt_q == 5'b11111) begin
           state_d = OtbnStartStopSecureWipeComplete;
           secure_wipe_ack_o = 1'b1;
@@ -183,7 +202,7 @@ module otbn_start_stop_control
       end
       default: begin
         // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
-        fatal_error_o = 1'b1;
+        state_error = 1'b1;
         state_d = OtbnStartStopStateLocked;
       end
     endcase
@@ -191,8 +210,8 @@ module otbn_start_stop_control
     if (urnd_reseed_ack_i && (state_q != OtbnStartStopStateUrndRefresh)) begin
       // We should never receive an ACK from URND when we're not refreshing the URND. Signal an
       // error if we see a stray ACK and lock the FSM.
-      fatal_error_o = 1'b1;
-      state_d       = OtbnStartStopStateLocked;
+      spurious_urnd_ack_error = 1'b1;
+      state_d                 = OtbnStartStopStateLocked;
     end
   end
 
@@ -212,6 +231,25 @@ module otbn_start_stop_control
   end
 
   assign sec_wipe_addr_o = addr_cnt_q;
+
+  // A check for spurious or dropped secure wipe requests. We only expect to start a secure wipe
+  // when running. Once we've started a secure wipe, the controller should not drop the request
+  // until we tell it we're done.
+  assign spurious_secure_wipe_req = secure_wipe_req_i & ~allow_secure_wipe;
+  assign dropped_secure_wipe_req  = expect_secure_wipe & ~secure_wipe_req_i;
+
+  // Delay the "glitch req/ack" error signal by a cycle. Otherwise, you end up with a combinatorial
+  // loop through the escalation signal that our fatal_error_o causes otbn_core to pass to the
+  // controller.
+  assign secure_wipe_error_d = spurious_secure_wipe_req | dropped_secure_wipe_req;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      secure_wipe_error_q <= 1'b0;
+    end else
+      secure_wipe_error_q <= secure_wipe_error_d;
+  end
+
+  assign fatal_error_o = spurious_urnd_ack_error | state_error | secure_wipe_error_q;
 
   `ASSERT(StartStopStateValid_A,
       state_q inside {OtbnStartStopStateHalt,

@@ -231,6 +231,16 @@
     { name: "CALL_STACK.ADDR.INTEGRITY"
       desc: "Call stack entries are protected with ECC integrity."
     }
+    { name: "START_STOP_CTRL.STATE.CONSISTENCY"
+      desc: '''
+        The secure wipe handshake between otbn_controller and
+        otbn_start_stop_control uses a level-based req/ack interface. At the
+        otbn_controller end, there is a check for unexpected acks. In
+        otbn_start_stop_control, there is a check for secure wipe requests when
+        we aren't in a state that allows it, and also a check for if the
+        request drops at an unexpected time.
+      '''
+    }
   ]
 
   regwidth: "32"
