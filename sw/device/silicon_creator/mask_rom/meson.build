@@ -66,6 +66,7 @@ mask_rom_epmp_test_lib = declare_dependency(
   sources: [
     hw_ip_aon_timer_reg_h,
     hw_ip_ast_reg_h,
+    hw_ip_clkmgr_reg_h,
     hw_ip_csrng_reg_h,
     hw_ip_edn_reg_h,
     hw_ip_entropy_src_reg_h,
@@ -233,6 +234,7 @@ mask_rom_lib = declare_dependency(
   sources: [
     hw_ip_aon_timer_reg_h,
     hw_ip_ast_reg_h,
+    hw_ip_clkmgr_reg_h,
     hw_ip_csrng_reg_h,
     hw_ip_edn_reg_h,
     hw_ip_entropy_src_reg_h,
