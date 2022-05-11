@@ -8,47 +8,30 @@ class spi_device_pass_cmd_filtering_vseq extends spi_device_pass_base_vseq;
   `uvm_object_new
 
   virtual task body();
-    bit [31:0] device_word_rsp;
-    bit [7:0]  pass_cmd;
-    bit [23:0] pass_addr;
-    bit [31:0] address_command;
-    bit [4:0]  cmd_info_idx;
+    bit [7:0]  op;
+    bit [7:0] opcode_q[$];
+    uint payload_size;
     spi_device_flash_pass_init(PassthroughMode);
 
-    cfg.clk_rst_vif.wait_clks(100);
+    // cmd_infos index is the opcode, get all opcode
+    opcode_q = cfg.m_spi_agent_cfg.cmd_infos.find_index() with ('1);
+    for (int i = 0; i < num_trans; ++i) begin
+      `uvm_info(`gfn, $sformatf("running iteration %0d", i), UVM_LOW)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(op,
+          op inside {opcode_q};)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(payload_size,
+          // TODO, use distribution later
+          payload_size <= 256;)
 
-    repeat (num_trans) begin
-
-      // Randomize opcode and address
-      `DV_CHECK_STD_RANDOMIZE_FATAL(pass_addr)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(pass_cmd)
-
-      // Configure unused CMD_INFO and enable this opcode
-      ral.cmd_info[cmd_info_idx].valid.set(1'b1); // Enable this OPCODE
-      ral.cmd_info[cmd_info_idx].opcode.set(pass_cmd);
-      ral.cmd_info[cmd_info_idx].addr_mode.set(Addr3B); //  3B address for this scenario
-      csr_update(.csr(ral.cmd_info[cmd_info_idx]));
-
-      // Make sure filter is not blocking command opcode
-      cfg_cmd_filter(0, pass_cmd);
-
-      // Prepare data for transfer
-      order_cmd_bits(pass_cmd, pass_addr, address_command);
-      spi_host_xfer_word(address_command, device_word_rsp);
-
-      cfg.clk_rst_vif.wait_clks(100);
-
-      // Set filtering of this command
-      cfg_cmd_filter(1, pass_cmd);
-      spi_host_xfer_word(address_command, device_word_rsp);
-
-      cfg.clk_rst_vif.wait_clks(100);
-
-      // Unset filtering and check if pass works again
-      cfg_cmd_filter(0, pass_cmd);
-      spi_host_xfer_word(address_command, device_word_rsp);
-
-      cfg.clk_rst_vif.wait_clks(100);
+      // test 2 cases:
+      //  - disable cmd filter, test cmd passthrough to downstream
+      // - enable cmd filter, test cmd is blocked
+      for (int cmd_filter = 0; cmd_filter < 2;  cmd_filter++) begin
+        // Make sure filter is not blocking command opcode
+        cfg_cmd_filter(cmd_filter, op);
+        // Prepare data for transfer
+        spi_host_xfer_flash_item(op, cfg.m_spi_agent_cfg.cmd_infos[op].addr_bytes, payload_size);
+      end
     end
 
   endtask : body

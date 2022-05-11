@@ -60,6 +60,7 @@ package spi_agent_pkg;
   typedef class spi_agent_cfg;
 
   // package sources
+  `include "spi_flash_cmd_info.sv"
   `include "spi_agent_cfg.sv"
   `include "spi_agent_cov.sv"
   `include "spi_item.sv"

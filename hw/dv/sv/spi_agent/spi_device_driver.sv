@@ -26,7 +26,11 @@ class spi_device_driver extends spi_driver;
       fork
         begin: iso_fork
           fork
-            send_rx_item(req);
+            if (cfg.is_flash_mode == 0) begin
+              send_rx_item(req);
+            end else begin
+              send_flash_item(req);
+            end
             drive_bus_to_highz();
             drive_bus_for_reset();
           join_any
@@ -37,7 +41,6 @@ class spi_device_driver extends spi_driver;
       `uvm_info(`gfn, "\n  dev_drv: item done", UVM_HIGH)
     end
   endtask : get_and_drive
-
 
   virtual task send_rx_item(spi_item item);
     logic [3:0] sio_bits;
@@ -62,6 +65,45 @@ class spi_device_driver extends spi_driver;
 
     end
   endtask : send_rx_item
+
+  virtual task send_flash_item(spi_item item);
+    logic [3:0] sio_bits;
+    bit         bits_q[$];
+    bit [7:0]   data[$] = {item.payload_q};
+
+    `uvm_info(`gfn, $sformatf("sending rx_item:\n%s", item.sprint()), UVM_MEDIUM)
+
+    if (item.write_command) return;
+
+    if (cfg.byte_order) cfg.swap_byte_order(data);
+    bits_q = {>> 1 {data}};
+
+    fork
+      begin: isolation_thread
+        fork
+          begin: csb_deassert_thread
+            wait(cfg.vif.csb[cfg.csb_sel] == 1'b1);
+          end
+          begin
+            spi_mode_e spi_mode;
+            if (item.num_lanes == 1) spi_mode = Standard;
+            else if (item.num_lanes == 2) spi_mode = Dual;
+            else spi_mode = Quad;
+
+          forever begin
+            cfg.wait_sck_edge(DrivingEdge);
+            for (int i = 0; i < item.num_lanes; i++) begin
+              sio_bits[i] = bits_q.size > 0 ? bits_q.pop_front() : $urandom_range(0, 1);
+            end
+            send_data_to_sio(spi_mode, sio_bits);
+            end
+          end
+        join_any
+        disable fork;
+        `uvm_info(`gfn, $sformatf("finished rx_item:\n%s", item.sprint()), UVM_HIGH)
+      end: isolation_thread
+    join
+  endtask : send_flash_item
 
   virtual task send_data_to_sio(spi_mode_e mode, input logic [3:0] sio_bits);
     case (mode)

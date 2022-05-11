@@ -28,6 +28,7 @@ class spi_agent extends dv_base_agent#(
     end else begin
       `uvm_info(`gfn, "spi agent is configure in Host mode", UVM_HIGH)
     end
+    cfg.has_req_fifo = 1;
   endfunction : build_phase
 
 endclass

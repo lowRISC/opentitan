@@ -13,6 +13,7 @@ filesets:
       - spi_agent_pkg.sv
       - spi_if.sv
       - spi_item.sv: {is_include_file: true}
+      - spi_flash_cmd_info.sv: {is_include_file: true}
       - spi_agent_cfg.sv: {is_include_file: true}
       - spi_agent_cov.sv: {is_include_file: true}
       - spi_driver.sv: {is_include_file: true}
@@ -26,6 +27,7 @@ filesets:
       - seq_lib/spi_host_seq.sv: {is_include_file: true}
       - seq_lib/spi_host_dummy_seq.sv: {is_include_file: true}
       - seq_lib/spi_host_flash_seq.sv: {is_include_file: true}
+      - seq_lib/spi_device_flash_seq.sv: {is_include_file: true}
       - seq_lib/spi_device_seq.sv: {is_include_file: true}
       - seq_lib/spi_device_cmd_rsp_seq.sv: {is_include_file: true}
     file_type: systemVerilogSource

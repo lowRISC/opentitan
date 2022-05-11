@@ -27,7 +27,7 @@ module tb;
   wire [3:0] sd_out_en;
   wire [3:0] sd_in;
   spi_device_pkg::passthrough_req_t pass_out;
-  spi_device_pkg::passthrough_req_t pass_in;
+  spi_device_pkg::passthrough_rsp_t pass_in;
 
   wire intr_rxf;
   wire intr_rxlvl;
@@ -110,7 +110,8 @@ module tb;
   `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 3)
 
   assign spi_if_pass.sck = pass_out.sck;
-  assign spi_if_pass.csb = pass_out.csb;
+  // if passthrough_en is low, set csb inactive as the whole passthrough interface is off
+  assign spi_if_pass.csb = pass_out.csb ||  !pass_out.passthrough_en;
   `CONNECT_SPI_IO_PASS(spi_if_pass, pass_in.s, pass_out.s, pass_out.s_en, 0)
   `CONNECT_SPI_IO_PASS(spi_if_pass, pass_in.s, pass_out.s, pass_out.s_en, 1)
   `CONNECT_SPI_IO_PASS(spi_if_pass, pass_in.s, pass_out.s, pass_out.s_en, 2)

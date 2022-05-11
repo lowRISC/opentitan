@@ -11,13 +11,12 @@ class spi_item extends uvm_sequence_item;
   // start of transaction
   bit first_byte;
   // flash command constraints
-  rand bit [7:0] read_bsize;
+  rand int read_size;
   rand bit [7:0] payload_q[$];
   rand bit write_command;
   rand bit [7:0] address_q[$];
   rand bit [7:0] opcode;
   rand bit [2:0] num_lanes; // 1,2 or 4 lanes for read response
-
 
   rand uint dummy_clk_cnt;
   rand uint dummy_sck_length_ns;
@@ -40,6 +39,12 @@ class spi_item extends uvm_sequence_item;
     `uvm_field_int(first_byte,                   UVM_DEFAULT)
     `uvm_field_int(dummy_clk_cnt,                UVM_DEFAULT)
     `uvm_field_int(dummy_sck_length_ns,          UVM_DEFAULT)
+    `uvm_field_int(read_size,                    UVM_DEFAULT)
+    `uvm_field_int(write_command,                UVM_DEFAULT)
+    `uvm_field_int(opcode,                       UVM_DEFAULT)
+    `uvm_field_int(num_lanes,                    UVM_DEFAULT)
+    `uvm_field_queue_int(payload_q,              UVM_DEFAULT)
+    `uvm_field_queue_int(address_q,              UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
