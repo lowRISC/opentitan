@@ -55,6 +55,8 @@ module spid_upload
   input sys_clk_i,
   input sys_rst_ni,
 
+  input clk_csb_i, // CSb as a clock source
+
   input sys_csb_deasserted_pulse_i,
 
   input sel_datapath_e sel_dp_i,
@@ -104,6 +106,11 @@ module spid_upload
 
   output logic set_busy_o,
 
+  // cmdfifo_set: Pulse event to notify SW the command fifo has entries
+  output logic sys_cmdfifo_set_o,
+  // cmdfifo_notempty: The SYS domain Command FIFO not empty.
+  // cmdfifo_set occurs at the end of SPI transaction. cmdfifo_notempty can be
+  // changed in the middle of SPI transaction.
   output logic sys_cmdfifo_notempty_o,
   output logic sys_cmdfifo_full_o,
   output logic sys_addrfifo_notempty_o,
@@ -173,12 +180,15 @@ module spid_upload
   logic [SramDw-1:0]      sys_sram_rdata  [NumSramIntf-1]; // not used
   logic [1:0]             sys_sram_rerror [NumSramIntf-1]; // not used
 
-  logic        cmdfifo_wvalid;
-  logic        cmdfifo_wready; // Assume always ready
-  logic [7:0]  cmdfifo_wdata ;
+  logic               cmdfifo_wvalid;
+  logic               cmdfifo_wready; // Assume always ready
+  logic [7:0]         cmdfifo_wdata ;
+  logic [CmdPtrW-1:0] cmdfifo_depth; // Write side depth to check if FIFO empty
+
   logic        addrfifo_wvalid;
   logic        addrfifo_wready; // Assume always ready
   logic [31:0] addrfifo_wdata ;
+
   logic        payload_wvalid;
   logic        payload_wready; // Assume always ready
   logic [7:0]  payload_wdata ;
@@ -253,6 +263,63 @@ module spid_upload
     end
   end
 
+  // sys_cmdfifo_not_empty_o -> sys_cmdfifo_set_o
+  //
+  // The signal is generated from SCK domain write fifo depth signal. The
+  // reason is to delay the interrupt. If the notempty interrupt comes from
+  // the CMDFIFO directly, then SW waits the SPI transaction to be completed
+  // in order to get the correct address and payload.
+  //
+  // cmdfifo_depth (SCK) is a registered signal. So, it becomes notempty after
+  // 8th beat of the SCK. The CSb as a clock latches the signal to be != 0,
+  // then sys_csb_deasserted_pulse_i signal let SYS_CLK latch the notemtpy
+  // signal. as CSb as a clock is synced clock to the SCK, there is no CDC
+  // issue here. Please check the chip Synopsys Design Constraints (SDC) file.
+  //
+  // The case to be considered: If two commands are back-to-back and uploaded
+  // into the CMDFIFO. Then, if SW pops the first one, the notempty keeps
+  // high. The edge detector could not catch the change.
+  //
+  // To resolve the issue describe above, the notempty interrupt @ SCK catches
+  // the current transaction only. It means that the notempty becomes one if
+  // the FIFO is empty and becomes notempty. If the FIFO is not empty and
+  // the logic pushes one more to the FIFO, it does not generate event
+  // signal.
+  //
+  // In the SYS_CLK, logics see the event. If it is high, the logic generates
+  // a pulse to set the interrupt (along with the status). So that the SW can
+  // get the event.
+
+  logic sck_cmdfifo_set;
+  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
+    // Can't use rst_ni, as it is basically CSb. conflict to @posedge CSb
+    if (!sys_rst_ni)                           sck_cmdfifo_set <= 1'b 0;
+    // Can't use cmdfifo_depth != '0 as cmdfifo_depth is latched by SCK
+    // CmdOnly SPI transaction cannot catch
+    else if (cmdfifo_wvalid && cmdfifo_wready) sck_cmdfifo_set <= 1'b 1;
+    else if (cmdfifo_depth == '0)              sck_cmdfifo_set <= 1'b 0;
+  end
+  `ASSERT(CmdFifoPush_A,
+          cmdfifo_wvalid && cmdfifo_wready |=> cmdfifo_depth != 0,
+          clk_i, !sys_rst_ni)
+
+  logic csb_cmdfifo_set;
+  always_ff @(posedge clk_csb_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) csb_cmdfifo_set <= 1'b 0;
+    else             csb_cmdfifo_set <= sck_cmdfifo_set;
+  end
+
+  logic sys_cmdfifo_set;
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) sys_cmdfifo_set <= 1'b 0;
+    else if (sys_csb_deasserted_pulse_i && csb_cmdfifo_set) begin
+      sys_cmdfifo_set <= 1'b 1;
+    end else begin
+      sys_cmdfifo_set <= 1'b 0;
+    end
+  end
+
+  assign sys_cmdfifo_set_o = sys_cmdfifo_set;
 
   // payloadptr manage: spid_fifo2sram_adapter's fifoptr (wdepth) is reset by
   // CSb everytime. the written payload size should be visible to SW even CSb
@@ -461,7 +528,7 @@ module spid_upload
     .wvalid_i  (cmdfifo_wvalid),
     .wready_o  (cmdfifo_wready),
     .wdata_i   (cmdfifo_wdata ),
-    .wdepth_o  (),
+    .wdepth_o  (cmdfifo_depth),
 
     .clk_rd_i  (sys_clk_i),
     .rst_rd_ni (sys_rst_ni),
@@ -471,6 +538,9 @@ module spid_upload
     .rdepth_o  (sys_cmdfifo_depth_o),
 
     .r_full_o     (sys_cmdfifo_full_o),
+    // Not directly use `notempty` as an interrupt. Rather generated from the
+    // upload logic to delay the cmdfifo_notempty interrupt.
+    // See #11871
     .r_notempty_o (sys_cmdfifo_notempty_o),
 
     .w_full_o (),
