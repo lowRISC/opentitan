@@ -104,6 +104,17 @@ program prog_passthrough_sw
       4'b 0001
     );
 
+    // FILTER
+    // Read STATUS filtered.
+    // WREN/ WRDI go through as no SPI_HOST IP in TB yet.
+    // PROGRAM/ BLOCK ERASE go through as same reason as WREN/ WRDI
+    tlul_write(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_CMD_FILTER_0_OFFSET),
+      32'h 0000_0020, // [5] := 1
+      4'b 1111
+    );
+
     // CMD_INFO
     init_cmdinfo_list();
 
