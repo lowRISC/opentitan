@@ -30,67 +30,50 @@ licenses([
 ])
 
 # Generated Targets
-# buildifier: disable=out-of-order-load
-# buildifier: disable=load-on-top
-load(
-    "@rules_rust//cargo:cargo_build_script.bzl",
-    "cargo_build_script",
-)
 
-cargo_build_script(
-    name = "num_traits_build_script",
-    srcs = glob(["**/*.rs"]),
-    build_script_env = {
-    },
-    crate_features = [
-        "default",
-        "i128",
-        "libm",
-        "std",
-    ],
-    crate_root = "build.rs",
-    data = glob(["**"]),
-    edition = "2015",
-    rustc_flags = [
-        "--cap-lints=allow",
-    ],
-    tags = [
-        "cargo-raze",
-        "manual",
-    ],
-    version = "0.2.15",
-    visibility = ["//visibility:private"],
-    deps = [
-        "@raze__autocfg__1_1_0//:autocfg",
-    ],
-)
+# Unsupported target "key" with type "bench" omitted
 
 rust_library(
-    name = "num_traits",
+    name = "rsa",
     srcs = glob(["**/*.rs"]),
+    aliases = {
+        "@raze__num_bigint_dig__0_7_0//:num_bigint_dig": "num_bigint",
+    },
     crate_features = [
+        "alloc",
         "default",
-        "i128",
-        "libm",
+        "pem",
         "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=num-traits",
+        "crate-name=rsa",
         "manual",
     ],
-    version = "0.2.15",
+    version = "0.5.0",
     # buildifier: leave-alone
     deps = [
-        ":num_traits_build_script",
-        "@raze__libm__0_2_2//:libm",
+        "@raze__byteorder__1_4_3//:byteorder",
+        "@raze__digest__0_9_0//:digest",
+        "@raze__lazy_static__1_4_0//:lazy_static",
+        "@raze__num_bigint_dig__0_7_0//:num_bigint_dig",
+        "@raze__num_integer__0_1_44//:num_integer",
+        "@raze__num_iter__0_1_43//:num_iter",
+        "@raze__num_traits__0_2_14//:num_traits",
+        "@raze__pkcs1__0_2_4//:pkcs1",
+        "@raze__pkcs8__0_7_6//:pkcs8",
+        "@raze__rand__0_8_5//:rand",
+        "@raze__subtle__2_4_1//:subtle",
+        "@raze__zeroize__1_4_3//:zeroize",
     ],
 )
 
-# Unsupported target "cast" with type "test" omitted
+# Unsupported target "pkcs1" with type "test" omitted
+
+# Unsupported target "pkcs8" with type "test" omitted

@@ -247,6 +247,15 @@ alias(
 )
 
 alias(
+    name = "rsa",
+    actual = "@raze__rsa__0_5_0//:rsa",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "rusb",
     actual = "@raze__rusb__0_8_1//:rusb",
     tags = [
