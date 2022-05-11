@@ -229,7 +229,7 @@ jobs:
       includePatterns:
         - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
 
-- job: execute_fast_verilated_tests
+- job: execute_verilated_tests
   displayName: Build and run fast tests on sim_verilator
   pool: ci-public
   timeoutInMinutes: 200
@@ -246,7 +246,7 @@ jobs:
     displayName: Set the remote cache GCP key path
   - bash: |
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
-      ci/scripts/run-fast-verilator-tests.sh
+      ci/scripts/run-verilator-tests.sh
     displayName: Build and execute tests
     continueOnError: true # Temporary workaround for #12603
   # TODO: build and cache the verilator model to avoid building twice (#12574)
@@ -260,27 +260,6 @@ jobs:
     parameters:
       includePatterns:
         - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
-
-- job: execute_slow_verilated_tests
-  displayName: Build and run slow tests on sim_verilator
-  pool: ci-public
-  timeoutInMinutes: 200
-  dependsOn: lint
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - task: DownloadSecureFile@1
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    name: bazelCacheGcpKey
-    inputs:
-      secureFile: "bazel_cache_gcp_key.json"
-  - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    displayName: Set the remote cache GCP key path
-  - bash: |
-      export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
-      ci/scripts/run-slow-verilator-tests.sh
-    continueOnError: true # Temporary workaround for #12603
-    displayName: Build and execute tests
 
 - job: execute_verilated_tests_englishbreakfast
   displayName: Execute tests on the Verilated English Breakfast toplevel design
@@ -478,7 +457,7 @@ jobs:
   dependsOn:
     - lint
     - sw_build
-    - execute_fast_verilated_tests
+    - execute_verilated_tests
     - chip_earlgrey_cw310
   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   steps:
@@ -487,7 +466,7 @@ jobs:
     parameters:
       downloadPartialBuildBinFrom:
         - sw_build
-        - execute_fast_verilated_tests
+        - execute_verilated_tests
         - chip_earlgrey_cw310
         - chip_englishbreakfast_verilator
   - bash: |
