@@ -83,6 +83,10 @@ program prog_passthrough_host
         test_wel(subtask_pass);
       end
 
+      "program": begin
+        test_program(subtask_pass);
+      end
+
       default: begin
         $display("Passthrough test requires '+TESTNAME=%%s'");
       end
@@ -329,6 +333,15 @@ program prog_passthrough_host
     end
 
   endtask : test_wel
+
+  static task test_program(output bit pass);
+
+    // Test sequence:
+    // Issue commands w/ random WEL
+    // It is expected for SW to catch program and upload to Mailbox buffer.
+    // Read from SPIFlash and from Mailbox buffer then compare
+
+  endtask : test_program
 
   // Access to Mirrored storage
   function automatic void write_byte(int unsigned addr, spi_data_t data);
