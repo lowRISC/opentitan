@@ -13,6 +13,7 @@
 `include "chip_sw_base_vseq.sv"
 `include "chip_sw_full_aon_reset_vseq.sv"
 `include "chip_sw_main_power_glitch_vseq.sv"
+`include "chip_sw_sysrst_ctrl_vseq.sv"
 `include "chip_sw_uart_tx_rx_vseq.sv"
 `include "chip_sw_uart_rand_baudrate_vseq.sv"
 `include "chip_sw_gpio_smoke_vseq.sv"

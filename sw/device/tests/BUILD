@@ -160,6 +160,29 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "pwrmgr_all_reset_reqs_test",
+    srcs = ["pwrmgr_all_reset_reqs_test.c"],
+    verilator = verilator_params(
+        tags = [
+            "cpu:4",
+            "failing_verilator",
+        ],
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "aon_timer_wdog_lc_escalate_test",
     srcs = ["aon_timer_wdog_lc_escalate_test.c"],
     cw310 = cw310_params(

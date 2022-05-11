@@ -188,6 +188,48 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "pwrmgr_sysrst_ctrl_test",
+    srcs = ["pwrmgr_sysrst_ctrl_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "pwrmgr_deep_sleep_sysrst_reqs_test",
+    srcs = ["pwrmgr_deep_sleep_sysrst_reqs_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "pwrmgr_usbdev_smoketest",
     srcs = ["pwrmgr_usbdev_smoketest.c"],
     targets = ["dv"],
