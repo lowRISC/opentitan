@@ -5,6 +5,7 @@ cargo-raze generated Bazel file.
 DO NOT EDIT! Replaced on runs of cargo-raze
 """
 
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")  # buildifier: disable=load
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")  # buildifier: disable=load
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")  # buildifier: disable=load
 
@@ -38,7 +39,6 @@ _DEPENDENCIES = {
         "raw_tty": "@raze__raw_tty__0_1_0//:raw_tty",
         "regex": "@raze__regex__1_5_5//:regex",
         "rusb": "@raze__rusb__0_8_1//:rusb",
-        "safe-ftdi": "@raze__safe_ftdi__0_3_0//:safe_ftdi",
         "serde": "@raze__serde__1_0_137//:serde",
         "serde_json": "@raze__serde_json__1_0_81//:serde_json",
         "serialport": "@raze__serialport__4_1_0//:serialport",
@@ -657,16 +657,6 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
-        name = "raze__libftdi1_sys__1_1_2",
-        url = "https://crates.io/api/v1/crates/libftdi1-sys/1.1.2/download",
-        type = "tar.gz",
-        sha256 = "3ff6928872c7d13bec3c8a60c4c92f41f6252f3369b7552a5b4f9c90c8ba2338",
-        strip_prefix = "libftdi1-sys-1.1.2",
-        build_file = Label("//third_party/rust/crates/remote:BUILD.libftdi1-sys-1.1.2.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "raze__libm__0_2_2",
         url = "https://crates.io/api/v1/crates/libm/0.2.2/download",
         type = "tar.gz",
@@ -1139,19 +1129,6 @@ def raze_fetch_remote_crates():
         sha256 = "73b4b750c782965c211b42f022f59af1fbceabdd026623714f104152f1ec149f",
         strip_prefix = "ryu-1.0.9",
         build_file = Label("//third_party/rust/crates/remote:BUILD.ryu-1.0.9.bazel"),
-    )
-
-    # TODO(lowRISC/opentitan:#12469): this was manually converted to an
-    # http_archive rule. Need to figure out how to update the Cargo.toml file so
-    # `cargo raze` will generate a (cacheable) http_archive rule to support
-    # air-gapped builds.
-    maybe(
-        http_archive,
-        name = "raze__safe_ftdi__0_3_0",
-        url = "https://github.com/cr1901/safe-ftdi/archive/2e6ff2b77cee8c0d7c04dcdb0dea678edbd8d56f.tar.gz",
-        sha256 = "bdc434ac8e1b379d434eec54f0aab7d272101630876bd760730f9dd0599e806c",
-        strip_prefix = "safe-ftdi-2e6ff2b77cee8c0d7c04dcdb0dea678edbd8d56f",
-        build_file = Label("//third_party/rust/crates/remote:BUILD.safe-ftdi-0.3.0.bazel"),
     )
 
     maybe(
