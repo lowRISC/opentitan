@@ -23,6 +23,8 @@ pub struct Options {
     pub otp_image: String,
     /// Any extra arguments to verilator.
     pub extra_args: Vec<String>,
+    /// Timeout for starting verilator.
+    pub timeout: Duration,
 }
 
 pub struct Subprocess {
@@ -68,13 +70,12 @@ impl Subprocess {
 
     /// Finds a string within the verilator output.
     /// It is assumed that the [`Regex`] `re` has exactly one capture group.
-    pub fn find(&mut self, re: &Regex, timeout: Duration) -> Result<String> {
+    pub fn find(&mut self, re: &Regex, deadline: Instant) -> Result<String> {
         // Regex captures_len: Capture group 0 is the full match.  Subsequent
         // capture groups are the individual capture groups in the regex.
         // We expect only one user-specified capture group in the regex,
         // and thus expect a capture length of two.
         assert_eq!(re.captures_len(), 2);
-        let deadline = Instant::now() + timeout;
         while deadline > Instant::now() {
             {
                 let a = self.accumulated_output.lock().unwrap();
@@ -108,6 +109,7 @@ mod test {
             flash_image: "".to_owned(),
             otp_image: "".to_owned(),
             extra_args: vec!["abc 123 def 456".to_owned()],
+            timeout: Duration::from_secs(5),
         };
         Subprocess::from_options(options)
     }
@@ -116,7 +118,8 @@ mod test {
     fn test_find_regex() -> Result<()> {
         let mut subprocess = echo_subprocess()?;
         let regex = Regex::new("abc (.*) def")?;
-        let found = subprocess.find(&regex, Duration::from_millis(5000))?;
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let found = subprocess.find(&regex, deadline)?;
         assert_eq!(found, "123");
         Ok(())
     }
