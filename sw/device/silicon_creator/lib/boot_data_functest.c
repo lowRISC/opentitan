@@ -36,6 +36,45 @@ boot_data_t kTestBootData = (boot_data_t){
     .min_security_version_rom_ext = 0,
 };
 
+static void clear_addr_range(uint32_t start_addr, size_t word_count) {
+  uint32_t addr = start_addr;
+  for (size_t i = 0; i < word_count; ++i) {
+    *((volatile uint32_t *)addr) = 0;
+    addr += sizeof(uint32_t);
+  }
+}
+
+enum {
+  kSpiDeviceBufferRegOffset = 0x1000,
+  kSpiDeviceBufferSizeWords = 1024,
+  kUsbdevBufferRegOffset = 0x800,
+  kUsbdevBufferSizeWords = 512,
+};
+
+static void clear_spi_device(void) {
+  clear_addr_range(
+      TOP_EARLGREY_SPI_DEVICE_BASE_ADDR + kSpiDeviceBufferRegOffset,
+      kSpiDeviceBufferSizeWords);
+}
+
+static void clear_usbdev(void) {
+  clear_addr_range(TOP_EARLGREY_USBDEV_BASE_ADDR + kUsbdevBufferRegOffset,
+                   kUsbdevBufferSizeWords);
+}
+
+static void time_it(const char *op_name, void (*op_func)(void)) {
+  uint64_t start = ibex_mcycle_read();
+  op_func();
+  uint64_t end = ibex_mcycle_read();
+  uint32_t cycles = end - start;
+  LOG_INFO("%s took %u cycles", op_name, cycles);
+}
+
+static void clear_device_buffers(void) {
+  time_it("spi_device clear", clear_spi_device);
+  time_it("usbdev clear", clear_usbdev);
+}
+
 /**
  * Sets read, write, and erase permissions for boot data pages.
  *
@@ -334,6 +373,8 @@ rom_error_t write_page_switch_test(void) {
 
 bool test_main(void) {
   rom_error_t result = kErrorOk;
+
+  clear_device_buffers();
 
   flash_ctrl_init();
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
