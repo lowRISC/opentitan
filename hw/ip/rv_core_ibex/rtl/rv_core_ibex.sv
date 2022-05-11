@@ -29,6 +29,7 @@ module rv_core_ibex
   parameter bit                   ICacheScramble   = 1'b1,
   parameter bit                   BranchPredictor  = 1'b1,
   parameter bit                   DbgTriggerEn     = 1'b1,
+  parameter int unsigned          DbgHwBreakNum    = 1,
   parameter bit                   SecureIbex       = 1'b1,
   parameter ibex_pkg::lfsr_seed_t RndCnstLfsrSeed  = ibex_pkg::RndCnstLfsrSeedDefault,
   parameter ibex_pkg::lfsr_perm_t RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
@@ -359,6 +360,7 @@ module rv_core_ibex
     .ICacheScramble           ( ICacheScramble           ),
     .BranchPredictor          ( BranchPredictor          ),
     .DbgTriggerEn             ( DbgTriggerEn             ),
+    .DbgHwBreakNum            ( DbgHwBreakNum            ),
     // SEC_CM: LOGIC.SHADOW
     // SEC_CM: PC.CTRL_FLOW.CONSISTENCY, CTRL_FLOW.UNPREDICTABLE, CORE.DATA_REG_SW.SCA
     // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC, EXCEPTION.CTRL_FLOW.LOCAL_ESC

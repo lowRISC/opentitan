@@ -317,6 +317,13 @@
       expose:  "true"
     },
 
+    { name:    "DbgHwBreakNum"
+      type:    "int"
+      default: "1"
+      local:   "false"
+      expose:  "true"
+    },
+
     { name:    "SecureIbex"
       type:    "bit"
       default: "0"
