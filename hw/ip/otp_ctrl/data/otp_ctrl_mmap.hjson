@@ -144,6 +144,10 @@
                     name: "CREATOR_SW_CFG_RNG_EN",
                     size: "4"
                 }
+                {
+                    name: "CREATOR_SW_CFG_JITTER_EN",
+                    size: "4"
+                }
             ],
             desc: '''Software configuration partition for
             device-specific calibration data (Clock, LDO,
