@@ -40,6 +40,12 @@ package spi_agent_pkg;
     RsvdSpd  = 2'b11   // RFU
   } spi_mode_e;
 
+  // spi functional mode
+  typedef enum bit {
+    FirmwareMode,
+    FlashMode
+  } spi_fw_flash_e;
+
   typedef enum bit [7:0] {
     ReadStd    = 8'b11001100,
     WriteStd   = 8'b11111100,
@@ -58,6 +64,33 @@ package spi_agent_pkg;
   // forward declare classes to allow typedefs below
   typedef class spi_item;
   typedef class spi_agent_cfg;
+
+  class cmd_info extends uvm_sequence_item;
+    rand byte op_code;
+    rand bit [2:0] addr_bytes; // constrain to 0, 3 or 4
+    rand bit write_command;
+    rand bit [2:0] dummy_cycles; // TODO add support in driver and monitor
+    rand bit [2:0] num_lanes;
+    rand bit addr_swap;
+    rand bit data_swap;
+
+    constraint limitations_c {
+      addr_bytes inside {0, 3, 4};
+      num_lanes inside {1, 2, 4};
+    }
+
+    `uvm_object_utils_begin(cmd_info)
+      `uvm_field_int(op_code,                   UVM_DEFAULT)
+      `uvm_field_int(addr_bytes,                UVM_DEFAULT)
+      `uvm_field_int(write_command,             UVM_DEFAULT)
+      `uvm_field_int(dummy_cycles,              UVM_DEFAULT)
+      `uvm_field_int(num_lanes,                 UVM_DEFAULT)
+      `uvm_field_int(addr_swap,                 UVM_DEFAULT)
+      `uvm_field_int(data_swap,                 UVM_DEFAULT)
+    `uvm_object_utils_end
+
+    `uvm_object_new
+  endclass
 
   // package sources
   `include "spi_agent_cfg.sv"

@@ -40,6 +40,12 @@ class spi_item extends uvm_sequence_item;
     `uvm_field_int(first_byte,                   UVM_DEFAULT)
     `uvm_field_int(dummy_clk_cnt,                UVM_DEFAULT)
     `uvm_field_int(dummy_sck_length_ns,          UVM_DEFAULT)
+    `uvm_field_int(read_bsize,                   UVM_DEFAULT)
+    `uvm_field_int(write_command,                UVM_DEFAULT)
+    `uvm_field_int(opcode,                       UVM_DEFAULT)
+    `uvm_field_int(num_lanes,                    UVM_DEFAULT)
+    `uvm_field_queue_int(payload_q,              UVM_DEFAULT)
+    `uvm_field_queue_int(address_q,              UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

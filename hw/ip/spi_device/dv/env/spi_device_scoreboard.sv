@@ -10,7 +10,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // TLM fifos to pick up the packets
   uvm_tlm_analysis_fifo #(spi_item) host_spi_data_fifo;
   uvm_tlm_analysis_fifo #(spi_item) device_spi_data_fifo;
-  uvm_tlm_analysis_fifo #(spi_item) pass_spi_data_fifo;
+  uvm_tlm_analysis_fifo #(spi_item) downstream_spi_host_data_fifo;
+  uvm_tlm_analysis_fifo #(spi_item) downstream_spi_device_data_fifo;
 
   // mem model to save expected value
   local mem_model tx_mem;
@@ -25,13 +26,23 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   local bit [31:0] tx_word_q[$];
   local bit [31:0] rx_word_q[$];
 
+  local bit [7:0] pass_opcode;
+  local bit [7:0] host_opcode;
+  local bit [7:0] pass_addr_q[$];
+  local bit [7:0] pass_pld_q[$];
+  local bit pass_enabled;
+
+  local spi_item host_items_q[$];
+  local spi_item pass_items_q[$];
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     host_spi_data_fifo = new("host_spi_data_fifo", this);
     device_spi_data_fifo = new("device_spi_data_fifo", this);
-    pass_spi_data_fifo = new("pass_spi_data_fifo", this);
+    downstream_spi_host_data_fifo = new("downstream_spi_host_data_fifo", this);
+    downstream_spi_device_data_fifo = new("downstream_spi_device_data_fifo", this);
     tx_mem = mem_model#()::type_id::create("tx_mem", this);
     rx_mem = mem_model#()::type_id::create("rx_mem", this);
   endfunction
@@ -48,9 +59,38 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // extract spi items sent from host
   virtual task process_host_spi_fifo();
     spi_item item;
+    bit [4:0] cmd_position;
+    bit [4:0] cmd_offset;
     forever begin
       host_spi_data_fifo.get(item);
-      receive_spi_rx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
+      if (cfg.m_spi_agent_cfg.fw_flash == 0) begin
+        receive_spi_rx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
+      end
+      if (cfg.m_spi_agent_cfg.fw_flash == 1) begin
+        host_items_q.push_back(item);
+        host_opcode = item.opcode;
+        if (`gmv(ral.control.mode) == PassthroughMode) begin
+          // If opcode is added to config it is enabled
+          if (cfg.m_spi_agent_cfg.cmd_infos[host_opcode].op_code == host_opcode) begin
+            pass_enabled = 1;
+          end else begin
+            host_items_q.delete();
+          end
+          cmd_position = host_opcode / 32;
+          cmd_offset = host_opcode % 32;
+          // If opcode is filtered in filter register it is disabled
+          if (`gmv(ral.cmd_filter[cmd_position].filter[cmd_offset]) == 1) begin
+            pass_enabled = 0;
+            host_items_q.delete();
+          end
+          if (cfg.m_spi_agent_cfg.cmd_infos[host_opcode].write_command == 0) begin
+            for (int i = 0; i < item.payload_q.size(); i++) begin
+              `DV_CHECK_EQ(item.payload_q[i], pass_items_q[0].payload_q[i], "Check Read Pass Data")
+            end
+          end
+        end
+        pass_items_q.delete();
+      end
       `uvm_info(`gfn, $sformatf("received host spi item:\n%0s", item.sprint()), UVM_HIGH)
     end
   endtask
@@ -60,19 +100,51 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     spi_item item;
     forever begin
       device_spi_data_fifo.get(item);
-      sendout_spi_tx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
+      if (cfg.m_spi_agent_cfg.num_bytes_per_trans_in_mon == 4) begin
+        sendout_spi_tx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
+      end
       `uvm_info(`gfn, $sformatf("received device spi item:\n%0s", item.sprint()), UVM_HIGH)
     end
   endtask
 
   virtual task process_pass_spi_fifo();
     spi_item item;
+    int shift;
     forever begin
-      pass_spi_data_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received pass spi item:\n%0s", item.sprint()), UVM_HIGH)
-      if (`gmv(ral.control.mode) == PassthroughMode) begin
-        compare_pass_opcode_addr({item.data[3], item.data[2], item.data[1], item.data[0]});
-      end
+      fork
+        begin : item_collection_thread
+          downstream_spi_host_data_fifo.get(item);
+          pass_items_q.push_back(item);
+          `uvm_info(`gfn, $sformatf("received pass spi item:\n%0s", item.sprint()), UVM_HIGH)
+          if (`gmv(ral.control.mode) == PassthroughMode) begin
+            pass_opcode = item.opcode;
+            // Compare OPCODE
+            `DV_CHECK_EQ(pass_opcode, host_opcode, "Compare PASSTHROUGH Opcode")
+            if (pass_enabled == 1) begin
+              pass_addr_q = item.address_q;
+              // Compare address - possible addr bits swap
+              compare_pass_addr(pass_addr_q);
+              shift = 1 + cfg.m_spi_agent_cfg.cmd_infos[host_opcode].addr_bytes;
+              if (cfg.m_spi_agent_cfg.cmd_infos[host_opcode].write_command == 1) begin
+                if (item.payload_q.size() >= 4) begin
+                  pass_pld_q = {item.payload_q[3], item.payload_q[2], item.payload_q[1],
+                               item.payload_q[0]};
+                  // Compare first payload word - possible bit swap
+                  compare_first_word(pass_pld_q);
+                end
+                // Remaining payload must be the same if pass command
+                for (int i = 4; i < item.payload_q.size(); i++) begin
+                  `DV_CHECK_EQ(item.payload_q[i], host_items_q[0].payload_q[i],
+                            "Check Payload Byte")
+                end
+              end
+            end
+            host_items_q.delete();
+            pass_pld_q.delete();
+            pass_addr_q.delete();
+          end
+        end
+      join_any
     end
   endtask
 
@@ -198,7 +270,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   virtual function void receive_spi_rx_data(bit [TL_DW:0] data);
     if (get_rx_sram_space_bytes() >= SRAM_WORD_SIZE || rx_word_q.size < 2) begin
       rx_word_q.push_back(data);
-      update_rx_mem_fifo_and_wptr();
+      if (`gmv(ral.control.mode) != PassthroughMode) begin
+        update_rx_mem_fifo_and_wptr();
+      end
     end
     else begin
       `uvm_info(`gfn, $sformatf("RX overflow data: 0x%0h ptr: 0x%0h", data, rx_wptr_exp),
@@ -206,43 +280,55 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
   endfunction
 
-  // Check if opcode is enabled and returns index of enabled opcode
-  // Checks if there are duplicate enabled opcodes - not proper config
-  // HW parses commands this way
-  virtual function check_opcode_enable(bit [7:0] q_opcode, ref bit enable, ref bit [4:0] en_idx);
-    enable = 0;
-    en_idx = 24; // Larger than num of cmd_info if not enabled
-    for (int i = 0; i<24; i++)  begin
-      if (q_opcode == `gmv(ral.cmd_info[i].opcode) && `gmv(ral.cmd_info[i].valid) == 1) begin
-        `DV_CHECK_EQ(enable, 0, "Each CMD_INFO slot should have unique opcode")
-        enable = 1;
-        en_idx = i;
+  // Task that compares passthrough addrss
+  virtual function void compare_pass_addr(bit [7:0] address[$]);
+    bit enabled;
+    bit [31:0] mask_swap = `gmv(ral.addr_swap_mask.mask);
+    bit [31:0] data_swap = `gmv(ral.addr_swap_data.data);
+    bit [31:0] addr_exp;
+    if (address.size() == 3) begin
+      addr_exp = {host_items_q[0].address_q[2], host_items_q[0].address_q[1],
+                  host_items_q[0].address_q[0]};
+    end
+    if (address.size() == 4) begin
+      addr_exp = {host_items_q[0].address_q[3], host_items_q[0].address_q[2],
+                  host_items_q[0].address_q[1], host_items_q[0].address_q[0]};
+    end
+    if (cfg.m_spi_agent_cfg.cmd_infos[host_opcode].addr_swap == 1) begin // Addr Swap enable
+      for (int i = 0; i < 32; i++) begin
+        if (mask_swap[i] == 1) begin
+          addr_exp[i] = data_swap[i];
+        end
       end
+    end
+    if (address.size() == 3) begin
+      `DV_CHECK_EQ({address[2], address[1], address[0]}, addr_exp[23:0],
+                   "Compare PASSTHROUGH Address")
+    end
+    if (address.size() == 4) begin
+      `DV_CHECK_EQ({address[3], address[2], address[1], address[0]}, addr_exp[31:0],
+                   "Compare PASSTHROUGH Address")
     end
   endfunction
 
-  // Task that compares passthrough opcode and first 3B of address
-  // TODO modify to check opcode, address and payload
-  virtual function void compare_pass_opcode_addr(bit [31:0] data_act);
+  // Task that compares passthrough payload first word
+  virtual function void compare_first_word(bit [7:0] payload[$]);
     bit enabled;
     bit [4:0] en_idx;
-    bit [7:0] opcode = data_act[7:0];
-    bit [4:0] cmd_position = opcode / 32;
-    bit [4:0] cmd_offset = opcode % 32;
-    bit [31:0] mask_swap = `gmv(ral.addr_swap_mask.mask);
-    bit [31:0] data_swap = `gmv(ral.addr_swap_data.data);
-    check_opcode_enable(opcode, enabled, en_idx);
-    if (enabled && (`gmv(ral.cmd_filter[cmd_position].filter[cmd_offset]) == 0)) begin
-      bit [31:0] data_exp     = rx_word_q.pop_front();
-      if (`gmv(ral.cmd_info[en_idx].addr_swap_en) == 1) begin // Addr Swap enable
-        for (int i = 0; i < 24; i++) begin // TODO add 4B Address Support
-          if (mask_swap[i] == 1) begin
-            data_exp[i+8] = data_swap[i];
-          end
+    bit [31:0] mask_swap = `gmv(ral.payload_swap_mask.mask);
+    bit [31:0] data_swap = `gmv(ral.payload_swap_data.data);
+    bit [31:0] data_exp;
+    data_exp = {host_items_q[0].payload_q[3], host_items_q[0].payload_q[2],
+                host_items_q[0].payload_q[1], host_items_q[0].payload_q[0]};
+    if (cfg.m_spi_agent_cfg.cmd_infos[host_opcode].data_swap == 1) begin // Addr Swap enable
+      for (int i = 0; i < 32; i++) begin
+        if (mask_swap[i] == 1) begin
+          data_exp[i] = data_swap[i];
         end
       end
-      `DV_CHECK_EQ(data_act, data_exp, "Compare PASSTHROUGH Data")
     end
+    `DV_CHECK_EQ({payload[3], payload[2], payload[1], payload[0]}, data_exp[31:0],
+                 "Compare PASSTHROUGH Payload")
   endfunction
 
   // update rx mem, fifo and wptr when receive a spi trans or when rptr is updated

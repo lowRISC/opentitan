@@ -26,7 +26,11 @@ class spi_device_driver extends spi_driver;
       fork
         begin: iso_fork
           fork
-            send_rx_item(req);
+            if (cfg.fw_flash == 0) begin
+              send_rx_item(req);
+            end else begin
+              send_flash_item(req);
+            end
             drive_bus_to_highz();
             drive_bus_for_reset();
           join_any
@@ -37,7 +41,6 @@ class spi_device_driver extends spi_driver;
       `uvm_info(`gfn, "\n  dev_drv: item done", UVM_HIGH)
     end
   endtask : get_and_drive
-
 
   virtual task send_rx_item(spi_item item);
     logic [3:0] sio_bits;
@@ -62,6 +65,36 @@ class spi_device_driver extends spi_driver;
 
     end
   endtask : send_rx_item
+
+  virtual task send_flash_item(spi_item item);
+    logic [3:0] sio_bits;
+    bit         bits_q[$];
+    int         max_tx_bits;
+    bit [7:0] data[$] = {item.payload_q, item.address_q, item.opcode};
+
+    if (cfg.byte_order) cfg.swap_byte_order(data);
+    bits_q = {>> 1 {data}};
+    max_tx_bits = cfg.get_sio_size();
+
+    `uvm_info(`gfn, $sformatf("\n  dev_drv: send_rx_item, return %0d bits to dut",
+                              bits_q.size()), UVM_DEBUG)
+    // pop enough bits do drive all needed sio
+    while (bits_q.size() > 8 * (1 + item.address_q.size())) begin
+      if (bits_q.size() > 8 * (1 + item.address_q.size())) cfg.wait_sck_edge(DrivingEdge);
+      for (int i = 0; i < 4; i++) begin
+        sio_bits[i] = 1'bz;
+        if (i < max_tx_bits) bits_q.pop_front();
+      end
+      send_data_to_sio(cfg.spi_mode, sio_bits);
+    end
+    while (bits_q.size() > 0) begin
+      if (bits_q.size() > 0) cfg.wait_sck_edge(DrivingEdge);
+      for (int i = 0; i < 4; i++) begin
+        sio_bits[i] = (i < max_tx_bits) ? bits_q.pop_front() : 1'bz;
+      end
+      send_data_to_sio(cfg.spi_mode, sio_bits);
+    end
+  endtask : send_flash_item
 
   virtual task send_data_to_sio(spi_mode_e mode, input logic [3:0] sio_bits);
     case (mode)

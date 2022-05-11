@@ -11,6 +11,7 @@ class spi_monitor extends dv_base_monitor#(
 
   spi_item host_item, host_clone;
   spi_item device_item, device_clone;
+  spi_item cmd_item, cmd_clone;
   spi_cmd_e cmd;
   spi_cmd_e cmdtmp;
   int cmd_byte;
@@ -42,7 +43,11 @@ class spi_monitor extends dv_base_monitor#(
       host_item.first_byte = 1;
       cmd = CmdOnly;
       cmd_byte = 0;
-      collect_curr_trans();
+      if (cfg.fw_flash == 0) begin
+        collect_curr_trans();
+      end else begin
+        collect_flash_trans();
+      end
     end
   endtask : collect_trans
 
@@ -154,7 +159,7 @@ class spi_monitor extends dv_base_monitor#(
                 `uvm_info(`gfn, $sformatf("spi_monitor: cmdtmp \n%0h", cmdtmp), UVM_DEBUG)
                  end
                  cmd_byte++;
-              if (cmd_byte == 4)begin
+              if (cmd_byte == cfg.num_bytes_per_trans_in_mon)begin
                  cmd = cmdtmp;
                 `uvm_info(`gfn, $sformatf("spi_monitor: cmd \n%0h", cmd), UVM_DEBUG)
                  end
@@ -180,6 +185,119 @@ class spi_monitor extends dv_base_monitor#(
       end
     join
   endtask : collect_curr_trans
+
+  virtual protected task collect_flash_trans();
+    fork
+      begin: isolation_thread
+        fork
+          begin: csb_deassert_thread
+            wait(cfg.vif.csb[cfg.csb_sel] == 1'b1);
+          end
+          begin: sample_thread
+            bit [2:0] addr_size = 4; // Updated upon opcode collection
+            byte opcode;
+            bit write = 1; // Updated upon opcode collection
+            // for mode 1 and 3, get the leading edges out of the way
+            cfg.wait_sck_edge(LeadingEdge);
+            forever begin
+              bit [7:0] host_byte;    // from sio
+              bit [7:0] device_byte;  // from sio
+              bit [7:0] cmd_byte;
+              int       which_bit_h;
+              int       which_bit_d;
+              int       data_shift;
+              bit [3:0] num_samples;
+              if (cfg.partial_byte == 1) begin
+                num_samples = cfg.bits_to_transfer;
+              end else begin
+                num_samples = 8;
+              end
+
+              data_shift = cfg.cmd_infos[cmd].num_lanes;
+
+              for (int i = 0; i < num_samples; i = i + data_shift) begin
+                // wait for the sampling edge
+                cfg.wait_sck_edge(SamplingEdge);
+                // check sio not x or z
+                if (cfg.en_monitor_checks) begin
+                  `DV_CHECK_CASE_NE(cfg.vif.sio[3:0], 4'bxxxx)
+                  `DV_CHECK_CASE_NE(cfg.vif.sio[3:0], 4'bxxxx)
+                end
+
+                which_bit_h = cfg.host_bit_dir ? i : 7 - i;
+                which_bit_d = cfg.device_bit_dir ? i : 7 - i;
+                case(data_shift)
+                  1: begin
+                    if (cmd_item.data.size > addr_size + 1 && write == 0) begin
+                      cmd_byte[which_bit_h] = cfg.vif.sio[1];
+                    end else begin
+                      cmd_byte[which_bit_h] = cfg.vif.sio[0];
+                    end
+                  end // 1
+                  2: begin
+                    // sample sio[0] sio[1] for tx bidir
+                    cmd_byte[which_bit_h] = cfg.vif.sio[1];
+                    cmd_byte[which_bit_h-1] = cfg.vif.sio[0];
+                  end // 2
+                  4: begin
+                    // sample sio[0] sio[1] sio[2] sio[3] for tx bidir
+                    cmd_byte[which_bit_h] = cfg.vif.sio[3];
+                    cmd_byte[which_bit_h-1] = cfg.vif.sio[2];
+                    cmd_byte[which_bit_h-2] = cfg.vif.sio[1];
+                    cmd_byte[which_bit_h-3] = cfg.vif.sio[0];
+                  end // 4
+                  default: `uvm_fatal(`gfn, $sformatf("Unsupported lanes num 0x%0h", data_shift))
+                endcase
+
+              end
+
+              // sending less than 7 bits will not be captured, byte to be re-sent
+              if (num_samples >= 7) begin
+                cmd_item.data.push_back(cmd_byte);
+              end
+
+              if (cmd_item.data.size == 1) begin
+                opcode = host_item.data[0];
+                host_item.opcode = opcode;
+                addr_size = cfg.cmd_infos[opcode].addr_bytes;
+                write = cfg.cmd_infos[opcode].write_command;
+              end
+
+              // sending transactions when CSB deasseted
+              if (cfg.vif.csb[cfg.csb_sel] == 1) begin
+                `uvm_info(`gfn, $sformatf("spi_monitor: cmd packet:\n%0s", cmd_item.sprint()),
+                          UVM_DEBUG)
+                `downcast(cmd_clone, cmd_item.clone());
+                host_analysis_port.write(cmd_clone);
+                // write to fifo for re-active env
+                req_analysis_port.write(cmd_clone);
+                // clean items
+                cmd_item   = spi_item::type_id::create("cmd_item", this);
+                break;
+              end
+
+              if (cmd_item.data.size > 1 && cmd_item.data.size <= addr_size + 1) begin
+                if (cfg.cmd_infos[opcode].addr_bytes == 0) begin
+                  `uvm_fatal(`gfn, $sformatf("Wrong address for this size 0x%0h", addr_size))
+                end
+                cmd_item.address_q.push_back(cmd_byte);
+              end
+
+              if (cmd_item.data.size > addr_size + 1) begin
+                if (write == 1) begin
+                  cmd_item.payload_q.push_back(cmd_byte);
+                end else begin
+                  cmd_item.payload_q.push_back(device_byte);
+                end
+              end
+
+            end // forever
+          end: sample_thread
+        join_any
+        disable fork;
+      end
+    join
+  endtask : collect_flash_trans
 
   virtual task monitor_ready_to_end();
     ok_to_end = cfg.vif.csb[cfg.csb_sel];

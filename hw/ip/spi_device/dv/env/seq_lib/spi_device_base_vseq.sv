@@ -127,6 +127,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
   // rx is data received over sio[1] (host traffic from SPI agent)
 
   // TODO: use spi_device_pkg spi_mode enum instead
+
   virtual task spi_device_init();
     // set clk period
     if (spi_freq_faster) begin
@@ -143,6 +144,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
     cfg.m_spi_agent_cfg.partial_byte = 0;
     cfg.m_spi_agent_cfg.csb_consecutive = 0;
     cfg.m_spi_agent_cfg.decode_commands = 0;
+    cfg.m_spi_agent_cfg.num_bytes_per_trans_in_mon = 4;
+    cfg.m_spi_agent_cfg.fw_flash = 0;
 
     if (spi_freq_faster) begin
       cfg.spi_device_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps / core_spi_freq_ratio;
@@ -157,6 +160,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
     cfg.spi_device_agent_cfg.csb_sel = 0;
     cfg.spi_device_agent_cfg.partial_byte = 0;
     cfg.spi_device_agent_cfg.csb_consecutive = 0;
+    cfg.spi_device_agent_cfg.num_bytes_per_trans_in_mon = 1;
+    cfg.spi_device_agent_cfg.fw_flash = 0;
 
     // update device rtl
     ral.control.mode.set(spi_mode);
@@ -238,34 +243,23 @@ class spi_device_base_vseq extends cip_base_vseq #(
   endtask
 
   // transfer in command including opcode, address and payload
-  virtual task spi_host_xfer_cmd_in(bit [7:0] op, bit [7:0] addr[$],
-                                      bit [7:0] pld[$], ref bit [31:0] device_data);
+  virtual task spi_host_xfer_cmd(bit [7:0] op, bit [7:0] addr[$], bit [7:0] rd_siz,
+                                      bit [7:0] pld[$]);
     spi_host_flash_seq m_spi_host_seq;
+    spi_host_flash_seq spi_device_seq;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+    `uvm_create_on(spi_device_seq, p_sequencer.spi_sequencer_d)
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
-                                   write_command == 1;
-                                   opcode == op;
+                                   op_code == op;
                                    address_q.size() == addr.size();
                                    foreach (address_q[i]) {address_q[i] == addr[i];}
                                    payload_q.size() == pld.size();
+                                   read_bsize == rd_siz;
                                    foreach (payload_q[i]) {payload_q[i] == pld[i];})
     `uvm_send(m_spi_host_seq)
-    device_data = {<<8{m_spi_host_seq.rsp.data}};
-  endtask
-
-  // transfer out command including opcode, address and payload
-  virtual task spi_host_xfer_cmd_out(bit [7:0] op, bit [7:0] addr[$],
-                                       bit [7:0] rd_siz, bit [2:0] lanes);
-    spi_host_flash_seq m_spi_host_seq;
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
-                                   write_command == 0;
-                                   opcode == op;
-                                   address_q.size() == addr.size();
-                                   foreach (address_q[i]) {address_q[i] == addr[i];}
-                                   read_bsize == rd_siz;
-                                   num_lanes == lanes;)
-    `uvm_send(m_spi_host_seq)
+    if (`gmv(ral.control.mode) == PassthroughMode) begin
+      `uvm_send(m_spi_host_seq)
+    end
   endtask
 
   // set a random chunk of bytes of data via host agent and receive same number of data from device
