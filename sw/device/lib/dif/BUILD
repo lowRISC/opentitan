@@ -259,6 +259,7 @@ cc_library(
     ],
     deps = [
         ":base",
+        ":csrng_shared",
         "//hw/ip/edn/data:edn_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
