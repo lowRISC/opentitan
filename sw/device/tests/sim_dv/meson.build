@@ -247,6 +247,58 @@ sw_tests += {
   }
 }
 
+pwrmgr_sysrst_ctrl_test_lib = declare_dependency(
+  link_with: static_library(
+    'pwrmgr_sysrst_ctrl_test_lib',
+    sources: ['pwrmgr_sysrst_ctrl_test.c'],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_rstmgr,
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_sysrst_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_testing_pinmux_testutils,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_rstmgr_testutils,
+      sw_lib_testing_pwrmgr_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'pwrmgr_sysrst_ctrl_test': {
+    'library': pwrmgr_sysrst_ctrl_test_lib,
+  }
+}
+
+pwrmgr_deep_sleep_sysrst_reqs_test = declare_dependency(
+  link_with: static_library(
+    'pwrmgr_deep_sleep_sysrst_reqs_test',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'pwrmgr_deep_sleep_sysrst_reqs_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_rstmgr,
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_sysrst_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_testing_pinmux_testutils,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_rstmgr_testutils,
+      sw_lib_testing_pwrmgr_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'pwrmgr_deep_sleep_sysrst_reqs_test': {
+    'library': pwrmgr_deep_sleep_sysrst_reqs_test,
+  }
+}
+
 spi_tx_rx_test_lib = declare_dependency(
   link_with: static_library(
     'spi_tx_rx_test_lib',

@@ -1163,6 +1163,32 @@ sw_tests += {
   }
 }
 
+# PWRMGR all reset test.
+pwrmgr_all_reset_reqs_test = declare_dependency(
+  link_with: static_library(
+    'pwrmgr_all_reset_reqs_test',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'pwrmgr_all_reset_reqs_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_rstmgr,
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_pwrmgr,
+      sw_lib_runtime_log,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_rstmgr_testutils,
+      sw_lib_testing_pwrmgr_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'pwrmgr_all_reset_reqs_test': {
+    'library': pwrmgr_all_reset_reqs_test,
+  }
+}
+
 # AON Timer sleep wdog sleep pause test.
 aon_timer_sleep_wdog_sleep_pause_test = declare_dependency(
   link_with: static_library(

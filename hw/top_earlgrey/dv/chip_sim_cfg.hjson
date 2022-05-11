@@ -478,6 +478,18 @@
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
     }
     {
+      name: chip_sw_pwrmgr_sysrst_ctrl_reset
+      uvm_test_seq: chip_sw_sysrst_ctrl_vseq
+      sw_images: ["sw/device/tests/pwrmgr_sysrst_ctrl_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_pwrmgr_deep_sleep_sysrst_reqs
+      uvm_test_seq: chip_sw_sysrst_ctrl_vseq
+      sw_images: ["sw/device/tests/pwrmgr_deep_sleep_sysrst_reqs_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_pwrmgr_sleep_power_glitch_reset
       uvm_test_seq: chip_sw_main_power_glitch_vseq
       sw_images: ["sw/device/tests/pwrmgr_sleep_power_glitch_test:1"]
@@ -514,6 +526,13 @@
       name: chip_sw_aon_timer_wdog_bite_reset
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/aon_timer_wdog_bite_reset_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=18000000"]
+    }
+    {
+      name: chip_sw_pwrmgr_all_reset_reqs
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/pwrmgr_all_reset_reqs_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=18000000"]
     }
