@@ -248,6 +248,7 @@ jobs:
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       ci/scripts/run-fast-verilator-tests.sh
     displayName: Build and execute tests
+    continueOnError: true # Temporary workaround for #12603
   # TODO: build and cache the verilator model to avoid building twice (#12574)
   - bash: |
       . util/build_consts.sh
@@ -278,6 +279,7 @@ jobs:
   - bash: |
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       ci/scripts/run-slow-verilator-tests.sh
+    continueOnError: true # Temporary workaround for #12603
     displayName: Build and execute tests
 
 - job: execute_verilated_tests_englishbreakfast

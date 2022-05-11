@@ -365,6 +365,7 @@ def opentitan_functest(
             name = test_name,
             srcs = [test_runner],
             args = concat_args,
+            flaky = target == "sim_verilator",  # Temporary workaround for #12603
             data = [
                 flash,
                 rom,
