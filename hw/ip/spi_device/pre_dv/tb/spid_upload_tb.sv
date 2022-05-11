@@ -138,6 +138,7 @@ module spid_upload_tb;
   logic addrfifo_rvalid, addrfifo_rready;
   logic [31:0] addrfifo_rdata;
   logic cmdfifo_notempty, addrfifo_notempty;
+  logic cmdfifo_set_pulse;
   logic payload_overflow;
   logic [ $clog2(SramCmdFifoDepth+1)-1:0] cmdfifo_depth;
   logic [$clog2(SramAddrFifoDepth+1)-1:0] addrfifo_depth;
@@ -234,7 +235,7 @@ module spid_upload_tb;
       payload
     );
     payload = {};
-    
+
     repeat(256) @(sck_clk.cbn); // Wait payload size (4clk per word read?)
 
     // Cmd & Addr & Payload : equal to 256B
@@ -249,7 +250,7 @@ module spid_upload_tb;
       payload
     );
     payload = {};
-    
+
     repeat(256) @(sck_clk.cbn); // Wait payload size (4clk per word read?)
 
     // Cmd & Addr & Payload : 256B < x <= 512B
@@ -265,7 +266,7 @@ module spid_upload_tb;
       payload
     );
     payload = {};
-    
+
     repeat(payload_bytes) @(sck_clk.cbn); // Wait payload size (4clk per word read?)
 
     // Cmd & Addr & Payload : greater than 512B
@@ -281,10 +282,10 @@ module spid_upload_tb;
       payload
     );
     payload = {};
-    
+
     repeat(payload_bytes) @(sck_clk.cbn); // Wait payload size (4clk per word read?)
 
-   
+
     #10us // Wait enough for SW to pop
     @(sck_clk.cbn);
   endtask : host
@@ -300,7 +301,7 @@ module spid_upload_tb;
       // it takes one more cycle to have valid read data
       // due to the latency that FIFO reads from DPSRAM.
       // Check cmdfifo_rvalid rather than cmdfifo_notempty
-      @(posedge clk iff (cmdfifo_rvalid == 1'b 1));
+      @(posedge clk iff (cmdfifo_set_pulse == 1'b 1));
       cmd = cmdfifo_rdata;
       $display("Cmd %x is uploaded", cmd);
       cmdfifo_rready = 1'b 1;
@@ -433,6 +434,8 @@ module spid_upload_tb;
     .sys_clk_i  (clk),
     .sys_rst_ni (rst_n),
 
+    .clk_csb_i  (sif.csb),
+
     .sys_csb_deasserted_pulse_i (csb_deasserted_busclk),
 
     .sel_dp_i (dut_sel_dp),
@@ -478,6 +481,7 @@ module spid_upload_tb;
 
     .set_busy_o (sck_busy_set),
 
+    .sys_cmdfifo_set_o       (cmdfifo_set_pulse),
     .sys_cmdfifo_notempty_o  (cmdfifo_notempty),
     .sys_cmdfifo_full_o      (), // not used
     .sys_addrfifo_notempty_o (addrfifo_notempty),
@@ -708,7 +712,7 @@ module spid_upload_tb;
       // push to result (based on current_offset, currnt_size)
       $display("Pushing the return data(from SRAM) into the result queue");
       data = {data, sram_data[current_offset:$]}; // push back the sram read
-      
+
       // start addr of next transaction
       $display("Calculating for the next SRAM transaction");
       remained_bytes = remained_bytes - (request_bytes - current_offset);
