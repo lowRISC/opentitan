@@ -26,6 +26,14 @@
         "+TESTNAME=addr_4b"
       ]
     }
+    {
+      name: spid_passthrough_wel
+      // WREN/ WRDI test
+      // Mainly to check if spi_device to set/clear wel bit in the status
+      run_opts: [
+        "+TESTNAME=wel"
+      ]
+    }
   ]
 
   regressions: [

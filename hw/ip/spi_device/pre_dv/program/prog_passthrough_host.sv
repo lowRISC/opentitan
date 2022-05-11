@@ -79,6 +79,14 @@ program prog_passthrough_host
         test_addr_4b(subtask_pass);
       end
 
+      "wel": begin
+        test_wel(subtask_pass);
+      end
+
+      default: begin
+        $display("Passthrough test requires '+TESTNAME=%%s'");
+      end
+
     endcase
 
     if (subtask_pass == 1'b 0) pass = 1'b 0;
@@ -97,13 +105,8 @@ program prog_passthrough_host
     repeat(10) @(negedge clk);
   endtask : wait_trans
 
-  static task test_readbasic(output bit pass);
+  task automatic read_status();
     automatic spi_data_t   temp_status;
-    automatic logic [23:0] temp_jedec_id;
-    automatic int unsigned num_cc;
-    automatic spi_queue_t  rdata = {};
-    automatic spi_queue_t  rdata_cmp = {};
-
     // Test: Issue Status Read command without intercept
     spiflash_readstatus(
       sif.tb,
@@ -115,6 +118,16 @@ program prog_passthrough_host
     status[0] = temp_status;
 
     wait_trans();
+
+  endtask : read_status
+
+  static task test_readbasic(output bit pass);
+    automatic logic [23:0] temp_jedec_id;
+    automatic int unsigned num_cc;
+    automatic spi_queue_t  rdata = {};
+    automatic spi_queue_t  rdata_cmp = {};
+
+    read_status();
 
     // Test: Jedec ID
     // CcNum 7, Cc 'h 7F
@@ -270,8 +283,52 @@ program prog_passthrough_host
 
   endtask : test_addr_4b
 
-  // TODO: Do Factory to load proper sequence for the test
+  static task test_wel(output bit pass);
+    automatic bit status_wel;
+    automatic bit exp_wel = 1'b 0;
+    // This test issues WREN/ WRDI to SPIFlash and check if the SPI_DEVICE IP
+    // (not SPIFlash) sets/ clears the STATUS.WEL correctly.
+    SpiTrans trans;
 
+    pass = 1'b 1;
+    repeat(10) begin
+      // Sequence: Random wel set/clear and read status to check
+      read_status();
+
+      // Check WEL.
+      status_wel = status[0][1];
+
+      if (status_wel != exp_wel) begin
+        // FIXME: move to scoreboard
+        $display("STATUS.WEL mismatch: EXP(%1b) / RCV(%1b)",
+          exp_wel, status_wel);
+        pass = 1'b 0;
+      end
+
+      trans = new();
+
+      trans.randomize() with {
+        cmd inside {
+          CmdWriteDisable,
+          CmdWriteEnable
+        };
+        size      == 0;
+        address   == '0;
+        addr_mode == 0;
+      };
+
+      // TODO: Add to TLM FIFO to sequencer then sequencer to Driver
+
+      spiflash_oponly(
+        sif.tb,
+        trans.cmd
+      );
+
+      wait_trans();
+      exp_wel = (trans.cmd == CmdWriteEnable) ? 1'b 1: 1'b 0;
+    end
+
+  endtask : test_wel
 
   // Access to Mirrored storage
   function automatic void write_byte(int unsigned addr, spi_data_t data);
