@@ -38,19 +38,19 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
 
    constraint pwrb_cycles_c { pwrb_cycles dist {
      [1 : set_pwrb_timer - 2] :/20,
-     [set_pwrb_timer + 5 : set_pwrb_timer * 2] :/80 };}
+     [set_pwrb_timer + 1 : set_pwrb_timer * 2] :/80 };}
    constraint lid_cycles_c { lid_cycles dist {
      [1 : set_lid_timer - 2] :/20,
-     [set_lid_timer + 5 : set_lid_timer * 2] :/80 };}
+     [set_lid_timer + 1 : set_lid_timer * 2] :/80 };}
    constraint ac_cycles_c { ac_cycles dist {
      [1 : set_ac_timer - 2]  :/20,
-     [set_ac_timer + 5 : set_ac_timer * 2] :/80 };}
+     [set_ac_timer + 1 : set_ac_timer * 2] :/80 };}
 
    constraint num_trans_c {num_trans == 3;}
 
    task drive_ac();
     cfg.vif.ac_present = 1;
-    cfg.clk_aon_rst_vif.wait_clks(ac_cycles+1);
+    cfg.clk_aon_rst_vif.wait_clks(ac_cycles);
     cfg.vif.ac_present = 0;
    endtask
 
@@ -58,7 +58,7 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
     cfg.vif.pwrb_in = 1;
     cfg.clk_aon_rst_vif.wait_clks($urandom_range(1,20));
     cfg.vif.pwrb_in = 0;
-    cfg.clk_aon_rst_vif.wait_clks(pwrb_cycles+1);
+    cfg.clk_aon_rst_vif.wait_clks(pwrb_cycles);
     cfg.vif.pwrb_in = 1;
    endtask
 
@@ -66,7 +66,7 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
     cfg.vif.lid_open = 0;
     cfg.clk_aon_rst_vif.wait_clks($urandom_range(1,20));
     cfg.vif.lid_open = 1;
-    cfg.clk_aon_rst_vif.wait_clks(lid_cycles+1);
+    cfg.clk_aon_rst_vif.wait_clks(lid_cycles);
     cfg.vif.lid_open = 0;
    endtask
 
