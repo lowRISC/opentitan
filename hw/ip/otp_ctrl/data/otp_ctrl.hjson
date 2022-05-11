@@ -279,6 +279,18 @@
       default: "4",
       local: "true"
     },
+    { name: "CreatorSwCfgJitterEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_JITTER_EN",
+      type: "int",
+      default: "224",
+      local: "true"
+    },
+    { name: "CreatorSwCfgJitterEnSize",
+      desc: "Size of CREATOR_SW_CFG_JITTER_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "CreatorSwCfgDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_DIGEST",
       type: "int",
