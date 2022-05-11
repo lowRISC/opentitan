@@ -119,7 +119,6 @@ rust_library(
         "//third_party/rust/crates:rand",
         "//third_party/rust/crates:regex",
         "//third_party/rust/crates:rusb",
-        "//third_party/rust/crates:safe_ftdi",
         "//third_party/rust/crates:serde",
         "//third_party/rust/crates:serde_json",
         "//third_party/rust/crates:serialport",
@@ -129,6 +128,7 @@ rust_library(
         "//third_party/rust/crates:typetag",
         "//third_party/rust/crates:zerocopy",
         "@mundane",
+        "@safe_ftdi",
     ],
 )
 

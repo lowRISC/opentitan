@@ -51,9 +51,6 @@ thiserror = "1.0.24"
 typetag = "0.1"
 zerocopy = "0.5.0"
 
-# TODO(cfrantz): work with cr1901 to release 0.3.0.
-safe-ftdi = { git = "https://github.com/cr1901/safe-ftdi" }
-
 [workspace.metadata.raze]
 workspace_path = "//third_party/rust/crates"
 experimental_api = true
