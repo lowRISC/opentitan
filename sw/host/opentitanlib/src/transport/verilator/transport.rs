@@ -4,11 +4,10 @@
 
 use anyhow::{ensure, Result};
 use lazy_static::lazy_static;
-use log::info;
 use regex::Regex;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::time::Duration;
+use std::time::Instant;
 
 use crate::io::uart::Uart;
 use crate::transport::verilator::subprocess::{Options, Subprocess};
@@ -45,17 +44,18 @@ impl Verilator {
                 Regex::new(r#"GPIO: FIFO pipes created at [^ ]+ \(read\) and ([^ ]+) \(write\) for 32-bit wide GPIO."#).unwrap();
         }
 
+        let deadline = Instant::now() + options.timeout;
         let mut subprocess = Subprocess::from_options(options)?;
-        let gpio_rd = subprocess.find(&GPIO_RD, Duration::from_secs(5))?;
-        let gpio_wr = subprocess.find(&GPIO_WR, Duration::from_secs(5))?;
-        let uart = subprocess.find(&UART, Duration::from_secs(5))?;
-        let spi = subprocess.find(&SPI, Duration::from_secs(5))?;
+        let gpio_rd = subprocess.find(&GPIO_RD, deadline)?;
+        let gpio_wr = subprocess.find(&GPIO_WR, deadline)?;
+        let uart = subprocess.find(&UART, deadline)?;
+        let spi = subprocess.find(&SPI, deadline)?;
 
-        info!("Verilator started with the following interaces:");
-        info!("gpio_read = {}", gpio_rd);
-        info!("gpio_write = {}", gpio_wr);
-        info!("uart = {}", uart);
-        info!("spi = {}", spi);
+        log::info!("Verilator started with the following interaces:");
+        log::info!("gpio_read = {}", gpio_rd);
+        log::info!("gpio_write = {}", gpio_wr);
+        log::info!("uart = {}", uart);
+        log::info!("spi = {}", spi);
         Ok(Verilator {
             subprocess: Some(subprocess),
             uart_file: uart,
