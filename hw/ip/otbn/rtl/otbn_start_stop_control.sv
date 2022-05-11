@@ -38,8 +38,8 @@ module otbn_start_stop_control
   input  logic urnd_reseed_ack_i,
   output logic urnd_advance_o,
 
-  input   logic start_secure_wipe_i,
-  output  logic secure_wipe_done_o,
+  input   logic secure_wipe_req_i,
+  output  logic secure_wipe_ack_o,
   output  logic done_o,
 
   output logic       sec_wipe_wdr_o,
@@ -65,7 +65,7 @@ module otbn_start_stop_control
   logic [4:0] addr_cnt_q, addr_cnt_d;
 
   // There are two ways in which the start/stop controller can be told to stop. Either
-  // start_secure_wipe_i comes from the controller (which means "I've run some instructions and I've
+  // secure_wipe_req_i comes from the controller (which means "I've run some instructions and I've
   // hit an ECALL or error"). Or escalate_en_i can be asserted (which means "Someone else has told
   // us to stop immediately"). If running, both can be true at once.
   //
@@ -75,7 +75,7 @@ module otbn_start_stop_control
   // SEC_CM: CONTROLLER.FSM.GLOBAL_ESC
   logic esc_request, should_lock_d, should_lock_q, stop;
   assign esc_request   = mubi4_test_true_loose(escalate_en_i);
-  assign stop          = esc_request | start_secure_wipe_i;
+  assign stop          = esc_request | secure_wipe_req_i;
   assign should_lock_d = should_lock_q | esc_request;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -104,8 +104,8 @@ module otbn_start_stop_control
     sec_wipe_mod_urnd_o    = 1'b0;
     sec_wipe_zero_o        = 1'b0;
     addr_cnt_inc           = 1'b0;
-    secure_wipe_done_o     = 1'b0;
     fatal_error_o          = 1'b0;
+    secure_wipe_ack_o      = 1'b0;
 
     unique case (state_q)
       OtbnStartStopStateHalt: begin
@@ -167,11 +167,11 @@ module otbn_start_stop_control
         addr_cnt_inc = 1'b1;
         if (addr_cnt_q == 5'b11111) begin
           state_d = OtbnStartStopSecureWipeComplete;
+          secure_wipe_ack_o = 1'b1;
         end
       end
       OtbnStartStopSecureWipeComplete: begin
         urnd_advance_o = 1'b1;
-        secure_wipe_done_o = 1'b1;
         state_d = should_lock_d ? OtbnStartStopStateLocked : OtbnStartStopStateHalt;
       end
       OtbnStartStopStateLocked: begin
@@ -224,6 +224,6 @@ module otbn_start_stop_control
                       OtbnStartStopStateLocked})
 
   `ASSERT(StartSecureWipeImpliesRunning_A,
-          start_secure_wipe_i |-> (state_q == OtbnStartStopStateRunning))
+          $rose(secure_wipe_req_i) |-> (state_q == OtbnStartStopStateRunning))
 
 endmodule

@@ -82,8 +82,8 @@ interface otbn_trace_if
 
   input logic [1:0][otbn_pkg::SideloadKeyWidth-1:0] sideload_key_shares_i,
 
-  input logic start_secure_wipe,
-  input logic secure_wipe_done
+  input logic secure_wipe_req,
+  input logic secure_wipe_ack
 );
   import otbn_pkg::*;
 
@@ -310,12 +310,12 @@ interface otbn_trace_if
     assign flags_read_data[i_fg] = u_otbn_alu_bignum.flags_q[i_fg];
   end
 
-  logic secure_wipe_running;
+  logic secure_wipe_ack_r;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      secure_wipe_running <= 0;
+      secure_wipe_ack_r <= 1'b0;
     end else begin
-      secure_wipe_running <= start_secure_wipe | (secure_wipe_running & ~secure_wipe_done);
+      secure_wipe_ack_r <= secure_wipe_ack;
     end
   end
 
