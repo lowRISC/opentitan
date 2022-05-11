@@ -193,6 +193,26 @@ cc_test(
 )
 
 cc_library(
+    name = "csrng_shared",
+    srcs = [
+        "autogen/dif_csrng_autogen.h",
+        "dif_csrng_shared.c",
+    ],
+    hdrs = [
+        "dif_csrng.h",
+        "dif_csrng_shared.h",
+    ],
+    visibility = ["//visibility:private"],
+    deps = [
+        ":base",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+    ],
+)
+
+cc_library(
     name = "csrng",
     srcs = [
         "autogen/dif_csrng_autogen.c",
@@ -204,6 +224,7 @@ cc_library(
     ],
     deps = [
         ":base",
+        ":csrng_shared",
         "//hw/ip/csrng/data:csrng_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",

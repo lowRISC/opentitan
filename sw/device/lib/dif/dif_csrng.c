@@ -8,95 +8,9 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_csrng_shared.h"
 
 #include "csrng_regs.h"  // Generated
-
-enum {
-  /**
-   * CSRNG genbits buffer size in uint32_t words.
-   */
-  kCsrngGenBitsBufferSize = 4,
-};
-
-/**
- * Supported CSRNG application commands.
- * See https://docs.opentitan.org/hw/ip/csrng/doc/#command-header for
- * details.
- */
-typedef enum csrng_app_cmd_id {
-  kCsrngAppCmdInstantiate = 1,
-  kCsrngAppCmdReseed = 2,
-  kCsrngAppCmdGenerate = 3,
-  kCsrngAppCmdUpdate = 4,
-  kCsrngAppCmdUnisntantiate = 5,
-} csrng_app_cmd_id_t;
-
-/**
- * CSRNG application interface command header parameters.
- */
-typedef struct csrng_app_cmd {
-  /**
-   * Application command.
-   */
-  csrng_app_cmd_id_t id;
-  /**
-   * Entropy source enable.
-   *
-   * Mapped to flag0 in the hardware command interface.
-   */
-  dif_csrng_entropy_src_toggle_t entropy_src_enable;
-  /**
-   * Seed material. Only used in `kCsrngAppCmdInstantiate`, `kCsrngAppCmdReseed`
-   * and `kCsrngAppCmdUpdate` commands.
-   */
-  const dif_csrng_seed_material_t *seed_material;
-  /**
-   * Generate length. Specified as number of 128bit blocks.
-   */
-  uint32_t generate_len;
-} csrng_app_cmd_t;
-
-#define BITSET_INSERT(set_, hw_idx_, dif_idx_) \
-  set_ = bitfield_bit32_write(set_, dif_idx_, bitfield_bit32_read(reg, hw_idx_))
-
-/**
- * Writes application command `cmd` to the CSRNG_CMD_REQ_REG register.
- * Returns the result of the operation.
- */
-static dif_result_t write_application_command(const dif_csrng_t *csrng,
-                                              csrng_app_cmd_t cmd) {
-  if (csrng == NULL) {
-    return kDifBadArg;
-  }
-
-  // The application command header is not specified as a register in the
-  // hardware specification, so the fields are mapped here by hand. The
-  // command register also accepts arbitrary 32bit data.
-  const uint32_t kAppCmdBitFlag0 = 8;
-  const bitfield_field32_t kAppCmdFieldCmdId = {.mask = 0xf, .index = 0};
-  const bitfield_field32_t kAppCmdFieldCmdLen = {.mask = 0xf, .index = 4};
-  const bitfield_field32_t kAppCmdFieldGlen = {.mask = 0x7ffff, .index = 12};
-
-  uint32_t cmd_len =
-      cmd.seed_material == NULL ? 0 : cmd.seed_material->seed_material_len;
-
-  if (cmd_len & ~kAppCmdFieldCmdLen.mask) {
-    return kDifBadArg;
-  }
-
-  // Build and write application command header.
-  uint32_t reg = bitfield_field32_write(0, kAppCmdFieldCmdId, cmd.id);
-  reg = bitfield_field32_write(reg, kAppCmdFieldCmdLen, cmd_len);
-  reg = bitfield_bit32_write(reg, kAppCmdBitFlag0, cmd.entropy_src_enable);
-  reg = bitfield_field32_write(reg, kAppCmdFieldGlen, cmd.generate_len);
-  mmio_region_write32(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET, reg);
-
-  for (size_t i = 0; i < cmd_len; ++i) {
-    mmio_region_write32(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
-                        cmd.seed_material->seed_material[i]);
-  }
-  return kDifOk;
-}
 
 /**
  * Reads the output data register status.
@@ -147,42 +61,54 @@ dif_result_t dif_csrng_configure(const dif_csrng_t *csrng) {
 dif_result_t dif_csrng_instantiate(
     const dif_csrng_t *csrng, dif_csrng_entropy_src_toggle_t entropy_src_enable,
     const dif_csrng_seed_material_t *seed_material) {
-  return write_application_command(csrng,
-                                   (csrng_app_cmd_t){
-                                       .id = kCsrngAppCmdInstantiate,
-                                       .entropy_src_enable = entropy_src_enable,
-                                       .seed_material = seed_material,
-                                   });
+  if (csrng == NULL || seed_material == NULL) {
+    return kDifBadArg;
+  }
+  return csrng_send_app_cmd(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+                            (csrng_app_cmd_t){
+                                .id = kCsrngAppCmdInstantiate,
+                                .entropy_src_enable = entropy_src_enable,
+                                .seed_material = seed_material,
+                            });
 }
 
 dif_result_t dif_csrng_reseed(const dif_csrng_t *csrng,
                               const dif_csrng_seed_material_t *seed_material) {
-  return write_application_command(csrng, (csrng_app_cmd_t){
-                                              .id = kCsrngAppCmdReseed,
-                                              .seed_material = seed_material,
-                                          });
+  if (csrng == NULL || seed_material == NULL) {
+    return kDifBadArg;
+  }
+  return csrng_send_app_cmd(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+                            (csrng_app_cmd_t){
+                                .id = kCsrngAppCmdReseed,
+                                .seed_material = seed_material,
+                            });
 }
 
 dif_result_t dif_csrng_update(const dif_csrng_t *csrng,
                               const dif_csrng_seed_material_t *seed_material) {
-  return write_application_command(csrng, (csrng_app_cmd_t){
-                                              .id = kCsrngAppCmdUpdate,
-                                              .seed_material = seed_material,
-                                          });
+  if (csrng == NULL || seed_material == NULL) {
+    return kDifBadArg;
+  }
+  return csrng_send_app_cmd(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+                            (csrng_app_cmd_t){
+                                .id = kCsrngAppCmdUpdate,
+                                .seed_material = seed_material,
+                            });
 }
 
 dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len) {
-  if (len == 0) {
+  if (csrng == NULL || len == 0) {
     return kDifBadArg;
   }
 
   // Round up the number of 128bit blocks. Aligning with respect to uint32_t.
   // TODO(#6112): Consider using a canonical reference for alignment operations.
   const uint32_t num_128bit_blocks = (len + 3) / 4;
-  return write_application_command(csrng, (csrng_app_cmd_t){
-                                              .id = kCsrngAppCmdGenerate,
-                                              .generate_len = num_128bit_blocks,
-                                          });
+  return csrng_send_app_cmd(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+                            (csrng_app_cmd_t){
+                                .id = kCsrngAppCmdGenerate,
+                                .generate_len = num_128bit_blocks,
+                            });
 }
 
 dif_result_t dif_csrng_generate_read(const dif_csrng_t *csrng, uint32_t *buf,
@@ -202,9 +128,13 @@ dif_result_t dif_csrng_generate_read(const dif_csrng_t *csrng, uint32_t *buf,
 }
 
 dif_result_t dif_csrng_uninstantiate(const dif_csrng_t *csrng) {
-  return write_application_command(csrng, (csrng_app_cmd_t){
-                                              .id = kCsrngAppCmdUnisntantiate,
-                                          });
+  if (csrng == NULL) {
+    return kDifBadArg;
+  }
+  return csrng_send_app_cmd(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+                            (csrng_app_cmd_t){
+                                .id = kCsrngAppCmdUnisntantiate,
+                            });
 }
 
 dif_result_t dif_csrng_get_cmd_interface_status(
@@ -226,57 +156,80 @@ dif_result_t dif_csrng_get_cmd_interface_status(
     uint32_t reg =
         mmio_region_read32(csrng->base_addr, CSRNG_ERR_CODE_REG_OFFSET);
 
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_CMD_ERR_BIT,
-                  kDifCsrngFifoCmd);
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_GENBITS_ERR_BIT,
-                  kDifCsrngFifoGenBits);
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_CMDREQ_ERR_BIT,
-                  kDifCsrngFifoCmdReq);
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_RCSTAGE_ERR_BIT,
-                  kDifCsrngFifoRcStage);
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_KEYVRC_ERR_BIT,
-                  kDifCsrngFifoKeyVrc);
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_UPDREQ_ERR_BIT,
-                  kDifCsrngFifoUpdateReq);
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_BENCREQ_ERR_BIT,
-                  kDifCsrngFifoBencRec);
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_BENCACK_ERR_BIT,
-                  kDifCsrngFifoBencAck);
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_PDATA_ERR_BIT,
-                  kDifCsrngFifoPData);
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_FINAL_ERR_BIT,
-                  kDifCsrngFifoFinal);
-    BITSET_INSERT(status->unhealthy_fifos,
-                  CSRNG_ERR_CODE_SFIFO_GBENCACK_ERR_BIT, kDifCsrngFifoGBencAck);
-    BITSET_INSERT(status->unhealthy_fifos,
-                  CSRNG_ERR_CODE_SFIFO_GRCSTAGE_ERR_BIT, kDifCsrngFifoGrcStage);
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_GGENREQ_ERR_BIT,
-                  kDifCsrngFifoGGenReq);
-    BITSET_INSERT(status->unhealthy_fifos,
-                  CSRNG_ERR_CODE_SFIFO_GADSTAGE_ERR_BIT, kDifCsrngFifoGadStage);
-    BITSET_INSERT(status->unhealthy_fifos, CSRNG_ERR_CODE_SFIFO_BLKENC_ERR_BIT,
-                  kDifCsrngFifoBlockEnc);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoCmd, reg,
+                            CSRNG_ERR_CODE_SFIFO_CMD_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoGenBits, reg,
+                            CSRNG_ERR_CODE_SFIFO_GENBITS_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoCmdReq, reg,
+                            CSRNG_ERR_CODE_SFIFO_CMDREQ_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoRcStage, reg,
+                            CSRNG_ERR_CODE_SFIFO_RCSTAGE_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoKeyVrc, reg,
+                            CSRNG_ERR_CODE_SFIFO_KEYVRC_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoUpdateReq,
+                            reg, CSRNG_ERR_CODE_SFIFO_UPDREQ_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoBencRec, reg,
+                            CSRNG_ERR_CODE_SFIFO_BENCREQ_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoBencAck, reg,
+                            CSRNG_ERR_CODE_SFIFO_BENCACK_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoPData, reg,
+                            CSRNG_ERR_CODE_SFIFO_PDATA_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoFinal, reg,
+                            CSRNG_ERR_CODE_SFIFO_FINAL_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoGBencAck, reg,
+                            CSRNG_ERR_CODE_SFIFO_GBENCACK_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoGrcStage, reg,
+                            CSRNG_ERR_CODE_SFIFO_GRCSTAGE_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoGGenReq, reg,
+                            CSRNG_ERR_CODE_SFIFO_GGENREQ_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoGadStage, reg,
+                            CSRNG_ERR_CODE_SFIFO_GADSTAGE_ERR_BIT);
+    status->unhealthy_fifos =
+        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoBlockEnc, reg,
+                            CSRNG_ERR_CODE_SFIFO_BLKENC_ERR_BIT);
 
-    BITSET_INSERT(status->errors, CSRNG_ERR_CODE_CMD_STAGE_SM_ERR_BIT,
-                  kDifCsrngErrorCmdStageSm);
-    BITSET_INSERT(status->errors, CSRNG_ERR_CODE_MAIN_SM_ERR_BIT,
-                  kDifCsrngErrorMainSm);
-    BITSET_INSERT(status->errors, CSRNG_ERR_CODE_DRBG_GEN_SM_ERR_BIT,
-                  kDifCsrngErrorDrbgGenSm);
-    BITSET_INSERT(status->errors, CSRNG_ERR_CODE_DRBG_UPDBE_SM_ERR_BIT,
-                  kDifCsrngErrorDrbgUpdateBlockEncSm);
-    BITSET_INSERT(status->errors, CSRNG_ERR_CODE_DRBG_UPDOB_SM_ERR_BIT,
-                  kDifCsrngErrorDrbgUpdateOutBlockSm);
-    BITSET_INSERT(status->errors, CSRNG_ERR_CODE_AES_CIPHER_SM_ERR_BIT,
-                  kDifCsrngErrorAesSm);
-    BITSET_INSERT(status->errors, CSRNG_ERR_CODE_CMD_GEN_CNT_ERR_BIT,
-                  kDifCsrngErrorGenerateCmdCounter);
-    BITSET_INSERT(status->errors, CSRNG_ERR_CODE_FIFO_WRITE_ERR_BIT,
-                  kDifCsrngErrorFifoWrite);
-    BITSET_INSERT(status->errors, CSRNG_ERR_CODE_FIFO_READ_ERR_BIT,
-                  kDifCsrngErrorFifoRead);
-    BITSET_INSERT(status->errors, CSRNG_ERR_CODE_FIFO_STATE_ERR_BIT,
-                  kDifCsrngErrorFifoFullAndEmpty);
+    status->errors =
+        bitfield_bit32_copy(status->errors, kDifCsrngErrorCmdStageSm, reg,
+                            CSRNG_ERR_CODE_CMD_STAGE_SM_ERR_BIT);
+    status->errors = bitfield_bit32_copy(status->errors, kDifCsrngErrorMainSm,
+                                         reg, CSRNG_ERR_CODE_MAIN_SM_ERR_BIT);
+    status->errors =
+        bitfield_bit32_copy(status->errors, kDifCsrngErrorDrbgGenSm, reg,
+                            CSRNG_ERR_CODE_DRBG_GEN_SM_ERR_BIT);
+    status->errors =
+        bitfield_bit32_copy(status->errors, kDifCsrngErrorDrbgUpdateBlockEncSm,
+                            reg, CSRNG_ERR_CODE_DRBG_UPDBE_SM_ERR_BIT);
+    status->errors =
+        bitfield_bit32_copy(status->errors, kDifCsrngErrorDrbgUpdateOutBlockSm,
+                            reg, CSRNG_ERR_CODE_DRBG_UPDOB_SM_ERR_BIT);
+    status->errors =
+        bitfield_bit32_copy(status->errors, kDifCsrngErrorAesSm, reg,
+                            CSRNG_ERR_CODE_AES_CIPHER_SM_ERR_BIT);
+    status->errors =
+        bitfield_bit32_copy(status->errors, kDifCsrngErrorGenerateCmdCounter,
+                            reg, CSRNG_ERR_CODE_CMD_GEN_CNT_ERR_BIT);
+    status->errors =
+        bitfield_bit32_copy(status->errors, kDifCsrngErrorFifoWrite, reg,
+                            CSRNG_ERR_CODE_FIFO_WRITE_ERR_BIT);
+    status->errors = bitfield_bit32_copy(status->errors, kDifCsrngErrorFifoRead,
+                                         reg, CSRNG_ERR_CODE_FIFO_READ_ERR_BIT);
+    status->errors =
+        bitfield_bit32_copy(status->errors, kDifCsrngErrorFifoFullAndEmpty, reg,
+                            CSRNG_ERR_CODE_FIFO_STATE_ERR_BIT);
 
     return kDifOk;
   }
@@ -513,14 +466,18 @@ dif_result_t dif_csrng_get_recoverable_alerts(const dif_csrng_t *csrng,
   *alerts = 0;
   uint32_t reg =
       mmio_region_read32(csrng->base_addr, CSRNG_RECOV_ALERT_STS_REG_OFFSET);
-  BITSET_INSERT(*alerts, CSRNG_RECOV_ALERT_STS_ENABLE_FIELD_ALERT_BIT,
-                kDifCsrngRecoverableAlertBadEnable);
-  BITSET_INSERT(*alerts, CSRNG_RECOV_ALERT_STS_SW_APP_ENABLE_FIELD_ALERT_BIT,
-                kDifCsrngRecoverableAlertBadSwAppEnable);
-  BITSET_INSERT(*alerts, CSRNG_RECOV_ALERT_STS_READ_INT_STATE_FIELD_ALERT_BIT,
-                kDifCsrngRecoverableAlertBadIntState);
-  BITSET_INSERT(*alerts, CSRNG_RECOV_ALERT_STS_CS_BUS_CMP_ALERT_BIT,
-                kDifCsrngRecoverableAlertRepeatedGenBits);
+  *alerts =
+      bitfield_bit32_copy(*alerts, kDifCsrngRecoverableAlertBadEnable, reg,
+                          CSRNG_RECOV_ALERT_STS_ENABLE_FIELD_ALERT_BIT);
+  *alerts =
+      bitfield_bit32_copy(*alerts, kDifCsrngRecoverableAlertBadSwAppEnable, reg,
+                          CSRNG_RECOV_ALERT_STS_SW_APP_ENABLE_FIELD_ALERT_BIT);
+  *alerts =
+      bitfield_bit32_copy(*alerts, kDifCsrngRecoverableAlertBadIntState, reg,
+                          CSRNG_RECOV_ALERT_STS_READ_INT_STATE_FIELD_ALERT_BIT);
+  *alerts =
+      bitfield_bit32_copy(*alerts, kDifCsrngRecoverableAlertRepeatedGenBits,
+                          reg, CSRNG_RECOV_ALERT_STS_CS_BUS_CMP_ALERT_BIT);
   return kDifOk;
 }
 

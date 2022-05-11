@@ -138,6 +138,24 @@ inline uint32_t bitfield_bit32_write(uint32_t bitfield,
 }
 
 /**
+ * Copies a bit from one bit set to the other.
+ *
+ * @param dest Bitfield to write to.
+ * @param dest_bit Bit to write to.
+ * @param dest Bitfield to read from.
+ * @param dest_bit Bit to read from.
+ * @return `dest` with the copied bit applied.
+ */
+OT_WARN_UNUSED_RESULT
+inline uint32_t bitfield_bit32_copy(uint32_t dest,
+                                    bitfield_bit32_index_t dest_bit,
+                                    uint32_t src,
+                                    bitfield_bit32_index_t src_bit) {
+  return bitfield_bit32_write(dest, dest_bit,
+                              bitfield_bit32_read(src, src_bit));
+}
+
+/**
  * Find First Set Bit
  *
  * Returns one plus the index of the least-significant 1-bit of a 32-bit word.
