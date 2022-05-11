@@ -256,15 +256,6 @@ alias(
 )
 
 alias(
-    name = "safe_ftdi",
-    actual = "@raze__safe_ftdi__0_3_0//:safe_ftdi",
-    tags = [
-        "cargo-raze",
-        "manual",
-    ],
-)
-
-alias(
     name = "serde",
     actual = "@raze__serde__1_0_137//:serde",
     tags = [
