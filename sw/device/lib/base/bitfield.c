@@ -21,6 +21,10 @@ extern bool bitfield_bit32_read(uint32_t bitfield,
 extern uint32_t bitfield_bit32_write(uint32_t bitfield,
                                      bitfield_bit32_index_t bit_index,
                                      bool value);
+extern uint32_t bitfield_bit32_copy(uint32_t dest,
+                                    bitfield_bit32_index_t dest_bit,
+                                    uint32_t src,
+                                    bitfield_bit32_index_t src_bit);
 
 extern int32_t bitfield_find_first_set32(int32_t bitfield);
 extern int32_t bitfield_count_leading_zeroes32(uint32_t bitfield);
