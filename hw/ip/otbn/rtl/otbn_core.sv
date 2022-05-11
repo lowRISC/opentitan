@@ -285,9 +285,9 @@ module otbn_core
     .sec_wipe_mod_urnd_o(sec_wipe_mod_urnd),
     .sec_wipe_zero_o    (sec_wipe_zero),
 
-    .ispr_init_o     (ispr_init),
-    .state_reset_o   (state_reset),
-    .internal_error_o(start_stop_internal_error)
+    .ispr_init_o  (ispr_init),
+    .state_reset_o(state_reset),
+    .fatal_error_o(start_stop_fatal_error)
   );
 
   // Depending on its usage, the instruction address (program counter) is qualified by two valid
@@ -540,7 +540,7 @@ module otbn_core
   assign err_bits_d = '{
     fatal_software:      controller_err_bits.fatal_software,
     bad_internal_state:  |{controller_err_bits.bad_internal_state,
-                           start_stop_internal_error,
+                           start_stop_fatal_error,
                            urnd_all_zero,
                            predec_error,
                            insn_addr_err},
@@ -576,7 +576,7 @@ module otbn_core
   // appears somewhere in err_bits_o above (checked in ErrBitsIfControllerEscalate_A)
   assign controller_fatal_escalate_en =
       mubi4_or_hi(escalate_en_i,
-                  mubi4_bool_to_mubi(|{start_stop_internal_error, urnd_all_zero, predec_error,
+                  mubi4_bool_to_mubi(|{start_stop_fatal_error, urnd_all_zero, predec_error,
                                        rf_base_rf_err, lsu_rdata_err, insn_fetch_err,
                                        non_controller_reg_intg_violation}));
 
