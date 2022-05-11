@@ -184,6 +184,7 @@ module otbn_controller
   logic done_complete;
   logic executing;
   logic state_error;
+  logic spurious_secure_wipe_ack;
 
   logic                     insn_fetch_req_valid_raw;
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr_last;
@@ -317,6 +318,9 @@ module otbn_controller
     end
   end
   assign secure_wipe_req_o = start_secure_wipe | secure_wipe_running_q;
+
+  // Spot spurious acks on the secure wipe interface
+  assign spurious_secure_wipe_ack = secure_wipe_ack_i & ~secure_wipe_running_q;
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
@@ -501,7 +505,8 @@ module otbn_controller
   assign illegal_insn_static = insn_illegal_i | ispr_err;
 
   assign fatal_software_err       = software_err & software_errs_fatal_i;
-  assign bad_internal_state_err   = state_error | loop_hw_err | rf_base_call_stack_hw_err_i;
+  assign bad_internal_state_err   = |{state_error, loop_hw_err, rf_base_call_stack_hw_err_i,
+                                      spurious_secure_wipe_ack};
   assign reg_intg_violation_err   = rf_bignum_rf_err | ispr_rdata_intg_err;
   assign key_invalid_err          = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
   assign illegal_insn_err         = illegal_insn_static | rf_indirect_err;

@@ -185,5 +185,11 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_start_stop_ctrl_state_consistency
+      desc: "Verify the countermeasure(s) START_STOP_CTRL.STATE.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
   ]
 }
