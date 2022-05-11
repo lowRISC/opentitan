@@ -52,7 +52,7 @@ package spi_device_env_pkg;
     PassthroughMode
   } device_mode_e;
 
-  typedef enum {
+  typedef enum bit [1:0] {
     AddrDisabled,
     AddrCfg,
     Addr3B,

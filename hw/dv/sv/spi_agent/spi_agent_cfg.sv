@@ -20,6 +20,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   bit [3:0] bits_to_transfer; // Bits to transfer if using less than byte
   bit csb_consecutive;            // Don't deassert CSB
   bit decode_commands;  // Used in monitor if decoding of commands needed
+  bit [2:0] cmd_addr_size = 4; //Address size for command
 
   //-------------------------
   // spi_host regs
@@ -35,6 +36,9 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   bit [3:0]        csn_idle[MAX_CS];
   // command register fields
   spi_mode_e       spi_mode;
+  // Cmd info configs
+  spi_flash_cmd_info cmd_infos[bit[7:0]];
+  bit              is_flash_mode;
 
 
   // address width in bytes (default is 4 bytes)
@@ -66,6 +70,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int (partial_byte,   UVM_DEFAULT)
     `uvm_field_int (csb_consecutive,    UVM_DEFAULT)
     `uvm_field_int (decode_commands,    UVM_DEFAULT)
+    `uvm_field_int (cmd_addr_size,      UVM_DEFAULT)
     `uvm_field_int (bits_to_transfer,             UVM_DEFAULT)
     `uvm_field_int (en_extra_dly_btw_sck,         UVM_DEFAULT)
     `uvm_field_int (max_extra_dly_ns_btw_sck,     UVM_DEFAULT)
@@ -81,6 +86,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_sarray_int(csn_trail,       UVM_DEFAULT)
     `uvm_field_sarray_int(csn_idle,        UVM_DEFAULT)
     `uvm_field_enum(spi_mode_e, spi_mode, UVM_DEFAULT)
+    `uvm_field_int(is_flash_mode, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
@@ -128,5 +134,11 @@ class spi_agent_cfg extends dv_base_agent_cfg;
       default:  return 0;
     endcase
   endfunction : get_sio_size
+
+  virtual function void add_cmd_info(spi_flash_cmd_info info);
+    // op_code must be unique
+    `DV_CHECK_EQ(cmd_infos.exists(info.op_code), 0)
+    cmd_infos[info.op_code] = info;
+  endfunction  : add_cmd_info
 
 endclass : spi_agent_cfg

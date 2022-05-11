@@ -69,10 +69,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     spi_item item;
     forever begin
       pass_spi_data_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received pass spi item:\n%0s", item.sprint()), UVM_HIGH)
-      if (`gmv(ral.control.mode) == PassthroughMode) begin
-        compare_pass_opcode_addr({item.data[3], item.data[2], item.data[1], item.data[0]});
-      end
+      `uvm_info(`gfn, $sformatf("received pass spi item:\n%0s", item.sprint()), UVM_MEDIUM)
+      `DV_CHECK_EQ(`gmv(ral.control.mode), PassthroughMode)
+      // TODO, check downstream items
     end
   endtask
 

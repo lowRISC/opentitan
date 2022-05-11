@@ -92,7 +92,7 @@ class spi_host_driver extends spi_driver;
       end else begin
         num_bits = 8;
       end
-      host_byte = req.data[i];
+      host_byte = transfer_data[i];
       for (int j = 0; j < num_bits; j++) begin
         // drive sio early so that it is stable at the sampling edge
         which_bit = cfg.host_bit_dir ? j : 7 - j;
@@ -131,14 +131,15 @@ class spi_host_driver extends spi_driver;
 
   task drive_flash_item();
     bit [7:0] drive_data[$];
+
+    `uvm_info(`gfn, $sformatf("Driving flash item: \n%s", req.sprint()), UVM_MEDIUM)
     cfg.vif.csb[cfg.csb_sel] <= 1'b0;
-    if (!req.write_command) begin
-      `DV_CHECK_EQ(req.payload_q.size, 0)
-    end
+
     drive_data = {req.opcode, req.address_q, req.payload_q};
     sck_pulses = drive_data.size() * 8;
     if (!req.write_command) begin
-      sck_pulses = sck_pulses + req.read_bsize * (8 / req.num_lanes);
+      `DV_CHECK_EQ(req.payload_q.size, 0)
+      sck_pulses = sck_pulses + req.read_size * (8 / req.num_lanes);
     end
 
     // for mode 1 and 3, get the leading edges out of the way
