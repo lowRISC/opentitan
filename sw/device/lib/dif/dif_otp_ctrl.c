@@ -612,6 +612,65 @@ dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
   return kDifOk;
 }
 
+static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
+                            ptrdiff_t *reg1) {
+  switch (partition) {
+    case kDifOtpCtrlPartitionVendorTest:
+      *reg0 = OTP_CTRL_VENDOR_TEST_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_VENDOR_TEST_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionCreatorSwCfg:
+      *reg0 = OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionOwnerSwCfg:
+      *reg0 = OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_OWNER_SW_CFG_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionHwCfg:
+      *reg0 = OTP_CTRL_HW_CFG_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_HW_CFG_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionSecret0:
+      *reg0 = OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_SECRET0_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionSecret1:
+      *reg0 = OTP_CTRL_SECRET1_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_SECRET1_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionSecret2:
+      *reg0 = OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET;
+      break;
+    default:
+      return false;
+  }
+
+  return true;
+}
+
+dif_result_t dif_otp_ctrl_is_digest_computed(const dif_otp_ctrl_t *otp,
+                                             dif_otp_ctrl_partition_t partition,
+                                             bool *is_computed) {
+  if (otp == NULL || is_computed == NULL) {
+    return kDifBadArg;
+  }
+
+  ptrdiff_t reg0, reg1;
+  if (!get_digest_regs(partition, &reg0, &reg1)) {
+    return kDifBadArg;
+  }
+
+  uint64_t value = mmio_region_read32(otp->base_addr, reg1);
+  value <<= 32;
+  value |= mmio_region_read32(otp->base_addr, reg0);
+
+  *is_computed = value != 0;
+
+  return kDifOk;
+}
+
 dif_result_t dif_otp_ctrl_get_digest(const dif_otp_ctrl_t *otp,
                                      dif_otp_ctrl_partition_t partition,
                                      uint64_t *digest) {
@@ -619,43 +678,9 @@ dif_result_t dif_otp_ctrl_get_digest(const dif_otp_ctrl_t *otp,
     return kDifBadArg;
   }
 
-  // The LC partition does not have a digest.
-  if (partition == kDifOtpCtrlPartitionLifeCycle) {
-    return kDifBadArg;
-  }
-
   ptrdiff_t reg0, reg1;
-  switch (partition) {
-    case kDifOtpCtrlPartitionVendorTest:
-      reg0 = OTP_CTRL_VENDOR_TEST_DIGEST_0_REG_OFFSET;
-      reg1 = OTP_CTRL_VENDOR_TEST_DIGEST_1_REG_OFFSET;
-      break;
-    case kDifOtpCtrlPartitionCreatorSwCfg:
-      reg0 = OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET;
-      reg1 = OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_REG_OFFSET;
-      break;
-    case kDifOtpCtrlPartitionOwnerSwCfg:
-      reg0 = OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET;
-      reg1 = OTP_CTRL_OWNER_SW_CFG_DIGEST_1_REG_OFFSET;
-      break;
-    case kDifOtpCtrlPartitionHwCfg:
-      reg0 = OTP_CTRL_HW_CFG_DIGEST_0_REG_OFFSET;
-      reg1 = OTP_CTRL_HW_CFG_DIGEST_1_REG_OFFSET;
-      break;
-    case kDifOtpCtrlPartitionSecret0:
-      reg0 = OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET;
-      reg1 = OTP_CTRL_SECRET0_DIGEST_1_REG_OFFSET;
-      break;
-    case kDifOtpCtrlPartitionSecret1:
-      reg0 = OTP_CTRL_SECRET1_DIGEST_0_REG_OFFSET;
-      reg1 = OTP_CTRL_SECRET1_DIGEST_1_REG_OFFSET;
-      break;
-    case kDifOtpCtrlPartitionSecret2:
-      reg0 = OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET;
-      reg1 = OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET;
-      break;
-    default:
-      return kDifBadArg;
+  if (!get_digest_regs(partition, &reg0, &reg1)) {
+    return kDifBadArg;
   }
 
   uint64_t value = mmio_region_read32(otp->base_addr, reg1);
