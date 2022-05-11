@@ -21,7 +21,7 @@
 /**
  * Simple buffer for passing data between TCP sockets and DPI modules
  */
-#define BUFSIZE_BYTE 256
+#define BUFSIZE_BYTE 1024
 
 struct tcp_buf {
   unsigned int rptr;
