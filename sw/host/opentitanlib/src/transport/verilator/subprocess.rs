@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::util::file;
-use anyhow::Result;
-use log::info;
+use anyhow::{anyhow, Result};
 use regex::Regex;
-use std::io::{ErrorKind, Read};
-use std::process::{Child, ChildStdout, Command, Stdio};
+use std::io::ErrorKind;
+use std::process::{Child, Command, Stdio};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+
+use crate::transport::verilator::stdout;
 
 /// Verilator startup options.
 pub struct Options {
@@ -26,8 +27,7 @@ pub struct Options {
 
 pub struct Subprocess {
     child: Child,
-    stdout: ChildStdout,
-    accumulated_output: String,
+    accumulated_output: Arc<Mutex<String>>,
 }
 
 impl Subprocess {
@@ -48,29 +48,22 @@ impl Subprocess {
         args.extend_from_slice(&options.extra_args);
         command.args(&args[..]);
 
-        info!("Spawning verilator: {:?} {:?}", options.executable, args);
+        log::info!("Spawning verilator: {:?} {:?}", options.executable, args);
 
         let mut child = command
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit())
             .spawn()?;
+        let accumulator: Arc<Mutex<String>> = Default::default();
         let stdout = child.stdout.take().unwrap();
+        let a = Arc::clone(&accumulator);
+        std::thread::spawn(move || stdout::accumulate(stdout, a));
+
         Ok(Subprocess {
             child,
-            stdout,
-            accumulated_output: String::default(),
+            accumulated_output: accumulator,
         })
-    }
-
-    /// Accumulates output from verilator's `stdout`.
-    pub fn accumulate(&mut self, timeout: Duration) -> Result<()> {
-        let mut buf = [0u8; 256];
-        file::wait_read_timeout(&self.stdout, timeout)?;
-        let n = self.stdout.read(&mut buf)?;
-        let s = String::from_utf8_lossy(&buf[..n]);
-        self.accumulated_output.push_str(&s);
-        Ok(())
     }
 
     /// Finds a string within the verilator output.
@@ -82,28 +75,24 @@ impl Subprocess {
         // and thus expect a capture length of two.
         assert_eq!(re.captures_len(), 2);
         let deadline = Instant::now() + timeout;
-        loop {
-            if let Some(captures) = re.captures(&self.accumulated_output) {
-                let val = captures.get(1).expect("expected a capture");
-                return Ok(val.as_str().to_owned());
-            } else {
-                self.accumulate(deadline.saturating_duration_since(Instant::now()))?;
+        while deadline > Instant::now() {
+            {
+                let a = self.accumulated_output.lock().unwrap();
+                if let Some(captures) = re.captures(&a.as_str()) {
+                    let val = captures.get(1).expect("expected a capture");
+                    return Ok(val.as_str().to_owned());
+                }
             }
+            std::thread::sleep(Duration::from_millis(50));
         }
+        Err(anyhow!("Timed out"))
     }
 
     /// Kill the verilator subprocess.
     pub fn kill(&mut self) -> Result<()> {
         match self.child.kill() {
-            Ok(_) => Ok(()),
-            Err(error) => {
-                if error.kind() == ErrorKind::InvalidInput {
-                    // Don't care if the child has already exited.
-                    Ok(())
-                } else {
-                    Err(error.into())
-                }
-            }
+            Err(error) if error.kind() != ErrorKind::InvalidInput => Err(error.into()),
+            _ => Ok(()),
         }
     }
 }
