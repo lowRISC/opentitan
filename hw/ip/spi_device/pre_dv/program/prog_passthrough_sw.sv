@@ -80,16 +80,6 @@ program prog_passthrough_sw
       4'b 1111
     );
 
-    // Turn off intercept for init
-    tlul_write(
-      clk,
-      h2d,
-      d2h,
-      32'(spi_device_reg_pkg::SPI_DEVICE_INTERCEPT_EN_OFFSET),
-      '0,
-      4'b 1111
-    );
-
     // JEDEC ID: Slightly differ from spiflash behavioral model
     tlul_write(
       clk, h2d, d2h,
@@ -104,6 +94,15 @@ program prog_passthrough_sw
       4'b 1111
     );
 
+    // INTERCEPT for Read Status
+    // WREN/ WRDI are processed inside SPI_DEVICE IP, by turning the intercept
+    // on, host system can check if WEL set/clear correctly.
+    tlul_write(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_INTERCEPT_EN_OFFSET),
+      32'h 0000_0009, // MBX, STATUS
+      4'b 0001
+    );
 
     // CMD_INFO
     init_cmdinfo_list();
