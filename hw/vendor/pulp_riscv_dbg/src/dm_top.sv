@@ -57,7 +57,9 @@ module dm_top #(
   input  logic [BusWidth-1:0]   master_r_rdata_i,
 
   // Connection to DTM - compatible to RocketChip Debug Module
-  input  logic                  dmi_rst_ni,
+  input  logic                  dmi_rst_ni, // Synchronous clear request from
+                                            // the DTM to clear the DMI response
+                                            // FIFO.
   input  logic                  dmi_req_valid_i,
   output logic                  dmi_req_ready_o,
   input  dm::dmi_req_t          dmi_req_i,

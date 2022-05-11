@@ -228,6 +228,17 @@ package dm;
     logic [1:0]  resp;
   } dmi_resp_t;
 
+  typedef struct packed {
+    logic [31:18] zero1;
+    logic         dmihardreset;
+    logic         dmireset;
+    logic         zero0;
+    logic [14:12] idle;
+    logic [11:10] dmistat;
+    logic [9:4]   abits;
+    logic [3:0]   version;
+  } dtmcs_t;
+
   // privilege levels
   typedef enum logic[1:0] {
     PRIV_LVL_M = 2'b11,
