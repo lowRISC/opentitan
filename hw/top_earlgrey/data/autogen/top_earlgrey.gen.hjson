@@ -6999,6 +6999,7 @@
         ICacheScramble: "1"
         BranchPredictor: "0"
         DbgTriggerEn: "1"
+        DbgHwBreakNum: "4"
         SecureIbex: "1"
         DmHaltAddr: tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0]
         DmExceptionAddr: tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0]
@@ -7209,6 +7210,13 @@
           default: "1"
           expose: "true"
           name_top: RvCoreIbexDbgTriggerEn
+        }
+        {
+          name: DbgHwBreakNum
+          type: int
+          default: "4"
+          expose: "true"
+          name_top: RvCoreIbexDbgHwBreakNum
         }
         {
           name: SecureIbex
