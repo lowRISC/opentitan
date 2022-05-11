@@ -601,6 +601,7 @@ package spid_common;
 
     // De-assert CSb
     spi_end(sif);
+    sif.sd_in[3:0] = 'Z; // make float
   endtask : spi_transaction
 
   // spi_start: assert CSb to start transaction
@@ -1123,16 +1124,24 @@ package spid_common;
   endtask : tlul_read
 
   // classes
-  class SpiTransRead;
+  class SpiTrans;
+    rand spi_device_pkg::spi_cmd_e cmd;
     rand bit                       addr_mode; // 1 : Addr4B, 0: Addr3B
     rand logic [31:0]              address;
     rand int unsigned              size;
-    rand spi_device_pkg::spi_cmd_e cmd;
     int unsigned                   dummy;
     mode_e                         io_mode;
 
-    // Information
     string str_cmd;
+
+    function void post_randomize();
+      str_cmd = cmd.name();
+    endfunction : post_randomize
+
+  endclass : SpiTrans
+
+  class SpiTransRead extends SpiTrans;
+    // Information
 
     constraint read_cmd_c {
       cmd inside {spi_device_pkg::CmdReadData,
@@ -1143,31 +1152,27 @@ package spid_common;
     }
 
     function void post_randomize();
+      super.post_randomize();
       case (cmd)
         spi_device_pkg::CmdReadData: begin
           dummy = 0;
           io_mode = IoSingle;
-          str_cmd = "Read Normal";
         end
         spi_device_pkg::CmdReadFast: begin
           dummy = 8;
           io_mode = IoSingle;
-          str_cmd = "Fast Read Normal";
         end
         spi_device_pkg::CmdReadDual: begin
           dummy = 4;
           io_mode = IoDual;
-          str_cmd = "Fast Read Dual";
         end
         spi_device_pkg::CmdReadQuad: begin
           dummy = 3; // match with other pre_dv
           io_mode = IoQuad;
-          str_cmd = "Fast Read Quad";
         end
         default: begin
           dummy = 8;
           io_mode = IoSingle;
-          str_cmd = "Error Read";
         end
       endcase
     endfunction : post_randomize
@@ -1182,5 +1187,23 @@ package spid_common;
     endfunction : display
 
   endclass : SpiTransRead
+
+  class SpiTransProgram extends SpiTrans;
+    rand bit wrap_test;
+    rand spi_queue_t program_data;
+
+    constraint pp_cmd_c { cmd == spi_device_pkg::CmdPageProgram;}
+
+    // Up-to 256B, if over, it wraps around
+    constraint size_c {
+      if (wrap_test == 1'b 0) size >= 1 && size <= 256;
+      else size > 256 && size <= 512;
+    }
+
+    constraint program_data_c {
+      program_data.size() == size;
+    }
+
+  endclass : SpiTransProgram
 
 endpackage : spid_common
