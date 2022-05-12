@@ -418,9 +418,8 @@ def parse_args():
 
     buildg.add_argument("--build-opts",
                         "-bo",
-                        nargs="+",
-                        default=[],
-                        metavar="OPT",
+                        default='',
+                        metavar="OPTS",
                         help=('Additional options passed on the command line '
                               'each time a build tool is run.'))
 
@@ -461,9 +460,8 @@ def parse_args():
 
     rung.add_argument("--run-opts",
                       "-ro",
-                      nargs="+",
-                      default=[],
-                      metavar="OPT",
+                      default='',
+                      metavar="OPTS",
                       help=('Additional options passed on the command line '
                             'each time a test is run.'))
 
@@ -669,6 +667,12 @@ def parse_args():
         if not args.select_cfgs:
             raise argparse.ArgumentError('--select-cfgs expects a non-empty '
                                          'list of configurations to run.')
+
+    # Turn --build-opts and --run-opts into lists of arguments. We want to be
+    # able to write something like `--build-opts 'a "b c"'` and get the quoting
+    # right so that this turns into ['a', 'b c'].
+    args.build_opts = shlex.split(args.build_opts)
+    args.run_opts = shlex.split(args.run_opts)
 
     # We want the --list argument to default to "all categories", but allow
     # filtering. If args.list is None, then --list wasn't supplied. If it is
