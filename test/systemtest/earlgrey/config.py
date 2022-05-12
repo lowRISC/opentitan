@@ -93,10 +93,10 @@ TEST_APPS_SELFCHECKING = [
         "targets": ["sim_verilator"],
     },
     {
-        "name": "kmac_mode_cshake_test", # Passing on cw310 when coordinated by bazel
+        "name": "kmac_mode_cshake_test",  # Passing on cw310 when coordinated by Bazel
     },
     {
-        "name": "kmac_mode_kmac_test", # Passing on cw310 when coordinated by bazel
+        "name": "kmac_mode_kmac_test",  # Passing on cw310 when coordinated by Bazel
     },
     {
         "name": "flash_ctrl_test",
@@ -114,20 +114,20 @@ TEST_APPS_SELFCHECKING = [
         "name": "usbdev_test",
         "targets": ["sim_verilator"],
     },
-    {
-        "name": "sw_silicon_creator_lib_driver_hmac_functest", # Passing on cw310 when coordinated by bazel
+    {  # Passing on cw310 when coordinated by Bazel
+        "name": "sw_silicon_creator_lib_driver_hmac_functest",
         "test_dir": "sw/device/silicon_creator/testing",
     },
-    {
-        "name": "sw_silicon_creator_lib_driver_uart_functest", # Passing on cw310 when coordinated by bazel
+    {  # Passing on cw310 when coordinated by Bazel
+        "name": "sw_silicon_creator_lib_driver_uart_functest",
         "test_dir": "sw/device/silicon_creator/testing",
     },
-    {
-        "name": "sw_silicon_creator_lib_driver_retention_sram_functest", # Passing on cw310 when coordinated by bazel
+    {  # Passing on cw310 when coordinated by Bazel
+        "name": "sw_silicon_creator_lib_driver_retention_sram_functest",
         "test_dir": "sw/device/silicon_creator/testing",
     },
-    {
-        "name": "sw_silicon_creator_lib_driver_alert_functest", # Passing on cw310 when coordinated by bazel
+    {  # Passing on cw310 when coordinated by Bazel
+        "name": "sw_silicon_creator_lib_driver_alert_functest",
         "test_dir": "sw/device/silicon_creator/testing",
         "targets": ["sim_verilator"],
     },
