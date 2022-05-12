@@ -167,11 +167,11 @@
     {
       name: error_mp
       desc: '''
-            Perform accesses in order to provoke memory permission error. Test both, Software
-            interface and Hardware interface. Related covergroup is error_cg.
+            Perform accesses in order to provoke memory permission errors. Test the Software
+            interface (Erase, Program, Read). Related covergroup is error_cg.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_error_mp"]
     }
     {
       name: error_rd
