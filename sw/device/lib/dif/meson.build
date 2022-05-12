@@ -93,32 +93,13 @@ sw_lib_dif_csrng = declare_dependency(
     sources: [
       hw_ip_csrng_reg_h,
       'dif_csrng.c',
+      'dif_csrng_shared.c',
     ],
     dependencies: [
       sw_lib_mmio,
       sw_lib_dif_autogen_csrng,
     ],
   )
-)
-
-test('dif_csrng_unittest', executable(
-    'dif_csrng_unittest',
-    sources: [
-      'dif_csrng_unittest.cc',
-      'autogen/dif_csrng_autogen_unittest.cc',
-      meson.project_source_root() / 'sw/device/lib/dif/dif_csrng.c',
-      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_csrng_autogen.c',
-      hw_ip_csrng_reg_h,
-    ],
-    dependencies: [
-      sw_vendor_gtest,
-      sw_lib_base_testing_mock_mmio,
-    ],
-    native: true,
-    c_args: ['-DMOCK_MMIO'],
-    cpp_args: ['-DMOCK_MMIO'],
-  ),
-  suite: 'dif',
 )
 
 # EDN DIF Library (dif_csrng)
@@ -134,25 +115,6 @@ sw_lib_dif_edn = declare_dependency(
       sw_lib_dif_autogen_edn,
     ],
   )
-)
-
-test('dif_edn_unittest', executable(
-    'dif_edn_unittest',
-    sources: [
-      'autogen/dif_edn_autogen_unittest.cc',
-      meson.project_source_root() / 'sw/device/lib/dif/dif_edn.c',
-      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_edn_autogen.c',
-      hw_ip_edn_reg_h,
-    ],
-    dependencies: [
-      sw_vendor_gtest,
-      sw_lib_base_testing_mock_mmio,
-    ],
-    native: true,
-    c_args: ['-DMOCK_MMIO'],
-    cpp_args: ['-DMOCK_MMIO'],
-  ),
-  suite: 'dif',
 )
 
 # UART DIF library (dif_uart)
