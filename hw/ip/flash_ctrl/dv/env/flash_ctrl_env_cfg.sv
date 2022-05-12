@@ -36,6 +36,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Knob for Bank Erase
   bit bank_erase_enable = 1;
 
+  // Enable full checks of the scoreboard memory model, enabled by default.
+  bit check_full_scb_mem_model = 1'b1;
+
   // mem for scoreboard
   data_model_t scb_flash_data = '{default: 1};
   data_model_t scb_flash_info = '{default: 1};
@@ -100,6 +103,31 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     endcase
   endfunction : get_partition_words_num
 
+  // Method to do a back-door update of a selected partition memory model to the actual flash data.
+  // Usualy should only be done after flash initialization.
+  task update_partition_mem_model(flash_dv_part_e part);
+    data_q_t read_val;
+    flash_op_t flash_op;
+    flash_op.op = FlashOpRead;
+    flash_op.partition = part;
+    flash_op.num_words = get_partition_words_num(part);
+
+    `uvm_info(`gfn, $sformatf("\nStart back-door updating partition %s memory model\n",
+                              part.name()), UVM_MEDIUM)
+    for (int i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin
+      flash_op.addr = i * BytesPerBank;
+      flash_mem_bkdr_read(.flash_op(flash_op), .data(read_val));
+      foreach (read_val[i, j]) begin
+        if ($isunknown(read_val[i][j])) read_val[i][j] = 1'b1;
+      end
+      set_scb_mem(.bkd_num_words(flash_op.num_words), .bkd_partition(part),
+                  .write_bkd_addr(flash_op.addr), .val_type(CustomVal), .custom_val(read_val));
+    end
+    `uvm_info(`gfn, $sformatf("\nFinished back-door updating partition %s memory model\n",
+                              part.name()), UVM_MEDIUM)
+
+  endtask : update_partition_mem_model
+
   // Backdoor initialize flash memory elements.
   //
   // Applies the initialization scheme to the given flash partition in all banks.
@@ -124,7 +152,53 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
         `uvm_error(`gfn, $sformatf("Undefined initialization scheme - %s", scheme.name()))
       end
     endcase
+    // Update the memory model with the initialization data
+    if (scb_check) update_partition_mem_model(part);
   endfunction : flash_mem_bkdr_init
+
+  // For a given partition returns its respective memory model.
+  function data_model_t get_partition_mem_model(flash_ctrl_env_pkg::flash_dv_part_e part);
+    case(part)
+      flash_ctrl_env_pkg::FlashPartData:    return scb_flash_data;
+      flash_ctrl_env_pkg::FlashPartInfo:    return scb_flash_info;
+      flash_ctrl_env_pkg::FlashPartInfo1:   return scb_flash_info1;
+      flash_ctrl_env_pkg::FlashPartInfo2:   return scb_flash_info2;
+      default: `uvm_error(`gfn, $sformatf("Undefined partition - %s", part.name()))
+    endcase
+  endfunction : get_partition_mem_model
+
+  // Task to back-door check a selected partition memory model
+  // This will be called in the scoreboard check_phase if the check_full_scb_mem_model will
+  //  be set to 1 (enabled by default).
+  task check_partition_mem_model(flash_ctrl_env_pkg::flash_dv_part_e part);
+    flash_mem_addr_attrs addr_attr;
+    data_4s_t bkdr_rd_data;
+    data_model_t scb_flash_model = get_partition_mem_model(part);
+    addr_attr = new();
+    foreach (scb_flash_model[addr]) begin
+      addr_attr.set_attrs(addr);
+      bkdr_rd_data = mem_bkdr_util_h[part][addr_attr.bank].read32(addr_attr.bank_addr);
+      if ($isunknown(bkdr_rd_data)) bkdr_rd_data = ALL_ONES;
+      `DV_CHECK_EQ(bkdr_rd_data, scb_flash_model[addr],
+                   $sformatf({"Memory model check failed in partition %s, bank %0d, addr 0x%0x ",
+                              "(%0d)"}, part.name(), addr_attr.bank, addr_attr.bank_addr,
+                              addr_attr.bank_addr))
+    end
+  endtask : check_partition_mem_model
+
+  // Task to back-door check the full memory model
+  // This will be called in the scoreboard check_phase & between calls to the inner rand_ops vseq
+  //  (in partner_flash_ctrl_base_vseq post_tran task) if the check_full_scb_mem_model will
+  //  be set to 1 (enabled by default).
+  task check_mem_model();
+    flash_ctrl_env_pkg::flash_dv_part_e part = part.first();
+    `uvm_info(`gfn, $sformatf("\nStart checking all memory model\n"), UVM_MEDIUM)
+    do begin
+      check_partition_mem_model(part);
+      part = part.next();
+    end while (part != part.first());
+    `uvm_info(`gfn, $sformatf("\nFinished checking all memory model\n"), UVM_MEDIUM)
+  endtask : check_mem_model
 
   // Reads flash mem contents via backdoor.
   //
