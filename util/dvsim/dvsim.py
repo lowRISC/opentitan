@@ -327,10 +327,10 @@ def parse_args():
                              'names.'))
 
     whatg.add_argument("--select-cfgs",
-                       nargs="*",
-                       metavar="CFG",
+                       metavar="CFGS",
                        help=('The .hjson file is a primary config. Only run '
-                             'the given configs from it. If this argument is '
+                             'the given configs (specified in a comma '
+                             'separated list) from it. If this argument is '
                              'not used, dvsim will process all configs listed '
                              'in a primary config.'))
 
@@ -660,6 +660,15 @@ def parse_args():
     if not args.items:
         raise argparse.ArgumentError('--items expects a non-empty list '
                                      'of items to run.')
+
+    # Apply a similar transformation to --select-cfgs. Unlike --items, this
+    # argument can be None (if it was not passed) and we want to pass that
+    # straight through.
+    if args.select_cfgs is not None:
+        args.select_cfgs = split_commas(args.select_cfgs)
+        if not args.select_cfgs:
+            raise argparse.ArgumentError('--select-cfgs expects a non-empty '
+                                         'list of configurations to run.')
 
     # We want the --list argument to default to "all categories", but allow
     # filtering. If args.list is None, then --list wasn't supplied. If it is
