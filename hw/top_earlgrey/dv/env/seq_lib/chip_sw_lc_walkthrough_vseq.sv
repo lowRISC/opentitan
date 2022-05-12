@@ -15,9 +15,16 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
   rand bit [7:0] lc_unlock_token[TokenWidthByte];
   bit [7:0] otp_exit_token[TokenWidthByte];
   bit [7:0] otp_unlock_token[TokenWidthByte];
+  bit [7:0] selected_dest_state[];
+
+  lc_ctrl_state_pkg::dec_lc_state_e dest_dec_state = lc_ctrl_state_pkg::DecLcStProdEnd;
 
   // Reassign `select_jtag` variable to drive LC JTAG tap and disable mubi assertion errors.
   virtual task pre_start();
+    string dest_state_s;
+    void'($value$plusargs("dest_dec_state=%0s", dest_state_s));
+    `DV_GET_ENUM_PLUSARG(lc_ctrl_state_pkg::dec_lc_state_e, dest_dec_state, dest_state_s)
+
     select_jtag = SelectLCJtagTap;
     otp_raw_img_mubi_assertion_ctrl(.enable(0));
     super.pre_start();
@@ -25,6 +32,7 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
 
   virtual task body();
     bit [TokenWidthBit-1:0] otp_exit_token_bits, otp_unlock_token_bits;
+    bit [7:0] selected_dest_state[];
     super.body();
 
     otp_exit_token_bits = dec_otp_token_from_lc_csrs(lc_exit_token);
@@ -40,6 +48,10 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     sw_symbol_backdoor_overwrite("kLcExitToken", lc_exit_token);
     sw_symbol_backdoor_overwrite("kOtpExitToken", otp_exit_token);
     sw_symbol_backdoor_overwrite("kOtpUnlockToken", otp_unlock_token);
+
+    // Override the C test destination state with the plusarg value.
+    selected_dest_state = {dest_dec_state};
+    sw_symbol_backdoor_overwrite("kDestState", selected_dest_state);
 
     wait_lc_ready(1);
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);

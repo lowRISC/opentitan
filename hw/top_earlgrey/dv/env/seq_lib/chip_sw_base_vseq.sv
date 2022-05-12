@@ -444,7 +444,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                  src_state.name, dest_state.name))
     end
 
-    `uvm_info(`gfn, $sformatf("Start LC transition request from %0s staet to %0s state",
+    `uvm_info(`gfn, $sformatf("Start LC transition request from %0s state to %0s state",
                               src_state.name, dest_state.name), UVM_LOW)
     jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
