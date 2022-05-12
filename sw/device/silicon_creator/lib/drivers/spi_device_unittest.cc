@@ -204,19 +204,14 @@ class CmdGetTest : public SpiDeviceTest,
                    public testing::WithParamInterface<CmdGetTestCase> {};
 
 TEST_F(CmdGetTest, PayloadOverflow) {
-  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET, 0);
-  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET,
-                    {
-                        {SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_NOTEMPTY_BIT, 1},
-                        {SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT, 1},
-                    });
-  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET,
-                    kSpiDeviceOpcodePageProgram);
-
-  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET, 0);
-
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET, 0);
   EXPECT_ABS_READ32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET,
-                    {{SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_OVERFLOW_BIT, 1}});
+                    {
+                        {SPI_DEVICE_INTR_STATE_UPLOAD_CMDFIFO_NOT_EMPTY_BIT, 1},
+                        {SPI_DEVICE_INTR_STATE_UPLOAD_PAYLOAD_OVERFLOW_BIT, 1},
+                    });
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                     std::numeric_limits<uint32_t>::max());
 
   spi_device_cmd_t cmd;
   EXPECT_EQ(spi_device_cmd_get(&cmd), kErrorSpiDevicePayloadOverflow);
@@ -225,29 +220,30 @@ TEST_F(CmdGetTest, PayloadOverflow) {
 TEST_P(CmdGetTest, CmdGet) {
   bool has_address = GetParam().address != kSpiDeviceNoAddress;
 
-  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET, 0);
-  EXPECT_ABS_READ32(
-      base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET,
-      {
-          {SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_NOTEMPTY_BIT, 1},
-          {SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT, has_address},
-      });
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET, 0);
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                    {{SPI_DEVICE_INTR_STATE_UPLOAD_CMDFIFO_NOT_EMPTY_BIT, 1}});
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                     std::numeric_limits<uint32_t>::max());
+
   EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET,
                     GetParam().opcode);
 
+  EXPECT_ABS_READ32(
+      base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET,
+      {{SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT, has_address}});
   if (has_address) {
     EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET,
                       GetParam().address);
   }
-
-  EXPECT_ABS_READ32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET, 0);
 
   std::vector<uint32_t> payload_area(kSpiDevicePayloadAreaNumWords,
                                      std::numeric_limits<uint32_t>::max());
   std::memcpy(payload_area.data(), GetParam().payload.data(),
               GetParam().payload.size());
   EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET,
-                    GetParam().payload.size());
+                    {{SPI_DEVICE_UPLOAD_STATUS2_PAYLOAD_DEPTH_OFFSET,
+                      GetParam().payload.size()}});
   uint32_t offset =
       base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
   for (size_t i = 0; i < GetParam().payload.size(); i += sizeof(uint32_t)) {
