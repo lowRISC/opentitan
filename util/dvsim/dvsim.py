@@ -267,6 +267,12 @@ def parse_reseed_multiplier(as_str: str) -> float:
     return ret
 
 
+def split_commas(as_str):
+    '''Split a string on commas, discarding empty strings'''
+    words = [w.strip() for w in as_str.split(',')]
+    return [w for w in words if w]
+
+
 def parse_args():
     cfg_metavar = "<cfg-hjson-file>"
     parser = argparse.ArgumentParser(
@@ -314,11 +320,10 @@ def parse_args():
 
     whatg.add_argument("-i",
                        "--items",
-                       nargs="*",
-                       default=["smoke"],
+                       default="smoke",
                        help=('Specify the regressions or tests to run. '
                              'Defaults to "smoke", but can be a '
-                             'space separated list of test or regression '
+                             'comma separated list of test or regression '
                              'names.'))
 
     whatg.add_argument("--select-cfgs",
@@ -648,6 +653,14 @@ def parse_args():
     if args.interactive and args.reseed != 1:
         args.reseed = 1
 
+    # Make sense of the --items argument. At the moment, it's a string holding
+    # a comma-separated list. Split it into a Python list and spit out an error
+    # if the result is empty.
+    args.items = split_commas(args.items)
+    if not args.items:
+        raise argparse.ArgumentError('--items expects a non-empty list '
+                                     'of items to run.')
+
     # We want the --list argument to default to "all categories", but allow
     # filtering. If args.list is None, then --list wasn't supplied. If it is
     # [], then --list was supplied with no further arguments and we want to
@@ -747,22 +760,16 @@ def main():
         cfg.deploy_objects()
         sys.exit(0)
 
-    # Deploy the builds and runs
-    if args.items:
-        # Create deploy objects.
-        cfg.create_deploy_objects()
-        results = cfg.deploy_objects()
+    # Create deploy objects.
+    cfg.create_deploy_objects()
+    results = cfg.deploy_objects()
 
-        # Generate results.
-        cfg.gen_results(results)
+    # Generate results.
+    cfg.gen_results(results)
 
-        # Publish results
-        if args.publish:
-            cfg.publish_results()
-
-    else:
-        log.error("Nothing to run!")
-        sys.exit(1)
+    # Publish results
+    if args.publish:
+        cfg.publish_results()
 
     # Exit with non-zero status if there were errors or failures.
     if cfg.has_errors():
