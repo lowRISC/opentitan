@@ -425,11 +425,12 @@ def parse_args():
 
     buildg.add_argument("--build-modes",
                         "-bm",
-                        nargs="+",
-                        default=[],
-                        metavar="MODE",
+                        default='',
+                        metavar="MODES",
                         help=('The options for each build_mode in this list '
-                              'are applied to all build and run targets.'))
+                              'are applied to all build and run targets. To '
+                              'specify more than one mode, pass a comma '
+                              'separated list.'))
 
     buildg.add_argument("--build-timeout-mins",
                         type=int,
@@ -467,11 +468,11 @@ def parse_args():
 
     rung.add_argument("--run-modes",
                       "-rm",
-                      nargs="+",
-                      default=[],
-                      metavar="MODE",
+                      default='',
+                      metavar="MODES",
                       help=('The options for each run_mode in this list are '
-                            'applied to each simulation run.'))
+                            'applied to each simulation run. To specify more '
+                            'than one mode, pass a comma separated list.'))
 
     rung.add_argument("--profile",
                       "-p",
@@ -673,6 +674,10 @@ def parse_args():
     # right so that this turns into ['a', 'b c'].
     args.build_opts = shlex.split(args.build_opts)
     args.run_opts = shlex.split(args.run_opts)
+
+    # Split build and run modes as comma-separated lists
+    args.build_modes = split_commas(args.build_modes)
+    args.run_modes = split_commas(args.run_modes)
 
     # We want the --list argument to default to "all categories", but allow
     # filtering. If args.list is None, then --list wasn't supplied. If it is
