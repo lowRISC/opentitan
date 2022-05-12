@@ -18,4 +18,13 @@
  */
 bool lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl);
 
+/**
+ * Check if Lifecycle Controller count number is expected.
+ *
+ * This function will read out lc_transition_cnt register and check the value
+ * against exp_lc_count value.
+ */
+void lc_ctrl_testutils_check_transition_count(const dif_lc_ctrl_t *lc_ctrl,
+                                              uint8_t exp_lc_count);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_LC_CTRL_TESTUTILS_H_

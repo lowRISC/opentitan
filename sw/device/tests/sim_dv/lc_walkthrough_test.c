@@ -44,16 +44,6 @@ static volatile const uint8_t kOtpUnlockToken[LC_TOKEN_SIZE] = {
     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 };
 
-static void check_lc_state_transition_count(uint8_t exp_lc_count) {
-  LOG_INFO("Read LC count and check with expect_val=%0d", exp_lc_count);
-  uint8_t lc_count;
-  CHECK_DIF_OK(dif_lc_ctrl_get_attempts(&lc, &lc_count),
-               "Read lc_count register failed!");
-  CHECK(lc_count == exp_lc_count,
-        "LC_count error, expected %0d but actual count is %0d", exp_lc_count,
-        lc_count);
-}
-
 /**
  * Walkthrough LC state: RAW -> TestUnlock0 -> Destination state.
  *
@@ -86,7 +76,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
 
   if (curr_state == kDifLcCtrlStateTestUnlocked0) {
-    check_lc_state_transition_count(1);
+    lc_ctrl_testutils_check_transition_count(&lc, 1);
     bool secret0_locked;
     CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(
         &otp, kDifOtpCtrlPartitionSecret0, &secret0_locked));
@@ -154,7 +144,7 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc));
       dif_lc_ctrl_settings_t settings;
       // TODO: randomize using external or internal clock.
-      settings.clock_select = kDifLcCtrlExternalClockEn;
+      settings.clock_select = kDifLcCtrlInternalClockEn;
       CHECK_DIF_OK(dif_lc_ctrl_transition(&lc, kDestState, &token, &settings),
                    "LC_transition failed!");
 
@@ -164,7 +154,7 @@ bool test_main(void) {
   } else {
     // Check LC enters ProdEnd state.
     CHECK(curr_state == kDestState);
-    check_lc_state_transition_count(2);
+    lc_ctrl_testutils_check_transition_count(&lc, 2);
     return true;
   }
 }

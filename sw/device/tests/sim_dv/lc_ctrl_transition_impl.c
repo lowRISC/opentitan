@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -37,16 +38,6 @@ static volatile const uint8_t kLcExitToken[LC_TOKEN_SIZE] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 };
-
-static void check_lc_state_transition_count(uint8_t exp_lc_count) {
-  LOG_INFO("Read LC count and check with expect_val=%0d", exp_lc_count);
-  uint8_t lc_count;
-  CHECK(dif_lc_ctrl_get_attempts(&lc, &lc_count) == kDifOk,
-        "Read lc_count register failed!");
-  CHECK(lc_count == exp_lc_count,
-        "LC_count error, expected %0d but actual count is %0d", exp_lc_count,
-        lc_count);
-}
 
 /**
  * Tests the state transition request handshake between LC_CTRL and OTP_CTRL.
@@ -89,7 +80,7 @@ bool execute_lc_ctrl_transition_test(bool use_ext_clk) {
   if (curr_state == kDifLcCtrlStateTestUnlocked2) {
     // LC TestUnlocked2 is the intial test state for this sequence.
     // The sequence will check if lc_count matches the preload value.
-    check_lc_state_transition_count(kLcStateTransitionCount);
+    lc_ctrl_testutils_check_transition_count(&lc, kLcStateTransitionCount);
 
     // Request lc_state transfer to Dev state.
     dif_lc_ctrl_token_t token;
@@ -112,7 +103,7 @@ bool execute_lc_ctrl_transition_test(bool use_ext_clk) {
     // Once the sequence checks current state and count via CSRs, the test can
     // exit successfully.
     CHECK(curr_state == kDifLcCtrlStateDev, "State transition failed!");
-    check_lc_state_transition_count(kLcStateTransitionCount + 1);
+    lc_ctrl_testutils_check_transition_count(&lc, kLcStateTransitionCount + 1);
     return true;
   }
 

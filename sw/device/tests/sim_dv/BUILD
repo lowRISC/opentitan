@@ -114,6 +114,7 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
