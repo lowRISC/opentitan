@@ -56,13 +56,10 @@ module chip_earlgrey_cw310 #(
   inout IOB0, // MIO Pad 9
   inout IOB1, // MIO Pad 10
   inout IOB2, // MIO Pad 11
-  inout IOB3, // MIO Pad 12
   inout IOB4, // MIO Pad 13
   inout IOB5, // MIO Pad 14
-  inout IOB6, // MIO Pad 15
-  inout IOB7, // MIO Pad 16
-  inout IOB8, // MIO Pad 17
-  inout IOB9, // MIO Pad 18
+  inout IOC0, // MIO Pad 22
+  inout IOC1, // MIO Pad 23
   inout IOC2, // MIO Pad 24
   inout IOC3, // MIO Pad 25
   inout IOC4, // MIO Pad 26
@@ -73,7 +70,8 @@ module chip_earlgrey_cw310 #(
   inout IOC9, // MIO Pad 31
   inout IOC10, // MIO Pad 32
   inout IOC11, // MIO Pad 33
-  inout IOR0  // MIO Pad 35
+  inout IOR0, // MIO Pad 35
+  inout IOR4  // MIO Pad 39
 );
 
   import top_earlgrey_pkg::*;
@@ -83,13 +81,13 @@ module chip_earlgrey_cw310 #(
   // Special Signal Indices //
   ////////////////////////////
 
-  localparam int Tap0PadIdx = 22;
-  localparam int Tap1PadIdx = 16;
-  localparam int Dft0PadIdx = 23;
-  localparam int Dft1PadIdx = 34;
+  localparam int Tap0PadIdx = 30;
+  localparam int Tap1PadIdx = 27;
+  localparam int Dft0PadIdx = 25;
+  localparam int Dft1PadIdx = 26;
   localparam int TckPadIdx = 59;
   localparam int TmsPadIdx = 60;
-  localparam int TrstNPadIdx = 18;
+  localparam int TrstNPadIdx = 39;
   localparam int TdiPadIdx = 53;
   localparam int TdoPadIdx = 54;
 
@@ -237,6 +235,21 @@ module chip_earlgrey_cw310 #(
   assign unused_sig[17] = dio_out[DioSpiDeviceSd2] ^ dio_oe[DioSpiDeviceSd2];
   assign dio_in[DioSpiDeviceSd3] = 1'b0;
   assign unused_sig[18] = dio_out[DioSpiDeviceSd3] ^ dio_oe[DioSpiDeviceSd3];
+  assign mio_in[12] = 1'b0;
+  assign mio_in_raw[12] = 1'b0;
+  assign unused_sig[33] = mio_out[12] ^ mio_oe[12];
+  assign mio_in[15] = 1'b0;
+  assign mio_in_raw[15] = 1'b0;
+  assign unused_sig[36] = mio_out[15] ^ mio_oe[15];
+  assign mio_in[16] = 1'b0;
+  assign mio_in_raw[16] = 1'b0;
+  assign unused_sig[37] = mio_out[16] ^ mio_oe[16];
+  assign mio_in[17] = 1'b0;
+  assign mio_in_raw[17] = 1'b0;
+  assign unused_sig[38] = mio_out[17] ^ mio_oe[17];
+  assign mio_in[18] = 1'b0;
+  assign mio_in_raw[18] = 1'b0;
+  assign unused_sig[39] = mio_out[18] ^ mio_oe[18];
   assign mio_in[19] = 1'b0;
   assign mio_in_raw[19] = 1'b0;
   assign unused_sig[40] = mio_out[19] ^ mio_oe[19];
@@ -246,12 +259,6 @@ module chip_earlgrey_cw310 #(
   assign mio_in[21] = 1'b0;
   assign mio_in_raw[21] = 1'b0;
   assign unused_sig[42] = mio_out[21] ^ mio_oe[21];
-  assign mio_in[22] = 1'b0;
-  assign mio_in_raw[22] = 1'b0;
-  assign unused_sig[43] = mio_out[22] ^ mio_oe[22];
-  assign mio_in[23] = 1'b0;
-  assign mio_in_raw[23] = 1'b0;
-  assign unused_sig[44] = mio_out[23] ^ mio_oe[23];
   assign mio_in[34] = 1'b0;
   assign mio_in_raw[34] = 1'b0;
   assign unused_sig[55] = mio_out[34] ^ mio_oe[34];
@@ -264,9 +271,6 @@ module chip_earlgrey_cw310 #(
   assign mio_in[38] = 1'b0;
   assign mio_in_raw[38] = 1'b0;
   assign unused_sig[59] = mio_out[38] ^ mio_oe[38];
-  assign mio_in[39] = 1'b0;
-  assign mio_in_raw[39] = 1'b0;
-  assign unused_sig[60] = mio_out[39] ^ mio_oe[39];
   assign mio_in[40] = 1'b0;
   assign mio_in_raw[40] = 1'b0;
   assign unused_sig[61] = mio_out[40] ^ mio_oe[40];
@@ -304,7 +308,7 @@ module chip_earlgrey_cw310 #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
     .NDioPads(24),
-    .NMioPads(30),
+    .NMioPads(28),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
       BidirStd, // IO_CLKOUT
@@ -332,6 +336,7 @@ module chip_earlgrey_cw310 #(
       InputStd  // POR_N
     }),
     .MioPadType ({
+      BidirStd, // IOR4
       BidirStd, // IOR0
       BidirOd, // IOC11
       BidirOd, // IOC10
@@ -343,13 +348,10 @@ module chip_earlgrey_cw310 #(
       BidirStd, // IOC4
       BidirStd, // IOC3
       BidirStd, // IOC2
-      BidirOd, // IOB9
-      BidirStd, // IOB8
-      BidirStd, // IOB7
-      BidirStd, // IOB6
+      BidirStd, // IOC1
+      BidirStd, // IOC0
       BidirStd, // IOB5
       BidirStd, // IOB4
-      BidirStd, // IOB3
       BidirStd, // IOB2
       BidirStd, // IOB1
       BidirStd, // IOB0
@@ -397,6 +399,7 @@ module chip_earlgrey_cw310 #(
     }),
 
     .mio_pad_io ({
+      IOR4,
       IOR0,
       IOC11,
       IOC10,
@@ -408,13 +411,10 @@ module chip_earlgrey_cw310 #(
       IOC4,
       IOC3,
       IOC2,
-      IOB9,
-      IOB8,
-      IOB7,
-      IOB6,
+      IOC1,
+      IOC0,
       IOB5,
       IOB4,
-      IOB3,
       IOB2,
       IOB1,
       IOB0,
@@ -536,29 +536,39 @@ module chip_earlgrey_cw310 #(
       }),
 
     .mio_in_o ({
+        mio_in[39],
         mio_in[35],
-        mio_in[33:24],
-        mio_in[18:0]
+        mio_in[33:22],
+        mio_in[14:13],
+        mio_in[11:0]
       }),
     .mio_out_i ({
+        mio_out[39],
         mio_out[35],
-        mio_out[33:24],
-        mio_out[18:0]
+        mio_out[33:22],
+        mio_out[14:13],
+        mio_out[11:0]
       }),
     .mio_oe_i ({
+        mio_oe[39],
         mio_oe[35],
-        mio_oe[33:24],
-        mio_oe[18:0]
+        mio_oe[33:22],
+        mio_oe[14:13],
+        mio_oe[11:0]
       }),
     .mio_attr_i ({
+        mio_attr[39],
         mio_attr[35],
-        mio_attr[33:24],
-        mio_attr[18:0]
+        mio_attr[33:22],
+        mio_attr[14:13],
+        mio_attr[11:0]
       }),
     .mio_in_raw_o ({
+        mio_in_raw[39],
         mio_in_raw[35],
-        mio_in_raw[33:24],
-        mio_in_raw[18:0]
+        mio_in_raw[33:22],
+        mio_in_raw[14:13],
+        mio_in_raw[11:0]
       })
   );
 

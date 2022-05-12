@@ -12311,16 +12311,18 @@
           OTP_EXT_VOLT
           FLASH_TEST_MODE0
           FLASH_TEST_MODE1
+          IOB3
+          IOB6
+          IOB7
+          IOB8
+          IOB9
           IOB10
           IOB11
           IOB12
-          IOC0
-          IOC1
           IOC12
           IOR1
           IOR2
           IOR3
-          IOR4
           IOR5
           IOR6
           IOR7
@@ -12434,27 +12436,27 @@
         [
           {
             name: tap0
-            pad: IOC0
-            desc: TAP strap signal, maps to a stubbed-off MIO.
-            idx: 22
+            pad: IOC8
+            desc: TAP strap signal.
+            idx: 30
           }
           {
             name: tap1
-            pad: IOB7
-            desc: TAP strap signal, maps to MIO pad 16.
-            idx: 16
+            pad: IOC5
+            desc: TAP strap signal.
+            idx: 27
           }
           {
             name: dft0
-            pad: IOC1
-            desc: DFT strap signal, maps to a stubbed-off MIO.
-            idx: 23
+            pad: IOC3
+            desc: DFT strap signal.
+            idx: 25
           }
           {
             name: dft1
-            pad: IOC12
-            desc: DFT strap signal, maps to a stubbed-off MIO.
-            idx: 34
+            pad: IOC4
+            desc: DFT strap signal.
+            idx: 26
           }
           {
             name: tck
@@ -12470,9 +12472,9 @@
           }
           {
             name: trst_n
-            pad: IOB9
-            desc: JTAG trst_n signal, maps to MIO pad 18.
-            idx: 18
+            pad: IOR4
+            desc: JTAG trst_n signal.
+            idx: 39
           }
           {
             name: tdi
