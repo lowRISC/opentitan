@@ -60,8 +60,6 @@ bool ecdsa_p256_verify_test(const ecdsa_p256_verify_test_vector_t *testvec) {
   return true;
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   // Stays true only if all tests pass.
   bool result = true;

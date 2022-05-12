@@ -39,8 +39,6 @@
  */
 #define RET_RAM_COPY_OFFSET SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS
 
-const test_config_t kTestConfig;
-
 static dif_sram_ctrl_t sram_ctrl;
 
 /**

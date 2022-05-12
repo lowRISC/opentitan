@@ -12,8 +12,6 @@
 
 static dif_rom_ctrl_t rom_ctrl;
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   dif_rom_ctrl_digest_t computed_digest;
   dif_rom_ctrl_digest_t expected_digest;

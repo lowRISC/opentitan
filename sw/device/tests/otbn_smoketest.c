@@ -20,8 +20,6 @@ OTBN_DECLARE_APP_SYMBOLS(err_test);
 
 static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
 
-const test_config_t kTestConfig;
-
 /**
  * Get OTBN error bits, check this succeeds and code matches `expected_err_bits`
  */

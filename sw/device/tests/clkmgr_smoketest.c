@@ -10,8 +10,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
-
 /**
  * Test that all 'gateable' clocks, directly controlled by software,
  * can be enabled and disabled.

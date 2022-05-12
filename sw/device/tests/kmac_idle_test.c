@@ -14,8 +14,6 @@
 static dif_clkmgr_t clkmgr;
 static dif_kmac_t kmac;
 
-const test_config_t kTestConfig;
-
 const dif_clkmgr_hintable_clock_t kmac_clock =
     kTopEarlgreyHintableClocksMainKmac;
 

@@ -229,8 +229,6 @@ static void test_memory_protection(void) {
   }
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   flash_info = dif_flash_ctrl_get_device_info();
   CHECK_DIF_OK(dif_flash_ctrl_init_state(

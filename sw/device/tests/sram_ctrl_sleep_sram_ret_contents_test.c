@@ -17,8 +17,6 @@
 
 #define NUM_TEST_WORDS 16
 
-const test_config_t kTestConfig;
-
 // Random data to read/write to/from retention SRAM.
 const uint32_t kTestData[NUM_TEST_WORDS] = {
     0xe647e5d5, 0x4b5fe6f6, 0x1608a98a, 0x5e347116, 0xb2dc5e92, 0x899e3c0f,

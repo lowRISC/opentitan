@@ -88,8 +88,6 @@ enum {
   kRsa4096SizeBytes = 4096 / 8,
 };
 
-const test_config_t kTestConfig;
-
 /**
  * Encrypts a message with RSA.
  *

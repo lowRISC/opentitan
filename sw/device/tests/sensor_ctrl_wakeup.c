@@ -18,8 +18,6 @@
 #include "sensor_ctrl_regs.h"  // Generated.
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
-const test_config_t kTestConfig;
-
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_plic_t plic;
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,

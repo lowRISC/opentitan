@@ -17,8 +17,6 @@
 
 #define FLASH_CTRL_NUM_IRQS 5
 
-const test_config_t kTestConfig;
-
 static dif_rv_plic_t plic0;
 static dif_flash_ctrl_state_t flash_state;
 static dif_flash_ctrl_t flash_ctrl;

@@ -45,8 +45,6 @@ rom_error_t sigverify_mod_exp_ibex_test(void) {
   return kErrorOk;
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   rom_error_t result = kErrorOk;
 

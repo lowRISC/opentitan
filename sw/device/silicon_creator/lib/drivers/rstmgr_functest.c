@@ -12,8 +12,6 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
-const test_config_t kTestConfig;
-
 /**
  * Test phases tracked in retention RAM.
  */

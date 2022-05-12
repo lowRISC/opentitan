@@ -51,8 +51,6 @@ rom_error_t sigverify_test(void) {
   return test_result;
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   rom_error_t result = kErrorOk;
 

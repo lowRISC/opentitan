@@ -23,8 +23,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
-
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 static const uint32_t kTickFreqHz = 1000 * 1000;  // 1Mhz / 1us
 static dif_aon_timer_t aon_timer;

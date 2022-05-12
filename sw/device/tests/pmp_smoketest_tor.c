@@ -65,8 +65,6 @@ static void pmp_configure_load_tor(void) {
         "Load configuration failed, error code = %d", result);
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   pmp_load_exception = false;
   char load = pmp_load_test_data[PMP_LOAD_RANGE_BOTTOM_OFFSET];

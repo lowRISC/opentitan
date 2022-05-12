@@ -11,8 +11,6 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
-const test_config_t kTestConfig;
-
 rom_error_t rnd_test(void) {
   const size_t kTestNumIter = 5;
   uint32_t prev = rnd_uint32();

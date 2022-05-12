@@ -206,8 +206,6 @@ ${"" if loop.last else "\n"}\
   % endfor
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);

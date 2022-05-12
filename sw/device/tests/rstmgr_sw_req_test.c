@@ -12,8 +12,6 @@
 
 static dif_rstmgr_t rstmgr;
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));

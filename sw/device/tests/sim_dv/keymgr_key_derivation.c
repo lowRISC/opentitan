@@ -99,8 +99,6 @@ const uint32_t kKmacPrefix[KMAC_PREFIX_SIZE] = {
     0x4d4b2001, 0x00014341, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 };
 
-const test_config_t kTestConfig;
-
 static void write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
                             const uint32_t *data) {
   uint32_t address = flash_ctrl_testutils_info_region_setup(

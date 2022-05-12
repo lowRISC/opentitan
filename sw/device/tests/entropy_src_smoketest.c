@@ -11,8 +11,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
-
 const size_t kEntropyDataNumWords = 12;
 
 // This expected value seems to require frequent updating.  If it turns

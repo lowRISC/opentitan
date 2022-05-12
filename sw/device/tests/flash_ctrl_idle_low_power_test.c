@@ -20,8 +20,6 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
-const test_config_t kTestConfig;
-
 static dif_rv_plic_t plic;
 static dif_aon_timer_t aon;
 

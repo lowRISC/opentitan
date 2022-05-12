@@ -1424,8 +1424,6 @@ static void peripheral_irqs_trigger(void) {
   }
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);

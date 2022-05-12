@@ -13,8 +13,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
-
 enum {
   kFlashInfoPageIdCreatorSecret = 1,
   kFlashInfoPageIdOwnerSecret = 2,

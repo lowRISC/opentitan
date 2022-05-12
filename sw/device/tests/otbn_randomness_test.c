@@ -29,8 +29,6 @@ static const otbn_addr_t kVarFailIdx = OTBN_ADDR_T_INIT(randomness, fail_idx);
 static const otbn_addr_t kVarRndOut = OTBN_ADDR_T_INIT(randomness, rnd_out);
 static const otbn_addr_t kVarUrndOut = OTBN_ADDR_T_INIT(randomness, urnd_out);
 
-const test_config_t kTestConfig;
-
 static dif_clkmgr_t clkmgr;
 static const dif_clkmgr_hintable_clock_t kOtbnClock =
     kTopEarlgreyHintableClocksMainOtbn;

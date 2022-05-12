@@ -11,8 +11,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
-
 /**
  * Digest lengths in 32-bit words.
  */
