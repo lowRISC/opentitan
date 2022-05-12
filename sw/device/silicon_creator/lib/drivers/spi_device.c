@@ -622,29 +622,31 @@ void spi_device_init(void) {
 rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
   uint32_t reg = 0;
   bool cmd_pending = false;
-  // TODO(#11871): When should sw read cmd, addr, and payload?
   while (!cmd_pending) {
-    reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET);
-    cmd_pending =
-        bitfield_bit32_read(reg, SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_NOTEMPTY_BIT);
+    // Note: Using INTR_STATE.UPLOAD_CMDFIFO_NOT_EMPTY because
+    // UPLOAD_STATUS.CMDFIFO_NOTEMPTY is set before the SPI transaction ends.
+    reg = abs_mmio_read32(kBase + SPI_DEVICE_INTR_STATE_REG_OFFSET);
+    cmd_pending = bitfield_bit32_read(
+        reg, SPI_DEVICE_INTR_COMMON_UPLOAD_CMDFIFO_NOT_EMPTY_BIT);
   }
-  cmd->opcode = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET);
+  abs_mmio_write32(kBase + SPI_DEVICE_INTR_STATE_REG_OFFSET, UINT32_MAX);
+  if (bitfield_bit32_read(reg,
+                          SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_OVERFLOW_BIT)) {
+    return kErrorSpiDevicePayloadOverflow;
+  }
 
+  cmd->opcode = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET);
   cmd->address = kSpiDeviceNoAddress;
+  reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET);
   if (bitfield_bit32_read(reg,
                           SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT)) {
     cmd->address =
         abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET);
   }
 
-  reg = abs_mmio_read32(kBase + SPI_DEVICE_INTR_STATE_REG_OFFSET);
-  if (bitfield_bit32_read(reg,
-                          SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_OVERFLOW_BIT)) {
-    return kErrorSpiDevicePayloadOverflow;
-  }
-
+  reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET);
   cmd->payload_byte_count =
-      abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET);
+      bitfield_field32_read(reg, SPI_DEVICE_UPLOAD_STATUS2_PAYLOAD_DEPTH_FIELD);
   uint32_t src =
       kBase + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
   char *dest = (char *)&cmd->payload;
