@@ -288,12 +288,14 @@ module otbn_controller
 
   logic [4:0] insn_bignum_rd_addr_a_q, insn_bignum_rd_addr_b_q, insn_bignum_wr_addr_q;
 
-  logic secure_wipe_running_q;
+  logic secure_wipe_running_q, secure_wipe_running_d;
+  assign secure_wipe_running_d = (start_secure_wipe_o |
+                                  (secure_wipe_running_q & ~secure_wipe_done_i));
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       secure_wipe_running_q <= 1'b0;
     end else begin
-      secure_wipe_running_q <= start_secure_wipe_o | (secure_wipe_running_q & ~secure_wipe_done_i);
+      secure_wipe_running_q <= secure_wipe_running_d;
     end
   end
 
@@ -322,7 +324,7 @@ module otbn_controller
   assign executing = (state_q == OtbnStateRun) ||
                      (state_q == OtbnStateStall);
 
-  assign locking_o = (state_d == OtbnStateLocked) & ~(start_secure_wipe_o | secure_wipe_running_q);
+  assign locking_o = (state_d == OtbnStateLocked) & ~secure_wipe_running_d;
   assign start_secure_wipe_o = executing & (done_complete | err) & ~secure_wipe_running_q;
 
   assign jump_or_branch = (insn_valid_i &
