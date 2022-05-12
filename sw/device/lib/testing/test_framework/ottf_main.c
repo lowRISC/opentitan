@@ -32,6 +32,10 @@
 #include "sw/vendor/freertos_freertos_kernel/include/task.h"
 #endif
 
+// Weak default definition of `kTestConfig` that tests can override
+OT_WEAK
+const test_config_t kTestConfig;
+
 // Check layout of test configuration struct since OTTF ISR asm code requires a
 // specific layout.
 OT_ASSERT_MEMBER_OFFSET(test_config_t, enable_concurrency, 0);

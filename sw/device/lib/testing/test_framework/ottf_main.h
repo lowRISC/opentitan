@@ -53,12 +53,8 @@ typedef struct test_config {
 /**
  * Global test configuration.
  *
- * This symbol should be defined externally in a standalone SW test. For most
- * tests, this will just look like the following:
- *
- *   const test_config_t kTestConfig;
- *
- * The zero values of all of the fields will behave like sane defaults.
+ * Tests that need to use non-default configurations should define a symbol
+ * with this name in the test file defining `test_main`.
  *
  * This value needs to be provided as a global so that the initialization code
  * that runs before `test_main()` is executed can take note of it.
