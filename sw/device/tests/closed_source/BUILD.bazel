@@ -1,0 +1,31 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    # The name is the label that will be used to refer to this library.
+    # Tests will use the full label `@test_hooks//:ip_config_hooks`.
+    name = "ip_config_hooks",
+
+    # `srcs` is a list of source files and private header files.
+    srcs = [
+        "sample_hooks.c",
+    ],
+
+    # `hdrs` is a list of public header files for this library.
+    hdrs = [],
+
+    # `deps` is a list of dependencies for this library.  You may use
+    # any library from the main opentitan repo; just prefix the label
+    # with `@lowrisc_opentitan`.
+    #
+    # Any dependencies local to this repo can simply start with `//`.
+    deps = [
+        "@lowrisc_opentitan//sw/device/lib/runtime:log",
+    ],
+
+    # We use alwayslink to force the symbols exported by this library to
+    # override any weak symbols provided by targets in `@lowrisc_opentitan`.
+    alwayslink = True,
+)

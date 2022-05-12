@@ -67,6 +67,17 @@ riscv_compliance_repos()
 load("//rules:bitstreams.bzl", "bitstreams_repo")
 bitstreams_repo(name = "bitstreams")
 
+# Setup for linking in external test hooks.
+load("//rules:hooks_setup.bzl", "hooks_setup")
+hooks_setup(
+    name = "hooks_setup",
+    dummy = "sw/device/tests/closed_source",
+)
+
+# Declare the external test_hooks repository.
+load("@hooks_setup//:repos.bzl", "hooks_repo")
+hooks_repo(name = "test_hooks")
+
 # The nonhermetic_repo imports environment variables needed to run vivado.
 load("//rules:nonhermetic.bzl", "nonhermetic_repo")
 nonhermetic_repo(name = "nonhermetic")
