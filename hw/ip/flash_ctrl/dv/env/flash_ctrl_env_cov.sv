@@ -8,7 +8,9 @@
  * Covergroups may also be wrapped inside helper classes if needed.
  */
 
-class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
+class flash_ctrl_env_cov extends cip_base_env_cov #(
+  .CFG_T(flash_ctrl_env_cfg)
+);
   `uvm_component_utils(flash_ctrl_env_cov)
 
   // the base class provides the following handles for use:
@@ -17,17 +19,22 @@ class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
   // covergroups
 
   covergroup control_cg with function sample (flash_op_t flash_cfg_opts);
-    part_cp : coverpoint flash_cfg_opts.partition;
-    erase_cp : coverpoint flash_cfg_opts.erase_type;
-    op_cp : coverpoint flash_cfg_opts.op;
+    part_cp: coverpoint flash_cfg_opts.partition;
+    erase_cp: coverpoint flash_cfg_opts.erase_type;
+    op_cp: coverpoint flash_cfg_opts.op;
+    op_evict_cp: coverpoint flash_cfg_opts.op {
+      bins op[] = {FlashOpRead, FlashOpProgram, FlashOpErase};
+      bins read_prog_read = (FlashOpRead => FlashOpProgram => FlashOpRead);
+      bins read_erase_read = (FlashOpRead => FlashOpErase => FlashOpRead);
+    }
     op_part_cross : cross part_cp, op_cp;
-  endgroup // control_cg
+  endgroup  // control_cg
 
   covergroup erase_susp_cg with function sample (bit erase_req = 0);
-    erase_susp_cp : coverpoint erase_req {
+    erase_susp_cp: coverpoint erase_req {
       bins erase_susp_true = {1};
     }
-  endgroup // erase_susp_cg
+  endgroup  // erase_susp_cg
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
