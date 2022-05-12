@@ -59,8 +59,8 @@ void _ottf_main(void) {
 
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
-  // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
-  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0x0ff00));
+  // Enable GPIO: 0-7 is output; 8-11 is input.
+  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0x000FF));
 
   // Add DATE and TIME because I keep fooling myself with old versions
   LOG_INFO("Hello World!");

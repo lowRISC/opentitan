@@ -29,7 +29,7 @@ impl CW310Spi {
             usb.spi1_enable(true)?;
 
             // Set the JTAG pin to false to use SPI mode.
-            usb.pin_set_state(CW310::PIN_JTAG, false)?;
+            usb.pin_set_state(CW310::PIN_TAP_STRAP1, false)?;
         }
 
         Ok(CW310Spi { device })

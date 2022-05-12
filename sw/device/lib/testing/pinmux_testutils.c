@@ -19,7 +19,7 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   for (uint32_t index = 0; index < NUM_GPIO; index++) {
     dif_pinmux_index_t mio = kTopEarlgreyPinmuxInselIoa0 + index;
     if (mio == kTopEarlgreyPinmuxInselIoc3 ||
-        mio == kTopEarlgreyPinmuxInselIoc8) {
+        mio == kTopEarlgreyPinmuxInselIob4) {
       // Avoid causing glitches: Don't assign the UART pins to a GPIO.
       continue;
     } else {
@@ -33,8 +33,8 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
     dif_pinmux_index_t mio = kTopEarlgreyPinmuxMioOutIoa0 + index;
     if (mio == kTopEarlgreyPinmuxMioOutIoc3 ||
         mio == kTopEarlgreyPinmuxMioOutIoc4 ||
-        mio == kTopEarlgreyPinmuxMioOutIoc8 ||
-        mio == kTopEarlgreyPinmuxMioOutIoc9) {
+        mio == kTopEarlgreyPinmuxMioOutIob4 ||
+        mio == kTopEarlgreyPinmuxMioOutIob5) {
       // Avoid causing glitches: Don't assign the UART pins to a GPIO.
       continue;
     } else {
@@ -54,14 +54,14 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
                                         kTopEarlgreyPinmuxOutselUart0Tx));
 
 #if !OT_IS_ENGLISH_BREAKFAST
-  // Configure UART1 RX input to connect to MIO pad IOC8
+  // Configure UART1 RX input to connect to MIO pad IOB4
   CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
                                        kTopEarlgreyPinmuxPeripheralInUart1Rx,
-                                       kTopEarlgreyPinmuxInselIoc8));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc8,
+                                       kTopEarlgreyPinmuxInselIob4));
+  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob4,
                                         kTopEarlgreyPinmuxOutselConstantHighZ));
-  // Configure UART1 TX output to connect to MIO pad IOC9
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc9,
+  // Configure UART1 TX output to connect to MIO pad IOB5
+  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob5,
                                         kTopEarlgreyPinmuxOutselUart1Tx));
 #endif
 

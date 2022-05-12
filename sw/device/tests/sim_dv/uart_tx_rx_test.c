@@ -535,13 +535,13 @@ bool test_main(void) {
 
   LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_base_addr);
 
-  // TODO, remove thse once pinout configuration is provided
   pinmux_connect_uart_to_pads(
       kTopEarlgreyPinmuxInselIoc3, kTopEarlgreyPinmuxPeripheralInUart0Rx,
       kTopEarlgreyPinmuxMioOutIoc4, kTopEarlgreyPinmuxOutselUart0Tx);
   pinmux_connect_uart_to_pads(
-      kTopEarlgreyPinmuxInselIor5, kTopEarlgreyPinmuxPeripheralInUart1Rx,
-      kTopEarlgreyPinmuxMioOutIor6, kTopEarlgreyPinmuxOutselUart1Tx);
+      kTopEarlgreyPinmuxInselIob4, kTopEarlgreyPinmuxPeripheralInUart1Rx,
+      kTopEarlgreyPinmuxMioOutIob5, kTopEarlgreyPinmuxOutselUart1Tx);
+  // TODO: the UARTs below still need to be mapped to the correct location.
   pinmux_connect_uart_to_pads(
       kTopEarlgreyPinmuxInselIor7, kTopEarlgreyPinmuxPeripheralInUart2Rx,
       kTopEarlgreyPinmuxMioOutIor10, kTopEarlgreyPinmuxOutselUart2Tx);
