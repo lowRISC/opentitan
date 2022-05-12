@@ -53,7 +53,6 @@ impl CW310 {
     const PIN_TAP_STRAP0: &'static str = "USB_A18";
     const PIN_TAP_STRAP1: &'static str = "USB_A19";
 
-
     pub fn new(
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
@@ -189,9 +188,9 @@ impl Transport for CW310 {
             // Program the FPGA bitstream.
             let usb = self.device.borrow();
             usb.spi1_enable(false)?;
-            usb.pin_set_state(CW310::PIN_TAP_STRAP0, true)?;
-            usb.pin_set_state(CW310::PIN_TAP_STRAP1, true)?;
-            usb.pin_set_state(CW310::PIN_TAP_STRAP2, true)?;
+            usb.pin_set_state(CW310::PIN_SW_STRAP0, true)?;
+            usb.pin_set_state(CW310::PIN_SW_STRAP1, true)?;
+            usb.pin_set_state(CW310::PIN_SW_STRAP2, true)?;
             usb.fpga_program(&fpga_program.bitstream)?;
             Ok(None)
         } else {

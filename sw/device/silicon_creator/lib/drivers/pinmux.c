@@ -32,28 +32,34 @@ typedef struct pinmux_output {
 /**
  * UART RX pin.
  */
-static const pinmux_input_t kInputUart = {
+static const pinmux_input_t kInputUart0 = {
     .periph = kTopEarlgreyPinmuxPeripheralInUart0Rx,
     .pad = kTopEarlgreyPinmuxInselIoc3,
 };
 
 /**
- * Bootstrap pin.
- *
- * TODO(#11934): The actual chip will have 3 strapping pins that should be
- * configured as inputs.
+ * UART TX pin.
  */
-static const pinmux_input_t kInputBootstrap = {
-    .periph = kTopEarlgreyPinmuxPeripheralInGpioGpio17,
-    .pad = kTopEarlgreyPinmuxInselIob8,
+static const pinmux_output_t kOutputUart0 = {
+    .pad = kTopEarlgreyPinmuxMioOutIoc4,
+    .periph = kTopEarlgreyPinmuxOutselUart0Tx,
 };
 
 /**
- * UART TX pin.
+ * SW strap pins.
+ *
  */
-static const pinmux_output_t kOutputUart = {
-    .pad = kTopEarlgreyPinmuxMioOutIoc4,
-    .periph = kTopEarlgreyPinmuxOutselUart0Tx,
+static const pinmux_input_t kInputSwStrap0 = {
+    .periph = kTopEarlgreyPinmuxPeripheralInGpioGpio22,
+    .pad = kTopEarlgreyPinmuxInselIoc0,
+};
+static const pinmux_input_t kInputSwStrap1 = {
+    .periph = kTopEarlgreyPinmuxPeripheralInGpioGpio23,
+    .pad = kTopEarlgreyPinmuxInselIoc1,
+};
+static const pinmux_input_t kInputSwStrap2 = {
+    .periph = kTopEarlgreyPinmuxPeripheralInGpioGpio24,
+    .pad = kTopEarlgreyPinmuxInselIoc2,
 };
 
 /**
@@ -84,9 +90,11 @@ void pinmux_init(void) {
   uint32_t bootstrap_en = otp_read32(OTP_CTRL_PARAM_ROM_BOOTSTRAP_EN_OFFSET);
   if (launder32(bootstrap_en) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(bootstrap_en, kHardenedBoolTrue);
-    configure_input(kInputBootstrap);
+    configure_input(kInputSwStrap0);
+    configure_input(kInputSwStrap1);
+    configure_input(kInputSwStrap2);
   }
 
-  configure_input(kInputUart);
-  configure_output(kOutputUart);
+  configure_input(kInputUart0);
+  configure_output(kOutputUart0);
 }

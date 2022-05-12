@@ -22,7 +22,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-#define GPIO_BOOTSTRAP_BIT_MASK 0x00020000u
+#define GPIO_BOOTSTRAP_BIT_MASK 0x00400000u
 
 /**
  * Check if flash is blank to determine if bootstrap is needed.

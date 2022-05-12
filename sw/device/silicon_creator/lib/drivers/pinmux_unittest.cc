@@ -68,8 +68,12 @@ TEST_F(InitTest, WithBootstrap) {
   // The inputs that will be configured.
   EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_ROM_BOOTSTRAP_EN_OFFSET))
       .WillOnce(Return(kHardenedBoolTrue));
-  EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInGpioGpio17),
-                     kTopEarlgreyPinmuxInselIob8)
+  EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInGpioGpio22),
+                     kTopEarlgreyPinmuxInselIoc0)
+  EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInGpioGpio23),
+                     kTopEarlgreyPinmuxInselIoc1)
+  EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInGpioGpio24),
+                     kTopEarlgreyPinmuxInselIoc2)
   EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInUart0Rx),
                      kTopEarlgreyPinmuxInselIoc3);
 
