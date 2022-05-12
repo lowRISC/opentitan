@@ -88,7 +88,7 @@ bool test_main(void) {
       memcpy(cipherptr + i - sizeof(out), &out, len_prev);
     }
   }
-  CHECK_BUFFER_EQ(ciphertext, kCiphertext, ARRAYSIZE(kCiphertext));
+  CHECK_ARRAYS_EQ(ciphertext, kCiphertext, ARRAYSIZE(kCiphertext));
 
   LOG_INFO("Cleaning up.");
   CHECK(aes_end() == kAesOk);

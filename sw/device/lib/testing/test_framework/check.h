@@ -157,10 +157,6 @@
     }                                                                          \
   } while (false)
 
-// Temporary shims to prevent merge-skew-breakage during renaming.
-#define CHECK_BUFFER_EQ CHECK_ARRAYS_EQ
-#define CHECK_BUFFER_NEQ CHECK_ARRAYS_NE
-
 /**
  * Checks that the given DIF call returns kDifOk. If the DIF call returns a
  * different dif_result_t value (defined in sw/device/lib/dif/dif_base.h), this
