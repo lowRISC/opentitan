@@ -698,11 +698,11 @@ opentitan_functest(
 opentitan_functest(
     name = "otbn_mem_scramble_test",
     srcs = ["otbn_mem_scramble_test.c"],
-    verilator = verilator_params(
-        tags = ["broken"],
-    ),
     cw310 = cw310_params(
         # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
+    verilator = verilator_params(
         tags = ["broken"],
     ),
     deps = [
@@ -857,11 +857,11 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_sleep_disabled_test",
     srcs = ["pwrmgr_sleep_disabled_test.c"],
-    verilator = verilator_params(
-        tags = ["broken"],
-    ),
     cw310 = cw310_params(
         # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
+    verilator = verilator_params(
         tags = ["broken"],
     ),
     deps = [
@@ -905,10 +905,10 @@ opentitan_functest(
 opentitan_functest(
     name = "rstmgr_sw_rst_ctrl_test",
     srcs = ["rstmgr_sw_rst_ctrl_test.c"],
-    verilator = verilator_params(
+    cw310 = cw310_params(
         tags = ["broken"],
     ),
-    cw310 = cw310_params(
+    verilator = verilator_params(
         tags = ["broken"],
     ),
     deps = [
@@ -981,11 +981,11 @@ opentitan_functest(
 opentitan_functest(
     name = "sensor_ctrl_alert_test",
     srcs = ["sensor_ctrl_alerts.c"],
-    verilator = verilator_params(
-        timeout = "eternal",
-    ),
     cw310 = cw310_params(
         tags = ["broken"],
+    ),
+    verilator = verilator_params(
+        timeout = "eternal",
     ),
     deps = [
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
@@ -1012,12 +1012,12 @@ opentitan_functest(
 opentitan_functest(
     name = "sensor_ctrl_wakeup_test",
     srcs = ["sensor_ctrl_wakeup.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
     cw310 = cw310_params(
         # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
         tags = ["broken"],
+    ),
+    verilator = verilator_params(
+        timeout = "long",
     ),
     deps = [
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
@@ -1182,12 +1182,12 @@ opentitan_functest(
 opentitan_functest(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
-    verilator = verilator_params(
-        timeout = "eternal",
-    ),
     cw310 = cw310_params(
         # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
         tags = ["broken"],
+    ),
+    verilator = verilator_params(
+        timeout = "eternal",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
