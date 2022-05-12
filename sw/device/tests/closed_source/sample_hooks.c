@@ -6,7 +6,7 @@
 
 #include "sw/device/lib/runtime/log.h"
 
-bool closed_source_pre_test_hook(void) {
+bool manufacturer_pre_test_hook(void) {
   // LOG_INFO("open_source_pre_test_hook");
 
   // Perform whatever pre-test setup needs to be done.
@@ -14,7 +14,7 @@ bool closed_source_pre_test_hook(void) {
   return true;
 }
 
-bool closed_source_post_test_hook(void) {
+bool manufacturer_post_test_hook(void) {
   // LOG_INFO("open_source_post_test_hook");
 
   // Perform whatever post-test teardown needs to be done.
