@@ -135,25 +135,35 @@ class _Bootstrap:
                                            'PIN_CS',
                                            'PIN_TRST',
                                            'PIN_SRST',
-                                           'PIN_JTAG_SPI',
-                                           'PIN_BOOTSTRAP'])
+                                           'PIN_SW_STRAP0',
+                                           'PIN_SW_STRAP1',
+                                           'PIN_SW_STRAP2',
+                                           'PIN_TAP_STRAP0',
+                                           'PIN_TAP_STRAP1'
+                                           ])
     _PIN_MAPPINGS = {}
-    _PIN_MAPPINGS['CW305'] = PinMapping('USB_A13',
+    _PIN_MAPPINGS['CW305'] = PinMapping('USB_A9',
+                                        'USB_A10',
+                                        'USB_A11',
+                                        'USB_A12',
+                                        'USB_A13',
                                         'USB_A14',
                                         'USB_A15',
                                         'USB_A16',
                                         'USB_A17',
                                         'USB_A18',
-                                        'USB_A19',
-                                        'USB_A20')
+                                        'USB_A19')
     _PIN_MAPPINGS['CW310'] = PinMapping('USB_SPI_SCK',
                                         'USB_SPI_COPI',
                                         'USB_SPI_CIPO',
                                         'USB_SPI_CS',
+                                        'USB_A13',
+                                        'USB_A14',
+                                        'USB_A15',
+                                        'USB_A16',
                                         'USB_A17',
                                         'USB_A18',
-                                        'USB_A19',
-                                        'USB_A16')
+                                        'USB_A19')
     _board = 'CW305'
 
     # Delays below are in seconds.
@@ -179,12 +189,18 @@ class _Bootstrap:
         self._fpga_io = fpga.gpio_mode()
         self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_TRST)
         self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_SRST)
-        self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_JTAG_SPI)
-        self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_BOOTSTRAP)
+        self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP0)
+        self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP1)
+        self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP2)
+        self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_TAP_STRAP0)
+        self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_TAP_STRAP1)
         self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_TRST, 1)
         self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SRST, 1)
-        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_JTAG_SPI, 1)
-        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_BOOTSTRAP, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP0, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP1, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP2, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_TAP_STRAP0, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_TAP_STRAP1, 1)
         # Initialize SPI pins.
         self._fpga_io.spi1_setpins(sck=self._PIN_MAPPINGS[self._board].PIN_SCK,
                                    sdo=self._PIN_MAPPINGS[self._board].PIN_SDI,
@@ -193,7 +209,7 @@ class _Bootstrap:
         self._fpga_io.spi1_enable(True)
 
     def _reset_opentitan(self):
-        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_JTAG_SPI, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_TAP_STRAP1, 1)
         self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SRST, 0)
         time.sleep(self._BOOTSTRAP_DELAY)
         self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SRST, 1)
@@ -201,16 +217,20 @@ class _Bootstrap:
 
     def __enter__(self):
         """Starts bootstrapping."""
-        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_BOOTSTRAP, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP0, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP1, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP2, 1)
         self._reset_opentitan()
-        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_JTAG_SPI, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_TAP_STRAP1, 0)
         time.sleep(self._BOOTSTRAP_DELAY)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Ends bootstrapping."""
-        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_BOOTSTRAP, 0)
-        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_JTAG_SPI, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP0, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP1, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SW_STRAP2, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_TAP_STRAP1, 1)
         time.sleep(self._BOOTSTRAP_DELAY)
 
     def transfer(self, frame):
