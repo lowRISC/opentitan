@@ -180,9 +180,9 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           // We start any operation when we see a write of the related command and we are currently
           // in the IDLE operational state. See the comment above pending_start_tl_trans to see how
           // this tracking works.
-          bit cmd_operation = item.a_data inside {otbn_pkg::CmdSecWipeImem,
-                                                  otbn_pkg::CmdSecWipeDmem,
-                                                  otbn_pkg::CmdExecute};
+          bit cmd_operation = item.a_data[7:0] inside {otbn_pkg::CmdSecWipeImem,
+                                                       otbn_pkg::CmdSecWipeDmem,
+                                                       otbn_pkg::CmdExecute};
           if (cmd_operation && (model_status == otbn_pkg::StatusIdle)) begin
             // Set a flag: we're expecting the model to start on the next posedge. Also, spawn off a
             // checking thread that will make sure the flag has been cleared again by the following
