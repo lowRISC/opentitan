@@ -252,16 +252,18 @@ The flash controller registers however, remain accessible for status reads and s
 
 Flash memory protection is handled differently depending on what type of partition is accessed.
 
-For data partitions, software can configure a number of memory protection regions such as {{< regref "MP_REGION_CFG_SHADOWED_0" >}}.
+For data partitions, software can configure a number of memory protection regions such as {{< regref "MP_REGION_CFG_0" >}}.
 For each region, software specifies both the beginning page and the number of pages that belong to that region.
 Software then configures the access privileges for that region.
+Finally, each region can be activated or de-activated from matching through {{< regref "MP_REGION_CFG_0.EN" >}}.
+
 Subsequent accesses are then allowed or denied based on the defined rule set.
 Similar to RISCV pmp, if two region overlaps, the lower region index has higher priority.
 
 For information partitions, the protection is done per individual page.
 Each page can be configured with access privileges.
 As a result, software does not need to define a start and end page for information partitions.
-See {{< regref "BANK0_INFO0_PAGE_CFG_SHADOWED_0" >}} as an example.
+See {{< regref "BANK0_INFO0_PAGE_CFG_0" >}} as an example.
 
 #### Bank Erase Protection
 
@@ -309,10 +311,10 @@ It is then up to the controlling software to take appropriate steps to erase aga
 
 #### Additional Flash Attributes
 
-There are certain attributes provisioned in {{< regref "MP_REGION_CFG_SHADOWED_0" >}} that are not directly used by the open source protocol or physical controllers.
+There are certain attributes provisioned in {{< regref "MP_REGION_CFG_0" >}} that are not directly used by the open source protocol or physical controllers.
 
 Instead, these attributes are fed to the vendor flash module on a per-page or defined boundary basis.
-Currently there is only one such attribute {{< regref "MP_REGION_CFG_SHADOWED_0.HE" >}}.
+Currently there is only one such attribute {{< regref "MP_REGION_CFG_0.HE" >}}.
 
 #### Idle Indication to External Power Manager
 
