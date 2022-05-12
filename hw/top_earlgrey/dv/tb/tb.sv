@@ -83,7 +83,7 @@ module tb;
 
   // TODO: Replace with correct interfaces once
   // pinmux/padring and pinout have been updated.
-  wire [25:0] tie_off;
+  wire [16:0] tie_off;
   wire [5:0] spi_host_tie_off;
   wire [1:0] spi_dev_tie_off;
   assign (weak0, weak1) tie_off = '0;
@@ -150,29 +150,27 @@ module tb;
     .IOB0(gpio_pins[9]),   // MIO 9
     .IOB1(gpio_pins[10]),  // MIO 10
     .IOB2(gpio_pins[11]),  // MIO 11
-    .IOB3(gpio_pins[12]),  // MIO 12
-    .IOB4(gpio_pins[13]),  // MIO 13
-    .IOB5(gpio_pins[14]),  // MIO 14
-    .IOB6(gpio_pins[15]),  // MIO 15
+    .IOB3(tie_off[0]),     // MIO 12
+    .IOB4(uart_rx[1]),     // MIO 13
+    .IOB5(uart_tx[1]),     // MIO 14
+    .IOB6(tie_off[1]),     // MIO 15
     .IOB7(iob7),           // MIO 16
-    // TODO, we probably need to change this when we have the final pinout configuration
-    // Connect this to IOB8 to align with SW bootstrap.c
-    .IOB8(sw_straps[0]),   // MIO 17
-    .IOB9(tie_off[1]),     // MIO 18
+    .IOB8(tie_off[2]),     // MIO 17
+    .IOB9(tie_off[3]),     // MIO 18
     .IOB10(iob10),         // MIO 19
     .IOB11(iob11),         // MIO 20
     .IOB12(iob12),         // MIO 21
     // Bank C (VCC domain)
-    .IOC0(tie_off[5]),     // MIO 22
+    .IOC0(sw_straps[0]),   // MIO 22
     .IOC1(sw_straps[1]),   // MIO 23
     .IOC2(sw_straps[2]),   // MIO 24
     .IOC3(ioc3),           // MIO 25
     .IOC4(ioc4),           // MIO 26
     .IOC5(tap_straps[1]),  // MIO 27
     .IOC6(clk),            // MIO 28 - external clock fed in at a fixed position
-    .IOC7(tie_off[7]),     // MIO 29
+    .IOC7(tie_off[4]),     // MIO 29
     .IOC8(tap_straps[0]),  // MIO 30
-    .IOC9(tie_off[8]),     // MIO 31
+    .IOC9(tie_off[5]),     // MIO 31
     .IOC10(ioc10),         // MIO 32
     .IOC11(ioc11),         // MIO 33
     .IOC12(ioc12),         // MIO 34
@@ -182,29 +180,29 @@ module tb;
     .IOR2(jtag_tdi),       // MIO 37
     .IOR3(jtag_tck),       // MIO 38
     .IOR4(jtag_trst_n),    // MIO 39
-    .IOR5(uart_rx[1]),     // MIO 40
-    .IOR6(uart_tx[1]),     // MIO 41
+    .IOR5(tie_off[6]),     // MIO 40
+    .IOR6(tie_off[7]),     // MIO 41
     .IOR7(uart_rx[2]),     // MIO 42
-    .IOR8(tie_off[13]),    // MIO 43, Dedicated sysrst_ctrl output (ec_rst_l)
-    .IOR9(tie_off[14]),    // MIO 44, Dedicated sysrst_ctrl output (pwrb_out)
+    .IOR8(tie_off[8]),     // MIO 43, Dedicated sysrst_ctrl output (ec_rst_l)
+    .IOR9(tie_off[9]),     // MIO 44, Dedicated sysrst_ctrl output (pwrb_out)
     .IOR10(uart_tx[2]),    // MIO 45
     .IOR11(uart_rx[3]),    // MIO 46
     .IOR12(uart_tx[3]),    // MIO 47
     .IOR13(ior13),         // MIO 48
     // DCD (VCC domain)
-    .CC1(tie_off[19]),
-    .CC2(tie_off[20]),
+    .CC1(tie_off[10]),
+    .CC2(tie_off[11]),
     // USB (VCC domain)
     .USB_P(usb_dp0),
     .USB_N(usb_dn0),
     // FLASH
-    .FLASH_TEST_MODE0(tie_off[21]),
-    .FLASH_TEST_MODE1(tie_off[22]),
-    .FLASH_TEST_VOLT(tie_off[23]),
+    .FLASH_TEST_MODE0(tie_off[12]),
+    .FLASH_TEST_MODE1(tie_off[13]),
+    .FLASH_TEST_VOLT(tie_off[14]),
     // OTP
-    .OTP_EXT_VOLT(tie_off[24]),
+    .OTP_EXT_VOLT(tie_off[15]),
     // MISC pad
-    .AST_MISC(tie_off[25])
+    .AST_MISC(tie_off[16])
   );
 
   // connect signals

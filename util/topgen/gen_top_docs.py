@@ -174,6 +174,7 @@ def gen_pinmux_docs(top, c_helper, out_path):
         pinout_table += table_str + '\n'
         pinout_table += '## Pinmux Connectivity\n\n'
         pinout_table += create_pinmux_table(top, c_helper)
+        pinout_table += "\n"
 
         pinout_table_path = doc_path / ("pinout_" + target['name'] + ".md")
         with open(pinout_table_path, 'w') as outfile:

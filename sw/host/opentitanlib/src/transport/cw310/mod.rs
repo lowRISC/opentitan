@@ -39,15 +39,20 @@ pub struct CW310 {
 }
 
 impl CW310 {
-    // Pins needed for reset & bootstrap on the CW310 board.
-    const PIN_SRST: &'static str = "USB_A18";
-    const PIN_BOOTSTRAP: &'static str = "USB_A16";
     // Pins needed for SPI on the CW310 board.
     const PIN_CLK: &'static str = "USB_SPI_SCK";
     const PIN_SDI: &'static str = "USB_SPI_COPI";
     const PIN_SDO: &'static str = "USB_SPI_CIPO";
     const PIN_CS: &'static str = "USB_SPI_CS";
-    const PIN_JTAG: &'static str = "USB_A19";
+    // Pins needed for reset & bootstrap on the CW310 board.
+    const PIN_TRST: &'static str = "USB_A13";
+    const PIN_SRST: &'static str = "USB_A14";
+    const PIN_SW_STRAP0: &'static str = "USB_A15";
+    const PIN_SW_STRAP1: &'static str = "USB_A16";
+    const PIN_SW_STRAP2: &'static str = "USB_A17";
+    const PIN_TAP_STRAP0: &'static str = "USB_A18";
+    const PIN_TAP_STRAP1: &'static str = "USB_A19";
+
 
     pub fn new(
         usb_vid: Option<u16>,
@@ -67,9 +72,13 @@ impl CW310 {
     // Initialize the IO direction of some basic pins on the board.
     fn init_direction(&self) -> anyhow::Result<()> {
         let device = self.device.borrow();
+        device.pin_set_output(Self::PIN_TRST, true)?;
         device.pin_set_output(Self::PIN_SRST, true)?;
-        device.pin_set_output(Self::PIN_JTAG, true)?;
-        device.pin_set_output(Self::PIN_BOOTSTRAP, true)?;
+        device.pin_set_output(Self::PIN_TAP_STRAP0, true)?;
+        device.pin_set_output(Self::PIN_TAP_STRAP1, true)?;
+        device.pin_set_output(Self::PIN_SW_STRAP0, true)?;
+        device.pin_set_output(Self::PIN_SW_STRAP1, true)?;
+        device.pin_set_output(Self::PIN_SW_STRAP2, true)?;
         Ok(())
     }
 
@@ -180,7 +189,9 @@ impl Transport for CW310 {
             // Program the FPGA bitstream.
             let usb = self.device.borrow();
             usb.spi1_enable(false)?;
-            usb.pin_set_state(CW310::PIN_JTAG, true)?;
+            usb.pin_set_state(CW310::PIN_TAP_STRAP0, true)?;
+            usb.pin_set_state(CW310::PIN_TAP_STRAP1, true)?;
+            usb.pin_set_state(CW310::PIN_TAP_STRAP2, true)?;
             usb.fpga_program(&fpga_program.bitstream)?;
             Ok(None)
         } else {
