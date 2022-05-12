@@ -449,6 +449,7 @@ jobs:
       BITSTREAM="${SHA} --offline" ci/bazelisk.sh test \
           --define DISABLE_VERILATOR_BUILD=true \
           --test_tag_filters=cw310,-broken \
+          --test_output=errors \
           --build_tests_only \
           $(./bazelisk.sh query 'rdeps(//sw/...,@bitstreams//:bitstream_test_rom)') \
           # All the tests that depend on the test rom
