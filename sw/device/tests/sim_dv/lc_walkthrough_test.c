@@ -24,6 +24,8 @@ static dif_otp_ctrl_t otp;
  * These tokens will be further randomized and overridden by the testbench.
  */
 
+static volatile const uint8_t kDestState;
+
 // LC exit token value for LC state transition.
 static volatile const uint8_t kLcExitToken[LC_TOKEN_SIZE] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -53,7 +55,7 @@ static void check_lc_state_transition_count(uint8_t exp_lc_count) {
 }
 
 /**
- * Walkthrough LC state: RAW -> TestUnlock0 -> ProdEnd.
+ * Walkthrough LC state: RAW -> TestUnlock0 -> Destination state.
  *
  * 1). Preload OTP RAW image file.
  * 2). DV sequence drives JTAG interface to write RawUnlockToken and
@@ -63,11 +65,14 @@ static void check_lc_state_transition_count(uint8_t exp_lc_count) {
  * 4). DV sequence issues reset to lock OTP secret0 partition.
  * 5). SW requests a LC state transfer to ProdEnd state with the correct
  * TestLockToken.
- * 6). DV sequence issues reset and SW check if LC transfers to ProdEnd state.
+ * 6). DV sequence issues reset and SW check if LC transfers to the destination
+ * state.
+ *
+ * Note that the destination state is a runtime input from the testbench.
  */
 
 bool test_main(void) {
-  LOG_INFO("Start LC walkthrough ProdEnd test.");
+  LOG_INFO("Start LC walkthrough %0d test.", kDestState);
 
   mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
@@ -141,7 +146,7 @@ bool test_main(void) {
       LOG_INFO("Written and locked OTP secret0 partition!");
       return true;
     } else {
-      // Issue a LC state transfer to ProdEnd state.
+      // Issue a LC state transfer to destination state.
       dif_lc_ctrl_token_t token;
       for (int i = 0; i < LC_TOKEN_SIZE; i++) {
         token.data[i] = kLcExitToken[i];
@@ -150,8 +155,7 @@ bool test_main(void) {
       dif_lc_ctrl_settings_t settings;
       // TODO: randomize using external or internal clock.
       settings.clock_select = kDifLcCtrlExternalClockEn;
-      CHECK_DIF_OK(dif_lc_ctrl_transition(&lc, kDifLcCtrlStateProdEnd, &token,
-                                          &settings),
+      CHECK_DIF_OK(dif_lc_ctrl_transition(&lc, kDestState, &token, &settings),
                    "LC_transition failed!");
 
       LOG_INFO("Waiting for LC transtition done and reboot.");
@@ -159,7 +163,7 @@ bool test_main(void) {
     }
   } else {
     // Check LC enters ProdEnd state.
-    CHECK(curr_state == kDifLcCtrlStateProdEnd);
+    CHECK(curr_state == kDestState);
     check_lc_state_transition_count(2);
     return true;
   }
