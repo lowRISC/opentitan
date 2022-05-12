@@ -135,9 +135,9 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   data_4s_t all_ones = {TL_DW{1'b1}};
 
   task body();
-
+    int func_cov_op;
     //enable polling of fifo status for frontdoor write and read
-    poll_fifo_status = 1;
+    poll_fifo_status           = 1;
 
     // Default region settings
     default_region_read_en     = MuBi4True;
@@ -147,7 +147,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
     default_region_scramble_en = MuBi4False;
 
     // Scoreboard knob
-    cfg.block_host_rd = 1;
+    cfg.block_host_rd          = 1;
 
     // Configure the flash with scramble disable.
     foreach (mp_regions[k]) begin
@@ -384,6 +384,16 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
 
     // make sure that controller read data is all ones
     check_all_ones_ctrl();
+
+    // checking coverpoints for state transitions
+    if (cfg.en_cov) begin
+      func_cov_op = cov.control_cg.op_evict_cp.get_inst_coverage();
+      if (func_cov_op == 100) begin
+        `uvm_info(`gfn, $sformatf("Coverage READ/PROGRAM(ERASE)/READ reached!"), UVM_LOW)
+      end else begin
+        `uvm_error(`gfn, $sformatf("Coverage READ/PROGRAM(ERASE)/READ not reached!"))
+      end
+    end
 
   endtask : body
 
