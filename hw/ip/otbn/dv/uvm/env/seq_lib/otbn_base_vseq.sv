@@ -54,8 +54,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wipe_cmd, wipe_cmd != otbn_pkg::CmdExecute;)
     if (bogus_write) begin
       // Write a bogus value while we are in IDLE state for coverage.
-      `uvm_info(`gfn, "\n\t ----| Writing a bogus value to CMD register", UVM_MEDIUM)
-      csr_utils_pkg::csr_wr(ral.cmd, $urandom);
+      _send_bogus_cmd();
     end
     case (num_wipes)
       1 : _run_otbn_cmd(wipe_cmd); // Run a random wipe command
@@ -204,15 +203,38 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
   endfunction
 
-  protected task _insert_random_cmd();
-    // Write a random CMD value
-    logic [7:0] random_cmd;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(random_cmd, random_cmd  dist {otbn_pkg::CmdExecute :/2,
-                                                                     otbn_pkg::CmdSecWipeDmem :/ 2,
-                                                                     otbn_pkg::CmdSecWipeImem :/ 2,
-                                                                     [0:$] :/ 1};)
-    `uvm_info(`gfn, "\n\t ----| Writing a random value to CMD register", UVM_MEDIUM)
-    csr_utils_pkg::csr_wr(ral.cmd, random_cmd);
+  // Write a random CMD value, which may or may not be a valid command.
+  //
+  // This is only used when OTBN is either known to be locked or running (so it will ignore the
+  // write) or is known to be ready to receive a command (For example, maybe we tried to send the
+  // command when it was running, but were a little bit late. That would still be fine because we
+  // know that we've got an ELF file loaded up)
+  //
+  // Note that the CMD register just contains an 8-bit field. We randomise the top bits here, but
+  // they should have no effect.
+  protected task _send_random_cmd();
+    logic [31:0] val;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, val[7:0] dist {otbn_pkg::CmdExecute :/2,
+                                                           otbn_pkg::CmdSecWipeDmem :/ 2,
+                                                           otbn_pkg::CmdSecWipeImem :/ 2,
+                                                           [0:$] :/ 1};)
+    `uvm_info(`gfn,
+              $sformatf("\n\t ----| Writing a random value (0x%08h) to CMD register", val),
+              UVM_MEDIUM)
+    csr_utils_pkg::csr_wr(ral.cmd, val);
+  endtask
+
+  // Write a bogus CMD value, which is definitely not a valid command
+  protected task _send_bogus_cmd();
+    logic [31:0] val;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val,
+                                       !(val[7:0] inside {otbn_pkg::CmdExecute,
+                                                          otbn_pkg::CmdSecWipeDmem,
+                                                          otbn_pkg::CmdSecWipeImem});)
+    `uvm_info(`gfn,
+              $sformatf("\n\t ----| Writing a bogus value (0x%08h) to CMD register", val),
+              UVM_MEDIUM)
+    csr_utils_pkg::csr_wr(ral.cmd, val);
   endtask
 
   // Start OTBN and then wait until done
@@ -300,7 +322,7 @@ class otbn_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cmd_wr, cmd_wr dist { 0 :/ 9, 1 :/ 1};)
       if (cmd_wr) begin
         `uvm_info(`gfn, "entered locked status. Writing to cmd register", UVM_LOW)
-        _insert_random_cmd();
+        _send_random_cmd();
       end
     end
     csr_utils_pkg::csr_wr(ral.ctrl, 'b0);
@@ -568,7 +590,7 @@ class otbn_base_vseq extends cip_base_vseq #(
       if (timed_out) break;
     end
     // Insert a random CMD write while we are running for coverage
-    _insert_random_cmd();
+    _send_random_cmd();
     // If we get here and timed_out is false then something weird has happened: we've run the binary
     // 10 times and each run has taken less than 75% of the time of the previous run. This shouldn't
     // happen!
