@@ -161,6 +161,7 @@ dif_result_t dif_edn_get_cmd_unhealthy_fifo_force(const dif_edn_t *edn,
       break;
     case kDifEdnFifoGenerateCmd:
       fifo_bit = EDN_ERR_CODE_SFIFO_GENCMD_ERR_BIT;
+      break;
     default:
       return kDifBadArg;
   }
