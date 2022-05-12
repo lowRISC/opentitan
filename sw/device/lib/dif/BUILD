@@ -273,6 +273,7 @@ cc_test(
     name = "edn_unittest",
     srcs = [
         "autogen/dif_edn_autogen_unittest.cc",
+        "dif_edn_unittest.cc",
     ],
     deps = [
         ":edn",
