@@ -476,9 +476,7 @@ def parse_args():
 
     rung.add_argument("--profile",
                       "-p",
-                      nargs="?",
                       choices=['time', 'mem'],
-                      const="time",
                       metavar="P",
                       help=('Turn on simulation profiling (where P is time '
                             'or mem).'))
