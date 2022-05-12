@@ -331,6 +331,9 @@ class flash_ctrl_scoreboard #(
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, eflash_tl_a_chan_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, eflash_tl_d_chan_fifo)
     `DV_CHECK_EQ(eflash_addr_phase_queue.size, 0)
+    if (cfg.scb_check && cfg.check_full_scb_mem_model) begin
+      cfg.check_mem_model();
+    end
   endfunction
 
   virtual function flash_dv_part_e calc_part(bit part_sel, bit [1:0] info_sel);
