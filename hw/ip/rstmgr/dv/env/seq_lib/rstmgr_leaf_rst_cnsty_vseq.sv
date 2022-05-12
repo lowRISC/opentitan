@@ -51,7 +51,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
   task body();
     for (int i = 0; i < LIST_OF_LEAFS.size(); ++i) begin
       leaf_path = {"tb.dut.", LIST_OF_LEAFS[i], ".gen_rst_chk.u_rst_chk"};
-      error_pos = $urandom_range(1, 4);
+      error_pos = 1;// $urandom_range(1, 4);
       my_pos = 0;
       `uvm_info(`gfn, $sformatf("Round %0d %s  pos:%0d", i, leaf_path, error_pos), UVM_MEDIUM)
 

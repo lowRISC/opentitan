@@ -35,6 +35,7 @@ package rstmgr_env_pkg;
   parameter uint NUM_ALERTS = 2;
 
   // leaf reset modules for top_earlgrey
+/*
   parameter string LIST_OF_LEAFS[] = {"u_daon_por",
                                       "u_daon_por_io",
                                       "u_daon_por_io_div2",
@@ -62,6 +63,9 @@ package rstmgr_env_pkg;
                                       "u_d0_i2c0",
                                       "u_d0_i2c1",
                                       "u_d0_i2c2"};
+*/
+
+  parameter string LIST_OF_LEAFS[] = {"u_daon_por_io_div4"};
 
   // leaf reset which has shadow pair
   parameter string LIST_OF_SHADOW_LEAFS[] = {"u_daon_por_io_div4",
