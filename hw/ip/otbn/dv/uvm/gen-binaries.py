@@ -38,6 +38,10 @@ def read_jobs(val: Optional[str]) -> Optional[Union[str, int]]:
     return read_positive(val)
 
 
+def is_exe(path: str) -> bool:
+    return os.path.isfile(path) and os.access(path, os.X_OK)
+
+
 class Toolchain:
 
     def __init__(self, env_data: Dict[str, str]) -> None:
@@ -50,7 +54,7 @@ class Toolchain:
     def get_tool(env_data: Dict[str, str], tool: str) -> str:
         path = env_data.get(tool)
         if path is None:
-            raise RuntimeError('No entry for {} in .env file'.format(tool))
+            raise RuntimeError('Unable to find tool: {}.'.format(tool))
         return path
 
     def run(self, cmd: List[str]) -> None:
@@ -61,60 +65,29 @@ class Toolchain:
         subprocess.run(cmd, env=env)
 
 
-def take_env_line(dst: Dict[str, str], path: str, line_number: int,
-                  line: str) -> None:
-    '''Read one line from a .env file, updating dst.'''
-    line = line.split('#', 1)[0].strip()
-    if not line:
-        return
+def get_toolchain(otbn_dir: str) -> Toolchain:
+    '''Reads environment variables to get toolchain info.'''
+    env_dict = {}  # type: Dict[str, str]
 
-    parts = line.split('=', 1)
-    if len(parts) != 2:
-        raise RuntimeError('{}:{}: No equals sign in line {!r}.'.format(
-            path, line_number, line))
+    # OTBN assembler and linker
+    env_dict['OTBN_AS'] = f"{otbn_dir}/util/otbn_as.py"
+    env_dict['OTBN_LD'] = f"{otbn_dir}/util/otbn_ld.py"
 
-    dst[parts[0]] = parts[1]
+    # RV32 assembler and linker
+    env_dict['RV32_TOOL_AS'] = os.getenv('RV32_TOOL_AS')
+    rv32_tool_as_default = "tools/riscv/bin/riscv32-unknown-elf-as"
+    if env_dict['RV32_TOOL_AS'] is None and is_exe(rv32_tool_as_default):
+        env_dict['RV32_TOOL_AS'] = rv32_tool_as_default
+    env_dict['RV32_TOOL_LD'] = os.getenv('RV32_TOOL_LD')
+    rv32_tool_ld_default = "tools/riscv/bin/riscv32-unknown-elf-ld"
+    if env_dict['RV32_TOOL_LD'] is None and is_exe(rv32_tool_ld_default):
+        env_dict['RV32_TOOL_LD'] = rv32_tool_ld_default
 
-
-def read_toolchain(obj_dir_arg: Optional[str], otbn_dir: str) -> Toolchain:
-    '''Read Meson's dumped .env file to get toolchain info'''
-    if obj_dir_arg is not None:
-        obj_dir = obj_dir_arg
-        source = 'specified by an --obj-dir argument'
-    else:
-        obj_dir_env = os.getenv('OBJ_DIR')
-        if obj_dir_env is not None:
-            obj_dir = obj_dir_env
-            source = ('inferred from OBJ_DIR environment variable; '
-                      'have you run meson_init.sh?')
-        else:
-            git_dir = os.path.normpath(os.path.join(otbn_dir, '../' * 3))
-            obj_dir = os.path.normpath(os.path.join(git_dir, 'build-out'))
-            source = ('inferred from script location; '
-                      'have you run meson_init.sh?')
-
-    env_path = os.path.join(obj_dir, '.env')
-    try:
-        with open(env_path) as env_file:
-            env_dict = {}  # type: Dict[str, str]
-            for idx, line in enumerate(env_file):
-                take_env_line(env_dict, env_path, idx + 1, line)
-
-            return Toolchain(env_dict)
-    except OSError as ose:
-        raise RuntimeError('Failed to read .env file at {!r} '
-                           '(at a path {}): {}.'.format(env_path, source,
-                                                        ose)) from None
+    return Toolchain(env_dict)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--obj-dir',
-                        help=('Object directory configured with Meson (used '
-                              'to find tool configuration). If not supplied, '
-                              'defaults to the OBJ_DIR environment variable '
-                              'if set, or build-out at the top of the '
-                              'repository if not.'))
     parser.add_argument('--count',
                         type=read_positive,
                         help='Number of binaries to generate (default: 10)')
@@ -164,7 +137,7 @@ def main() -> int:
     otbn_dir = os.path.normpath(os.path.join(script_dir, '../' * 2))
 
     try:
-        toolchain = read_toolchain(args.obj_dir, otbn_dir)
+        toolchain = get_toolchain(otbn_dir)
     except RuntimeError as err:
         print(err, file=sys.stderr)
         return 1
@@ -204,7 +177,7 @@ def main() -> int:
 
 def write_ninja_rnd(handle: TextIO, toolchain: Toolchain, otbn_dir: str,
                     count: int, start_seed: int, size: int) -> None:
-    '''Write a build.ninja to build random binaries
+    '''Write a build.ninja to build random binaries.
 
     The rules build everything in the same directory as the build.ninja file.
     OTBN tooling is found through the toolchain argument.
