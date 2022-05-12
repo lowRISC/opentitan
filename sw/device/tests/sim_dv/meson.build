@@ -119,6 +119,7 @@ lc_ctrl_transition_test_impl_lib = declare_dependency(
       sw_lib_mmio,
       sw_lib_runtime_hart,
       sw_lib_runtime_log,
+      sw_lib_testing_lc_ctrl_testutils,
       top_earlgrey,
     ],
   ),

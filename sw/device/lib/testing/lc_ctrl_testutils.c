@@ -30,3 +30,14 @@ bool lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl) {
       return false;
   }
 }
+
+void lc_ctrl_testutils_check_transition_count(const dif_lc_ctrl_t *lc_ctrl,
+                                              uint8_t exp_lc_count) {
+  LOG_INFO("Read LC count and check with expect_val=%0d", exp_lc_count);
+  uint8_t lc_count;
+  CHECK(dif_lc_ctrl_get_attempts(lc_ctrl, &lc_count) == kDifOk,
+        "Read lc_count register failed!");
+  CHECK(lc_count == exp_lc_count,
+        "LC_count error, expected %0d but actual count is %0d", exp_lc_count,
+        lc_count);
+}
