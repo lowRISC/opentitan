@@ -2744,7 +2744,7 @@
              Verify that the features that should indeed be disabled are indeed disabled.
              '''
       milestone: V2
-      tests: ["chip_sw_lc_walkthrough"]
+      tests: ["chip_sw_lc_walkthrough_prodend", "chip_sw_lc_walkthrough_rma"]
     }
     {
       name: chip_sw_device_ownership
