@@ -439,6 +439,7 @@ package flash_ctrl_pkg;
     logic                    spurious_ack;
     logic                    arb_err;
     logic                    host_gnt_err;
+    logic                    fifo_err;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)
@@ -460,7 +461,8 @@ package flash_ctrl_pkg;
     fsm_err:            '0,
     spurious_ack:       '0,
     arb_err:            '0,
-    host_gnt_err:       '0
+    host_gnt_err:       '0,
+    fifo_err:           '0
   };
 
   // RMA entries

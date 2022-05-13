@@ -31,6 +31,7 @@ module tlul_adapter_sram
   parameter bit EnableRspIntgGen  = 0,  // 1: Generate response integrity
   parameter bit EnableDataIntgGen = 0,  // 1: Generate response data integrity
   parameter bit EnableDataIntgPt  = 0,  // 1: Passthrough command/response data integrity
+  parameter bit SecFifoPtr        = 0,  // 1: Duplicated fifo pointers
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
   localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
   localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw
@@ -70,6 +71,7 @@ module tlul_adapter_sram
   logic instr_error;
   logic wr_vld_error;
   logic rd_vld_error;
+  logic rsp_fifo_error;
   logic intg_error;
   logic tlul_error;
 
@@ -88,14 +90,14 @@ module tlul_adapter_sram
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       intg_error_q <= '0;
-    end else if (intg_error) begin
+    end else if (intg_error || rsp_fifo_error) begin
       intg_error_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // or other downstream effects
-  assign intg_error_o = intg_error | intg_error_q;
+  assign intg_error_o = intg_error | rsp_fifo_error | intg_error_q;
 
   // wr_attr_error: Check if the request size,mask are permitted.
   //    Basic check of size, mask, addr align is done in tlul_err module.
@@ -508,7 +510,8 @@ module tlul_adapter_sram
   prim_fifo_sync #(
     .Width   (RspFifoWidth),
     .Pass    (1'b1),
-    .Depth   (Outstanding)
+    .Depth   (Outstanding),
+    .Secure  (SecFifoPtr)
   ) u_rspfifo (
     .clk_i,
     .rst_ni,
@@ -521,7 +524,7 @@ module tlul_adapter_sram
     .rdata_o (rspfifo_rdata),
     .full_o  (),
     .depth_o (),
-    .err_o   ()
+    .err_o   (rsp_fifo_error)
   );
 
   // below assertion fails when SRAM rvalid is asserted even though ReqFifo is empty

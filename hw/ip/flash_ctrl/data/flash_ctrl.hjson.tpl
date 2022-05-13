@@ -1309,6 +1309,12 @@
               Flash ctrl read/prog has encountered a count error.
             '''
           },
+          { bits: "8",
+            name: "fifo_err",
+            desc: '''
+              Flash primitive fifo's have encountered a count error.
+            '''
+          },
         ]
       },
 

@@ -11,6 +11,7 @@ module prim_fifo_sync #(
   parameter bit Pass                 = 1'b1, // if == 1 allow requests to pass through empty FIFO
   parameter int unsigned Depth       = 4,
   parameter bit OutputZeroIfEmpty    = 1'b1, // if == 1 always output 0 when FIFO is empty
+  parameter bit Secure               = 1'b0, // use prim count for pointers
   // derived parameter
   localparam int          DepthW     = prim_util_pkg::vbits(Depth+1)
 ) (
@@ -101,7 +102,7 @@ module prim_fifo_sync #(
     prim_fifo_sync_cnt #(
       .Width(PTR_WIDTH),
       .Depth(Depth),
-      .Secure('0)
+      .Secure(Secure)
     ) u_fifo_cnt (
       .clk_i,
       .rst_ni,
