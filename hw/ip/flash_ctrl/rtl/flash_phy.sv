@@ -105,6 +105,10 @@ module flash_phy
   logic [NumBanks-1:0] arb_err;
   logic [NumBanks-1:0] host_gnt_err;
 
+  // fifo error per bank
+  logic [NumBanks-1:0]     rsp_fifo_err;
+  logic [NumBanks-1:0]     core_fifo_err;
+
   // select which bank each is operating on
   assign host_bank_sel = host_req_i ? host_addr_i[BusAddrW-1 -: BankW] : '0;
   assign ctrl_bank_sel = flash_ctrl_i.addr[BusAddrW-1 -: BankW];
@@ -132,6 +136,7 @@ module flash_phy
   assign flash_ctrl_o.spurious_ack = |spurious_acks;
   assign flash_ctrl_o.arb_err = |arb_err;
   assign flash_ctrl_o.host_gnt_err = |host_gnt_err;
+  assign flash_ctrl_o.fifo_err = |{rsp_fifo_err, core_fifo_err};
 
   // This fifo holds the expected return order
   prim_fifo_sync #(
@@ -215,7 +220,8 @@ module flash_phy
     prim_fifo_sync #(
       .Width   (BusFullWidth + 1),
       .Pass    (1'b1),
-      .Depth   (FlashMacroOustanding)
+      .Depth   (FlashMacroOustanding),
+      .Secure  (1'b1)
     ) u_host_rsp_fifo (
       .clk_i,
       .rst_ni,
@@ -228,7 +234,7 @@ module flash_phy
       .rvalid_o(host_rsp_vld[bank]),
       .rready_i(host_rsp_ack[bank]),
       .rdata_o ({host_rsp_err[bank], host_rsp_data[bank]}),
-      .err_o   ()
+      .err_o   (rsp_fifo_err[bank])
     );
 
     logic host_req;
@@ -287,7 +293,8 @@ module flash_phy
       .intg_ecc_err_o(intg_ecc_err[bank]),
       .spurious_ack_o(spurious_acks[bank]),
       .arb_err_o(arb_err[bank]),
-      .host_gnt_err_o(host_gnt_err[bank])
+      .host_gnt_err_o(host_gnt_err[bank]),
+      .fifo_err_o(core_fifo_err[bank])
     );
   end // block: gen_flash_banks
 

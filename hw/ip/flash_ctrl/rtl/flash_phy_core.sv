@@ -59,7 +59,8 @@ module flash_phy_core
   output logic                       intg_ecc_err_o,
   output logic                       spurious_ack_o,
   output logic                       arb_err_o,
-  output logic                       host_gnt_err_o
+  output logic                       host_gnt_err_o,
+  output logic                       fifo_err_o
 );
 
 
@@ -401,7 +402,8 @@ module flash_phy_core
     .ecc_single_err_o,
     .ecc_addr_o,
     .relbl_ecc_err_o,
-    .intg_ecc_err_o
+    .intg_ecc_err_o,
+    .fifo_err_o
     );
 
   ////////////////////////

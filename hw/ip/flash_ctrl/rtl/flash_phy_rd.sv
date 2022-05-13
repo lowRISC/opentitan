@@ -74,7 +74,10 @@ module flash_phy_rd
   // only single bit error is shown here as multi-bit errors are
   // actual data errors and reflected in-band through data_err_o
   output logic ecc_single_err_o,
-  output logic [BusBankAddrW-1:0] ecc_addr_o
+  output logic [BusBankAddrW-1:0] ecc_addr_o,
+
+  // fifo error
+  output logic fifo_err_o
   );
 
   /////////////////////////////////
@@ -282,11 +285,13 @@ module flash_phy_rd
   assign rsp_fifo_wdata.intg_ecc_en = ecc_i;
 
   // response order FIFO
+  logic rsp_order_fifo_err;
   prim_fifo_sync #(
     .Width  (RspOrderFifoWidth),
     .Pass   (0),
-    .Depth  (RspOrderDepth)
-  ) i_rsp_order_fifo (
+    .Depth  (RspOrderDepth),
+    .Secure (1'b1)
+  ) u_rsp_order_fifo (
     .clk_i,
     .rst_ni,
     .clr_i   (1'b0),
@@ -298,7 +303,7 @@ module flash_phy_rd
     .rvalid_o(rsp_fifo_vld),
     .rready_i(data_valid_o), // pop when a match has been found
     .rdata_o (rsp_fifo_rdata),
-    .err_o   ()
+    .err_o   (rsp_order_fifo_err)
   );
 
 
@@ -450,11 +455,13 @@ module flash_phy_rd
   assign hint_forward = fifo_data_valid & forward_q;
 
   // See comment above on how FIFO popping can be improved in the future
+  logic rd_stage_fifo_err;
   prim_fifo_sync #(
     .Width   (PlainDataWidth + 3 + NumBuf),
     .Pass    (0),
     .Depth   (2),
-    .OutputZeroIfEmpty (1)
+    .OutputZeroIfEmpty (1),
+    .Secure  (1'b1)
   ) u_rd_storage (
     .clk_i,
     .rst_ni,
@@ -467,7 +474,7 @@ module flash_phy_rd
     .rvalid_o(fifo_data_valid),
     .rready_i(rd_and_mask_fifo_pop),
     .rdata_o ({alloc_q2, descram_q, forward_q, data_err_q, fifo_data}),
-    .err_o   ()
+    .err_o   (rd_stage_fifo_err)
   );
 
   // storage for mask calculations
@@ -630,6 +637,9 @@ module flash_phy_rd
 
   // the entire read pipeline is idle when there are no responses to return and no
   assign idle_o = ~rsp_fifo_vld;
+
+  // if any fifo shows an integrity error
+  assign fifo_err_o = |{rsp_order_fifo_err, rd_stage_fifo_err};
 
   /////////////////////////////////
   // Assertions

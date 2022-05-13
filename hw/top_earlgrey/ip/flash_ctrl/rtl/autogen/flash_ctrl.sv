@@ -1054,6 +1054,7 @@ module flash_ctrl
   assign hw2reg.std_fault_status.storage_err.d     = 1'b1;
   assign hw2reg.std_fault_status.phy_fsm_err.d     = 1'b1;
   assign hw2reg.std_fault_status.ctrl_cnt_err.d    = 1'b1;
+  assign hw2reg.std_fault_status.fifo_err.d        = 1'b1;
   assign hw2reg.std_fault_status.reg_intg_err.de   = intg_err | eflash_cmd_intg_err;
   assign hw2reg.std_fault_status.prog_intg_err.de  = flash_phy_rsp.prog_intg_err;
   assign hw2reg.std_fault_status.lcmgr_err.de      = lcmgr_err;
@@ -1062,6 +1063,7 @@ module flash_ctrl
   assign hw2reg.std_fault_status.storage_err.de    = storage_err;
   assign hw2reg.std_fault_status.phy_fsm_err.de    = flash_phy_rsp.fsm_err;
   assign hw2reg.std_fault_status.ctrl_cnt_err.de   = rd_cnt_err | prog_cnt_err;
+  assign hw2reg.std_fault_status.fifo_err.de       = flash_phy_rsp.fifo_err;
 
   // Correctable ECC count / address
   for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg
@@ -1365,5 +1367,33 @@ module flash_ctrl
      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyProgFsmCheck_A,
        u_eflash.gen_flash_cores[i].u_core.gen_prog_data.u_prog.u_state_regs, alert_tx_o[1])
    end
+
+  `ifdef INC_ASSERT
+   `define PHY u_eflash.gen_flash_cores[i]
+   `define PHY_CORE `PHY.u_core
+   for (genvar i=0; i<NumBanks; i++) begin : gen_phy_cnt_errs
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRspFifoWPtr_A,
+       `PHY.u_host_rsp_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr, alert_tx_o[1])
+
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRspFifoRPtr_A,
+       `PHY.u_host_rsp_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr, alert_tx_o[1])
+
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdRspFifoWPtr_A,
+       `PHY_CORE.u_rd.u_rsp_order_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+       alert_tx_o[1])
+
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdRspFifoRPtr_A,
+       `PHY_CORE.u_rd.u_rsp_order_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+       alert_tx_o[1])
+
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdDataFifoWPtr_A,
+       `PHY_CORE.u_rd.u_rd_storage.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+       alert_tx_o[1])
+
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdDataFifoRPtr_A,
+       `PHY_CORE.u_rd.u_rd_storage.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+       alert_tx_o[1])
+   end
+   `endif
 
 endmodule
