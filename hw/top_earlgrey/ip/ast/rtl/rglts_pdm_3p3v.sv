@@ -16,7 +16,8 @@ module rglts_pdm_3p3v (
   input por_sync_h_ni,                        // POR (Sync to AON clock) (1.1v) @3.3v
   input [1:0] otp_power_seq_h_i,         // MMR0,24 in @3.3v
   input scan_mode_h_i,                   // Scan Mode
-  input scan_reset_h_ni,                 // Scan Reset @3.3v
+  input vcaon_supp_i,                    //
+  input vcmain_supp_i,                   //
   output logic rglssm_vmppr_h_o,         // Regulators SM at VMPPR (vcmaim_pok_por_reset) @3.3v
   output logic rglssm_vcmon_h_o,         // Regulators state machine at VCMON @3.3v
   output logic rglssm_brout_h_o,         // Regulators state machine at BROUT @3.3v
@@ -93,14 +94,10 @@ assign rgls_rst_h_n = vcc_pok_str_h_o;
 ///////////////////////////////////////
 logic vcc_pok_fe_h, vcc_pok_s_h;
 
+
 logic clk_src_aon_h_n;
-prim_clock_inv #(
-  .HasScanMode(0)
-) u_prim_clock_inv (
-  .clk_i     (clk_src_aon_h_i),
-  .scanmode_i(1'b0),
-  .clk_no    (clk_src_aon_h_n)
-);
+assign clk_src_aon_h_n = scan_mode_h_i ? clk_src_aon_h_i :
+                                        !clk_src_aon_h_i;
 
 always_ff @( posedge clk_src_aon_h_n, negedge rgls_rst_h_n ) begin
   if ( !rgls_rst_h_n ) begin
@@ -287,10 +284,10 @@ end
 ///////////////////////////////////////
 // VCMAIN_POK & VCAON POK
 ///////////////////////////////////////
-assign vcmain_pok_h_o     = vcmain_pok_h;
+assign vcmain_pok_h_o = vcmain_pok_h && vcmain_supp_i;
 // VCAON POK is needed for cold power-up to enable the AON clock
 // Therefore, it is connected directly to VCC POK.
-assign vcaon_pok_h_o     = vcc_pok_h_i;
+assign vcaon_pok_h_o = vcc_pok_h_i && vcaon_supp_i;
 assign vcaon_pok_1p1_h_o = vcaon_pok_h_o;  // For layout separation
 
 
@@ -302,13 +299,14 @@ localparam int VccPokStrNum = 4;  // (Min-Max) (3-4)x5us=(15-20)us
 logic vcc_pok_set_h, vcc_pok_rst_h_n;
 logic [VccPokStrNum-1:0] vcc_pok_str_h;
 
-assign vcc_pok_rst_h_n = scan_mode_h_i ? scan_reset_h_ni : vcc_pok_h_i || vcaon_pok_h_o;
+assign vcc_pok_rst_h_n = vcc_pok_h_i || vcaon_pok_h_o;  // Non-Scan
 
 // Enable proper order of reset/set execution
 always_comb begin
-  vcc_pok_set_h = !scan_mode_h_i && vcc_pok_rst_h_n && vcc_pok_h_i;  // <=
+  vcc_pok_set_h = vcc_pok_rst_h_n && vcc_pok_h_i;  // <=  // Non-scan
 end
 
+// TODO: Concider moving to Non-scan
 always_ff @( posedge clk_src_aon_h_i, negedge vcc_pok_rst_h_n, posedge vcc_pok_set_h ) begin
   if ( !vcc_pok_rst_h_n ) begin
     vcc_pok_str_h[0] <= 1'b0;
@@ -319,6 +317,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge vcc_pok_rst_h_n, posedge vcc_pok_s
   end
 end
 
+// TODO: Concider moving to Non-scan
 for (genvar i = 1; i < VccPokStrNum; i++ ) begin : gen_vcc_pok_str
   always_ff @( posedge clk_src_aon_h_i, negedge vcc_pok_rst_h_n, posedge vcc_pok_set_h ) begin
     if ( !vcc_pok_rst_h_n ) begin

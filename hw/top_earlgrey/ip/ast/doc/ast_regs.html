@@ -2,7 +2,7 @@
  table.regpic {
   width: 95%;
   border-collapse: collapse;
-  margin-left:auto; 
+  margin-left:auto;
   margin-right:auto;
   table-layout:fixed;
  }
@@ -10,7 +10,7 @@
   border: 1px solid black;
   width: 80%;
   border-collapse: collapse;
-  margin-left:auto; 
+  margin-left:auto;
   margin-right:auto;
   table-layout:auto;
  }
@@ -495,11 +495,11 @@
 </tr></table></td></tr>
 <tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x1e</td><td class="regfn">reg32</td><td class="regde"><p>32-bit Register</p></td></table>
 <br>
-<table class="regdef" id="Reg_regal">
+<table class="regdef" id="Reg_rega31">
  <tr>
   <th class="regdef" colspan=5>
-   <div>ast.REGAL @ 0x7c</div>
-   <div><p>AST Last Register for OTP/ROM Write Testing</p></div>
+   <div>ast.REGA31 @ 0x7c</div>
+   <div><p>AST 31 Register for OTP/ROM Write Testing</p></div>
    <div>Reset default = 0x1f, mask 0xffffffff</div>
   </th>
  </tr>
@@ -507,7 +507,105 @@
 </tr>
 <tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...reg32</td>
 </tr></table></td></tr>
-<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">wo</td><td class="regrv">0x1f</td><td class="regfn">reg32</td><td class="regde"><p>32-bit Register</p></td></table>
+<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x1f</td><td class="regfn">reg32</td><td class="regde"><p>32-bit Register</p></td></table>
+<br>
+<table class="regdef" id="Reg_rega32">
+ <tr>
+  <th class="regdef" colspan=5>
+   <div>ast.REGA32 @ 0x80</div>
+   <div><p>AST 32 Register for OTP/ROM Write Testing</p></div>
+   <div>Reset default = 0x20, mask 0xffffffff</div>
+  </th>
+ </tr>
+<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="fname" colspan=16>reg32...</td>
+</tr>
+<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...reg32</td>
+</tr></table></td></tr>
+<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x20</td><td class="regfn">reg32</td><td class="regde"><p>32-bit Register</p></td></table>
+<br>
+<table class="regdef" id="Reg_rega33">
+ <tr>
+  <th class="regdef" colspan=5>
+   <div>ast.REGA33 @ 0x84</div>
+   <div><p>AST 33 Register for OTP/ROM Write Testing</p></div>
+   <div>Reset default = 0x21, mask 0xffffffff</div>
+  </th>
+ </tr>
+<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="fname" colspan=16>reg32...</td>
+</tr>
+<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...reg32</td>
+</tr></table></td></tr>
+<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x21</td><td class="regfn">reg32</td><td class="regde"><p>32-bit Register</p></td></table>
+<br>
+<table class="regdef" id="Reg_rega34">
+ <tr>
+  <th class="regdef" colspan=5>
+   <div>ast.REGA34 @ 0x88</div>
+   <div><p>AST 34 Register for OTP/ROM Write Testing</p></div>
+   <div>Reset default = 0x22, mask 0xffffffff</div>
+  </th>
+ </tr>
+<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="fname" colspan=16>reg32...</td>
+</tr>
+<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...reg32</td>
+</tr></table></td></tr>
+<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x22</td><td class="regfn">reg32</td><td class="regde"><p>32-bit Register</p></td></table>
+<br>
+<table class="regdef" id="Reg_rega35">
+ <tr>
+  <th class="regdef" colspan=5>
+   <div>ast.REGA35 @ 0x8c</div>
+   <div><p>AST 35 Register for OTP/ROM Write Testing</p></div>
+   <div>Reset default = 0x23, mask 0xffffffff</div>
+  </th>
+ </tr>
+<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="fname" colspan=16>reg32...</td>
+</tr>
+<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...reg32</td>
+</tr></table></td></tr>
+<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x23</td><td class="regfn">reg32</td><td class="regde"><p>32-bit Register</p></td></table>
+<br>
+<table class="regdef" id="Reg_rega36">
+ <tr>
+  <th class="regdef" colspan=5>
+   <div>ast.REGA36 @ 0x90</div>
+   <div><p>AST 36 Register for OTP/ROM Write Testing</p></div>
+   <div>Reset default = 0x24, mask 0xffffffff</div>
+  </th>
+ </tr>
+<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="fname" colspan=16>reg32...</td>
+</tr>
+<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...reg32</td>
+</tr></table></td></tr>
+<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x24</td><td class="regfn">reg32</td><td class="regde"><p>32-bit Register</p></td></table>
+<br>
+<table class="regdef" id="Reg_rega37">
+ <tr>
+  <th class="regdef" colspan=5>
+   <div>ast.REGA37 @ 0x94</div>
+   <div><p>AST 37 Register for OTP/ROM Write Testing</p></div>
+   <div>Reset default = 0x25, mask 0xffffffff</div>
+  </th>
+ </tr>
+<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="fname" colspan=16>reg32...</td>
+</tr>
+<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...reg32</td>
+</tr></table></td></tr>
+<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x25</td><td class="regfn">reg32</td><td class="regde"><p>32-bit Register</p></td></table>
+<br>
+<table class="regdef" id="Reg_regal">
+ <tr>
+  <th class="regdef" colspan=5>
+   <div>ast.REGAL @ 0x98</div>
+   <div><p>AST Last Register for OTP/ROM Write Testing</p></div>
+   <div>Reset default = 0x26, mask 0xffffffff</div>
+  </th>
+ </tr>
+<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="fname" colspan=16>reg32...</td>
+</tr>
+<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...reg32</td>
+</tr></table></td></tr>
+<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">wo</td><td class="regrv">0x26</td><td class="regfn">reg32</td><td class="regde"><p>32-bit Register</p></td></table>
 <br>
 <table class="regdef" id="Reg_regb_0">
  <tr>

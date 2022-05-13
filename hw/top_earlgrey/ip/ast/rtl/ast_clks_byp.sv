@@ -41,9 +41,8 @@ module ast_clks_byp (
 
 logic scan_mode_i, scan_reset_ni;
 
-assign scan_mode_i = 1'b0;
+assign scan_mode_i   = 1'b0;
 assign scan_reset_ni = 1'b1;
-
 
 ////////////////////////////////////////
 // Local AON clock buffer
@@ -115,7 +114,7 @@ prim_flop_2sync #(
   .Width ( 1 ),
   // Assume external clock is 96Hhz on reset
   .ResetValue ( 1'b1 )
-) u_ext_freq_is_96m_sync (
+) u_no_scan_ext_freq_is_96m_sync (
   .clk_i ( clk_ext ),
   .rst_ni ( rst_aon_exda_n ),
   .d_i ( ext_freq_is_96m ),
@@ -124,7 +123,7 @@ prim_flop_2sync #(
 
 prim_clock_div #(
   .Divisor( 2 )
-) u_clk_ext_d1ord2 (
+) u_no_scan_clk_ext_d1ord2 (
   .clk_i ( clk_ext ),
   .rst_ni ( rst_aon_exda_n ),
   .step_down_req_i( !ext_freq_is_96m_sync ),
@@ -139,7 +138,7 @@ assign clk_ext_aon_val = 1'b1;  // Always ON clock
 
 prim_clock_div #(
   .Divisor( 240 )
-) u_clk_usb_div240_div (
+) u_no_scan_clk_usb_div240_div (
   .clk_i ( clk_src_ext_usb ),
   .rst_ni ( rst_aon_exda_n ),
   .step_down_req_i( 1'b0 ),
@@ -177,7 +176,7 @@ logic clk_src_sys_en;
 prim_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
-) u_clk_src_sys_en_sync (
+) u_no_scan_clk_src_sys_en_sync (
   .clk_i ( clk_ext ),
   .rst_ni ( rst_aon_exda_n ),
   .d_i ( clk_src_sys_en_i ),
@@ -204,7 +203,7 @@ logic clk_src_io_en;
 prim_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
-) u_clk_src_io_en_sync (
+) u_no_scan_clk_src_io_en_sync (
   .clk_i ( clk_ext ),
   .rst_ni ( rst_aon_exda_n ),
   .d_i ( clk_src_io_en_i ),
@@ -231,7 +230,7 @@ logic clk_src_usb_en;
 prim_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
-) u_clk_src_usb_en_sync (
+) u_no_scan_clk_src_usb_en_sync (
   .clk_i ( clk_ext ),
   .rst_ni ( rst_aon_exda_n ),
   .d_i ( clk_src_usb_en_i ),
@@ -254,7 +253,7 @@ prim_clock_gating #(
 ////////////////////////////////////////
 // SW Bypass select logic
 ////////////////////////////////////////
-// Sync to local AON clcok
+// Sync to local AON clock
 prim_mubi_pkg::mubi4_t ot_io_clk_byp_req, ot_all_clk_byp_req, ot_ext_freq_is_96m;
 
 prim_mubi4_sync #(
@@ -312,7 +311,7 @@ prim_flop #(
 prim_flop #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
-) u_no_scan_sw_sys_clk_byp_dgl (
+) u_sw_sys_clk_byp_dgl (
   .clk_i ( clk_aon ),
   .rst_ni ( rst_aon_n ),
   .d_i ( ot_sys_clk_byp ),
@@ -396,7 +395,7 @@ assign extfreq_is_96m = sw_exfr_is_96m;
 logic sys_clk_byp_sel, io_clk_byp_sel, usb_clk_byp_sel, aon_clk_byp_sel;
 
 always_latch begin
-  if (!scan_mode_i) begin
+  if ( !scan_mode_i ) begin
     sys_clk_byp_sel = sys_clk_byp;
     io_clk_byp_sel  = io_clk_byp;
     usb_clk_byp_sel = usb_clk_byp;
@@ -411,20 +410,63 @@ end
 ////////////////////////////////////////
 logic sys_clk_osc_en, io_clk_osc_en, usb_clk_osc_en, aon_clk_osc_en;
 logic sys_clk_byp_en, io_clk_byp_en, usb_clk_byp_en, aon_clk_byp_en;
-
 logic rst_clk_osc_n, rst_clk_ext_n;
+
 assign rst_clk_osc_n = vcaon_pok;
 assign rst_clk_ext_n = vcaon_pok;
+
+logic rst_clk_osc_sys_n, rst_clk_ext_sys_n, rst_clk_osc_io_n, rst_clk_ext_io_n;
+logic rst_clk_osc_usb_n, rst_clk_ext_usb_n, rst_clk_osc_aon_n, rst_clk_ext_aon_n;
+
+prim_buf u_rst_clk_osc_sys (
+  .in_i ( rst_clk_osc_n ),
+  .out_o ( rst_clk_osc_sys_n )
+);
+
+prim_buf u_rst_clk_ext_sys (
+  .in_i ( rst_clk_ext_n ),
+  .out_o ( rst_clk_ext_sys_n )
+);
+
+prim_buf u_rst_clk_osc_io (
+  .in_i ( rst_clk_osc_n ),
+  .out_o ( rst_clk_osc_io_n )
+);
+
+prim_buf u_rst_clk_ext_io (
+  .in_i ( rst_clk_ext_n ),
+  .out_o ( rst_clk_ext_io_n )
+);
+
+prim_buf u_rst_clk_osc_usb (
+  .in_i ( rst_clk_osc_n ),
+  .out_o ( rst_clk_osc_usb_n )
+);
+
+prim_buf u_rst_clk_ext_usb (
+  .in_i ( rst_clk_ext_n ),
+  .out_o ( rst_clk_ext_usb_n )
+);
+
+prim_buf u_rst_clk_osc_aon (
+  .in_i ( rst_clk_osc_n ),
+  .out_o ( rst_clk_osc_aon_n )
+);
+
+prim_buf u_rst_clk_ext_aon (
+  .in_i ( rst_clk_ext_n ),
+  .out_o ( rst_clk_ext_aon_n )
+);
 
 // SYS Clock Bypass Mux
 ////////////////////////////////////////
 gfr_clk_mux2 u_clk_src_sys_sel (
   .clk_osc_i ( clk_osc_sys_i ),
   .clk_osc_val_i ( clk_osc_sys_val_i ),
-  .rst_clk_osc_ni ( rst_clk_osc_n ),
+  .rst_clk_osc_ni ( rst_clk_osc_sys_n ),
   .clk_ext_i ( clk_ext_sys ),
   .clk_ext_val_i ( clk_ext_sys_val ),
-  .rst_clk_ext_ni ( rst_clk_ext_n ),
+  .rst_clk_ext_ni ( rst_clk_ext_sys_n ),
   .ext_sel_i ( sys_clk_byp_sel ),
   .clk_osc_en_o ( sys_clk_osc_en ),
   .clk_ext_en_o ( sys_clk_byp_en ),
@@ -437,10 +479,10 @@ gfr_clk_mux2 u_clk_src_sys_sel (
 gfr_clk_mux2 u_clk_src_io_sel (
   .clk_osc_i ( clk_osc_io_i ),
   .clk_osc_val_i ( clk_osc_io_val_i ),
-  .rst_clk_osc_ni ( rst_clk_osc_n ),
+  .rst_clk_osc_ni ( rst_clk_osc_io_n ),
   .clk_ext_i ( clk_ext_io ),
   .clk_ext_val_i ( clk_ext_io_val ),
-  .rst_clk_ext_ni ( rst_clk_ext_n ),
+  .rst_clk_ext_ni ( rst_clk_ext_io_n ),
   .ext_sel_i ( io_clk_byp_sel ),
   .clk_osc_en_o ( io_clk_osc_en ),
   .clk_ext_en_o ( io_clk_byp_en ),
@@ -453,10 +495,10 @@ gfr_clk_mux2 u_clk_src_io_sel (
 gfr_clk_mux2 u_clk_src_usb_sel (
   .clk_osc_i ( clk_osc_usb_i ),
   .clk_osc_val_i ( clk_osc_usb_val_i ),
-  .rst_clk_osc_ni ( rst_clk_osc_n ),
+  .rst_clk_osc_ni ( rst_clk_osc_usb_n ),
   .clk_ext_i ( clk_ext_usb ),
   .clk_ext_val_i ( clk_ext_usb_val ),
-  .rst_clk_ext_ni ( rst_clk_ext_n ),
+  .rst_clk_ext_ni ( rst_clk_ext_usb_n ),
   .ext_sel_i ( usb_clk_byp_sel ),
   .clk_osc_en_o ( usb_clk_osc_en ),
   .clk_ext_en_o ( usb_clk_byp_en ),
@@ -469,10 +511,10 @@ gfr_clk_mux2 u_clk_src_usb_sel (
 gfr_clk_mux2 u_clk_src_aon_sel (
   .clk_osc_i ( clk_osc_aon_i ),
   .clk_osc_val_i ( clk_osc_aon_val_i ),
-  .rst_clk_osc_ni ( rst_clk_osc_n ),
+  .rst_clk_osc_ni ( rst_clk_osc_aon_n ),
   .clk_ext_i ( clk_ext_aon ),
   .clk_ext_val_i ( clk_ext_aon_val ),
-  .rst_clk_ext_ni ( rst_clk_ext_n ),
+  .rst_clk_ext_ni ( rst_clk_ext_aon_n ),
   .ext_sel_i ( aon_clk_byp_sel ),
   .clk_osc_en_o ( aon_clk_osc_en ),
   .clk_ext_en_o ( aon_clk_byp_en ),
@@ -569,7 +611,7 @@ always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
   if ( !rst_aon_n ) begin
     io_clk_byp_is_48m_src <= 1'b0;
   end else begin
-    io_clk_byp_is_48m_src <= io_clk_byp_sel && io_clk_byp_en && !ext_freq_is_96m;
+    io_clk_byp_is_48m_src <= io_clk_byp_en && !ext_freq_is_96m;
   end
 end
 
