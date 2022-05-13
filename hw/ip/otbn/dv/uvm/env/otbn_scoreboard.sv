@@ -401,7 +401,9 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
           model_status = item.status;
 
-          if (cfg.en_cov) cov.on_state_change(model_status);
+          if (cfg.en_cov) begin
+            cov.on_state_change(get_operational_state(status_e'(model_status)));
+          end
         end
 
         OtbnModelInsn: begin
