@@ -245,7 +245,7 @@ module otbn_core
 
   core_err_bits_t err_bits_q, err_bits_d;
 
-  logic start_stop_state_error;
+  logic start_stop_internal_error;
   logic rf_bignum_predec_error, alu_bignum_predec_error, ispr_predec_error, mac_bignum_predec_error;
   logic controller_predec_error;
   logic rd_predec_error, predec_error;
@@ -283,9 +283,9 @@ module otbn_core
     .sec_wipe_mod_urnd_o(sec_wipe_mod_urnd),
     .sec_wipe_zero_o    (sec_wipe_zero),
 
-    .ispr_init_o  (ispr_init),
-    .state_reset_o(state_reset),
-    .state_error_o(start_stop_state_error)
+    .ispr_init_o     (ispr_init),
+    .state_reset_o   (state_reset),
+    .internal_error_o(start_stop_internal_error)
   );
 
   // Depending on its usage, the instruction address (program counter) is qualified by two valid
@@ -525,7 +525,7 @@ module otbn_core
   assign err_bits_d = '{
     fatal_software:      controller_err_bits.fatal_software,
     bad_internal_state:  |{controller_err_bits.bad_internal_state,
-                           start_stop_state_error,
+                           start_stop_internal_error,
                            urnd_all_zero,
                            predec_error},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
@@ -562,7 +562,7 @@ module otbn_core
   // appears somewhere in err_bits_o above (checked in ErrBitsIfControllerEscalate_A)
   assign controller_escalate_en =
       mubi4_or_hi(escalate_en_i,
-                  mubi4_bool_to_mubi(|{start_stop_state_error, urnd_all_zero, predec_error,
+                  mubi4_bool_to_mubi(|{start_stop_internal_error, urnd_all_zero, predec_error,
                                        rf_base_rf_err, lsu_rdata_err, insn_fetch_err,
                                        err_bits_d.reg_intg_violation}));
 

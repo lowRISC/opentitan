@@ -57,7 +57,7 @@ module otbn_start_stop_control
 
   output logic ispr_init_o,
   output logic state_reset_o,
-  output logic state_error_o
+  output logic internal_error_o
 );
   otbn_start_stop_state_e state_q, state_d;
 
@@ -104,7 +104,7 @@ module otbn_start_stop_control
     sec_wipe_zero_o        = 1'b0;
     addr_cnt_inc           = 1'b0;
     secure_wipe_done_o     = 1'b0;
-    state_error_o          = 1'b0;
+    internal_error_o       = 1'b0;
 
     unique case (state_q)
       OtbnStartStopStateHalt: begin
@@ -186,10 +186,17 @@ module otbn_start_stop_control
       end
       default: begin
         // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
-        state_error_o = 1'b1;
+        internal_error_o = 1'b1;
         state_d = OtbnStartStopStateLocked;
       end
     endcase
+
+    if (urnd_reseed_ack_i && (state_q != OtbnStartStopStateUrndRefresh)) begin
+      // We should never receive an ACK from URND when we're not refreshing the URND. Signal an
+      // error if we see a stray ACK and lock the FSM.
+      internal_error_o = 1'b1;
+      state_d          = OtbnStartStopStateLocked;
+    end
   end
 
   // Logic separate from main FSM code to avoid false combinational loop warning from verilator
