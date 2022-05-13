@@ -255,6 +255,12 @@ class OTBNSim:
         # that instruction before it gets shot down.
         self.state.take_injected_err_bits()
 
+        # If something bad happened asynchronously (because of an escalation),
+        # we might have an unfinished instruction. But we want to turn it into
+        # a "finished, but aborted" one.
+        if self.state.pending_halt:
+            self._execute_generator = None
+
         sim_stalled = (self._execute_generator is not None)
         if not sim_stalled:
             return (insn, self._on_retire(verbose, insn))
