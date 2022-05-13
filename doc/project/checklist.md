@@ -465,11 +465,6 @@ Branch, statement and functional code coverage for FPV testbenches has reached 9
 
 COI coverage for FPV testbenches has reached 75%.
 
-### TB_LINT_PASS
-
-The lint checking flow for the testbench passes cleanly.
-Any waiver files have been reviewed.
-
 ### PRE_VERIFIED_SUB_MODULES_V2
 
 Sub-modules that are pre-verified with their own testbenches have already reached V2 or a higher stage.
@@ -477,7 +472,6 @@ The coverage level of the pre-verified sub-modules that are not tracked (i.e., n
 
 ### SEC_CM_PLANNED
 
-<!-- TODO, add the link to security hardening guidelines doc -->
 Security countermeasures are planned and documented.
 - Common countermeasure features (such as shadowed reg, hardened counter etc) can be tested by importing common sec_cm testplans, tests and adding the bind file `cm_sec_bind`.
 - Additional checks and sequences may be needed to verify those features. Document those in the individual testplan.
