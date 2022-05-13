@@ -1,0 +1,34 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+package(default_visibility = ["//visibility:public"])
+
+#exports_files(glob(["**/*"]))
+exports_files([
+      "core_list_join.c",
+      "core_main.c",
+      "core_matrix.c",
+      "core_state.c",
+      "core_util.c",
+      "coremark.h",
+])
+
+cc_library(
+    name = "coremark_lib",
+    srcs = [
+      "core_list_join.c",
+      "core_main.c",
+      "core_matrix.c",
+      "core_state.c",
+      "core_util.c",
+    ],
+    hdrs = [
+      "coremark.h",
+    ],
+    defines = [
+    ],
+    includes = [
+    ],
+)
+
