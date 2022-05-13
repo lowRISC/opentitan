@@ -55,9 +55,9 @@ module ast_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [36:0] reg_we_check;
+  logic [43:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(37)
+    .OneHotWidth(44)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -208,6 +208,27 @@ module ast_reg_top (
   logic rega30_we;
   logic [31:0] rega30_qs;
   logic [31:0] rega30_wd;
+  logic rega31_we;
+  logic [31:0] rega31_qs;
+  logic [31:0] rega31_wd;
+  logic rega32_we;
+  logic [31:0] rega32_qs;
+  logic [31:0] rega32_wd;
+  logic rega33_we;
+  logic [31:0] rega33_qs;
+  logic [31:0] rega33_wd;
+  logic rega34_we;
+  logic [31:0] rega34_qs;
+  logic [31:0] rega34_wd;
+  logic rega35_we;
+  logic [31:0] rega35_qs;
+  logic [31:0] rega35_wd;
+  logic rega36_we;
+  logic [31:0] rega36_qs;
+  logic [31:0] rega36_wd;
+  logic rega37_we;
+  logic [31:0] rega37_qs;
+  logic [31:0] rega37_wd;
   logic regal_we;
   logic [31:0] regal_wd;
   logic regb_0_we;
@@ -1033,6 +1054,188 @@ module ast_reg_top (
   );
 
 
+  // R[rega31]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h1f)
+  ) u_rega31 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rega31_we),
+    .wd     (rega31_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rega31.q),
+
+    // to register interface (read)
+    .qs     (rega31_qs)
+  );
+
+
+  // R[rega32]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h20)
+  ) u_rega32 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rega32_we),
+    .wd     (rega32_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rega32.q),
+
+    // to register interface (read)
+    .qs     (rega32_qs)
+  );
+
+
+  // R[rega33]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h21)
+  ) u_rega33 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rega33_we),
+    .wd     (rega33_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rega33.q),
+
+    // to register interface (read)
+    .qs     (rega33_qs)
+  );
+
+
+  // R[rega34]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h22)
+  ) u_rega34 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rega34_we),
+    .wd     (rega34_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rega34.q),
+
+    // to register interface (read)
+    .qs     (rega34_qs)
+  );
+
+
+  // R[rega35]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h23)
+  ) u_rega35 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rega35_we),
+    .wd     (rega35_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rega35.q),
+
+    // to register interface (read)
+    .qs     (rega35_qs)
+  );
+
+
+  // R[rega36]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h24)
+  ) u_rega36 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rega36_we),
+    .wd     (rega36_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rega36.q),
+
+    // to register interface (read)
+    .qs     (rega36_qs)
+  );
+
+
+  // R[rega37]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h25)
+  ) u_rega37 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (rega37_we),
+    .wd     (rega37_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rega37.q),
+
+    // to register interface (read)
+    .qs     (rega37_qs)
+  );
+
+
   // R[regal]: V(True)
   logic regal_qe;
   logic [0:0] regal_flds_we;
@@ -1188,7 +1391,7 @@ module ast_reg_top (
 
 
 
-  logic [36:0] addr_hit;
+  logic [43:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == AST_REGA0_OFFSET);
@@ -1222,12 +1425,19 @@ module ast_reg_top (
     addr_hit[28] = (reg_addr == AST_REGA28_OFFSET);
     addr_hit[29] = (reg_addr == AST_REGA29_OFFSET);
     addr_hit[30] = (reg_addr == AST_REGA30_OFFSET);
-    addr_hit[31] = (reg_addr == AST_REGAL_OFFSET);
-    addr_hit[32] = (reg_addr == AST_REGB_0_OFFSET);
-    addr_hit[33] = (reg_addr == AST_REGB_1_OFFSET);
-    addr_hit[34] = (reg_addr == AST_REGB_2_OFFSET);
-    addr_hit[35] = (reg_addr == AST_REGB_3_OFFSET);
-    addr_hit[36] = (reg_addr == AST_REGB_4_OFFSET);
+    addr_hit[31] = (reg_addr == AST_REGA31_OFFSET);
+    addr_hit[32] = (reg_addr == AST_REGA32_OFFSET);
+    addr_hit[33] = (reg_addr == AST_REGA33_OFFSET);
+    addr_hit[34] = (reg_addr == AST_REGA34_OFFSET);
+    addr_hit[35] = (reg_addr == AST_REGA35_OFFSET);
+    addr_hit[36] = (reg_addr == AST_REGA36_OFFSET);
+    addr_hit[37] = (reg_addr == AST_REGA37_OFFSET);
+    addr_hit[38] = (reg_addr == AST_REGAL_OFFSET);
+    addr_hit[39] = (reg_addr == AST_REGB_0_OFFSET);
+    addr_hit[40] = (reg_addr == AST_REGB_1_OFFSET);
+    addr_hit[41] = (reg_addr == AST_REGB_2_OFFSET);
+    addr_hit[42] = (reg_addr == AST_REGB_3_OFFSET);
+    addr_hit[43] = (reg_addr == AST_REGB_4_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1271,7 +1481,14 @@ module ast_reg_top (
                (addr_hit[33] & (|(AST_PERMIT[33] & ~reg_be))) |
                (addr_hit[34] & (|(AST_PERMIT[34] & ~reg_be))) |
                (addr_hit[35] & (|(AST_PERMIT[35] & ~reg_be))) |
-               (addr_hit[36] & (|(AST_PERMIT[36] & ~reg_be)))));
+               (addr_hit[36] & (|(AST_PERMIT[36] & ~reg_be))) |
+               (addr_hit[37] & (|(AST_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(AST_PERMIT[38] & ~reg_be))) |
+               (addr_hit[39] & (|(AST_PERMIT[39] & ~reg_be))) |
+               (addr_hit[40] & (|(AST_PERMIT[40] & ~reg_be))) |
+               (addr_hit[41] & (|(AST_PERMIT[41] & ~reg_be))) |
+               (addr_hit[42] & (|(AST_PERMIT[42] & ~reg_be))) |
+               (addr_hit[43] & (|(AST_PERMIT[43] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -1359,22 +1576,43 @@ module ast_reg_top (
   assign rega30_we = addr_hit[30] & reg_we & !reg_error;
 
   assign rega30_wd = reg_wdata[31:0];
-  assign regal_we = addr_hit[31] & reg_we & !reg_error;
+  assign rega31_we = addr_hit[31] & reg_we & !reg_error;
+
+  assign rega31_wd = reg_wdata[31:0];
+  assign rega32_we = addr_hit[32] & reg_we & !reg_error;
+
+  assign rega32_wd = reg_wdata[31:0];
+  assign rega33_we = addr_hit[33] & reg_we & !reg_error;
+
+  assign rega33_wd = reg_wdata[31:0];
+  assign rega34_we = addr_hit[34] & reg_we & !reg_error;
+
+  assign rega34_wd = reg_wdata[31:0];
+  assign rega35_we = addr_hit[35] & reg_we & !reg_error;
+
+  assign rega35_wd = reg_wdata[31:0];
+  assign rega36_we = addr_hit[36] & reg_we & !reg_error;
+
+  assign rega36_wd = reg_wdata[31:0];
+  assign rega37_we = addr_hit[37] & reg_we & !reg_error;
+
+  assign rega37_wd = reg_wdata[31:0];
+  assign regal_we = addr_hit[38] & reg_we & !reg_error;
 
   assign regal_wd = reg_wdata[31:0];
-  assign regb_0_we = addr_hit[32] & reg_we & !reg_error;
+  assign regb_0_we = addr_hit[39] & reg_we & !reg_error;
 
   assign regb_0_wd = reg_wdata[31:0];
-  assign regb_1_we = addr_hit[33] & reg_we & !reg_error;
+  assign regb_1_we = addr_hit[40] & reg_we & !reg_error;
 
   assign regb_1_wd = reg_wdata[31:0];
-  assign regb_2_we = addr_hit[34] & reg_we & !reg_error;
+  assign regb_2_we = addr_hit[41] & reg_we & !reg_error;
 
   assign regb_2_wd = reg_wdata[31:0];
-  assign regb_3_we = addr_hit[35] & reg_we & !reg_error;
+  assign regb_3_we = addr_hit[42] & reg_we & !reg_error;
 
   assign regb_3_wd = reg_wdata[31:0];
-  assign regb_4_we = addr_hit[36] & reg_we & !reg_error;
+  assign regb_4_we = addr_hit[43] & reg_we & !reg_error;
 
   assign regb_4_wd = reg_wdata[31:0];
 
@@ -1412,12 +1650,19 @@ module ast_reg_top (
     reg_we_check[28] = 1'b0;
     reg_we_check[29] = rega29_we;
     reg_we_check[30] = rega30_we;
-    reg_we_check[31] = regal_we;
-    reg_we_check[32] = regb_0_we;
-    reg_we_check[33] = regb_1_we;
-    reg_we_check[34] = regb_2_we;
-    reg_we_check[35] = regb_3_we;
-    reg_we_check[36] = regb_4_we;
+    reg_we_check[31] = rega31_we;
+    reg_we_check[32] = rega32_we;
+    reg_we_check[33] = rega33_we;
+    reg_we_check[34] = rega34_we;
+    reg_we_check[35] = rega35_we;
+    reg_we_check[36] = rega36_we;
+    reg_we_check[37] = rega37_we;
+    reg_we_check[38] = regal_we;
+    reg_we_check[39] = regb_0_we;
+    reg_we_check[40] = regb_1_we;
+    reg_we_check[41] = regb_2_we;
+    reg_we_check[42] = regb_3_we;
+    reg_we_check[43] = regb_4_we;
   end
 
   // Read data return
@@ -1549,26 +1794,54 @@ module ast_reg_top (
       end
 
       addr_hit[31]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = rega31_qs;
       end
 
       addr_hit[32]: begin
-        reg_rdata_next[31:0] = regb_0_qs;
+        reg_rdata_next[31:0] = rega32_qs;
       end
 
       addr_hit[33]: begin
-        reg_rdata_next[31:0] = regb_1_qs;
+        reg_rdata_next[31:0] = rega33_qs;
       end
 
       addr_hit[34]: begin
-        reg_rdata_next[31:0] = regb_2_qs;
+        reg_rdata_next[31:0] = rega34_qs;
       end
 
       addr_hit[35]: begin
-        reg_rdata_next[31:0] = regb_3_qs;
+        reg_rdata_next[31:0] = rega35_qs;
       end
 
       addr_hit[36]: begin
+        reg_rdata_next[31:0] = rega36_qs;
+      end
+
+      addr_hit[37]: begin
+        reg_rdata_next[31:0] = rega37_qs;
+      end
+
+      addr_hit[38]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[39]: begin
+        reg_rdata_next[31:0] = regb_0_qs;
+      end
+
+      addr_hit[40]: begin
+        reg_rdata_next[31:0] = regb_1_qs;
+      end
+
+      addr_hit[41]: begin
+        reg_rdata_next[31:0] = regb_2_qs;
+      end
+
+      addr_hit[42]: begin
+        reg_rdata_next[31:0] = regb_3_qs;
+      end
+
+      addr_hit[43]: begin
         reg_rdata_next[31:0] = regb_4_qs;
       end
 
