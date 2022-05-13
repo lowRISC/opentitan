@@ -83,6 +83,10 @@ freertos_repos()
 load("//third_party/riscv-compliance:repos.bzl", "riscv_compliance_repos")
 riscv_compliance_repos()
 
+# CoreMark benchmark
+load("//third_party/coremark:repos.bzl", "coremark_repos")
+coremark_repos()
+
 # Bitstreams from https://storage.googleapis.com/opentitan-bitstreams/
 load("//rules:bitstreams.bzl", "bitstreams_repo")
 bitstreams_repo(name = "bitstreams")
