@@ -204,7 +204,7 @@ elf_to_scrambled_rom_vmem = rv_rule(
     },
 )
 
-def _bin_to_flash_vmem_impl(ctx):
+def _bin_to_vmem_impl(ctx):
     outputs = []
     vmem = ctx.actions.declare_file("{}.{}.vmem".format(
         # Remove ".bin" from file basename.
@@ -248,8 +248,8 @@ def _bin_to_flash_vmem_impl(ctx):
         data_runfiles = ctx.runfiles(files = outputs),
     )]
 
-bin_to_flash_vmem = rv_rule(
-    implementation = _bin_to_flash_vmem_impl,
+bin_to_vmem = rv_rule(
+    implementation = _bin_to_vmem_impl,
     attrs = {
         "bin": attr.label(allow_single_file = True),
         "word_size": attr.int(
@@ -530,12 +530,13 @@ def opentitan_rom_binary(
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for ROM.
 
-    This macro is mostly a wrapper around a opentitan_binary macro, which itself
-    is a wrapper around cc_binary, but also creates artifacts for each of the
-    keys in `per_device_deps`. The actual artifacts created are an ELF file, a
-    BIN file, the disassembly, the sim_dv logs database, and the scrambled (ROM)
-    VMEM file. Each of these output targets performs a bazel transition to the
-    RV32I toolchain to build the target under the correct compiler.
+    This macro is mostly a wrapper around a opentitan_binary macro, which
+    itself is a wrapper around cc_binary, but also creates artifacts for each
+    of the keys in `per_device_deps`. The actual artifacts created are an ELF
+    file, a BIN file, the disassembly, the sim_dv logs database, the
+    unscrambled (ROM) VMEM file, and the scrambled (ROM) VMEM file. Each of
+    these output targets performs a bazel transition to the RV32I toolchain to
+    build the target under the correct compiler.
     Args:
       @param name: The name of this rule.
       @param platform: The target platform for the artifacts.
@@ -548,6 +549,7 @@ def opentitan_rom_binary(
         obj_transform             named: <name>_<device>_elf
         obj_transform             named: <name>_<device>_bin
         elf_to_dissassembly       named: <name>_<device>_dis
+        bin_to_rom_vmem           named: <name>_<device>_vmem
         elf_to_scrambled_rom_vmem named: <name>_<device>_scr_vmem
       For the sim_dv device:
         gen_sim_dv_logs_db        named: <name>_sim_dv_logs
@@ -568,6 +570,17 @@ def opentitan_rom_binary(
             **kwargs
         ))
         elf_name = "{}_{}".format(devname, "elf")
+        bin_name = "{}_{}".format(devname, "bin")
+
+        # Generate Un-scrambled ROM VMEM
+        vmem_name = "{}_vmem".format(devname)
+        targets.append(":" + vmem_name)
+        bin_to_vmem(
+            name = vmem_name,
+            bin = bin_name,
+            platform = platform,
+            word_size = 32, 
+        )
 
         # Generate Scrambled ROM VMEM
         scr_vmem_name = "{}_scr_vmem".format(devname)
@@ -617,11 +630,11 @@ def opentitan_flash_binary(
         obj_transform          named: <name>_<device>_elf
         obj_transform          named: <name>_<device>_bin
         elf_to_dissassembly    named: <name>_<device>_dis
-        bin_to_flash_vmem      named: <name>_<device>_flash_vmem
+        bin_to_vmem            named: <name>_<device>_flash_vmem
         scrambled_flash_vmem   named: <name>_<device>_scr_flash_vmem
         optionally:
           sign_bin             named: <name>_<device>_bin_signed_<key_name>
-          bin_to_flash_vmem    named: <name>_<device>_flash_vmem_signed_<key_name>
+          bin_to_vmem          named: <name>_<device>_flash_vmem_signed_<key_name>
           scrambled_flash_vmem named: <name>_<device>_scr_flash_vmem_signed_<key_name>
       For the sim_dv device:
         gen_sim_dv_logs_db     named: <name>_sim_dv_logs
@@ -654,7 +667,7 @@ def opentitan_flash_binary(
             )
             frames_vmem_name = "{}_frames_vmem".format(devname)
             targets.append(":" + frames_vmem_name)
-            bin_to_flash_vmem(
+            bin_to_vmem(
                 name = frames_vmem_name,
                 bin = frames_bin_name,
                 platform = platform,
@@ -681,7 +694,7 @@ def opentitan_flash_binary(
                     key_name,
                 )
                 targets.append(":" + signed_vmem_name)
-                bin_to_flash_vmem(
+                bin_to_vmem(
                     name = signed_vmem_name,
                     bin = signed_bin_name,
                     platform = platform,
@@ -703,7 +716,7 @@ def opentitan_flash_binary(
             # Generate a VMEM64 from the binary.
             vmem_name = "{}_vmem64".format(devname)
             targets.append(":" + vmem_name)
-            bin_to_flash_vmem(
+            bin_to_vmem(
                 name = vmem_name,
                 bin = bin_name,
                 platform = platform,
