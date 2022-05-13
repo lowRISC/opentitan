@@ -190,7 +190,6 @@ Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
 Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | Not Started |
-Code Quality  | [TB_LINT_PASS][]                        | Not Started |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
@@ -212,7 +211,6 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 [SIM_FUNCTIONAL_COVERAGE_V2]:         {{<relref "/doc/project/checklist.md#sim_functional_coverage_v2" >}}
 [FPV_CODE_COVERAGE_V2]:               {{<relref "/doc/project/checklist.md#fpv_code_coverage_v2" >}}
 [FPV_COI_COVERAGE_V2]:                {{<relref "/doc/project/checklist.md#fpv_coi_coverage_v2" >}}
-[TB_LINT_PASS]:                       {{<relref "/doc/project/checklist.md#tb_lint_pass" >}}
 [PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v2" >}}
 [NO_HIGH_PRIORITY_ISSUES_PENDING]:    {{<relref "/doc/project/checklist.md#no_high_priority_issues_pending" >}}
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all_low_priority_issues_root_caused" >}}
