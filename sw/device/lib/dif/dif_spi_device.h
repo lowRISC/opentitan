@@ -167,6 +167,60 @@ dif_result_t dif_spi_device_configure(dif_spi_device_handle_t *spi,
                                       dif_spi_device_config_t config);
 
 /**
+ * Resets the asynchronous TX FIFO in generic mode.
+ *
+ * This function should only be called when the upstream spi host is held in
+ * reset or otherwise is inactive.
+ *
+ * @param spi A SPI handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_reset_generic_tx_fifo(dif_spi_device_handle_t *spi);
+
+/**
+ * Resets the asynchronous RX FIFO in generic mode.
+ *
+ * This function should only be called when the upstream spi host is held in
+ * reset or otherwise is inactive.
+ *
+ * @param spi A SPI handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_reset_generic_rx_fifo(dif_spi_device_handle_t *spi);
+
+/**
+ * Enable or disable the clock for the SRAM backing all the various memory and
+ * FIFO-related functions.
+ *
+ * This function should only be called when the upstream spi host is held in
+ * reset or otherwise is inactive.
+ *
+ * @param spi A SPI handle.
+ * @param enable Whether to enable or disable the clock.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_set_sram_clock_enable(dif_spi_device_handle_t *spi,
+                                                  dif_toggle_t enable);
+
+/**
+ * Get the current enablement state for the clock of the SRAM backing all the
+ * various memory and FIFO-related functions.
+ *
+ * This function should only be called when the upstream spi host is held in
+ * reset or otherwise is inactive.
+ *
+ * @param spi A SPI handle.
+ * @param[out] enabled Whether the clock is enabled or disabled.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_get_sram_clock_enable(dif_spi_device_handle_t *spi,
+                                                  dif_toggle_t *enabled);
+
+/**
  * Issues an "abort" to the given SPI device, causing all in-progress IO to
  * halt.
  *
@@ -232,6 +286,59 @@ dif_result_t dif_spi_device_tx_pending(const dif_spi_device_handle_t *spi,
                                        size_t *bytes_pending);
 
 /**
+ * Get the current async FIFO occupancy levels. Only used in generic mode.
+ *
+ * @param spi A SPI handle.
+ * @param[out] rx_fifo_level The occupancy level of the RX FIFO.
+ * @param[out] tx_fifo_level The occupancy level of the TX FIFO.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_get_async_fifo_levels(dif_spi_device_handle_t *spi,
+                                                  uint16_t *rx_fifo_level,
+                                                  uint16_t *tx_fifo_level);
+
+/** Represents the status of the synchronous FIFOs in generic mode. */
+typedef struct dif_spi_device_generic_fifo_status {
+  /** Whether the RX FIFO is full. */
+  bool rx_full;
+  /** Whether the RX FIFO is empty. */
+  bool rx_empty;
+  /** Whether the TX FIFO is full. */
+  bool tx_full;
+  /** Whether the TX FIFO is empty. */
+  bool tx_empty;
+} dif_spi_device_generic_fifo_status_t;
+
+/**
+ * Get the current empty/full status for generic mode's synchronous FIFOs.
+ *
+ * @param spi A SPI handle.
+ * @param[out] status The empty/full status for the FIFOs.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_get_generic_fifo_status(
+    dif_spi_device_handle_t *spi, dif_spi_device_generic_fifo_status_t *status);
+
+/**
+ * Get the current level of the CSB pin.
+ *
+ * This is available for the esoteric case where CSB is used like a slow GPIO.
+ * Note that for ordinary SPI operation, software sampling of the CSB pin cannot
+ * be used to determine whether it is safe to perform an operation where the
+ * host must be inactive.
+ *
+ * @param spi A SPI handle.
+ * @param[out] csb The current value of the chip-select pin (false for asserted,
+ * true for deasserted).
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_get_csb_status(dif_spi_device_handle_t *spi,
+                                           bool *csb);
+
+/**
  * Reads at most `buf_len` bytes from the RX FIFO; the number of bytes read
  * will be written to `bytes_received`.
  *
@@ -263,17 +370,6 @@ dif_result_t dif_spi_device_recv(dif_spi_device_handle_t *spi, void *buf,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_send(dif_spi_device_handle_t *spi, const void *buf,
                                  size_t buf_len, size_t *bytes_sent);
-
-typedef struct dif_spi_device_flash_id {
-  /** The device ID for the SPI flash. */
-  uint16_t device_id;
-  /** The JEDEC manufacturer ID. */
-  uint8_t manufacturer_id;
-  /** The continuation code used before the `manufacturer_id` byte. */
-  uint8_t continuation_code;
-  /** The number of continuation codes preceding the `manufacturer_id`. */
-  uint8_t num_continuation_code;
-} dif_spi_device_flash_id_t;
 
 /**
  * Enable the mailbox region for spi_device flash / passthrough modes.
@@ -335,6 +431,17 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_get_4b_address_mode(dif_spi_device_handle_t *spi,
                                                 dif_toggle_t *addr_4b);
 
+typedef struct dif_spi_device_flash_id {
+  /** The device ID for the SPI flash. */
+  uint16_t device_id;
+  /** The JEDEC manufacturer ID. */
+  uint8_t manufacturer_id;
+  /** The continuation code used before the `manufacturer_id` byte. */
+  uint8_t continuation_code;
+  /** The number of continuation codes preceding the `manufacturer_id`. */
+  uint8_t num_continuation_code;
+} dif_spi_device_flash_id_t;
+
 /**
  * Get the JEDEC ID presented when in flash / passthrough modes.
  *
@@ -356,6 +463,77 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_set_flash_id(dif_spi_device_handle_t *spi,
                                          dif_spi_device_flash_id_t id);
 
+/**
+ * Represents which optional hardware features may intercept commands in
+ * passthrough mode. If selected, the function will be handled internally and
+ * not passed to the downstream SPI flash (sometimes with conditions, such as
+ * the address matching the mailbox region when mailbox interception is
+ * selected).
+ */
+typedef struct dif_spi_device_passthrough_intercept_config {
+  /**
+   * Whether to intercept commands to the status registers, such as WriteStatus
+   * and ReadStatus.
+   */
+  bool status;
+  /**
+   * Whether to intercept the ReadID command and respond with the JEDEC ID
+   * programmed via `dif_spi_device_set_flash_id()`.
+   */
+  bool jedec_id;
+  /**
+   * Whether to intercept the ReadSFDP command with data programmed to the
+   * internal SFDP region.
+   */
+  bool sfdp;
+  /**
+   * Whether to intercept read memory commands with data programmed in the
+   * mailbox buffer, when the address is inside the mailbox region.
+   */
+  bool mailbox;
+} dif_spi_device_passthrough_intercept_config_t;
+
+/**
+ * Configure the optional hardware functions to intercept passthrough commands.
+ *
+ * @param spi A SPI handle.
+ * @param config The passthrough interception configuration.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_set_passthrough_intercept_config(
+    dif_spi_device_handle_t *spi,
+    dif_spi_device_passthrough_intercept_config_t config);
+
+/**
+ * Get the last address read from the flash memory that was not in the mailbox
+ * region.
+ *
+ * @param spi A SPI handle.
+ * @param[out] address The last address read.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_get_last_read_address(dif_spi_device_handle_t *spi,
+                                                  uint32_t *address);
+
+/**
+ * Set the read threshold watermark for reporting to the corresponding interrupt
+ * status bit.
+ *
+ * This function is intended to be used in flash mode for devices that
+ * sequentially read from address 0 to the end of some initial block. A supplied
+ * address of 0 disables the watermark status bit and interrupt.
+ *
+ * @param spi A SPI handle.
+ * @param address The watermark address that triggers reporting to the read
+ * threshold watermark's status bit, which can signal an interrupt.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_set_eflash_read_threshold(
+    dif_spi_device_handle_t *spi, uint32_t address);
+
 typedef enum dif_spi_device_flash_address_type {
   /** No address for this command */
   kDifSpiDeviceFlashAddrDisabled = 0,
@@ -368,11 +546,17 @@ typedef enum dif_spi_device_flash_address_type {
   kDifSpiDeviceFlashAddrCount,
 } dif_spi_device_flash_address_type_t;
 
+/** An enum describing the type of I/O width used by a command's payload. */
 typedef enum dif_spi_device_payload_io {
+  /** Command does not have a payload. */
   kDifSpiDevicePayloadIoNone = 0x0,
+  /** Command's payload has an I/O channel width of 1. */
   kDifSpiDevicePayloadIoSingle = 0x1,
+  /** Command's payload has an I/O channel width of 2. */
   kDifSpiDevicePayloadIoDual = 0x3,
+  /** Command's payload has an I/O channel width of 4. */
   kDifSpiDevicePayloadIoQuad = 0xf,
+  /** The command info slot had an invalid setting for the payload I/O width. */
   kDifSpiDevicePayloadIoInvalid = 0x10,
 } dif_spi_device_payload_io_t;
 
@@ -453,6 +637,66 @@ dif_result_t dif_spi_device_get_flash_command_slot(
     dif_spi_device_flash_command_t *command_info);
 
 /**
+ * Configure the command properties of the hardware's EN4B function.
+ *
+ * EN4B is the command to activate 4-byte addressing for flash and passthrough
+ * modes.
+ *
+ * @param spi A handle to a spi_device.
+ * @param enable Whether to enable the function.
+ * @param opcode Which opcode activates the function.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_configure_flash_en4b_command(
+    dif_spi_device_handle_t *spi, dif_toggle_t enable, uint8_t opcode);
+
+/**
+ * Configure the command properties of the hardware's EX4B function.
+ *
+ * EX4B is the command to deactivate 4-byte addressing for flash and passthrough
+ * modes. This would return the device to the 3-byte address mode.
+ *
+ * @param spi A handle to a spi_device.
+ * @param enable Whether to enable the function.
+ * @param opcode Which opcode activates the function.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_configure_flash_ex4b_command(
+    dif_spi_device_handle_t *spi, dif_toggle_t enable, uint8_t opcode);
+
+/**
+ * Configure the command properties of the hardware's WREN function.
+ *
+ * WREN is the command to enable writes and set the WEL bit of the status
+ * register, for flash and passthroug modes.
+ *
+ * @param spi A handle to a spi_device.
+ * @param enable Whether to enable the function.
+ * @param opcode Which opcode activates the function.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_configure_flash_wren_command(
+    dif_spi_device_handle_t *spi, dif_toggle_t enable, uint8_t opcode);
+
+/**
+ * Configure the command properties of the hardware's WRDI function.
+ *
+ * WRDI is the command to disable writes and clear the WEL bit of the status
+ * register, for flash and passthrough modes.
+ *
+ * @param spi A handle to a spi_device.
+ * @param enable Whether to enable the function.
+ * @param opcode Which opcode activates the function.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_configure_flash_wrdi_command(
+    dif_spi_device_handle_t *spi, dif_toggle_t enable, uint8_t opcode);
+
+/**
  * Set which address bits are swapped and their values for commands that have
  * the address swap enabled.
  *
@@ -479,6 +723,52 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_set_flash_payload_swap(dif_spi_device_handle_t *spi,
                                                    uint32_t mask,
                                                    uint32_t replacement);
+
+/**
+ * Get the current occupancy level of the command FIFO. Used in flash and
+ * passthrough modes.
+ *
+ * @param spi A SPI handle.
+ * @param[out] occupancy The number of command entries present in the command
+ * FIFO.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_get_flash_command_fifo_occupancy(
+    dif_spi_device_handle_t *spi, uint8_t *occupancy);
+
+/**
+ * Get the current occupancy level of the address FIFO. Used in flash and
+ * passthrough modes.
+ *
+ * @param spi A SPI handle.
+ * @param[out] occupancy The number of address entries present in the command
+ * FIFO.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_get_flash_address_fifo_occupancy(
+    dif_spi_device_handle_t *spi, uint8_t *occupancy);
+
+/**
+ * Get the current occupancy level of the payload FIFO. Used in flash and
+ * passthrough modes.
+ *
+ * Also get the starting offset for the data that was captured. Only up to 256
+ * bytes of payload may be captured by the SPI device, and if the SPI host sends
+ * more data, the SPI device wraps around to the beginning of the payload buffer
+ * and writes the newest data from there. The starting offset points to the
+ * oldest item in the payload buffer.
+ *
+ * @param spi A SPI handle.
+ * @param[out] occupancy The number of bytes present in the command FIFO.
+ * @param[out] start_offset The starting offset in the payload buffer for the
+ * data, which may wrap around to the beginning.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_get_flash_payload_fifo_occupancy(
+    dif_spi_device_handle_t *spi, uint16_t *occupancy, uint32_t *start_offset);
 
 /**
  * Pop the first command from the uploaded command FIFO.
