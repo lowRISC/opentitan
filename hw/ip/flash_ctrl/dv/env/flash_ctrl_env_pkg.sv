@@ -118,6 +118,10 @@ package flash_ctrl_env_pkg;
   parameter uint CODE_EXEC_KEY_W = 32;
   parameter uint CODE_EXEC_KEY = 32'ha26a38f7;
 
+  // MP Access Flags
+  parameter bit MP_PASS      = 0;
+  parameter bit MP_VIOLATION = 1;
+
   // types
   typedef enum int {
     FlashCtrlIntrProgEmpty = 0,
