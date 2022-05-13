@@ -28,7 +28,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
   rand flash_op_t flash_op;
   rand data_q_t   flash_op_data;
   rand uint       bank;
-  rand  bit [1:0] prog_type_en;
+  rand bit [1:0]  prog_type_en;
 
   // Iteration Limits
   rand uint x_max;
@@ -164,7 +164,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
     cfg.seq_cfg.op_readonly_on_info1_partition = 1;
 
     // MAX Delay for an Expected Alert
-    cfg.alert_max_delay = 100_000_000;
+    cfg.alert_max_delay = cfg.seq_cfg.prog_timeout_ns;
 
   endfunction : configure_vseq
 
@@ -198,7 +198,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
         // Randomize the Members of the Class (Uses Flash Program, and a Data Partition)
         `DV_CHECK_RANDOMIZE_FATAL(this)
 
-        // Model Expected Response (Error Expected / Pass)
+        // Model Expected Response (Violation Expected / Pass)
         exp_alert = predict_expected_err_rsp(prog_type_en, flash_op.prog_sel);
         cfg.scb_set_exp_alert = exp_alert;
 
@@ -209,7 +209,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
         // FLASH PROGRAM
         flash_ctrl_start_op(flash_op);
         flash_ctrl_write(flash_op_data, poll_fifo_status);
-        wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+        wait_flash_op_done(.clear_op_status(0), .timeout_ns(cfg.seq_cfg.prog_timeout_ns));
         `uvm_info(`gfn, $sformatf("Program Data : %0p", flash_op_data), UVM_LOW)
 
         // Predict Status (for RAL)
@@ -278,7 +278,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
     bit    rsp;
     string rsp_str;
     rsp = ~prog_type_en[prog_sel];
-    rsp_str = rsp ? "ERROR" : "PASS";
+    rsp_str = rsp ? "MP_VIOLATION" : "MP_PASS";
     `uvm_info(`gfn, $sformatf("prog_type : %02b, prog_sel : %0b : Expect : %s", prog_type_en,
        prog_sel, rsp_str), UVM_LOW)
     return (rsp);
