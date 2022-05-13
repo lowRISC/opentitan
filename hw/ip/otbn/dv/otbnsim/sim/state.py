@@ -397,13 +397,18 @@ class OTBNState:
         the increment of INSN_CNT that we want to keep.
 
         Either way, set the appropriate bits in the external ERR_CODE register,
-        clear the busy flag and write STOP_PC.
+        write STOP_PC and start a secure wipe.
 
+        It's possible that we are already doing a secure wipe. For example, we
+        might have had an error escalation signal after starting the wipe. In
+        this case, there's nothing to do except possibly to update ERR_BITS.
         '''
 
-        if self._err_bits:
-            # Abort all pending changes, including changes to external
-            # registers.
+        # If we were running an instruction and something went wrong then it
+        # might have updated state (either registers, memory or
+        # externally-visible registers). We want to roll back any of those
+        # changes.
+        if self._err_bits and self._fsm_state == FsmState.EXEC:
             self._abort()
 
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
@@ -415,23 +420,27 @@ class OTBNState:
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
 
-        # Make the final PC visible. This isn't currently in the RTL, but is
-        # useful in simulations that want to track whether we stopped where we
-        # expected to stop.
-        self.ext_regs.write('STOP_PC', self.pc, True)
-
         # Set the WIPE_START flag if we were running. This is used to tell the
         # C++ model code that this is a good time to inspect DMEM and check
         # that the RTL and model match. The flag will be cleared again on the
         # next cycle.
         if self._fsm_state == FsmState.EXEC:
+            # Make the final PC visible. This isn't currently in the RTL, but
+            # is useful in simulations that want to track whether we stopped
+            # where we expected to stop.
+            self.ext_regs.write('STOP_PC', self.pc, True)
+
             self.ext_regs.write('WIPE_START', 1, True)
             self.ext_regs.regs['WIPE_START'].commit()
 
             # Switch to a 'wiping' state
             self._next_fsm_state = (FsmState.WIPING_BAD if should_lock
                                     else FsmState.WIPING_GOOD)
-            self.wipe_cycles = (_WIPE_CYCLES if self.secure_wipe_enabled else 2)
+            self.wipe_cycles = (_WIPE_CYCLES
+                                if self.secure_wipe_enabled else 2)
+        elif self._fsm_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
+            assert should_lock
+            self._next_fsm_state = FsmState.WIPING_BAD
         else:
             assert should_lock
             self._next_fsm_state = FsmState.LOCKED
