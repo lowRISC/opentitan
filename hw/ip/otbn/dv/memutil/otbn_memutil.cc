@@ -176,7 +176,7 @@ extern "C" int OtbnMemUtilGetSegCount(OtbnMemUtil *mem_util, svBit is_imem) {
   // but it's theoretically possible). Fortunately, that number is still
   // representable with a signed 32-bit integer, so this assertion shouldn't
   // ever fire.
-  assert(num_segs < std::numeric_limits<int>::max());
+  assert(num_segs < (unsigned)std::numeric_limits<int>::max());
 
   return num_segs;
 }
@@ -294,7 +294,7 @@ int OtbnMemUtilGetNumLoopWarps(OtbnMemUtil *mem_util) {
   assert(mem_util);
 
   size_t sz = mem_util->GetLoopWarps().size();
-  assert(sz < std::numeric_limits<int>::max());
+  assert(sz < (unsigned)std::numeric_limits<int>::max());
 
   return sz;
 }
