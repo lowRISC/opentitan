@@ -14,11 +14,37 @@ class dv_base_reg_field extends uvm_reg_field;
   local dv_base_reg_field regwen_fld;
   local dv_base_lockable_field_cov lockable_field_cov;
 
+  // This is used for get_field_by_name
+  string alias_name = "";
+
   // variable for mubi coverage, which is only created when this is a mubi reg
   dv_base_mubi_cov mubi_cov;
 
   `uvm_object_utils(dv_base_reg_field)
   `uvm_object_new
+
+  // this is similar to get_name, but it gets the
+  // simple name of the aliased field instead.
+  function string get_alias_name ();
+     return this.alias_name;
+  endfunction: get_alias_name
+
+  // this is similar to set_name, but it sets the
+  // simple name of the aliased field instead.
+  function void set_alias_name (string alias_name);
+    dv_base_reg register;
+    dv_base_reg_block reg_block;
+    `downcast(register, this.get_parent())
+    register.field_alias_lookup[alias_name] = this.get_name();
+    // We also add the name to the lookup table inside the reg_block to enable get_field_by_name at
+    // that level. Note: in order for the get_field_by_name function of dv_base_reg_block to
+    // produce meaningful results, all field names within the reg block have to be unique - which
+    // cannot always guaranteed. If the fields are not unique at that level, the get_field_by_name
+    // of dv_base_reg should be used instead.
+    `downcast(reg_block, register.get_parent())
+    reg_block.field_alias_lookup[alias_name] = this.get_name();
+    this.alias_name = alias_name;
+  endfunction: set_alias_name
 
   // Issue #5105: UVM forces the value member to be non-randomizable for certain access policies.
   // We restore it in this extended class.
