@@ -21,7 +21,7 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
-  wire idle, intr_done;
+  wire intr_done;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // Configure internal secure wipe
@@ -30,7 +30,6 @@ module tb;
   // interfaces
   clk_rst_if                    clk_rst_if  (.clk(clk), .rst_n(rst_n));
   tl_if                         tl_if       (.clk(clk), .rst_n(rst_n));
-  pins_if #(1)                  idle_if     (idle);
   otbn_escalate_if              escalate_if (.clk_i (clk), .rst_ni (rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if     (interrupts);
   assign interrupts[0] = {intr_done};
@@ -126,7 +125,8 @@ module tb;
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),
 
-    .idle_o(idle),
+    // Correct behaviour of the idle output is ensured by the bound-in otbn_idle_checker instance.
+    .idle_o(),
 
     .intr_done_o(intr_done),
 
@@ -314,7 +314,6 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "otp_clk_rst_vif", otp_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(idle_vif)::set(null, "*.env", "idle_vif", idle_if);
     uvm_config_db#(escalate_vif)::set(null, "*.env", "escalate_vif", escalate_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual otbn_model_if)::set(null, "*.env.model_agent", "vif", model_if);
