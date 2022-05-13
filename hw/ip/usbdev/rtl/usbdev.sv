@@ -777,7 +777,7 @@ module usbdev
   prim_ram_2p_async_adv #(
     .Depth (SramDepth),
     .Width (SramDw),    // 32 x 512 --> 2kB
-    .DataBitsPerMask(SramDw),
+    .DataBitsPerMask(8),
 
     .EnableECC           (0), // No Protection
     .EnableParity        (0),
