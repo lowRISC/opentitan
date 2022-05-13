@@ -196,12 +196,60 @@ TEST_F(ConfigTest, ComplexInit) {
 
 TEST_F(ConfigTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_spi_device_configure(nullptr, kDefaultConfig));
+  EXPECT_DIF_BADARG(dif_spi_device_reset_generic_tx_fifo(nullptr));
+  EXPECT_DIF_BADARG(dif_spi_device_reset_generic_rx_fifo(nullptr));
+  EXPECT_DIF_BADARG(
+      dif_spi_device_set_sram_clock_enable(nullptr, kDifToggleEnabled));
+  dif_toggle_t toggle;
+  EXPECT_DIF_BADARG(dif_spi_device_get_sram_clock_enable(nullptr, &toggle));
+  EXPECT_DIF_BADARG(dif_spi_device_get_sram_clock_enable(&spi_, nullptr));
 }
 
 TEST_F(ConfigTest, InitSramOverflow) {
   dif_spi_device_config_t config = kDefaultConfig;
   config.mode_cfg.generic.rx_fifo_len = 0x1000;
   EXPECT_DIF_BADARG(dif_spi_device_configure(&spi_, config));
+}
+
+TEST_F(ConfigTest, SramClockEnable) {
+  dif_toggle_t enabled;
+  EXPECT_READ32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                {
+                    {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_spi_device_get_sram_clock_enable(&spi_, &enabled));
+  EXPECT_TRUE(enabled);
+
+  EXPECT_READ32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                {
+                    {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 0},
+                });
+  EXPECT_DIF_OK(dif_spi_device_get_sram_clock_enable(&spi_, &enabled));
+  EXPECT_FALSE(enabled);
+
+  EXPECT_READ32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                {
+                    {SPI_DEVICE_CONTROL_MODE_OFFSET, 2},
+                    {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 0},
+                });
+  EXPECT_WRITE32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CONTROL_MODE_OFFSET, 2},
+                     {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_set_sram_clock_enable(&spi_, kDifToggleEnabled));
+  EXPECT_READ32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                {
+                    {SPI_DEVICE_CONTROL_MODE_OFFSET, 2},
+                    {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
+                });
+  EXPECT_WRITE32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CONTROL_MODE_OFFSET, 2},
+                     {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 0},
+                 });
+  EXPECT_DIF_OK(
+      dif_spi_device_set_sram_clock_enable(&spi_, kDifToggleDisabled));
 }
 
 class IrqTest : public SpiTest {};
@@ -271,6 +319,19 @@ TEST_F(RxPendingTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_spi_device_rx_pending(nullptr, &bytes_remaining));
   EXPECT_DIF_BADARG(dif_spi_device_rx_pending(&spi_, nullptr));
   EXPECT_DIF_BADARG(dif_spi_device_rx_pending(nullptr, nullptr));
+}
+
+TEST_F(RxPendingTest, AsyncFifo) {
+  uint16_t rx_level, tx_level;
+  EXPECT_READ32(SPI_DEVICE_ASYNC_FIFO_LEVEL_REG_OFFSET,
+                {
+                    {SPI_DEVICE_ASYNC_FIFO_LEVEL_RXLVL_OFFSET, 10},
+                    {SPI_DEVICE_ASYNC_FIFO_LEVEL_TXLVL_OFFSET, 5},
+                });
+  EXPECT_DIF_OK(
+      dif_spi_device_get_async_fifo_levels(&spi_, &rx_level, &tx_level));
+  EXPECT_EQ(rx_level, 10);
+  EXPECT_EQ(tx_level, 5);
 }
 
 class TxPendingTest : public SpiTest {
@@ -736,6 +797,109 @@ TEST_F(SendTest, NullArgs) {
   EXPECT_DIF_OK(dif_spi_device_send(&spi_, buf.data(), buf.size(), nullptr));
 }
 
+class GenericTest : public SpiTest {};
+
+TEST_F(GenericTest, NullArgs) {
+  uint16_t uint16_arg;
+  bool bool_arg;
+  dif_spi_device_generic_fifo_status_t fifo_status;
+  EXPECT_DIF_BADARG(
+      dif_spi_device_get_async_fifo_levels(nullptr, &uint16_arg, &uint16_arg));
+  EXPECT_DIF_BADARG(
+      dif_spi_device_get_async_fifo_levels(&spi_, nullptr, &uint16_arg));
+  EXPECT_DIF_BADARG(
+      dif_spi_device_get_async_fifo_levels(&spi_, &uint16_arg, nullptr));
+  EXPECT_DIF_BADARG(
+      dif_spi_device_get_generic_fifo_status(nullptr, &fifo_status));
+  EXPECT_DIF_BADARG(dif_spi_device_get_generic_fifo_status(&spi_, nullptr));
+  EXPECT_DIF_BADARG(dif_spi_device_get_csb_status(nullptr, &bool_arg));
+  EXPECT_DIF_BADARG(dif_spi_device_get_csb_status(&spi_, nullptr));
+}
+
+TEST_F(GenericTest, ResetFifos) {
+  EXPECT_READ32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                {
+                    {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
+                });
+  EXPECT_WRITE32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
+                     {SPI_DEVICE_CONTROL_RST_TXFIFO_BIT, 1},
+                 });
+  EXPECT_WRITE32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
+                     {SPI_DEVICE_CONTROL_RST_TXFIFO_BIT, 0},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_reset_generic_tx_fifo(&spi_));
+
+  EXPECT_READ32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                {
+                    {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 0},
+                });
+  EXPECT_WRITE32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 0},
+                     {SPI_DEVICE_CONTROL_RST_RXFIFO_BIT, 1},
+                 });
+  EXPECT_WRITE32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 0},
+                     {SPI_DEVICE_CONTROL_RST_RXFIFO_BIT, 0},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_reset_generic_rx_fifo(&spi_));
+}
+
+TEST_F(GenericTest, FifoStatus) {
+  dif_spi_device_generic_fifo_status_t status;
+  EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET,
+                {
+                    {SPI_DEVICE_STATUS_RXF_FULL_BIT, 1},
+                    {SPI_DEVICE_STATUS_RXF_EMPTY_BIT, 0},
+                    {SPI_DEVICE_STATUS_TXF_FULL_BIT, 0},
+                    {SPI_DEVICE_STATUS_TXF_EMPTY_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_spi_device_get_generic_fifo_status(&spi_, &status));
+  EXPECT_TRUE(status.rx_full);
+  EXPECT_FALSE(status.rx_empty);
+  EXPECT_FALSE(status.tx_full);
+  EXPECT_TRUE(status.tx_empty);
+
+  EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET,
+                {
+                    {SPI_DEVICE_STATUS_RXF_FULL_BIT, 0},
+                    {SPI_DEVICE_STATUS_RXF_EMPTY_BIT, 1},
+                    {SPI_DEVICE_STATUS_TXF_FULL_BIT, 1},
+                    {SPI_DEVICE_STATUS_TXF_EMPTY_BIT, 0},
+                });
+  EXPECT_DIF_OK(dif_spi_device_get_generic_fifo_status(&spi_, &status));
+  EXPECT_FALSE(status.rx_full);
+  EXPECT_TRUE(status.rx_empty);
+  EXPECT_TRUE(status.tx_full);
+  EXPECT_FALSE(status.tx_empty);
+}
+
+TEST_F(GenericTest, CsbGpio) {
+  bool csb;
+  EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET,
+                {
+                    {SPI_DEVICE_STATUS_CSB_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_spi_device_get_csb_status(&spi_, &csb));
+  EXPECT_TRUE(csb);
+
+  EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET,
+                {
+                    {SPI_DEVICE_STATUS_RXF_FULL_BIT, 1},
+                    {SPI_DEVICE_STATUS_RXF_EMPTY_BIT, 1},
+                    {SPI_DEVICE_STATUS_TXF_FULL_BIT, 1},
+                    {SPI_DEVICE_STATUS_TXF_EMPTY_BIT, 1},
+                    {SPI_DEVICE_STATUS_CSB_BIT, 0},
+                });
+  EXPECT_DIF_OK(dif_spi_device_get_csb_status(&spi_, &csb));
+  EXPECT_FALSE(csb);
+}
+
 class FlashTest : public SpiTest {
   void SetUp() {
     const dif_spi_device_config_t config = {
@@ -782,9 +946,11 @@ class FlashTest : public SpiTest {
 TEST_F(FlashTest, NullArgs) {
   dif_toggle_t toggle_arg;
   uint32_t uint32_arg;
+  uint16_t uint16_arg;
   uint8_t uint8_arg;
   dif_spi_device_flash_id_t id_arg;
   dif_spi_device_flash_command_t command_arg;
+  dif_spi_device_passthrough_intercept_config_t intercept_config;
   EXPECT_DIF_BADARG(dif_spi_device_init_handle(dev().region(), nullptr));
   EXPECT_DIF_BADARG(dif_spi_device_enable_mailbox(nullptr, /*address=*/0x1000));
   EXPECT_DIF_BADARG(dif_spi_device_disable_mailbox(nullptr));
@@ -801,6 +967,12 @@ TEST_F(FlashTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_spi_device_get_flash_id(nullptr, &id_arg));
   EXPECT_DIF_BADARG(dif_spi_device_get_flash_id(&spi_, nullptr));
   EXPECT_DIF_BADARG(dif_spi_device_set_flash_id(nullptr, id_arg));
+  EXPECT_DIF_BADARG(dif_spi_device_set_passthrough_intercept_config(
+      nullptr, intercept_config));
+  EXPECT_DIF_BADARG(dif_spi_device_get_last_read_address(nullptr, &uint32_arg));
+  EXPECT_DIF_BADARG(dif_spi_device_get_last_read_address(&spi_, nullptr));
+  EXPECT_DIF_BADARG(
+      dif_spi_device_set_eflash_read_threshold(nullptr, /*address=*/0));
   EXPECT_DIF_BADARG(dif_spi_device_get_flash_command_slot(
       nullptr, /*slot=*/0, &toggle_arg, &command_arg));
   EXPECT_DIF_BADARG(dif_spi_device_get_flash_command_slot(
@@ -809,10 +981,32 @@ TEST_F(FlashTest, NullArgs) {
       &spi_, /*slot=*/0, &toggle_arg, nullptr));
   EXPECT_DIF_BADARG(dif_spi_device_set_flash_command_slot(
       nullptr, /*slot=*/0, kDifToggleEnabled, command_arg));
+  EXPECT_DIF_BADARG(dif_spi_device_configure_flash_en4b_command(
+      nullptr, kDifToggleEnabled, /*opcode=*/0));
+  EXPECT_DIF_BADARG(dif_spi_device_configure_flash_ex4b_command(
+      nullptr, kDifToggleEnabled, /*opcode=*/0));
+  EXPECT_DIF_BADARG(dif_spi_device_configure_flash_wren_command(
+      nullptr, kDifToggleEnabled, /*opcode=*/0));
+  EXPECT_DIF_BADARG(dif_spi_device_configure_flash_wrdi_command(
+      nullptr, kDifToggleEnabled, /*opcode=*/0));
   EXPECT_DIF_BADARG(dif_spi_device_set_flash_address_swap(nullptr, /*mask=*/0,
                                                           /*replacement=*/0));
   EXPECT_DIF_BADARG(dif_spi_device_set_flash_payload_swap(nullptr, /*mask=*/0,
                                                           /*replacement=*/0));
+  EXPECT_DIF_BADARG(
+      dif_spi_device_get_flash_command_fifo_occupancy(nullptr, &uint8_arg));
+  EXPECT_DIF_BADARG(
+      dif_spi_device_get_flash_command_fifo_occupancy(&spi_, nullptr));
+  EXPECT_DIF_BADARG(
+      dif_spi_device_get_flash_address_fifo_occupancy(nullptr, &uint8_arg));
+  EXPECT_DIF_BADARG(
+      dif_spi_device_get_flash_address_fifo_occupancy(&spi_, nullptr));
+  EXPECT_DIF_BADARG(dif_spi_device_get_flash_payload_fifo_occupancy(
+      nullptr, &uint16_arg, &uint32_arg));
+  EXPECT_DIF_BADARG(dif_spi_device_get_flash_payload_fifo_occupancy(
+      &spi_, nullptr, &uint32_arg));
+  EXPECT_DIF_BADARG(dif_spi_device_get_flash_payload_fifo_occupancy(
+      &spi_, &uint16_arg, nullptr));
   EXPECT_DIF_BADARG(dif_spi_device_pop_flash_command_fifo(nullptr, &uint8_arg));
   EXPECT_DIF_BADARG(dif_spi_device_pop_flash_command_fifo(&spi_, nullptr));
   EXPECT_DIF_BADARG(
@@ -972,6 +1166,50 @@ TEST_F(FlashTest, DeviceId) {
   EXPECT_DIF_OK(dif_spi_device_set_flash_id(&spi_, id));
 }
 
+TEST_F(FlashTest, InterceptConfig) {
+  dif_spi_device_passthrough_intercept_config_t config = {
+      .status = false,
+      .jedec_id = true,
+      .sfdp = false,
+      .mailbox = true,
+  };
+  EXPECT_WRITE32(SPI_DEVICE_INTERCEPT_EN_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_INTERCEPT_EN_STATUS_BIT, 0},
+                     {SPI_DEVICE_INTERCEPT_EN_JEDEC_BIT, 1},
+                     {SPI_DEVICE_INTERCEPT_EN_SFDP_BIT, 0},
+                     {SPI_DEVICE_INTERCEPT_EN_MBX_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_set_passthrough_intercept_config(&spi_, config));
+
+  config = (dif_spi_device_passthrough_intercept_config_t){
+      .status = true,
+      .jedec_id = false,
+      .sfdp = true,
+      .mailbox = false,
+  };
+  EXPECT_WRITE32(SPI_DEVICE_INTERCEPT_EN_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_INTERCEPT_EN_STATUS_BIT, 1},
+                     {SPI_DEVICE_INTERCEPT_EN_JEDEC_BIT, 0},
+                     {SPI_DEVICE_INTERCEPT_EN_SFDP_BIT, 1},
+                     {SPI_DEVICE_INTERCEPT_EN_MBX_BIT, 0},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_set_passthrough_intercept_config(&spi_, config));
+}
+
+TEST_F(FlashTest, FlashWatermark) {
+  uint32_t address;
+  EXPECT_READ32(SPI_DEVICE_LAST_READ_ADDR_REG_OFFSET, 0x1000);
+  EXPECT_DIF_OK(dif_spi_device_get_last_read_address(&spi_, &address));
+  EXPECT_EQ(address, 0x1000);
+
+  EXPECT_DIF_BADARG(dif_spi_device_set_eflash_read_threshold(&spi_, 0x800));
+
+  EXPECT_WRITE32(SPI_DEVICE_READ_THRESHOLD_REG_OFFSET, 0x26a);
+  EXPECT_DIF_OK(dif_spi_device_set_eflash_read_threshold(&spi_, 0x26a));
+}
+
 TEST_F(FlashTest, CommandInfo) {
   dif_spi_device_flash_command_t command_info;
   dif_toggle_t toggle;
@@ -1108,6 +1346,37 @@ TEST_F(FlashTest, CommandInfo) {
       &spi_, /*slot=*/1, kDifToggleEnabled, command_info));
 }
 
+TEST_F(FlashTest, HardwareCommandInfo) {
+  EXPECT_WRITE32(SPI_DEVICE_CMD_INFO_EN4B_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CMD_INFO_EN4B_OPCODE_OFFSET, 0xb7},
+                     {SPI_DEVICE_CMD_INFO_EN4B_VALID_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_configure_flash_en4b_command(
+      &spi_, kDifToggleEnabled, /*opcode=*/0xb7));
+  EXPECT_WRITE32(SPI_DEVICE_CMD_INFO_EX4B_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CMD_INFO_EX4B_OPCODE_OFFSET, 0xe9},
+                     {SPI_DEVICE_CMD_INFO_EX4B_VALID_BIT, 0},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_configure_flash_ex4b_command(
+      &spi_, kDifToggleDisabled, /*opcode=*/0xe9));
+  EXPECT_WRITE32(SPI_DEVICE_CMD_INFO_WREN_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CMD_INFO_WREN_OPCODE_OFFSET, 0x06},
+                     {SPI_DEVICE_CMD_INFO_WREN_VALID_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_configure_flash_wren_command(
+      &spi_, kDifToggleEnabled, /*opcode=*/0x06));
+  EXPECT_WRITE32(SPI_DEVICE_CMD_INFO_WRDI_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CMD_INFO_WRDI_OPCODE_OFFSET, 0x04},
+                     {SPI_DEVICE_CMD_INFO_WRDI_VALID_BIT, 0},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_configure_flash_wrdi_command(
+      &spi_, kDifToggleDisabled, /*opcode=*/0x04));
+}
+
 TEST_F(FlashTest, Swaps) {
   EXPECT_WRITE32(SPI_DEVICE_ADDR_SWAP_MASK_REG_OFFSET, 0x10203456u);
   EXPECT_WRITE32(SPI_DEVICE_ADDR_SWAP_DATA_REG_OFFSET, 0xffff0000u);
@@ -1118,6 +1387,43 @@ TEST_F(FlashTest, Swaps) {
   EXPECT_WRITE32(SPI_DEVICE_PAYLOAD_SWAP_DATA_REG_OFFSET, 0xa5a5f00fu);
   EXPECT_DIF_OK(
       dif_spi_device_set_flash_payload_swap(&spi_, 0x24587001u, 0xa5a5f00fu));
+}
+
+TEST_F(FlashTest, FifoOccupancy) {
+  uint8_t cmd_fifo_occupancy, addr_fifo_occupancy;
+  uint16_t payload_fifo_occupancy;
+  uint32_t payload_start_offset;
+  EXPECT_READ32(SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET,
+                {
+                    {SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_DEPTH_OFFSET, 3},
+                    {SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_NOTEMPTY_BIT, 1},
+                    {SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_DEPTH_OFFSET, 2},
+                    {SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_spi_device_get_flash_command_fifo_occupancy(
+      &spi_, &cmd_fifo_occupancy));
+  EXPECT_EQ(cmd_fifo_occupancy, 3);
+
+  EXPECT_READ32(SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET,
+                {
+                    {SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_DEPTH_OFFSET, 0},
+                    {SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_NOTEMPTY_BIT, 0},
+                    {SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_DEPTH_OFFSET, 2},
+                    {SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_spi_device_get_flash_address_fifo_occupancy(
+      &spi_, &addr_fifo_occupancy));
+  EXPECT_EQ(addr_fifo_occupancy, 2);
+
+  EXPECT_READ32(SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET,
+                {
+                    {SPI_DEVICE_UPLOAD_STATUS2_PAYLOAD_DEPTH_OFFSET, 256},
+                    {SPI_DEVICE_UPLOAD_STATUS2_PAYLOAD_START_IDX_OFFSET, 3},
+                });
+  EXPECT_DIF_OK(dif_spi_device_get_flash_payload_fifo_occupancy(
+      &spi_, &payload_fifo_occupancy, &payload_start_offset));
+  EXPECT_EQ(payload_fifo_occupancy, 256);
+  EXPECT_EQ(payload_start_offset, 3);
 }
 
 TEST_F(FlashTest, FifoPop) {
