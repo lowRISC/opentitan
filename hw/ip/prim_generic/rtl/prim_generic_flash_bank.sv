@@ -143,7 +143,8 @@ module prim_generic_flash_bank #(
     .full_o (),
     .rvalid_o(cmd_valid),
     .rready_i(pop_cmd),
-    .rdata_o (cmd_q)
+    .rdata_o (cmd_q),
+    .err_o   ()
   );
 
   logic rd_req, prog_req, pg_erase_req, bk_erase_req;

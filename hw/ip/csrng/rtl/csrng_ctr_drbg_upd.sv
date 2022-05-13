@@ -257,7 +257,8 @@ module csrng_ctr_drbg_upd #(
     .rready_i (sfifo_updreq_pop),
     .rdata_o  (sfifo_updreq_rdata),
     .full_o   (sfifo_updreq_full),
-    .depth_o  ()
+    .depth_o  (),
+    .err_o    ()
   );
 
   assign sfifo_updreq_push = !sfifo_updreq_full && ctr_drbg_upd_req_i;
@@ -383,7 +384,8 @@ module csrng_ctr_drbg_upd #(
     .rready_i (sfifo_bencreq_pop),
     .rdata_o  (sfifo_bencreq_rdata),
     .full_o   (sfifo_bencreq_full),
-    .depth_o  ()
+    .depth_o  (),
+    .err_o    ()
   );
 
   assign sfifo_bencreq_pop = block_encrypt_req_o && block_encrypt_rdy_i;
@@ -425,7 +427,8 @@ module csrng_ctr_drbg_upd #(
     .rready_i (sfifo_bencack_pop),
     .rdata_o  (sfifo_bencack_rdata),
     .full_o   (sfifo_bencack_full),
-    .depth_o  ()
+    .depth_o  (),
+    .err_o    ()
   );
 
   assign sfifo_bencack_push = !sfifo_bencack_full && block_encrypt_ack_i;
@@ -459,7 +462,8 @@ module csrng_ctr_drbg_upd #(
     .rready_i (sfifo_pdata_pop),
     .rdata_o  (sfifo_pdata_rdata),
     .full_o   (sfifo_pdata_full),
-    .depth_o  ()
+    .depth_o  (),
+    .err_o    ()
   );
 
   assign sfifo_pdata_wdata = sfifo_updreq_pdata;
@@ -573,7 +577,8 @@ module csrng_ctr_drbg_upd #(
     .rready_i (sfifo_final_pop),
     .rdata_o  (sfifo_final_rdata),
     .full_o   (sfifo_final_full),
-    .depth_o  ()
+    .depth_o  (),
+    .err_o    ()
   );
 
   assign sfifo_final_wdata = {updated_key_and_v,concat_inst_id_q,concat_ccmd_q};

@@ -472,7 +472,8 @@ module tlul_adapter_sram
     .rready_i(reqfifo_rready),
     .rdata_o (reqfifo_rdata),
     .full_o  (),
-    .depth_o ()
+    .depth_o (),
+    .err_o   ()
   );
 
   // sramreqfifo:
@@ -494,7 +495,8 @@ module tlul_adapter_sram
     .rready_i(sramreqfifo_rready),
     .rdata_o (sramreqfifo_rdata),
     .full_o  (),
-    .depth_o ()
+    .depth_o (),
+    .err_o   ()
   );
 
   // Rationale having #Outstanding depth in response FIFO.
@@ -518,7 +520,8 @@ module tlul_adapter_sram
     .rready_i(rspfifo_rready),
     .rdata_o (rspfifo_rdata),
     .full_o  (),
-    .depth_o ()
+    .depth_o (),
+    .err_o   ()
   );
 
   // below assertion fails when SRAM rvalid is asserted even though ReqFifo is empty
