@@ -528,12 +528,11 @@ def parse_args():
 
     seedg.add_argument("--seeds",
                        "-s",
-                       nargs="+",
-                       default=[],
+                       default='',
                        metavar="S",
-                       help=('A list of seeds for tests. Note that these '
-                             'specific seeds are applied to items being run '
-                             'in the order they are passed.'))
+                       help=('A comma-separated list of seeds for tests. Note '
+                             'that these specific seeds are applied to items '
+                             'being run in the order they are passed.'))
 
     seedg.add_argument("--fixed-seed",
                        type=int,
@@ -676,6 +675,9 @@ def parse_args():
     # Split build and run modes as comma-separated lists
     args.build_modes = split_commas(args.build_modes)
     args.run_modes = split_commas(args.run_modes)
+
+    # Split --seeds as a comma-separated list
+    args.seeds = split_commas(args.seeds)
 
     # We want the --list argument to default to "all categories", but allow
     # filtering. If args.list is None, then --list wasn't supplied. If it is
