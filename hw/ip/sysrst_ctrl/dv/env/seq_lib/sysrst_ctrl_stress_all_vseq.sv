@@ -9,7 +9,7 @@ class sysrst_ctrl_stress_all_vseq extends sysrst_ctrl_base_vseq;
 
   `uvm_object_new
 
-  constraint num_trans_c {num_trans inside {[2 : 5]};}
+  constraint num_trans_c {num_trans inside {[20 : 30]};}
 
   task body();
     string seq_names[] = {"sysrst_ctrl_smoke_vseq",
@@ -18,9 +18,11 @@ class sysrst_ctrl_stress_all_vseq extends sysrst_ctrl_base_vseq;
                           "sysrst_ctrl_auto_blk_key_output_vseq",
                           "sysrst_ctrl_pin_access_vseq",
                           "sysrst_ctrl_pin_override_vseq",
+                          "sysrst_ctrl_flash_wr_prot_vseq",
                           "sysrst_ctrl_ec_pwr_on_rst_vseq",
                           "sysrst_ctrl_flash_wr_prot_vseq",
                           "sysrst_ctrl_ultra_low_pwr_vseq",
+                          "sysrst_ctrl_combo_detect",
                           "sysrst_ctrl_edge_detect_vseq",
                           "sysrst_ctrl_common_vseq"};
 
