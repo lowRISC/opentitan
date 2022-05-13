@@ -285,7 +285,8 @@ module hmac
 
     .rvalid_o(fifo_rvalid),
     .rready_i(fifo_rready),
-    .rdata_o (fifo_rdata)
+    .rdata_o (fifo_rdata),
+    .err_o   ()
   );
 
   // TL ADAPTER SRAM

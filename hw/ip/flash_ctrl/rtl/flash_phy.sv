@@ -149,7 +149,8 @@ module flash_phy
     .full_o (),
     .rvalid_o(seq_fifo_pending),
     .rready_i(host_req_done_o),
-    .rdata_o (rsp_bank_sel)
+    .rdata_o (rsp_bank_sel),
+    .err_o   ()
   );
 
   // Generate host scramble_en indication, broadcasted to all banks
@@ -226,7 +227,8 @@ module flash_phy
       .full_o (),
       .rvalid_o(host_rsp_vld[bank]),
       .rready_i(host_rsp_ack[bank]),
-      .rdata_o ({host_rsp_err[bank], host_rsp_data[bank]})
+      .rdata_o ({host_rsp_err[bank], host_rsp_data[bank]}),
+      .err_o   ()
     );
 
     logic host_req;

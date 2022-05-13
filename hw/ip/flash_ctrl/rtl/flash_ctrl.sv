@@ -535,7 +535,8 @@ module flash_ctrl
     .full_o  (),
     .rvalid_o(prog_fifo_rvalid),
     .rready_i(prog_fifo_ren),
-    .rdata_o (prog_fifo_rdata)
+    .rdata_o (prog_fifo_rdata),
+    .err_o   ()
   );
   assign hw2reg.curr_fifo_lvl.prog.d = prog_fifo_depth;
 
@@ -642,7 +643,8 @@ module flash_ctrl
     .depth_o (rd_fifo_depth),
     .rvalid_o(rd_fifo_rvalid),
     .rready_i(rd_fifo_rready),
-    .rdata_o (rd_fifo_rdata)
+    .rdata_o (rd_fifo_rdata),
+    .err_o   ()
   );
   assign hw2reg.curr_fifo_lvl.rd.d = rd_fifo_depth;
 

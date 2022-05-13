@@ -297,7 +297,8 @@ module flash_phy_rd
     .full_o (),
     .rvalid_o(rsp_fifo_vld),
     .rready_i(data_valid_o), // pop when a match has been found
-    .rdata_o (rsp_fifo_rdata)
+    .rdata_o (rsp_fifo_rdata),
+    .err_o   ()
   );
 
 
@@ -465,7 +466,8 @@ module flash_phy_rd
     .full_o (),
     .rvalid_o(fifo_data_valid),
     .rready_i(rd_and_mask_fifo_pop),
-    .rdata_o ({alloc_q2, descram_q, forward_q, data_err_q, fifo_data})
+    .rdata_o ({alloc_q2, descram_q, forward_q, data_err_q, fifo_data}),
+    .err_o   ()
   );
 
   // storage for mask calculations
@@ -485,7 +487,8 @@ module flash_phy_rd
     .full_o (),
     .rvalid_o(mask_valid),
     .rready_i(rd_and_mask_fifo_pop),
-    .rdata_o (mask)
+    .rdata_o (mask),
+    .err_o   ()
   );
 
   // generate the mask calculation request
