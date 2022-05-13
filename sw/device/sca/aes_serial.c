@@ -194,7 +194,7 @@ static void init_aes(void) {
  * UART.
  */
 void _ottf_main(void) {
-  sca_init(kScaTriggerSourceAes, kScaPeripheralAes);
+  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralAes);
 
   LOG_INFO("Running AES serial");
 
