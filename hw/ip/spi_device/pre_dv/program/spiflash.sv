@@ -475,8 +475,10 @@ program spiflash #(
     // get address field
     get_address(IoSingle, AddrCfg, address);
     $display("T:%0d] SPIFlash: Read Address %8Xh", $time, address);
-    assert(address[31:StorageAw] == '0)
-      else $display("Out-of-Bound Address received");
+    if (address[31:StorageAw] != '0) begin
+      $display("Out-of-Bound Address received: %8Xh", address);
+      $display("  Keep returning garbage data");
+    end
 
     // Dummy cycle?
     case (opcode)

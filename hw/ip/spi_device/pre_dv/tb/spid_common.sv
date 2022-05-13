@@ -871,7 +871,7 @@ package spid_common;
     input spi_data_t  opcode,
     input logic [31:0] addr,
     input bit          addr_4b_en,
-    input spi_data_t   payload [$]
+    input spi_queue_t  payload
   );
     automatic spi_fifo_t send_data [$];
     automatic spi_data_t rcv_data  [$];
@@ -1140,6 +1140,23 @@ package spid_common;
 
   endclass : SpiTrans
 
+  class SpiTransWel extends SpiTrans;
+    constraint wel_cmd_c {
+      cmd inside {
+        spi_device_pkg::CmdWriteDisable,
+        spi_device_pkg::CmdWriteEnable
+      };
+      address   == 0;
+      addr_mode == 0;
+      size      == 0;
+    };
+
+    function void display();
+      $display("SPI WREN/ WRDI Transaction:");
+      $display("  Command: %s", str_cmd);
+    endfunction : display
+  endclass : SpiTransWel
+
   class SpiTransRead extends SpiTrans;
     // Information
 
@@ -1177,7 +1194,7 @@ package spid_common;
       endcase
     endfunction : post_randomize
 
-    function void display();
+    function automatic void display();
       $display("SPI Read Transaction:");
       $display("  Command: %s", str_cmd);
       $display("  Address: %8Xh Mode(%1d)", address, addr_mode);
@@ -1204,6 +1221,29 @@ package spid_common;
       program_data.size() == size;
     }
 
+    function automatic void display();
+      automatic string payload_partial = ""; // to display first a few bytes
+      automatic int unsigned bytes;
+
+      bytes = $min(16, size) ;
+
+      for (int i = 0 ; i < bytes ; i++) begin
+        if (i == 0) payload_partial = $sformatf("%X", program_data[i]);
+        else begin
+          payload_partial = { payload_partial,
+            " ",
+            $sformatf("%X", program_data[i])
+          };
+        end
+      end
+
+      $display("SPI Page Program Transaction:");
+      $display("  Address: %8Xh Mode(%1d)", address, addr_mode);
+      $display("  Size:    %4d",  $min(256, size));
+      $display("  Wrap Test: %1X", wrap_test);
+      $display("  Payload: %s", payload_partial);
+      $display("");
+    endfunction : display
   endclass : SpiTransProgram
 
 endpackage : spid_common
