@@ -3,16 +3,26 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@//rules:repo.bzl", "http_archive_or_local")
 
-def rust_repos():
+def rust_repos(rules_rust = None, safe_ftdi = None):
     # We use forked/patched Rust Bazel rules to enable caching repository rules
     # required for air-gapped Bazel builds. See lowRISC/opentitan:#12515 for
     # more details.
-    http_archive(
+    http_archive_or_local(
         name = "rules_rust",
+        local = rules_rust,
         sha256 = "5e2f59778ee496064b2d96182bc8aa916a0e34921124a359f740f51e5e5afc38",
         strip_prefix = "rules_rust-be0d6ca492f64cc8d460f54f467925ef2753ed89",
         url = "https://github.com/lowRISC/rules_rust/archive/be0d6ca492f64cc8d460f54f467925ef2753ed89.tar.gz",
+    )
+
+    http_archive_or_local(
+        name = "safe_ftdi",
+        local = safe_ftdi,
+        sha256 = "33c61f3c2303e595c554a0b9ed8ba7ae3088d51052fa5916a9a4767604683b52",
+        strip_prefix = "safe-ftdi-bazel-20220511_01",
+        url = "https://github.com/lowRISC/safe-ftdi/archive/refs/tags/bazel-20220511_01.tar.gz",
     )
 
     # We use GitHub mirrors of boringssl and mundane because their counterparts

@@ -899,6 +899,12 @@ void otbn_take_loop_warps(OtbnModel *model, OtbnMemUtil *memutil) {
   model->take_loop_warps(*memutil);
 }
 
+int otbn_has_loop_warps(OtbnMemUtil *memutil) {
+  assert(memutil);
+
+  return memutil->GetLoopWarps().size() != 0;
+}
+
 int otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
                                 svLogicVecVal *key1, unsigned char valid) {
   assert(model && key0 && key1);

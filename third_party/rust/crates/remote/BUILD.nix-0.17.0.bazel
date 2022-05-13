@@ -82,7 +82,7 @@ rust_library(
         ":nix_build_script",
         "@raze__bitflags__1_3_2//:bitflags",
         "@raze__cfg_if__0_1_10//:cfg_if",
-        "@raze__libc__0_2_124//:libc",
+        "@raze__libc__0_2_125//:libc",
         "@raze__void__1_0_2//:void",
     ],
 )

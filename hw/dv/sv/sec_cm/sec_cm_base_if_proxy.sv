@@ -9,6 +9,6 @@ virtual class sec_cm_base_if_proxy extends uvm_object;
 
   `uvm_object_new
 
-  pure virtual task inject_fault();
-  pure virtual task restore_fault();
+  pure virtual task automatic inject_fault();
+  pure virtual task automatic restore_fault();
 endclass

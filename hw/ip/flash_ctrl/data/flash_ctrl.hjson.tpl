@@ -838,7 +838,8 @@
                 name: "EN",
                 mubi: true,
                 desc: '''
-                  Region enabled, following fields apply
+                  Region enabled, following fields apply.
+                  If region is disabled, it is not matched against any incoming transaction.
                 ''',
                 resval: false
               },

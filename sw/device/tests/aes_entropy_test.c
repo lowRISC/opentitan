@@ -124,7 +124,7 @@ bool test_main(void) {
   // Assertion check verifies that the internal states (data_in, key share and
   // IV are also garbage, i.e. different from the originally written values.
   CHECK_DIF_OK(dif_aes_read_iv(&aes, &iv));
-  CHECK_BUFFER_NEQ(iv.iv, kIv, ARRAYSIZE(kIv));
+  CHECK_ARRAYS_NE(iv.iv, kIv, ARRAYSIZE(kIv));
 
   CHECK_DIF_OK(dif_aes_end(&aes));
   return true;

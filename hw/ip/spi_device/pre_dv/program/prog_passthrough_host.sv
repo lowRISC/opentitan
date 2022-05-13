@@ -20,6 +20,30 @@ program prog_passthrough_host
 
   spi_data_t mirrored_storage[*]; // Mirrored SPIFlash storage
 
+  import spi_device_pkg::Addr3B, spi_device_pkg::Addr4B,
+         spi_device_pkg::addr_mode_e;
+  addr_mode_e addr_mode;
+
+  // FIXME: Make it configurable by ReadSfdp
+  parameter int unsigned FlashSize = 1024*1024;
+
+  import spi_device_pkg::CmdReadStatus1,
+         spi_device_pkg::CmdJedecId,
+         spi_device_pkg::CmdPageProgram,
+         spi_device_pkg::CmdSectorErase,
+         spi_device_pkg::CmdBlockErase32,
+         spi_device_pkg::CmdBlockErase64,
+         spi_device_pkg::CmdReadData,
+         spi_device_pkg::CmdReadFast,
+         spi_device_pkg::CmdReadDual,
+         spi_device_pkg::CmdReadQuad,
+         spi_device_pkg::CmdWriteDisable,
+         spi_device_pkg::CmdWriteEnable,
+         spi_device_pkg::CmdEn4B,
+         spi_device_pkg::CmdEx4B,
+         spi_device_pkg::CmdReadSfdp,
+         spi_device_pkg::CmdResetDevice;
+
   // Timeout
   initial begin
     #1ms
@@ -28,14 +52,13 @@ program prog_passthrough_host
   end
 
   initial begin
-    automatic spi_data_t temp_status;
-    automatic logic [23:0] temp_jedec_id;
-    automatic int unsigned num_cc;
-    automatic spi_queue_t  rdata = {};
-    automatic spi_queue_t  rdata_cmp = {};
+    automatic string testname;
     automatic bit pass = 1'b 1;
+    automatic bit subtask_pass;
+
     // Default value
     sif.csb = 1'b 1;
+    addr_mode = Addr3B; // default 3B mode
 
     @(posedge rst_n);
 
@@ -43,23 +66,74 @@ program prog_passthrough_host
     #2us
 
     @(negedge clk);
+
+    $value$plusargs("TESTNAME=%s", testname);
+
+    case (testname)
+      "readbasic": begin
+        test_readbasic(subtask_pass);
+      end
+
+      "addr_4b": begin
+        // Test EN4B
+        test_addr_4b(subtask_pass);
+      end
+
+      "wel": begin
+        test_wel(subtask_pass);
+      end
+
+      default: begin
+        $display("Passthrough test requires '+TESTNAME=%%s'");
+      end
+
+    endcase
+
+    if (subtask_pass == 1'b 0) pass = 1'b 0;
+    wait_trans();
+
+    // Finish
+    if (pass) begin
+      $display("TEST PASSED CHECKS");
+    end
+
+    $finish();
+
+  end
+
+  static task automatic wait_trans();
+    repeat(10) @(negedge clk);
+  endtask : wait_trans
+
+  task automatic read_status();
+    automatic spi_data_t   temp_status;
     // Test: Issue Status Read command without intercept
     spiflash_readstatus(
       sif.tb,
-      spi_device_pkg::CmdReadStatus1,
+      CmdReadStatus1,
       temp_status
     );
 
     $display("Received Status: %2Xh", temp_status);
     status[0] = temp_status;
 
-    repeat(10) @(negedge clk);
+    wait_trans();
+
+  endtask : read_status
+
+  static task test_readbasic(output bit pass);
+    automatic logic [23:0] temp_jedec_id;
+    automatic int unsigned num_cc;
+    automatic spi_queue_t  rdata = {};
+    automatic spi_queue_t  rdata_cmp = {};
+
+    read_status();
 
     // Test: Jedec ID
     // CcNum 7, Cc 'h 7F
     spiflash_readjedec(
       sif.tb,
-      spi_device_pkg::CmdJedecId,
+      CmdJedecId,
       8'h 7F,
       num_cc,
       temp_jedec_id
@@ -70,12 +144,12 @@ program prog_passthrough_host
     $display("Received Jedec ID: %2Xh (CC: %2d), Device ID: %4Xh",
       jedec_id, num_cc, device_id);
 
-    repeat(10) @(negedge clk);
+    wait_trans();
 
     // Read SFDP from SPIFlash (not inside SPI_DEVICE IP)
     spiflash_readsfdp(
       sif.tb,
-      spi_device_pkg::CmdReadSfdp, // 5Ah
+      CmdReadSfdp, // 5Ah
       24'h 00_0000, // addr
       32,           // size
       rdata
@@ -84,12 +158,12 @@ program prog_passthrough_host
     // clean-up for SFDP
     rdata.delete();
 
-    repeat(10) @(negedge clk);
+    wait_trans();
 
     // Read commands:
     spiflash_read(
       sif,
-      spi_device_pkg::CmdReadData, // 03h
+      CmdReadData, // 03h
       32'h 0000_0103,              // address
       0,                           // 3B mode
       0,                           // dummy
@@ -101,12 +175,12 @@ program prog_passthrough_host
     // Update mirrored storage
     update_storage('h 103, 256, rdata);
 
-    repeat(10) @(negedge clk);
+    wait_trans();
 
     // Issue another command to the partial of the address and compare
     spiflash_read(
       sif,
-      spi_device_pkg::CmdReadQuad,
+      CmdReadQuad,
       32'h 0000_103,               // address
       0,                           // 3B mode
       3,                           // dummy
@@ -116,6 +190,7 @@ program prog_passthrough_host
     );
 
     if (!compare_storage('h 103, 131, rdata_cmp)) pass = 1'b 0;
+    else pass = 1'b 1;
 
     $display("Read Data size: %3d / %3d", rdata.size(), rdata_cmp.size());
     $display("Read Data (1st): %p", rdata);
@@ -124,17 +199,136 @@ program prog_passthrough_host
     rdata.delete();
     rdata_cmp.delete();
 
-    repeat(10) @(negedge clk);
+    wait_trans();
 
-    // Finish
-    if (pass) begin
-      $display("TEST PASSED CHECKS");
+  endtask : test_readbasic
+
+  static task test_addr_4b(output bit pass);
+    automatic spi_queue_t rdata;
+    automatic logic [31:0] address;
+    automatic int unsigned size;
+
+    SpiTransRead trans = new();
+    // Random address and size
+    trans.randomize() with {
+      size < 32;
+      address < FlashSize - size;
+      addr_mode == 0; // 3B only
+    };
+    trans.display();
+
+    if (addr_mode != Addr3B) begin
+      spiflash_addr_4b(sif.tb, CmdEx4B);
+
+      addr_mode = Addr3B;
+
+      wait_trans();
     end
-    $finish();
-  end
 
-  // TODO: Do Factory to load proper sequence for the test
+    // FIXME: Call SPI Driver
+    spiflash_read(
+      sif.tb,
+      trans.cmd,
+      trans.address,
+      trans.addr_mode,
+      trans.dummy,
+      trans.size,
+      trans.io_mode,
+      rdata
+    );
 
+    update_storage(trans.address, trans.size, rdata);
+    rdata.delete();
+
+    wait_trans();
+
+    address = trans.address;
+    size    = trans.size;
+
+    trans = new();
+
+    trans.randomize() with {
+      size      == local::size;
+      address   == local::address;
+      addr_mode == 1; // Addr 4B
+    };
+    trans.display();
+
+    // Issue En4B
+    spiflash_addr_4b(sif.tb, CmdEn4B);
+
+    addr_mode = Addr4B;
+
+    wait_trans();
+
+    $display("Issuing 4B address command");
+
+    spiflash_read(
+      sif.tb,
+      trans.cmd,
+      trans.address,
+      trans.addr_mode,
+      trans.dummy,
+      trans.size,
+      trans.io_mode,
+      rdata
+    );
+
+    wait_trans();
+
+    if (!compare_storage(trans.address, trans.size, rdata)) pass = 1'b 0;
+    else pass = 1'b 1;
+
+    rdata.delete();
+
+  endtask : test_addr_4b
+
+  static task test_wel(output bit pass);
+    automatic bit status_wel;
+    automatic bit exp_wel = 1'b 0;
+    // This test issues WREN/ WRDI to SPIFlash and check if the SPI_DEVICE IP
+    // (not SPIFlash) sets/ clears the STATUS.WEL correctly.
+    SpiTrans trans;
+
+    pass = 1'b 1;
+    repeat(10) begin
+      // Sequence: Random wel set/clear and read status to check
+      read_status();
+
+      // Check WEL.
+      status_wel = status[0][1];
+
+      if (status_wel != exp_wel) begin
+        // FIXME: move to scoreboard
+        $display("STATUS.WEL mismatch: EXP(%1b) / RCV(%1b)",
+          exp_wel, status_wel);
+        pass = 1'b 0;
+      end
+
+      trans = new();
+
+      trans.randomize() with {
+        cmd inside {
+          CmdWriteDisable,
+          CmdWriteEnable
+        };
+        size      == 0;
+        address   == '0;
+        addr_mode == 0;
+      };
+
+      // TODO: Add to TLM FIFO to sequencer then sequencer to Driver
+
+      spiflash_oponly(
+        sif.tb,
+        trans.cmd
+      );
+
+      wait_trans();
+      exp_wel = (trans.cmd == CmdWriteEnable) ? 1'b 1: 1'b 0;
+    end
+
+  endtask : test_wel
 
   // Access to Mirrored storage
   function automatic void write_byte(int unsigned addr, spi_data_t data);
@@ -166,6 +360,8 @@ program prog_passthrough_host
       if (!mirrored_storage.exists(addr+i)) write_byte(addr+i, data[i]);
       else if (read_byte(addr+i) != data[i]) begin
         pass = 1'b 0;
+        $display("Data mismatch: Addr{%8Xh} EXP(%2Xh) / RCV(%2Xh)",
+          addr+i, read_byte(addr+i), data[i]);
       end
     end
     return pass;

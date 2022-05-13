@@ -16,6 +16,10 @@ class pwrmgr_clk_ctrl_monitor extends dv_base_monitor #(
 
   `uvm_component_new
 
+  typedef enum {P_EDGE = 1, N_EDGE = -1} edge_capture_e;
+  edge_capture_e pwr_clk_req_io_ip_clk_edge_capture[$];
+  edge_capture_e pwr_ast_req_io_clk_edge_capture[$];
+
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
   endfunction
@@ -31,21 +35,31 @@ class pwrmgr_clk_ctrl_monitor extends dv_base_monitor #(
     `uvm_info(`gfn, $sformatf("clk_ctrl %s", (cfg.clk_ctrl_en)? "enabled" :
                               "disabled"), UVM_MEDIUM)
     if (cfg.clk_ctrl_en) begin
+      if (cfg.vif.pwr_ast_req.io_clk_en == 0) cfg.clk_rst_vif.stop_clk();
+      if (cfg.vif.pwr_clk_req.io_ip_clk_en == 0) cfg.esc_clk_rst_vif.stop_clk();
       fork
         monitor_pwr_ast_o();
         monitor_pwr_clk_o();
+        ctrl_main_clk();
+        ctrl_esc_clk();
       join_none
     end
   endtask
 
   task monitor_pwr_ast_o();
+    logic ival = cfg.vif.pwr_ast_req.io_clk_en;
     forever begin
       @cfg.vif.cb;
-      if (cfg.vif.pwr_ast_req.io_clk_en == 0) begin
-        cfg.clk_rst_vif.stop_clk();
+      if (ival) begin
+        // capture posedge
+        @(negedge cfg.vif.pwr_ast_req.io_clk_en);
+        pwr_ast_req_io_clk_edge_capture.push_back(N_EDGE);
+        ival = 0;
+      end else begin
+        // capture negedge
         @(posedge cfg.vif.pwr_ast_req.io_clk_en);
-        repeat ($urandom_range(MAIN_CLK_DELAY_MIN, MAIN_CLK_DELAY_MAX)) @cfg.vif.cb;
-        cfg.clk_rst_vif.start_clk();
+        pwr_ast_req_io_clk_edge_capture.push_back(P_EDGE);
+        ival = 1;
       end
     end
   endtask // monitor_pwr_ast_o
@@ -55,16 +69,50 @@ class pwrmgr_clk_ctrl_monitor extends dv_base_monitor #(
     forever begin
       @cfg.vif.cb;
       if (ival) begin
+        // capture posedge
         @(negedge cfg.vif.pwr_clk_req.io_ip_clk_en);
-        repeat($urandom_range(ESC_CLK_DELAY_MIN, ESC_CLK_DELAY_MAX)) @cfg.vif.cb;
-        cfg.esc_clk_rst_vif.stop_clk();
+        pwr_clk_req_io_ip_clk_edge_capture.push_back(N_EDGE);
         ival = 0;
       end else begin
+        // capture negedge
         @(posedge cfg.vif.pwr_clk_req.io_ip_clk_en);
-        repeat($urandom_range(ESC_CLK_DELAY_MIN, ESC_CLK_DELAY_MAX)) @cfg.vif.cb;
-        cfg.esc_clk_rst_vif.start_clk();
+        pwr_clk_req_io_ip_clk_edge_capture.push_back(P_EDGE);
         ival = 1;
       end
     end
   endtask // monitor_pwr_clk_o
+
+  task ctrl_main_clk();
+    edge_capture_e val;
+    forever begin
+      @cfg.vif.cb;
+      if (pwr_ast_req_io_clk_edge_capture.size() > 0) begin
+        val = pwr_ast_req_io_clk_edge_capture.pop_front();
+        if (val == P_EDGE) begin
+          repeat ($urandom_range(MAIN_CLK_DELAY_MIN, MAIN_CLK_DELAY_MAX)) @cfg.vif.cb;
+          cfg.clk_rst_vif.start_clk();
+        end else begin
+          repeat ($urandom_range(MAIN_CLK_DELAY_MIN, MAIN_CLK_DELAY_MAX)) @cfg.vif.cb;
+          cfg.clk_rst_vif.stop_clk();
+        end
+      end
+    end
+  endtask // ctrl_main_clk
+
+  task ctrl_esc_clk();
+    edge_capture_e val;
+    forever begin
+      @cfg.vif.cb;
+      if (pwr_clk_req_io_ip_clk_edge_capture.size() > 0) begin
+        val = pwr_clk_req_io_ip_clk_edge_capture.pop_front();
+        if (val == P_EDGE) begin
+          repeat ($urandom_range(ESC_CLK_DELAY_MIN, ESC_CLK_DELAY_MAX)) @cfg.vif.cb;
+          cfg.esc_clk_rst_vif.start_clk();
+        end else begin
+          repeat ($urandom_range(ESC_CLK_DELAY_MIN, ESC_CLK_DELAY_MAX)) @cfg.vif.cb;
+          cfg.esc_clk_rst_vif.stop_clk();
+        end
+      end
+    end
+  endtask // ctrl_esc_clk
 endclass

@@ -35,10 +35,6 @@ module otbn_loop_controller
   input jump_or_branch_i,
   input otbn_stall_i
 );
-  // The loop controller has a current loop and then a stack of outer loops, this sets the size of
-  // the stack so maximum loop nesting depth is LoopStackDepth + 1.
-  localparam int unsigned LoopStackDepth = 7;
-
   // The ISA has a fixed 12 bits for loop_bodysize. The maximum possible address for the end of a
   // loop is the maximum address in Imem (2^ImemAddrWidth - 4) plus loop_bodysize instructions
   // (which take 4 * (2^12 - 1) bytes), plus 4 extra bytes. This simplifies to
@@ -52,22 +48,25 @@ module otbn_loop_controller
   typedef struct packed {
     logic [ImemAddrWidth-1:0] loop_start;
     logic [ImemAddrWidth:0]   loop_end;
+  } loop_addr_info_t;
+
+  typedef struct packed {
+    loop_addr_info_t          loop_addr_info;
     logic [31:0]              loop_iterations;
   } loop_info_t;
 
-  logic       loop_active_q, loop_active_d;
-  loop_info_t current_loop_q, current_loop_d;
+  loop_info_t current_loop;
+  logic       current_loop_valid;
 
   logic       at_current_loop_end_insn;
   logic       current_loop_finish;
-
-  loop_info_t next_loop;
-  logic       next_loop_valid;
+  logic       current_loop_counter_dec;
 
   loop_info_t                  new_loop;
   logic [LoopEndAddrWidth-1:0] new_loop_end_addr_full;
   logic [ImemAddrWidth:0]      new_loop_end_addr_imem;
-
+  loop_addr_info_t             next_loop_addr_info;
+  logic                        next_loop_valid;
   logic loop_stack_push_req;
   logic loop_stack_push;
   logic loop_stack_full;
@@ -77,14 +76,23 @@ module otbn_loop_controller
   logic loop_branch_err;
   logic loop_stack_overflow_err;
   logic loop_at_end_err;
+  logic loop_stack_cnt_err;
 
-  // The loop controller maintains a current loop and a loop stack. The current loop is the
-  // innermost loop and is valid when loop_active_q is set. The loop controller tracks the current
-  // address vs the current loop end address. When the current loop is active and the end address is
-  // reached a jump is performed (via loop_jump_o) back to the top of the loop if iterations of the
-  // loop remain. When a new loop is started if a current loop exists it is pushed to the loop
-  // stack. When the current loop ends a loop is popped off the loop stack to become the current
-  // loop if the loop stack isn't empty.
+  localparam int unsigned StackDepthW = prim_util_pkg::vbits(LoopStackDepth);
+  logic [StackDepthW-1:0] loop_stack_wr_idx;
+  logic                   loop_stack_write;
+  logic [StackDepthW-1:0] loop_stack_rd_idx;
+
+  logic [31:0]               loop_counters [LoopStackDepth];
+  logic [LoopStackDepth-1:0] loop_counter_err;
+
+  // The loop controller maintains a loop stack. The top of the loop stack is the innermost loop and
+  // is valid when current_loop_valid is set. The loop controller tracks the current address vs the
+  // current loop end address. When the current loop is active and the end address is reached a jump
+  // is performed (via loop_jump_o) back to the top of the loop if iterations of the loop remain.
+  // When a new loop is started it is pushed to the loop stack. When the current loop ends it is
+  // popped off the loop stack with the loop below it becoming the current loop if the loop stack
+  // isn't empty.
 
   // Determine end address of incoming loop from LOOP/LOOPI instruction (valid on loop_start_req_i
   // and specified by the current instruction address and loop_bodysize_i).
@@ -103,26 +111,29 @@ module otbn_loop_controller
       |new_loop_end_addr_full[LoopEndAddrWidth-1:ImemAddrWidth];
 
   assign new_loop = '{
-    loop_start: next_insn_addr_i,
-    loop_end: new_loop_end_addr_imem,
+    loop_addr_info : '{
+        loop_start: next_insn_addr_i,
+        loop_end: new_loop_end_addr_imem
+    },
     loop_iterations: loop_iterations_i
   };
 
   // `loop_end` has one more bit than Imem width; this is set when the end address calculation
   // overflows. When this is the case the end instruction is never reached.
   assign at_current_loop_end_insn =
-      loop_active_q & (current_loop_q.loop_end == {1'b0, insn_addr_i}) & insn_valid_i;
+      current_loop_valid & (current_loop.loop_addr_info.loop_end == {1'b0, insn_addr_i}) &
+      insn_valid_i;
 
   // The iteration decrement happens at loop end. So when execution reaches the end instruction of
   // the current loop with 1 iteration that is the end of the final iteration and the current loop
   // finishes.
-  assign current_loop_finish = at_current_loop_end_insn & (current_loop_q.loop_iterations == 1)
+  assign current_loop_finish = at_current_loop_end_insn & (current_loop.loop_iterations == 1)
     & ~otbn_stall_i;
 
   // Jump to top of current loop when execution reaches the end instruction of the current loop it
   // isn't finished.
   assign loop_jump_o      = at_current_loop_end_insn & ~current_loop_finish;
-  assign loop_jump_addr_o = current_loop_q.loop_start;
+  assign loop_jump_addr_o = current_loop.loop_addr_info.loop_start;
 
   assign loop_iteration_err      = (loop_iterations_i == '0) & loop_start_req_i;
   assign loop_branch_err         = at_current_loop_end_insn & jump_or_branch_i;
@@ -134,65 +145,25 @@ module otbn_loop_controller
                     loop_stack_overflow_err |
                     loop_at_end_err;
 
-  always_comb begin
-    loop_active_d  = loop_active_q;
-    current_loop_d = current_loop_q;
+  // Decrement current loop counter when execution reaches the end instruction
+  assign current_loop_counter_dec = ~state_reset_i & ~otbn_stall_i & at_current_loop_end_insn;
 
-    if (state_reset_i) begin
-      // Clear any current loop on start
-      loop_active_d = 1'b0;
-    end else if (!otbn_stall_i) begin
-      // If we're not starting a new operation, we only take state altering actions if OTBN is not
-      // stalled.
-
-      if (loop_start_req_i && loop_start_commit_i) begin
-        // A new loop is starting (executing LOOP instruction), so incoming loop becomes the current
-        // loop.
-        loop_active_d  = 1'b1;
-        current_loop_d = new_loop;
-      end else if (current_loop_finish) begin
-        // Current loop has finished, check to see if another loop is available on the loop stack.
-        if (next_loop_valid) begin
-          // Loop at top of loop stack (if it exists) becomes the current loop.
-          current_loop_d = next_loop;
-        end else begin
-          // Otherwise (loop stack empty) no loop is active.
-          loop_active_d = 1'b0;
-        end
-      end else if (at_current_loop_end_insn) begin
-        // Reached end of the current loop so decrement the iteration counter for the current loop.
-        current_loop_d.loop_iterations = current_loop_q.loop_iterations - 1'b1;
-      end
-    end
-  end
+  assign loop_stack_push_req = loop_start_req_i;
 
   // The OTBN controller must not commit a loop request if it sees a loop error.
   `ASSERT(NoStartCommitIfLoopErr, loop_start_req_i && loop_start_commit_i |-> !sw_err_o)
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      loop_active_q <= 1'b0;
-    end else begin
-      loop_active_q <= loop_active_d;
-    end
-  end
-
-  always_ff @(posedge clk_i) begin
-    current_loop_q <= current_loop_d;
-  end
-
-  // Push current loop to the loop stack when a new loop starts (LOOP instruction executed) and
-  // there is an active loop. loop_stack_push_req indicates a push is requested and loop_stack_push
-  // commands it to happen (when the loop start is committed).
-  assign loop_stack_push_req = loop_start_req_i & loop_active_q;
-  assign loop_stack_push     = loop_start_commit_i & loop_stack_push_req;
+  // Push current loop to the loop stack when a new loop starts (LOOP instruction executed).
+  // loop_stack_push_req indicates a push is requested and loop_stack_push commands it to happen
+  // (when the loop start is committed).
+  assign loop_stack_push = loop_start_commit_i & loop_stack_push_req;
 
   // Pop from the loop stack when the current loop finishes. Stack internally checks to see if it's
   // empty when asked to pop so no need to factor that in here.
   assign loop_stack_pop = current_loop_finish;
 
   otbn_stack #(
-    .StackWidth($bits(loop_info_t)),
+    .StackWidth($bits(loop_addr_info_t)),
     .StackDepth(LoopStackDepth)
   ) loop_info_stack (
     .clk_i,
@@ -200,23 +171,71 @@ module otbn_loop_controller
 
     .full_o(loop_stack_full),
 
-    .cnt_err_o(hw_err_o),
+    .cnt_err_o(loop_stack_cnt_err),
 
     .clear_i(state_reset_i),
 
-    .push_data_i(current_loop_q),
+    .push_data_i(new_loop.loop_addr_info),
     .push_i     (loop_stack_push),
 
     .pop_i      (loop_stack_pop),
-    .top_data_o (next_loop),
-    .top_valid_o(next_loop_valid)
+    .top_data_o (current_loop.loop_addr_info),
+    .top_valid_o(current_loop_valid),
+
+    .stack_wr_idx_o(loop_stack_wr_idx),
+    .stack_write_o (loop_stack_write),
+    .stack_rd_idx_o(loop_stack_rd_idx),
+    .stack_read_o  (),
+
+    .next_top_data_o(next_loop_addr_info),
+    .next_top_valid_o(next_loop_valid)
   );
 
+  for(genvar i_count = 0; i_count < LoopStackDepth; i_count = i_count + 1) begin : g_loop_counters
+    logic loop_count_set;
+    logic loop_count_dec;
+
+    assign loop_count_set = loop_stack_write & (loop_stack_wr_idx == i_count);
+    assign loop_count_dec = current_loop_counter_dec & (loop_stack_rd_idx == i_count);
+
+    prim_count #(.Width(32), .CntStyle(prim_count_pkg::CrossCnt)) u_loop_count (
+      .clk_i,
+      .rst_ni,
+
+      .clr_i    (state_reset_i),
+      .set_i    (loop_count_set),
+      .set_cnt_i(new_loop.loop_iterations),
+      .en_i     (loop_count_dec),
+      .step_i   (32'd1),
+      .cnt_o    (loop_counters[i_count]),
+      .err_o    (loop_counter_err[i_count])
+    );
+
+    // Cannot clear and set prim_count in the same cycle
+    `ASSERT(NoLoopCountClrAndSet_A, !(state_reset_i & loop_count_set))
+  end
+
+  assign hw_err_o = (|loop_counter_err) | loop_stack_cnt_err;
+
+  assign current_loop.loop_iterations = loop_counters[loop_stack_rd_idx];
+
   // Forward info about loop state for next cycle to prefetch stage
-  assign prefetch_loop_active_o     = loop_active_d;
-  assign prefetch_loop_iterations_o = current_loop_d.loop_iterations;
-  assign prefetch_loop_end_addr_o   = current_loop_d.loop_end;
-  assign prefetch_loop_jump_addr_o  = current_loop_d.loop_start;
+  assign prefetch_loop_active_o = next_loop_valid;
+
+  // Iterations for the current loop on the next cycle depend upon a number of factors
+  // - If the loop stack is being popped the next counter on the stack provides the new iterations
+  // - If the current loop iterations are being decremented new iterations are the decremented value
+  // - If a new loop is starting it's iterations are the new iterations
+  // - Otherwise next loop iterations is just the current loop iterations
+  assign prefetch_loop_iterations_o =
+    loop_stack_pop           ? loop_counters[loop_stack_rd_idx - 1'b1] :
+    current_loop_counter_dec ? current_loop.loop_iterations - 32'd1    :
+    loop_stack_write         ? new_loop.loop_iterations                :
+                               current_loop.loop_iterations;
+
+  assign prefetch_loop_end_addr_o  = next_loop_addr_info.loop_end;
+  assign prefetch_loop_jump_addr_o = next_loop_addr_info.loop_start;
 
   `ASSERT(NoLoopStackPushAndPop, !(loop_stack_push && loop_stack_pop))
+  `ASSERT(NoLoopWriteIfCounterDec, current_loop_counter_dec |-> !loop_stack_write);
 endmodule

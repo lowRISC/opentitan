@@ -158,6 +158,7 @@ module spi_device
   logic       cmdfifo_rvalid, cmdfifo_rready;
   logic [7:0] cmdfifo_rdata;
   logic       cmdfifo_notempty;
+  logic       cmdfifo_set_pulse;
 
   logic        addrfifo_rvalid, addrfifo_rready;
   logic [31:0] addrfifo_rdata;
@@ -592,19 +593,19 @@ module spi_device
   );
 
   prim_edge_detector #(
-    .Width (3),
+    .Width (2),
     .EnSync(1'b 0)
   ) u_intr_upload_edge (
     .clk_i,
     .rst_ni,
 
-    .d_i               ({cmdfifo_notempty, payload_notempty, payload_overflow}),
+    .d_i               ({payload_notempty, payload_overflow}),
     .q_sync_o          (),
-    .q_posedge_pulse_o ({intr_upload_cmdfifo_not_empty,
-                         intr_upload_payload_not_empty,
+    .q_posedge_pulse_o ({intr_upload_payload_not_empty,
                          intr_upload_payload_overflow}),
     .q_negedge_pulse_o ()
   );
+  assign intr_upload_cmdfifo_not_empty = cmdfifo_set_pulse;
 
   prim_intr_hw #(.Width(1)) u_intr_cmdfifo_not_empty (
     .clk_i,
@@ -1455,6 +1456,8 @@ module spi_device
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
 
+    .clk_csb_i (clk_csb),
+
     .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
 
     .sel_dp_i (cmd_dp_sel),
@@ -1500,6 +1503,7 @@ module spi_device
 
     .set_busy_o (sck_status_busy_set),
 
+    .sys_cmdfifo_set_o       (cmdfifo_set_pulse),
     .sys_cmdfifo_notempty_o  (cmdfifo_notempty),
     .sys_cmdfifo_full_o      (), // not used
     .sys_addrfifo_notempty_o (addrfifo_notempty),

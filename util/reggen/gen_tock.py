@@ -11,7 +11,7 @@ import sys
 import textwrap
 import warnings
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, TextIO
+from typing import Any, Dict, Optional, Set, TextIO
 
 from .ip_block import IpBlock
 from .multi_register import MultiRegister
@@ -81,7 +81,9 @@ def to_upper_snake_case(s: str) -> str:
 
 def first_line(s: str) -> str:
     """Returns the first line of a multi-line string"""
-    return s.splitlines()[0]
+
+    # Just return the 's' if it is empty or 'None'.
+    return s.splitlines()[0] if s else s
 
 
 def format_comment(s: str) -> str:

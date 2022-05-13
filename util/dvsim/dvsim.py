@@ -276,10 +276,9 @@ def parse_args():
         # help message
         usage='%(prog)s {} [-h] [options]'.format(cfg_metavar),
         epilog="Either place the positional argument ahead of the optional args:\n" \
-            "eg. `dvsim.py {} -i ITEM ITEM` \n" \
-            "or end a sequence of optional args with `--`:\n" \
-            "eg. `dvsim.py -i ITEM ITEM -- {}`\n".format(cfg_metavar,cfg_metavar)
-    )
+               "eg. `dvsim.py {} -i ITEM ITEM` \n" \
+               "or end a sequence of optional args with `--`:\n" \
+               "eg. `dvsim.py -i ITEM ITEM -- {}`\n".format(cfg_metavar, cfg_metavar))
 
     parser.add_argument("cfg",
                         metavar=cfg_metavar,
@@ -307,8 +306,7 @@ def parse_args():
                               'the things that can be run, then exit. The '
                               'list can be filtered with a space-separated '
                               'of categories from: {}.'.format(
-                                  ', '.join(_LIST_CATEGORIES)))
-    )
+                                  ', '.join(_LIST_CATEGORIES))))
 
     whatg = parser.add_argument_group('Choosing what to run')
 

@@ -80,6 +80,7 @@ rust_library(
         "src/transport/ultradebug/spi.rs",
         "src/transport/ultradebug/uart.rs",
         "src/transport/verilator/mod.rs",
+        "src/transport/verilator/stdout.rs",
         "src/transport/verilator/subprocess.rs",
         "src/transport/verilator/transport.rs",
         "src/transport/verilator/uart.rs",
@@ -119,7 +120,6 @@ rust_library(
         "//third_party/rust/crates:rand",
         "//third_party/rust/crates:regex",
         "//third_party/rust/crates:rusb",
-        "//third_party/rust/crates:safe_ftdi",
         "//third_party/rust/crates:serde",
         "//third_party/rust/crates:serde_json",
         "//third_party/rust/crates:serialport",
@@ -129,6 +129,7 @@ rust_library(
         "//third_party/rust/crates:typetag",
         "//third_party/rust/crates:zerocopy",
         "@mundane",
+        "@safe_ftdi",
     ],
 )
 

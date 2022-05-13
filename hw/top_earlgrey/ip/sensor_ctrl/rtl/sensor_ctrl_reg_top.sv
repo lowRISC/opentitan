@@ -122,13 +122,18 @@ module sensor_ctrl_reg_top (
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic intr_state_we;
-  logic intr_state_qs;
-  logic intr_state_wd;
+  logic intr_state_io_status_change_qs;
+  logic intr_state_io_status_change_wd;
+  logic intr_state_init_status_change_qs;
+  logic intr_state_init_status_change_wd;
   logic intr_enable_we;
-  logic intr_enable_qs;
-  logic intr_enable_wd;
+  logic intr_enable_io_status_change_qs;
+  logic intr_enable_io_status_change_wd;
+  logic intr_enable_init_status_change_qs;
+  logic intr_enable_init_status_change_wd;
   logic intr_test_we;
-  logic intr_test_wd;
+  logic intr_test_io_status_change_wd;
+  logic intr_test_init_status_change_wd;
   logic alert_test_we;
   logic alert_test_recov_alert_wd;
   logic alert_test_fatal_alert_wd;
@@ -235,43 +240,70 @@ module sensor_ctrl_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
+  //   F[io_status_change]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state (
+  ) u_intr_state_io_status_change (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_wd),
+    .wd     (intr_state_io_status_change_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.de),
-    .d      (hw2reg.intr_state.d),
+    .de     (hw2reg.intr_state.io_status_change.de),
+    .d      (hw2reg.intr_state.io_status_change.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.q),
+    .q      (reg2hw.intr_state.io_status_change.q),
 
     // to register interface (read)
-    .qs     (intr_state_qs)
+    .qs     (intr_state_io_status_change_qs)
+  );
+
+  //   F[init_status_change]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_intr_state_init_status_change (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_init_status_change_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.init_status_change.de),
+    .d      (hw2reg.intr_state.init_status_change.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.init_status_change.q),
+
+    // to register interface (read)
+    .qs     (intr_state_init_status_change_qs)
   );
 
 
   // R[intr_enable]: V(False)
+  //   F[io_status_change]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable (
+  ) u_intr_enable_io_status_change (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_wd),
+    .wd     (intr_enable_io_status_change_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -279,30 +311,71 @@ module sensor_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.q),
+    .q      (reg2hw.intr_enable.io_status_change.q),
 
     // to register interface (read)
-    .qs     (intr_enable_qs)
+    .qs     (intr_enable_io_status_change_qs)
+  );
+
+  //   F[init_status_change]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_init_status_change (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_init_status_change_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.init_status_change.q),
+
+    // to register interface (read)
+    .qs     (intr_enable_init_status_change_qs)
   );
 
 
   // R[intr_test]: V(True)
   logic intr_test_qe;
-  logic [0:0] intr_test_flds_we;
+  logic [1:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
+  //   F[io_status_change]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test (
+  ) u_intr_test_io_status_change (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_wd),
+    .wd     (intr_test_io_status_change_wd),
     .d      ('0),
     .qre    (),
     .qe     (intr_test_flds_we[0]),
-    .q      (reg2hw.intr_test.q),
+    .q      (reg2hw.intr_test.io_status_change.q),
     .qs     ()
   );
-  assign reg2hw.intr_test.qe = intr_test_qe;
+  assign reg2hw.intr_test.io_status_change.qe = intr_test_qe;
+
+  //   F[init_status_change]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_init_status_change (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_init_status_change_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (intr_test_flds_we[1]),
+    .q      (reg2hw.intr_test.init_status_change.q),
+    .qs     ()
+  );
+  assign reg2hw.intr_test.init_status_change.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
@@ -1794,13 +1867,19 @@ module sensor_ctrl_reg_top (
   // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_wd = reg_wdata[0];
+  assign intr_state_io_status_change_wd = reg_wdata[0];
+
+  assign intr_state_init_status_change_wd = reg_wdata[1];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_wd = reg_wdata[0];
+  assign intr_enable_io_status_change_wd = reg_wdata[0];
+
+  assign intr_enable_init_status_change_wd = reg_wdata[1];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_wd = reg_wdata[0];
+  assign intr_test_io_status_change_wd = reg_wdata[0];
+
+  assign intr_test_init_status_change_wd = reg_wdata[1];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_recov_alert_wd = reg_wdata[0];
@@ -1911,15 +1990,18 @@ module sensor_ctrl_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = intr_state_qs;
+        reg_rdata_next[0] = intr_state_io_status_change_qs;
+        reg_rdata_next[1] = intr_state_init_status_change_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = intr_enable_qs;
+        reg_rdata_next[0] = intr_enable_io_status_change_qs;
+        reg_rdata_next[1] = intr_enable_init_status_change_qs;
       end
 
       addr_hit[2]: begin
         reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
       end
 
       addr_hit[3]: begin

@@ -29,6 +29,7 @@ module rv_core_ibex
   parameter bit                   ICacheScramble   = 1'b1,
   parameter bit                   BranchPredictor  = 1'b1,
   parameter bit                   DbgTriggerEn     = 1'b1,
+  parameter int unsigned          DbgHwBreakNum    = 1,
   parameter bit                   SecureIbex       = 1'b1,
   parameter ibex_pkg::lfsr_seed_t RndCnstLfsrSeed  = ibex_pkg::RndCnstLfsrSeedDefault,
   parameter ibex_pkg::lfsr_perm_t RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
@@ -182,6 +183,10 @@ module rv_core_ibex
   logic [31:0] rvfi_mem_rdata;
   logic [31:0] rvfi_mem_wdata;
 `endif
+
+  // core sleeping
+  logic core_sleep;
+
 
   // errors and core alert events
   logic ibus_intg_err, dbus_intg_err;
@@ -355,6 +360,7 @@ module rv_core_ibex
     .ICacheScramble           ( ICacheScramble           ),
     .BranchPredictor          ( BranchPredictor          ),
     .DbgTriggerEn             ( DbgTriggerEn             ),
+    .DbgHwBreakNum            ( DbgHwBreakNum            ),
     // SEC_CM: LOGIC.SHADOW
     // SEC_CM: PC.CTRL_FLOW.CONSISTENCY, CTRL_FLOW.UNPREDICTABLE, CORE.DATA_REG_SW.SCA
     // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC, EXCEPTION.CTRL_FLOW.LOCAL_ESC
@@ -447,8 +453,17 @@ module rv_core_ibex
     .alert_minor_o          (alert_minor),
     .alert_major_internal_o (alert_major_internal),
     .alert_major_bus_o      (alert_major_bus),
-    .core_sleep_o           (pwrmgr_o.core_sleeping)
+    .core_sleep_o           (core_sleep)
   );
+
+  prim_buf #(
+    .Width(1)
+  ) u_core_sleeping_buf (
+    .in_i(core_sleep),
+    .out_o(pwrmgr_o.core_sleeping)
+  );
+
+
 
   ibex_pkg::crash_dump_t crash_dump_previous;
   logic previous_valid;

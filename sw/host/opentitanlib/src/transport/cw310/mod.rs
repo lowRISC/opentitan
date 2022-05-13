@@ -79,6 +79,7 @@ impl CW310 {
 
         let mut ports = serialport::available_ports()
             .map_err(|e| UartError::EnumerationError(e.to_string()))?;
+        println!("available ports:{:?}", ports);
         ports.retain(|port| {
             if let SerialPortType::UsbPort(info) = &port.port_type {
                 if info.serial_number.as_deref() == Some(serial_number) {

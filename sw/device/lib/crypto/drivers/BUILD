@@ -5,6 +5,32 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules:opentitan_test.bzl", "opentitan_functest")
+
+cc_library(
+    name = "aes",
+    srcs = ["aes.c"],
+    hdrs = ["aes.h"],
+    deps = [
+        "//hw/ip/aes/data:aes_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+    ],
+)
+
+opentitan_functest(
+    name = "aes_test",
+    srcs = ["aes_test.c"],
+    deps = [
+        ":aes",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
 
 cc_library(
     name = "hmac",

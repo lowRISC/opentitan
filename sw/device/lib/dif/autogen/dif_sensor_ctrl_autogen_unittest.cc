@@ -123,6 +123,14 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_DIF_OK(dif_sensor_ctrl_irq_is_pending(
       &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, &irq_state));
   EXPECT_TRUE(irq_state);
+
+  // Get the last IRQ state.
+  irq_state = true;
+  EXPECT_READ32(SENSOR_CTRL_INTR_STATE_REG_OFFSET,
+                {{SENSOR_CTRL_INTR_STATE_INIT_STATUS_CHANGE_BIT, false}});
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_is_pending(
+      &sensor_ctrl_, kDifSensorCtrlIrqInitStatusChange, &irq_state));
+  EXPECT_FALSE(irq_state);
 }
 
 class AcknowledgeAllTest : public SensorCtrlTest {};
@@ -156,6 +164,12 @@ TEST_F(IrqAcknowledgeTest, Success) {
                  {{SENSOR_CTRL_INTR_STATE_IO_STATUS_CHANGE_BIT, true}});
   EXPECT_DIF_OK(dif_sensor_ctrl_irq_acknowledge(
       &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange));
+
+  // Clear the last IRQ state.
+  EXPECT_WRITE32(SENSOR_CTRL_INTR_STATE_REG_OFFSET,
+                 {{SENSOR_CTRL_INTR_STATE_INIT_STATUS_CHANGE_BIT, true}});
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_acknowledge(
+      &sensor_ctrl_, kDifSensorCtrlIrqInitStatusChange));
 }
 
 class IrqForceTest : public SensorCtrlTest {};
@@ -176,6 +190,12 @@ TEST_F(IrqForceTest, Success) {
                  {{SENSOR_CTRL_INTR_TEST_IO_STATUS_CHANGE_BIT, true}});
   EXPECT_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_,
                                           kDifSensorCtrlIrqIoStatusChange));
+
+  // Force last IRQ.
+  EXPECT_WRITE32(SENSOR_CTRL_INTR_TEST_REG_OFFSET,
+                 {{SENSOR_CTRL_INTR_TEST_INIT_STATUS_CHANGE_BIT, true}});
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_,
+                                          kDifSensorCtrlIrqInitStatusChange));
 }
 
 class IrqGetEnabledTest : public SensorCtrlTest {};
@@ -210,6 +230,14 @@ TEST_F(IrqGetEnabledTest, Success) {
   EXPECT_DIF_OK(dif_sensor_ctrl_irq_get_enabled(
       &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleEnabled);
+
+  // Last IRQ is disabled.
+  irq_state = kDifToggleEnabled;
+  EXPECT_READ32(SENSOR_CTRL_INTR_ENABLE_REG_OFFSET,
+                {{SENSOR_CTRL_INTR_ENABLE_INIT_STATUS_CHANGE_BIT, false}});
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_get_enabled(
+      &sensor_ctrl_, kDifSensorCtrlIrqInitStatusChange, &irq_state));
+  EXPECT_EQ(irq_state, kDifToggleDisabled);
 }
 
 class IrqSetEnabledTest : public SensorCtrlTest {};
@@ -237,6 +265,13 @@ TEST_F(IrqSetEnabledTest, Success) {
                 {{SENSOR_CTRL_INTR_ENABLE_IO_STATUS_CHANGE_BIT, 0x1, true}});
   EXPECT_DIF_OK(dif_sensor_ctrl_irq_set_enabled(
       &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, irq_state));
+
+  // Disable last IRQ.
+  irq_state = kDifToggleDisabled;
+  EXPECT_MASK32(SENSOR_CTRL_INTR_ENABLE_REG_OFFSET,
+                {{SENSOR_CTRL_INTR_ENABLE_INIT_STATUS_CHANGE_BIT, 0x1, false}});
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_set_enabled(
+      &sensor_ctrl_, kDifSensorCtrlIrqInitStatusChange, irq_state));
 }
 
 class IrqDisableAllTest : public SensorCtrlTest {};

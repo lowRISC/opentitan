@@ -42,4 +42,15 @@ jobs:
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
-      ./bazelisk.sh test //sw/device/tests:fpga_cw310_aes_smoketest --test_output=errors
+      set -x
+      mkdir -p /etc/udev/rules.d
+      cp doc/getting_started/install_vivado/90-lowrisc.rules /etc/udev/rules.d/90-lowrisc.rules
+      cat /etc/udev/rules.d/90-lowrisc.rules
+      udevadm control --reload
+      sudo udevadm control --reload
+      udevadm info /dev/ttyACM0
+      udevadm info /dev/ttyACM1
+      udevadm info /dev/TTY_CW310_0
+      udevadm info /dev/TTY_CW310_1
+      lsusb -v
+      ./bazelisk.sh test //sw/device/tests:fpga_cw310_aes_smoketest --test_output=all

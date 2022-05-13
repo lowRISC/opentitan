@@ -1,0 +1,13 @@
+# Grant access to board peripherals connected over USB:
+# - The USB devices itself (used e.g. by Vivado to program the FPGA)
+# - Virtual UART at /dev/tty/XXX
+
+# NewAE Technology Inc. ChipWhisperer boards e.g. CW310, CW305, CW-Lite, CW-Husky
+ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="2b3e", ATTRS{idProduct}=="ace[0-9]|c[3-6][0-9][0-9]", MODE="0666"
+
+# Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
+# used on Digilent boards
+ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTRS{manufacturer}=="Digilent", MODE="0666"
+
+# Future Technology Devices International, Ltd FT232 Serial (UART) IC
+ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="0666"

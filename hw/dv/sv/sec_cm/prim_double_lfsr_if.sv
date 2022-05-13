@@ -27,7 +27,7 @@ interface prim_double_lfsr_if #(
 
     logic[Width-1:0] orig_value;
 
-    virtual task inject_fault();
+    virtual task automatic inject_fault();
       logic[Width-1:0] force_value;
 
       @(negedge clk_i);
@@ -42,7 +42,7 @@ interface prim_double_lfsr_if #(
       @(posedge clk_i);
     endtask
 
-    virtual task restore_fault();
+    virtual task automatic restore_fault();
       logic[Width-1:0] restore_value;
       `DV_CHECK(uvm_hdl_read(signal_for_restore, restore_value))
       `DV_CHECK(uvm_hdl_deposit(signal_forced, restore_value))

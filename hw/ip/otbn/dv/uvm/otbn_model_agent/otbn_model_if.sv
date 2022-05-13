@@ -83,6 +83,10 @@ interface otbn_model_if
     u_model.otbn_take_loop_warps(handle, memutil);
   endfunction
 
+  function automatic bit has_loop_warps(chandle memutil);
+    return u_model.otbn_has_loop_warps(memutil) != 0;
+  endfunction
+
   task automatic send_err_escalation(bit [31:0] err_val);
     `uvm_info("otbn_model_if", "Escalating errors", UVM_HIGH)
     force u_model.wakeup_iss = 1;

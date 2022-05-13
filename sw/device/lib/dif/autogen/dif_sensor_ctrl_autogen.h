@@ -84,6 +84,10 @@ typedef enum dif_sensor_ctrl_irq {
    * Io power status has changed
    */
   kDifSensorCtrlIrqIoStatusChange = 0,
+  /**
+   * Ast init status has changed
+   */
+  kDifSensorCtrlIrqInitStatusChange = 1,
 } dif_sensor_ctrl_irq_t;
 
 /**

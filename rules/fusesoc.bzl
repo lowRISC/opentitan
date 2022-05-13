@@ -19,6 +19,8 @@ having been installed.  In the future, we will try to rework our
 dependencies so the FuseSoC rules can be sandboxed.
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+
 def _fusesoc_build_impl(ctx):
     dirname = "build.{}".format(ctx.label.name)
     out_dir = ctx.actions.declare_directory(dirname)
@@ -29,6 +31,9 @@ def _fusesoc_build_impl(ctx):
         deps = [ctx.actions.declare_file("{}/{}".format(dirname, f)) for f in files]
         outputs.extend(deps)
         groups[group] = depset(deps)
+
+    verilator_options = ctx.attr.verilator_options[BuildSettingInfo].value
+    flags.append("--verilator_options={}".format(" ".join(verilator_options)))
 
     ctx.actions.run(
         mnemonic = "FuseSoC",
@@ -73,5 +78,6 @@ fusesoc_build = rule(
             allow_empty = True,
             doc = "Mapping of group name to lists of files in that named group",
         ),
+        "verilator_options": attr.label(),
     },
 )

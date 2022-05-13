@@ -93,9 +93,9 @@ rust_library(
         ":backtrace_build_script",
         "@raze__addr2line__0_17_0//:addr2line",
         "@raze__cfg_if__1_0_0//:cfg_if",
-        "@raze__libc__0_2_124//:libc",
+        "@raze__libc__0_2_125//:libc",
         "@raze__miniz_oxide__0_5_1//:miniz_oxide",
-        "@raze__object__0_28_3//:object",
+        "@raze__object__0_28_4//:object",
         "@raze__rustc_demangle__0_1_21//:rustc_demangle",
     ],
 )

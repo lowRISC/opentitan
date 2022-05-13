@@ -3,16 +3,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import os
 import random
 import re
 import subprocess
-import sys
 import tempfile
 from typing import BinaryIO, IO, List, Optional, TextIO, Tuple
 
 from elftools.elf.elffile import ELFFile  # type: ignore
-from util.design.secded_gen import ecc_encode_some # type: ignore
+from util.design.secded_gen import ecc_encode_some  # type: ignore
 
 
 class MemChunk:

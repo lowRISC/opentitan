@@ -328,6 +328,7 @@ opentitan_functest(
     srcs = ["entropy_src_smoketest.c"],
     verilator = verilator_params(
         timeout = "long",
+        tags = ["failing_verilator"],
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -357,6 +358,9 @@ opentitan_functest(
     # loading the default test ROM, or any other ROM that may be specified via
     # Verilator or CW310 params).
     test_in_rom = True,
+    verilator = verilator_params(
+        tags = ["failing_verilator"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -643,6 +647,9 @@ opentitan_functest(
 opentitan_functest(
     name = "otbn_mem_scramble_test",
     srcs = ["otbn_mem_scramble_test.c"],
+    verilator = verilator_params(
+        tags = ["failing_verilator"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:base",
@@ -679,7 +686,7 @@ opentitan_functest(
     name = "otbn_rsa_test",
     srcs = ["otbn_rsa_test.c"],
     verilator = verilator_params(
-        timeout = "long",
+        timeout = "eternal",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -782,6 +789,9 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_sleep_disabled_test",
     srcs = ["pwrmgr_sleep_disabled_test.c"],
+    verilator = verilator_params(
+        tags = ["failing_verilator"],
+    ),
     deps = [
         "//sw/device/lib:irq",
         "//sw/device/lib/dif:aon_timer",
@@ -820,6 +830,9 @@ opentitan_functest(
 opentitan_functest(
     name = "rstmgr_sw_rst_ctrl_test",
     srcs = ["rstmgr_sw_rst_ctrl_test.c"],
+    verilator = verilator_params(
+        tags = ["failing_verilator"],
+    ),
     deps = [
         "//hw/ip/i2c/data:i2c_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
@@ -890,6 +903,9 @@ opentitan_functest(
 opentitan_functest(
     name = "sensor_ctrl_alert_test",
     srcs = ["sensor_ctrl_alerts.c"],
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
     deps = [
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -915,6 +931,9 @@ opentitan_functest(
 opentitan_functest(
     name = "sensor_ctrl_wakeup_test",
     srcs = ["sensor_ctrl_wakeup.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -939,7 +958,7 @@ opentitan_functest(
     name = "sleep_pwm_pulses_test",
     srcs = ["sleep_pwm_pulses_test.c"],
     verilator = verilator_params(
-        timeout = "long",
+        timeout = "eternal",
     ),
     deps = [
         "//hw/ip/pwm/data:pwm_regs",
@@ -1036,6 +1055,7 @@ opentitan_functest(
     srcs = ["rstmgr_alert_info_test.c"],
     verilator = verilator_params(
         timeout = "long",
+        tags = ["failing_verilator"],
     ),
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
@@ -1066,6 +1086,9 @@ opentitan_functest(
 opentitan_functest(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",

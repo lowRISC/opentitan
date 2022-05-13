@@ -99,8 +99,8 @@ package spid_common;
     },
     // 25: EX4B
     '{
-      valid:            1'b 0,
-      opcode:           8'h E6,
+      valid:            1'b 1,
+      opcode:           8'h E9,
       addr_mode:        AddrDisabled,
       addr_swap_en:     1'b 0,
       mbyte_en:         1'b 0,
@@ -115,8 +115,8 @@ package spid_common;
 
     // 24: EN4B
     '{
-      valid:            1'b 0,
-      opcode:           8'h E6,
+      valid:            1'b 1,
+      opcode:           8'h B7,
       addr_mode:        AddrDisabled,
       addr_swap_en:     1'b 0,
       mbyte_en:         1'b 0,
@@ -554,7 +554,7 @@ package spid_common;
 
     // pop data from `d_in[$]`
     foreach (d_in[i]) begin
-      $display("Popped from d_in[%d]: %x", i, d_in[i].data);
+      //$display("Popped from d_in[%d]: %x", i, d_in[i].data);
 
       if (d_in[i].dir != DirNone) begin
         // TODO: check the dir sequence.
@@ -601,6 +601,7 @@ package spid_common;
 
     // De-assert CSb
     spi_end(sif);
+    sif.sd_in[3:0] = 'Z; // make float
   endtask : spi_transaction
 
   // spi_start: assert CSb to start transaction
@@ -652,7 +653,7 @@ package spid_common;
       end
     endcase
 
-    $display("SPI Byte sent!: %x", data);
+    //$display("SPI Byte sent!: %x", data);
   endtask: spi_sendbyte
 
   // spi_highz floats the lines for one cycle.
@@ -674,7 +675,7 @@ package spid_common;
       @(negedge sif.clk);
     end
 
-    $display("SPI Byte Sent/Received!: %x / %x", send_byte, rcv_byte);
+    //$display("SPI Byte Sent/Received!: %x / %x", send_byte, rcv_byte);
 
   endtask : spi_sendandreceive
 
@@ -709,7 +710,7 @@ package spid_common;
       end
     endcase
 
-    $display("SPI Byte Received: %x", rcv_byte);
+    //$display("SPI Byte Received: %x", rcv_byte);
 
     // Always end with negative edge to complete the byte
     @(negedge sif.clk);
@@ -740,32 +741,35 @@ package spid_common;
 
   endtask : spiflash_readstatus
 
-  task automatic spiflash_wel(
+  task automatic spiflash_oponly(
     virtual spi_if.tb sif,
     input spi_byte_t opcode
   );
+    // OPCODE only commands
     automatic spi_fifo_t send_data [$];
     automatic spi_data_t rcv_data [$];
 
     send_data.push_back('{data: opcode, dir: DirIn,  mode: IoSingle});
     spi_transaction(sif, send_data, rcv_data);
 
-    $display("WREN sent!");
-
-  endtask : spiflash_wel
+  endtask : spiflash_oponly
 
   task automatic spiflash_wren(
     virtual spi_if.tb sif,
     input spi_byte_t opcode
   );
-    spiflash_wel(sif, opcode);
+    spiflash_oponly(sif, opcode);
+    $display("WREN sent!");
+
   endtask : spiflash_wren
 
   task automatic spiflash_wrdi(
     virtual spi_if.tb sif,
     input spi_byte_t opcode
   );
-    spiflash_wel(sif, opcode);
+    spiflash_oponly(sif, opcode);
+    $display("WRDI sent!");
+
   endtask : spiflash_wrdi
 
   task automatic spiflash_readjedec(
@@ -987,6 +991,15 @@ package spid_common;
 
   endtask : spiflash_read
 
+  task automatic spiflash_addr_4b(
+    virtual spi_if.tb  sif,
+    input spi_data_t   opcode
+  );
+    spiflash_oponly(sif, opcode);
+
+  endtask : spiflash_addr_4b
+
+
   //===========================================================================
   // SW-side functions/ tasks
   // SRAM interface
@@ -1109,5 +1122,88 @@ package spid_common;
     h2d.d_ready = 1'b 0;
 
   endtask : tlul_read
+
+  // classes
+  class SpiTrans;
+    rand spi_device_pkg::spi_cmd_e cmd;
+    rand bit                       addr_mode; // 1 : Addr4B, 0: Addr3B
+    rand logic [31:0]              address;
+    rand int unsigned              size;
+    int unsigned                   dummy;
+    mode_e                         io_mode;
+
+    string str_cmd;
+
+    function void post_randomize();
+      str_cmd = cmd.name();
+    endfunction : post_randomize
+
+  endclass : SpiTrans
+
+  class SpiTransRead extends SpiTrans;
+    // Information
+
+    constraint read_cmd_c {
+      cmd inside {spi_device_pkg::CmdReadData,
+                  spi_device_pkg::CmdReadFast,
+                  spi_device_pkg::CmdReadDual,
+                  spi_device_pkg::CmdReadQuad
+                  };
+    }
+
+    function void post_randomize();
+      super.post_randomize();
+      case (cmd)
+        spi_device_pkg::CmdReadData: begin
+          dummy = 0;
+          io_mode = IoSingle;
+        end
+        spi_device_pkg::CmdReadFast: begin
+          dummy = 8;
+          io_mode = IoSingle;
+        end
+        spi_device_pkg::CmdReadDual: begin
+          dummy = 4;
+          io_mode = IoDual;
+        end
+        spi_device_pkg::CmdReadQuad: begin
+          dummy = 3; // match with other pre_dv
+          io_mode = IoQuad;
+        end
+        default: begin
+          dummy = 8;
+          io_mode = IoSingle;
+        end
+      endcase
+    endfunction : post_randomize
+
+    function void display();
+      $display("SPI Read Transaction:");
+      $display("  Command: %s", str_cmd);
+      $display("  Address: %8Xh Mode(%1d)", address, addr_mode);
+      $display("  Size:    %4d",  size);
+      $display("  Dummy:   %1d cycles", dummy);
+      $display("");
+    endfunction : display
+
+  endclass : SpiTransRead
+
+  class SpiTransProgram extends SpiTrans;
+    rand bit wrap_test;
+    rand spi_queue_t program_data;
+
+    constraint pp_cmd_c { cmd == spi_device_pkg::CmdPageProgram;}
+
+    // Up-to 256B, if over, it wraps around
+    constraint size_c {
+      if (wrap_test == 1'b 0) size >= 1 && size <= 256;
+      else size > 256 && size <= 512;
+    }
+
+    constraint program_data_c {
+      program_data.size() == size;
+    }
+
+  endclass : SpiTransProgram
 
 endpackage : spid_common
