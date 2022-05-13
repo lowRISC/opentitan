@@ -59,6 +59,10 @@ class dv_base_reg_block extends uvm_reg_block;
   bit has_unmapped_addrs;
   addr_range_t unmapped_addr_ranges[$];
 
+  // Lookup table for alias registers and fields.
+  string register_alias_lookup[string];
+  string field_alias_lookup[string];
+
   function new (string name = "", int has_coverage = UVM_NO_COVERAGE);
     super.new(name, has_coverage);
   endfunction
@@ -376,6 +380,29 @@ class dv_base_reg_block extends uvm_reg_block;
 
     get_dv_base_reg_blocks(subblks);
     foreach (subblks[i]) subblks[i].set_default_map_w_subblks_by_name(map_name);
+  endfunction
+
+  // this overrides the get_reg_by_name function
+  function dv_base_reg get_reg_by_name(string name);
+    dv_base_reg retval;
+    if (register_alias_lookup.exists(name)) begin
+      `downcast(retval, super.get_reg_by_name(register_alias_lookup[name]))
+    end else begin
+      `downcast(retval, super.get_reg_by_name(name))
+    end
+    return retval;
+  endfunction
+
+  // this overrides the get_field_by_name function
+  // note however that this function is only meaningful if the fields are unique within a regblock!
+  function dv_base_reg_field get_field_by_name(string name);
+    dv_base_reg_field retval;
+    if (field_alias_lookup.exists(name)) begin
+      `downcast(retval, super.get_field_by_name(field_alias_lookup[name]))
+    end else begin
+      `downcast(retval, super.get_field_by_name(name))
+    end
+    return retval;
   endfunction
 
 endclass
