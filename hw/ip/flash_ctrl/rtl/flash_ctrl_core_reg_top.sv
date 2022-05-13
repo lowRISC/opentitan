@@ -969,6 +969,7 @@ module flash_ctrl_core_reg_top (
   logic std_fault_status_storage_err_qs;
   logic std_fault_status_phy_fsm_err_qs;
   logic std_fault_status_ctrl_cnt_err_qs;
+  logic std_fault_status_fifo_err_qs;
   logic fault_status_mp_err_qs;
   logic fault_status_rd_err_qs;
   logic fault_status_prog_err_qs;
@@ -10168,6 +10169,31 @@ module flash_ctrl_core_reg_top (
     .qs     (std_fault_status_ctrl_cnt_err_qs)
   );
 
+  //   F[fifo_err]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_std_fault_status_fifo_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.std_fault_status.fifo_err.de),
+    .d      (hw2reg.std_fault_status.fifo_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.std_fault_status.fifo_err.q),
+
+    // to register interface (read)
+    .qs     (std_fault_status_fifo_err_qs)
+  );
+
 
   // R[fault_status]: V(False)
   //   F[mp_err]: 1:1
@@ -12645,6 +12671,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[5] = std_fault_status_storage_err_qs;
         reg_rdata_next[6] = std_fault_status_phy_fsm_err_qs;
         reg_rdata_next[7] = std_fault_status_ctrl_cnt_err_qs;
+        reg_rdata_next[8] = std_fault_status_fifo_err_qs;
       end
 
       addr_hit[95]: begin
