@@ -41,10 +41,11 @@ class otbn_illegal_mem_acc_vseq extends otbn_single_vseq;
     cfg.en_scb_tl_err_chk = 0;
     fork
       begin
+        string valid_signal_path = "tb.dut.tl_i.a_valid";
         bit temp_var;
         do begin
           cfg.clk_rst_vif.wait_clks(1);
-          uvm_hdl_read("tb.dut.tl_i.a_valid", temp_var);
+          `DV_CHECK_FATAL(uvm_hdl_read(valid_signal_path, temp_var) == 1)
         end while (!temp_var);
         cfg.model_agent_cfg.vif.send_err_escalation(err_val);
       end
