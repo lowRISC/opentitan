@@ -212,7 +212,7 @@ program prog_passthrough_sw
     tlul_write(
       clk, h2d, d2h,
       32'(spi_device_reg_pkg::SPI_DEVICE_INTERCEPT_EN_OFFSET),
-      32'h 0000_0000, // MBX, STATUS
+      32'h 0000_0008, // [3] := MBX
       4'b 0001
     );
 

@@ -27,6 +27,10 @@ program prog_passthrough_host
   // FIXME: Make it configurable by ReadSfdp
   parameter int unsigned FlashSize = 1024*1024;
 
+  // FIXME: Make it configurable (How?)
+  parameter logic [31:0] MailboxAddr = 32'h 00CD_E000;
+  parameter int unsigned MailboxSize = 'h 400; // 1kB
+
   import spi_device_pkg::CmdReadStatus1,
          spi_device_pkg::CmdJedecId,
          spi_device_pkg::CmdPageProgram,
@@ -340,6 +344,116 @@ program prog_passthrough_host
     // Issue commands w/ random WEL
     // It is expected for SW to catch program and upload to Mailbox buffer.
     // Read from SPIFlash and from Mailbox buffer then compare
+    SpiTransWel     trans_wel; // If WEL is set or not
+    SpiTransProgram trans_prog; // Program command to Issue to SPIFlash
+    SpiTransRead    trans_read; // To issue read
+    int unsigned trans_size;
+
+    int unsigned test_count;
+
+    automatic spi_queue_t rdata_mbx, rdata_spiflash;
+
+    // Decide how many times it repeats
+    test_count = $urandom_range(10, 1);
+
+    repeat (test_count) begin
+      automatic bit wel = 1'b 0;
+      automatic bit busy = 1'b 0;
+      // Read Status
+      read_status();
+      wel = status[0][1];
+
+      // WEL cmd
+      trans_wel = new();
+      trans_wel.randomize();
+
+      // If flip, issue cmd
+      if (((trans_wel.cmd == CmdWriteEnable) && !wel)
+        || ((trans_wel.cmd == CmdWriteDisable) && wel)) begin
+        trans_wel.display();
+        spiflash_oponly(sif.tb, trans_wel.cmd);
+
+        wel = (trans_wel.cmd == CmdWriteEnable) ? 1'b 1 : 1'b 0;
+      end
+
+      // Issue page program
+      trans_prog = new();
+      trans_prog.randomize() with {
+        address < (local::FlashSize - size);
+      };
+      trans_prog.display();
+
+      spiflash_program(
+        sif.tb,
+        trans_prog.cmd,
+        trans_prog.address,
+        trans_prog.addr_mode,
+        trans_prog.program_data
+      );
+
+      wait_trans();
+
+      // while Read Status BUSY cleared
+      do begin
+        #100ns
+        read_status();
+        busy = status[0][0];
+      end while (busy == 1'b 1);
+
+      // Update mirrored_storage
+      if (wel) update_storage_with_trans(trans_prog);
+
+      // Read from Mailbox space only when WEL
+      trans_size = $min(trans_prog.size, 256);
+      trans_read = new();
+      trans_read.randomize() with {
+        address == local::MailboxAddr;
+        addr_mode == 1'b 0; // 3B
+        size == local::trans_size;
+      };
+
+      spiflash_read(
+        sif.tb,
+        trans_read.cmd,
+        trans_read.address,
+        trans_read.addr_mode,
+        trans_read.dummy,
+        trans_read.size,
+        trans_read.io_mode,
+        rdata_mbx
+      );
+
+      wait_trans();
+
+      // Read from SPIFlash (to the original address)
+      // Read even if wel = 0. Check if value is written?
+
+      trans_read = new();
+      trans_read.randomize() with {
+        address == local::trans_prog.address;
+        addr_mode == 1'b 0; // 3B
+        size == local::trans_size;
+      };
+
+      spiflash_read(
+        sif.tb,
+        trans_read.cmd,
+        trans_read.address,
+        trans_read.addr_mode,
+        trans_read.dummy,
+        trans_read.size,
+        trans_read.io_mode,
+        rdata_spiflash
+      );
+
+      wait_trans();
+
+      // Compare all three buffers!
+
+      rdata_mbx.delete();
+      rdata_spiflash.delete();
+
+    end
 
   endtask : test_program
 
@@ -362,6 +476,23 @@ program prog_passthrough_host
       write_byte(addr+i, data[i]);
     end
   endfunction : update_storage
+
+  function automatic void update_storage_with_trans(
+    SpiTransProgram trans
+  );
+    automatic int unsigned start_idx;
+    automatic int unsigned trans_size = $min(256, trans.size);
+    automatic logic [31:0] trans_addr = {trans.address[31:8], 8'h0};
+    automatic logic [7:0] trans_offset = trans.address[7:0];
+
+    start_idx = (trans.size > 256) ? (trans.size % 256) : 0;
+    for (int unsigned i = 0 ; i < trans_size ; i++) begin
+      write_byte(
+        trans_addr + ((trans_offset + i)%256),
+        trans.program_data[start_idx+i]
+      );
+    end
+  endfunction : update_storage_with_trans
 
   function automatic bit compare_storage(
     int unsigned addr,
