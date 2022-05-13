@@ -28,7 +28,9 @@ reg init_start;
 initial init_start = 1'b0;
 
 initial begin
-  #1; init_start  = 1'b1;
+  #1;
+  init_start  = 1'b1;
+  #1;
   $display("\n%m: IO Clock Power-up Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
 end
 
@@ -62,7 +64,7 @@ logic en_osc;
 logic en_clk, clk;
 
 always_latch begin
-  if ( !clk_osc ) en_clk <= en_osc;
+  if ( !clk_osc ) en_clk = en_osc;
 end
 
 assign clk = clk_osc && en_clk;
