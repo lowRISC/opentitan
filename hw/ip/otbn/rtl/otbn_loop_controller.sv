@@ -237,5 +237,5 @@ module otbn_loop_controller
   assign prefetch_loop_jump_addr_o = next_loop_addr_info.loop_start;
 
   `ASSERT(NoLoopStackPushAndPop, !(loop_stack_push && loop_stack_pop))
-  `ASSERT(NoLoopWriteIfCounterDec, current_loop_counter_dec |-> !loop_stack_write);
+  `ASSERT(NoLoopWriteIfCounterDec, current_loop_counter_dec |-> !loop_stack_write)
 endmodule
