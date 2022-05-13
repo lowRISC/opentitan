@@ -22,9 +22,7 @@ module otbn_idle_checker
 
   input logic [7:0] status_q_i,
   input logic [38:0] imem_rdata_bus,
-  input logic [ExtWLEN-1:0] dmem_rdata_bus,
-
-  input logic locking_i
+  input logic [ExtWLEN-1:0] dmem_rdata_bus
 );
 
   // Several of the internal signals that we snoop from the otbn module run "a cycle early". This
