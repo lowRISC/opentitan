@@ -274,13 +274,16 @@ class OTBNSim:
 
         is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
 
-        # Clear the WIPE_START register if it was set. In this situation, we
-        # know we're on the first cycle of the wipe, which is also where we
-        # zero INSN_CNT if we're in state WIPING_BAD.
+        # Clear the WIPE_START register if it was set.
         if self.state.ext_regs.read('WIPE_START', True):
             self.state.ext_regs.write('WIPE_START', 0, True)
-            if not is_good:
-                self.state.ext_regs.write('INSN_CNT', 0, True)
+
+        # Zero INSN_CNT if we're in state WIPING_BAD. This is a bit silly
+        # because we'll send that update on every cycle, but it correctly
+        # handles the situation where we switch from WIPING_GOOD to WIPING_BAD
+        # half way through a secure wipe because of an incoming escalation.
+        if not is_good:
+            self.state.ext_regs.write('INSN_CNT', 0, True)
 
         # Wipe all registers and set STATUS on the penultimate cycle.
         if self.state.wipe_cycles == 1:
