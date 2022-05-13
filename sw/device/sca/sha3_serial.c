@@ -478,7 +478,7 @@ static void sha3_serial_single_absorb(const uint8_t *msg, size_t msg_len) {
  * UART.
  */
 void _ottf_main(void) {
-  sca_init(kScaTriggerSourceKmac, kScaPeripheralKmac);
+  sca_init(kScaTriggerSourceKmac, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
 
   LOG_INFO("Running sha3_serial");
 
