@@ -313,7 +313,8 @@ module spid_readsram
     .rdata_o  (sram_data),
 
     .full_o   (sram_fifo_full),
-    .depth_o  (unused_sram_depth)
+    .depth_o  (unused_sram_depth),
+    .err_o    ()
   );
 
   prim_fifo_sync #(
@@ -336,7 +337,8 @@ module spid_readsram
     .rdata_o  (fifo_rdata_o ),
 
     .full_o   (unused_fifo_full ),
-    .depth_o  (unused_fifo_depth)
+    .depth_o  (unused_fifo_depth),
+    .err_o    ()
   );
 
   // TODO: Handle SRAM integrity errors

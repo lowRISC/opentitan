@@ -184,7 +184,8 @@ module uart_core (
     .full_o (),
     .rvalid_o(tx_fifo_rvalid),
     .rready_i(tx_fifo_rready),
-    .rdata_o (tx_fifo_data)
+    .rdata_o (tx_fifo_data),
+    .err_o   ()
   );
 
   uart_tx uart_tx (
@@ -284,7 +285,8 @@ module uart_core (
     .full_o (),
     .rvalid_o(rx_fifo_rvalid),
     .rready_i(reg2hw.rdata.re),
-    .rdata_o (uart_rdata)
+    .rdata_o (uart_rdata),
+    .err_o   ()
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
