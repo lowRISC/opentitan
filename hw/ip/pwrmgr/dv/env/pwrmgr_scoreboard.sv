@@ -18,7 +18,11 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
+    string common_seq_type;
     super.build_phase(phase);
+
+    void'($value$plusargs("run_%0s", common_seq_type));
+    if (common_seq_type == "stress_all_with_rand_reset") do_alert_check = 0;
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -175,7 +179,8 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
         // rw1c: write 1 clears, write 0 is no-op.
         do_read_check = 1'b0;
       end
-      "intr_enable": begin
+      "intr_enable", "alert_test": begin
+        // Do nothing
       end
       "intr_test": begin
         if (data_phase_write) begin

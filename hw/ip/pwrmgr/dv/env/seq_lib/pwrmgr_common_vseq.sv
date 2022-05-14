@@ -21,11 +21,28 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
       expect_fatal_alerts = 1;
     end
 
+    // pounding write to this register cause back-to-back dst_pulse_o and
+    // create spurious assertion failure
+    // tb.dut.u_cdc.u_slow_cdc_sync.DstPulseCheck_A
+    // remove this register from the same_csr_outstanding write test
+    if (common_seq_type == "same_csr_outstanding") begin
+      csr_excl.add_excl("pwrmgr_reg_block.cfg_cdc_sync", CsrExclWrite);
+    end
   endtask
 
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body
+
+  task rand_reset_eor_clean_up();
+    // clear wakeup at the beginning
+    cfg.pwrmgr_vif.update_wakeups('0);
+    cfg.clk_rst_vif.wait_clks(2);
+
+    // clear interrupt
+    csr_wr(.ptr(ral.intr_state), .value(1));
+
+  endtask // rand_reset_eor_clean_up
 
   // pwrmgr has three alert events
   // REG_INTG_ERR, ESC_TIMEOUT and MAIN_PD_GLITCH

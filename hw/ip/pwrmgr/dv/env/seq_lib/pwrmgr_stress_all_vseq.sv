@@ -18,6 +18,7 @@ class pwrmgr_stress_all_vseq extends pwrmgr_base_vseq;
       "pwrmgr_wakeup_reset_vseq",
       "pwrmgr_wakeup_vseq"
     };
+
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence     seq;
       pwrmgr_base_vseq pwrmgr_vseq;
@@ -26,10 +27,14 @@ class pwrmgr_stress_all_vseq extends pwrmgr_base_vseq;
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(pwrmgr_vseq, seq)
 
+      if (seq_names[seq_idx] inside {"pwrmgr_reset_vseq", "pwrmgr_wakeup_reset_vseq"}) begin
+        expect_fatal_alerts = 1;
+        cfg.exp_alert_q.push_back(1);
+      end
       // if upper seq disables do_apply_reset for this seq, then can't issue reset
       // as upper seq may drive reset
-      if (do_apply_reset) pwrmgr_vseq.do_apply_reset = $urandom_range(0, 1);
-      else pwrmgr_vseq.do_apply_reset = 0;
+
+      pwrmgr_vseq.do_apply_reset = 1;
       pwrmgr_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(pwrmgr_vseq)
       `uvm_info(`gfn, $sformatf("seq_idx = %0d, sequence is %0s", seq_idx, pwrmgr_vseq.get_name()),

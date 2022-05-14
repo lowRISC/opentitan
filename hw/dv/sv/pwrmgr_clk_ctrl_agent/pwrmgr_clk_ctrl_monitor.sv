@@ -49,36 +49,39 @@ class pwrmgr_clk_ctrl_monitor extends dv_base_monitor #(
   task monitor_pwr_ast_o();
     logic ival = cfg.vif.pwr_ast_req.io_clk_en;
     forever begin
-      @cfg.vif.cb;
       if (ival) begin
-        // capture posedge
+        // capture negedge
         @(negedge cfg.vif.pwr_ast_req.io_clk_en);
         pwr_ast_req_io_clk_edge_capture.push_back(N_EDGE);
         ival = 0;
       end else begin
-        // capture negedge
+        // capture posedge
         @(posedge cfg.vif.pwr_ast_req.io_clk_en);
         pwr_ast_req_io_clk_edge_capture.push_back(P_EDGE);
         ival = 1;
-      end
+      end // else: !if(ival)
+      // handle corner case where reset and clock edge comes very close
+      @cfg.vif.cb;
     end
   endtask // monitor_pwr_ast_o
 
   task monitor_pwr_clk_o();
     logic ival = cfg.vif.pwr_clk_req.io_ip_clk_en;
     forever begin
-      @cfg.vif.cb;
       if (ival) begin
-        // capture posedge
+        // capture negedge
         @(negedge cfg.vif.pwr_clk_req.io_ip_clk_en);
         pwr_clk_req_io_ip_clk_edge_capture.push_back(N_EDGE);
         ival = 0;
       end else begin
-        // capture negedge
+        // capture posedge
         @(posedge cfg.vif.pwr_clk_req.io_ip_clk_en);
         pwr_clk_req_io_ip_clk_edge_capture.push_back(P_EDGE);
         ival = 1;
       end
+      // move cb to here
+      // to address the case where reset and clock edge comes very close
+      @cfg.vif.cb;
     end
   endtask // monitor_pwr_clk_o
 
