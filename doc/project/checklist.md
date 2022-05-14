@@ -172,9 +172,9 @@ Note the SEC_CM_DOCUMENTED item in the D2 checklist, which is a precursor to thi
 ### SEC_CM_IMPLEMENTED
 
 Any appropriate security counter-measures are implemented.
+Implementations must follow the [OpenTitan Secure Hardware Design Guidelines]({{< relref "../security/implementation_guidelines/hardware" >}}).
 
-
-Note:
+In particular, note that:
 
 - For duplicated counters [`prim_count`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_count.sv) must be used.
 - For duplicated LFSRs [`prim_double_lfsr`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_double_lfsr.sv) must be used.
