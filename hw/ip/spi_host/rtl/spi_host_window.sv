@@ -21,8 +21,9 @@ module spi_host_window (
 
   localparam int AW = spi_host_reg_pkg::BlockAw;
   localparam int DW = 32;
+  localparam int ByteMaskW = DW / 8;
 
-  logic rx_we, tx_re;
+  logic         rx_we;
 
   // Only support reads from the data RX fifo window
   logic  rx_access_error;
@@ -46,26 +47,41 @@ module spi_host_window (
     .busy_i  ('0)
   );
 
-  // Only support writes to the data TX fifo window
-  logic  tx_access_error;
-  assign tx_access_error = tx_re;
+  // translate bitmask to byte mask
+  logic [DW-1:0] bit_mask;
+  for (genvar i = 0; i < ByteMaskW; i++) begin : gen_byte_mask
+     assign tx_be_o[i] = |bit_mask[i*8 +: 8];
 
-  tlul_adapter_reg #(
-    .RegAw (AW),
-    .RegDw (DW)
+    // all the bits of particular byte must be the same
+    `ASSERT(BitMaskCheck_A, (|bit_mask[i*8 +: 8] == 1'b0) ||
+                            (&bit_mask[i*8 +: 8] == 1'b1))
+  end
+
+  // Only support writes to the data TX fifo window
+  tlul_adapter_sram #(
+    .SramAw(AW),
+    .SramDw(DW),
+    .Outstanding(1),
+    .ByteAccess(1),
+    .ErrOnWrite(0),
+    .ErrOnRead(1)
   ) u_adapter_tx (
     .clk_i,
     .rst_ni,
-    .tl_i    (tx_win_i),
-    .tl_o    (tx_win_o),
-    .we_o    (tx_valid_o),
-    .re_o    (tx_re),
-    .addr_o  (),
-    .wdata_o (tx_data_o),
-    .be_o    (tx_be_o),
-    .rdata_i ({DW{1'b0}}),
-    .error_i (tx_access_error),
-    .busy_i  ('0)
+    .tl_i(tx_win_i),
+    .tl_o(tx_win_o),
+    .en_ifetch_i(prim_mubi_pkg::MuBi4False),
+    .req_o(tx_valid_o),
+    .req_type_o(),
+    .gnt_i(1'b1),
+    .we_o(),
+    .addr_o(),
+    .wdata_o(tx_data_o),
+    .wmask_o(bit_mask),
+    .intg_error_o(),
+    .rdata_i('0),
+    .rvalid_i('0),
+    .rerror_i('0)
   );
 
 endmodule : spi_host_window
