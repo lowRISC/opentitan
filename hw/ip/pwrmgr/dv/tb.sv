@@ -149,5 +149,6 @@ module tb;
     uvm_config_db#(virtual pwrmgr_clk_ctrl_if)::set(null, "*.env.m_pcc_agent*", "vif", pcc_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
-  end
+  end // initial begin
+
 endmodule

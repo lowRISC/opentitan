@@ -64,6 +64,8 @@ interface pwrmgr_if (
   logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_status;
 
   logic                                                        lowpwr_cfg_wen;
+  pwrmgr_reg_pkg::pwrmgr_hw2reg_wake_info_reg_t                wake_info;
+
   // Internal DUT signals.
 `ifndef PATH_TO_DUT
   `define PATH_TO_DUT tb.dut
@@ -107,6 +109,7 @@ interface pwrmgr_if (
     };
 
   always_comb wakeup_capture_en = !`PATH_TO_DUT.u_reg.wake_info_capture_dis_qs;
+  always_comb wake_info = `PATH_TO_DUT.i_wake_info.info_o;
 
   logic intr_enable;
   always_comb intr_enable = `PATH_TO_DUT.reg2hw.intr_enable.q;
