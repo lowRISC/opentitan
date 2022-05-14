@@ -16,6 +16,7 @@ interface pwrmgr_clock_enables_sva_if (
   input logic                        core_clk_en_i,
   input logic                        usb_clk_en_lp_i,
   input logic                        usb_clk_en_active_i,
+  input logic                        usb_ip_clk_status_i,
   // The output enables.
   input logic                        main_pd_n,
   input logic                        io_clk_en,
@@ -37,7 +38,7 @@ interface pwrmgr_clock_enables_sva_if (
 
   // This allows the usb enable to be slower since it also depends on usb clk_status.
   sequence usbActiveTransition_S;
-    ##[0:7] !fast_is_active || usb_clk_en == usb_clk_en_active_i;
+    ##[0:7] !fast_is_active || usb_clk_en == (usb_clk_en_active_i | usb_ip_clk_status_i);
   endsequence
 
   `ASSERT(CoreClkPwrUp_A, transitionUp_S |=> core_clk_en == 1'b1, clk_i, reset_or_disable)

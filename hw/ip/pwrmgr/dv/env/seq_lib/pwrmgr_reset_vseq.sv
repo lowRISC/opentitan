@@ -49,13 +49,18 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
         cfg.pwrmgr_vif.glitch_power_reset();
       end
       cfg.clk_rst_vif.wait_clks(cycles_before_reset);
+
+      if (cycles_before_reset == 0) enabled_resets = 0;
+
       `uvm_info(`gfn, $sformatf("Sending resets=0x%x", resets), UVM_MEDIUM)
       cfg.pwrmgr_vif.update_resets(resets);
       `uvm_info(`gfn, $sformatf("Sending sw reset from rstmgr=%b", sw_rst_from_rstmgr), UVM_MEDIUM)
       if (escalation_reset) send_escalation_reset();
       cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
 
-      cfg.slow_clk_rst_vif.wait_clks(4);
+      cfg.slow_clk_rst_vif.wait_clks(2);
+      //wait until fast clock comes back
+      repeat(4) @cfg.clk_rst_vif.cb;
 
       // This read is not always possible since the CPU may be off.
       check_reset_status(enabled_resets);

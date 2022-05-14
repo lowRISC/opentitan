@@ -81,6 +81,9 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
       // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
       // This read will not work in the chip, since the processor will be asleep.
       cfg.slow_clk_rst_vif.wait_clks(4);
+      // wait for clock is on
+      cfg.clk_rst_vif.wait_clks(10);
+
       check_wake_status(enabled_wakeups);
       `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
       wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
@@ -88,17 +91,27 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
       wait_for_fast_fsm_active();
       `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
 
-      check_reset_status('0);
-      check_wake_info(.reasons(enabled_wakeups), .prior_reasons(prior_reasons), .fall_through(1'b0),
-                      .prior_fall_through(prior_fall_through), .abort(1'b0),
-                      .prior_abort(prior_abort));
-
+      @cfg.clk_rst_vif.cb;
+      fork
+        begin
+          fast_check_reset_status(0);
+        end
+        begin
+          fast_check_wake_info(.reasons(enabled_wakeups), .prior_reasons(prior_reasons),
+                               .fall_through(1'b0), .abort(1'b0),
+                               .prior_fall_through(prior_fall_through),
+                               .prior_abort(prior_abort));
+        end
+      join
       // This is the expected side-effect of the low power entry reset, since the source of the
       // non-aon wakeup sources will deassert it as a consequence of their reset.
       // Some aon wakeups may remain active until software clears them. If they didn't, such wakeups
       // will remain active, preventing the device from going to sleep.
       cfg.pwrmgr_vif.update_wakeups('0);
       cfg.slow_clk_rst_vif.wait_clks(10);
+
+      // if clock is off, we need to wait until it is resumed.
+      cfg.clk_rst_vif.wait_clks(5);
       check_wake_status('0);
 
       // And make the cpu active.

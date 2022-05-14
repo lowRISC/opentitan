@@ -650,6 +650,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     run_seq_with_rand_reset_vseq(create_seq_by_name(stress_seq_name), num_times);
   endtask
 
+  // Some blocks needs input ports and status / intr csr clean up
+  // for multi loop rand_reset tests
+  // override this task from {block}_common_vseq if needed
+  virtual task rand_reset_eor_clean_up();
+  endtask
   // Run the given sequence and possibly a TL errors vseq (if do_tl_err is set). Suddenly inject a
   // reset after at most reset_delay_bound cycles. When we come out of reset, check all CSR values
   // to ensure they are the documented reset values.
@@ -709,6 +714,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           if (do_read_and_check_all_csrs) read_and_check_all_csrs_after_reset();
         end : isolation_fork
       join
+      rand_reset_eor_clean_up();
     end
   endtask
 

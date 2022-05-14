@@ -41,6 +41,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
     logic [TL_DW-1:0] value;
     resets_t enabled_resets;
     wakeups_t enabled_wakeups;
+
     wait_for_fast_fsm_active();
 
     check_reset_status('0);
@@ -49,6 +50,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
       setup_interrupt(.enable(en_intr));
+
       // Enable resets.
       enabled_resets = resets_en & resets;
       `uvm_info(`gfn, $sformatf(
@@ -75,7 +77,6 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
 
       low_power_hint = 1'b1;
       update_control_csr();
-
       wait_for_csr_to_propagate_to_slow_domain();
 
       // Initiate low power transition.
@@ -90,6 +91,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
         begin
           cfg.aon_clk_rst_vif.wait_clks(cycles_before_reset);
           cfg.pwrmgr_vif.update_resets(resets);
+
           if (power_glitch_reset) begin
             `uvm_info(`gfn, "Sending power glitch", UVM_MEDIUM)
             // create glitch by 'glitch_power_reset' only possible
@@ -99,6 +101,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
               cfg.exp_alert_q.push_back(1);
             end
             cfg.pwrmgr_vif.glitch_power_reset();
+            enabled_resets = 0;
           end
           if (escalation_reset) send_escalation_reset();
           `uvm_info(`gfn, $sformatf(
@@ -120,23 +123,29 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       end
       // twirl_rom_response has some waits, and so does the code to check wake_status,
       // so we fork them to avoid conflicts.
+
       fork
         begin
           // At lowpower state, wait for clock comes back before check any csr
-          @cfg.clk_rst_vif.cb;
+           @cfg.clk_rst_vif.cb;
           // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
           // This read will not work in the chip, since the processor will be asleep.
           // After tighten reset status window, it is not possible to verify
           // reset status by csr rd.
           // Replace with a direct probe
           fork
-            fast_check_reset_status(enabled_resets);
-            fast_check_wake_status(enabled_wakeups);
+            begin
+              fast_check_reset_status(enabled_resets);
+            end
+            begin
+              fast_check_wake_status(enabled_wakeups);
+            end
           join
           `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
         end
         twirl_rom_response();
       join
+
       wait_for_fast_fsm_active();
 
       check_reset_status('0);
