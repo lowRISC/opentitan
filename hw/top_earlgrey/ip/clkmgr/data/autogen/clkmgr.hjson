@@ -539,13 +539,13 @@
           desc: "Enable measurement for io",
           mubi: true,
           resval: false,
-          // Measurements can cause recoverable errors depending on the
-          // thresholds which randomized CSR tests will not predict correctly.
-          // To provide better CSR coverage we allow writing the threshold
-          // fields, but not enabling the counters.
-          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
+      // Measurements can cause recoverable errors depending on the
+      // thresholds which randomized CSR tests will not predict correctly.
+      // To provide better CSR coverage we allow writing the threshold
+      // fields, but not enabling the counters.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "IO_MEAS_CTRL_SHADOWED",
@@ -593,13 +593,13 @@
           desc: "Enable measurement for io_div2",
           mubi: true,
           resval: false,
-          // Measurements can cause recoverable errors depending on the
-          // thresholds which randomized CSR tests will not predict correctly.
-          // To provide better CSR coverage we allow writing the threshold
-          // fields, but not enabling the counters.
-          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
+      // Measurements can cause recoverable errors depending on the
+      // thresholds which randomized CSR tests will not predict correctly.
+      // To provide better CSR coverage we allow writing the threshold
+      // fields, but not enabling the counters.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "IO_DIV2_MEAS_CTRL_SHADOWED",
@@ -647,13 +647,13 @@
           desc: "Enable measurement for io_div4",
           mubi: true,
           resval: false,
-          // Measurements can cause recoverable errors depending on the
-          // thresholds which randomized CSR tests will not predict correctly.
-          // To provide better CSR coverage we allow writing the threshold
-          // fields, but not enabling the counters.
-          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
+      // Measurements can cause recoverable errors depending on the
+      // thresholds which randomized CSR tests will not predict correctly.
+      // To provide better CSR coverage we allow writing the threshold
+      // fields, but not enabling the counters.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "IO_DIV4_MEAS_CTRL_SHADOWED",
@@ -701,13 +701,13 @@
           desc: "Enable measurement for main",
           mubi: true,
           resval: false,
-          // Measurements can cause recoverable errors depending on the
-          // thresholds which randomized CSR tests will not predict correctly.
-          // To provide better CSR coverage we allow writing the threshold
-          // fields, but not enabling the counters.
-          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
+      // Measurements can cause recoverable errors depending on the
+      // thresholds which randomized CSR tests will not predict correctly.
+      // To provide better CSR coverage we allow writing the threshold
+      // fields, but not enabling the counters.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "MAIN_MEAS_CTRL_SHADOWED",
@@ -755,13 +755,13 @@
           desc: "Enable measurement for usb",
           mubi: true,
           resval: false,
-          // Measurements can cause recoverable errors depending on the
-          // thresholds which randomized CSR tests will not predict correctly.
-          // To provide better CSR coverage we allow writing the threshold
-          // fields, but not enabling the counters.
-          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
+      // Measurements can cause recoverable errors depending on the
+      // thresholds which randomized CSR tests will not predict correctly.
+      // To provide better CSR coverage we allow writing the threshold
+      // fields, but not enabling the counters.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "USB_MEAS_CTRL_SHADOWED",

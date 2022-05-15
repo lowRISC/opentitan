@@ -468,13 +468,13 @@
           desc: "Enable measurement for ${src}",
           mubi: true,
           resval: false,
-          // Measurements can cause recoverable errors depending on the
-          // thresholds which randomized CSR tests will not predict correctly.
-          // To provide better CSR coverage we allow writing the threshold
-          // fields, but not enabling the counters.
-          tags: ["excl:CsrAllTests:CsrExclWrite"]
         },
       ]
+      // Measurements can cause recoverable errors depending on the
+      // thresholds which randomized CSR tests will not predict correctly.
+      // To provide better CSR coverage we allow writing the threshold
+      // fields, but not enabling the counters.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 <%
   freq = clocks.all_srcs[src].freq

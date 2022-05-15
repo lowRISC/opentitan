@@ -100,7 +100,7 @@ interface clkmgr_if (
                               slow: `CLKMGR_HIER.u_io_meas.u_meas.slow_o,
                               fast: `CLKMGR_HIER.u_io_meas.u_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf("Sampled coverage for ClkMesrIo as %p", io_freq_measurement),
-                UVM_MEDIUM)
+                UVM_HIGH)
     end
   end
   always_comb io_timeout_err = `CLKMGR_HIER.u_io_meas.timeout_err_o;
@@ -113,7 +113,7 @@ interface clkmgr_if (
                                    slow: `CLKMGR_HIER.u_io_div2_meas.u_meas.slow_o,
                                    fast: `CLKMGR_HIER.u_io_div2_meas.u_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf(
-                "Sampled coverage for ClkMesrIoDiv2 as %p", io_div2_freq_measurement), UVM_MEDIUM)
+                "Sampled coverage for ClkMesrIoDiv2 as %p", io_div2_freq_measurement), UVM_HIGH)
     end
   end
   always_comb io_div2_timeout_err = `CLKMGR_HIER.u_io_div2_meas.timeout_err_o;
@@ -126,7 +126,7 @@ interface clkmgr_if (
                                    slow: `CLKMGR_HIER.u_io_div4_meas.u_meas.slow_o,
                                    fast: `CLKMGR_HIER.u_io_div4_meas.u_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf(
-                "Sampled coverage for ClkMesrIoDiv4 as %p", io_div4_freq_measurement), UVM_MEDIUM)
+                "Sampled coverage for ClkMesrIoDiv4 as %p", io_div4_freq_measurement), UVM_HIGH)
     end
   end
   always_comb io_div4_timeout_err = `CLKMGR_HIER.u_io_div4_meas.timeout_err_o;
@@ -139,7 +139,7 @@ interface clkmgr_if (
                                 slow: `CLKMGR_HIER.u_main_meas.u_meas.slow_o,
                                 fast: `CLKMGR_HIER.u_main_meas.u_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf(
-                "Sampled coverage for ClkMesrMain as %p", main_freq_measurement), UVM_MEDIUM)
+                "Sampled coverage for ClkMesrMain as %p", main_freq_measurement), UVM_HIGH)
     end
   end
   always_comb main_timeout_err = `CLKMGR_HIER.u_main_meas.timeout_err_o;
@@ -152,7 +152,7 @@ interface clkmgr_if (
                                slow: `CLKMGR_HIER.u_usb_meas.u_meas.slow_o,
                                fast: `CLKMGR_HIER.u_usb_meas.u_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf("Sampled coverage for ClkMesrUsb as %p", usb_freq_measurement
-                ), UVM_MEDIUM)
+                ), UVM_HIGH)
     end
   end
   always_comb usb_timeout_err = `CLKMGR_HIER.u_usb_meas.timeout_err_o;
