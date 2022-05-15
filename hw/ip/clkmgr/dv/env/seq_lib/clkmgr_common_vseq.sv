@@ -8,6 +8,16 @@ class clkmgr_common_vseq extends clkmgr_base_vseq;
   constraint num_trans_c {num_trans inside {[1 : 2]};}
   `uvm_object_new
 
+  virtual task pre_start();
+    csr_excl_item csr_excl = ral.get_excl_item();
+    super.pre_start();
+
+    // Remove rw1c type from same_csr_outstanding
+    if (common_seq_type == "same_csr_outstanding") begin
+      csr_excl.add_excl("clkmgr_reg_block.recov_err_code", CsrExclWrite);
+    end
+  endtask
+
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body
@@ -74,5 +84,4 @@ class clkmgr_common_vseq extends clkmgr_base_vseq;
                                                        string alert_name);
     skid_check_fatal_alert_nonblocking(alert_name);
   endtask
-
 endclass
