@@ -118,25 +118,26 @@ jobs:
   displayName: Build Software for Earl Grey toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool: ci-public
+  pool:
+    vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
-      set -x
-      sudo util/get-toolchain.py \
-        --install-dir="$TOOLCHAIN_PATH" \
-        --release-version="$TOOLCHAIN_VERSION" \
-        --update
-    displayName: Install toolchain
-  - bash: |
-      . util/build_consts.sh
-      ./meson_init.sh -A
-      ninja -C "$OBJ_DIR" all
+      set -x -e
+      ci/bazelisk.sh build //sw/... \
+      --define DISABLE_VERILATOR_BUILD=true # build verilator tests but not verilator
     displayName: Build embedded targets
   - bash: |
+      set -x -e
       . util/build_consts.sh
-      ninja -C "$OBJ_DIR" test
-    displayName: Run unit tests
+      # copy the mask rom to a specific location
+      MASK_ROM_TARGET=${BIN_DIR}/sw/device/silicon_creator/mask_rom
+      mkdir -p ${MASK_ROM_TARGET}
+      MASK_ROM=$(ci/scripts/target-location.sh //sw/device/silicon_creator/mask_rom:mask_rom_fpga_cw310_scr_vmem)
+      cp $MASK_ROM $MASK_ROM_TARGET/mask_rom_fpga_cw310.scr.39.vmem
+      MASK_ROM_DIR=$(dirname $MASK_ROM)
+      cp $MASK_ROM_DIR/mask_rom_fpga_cw310.elf $MASK_ROM_TARGET/mask_rom_fpga_cw310.elf
+      cp $MASK_ROM_DIR/mask_rom_fpga_cw310.bin $MASK_ROM_TARGET/mask_rom_fpga_cw310.bin
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
