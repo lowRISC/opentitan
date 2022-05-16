@@ -36,6 +36,9 @@ pub struct BackendOpts {
     usb_serial: Option<String>,
 
     #[structopt(flatten)]
+    cw310_opts: cw310::Cw310Opts,
+
+    #[structopt(flatten)]
     verilator_opts: verilator::VerilatorOpts,
 
     #[structopt(flatten)]
