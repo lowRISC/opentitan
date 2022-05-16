@@ -29,8 +29,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   mubi4_t               scanmode;
   int                   scanmode_on_weight         = 8;
 
-  lc_tx_t               extclk_ctrl_low_speed_sel;
-  lc_tx_t               extclk_ctrl_sel;
+  mubi4_t               extclk_ctrl_high_speed_sel;
+  mubi4_t               extclk_ctrl_sel;
   clkmgr_mubi_e         mubi_mode;
 
   virtual function void set_scanmode_on_low_weight();
@@ -38,15 +38,12 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   function void post_randomize();
-    extclk_ctrl_low_speed_sel = get_rand_lc_tx_val(6, 2, 2);
-    extclk_ctrl_sel = get_rand_lc_tx_val(4, 2, 2);
+    extclk_ctrl_high_speed_sel = get_rand_mubi4_val(6, 2, 2);
+    extclk_ctrl_sel = get_rand_mubi4_val(4, 2, 2);
     scanmode = get_rand_mubi4_val(scanmode_on_weight, 4, 4);
     `uvm_info(`gfn, $sformatf(
-              "randomize gives extclk_ctrl_sel=0x%x, extclk_ctrl_low_speed_sel=0x%x, scanmode=0x%x",
-              extclk_ctrl_sel,
-              extclk_ctrl_low_speed_sel,
-              scanmode
-              ), UVM_MEDIUM)
+       "randomize gives extclk_ctrl_sel=0x%x, extclk_ctrl_high_speed_sel=0x%x, scanmode=0x%x",
+       extclk_ctrl_sel, extclk_ctrl_high_speed_sel, scanmode), UVM_MEDIUM)
     super.post_randomize();
   endfunction
 

@@ -57,6 +57,9 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
       // Setting all idle should make hint_status match hints.
       cfg.clkmgr_vif.update_idle({NUM_TRANS{MuBi4True}});
       cfg.io_clk_rst_vif.wait_clks(IO_DIV4_SYNC_CYCLES);
+
+      cfg.clkmgr_vif.check_trans_clk();
+
       csr_rd(.ptr(ral.clk_hints_status), .value(value));
       `DV_CHECK_EQ(value, initial_hints, "All idle: units status matches hints")
 

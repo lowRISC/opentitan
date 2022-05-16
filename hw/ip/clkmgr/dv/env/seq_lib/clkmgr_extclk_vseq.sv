@@ -44,6 +44,8 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   mubi4_t all_clk_byp_ack_non_true;
   mubi4_t div_step_down_req_non_true;
 
+  int exp_all_clk_byp_ack;
+
   function void post_randomize();
     if (mubi_mode == ClkmgrMubiLcHand) begin
       // increase weight of illgal value only in ClkmgrMubiLcHand
@@ -66,16 +68,27 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
               "randomize gives lc_clk_byp_req=0x%x, lc_debug_en=0x%x", lc_clk_byp_req, lc_debug_en),
               UVM_MEDIUM)
     super.post_randomize();
+
+    extclk_ctrl_sel = get_rand_mubi4_val(.t_weight(8), .f_weight(1), .other_weight(1));
+    `uvm_info(`gfn, $sformatf(
+                              "overwrite extclk_ctrl_sel=0x%x", extclk_ctrl_sel), UVM_MEDIUM)
+
   endfunction
 
   // Notice only all_clk_byp_req and io_clk_byp_req Mubi4True and Mubi4False cause transitions.
 
   local task delayed_update_all_clk_byp_ack(mubi4_t value, int cycles);
+    uvm_reg_data_t rd_data;
+
     if (mubi_mode == ClkmgrMubiHand && value == MuBi4True) begin
       repeat ($urandom_range(1, 10)) begin
+        exp_all_clk_byp_ack = get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(1));
         cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-        cfg.clkmgr_vif.update_all_clk_byp_ack(get_rand_mubi4_val(
-                                              .t_weight(0), .f_weight(1), .other_weight(1)));
+        cfg.clkmgr_vif.update_all_clk_byp_ack(exp_all_clk_byp_ack);
+        cfg.clk_rst_vif.wait_clks(4);
+        csr_rd(.ptr(ral.extclk_status), .value(rd_data));
+        // csr_rd_check didn't work well for status regiser read check
+        `DV_CHECK_EQ(exp_all_clk_byp_ack, rd_data, "extclk_status mismatch")
       end
     end
     cfg.clk_rst_vif.wait_clks(cycles);
@@ -168,7 +181,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
       fork
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_extclk_ctrl_sel);
-          csr_wr(.ptr(ral.extclk_ctrl), .value({extclk_ctrl_low_speed_sel, extclk_ctrl_sel}));
+          csr_wr(.ptr(ral.extclk_ctrl), .value({extclk_ctrl_high_speed_sel, extclk_ctrl_sel}));
         end
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_lc_clk_byp_req);
@@ -177,17 +190,17 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
       join
       `uvm_info(`gfn, $sformatf(
                 {
-                  "extclk_ctrl_sel=0x%0x, extclk_ctrl_low_speed_sel=0x%0x, lc_clk_byp_req=0x%0x, ",
+                  "extclk_ctrl_sel=0x%0x, extclk_ctrl_high_speed_sel=0x%0x, lc_clk_byp_req=0x%0x, ",
                   "lc_debug_en=0x%0x, scanmode=0x%0x"
                 },
                 extclk_ctrl_sel,
-                extclk_ctrl_low_speed_sel,
+                extclk_ctrl_high_speed_sel,
                 lc_clk_byp_req,
                 lc_debug_en,
                 scanmode
                 ), UVM_MEDIUM)
       csr_rd_check(.ptr(ral.extclk_ctrl),
-                   .compare_value({extclk_ctrl_low_speed_sel, extclk_ctrl_sel}));
+                   .compare_value({extclk_ctrl_high_speed_sel, extclk_ctrl_sel}));
       if (lc_clk_byp_req == lc_ctrl_pkg::On) begin
         wait(cfg.clkmgr_vif.lc_clk_byp_req == lc_ctrl_pkg::On);
         cfg.clk_rst_vif.wait_clks(cycles_before_lc_clk_byp_ack);
