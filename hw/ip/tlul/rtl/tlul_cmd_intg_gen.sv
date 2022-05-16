@@ -32,9 +32,7 @@ module tlul_cmd_intg_gen import tlul_pkg::*; #(
   logic [DataIntgWidth-1:0] data_intg;
 
   if (EnableDataIntgGen) begin : gen_data_intg
-    for (genvar i = 0; i < top_pkg::TL_DBW; i++) begin : gen_data_fill
-      assign data_final[i*8 +: 8] = tl_i.a_mask[i] ? tl_i.a_data[i*8 +: 8] : '0;
-    end
+    assign data_final = tl_i.a_data;
 
     logic [DataMaxWidth-1:0] unused_data;
     prim_secded_inv_39_32_enc u_data_gen (
