@@ -8,8 +8,8 @@
 // 3. i2c_error_intr_vseq can issue internal reset
 //    so it is excluded/included w.r.t stress_all_with_rand_reset/stress_all test
 
-class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_stress_all_vseq)
+class i2c_host_stress_all_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_stress_all_vseq)
 
   `uvm_object_new
 
@@ -18,12 +18,12 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
 
   string seq_names[$] = {
     "i2c_common_vseq",      // for intr_test
-    "i2c_smoke_vseq",
-    "i2c_fifo_full_vseq",
-    "i2c_fifo_overflow_vseq",
-    "i2c_fifo_watermark_vseq",
-    "i2c_stretch_timeout_vseq",
-    "i2c_perf_vseq"
+    "i2c_host_smoke_vseq",
+    "i2c_host_fifo_full_vseq",
+    "i2c_host_fifo_overflow_vseq",
+    "i2c_host_fifo_watermark_vseq",
+    "i2c_host_stretch_timeout_vseq",
+    "i2c_host_perf_vseq"
   };
 
   virtual task pre_start();
@@ -37,7 +37,7 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
   endtask : pre_start
 
   virtual task body();
-    `uvm_info(`gfn, "\n\n=> start i2c_stress_all_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n\n=> start i2c_host_stress_all_vseq", UVM_DEBUG)
     print_seq_names(seq_names);
     initialization(.mode(Host));
     for (int i = 1; i <= seq_names.size(); i++) begin
@@ -91,7 +91,7 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
       wait(cfg.m_i2c_agent_cfg.vif.rst_ni);
     end
     wait_host_for_idle();
-    `uvm_info(`gfn, "\n=> end of i2c_stress_all_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n=> end of i2c_host_stress_all_vseq", UVM_DEBUG)
 
     // get the histogram of vseq running
     str = {str, "\n\n=> vseq run histogram:"};
@@ -112,4 +112,4 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
     `uvm_info(`gfn, $sformatf("%s", str), UVM_DEBUG)
   endfunction : print_seq_names
 
-endclass : i2c_stress_all_vseq
+endclass : i2c_host_stress_all_vseq

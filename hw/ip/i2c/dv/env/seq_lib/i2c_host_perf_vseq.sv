@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // performance test vseq
-class i2c_perf_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_perf_vseq)
+class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_perf_vseq)
   `uvm_object_new
 
   // should have few long transactions
@@ -25,10 +25,10 @@ class i2c_perf_vseq extends i2c_rx_tx_vseq;
       [9:32]  :/ 1
     };
   }
-  
+
   // clear interrupt immediately
   constraint clear_intr_dly_c { clear_intr_dly == 0; }
-  
+
   // set latency to zero values for fatest access fmt_fifo and rx_fifo
   constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
   constraint rx_fifo_access_dly_c  { rx_fifo_access_dly  == 0;}
@@ -49,4 +49,4 @@ class i2c_perf_vseq extends i2c_rx_tx_vseq;
     t_buf     == 1;  // min:  (tsu_sta - t_r + 1)
   }
 
-endclass : i2c_perf_vseq
+endclass : i2c_host_perf_vseq

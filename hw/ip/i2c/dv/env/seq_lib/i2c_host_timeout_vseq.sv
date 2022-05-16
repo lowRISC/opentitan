@@ -7,8 +7,8 @@
 // runs random i2c transactions agent is configured to pull down clock
 // host will trigger an interrupt stretch timeout when count exceeds the programmed
 // value in timeout control reg
-class i2c_timeout_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_timeout_vseq)
+class i2c_host_timeout_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_timeout_vseq)
   `uvm_object_new
 
   // increase num_trans to cover all transaction types
@@ -18,4 +18,4 @@ class i2c_timeout_vseq extends i2c_rx_tx_vseq;
   constraint t_timeout_c { t_timeout == cfg.seq_cfg.i2c_max_timing; }
   constraint e_timeout_c { e_timeout == 1'b1; }
 
-endclass : i2c_timeout_vseq
+endclass : i2c_host_timeout_vseq

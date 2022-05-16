@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // basic fifo_overflow test vseq
-class i2c_fifo_overflow_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_fifo_overflow_vseq)
+class i2c_host_fifo_overflow_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_fifo_overflow_vseq)
   `uvm_object_new
 
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
@@ -40,7 +40,7 @@ class i2c_fifo_overflow_vseq extends i2c_rx_tx_vseq;
     bit rxempty = 1'b0;
 
     initialization(.mode(Host));
-    `uvm_info(`gfn, "\n--> start of i2c_fifo_overflow_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> start of i2c_host_fifo_overflow_vseq", UVM_DEBUG)
     for (int i = 1; i <= num_trans; i++) begin
       check_fmt_overflow = 1'b1; // set to gracefully stop process_fmt_overflow_intr
       check_rx_overflow  = 1'b1; // set to gracefully stop process_rx_overflow_intr
@@ -118,4 +118,4 @@ class i2c_fifo_overflow_vseq extends i2c_rx_tx_vseq;
     end
   endtask : process_rx_overflow_intr
 
-endclass : i2c_fifo_overflow_vseq
+endclass : i2c_host_fifo_overflow_vseq

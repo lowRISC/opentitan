@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class i2c_override_vseq extends i2c_base_vseq;
-  `uvm_object_utils(i2c_override_vseq)
+class i2c_host_override_vseq extends i2c_base_vseq;
+  `uvm_object_utils(i2c_host_override_vseq)
   `uvm_object_new
 
   local rand bit sclval;
@@ -23,7 +23,7 @@ class i2c_override_vseq extends i2c_base_vseq;
 
   task body();
     initialization(.mode(Host));
-    `uvm_info(`gfn, "\n--> start of i2c_override_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> start of i2c_host_override_vseq", UVM_DEBUG)
     for (uint i = 1; i <= num_trans; i++) begin
       `uvm_info(`gfn, $sformatf("\n  run simulation %0d/%0d", i, num_trans), UVM_DEBUG)
       // program to enable OVRD reg
@@ -48,7 +48,7 @@ class i2c_override_vseq extends i2c_base_vseq;
         end
       end
     end
-    `uvm_info(`gfn, "\n--> end of i2c_override_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> end of i2c_host_override_vseq", UVM_DEBUG)
   endtask : body
 
-endclass : i2c_override_vseq
+endclass : i2c_host_override_vseq
