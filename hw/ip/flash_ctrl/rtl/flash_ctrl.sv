@@ -990,6 +990,7 @@ module flash_ctrl
   //////////////////////////////////////
 
   // all software interface errors are treated as synchronous errors
+  assign hw2reg.err_code.op_err.d           = 1'b1;
   assign hw2reg.err_code.mp_err.d           = 1'b1;
   assign hw2reg.err_code.rd_err.d           = 1'b1;
   assign hw2reg.err_code.prog_err.d         = 1'b1;
@@ -997,6 +998,7 @@ module flash_ctrl
   assign hw2reg.err_code.prog_type_err.d    = 1'b1;
   assign hw2reg.err_code.flash_macro_err.d  = 1'b1;
   assign hw2reg.err_code.update_err.d       = 1'b1;
+  assign hw2reg.err_code.op_err.de          = sw_ctrl_err.invalid_op_err;
   assign hw2reg.err_code.mp_err.de          = sw_ctrl_err.mp_err;
   assign hw2reg.err_code.rd_err.de          = sw_ctrl_err.rd_err;
   assign hw2reg.err_code.prog_err.de        = sw_ctrl_err.prog_err;
@@ -1014,6 +1016,7 @@ module flash_ctrl
   // There are two types of faults
   // standard faults - things like fsm / counter / tlul integrity
   // custom faults - things like hardware interface not working correctly
+  assign hw2reg.fault_status.op_err.d           = 1'b1;
   assign hw2reg.fault_status.mp_err.d           = 1'b1;
   assign hw2reg.fault_status.rd_err.d           = 1'b1;
   assign hw2reg.fault_status.prog_err.d         = 1'b1;
@@ -1026,6 +1029,7 @@ module flash_ctrl
   assign hw2reg.fault_status.spurious_ack.d     = 1'b1;
   assign hw2reg.fault_status.arb_err.d          = 1'b1;
   assign hw2reg.fault_status.host_gnt_err.d     = 1'b1;
+  assign hw2reg.fault_status.op_err.de          = hw_err.invalid_op_err;
   assign hw2reg.fault_status.mp_err.de          = hw_err.mp_err;
   assign hw2reg.fault_status.rd_err.de          = hw_err.rd_err;
   assign hw2reg.fault_status.prog_err.de        = hw_err.prog_err;

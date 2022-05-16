@@ -543,6 +543,7 @@ package flash_ctrl_pkg;
 
   // Error bit positioning
   typedef struct packed {
+    logic invalid_op_err;
     logic oob_err;
     logic mp_err;
     logic rd_err;
