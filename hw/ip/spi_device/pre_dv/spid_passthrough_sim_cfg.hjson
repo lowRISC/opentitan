@@ -43,6 +43,13 @@
         "+TESTNAME=program"
       ]
     }
+    {
+      name: spid_passthrough_upload
+      // Chip Erase + Read Status + Page Program test
+      run_opts: [
+        "+TESTNAME=upload"
+      ]
+    }
   ]
 
   regressions: [

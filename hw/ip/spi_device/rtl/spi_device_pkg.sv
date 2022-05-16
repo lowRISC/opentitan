@@ -368,6 +368,8 @@ package spi_device_pkg;
 
     CmdReadSfdp = 8'h 5A,
 
+    CmdChipErase = 8'h C7,
+
     CmdEnableReset = 8'h 66,
     CmdResetDevice = 8'h 99
   } spi_cmd_e;
