@@ -451,6 +451,7 @@ jobs:
           --test_tag_filters=cw310,-broken \
           --test_output=errors \
           --build_tests_only \
+          --define cw310=lowrisc \
           $(./bazelisk.sh query 'rdeps(//sw/...,@bitstreams//:bitstream_test_rom)') \
           # All the tests that depend on the test rom
     displayName: Execute tests
