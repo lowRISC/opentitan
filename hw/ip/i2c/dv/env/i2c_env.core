@@ -29,6 +29,7 @@ filesets:
       - seq_lib/i2c_fifo_watermark_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_fifo_overflow_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_fifo_reset_fmt_vseq.sv: {is_include_file: true}
+      - seq_lib/i2c_host_fifo_fmt_empty_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_fifo_reset_rx_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_timeout_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_fifo_full_vseq.sv: {is_include_file: true}
