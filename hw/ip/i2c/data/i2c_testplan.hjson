@@ -163,23 +163,6 @@
       tests: ["i2c_fifo_overflow"]
     }
     {
-      name: target_fifo_empty
-      desc: '''
-            Test tx_empty and tx_nonempty interrupt.
-
-            Stimulus:
-              - Configure DUT/Agent to Target/Host mode respectively
-              - Agent sends transaction to the DUT
-
-            Checking:
-              - During read transaction, ensure tx_empty interrupt is asserted when no data left
-                in tx_fifo
-                otherwise tx_empty interrupt must be asserted
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
       name: host_fifo_reset
       desc: '''
             Test fmt_fifo and rx_fifo reset.
@@ -193,7 +176,7 @@
               - Ensure the remaining entries are not show up after fmt_fifo is reset
             '''
       milestone: V2
-      tests: ["i2c_fifo_reset_fmt", "i2c_fifo_reset_rx"]
+      tests: ["i2c_fifo_reset_fmt", "i2c_fifo_reset_rx", "i2c_host_fifo_fmt_empty"]
     }
     {
       name: host_fifo_full
@@ -370,6 +353,23 @@
             '''
       milestone: V2
       tests: ["i2c_fifo_overflow"]
+    }
+    {
+      name: target_fifo_empty
+      desc: '''
+            Test tx_empty and tx_nonempty interrupt.
+
+            Stimulus:
+              - Configure DUT/Agent to Target/Host mode respectively
+              - Agent sends transaction to the DUT
+
+            Checking:
+              - During read transaction, ensure tx_empty interrupt is asserted when no data left
+                in tx_fifo
+                otherwise tx_empty interrupt must be asserted
+            '''
+      milestone: V2
+      tests: []
     }
     {
       name: target_fifo_reset
