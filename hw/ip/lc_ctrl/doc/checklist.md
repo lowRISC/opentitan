@@ -225,9 +225,9 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
 Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        |
-Tests         | [FPV_SEC_CM_VERIFIED][]                 | Done        |
+Tests         | [FPV_SEC_CM_VERIFIED][]                 | Done        | Waive tool issue #13693
 Tests         | [SIM_SEC_CM_VERIFIED][]                 | Done        |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        |
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        | Waive reg_en coverage that will implement in common test and FSM coverage covered in FPV test
 Review        | [SEC_CM_DV_REVIEWED][]                  | Done        |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          {{<relref "/doc/project/checklist.md#sec_cm_testplan_completed" >}}
