@@ -319,4 +319,19 @@ module clkmgr_bind;
     .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.main_otbn == prim_mubi_pkg::MuBi4True)
   );
+
+  bind clkmgr clkmgr_sec_cm_checker_assert clkmgr_sec_cm_checker_assert (
+    .clk_i,
+    .rst_ni,
+    .all_clk_byp_req_o,
+    .lc_hw_debug_en_i,
+    .lc_clk_byp_req_i,
+    .lc_clk_byp_ack_o,
+    .io_clk_byp_req_o,
+    // internal signal is picked due to inconsistent t->f, f->t delay
+    .io_clk_byp_ack(u_clkmgr_byp.io_clk_byp_ack),
+    // internal signal is picked due to inconsistent input to signal delay
+    .step_down_acks_sync(u_clkmgr_byp.step_down_acks_sync),
+    .extclk_ctrl_sel
+  );
 endmodule
