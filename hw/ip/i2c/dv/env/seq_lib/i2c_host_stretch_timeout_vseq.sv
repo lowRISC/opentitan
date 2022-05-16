@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // basic stretch_timeout test vseq
-class i2c_stretch_timeout_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_stretch_timeout_vseq)
+class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_stretch_timeout_vseq)
   `uvm_object_new
 
   // set timeout field to minimum value to ensure
@@ -20,7 +20,7 @@ class i2c_stretch_timeout_vseq extends i2c_rx_tx_vseq;
   local bit  check_rd_stretch;
 
   virtual task body();
-    `uvm_info(`gfn, "\n--> start of i2c_stretch_timeout_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> start of i2c_host_stretch_timeout_vseq", UVM_DEBUG)
     initialization(.mode(Host));
     for (int i = 1; i <= num_trans; i++) begin
       cnt_wr_stretch = 0;
@@ -56,7 +56,7 @@ class i2c_stretch_timeout_vseq extends i2c_rx_tx_vseq;
         end
       join
     end
-    `uvm_info(`gfn, "\n--> end of i2c_stretch_timeout_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> end of i2c_host_stretch_timeout_vseq", UVM_DEBUG)
   endtask : body
 
   task process_stretch_timeout_intr();
@@ -77,4 +77,4 @@ class i2c_stretch_timeout_vseq extends i2c_rx_tx_vseq;
     end
   endtask : process_stretch_timeout_intr
 
-endclass : i2c_stretch_timeout_vseq
+endclass : i2c_host_stretch_timeout_vseq

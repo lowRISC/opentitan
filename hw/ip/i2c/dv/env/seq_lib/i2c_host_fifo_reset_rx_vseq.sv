@@ -5,8 +5,8 @@
 //  i2c_fifo_reset_rx test vseq
 //  this sequence waits for rx fifo full and resets rx fifo.
 //  checks for fifo empty high and rx lvl is 0
-class i2c_fifo_reset_rx_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_fifo_reset_rx_vseq)
+class i2c_host_fifo_reset_rx_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_fifo_reset_rx_vseq)
   `uvm_object_new
 
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
@@ -37,7 +37,7 @@ class i2c_fifo_reset_rx_vseq extends i2c_rx_tx_vseq;
   virtual task body();
     initialization(.mode(Host));
     read = 1'b0;
-    `uvm_info(`gfn, "\n--> start of i2c_fifo_reset_rx_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> start of i2c_host_fifo_reset_rx_vseq", UVM_DEBUG)
     fork
       begin
         while (!cfg.under_reset && check_fifo_full) process_fifo_full_status();
@@ -47,7 +47,7 @@ class i2c_fifo_reset_rx_vseq extends i2c_rx_tx_vseq;
         check_fifo_full = 1'b0; // gracefully stop process_fifo_full_status
       end
     join
-    `uvm_info(`gfn, "\n--> end of i2c_fifo_reset_rx_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> end of i2c_host_fifo_reset_rx_vseq", UVM_DEBUG)
   endtask : body
 
   task process_fifo_full_status();
@@ -78,4 +78,4 @@ class i2c_fifo_reset_rx_vseq extends i2c_rx_tx_vseq;
       if (rx_empty)  `DV_CHECK_EQ(rx_lvl, 0);
     end
   endtask : process_fifo_full_status
-endclass : i2c_fifo_reset_rx_vseq
+endclass : i2c_host_fifo_reset_rx_vseq

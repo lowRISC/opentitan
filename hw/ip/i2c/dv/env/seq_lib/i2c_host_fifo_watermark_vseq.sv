@@ -5,8 +5,8 @@
 // test the watermark interrupt of fmt_fifo and rx_fifo
 // TODO: Weicai's comments in PR #3128: consider constraining rx_fifo_access_dly
 // to test watermark irq
-class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_fifo_watermark_vseq)
+class i2c_host_fifo_watermark_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_fifo_watermark_vseq)
   `uvm_object_new
 
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
@@ -33,7 +33,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
     bit check_fmt_watermark, check_rx_watermark;
 
     initialization(.mode(Host));
-    `uvm_info(`gfn, "\n--> start of i2c_fifo_watermark_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> start of i2c_host_fifo_watermark_vseq", UVM_DEBUG)
     for (int i = 1; i <= num_trans; i++) begin
       check_fmt_watermark = 1'b1;
       check_rx_watermark  = 1'b1;
@@ -96,7 +96,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
         end
       join
     end
-    `uvm_info(`gfn, "\n--> end of i2c_fifo_watermark_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> end of i2c_host_fifo_watermark_vseq", UVM_DEBUG)
   endtask : body
 
   task process_fmt_watermark_intr();
@@ -151,6 +151,5 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
       clear_interrupt(RxWatermark);
     end
   endtask : process_rx_watermark_intr
-  
-endclass : i2c_fifo_watermark_vseq
 
+endclass : i2c_host_fifo_watermark_vseq

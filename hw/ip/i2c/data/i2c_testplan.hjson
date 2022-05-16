@@ -32,7 +32,7 @@
               - Read and write transfer matching
             '''
       milestone: V1
-      tests: ["i2c_smoke"]
+      tests: ["i2c_host_smoke"]
     }
     {
       name: host_error_intr
@@ -56,7 +56,7 @@
               - Ensure IP operation get back normal after on-the-fly reset finished
             '''
       milestone: V2
-      tests: ["i2c_error_intr"]
+      tests: ["i2c_host_error_intr"]
     }
     {
       name: host_stress_all
@@ -66,7 +66,7 @@
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
               - Combine above sequences in one test to run sequentially
-                except csr sequence and i2c_rx_oversample_vseq (requires zero_delays)
+                except csr sequence and i2c_host_rx_oversample_vseq (requires zero_delays)
               - Randomly add reset between each sequence
 
             Checking:
@@ -74,7 +74,7 @@
               - Ensure reset is handled correctly
             '''
       milestone: V2
-      tests: ["i2c_stress_all"]
+      tests: ["i2c_host_stress_all"]
     }
     {
       name: host_stress_all_with_rand_reset
@@ -84,7 +84,7 @@
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
               - Combine above sequences in one test to run sequentially
-                except csr sequence and i2c_rx_oversample_vseq (requires zero_delays)
+                except csr sequence and i2c_host_rx_oversample_vseq (requires zero_delays)
               - Randomly add reset within the sequences then switch to another one
 
             Checking:
@@ -92,7 +92,7 @@
               - Ensure reset is handled correctly
             '''
       milestone: V2
-      tests: ["i2c_stress_all_with_rand_reset"]
+      tests: ["i2c_host_stress_all_with_rand_reset"]
     }
     {
       name: host_perf
@@ -110,7 +110,7 @@
               - Ensure transactions are transmitted/received correctly
             '''
       milestone: V2
-      tests: ["i2c_perf"]
+      tests: ["i2c_host_perf"]
     }
     {
       name: host_override
@@ -125,7 +125,7 @@
               - Ensure scl_o, sda_o are overridden
             '''
       milestone: V2
-      tests: ["i2c_override"]
+      tests: ["i2c_host_override"]
     }
     {
       name: host_fifo_watermark
@@ -143,7 +143,7 @@
               - Ensure receving correct number of fmt_fifo and rx_fifo watermark interrupts
             '''
       milestone: V2
-      tests: ["i2c_fifo_watermark"]
+      tests: ["i2c_host_fifo_watermark"]
     }
     {
       name: host_fifo_overflow
@@ -160,7 +160,7 @@
               - Ensure fmt_overflow and rx_overflow interrupt are asserted
             '''
       milestone: V2
-      tests: ["i2c_fifo_overflow"]
+      tests: ["i2c_host_fifo_overflow"]
     }
     {
       name: host_fifo_reset
@@ -176,7 +176,7 @@
               - Ensure the remaining entries are not show up after fmt_fifo is reset
             '''
       milestone: V2
-      tests: ["i2c_fifo_reset_fmt", "i2c_fifo_reset_rx", "i2c_host_fifo_fmt_empty"]
+      tests: ["i2c_host_fifo_reset_fmt", "i2c_host_fifo_reset_rx", "i2c_host_fifo_fmt_empty"]
     }
     {
       name: host_fifo_full
@@ -192,7 +192,7 @@
               - Check fifo full states by reading status register
             '''
       milestone: V2
-      tests: ["i2c_fifo_full"]
+      tests: ["i2c_host_fifo_full"]
     }
     {
       name: host_timeout
@@ -211,7 +211,7 @@
 
             '''
       milestone: V2
-      tests: ["i2c_timeout"]
+      tests: ["i2c_host_timeout"]
     }
     {
       name: host_rx_oversample
@@ -226,21 +226,7 @@
               - Read rx data oversampled value and ensure it is same as driven value
             '''
       milestone: V2
-      tests: ["i2c_rx_oversample"]
-    }
-    {
-      name: host_rw_loopback
-      desc: '''
-            Host and Target mode: do write data, read loopback, and compare.
-
-            Stimulus:
-              - Drive DUT/Agent to write data to the Agent/DUT then read loopback
-
-            Checking:
-              - Ensure read data is matched with write data
-            '''
-      milestone: V2
-      tests: []
+      tests: ["i2c_host_rx_oversample"]
     }
 
     //-----------------------------------------------
@@ -266,7 +252,7 @@
               - Read and write transfer matching
             '''
       milestone: V1
-      tests: ["i2c_smoke"]
+      tests: [""]
     }
     {
       name: target_error_intr
@@ -282,7 +268,7 @@
               - Ensure IP operation get back normal after on-the-fly reset finished
             '''
       milestone: V2
-      tests: ["i2c_error_intr"]
+      tests: [""]
     }
     {
       name: target_stress_all
@@ -299,7 +285,7 @@
               - Ensure reset is handled correctly
             '''
       milestone: V2
-      tests: ["i2c_stress_all"]
+      tests: [""]
     }
     {
       name: target_stress_all_with_rand_reset
@@ -309,7 +295,7 @@
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
               - Combine above sequences in one test to run sequentially
-                except csr sequence and i2c_rx_oversample_vseq (requires zero_delays)
+                except csr sequence
               - Randomly add reset within the sequences then switch to another one
 
             Checking:
@@ -317,7 +303,7 @@
               - Ensure reset is handled correctly
             '''
       milestone: V2
-      tests: ["i2c_stress_all_with_rand_reset"]
+      tests: [""]
     }
     {
       name: target_perf
@@ -335,7 +321,7 @@
               - Ensure transactions are transmitted/received correctly
             '''
       milestone: V2
-      tests: ["i2c_perf"]
+      tests: [""]
     }
     {
       name: target_fifo_overflow
@@ -352,7 +338,7 @@
               - Ensure tx_overflow and acq_overflow interrupt are asserted
             '''
       milestone: V2
-      tests: ["i2c_fifo_overflow"]
+      tests: [""]
     }
     {
       name: target_fifo_empty
@@ -401,7 +387,7 @@
               - Check fifo full states by reading status register
             '''
       milestone: V2
-      tests: ["i2c_fifo_full"]
+      tests: [""]
     }
     {
       name: target_timeout
@@ -418,7 +404,7 @@
 
             '''
       milestone: V2
-      tests: []
+      tests: [""]
     }
   ]
 }
