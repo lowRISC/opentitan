@@ -95,11 +95,11 @@ They also depend on the `idle_i` input, which also has a separate bit for each u
 Any unit's `idle_i` bit is clear when the unit is currently busy, and prevents its clock to be turned off until it becomes idle.
 
 The sequence `clkmgr_extclk_vseq` randomizes the stimuli that drive the external clock selection.
-The selection is controlled by software if the `extclk_ctrl.sel` CSR is `lc_ctrl_pkg::On`, provided the `lc_hw_debug_en_i` input is also set to `lc_ctrl_pkg::On`.
+The selection is controlled by software if the `extclk_ctrl.sel` CSR is `prim_mubi_pkg::MuBi4True`, provided the `lc_hw_debug_en_i` input is also set to `lc_ctrl_pkg::On`.
 Alternatively, the external clock is selected by the life cycle controller if the `lc_ctrl_byp_req_i` input is `lc_ctrl_pkg::On`.
-When the external clock is selected and `scanmode_i` is not set to `lc_ctrl_pkg::On`, the clock dividers for the clk_io_div2 and clk_io_div4 output clocks are stepped down:
+When the external clock is selected and `scanmode_i` is not set to `prim_mubi_pkg::MuBi4True`, the clock dividers for the clk_io_div2 and clk_io_div4 output clocks are stepped down:
 * If `lc_ctrl_byp_req_i` is on, or
-* If `extclk_ctrl.low_speed_sel` CSR is `lc_ctrl_pkg::On`, when the selection is enabled by software.
+* If `extclk_ctrl.hi_speed_sel` CSR is `prim_mubi_pkg::MuBi4True`, when the selection is enabled by software.
 
 The sequence `clkmgr_frequency_vseq` randomly programs the frequency measurement for each clock so its measurement is either okay, slow, or fast.
 It checks the recoverable alerts trigger as expected when a measurement is not okay.

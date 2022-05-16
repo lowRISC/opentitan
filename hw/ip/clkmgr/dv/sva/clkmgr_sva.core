@@ -12,6 +12,7 @@ filesets:
       - lowrisc:dv:clkmgr_sva_ifs
     files:
       - clkmgr_bind.sv
+      - clkmgr_sec_cm_checker_assert.sv
     file_type: systemVerilogSource
 
   files_formal:

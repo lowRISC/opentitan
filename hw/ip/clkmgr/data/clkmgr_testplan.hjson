@@ -107,9 +107,9 @@
               the CSR `extclk_ctrl_regwen` is 1.
             - A successful switch to external clocks due to `lc_clk_byl_req_i`
               will cause the clkmgr to undo a divide by 2 for io_div4 and
-              io_div2 clocks except when `(scanmode_i == lc_ctrl_pkg::On)`.
+              io_div2 clocks except when `(scanmode_i == prim_mubi_pkg::MuBi4True)`.
             - A software triggered switch to external clock will undo divides
-              by 2 if `extclk_ctrl.low_speed_sel` is set to `lc_ctrl_pkg::On`.
+              by 2 if `extclk_ctrl.hi_speed_sel` is set to `prim_mubi_pkg::MuBi4True`.
 
             **Stimulus**:
             - CSR writes to `extclk_ctrl` and `extclk_ctrl_regwen`.
@@ -290,7 +290,7 @@
             Collects coverage for the external clock selection.
 
             The external clock selection depends on the `extclk_ctrl` CSR
-            fields `sel` and `low_speed_sel`, and the `lc_hw_debug_en_i`,
+            fields `sel` and `hi_speed_sel`, and the `lc_hw_debug_en_i`,
             `lc_clk_byp_req_i`, and `scanmode_i` input pins. This covergroup
             collects their cross.
             '''
