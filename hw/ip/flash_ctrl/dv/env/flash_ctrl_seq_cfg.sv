@@ -28,6 +28,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
   // Weights to enable read / program and erase for each mem region.
   // TODO: Should these be per region?
+  uint mp_region_en_pc;
   uint mp_region_read_en_pc;
   uint mp_region_program_en_pc;
   uint mp_region_erase_en_pc;
@@ -68,8 +69,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint op_on_info1_partition_pc;  // Choose info1 partition.
   uint op_on_info2_partition_pc;  // Choose info2 partition.
 
-  bit op_readonly_on_info_partition;  // Make info partition read-only.
+  bit op_readonly_on_info_partition;   // Make info  partition read-only.
   bit op_readonly_on_info1_partition;  // Make info1 partition read-only.
+  bit op_readonly_on_info2_partition;  // Make info2 partition read-only.
 
   uint op_erase_type_bank_pc;
   uint op_prog_type_repair_pc;
@@ -82,7 +84,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Chances to start flash with all 1s and not with random values (default is 30%).
   uint flash_init_set_pc;
 
-  //  Set by a higher level vseq that invokes this vseq.
+  // Set by a higher level vseq that invokes this vseq.
   bit external_cfg;
 
   // If pre-transaction back-door memory preperation isn't needed, set do_tran_prep_mem to 0.
@@ -143,6 +145,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
     allow_mp_region_overlap       = 1'b0;
 
+    mp_region_en_pc               = 50;
     mp_region_read_en_pc          = 50;
     mp_region_program_en_pc       = 50;
     mp_region_erase_en_pc         = 50;

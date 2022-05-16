@@ -30,26 +30,27 @@ _dv_log_offset = 0x10000;
  * The start of the .text section relative to the beginning of the associated
  * slot for use in the manifest.
  */
-_manifest_code_start = _text_start - _slot_start_address;
+_manifest_code_start = _text_start - _rom_ext_start_address;
 /*
  * The end of the .text section relative to the beginning of the associated slot
  * for use in the manifest.
  */
-_manifest_code_end = _text_end - _slot_start_address;
+_manifest_code_end = _text_end - _rom_ext_start_address;
 /*
  * The location of the entry point relative to the beginning of the associated
  * slot for use in the manifest.
  */
-_manifest_entry_point = _rom_ext_start_boot - _slot_start_address;
+_manifest_entry_point = _rom_ext_start_boot - _rom_ext_start_address;
+
 
 /**
  * NOTE: We have to align each section to word boundaries as our current
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
  */
 SECTIONS {
-  .manifest _slot_start_address : {
+  .manifest _rom_ext_start_address : {
     KEEP(*(.manifest))
-  } > eflash
+  } > rom_ext_flash
 
   /**
    * Ibex interrupt vector.
@@ -60,14 +61,14 @@ SECTIONS {
   .vectors : ALIGN(256) {
     _text_start = .;
     KEEP(*(.vectors))
-  } > eflash
+  } > rom_ext_flash
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > eflash
+  } > rom_ext_flash
 
   /**
    * Standard text section, containing program code.
@@ -78,7 +79,7 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
-  } > eflash
+  } > rom_ext_flash
 
   /**
    * Shutdown text section, containing shutdown function(s).
@@ -92,7 +93,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > eflash
+  } > rom_ext_flash
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -105,7 +106,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > eflash
+  } > rom_ext_flash
 
   /**
    * Critical static data that is accessible by both the mask ROM and the ROM
@@ -155,7 +156,7 @@ SECTIONS {
      *
      * Using `AT>` means we don't have to keep track of the next free part of
      * flash, as we do in our other linker scripts. */
-  } > ram_main AT> eflash
+  } > ram_main AT> rom_ext_flash
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.

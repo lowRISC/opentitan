@@ -25,6 +25,7 @@ filesets:
       - seq_lib/i2c_rx_tx_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_override_vseq.sv: {is_include_file: true}
+      - seq_lib/i2c_rx_oversample_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_fifo_watermark_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_fifo_overflow_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_fifo_reset_fmt_vseq.sv: {is_include_file: true}

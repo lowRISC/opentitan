@@ -192,13 +192,13 @@
     { name: "CreatorSwCfgAstCfgSize",
       desc: "Size of CREATOR_SW_CFG_AST_CFG",
       type: "int",
-      default: "128",
+      default: "156",
       local: "true"
     },
     { name: "CreatorSwCfgAstInitEnOffset",
       desc: "Offset of CREATOR_SW_CFG_AST_INIT_EN",
       type: "int",
-      default: "192",
+      default: "220",
       local: "true"
     },
     { name: "CreatorSwCfgAstInitEnSize",
@@ -210,7 +210,7 @@
     { name: "CreatorSwCfgRomExtSkuOffset",
       desc: "Offset of CREATOR_SW_CFG_ROM_EXT_SKU",
       type: "int",
-      default: "196",
+      default: "224",
       local: "true"
     },
     { name: "CreatorSwCfgRomExtSkuSize",
@@ -222,7 +222,7 @@
     { name: "CreatorSwCfgUseSwRsaVerifyOffset",
       desc: "Offset of CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
       type: "int",
-      default: "200",
+      default: "228",
       local: "true"
     },
     { name: "CreatorSwCfgUseSwRsaVerifySize",
@@ -234,7 +234,7 @@
     { name: "CreatorSwCfgKeyIsValidOffset",
       desc: "Offset of CREATOR_SW_CFG_KEY_IS_VALID",
       type: "int",
-      default: "204",
+      default: "232",
       local: "true"
     },
     { name: "CreatorSwCfgKeyIsValidSize",
@@ -246,7 +246,7 @@
     { name: "CreatorSwCfgFlashDataDefaultCfgOffset",
       desc: "Offset of CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
       type: "int",
-      default: "212",
+      default: "240",
       local: "true"
     },
     { name: "CreatorSwCfgFlashDataDefaultCfgSize",
@@ -258,7 +258,7 @@
     { name: "CreatorSwCfgFlashInfoBootDataCfgOffset",
       desc: "Offset of CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG",
       type: "int",
-      default: "216",
+      default: "244",
       local: "true"
     },
     { name: "CreatorSwCfgFlashInfoBootDataCfgSize",
@@ -270,11 +270,23 @@
     { name: "CreatorSwCfgRngEnOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_EN",
       type: "int",
-      default: "220",
+      default: "248",
       local: "true"
     },
     { name: "CreatorSwCfgRngEnSize",
       desc: "Size of CREATOR_SW_CFG_RNG_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "CreatorSwCfgJitterEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_JITTER_EN",
+      type: "int",
+      default: "252",
+      local: "true"
+    },
+    { name: "CreatorSwCfgJitterEnSize",
+      desc: "Size of CREATOR_SW_CFG_JITTER_EN",
       type: "int",
       default: "4",
       local: "true"

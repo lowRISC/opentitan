@@ -8,6 +8,7 @@
 `include "chip_common_vseq.sv"
 `include "chip_jtag_csr_rw_vseq.sv"
 `include "chip_jtag_mem_vseq.sv"
+`include "chip_tap_straps_vseq.sv"
 // This needs to be listed prior to all sequences that derive from it.
 `include "chip_sw_base_vseq.sv"
 `include "chip_sw_full_aon_reset_vseq.sv"
@@ -19,6 +20,7 @@
 `include "chip_sw_flash_ctrl_lc_rw_en_vseq.sv"
 `include "chip_sw_flash_rma_unlocked_vseq.sv"
 `include "chip_sw_lc_ctrl_transition_vseq.sv"
+`include "chip_sw_lc_walkthrough_vseq.sv"
 `include "chip_sw_spi_tx_rx_vseq.sv"
 `include "chip_sw_rom_ctrl_integrity_check_vseq.sv"
 `include "chip_sw_sram_ctrl_execution_main_vseq.sv"
@@ -28,3 +30,4 @@
 `include "chip_sw_ast_clk_outputs_vseq.sv"
 `include "chip_sw_sensor_ctrl_status_intr_vseq.sv"
 `include "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq.sv"
+`include "chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq.sv"

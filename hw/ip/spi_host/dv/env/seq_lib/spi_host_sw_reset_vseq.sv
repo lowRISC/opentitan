@@ -35,13 +35,12 @@ class spi_host_sw_reset_vseq extends spi_host_tx_rx_vseq;
           read_rx_fifo();
         end
       join
-      
+
       txfifo_fill();
 
       cfg.clk_rst_vif.wait_clks($urandom_range(100,200));
       spi_host_init();
       cfg.clk_rst_vif.wait_clks($urandom_range(100,200));
-
       csr_rd_check(.ptr(ral.status.rxempty), .compare_value(1'b1));
       csr_rd_check(.ptr(ral.status.txempty), .compare_value(1'b1));
     end  // end for loop

@@ -76,28 +76,23 @@ module tb;
     .intr_spi_event_o     (intr_event)
   );
 
-  assign passthrough_i.sck = clk;
-  always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-      passthrough_i.passthrough_en <= 1'b0;
-      passthrough_i.sck_en <= 1'b0;
-      passthrough_i.csb_en <= 1'b0;
-      passthrough_i.s_en   <= 1'b0;
-      passthrough_i.csb    <= 1'b1;
-    end else begin
-      passthrough_i.passthrough_en <= spi_passthrough_if.passthrough_en;
-      passthrough_i.sck_en         <= spi_passthrough_if.sck_en;
-      passthrough_i.csb_en         <= spi_passthrough_if.csb_en;
-      passthrough_i.s_en           <= spi_passthrough_if.s_en;
-      passthrough_i.csb            <= spi_passthrough_if.csb;
-  end
-  end
+  assign passthrough_i.passthrough_en = spi_passthrough_if.passthrough_en;
+  assign passthrough_i.sck_en         = spi_passthrough_if.sck_en;
+  assign passthrough_i.csb_en         = spi_passthrough_if.csb_en;
+  assign passthrough_i.s_en           = spi_passthrough_if.s_en;
+  assign passthrough_i.csb            = spi_passthrough_if.csb;
+  assign passthrough_i.sck            = spi_passthrough_if.sck;
 
-  assign passthrough_i.s      = spi_passthrough_if.is;
-  assign spi_passthrough_if.os = passthrough_o.s;
-  assign spi_passthrough_if.cio_sd_o = cio_sd_o;
+  assign passthrough_i.s                 = spi_passthrough_if.is;
+  assign spi_passthrough_if.os           = passthrough_o.s;
+  assign spi_passthrough_if.cio_sck_o    = cio_sck_o;
+  assign spi_passthrough_if.cio_sck_en_o = cio_sck_en_o;
+  assign spi_passthrough_if.cio_csb_o    = cio_csb_o;
+  assign spi_passthrough_if.cio_csb_en_o = cio_csb_en_o;
+  assign spi_passthrough_if.cio_sd_en_o  = cio_sd_en_o;
+  assign spi_passthrough_if.cio_sd_o     = cio_sd_o;
 
-  assign cio_sd_i =  spi_passthrough_if.passthrough_en ? spi_passthrough_if.cio_sd_i : si_pulldown;
+  assign cio_sd_i = spi_passthrough_if.passthrough_en ? spi_passthrough_if.cio_sd_i : si_pulldown;
 
   // configure spi_if i/o
   assign spi_if.sck = (cio_sck_en_o) ? cio_sck_o : 1'bz;

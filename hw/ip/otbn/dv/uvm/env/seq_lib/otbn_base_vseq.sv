@@ -466,7 +466,7 @@ class otbn_base_vseq extends cip_base_vseq #(
   endtask
 
   // Set a counter in the loop stack to a specified value
-  protected function _set_loop_counter(bit [31:0] loop_counter_idx, bit [31:0] new_count);
+  protected function void _set_loop_counter(bit [31:0] loop_counter_idx, bit [31:0] new_count);
     bit [31:0] new_up_cnt_q;
     bit [31:0] new_up_cnt_d;
     bit [31:0] new_past_cnt;

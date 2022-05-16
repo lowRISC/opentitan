@@ -35,7 +35,7 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
   constraint x_max_c { x_max inside {[64:256]}; }  // Loop - Num Iterations
 
   // Expect Alert Violation
-  constraint exp_alert_c { exp_alert dist {0:=3, 1:=1}; }
+  constraint exp_alert_c { exp_alert dist {MP_PASS:=3, MP_VIOLATION:=1}; }
 
   // Extended Num Words (for the Violation Case)
   constraint extended_num_words_c { extended_num_words
@@ -172,7 +172,7 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
     cfg.seq_cfg.default_region_he_en_pc = 50;
 
     // MAX Delay for an Expected Alert
-    cfg.alert_max_delay = 100_000_000;
+    cfg.alert_max_delay = cfg.seq_cfg.prog_timeout_ns;
 
   endfunction : configure_vseq
 
@@ -199,12 +199,12 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
       `uvm_info(`gfn, $sformatf("extended_data      : %p ", extended_data), UVM_MEDIUM)
 
       // Display Alert Chosen
-      alert_str = (exp_alert) ? "VIOLATION EXPECTED" : "NONE";
+      alert_str = exp_alert ? "MP_VIOLATION" : "MP_PASS";
       `uvm_info(`gfn, $sformatf("Expect Alert : %s", alert_str), UVM_LOW)
 
       // Choose given Flash Op, or Extend Program Window
       flash_op_prog_win = flash_op;  // Copy Op
-      if (exp_alert == 0)  // Normal Window - PASS
+      if (exp_alert == MP_PASS)  // Normal Window - PASS
         flash_op_data_prog_win = flash_op_data;  // Copy Data
       else begin  // Extended Program Window - VIOLATION
         flash_op_prog_win.num_words = extended_num_words; // Extended Window
@@ -223,7 +223,7 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
       // FLASH PROGRAM
       flash_ctrl_start_op(flash_op_prog_win);
       flash_ctrl_write(flash_op_data_prog_win, poll_fifo_status);
-      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+      wait_flash_op_done(.clear_op_status(0), .timeout_ns(cfg.seq_cfg.prog_timeout_ns));
       `uvm_info(`gfn, $sformatf("Program Data : %0p", flash_op_data_prog_win), UVM_MEDIUM)
 
       // Predict Alert Status (for RAL)

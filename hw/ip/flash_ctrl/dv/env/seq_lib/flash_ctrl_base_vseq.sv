@@ -140,7 +140,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask : flash_ctrl_mp_region_cfg
 
   // Configure the protection for the "default" region (all pages that do not fall
-  //  into one of the memory protection regions).
+  // into one of the memory protection regions).
   virtual task flash_ctrl_default_region_cfg(mubi4_t read_en     = MuBi4True,
                                              mubi4_t program_en  = MuBi4True,
                                              mubi4_t erase_en    = MuBi4True,
@@ -1005,12 +1005,14 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     case (alert_name)
       "prog_type_err" : csr_rd_check(.ptr(ral.err_code.prog_type_err), .compare_value(exp_alert));
       "prog_win_err"  : csr_rd_check(.ptr(ral.err_code.prog_win_err),  .compare_value(exp_alert));
+      "mp_err"        : csr_rd_check(.ptr(ral.err_code.mp_err),        .compare_value(exp_alert));
       default : `uvm_fatal(`gfn, "Unrecognized alert_name, FAIL")
     endcase
     csr_rd_check(.ptr(ral.op_status.err), .compare_value(exp_alert));
 
-    // Check Backdoor If Pass
-    if (exp_alert == 0) begin
+    // For 'prog_type_err' and 'prog_win_err' check via backdoor ff Pass,
+    // 'mp_err' is Backdoor checked directly within its own test.
+    if ((alert_name inside {"prog_type_err", "prog_win_err"}) && (exp_alert == 0)) begin
       cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
     end
 
@@ -1019,6 +1021,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       "prog_type_err" : reg_data = get_csr_val_with_updated_field(ral.err_code.prog_type_err,
                                                                   reg_data, 1);
       "prog_win_err"  : reg_data = get_csr_val_with_updated_field(ral.err_code.prog_win_err,
+                                                                  reg_data, 1);
+      "mp_err"        : reg_data = get_csr_val_with_updated_field(ral.err_code.mp_err,
                                                                   reg_data, 1);
       default : `uvm_fatal(`gfn, "Unrecognized alert_name")
     endcase

@@ -48,41 +48,22 @@ interface otbn_loop_if #(
     return otbn_env_pkg::StackEmpty;
   endfunction
 
-  event disable_out_set_assertions_ev;
-  event enable_out_set_assertions_ev;
+  // Are assertions in the loop counters currently enabled?
+  bit loop_counter_assertions_enabled = 1'b1;
 
-  // Generate statements cannot be used inside a function. So to allow a parameterised loop stack
-  // depth have a generate for loop here to produce always blocks that turn on or off the OutSet_A
-  // assertion upon events 'enable_out_set_assertions_ev' or 'disable_out_set_assertions_ev'
-  // occurring. These event can then be triggered by a function.
-  for (genvar i = 0;i < otbn_pkg::LoopStackDepth; ++i) begin : gen_loop_counter_disable_assert
-    always @(disable_out_set_assertions_ev) begin
-      // Using absolute path here as Xcelium will not accept a relative one
-      $assertoff(0,
-                 dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.g_loop_counters[i].
-                 u_loop_count.OutSet_A
-                );
+  // Enables or disables all assertions in the loop controller. One assertion in the counter
+  // (OutSet_A) is not compatible with loop warping and a more targetted disable for that assertion
+  // does not work under Xcelium.
+  function automatic void control_loop_counters_out_set_assertion(bit enable);
+    if (enable == loop_counter_assertions_enabled) begin
+      return;
     end
-
-    always @(enable_out_set_assertions_ev) begin
-      // Using absolute path here as Xcelium will not accept a relative one
-      $asserton(0,
-                 dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.g_loop_counters[i].
-                 u_loop_count.OutSet_A
-                );
+    if (enable) begin
+      $asserton(0, tb.dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller);
+    end else begin
+      $assertoff(0, tb.dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller);
     end
-  end
-
-  // Enables or isables an assertion that is not compatible with loop warping. Calling this function
-  // twice with different enable values within the same process in the same delta cycle has
-  // undefined results (it depends on how the simulator chooses to schedule the processes that
-  // actually enable or disable the assertion).
-  function automatic control_loop_counters_out_set_assertion(bit enable);
-      if (enable) begin
-        -> enable_out_set_assertions_ev;
-      end else begin
-        -> disable_out_set_assertions_ev;
-      end
+    loop_counter_assertions_enabled = enable;
   endfunction
 
   // Track completing some loop. This is implied by the next item, but much easier to hit so maybe

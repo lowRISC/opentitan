@@ -34,6 +34,15 @@
         "+TESTNAME=wel"
       ]
     }
+    {
+      name: spid_passthrough_program
+      // WEL + PageProgram test
+      // Randomly issue Program with/without WEL, then check if the values are
+      // written or not by reading them back.
+      run_opts: [
+        "+TESTNAME=program"
+      ]
+    }
   ]
 
   regressions: [
@@ -41,7 +50,8 @@
       name: smoke
       tests: [
         "spid_passthrough_readbasic",
-        "spid_passthrough_addr4b"
+        "spid_passthrough_addr4b",
+        "spid_passthrough_wel"
       ]
     }
     {

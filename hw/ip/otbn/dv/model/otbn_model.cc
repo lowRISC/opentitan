@@ -111,8 +111,6 @@ static void write_words_to_file(const std::string &path,
   }
 }
 
-static bool is_xz(svLogic l) { return l == sv_x || l == sv_z; }
-
 template <typename T>
 static std::array<T, 32> get_rtl_regs(const std::string &reg_scope) {
   std::array<T, 32> ret;

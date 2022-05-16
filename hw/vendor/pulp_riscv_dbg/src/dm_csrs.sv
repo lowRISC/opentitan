@@ -23,7 +23,8 @@ module dm_csrs #(
   input  logic                              clk_i,           // Clock
   input  logic                              rst_ni,          // Asynchronous reset active low
   input  logic                              testmode_i,
-  input  logic                              dmi_rst_ni,      // Debug Module Intf reset active-low
+  input  logic                              dmi_rst_ni,      // sync. DTM reset,
+                                                             // active-low
   input  logic                              dmi_req_valid_i,
   output logic                              dmi_req_ready_o,
   input  dm::dmi_req_t                      dmi_req_i,

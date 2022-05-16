@@ -22,11 +22,13 @@ class i2c_fifo_reset_fmt_vseq extends i2c_rx_tx_vseq;
     initialization(.mode(Host));
     fmt_item = new("fmt_item");
     `uvm_info(`gfn, "\n--> start of i2c_fifo_reset_fmt_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("number of runs is %0d ", num_runs), UVM_HIGH)
     for (int i = 1; i <= num_runs; i++) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_wr_bytes)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wr_data)
       `uvm_info(`gfn, $sformatf("write transaction length is %0d byte", num_wr_bytes), UVM_HIGH)
       for (int i = 1; i <= num_wr_bytes; i++) begin
+      `uvm_info(`gfn, $sformatf("VISWA loop I %0d byte", i), UVM_HIGH)
         // randomize until at least one of format bits is non-zero to ensure
         // data format will be pushed into fmt_fifo (if not empty)
         do begin
@@ -47,6 +49,8 @@ class i2c_fifo_reset_fmt_vseq extends i2c_rx_tx_vseq;
         end
         program_format_flag(fmt_item, "program_write_data_to_target");
       end // for num wr bytes
+      csr_rd_check(.ptr(ral.fifo_status.fmtlvl), .compare_value(num_wr_bytes));
+      csr_rd_check(.ptr(ral.status.fmtempty), .compare_value(0));
       cfg.clk_rst_vif.wait_clks($urandom_range(100, 2000));
       reset_fmt_fifo();
       csr_rd_check(.ptr(ral.status.fmtempty), .compare_value(1));
@@ -54,10 +58,4 @@ class i2c_fifo_reset_fmt_vseq extends i2c_rx_tx_vseq;
     `uvm_info(`gfn, "\n--> end of i2c_fifo_reset_fmt_vseq", UVM_DEBUG)
 
   endtask : body
-
-  task reset_fmt_fifo();
-    csr_wr(.ptr(ral.fifo_ctrl.fmtrst), .value(1'b1));
-    csr_wr(.ptr(ral.fifo_ctrl.fmtrst), .value(1'b0));
-  endtask : reset_fmt_fifo
-
 endclass : i2c_fifo_reset_fmt_vseq

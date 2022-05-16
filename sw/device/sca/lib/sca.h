@@ -84,9 +84,21 @@ typedef enum sca_peripheral {
    */
   kScaPeripheralOtbn = 1 << 6,
   /**
+   * Peripherals using the IO_DIV4_PERI clock (UART, GPIO, I2C, SPI Dev, ...)
+   */
+  kScaPeripheralIoDiv4 = 1 << 7,
+  /**
+   * Peripherals using the IO_DIV2_PERI clock (SPI Host 1)
+   */
+  kScaPeripheralIoDiv2 = 1 << 8,
+  /**
    * USB.
    */
-  kScaPeripheralUsb = 1 << 7,
+  kScaPeripheralUsb = 1 << 9,
+  /**
+   * Peripherals using the IO_PERI clock (SPI Host 0)
+   */
+  kScaPeripheralIo = 1 << 10,
 } sca_peripheral_t;
 
 /**

@@ -9,13 +9,45 @@ interface otbn_mac_bignum_if (
   input         rst_ni,
 
   // Signal names from the otbn_mac_bignum module (where we are bound)
-  input logic [255:0] adder_op_a,
-  input logic [255:0] adder_op_b
+  input logic [255:0]                 adder_op_a,
+  input logic [255:0]                 adder_op_b,
+  input logic [otbn_pkg::ExtWLEN-1:0] acc_intg_q,
+  input logic                         acc_used
 );
 
   // Return the intermediate sum (the value of ACC before it gets truncated back down to 256 bits).
   function automatic logic [256:0] get_sum_value();
     return {1'b0, adder_op_a} + {1'b0, adder_op_b};
   endfunction
+
+  // Force the `acc_intg_q` register to `should_val`.  This function needs to be static because its
+  // argument must live as least as long as the `force` statement is in effect.
+  function static void force_acc_intg_q(input logic [otbn_pkg::ExtWLEN-1:0] should_val);
+    force u_otbn_mac_bignum.acc_intg_q = should_val;
+  endfunction
+
+  // Release the forcing of the `acc_intg_q` register.
+  function automatic void release_acc_intg_q();
+    release u_otbn_mac_bignum.acc_intg_q;
+  endfunction
+
+  // Wait for the `acc_used` signal to be high (outside a reset) or until `max_cycles` clock cycles
+  // have passed.  When this task returns, the `success` output is set to `1'b1` if the `acc_used`
+  // signal was high and to `1'b0` otherwise.
+  task automatic wait_for_acc_used(input int unsigned max_cycles, output bit success);
+    int unsigned cycle_cnt = 0;
+    while (1) begin
+      @(negedge clk_i);
+      if (rst_ni && acc_used) begin
+        success = 1'b1;
+        break;
+      end
+      if (max_cycles != 0 && cycle_cnt >= max_cycles) begin
+        success = 1'b0;
+        break;
+      end
+      cycle_cnt++;
+    end
+  endtask
 
 endinterface

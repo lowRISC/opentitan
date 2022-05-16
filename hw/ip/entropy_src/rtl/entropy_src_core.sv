@@ -840,7 +840,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rdata_o    (sfifo_esrng_rdata),
     .rready_i   (sfifo_esrng_pop),
     .full_o     (sfifo_esrng_full),
-    .depth_o    ()
+    .depth_o    (),
+    .err_o      ()
   );
 
   // fifo controls
@@ -2152,7 +2153,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rdata_o    (sfifo_observe_rdata),
     .rready_i   (sfifo_observe_pop),
     .full_o     (sfifo_observe_full),
-    .depth_o    (sfifo_observe_depth)
+    .depth_o    (sfifo_observe_depth),
+    .err_o      ()
   );
 
   // The Observe fifo is intended to hold kilobits of contiguous data, yet still gracefully
@@ -2398,7 +2400,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rready_i       (sfifo_esfinal_pop),
     .rdata_o        (sfifo_esfinal_rdata),
     .full_o         (sfifo_esfinal_full),
-    .depth_o        (sfifo_esfinal_depth)
+    .depth_o        (sfifo_esfinal_depth),
+    .err_o          ()
   );
 
   assign fips_compliance = !es_bypass_mode && es_enable_q_fo[29] && !rng_bit_en;

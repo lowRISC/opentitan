@@ -114,7 +114,7 @@
             items: [
                 {
                     name: "CREATOR_SW_CFG_AST_CFG",
-                    size: "128"
+                    size: "156"
                 }
                 {
                     name: "CREATOR_SW_CFG_AST_INIT_EN",
@@ -142,6 +142,10 @@
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_EN",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_JITTER_EN",
                     size: "4"
                 }
             ],

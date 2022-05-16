@@ -46,7 +46,9 @@ initial begin
     calibrate_usb_clk = 1'b1;
   end
   //
-  #1; init_start = 1'b1;
+  #1;
+  init_start = 1'b1;
+  #1;
   $display("\n%m: USB Clock Power-up Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
   rand32 = ($urandom_range(0, 832) - 416);  // +/-416ps (+/-2% max)
   $display("%m: USB Clock Drift: %0d ps", rand32);
@@ -89,7 +91,7 @@ logic en_osc;
 logic en_clk, clk;
 
 always_latch begin
-  if ( !clk_osc ) en_clk <= en_osc;
+  if ( !clk_osc ) en_clk = en_osc;
 end
 
 assign clk = clk_osc && en_clk;

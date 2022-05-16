@@ -19,6 +19,7 @@ filesets:
       - otbn_env_pkg.sv
       - otbn_loop_if.sv
       - otbn_alu_bignum_if.sv
+      - otbn_controller_if.sv
       - otbn_mac_bignum_if.sv
       - otbn_rf_base_if.sv
       - otbn_insn_cnt_if.sv
@@ -47,6 +48,10 @@ filesets:
       - seq_lib/otbn_zero_state_err_urnd_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_illegal_mem_acc_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_sw_errs_fatal_chk_vseq.sv: {is_include_file: true}
+      - seq_lib/otbn_intg_err_vseq.sv: {is_include_file: true}
+      - seq_lib/otbn_alu_bignum_mod_err_vseq.sv: {is_include_file: true}
+      - seq_lib/otbn_controller_ispr_rdata_err_vseq.sv: {is_include_file: true}
+      - seq_lib/otbn_mac_bignum_acc_err_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

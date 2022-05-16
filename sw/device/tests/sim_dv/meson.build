@@ -156,6 +156,30 @@ sw_tests += {
   }
 }
 
+lc_walkthrough_test_lib = declare_dependency(
+  link_with: static_library(
+    'lc_walkthrough_test_lib',
+    sources: [
+      'lc_walkthrough_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_lc_ctrl,
+      sw_lib_dif_otp_ctrl,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_log,
+      sw_lib_testing_otp_ctrl_testutils,
+      sw_lib_testing_lc_ctrl_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'lc_walkthrough_test': {
+    'library': lc_walkthrough_test_lib,
+  }
+}
+
 pwrmgr_main_power_glitch_test_lib = declare_dependency(
   link_with: static_library(
     'pwrmgr_main_power_glitch_test_lib',
@@ -383,5 +407,27 @@ sram_ctrl_main_scrambled_access_test_lib = declare_dependency(
 sw_tests += {
   'sram_ctrl_main_scrambled_access_test': {
     'library': sram_ctrl_main_scrambled_access_test_lib,
+  }
+}
+
+adc_ctrl_sleep_debug_cable_wakeup_test_lib = declare_dependency(
+  link_with: static_library(
+    'adc_ctrl_sleep_debug_cable_wakeup_test_lib',
+    sources: ['adc_ctrl_sleep_debug_cable_wakeup_test.c'],
+    dependencies: [
+      sw_lib_dif_adc_ctrl,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_rstmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+      sw_lib_testing_pwrmgr_testutils,
+      sw_lib_testing_rstmgr_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'adc_ctrl_sleep_debug_cable_wakeup_test': {
+    'library': adc_ctrl_sleep_debug_cable_wakeup_test_lib,
   }
 }

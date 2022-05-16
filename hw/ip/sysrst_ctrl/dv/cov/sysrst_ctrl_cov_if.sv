@@ -15,66 +15,6 @@ interface sysrst_ctrl_cov_if
   import dv_utils_pkg::*;
   `include "dv_fcov_macros.svh"
 
-  ////////////////////////////////////////////////
-  // Combo detect actions register cover points //
-  ////////////////////////////////////////////////
-
-  covergroup sysrst_ctrl_combo_detect_action_cg (int index) with function sample (
-    bit bat_disable,
-    bit interrupt,
-    bit ec_rst,
-    bit rst_req,
-    bit key0_in_sel,
-    bit key1_in_sel,
-    bit key2_in_sel,
-    bit pwrb_in_sel,
-    bit ac_present_sel
-  );
-    option.per_instance = 1;
-    option.name = $sformatf("sysrst_ctrl_combo_detect_action_cg_%0d", index);
-
-    cp_bat_disable: coverpoint bat_disable;
-    cp_interrupt:   coverpoint interrupt;
-    cp_ec_rst:      coverpoint ec_rst;
-    cp_rst_req:     coverpoint rst_req;
-    cp_key0_in_sel:   coverpoint key0_in_sel;
-    cp_key1_in_sel:   coverpoint key1_in_sel;
-    cp_key2_in_sel:   coverpoint key2_in_sel;
-    cp_pwrb_in_sel:   coverpoint pwrb_in_sel;
-    cp_ac_present_sel:coverpoint ac_present_sel;
-    cross_bat_disable_combo_sel: cross cp_bat_disable, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
-    cross_interrupt_combo_sel: cross cp_bat_disable, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
-    cross_ec_rst_combo_sel: cross cp_bat_disable, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
-    cross_rst_req_combo_sel: cross cp_bat_disable, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
-  endgroup // sysrst_ctrl_combo_detect_action_cg
-
-  ////////////////////////////////////////////////
-  // Combo detect select register cover points //
-  ////////////////////////////////////////////////
-
-  covergroup sysrst_ctrl_combo_detect_sel_cg (int index) with function sample (
-    bit key0_in_sel,
-    bit key1_in_sel,
-    bit key2_in_sel,
-    bit pwrb_in_sel,
-    bit ac_present_sel
-  );
-    option.per_instance = 1;
-    option.name = $sformatf("sysrst_ctrl_combo_detect_sel_cg_%0d", index);
-
-    cp_key0_in_sel:   coverpoint key0_in_sel;
-    cp_key1_in_sel:   coverpoint key1_in_sel;
-    cp_key2_in_sel:   coverpoint key2_in_sel;
-    cp_pwrb_in_sel:   coverpoint pwrb_in_sel;
-    cp_ac_present_sel:coverpoint ac_present_sel;
-    cp_cross_combo_detect_sel: cross cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-          cp_pwrb_in_sel, cp_ac_present_sel;
-  endgroup // sysrst_ctrl_combo_detect_sel_cg
-
   /////////////////////////////////////////////////
   // Combo detection timer register cover points //
   /////////////////////////////////////////////////
@@ -113,52 +53,6 @@ interface sysrst_ctrl_cov_if
       }
 
   endgroup // sysrst_ctrl_auto_block_debounce_ctl_cg
-
-  /////////////////////////////////////////////
-  // Combo intr status register cover points //
-  /////////////////////////////////////////////
-
-  covergroup sysrst_ctrl_combo_intr_status_cg with function sample (
-    bit combo0_h2l,
-    bit combo1_h2l,
-    bit combo2_h2l,
-    bit combo3_h2l,
-    bit key0_in_sel,
-    bit key1_in_sel,
-    bit key2_in_sel,
-    bit pwrb_in_sel,
-    bit ac_present_sel,
-    bit bat_disable,
-    bit interrupt,
-    bit ec_rst,
-    bit rst_req
-  );
-    option.per_instance = 1;
-    option.name = "sysrst_ctrl_combo_intr_status_cg";
-
-    cp_combo0_h2l: coverpoint combo0_h2l;
-    cp_combo1_h2l: coverpoint combo1_h2l;
-    cp_combo2_h2l: coverpoint combo2_h2l;
-    cp_combo3_h2l: coverpoint combo3_h2l;
-    cp_key0_in_sel:   coverpoint key0_in_sel;
-    cp_key1_in_sel:   coverpoint key1_in_sel;
-    cp_key2_in_sel:   coverpoint key2_in_sel;
-    cp_pwrb_in_sel:   coverpoint pwrb_in_sel;
-    cp_ac_present_sel:coverpoint ac_present_sel;
-    cp_bat_disable: coverpoint bat_disable;
-    cp_interrupt:   coverpoint interrupt;
-    cp_ec_rst:      coverpoint ec_rst;
-    cp_rst_req:     coverpoint rst_req;
-    cross_combo0: cross cp_combo0_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
-    cross_combo1: cross cp_combo1_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
-    cross_combo2: cross cp_combo2_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
-    cross_combo3: cross cp_combo3_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
-
-  endgroup // sysrst_ctrl_combo_intr_status_cg
 
   /////////////////////////////////////////////
   // key intr status register cover points //
@@ -256,30 +150,13 @@ interface sysrst_ctrl_cov_if
 
   endgroup // sysrst_ctrl_pin_in_value_cg
 
-
-
   ///////////////////////////////////
   // Instantiation Macros          //
   ///////////////////////////////////
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_auto_block_debounce_ctl_cg)
-  `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_combo_intr_status_cg)
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_key_intr_status_cg)
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_wkup_event_cg)
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_pin_in_value_cg)
-
-  sysrst_ctrl_combo_detect_action_cg combo_detect_action_cg_inst[4];
-  initial begin
-    foreach (combo_detect_action_cg_inst[i]) begin
-      combo_detect_action_cg_inst[i] = new(i);
-    end
-  end
-
-  sysrst_ctrl_combo_detect_sel_cg combo_detect_sel_cg_inst[4];
-  initial begin
-    foreach (combo_detect_sel_cg_inst[i]) begin
-      combo_detect_sel_cg_inst[i] = new(i);
-    end
-  end
 
   sysrst_ctrl_combo_detect_det_cg combo_detect_det_cg_inst[4];
   initial begin
@@ -291,38 +168,6 @@ interface sysrst_ctrl_cov_if
   /////////////////////
   // Sample function //
   /////////////////////
-  function automatic void cg_combo_detect_actions_sample (
-    int index,
-    bit bat_disable,
-    bit interrupt,
-    bit ec_rst,
-    bit rst_req,
-    bit key0_in_sel,
-    bit key1_in_sel,
-    bit key2_in_sel,
-    bit pwrb_in_sel,
-    bit ac_present_sel
-  );
-    foreach (combo_detect_action_cg_inst[i]) begin
-      combo_detect_action_cg_inst[index].sample(bat_disable, interrupt, ec_rst, rst_req,
-         key0_in_sel, key1_in_sel, key2_in_sel, pwrb_in_sel, ac_present_sel);
-    end
-  endfunction
-
-  function automatic void cg_combo_detect_sel_sample (
-    int index,
-    bit key0_in_sel,
-    bit key1_in_sel,
-    bit key2_in_sel,
-    bit pwrb_in_sel,
-    bit ac_present_sel
-  );
-    foreach (combo_detect_sel_cg_inst[i]) begin
-      combo_detect_sel_cg_inst[index].sample(key0_in_sel, key1_in_sel, key2_in_sel,
-                pwrb_in_sel, ac_present_sel);
-    end
-  endfunction
-
   function automatic void cg_combo_detect_det_sample(
     int index,
     bit [31:0] detection_timer
@@ -337,26 +182,6 @@ interface sysrst_ctrl_cov_if
     bit auto_block_enable
   );
     sysrst_ctrl_auto_block_debounce_ctl_cg_inst.sample(debounce_timer, auto_block_enable);
-  endfunction
-
-   function automatic void cg_combo_intr_status_sample (
-    bit combo0_h2l,
-    bit combo1_h2l,
-    bit combo2_h2l,
-    bit combo3_h2l,
-    bit key0_in_sel,
-    bit key1_in_sel,
-    bit key2_in_sel,
-    bit pwrb_in_sel,
-    bit ac_present_sel,
-    bit bat_disable,
-    bit interrupt,
-    bit ec_rst,
-    bit rst_req
-  );
-    sysrst_ctrl_combo_intr_status_cg_inst.sample(combo0_h2l,combo1_h2l,combo2_h2l,combo3_h2l,
-        key0_in_sel,key1_in_sel,key2_in_sel,pwrb_in_sel,ac_present_sel,bat_disable,
-        interrupt,ec_rst,rst_req);
   endfunction
 
   function automatic void cg_key_intr_status_sample (
