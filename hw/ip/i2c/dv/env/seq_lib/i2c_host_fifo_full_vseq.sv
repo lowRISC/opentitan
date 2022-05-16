@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // basic fifo_full test vseq
-class i2c_fifo_full_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_fifo_full_vseq)
+class i2c_host_fifo_full_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_fifo_full_vseq)
   `uvm_object_new
 
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
@@ -33,7 +33,7 @@ class i2c_fifo_full_vseq extends i2c_rx_tx_vseq;
 
   virtual task body();
     initialization(.mode(Host));
-    `uvm_info(`gfn, "\n--> start of i2c_fifo_full_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> start of i2c_host_fifo_full_vseq", UVM_DEBUG)
     fork
       begin
         while (!cfg.under_reset && check_fifo_full) process_fifo_full_status();
@@ -43,7 +43,7 @@ class i2c_fifo_full_vseq extends i2c_rx_tx_vseq;
         check_fifo_full = 1'b0; // gracefully stop process_fifo_full_status
       end
     join
-    `uvm_info(`gfn, "\n--> end of i2c_fifo_full_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> end of i2c_host_fifo_full_vseq", UVM_DEBUG)
   endtask : body
 
   // TODO: weicai suggested corner tests: send N + 1 items (N is fifo depth), configure agent
@@ -81,4 +81,4 @@ class i2c_fifo_full_vseq extends i2c_rx_tx_vseq;
     end
   endtask : process_fifo_full_status
 
-endclass : i2c_fifo_full_vseq
+endclass : i2c_host_fifo_full_vseq

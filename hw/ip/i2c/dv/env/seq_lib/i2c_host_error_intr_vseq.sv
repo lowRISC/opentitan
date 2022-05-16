@@ -7,8 +7,8 @@
 //   such as sda_interference, scl_interference, sda_unstable irqs
 // - do on-the-fly reset dut and dv if error irqs are asserted
 // - continue sending transactions and verify dut works as normal
-class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_error_intr_vseq)
+class i2c_host_error_intr_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_error_intr_vseq)
   `uvm_object_new
 
   local bit do_reset = 1'b0;
@@ -27,7 +27,7 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
   endtask : pre_start
 
   virtual task body();
-    `uvm_info(`gfn, "\n--> start of i2c_error_intr_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> start of i2c_host_error_intr_vseq", UVM_DEBUG)
     initialization(.mode(Host));
     for (int i = 1; i <= num_runs; i++) begin
       `uvm_info(`gfn, $sformatf("\n  run simulation %0d/%0d", i, num_runs), UVM_DEBUG)
@@ -61,7 +61,7 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
         end
       join
     end
-    `uvm_info(`gfn, "\n--> end of i2c_error_intr_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> end of i2c_host_error_intr_vseq", UVM_DEBUG)
   endtask : body
 
   virtual task process_error_interrupts();
@@ -82,4 +82,4 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
     end
   endtask : process_error_interrupts
 
-endclass : i2c_error_intr_vseq
+endclass : i2c_host_error_intr_vseq

@@ -5,8 +5,8 @@
 //  i2c_fifo_reset_fmt test vseq
 //  this sequence fills fmt fifo with random bytes and resets fmt fifo.
 //  checks for fifo empty high
-class i2c_fifo_reset_fmt_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_fifo_reset_fmt_vseq)
+class i2c_host_fifo_reset_fmt_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_fifo_reset_fmt_vseq)
   `uvm_object_new
 
   i2c_item fmt_item;
@@ -21,7 +21,7 @@ class i2c_fifo_reset_fmt_vseq extends i2c_rx_tx_vseq;
     last_tran = 1'b1;
     initialization(.mode(Host));
     fmt_item = new("fmt_item");
-    `uvm_info(`gfn, "\n--> start of i2c_fifo_reset_fmt_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> start of i2c_host_fifo_reset_fmt_vseq", UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("number of runs is %0d ", num_runs), UVM_HIGH)
     for (int i = 1; i <= num_runs; i++) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_wr_bytes)
@@ -55,7 +55,7 @@ class i2c_fifo_reset_fmt_vseq extends i2c_rx_tx_vseq;
       reset_fmt_fifo();
       csr_rd_check(.ptr(ral.status.fmtempty), .compare_value(1));
     end // for num runs
-    `uvm_info(`gfn, "\n--> end of i2c_fifo_reset_fmt_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> end of i2c_host_fifo_reset_fmt_vseq", UVM_DEBUG)
 
   endtask : body
-endclass : i2c_fifo_reset_fmt_vseq
+endclass : i2c_host_fifo_reset_fmt_vseq

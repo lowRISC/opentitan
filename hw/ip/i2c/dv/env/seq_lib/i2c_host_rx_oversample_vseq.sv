@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // basic smoke test vseq
-class i2c_rx_oversample_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_rx_oversample_vseq)
+class i2c_host_rx_oversample_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_rx_oversample_vseq)
   `uvm_object_new
 
   constraint num_trans_c {
@@ -61,4 +61,4 @@ class i2c_rx_oversample_vseq extends i2c_rx_tx_vseq;
     end
   endtask : body
 
-endclass : i2c_rx_oversample_vseq
+endclass : i2c_host_rx_oversample_vseq
