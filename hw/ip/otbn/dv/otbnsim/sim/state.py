@@ -145,6 +145,10 @@ class OTBNState:
         # being locked.
         self.software_errs_fatal = False
 
+        # This is a counter that keeps track of how many cycles have elapsed in
+        # current fsm_state.
+        self.cycles_in_this_state = 0
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -330,6 +334,12 @@ class OTBNState:
         old_state = self._fsm_state
 
         self._fsm_state = self._next_fsm_state
+
+        if self._fsm_state == old_state:
+            self.cycles_in_this_state += 1
+        else:
+            self.cycles_in_this_state = 0
+
         self.ext_regs.commit()
 
         # Pull URND out separately because we also want to commit this in some
