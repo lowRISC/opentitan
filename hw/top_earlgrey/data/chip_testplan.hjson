@@ -853,9 +853,19 @@
             Enable clock jitter setting the clkmgr `jitter_enable` CSR high. This causes the
             jitter_o clkmgr output to toggle. Verify this output is connected to AST's
             clk_src_sys_jen_i input using formal.
+
+            X-ref with various specific jitter enable tests.
             '''
       milestone: V2
-      tests: ["chip_sw_clkmgr_jitter"]
+      tests: ["chip_sw_clkmgr_jitter",
+              "chip_sw_flash_ctrl_ops_jitter_en",
+              "chip_sw_flash_ctrl_access_jitter_en",
+              "chip_sw_otbn_ecdsa_op_irq_jitter_en",
+              "chip_sw_aes_enc_jitter_en",
+              "chip_sw_hmac_enc_jitter_en",
+              "chip_sw_keymgr_key_derivation_jitter_en",
+              "chip_sw_kmac_mode_kmac_jitter_en",
+              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"]
     }
 
     // PWRMGR tests:
@@ -1566,7 +1576,8 @@
             register. Check the digest registers for correctness against the expected digest value.
             '''
       milestone: V2
-      tests: ["chip_sw_aes_enc"]
+      tests: ["chip_sw_aes_enc",
+              "chip_sw_aes_enc_jitter_en"]
     }
     {
       name: chip_sw_aes_entropy
@@ -1624,7 +1635,8 @@
             the HMAC done and FIFO empty interrupts as a part of this test.
             '''
       milestone: V2
-      tests: ["chip_sw_hmac_enc_irq", "chip_sw_hmac_enc"]
+      tests: ["chip_sw_hmac_enc_irq", "chip_sw_hmac_enc",
+              "chip_sw_hmac_enc_jitter_en"]
     }
     {
       name: chip_sw_hmac_idle
@@ -1652,7 +1664,8 @@
             the NIST vectors). SW validates the reception of kmac done and fifo empty interrupts.
             '''
       milestone: V2
-      tests: ["chip_sw_kmac_mode_cshake", "chip_sw_kmac_mode_kmac"]
+      tests: ["chip_sw_kmac_mode_cshake", "chip_sw_kmac_mode_kmac",
+              "chip_sw_kmac_mode_kmac_jitter_en"]
     }
     {
       name: chip_sw_kmac_app_keymgr
@@ -1947,7 +1960,8 @@
               pre-computed using a reference model.
             '''
       milestone: V2
-      tests: ["chip_sw_otbn_ecdsa_op_irq"]
+      tests: ["chip_sw_otbn_ecdsa_op_irq",
+              "chip_sw_otbn_ecdsa_op_irq_jitter_en"]
     }
     {
       name: chip_sw_otbn_rnd_entropy
@@ -2061,7 +2075,8 @@
             '''
       milestone: V2
       tests: ["chip_sw_sram_ctrl_ret_scrambled_access",
-              "chip_sw_sram_ctrl_main_scrambled_access"]
+              "chip_sw_sram_ctrl_main_scrambled_access",
+              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"]
     }
     {
       name: chip_sw_sleep_sram_ret_contents
@@ -2285,7 +2300,8 @@
             Nothing extra to do here - most SW based tests fetch code from flash.
             '''
       milestone: V2
-      tests: ["chip_sw_flash_ctrl_access"]
+      tests: ["chip_sw_flash_ctrl_access",
+              "chip_sw_flash_ctrl_access_jitter_en"]
     }
     {
       name: chip_sw_flash_ctrl_ops
@@ -2296,7 +2312,7 @@
             prog empty, prog level, rd full, rd level and op done interrupts.
             '''
       milestone: V2
-      tests: ["chip_sw_flash_ctrl_ops"]
+      tests: ["chip_sw_flash_ctrl_ops", "chip_sw_flash_ctrl_ops_jitter_en"]
     }
     {
       name: chip_sw_flash_rma_unlocked
