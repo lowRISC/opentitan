@@ -35,11 +35,12 @@ interface prim_double_lfsr_if #(
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_value,
                                          force_value != orig_value;)
 
-      `DV_CHECK(uvm_hdl_deposit(signal_forced, force_value))
+      `DV_CHECK(uvm_hdl_force(signal_forced, force_value))
       `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
                                   signal_forced, orig_value, force_value), UVM_LOW)
 
-      @(posedge clk_i);
+      @(negedge clk_i);
+      `DV_CHECK(uvm_hdl_release(signal_forced))
     endtask
 
     virtual task automatic restore_fault();
