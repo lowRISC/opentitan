@@ -13,9 +13,10 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
 
   rand bit [7:0] lc_exit_token[TokenWidthByte];
   rand bit [7:0] lc_unlock_token[TokenWidthByte];
+  rand bit [7:0] lc_rma_token[TokenWidthByte];
   bit [7:0] otp_exit_token[TokenWidthByte];
   bit [7:0] otp_unlock_token[TokenWidthByte];
-  bit [7:0] selected_dest_state[];
+  bit [7:0] otp_rma_token[TokenWidthByte];
 
   lc_ctrl_state_pkg::dec_lc_state_e dest_dec_state = lc_ctrl_state_pkg::DecLcStProdEnd;
 
@@ -30,15 +31,17 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task body();
-    bit [TokenWidthBit-1:0] otp_exit_token_bits, otp_unlock_token_bits;
+    bit [TokenWidthBit-1:0] otp_exit_token_bits, otp_unlock_token_bits, otp_rma_token_bits;
     bit [7:0] selected_dest_state[];
     super.body();
 
     otp_exit_token_bits = dec_otp_token_from_lc_csrs(lc_exit_token);
     otp_unlock_token_bits = dec_otp_token_from_lc_csrs(lc_unlock_token);
+    otp_rma_token_bits = dec_otp_token_from_lc_csrs(lc_rma_token);
 
     otp_unlock_token = {<< 8{otp_unlock_token_bits}};
     otp_exit_token = {<< 8{otp_exit_token_bits}};
+    otp_rma_token = {<< 8{otp_rma_token_bits}};
 
     `uvm_info(`gfn, $sformatf("OTP unlock token %0h and OTP exit token %0h",
               otp_unlock_token_bits, otp_exit_token_bits), UVM_LOW)
@@ -47,6 +50,8 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     sw_symbol_backdoor_overwrite("kLcExitToken", lc_exit_token);
     sw_symbol_backdoor_overwrite("kOtpExitToken", otp_exit_token);
     sw_symbol_backdoor_overwrite("kOtpUnlockToken", otp_unlock_token);
+    sw_symbol_backdoor_overwrite("kLcRmaToken", lc_rma_token);
+    sw_symbol_backdoor_overwrite("kOtpRmaToken", otp_rma_token);
 
     // Override the C test destination state with the plusarg value.
     selected_dest_state = {dest_dec_state};
@@ -56,19 +61,29 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);
     apply_reset();
 
-    wait (cfg.sw_logger_vif.printed_log == "Written and locked OTP secret0 partition!");
-    apply_reset();
-
     wait (cfg.sw_logger_vif.printed_log == "Waiting for LC transtition done and reboot.");
     // Wait for a large number of cycles to transit to RMA state.
     wait_lc_status(LcTransitionSuccessful, 50_000);
     apply_reset();
 
-    // Reload flash bootstrap and reforce the sw symbols because RMA state wiped out flash.
+    if (dest_dec_state == DecLcStRma) reload_flash_after_rma_transfer();
+
+    // The following states will transfer twice to make sure LC_EXIT and RMA tokens are used.
+    if (dest_dec_state inside {DecLcStProd, DecLcStDev}) begin
+      wait (cfg.sw_logger_vif.printed_log == "Waiting for LC RMA transtition done and reboot.");
+      // Wait for a large number of cycles to transit to RMA state.
+      wait_lc_status(LcTransitionSuccessful, 50_000);
+      apply_reset();
+      reload_flash_after_rma_transfer();
+    end
+  endtask
+
+  // Reload flash bootstrap and reforce the sw symbols because RMA state wiped out flash.
+  virtual task reload_flash_after_rma_transfer();
+    bit [7:0] selected_dest_state[];
+    selected_dest_state = {dest_dec_state};
     cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
         {cfg.sw_images[SwTypeTest], ".64.scr.vmem"});
     sw_symbol_backdoor_overwrite("kDestState", selected_dest_state);
-
   endtask
-
 endclass
