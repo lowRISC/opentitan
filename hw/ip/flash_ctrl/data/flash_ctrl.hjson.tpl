@@ -1195,6 +1195,13 @@
         swaccess: "rw1c",
         hwaccess: "hwo",
         fields: [
+          { bits: "0",
+            name: "op_err",
+            desc: '''
+              Software has supplied an undefined operation.
+              See !!CONTROL.OP for list of valid operations.
+            '''
+          },
           { bits: "1",
             name: "mp_err",
             desc: '''
@@ -1334,6 +1341,13 @@
         swaccess: "ro",
         hwaccess: "hrw",
         fields: [
+          { bits: "0",
+            name: "op_err",
+            desc: '''
+              The flash life cycle management interface has supplied an undefined operation.
+              See !!CONTROL.OP for list of valid operations.
+            '''
+          },
           { bits: "1",
             name: "mp_err",
             desc: '''

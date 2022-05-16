@@ -285,7 +285,15 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
         ctrl_err_addr_o = rd_err_addr_i;
       end
 
-      default:;
+      default: begin
+        // if operation is started but does not match
+        // any valid operation, error back
+        if (muxed_ctrl_o.start) begin
+          ctrl_ack = 1'b1;
+          ctrl_err.invalid_op_err = 1'b1;
+        end
+      end
+
     endcase // unique case (muxed_ctrl_o.op.q)
   end
 
