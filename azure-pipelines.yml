@@ -151,18 +151,14 @@ jobs:
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
-      set -x
-      sudo util/get-toolchain.py \
-        --install-dir="$TOOLCHAIN_PATH" \
-        --release-version="$TOOLCHAIN_VERSION" \
-        --update
-    displayName: Install toolchain
-  - bash: |
       . util/build_consts.sh
-      ./meson_init.sh -A
-      ninja -C "$OBJ_DIR" \
-        sw/device/otp_img/otp_img_export_fpga_cw310 \
-        sw/device/lib/testing/test_rom/test_rom_export_fpga_cw310
+      ci/bazelisk.sh build \
+        //hw/ip/otp_ctrl/data:test_rma_image \
+        //sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem
+      mkdir -p $BIN_DIR/sw/device/otp_img
+      mkdir -p $BIN_DIR/sw/device/lib/testing/test_rom
+      cp bazel-bin/hw/ip/otp_ctrl/data/test_rma_image.vmem $BIN_DIR/sw/device/otp_img/otp_img_fpga_cw310.vmem
+      cp $(find bazel-out/* -name test_rom_fpga_cw310.scr.39.vmem) $BIN_DIR/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.scr.39.vmem
     displayName: Build embedded targets
   - template: ci/upload-artifacts-template.yml
     parameters:

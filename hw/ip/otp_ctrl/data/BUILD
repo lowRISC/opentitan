@@ -14,7 +14,7 @@ autogen_hjson_header(
 )
 
 otp_image(
-    name = "rma_image_verilator",
+    name = "test_rma_image",
     src = ":otp_ctrl_img_rma.hjson",
 )
 

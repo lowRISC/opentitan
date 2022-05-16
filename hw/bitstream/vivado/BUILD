@@ -17,7 +17,7 @@ _PREFIX = "../../../../../../../../../.."
 
 _FPGA_CW310_TESTROM = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem"
 
-_FPGA_CW310_OTP_RMA = "//hw/ip/otp_ctrl/data:rma_image_verilator"
+_FPGA_CW310_OTP_RMA = "//hw/ip/otp_ctrl/data:test_rma_image"
 
 _FPGA_CW310_TESTROM_PATH = "{}/$(location {})".format(_PREFIX, _FPGA_CW310_TESTROM)
 
