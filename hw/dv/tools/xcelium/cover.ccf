@@ -27,7 +27,8 @@ deselect_coverage -betfs -module prim_cdc_rand_delay
 deselect_coverage -betf -module *csr_assert_fpv...
 
 // Only collect toggle coverage on the DUT and the black-boxed IP (above) ports.
-
+deselect_coverage -toggle -module ${DUT_TOP}...
+select_coverage -toggle -module ${DUT_TOP}
 
 select_coverage -toggle -module prim_alert_sender
 select_coverage -toggle -module prim_alert_receiver
