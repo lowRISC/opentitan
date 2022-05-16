@@ -79,6 +79,8 @@ module tb;
 
   prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg; // tied
 
+  interrupt_t intr;
+
   // TB
   initial begin
     sck_clk.set_period_ps(SckPeriod);
@@ -104,7 +106,9 @@ module tb;
 
     // TL ports
     .h2d (tl_h2d),
-    .d2h (tl_d2h)
+    .d2h (tl_d2h),
+
+    .intr (intr)
   );
 
   // Passthrough SPI Flash device
@@ -154,22 +158,22 @@ module tb;
 
     // Interrupts
     // INTR: Generic mode : Not Testing here
-    .intr_generic_rx_full_o     (), // RX FIFO Full
-    .intr_generic_rx_watermark_o(), // RX FIFO above level
-    .intr_generic_tx_watermark_o(), // TX FIFO below level
-    .intr_generic_rx_error_o    (), // RX Frame error
-    .intr_generic_rx_overflow_o (), // RX Async FIFO Overflow
-    .intr_generic_tx_underflow_o(), // TX Async FIFO Underflow
+    .intr_generic_rx_full_o     (intr.generic_rx_full),
+    .intr_generic_rx_watermark_o(intr.generic_rx_watermark),
+    .intr_generic_tx_watermark_o(intr.generic_tx_watermark),
+    .intr_generic_rx_error_o    (intr.generic_rx_error),
+    .intr_generic_rx_overflow_o (intr.generic_rx_overflow),
+    .intr_generic_tx_underflow_o(intr.generic_tx_underflow),
 
     // INTR: Flash mode : Not testing here
-    .intr_upload_cmdfifo_not_empty_o(),
-    .intr_upload_payload_not_empty_o(),
-    .intr_upload_payload_overflow_o (),
-    .intr_readbuf_watermark_o       (),
-    .intr_readbuf_flip_o            (),
+    .intr_upload_cmdfifo_not_empty_o(intr.upload_cmdfifo_not_empty),
+    .intr_upload_payload_not_empty_o(intr.upload_payload_not_empty),
+    .intr_upload_payload_overflow_o (intr.upload_payload_overflow),
+    .intr_readbuf_watermark_o       (intr.readbuf_watermark),
+    .intr_readbuf_flip_o            (intr.readbuf_flip),
 
     // INTR: TPM mode : Not Testing here
-    .intr_tpm_header_not_empty_o(),
+    .intr_tpm_header_not_empty_o(intr.tpm_header_not_empty),
 
     // Memory configuration
     .ram_cfg_i (ram_cfg),

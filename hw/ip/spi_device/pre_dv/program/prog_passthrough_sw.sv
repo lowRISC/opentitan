@@ -12,7 +12,9 @@ program prog_passthrough_sw
   input logic rst_n,
 
   output tlul_pkg::tl_h2d_t h2d,
-  input  tlul_pkg::tl_d2h_t d2h
+  input  tlul_pkg::tl_d2h_t d2h,
+
+  input interrupt_t intr
 );
 
   initial begin
@@ -43,6 +45,11 @@ program prog_passthrough_sw
         // Need to disable Status return from SPI_DEVICE and issue directly to
         // SPIFlash
         test_program();
+      end
+
+      "upload": begin
+        // TODO: Read and check if cmds...
+        test_upload();
       end
     endcase
 
@@ -141,6 +148,8 @@ program prog_passthrough_sw
 
     init_dpsram();
 
+    init_interrupts();
+
   endtask : init_spidevice_passthrough
 
   task automatic init_cmdinfo_list();
@@ -207,6 +216,16 @@ program prog_passthrough_sw
     end
   endfunction : init_dpsram
 
+  task automatic init_interrupts();
+    // Enable CMDFIFO Not Empty
+    tlul_write(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_INTR_ENABLE_OFFSET),
+      32'h 0000_0000 | (1 << BitCmdfifoNotEmpty),
+      4'b 1111
+    );
+  endtask : init_interrupts
+
   static task test_program();
     // Turning off INTERCEPT
     tlul_write(
@@ -226,5 +245,88 @@ program prog_passthrough_sw
     );
 
   endtask : test_program
+
+  static task test_upload();
+    automatic logic [31:0] tl_rdata;
+    automatic logic [ 7:0] opcode; // cmd opcode
+    automatic logic [31:0] address;
+    automatic spi_data_t payload [256];
+
+    // Wait Upload Command FIFO
+    wait(intr.upload_cmdfifo_not_empty);
+
+    // Fetch CMDFIFO
+    tlul_read(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_UPLOAD_CMDFIFO_OFFSET),
+      tl_rdata
+    );
+
+    opcode = tl_rdata[7:0];
+
+    $display("SW: Received Command: %2Xh", opcode);
+
+    if (opcode != spi_device_pkg::CmdChipErase) begin
+      $display("SW: Unexpected Command: %2Xh / EXP(%2Xh)",
+        opcode,
+        spi_device_pkg::CmdChipErase);
+    end
+
+    // Process cmd (or push to TLM to process later)
+
+    // Clear Interrupt
+    tlul_write(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_INTR_STATE_OFFSET),
+      1 << BitCmdfifoNotEmpty,
+      4'b 1111
+    );
+
+    // Expect CMDFIFO Depth 0 (the delay is short so that Page Program should not arrived yet)
+    tlul_read(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_UPLOAD_STATUS_OFFSET),
+      tl_rdata
+    );
+
+    if (tl_rdata[4:0] != 0) begin
+      $display("SW: CMDFIFO not empty after fetching: %2d", tl_rdata[4:0]);
+    end
+
+    // Will have two or more Read Status
+
+    #($urandom_range(5,2) * 1us);
+
+    @(negedge clk);
+
+    // Clear BUSY
+    tlul_rmw(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_FLASH_STATUS_OFFSET),
+      32'h 0, // value
+      32'h 1  // mask
+    );
+
+    // Wait for Page Program
+    wait(intr.upload_cmdfifo_not_empty);
+
+    // Fetch CMDFIFO
+    tlul_read(
+      clk, h2d, d2h,
+      32'(spi_device_reg_pkg::SPI_DEVICE_UPLOAD_CMDFIFO_OFFSET),
+      tl_rdata
+    );
+
+    opcode = tl_rdata[7:0];
+
+    $display("SW: Received Command: %2Xh", opcode);
+
+    if (opcode != spi_device_pkg::CmdPageProgram) begin
+      $display("SW: Unexpected Command: %2Xh / EXP(%2Xh)",
+        opcode,
+        spi_device_pkg::CmdChipErase);
+    end
+
+  endtask : test_upload
 
 endprogram : prog_passthrough_sw

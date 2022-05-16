@@ -60,6 +60,26 @@ package spid_common;
     dir_e       dir;
   } spi_fifo_t;
 
+  typedef struct packed {
+    logic generic_rx_full;
+    logic generic_rx_watermark;
+    logic generic_tx_watermark;
+    logic generic_rx_error;
+    logic generic_rx_overflow;
+    logic generic_tx_underflow;
+    logic upload_cmdfifo_not_empty;
+    logic upload_payload_not_empty;
+    logic upload_payload_overflow;
+    logic readbuf_watermark;
+    logic readbuf_flip;
+    logic tpm_header_not_empty;
+  } interrupt_t;
+
+  // Register parameters
+  parameter int unsigned BitCmdfifoNotEmpty  = 6;
+  parameter int unsigned BitReadbufWatermark = 9;
+  parameter int unsigned BitReadbufFlip      = 10;
+
   // Command list parameters
   import spi_device_pkg::cmd_info_t;
   import spi_device_pkg::NumTotalCmdInfo;
@@ -1122,6 +1142,24 @@ package spid_common;
     h2d.d_ready = 1'b 0;
 
   endtask : tlul_read
+
+  task automatic tlul_rmw(
+    const ref logic clk,
+
+    ref tlul_pkg::tl_h2d_t       h2d,
+    const ref tlul_pkg::tl_d2h_t d2h,
+
+    input logic [31:0] address,
+    input logic [31:0] data,
+    input logic [31:0] mask
+  );
+
+    automatic logic [31:0] tl_data;
+
+    tlul_read(clk, h2d, d2h, address, tl_data);
+    tl_data = (tl_data & ~mask) | (mask & data);
+    tlul_write(clk, h2d, d2h, address, tl_data, 4'b 1111);
+  endtask : tlul_rmw
 
   // classes
   class SpiTrans;

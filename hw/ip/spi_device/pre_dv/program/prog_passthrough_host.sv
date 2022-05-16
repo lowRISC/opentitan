@@ -46,7 +46,8 @@ program prog_passthrough_host
          spi_device_pkg::CmdEn4B,
          spi_device_pkg::CmdEx4B,
          spi_device_pkg::CmdReadSfdp,
-         spi_device_pkg::CmdResetDevice;
+         spi_device_pkg::CmdResetDevice,
+         spi_device_pkg::CmdChipErase;
 
   // Timeout
   initial begin
@@ -89,6 +90,10 @@ program prog_passthrough_host
 
       "program": begin
         test_program(subtask_pass);
+      end
+
+      "upload": begin
+        test_upload(subtask_pass);
       end
 
       default: begin
@@ -456,6 +461,48 @@ program prog_passthrough_host
     end
 
   endtask : test_program
+
+  static task test_upload(output bit pass);
+    SpiTransProgram trans;
+    // Sequence
+
+    // Issue Chip Erase
+    spiflash_oponly(
+      sif.tb,
+      CmdChipErase
+    );
+
+    wait_trans();
+
+    // Issue two ~ more Read Status until BUSY is cleared
+
+    read_status();
+
+    do begin
+      #1us
+      @(negedge clk);
+      read_status();
+    end while (status[0][0] == 1'b 1);
+
+    // Issue Page Program
+    trans = new();
+    trans.randomize() with {
+        address < (local::FlashSize - size);
+    };
+    trans.display();
+
+    spiflash_program(
+      sif.tb,
+      trans.cmd,
+      trans.address,
+      trans.addr_mode,
+      trans.program_data
+    );
+
+    wait_trans();
+
+    // TODO: Check in scoreboard if opcode/ payload matches
+  endtask : test_upload
 
   // Access to Mirrored storage
   function automatic void write_byte(int unsigned addr, spi_data_t data);
