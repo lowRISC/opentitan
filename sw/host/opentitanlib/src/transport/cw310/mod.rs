@@ -35,6 +35,7 @@ struct Inner {
 
 pub struct CW310 {
     device: Rc<RefCell<usb::Backend>>,
+    uart_override: Vec<String>,
     inner: RefCell<Inner>,
 }
 
@@ -57,11 +58,13 @@ impl CW310 {
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
+        uart_override: &[&str],
     ) -> anyhow::Result<Self> {
         let board = CW310 {
             device: Rc::new(RefCell::new(usb::Backend::new(
                 usb_vid, usb_pid, usb_serial,
             )?)),
+            uart_override: uart_override.iter().map(|s| s.to_string()).collect(),
             inner: RefCell::default(),
         };
         board.init_direction()?;
@@ -82,27 +85,36 @@ impl CW310 {
     }
 
     fn open_uart(&self, instance: u32) -> Result<SerialPortUart> {
-        let usb = self.device.borrow();
-        let serial_number = usb.get_serial_number();
+        if self.uart_override.is_empty() {
+            let usb = self.device.borrow();
+            let serial_number = usb.get_serial_number();
 
-        let mut ports = serialport::available_ports()
-            .map_err(|e| UartError::EnumerationError(e.to_string()))?;
-        ports.retain(|port| {
-            if let SerialPortType::UsbPort(info) = &port.port_type {
-                if info.serial_number.as_deref() == Some(serial_number) {
-                    return true;
+            let mut ports = serialport::available_ports()
+                .map_err(|e| UartError::EnumerationError(e.to_string()))?;
+            ports.retain(|port| {
+                if let SerialPortType::UsbPort(info) = &port.port_type {
+                    if info.serial_number.as_deref() == Some(serial_number) {
+                        return true;
+                    }
                 }
-            }
-            false
-        });
-        // The CW board seems to have the last port connected as OpenTitan UART 0.
-        // Reverse the sort order so the last port will be instance 0.
-        ports.sort_by(|a, b| b.port_name.cmp(&a.port_name));
+                false
+            });
+            // The CW board seems to have the last port connected as OpenTitan UART 0.
+            // Reverse the sort order so the last port will be instance 0.
+            ports.sort_by(|a, b| b.port_name.cmp(&a.port_name));
 
-        let port = ports.get(instance as usize).ok_or_else(|| {
-            TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
-        })?;
-        SerialPortUart::open(&port.port_name)
+            let port = ports.get(instance as usize).ok_or_else(|| {
+                TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
+            })?;
+            SerialPortUart::open(&port.port_name)
+        } else {
+            let instance = instance as usize;
+            ensure!(
+                instance < self.uart_override.len(),
+                TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
+            );
+            SerialPortUart::open(&self.uart_override[instance])
+        }
     }
 }
 

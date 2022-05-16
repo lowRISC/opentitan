@@ -353,6 +353,14 @@ def opentitan_functest(
             rom_kind = rom_kind,
             bitstream = bitstream,
         )
+        if target == "fpga_cw310":
+            # We attach the uarts configuration to the front of the command
+            # line so that they'll be parsed as global options rather than
+            # command-specific options.
+            concat_args = select({
+                "//ci:lowrisc_fpga_cw310": ["--cw310-uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
+                "//conditions:default": [],
+            }) + concat_args
         concat_data = _format_list(
             "data",
             data,
