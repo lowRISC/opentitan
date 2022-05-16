@@ -293,10 +293,13 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   task compare_trans(bus_op_e dir = BusOpWrite);
     i2c_item   exp_trn;
     i2c_item   dut_trn;
+    int        lastidx;
     forever begin
       if (dir == BusOpWrite) begin
         wr_item_fifo.get(dut_trn);
         wait(exp_wr_q.size() > 0);
+        lastidx = dut_trn.data_q.size();
+        cfg.lastbyte = dut_trn.data_q[lastidx - 1];
         exp_trn = exp_wr_q.pop_front();
       end else begin  // BusOpRead
         rd_item_fifo.get(dut_trn);

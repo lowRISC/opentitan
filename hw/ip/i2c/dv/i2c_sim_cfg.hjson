@@ -79,6 +79,12 @@
     }
 
     {
+      name: i2c_host_fifo_fmt_empty
+      uvm_test_seq: i2c_host_fifo_fmt_empty_vseq
+      run_opts: ["+test_timeout_ns=10_000_000"]
+    }
+
+    {
       name: i2c_fifo_reset_rx
       uvm_test_seq: i2c_fifo_reset_rx_vseq
       run_opts: ["+test_timeout_ns=10_000_000"]
