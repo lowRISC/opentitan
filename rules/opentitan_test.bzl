@@ -12,8 +12,7 @@ _BASE_PARAMS = {
     "args": [],
     "data": [],
     "local": True,
-    # TODO: the name of this target should be HW target generic
-    "otp": "//hw/ip/otp_ctrl/data:rma_image_verilator",
+    "otp": "//hw/ip/otp_ctrl/data:test_rma_image",
     "rom": "//sw/device/lib/testing/test_rom:test_rom_{}_scr_vmem",
     "tags": [],
     "test_runner": "//util:opentitantool_test_runner.sh",
