@@ -147,7 +147,6 @@ class OTBNSim:
 
         '''
         fsm_state = self.state.get_fsm_state()
-
         # Pairs: (stepper, handles_injected_err). If handles_injected_err is
         # False then the generic code here will deal with any pending errors in
         # self.state.injected_err_bits. If True, then we expect the stepper
@@ -174,6 +173,9 @@ class OTBNSim:
             # We've reached the end of the run because of some error. Register
             # it on the next cycle.
             self.state.stop()
+        if ((self.state._fsm_state == FsmState.LOCKED and
+             self.state.cycles_in_this_state == 0)):
+            self.state.ext_regs.write('INSN_CNT', 0, True)
 
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
