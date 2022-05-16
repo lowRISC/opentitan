@@ -166,6 +166,7 @@ lc_walkthrough_test_lib = declare_dependency(
     dependencies: [
       sw_lib_dif_lc_ctrl,
       sw_lib_dif_otp_ctrl,
+      sw_lib_dif_rstmgr,
       sw_lib_mmio,
       sw_lib_runtime_hart,
       sw_lib_runtime_log,

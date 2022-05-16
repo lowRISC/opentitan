@@ -2799,7 +2799,10 @@
              Verify that the features that should indeed be disabled are indeed disabled.
              '''
       milestone: V2
-      tests: ["chip_sw_lc_walkthrough_prodend", "chip_sw_lc_walkthrough_rma",
+      tests: ["chip_sw_lc_walkthrough_dev",
+              "chip_sw_lc_walkthrough_prod",
+              "chip_sw_lc_walkthrough_prodend",
+              "chip_sw_lc_walkthrough_rma",
               "chip_sw_lc_walkthrough_testunlocks"]
     }
     {

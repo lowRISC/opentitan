@@ -423,6 +423,26 @@
       reseed: 15
     }
     {
+      name: chip_sw_lc_walkthrough_dev
+      uvm_test_seq: chip_sw_lc_walkthrough_vseq
+      sw_images: ["sw/device/tests/lc_walkthrough_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+use_otp_image=LcStRaw", "+dest_dec_state=DecLcStDev",
+                 // The test takes long time because it will transit to RMA state
+                 "+sw_test_timeout_ns=200_000_000"]
+      reseed: 1
+    }
+    {
+      name: chip_sw_lc_walkthrough_prod
+      uvm_test_seq: chip_sw_lc_walkthrough_vseq
+      sw_images: ["sw/device/tests/lc_walkthrough_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+use_otp_image=LcStRaw", "+dest_dec_state=DecLcStProd",
+                 // The test takes long time because it will transit to RMA state
+                 "+sw_test_timeout_ns=200_000_000"]
+      reseed: 1
+    }
+    {
       name: chip_sw_lc_walkthrough_prodend
       uvm_test_seq: chip_sw_lc_walkthrough_vseq
       sw_images: ["sw/device/tests/sim_dv/lc_walkthrough_test:1"]
