@@ -359,7 +359,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       end
     end
 
-    if (i > max_attemp) begin
+    if (i >= max_attemp) begin
       `uvm_fatal(`gfn, $sformatf("max attempt reached to get lc status %0s!", expect_status.name))
     end
   endtask
