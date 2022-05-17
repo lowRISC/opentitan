@@ -440,6 +440,14 @@
       reseed: 1
     }
     {
+      name: chip_sw_lc_walkthrough_testunlocks
+      uvm_test_seq: chip_sw_lc_walkthrough_testunlocks_vseq
+      sw_images: ["sw/device/tests/lc_walkthrough_testunlocks_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+use_otp_image=LcStRaw", "+dest_dec_state=DecLcStTestUnlock7"]
+      reseed: 1
+    }
+    {
       name: chip_sw_rstmgr_sw_req
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/rstmgr_sw_req_test:1"]
