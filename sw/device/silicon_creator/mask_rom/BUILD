@@ -322,7 +322,7 @@ opentitan_functest(
     cw310 = cw310_params(
         args = [
             "--exec=\"load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
-            "--exec=\"bootstrap $(location {flash})\"",
+            "--exec=\"bootstrap --protocol {bootstrap_protocol} $(location {flash})\"",
             "console",
             "--timeout=3600s",
             "--exit-success='{}'".format(BOOT_FAILURE_MSG),
