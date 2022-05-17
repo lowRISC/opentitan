@@ -33,6 +33,7 @@ class MockFlashCtrl : public global_mock::GlobalMock<MockFlashCtrl> {
   MOCK_METHOD(void, InfoPermsSet, (flash_ctrl_info_page_t, flash_ctrl_perms_t));
   MOCK_METHOD(void, DataDefaultCfgSet, (flash_ctrl_cfg_t));
   MOCK_METHOD(void, InfoCfgSet, (flash_ctrl_info_page_t, flash_ctrl_cfg_t));
+  MOCK_METHOD(void, BankErasePermsSet, (hardened_bool_t));
   MOCK_METHOD(void, ExecSet, (uint32_t));
   MOCK_METHOD(void, CreatorInfoPagesLockdown, ());
 };
@@ -105,6 +106,10 @@ void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg) {
 void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
                              flash_ctrl_cfg_t cfg) {
   MockFlashCtrl::Instance().InfoCfgSet(info_page, cfg);
+}
+
+void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
+  MockFlashCtrl::Instance().BankErasePermsSet(enable);
 }
 
 void flash_ctrl_exec_set(uint32_t exec_val) {

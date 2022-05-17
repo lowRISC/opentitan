@@ -528,6 +528,27 @@ void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
   sec_mmio_write32(cfg_addr, reg);
 }
 
+void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
+  uint32_t reg;
+  switch (launder32(enable)) {
+    case kHardenedBoolTrue:
+      HARDENED_CHECK_EQ(enable, kHardenedBoolTrue);
+      reg = bitfield_bit32_write(
+          0, FLASH_CTRL_MP_BANK_CFG_SHADOWED_ERASE_EN_0_BIT, true);
+      reg = bitfield_bit32_write(
+          reg, FLASH_CTRL_MP_BANK_CFG_SHADOWED_ERASE_EN_1_BIT, true);
+      break;
+    case kHardenedBoolFalse:
+      HARDENED_CHECK_EQ(enable, kHardenedBoolFalse);
+      reg = 0;
+      break;
+    default:
+      HARDENED_UNREACHABLE();
+  }
+  sec_mmio_write32_shadowed(kBase + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET,
+                            reg);
+}
+
 /**
  * Information pages that should be locked by ROM_EXT before handing over
  * execution to the first owner boot stage. See
