@@ -1,0 +1,9 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# rule to isolate output files from a cquery result with starlark
+
+def format(target):
+    outputs = target.files.to_list()
+    return outputs[0].path if len(outputs) > 0 else "(missing)"
