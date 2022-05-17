@@ -52,9 +52,6 @@ cc_test(
 opentitan_functest(
     name = "alert_functest",
     srcs = ["alert_functest.c"],
-    cw310 = cw310_params(
-        tags = ["broken"],
-    ),
     deps = [
         ":alert",
         ":rstmgr",

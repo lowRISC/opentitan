@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
+load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
@@ -137,9 +137,6 @@ cc_library(
 opentitan_functest(
     name = "irq_asm_functest",
     srcs = ["irq_asm_functest.c"],
-    cw310 = cw310_params(
-        tags = ["broken"],
-    ),
     deps = [
         ":error",
         ":irq_asm",

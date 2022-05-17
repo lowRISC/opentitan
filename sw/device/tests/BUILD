@@ -303,9 +303,6 @@ opentitan_functest(
 opentitan_functest(
     name = "clkmgr_off_peri_test",
     srcs = ["clkmgr_off_peri_test.c"],
-    cw310 = cw310_params(
-        tags = ["broken"],
-    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -900,9 +897,6 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_smoketest",
     srcs = ["pwrmgr_smoketest.c"],
-    cw310 = cw310_params(
-        tags = ["broken"],
-    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -953,9 +947,6 @@ opentitan_functest(
 opentitan_functest(
     name = "rstmgr_sw_req_test",
     srcs = ["rstmgr_sw_req_test.c"],
-    cw310 = cw310_params(
-        tags = ["broken"],
-    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1105,9 +1096,6 @@ opentitan_functest(
 opentitan_functest(
     name = "sleep_pwm_pulses_test",
     srcs = ["sleep_pwm_pulses_test.c"],
-    cw310 = cw310_params(
-        tags = ["broken"],
-    ),
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -1145,9 +1133,6 @@ opentitan_functest(
 opentitan_functest(
     name = "sram_ctrl_sleep_sram_ret_contents_test",
     srcs = ["sram_ctrl_sleep_sram_ret_contents_test.c"],
-    cw310 = cw310_params(
-        tags = ["broken"],
-    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1246,7 +1231,6 @@ opentitan_functest(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
     cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
         tags = ["broken"],
     ),
     verilator = verilator_params(
