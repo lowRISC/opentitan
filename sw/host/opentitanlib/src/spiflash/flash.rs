@@ -66,7 +66,7 @@ impl SpiFlash {
     pub const READ: u8 = 0x03;
     pub const PAGE_PROGRAM: u8 = 0x02;
     pub const SECTOR_ERASE: u8 = 0x20;
-    pub const CHIP_ERASE: u8 = 0x60;
+    pub const CHIP_ERASE: u8 = 0xc7;
     pub const WRITE_ENABLE: u8 = 0x06;
     pub const WRITE_DISABLE: u8 = 0x04;
     pub const READ_STATUS: u8 = 0x05;
