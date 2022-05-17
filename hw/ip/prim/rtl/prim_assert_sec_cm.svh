@@ -9,7 +9,9 @@
 
 // Helper macros
 `define ASSERT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, GATE_, MAX_CYCLES_, ERR_NAME_) \
-  `ASSERT(FpvSecCm``NAME_``, $rose(PRIM_HIER_.ERR_NAME_) && !(GATE_) |-> ##[0:MAX_CYCLES_] (ALERT_.alert_p)) \
+  `ASSERT(FpvSecCm``NAME_``, \
+          $rose(PRIM_HIER_.ERR_NAME_) && !(GATE_) \
+          |-> ##[0:MAX_CYCLES_] (ALERT_.alert_p)) \
   `ifdef INC_ASSERT \
   assign PRIM_HIER_.unused_assert_connected = 1'b1; \
   `endif \
