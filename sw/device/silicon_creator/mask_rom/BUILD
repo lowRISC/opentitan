@@ -200,30 +200,6 @@ opentitan_functest(
 )
 
 cc_library(
-    name = "primitive_bootstrap",
-    srcs = ["primitive_bootstrap.c"],
-    hdrs = ["primitive_bootstrap.h"],
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing/test_rom:bootstrap",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:rom_print",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:watchdog",
-    ],
-)
-
-cc_library(
     name = "bootstrap",
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
