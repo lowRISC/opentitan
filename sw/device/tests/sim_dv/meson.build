@@ -181,6 +181,31 @@ sw_tests += {
   }
 }
 
+lc_walkthrough_testunlocks_test_lib = declare_dependency(
+  link_with: static_library(
+    'lc_walkthrough_testunlocks_test_lib',
+    sources: [
+      'lc_walkthrough_testunlocks_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_lc_ctrl,
+      sw_lib_dif_otp_ctrl,
+      sw_lib_dif_rstmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_log,
+      sw_lib_testing_otp_ctrl_testutils,
+      sw_lib_testing_lc_ctrl_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'lc_walkthrough_testunlocks_test': {
+    'library': lc_walkthrough_testunlocks_test_lib,
+  }
+}
+
 pwrmgr_main_power_glitch_test_lib = declare_dependency(
   link_with: static_library(
     'pwrmgr_main_power_glitch_test_lib',
