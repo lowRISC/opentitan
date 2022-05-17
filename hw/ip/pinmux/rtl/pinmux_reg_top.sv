@@ -117,6 +117,7 @@ module pinmux_reg_top (
 
   // cdc oversampling signals
     logic sync_aon_update;
+  logic aon_update;
   prim_sync_reqack u_aon_tgl (
     .clk_src_i(clk_aon_i),
     .rst_src_ni(rst_aon_ni),
@@ -124,7 +125,7 @@ module pinmux_reg_top (
     .rst_dst_ni(rst_ni),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(aon_update),
     .dst_req_o(sync_aon_update),
     .dst_ack_i(sync_aon_update)
   );
@@ -2315,6 +2316,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_0_busy),
     .src_qs_o     (wkup_detector_en_0_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_en_0_d),
     .dst_we_o     (aon_wkup_detector_en_0_we),
     .dst_re_o     (),
@@ -2352,6 +2354,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_1_busy),
     .src_qs_o     (wkup_detector_en_1_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_en_1_d),
     .dst_we_o     (aon_wkup_detector_en_1_we),
     .dst_re_o     (),
@@ -2389,6 +2392,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_2_busy),
     .src_qs_o     (wkup_detector_en_2_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_en_2_d),
     .dst_we_o     (aon_wkup_detector_en_2_we),
     .dst_re_o     (),
@@ -2426,6 +2430,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_3_busy),
     .src_qs_o     (wkup_detector_en_3_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_en_3_d),
     .dst_we_o     (aon_wkup_detector_en_3_we),
     .dst_re_o     (),
@@ -2463,6 +2468,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_4_busy),
     .src_qs_o     (wkup_detector_en_4_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_en_4_d),
     .dst_we_o     (aon_wkup_detector_en_4_we),
     .dst_re_o     (),
@@ -2500,6 +2506,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_5_busy),
     .src_qs_o     (wkup_detector_en_5_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_en_5_d),
     .dst_we_o     (aon_wkup_detector_en_5_we),
     .dst_re_o     (),
@@ -2537,6 +2544,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_6_busy),
     .src_qs_o     (wkup_detector_en_6_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_en_6_d),
     .dst_we_o     (aon_wkup_detector_en_6_we),
     .dst_re_o     (),
@@ -2574,6 +2582,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_7_busy),
     .src_qs_o     (wkup_detector_en_7_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_en_7_d),
     .dst_we_o     (aon_wkup_detector_en_7_we),
     .dst_re_o     (),
@@ -2615,6 +2624,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_0_busy),
     .src_qs_o     (wkup_detector_0_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_0_d),
     .dst_we_o     (aon_wkup_detector_0_we),
     .dst_re_o     (),
@@ -2656,6 +2666,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_1_busy),
     .src_qs_o     (wkup_detector_1_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_1_d),
     .dst_we_o     (aon_wkup_detector_1_we),
     .dst_re_o     (),
@@ -2697,6 +2708,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_2_busy),
     .src_qs_o     (wkup_detector_2_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_2_d),
     .dst_we_o     (aon_wkup_detector_2_we),
     .dst_re_o     (),
@@ -2738,6 +2750,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_3_busy),
     .src_qs_o     (wkup_detector_3_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_3_d),
     .dst_we_o     (aon_wkup_detector_3_we),
     .dst_re_o     (),
@@ -2779,6 +2792,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_4_busy),
     .src_qs_o     (wkup_detector_4_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_4_d),
     .dst_we_o     (aon_wkup_detector_4_we),
     .dst_re_o     (),
@@ -2820,6 +2834,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_5_busy),
     .src_qs_o     (wkup_detector_5_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_5_d),
     .dst_we_o     (aon_wkup_detector_5_we),
     .dst_re_o     (),
@@ -2861,6 +2876,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_6_busy),
     .src_qs_o     (wkup_detector_6_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_6_d),
     .dst_we_o     (aon_wkup_detector_6_we),
     .dst_re_o     (),
@@ -2902,6 +2918,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_7_busy),
     .src_qs_o     (wkup_detector_7_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_7_d),
     .dst_we_o     (aon_wkup_detector_7_we),
     .dst_re_o     (),
@@ -2939,6 +2956,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_0_busy),
     .src_qs_o     (wkup_detector_cnt_th_0_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_cnt_th_0_d),
     .dst_we_o     (aon_wkup_detector_cnt_th_0_we),
     .dst_re_o     (),
@@ -2976,6 +2994,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_1_busy),
     .src_qs_o     (wkup_detector_cnt_th_1_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_cnt_th_1_d),
     .dst_we_o     (aon_wkup_detector_cnt_th_1_we),
     .dst_re_o     (),
@@ -3013,6 +3032,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_2_busy),
     .src_qs_o     (wkup_detector_cnt_th_2_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_cnt_th_2_d),
     .dst_we_o     (aon_wkup_detector_cnt_th_2_we),
     .dst_re_o     (),
@@ -3050,6 +3070,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_3_busy),
     .src_qs_o     (wkup_detector_cnt_th_3_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_cnt_th_3_d),
     .dst_we_o     (aon_wkup_detector_cnt_th_3_we),
     .dst_re_o     (),
@@ -3087,6 +3108,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_4_busy),
     .src_qs_o     (wkup_detector_cnt_th_4_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_cnt_th_4_d),
     .dst_we_o     (aon_wkup_detector_cnt_th_4_we),
     .dst_re_o     (),
@@ -3124,6 +3146,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_5_busy),
     .src_qs_o     (wkup_detector_cnt_th_5_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_cnt_th_5_d),
     .dst_we_o     (aon_wkup_detector_cnt_th_5_we),
     .dst_re_o     (),
@@ -3161,6 +3184,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_6_busy),
     .src_qs_o     (wkup_detector_cnt_th_6_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_cnt_th_6_d),
     .dst_we_o     (aon_wkup_detector_cnt_th_6_we),
     .dst_re_o     (),
@@ -3198,6 +3222,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_7_busy),
     .src_qs_o     (wkup_detector_cnt_th_7_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_detector_cnt_th_7_d),
     .dst_we_o     (aon_wkup_detector_cnt_th_7_we),
     .dst_re_o     (),
@@ -3248,6 +3273,7 @@ module pinmux_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_cause_busy),
     .src_qs_o     (wkup_cause_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_cause_d),
     .dst_we_o     (aon_wkup_cause_we),
     .dst_re_o     (),

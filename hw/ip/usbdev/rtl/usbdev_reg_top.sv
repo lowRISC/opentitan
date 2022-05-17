@@ -173,6 +173,7 @@ module usbdev_reg_top (
 
   // cdc oversampling signals
     logic sync_usb_48mhz_update;
+  logic usb_48mhz_update;
   prim_sync_reqack u_usb_48mhz_tgl (
     .clk_src_i(clk_usb_48mhz_i),
     .rst_src_ni(rst_usb_48mhz_ni),
@@ -180,11 +181,12 @@ module usbdev_reg_top (
     .rst_dst_ni(rst_ni),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(usb_48mhz_update),
     .dst_req_o(sync_usb_48mhz_update),
     .dst_ack_i(sync_usb_48mhz_update)
   );
     logic sync_aon_update;
+  logic aon_update;
   prim_sync_reqack u_aon_tgl (
     .clk_src_i(clk_aon_i),
     .rst_src_ni(rst_aon_ni),
@@ -192,7 +194,7 @@ module usbdev_reg_top (
     .rst_dst_ni(rst_ni),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(aon_update),
     .dst_req_o(sync_aon_update),
     .dst_ack_i(sync_aon_update)
   );
@@ -743,6 +745,7 @@ module usbdev_reg_top (
     .src_wd_i     (reg_wdata[22:0]),
     .src_busy_o   (usbctrl_busy),
     .src_qs_o     (usbctrl_qs), // for software read back
+    .dst_update_i (usb_48mhz_update),
     .dst_d_i      (usb_48mhz_usbctrl_d),
     .dst_we_o     (usb_48mhz_usbctrl_we),
     .dst_re_o     (),
@@ -801,6 +804,7 @@ module usbdev_reg_top (
     .src_wd_i     (reg_wdata[11:0]),
     .src_busy_o   (rxenable_out_busy),
     .src_qs_o     (rxenable_out_qs), // for software read back
+    .dst_update_i (usb_48mhz_update),
     .dst_d_i      (usb_48mhz_rxenable_out_d),
     .dst_we_o     (usb_48mhz_rxenable_out_we),
     .dst_re_o     (),
@@ -837,6 +841,7 @@ module usbdev_reg_top (
     .src_wd_i     (reg_wdata[1:0]),
     .src_busy_o   (wake_config_busy),
     .src_qs_o     (wake_config_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wake_config_d),
     .dst_we_o     (aon_wake_config_we),
     .dst_re_o     (),
@@ -874,6 +879,7 @@ module usbdev_reg_top (
     .src_wd_i     ('0),
     .src_busy_o   (wake_events_busy),
     .src_qs_o     (wake_events_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wake_events_d),
     .dst_we_o     (),
     .dst_re_o     (),

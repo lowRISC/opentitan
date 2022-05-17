@@ -116,6 +116,7 @@ module pwm_reg_top (
 
   // cdc oversampling signals
     logic sync_core_update;
+  logic core_update;
   prim_sync_reqack u_core_tgl (
     .clk_src_i(clk_core_i),
     .rst_src_ni(rst_core_ni),
@@ -123,7 +124,7 @@ module pwm_reg_top (
     .rst_dst_ni(rst_ni),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(core_update),
     .dst_req_o(sync_core_update),
     .dst_ack_i(sync_core_update)
   );
@@ -237,6 +238,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (cfg_busy),
     .src_qs_o     (cfg_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_cfg_d),
     .dst_we_o     (core_cfg_we),
     .dst_re_o     (),
@@ -284,6 +286,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[5:0]),
     .src_busy_o   (pwm_en_busy),
     .src_qs_o     (pwm_en_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_pwm_en_d),
     .dst_we_o     (core_pwm_en_we),
     .dst_re_o     (),
@@ -331,6 +334,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[5:0]),
     .src_busy_o   (invert_busy),
     .src_qs_o     (invert_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_invert_d),
     .dst_we_o     (core_invert_we),
     .dst_re_o     (),
@@ -372,6 +376,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_0_busy),
     .src_qs_o     (pwm_param_0_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_pwm_param_0_d),
     .dst_we_o     (core_pwm_param_0_we),
     .dst_re_o     (),
@@ -413,6 +418,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_1_busy),
     .src_qs_o     (pwm_param_1_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_pwm_param_1_d),
     .dst_we_o     (core_pwm_param_1_we),
     .dst_re_o     (),
@@ -454,6 +460,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_2_busy),
     .src_qs_o     (pwm_param_2_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_pwm_param_2_d),
     .dst_we_o     (core_pwm_param_2_we),
     .dst_re_o     (),
@@ -495,6 +502,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_3_busy),
     .src_qs_o     (pwm_param_3_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_pwm_param_3_d),
     .dst_we_o     (core_pwm_param_3_we),
     .dst_re_o     (),
@@ -536,6 +544,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_4_busy),
     .src_qs_o     (pwm_param_4_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_pwm_param_4_d),
     .dst_we_o     (core_pwm_param_4_we),
     .dst_re_o     (),
@@ -577,6 +586,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_5_busy),
     .src_qs_o     (pwm_param_5_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_pwm_param_5_d),
     .dst_we_o     (core_pwm_param_5_we),
     .dst_re_o     (),
@@ -616,6 +626,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_0_busy),
     .src_qs_o     (duty_cycle_0_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_duty_cycle_0_d),
     .dst_we_o     (core_duty_cycle_0_we),
     .dst_re_o     (),
@@ -655,6 +666,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_1_busy),
     .src_qs_o     (duty_cycle_1_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_duty_cycle_1_d),
     .dst_we_o     (core_duty_cycle_1_we),
     .dst_re_o     (),
@@ -694,6 +706,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_2_busy),
     .src_qs_o     (duty_cycle_2_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_duty_cycle_2_d),
     .dst_we_o     (core_duty_cycle_2_we),
     .dst_re_o     (),
@@ -733,6 +746,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_3_busy),
     .src_qs_o     (duty_cycle_3_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_duty_cycle_3_d),
     .dst_we_o     (core_duty_cycle_3_we),
     .dst_re_o     (),
@@ -772,6 +786,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_4_busy),
     .src_qs_o     (duty_cycle_4_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_duty_cycle_4_d),
     .dst_we_o     (core_duty_cycle_4_we),
     .dst_re_o     (),
@@ -811,6 +826,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_5_busy),
     .src_qs_o     (duty_cycle_5_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_duty_cycle_5_d),
     .dst_we_o     (core_duty_cycle_5_we),
     .dst_re_o     (),
@@ -850,6 +866,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_0_busy),
     .src_qs_o     (blink_param_0_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_blink_param_0_d),
     .dst_we_o     (core_blink_param_0_we),
     .dst_re_o     (),
@@ -889,6 +906,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_1_busy),
     .src_qs_o     (blink_param_1_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_blink_param_1_d),
     .dst_we_o     (core_blink_param_1_we),
     .dst_re_o     (),
@@ -928,6 +946,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_2_busy),
     .src_qs_o     (blink_param_2_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_blink_param_2_d),
     .dst_we_o     (core_blink_param_2_we),
     .dst_re_o     (),
@@ -967,6 +986,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_3_busy),
     .src_qs_o     (blink_param_3_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_blink_param_3_d),
     .dst_we_o     (core_blink_param_3_we),
     .dst_re_o     (),
@@ -1006,6 +1026,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_4_busy),
     .src_qs_o     (blink_param_4_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_blink_param_4_d),
     .dst_we_o     (core_blink_param_4_we),
     .dst_re_o     (),
@@ -1045,6 +1066,7 @@ module pwm_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_5_busy),
     .src_qs_o     (blink_param_5_qs), // for software read back
+    .dst_update_i (core_update),
     .dst_d_i      (core_blink_param_5_d),
     .dst_we_o     (core_blink_param_5_we),
     .dst_re_o     (),

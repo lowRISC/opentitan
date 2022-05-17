@@ -389,6 +389,7 @@ module ${mod_name} (
     rname = clock.reset
   %>\
   logic sync_${clk_name}_update;
+  logic ${clk_name}_update;
   prim_sync_reqack u_${tgl_expr} (
     .clk_src_i(${cname}),
     .rst_src_ni(${rname}),
@@ -396,7 +397,7 @@ module ${mod_name} (
     .rst_dst_ni(${reg_rst_expr}),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(${clk_name}_update),
     .dst_req_o(sync_${clk_name}_update),
     .dst_ack_i(sync_${clk_name}_update)
   );
@@ -500,6 +501,7 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
     .src_wd_i     (${src_wd_expr}),
     .src_busy_o   (${r_name}_busy),
     .src_qs_o     (${r_name}_qs), // for software read back
+    .dst_update_i (${r.async_clk.clock_base_name}_update),
     .dst_d_i      (${base_name}_${r_name}_d),
     .dst_we_o     (${dst_we_expr}),
     .dst_re_o     (${dst_re_expr}),

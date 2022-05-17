@@ -23,12 +23,29 @@ module prim_reg_cdc #(
   input [DataWidth-1:0] src_wd_i,
   output logic src_busy_o,
   output logic [DataWidth-1:0] src_qs_o,
+  input dst_update_i,
   input  [DataWidth-1:0] dst_d_i,
   output logic dst_we_o,
   output logic dst_re_o,
   output logic dst_regwen_o,
   output logic [DataWidth-1:0] dst_wd_o
 );
+
+  // In the event that source clock is less than 4x faster than the desitnation
+  // clock, we cannot guarantee that the destination data will stay stable
+  // long enough for capture. Capture it here.
+  //
+  // TODO: Eventually we should wire up a top level parameter that indicates
+  // the relative speed differential between the source clock and destination
+  // clocks, that will help determine whether this capture stage is needed.
+  logic [DataWidth-1:0] dst_q;
+  always_ff @(posedge clk_dst_i or negedge rst_dst_ni) begin
+    if (!rst_dst_ni) begin
+      dst_q <= ResetVal;
+    end else if(dst_update_i) begin
+      dst_q <= dst_d_i;
+    end
+  end
 
   ////////////////////////////
   // Source domain
@@ -72,7 +89,7 @@ module prim_reg_cdc #(
   // the cdc portion then begins sampling once more.
   //
   // This is consistent with prim_subreg_arb where during software / hardware conflicts,
-  // software is always prioritized.  The main difference is the conflict resolution window
+  // software is always prioritized.  The main difference is the coonflict resolution window
   // is now larger instead of just one destination clock cycle.
 
   logic busy;
@@ -94,7 +111,7 @@ module prim_reg_cdc #(
       // 2. ack one cycle before update
       // 3. update / ack on the same cycle
       // During all 3 cases the read data should be correct
-      src_q <= dst_d_i;
+      src_q <= dst_q;
       txn_bits_q <= '0;
     end
   end

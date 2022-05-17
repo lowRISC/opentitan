@@ -129,6 +129,7 @@ module clkmgr_reg_top (
 
   // cdc oversampling signals
     logic sync_io_update;
+  logic io_update;
   prim_sync_reqack u_io_tgl (
     .clk_src_i(clk_io_i),
     .rst_src_ni(rst_io_ni),
@@ -136,11 +137,12 @@ module clkmgr_reg_top (
     .rst_dst_ni(rst_ni),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(io_update),
     .dst_req_o(sync_io_update),
     .dst_ack_i(sync_io_update)
   );
     logic sync_io_div2_update;
+  logic io_div2_update;
   prim_sync_reqack u_io_div2_tgl (
     .clk_src_i(clk_io_div2_i),
     .rst_src_ni(rst_io_div2_ni),
@@ -148,11 +150,12 @@ module clkmgr_reg_top (
     .rst_dst_ni(rst_ni),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(io_div2_update),
     .dst_req_o(sync_io_div2_update),
     .dst_ack_i(sync_io_div2_update)
   );
     logic sync_io_div4_update;
+  logic io_div4_update;
   prim_sync_reqack u_io_div4_tgl (
     .clk_src_i(clk_io_div4_i),
     .rst_src_ni(rst_io_div4_ni),
@@ -160,11 +163,12 @@ module clkmgr_reg_top (
     .rst_dst_ni(rst_ni),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(io_div4_update),
     .dst_req_o(sync_io_div4_update),
     .dst_ack_i(sync_io_div4_update)
   );
     logic sync_main_update;
+  logic main_update;
   prim_sync_reqack u_main_tgl (
     .clk_src_i(clk_main_i),
     .rst_src_ni(rst_main_ni),
@@ -172,11 +176,12 @@ module clkmgr_reg_top (
     .rst_dst_ni(rst_ni),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(main_update),
     .dst_req_o(sync_main_update),
     .dst_ack_i(sync_main_update)
   );
     logic sync_usb_update;
+  logic usb_update;
   prim_sync_reqack u_usb_tgl (
     .clk_src_i(clk_usb_i),
     .rst_src_ni(rst_usb_ni),
@@ -184,7 +189,7 @@ module clkmgr_reg_top (
     .rst_dst_ni(rst_ni),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(usb_update),
     .dst_req_o(sync_usb_update),
     .dst_ack_i(sync_usb_update)
   );
@@ -351,6 +356,7 @@ module clkmgr_reg_top (
     .src_wd_i     (reg_wdata[3:0]),
     .src_busy_o   (io_meas_ctrl_en_busy),
     .src_qs_o     (io_meas_ctrl_en_qs), // for software read back
+    .dst_update_i (io_update),
     .dst_d_i      (io_io_meas_ctrl_en_d),
     .dst_we_o     (io_io_meas_ctrl_en_we),
     .dst_re_o     (),
@@ -391,6 +397,7 @@ module clkmgr_reg_top (
     .src_wd_i     (reg_wdata[19:0]),
     .src_busy_o   (io_meas_ctrl_shadowed_busy),
     .src_qs_o     (io_meas_ctrl_shadowed_qs), // for software read back
+    .dst_update_i (io_update),
     .dst_d_i      (io_io_meas_ctrl_shadowed_d),
     .dst_we_o     (io_io_meas_ctrl_shadowed_we),
     .dst_re_o     (io_io_meas_ctrl_shadowed_re),
@@ -428,6 +435,7 @@ module clkmgr_reg_top (
     .src_wd_i     (reg_wdata[3:0]),
     .src_busy_o   (io_div2_meas_ctrl_en_busy),
     .src_qs_o     (io_div2_meas_ctrl_en_qs), // for software read back
+    .dst_update_i (io_div2_update),
     .dst_d_i      (io_div2_io_div2_meas_ctrl_en_d),
     .dst_we_o     (io_div2_io_div2_meas_ctrl_en_we),
     .dst_re_o     (),
@@ -468,6 +476,7 @@ module clkmgr_reg_top (
     .src_wd_i     (reg_wdata[17:0]),
     .src_busy_o   (io_div2_meas_ctrl_shadowed_busy),
     .src_qs_o     (io_div2_meas_ctrl_shadowed_qs), // for software read back
+    .dst_update_i (io_div2_update),
     .dst_d_i      (io_div2_io_div2_meas_ctrl_shadowed_d),
     .dst_we_o     (io_div2_io_div2_meas_ctrl_shadowed_we),
     .dst_re_o     (io_div2_io_div2_meas_ctrl_shadowed_re),
@@ -505,6 +514,7 @@ module clkmgr_reg_top (
     .src_wd_i     (reg_wdata[3:0]),
     .src_busy_o   (io_div4_meas_ctrl_en_busy),
     .src_qs_o     (io_div4_meas_ctrl_en_qs), // for software read back
+    .dst_update_i (io_div4_update),
     .dst_d_i      (io_div4_io_div4_meas_ctrl_en_d),
     .dst_we_o     (io_div4_io_div4_meas_ctrl_en_we),
     .dst_re_o     (),
@@ -545,6 +555,7 @@ module clkmgr_reg_top (
     .src_wd_i     (reg_wdata[15:0]),
     .src_busy_o   (io_div4_meas_ctrl_shadowed_busy),
     .src_qs_o     (io_div4_meas_ctrl_shadowed_qs), // for software read back
+    .dst_update_i (io_div4_update),
     .dst_d_i      (io_div4_io_div4_meas_ctrl_shadowed_d),
     .dst_we_o     (io_div4_io_div4_meas_ctrl_shadowed_we),
     .dst_re_o     (io_div4_io_div4_meas_ctrl_shadowed_re),
@@ -582,6 +593,7 @@ module clkmgr_reg_top (
     .src_wd_i     (reg_wdata[3:0]),
     .src_busy_o   (main_meas_ctrl_en_busy),
     .src_qs_o     (main_meas_ctrl_en_qs), // for software read back
+    .dst_update_i (main_update),
     .dst_d_i      (main_main_meas_ctrl_en_d),
     .dst_we_o     (main_main_meas_ctrl_en_we),
     .dst_re_o     (),
@@ -622,6 +634,7 @@ module clkmgr_reg_top (
     .src_wd_i     (reg_wdata[19:0]),
     .src_busy_o   (main_meas_ctrl_shadowed_busy),
     .src_qs_o     (main_meas_ctrl_shadowed_qs), // for software read back
+    .dst_update_i (main_update),
     .dst_d_i      (main_main_meas_ctrl_shadowed_d),
     .dst_we_o     (main_main_meas_ctrl_shadowed_we),
     .dst_re_o     (main_main_meas_ctrl_shadowed_re),
@@ -659,6 +672,7 @@ module clkmgr_reg_top (
     .src_wd_i     (reg_wdata[3:0]),
     .src_busy_o   (usb_meas_ctrl_en_busy),
     .src_qs_o     (usb_meas_ctrl_en_qs), // for software read back
+    .dst_update_i (usb_update),
     .dst_d_i      (usb_usb_meas_ctrl_en_d),
     .dst_we_o     (usb_usb_meas_ctrl_en_we),
     .dst_re_o     (),
@@ -699,6 +713,7 @@ module clkmgr_reg_top (
     .src_wd_i     (reg_wdata[17:0]),
     .src_busy_o   (usb_meas_ctrl_shadowed_busy),
     .src_qs_o     (usb_meas_ctrl_shadowed_qs), // for software read back
+    .dst_update_i (usb_update),
     .dst_d_i      (usb_usb_meas_ctrl_shadowed_d),
     .dst_we_o     (usb_usb_meas_ctrl_shadowed_we),
     .dst_re_o     (usb_usb_meas_ctrl_shadowed_re),

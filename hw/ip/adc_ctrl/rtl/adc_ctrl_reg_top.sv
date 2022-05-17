@@ -117,6 +117,7 @@ module adc_ctrl_reg_top (
 
   // cdc oversampling signals
     logic sync_aon_update;
+  logic aon_update;
   prim_sync_reqack u_aon_tgl (
     .clk_src_i(clk_aon_i),
     .rst_src_ni(rst_aon_ni),
@@ -124,7 +125,7 @@ module adc_ctrl_reg_top (
     .rst_dst_ni(rst_ni),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(aon_update),
     .dst_req_o(sync_aon_update),
     .dst_ack_i(sync_aon_update)
   );
@@ -272,6 +273,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[1:0]),
     .src_busy_o   (adc_en_ctl_busy),
     .src_qs_o     (adc_en_ctl_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_en_ctl_d),
     .dst_we_o     (aon_adc_en_ctl_we),
     .dst_re_o     (),
@@ -312,6 +314,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_pd_ctl_busy),
     .src_qs_o     (adc_pd_ctl_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_pd_ctl_d),
     .dst_we_o     (aon_adc_pd_ctl_we),
     .dst_re_o     (),
@@ -348,6 +351,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (adc_lp_sample_ctl_busy),
     .src_qs_o     (adc_lp_sample_ctl_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_lp_sample_ctl_d),
     .dst_we_o     (aon_adc_lp_sample_ctl_we),
     .dst_re_o     (),
@@ -384,6 +388,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[15:0]),
     .src_busy_o   (adc_sample_ctl_busy),
     .src_qs_o     (adc_sample_ctl_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_sample_ctl_d),
     .dst_we_o     (aon_adc_sample_ctl_we),
     .dst_re_o     (),
@@ -420,6 +425,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (adc_fsm_rst_busy),
     .src_qs_o     (adc_fsm_rst_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_fsm_rst_d),
     .dst_we_o     (aon_adc_fsm_rst_we),
     .dst_re_o     (),
@@ -462,6 +468,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn0_filter_ctl_0_busy),
     .src_qs_o     (adc_chn0_filter_ctl_0_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn0_filter_ctl_0_d),
     .dst_we_o     (aon_adc_chn0_filter_ctl_0_we),
     .dst_re_o     (),
@@ -504,6 +511,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn0_filter_ctl_1_busy),
     .src_qs_o     (adc_chn0_filter_ctl_1_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn0_filter_ctl_1_d),
     .dst_we_o     (aon_adc_chn0_filter_ctl_1_we),
     .dst_re_o     (),
@@ -546,6 +554,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn0_filter_ctl_2_busy),
     .src_qs_o     (adc_chn0_filter_ctl_2_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn0_filter_ctl_2_d),
     .dst_we_o     (aon_adc_chn0_filter_ctl_2_we),
     .dst_re_o     (),
@@ -588,6 +597,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn0_filter_ctl_3_busy),
     .src_qs_o     (adc_chn0_filter_ctl_3_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn0_filter_ctl_3_d),
     .dst_we_o     (aon_adc_chn0_filter_ctl_3_we),
     .dst_re_o     (),
@@ -630,6 +640,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn0_filter_ctl_4_busy),
     .src_qs_o     (adc_chn0_filter_ctl_4_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn0_filter_ctl_4_d),
     .dst_we_o     (aon_adc_chn0_filter_ctl_4_we),
     .dst_re_o     (),
@@ -672,6 +683,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn0_filter_ctl_5_busy),
     .src_qs_o     (adc_chn0_filter_ctl_5_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn0_filter_ctl_5_d),
     .dst_we_o     (aon_adc_chn0_filter_ctl_5_we),
     .dst_re_o     (),
@@ -714,6 +726,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn0_filter_ctl_6_busy),
     .src_qs_o     (adc_chn0_filter_ctl_6_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn0_filter_ctl_6_d),
     .dst_we_o     (aon_adc_chn0_filter_ctl_6_we),
     .dst_re_o     (),
@@ -756,6 +769,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn0_filter_ctl_7_busy),
     .src_qs_o     (adc_chn0_filter_ctl_7_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn0_filter_ctl_7_d),
     .dst_we_o     (aon_adc_chn0_filter_ctl_7_we),
     .dst_re_o     (),
@@ -798,6 +812,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn1_filter_ctl_0_busy),
     .src_qs_o     (adc_chn1_filter_ctl_0_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn1_filter_ctl_0_d),
     .dst_we_o     (aon_adc_chn1_filter_ctl_0_we),
     .dst_re_o     (),
@@ -840,6 +855,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn1_filter_ctl_1_busy),
     .src_qs_o     (adc_chn1_filter_ctl_1_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn1_filter_ctl_1_d),
     .dst_we_o     (aon_adc_chn1_filter_ctl_1_we),
     .dst_re_o     (),
@@ -882,6 +898,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn1_filter_ctl_2_busy),
     .src_qs_o     (adc_chn1_filter_ctl_2_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn1_filter_ctl_2_d),
     .dst_we_o     (aon_adc_chn1_filter_ctl_2_we),
     .dst_re_o     (),
@@ -924,6 +941,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn1_filter_ctl_3_busy),
     .src_qs_o     (adc_chn1_filter_ctl_3_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn1_filter_ctl_3_d),
     .dst_we_o     (aon_adc_chn1_filter_ctl_3_we),
     .dst_re_o     (),
@@ -966,6 +984,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn1_filter_ctl_4_busy),
     .src_qs_o     (adc_chn1_filter_ctl_4_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn1_filter_ctl_4_d),
     .dst_we_o     (aon_adc_chn1_filter_ctl_4_we),
     .dst_re_o     (),
@@ -1008,6 +1027,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn1_filter_ctl_5_busy),
     .src_qs_o     (adc_chn1_filter_ctl_5_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn1_filter_ctl_5_d),
     .dst_we_o     (aon_adc_chn1_filter_ctl_5_we),
     .dst_re_o     (),
@@ -1050,6 +1070,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn1_filter_ctl_6_busy),
     .src_qs_o     (adc_chn1_filter_ctl_6_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn1_filter_ctl_6_d),
     .dst_we_o     (aon_adc_chn1_filter_ctl_6_we),
     .dst_re_o     (),
@@ -1092,6 +1113,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (adc_chn1_filter_ctl_7_busy),
     .src_qs_o     (adc_chn1_filter_ctl_7_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn1_filter_ctl_7_d),
     .dst_we_o     (aon_adc_chn1_filter_ctl_7_we),
     .dst_re_o     (),
@@ -1131,6 +1153,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     ('0),
     .src_busy_o   (adc_chn_val_0_busy),
     .src_qs_o     (adc_chn_val_0_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn_val_0_d),
     .dst_we_o     (),
     .dst_re_o     (),
@@ -1168,6 +1191,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     ('0),
     .src_busy_o   (adc_chn_val_1_busy),
     .src_qs_o     (adc_chn_val_1_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_chn_val_1_d),
     .dst_we_o     (),
     .dst_re_o     (),
@@ -1202,6 +1226,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (adc_wakeup_ctl_busy),
     .src_qs_o     (adc_wakeup_ctl_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_adc_wakeup_ctl_d),
     .dst_we_o     (aon_adc_wakeup_ctl_we),
     .dst_re_o     (),
@@ -1238,6 +1263,7 @@ module adc_ctrl_reg_top (
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (filter_status_busy),
     .src_qs_o     (filter_status_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_filter_status_d),
     .dst_we_o     (aon_filter_status_we),
     .dst_re_o     (),

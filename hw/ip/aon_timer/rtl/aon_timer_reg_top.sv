@@ -117,6 +117,7 @@ module aon_timer_reg_top (
 
   // cdc oversampling signals
     logic sync_aon_update;
+  logic aon_update;
   prim_sync_reqack u_aon_tgl (
     .clk_src_i(clk_aon_i),
     .rst_src_ni(rst_aon_ni),
@@ -124,7 +125,7 @@ module aon_timer_reg_top (
     .rst_dst_ni(rst_ni),
     .req_chk_i(1'b1),
     .src_req_i(1'b1),
-    .src_ack_o(),
+    .src_ack_o(aon_update),
     .dst_req_o(sync_aon_update),
     .dst_ack_i(sync_aon_update)
   );
@@ -204,6 +205,7 @@ module aon_timer_reg_top (
     .src_wd_i     (reg_wdata[12:0]),
     .src_busy_o   (wkup_ctrl_busy),
     .src_qs_o     (wkup_ctrl_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_ctrl_d),
     .dst_we_o     (aon_wkup_ctrl_we),
     .dst_re_o     (),
@@ -240,6 +242,7 @@ module aon_timer_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (wkup_thold_busy),
     .src_qs_o     (wkup_thold_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_thold_d),
     .dst_we_o     (aon_wkup_thold_we),
     .dst_re_o     (),
@@ -276,6 +279,7 @@ module aon_timer_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (wkup_count_busy),
     .src_qs_o     (wkup_count_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_count_d),
     .dst_we_o     (aon_wkup_count_we),
     .dst_re_o     (),
@@ -315,6 +319,7 @@ module aon_timer_reg_top (
     .src_wd_i     (reg_wdata[1:0]),
     .src_busy_o   (wdog_ctrl_busy),
     .src_qs_o     (wdog_ctrl_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wdog_ctrl_d),
     .dst_we_o     (aon_wdog_ctrl_we),
     .dst_re_o     (),
@@ -352,6 +357,7 @@ module aon_timer_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (wdog_bark_thold_busy),
     .src_qs_o     (wdog_bark_thold_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wdog_bark_thold_d),
     .dst_we_o     (aon_wdog_bark_thold_we),
     .dst_re_o     (),
@@ -389,6 +395,7 @@ module aon_timer_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (wdog_bite_thold_busy),
     .src_qs_o     (wdog_bite_thold_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wdog_bite_thold_d),
     .dst_we_o     (aon_wdog_bite_thold_we),
     .dst_re_o     (),
@@ -425,6 +432,7 @@ module aon_timer_reg_top (
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (wdog_count_busy),
     .src_qs_o     (wdog_count_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wdog_count_d),
     .dst_we_o     (aon_wdog_count_we),
     .dst_re_o     (),
@@ -461,6 +469,7 @@ module aon_timer_reg_top (
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_cause_busy),
     .src_qs_o     (wkup_cause_qs), // for software read back
+    .dst_update_i (aon_update),
     .dst_d_i      (aon_wkup_cause_d),
     .dst_we_o     (aon_wkup_cause_we),
     .dst_re_o     (),
