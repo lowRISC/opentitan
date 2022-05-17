@@ -29,6 +29,9 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand bit                    rw_bit;
   rand bit   [7:0]            wr_data[$];
   rand bit   [9:0]            addr;  // support both 7-bit and 10-bit target address
+  rand bit   [6:0]            target_addr0;  // Target Address 0
+  rand bit   [6:0]            target_addr1;  // Target Address 1
+  rand bit   [7:0]            txdata;
   rand bit   [2:0]            rxilvl;
   rand bit   [1:0]            fmtilvl;
 
@@ -238,6 +241,11 @@ class i2c_base_vseq extends cip_base_vseq #(
       ral.ctrl.llpbk.set(1'b0);
       csr_update(ral.ctrl);
       // TODO: more initialization for the host running Target mode
+      ral.target_id.address0.set(target_addr0);
+      ral.target_id.mask0.set(7'h3f);
+      ral.target_id.address1.set(target_addr1);
+      ral.target_id.mask1.set(7'h3f);
+      csr_update(ral.target_id);
     end
 
     // clear fifos
@@ -393,6 +401,15 @@ class i2c_base_vseq extends cip_base_vseq #(
     if (bit'(get_field_val(ral.intr_state.stretch_timeout, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing stretch_timeout", UVM_DEBUG)
     end
+    if (bit'(get_field_val(ral.intr_state.tx_empty, intr_clear))) begin
+      `uvm_info(`gfn, "\n  clearing tx_empty", UVM_DEBUG)
+    end
+    if (bit'(get_field_val(ral.intr_state.tx_nonempty, intr_clear))) begin
+      `uvm_info(`gfn, "\n  clearing tx_nonempty", UVM_DEBUG)
+    end
+    if (bit'(get_field_val(ral.intr_state.tx_overflow, intr_clear))) begin
+      `uvm_info(`gfn, "\n  clearing tx_overflow", UVM_DEBUG)
+    end
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
     cfg.clk_rst_vif.wait_clks(clear_intr_dly);
@@ -459,4 +476,29 @@ class i2c_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.fifo_ctrl.fmtrst), .value(1'b0));
   endtask : reset_fmt_fifo
 
+  task program_tx_fifo(int tx_bytes);
+    for (int i = 0; i < tx_bytes; i++) begin
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(txdata)
+      csr_wr(.ptr(ral.txdata), .value(txdata));
+    end
+  endtask : program_tx_fifo
+
+  task read_acqdata (int num_bytes);
+    bit [6:0] acqlvl;
+    bit [7:0] abyte;
+    bit [1:0] signal;
+    csr_rd_check(.ptr(ral.status.acqempty), .compare_value(0));
+    csr_rd(.ptr(ral.fifo_status.acqlvl), .value(acqlvl));
+    `DV_CHECK_EQ(acqlvl, (num_bytes+2)) // addr byte + data bytes + junk byte
+    for (int i = 0; i < (num_bytes+2); i++) begin
+      csr_rd(.ptr(ral.acqdata), .value({signal,abyte}));
+    end
+  endtask : read_acqdata
+
+  task program_stretch_ctrl(bit stop_acq, bit stop_tx, bit en_addr_acq, bit en_addr_tx);
+     csr_wr(.ptr(ral.stretch_ctrl.stop_acq), .value(stop_acq));
+     csr_wr(.ptr(ral.stretch_ctrl.stop_tx), .value(stop_tx));
+     csr_wr(.ptr(ral.stretch_ctrl.en_addr_acq), .value(en_addr_acq));
+     csr_wr(.ptr(ral.stretch_ctrl.en_addr_tx), .value(en_addr_tx));
+  endtask : program_stretch_ctrl
 endclass : i2c_base_vseq
