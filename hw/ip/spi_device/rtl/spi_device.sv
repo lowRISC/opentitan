@@ -121,6 +121,8 @@ module spi_device
 
 
   // Submoule SRAM Requests
+  sram_l2m_t flash_sram_l2m;
+  sram_m2l_t flash_sram_m2l;
   sram_l2m_t sub_sram_l2m [IoModeEnd];
   sram_m2l_t sub_sram_m2l [IoModeEnd];
 
@@ -1023,6 +1025,39 @@ module spi_device
     else            cmd_dp_sel_outclk <= cmd_dp_sel;
   end
 
+  // SCK clock domain MUX for SRAM access for Flash and Passthrough
+  always_comb begin
+    flash_sram_l2m = '{ default: '0 };
+
+    for (int unsigned i = IoModeCmdParse ; i < IoModeEnd ; i++) begin
+      sub_sram_m2l[i] = '{
+        rvalid: 1'b 0,
+        rdata: '0,
+        rerror: '{uncorr: 1'b 0, corr: 1'b 0}
+      };
+    end
+
+    unique case (cmd_dp_sel)
+      DpReadCmd, DpReadSFDP: begin
+        // SRAM:: Remember this has glitch
+        // switch should happen only when clock gate is disabled.
+        flash_sram_l2m = sub_sram_l2m[IoModeReadCmd];
+        sub_sram_m2l[IoModeReadCmd] = flash_sram_m2l;
+      end
+
+      DpUpload: begin
+        flash_sram_l2m = sub_sram_l2m[IoModeUpload];
+        sub_sram_m2l[IoModeUpload] = flash_sram_m2l;
+      end
+
+      default: begin
+        // DpNone, DpReadStatus, DpReadJEDEC
+        flash_sram_l2m = '{default: '0 };
+      end
+    endcase
+  end
+
+  // inverted SCK clock domain MUX for IO Mode and P2S
   always_comb begin
     io_mode = SingleIO;
     p2s_valid = 1'b 0;
@@ -1030,13 +1065,18 @@ module spi_device
     sub_p2s_sent = '{default: 1'b 0};
 
     mem_b_l2m = '{ default: '0 };
-    for (int unsigned i = 0 ; i < IoModeEnd ; i++) begin
-      sub_sram_m2l[i] = '{
-        rvalid: 1'b 0,
-        rdata: '0,
-        rerror: '{uncorr: 1'b 0, corr: 1'b 0}
-      };
-    end
+
+    sub_sram_m2l[IoModeFw] = '{
+      rvalid: 1'b 0,
+      rdata: '0,
+      rerror: '{uncorr: 1'b 0, corr: 1'b 0}
+    };
+
+    flash_sram_m2l = '{
+      rvalid: 1'b 0,
+      rdata: '0,
+      rerror: '{uncorr: 1'b 0, corr: 1'b 0}
+    };
 
     unique case (spi_mode)
       FwMode: begin
@@ -1053,13 +1093,16 @@ module spi_device
       end
 
       FlashMode, PassThrough: begin
+        // SRAM comb logic is in SCK clock domain
+        mem_b_l2m = flash_sram_l2m;
+        flash_sram_m2l = mem_b_m2l;
+
         unique case (cmd_dp_sel_outclk)
           DpNone: begin
             io_mode = sub_iomode[IoModeCmdParse];
 
             sub_p2s_sent[IoModeCmdParse] = p2s_sent;
 
-            // Leave SRAM default;
           end
           DpReadCmd, DpReadSFDP: begin
             io_mode = sub_iomode[IoModeReadCmd];
@@ -1067,11 +1110,6 @@ module spi_device
             p2s_valid = sub_p2s_valid[IoModeReadCmd];
             p2s_data  = sub_p2s_data[IoModeReadCmd];
             sub_p2s_sent[IoModeReadCmd] = p2s_sent;
-
-            // SRAM:: Remember this has glitch
-            // switch should happen only when clock gate is disabled.
-            mem_b_l2m = sub_sram_l2m[IoModeReadCmd];
-            sub_sram_m2l[IoModeReadCmd] = mem_b_m2l;
           end
           DpReadStatus: begin
             io_mode = sub_iomode[IoModeStatus];
@@ -1080,7 +1118,6 @@ module spi_device
             p2s_data  = sub_p2s_data[IoModeStatus];
             sub_p2s_sent[IoModeStatus] = p2s_sent;
 
-            // default memory (tied)
           end
 
           DpReadJEDEC: begin
@@ -1097,9 +1134,6 @@ module spi_device
             p2s_valid = sub_p2s_valid[IoModeUpload];
             p2s_data  = sub_p2s_data[IoModeUpload];
             sub_p2s_sent[IoModeUpload] = p2s_sent;
-
-            mem_b_l2m = sub_sram_l2m[IoModeUpload];
-            sub_sram_m2l[IoModeUpload] = mem_b_m2l;
           end
           // DpUnknown:
           default: begin
