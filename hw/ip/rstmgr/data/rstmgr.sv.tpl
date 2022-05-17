@@ -312,7 +312,11 @@ module rstmgr
     % for domain in power_domains:
        % if domain in rst.domains:
   rstmgr_leaf_rst #(
+    % if rst.name==rst_ni:
+    .SecCheck(0),
+    % else:
     .SecCheck(SecCheck),
+    % endif
     .SecMaxSyncDelay(SecMaxSyncDelay),
     % if rst.sw:
     .SwRstReq(1'b1)
@@ -337,13 +341,14 @@ module rstmgr
     .fsm_err_o(${err_prefix[j]}fsm_errs[${i}][Domain${domain}Sel])
   );
 
+  % if rst.name!=rst_ni:
   if (SecCheck) begin : gen_d${domain.lower()}_${name}_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     D${domain.capitalize()}${rst_name.as_camel_case()}FsmCheck_A,
     u_d${domain.lower()}_${name}.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-
+  % endif
       % else:
   assign resets_o.rst_${name}_n[Domain${domain}Sel] = '0;
   assign ${err_prefix[j]}cnsty_chk_errs[${i}][Domain${domain}Sel] = '0;

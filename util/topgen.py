@@ -470,6 +470,9 @@ def generate_pwrmgr(top, out_path):
     # Generate reg files
     generate_regfile_from_path(hjson_path, rtl_path, original_rtl_path)
 
+def get_rst_ni(top):
+    rstmgrs = [m for m in top['module'] if m['type'] == 'rstmgr']
+    return rstmgrs[0]["reset_connections"]
 
 # generate rstmgr
 def generate_rstmgr(topcfg, out_path):
@@ -510,6 +513,9 @@ def generate_rstmgr(topcfg, out_path):
     # sw controlled resets
     sw_rsts = reset_obj.get_sw_resets()
 
+    # rst_ni
+    rst_ni = get_rst_ni(topcfg)
+
     # leaf resets
     leaf_rsts = reset_obj.get_generated_resets()
 
@@ -528,6 +534,7 @@ def generate_rstmgr(topcfg, out_path):
                                  sw_rsts=sw_rsts,
                                  output_rsts=output_rsts,
                                  leaf_rsts=leaf_rsts,
+                                 rst_ni = rst_ni['rst_ni']['name'],
                                  export_rsts=topcfg["exported_rsts"],
                                  reset_obj=topcfg["resets"])
 
