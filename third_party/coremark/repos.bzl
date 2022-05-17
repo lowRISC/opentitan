@@ -14,7 +14,6 @@ def coremark_repos():
             "https://github.com/eembc/coremark/archive/21d473aae1f11d52ea592a8685734be2209aa66f.tar.gz",
         ],
         patches = [
-#            Label("//third_party/coremark:include_adjust.patch"),
             Label("//third_party/coremark:use_ottf_main.patch"),
         ],
         patch_args = ["-p1"],

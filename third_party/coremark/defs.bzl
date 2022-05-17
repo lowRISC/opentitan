@@ -10,12 +10,12 @@ def coremark_test():
         srcs = [
             "top_earlgrey/core_portme.c",
             "top_earlgrey/ee_printf.c",
-#            "core_list_join.c",
-#            "core_main.c",
-#            "core_matrix.c",
-#            "core_state.c",
-#            "core_util.c",
-               ],
+            #            "core_list_join.c",
+            #            "core_main.c",
+            #            "core_matrix.c",
+            #            "core_state.c",
+            #            "core_util.c",
+        ],
         copts = [
             "-Wno-implicit-fallthrough",
             "-Wno-strict-prototypes",
