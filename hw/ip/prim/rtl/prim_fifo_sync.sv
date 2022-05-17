@@ -51,6 +51,9 @@ module prim_fifo_sync #(
     logic unused_clr;
     assign unused_clr = clr_i;
 
+    // No error
+    assign err_o = 1'b 0;
+
   // Normal FIFO construction
   end else begin : gen_normal_fifo
 
