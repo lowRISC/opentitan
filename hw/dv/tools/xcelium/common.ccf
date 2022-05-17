@@ -41,7 +41,8 @@ set_fsm_reset_scoring
 set_toggle_portsonly
 
 // Enable scoring of FSM arcs (state transitions).
-set_fsm_arc_scoring
+// TODO: re-enable this setting, temp disable due to #12544
+// set_fsm_arc_scoring
 
 // Include X->1|0 for toggle coverage collection. #10332
 set_toggle_includex
