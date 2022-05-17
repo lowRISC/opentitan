@@ -83,9 +83,9 @@ opentitan_rom_binary(
     extract_sw_logs_db = False,
     deps = [
         ":boot_policy",
+        ":bootstrap",
         ":linker_script",
         ":mask_rom_epmp",
-        ":primitive_bootstrap",
         ":sigverify_keys",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/ip/csrng/data:csrng_regs",
@@ -101,6 +101,7 @@ opentitan_rom_binary(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:stdasm",

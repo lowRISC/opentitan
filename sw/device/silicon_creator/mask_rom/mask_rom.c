@@ -31,8 +31,8 @@
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/boot_policy.h"
+#include "sw/device/silicon_creator/mask_rom/bootstrap.h"
 #include "sw/device/silicon_creator/mask_rom/mask_rom_epmp.h"
-#include "sw/device/silicon_creator/mask_rom/primitive_bootstrap.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -332,9 +332,13 @@ void mask_rom_main(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
 
-  // TODO(lowrisc/opentitan#1513): Switch to EEPROM SPI device bootstrap
-  // protocol.
-  SHUTDOWN_IF_ERROR(primitive_bootstrap(lc_state));
+  hardened_bool_t bootstrap_req = bootstrap_requested();
+  if (launder32(bootstrap_req) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(bootstrap_req, kHardenedBoolTrue);
+    // TODO(lowRISC/opentitan#10631): decide on watchdog strategy for bootstrap.
+    watchdog_disable();
+    shutdown_finalize(bootstrap());
+  }
 
   // `mask_rom_try_boot` will not return unless there is an error.
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 4, kCfiRomTryBoot);
