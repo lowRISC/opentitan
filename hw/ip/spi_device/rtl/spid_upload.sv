@@ -57,6 +57,7 @@ module spid_upload
 
   input clk_csb_i, // CSb as a clock source
 
+  input sck_csb_asserted_pulse_i,
   input sys_csb_deasserted_pulse_i,
 
   input sel_datapath_e sel_dp_i,
@@ -297,7 +298,7 @@ module spid_upload
     // Can't use cmdfifo_depth != '0 as cmdfifo_depth is latched by SCK
     // CmdOnly SPI transaction cannot catch
     else if (cmdfifo_wvalid && cmdfifo_wready) sck_cmdfifo_set <= 1'b 1;
-    else if (cmdfifo_depth == '0)              sck_cmdfifo_set <= 1'b 0;
+    else if (sck_csb_asserted_pulse_i)         sck_cmdfifo_set <= 1'b 0;
   end
   `ASSERT(CmdFifoPush_A,
           cmdfifo_wvalid && cmdfifo_wready |=> cmdfifo_depth != 0,

@@ -1492,6 +1492,7 @@ module spi_device
 
     .clk_csb_i (clk_csb),
 
+    .sck_csb_asserted_pulse_i   (sck_csb_asserted_pulse),
     .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
 
     .sel_dp_i (cmd_dp_sel),
