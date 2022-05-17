@@ -4,31 +4,20 @@
 
 package(default_visibility = ["//visibility:public"])
 
-#exports_files(glob(["**/*"]))
-exports_files([
-      "core_list_join.c",
-      "core_main.c",
-      "core_matrix.c",
-      "core_state.c",
-      "core_util.c",
-      "coremark.h",
-])
-
 cc_library(
     name = "coremark_lib",
     srcs = [
-      "core_list_join.c",
-      "core_main.c",
-      "core_matrix.c",
-      "core_state.c",
-      "core_util.c",
+        "core_list_join.c",
+        "core_main.c",
+        "core_matrix.c",
+        "core_state.c",
+        "core_util.c",
     ],
     hdrs = [
-      "coremark.h",
+        "coremark.h",
     ],
-    defines = [
-    ],
-    includes = [
+    includes = ["."],
+    deps = [
+        "@lowrisc_opentitan//third_party/coremark/top_earlgrey:core_portme",
     ],
 )
-

@@ -5,14 +5,14 @@
         Author : Shay Gal-On, EEMBC
         Legal : TODO!
 */
-#include "sw/device/benchmarks/coremark/top_earlgrey/core_portme.h"
+#include "third_party/coremark/top_earlgrey/core_portme.h"
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "sw/vendor/eembc_coremark/coremark.h"
+#include "coremark.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -131,6 +131,7 @@ void portable_init(core_portable *p, int *argc, char *argv[]) {
   if (sizeof(ee_u32) != 4) {
     ee_printf("ERROR! Please define ee_u32 to a 32b unsigned type!\n");
   }
+  base_printf("coremark starting\n");
   p->portable_id = 1;
   test_status_set(kTestStatusInTest);
 }

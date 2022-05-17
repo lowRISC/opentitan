@@ -35,7 +35,7 @@ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 #include <stdarg.h>
 
 #include "sw/device/lib/runtime/print.h"
-#include "sw/vendor/eembc_coremark/coremark.h"
+#include "coremark.h"
 
 #define ZEROPAD (1 << 0)   /* Pad with zero */
 #define SIGN (1 << 1)      /* Unsigned/signed long */

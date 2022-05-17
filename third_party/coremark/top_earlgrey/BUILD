@@ -1,0 +1,42 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "core_portme",
+    hdrs = ["core_portme.h"],
+    includes = ["."],
+)
+
+opentitan_functest(
+    name = "coremark_test",
+    srcs = [
+        "core_portme.c",
+        "cvt.c",
+        "ee_printf.c",
+    ],
+    copts = [
+        "-Wno-implicit-fallthrough",
+        "-Wno-strict-prototypes",
+        "-DITERATIONS=1",
+        "-DPERFORMANCE_RUN=1",
+        "-DTOTAL_DATA_SIZE=2000",
+        "-DMAIN_HAS_NOARGC=1",
+    ],
+    linkopts = ["-Wl,--no-relax"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":core_portme",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_start",
+        "//sw/device/lib/testing/test_framework:status",
+        "@coremark//:coremark_lib",
+    ],
+)
