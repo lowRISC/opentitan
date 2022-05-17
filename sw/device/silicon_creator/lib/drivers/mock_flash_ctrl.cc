@@ -70,6 +70,10 @@ void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
   MockFlashCtrl::Instance().InfoCfgSet(info_page, cfg);
 }
 
+void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
+  MockFlashCtrl::Instance().BankErasePermsSet(enable);
+}
+
 void flash_ctrl_exec_set(uint32_t exec_val) {
   MockFlashCtrl::Instance().ExecSet(exec_val);
 }

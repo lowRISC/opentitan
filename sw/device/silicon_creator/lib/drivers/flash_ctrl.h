@@ -152,6 +152,7 @@ enum {
   kFlashCtrlSecMmioExecSet = 1,
   kFlashCtrlSecMmioInfoCfgSet = 1,
   kFlashCtrlSecMmioInfoPermsSet = 1,
+  kFlashCtrlSecMmioBankErasePermsSet = 1,
   kFlashCtrlSecMmioInit = 5,
 };
 
@@ -430,6 +431,17 @@ void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg);
  * @param cfg New configuration settings.
  */
 void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page, flash_ctrl_cfg_t cfg);
+
+/**
+ * Set bank erase permissions for both flash banks.
+ *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioBankErasePermsSet)` when
+ * sec_mmio is being used to check expectations.
+ *
+ * @param enable Whether to enable bank erase.
+ */
+void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable);
 
 /**
  * Enable execution from flash.

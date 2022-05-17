@@ -601,6 +601,20 @@ TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
   flash_ctrl_creator_info_pages_lockdown();
 }
 
+TEST_F(FlashCtrlTest, BankErasePermsSet) {
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET,
+      {
+          {FLASH_CTRL_MP_BANK_CFG_SHADOWED_ERASE_EN_0_BIT, 1},
+          {FLASH_CTRL_MP_BANK_CFG_SHADOWED_ERASE_EN_1_BIT, 1},
+      });
+  flash_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
+
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET, 0);
+  flash_ctrl_bank_erase_perms_set(kHardenedBoolFalse);
+}
+
 struct EraseVerifyCase {
   /**
    * Address.
