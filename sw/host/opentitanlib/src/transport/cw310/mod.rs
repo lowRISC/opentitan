@@ -67,12 +67,13 @@ impl CW310 {
             uart_override: uart_override.iter().map(|s| s.to_string()).collect(),
             inner: RefCell::default(),
         };
-        board.init_direction()?;
+        board.init_pin_directions()?;
+        board.init_pin_values()?;
         Ok(board)
     }
 
     // Initialize the IO direction of some basic pins on the board.
-    fn init_direction(&self) -> anyhow::Result<()> {
+    fn init_pin_directions(&self) -> anyhow::Result<()> {
         let device = self.device.borrow();
         device.pin_set_output(Self::PIN_TRST, true)?;
         device.pin_set_output(Self::PIN_SRST, true)?;
@@ -81,6 +82,19 @@ impl CW310 {
         device.pin_set_output(Self::PIN_SW_STRAP0, true)?;
         device.pin_set_output(Self::PIN_SW_STRAP1, true)?;
         device.pin_set_output(Self::PIN_SW_STRAP2, true)?;
+        Ok(())
+    }
+
+    // Initialize the values of the output pins on the board.
+    fn init_pin_values(&self) -> anyhow::Result<()> {
+        let device = self.device.borrow();
+        device.pin_set_state(Self::PIN_TRST, true)?;
+        device.pin_set_state(Self::PIN_SRST, true)?;
+        device.pin_set_state(Self::PIN_TAP_STRAP0, false)?;
+        device.pin_set_state(Self::PIN_TAP_STRAP1, true)?;
+        device.pin_set_state(Self::PIN_SW_STRAP0, false)?;
+        device.pin_set_state(Self::PIN_SW_STRAP1, false)?;
+        device.pin_set_state(Self::PIN_SW_STRAP2, false)?;
         Ok(())
     }
 
@@ -200,9 +214,6 @@ impl Transport for CW310 {
             // Program the FPGA bitstream.
             let usb = self.device.borrow();
             usb.spi1_enable(false)?;
-            usb.pin_set_state(CW310::PIN_SW_STRAP0, true)?;
-            usb.pin_set_state(CW310::PIN_SW_STRAP1, true)?;
-            usb.pin_set_state(CW310::PIN_SW_STRAP2, true)?;
             usb.fpga_program(&fpga_program.bitstream)?;
             Ok(None)
         } else {
