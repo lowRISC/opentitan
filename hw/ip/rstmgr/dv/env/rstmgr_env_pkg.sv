@@ -38,8 +38,6 @@ package rstmgr_env_pkg;
   parameter string LIST_OF_LEAFS[] = {"u_daon_por",
                                       "u_daon_por_io",
                                       "u_daon_por_io_div2",
-                                      "u_daon_por_io_div4",
-                                      "u_daon_por_io_div4_shadowed",
                                       "u_daon_por_usb",
                                       "u_daon_sys_aon",
                                       "u_daon_sys_io_div4",
@@ -64,8 +62,7 @@ package rstmgr_env_pkg;
                                       "u_d0_i2c2"};
 
   // leaf reset which has shadow pair
-  parameter string LIST_OF_SHADOW_LEAFS[] = {"u_daon_por_io_div4",
-                                             "u_d0_lc",
+  parameter string LIST_OF_SHADOW_LEAFS[] = {"u_d0_lc",
                                              "u_d0_lc_io_div4",
                                              "u_daon_lc_io_div4",
                                              "u_d0_sys"};
