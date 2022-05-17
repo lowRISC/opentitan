@@ -248,7 +248,6 @@ mask_rom_lib = declare_dependency(
     link_args: rom_link_args,
     dependencies: [
       freestanding_headers,
-      primitive_bootstrap_lib,
       sw_silicon_creator_lib_driver_hmac,
       sw_silicon_creator_lib_driver_flash_ctrl,
       sw_silicon_creator_lib_driver_ibex,
@@ -262,11 +261,13 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_driver_watchdog,
       sw_silicon_creator_lib_fake_deps,
       sw_silicon_creator_lib_irq_asm,
+      sw_silicon_creator_lib_log,
       sw_silicon_creator_lib_manifest,
       sw_silicon_creator_lib_shutdown,
+      sw_silicon_creator_mask_rom_boot_policy,
+      sw_silicon_creator_mask_rom_bootstrap,
       sw_silicon_creator_mask_rom_epmp,
       sw_silicon_creator_mask_rom_sigverify,
-      sw_silicon_creator_mask_rom_boot_policy,
       sw_lib_crt,
     ],
     link_with: static_library(
