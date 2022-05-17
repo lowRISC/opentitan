@@ -75,17 +75,6 @@ class BootstrapTest : public mask_rom_test::MaskRomTest {
   }
 
   /**
-   * Sets an expectation for enabling erase for the data partition.
-   */
-  void ExpectFlashCtrlEraseEnable() {
-    EXPECT_CALL(flash_ctrl_, DataDefaultPermsSet((flash_ctrl_perms_t){
-                                 .read = kMultiBitBool4False,
-                                 .write = kMultiBitBool4False,
-                                 .erase = kMultiBitBool4True,
-                             }));
-  }
-
-  /**
    * Sets an expectation for enabling write for the data partition.
    */
   void ExpectFlashCtrlWriteEnable() {
@@ -114,13 +103,13 @@ class BootstrapTest : public mask_rom_test::MaskRomTest {
    * @param err1 Result of erase for the second bank.
    */
   void ExpectFlashCtrlChipErase(rom_error_t err0, rom_error_t err1) {
-    ExpectFlashCtrlEraseEnable();
+    EXPECT_CALL(flash_ctrl_, BankErasePermsSet(kHardenedBoolTrue));
     EXPECT_CALL(flash_ctrl_, DataErase(0, kFlashCtrlEraseTypeBank))
         .WillOnce(Return(err0));
     EXPECT_CALL(flash_ctrl_, DataErase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
                                        kFlashCtrlEraseTypeBank))
         .WillOnce(Return(err1));
-    ExpectFlashCtrlAllDisable();
+    EXPECT_CALL(flash_ctrl_, BankErasePermsSet(kHardenedBoolFalse));
   }
 
   /**
@@ -132,7 +121,11 @@ class BootstrapTest : public mask_rom_test::MaskRomTest {
    */
   void ExpectFlashCtrlSectorErase(rom_error_t err0, rom_error_t err1,
                                   uint32_t addr) {
-    ExpectFlashCtrlEraseEnable();
+    EXPECT_CALL(flash_ctrl_, DataDefaultPermsSet((flash_ctrl_perms_t){
+                                 .read = kMultiBitBool4False,
+                                 .write = kMultiBitBool4False,
+                                 .erase = kMultiBitBool4True,
+                             }));
     EXPECT_CALL(flash_ctrl_, DataErase(addr, kFlashCtrlEraseTypePage))
         .WillOnce(Return(err0));
     EXPECT_CALL(flash_ctrl_, DataErase(addr + FLASH_CTRL_PARAM_BYTES_PER_PAGE,

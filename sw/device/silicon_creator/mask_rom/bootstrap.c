@@ -69,19 +69,11 @@ typedef enum bootstrap_state {
  * @return Result of the operation.
  */
 static rom_error_t bootstrap_chip_erase(void) {
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
-      .read = kMultiBitBool4False,
-      .write = kMultiBitBool4False,
-      .erase = kMultiBitBool4True,
-  });
+  flash_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
   rom_error_t err_0 = flash_ctrl_data_erase(0, kFlashCtrlEraseTypeBank);
   rom_error_t err_1 = flash_ctrl_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
                                             kFlashCtrlEraseTypeBank);
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
-      .read = kMultiBitBool4False,
-      .write = kMultiBitBool4False,
-      .erase = kMultiBitBool4False,
-  });
+  flash_ctrl_bank_erase_perms_set(kHardenedBoolFalse);
 
   HARDENED_RETURN_IF_ERROR(err_0);
   return err_1;
