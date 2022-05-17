@@ -25,7 +25,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
   // Class Members
   bit             poll_fifo_status = 1;
-  rand uint       num_iter;
+  uint            num_iter;
   rand flash_op_t flash_op;
   rand data_q_t   flash_op_data;
   rand uint       bank;
@@ -41,9 +41,6 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
   // Test Iteration Limits (Max, Min)
   localparam uint ITER_MIN = 256;
   localparam uint ITER_MAX = 512;
-
-  // Test Iterations
-  constraint num_iter_c {num_iter inside {[ITER_MIN:ITER_MAX]};}
 
   // Constraint for Bank.
   constraint bank_c {bank inside {[0 : flash_ctrl_pkg::NumBanks - 1]};}
@@ -220,6 +217,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
     init_flash_regions();
 
     // Iteration Loop
+    num_iter = $urandom_range(ITER_MIN, ITER_MAX);
     for (int iter = 0; iter < num_iter; iter++)
     begin
 
@@ -492,7 +490,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
   virtual function void display_mp_region_info();
     string en_msg;
     `uvm_info(`gfn, "MP REGION INFORMATION (DATA PARTITIONS)", UVM_MEDIUM)
-    foreach (mp_regions[i]) begin
+    foreach (mp_data_regions[i]) begin
       en_msg = (mp_data_regions[i].en == MuBi4True) ? "Enabled": "Disabled";
       `uvm_info(`gfn,
         $sformatf("MPR%0d : From : 0x%03x, To : 0x%03x : From : 0x%08x, To : 0x%08x, %s", i,
