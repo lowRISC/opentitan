@@ -407,6 +407,7 @@ cc_test(
     name = "hmac_unittest",
     srcs = [
         "autogen/dif_hmac_autogen_unittest.cc",
+        "dif_hmac_unittest.cc",
     ],
     deps = [
         ":hmac",
