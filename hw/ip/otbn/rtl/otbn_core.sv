@@ -103,6 +103,7 @@ module otbn_core
 
   rf_predec_bignum_t   rf_predec_bignum;
   alu_predec_bignum_t  alu_predec_bignum;
+  ctrl_flow_predec_t   ctrl_flow_predec;
   ispr_predec_bignum_t ispr_predec_bignum;
   mac_predec_bignum_t  mac_predec_bignum;
   logic                lsu_addr_en_predec;
@@ -326,6 +327,7 @@ module otbn_core
 
     .rf_predec_bignum_o  (rf_predec_bignum),
     .alu_predec_bignum_o (alu_predec_bignum),
+    .ctrl_flow_predec_o  (ctrl_flow_predec),
     .ispr_predec_bignum_o(ispr_predec_bignum),
     .mac_predec_bignum_o (mac_predec_bignum),
     .lsu_addr_en_predec_o(lsu_addr_en_predec),
@@ -517,7 +519,8 @@ module otbn_core
     .prefetch_loop_jump_addr_o (prefetch_loop_jump_addr),
     .prefetch_ignore_errs_o    (prefetch_ignore_errs),
 
-    .predec_error_o(controller_predec_error)
+    .ctrl_flow_predec_i(ctrl_flow_predec),
+    .predec_error_o    (controller_predec_error)
   );
 
   `ASSERT(InsnDataStableInStall, u_otbn_controller.state_q == OtbnStateStall |->

@@ -158,7 +158,9 @@ module otbn_controller
   output logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_o,
   output logic                     prefetch_ignore_errs_o,
 
-  output logic                     predec_error_o
+  // Predecoded control
+  input  ctrl_flow_predec_t ctrl_flow_predec_i,
+  output logic              predec_error_o
 );
   import prim_mubi_pkg::*;
 
@@ -224,6 +226,9 @@ module otbn_controller
   logic [DmemAddrWidth-1:0] lsu_addr, lsu_addr_blanked, lsu_addr_saved_d, lsu_addr_saved_q;
   logic                     lsu_addr_saved_sel;
   logic                     expected_lsu_addr_en;
+
+  logic                     expected_call_stack_push, expected_call_stack_pop;
+  logic                     lsu_predec_error, ctrl_predec_error;
 
   logic rnd_req_raw;
 
@@ -1326,7 +1331,23 @@ module otbn_controller
   assign expected_lsu_addr_en =
     insn_valid_i & (insn_dec_shared_i.ld_insn | insn_dec_shared_i.st_insn);
 
-  assign predec_error_o = expected_lsu_addr_en != lsu_addr_en_predec_i;
+  assign lsu_predec_error = expected_lsu_addr_en != lsu_addr_en_predec_i;
+
+  assign expected_call_stack_push =
+    insn_valid_i & insn_dec_base_i.rf_we & rf_base_wr_addr_o == 5'd1;
+
+  assign expected_call_stack_pop = insn_valid_i &
+                                   ((insn_dec_base_i.rf_ren_a & rf_base_rd_addr_a_o == 5'd1) |
+                                    (insn_dec_base_i.rf_ren_b & rf_base_rd_addr_b_o == 5'd1));
+
+  assign ctrl_predec_error =
+    |{ctrl_flow_predec_i.jump            != (insn_dec_shared_i.jump_insn   & insn_valid_i),
+      ctrl_flow_predec_i.loop            != (insn_dec_shared_i.loop_insn   & insn_valid_i),
+      ctrl_flow_predec_i.branch          != (insn_dec_shared_i.branch_insn & insn_valid_i),
+      ctrl_flow_predec_i.call_stack_push != expected_call_stack_push,
+      ctrl_flow_predec_i.call_stack_pop  != expected_call_stack_pop};
+
+  assign predec_error_o = lsu_predec_error | ctrl_predec_error;
 
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(DmemAddrWidth)) u_lsu_addr_blanker (

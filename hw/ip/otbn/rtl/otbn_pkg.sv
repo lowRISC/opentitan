@@ -429,6 +429,14 @@ package otbn_pkg;
   } mac_predec_bignum_t;
 
   typedef struct packed {
+    logic call_stack_pop;
+    logic call_stack_push;
+    logic branch;
+    logic jump;
+    logic loop;
+  } ctrl_flow_predec_t;
+
+  typedef struct packed {
     alu_op_base_e     op;
     logic [31:0] operand_a;
     logic [31:0] operand_b;
