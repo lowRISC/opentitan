@@ -330,6 +330,7 @@ opentitan_functest(
             "--exit-failure='PASS!'",
         ],
         bitstream = "//hw/bitstream:mask_rom",
+        tags = ["broken"],
     ),
     signed = False,
     targets = ["cw310"],
