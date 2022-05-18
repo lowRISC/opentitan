@@ -30,6 +30,7 @@ module otbn_controller
 
   // Next instruction selection (to instruction fetch)
   output logic                     insn_fetch_req_valid_o,
+  output logic                     insn_fetch_req_valid_raw_o,
   output logic [ImemAddrWidth-1:0] insn_fetch_req_addr_o,
   output logic                     insn_fetch_resp_clear_o,
 
@@ -455,7 +456,11 @@ module otbn_controller
   // Anything that moves us or keeps us in the stall state should cause `stall` to be asserted
   `ASSERT(StallIfNextStateStall, insn_valid_i & (state_d == OtbnStateStall) |-> stall)
 
-  assign insn_fetch_req_valid_o = err ? 1'b0 : insn_fetch_req_valid_raw;
+  // The raw signal is needed by the instruction fetch stage for generating instruction address
+  // errors (where instruction fetch and prefetch disagree on address). `err` will factor this in so
+  // using the qualified signal results in a combinational loop.
+  assign insn_fetch_req_valid_raw_o = insn_fetch_req_valid_raw;
+  assign insn_fetch_req_valid_o     = err ? 1'b0 : insn_fetch_req_valid_raw;
 
   // Determine if there are any errors related to the Imem fetch address.
   always_comb begin
