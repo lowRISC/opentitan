@@ -326,7 +326,7 @@ jobs:
     - cw310_sw_build
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   pool: ci-public
-  timeoutInMinutes: 120 # 2 hours
+  timeoutInMinutes: 180
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
