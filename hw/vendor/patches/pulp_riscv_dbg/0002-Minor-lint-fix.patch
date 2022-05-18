@@ -1,7 +1,7 @@
-From 9260f3f35f14f53c00051d60fae6f619a8a7fc13 Mon Sep 17 00:00:00 2001
+From 0003fac5417788dd8aaeb6eebcd767049d3a5859 Mon Sep 17 00:00:00 2001
 From: Timothy Chen <timothytim@google.com>
 Date: Wed, 11 May 2022 14:54:30 -0700
-Subject: [PATCH] Minor lint fix
+Subject: [PATCH 2/2] [PATCH] Minor lint fix
 
 Signed-off-by: Timothy Chen <timothytim@google.com>
 ---
@@ -30,5 +30,5 @@ index e040a3a..048dbff 100644
      dtmcs_d = dtmcs_q;
      if (capture) begin
 -- 
-2.36.0.550.gb090851708-goog
+2.36.1.124.g0e6072fb45-goog
 
