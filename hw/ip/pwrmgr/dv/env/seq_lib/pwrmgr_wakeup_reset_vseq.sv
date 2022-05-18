@@ -82,7 +82,6 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       // Initiate low power transition.
       cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
       set_nvms_idle();
-
       // Wait for the slow state machine to be in low power.
       wait(cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateLowPower);
       // This will send the wakeup and reset so they almost coincide.
@@ -145,6 +144,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
         end
         twirl_rom_response();
       join
+
 
       wait_for_fast_fsm_active();
 

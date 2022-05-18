@@ -32,14 +32,32 @@ class pwrmgr_global_esc_vseq extends pwrmgr_base_vseq;
   endtask // send_esc
 
   task check_rst_req();
+    bit dut_init_done = -1;
+
     while(trans_cnt < num_trans) begin
       @(cfg.clk_rst_vif.cb);
-      wait(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateResetPrep &&
-           cfg.pwrmgr_vif.pwr_rst_req.rstreqs == 4'h8);
-
+      wait(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive &&
+           cfg.pwrmgr_vif.pwr_rst_req.rstreqs[3] == 1'b1);
       trans_cnt++;
-      dut_init();
+
+      // Make sure previous dut_init is done
+      if (dut_init_done > -1) begin
+        wait(dut_init_done == 1);
+      end
+      // Spawning dut_init thread then go to
+      // wait reset state
+      fork
+        begin
+          dut_init_done = 0;
+          dut_init();
+          dut_init_done = 1;
+        end
+        begin
+          cfg.clk_rst_vif.wait_clks(10);
+        end
+      join_any
     end
+    wait(dut_init_done == 1);
   endtask // check_rst_req
 
 endclass

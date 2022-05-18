@@ -28,6 +28,8 @@
       desc: '''Verify the countermeasure(s) BUS.INTEGRITY.
             This entry is covered by tl_access_test
             (hw/dv/tools/dvsim/tests/tl_access_tests.hjson)
+            This will not trigger rst_req, but
+            send fatal alert
             '''
       milestone: V2S
       tests: ["pwrmgr_tl_intg_err"]
@@ -94,9 +96,11 @@
               or reset failure by stopping clock or asserting reset.
 
             **Check**:
-            - Expecting fatal alert event. After alert agent process
+            - Expecting esc_timeout event and trigger rstreqs[ResetEscIdx]
+              and fatal alert event. After alert agent process
               the alert by asserting escalation reset, see if dut
               is back to normal operation state.
+
             '''
       milestone: V2S
       tests: ["pwrmgr_esc_clk_rst_malfunc"]
@@ -112,6 +116,7 @@
 
             **Check**:
             - Detect fast state transition to FastPwrStateResetPrep.
+              And this will trigger rstreqs[ResetEscIdx].
             '''
       milestone: V2S
       tests: ["pwrmgr_sec_cm"]
