@@ -826,8 +826,10 @@ cc_library(
     srcs = [
         "autogen/dif_rv_core_ibex_autogen.c",
         "autogen/dif_rv_core_ibex_autogen.h",
+        "dif_rv_core_ibex.c",
     ],
     hdrs = [
+        "dif_rv_core_ibex.h",
     ],
     deps = [
         ":base",
@@ -841,6 +843,7 @@ cc_test(
     name = "rv_core_ibex_unittest",
     srcs = [
         "autogen/dif_rv_core_ibex_autogen_unittest.cc",
+        "dif_rv_core_ibex_unittest.cc",
     ],
     deps = [
         ":rv_core_ibex",
