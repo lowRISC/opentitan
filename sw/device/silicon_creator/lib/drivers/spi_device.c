@@ -233,43 +233,54 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
  * BFPT 10th Word
  * --------------
  * [31:11]: Erase 4,3,2 typical time (not supported, 0x0)
- * [10: 9]: Erase type 1 time unit (ms, 0x0)
- * [ 8: 4]: Erase type 1 time count, zero-based (0x1d)
+ * [10: 9]: Erase type 1 time unit (16 ms, 0x1)
+ * [ 8: 4]: Erase type 1 time count, zero-based (0x8)
+ *          formula: (count + 1) * unit
+ *          (8 + 1) * 16 ms = 144 ms
  * [ 3: 0]: Max erase time multiplier, zero-based (0x6)
  *          formula: 2 * (multiplier + 1) * erase_time
  */
 #define BFPT_WORD_10(X) \
   X(31, 11, kBfptNotSupported) & \
-  X(10,  9, 0x0) & \
-  X( 8,  4, 0x1d) & \
-  X( 3,  0, 0x6)
+  X(10,  9, 0x1) & \
+  X( 8,  4, 0x8) & \
+  X( 3,  0, 0x0)
 
 /**
  * BFPT 11th Word
  * --------------
  * [31:31]: Reserved
- * [30:29]: Chip erase time units (256 ms, 0x1)
- * [28:24]: Chip erase time count, zero-based (0x3)
- * [23:23]: Additional byte program time units (us, 0x0)
- * [22:19]: Additional byte program time count, zero-based (0x0)
+ * [30:29]: Chip erase time units (16 ms, 0x0)
+ * [28:24]: Chip erase time count, zero-based (0xb)
+ *          formula: (count + 1) * unit
+ *          (11 + 1) * 16 ms = 192 ms
+ * [23:23]: Additional byte program time units (8 us, 0x1)
+ * [22:19]: Additional byte program time count, zero-based (0x5)
+ *          formula: (count + 1) * unit
+ *          (5 + 1) * 8 us = 48 us
  * [18:18]: First byte program time unit (8 us, 0x1)
- * [17:14]: First byte program time count, zero-based (0x3)
- * [13:13]: Page program time unit (8 us, 0x0)
- * [12: 8]: Page program time count, zero-based (0x1f)
+ * [17:14]: First byte program time count, zero-based (0x5)
+ *          formula: (count + 1) * unit
+ *          (5 + 1) * 8 us = 48 us
+ * [13:13]: Page program time unit (64 us, 0x1)
+ * [12: 8]: Page program time count, zero-based (0xb)
+ *          formula: (count + 1) * unit
+ *          (11 + 1) * 64 us = 768 us
  * [ 7: 4]: Page size, 2^N (0x8)
- * [ 3: 0]: Max program time multiplier, zero-based (0x1)
+ * [ 3: 0]: Max program time multiplier, zero-based (0x0)
+ *          formula: 2 * (multiplier + 1) * program_time
  */
 #define BFPT_WORD_11(X) \
- X(30, 29, 0x1) & \
- X(28, 24, 0x3) & \
- X(23, 23, 0x0) & \
- X(22, 19, 0x0) & \
+ X(30, 29, 0x0) & \
+ X(28, 24, 0xb) & \
+ X(23, 23, 0x1) & \
+ X(22, 19, 0x5) & \
  X(18, 18, 0x1) & \
- X(17, 14, 0x3) & \
- X(13, 13, 0x0) & \
- X(12,  8, 0x1f) & \
+ X(17, 14, 0x5) & \
+ X(13, 13, 0x1) & \
+ X(12,  8, 0xb) & \
  X( 7,  4, 0x8) & \
- X( 3,  0, 0x1)
+ X( 3,  0, 0x0)
 
 /**
  * BFPT 12th Word
