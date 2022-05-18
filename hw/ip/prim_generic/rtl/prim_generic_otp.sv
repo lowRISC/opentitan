@@ -355,25 +355,48 @@ module prim_generic_otp
     rdata_o = rdata_reshaped;
   end
 
-  prim_ram_1p_adv #(
+  logic req_q0, wren_q0;
+  logic [AddrWidth-1:0] addr_q0;
+  logic [Width + EccWidth -1 : 0] wdata_q0, rdata_d0, rdata_q0;
+  prim_generic_ram_1p #(
     .Depth                (Depth),
     .Width                (Width + EccWidth),
     .MemInitFile          (MemInitFile),
-    .EnableInputPipeline  (1),
-    .EnableOutputPipeline (1)
-  ) u_prim_ram_1p_adv (
+    .DataBitsPerMask      (1)
+  ) u_prim_generic_ram_1p (
     .clk_i,
-    .rst_ni,
-    .req_i    ( req                    ),
-    .write_i  ( wren                   ),
-    .addr_i   ( addr                   ),
-    .wdata_i  ( wdata_rmw              ),
+    .req_i    ( req_q0                 ),
+    .write_i  ( wren_q0                ),
+    .addr_i   ( addr_q0                ),
+    .wdata_i  ( wdata_q0               ),
     .wmask_i  ( {Width+EccWidth{1'b1}} ),
-    .rdata_o  ( rdata_ecc              ),
-    .rvalid_o ( rvalid                 ),
-    .rerror_o (                        ),
+    .rdata_o  ( rdata_d0               ),
     .cfg_i    ( '0                     )
   );
+
+  logic rvalid_q0, rvalid_q1;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      req_q0    <= '0;
+      wren_q0   <= '0;
+      addr_q0   <= '0;
+      wdata_q0  <= '0;
+      rvalid_q0 <= 1'b0;
+      rvalid_q1 <= 1'b0;
+      rdata_q0  <= '0;
+    end else begin
+      req_q0    <= req;
+      wren_q0   <= wren;
+      addr_q0   <= addr;
+      wdata_q0  <= wdata_rmw;
+      rvalid_q0 <= req_q0 & ~wren_q0;
+      rvalid_q1 <= rvalid_q0;
+      rdata_q0  <= rdata_d0;
+    end
+  end
+
+  assign rvalid = rvalid_q1;
+  assign rdata_ecc = rdata_q0;
 
   // Currently it is assumed that no wrap arounds can occur.
   `ASSERT(NoWrapArounds_A, req |-> (addr >= addr_q))
