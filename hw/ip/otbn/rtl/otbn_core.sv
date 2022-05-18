@@ -91,6 +91,7 @@ module otbn_core
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
   logic                     insn_fetch_req_valid;
+  logic                     insn_fetch_req_valid_raw;
 
   // Fetch response (the current instruction before it is decoded)
   logic                     insn_fetch_resp_valid;
@@ -98,6 +99,7 @@ module otbn_core
   logic [31:0]              insn_fetch_resp_data;
   logic                     insn_fetch_resp_clear;
   logic                     insn_fetch_err;
+  logic                     insn_addr_err;
 
   rf_predec_bignum_t   rf_predec_bignum;
   alu_predec_bignum_t  alu_predec_bignum;
@@ -308,8 +310,9 @@ module otbn_core
     .imem_rvalid_i,
 
     // Instruction to fetch
-    .insn_fetch_req_addr_i (insn_fetch_req_addr),
-    .insn_fetch_req_valid_i(insn_fetch_req_valid),
+    .insn_fetch_req_addr_i     (insn_fetch_req_addr),
+    .insn_fetch_req_valid_i    (insn_fetch_req_valid),
+    .insn_fetch_req_valid_raw_i(insn_fetch_req_valid_raw),
 
     // Fetched instruction
     .insn_fetch_resp_addr_o (insn_fetch_resp_addr),
@@ -317,6 +320,7 @@ module otbn_core
     .insn_fetch_resp_data_o (insn_fetch_resp_data),
     .insn_fetch_resp_clear_i(insn_fetch_resp_clear),
     .insn_fetch_err_o       (insn_fetch_err),
+    .insn_addr_err_o        (insn_addr_err),
 
     .rf_predec_bignum_o  (rf_predec_bignum),
     .alu_predec_bignum_o (alu_predec_bignum),
@@ -389,9 +393,10 @@ module otbn_core
     .recoverable_err_o,
 
     // Next instruction selection (to instruction fetch)
-    .insn_fetch_req_addr_o  (insn_fetch_req_addr),
-    .insn_fetch_req_valid_o (insn_fetch_req_valid),
-    .insn_fetch_resp_clear_o(insn_fetch_resp_clear),
+    .insn_fetch_req_addr_o     (insn_fetch_req_addr),
+    .insn_fetch_req_valid_o    (insn_fetch_req_valid),
+    .insn_fetch_req_valid_raw_o(insn_fetch_req_valid_raw),
+    .insn_fetch_resp_clear_o   (insn_fetch_resp_clear),
 
     // The current instruction
     .insn_valid_i  (insn_valid),
@@ -527,7 +532,8 @@ module otbn_core
     bad_internal_state:  |{controller_err_bits.bad_internal_state,
                            start_stop_internal_error,
                            urnd_all_zero,
-                           predec_error},
+                           predec_error,
+                           insn_addr_err},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
                            alu_bignum_reg_intg_violation_err,
                            mac_bignum_reg_intg_violation_err,
