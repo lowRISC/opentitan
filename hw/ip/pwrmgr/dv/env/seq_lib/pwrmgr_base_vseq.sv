@@ -633,6 +633,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   virtual task init_rom_response();
     if (cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateActive ||
         cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp ||
+        cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateStrap    ||
         cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheck) begin
       cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
       cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;

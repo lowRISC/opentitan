@@ -15,6 +15,10 @@ interface pwrmgr_clk_ctrl_if (
   // interface pins
   pwrmgr_pkg::pwr_ast_req_t pwr_ast_req;
   pwrmgr_pkg::pwr_clk_req_t pwr_clk_req;
+  pwrmgr_pkg::pwr_rst_req_t pwr_rst_req;
+
+  logic       rst_lc_on;
+  always_comb rst_lc_on = |pwr_rst_req.rst_lc_req;
 
   clocking cb @(posedge clk);
   endclocking // cb

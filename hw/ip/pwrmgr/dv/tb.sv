@@ -66,6 +66,7 @@ module tb;
 
   assign pcc_if.pwr_ast_req = pwrmgr_if.pwr_ast_req;
   assign pcc_if.pwr_clk_req = pwrmgr_if.pwr_clk_req;
+  assign pcc_if.pwr_rst_req = pwrmgr_if.pwr_rst_req;
 
   `DV_ALERT_IF_CONNECT
 

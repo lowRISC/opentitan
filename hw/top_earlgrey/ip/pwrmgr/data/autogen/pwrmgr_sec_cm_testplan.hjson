@@ -95,9 +95,12 @@
               or reset failure by stopping clock or asserting reset.
 
             **Check**:
-            - Expecting fatal alert event. After alert agent process
-              the alert by asserting escalation reset, see if dut
-              is back to normal operation state.
+            - Expecting fatal alert event and rstreqs[ResetEscIdx].
+            - Add assertion to see if u_esc_timeout happens, then
+              rstreqs[ResetEscIdx] should be asserted.
+            - After the alert agent processese the alert
+              by asserting escalation reset,
+              see if dut is back to normal operation state.
             '''
       milestone: V2S
       tests: ["pwrmgr_esc_clk_rst_malfunc"]
@@ -113,6 +116,8 @@
 
             **Check**:
             - Detect fast state transition to FastPwrStateResetPrep.
+            - Add assertion to check if u_sec_timeout happens, then
+              rstreqs[ResetEscIdx] should be asserted.
             '''
       milestone: V2S
       tests: ["pwrmgr_sec_cm"]
@@ -135,11 +140,11 @@
             This is caused by any invalid (slow|fast) state.
 
             **Check**:
-            If slow state is invalid, fast state becomes FastPwrStateInvalid,
-            pwr_ast_o.pwr_clamp =1 and pwr_ast_o.main_pd_n = 0.
-            If fast state is invalid, pwr_rst_o.rst_lc_req is all one,
-            pwr_rst_o.rst_sys_req is all one  and pwr_clk_o = 0.
-            Dut should be recovered by asserting rst_n = 0.
+            - If slow state is invalid, fast state becomes FastPwrStateInvalid,
+              pwr_ast_o.pwr_clamp =1 and pwr_ast_o.main_pd_n = 0.
+            - If fast state is invalid, pwr_rst_o.rst_lc_req is all one,
+              pwr_rst_o.rst_sys_req is all one  and pwr_clk_o = 0.
+              Dut should be recovered by asserting rst_n = 0.
             '''
       milestone: V2S
       tests: ["pwrmgr_sec_cm"]
@@ -149,11 +154,12 @@
       desc: '''Verify the countermeasure(s) CTRL_FLOW.GLOBAL_ESC.
 
             **Stimulus**:
-            - Send escalation request to esc_rst_tx_i.
+            - Send escalation request to esc_rst_tx_i
 
             **Check**:
             - Check fast state transition to FastPwrStateResetPrep
-              and get pwr_rst_req.
+            - Add assertion to see if we get pwr_rst_o.rstreqs[ResetEscIdx]
+              set when dut receives esc_rst_tx_i
             '''
       milestone: V2S
       tests: ["pwrmgr_global_esc"]
@@ -164,11 +170,11 @@
 
             **Stimulus**:
             - Create power reset glitch by setting tb.dut.rst_main_ni
-              and tb.dut.pwr_ast_i.main_pok  to 0.
+              and tb.dut.pwr_ast_i.main_pok to 0
 
             **Check**:
             - Check fast state transition to FastPwrStateResetPrep
-              and get pwr_rst_req.
+            - Add assertion to see if we get pwr_rst_o.rstreqs[ResetMainPwrIdx]
             '''
       milestone: V2S
       tests: ["pwrmgr_glitch"]
