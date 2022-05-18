@@ -210,16 +210,15 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   endtask : compare_trans
 
   virtual task generate_exp_item(ref pwm_item item, input bit [PWM_NUM_CHANNELS-1:0] channel);
-    int int_dc;
-    int beats_cycle;
-    int period;
-    int high_cycles;
-    int low_cycles;
-    int initial_dc = 0;
-    int subcycle_cnt = 0;
+    uint int_dc          = 0;
+    uint beats_cycle     = 0;
+    uint period          = 0;
+    uint high_cycles     = 0;
+    uint low_cycles      = 0;
+    uint initial_dc      = 0;
+    uint subcycle_cnt    = 0;
+    uint phase_count     = 0;
     dc_mod_e dc_mod;
-    bit [15:0] resn_mask = '0;
-    bit [15:0] phase_count = '0;
 
     // compare duty cycle for modifier
     dc_mod = (duty_cycle[channel].A > duty_cycle[channel].B) ? LargeA : LargeB;

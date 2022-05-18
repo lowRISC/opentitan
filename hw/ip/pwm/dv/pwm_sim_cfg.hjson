@@ -31,7 +31,6 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
-                //"{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Add additional tops for simulation.
@@ -72,6 +71,11 @@
     {
       name: pwm_perf
       uvm_test_seq: pwm_perf_vseq
+    }
+    {
+      name: pwm_stress
+      uvm_test_seq: pwm_stress_vseq
+      run_opts:["+test_timeout_s=1"]
     }
   ]
 
