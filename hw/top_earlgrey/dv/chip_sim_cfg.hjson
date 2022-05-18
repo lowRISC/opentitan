@@ -781,6 +781,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_plic_sw_irq
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/plic_sw_irq_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_clkmgr_off_peri
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/clkmgr_off_peri_test:1"]
