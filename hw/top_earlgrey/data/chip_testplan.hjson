@@ -531,10 +531,11 @@
 
             - While Ibex is executing, trigger a debug request by programming `dmcontrol.haltreq`
               via JTAG.
-            - Ibex steps into interactive debug to store a value in SRAM.
-            - Program the program buffer through JTAG with code to store a value in SRAM and return
-              back to normal program execution using dret.
-            - After Ibex jumps back to the program execution, check the stored value in the SRAM.
+            - Ibex steps into interactive debug to execute instructions in SRAM.
+            - Load instruction data into the SRAM via SW. X-ref'ed with chip_sw_sram_execution.
+            - Program the program buffer via JTAG with code to let Ibex jump to the SRAM to
+              execute the instructions.
+            - Verfy that Ibex can fetch and execute the instructions from the SRAM correctly.
             '''
       milestone: V2
       tests: []
