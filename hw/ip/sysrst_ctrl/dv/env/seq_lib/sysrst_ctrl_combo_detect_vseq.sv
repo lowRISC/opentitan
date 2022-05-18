@@ -143,6 +143,21 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       // Latch the trigger value before resetting the input pins
       foreach (triggered[i]) triggered[i] = get_combo_trigger(i);
 
+      // Sample the combo_intr_status covergroup to capture the trigger combo inputs
+      // before resetting the combo inputs.
+      cov.combo_intr_status.sysrst_ctrl_combo_intr_status_cg.sample(
+          get_field_val(ral.combo_intr_status.combo0_h2l, rdata),
+          get_field_val(ral.combo_intr_status.combo1_h2l, rdata),
+          get_field_val(ral.combo_intr_status.combo2_h2l, rdata),
+          get_field_val(ral.combo_intr_status.combo3_h2l, rdata),
+          cfg.vif.key0_in,
+          cfg.vif.key1_in,
+          cfg.vif.key2_in,
+          cfg.vif.pwrb_in,
+          cfg.vif.ac_present,
+          intr_actions
+      );
+
       reset_combo_inputs();
 
       `uvm_info(`gfn, $sformatf("Value of cycles:%0d", cycles), UVM_LOW)
@@ -161,14 +176,14 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
           rst_act_triggered |= get_field_val(ral.com_out_ctl[i].rst_req, get_action[i]);
 
           cov.combo_detect_action[i].sysrst_ctrl_combo_detect_action_cg.sample(bat_act_triggered,
-                                                       intr_actions[i],
-                                                       ec_act_triggered,
-                                                       rst_act_triggered,
-                                                       cfg.vif.key0_in,
-                                                       cfg.vif.key1_in,
-                                                       cfg.vif.key2_in,
-                                                       cfg.vif.pwrb_in,
-                                                       cfg.vif.ac_present);
+                          intr_actions[i],
+                          ec_act_triggered,
+                          rst_act_triggered,
+                          get_field_val(ral.com_sel_ctl[i].key0_in_sel, get_trigger_combo[i]),
+                          get_field_val(ral.com_sel_ctl[i].key1_in_sel, get_trigger_combo[i]),
+                          get_field_val(ral.com_sel_ctl[i].key2_in_sel, get_trigger_combo[i]),
+                          get_field_val(ral.com_sel_ctl[i].pwrb_in_sel, get_trigger_combo[i]),
+                          get_field_val(ral.com_sel_ctl[i].ac_present_sel, get_trigger_combo[i]));
 
           if (get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i])) begin
             ec_act_triggered = 1;
@@ -201,6 +216,21 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
         cfg.clk_aon_rst_vif.wait_clks(5);
         // check if the interrupt is cleared
         csr_rd_check(ral.combo_intr_status, .compare_value(0));
+
+        // Sample the combo intr status covergroup
+        // The combo_intr_status get updated only when the interrupt action is triggered
+        cov.combo_intr_status.sysrst_ctrl_combo_intr_status_cg.sample(
+          get_field_val(ral.combo_intr_status.combo0_h2l, rdata),
+          get_field_val(ral.combo_intr_status.combo1_h2l, rdata),
+          get_field_val(ral.combo_intr_status.combo2_h2l, rdata),
+          get_field_val(ral.combo_intr_status.combo3_h2l, rdata),
+          cfg.vif.key0_in,
+          cfg.vif.key1_in,
+          cfg.vif.key2_in,
+          cfg.vif.pwrb_in,
+          cfg.vif.ac_present,
+          intr_actions
+      );
       end else begin
         check_interrupts(.interrupts(1 << IntrSysrstCtrl), .check_set(0));
       end
@@ -220,21 +250,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       end else begin
         `DV_CHECK_EQ(cfg.vif.sysrst_ctrl_rst_req, 0);
       end
-      cov.combo_intr_status.sysrst_ctrl_combo_intr_status_cg.sample(
-          get_field_val(ral.combo_intr_status.combo0_h2l, rdata),
-          get_field_val(ral.combo_intr_status.combo1_h2l, rdata),
-          get_field_val(ral.combo_intr_status.combo2_h2l, rdata),
-          get_field_val(ral.combo_intr_status.combo3_h2l, rdata),
-          cfg.vif.key0_in,
-          cfg.vif.key1_in,
-          cfg.vif.key2_in,
-          cfg.vif.pwrb_in,
-          cfg.vif.ac_present,
-          cfg.vif.bat_disable,
-          intr_actions,
-          cfg.vif.ec_rst_l_out,
-          cfg.vif.sysrst_ctrl_rst_req
-      );
+
       if (bat_act_triggered || rst_act_triggered) begin
         apply_resets_concurrently();
         // delay to avoid race condition when sending item and checking no item after reset occur
