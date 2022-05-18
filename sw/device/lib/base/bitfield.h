@@ -103,7 +103,8 @@ OT_WARN_UNUSED_RESULT
 inline bitfield_field32_t bitfield_bit32_to_field32(
     bitfield_bit32_index_t bit_index) {
   return (bitfield_field32_t){
-      .mask = 0x1, .index = bit_index,
+      .mask = 0x1,
+      .index = bit_index,
   };
 }
 
@@ -142,8 +143,8 @@ inline uint32_t bitfield_bit32_write(uint32_t bitfield,
  *
  * @param dest Bitfield to write to.
  * @param dest_bit Bit to write to.
- * @param dest Bitfield to read from.
- * @param dest_bit Bit to read from.
+ * @param src Bitfield to read from.
+ * @param src_bit Bit to read from.
  * @return `dest` with the copied bit applied.
  */
 OT_WARN_UNUSED_RESULT
