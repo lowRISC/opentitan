@@ -316,13 +316,13 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
  * BFPT 16th Word
  * --------------
  * [31:14]: 4-Byte addressing (not supported, 0x0)
- * [13: 8]: Soft-reset (instruction 0xf0, 0x80)
+ * [13: 8]: Soft-reset (0x66/0x99 sequence, 0x10)
  * [ 7: 7]: Reserved
  * [ 6: 0]: Status register (read-only, 0x0)
  */
 #define BFPT_WORD_16(X) \
   X(31, 14, kBfptNotSupported) & \
-  X(13,  8, 0x80) & \
+  X(13,  8, 0x10) & \
   X( 6,  0, 0x0)
 
 /**
