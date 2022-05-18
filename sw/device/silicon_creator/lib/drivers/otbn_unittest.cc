@@ -222,13 +222,23 @@ TEST_F(ControlSoftwareErrorsFatalTest, Success) {
   EXPECT_ABS_READ32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
 
   EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(true), kErrorOk);
-}  // namespace
+}
 
 TEST_F(ControlSoftwareErrorsFatalTest, Failure) {
   EXPECT_ABS_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x0);
   EXPECT_ABS_READ32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
 
   EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(false), kErrorOtbnUnavailable);
+}
+
+class ZeroDmemTest : public OtbnTest {};
+
+TEST_F(ZeroDmemTest, Success) {
+  for (int i = 0; i < OTBN_DMEM_SIZE_BYTES; i += sizeof(uint32_t)) {
+    EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + i, 0);
+  }
+
+  otbn_zero_dmem();
 }
 
 }  // namespace
