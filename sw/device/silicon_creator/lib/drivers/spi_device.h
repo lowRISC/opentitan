@@ -149,9 +149,10 @@ typedef enum spi_device_opcode {
    * RESET command.
    *
    * This command should be handled in software. Upon receiving this command,
-   * the chip should be reset.
+   * the chip should be reset. Note that OpenTitan does not enforce the
+   * RESET_ENABLE (0x66) and RESET (0x99) sequence.
    */
-  kSpiDeviceOpcodeReset = 0xf0,
+  kSpiDeviceOpcodeReset = 0x99,
   /**
    * WRITE_ENABLE command.
    *
