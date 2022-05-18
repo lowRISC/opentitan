@@ -435,6 +435,16 @@ class Register(RegBase):
                 return True
         return False
 
+    def needs_int_qe(self) -> bool:
+        '''Return true if the register or at least one field needs an
+           internal q-enable.  An internal q-enable means the net
+           may be consumed by other reg logic but will not be exposed
+           in the package file.'''
+        if self.async_clk and self.is_hw_writable():
+            return True
+        else:
+            return self.needs_qe();
+
     def needs_re(self) -> bool:
         '''Return true if at least one field needs a read-enable
 

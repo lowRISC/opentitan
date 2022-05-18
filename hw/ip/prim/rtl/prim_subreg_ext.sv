@@ -17,9 +17,13 @@ module prim_subreg_ext #(
   output logic          qe,
   output logic          qre,
   output logic [DW-1:0] q,
+  output logic [DW-1:0] ds,
   output logic [DW-1:0] qs
 );
 
+  // for external registers, there is no difference
+  // between qs and ds
+  assign ds = d;
   assign qs = d;
   assign q = wd;
   assign qe = we;
