@@ -234,6 +234,7 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_driver_ibex,
       sw_silicon_creator_lib_driver_keymgr,
       sw_silicon_creator_lib_driver_lifecycle,
+      sw_silicon_creator_lib_driver_otp,
       sw_silicon_creator_lib_driver_pinmux,
       sw_silicon_creator_lib_driver_retention_sram,
       sw_silicon_creator_lib_driver_rnd,
@@ -254,6 +255,7 @@ mask_rom_lib = declare_dependency(
     link_with: static_library(
       'mask_rom_lib',
       sources: [
+        hw_ip_otp_ctrl_reg_h,
         'mask_rom.c',
       ],
       link_depends: [rom_linkfile],
