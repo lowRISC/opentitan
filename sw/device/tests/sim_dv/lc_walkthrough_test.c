@@ -81,18 +81,16 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(
         &otp, kDifOtpCtrlPartitionSecret0, &secret0_locked));
 
-    if (secret0_locked == false) {
+    if (!secret0_locked) {
       // Write LC tokens to OTP secret0 partition.
       uint64_t otp_unlock_token_0 = 0;
       uint64_t otp_unlock_token_1 = 0;
       for (int i = 0; i < LC_TOKEN_SIZE; i++) {
         if (i < LC_TOKEN_SIZE / 2) {
-          otp_unlock_token_0 =
-              otp_unlock_token_0 | ((uint64_t)kOtpUnlockToken[i] << (i * 8));
+          otp_unlock_token_0 |= (uint64_t)kOtpUnlockToken[i] << (i * 8);
         } else {
-          otp_unlock_token_1 =
-              otp_unlock_token_1 |
-              ((uint64_t)kOtpUnlockToken[i] << ((i - LC_TOKEN_SIZE / 2) * 8));
+          otp_unlock_token_1 |= (uint64_t)kOtpUnlockToken[i]
+                                << ((i - LC_TOKEN_SIZE / 2) * 8);
         }
       }
 
@@ -100,12 +98,10 @@ bool test_main(void) {
       uint64_t otp_exit_token_1 = 0;
       for (int i = 0; i < LC_TOKEN_SIZE; i++) {
         if (i < LC_TOKEN_SIZE / 2) {
-          otp_exit_token_0 =
-              otp_exit_token_0 | ((uint64_t)kOtpExitToken[i] << (i * 8));
+          otp_exit_token_0 |= (uint64_t)kOtpExitToken[i] << (i * 8);
         } else {
-          otp_exit_token_1 =
-              otp_exit_token_1 |
-              ((uint64_t)kOtpExitToken[i] << ((i - LC_TOKEN_SIZE / 2) * 8));
+          otp_exit_token_1 |= (uint64_t)kOtpExitToken[i]
+                              << ((i - LC_TOKEN_SIZE / 2) * 8);
         }
       }
 
@@ -133,23 +129,34 @@ bool test_main(void) {
                                            /*digest=*/0));
       otp_ctrl_testutils_wait_for_dai(&otp);
 
-      LOG_INFO("Written and locked OTP secret0 partition!");
-      return true;
+      LOG_INFO("Wrote and locked OTP secret0 partition!");
+      wait_for_interrupt();
+      // Unreachable
+      return false;
     } else {
       // Issue a LC state transfer to destination state.
       dif_lc_ctrl_token_t token;
       for (int i = 0; i < LC_TOKEN_SIZE; i++) {
-        token.data[i] = kLcExitToken[i];
+        if (kDestState != kDifLcCtrlStateRma) {
+          token.data[i] = kLcExitToken[i];
+        } else {
+          // Transition from TestUnlock to Rma state is unconditional and
+          // requires to write all zero default tokens.
+          token.data[i] = 0;
+        }
       }
       CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc));
       dif_lc_ctrl_settings_t settings;
-      // TODO: randomize using external or internal clock.
+      // TODO(lowRISC/opentitan#12775): randomize using external or internal
+      // clock.
       settings.clock_select = kDifLcCtrlInternalClockEn;
       CHECK_DIF_OK(dif_lc_ctrl_transition(&lc, kDestState, &token, &settings),
                    "LC_transition failed!");
 
       LOG_INFO("Waiting for LC transtition done and reboot.");
-      return true;
+      wait_for_interrupt();
+      // Unreachable
+      return false;
     }
   } else {
     // Check LC enters ProdEnd state.

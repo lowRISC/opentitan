@@ -60,8 +60,15 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     apply_reset();
 
     wait (cfg.sw_logger_vif.printed_log == "Waiting for LC transtition done and reboot.");
-    wait_lc_status(LcTransitionSuccessful);
+    // Wait for a large number of cycles to transit to RMA state.
+    wait_lc_status(LcTransitionSuccessful, 50_000);
     apply_reset();
+
+    // Reload flash bootstrap and reforce the sw symbols because RMA state wiped out flash.
+    cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
+        {cfg.sw_images[SwTypeTest], ".64.scr.vmem"});
+    sw_symbol_backdoor_overwrite("kDestState", selected_dest_state);
+
   endtask
 
 endclass
