@@ -291,6 +291,18 @@
       default: "4",
       local: "true"
     },
+    { name: "CreatorSwCfgRetRamResetMaskOffset",
+      desc: "Offset of CREATOR_SW_CFG_RET_RAM_RESET_MASK",
+      type: "int",
+      default: "256",
+      local: "true"
+    },
+    { name: "CreatorSwCfgRetRamResetMaskSize",
+      desc: "Size of CREATOR_SW_CFG_RET_RAM_RESET_MASK",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "CreatorSwCfgDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_DIGEST",
       type: "int",

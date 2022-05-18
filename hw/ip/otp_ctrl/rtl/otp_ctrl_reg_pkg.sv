@@ -41,6 +41,8 @@ package otp_ctrl_reg_pkg;
   parameter int CreatorSwCfgRngEnSize = 4;
   parameter int CreatorSwCfgJitterEnOffset = 252;
   parameter int CreatorSwCfgJitterEnSize = 4;
+  parameter int CreatorSwCfgRetRamResetMaskOffset = 256;
+  parameter int CreatorSwCfgRetRamResetMaskSize = 4;
   parameter int CreatorSwCfgDigestOffset = 856;
   parameter int CreatorSwCfgDigestSize = 8;
   parameter int OwnerSwCfgOffset = 864;
