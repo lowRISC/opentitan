@@ -128,7 +128,7 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
       .d = 0,
   };
 
-  static constexpr std::array<uint8_t, 17> kMsg_ = {
+  static constexpr std::array<uint8_t, 17> kMsg = {
       0xa7, 0x48, 0x47, 0x93, 0x0a, 0x03, 0xab, 0xee, 0xa4,
       0x73, 0xe1, 0xf3, 0xdc, 0x30, 0xb8, 0x88, 0x15};
 
@@ -563,7 +563,7 @@ TEST_F(Cshake256Test, StartError) {
             kDifError);
 }
 
-constexpr std::array<uint8_t, 17> KmacTest::kMsg_;
+constexpr std::array<uint8_t, 17> KmacTest::kMsg;
 
 class AbsorbalignmentMessage : public KmacTest {
  protected:
@@ -571,17 +571,17 @@ class AbsorbalignmentMessage : public KmacTest {
 };
 
 TEST_F(AbsorbalignmentMessage, Success) {
-  uint8_t buffer[kMsg_.size() + sizeof(uint32_t)];
+  uint8_t buffer[kMsg.size() + sizeof(uint32_t)];
 
   for (size_t i = 0; i < sizeof(uint32_t); i++) {
     uint8_t *pMsg = &buffer[i];
-    std::copy(kMsg_.begin(), kMsg_.end(), pMsg);
+    std::copy(kMsg.begin(), kMsg.end(), pMsg);
 
     EXPECT_READ32(KMAC_STATUS_REG_OFFSET, 3);
-    ExpectMessageInt32(pMsg, kMsg_.size());
+    ExpectMessageInt32(pMsg, kMsg.size());
 
     EXPECT_DIF_OK(
-        dif_kmac_absorb(&kmac_, &op_state_, pMsg, kMsg_.size(), nullptr));
+        dif_kmac_absorb(&kmac_, &op_state_, pMsg, kMsg.size(), nullptr));
   }
 }
 
