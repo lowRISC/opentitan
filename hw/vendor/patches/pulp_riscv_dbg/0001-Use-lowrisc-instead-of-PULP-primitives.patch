@@ -1,7 +1,7 @@
-From 0b886f85b7507d5780f9e71a25d22fe4fd4ab7f5 Mon Sep 17 00:00:00 2001
+From 083977618f162badfe0bca957454c266c1cf38dd Mon Sep 17 00:00:00 2001
 From: Timothy Chen <timothytim@google.com>
 Date: Wed, 11 May 2022 09:16:11 -0700
-Subject: [PATCH] Use lowrisc instead of PULP primitives
+Subject: [PATCH 1/2] [PATCH] Use lowrisc instead of PULP primitives
 
 Signed-off-by: Michael Schaffner <msf@google.com>
 
@@ -11,14 +11,14 @@ can be assumed to be done during graceful periods only.
 
 Signed-off-by: Timothy Chen <timothytim@google.com>
 ---
- src/dm_csrs.sv      |  44 +++++++--------
+ src/dm_csrs.sv      |  45 +++++++---------
  src/dmi_cdc.sv      | 127 ++++++++++++++++++++++++--------------------
  src/dmi_jtag.sv     |   8 ++-
  src/dmi_jtag_tap.sv |  21 ++++----
- 4 files changed, 104 insertions(+), 96 deletions(-)
+ 4 files changed, 105 insertions(+), 96 deletions(-)
 
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
-index 350c6c5..c59bf7c 100644
+index 350c6c5..38d7b51 100644
 --- a/src/dm_csrs.sv
 +++ b/src/dm_csrs.sv
 @@ -79,6 +79,7 @@ module dm_csrs #(
@@ -50,7 +50,7 @@ index 350c6c5..c59bf7c 100644
    // SBA
    assign sbautoincrement_o = sbcs_q.sbautoincrement;
    assign sbreadonaddr_o    = sbcs_q.sbreadonaddr;
-@@ -551,28 +545,28 @@ module dm_csrs #(
+@@ -551,28 +545,29 @@ module dm_csrs #(
    assign progbuf_o   = progbuf_q;
    assign data_o      = data_q;
  
@@ -93,7 +93,8 @@ index 350c6c5..c59bf7c 100644
 +    .rvalid_o( dmi_resp_valid_o     ),
 +    .rready_i( dmi_resp_ready_i     ),
 +    .full_o  (                      ), // Unused
-+    .depth_o (                      )  // Unused
++    .depth_o (                      ), // Unused
++    .err_o   (                      )  // Unused
    );
  
    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
@@ -309,5 +310,5 @@ index 0c188c0..a804da0 100644
  
    // TDO changes state at negative edge of TCK
 -- 
-2.36.0.550.gb090851708-goog
+2.36.1.124.g0e6072fb45-goog
 
