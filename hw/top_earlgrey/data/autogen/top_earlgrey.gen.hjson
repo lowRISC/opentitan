@@ -7108,6 +7108,7 @@
         }
         {
           name: PMPGranularity
+          desc: PMP Granularity
           type: int unsigned
           default: "0"
           expose: "true"
@@ -7115,6 +7116,7 @@
         }
         {
           name: PMPNumRegions
+          desc: PMP number of regions
           type: int unsigned
           default: "16"
           expose: "true"
@@ -7122,6 +7124,7 @@
         }
         {
           name: MHPMCounterNum
+          desc: "Number of the MHPM counter "
           type: int unsigned
           default: "10"
           expose: "true"
@@ -7129,6 +7132,7 @@
         }
         {
           name: MHPMCounterWidth
+          desc: "Width of the MHPM Counter "
           type: int unsigned
           default: "32"
           expose: "true"
@@ -7136,6 +7140,7 @@
         }
         {
           name: RV32E
+          desc: RV32E
           type: bit
           default: "0"
           expose: "true"
@@ -7143,6 +7148,7 @@
         }
         {
           name: RV32M
+          desc: RV32M
           type: ibex_pkg::rv32m_e
           default: ibex_pkg::RV32MSingleCycle
           expose: "true"
@@ -7150,6 +7156,7 @@
         }
         {
           name: RV32B
+          desc: RV32B
           type: ibex_pkg::rv32b_e
           default: ibex_pkg::RV32BOTEarlGrey
           expose: "true"
@@ -7157,6 +7164,7 @@
         }
         {
           name: RegFile
+          desc: Reg file
           type: ibex_pkg::regfile_e
           default: ibex_pkg::RegFileFF
           expose: "true"
@@ -7164,6 +7172,7 @@
         }
         {
           name: BranchTargetALU
+          desc: Branch target ALU
           type: bit
           default: "1"
           expose: "true"
@@ -7171,6 +7180,7 @@
         }
         {
           name: WritebackStage
+          desc: Write back stage
           type: bit
           default: "1"
           expose: "true"
@@ -7178,6 +7188,7 @@
         }
         {
           name: ICache
+          desc: Instruction cache
           type: bit
           default: "1"
           expose: "true"
@@ -7185,6 +7196,7 @@
         }
         {
           name: ICacheECC
+          desc: Instruction cache ECC
           type: bit
           default: "1"
           expose: "true"
@@ -7192,6 +7204,7 @@
         }
         {
           name: ICacheScramble
+          desc: Scramble instruction cach
           type: bit
           default: "1"
           expose: "true"
@@ -7199,6 +7212,7 @@
         }
         {
           name: BranchPredictor
+          desc: Branch predictor
           type: bit
           default: "0"
           expose: "true"
@@ -7206,6 +7220,7 @@
         }
         {
           name: DbgTriggerEn
+          desc: Enable degug trigger
           type: bit
           default: "1"
           expose: "true"
@@ -7213,6 +7228,7 @@
         }
         {
           name: DbgHwBreakNum
+          desc: Number of debug hardware break
           type: int
           default: "4"
           expose: "true"
@@ -7220,6 +7236,7 @@
         }
         {
           name: SecureIbex
+          desc: "Width of the MHPM Counter "
           type: bit
           default: "1"
           expose: "true"
@@ -7227,6 +7244,7 @@
         }
         {
           name: DmHaltAddr
+          desc: Halt address
           type: int unsigned
           default: tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0]
           expose: "true"
@@ -7234,6 +7252,7 @@
         }
         {
           name: DmExceptionAddr
+          desc: Exception address
           type: int unsigned
           default: tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0]
           expose: "true"
@@ -7241,6 +7260,7 @@
         }
         {
           name: PipeLine
+          desc: Pipe line
           type: bit
           default: "0"
           expose: "true"

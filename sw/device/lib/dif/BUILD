@@ -822,6 +822,34 @@ cc_test(
 )
 
 cc_library(
+    name = "rv_core_ibex",
+    srcs = [
+        "autogen/dif_rv_core_ibex_autogen.c",
+        "autogen/dif_rv_core_ibex_autogen.h",
+    ],
+    hdrs = [
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+    ],
+)
+
+cc_test(
+    name = "rv_core_ibex_unittest",
+    srcs = [
+        "autogen/dif_rv_core_ibex_autogen_unittest.cc",
+    ],
+    deps = [
+        ":rv_core_ibex",
+        ":test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "rv_plic",
     srcs = [
         "autogen/dif_rv_plic_autogen.c",

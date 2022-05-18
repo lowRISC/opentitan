@@ -171,33 +171,25 @@
     # Random netlist constants
     { name:    "RndCnstLfsrSeed",
       type:    "ibex_pkg::lfsr_seed_t",
-      desc:    '''
-        Default seed of the PRNG used for random instructions.
-      '''
+      desc:    "Default seed of the PRNG used for random instructions."
       randcount: "32",
       randtype:  "data"
     },
     { name:    "RndCnstLfsrPerm",
       type:    "ibex_pkg::lfsr_perm_t",
-      desc:    '''
-        Permutation applied to the LFSR of the PRNG used for random instructions.
-      '''
+      desc:    "Permutation applied to the LFSR of the PRNG used for random instructions."
       randcount: "32",
       randtype:  "perm"
     },
     { name:    "RndCnstIbexKeyDefault",
       type:    "logic [ibex_pkg::SCRAMBLE_KEY_W-1:0]",
-      desc:    '''
-        Default icache scrambling key
-      '''
+      desc:    "Default icache scrambling key"
       randcount: "128",
       randtype:  "data"
     },
     { name:    "RndCnstIbexNonceDefault",
       type:    "logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0]",
-      desc:    '''
-        Default icache scrambling nonce
-      '''
+      desc:    "Default icache scrambling nonce"
       randcount: "64",
       randtype:  "data"
     },
@@ -205,9 +197,7 @@
     { name:    "PMPEnable"
       type:    "bit"
       default: "1'b0"
-      desc:    '''
-        Enable PMP
-        '''
+      desc:    "Enable PMP"
       local:   "false"
       expose:  "true"
     },
@@ -215,6 +205,7 @@
     { name:    "PMPGranularity"
       type:    "int unsigned"
       default: "0"
+      desc:    "PMP Granularity"
       local:   "false"
       expose:  "true"
     },
@@ -222,6 +213,7 @@
     { name:    "PMPNumRegions"
       type:    "int unsigned"
       default: "4"
+      desc:    "PMP number of regions"
       local:   "false"
       expose:  "true"
     },
@@ -229,6 +221,7 @@
     { name:    "MHPMCounterNum"
       type:    "int unsigned"
       default: "10"
+      desc:    "Number of the MHPM counter "
       local:   "false"
       expose:  "true"
     },
@@ -236,6 +229,7 @@
     { name:    "MHPMCounterWidth"
       type:    "int unsigned"
       default: "32"
+      desc:    "Width of the MHPM Counter "
       local:   "false"
       expose:  "true"
     },
@@ -243,6 +237,7 @@
     { name:    "RV32E"
       type:    "bit"
       default: "0"
+      desc:    "RV32E"
       local:   "false"
       expose:  "true"
     },
@@ -250,6 +245,7 @@
     { name:    "RV32M"
       type:    "ibex_pkg::rv32m_e"
       default: "ibex_pkg::RV32MSingleCycle"
+      desc:    "RV32M"
       local:   "false"
       expose:  "true"
     },
@@ -257,6 +253,7 @@
     { name:    "RV32B"
       type:    "ibex_pkg::rv32b_e"
       default: "ibex_pkg::RV32BNone"
+      desc:    "RV32B"
       local:   "false"
       expose:  "true"
     },
@@ -264,6 +261,7 @@
     { name:    "RegFile"
       type:    "ibex_pkg::regfile_e"
       default: "ibex_pkg::RegFileFF"
+      desc:    "Reg file"
       local:   "false"
       expose:  "true"
     },
@@ -271,6 +269,7 @@
     { name:    "BranchTargetALU"
       type:    "bit"
       default: "1'b1"
+      desc:    "Branch target ALU"
       local:   "false"
       expose:  "true"
     },
@@ -278,6 +277,7 @@
     { name:    "WritebackStage"
       type:    "bit"
       default: "1'b1"
+      desc:    "Write back stage"
       local:   "false"
       expose:  "true"
     },
@@ -285,6 +285,7 @@
     { name:    "ICache"
       type:    "bit"
       default: "0"
+      desc:    "Instruction cache"
       local:   "false"
       expose:  "true"
     },
@@ -292,6 +293,7 @@
     { name:    "ICacheECC"
       type:    "bit"
       default: "0"
+      desc:    "Instruction cache ECC"
       local:   "false"
       expose:  "true"
     },
@@ -299,6 +301,7 @@
     { name:    "ICacheScramble"
       type:    "bit"
       default: "0"
+      desc:    "Scramble instruction cach"
       local:   "false"
       expose:  "true"
     },
@@ -306,6 +309,7 @@
     { name:    "BranchPredictor"
       type:    "bit"
       default: "0"
+      desc:    "Branch predictor"
       local:   "false"
       expose:  "true"
     },
@@ -313,6 +317,7 @@
     { name:    "DbgTriggerEn"
       type:    "bit"
       default: "1"
+      desc:    "Enable degug trigger"
       local:   "false"
       expose:  "true"
     },
@@ -320,6 +325,7 @@
     { name:    "DbgHwBreakNum"
       type:    "int"
       default: "1"
+      desc:    "Number of debug hardware break"
       local:   "false"
       expose:  "true"
     },
@@ -327,6 +333,7 @@
     { name:    "SecureIbex"
       type:    "bit"
       default: "0"
+      desc:    "Width of the MHPM Counter "
       local:   "false"
       expose:  "true"
     },
@@ -334,6 +341,7 @@
     { name:    "DmHaltAddr"
       type:    "int unsigned"
       default: "437323776" //"32'h1A110800"
+      desc:    "Halt address"
       local:   "false"
       expose:  "true"
     },
@@ -341,6 +349,7 @@
     { name:    "DmExceptionAddr"
       type:    "int unsigned"
       default: "437323784" //"32'h1A110808"
+      desc:    "Exception address"
       local:   "false"
       expose:  "true"
     },
@@ -348,6 +357,7 @@
     { name:    "PipeLine"
       type:    "bit"
       default: "1'b0"
+      desc:    "Pipe line"
       local:   "false"
       expose:  "true"
     },
@@ -367,9 +377,7 @@
     },
     { name:    "NumScratchWords",
       type:    "int",
-      desc:    '''
-        Number of scratch words maintained.
-      '''
+      desc:    "Number of scratch words maintained."
       default: "8"
     },
   ],
