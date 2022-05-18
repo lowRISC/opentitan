@@ -648,6 +648,32 @@ sw_tests += {
   }
 }
 
+# chip_sw_plic_sw_irqs_vseq
+plic_sw_irq_test_lib = declare_dependency(
+  link_with: static_library(
+    'plic_sw_irq_test_lib',
+    sources: [
+      'plic_sw_irq_test.c',
+      hw_top_earlgrey_rv_plic_reg_h,
+    ],
+    dependencies: [
+      sw_lib_dif_rv_plic,
+      sw_lib_irq,
+      sw_lib_mmio,
+      sw_lib_abs_mmio,
+      sw_lib_runtime_log,
+      sw_lib_runtime_hart,
+      sw_lib_testing_test_status,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'plic_sw_irq_test': {
+    'library': plic_sw_irq_test_lib,
+  }
+}
+
 ###############################################################################
 # IP Integration Tests
 ###############################################################################

@@ -810,6 +810,22 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "plic_sw_irq_test",
+    srcs = ["plic_sw_irq_test.c"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib:irq",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "pmp_smoketest_napot",
     srcs = ["pmp_smoketest_napot.c"],
     cw310 = cw310_params(

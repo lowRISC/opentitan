@@ -757,7 +757,7 @@
             interrupt that is seen is the SW interrupt.
             '''
       milestone: V2
-      tests: [""]
+      tests: ["chip_sw_plic_sw_irq"]
     }
     {
       name: chip_sw_plic_nmi_irq
