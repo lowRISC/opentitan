@@ -185,6 +185,7 @@ def cw310_params(
     required_tags = [
         "cw310",
         "exclusive",
+        "flaky",
     ]
     kwargs.update(
         args = required_args + args,
