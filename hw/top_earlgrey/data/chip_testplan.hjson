@@ -905,7 +905,7 @@
             rstmgr's `reset_info` indicates the expected reset.
             '''
       milestone: V2
-      tests: ["chip_aon_timer_wdog_bite_reset"]
+      tests: ["chip_sw_aon_timer_wdog_bite_reset"]
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
@@ -1170,7 +1170,7 @@
             X-ref'ed with the automated PLIC test.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_plic_all_irqs"]
     }
     {
       name: chip_sw_alert_handler_entropy
@@ -1292,7 +1292,7 @@
             - Ensure that no interrupts or alerts are triggered.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
       name: chip_sw_lc_ctrl_transitions
@@ -2188,7 +2188,7 @@
             - Ensure that no interrupts or alerts are triggered.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
       name: chip_sw_otp_ctrl_keys
@@ -2274,7 +2274,8 @@
             - `lc_check_byp_en_i`: verify that the background check during LC ctrl state
               programming passes when enabled.
 
-            `X-ref'ed with chip_otp_ctrl_program.
+            X-ref'ed with chip_lc_ctrl_broadcast test, which verifies the connectivity of the LC
+            decoded outputs to other IPs.
             '''
       milestone: V2
       tests: []
@@ -2625,7 +2626,7 @@
                from a sensor_ctrl register.
             '''
       milestone: V2
-      tests: ["chip_sw_sensor_ctrl_status_intr"]
+      tests: ["chip_sw_sensor_ctrl_status"]
     }
     {
       name: chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup
