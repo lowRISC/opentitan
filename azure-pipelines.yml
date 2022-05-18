@@ -444,7 +444,7 @@ jobs:
 - job: execute_fpga_tests_cw310
   displayName: Execute tests on ChipWhisperer CW310 FPGA board
   pool: FPGA
-  timeoutInMinutes: 24
+  timeoutInMinutes: 30
   dependsOn:
     - chip_earlgrey_cw310
     - sw_build
@@ -474,7 +474,7 @@ jobs:
           --build_tests_only \
           --flaky_test_attempts=4 \
           --define cw310=lowrisc \
-          $(./bazelisk.sh query 'rdeps(//sw/...,@bitstreams//:bitstream_test_rom)') \
+          $(./bazelisk.sh query 'rdeps(//...,@bitstreams//:bitstream_test_rom)') \
           # All the tests that depend on the test rom
     displayName: Execute tests
 
