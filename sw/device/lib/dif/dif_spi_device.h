@@ -112,14 +112,6 @@ typedef struct dif_spi_device_config {
   } mode_cfg;
 } dif_spi_device_config_t;
 
-typedef struct dif_spi_device_tpm_config_t {
-  /**
-   * Enable the TPM circuit, which has a separate chip-select input but shares
-   * the clock and data pins. The TPM can be enabled alongside the other modes.
-   */
-  bool tpm_enable;
-} dif_spi_device_tpm_config_t;
-
 /**
  * Struct containing the relevant run-time information for the DIF.
  */
@@ -908,6 +900,331 @@ dif_result_t dif_spi_device_set_flash_status_registers(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_get_flash_status_registers(
     dif_spi_device_handle_t *spi, uint32_t *value);
+
+typedef struct dif_spi_device_tpm_caps {
+  /** Hardware revision of the TPM submodule. */
+  uint8_t revision;
+  /**
+   * True if the TPM supports 5 Locality. Otherwise, only 1 Locality is
+   * supported.
+   */
+  bool multi_locality;
+  /**
+   * The maximum transfer size, in bytes, of the data phase of TPM
+   * transactions. This represents the maximum amount of data the FIFO can
+   * accept.
+   */
+  uint8_t max_transfer_size;
+} dif_spi_device_tpm_caps_t;
+
+/**
+ * Read the capabilities of the TPM hardware IP.
+ *
+ * @param spi A handle to a spi device.
+ * @param[out] caps The TPM's hardware capabilities.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_get_tpm_capabilities(
+    dif_spi_device_handle_t *spi, dif_spi_device_tpm_caps_t *caps);
+
+typedef enum dif_spi_device_tpm_interface {
+  /** Specifies the FIFO interface from the TPM specification. */
+  kDifSpiDeviceTpmInterfaceFifo = 0,
+  /** Specifies the CRB interface from the TPM specification. */
+  kDifSpiDeviceTpmInterfaceCrb,
+  kDifSpiDeviceTpmInterfaceCount,
+} dif_spi_device_tpm_interface_t;
+
+typedef struct dif_spi_device_tpm_config {
+  /**
+   * The register interface to implement for the TPM. Note that in CRB mode, the
+   * return-by-hardware logic is disabled.
+   */
+  dif_spi_device_tpm_interface_t interface;
+  /**
+   * Upload the commands that would ordinarily be targeted towards registers
+   * that automatically return by hardware. This includes TPM_DID_VID_x,
+   * TPM_RID_x, TPM_STS_x, and TPM_ACCESS_x.
+   */
+  bool disable_return_by_hardware;
+  /**
+   * Disable address prefix check that matches the pattern 0xD4_XXXX before
+   * using the return-by-hardware logic. When true, the upper 8 bits of the
+   * address are not required to be 0xD4 for the return-by-hardware logic to
+   * activate. When false, commands with non-matching addresses will be
+   * uploaded.
+   */
+  bool disable_address_prefix_check;
+  /**
+   * Disable locality value check to be within the max value before using the
+   * return-by-hardware logic. When true, the TPM will return 0xFF-valued data
+   * on reads and discard writes to registers in the TPM region (matching the
+   * 0xD4_XXXX address pattern) if the locality value is above the maximum. When
+   * false, commands with invalid locality will be uploaded, and software would
+   * be responsible for returning 0xFF to read requests.
+   */
+  bool disable_locality_check;
+} dif_spi_device_tpm_config_t;
+
+/**
+ * Configure the TPM within a SPI device.
+ *
+ * The TPM circuit has a separate chip-select input but shares the clock and
+ * data pins of the rest of the spi_device. The TPM can be enabled alongside
+ * the other data path (for generic/flash/passthrough modes).
+ *
+ * @param spi A handle to a spi device.
+ * @param enable Whether to enable the TPM block.
+ * @param config The TPM configuration.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_configure(dif_spi_device_handle_t *spi,
+                                          dif_toggle_t enable,
+                                          dif_spi_device_tpm_config_t config);
+
+typedef struct dif_spi_device_tpm_data_status {
+  /** True if a command and address have been captured and are can be read. */
+  bool cmd_addr_valid;
+  /** True if there is data still to be read from the Read FIFO. */
+  bool read_fifo_not_empty;
+  /** Current Read FIFO occupancy. */
+  uint8_t read_fifo_occupancy;
+  /** Current Write FIFO occupancy. */
+  uint8_t write_fifo_occupancy;
+} dif_spi_device_tpm_data_status_t;
+
+/**
+ * Get the current status of the TPM's data FIFOs and command / address
+ * register.
+ *
+ * @param spi A handle to a spi device.
+ * @param[out] status The status of the TPM.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_get_data_status(
+    dif_spi_device_handle_t *spi, dif_spi_device_tpm_data_status_t *status);
+
+/**
+ * Set the value for the TPM_ACCESS_x register, for use when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param locality Which TPM_ACCESS_x register to target, indexed by the
+ * locality.
+ * @param value The value to set the TPM_ACCESS_x register to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_set_access_reg(dif_spi_device_handle_t *spi,
+                                               uint8_t locality, uint8_t value);
+
+/**
+ * Get the value of the TPM_ACCESS_x register that is used when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param locality Which TPM_ACCESS_x register to query, indexed by the
+ * locality.
+ * @param[out] value The value of the TPM_ACCESS_x register.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_get_access_reg(dif_spi_device_handle_t *spi,
+                                               uint8_t locality,
+                                               uint8_t *value);
+
+/**
+ * Set the value for the TPM_STS register, for use when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param value The value to set the TPM_STS register to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_set_sts_reg(dif_spi_device_handle_t *spi,
+                                            uint32_t value);
+
+/**
+ * Get the value of the TPM_STS register that is used when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param[out] value The value of the TPM_STS register.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_get_sts_reg(dif_spi_device_handle_t *spi,
+                                            uint32_t *value);
+
+/**
+ * Set the value for the TPM_INTF_CAPABILITY register, for use when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param value The value to set the TPM_INTF_CAPABILITY register to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_set_intf_capability_reg(
+    dif_spi_device_handle_t *spi, uint32_t value);
+
+/**
+ * Get the value of the TPM_INTF_CAPABILITY register that is used when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param[out] value The value of the TPM_INTF_CAPABILITY register.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_get_intf_capability_reg(
+    dif_spi_device_handle_t *spi, uint32_t *value);
+
+/**
+ * Set the value for the TPM_INT_ENABLE register, for use when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param value The value to set the TPM_INT_ENABLE register to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_set_int_enable_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t value);
+
+/**
+ * Get the value of the TPM_INT_ENABLE register that is used when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param[out] value The value of the TPM_INT_ENABLE register.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_get_int_enable_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t *value);
+
+/**
+ * Set the value for the TPM_INT_VECTOR register, for use when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param value The value to set the TPM_INT_VECTOR register to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_set_int_vector_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t value);
+
+/**
+ * Get the value of the TPM_INT_VECTOR register that is used when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param[out] value The value of the TPM_INT_VECTOR register.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_get_int_vector_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t *value);
+
+/**
+ * Set the value for the TPM_INT_STATUS register, for use when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param value The value to set the TPM_INT_STATUS register to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_set_int_status_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t value);
+
+/**
+ * Get the value of the TPM_INT_STATUS register that is used when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param value[out] The value of the TPM_INT_STATUS register.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_get_int_status_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t *value);
+
+typedef struct dif_spi_device_tpm_id {
+  /** The vendor ID found in the TPM_DID_VID register. */
+  uint16_t vendor_id;
+  /** The device ID found in the TPM_DID_VID register. */
+  uint16_t device_id;
+  /** The revision ID found in the TPM_RID register. */
+  uint8_t revision;
+} dif_spi_device_tpm_id_t;
+
+/**
+ * Set the values for the TPM_DID_VID and TPM_RID registers, for use when the
+ * return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param id The values to set the registers to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_set_id(dif_spi_device_handle_t *spi,
+                                       dif_spi_device_tpm_id_t id);
+
+/**
+ * Get the values of the TPM_DID_VID and TPM_RID registers that are used when
+ * the return-by-hardware mode is active for this register type.
+ *
+ * @param spi A handle to a spi device.
+ * @param[out] value The value of the registers.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_get_id(dif_spi_device_handle_t *spi,
+                                       dif_spi_device_tpm_id_t *value);
+
+/**
+ * Retrieve the command and address of the current command.
+ *
+ * @param spi A handle to a spi device.
+ * @param[out] command The command opcode.
+ * @param[out] address The address associated with the command.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_get_command(dif_spi_device_handle_t *spi,
+                                            uint8_t *command,
+                                            uint32_t *address);
+
+/**
+ * Write data to the TPM's ReadFIFO.
+ *
+ * @param spi A handle to a spi device.
+ * @param length The length, in bytes, of the data to be copied.
+ * @param buf A pointer to the location of the data to be copied.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_write_data(dif_spi_device_handle_t *spi,
+                                           size_t length, uint8_t *buf);
+
+/**
+ * Read data from the TPM's WriteFIFO.
+ *
+ * @param spi A handle to a spi device.
+ * @param length The length, in bytes, of the data to be copied.
+ * @param[out] buf A pointer to the location where the data should be stored.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_read_data(dif_spi_device_handle_t *spi,
+                                          size_t length, uint8_t *buf);
 
 #ifdef __cplusplus
 }  // extern "C"

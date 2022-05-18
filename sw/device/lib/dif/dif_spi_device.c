@@ -10,6 +10,8 @@
 
 #include "spi_device_regs.h"  // Generated.
 
+#define DIF_SPI_DEVICE_TPM_FIFO_DEPTH 4
+
 const uint16_t kDifSpiDeviceBufferLen = SPI_DEVICE_BUFFER_SIZE_BYTES;
 
 enum { kDifSpiDeviceEFlashLen = 2048 };
@@ -1262,5 +1264,315 @@ dif_result_t dif_spi_device_get_flash_status_registers(
   }
   *value = mmio_region_read32(spi->dev.base_addr,
                               SPI_DEVICE_FLASH_STATUS_REG_OFFSET);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_get_tpm_capabilities(
+    dif_spi_device_handle_t *spi, dif_spi_device_tpm_caps_t *caps) {
+  if (spi == NULL || caps == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg_val =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_TPM_CAP_REG_OFFSET);
+  caps->revision = bitfield_field32_read(reg_val, SPI_DEVICE_TPM_CAP_REV_FIELD);
+  caps->multi_locality =
+      bitfield_bit32_read(reg_val, SPI_DEVICE_TPM_CAP_LOCALITY_BIT);
+  caps->max_transfer_size =
+      bitfield_field32_read(reg_val, SPI_DEVICE_TPM_CAP_MAX_XFER_SIZE_FIELD);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_tpm_configure(dif_spi_device_handle_t *spi,
+                                          dif_toggle_t enable,
+                                          dif_spi_device_tpm_config_t config) {
+  if (spi == NULL || !dif_is_valid_toggle(enable)) {
+    return kDifBadArg;
+  }
+  bool tpm_en = dif_toggle_to_bool(enable);
+  uint32_t reg_val = bitfield_bit32_write(0, SPI_DEVICE_TPM_CFG_EN_BIT, tpm_en);
+  if (tpm_en) {
+    bool use_crb;
+    switch (config.interface) {
+      case kDifSpiDeviceTpmInterfaceFifo:
+        use_crb = false;
+        break;
+      case kDifSpiDeviceTpmInterfaceCrb:
+        use_crb = true;
+        break;
+      default:
+        return kDifBadArg;
+    }
+    reg_val =
+        bitfield_bit32_write(reg_val, SPI_DEVICE_TPM_CFG_TPM_MODE_BIT, use_crb);
+    reg_val = bitfield_bit32_write(reg_val, SPI_DEVICE_TPM_CFG_HW_REG_DIS_BIT,
+                                   config.disable_return_by_hardware);
+    reg_val =
+        bitfield_bit32_write(reg_val, SPI_DEVICE_TPM_CFG_TPM_REG_CHK_DIS_BIT,
+                             config.disable_address_prefix_check);
+    reg_val =
+        bitfield_bit32_write(reg_val, SPI_DEVICE_TPM_CFG_INVALID_LOCALITY_BIT,
+                             config.disable_locality_check);
+  }
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_TPM_CFG_REG_OFFSET,
+                      reg_val);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_tpm_get_data_status(
+    dif_spi_device_handle_t *spi, dif_spi_device_tpm_data_status_t *status) {
+  if (spi == NULL || status == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg_val =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_TPM_STATUS_REG_OFFSET);
+  status->cmd_addr_valid =
+      bitfield_bit32_read(reg_val, SPI_DEVICE_TPM_STATUS_CMDADDR_NOTEMPTY_BIT);
+  status->read_fifo_not_empty =
+      bitfield_bit32_read(reg_val, SPI_DEVICE_TPM_STATUS_RDFIFO_NOTEMPTY_BIT);
+  status->read_fifo_occupancy =
+      bitfield_field32_read(reg_val, SPI_DEVICE_TPM_STATUS_RDFIFO_DEPTH_FIELD);
+  status->write_fifo_occupancy =
+      bitfield_field32_read(reg_val, SPI_DEVICE_TPM_STATUS_WRFIFO_DEPTH_FIELD);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_tpm_set_access_reg(dif_spi_device_handle_t *spi,
+                                               uint8_t locality,
+                                               uint8_t value) {
+  if (spi == NULL || locality >= SPI_DEVICE_PARAM_NUM_LOCALITY) {
+    return kDifBadArg;
+  }
+  // There is one 8-bit TPM_ACCESS register per locality, but bus accesses are
+  // 32 bits.
+  ptrdiff_t reg_offset = SPI_DEVICE_TPM_ACCESS_0_REG_OFFSET + (locality & 0xfc);
+  uint32_t reg_val = mmio_region_read32(spi->dev.base_addr, reg_offset);
+  switch (locality & 0x03) {
+    case 0:
+      reg_val = bitfield_field32_write(
+          reg_val, SPI_DEVICE_TPM_ACCESS_0_ACCESS_0_FIELD, value);
+      break;
+    case 1:
+      reg_val = bitfield_field32_write(
+          reg_val, SPI_DEVICE_TPM_ACCESS_0_ACCESS_1_FIELD, value);
+      break;
+    case 2:
+      reg_val = bitfield_field32_write(
+          reg_val, SPI_DEVICE_TPM_ACCESS_0_ACCESS_2_FIELD, value);
+      break;
+    case 3:
+      reg_val = bitfield_field32_write(
+          reg_val, SPI_DEVICE_TPM_ACCESS_0_ACCESS_3_FIELD, value);
+      break;
+    default:
+      break;
+  }
+  mmio_region_write32(spi->dev.base_addr, reg_offset, reg_val);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_tpm_get_access_reg(dif_spi_device_handle_t *spi,
+                                               uint8_t locality,
+                                               uint8_t *value) {
+  if (spi == NULL || locality >= SPI_DEVICE_PARAM_NUM_LOCALITY ||
+      value == NULL) {
+    return kDifBadArg;
+  }
+  // There is one 8-bit TPM_ACCESS register per locality, but bus accesses are
+  // 32 bits.
+  ptrdiff_t reg_offset = SPI_DEVICE_TPM_ACCESS_0_REG_OFFSET + (locality & 0xfc);
+  uint32_t reg_val = mmio_region_read32(spi->dev.base_addr, reg_offset);
+  switch (locality & 0x03) {
+    case 0:
+      *value = bitfield_field32_read(reg_val,
+                                     SPI_DEVICE_TPM_ACCESS_0_ACCESS_0_FIELD);
+      break;
+    case 1:
+      *value = bitfield_field32_read(reg_val,
+                                     SPI_DEVICE_TPM_ACCESS_0_ACCESS_1_FIELD);
+      break;
+    case 2:
+      *value = bitfield_field32_read(reg_val,
+                                     SPI_DEVICE_TPM_ACCESS_0_ACCESS_2_FIELD);
+      break;
+    case 3:
+      *value = bitfield_field32_read(reg_val,
+                                     SPI_DEVICE_TPM_ACCESS_0_ACCESS_3_FIELD);
+      break;
+    default:
+      break;
+  }
+  return kDifOk;
+}
+
+/**
+ * Write a TPM register used with the return-by-hardware logic.
+ *
+ * @param spi A handle to a spi device.
+ * @param value The value to write.
+ * @param reg_offset The offset of the related CSR from the spi device's base.
+ * @return The result of the operation.
+ */
+static dif_result_t tpm_reg_write32(dif_spi_device_handle_t *spi,
+                                    uint32_t value, ptrdiff_t reg_offset) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(spi->dev.base_addr, reg_offset, value);
+  return kDifOk;
+}
+
+/**
+ * Read from a TPM register used with the return-by-hardware logic.
+ *
+ * @param spi A handle to a spi device.
+ * @param value The value read.
+ * @param reg_offset The offset of the related CSR from the spi device's base.
+ * @return The result of the operation.
+ */
+static dif_result_t tpm_reg_read32(dif_spi_device_handle_t *spi,
+                                   uint32_t *value, ptrdiff_t reg_offset) {
+  if (spi == NULL || value == NULL) {
+    return kDifBadArg;
+  }
+  *value = mmio_region_read32(spi->dev.base_addr, reg_offset);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_tpm_set_sts_reg(dif_spi_device_handle_t *spi,
+                                            uint32_t value) {
+  return tpm_reg_write32(spi, value, SPI_DEVICE_TPM_STS_REG_OFFSET);
+}
+
+dif_result_t dif_spi_device_tpm_get_sts_reg(dif_spi_device_handle_t *spi,
+                                            uint32_t *value) {
+  return tpm_reg_read32(spi, value, SPI_DEVICE_TPM_STS_REG_OFFSET);
+}
+
+dif_result_t dif_spi_device_tpm_set_intf_capability_reg(
+    dif_spi_device_handle_t *spi, uint32_t value) {
+  return tpm_reg_write32(spi, value, SPI_DEVICE_TPM_INTF_CAPABILITY_REG_OFFSET);
+}
+
+dif_result_t dif_spi_device_tpm_get_intf_capability_reg(
+    dif_spi_device_handle_t *spi, uint32_t *value) {
+  return tpm_reg_read32(spi, value, SPI_DEVICE_TPM_INTF_CAPABILITY_REG_OFFSET);
+}
+
+dif_result_t dif_spi_device_tpm_set_int_enable_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t value) {
+  return tpm_reg_write32(spi, value, SPI_DEVICE_TPM_INT_ENABLE_REG_OFFSET);
+}
+
+dif_result_t dif_spi_device_tpm_get_int_enable_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t *value) {
+  return tpm_reg_read32(spi, value, SPI_DEVICE_TPM_INT_ENABLE_REG_OFFSET);
+}
+
+dif_result_t dif_spi_device_tpm_set_int_vector_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t value) {
+  return tpm_reg_write32(spi, value, SPI_DEVICE_TPM_INT_VECTOR_REG_OFFSET);
+}
+
+dif_result_t dif_spi_device_tpm_get_int_vector_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t *value) {
+  return tpm_reg_read32(spi, value, SPI_DEVICE_TPM_INT_VECTOR_REG_OFFSET);
+}
+
+dif_result_t dif_spi_device_tpm_set_int_status_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t value) {
+  return tpm_reg_write32(spi, value, SPI_DEVICE_TPM_INT_STATUS_REG_OFFSET);
+}
+
+dif_result_t dif_spi_device_tpm_get_int_status_reg(dif_spi_device_handle_t *spi,
+                                                   uint32_t *value) {
+  return tpm_reg_read32(spi, value, SPI_DEVICE_TPM_INT_STATUS_REG_OFFSET);
+}
+
+dif_result_t dif_spi_device_tpm_set_id(dif_spi_device_handle_t *spi,
+                                       dif_spi_device_tpm_id_t id) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg_val;
+  reg_val =
+      bitfield_field32_write(0, SPI_DEVICE_TPM_DID_VID_VID_FIELD, id.vendor_id);
+  reg_val = bitfield_field32_write(reg_val, SPI_DEVICE_TPM_DID_VID_DID_FIELD,
+                                   id.device_id);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_TPM_DID_VID_REG_OFFSET,
+                      reg_val);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_TPM_RID_REG_OFFSET,
+                      id.revision);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_tpm_get_id(dif_spi_device_handle_t *spi,
+                                       dif_spi_device_tpm_id_t *value) {
+  if (spi == NULL || value == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t did_vid =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_TPM_DID_VID_REG_OFFSET);
+  uint32_t rid =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_TPM_RID_REG_OFFSET);
+  value->vendor_id =
+      bitfield_field32_read(did_vid, SPI_DEVICE_TPM_DID_VID_VID_FIELD);
+  value->device_id =
+      bitfield_field32_read(did_vid, SPI_DEVICE_TPM_DID_VID_DID_FIELD);
+  value->revision = bitfield_field32_read(rid, SPI_DEVICE_TPM_RID_RID_FIELD);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_tpm_get_command(dif_spi_device_handle_t *spi,
+                                            uint8_t *command,
+                                            uint32_t *address) {
+  if (spi == NULL || command == NULL || address == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg_val = mmio_region_read32(spi->dev.base_addr,
+                                        SPI_DEVICE_TPM_CMD_ADDR_REG_OFFSET);
+  *command = bitfield_field32_read(reg_val, SPI_DEVICE_TPM_CMD_ADDR_CMD_FIELD);
+  *address = bitfield_field32_read(reg_val, SPI_DEVICE_TPM_CMD_ADDR_ADDR_FIELD);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_tpm_write_data(dif_spi_device_handle_t *spi,
+                                           size_t length, uint8_t *buf) {
+  if (spi == NULL || buf == NULL) {
+    return kDifBadArg;
+  }
+  dif_spi_device_tpm_data_status_t status;
+  dif_result_t result = dif_spi_device_tpm_get_data_status(spi, &status);
+  if (result != kDifOk) {
+    return result;
+  }
+  if (DIF_SPI_DEVICE_TPM_FIFO_DEPTH - status.read_fifo_occupancy < length) {
+    return kDifOutOfRange;
+  }
+  for (int i = 0; i < length; i++) {
+    mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_TPM_READ_FIFO_REG_OFFSET,
+                        buf[i]);
+  }
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_tpm_read_data(dif_spi_device_handle_t *spi,
+                                          size_t length, uint8_t *buf) {
+  if (spi == NULL || buf == NULL) {
+    return kDifBadArg;
+  }
+  dif_spi_device_tpm_data_status_t status;
+  dif_result_t result = dif_spi_device_tpm_get_data_status(spi, &status);
+  if (result != kDifOk) {
+    return result;
+  }
+  if (status.write_fifo_occupancy < length) {
+    return kDifOutOfRange;
+  }
+  for (int i = 0; i < length; i++) {
+    uint32_t fifo_val = mmio_region_read32(
+        spi->dev.base_addr, SPI_DEVICE_TPM_WRITE_FIFO_REG_OFFSET);
+    buf[i] =
+        bitfield_field32_read(fifo_val, SPI_DEVICE_TPM_WRITE_FIFO_VALUE_FIELD);
+  }
   return kDifOk;
 }
