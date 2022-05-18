@@ -293,6 +293,18 @@ inline uint32_t bitfield_byteswap32(uint32_t bitfield) {
   return __builtin_bswap32(bitfield);
 }
 
+/**
+ * Check whether the bitfield value is power of two aligned.
+ *
+ * Zero will also return false.
+ *
+ * @param bitfield Value to be verified.
+ * @return True if bitfield is power of two, otherwise false.
+ */
+inline bool bitfield_is_power_of_two32(uint32_t bitfield) {
+  return bitfield != 0 && (bitfield & (bitfield - 1)) == 0;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
