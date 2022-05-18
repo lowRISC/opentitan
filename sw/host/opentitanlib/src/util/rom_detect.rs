@@ -43,7 +43,7 @@ impl RomDetect {
             usr_access: Self::scan_usr_access(bitstream)?,
             console: UartConsole {
                 timeout: timeout,
-                exit_success: Some(Regex::new(r"(\w+ROM):([^\r\n]*)").unwrap()),
+                exit_success: Some(Regex::new(r"(\w+ROM):([^\r\n]+)").unwrap()),
                 ..Default::default()
             },
         })
