@@ -381,29 +381,7 @@ module ${mod_name} (
     .error_i (reg_error)
   );
 
-  % if not rb.async_if:
   // cdc oversampling signals
-    % for clock in rb.clocks.values():
-  <%
-    clk_name = clock.clock_base_name
-    tgl_expr = clk_name + "_tgl"
-    cname = clock.clock
-    rname = clock.reset
-  %>\
-  logic sync_${clk_name}_update;
-  prim_sync_reqack u_${tgl_expr} (
-    .clk_src_i(${cname}),
-    .rst_src_ni(${rname}),
-    .clk_dst_i(${reg_clk_expr}),
-    .rst_dst_ni(${reg_rst_expr}),
-    .req_chk_i(1'b1),
-    .src_req_i(1'b1),
-    .src_ack_o(),
-    .dst_req_o(sync_${clk_name}_update),
-    .dst_ack_i(sync_${clk_name}_update)
-  );
-    % endfor
-  % endif
 
   % if block.expose_reg_if:
   assign reg2hw.reg_if.reg_we    = reg_we;
@@ -438,79 +416,108 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
 <%
   base_name = r.async_clk.clock_base_name
   r_name = r.name.lower()
+  comb_name = f"{base_name}_{r_name}"
   src_we_expr = f"{r_name}_we" if r.needs_we() else "'0"
   src_wd_expr = f"reg_wdata[{r.get_width()-1}:0]" if r.needs_we() else "'0"
   src_re_expr = f"{r_name}_re" if r.needs_re() else "'0"
   src_regwen_expr = f"{r.regwen.lower()}_qs" if r.regwen else "'0"
-  dst_we_expr = f"{base_name}_{r_name}_we" if r.needs_we() else ""
-  dst_wd_expr = f"{base_name}_{r_name}_wdata" if r.needs_we() else ""
-  dst_re_expr = f"{base_name}_{r_name}_re" if r.needs_re() else ""
-  dst_regwen_expr = f"{base_name}_{r_name}_regwen" if r.regwen else ""
+  dst_we_expr = f"{comb_name}_we" if r.needs_we() else ""
+  dst_wd_expr = f"{comb_name}_wdata" if r.needs_we() else ""
+  dst_re_expr = f"{comb_name}_re" if r.needs_re() else ""
+  dst_regwen_expr = f"{comb_name}_regwen" if r.regwen else ""
+  dst_qe_expr = f"{comb_name}_qe" if r.is_hw_writable() else "'0"
+  dst_wr_req = "1" if r.is_hw_writable() else "0"
+  dst_ds_expr = f"{comb_name}_ds" if r.is_hw_writable() else "'0"
+  reset_val = format(r.resval, "x")
+  reset_val_expr = f"{r.get_width()}'h{reset_val}"
 %>
       % if len(r.fields) > 1:
         % for f in r.fields:
+          % if r.is_hw_writable():
+  logic ${str_arr_sv(f.bits)} ${comb_name}_${f.name.lower()}_ds_int;
+          % endif
           % if f.swaccess.allows_read():
-  logic ${str_arr_sv(f.bits)} ${base_name}_${r_name}_${f.name.lower()}_qs_int;
+  logic ${str_arr_sv(f.bits)} ${comb_name}_${f.name.lower()}_qs_int;
           % endif
         % endfor
       % else:
+          % if r.is_hw_writable():
+  logic ${str_arr_sv(r.fields[0].bits)} ${comb_name}_ds_int;
+          % endif
         % if r.fields[0].swaccess.allows_read():
-  logic ${str_arr_sv(r.fields[0].bits)} ${base_name}_${r_name}_qs_int;
+  logic ${str_arr_sv(r.fields[0].bits)} ${comb_name}_qs_int;
         % endif
       % endif
-  logic [${r.get_width()-1}:0] ${base_name}_${r_name}_d;
+      % if r.is_hw_writable():
+  logic [${r.get_width()-1}:0] ${comb_name}_ds;
+  logic ${dst_qe_expr};
+      % endif
+  logic [${r.get_width()-1}:0] ${comb_name}_qs;
       % if r.needs_we():
-  logic [${r.get_width()-1}:0] ${base_name}_${r_name}_wdata;
-  logic ${base_name}_${r_name}_we;
-  logic unused_${base_name}_${r_name}_wdata;
+  logic [${r.get_width()-1}:0] ${comb_name}_wdata;
+  logic ${dst_we_expr};
+  logic unused_${comb_name}_wdata;
       % endif
       % if r.needs_re():
-  logic ${base_name}_${r_name}_re;
+  logic ${dst_re_expr};
       % endif
       % if r.regwen:
-  logic ${base_name}_${r_name}_regwen;
+  logic ${dst_regwen_expr};
       % endif
 
+  ## Since prim_reg_cdc operates at the level of the register, the registers
+  ## hw writability is used to determine whether the ds is needed.
   always_comb begin
-    ${base_name}_${r_name}_d = '0;
+    ${comb_name}_qs = ${reset_val_expr};
+    % if r.is_hw_writable():
+    ${comb_name}_ds = ${reset_val_expr};
+    % endif
       % if len(r.fields) > 1:
         % for f in r.fields:
+          % if r.is_hw_writable() and f.swaccess.allows_read():
+    ${comb_name}_ds[${str_bits_sv(f.bits)}] = ${comb_name}_${f.name.lower()}_ds_int;
+          % endif
           % if f.swaccess.allows_read():
-    ${base_name}_${r_name}_d[${str_bits_sv(f.bits)}] = ${base_name}_${r_name}_${f.name.lower()}_qs_int;
+    ${comb_name}_qs[${str_bits_sv(f.bits)}] = ${comb_name}_${f.name.lower()}_qs_int;
           % endif
         % endfor
       % else:
-          % if f.swaccess.allows_read():
-    ${base_name}_${r_name}_d = ${base_name}_${r_name}_qs_int;
+          % if r.is_hw_writable() and r.fields[0].swaccess.allows_read():
+    ${comb_name}_ds = ${comb_name}_ds_int;
+          % endif
+          % if r.fields[0].swaccess.allows_read():
+    ${comb_name}_qs = ${comb_name}_qs_int;
           % endif
       % endif
   end
 
   prim_reg_cdc #(
     .DataWidth(${r.get_width()}),
-    .ResetVal(${r.get_width()}'h${format(r.resval, "x")}),
-    .BitMask(${r.get_width()}'h${r.bitmask()})
+    .ResetVal(${reset_val_expr}),
+    .BitMask(${r.get_width()}'h${r.bitmask()}),
+    .DstWrReq(${dst_wr_req})
   ) u_${r_name}_cdc (
     .clk_src_i    (${reg_clk_expr}),
     .rst_src_ni   (${reg_rst_expr}),
     .clk_dst_i    (${r.async_clk.clock}),
     .rst_dst_ni   (${r.async_clk.reset}),
-    .src_update_i (sync_${r.async_clk.clock_base_name}_update),
     .src_regwen_i (${src_regwen_expr}),
     .src_we_i     (${src_we_expr}),
     .src_re_i     (${src_re_expr}),
     .src_wd_i     (${src_wd_expr}),
     .src_busy_o   (${r_name}_busy),
     .src_qs_o     (${r_name}_qs), // for software read back
-    .dst_d_i      (${base_name}_${r_name}_d),
+    .dst_update_i (${dst_qe_expr}),
+    .dst_ds_i     (${dst_ds_expr}),
+    .dst_qs_i     (${comb_name}_qs),
     .dst_we_o     (${dst_we_expr}),
     .dst_re_o     (${dst_re_expr}),
     .dst_regwen_o (${dst_regwen_expr}),
     .dst_wd_o     (${dst_wd_expr})
   );
       % if r.needs_we():
-  assign unused_${base_name}_${r_name}_wdata =
-      ^${base_name}_${r_name}_wdata;
+  assign unused_${comb_name}_wdata =
+      ^${comb_name}_wdata;
       % endif
     % endif
   % endfor
@@ -536,10 +543,13 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
 ${reg_hdr}
       % if sr.needs_qe():
   logic ${sr_name}_qe;
+      % endif
+      % if sr.needs_int_qe():
   logic [${len(sr.fields)-1}:0] ${sr_name}_flds_we;
-        % if sr.hwext:
+      % endif
+      % if sr.needs_qe() and sr.hwext:
   assign ${sr_name}_qe = &${sr_name}_flds_we;
-        % else:
+      % elif sr.needs_qe():
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -549,24 +559,26 @@ ${reg_hdr}
     .d_i(&${sr_name}_flds_we),
     .q_o(${sr_name}_qe)
   );
-        % endif
       % endif
 <%
   # We usually use the REG_we signal, but use REG_re for RC fields
   # (which get updated on a read, not a write)
   clk_base_name = f"{sr.async_clk.clock_base_name}_" if sr.async_clk else ""
   we_suffix = 're' if field.swaccess.swrd() == SwRdAccess.RC else 'we'
-  we_signal = f'{clk_base_name}{sr.name.lower()}_{we_suffix}'
+  we_signal = f'{clk_base_name}{sr_name}_{we_suffix}'
 
   if sr.async_clk and sr.regwen:
-    we_expr = f'{we_signal} & {clk_base_name}{sr.name.lower()}_regwen'
+    we_expr = f'{we_signal} & {clk_base_name}{sr_name}_regwen'
   elif sr.regwen:
     we_expr = f'{we_signal} & {sr.regwen.lower()}_qs'
   else:
     we_expr = we_signal
 
-  we_expr_regwen_gated = f'{clk_base_name}{sr.name.lower()}_gated_{we_suffix}'
+  we_expr_regwen_gated = f'{clk_base_name}{sr_name}_gated_{we_suffix}'
 %>\
+  % if sr.async_clk and sr.is_hw_writable():
+  assign ${clk_base_name}${sr_name}_qe = |${sr_name}_flds_we;
+  % endif
   ## Only create this helper signal if there actually is a REGWEN gate.
   ## Otherwise the WE signal is connected directly to the register.
   % if sr.regwen and sr.needs_we():
@@ -885,17 +897,21 @@ ${bits.msb}\
     # field instance outputs
     qre_expr = f'reg2hw.{fsig_name}.re' if reg.hwre or reg.shadowed else ""
 
+    if reg.needs_int_qe() or field.hwaccess.allows_read():
+      qe_expr = f'{reg_name}_flds_we[{fidx}]' if reg.needs_int_qe() else ''
+    else:
+      qe_expr = ''
+
     if field.hwaccess.allows_read():
-      qe_expr = f'{reg_name}_flds_we[{fidx}]' if reg.needs_qe() else ''
       qe_reg_expr = f'reg2hw.{fsig_name}.qe'
       q_expr = f'reg2hw.{fsig_name}.q'
     else:
-      qe_expr = ''
       q_expr = ''
 
     # when async, the outputs are aggregated first by the cdc module
     async_suffix = '_int' if reg.async_clk else ''
     qs_expr = f'{clk_base_name}{finst_name}_qs{async_suffix}' if field.swaccess.allows_read() else ''
+    ds_expr = f'{clk_base_name}{finst_name}_ds{async_suffix}' if reg.async_clk and reg.is_hw_writable() else ''
 
 %>\
   % if reg.hwext:       ## if hwext, instantiate prim_subreg_ext
@@ -912,6 +928,7 @@ ${bits.msb}\
     .qre    (${qre_expr}),
     .qe     (${qe_expr}),
     .q      (${q_expr}),
+    .ds     (${ds_expr}),
     .qs     (${qs_expr})
   );
   % else:
@@ -936,13 +953,12 @@ ${bits.msb}\
   logic async_${finst_name}_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_en #(
+  prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_${finst_name}_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .en_i(sync_${clk_base_name}update),
     .d_i(async_${finst_name}_err_storage),
     .q_o(${finst_name}_storage_err)
   );
@@ -982,6 +998,7 @@ ${bits.msb}\
     // to internal hardware
     .qe     (${qe_expr}),
     .q      (${q_expr}),
+    .ds     (${ds_expr}),
 
     // to register interface (read)
       % if not reg.shadowed:

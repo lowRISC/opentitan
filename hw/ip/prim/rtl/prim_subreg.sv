@@ -26,6 +26,11 @@ module prim_subreg
   // output to HW and Reg Read
   output logic          qe,
   output logic [DW-1:0] q,
+
+  // ds and qs have slightly different timing.
+  // ds is the data that will be written into the flop,
+  // while qs is the current flop value exposed to software.
+  output logic [DW-1:0] ds,
   output logic [DW-1:0] qs
 );
 
@@ -54,6 +59,7 @@ module prim_subreg
   end
 
   // feed back out for consolidation
+  assign ds = wr_en ? wr_data : qs;
   assign qe = wr_en;
   assign qs = q;
 
