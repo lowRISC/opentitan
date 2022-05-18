@@ -497,6 +497,12 @@
       type:      "int"
       default:   "16",
     },
+
+    { name:      "MaxFifoWidth",
+      desc:      "Maximum depth for read / program fifos",
+      type:      "int"
+      default:   "5",
+    },
   ],
 
   regwidth: "32",

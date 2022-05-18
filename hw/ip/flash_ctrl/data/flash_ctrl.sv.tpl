@@ -537,7 +537,7 @@ module flash_ctrl
     .rdata_o (prog_fifo_rdata),
     .err_o   ()
   );
-  assign hw2reg.curr_fifo_lvl.prog.d = prog_fifo_depth;
+  assign hw2reg.curr_fifo_lvl.prog.d = MaxFifoWidth'(prog_fifo_depth);
 
   // Program handler is consumer of prog_fifo
   logic [1:0] prog_type_en;
@@ -1103,7 +1103,7 @@ module flash_ctrl
   ) u_prog_lvl_event (
     .clk_i,
     .rst_ni,
-    .d_i(reg2hw.fifo_lvl.prog.q == prog_fifo_depth),
+    .d_i(reg2hw.fifo_lvl.prog.q == MaxFifoWidth'(prog_fifo_depth)),
     .q_sync_o(),
     .q_posedge_pulse_o(intr_event[ProgLvl]),
     .q_negedge_pulse_o()

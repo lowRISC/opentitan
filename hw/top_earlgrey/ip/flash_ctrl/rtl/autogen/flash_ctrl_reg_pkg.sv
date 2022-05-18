@@ -23,6 +23,7 @@ package flash_ctrl_reg_pkg;
   parameter int BytesPerBank = 524288;
   parameter int unsigned ExecEn = 32'ha26a38f7;
   parameter int MaxFifoDepth = 16;
+  parameter int MaxFifoWidth = 5;
   parameter int NumAlerts = 3;
 
   // Address widths within the block
