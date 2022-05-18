@@ -323,8 +323,6 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
     cfg.m_alert_agent_cfg["recov"].vif.wait_ack_complete();
 
-    running_ = 1'b0;
-
     if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked) begin
       bit cmd_wr;
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cmd_wr, cmd_wr dist { 0 :/ 9, 1 :/ 1};)
@@ -347,6 +345,10 @@ class otbn_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
       csr_utils_pkg::csr_wr(ral.err_bits, wdata);
     end
+
+    // Note: This must be the last thing in the function before we return. We use this flag to
+    // synchronise with a "disable fork" in start_running_otbn().
+    running_ = 1'b0;
   endtask
 
   // The guts of the run_otbn task. Writes to the CMD register to start OTBN and polls the status
