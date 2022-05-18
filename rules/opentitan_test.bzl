@@ -289,15 +289,17 @@ def opentitan_functest(
             continue
 
         # Set test name.
-        test_name = "{}_{}".format(target, name)
+        test_name = "{}_{}".format(name, target)
         if "manual" not in params.get("tags"):
             all_tests.append(test_name)
 
         # Set flash image.
         if target in ["sim_dv", "sim_verilator"]:
             flash = "{}_prog_{}_scr_vmem64".format(name, target)
+            sw_logs_db = ["{}_prog_{}_logs_db".format(name, target)]
         else:
             flash = "{}_prog_{}_bin".format(name, target)
+            sw_logs_db = []
         if signed:
             flash += "_signed_{}".format(key)
 
@@ -385,7 +387,7 @@ def opentitan_functest(
                 flash,
                 rom,
                 otp,
-            ] + concat_data,
+            ] + concat_data + sw_logs_db,
             **params
         )
 

@@ -564,7 +564,7 @@ def opentitan_rom_binary(
         targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
-            extract_sw_logs_db = extract_sw_logs_db and device == "sim_dv",
+            extract_sw_logs_db = extract_sw_logs_db and device.startswith("sim_"),
             **kwargs
         ))
         elf_name = "{}_{}".format(devname, "elf")
@@ -638,7 +638,7 @@ def opentitan_flash_binary(
         targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
-            extract_sw_logs_db = extract_sw_logs_db and device == "sim_dv",
+            extract_sw_logs_db = extract_sw_logs_db and device.startswith("sim_"),
             **kwargs
         ))
         elf_name = "{}_{}".format(devname, "elf")

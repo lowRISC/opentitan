@@ -66,7 +66,7 @@
     }
     // Used by 'cover_reg_top' only builds - we only cover the *_reg_top of
     // the non-pre-verified modules at the chip level. See
-    // `hw/dv/tools/dvsim//common_sim_cfg.hjson` for the default value.
+    // `hw/dv/tools/dvsim/common_sim_cfg.hjson` for the default value.
     {
       name: cover_reg_top_vcs_cov_cfg_file
       value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover_reg_top.cfg"
@@ -227,16 +227,14 @@
 
   // List of test specifications.
   //
-  // If you are adding a test that has been generated from the `sw_tests`
-  // dictionary declared in `sw/device/tests/meson.build`, the `sw_images` list
-  // below should contain `sw/device/tests/<sw_test_name>` (without any more
-  // subdirectories) because that is where the meson target is created. For
-  // example `gpio_test` is added to `sw_tests` in
-  // `sw/device/tests/sim_dv/meson.build`, but the final meson targets all
-  // start with `sw/device/tests/gpio_test_`.
+  // If you are adding a test that has been generated from a Bazel
+  // `opentitan_functest` macro, you can specify the test using the path to the
+  // Bazel target. For example, if the Bazel target is:
+  // `//sw/device/tests:example_test_from_flash`, then you would specify this as
+  // `sw/device/tests/example_test_from_flash`.
   //
-  // Each entry in `sw_images` is followed by an index separated with ':' which
-  // is used by the testbench to know what type of image is it:
+  // Additionally, each entry in `sw_images` is followed by an index separated
+  // with ':' which is used by the testbench to know what type of image is it:
   // - 0 for Boot ROM,
   // - 1 for SW test,
   // - 2 for OTBN test,
@@ -269,7 +267,7 @@
     {
       name: chip_sw_uart_tx_rx
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+uart_idx=0"]
       reseed: 5
@@ -277,7 +275,7 @@
     {
       name: chip_sw_uart_tx_rx_idx1
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+uart_idx=1"]
       reseed: 5
@@ -285,7 +283,7 @@
     {
       name: chip_sw_uart_tx_rx_idx2
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+uart_idx=2"]
       reseed: 5
@@ -293,7 +291,7 @@
     {
       name: chip_sw_uart_tx_rx_idx3
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+uart_idx=3"]
       reseed: 5
@@ -301,14 +299,14 @@
     {
       name: chip_sw_uart_tx_rx_bootstrap
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_spi_load_bootstrap=1"]
     }
     {
       name: chip_sw_uart_rand_baudrate
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
-      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=80_000_000"]
       reseed: 20
@@ -316,7 +314,7 @@
     {
       name: chip_sw_uart_tx_rx_alt_clk_freq
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
-      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=80_000_000", "+use_otp_image=LcStRma",
                  "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1"]
@@ -325,7 +323,7 @@
     {
       name: chip_sw_uart_tx_rx_alt_clk_freq_low_speed
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
-      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=80_000_000", "+use_otp_image=LcStRma",
                  "+ext_clk_type=ExtClkLowSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
@@ -339,7 +337,7 @@
     {
       name: chip_sw_uart_tx_rx_alt_clk_fast_ip_clk
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
-      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=80_000_000", "+use_otp_image=LcStRma",
                  "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
@@ -348,13 +346,13 @@
     {
       name: chip_sw_spi_device_tx_rx
       uvm_test_seq: chip_sw_spi_tx_rx_vseq
-      sw_images: ["sw/device/tests/spi_tx_rx_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/spi_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_gpio
       uvm_test_seq: chip_sw_gpio_vseq
-      sw_images: ["sw/device/tests/gpio_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/gpio_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -374,7 +372,7 @@
     {
       name: chip_sw_flash_ctrl_lc_rw_en
       uvm_test_seq: chip_sw_flash_ctrl_lc_rw_en_vseq
-      sw_images: ["sw/device/tests/flash_ctrl_lc_rw_en_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/flash_ctrl_lc_rw_en_test:1"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
@@ -400,7 +398,7 @@
     {
       name: chip_sw_flash_rma_unlocked
       uvm_test_seq: chip_sw_flash_rma_unlocked_vseq
-      sw_images: ["sw/device/tests/flash_rma_unlocked_test:0"]
+      sw_images: ["sw/device/tests/sim_dv/flash_rma_unlocked_test:0"]
       en_run_modes: ["sw_test_mode_common"]
       run_opts: ["+sw_test_timeout_ns=200_000_000"]
     }
@@ -420,21 +418,21 @@
       // Set higher reseed value to reach all kmac_data to lc_ctrl toggle coverage.
       name: chip_sw_lc_ctrl_transition
       uvm_test_seq: chip_sw_lc_ctrl_transition_vseq
-      sw_images: ["sw/device/tests/lc_ctrl_transition_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/lc_ctrl_transition_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       reseed: 15
     }
     {
       name: chip_sw_lc_walkthrough_prodend
       uvm_test_seq: chip_sw_lc_walkthrough_vseq
-      sw_images: ["sw/device/tests/lc_walkthrough_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/lc_walkthrough_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_otp_image=LcStRaw", "+dest_dec_state=DecLcStProdEnd"]
     }
     {
       name: chip_sw_lc_walkthrough_rma
       uvm_test_seq: chip_sw_lc_walkthrough_vseq
-      sw_images: ["sw/device/tests/lc_walkthrough_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/lc_walkthrough_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_otp_image=LcStRaw", "+dest_dec_state=DecLcStRma",
                  // The test takes long time because it will transit to RMA state
@@ -470,7 +468,7 @@
     {
       name: chip_sw_pwrmgr_usbdev_wakeup
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/pwrmgr_usbdev_smoketest:1"]
+      sw_images: ["sw/device/tests/sim_dv/pwrmgr_usbdev_smoketest:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -482,26 +480,26 @@
     {
       name: chip_sw_pwrmgr_main_power_glitch_reset
       uvm_test_seq: chip_sw_main_power_glitch_vseq
-      sw_images: ["sw/device/tests/pwrmgr_main_power_glitch_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/pwrmgr_main_power_glitch_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
     }
     {
       name: chip_sw_pwrmgr_sysrst_ctrl_reset
       uvm_test_seq: chip_sw_sysrst_ctrl_vseq
-      sw_images: ["sw/device/tests/pwrmgr_sysrst_ctrl_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/pwrmgr_sysrst_ctrl_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_sysrst_reqs
       uvm_test_seq: chip_sw_sysrst_ctrl_vseq
-      sw_images: ["sw/device/tests/pwrmgr_deep_sleep_sysrst_reqs_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/pwrmgr_deep_sleep_sysrst_reqs_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_sleep_power_glitch_reset
       uvm_test_seq: chip_sw_main_power_glitch_vseq
-      sw_images: ["sw/device/tests/pwrmgr_sleep_power_glitch_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/pwrmgr_sleep_power_glitch_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
     }
@@ -555,7 +553,7 @@
     {
       name: chip_sw_adc_ctrl_sleep_debug_cable_wakeup
       uvm_test_seq: chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq
-      sw_images: ["sw/device/tests/adc_ctrl_sleep_debug_cable_wakeup_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/adc_ctrl_sleep_debug_cable_wakeup_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=18000000"]
     }
@@ -611,7 +609,7 @@
     {
       name: chip_sw_alert_test
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/alert_test:1"]
+      sw_images: ["sw/device/tests/autogen/alert_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -650,7 +648,7 @@
     {
       name: chip_sw_keymgr_key_derivation
       uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
-      sw_images: ["sw/device/tests/keymgr_key_derivation_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/keymgr_key_derivation_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=20000000"]
     }
@@ -695,20 +693,20 @@
     {
       name: chip_sw_rom_ctrl_integrity_check
       uvm_test_seq: chip_sw_rom_ctrl_integrity_check_vseq
-      sw_images: ["sw/device/tests/rom_ctrl_integrity_check_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/rom_ctrl_integrity_check_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_sram_ctrl_ret_scrambled_access
       uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
-      sw_images: ["sw/device/tests/sram_ctrl_ret_scrambled_access_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/sram_ctrl_ret_scrambled_access_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+mem_sel=ret"]
     }
     {
       name: chip_sw_sram_ctrl_main_scrambled_access_jitter_en
       uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
-      sw_images: ["sw/device/tests/sram_ctrl_main_scrambled_access_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/sram_ctrl_main_scrambled_access_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+mem_sel=main",
                  "+sw_test_timeout_ns=7000000",
@@ -717,7 +715,7 @@
     {
       name: chip_sw_sram_ctrl_execution_main
       uvm_test_seq: chip_sw_sram_ctrl_execution_main_vseq
-      sw_images: ["sw/device/tests/sram_ctrl_execution_test_main:1"]
+      sw_images: ["sw/device/tests/sim_dv/sram_ctrl_execution_test_main:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -777,7 +775,7 @@
     {
       name: chip_plic_all_irqs
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/plic_all_irqs_test:1"]
+      sw_images: ["sw/device/tests/autogen/plic_all_irqs_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -795,7 +793,7 @@
     {
       name: chip_sw_clkmgr_external_clk_src_for_lc
       uvm_test_seq: chip_sw_lc_ctrl_transition_vseq
-      sw_images: ["sw/device/tests/clkmgr_external_clk_src_for_lc_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/clkmgr_external_clk_src_for_lc_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+ext_clk_type=ExtClkLowSpeed", "+calibrate_usb_clk=1"]
     }
@@ -840,7 +838,7 @@
     {
       name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
       uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
-      sw_images: ["sw/device/tests/pwrmgr_deep_sleep_all_wake_ups:1"]
+      sw_images: ["sw/device/tests/sim_dv/pwrmgr_deep_sleep_all_wake_ups:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=18000000"]
     }
