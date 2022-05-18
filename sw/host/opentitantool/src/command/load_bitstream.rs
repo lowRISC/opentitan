@@ -15,7 +15,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::transport::cw310;
 use opentitanlib::util::rom_detect::RomKind;
 
-/// Read data from a SPI EEPROM.
+/// Load a bitstream into the FPGA.
 #[derive(Debug, StructOpt)]
 pub struct LoadBitstream {
     #[structopt(name = "FILE")]
