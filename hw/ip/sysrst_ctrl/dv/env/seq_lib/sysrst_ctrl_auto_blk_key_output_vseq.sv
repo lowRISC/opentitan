@@ -44,10 +44,7 @@ class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
     bit key2_out_sel,
     bit key0_out_value,
     bit key1_out_value,
-    bit key2_out_value,
-    bit key0_out,
-    bit key1_out,
-    bit key2_out
+    bit key2_out_value
    );
     option.per_instance = 1;
     option.name = "sysrst_ctrl_auto_blk_out_ctl_cg";
@@ -58,9 +55,9 @@ class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
     cp_key0_out_value: coverpoint key0_out_value;
     cp_key1_out_value: coverpoint key1_out_value;
     cp_key2_out_value: coverpoint key2_out_value;
-    cross_key0_out_sel_value: cross cp_key0_out_value, key0_out;
-    cross_key1_out_sel_value: cross cp_key1_out_value, key1_out;
-    cross_key2_out_sel_value: cross cp_key2_out_value, key2_out;
+    cross_key0_out_sel_value: cross cp_key0_out_value, cp_key0_out_sel;
+    cross_key1_out_sel_value: cross cp_key1_out_value, cp_key1_out_sel;
+    cross_key2_out_sel_value: cross cp_key2_out_value, cp_key2_out_sel;
 
    endgroup // sysrst_ctrl_auto_blk_out_ctl_cg
 
@@ -138,10 +135,7 @@ class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
             enable_key2_out_sel,
             override_key0_out_value,
             override_key1_out_value,
-            override_key2_out_value,
-            cfg.vif.key0_out,
-            cfg.vif.key1_out,
-            cfg.vif.key2_out
+            override_key2_out_value
       );
     end
    endtask : body
