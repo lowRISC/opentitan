@@ -122,10 +122,7 @@ class sysrst_ctrl_combo_intr_status_obj extends uvm_object;
     bit key2_in_sel,
     bit pwrb_in_sel,
     bit ac_present_sel,
-    bit bat_disable,
-    bit interrupt,
-    bit ec_rst,
-    bit rst_req
+    bit interrupt
   );
     option.per_instance = 1;
     option.name = "sysrst_ctrl_combo_intr_status_cg";
@@ -139,18 +136,15 @@ class sysrst_ctrl_combo_intr_status_obj extends uvm_object;
     cp_key2_in_sel:   coverpoint key2_in_sel;
     cp_pwrb_in_sel:   coverpoint pwrb_in_sel;
     cp_ac_present_sel:coverpoint ac_present_sel;
-    cp_bat_disable: coverpoint bat_disable;
     cp_interrupt:   coverpoint interrupt;
-    cp_ec_rst:      coverpoint ec_rst;
-    cp_rst_req:     coverpoint rst_req;
     cross_combo0: cross cp_combo0_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt;
     cross_combo1: cross cp_combo1_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt;
     cross_combo2: cross cp_combo2_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt;
     cross_combo3: cross cp_combo3_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt;
 
   endgroup // sysrst_ctrl_combo_intr_status_cg
 
