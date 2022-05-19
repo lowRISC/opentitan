@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -86,7 +87,9 @@ rom_error_t otbn_execute_app(otbn_t *ctx) {
   }
   HARDENED_CHECK_EQ(ctx->app_is_loaded, kHardenedBoolTrue);
 
-  return otbn_execute();
+  rom_error_t err = otbn_execute();
+  SEC_MMIO_WRITE_INCREMENT(kOtbnSecMmioExecute);
+  return err;
 }
 
 rom_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len, const uint32_t *src,

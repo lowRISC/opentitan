@@ -247,6 +247,7 @@ cc_library(
     hdrs = ["otbn_util.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:otbn",
     ],
 )

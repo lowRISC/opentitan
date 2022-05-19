@@ -298,6 +298,7 @@ cc_library(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:rnd",
     ],
 )

@@ -10,6 +10,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -125,6 +126,7 @@ static rom_error_t otbn_cmd_run(otbn_cmd_t cmd, rom_error_t error) {
 }
 
 rom_error_t otbn_execute(void) {
+  otbn_set_ctrl_software_errs_fatal(true);
   return otbn_cmd_run(kOtbnCmdExecute, kErrorOtbnExecutionFailed);
 }
 
@@ -184,7 +186,7 @@ void otbn_zero_dmem(void) {
   HARDENED_CHECK_EQ(i, kOtbnDMemSizeBytes);
 }
 
-rom_error_t otbn_set_ctrl_software_errs_fatal(bool enable) {
+void otbn_set_ctrl_software_errs_fatal(bool enable) {
   // Only one bit in the CTRL register so no need to read current value.
   uint32_t new_ctrl;
 
@@ -194,10 +196,5 @@ rom_error_t otbn_set_ctrl_software_errs_fatal(bool enable) {
     new_ctrl = 0;
   }
 
-  abs_mmio_write32(kBase + OTBN_CTRL_REG_OFFSET, new_ctrl);
-  if (abs_mmio_read32(kBase + OTBN_CTRL_REG_OFFSET) != new_ctrl) {
-    return kErrorOtbnUnavailable;
-  }
-
-  return kErrorOk;
+  sec_mmio_write32(kBase + OTBN_CTRL_REG_OFFSET, new_ctrl);
 }
