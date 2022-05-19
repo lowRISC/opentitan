@@ -19,6 +19,30 @@ from .signal import Signal
 from .countermeasure import CounterMeasure
 
 
+REQUIRED_ALIAS_FIELDS = {
+    'alias_impl': [
+        's',
+        "identifier for this alias implementation"
+    ],
+    'alias_target': [
+        's',
+        "name of the component to apply the alias file to"
+    ],
+    'registers': [
+        'l',
+        "list of alias register definition groups"
+    ],
+    'bus_interfaces': [
+        'l',
+        "bus interfaces for the device"
+    ],
+}
+
+# TODO: we may want to support for countermeasure and parameter aliases
+# in the future.
+OPTIONAL_ALIAS_FIELDS: Dict[str, List[str]] = {
+}
+
 REQUIRED_FIELDS = {
     'name': ['s', "name of the component"],
     'clocking': ['l', "clocking for the device"],
@@ -73,6 +97,7 @@ class IpBlock:
                  regwidth: int,
                  params: ReggenParams,
                  reg_blocks: Dict[Optional[str], RegBlock],
+                 alias_impl: Optional[str],
                  interrupts: Sequence[Signal],
                  no_auto_intr: bool,
                  alerts: List[Alert],
@@ -103,6 +128,7 @@ class IpBlock:
         self.name = name
         self.regwidth = regwidth
         self.reg_blocks = reg_blocks
+        self.alias_impl = alias_impl
         self.params = params
         self.interrupts = interrupts
         self.no_auto_intr = no_auto_intr
@@ -231,7 +257,7 @@ class IpBlock:
 
         reg_blocks = RegBlock.build_blocks(init_block, rd['registers'],
                                            bus_interfaces,
-                                           clocking)
+                                           clocking, False)
 
         xputs = (
             Signal.from_raw_list('available_inout_list for block ' + name,
@@ -268,7 +294,7 @@ class IpBlock:
                              .format(name, dev_if_names,
                                      list(reg_block_names)))
 
-        return IpBlock(name, regwidth, params, reg_blocks,
+        return IpBlock(name, regwidth, params, reg_blocks, None,
                        interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces, clocking, xputs,
                        wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
@@ -290,6 +316,124 @@ class IpBlock:
         with open(path, 'r', encoding='utf-8') as handle:
             return IpBlock.from_text(handle.read(), param_defaults,
                                      'file at {!r}'.format(path))
+
+    def alias_from_raw(self,
+                       raw: object,
+                       where: str) -> None:
+        '''Parses and validates an alias reg block and adds it to this IpBlock.
+
+        The alias register definitions are compared with the corresponding
+        generic register definitions in self.reg_blocks to ensure that the
+        register and field structure is the same. Only a subset of register
+        and field attributes may differ and all other attributes must be
+        identical. The overridable attributes are defined in register.py and
+        field.py, but typically comprise attributes like 'name', 'desc',
+        'resval' and 'tags'.
+
+        The alias register information is then applied to the self.reg_blocks
+        datastructure. Generic register descriptions with no associated alias
+        register definition just remain unmodified, meaning that the user can
+        choose to only provide alias overrides for a subset of all registers.
+        The resulting "augmented" register block is therefore always guaranteed
+        to be structurally identical to the unmodified generic register block.
+
+        Note that the alias register definition also overrides the hier_path
+        variable associated with the corresponding bus interfaces.
+        '''
+        rd = check_keys(raw, 'block at ' + where,
+                        list(REQUIRED_ALIAS_FIELDS.keys()),
+                        list(OPTIONAL_ALIAS_FIELDS.keys()))
+
+        alias_bus_interfaces = (BusInterfaces.
+                                from_raw(rd['bus_interfaces'],
+                                         'bus_interfaces of block at ' + where))
+        if ((alias_bus_interfaces.has_unnamed_host or
+             alias_bus_interfaces.named_hosts)):
+            raise ValueError("Alias registers cannot be defined for host "
+                             "interfaces (in block at {})."
+                             .format(where))
+        # Alias register definitions are only compatible with named devices.
+        if ((alias_bus_interfaces.has_unnamed_device or
+             self.bus_interfaces.has_unnamed_device)):
+            raise ValueError("Alias registers must use named devices "
+                             "(in block at {}).".format(where))
+
+        # Check that the device interface names are
+        # a subset of the already defined register blocks
+        bus_device_names = set(self.bus_interfaces.named_devices)
+        alias_bus_device_names = set(alias_bus_interfaces.named_devices)
+        if not alias_bus_device_names.issubset(bus_device_names):
+            raise ValueError("Alias file {} refers to device names {} that "
+                             "do not map to device names in {}."
+                             .format(where, list(alias_bus_device_names),
+                                     self.name))
+
+        self.alias_impl = check_name(rd['alias_impl'],
+                                     'alias_impl of block at ' + where)
+
+        alias_target = check_name(rd['alias_target'],
+                                  'alias_target of block at ' + where)
+
+        if alias_target != self.name:
+            raise ValueError("Alias target block name {} in {} "
+                             "does not match block name {}."
+                             .format(alias_target, where, self.name))
+
+        init_block = RegBlock(self.regwidth, self.params)
+
+        alias_reg_blocks = RegBlock.build_blocks(init_block, rd['registers'],
+                                                 self.bus_interfaces,
+                                                 self.clocking,
+                                                 True)
+
+        # Check that alias register block names are
+        # a subset of the already defined register blocks
+        alias_reg_block_names = set(alias_reg_blocks.keys())
+
+        if not alias_reg_block_names.issubset(set(self.reg_blocks.keys())):
+            raise ValueError("Alias file {} refers to register blocks {} that "
+                             "do not map to register blocks in {}."
+                             .format(where, list(alias_reg_block_names),
+                                     self.name))
+
+        # Check that the alias bus interface names and register blocks match
+        if alias_reg_block_names != alias_bus_device_names:
+            raise ValueError("Interface and register block names do not match "
+                             "in {}.".format(where))
+
+        # Validate alias registers against the generic reg blocks,
+        # and enhance the information in the existing datastructures.
+        for block_key, alias_block in alias_reg_blocks.items():
+            # Double check the interface definition options
+            if self.bus_interfaces.device_async:
+                if not alias_bus_interfaces.device_async:
+                    raise ValueError('Missing device_async key in alias '
+                                     'interface {} in {}'
+                                     .format(block_key, where))
+                if ((alias_bus_interfaces.device_async[block_key] !=
+                     self.bus_interfaces.device_async[block_key])):
+                    raise ValueError('Inconsistent configuration of interface '
+                                     '{} in {}'
+                                     .format(block_key, where))
+
+            # Override hier path of aliased interface
+            hier_path = alias_bus_interfaces.device_hier_paths[block_key]
+            self.bus_interfaces.device_hier_paths[block_key] = hier_path
+
+            self.reg_blocks[block_key].apply_alias(alias_block, where)
+
+    def alias_from_text(self,
+                        txt: str,
+                        where: str) -> None:
+        '''Load alias regblocks from an hjson description in txt'''
+        self.alias_from_raw(hjson.loads(txt, use_decimal=True), where)
+
+    def alias_from_path(self,
+                        path: str) -> None:
+        '''Load alias regblocks from an hjson description in a file at path'''
+        with open(path, 'r', encoding='utf-8') as handle:
+            self.alias_from_text(handle.read(),
+                                 'alias file at {!r}'.format(path))
 
     def _asdict(self) -> Dict[str, object]:
         ret = {
