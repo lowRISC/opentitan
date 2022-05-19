@@ -446,10 +446,10 @@ jobs:
       BITCACHE_FILE=$BITCACHE_DIR/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig
       cp $BIN_DIR/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit ${BITCACHE_FILE}
       echo "" >> ${BITCACHE_DIR}/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice
-      BITSTREAM="${SHA} --offline" ci/bazelisk.sh test \
+      BITSTREAM="--offline --list ${SHA}" ci/bazelisk.sh test \
           --define DISABLE_VERILATOR_BUILD=true \
           --test_tag_filters=cw310,-broken \
-          --test_output=errors \
+          --test_output=all \
           --build_tests_only \
           --flaky_test_attempts=4 \
           --define cw310=lowrisc \

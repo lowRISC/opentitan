@@ -309,7 +309,7 @@ def main(argv):
                 'Cannot find a bitstream close to {}'.format(bitstream))
             return 1
         if closest != bitstream:
-            logging.info('Closest bitstream to {} is {}.'.format(
+            logging.error('Closest bitstream to {} is {}.'.format(
                 bitstream, closest))
             bitstream = closest
 
@@ -319,7 +319,7 @@ def main(argv):
     #   @bitstreams//:bitstream_mask_rom
     configured = cache.WriteBuildFile(args.build_file, bitstream)
     if args.bitstream != configured:
-        logging.info('Configured bitstream "{}" as {}.'.format(
+        logging.error('Configured bitstream "{}" as {}.'.format(
             args.bitstream, configured))
     else:
         logging.info('Configured bitstream {}.'.format(configured))
