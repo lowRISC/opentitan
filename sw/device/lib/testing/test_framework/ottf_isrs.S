@@ -24,9 +24,10 @@
   .type compute_mepc_on_synchronous_irq, @function
 compute_mepc_on_synchronous_irq:
   csrr t0, mepc
+  lh t2, 0(t0)
   li t1, 0x3
-  and t2, t0, t1
-  beq t2, t1, .L_32bit_trap_instr
+  and t3, t2, t1
+  beq t3, t1, .L_32bit_trap_instr
   addi t0, t0, OTTF_HALF_WORD_SIZE
   ret
 .L_32bit_trap_instr:
