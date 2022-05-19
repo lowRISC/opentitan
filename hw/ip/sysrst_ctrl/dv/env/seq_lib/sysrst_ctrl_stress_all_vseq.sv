@@ -22,7 +22,7 @@ class sysrst_ctrl_stress_all_vseq extends sysrst_ctrl_base_vseq;
                           "sysrst_ctrl_ec_pwr_on_rst_vseq",
                           "sysrst_ctrl_flash_wr_prot_vseq",
                           "sysrst_ctrl_ultra_low_pwr_vseq",
-                          "sysrst_ctrl_combo_detect",
+                          "sysrst_ctrl_combo_detect_vseq",
                           "sysrst_ctrl_edge_detect_vseq",
                           "sysrst_ctrl_common_vseq"};
 
