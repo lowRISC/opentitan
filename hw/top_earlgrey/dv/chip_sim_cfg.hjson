@@ -546,6 +546,13 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_sysrst_ctrl_reset
+      uvm_test_seq: chip_sw_sysrst_ctrl_reset_vseq
+      sw_images: ["sw/device/tests/sysrst_ctrl_reset_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=36000000"]
+    }
+    {
       name: chip_sw_aon_timer_irq
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/aon_timer_irq_test:1"]
