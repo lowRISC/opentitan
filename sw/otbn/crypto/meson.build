@@ -89,25 +89,25 @@ sw_otbn_sources += {
     'rsa_1024_enc_test.s',
     'modexp.s',
   ),
-  'rsa_verify_3072': files(
-    '../../vendor/veri-titan/gen/rsa_verify_3072.s',
+  'otbn_modexp': files(
+    '../../vendor/veri-titan/gen/otbn_modexp.s',
   ),
   'rsa_verify_3072_consts_test': files(
     'rsa_verify_3072_consts_test.s',
     'rsa_verify_3072_rr.s',
     'rsa_verify_3072_m0inv.s',
-    '../../vendor/veri-titan/gen/rsa_verify_3072.s',
+    '../../vendor/veri-titan/gen/otbn_modexp.s',
   ),
   'rsa_verify_3072_m0inv': files(
     'rsa_verify_3072_m0inv.s',
   ),
   'rsa_verify_3072_rr': files(
     'rsa_verify_3072_rr.s',
-    '../../vendor/veri-titan/gen/rsa_verify_3072.s',
+    '../../vendor/veri-titan/gen/otbn_modexp.s',
   ),
   'rsa_verify_3072_test': files(
     'rsa_verify_3072_test.s',
-    '../../vendor/veri-titan/gen/rsa_verify_3072.s',
+    '../../vendor/veri-titan/gen/otbn_modexp.s',
   ),
   'rsa_verify': files(
     'rsa_verify.s',
@@ -122,13 +122,13 @@ sw_otbn_sources += {
   ),
   'run_rsa_verify_3072': files(
     'run_rsa_verify_3072.s',
-    '../../vendor/veri-titan/gen/rsa_verify_3072.s',
+    '../../vendor/veri-titan/gen/otbn_modexp.s',
     'rsa_verify_3072_m0inv.s',
     'rsa_verify_3072_rr.s',
   ),
   'run_rsa_verify_3072_rr_modexp': files(
     'run_rsa_verify_3072_rr_modexp.s',
     'rsa_verify_3072_rr.s',
-    '../../vendor/veri-titan/gen/rsa_verify_3072.s',
+    '../../vendor/veri-titan/gen/otbn_modexp.s',
   ),
 }
