@@ -106,23 +106,37 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Method to do a back-door update of a selected partition memory model to the actual flash data.
   // Usualy should only be done after flash initialization.
   task update_partition_mem_model(flash_dv_part_e part);
-    data_q_t read_val;
-    flash_op_t flash_op;
-    flash_op.op = FlashOpRead;
-    flash_op.partition = part;
-    flash_op.num_words = get_partition_words_num(part);
+    flash_mem_addr_attrs addr_attr;
+    data_4s_t bkdr_rd_data;
+    uint partition_words_num;
+    data_model_t scb_flash_model;
+    addr_attr = new();
+    partition_words_num = get_partition_words_num(part);
 
     `uvm_info(`gfn, $sformatf("\nStart back-door updating partition %s memory model\n",
                               part.name()), UVM_MEDIUM)
-    for (int i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin
-      flash_op.addr = i * BytesPerBank;
-      flash_mem_bkdr_read(.flash_op(flash_op), .data(read_val));
-      foreach (read_val[i, j]) begin
-        if ($isunknown(read_val[i][j])) read_val[i][j] = 1'b1;
-      end
-      set_scb_mem(.bkd_num_words(flash_op.num_words), .bkd_partition(part),
-                  .write_bkd_addr(flash_op.addr), .val_type(CustomVal), .custom_val(read_val));
-    end
+
+    for (int i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : iterate_all_banks
+      addr_attr.set_attrs(i * BytesPerBank);
+      for (int j = 0; j < partition_words_num; j++) begin : iterate_all_bank_partition_words
+        bkdr_rd_data = mem_bkdr_util_h[part][addr_attr.bank].read32(addr_attr.bank_addr);
+        if ($isunknown(bkdr_rd_data)) begin
+          scb_flash_model[addr_attr.addr] = ALL_ONES;
+        end else begin
+          scb_flash_model[addr_attr.addr] = bkdr_rd_data;
+        end
+        addr_attr.incr(flash_ctrl_pkg::BusBytes);
+      end : iterate_all_bank_partition_words
+    end : iterate_all_banks
+
+    case(part)
+      flash_ctrl_env_pkg::FlashPartData:    scb_flash_data      = scb_flash_model;
+      flash_ctrl_env_pkg::FlashPartInfo:    scb_flash_info      = scb_flash_model;
+      flash_ctrl_env_pkg::FlashPartInfo1:   scb_flash_info1     = scb_flash_model;
+      flash_ctrl_env_pkg::FlashPartInfo2:   scb_flash_info2     = scb_flash_model;
+      default: `uvm_error(`gfn, $sformatf("Undefined partition - %s", part.name()))
+    endcase
+
     `uvm_info(`gfn, $sformatf("\nFinished back-door updating partition %s memory model\n",
                               part.name()), UVM_MEDIUM)
 
@@ -133,7 +147,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Applies the initialization scheme to the given flash partition in all banks.
   // part is the type of flash partition.
   // scheme is the type of initialization to be done.
-  virtual function void flash_mem_bkdr_init(flash_dv_part_e part = FlashPartData,
+  virtual task flash_mem_bkdr_init(flash_dv_part_e part = FlashPartData,
                                             flash_mem_init_e scheme);
     case (scheme)
       FlashMemInitSet: begin
@@ -154,7 +168,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     endcase
     // Update the memory model with the initialization data
     if (scb_check) update_partition_mem_model(part);
-  endfunction : flash_mem_bkdr_init
+  endtask : flash_mem_bkdr_init
 
   // For a given partition returns its respective memory model.
   function data_model_t get_partition_mem_model(flash_ctrl_env_pkg::flash_dv_part_e part);
