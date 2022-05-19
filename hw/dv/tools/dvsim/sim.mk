@@ -71,7 +71,7 @@ ifneq (${sw_images},)
 	set -e; \
 	mkdir -p ${sw_build_dir}; \
 	${LOCK_SW_BUILD_DIR} "cd ${proj_root} && \
-		env BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh"; \
+		env BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh -f"; \
 	for sw_image in ${sw_images}; do \
 		image=`echo $$sw_image | cut -d: -f 1`;  \
 		index=`echo $$sw_image | cut -d: -f 2`; \
