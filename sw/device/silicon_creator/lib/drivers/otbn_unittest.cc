@@ -8,6 +8,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/testing/mock_abs_mmio.h"
+#include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
@@ -48,8 +49,9 @@ class OtbnTest : public mask_rom_test::MaskRomTest {
   }
 
   uint32_t base_ = TOP_EARLGREY_OTBN_BASE_ADDR;
-  mask_rom_test::MockAbsMmio mmio_;
+  mask_rom_test::MockAbsMmio abs_mmio_;
   mask_rom_test::MockRnd rnd_;
+  mask_rom_test::MockSecMmio sec_mmio_;
 };
 
 class ExecuteTest : public OtbnTest {};
@@ -58,12 +60,16 @@ TEST_F(ExecuteTest, Success) {
   // Test assumption.
   static_assert(OTBN_IMEM_SIZE_BYTES >= 8, "OTBN IMEM size too small.");
 
+  EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
+
   ExpectCmdRun(kOtbnCmdExecute, kOtbnErrBitsNoError);
 
   EXPECT_EQ(otbn_execute(), kErrorOk);
 }
 
 TEST_F(ExecuteTest, Failure) {
+  EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
+
   ExpectCmdRun(kOtbnCmdExecute, kOtbnErrBitsFatalSoftware);
 
   EXPECT_EQ(otbn_execute(), kErrorOtbnExecutionFailed);
@@ -218,17 +224,9 @@ TEST_F(DmemReadTest, SuccessWithOffset) {
 class ControlSoftwareErrorsFatalTest : public OtbnTest {};
 
 TEST_F(ControlSoftwareErrorsFatalTest, Success) {
-  EXPECT_ABS_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
-  EXPECT_ABS_READ32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
+  EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
 
-  EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(true), kErrorOk);
-}
-
-TEST_F(ControlSoftwareErrorsFatalTest, Failure) {
-  EXPECT_ABS_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x0);
-  EXPECT_ABS_READ32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
-
-  EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(false), kErrorOtbnUnavailable);
+  otbn_set_ctrl_software_errs_fatal(true);
 }
 
 class ZeroDmemTest : public OtbnTest {};

@@ -46,6 +46,22 @@ typedef enum otbn_status {
 } otbn_status_t;
 
 /**
+ * The following constants represent the expected number of sec_mmio register
+ * writes performed by functions in provided in this module. See
+ * `SEC_MMIO_WRITE_INCREMENT()` for more details.
+ *
+ * Example:
+ * ```
+ *  otbn_execute();
+ *  SEC_MMIO_WRITE_INCREMENT(kOtbnSecMMioExecute);
+ * ```
+ */
+enum {
+  kOtbnSecMmioExecute = 1,
+  kOtbnSecMmioSetCtrlSwErrsFatal = 1,
+};
+
+/**
  * Start the execution of the application loaded into OTBN.
  *
  * This function blocks until OTBN is idle.
@@ -180,7 +196,7 @@ void otbn_zero_dmem(void);
  * @return `kErrorOtbnUnavailable` if the requested change cannot be made or
  * `kErrorOk` otherwise.
  */
-rom_error_t otbn_set_ctrl_software_errs_fatal(bool enable);
+void otbn_set_ctrl_software_errs_fatal(bool enable);
 
 #ifdef __cplusplus
 }
