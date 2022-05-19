@@ -12,7 +12,6 @@ from .lib import (check_keys, check_str, check_name, check_bool,
 from .params import ReggenParams
 from design.mubi.prim_mubi import is_width_valid, mubi_value_as_int  # type: ignore
 
-
 REQUIRED_FIELDS = {
     'bits': ['b', "bit or bit range (msb:lsb)"]
 }
@@ -20,6 +19,10 @@ REQUIRED_FIELDS = {
 OPTIONAL_FIELDS = {
     'name': ['s', "name of the field"],
     'desc': ['t', "description of field (required if the field has a name)"],
+    'alias_target': [
+        's',
+        "name of the field to apply the alias definition to."
+    ],
     'swaccess': [
         's', "software access permission, copied from "
         "register if not provided in field. "
@@ -58,6 +61,7 @@ OPTIONAL_FIELDS = {
 class Field:
     def __init__(self,
                  name: str,
+                 alias_target: Optional[str],
                  desc: Optional[str],
                  tags: List[str],
                  swaccess: SWAccess,
@@ -68,6 +72,7 @@ class Field:
                  enum: Optional[List[EnumEntry]],
                  mubi: bool):
         self.name = name
+        self.alias_target = alias_target
         self.desc = desc
         self.tags = tags
         self.swaccess = swaccess
@@ -90,6 +95,7 @@ class Field:
                  hwext: bool,
                  default_hwqe: bool,
                  shadowed: bool,
+                 is_alias: bool,
                  raw: object) -> 'Field':
         where = 'field {} of {} register'.format(field_idx, reg_name)
         rd = check_keys(raw, where,
@@ -102,6 +108,15 @@ class Field:
                     if num_fields > 1 else reg_name)
         else:
             name = check_name(raw_name, 'name of {}'.format(where))
+
+        alias_target = None
+        if rd.get('alias_target') is not None:
+            if is_alias:
+                alias_target = check_name(rd.get('alias_target'),
+                                          'name of alias target register')
+            else:
+                raise ValueError('Field {} may not have an alias_target key.'
+                                 .format(name))
 
         raw_desc = rd.get('desc')
         if raw_desc is None and raw_name is not None:
@@ -218,7 +233,8 @@ class Field:
                 enum.append(entry)
                 enum_val_to_name[entry.value] = entry.name
 
-        return Field(name, desc, tags, swaccess, hwaccess, hwqe, bits, resval, enum, is_mubi)
+        return Field(name, alias_target, desc, tags, swaccess, hwaccess,
+                     hwqe, bits, resval, enum, is_mubi)
 
     def has_incomplete_enum(self) -> bool:
         return (self.enum is not None and
@@ -283,13 +299,18 @@ class Field:
         ret = []
         for reg_idx in range(min_reg_idx, max_reg_idx + 1):
             name = '{}_{}'.format(self.name, reg_idx)
+            # In case this is an alias register, we need to make sure that
+            # the alias_target name is expanded as well.
+            alias_target = None
+            if self.alias_target is not None:
+                alias_target = '{}_{}'.format(self.alias_target, reg_idx)
 
             bit_offset = field_width * (reg_idx - min_reg_idx)
             bits = (self.bits
                     if bit_offset == 0
                     else self.bits.make_translated(bit_offset))
 
-            ret.append(Field(name, desc,
+            ret.append(Field(name, alias_target, desc,
                              self.tags, self.swaccess, self.hwaccess, self.hwqe,
                              bits, self.resval, enum, self.mubi))
 
@@ -303,7 +324,11 @@ class Field:
                 if stripped else self.desc)
         enum = None if stripped else self.enum
 
-        return Field(self.name + suffix,
+        alias_target = None
+        if self.alias_target is not None:
+            alias_target = self.alias_target + suffix
+
+        return Field(self.name + suffix, alias_target,
                      desc, self.tags, self.swaccess, self.hwaccess, self.hwqe,
                      self.bits, self.resval, enum, self.mubi)
 
@@ -311,6 +336,7 @@ class Field:
         rd = {
             'bits': self.bits.as_str(),
             'name': self.name,
+            'alias_target': self.alias_target,
             'swaccess': self.swaccess.key,
             'hwaccess': self.hwaccess.key,
             'resval': 'x' if self.resval is None else str(self.resval),
@@ -328,3 +354,30 @@ class Field:
 
     def sw_writable(self) -> bool:
         return self.swaccess.key != 'ro'
+
+    def apply_alias(self, alias_field: 'Field', where: str) -> None:
+        '''Compare all attributes and replace overridable values.
+
+        This updates the overridable field attributes with the alias values and
+        ensures that all non-overridable attributes have identical values.
+        '''
+
+        # Attributes to be crosschecked
+        attrs = ['bits', 'swaccess', 'hwaccess', 'hwqe', 'mubi']
+        for attr in attrs:
+            if getattr(self, attr) != getattr(alias_field, attr):
+                raise ValueError('Value mismatch for attribute {} between '
+                                 'alias field {} and field {} in {}.'
+                                 .format(attr, self.name,
+                                         alias_field.name, where))
+
+        # These attributes can be overridden by the aliasing mechanism.
+        self.name = alias_field.name
+        self.desc = alias_field.desc
+        self.enum = alias_field.enum
+        self.resval = alias_field.resval
+        self.tags = alias_field.tags
+        # We also keep track of the alias_target when overriding attributes.
+        # This gives us a way to check whether a register has been overridden
+        # or not, and what the name of the original register was.
+        self.alias_target = alias_field.alias_target
