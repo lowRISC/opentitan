@@ -291,9 +291,8 @@ def main(argv):
 
     # Do we need a refresh?
     need_refresh = (args.refresh or bitstream != 'latest' or
-                    (cache.NeedRefresh(args.refresh_time) and
-                     not args.offline))
-    cache.GetBitstreamsAvailable(need_refresh)
+                    cache.NeedRefresh(args.refresh_time))
+    cache.GetBitstreamsAvailable(need_refresh and not args.offline)
 
     # If commanded to print bitstream availability, do so.
     if args.list:
