@@ -336,6 +336,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.fmt_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_fmt_watermark_qs)
@@ -361,6 +362,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_watermark_qs)
@@ -386,6 +388,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.fmt_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_fmt_overflow_qs)
@@ -411,6 +414,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_overflow_qs)
@@ -436,6 +440,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.nak.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_nak_qs)
@@ -461,6 +466,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.scl_interference.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_scl_interference_qs)
@@ -486,6 +492,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.sda_interference.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_sda_interference_qs)
@@ -511,6 +518,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.stretch_timeout.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_stretch_timeout_qs)
@@ -536,6 +544,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.sda_unstable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_sda_unstable_qs)
@@ -561,6 +570,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.trans_complete.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_trans_complete_qs)
@@ -586,6 +596,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.tx_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_tx_empty_qs)
@@ -611,6 +622,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.tx_nonempty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_tx_nonempty_qs)
@@ -636,6 +648,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.tx_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_tx_overflow_qs)
@@ -661,6 +674,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.acq_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_acq_overflow_qs)
@@ -686,6 +700,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.ack_stop.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_ack_stop_qs)
@@ -711,6 +726,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.host_timeout.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_host_timeout_qs)
@@ -738,6 +754,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.fmt_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_fmt_watermark_qs)
@@ -763,6 +780,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_watermark_qs)
@@ -788,6 +806,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.fmt_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_fmt_overflow_qs)
@@ -813,6 +832,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_overflow_qs)
@@ -838,6 +858,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.nak.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_nak_qs)
@@ -863,6 +884,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.scl_interference.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_scl_interference_qs)
@@ -888,6 +910,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.sda_interference.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_sda_interference_qs)
@@ -913,6 +936,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.stretch_timeout.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_stretch_timeout_qs)
@@ -938,6 +962,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.sda_unstable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_sda_unstable_qs)
@@ -963,6 +988,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.trans_complete.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_trans_complete_qs)
@@ -988,6 +1014,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.tx_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_tx_empty_qs)
@@ -1013,6 +1040,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.tx_nonempty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_tx_nonempty_qs)
@@ -1038,6 +1066,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.tx_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_tx_overflow_qs)
@@ -1063,6 +1092,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.acq_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_acq_overflow_qs)
@@ -1088,6 +1118,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.ack_stop.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_ack_stop_qs)
@@ -1113,6 +1144,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.host_timeout.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_host_timeout_qs)
@@ -1134,6 +1166,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.fmt_watermark.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.fmt_watermark.qe = intr_test_qe;
@@ -1149,6 +1182,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.rx_watermark.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_watermark.qe = intr_test_qe;
@@ -1164,6 +1198,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.fmt_overflow.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.fmt_overflow.qe = intr_test_qe;
@@ -1179,6 +1214,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.rx_overflow.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_overflow.qe = intr_test_qe;
@@ -1194,6 +1230,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[4]),
     .q      (reg2hw.intr_test.nak.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.nak.qe = intr_test_qe;
@@ -1209,6 +1246,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[5]),
     .q      (reg2hw.intr_test.scl_interference.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.scl_interference.qe = intr_test_qe;
@@ -1224,6 +1262,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[6]),
     .q      (reg2hw.intr_test.sda_interference.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.sda_interference.qe = intr_test_qe;
@@ -1239,6 +1278,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[7]),
     .q      (reg2hw.intr_test.stretch_timeout.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.stretch_timeout.qe = intr_test_qe;
@@ -1254,6 +1294,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[8]),
     .q      (reg2hw.intr_test.sda_unstable.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.sda_unstable.qe = intr_test_qe;
@@ -1269,6 +1310,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[9]),
     .q      (reg2hw.intr_test.trans_complete.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.trans_complete.qe = intr_test_qe;
@@ -1284,6 +1326,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[10]),
     .q      (reg2hw.intr_test.tx_empty.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.tx_empty.qe = intr_test_qe;
@@ -1299,6 +1342,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[11]),
     .q      (reg2hw.intr_test.tx_nonempty.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.tx_nonempty.qe = intr_test_qe;
@@ -1314,6 +1358,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[12]),
     .q      (reg2hw.intr_test.tx_overflow.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.tx_overflow.qe = intr_test_qe;
@@ -1329,6 +1374,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[13]),
     .q      (reg2hw.intr_test.acq_overflow.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.acq_overflow.qe = intr_test_qe;
@@ -1344,6 +1390,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[14]),
     .q      (reg2hw.intr_test.ack_stop.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.ack_stop.qe = intr_test_qe;
@@ -1359,6 +1406,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[15]),
     .q      (reg2hw.intr_test.host_timeout.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.host_timeout.qe = intr_test_qe;
@@ -1378,6 +1426,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -1404,6 +1453,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.enablehost.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_enablehost_qs)
@@ -1429,6 +1479,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.enabletarget.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_enabletarget_qs)
@@ -1454,6 +1505,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.llpbk.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_llpbk_qs)
@@ -1472,6 +1524,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_fmtfull_qs)
   );
 
@@ -1486,6 +1539,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_rxfull_qs)
   );
 
@@ -1500,6 +1554,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_fmtempty_qs)
   );
 
@@ -1514,6 +1569,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_hostidle_qs)
   );
 
@@ -1528,6 +1584,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_targetidle_qs)
   );
 
@@ -1542,6 +1599,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_rxempty_qs)
   );
 
@@ -1556,6 +1614,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_txfull_qs)
   );
 
@@ -1570,6 +1629,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_acqfull_qs)
   );
 
@@ -1584,6 +1644,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_txempty_qs)
   );
 
@@ -1598,6 +1659,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_acqempty_qs)
   );
 
@@ -1613,6 +1675,7 @@ module i2c_reg_top (
     .qre    (reg2hw.rdata.re),
     .qe     (),
     .q      (reg2hw.rdata.q),
+    .ds     (),
     .qs     (rdata_qs)
   );
 
@@ -1649,6 +1712,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fdata_flds_we[0]),
     .q      (reg2hw.fdata.fbyte.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1675,6 +1739,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fdata_flds_we[1]),
     .q      (reg2hw.fdata.start.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1701,6 +1766,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fdata_flds_we[2]),
     .q      (reg2hw.fdata.stop.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1727,6 +1793,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fdata_flds_we[3]),
     .q      (reg2hw.fdata.read.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1753,6 +1820,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fdata_flds_we[4]),
     .q      (reg2hw.fdata.rcont.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1779,6 +1847,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fdata_flds_we[5]),
     .q      (reg2hw.fdata.nakok.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1818,6 +1887,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fifo_ctrl_flds_we[0]),
     .q      (reg2hw.fifo_ctrl.rxrst.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1844,6 +1914,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fifo_ctrl_flds_we[1]),
     .q      (reg2hw.fifo_ctrl.fmtrst.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1870,6 +1941,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fifo_ctrl_flds_we[2]),
     .q      (reg2hw.fifo_ctrl.rxilvl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fifo_ctrl_rxilvl_qs)
@@ -1896,6 +1968,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fifo_ctrl_flds_we[3]),
     .q      (reg2hw.fifo_ctrl.fmtilvl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fifo_ctrl_fmtilvl_qs)
@@ -1922,6 +1995,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fifo_ctrl_flds_we[4]),
     .q      (reg2hw.fifo_ctrl.acqrst.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1948,6 +2022,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (fifo_ctrl_flds_we[5]),
     .q      (reg2hw.fifo_ctrl.txrst.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1967,6 +2042,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (fifo_status_fmtlvl_qs)
   );
 
@@ -1981,6 +2057,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (fifo_status_txlvl_qs)
   );
 
@@ -1995,6 +2072,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (fifo_status_rxlvl_qs)
   );
 
@@ -2009,6 +2087,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (fifo_status_acqlvl_qs)
   );
 
@@ -2034,6 +2113,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ovrd.txovrden.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ovrd_txovrden_qs)
@@ -2059,6 +2139,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ovrd.sclval.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ovrd_sclval_qs)
@@ -2084,6 +2165,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ovrd.sdaval.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ovrd_sdaval_qs)
@@ -2102,6 +2184,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (val_scl_rx_qs)
   );
 
@@ -2116,6 +2199,7 @@ module i2c_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (val_sda_rx_qs)
   );
 
@@ -2141,6 +2225,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timing0.thigh.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timing0_thigh_qs)
@@ -2166,6 +2251,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timing0.tlow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timing0_tlow_qs)
@@ -2193,6 +2279,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timing1.t_r.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timing1_t_r_qs)
@@ -2218,6 +2305,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timing1.t_f.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timing1_t_f_qs)
@@ -2245,6 +2333,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timing2.tsu_sta.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timing2_tsu_sta_qs)
@@ -2270,6 +2359,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timing2.thd_sta.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timing2_thd_sta_qs)
@@ -2297,6 +2387,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timing3.tsu_dat.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timing3_tsu_dat_qs)
@@ -2322,6 +2413,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timing3.thd_dat.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timing3_thd_dat_qs)
@@ -2349,6 +2441,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timing4.tsu_sto.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timing4_tsu_sto_qs)
@@ -2374,6 +2467,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timing4.t_buf.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timing4_t_buf_qs)
@@ -2401,6 +2495,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timeout_ctrl.val.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timeout_ctrl_val_qs)
@@ -2426,6 +2521,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timeout_ctrl.en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timeout_ctrl_en_qs)
@@ -2453,6 +2549,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.target_id.address0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (target_id_address0_qs)
@@ -2478,6 +2575,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.target_id.mask0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (target_id_mask0_qs)
@@ -2503,6 +2601,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.target_id.address1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (target_id_address1_qs)
@@ -2528,6 +2627,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.target_id.mask1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (target_id_mask1_qs)
@@ -2546,6 +2646,7 @@ module i2c_reg_top (
     .qre    (reg2hw.acqdata.abyte.re),
     .qe     (),
     .q      (reg2hw.acqdata.abyte.q),
+    .ds     (),
     .qs     (acqdata_abyte_qs)
   );
 
@@ -2560,6 +2661,7 @@ module i2c_reg_top (
     .qre    (reg2hw.acqdata.signal.re),
     .qe     (),
     .q      (reg2hw.acqdata.signal.q),
+    .ds     (),
     .qs     (acqdata_signal_qs)
   );
 
@@ -2595,6 +2697,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (txdata_flds_we[0]),
     .q      (reg2hw.txdata.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -2623,6 +2726,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.stretch_ctrl.en_addr_tx.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (stretch_ctrl_en_addr_tx_qs)
@@ -2648,6 +2752,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.stretch_ctrl.en_addr_acq.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (stretch_ctrl_en_addr_acq_qs)
@@ -2673,6 +2778,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.stretch_ctrl.stop_tx.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (stretch_ctrl_stop_tx_qs)
@@ -2698,6 +2804,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.stretch_ctrl.stop_acq.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (stretch_ctrl_stop_acq_qs)
@@ -2724,6 +2831,7 @@ module i2c_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.host_timeout_ctrl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (host_timeout_ctrl_qs)

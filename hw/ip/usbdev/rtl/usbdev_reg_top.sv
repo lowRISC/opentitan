@@ -172,30 +172,6 @@ module usbdev_reg_top (
   );
 
   // cdc oversampling signals
-    logic sync_usb_48mhz_update;
-  prim_sync_reqack u_usb_48mhz_tgl (
-    .clk_src_i(clk_usb_48mhz_i),
-    .rst_src_ni(rst_usb_48mhz_ni),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .req_chk_i(1'b1),
-    .src_req_i(1'b1),
-    .src_ack_o(),
-    .dst_req_o(sync_usb_48mhz_update),
-    .dst_ack_i(sync_usb_48mhz_update)
-  );
-    logic sync_aon_update;
-  prim_sync_reqack u_aon_tgl (
-    .clk_src_i(clk_aon_i),
-    .rst_src_ni(rst_aon_ni),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .req_chk_i(1'b1),
-    .src_req_i(1'b1),
-    .src_ack_o(),
-    .dst_req_o(sync_aon_update),
-    .dst_ack_i(sync_aon_update)
-  );
 
   assign reg_rdata = reg_rdata_next ;
   assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
@@ -711,36 +687,46 @@ module usbdev_reg_top (
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
 
+  logic  usb_48mhz_usbctrl_enable_ds_int;
   logic  usb_48mhz_usbctrl_enable_qs_int;
+  logic  usb_48mhz_usbctrl_resume_link_active_ds_int;
+  logic [6:0]  usb_48mhz_usbctrl_device_address_ds_int;
   logic [6:0]  usb_48mhz_usbctrl_device_address_qs_int;
-  logic [22:0] usb_48mhz_usbctrl_d;
+  logic [22:0] usb_48mhz_usbctrl_ds;
+  logic usb_48mhz_usbctrl_qe;
+  logic [22:0] usb_48mhz_usbctrl_qs;
   logic [22:0] usb_48mhz_usbctrl_wdata;
   logic usb_48mhz_usbctrl_we;
   logic unused_usb_48mhz_usbctrl_wdata;
 
   always_comb begin
-    usb_48mhz_usbctrl_d = '0;
-    usb_48mhz_usbctrl_d[0] = usb_48mhz_usbctrl_enable_qs_int;
-    usb_48mhz_usbctrl_d[22:16] = usb_48mhz_usbctrl_device_address_qs_int;
+    usb_48mhz_usbctrl_qs = 23'h0;
+    usb_48mhz_usbctrl_ds = 23'h0;
+    usb_48mhz_usbctrl_ds[0] = usb_48mhz_usbctrl_enable_ds_int;
+    usb_48mhz_usbctrl_qs[0] = usb_48mhz_usbctrl_enable_qs_int;
+    usb_48mhz_usbctrl_ds[22:16] = usb_48mhz_usbctrl_device_address_ds_int;
+    usb_48mhz_usbctrl_qs[22:16] = usb_48mhz_usbctrl_device_address_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(23),
     .ResetVal(23'h0),
-    .BitMask(23'h7f0003)
+    .BitMask(23'h7f0003),
+    .DstWrReq(1)
   ) u_usbctrl_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_usb_48mhz_i),
     .rst_dst_ni   (rst_usb_48mhz_ni),
-    .src_update_i (sync_usb_48mhz_update),
     .src_regwen_i ('0),
     .src_we_i     (usbctrl_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[22:0]),
     .src_busy_o   (usbctrl_busy),
     .src_qs_o     (usbctrl_qs), // for software read back
-    .dst_d_i      (usb_48mhz_usbctrl_d),
+    .dst_update_i (usb_48mhz_usbctrl_qe),
+    .dst_ds_i     (usb_48mhz_usbctrl_ds),
+    .dst_qs_i     (usb_48mhz_usbctrl_qs),
     .dst_we_o     (usb_48mhz_usbctrl_we),
     .dst_re_o     (),
     .dst_regwen_o (),
@@ -749,56 +735,85 @@ module usbdev_reg_top (
   assign unused_usb_48mhz_usbctrl_wdata =
       ^usb_48mhz_usbctrl_wdata;
 
+  logic  usb_48mhz_rxenable_out_out_0_ds_int;
   logic  usb_48mhz_rxenable_out_out_0_qs_int;
+  logic  usb_48mhz_rxenable_out_out_1_ds_int;
   logic  usb_48mhz_rxenable_out_out_1_qs_int;
+  logic  usb_48mhz_rxenable_out_out_2_ds_int;
   logic  usb_48mhz_rxenable_out_out_2_qs_int;
+  logic  usb_48mhz_rxenable_out_out_3_ds_int;
   logic  usb_48mhz_rxenable_out_out_3_qs_int;
+  logic  usb_48mhz_rxenable_out_out_4_ds_int;
   logic  usb_48mhz_rxenable_out_out_4_qs_int;
+  logic  usb_48mhz_rxenable_out_out_5_ds_int;
   logic  usb_48mhz_rxenable_out_out_5_qs_int;
+  logic  usb_48mhz_rxenable_out_out_6_ds_int;
   logic  usb_48mhz_rxenable_out_out_6_qs_int;
+  logic  usb_48mhz_rxenable_out_out_7_ds_int;
   logic  usb_48mhz_rxenable_out_out_7_qs_int;
+  logic  usb_48mhz_rxenable_out_out_8_ds_int;
   logic  usb_48mhz_rxenable_out_out_8_qs_int;
+  logic  usb_48mhz_rxenable_out_out_9_ds_int;
   logic  usb_48mhz_rxenable_out_out_9_qs_int;
+  logic  usb_48mhz_rxenable_out_out_10_ds_int;
   logic  usb_48mhz_rxenable_out_out_10_qs_int;
+  logic  usb_48mhz_rxenable_out_out_11_ds_int;
   logic  usb_48mhz_rxenable_out_out_11_qs_int;
-  logic [11:0] usb_48mhz_rxenable_out_d;
+  logic [11:0] usb_48mhz_rxenable_out_ds;
+  logic usb_48mhz_rxenable_out_qe;
+  logic [11:0] usb_48mhz_rxenable_out_qs;
   logic [11:0] usb_48mhz_rxenable_out_wdata;
   logic usb_48mhz_rxenable_out_we;
   logic unused_usb_48mhz_rxenable_out_wdata;
 
   always_comb begin
-    usb_48mhz_rxenable_out_d = '0;
-    usb_48mhz_rxenable_out_d[0] = usb_48mhz_rxenable_out_out_0_qs_int;
-    usb_48mhz_rxenable_out_d[1] = usb_48mhz_rxenable_out_out_1_qs_int;
-    usb_48mhz_rxenable_out_d[2] = usb_48mhz_rxenable_out_out_2_qs_int;
-    usb_48mhz_rxenable_out_d[3] = usb_48mhz_rxenable_out_out_3_qs_int;
-    usb_48mhz_rxenable_out_d[4] = usb_48mhz_rxenable_out_out_4_qs_int;
-    usb_48mhz_rxenable_out_d[5] = usb_48mhz_rxenable_out_out_5_qs_int;
-    usb_48mhz_rxenable_out_d[6] = usb_48mhz_rxenable_out_out_6_qs_int;
-    usb_48mhz_rxenable_out_d[7] = usb_48mhz_rxenable_out_out_7_qs_int;
-    usb_48mhz_rxenable_out_d[8] = usb_48mhz_rxenable_out_out_8_qs_int;
-    usb_48mhz_rxenable_out_d[9] = usb_48mhz_rxenable_out_out_9_qs_int;
-    usb_48mhz_rxenable_out_d[10] = usb_48mhz_rxenable_out_out_10_qs_int;
-    usb_48mhz_rxenable_out_d[11] = usb_48mhz_rxenable_out_out_11_qs_int;
+    usb_48mhz_rxenable_out_qs = 12'h0;
+    usb_48mhz_rxenable_out_ds = 12'h0;
+    usb_48mhz_rxenable_out_ds[0] = usb_48mhz_rxenable_out_out_0_ds_int;
+    usb_48mhz_rxenable_out_qs[0] = usb_48mhz_rxenable_out_out_0_qs_int;
+    usb_48mhz_rxenable_out_ds[1] = usb_48mhz_rxenable_out_out_1_ds_int;
+    usb_48mhz_rxenable_out_qs[1] = usb_48mhz_rxenable_out_out_1_qs_int;
+    usb_48mhz_rxenable_out_ds[2] = usb_48mhz_rxenable_out_out_2_ds_int;
+    usb_48mhz_rxenable_out_qs[2] = usb_48mhz_rxenable_out_out_2_qs_int;
+    usb_48mhz_rxenable_out_ds[3] = usb_48mhz_rxenable_out_out_3_ds_int;
+    usb_48mhz_rxenable_out_qs[3] = usb_48mhz_rxenable_out_out_3_qs_int;
+    usb_48mhz_rxenable_out_ds[4] = usb_48mhz_rxenable_out_out_4_ds_int;
+    usb_48mhz_rxenable_out_qs[4] = usb_48mhz_rxenable_out_out_4_qs_int;
+    usb_48mhz_rxenable_out_ds[5] = usb_48mhz_rxenable_out_out_5_ds_int;
+    usb_48mhz_rxenable_out_qs[5] = usb_48mhz_rxenable_out_out_5_qs_int;
+    usb_48mhz_rxenable_out_ds[6] = usb_48mhz_rxenable_out_out_6_ds_int;
+    usb_48mhz_rxenable_out_qs[6] = usb_48mhz_rxenable_out_out_6_qs_int;
+    usb_48mhz_rxenable_out_ds[7] = usb_48mhz_rxenable_out_out_7_ds_int;
+    usb_48mhz_rxenable_out_qs[7] = usb_48mhz_rxenable_out_out_7_qs_int;
+    usb_48mhz_rxenable_out_ds[8] = usb_48mhz_rxenable_out_out_8_ds_int;
+    usb_48mhz_rxenable_out_qs[8] = usb_48mhz_rxenable_out_out_8_qs_int;
+    usb_48mhz_rxenable_out_ds[9] = usb_48mhz_rxenable_out_out_9_ds_int;
+    usb_48mhz_rxenable_out_qs[9] = usb_48mhz_rxenable_out_out_9_qs_int;
+    usb_48mhz_rxenable_out_ds[10] = usb_48mhz_rxenable_out_out_10_ds_int;
+    usb_48mhz_rxenable_out_qs[10] = usb_48mhz_rxenable_out_out_10_qs_int;
+    usb_48mhz_rxenable_out_ds[11] = usb_48mhz_rxenable_out_out_11_ds_int;
+    usb_48mhz_rxenable_out_qs[11] = usb_48mhz_rxenable_out_out_11_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(12),
     .ResetVal(12'h0),
-    .BitMask(12'hfff)
+    .BitMask(12'hfff),
+    .DstWrReq(1)
   ) u_rxenable_out_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_usb_48mhz_i),
     .rst_dst_ni   (rst_usb_48mhz_ni),
-    .src_update_i (sync_usb_48mhz_update),
     .src_regwen_i ('0),
     .src_we_i     (rxenable_out_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[11:0]),
     .src_busy_o   (rxenable_out_busy),
     .src_qs_o     (rxenable_out_qs), // for software read back
-    .dst_d_i      (usb_48mhz_rxenable_out_d),
+    .dst_update_i (usb_48mhz_rxenable_out_qe),
+    .dst_ds_i     (usb_48mhz_rxenable_out_ds),
+    .dst_qs_i     (usb_48mhz_rxenable_out_qs),
     .dst_we_o     (usb_48mhz_rxenable_out_we),
     .dst_re_o     (),
     .dst_regwen_o (),
@@ -807,32 +822,34 @@ module usbdev_reg_top (
   assign unused_usb_48mhz_rxenable_out_wdata =
       ^usb_48mhz_rxenable_out_wdata;
 
-  logic [1:0] aon_wake_control_d;
+  logic [1:0] aon_wake_control_qs;
   logic [1:0] aon_wake_control_wdata;
   logic aon_wake_control_we;
   logic unused_aon_wake_control_wdata;
 
   always_comb begin
-    aon_wake_control_d = '0;
+    aon_wake_control_qs = 2'h0;
   end
 
   prim_reg_cdc #(
     .DataWidth(2),
     .ResetVal(2'h0),
-    .BitMask(2'h3)
+    .BitMask(2'h3),
+    .DstWrReq(0)
   ) u_wake_control_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i ('0),
     .src_we_i     (wake_control_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[1:0]),
     .src_busy_o   (wake_control_busy),
     .src_qs_o     (wake_control_qs), // for software read back
-    .dst_d_i      (aon_wake_control_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wake_control_qs),
     .dst_we_o     (aon_wake_control_we),
     .dst_re_o     (),
     .dst_regwen_o (),
@@ -841,35 +858,46 @@ module usbdev_reg_top (
   assign unused_aon_wake_control_wdata =
       ^aon_wake_control_wdata;
 
+  logic  aon_wake_events_module_active_ds_int;
   logic  aon_wake_events_module_active_qs_int;
+  logic  aon_wake_events_disconnected_ds_int;
   logic  aon_wake_events_disconnected_qs_int;
+  logic  aon_wake_events_bus_reset_ds_int;
   logic  aon_wake_events_bus_reset_qs_int;
-  logic [9:0] aon_wake_events_d;
+  logic [9:0] aon_wake_events_ds;
+  logic aon_wake_events_qe;
+  logic [9:0] aon_wake_events_qs;
 
   always_comb begin
-    aon_wake_events_d = '0;
-    aon_wake_events_d[0] = aon_wake_events_module_active_qs_int;
-    aon_wake_events_d[8] = aon_wake_events_disconnected_qs_int;
-    aon_wake_events_d[9] = aon_wake_events_bus_reset_qs_int;
+    aon_wake_events_qs = 10'h0;
+    aon_wake_events_ds = 10'h0;
+    aon_wake_events_ds[0] = aon_wake_events_module_active_ds_int;
+    aon_wake_events_qs[0] = aon_wake_events_module_active_qs_int;
+    aon_wake_events_ds[8] = aon_wake_events_disconnected_ds_int;
+    aon_wake_events_qs[8] = aon_wake_events_disconnected_qs_int;
+    aon_wake_events_ds[9] = aon_wake_events_bus_reset_ds_int;
+    aon_wake_events_qs[9] = aon_wake_events_bus_reset_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(10),
     .ResetVal(10'h0),
-    .BitMask(10'h301)
+    .BitMask(10'h301),
+    .DstWrReq(1)
   ) u_wake_events_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i ('0),
     .src_we_i     ('0),
     .src_re_i     ('0),
     .src_wd_i     ('0),
     .src_busy_o   (wake_events_busy),
     .src_qs_o     (wake_events_qs), // for software read back
-    .dst_d_i      (aon_wake_events_d),
+    .dst_update_i (aon_wake_events_qe),
+    .dst_ds_i     (aon_wake_events_ds),
+    .dst_qs_i     (aon_wake_events_qs),
     .dst_we_o     (),
     .dst_re_o     (),
     .dst_regwen_o (),
@@ -898,6 +926,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.pkt_received.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_pkt_received_qs)
@@ -923,6 +952,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.pkt_sent.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_pkt_sent_qs)
@@ -948,6 +978,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.disconnected.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_disconnected_qs)
@@ -973,6 +1004,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.host_lost.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_host_lost_qs)
@@ -998,6 +1030,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.link_reset.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_link_reset_qs)
@@ -1023,6 +1056,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.link_suspend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_link_suspend_qs)
@@ -1048,6 +1082,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.link_resume.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_link_resume_qs)
@@ -1073,6 +1108,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.av_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_av_empty_qs)
@@ -1098,6 +1134,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_full.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_full_qs)
@@ -1123,6 +1160,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.av_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_av_overflow_qs)
@@ -1148,6 +1186,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.link_in_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_link_in_err_qs)
@@ -1173,6 +1212,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_crc_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_crc_err_qs)
@@ -1198,6 +1238,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_pid_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_pid_err_qs)
@@ -1223,6 +1264,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_bitstuff_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_bitstuff_err_qs)
@@ -1248,6 +1290,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.frame.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_frame_qs)
@@ -1273,6 +1316,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.powered.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_powered_qs)
@@ -1298,6 +1342,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.link_out_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_link_out_err_qs)
@@ -1325,6 +1370,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.pkt_received.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_pkt_received_qs)
@@ -1350,6 +1396,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.pkt_sent.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_pkt_sent_qs)
@@ -1375,6 +1422,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.disconnected.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_disconnected_qs)
@@ -1400,6 +1448,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.host_lost.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_host_lost_qs)
@@ -1425,6 +1474,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.link_reset.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_link_reset_qs)
@@ -1450,6 +1500,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.link_suspend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_link_suspend_qs)
@@ -1475,6 +1526,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.link_resume.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_link_resume_qs)
@@ -1500,6 +1552,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.av_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_av_empty_qs)
@@ -1525,6 +1578,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_full.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_full_qs)
@@ -1550,6 +1604,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.av_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_av_overflow_qs)
@@ -1575,6 +1630,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.link_in_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_link_in_err_qs)
@@ -1600,6 +1656,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_crc_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_crc_err_qs)
@@ -1625,6 +1682,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_pid_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_pid_err_qs)
@@ -1650,6 +1708,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_bitstuff_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_bitstuff_err_qs)
@@ -1675,6 +1734,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.frame.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_frame_qs)
@@ -1700,6 +1760,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.powered.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_powered_qs)
@@ -1725,6 +1786,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.link_out_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_link_out_err_qs)
@@ -1746,6 +1808,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.pkt_received.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.pkt_received.qe = intr_test_qe;
@@ -1761,6 +1824,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.pkt_sent.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.pkt_sent.qe = intr_test_qe;
@@ -1776,6 +1840,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.disconnected.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.disconnected.qe = intr_test_qe;
@@ -1791,6 +1856,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.host_lost.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.host_lost.qe = intr_test_qe;
@@ -1806,6 +1872,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[4]),
     .q      (reg2hw.intr_test.link_reset.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.link_reset.qe = intr_test_qe;
@@ -1821,6 +1888,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[5]),
     .q      (reg2hw.intr_test.link_suspend.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.link_suspend.qe = intr_test_qe;
@@ -1836,6 +1904,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[6]),
     .q      (reg2hw.intr_test.link_resume.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.link_resume.qe = intr_test_qe;
@@ -1851,6 +1920,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[7]),
     .q      (reg2hw.intr_test.av_empty.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.av_empty.qe = intr_test_qe;
@@ -1866,6 +1936,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[8]),
     .q      (reg2hw.intr_test.rx_full.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_full.qe = intr_test_qe;
@@ -1881,6 +1952,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[9]),
     .q      (reg2hw.intr_test.av_overflow.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.av_overflow.qe = intr_test_qe;
@@ -1896,6 +1968,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[10]),
     .q      (reg2hw.intr_test.link_in_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.link_in_err.qe = intr_test_qe;
@@ -1911,6 +1984,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[11]),
     .q      (reg2hw.intr_test.rx_crc_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_crc_err.qe = intr_test_qe;
@@ -1926,6 +2000,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[12]),
     .q      (reg2hw.intr_test.rx_pid_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_pid_err.qe = intr_test_qe;
@@ -1941,6 +2016,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[13]),
     .q      (reg2hw.intr_test.rx_bitstuff_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_bitstuff_err.qe = intr_test_qe;
@@ -1956,6 +2032,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[14]),
     .q      (reg2hw.intr_test.frame.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.frame.qe = intr_test_qe;
@@ -1971,6 +2048,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[15]),
     .q      (reg2hw.intr_test.powered.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.powered.qe = intr_test_qe;
@@ -1986,6 +2064,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[16]),
     .q      (reg2hw.intr_test.link_out_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.link_out_err.qe = intr_test_qe;
@@ -2005,6 +2084,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -2022,6 +2102,7 @@ module usbdev_reg_top (
     .d_i(&usbctrl_flds_we),
     .q_o(usbctrl_qe)
   );
+  assign usb_48mhz_usbctrl_qe = |usbctrl_flds_we;
   //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -2042,6 +2123,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (usbctrl_flds_we[0]),
     .q      (reg2hw.usbctrl.enable.q),
+    .ds     (usb_48mhz_usbctrl_enable_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_usbctrl_enable_qs_int)
@@ -2067,6 +2149,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (usbctrl_flds_we[1]),
     .q      (reg2hw.usbctrl.resume_link_active.q),
+    .ds     (usb_48mhz_usbctrl_resume_link_active_ds_int),
 
     // to register interface (read)
     .qs     ()
@@ -2093,6 +2176,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (usbctrl_flds_we[2]),
     .q      (reg2hw.usbctrl.device_address.q),
+    .ds     (usb_48mhz_usbctrl_device_address_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_usbctrl_device_address_qs_int)
@@ -2121,6 +2205,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_0_qs)
@@ -2146,6 +2231,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_1_qs)
@@ -2171,6 +2257,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_2_qs)
@@ -2196,6 +2283,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_3_qs)
@@ -2221,6 +2309,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_4_qs)
@@ -2246,6 +2335,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_5_qs)
@@ -2271,6 +2361,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_6_qs)
@@ -2296,6 +2387,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_7_qs)
@@ -2321,6 +2413,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_8_qs)
@@ -2346,6 +2439,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_9_qs)
@@ -2371,6 +2465,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_10_qs)
@@ -2396,6 +2491,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_out_enable[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_out_enable_enable_11_qs)
@@ -2424,6 +2520,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_0_qs)
@@ -2449,6 +2546,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_1_qs)
@@ -2474,6 +2572,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_2_qs)
@@ -2499,6 +2598,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_3_qs)
@@ -2524,6 +2624,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_4_qs)
@@ -2549,6 +2650,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_5_qs)
@@ -2574,6 +2676,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_6_qs)
@@ -2599,6 +2702,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_7_qs)
@@ -2624,6 +2728,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_8_qs)
@@ -2649,6 +2754,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_9_qs)
@@ -2674,6 +2780,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_10_qs)
@@ -2699,6 +2806,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ep_in_enable[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ep_in_enable_enable_11_qs)
@@ -2717,6 +2825,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (usbstat_frame_qs)
   );
 
@@ -2731,6 +2840,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (usbstat_host_lost_qs)
   );
 
@@ -2745,6 +2855,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (usbstat_link_state_qs)
   );
 
@@ -2759,6 +2870,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (usbstat_sense_qs)
   );
 
@@ -2773,6 +2885,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (usbstat_av_depth_qs)
   );
 
@@ -2787,6 +2900,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (usbstat_av_full_qs)
   );
 
@@ -2801,6 +2915,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (usbstat_rx_depth_qs)
   );
 
@@ -2815,6 +2930,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (usbstat_rx_empty_qs)
   );
 
@@ -2850,6 +2966,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (avbuffer_flds_we[0]),
     .q      (reg2hw.avbuffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -2869,6 +2986,7 @@ module usbdev_reg_top (
     .qre    (reg2hw.rxfifo.buffer.re),
     .qe     (),
     .q      (reg2hw.rxfifo.buffer.q),
+    .ds     (),
     .qs     (rxfifo_buffer_qs)
   );
 
@@ -2883,6 +3001,7 @@ module usbdev_reg_top (
     .qre    (reg2hw.rxfifo.size.re),
     .qe     (),
     .q      (reg2hw.rxfifo.size.q),
+    .ds     (),
     .qs     (rxfifo_size_qs)
   );
 
@@ -2897,6 +3016,7 @@ module usbdev_reg_top (
     .qre    (reg2hw.rxfifo.setup.re),
     .qe     (),
     .q      (reg2hw.rxfifo.setup.q),
+    .ds     (),
     .qs     (rxfifo_setup_qs)
   );
 
@@ -2911,6 +3031,7 @@ module usbdev_reg_top (
     .qre    (reg2hw.rxfifo.ep.re),
     .qe     (),
     .q      (reg2hw.rxfifo.ep.q),
+    .ds     (),
     .qs     (rxfifo_ep_qs)
   );
 
@@ -2937,6 +3058,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_0_qs)
@@ -2962,6 +3084,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_1_qs)
@@ -2987,6 +3110,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_2_qs)
@@ -3012,6 +3136,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_3_qs)
@@ -3037,6 +3162,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_4_qs)
@@ -3062,6 +3188,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_5_qs)
@@ -3087,6 +3214,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_6_qs)
@@ -3112,6 +3240,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_7_qs)
@@ -3137,6 +3266,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_8_qs)
@@ -3162,6 +3292,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_9_qs)
@@ -3187,6 +3318,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_10_qs)
@@ -3212,6 +3344,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxenable_setup[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxenable_setup_setup_11_qs)
@@ -3220,6 +3353,8 @@ module usbdev_reg_top (
 
   // Subregister 0 of Multireg rxenable_out
   // R[rxenable_out]: V(False)
+  logic [11:0] rxenable_out_flds_we;
+  assign usb_48mhz_rxenable_out_qe = |rxenable_out_flds_we;
   //   F[out_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -3238,8 +3373,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[0].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[0]),
     .q      (reg2hw.rxenable_out[0].q),
+    .ds     (usb_48mhz_rxenable_out_out_0_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_0_qs_int)
@@ -3263,8 +3399,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[1].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[1]),
     .q      (reg2hw.rxenable_out[1].q),
+    .ds     (usb_48mhz_rxenable_out_out_1_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_1_qs_int)
@@ -3288,8 +3425,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[2].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[2]),
     .q      (reg2hw.rxenable_out[2].q),
+    .ds     (usb_48mhz_rxenable_out_out_2_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_2_qs_int)
@@ -3313,8 +3451,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[3].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[3]),
     .q      (reg2hw.rxenable_out[3].q),
+    .ds     (usb_48mhz_rxenable_out_out_3_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_3_qs_int)
@@ -3338,8 +3477,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[4].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[4]),
     .q      (reg2hw.rxenable_out[4].q),
+    .ds     (usb_48mhz_rxenable_out_out_4_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_4_qs_int)
@@ -3363,8 +3503,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[5].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[5]),
     .q      (reg2hw.rxenable_out[5].q),
+    .ds     (usb_48mhz_rxenable_out_out_5_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_5_qs_int)
@@ -3388,8 +3529,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[6].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[6]),
     .q      (reg2hw.rxenable_out[6].q),
+    .ds     (usb_48mhz_rxenable_out_out_6_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_6_qs_int)
@@ -3413,8 +3555,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[7].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[7]),
     .q      (reg2hw.rxenable_out[7].q),
+    .ds     (usb_48mhz_rxenable_out_out_7_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_7_qs_int)
@@ -3438,8 +3581,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[8].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[8]),
     .q      (reg2hw.rxenable_out[8].q),
+    .ds     (usb_48mhz_rxenable_out_out_8_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_8_qs_int)
@@ -3463,8 +3607,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[9].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[9]),
     .q      (reg2hw.rxenable_out[9].q),
+    .ds     (usb_48mhz_rxenable_out_out_9_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_9_qs_int)
@@ -3488,8 +3633,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[10].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[10]),
     .q      (reg2hw.rxenable_out[10].q),
+    .ds     (usb_48mhz_rxenable_out_out_10_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_10_qs_int)
@@ -3513,8 +3659,9 @@ module usbdev_reg_top (
     .d      (hw2reg.rxenable_out[11].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (rxenable_out_flds_we[11]),
     .q      (reg2hw.rxenable_out[11].q),
+    .ds     (usb_48mhz_rxenable_out_out_11_ds_int),
 
     // to register interface (read)
     .qs     (usb_48mhz_rxenable_out_out_11_qs_int)
@@ -3543,6 +3690,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_0_qs)
@@ -3568,6 +3716,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_1_qs)
@@ -3593,6 +3742,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_2_qs)
@@ -3618,6 +3768,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_3_qs)
@@ -3643,6 +3794,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_4_qs)
@@ -3668,6 +3820,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_5_qs)
@@ -3693,6 +3846,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_6_qs)
@@ -3718,6 +3872,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_7_qs)
@@ -3743,6 +3898,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_8_qs)
@@ -3768,6 +3924,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_9_qs)
@@ -3793,6 +3950,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_10_qs)
@@ -3818,6 +3976,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.set_nak_out[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (set_nak_out_enable_11_qs)
@@ -3846,6 +4005,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_0_qs)
@@ -3871,6 +4031,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_1_qs)
@@ -3896,6 +4057,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_2_qs)
@@ -3921,6 +4083,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_3_qs)
@@ -3946,6 +4109,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_4_qs)
@@ -3971,6 +4135,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_5_qs)
@@ -3996,6 +4161,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_6_qs)
@@ -4021,6 +4187,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_7_qs)
@@ -4046,6 +4213,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_8_qs)
@@ -4071,6 +4239,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_9_qs)
@@ -4096,6 +4265,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_10_qs)
@@ -4121,6 +4291,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_sent_sent_11_qs)
@@ -4149,6 +4320,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_0_qs)
@@ -4174,6 +4346,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_1_qs)
@@ -4199,6 +4372,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_2_qs)
@@ -4224,6 +4398,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_3_qs)
@@ -4249,6 +4424,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_4_qs)
@@ -4274,6 +4450,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_5_qs)
@@ -4299,6 +4476,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_6_qs)
@@ -4324,6 +4502,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_7_qs)
@@ -4349,6 +4528,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_8_qs)
@@ -4374,6 +4554,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_9_qs)
@@ -4399,6 +4580,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_10_qs)
@@ -4424,6 +4606,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_stall[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_stall_endpoint_11_qs)
@@ -4452,6 +4635,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_0_qs)
@@ -4477,6 +4661,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_1_qs)
@@ -4502,6 +4687,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_2_qs)
@@ -4527,6 +4713,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_3_qs)
@@ -4552,6 +4739,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_4_qs)
@@ -4577,6 +4765,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_5_qs)
@@ -4602,6 +4791,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_6_qs)
@@ -4627,6 +4817,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_7_qs)
@@ -4652,6 +4843,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_8_qs)
@@ -4677,6 +4869,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_9_qs)
@@ -4702,6 +4895,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_10_qs)
@@ -4727,6 +4921,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_stall[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_stall_endpoint_11_qs)
@@ -4755,6 +4950,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[0].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_0_buffer_0_qs)
@@ -4780,6 +4976,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[0].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_0_size_0_qs)
@@ -4805,6 +5002,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[0].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_0_pend_0_qs)
@@ -4830,6 +5028,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[0].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_0_rdy_0_qs)
@@ -4858,6 +5057,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[1].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_1_buffer_1_qs)
@@ -4883,6 +5083,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[1].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_1_size_1_qs)
@@ -4908,6 +5109,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[1].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_1_pend_1_qs)
@@ -4933,6 +5135,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[1].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_1_rdy_1_qs)
@@ -4961,6 +5164,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[2].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_2_buffer_2_qs)
@@ -4986,6 +5190,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[2].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_2_size_2_qs)
@@ -5011,6 +5216,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[2].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_2_pend_2_qs)
@@ -5036,6 +5242,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[2].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_2_rdy_2_qs)
@@ -5064,6 +5271,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[3].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_3_buffer_3_qs)
@@ -5089,6 +5297,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[3].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_3_size_3_qs)
@@ -5114,6 +5323,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[3].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_3_pend_3_qs)
@@ -5139,6 +5349,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[3].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_3_rdy_3_qs)
@@ -5167,6 +5378,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[4].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_4_buffer_4_qs)
@@ -5192,6 +5404,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[4].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_4_size_4_qs)
@@ -5217,6 +5430,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[4].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_4_pend_4_qs)
@@ -5242,6 +5456,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[4].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_4_rdy_4_qs)
@@ -5270,6 +5485,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[5].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_5_buffer_5_qs)
@@ -5295,6 +5511,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[5].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_5_size_5_qs)
@@ -5320,6 +5537,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[5].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_5_pend_5_qs)
@@ -5345,6 +5563,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[5].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_5_rdy_5_qs)
@@ -5373,6 +5592,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[6].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_6_buffer_6_qs)
@@ -5398,6 +5618,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[6].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_6_size_6_qs)
@@ -5423,6 +5644,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[6].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_6_pend_6_qs)
@@ -5448,6 +5670,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[6].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_6_rdy_6_qs)
@@ -5476,6 +5699,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[7].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_7_buffer_7_qs)
@@ -5501,6 +5725,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[7].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_7_size_7_qs)
@@ -5526,6 +5751,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[7].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_7_pend_7_qs)
@@ -5551,6 +5777,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[7].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_7_rdy_7_qs)
@@ -5579,6 +5806,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[8].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_8_buffer_8_qs)
@@ -5604,6 +5832,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[8].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_8_size_8_qs)
@@ -5629,6 +5858,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[8].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_8_pend_8_qs)
@@ -5654,6 +5884,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[8].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_8_rdy_8_qs)
@@ -5682,6 +5913,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[9].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_9_buffer_9_qs)
@@ -5707,6 +5939,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[9].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_9_size_9_qs)
@@ -5732,6 +5965,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[9].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_9_pend_9_qs)
@@ -5757,6 +5991,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[9].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_9_rdy_9_qs)
@@ -5785,6 +6020,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[10].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_10_buffer_10_qs)
@@ -5810,6 +6046,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[10].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_10_size_10_qs)
@@ -5835,6 +6072,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[10].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_10_pend_10_qs)
@@ -5860,6 +6098,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[10].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_10_rdy_10_qs)
@@ -5888,6 +6127,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[11].buffer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_11_buffer_11_qs)
@@ -5913,6 +6153,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[11].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_11_size_11_qs)
@@ -5938,6 +6179,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[11].pend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_11_pend_11_qs)
@@ -5963,6 +6205,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configin[11].rdy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configin_11_rdy_11_qs)
@@ -5991,6 +6234,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_0_qs)
@@ -6016,6 +6260,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_1_qs)
@@ -6041,6 +6286,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_2_qs)
@@ -6066,6 +6312,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_3_qs)
@@ -6091,6 +6338,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_4_qs)
@@ -6116,6 +6364,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_5_qs)
@@ -6141,6 +6390,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_6_qs)
@@ -6166,6 +6416,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_7_qs)
@@ -6191,6 +6442,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_8_qs)
@@ -6216,6 +6468,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_9_qs)
@@ -6241,6 +6494,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_10_qs)
@@ -6266,6 +6520,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.out_iso[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (out_iso_iso_11_qs)
@@ -6294,6 +6549,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_0_qs)
@@ -6319,6 +6575,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_1_qs)
@@ -6344,6 +6601,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_2_qs)
@@ -6369,6 +6627,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_3_qs)
@@ -6394,6 +6653,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_4_qs)
@@ -6419,6 +6679,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_5_qs)
@@ -6444,6 +6705,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_6_qs)
@@ -6469,6 +6731,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_7_qs)
@@ -6494,6 +6757,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_8_qs)
@@ -6519,6 +6783,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_9_qs)
@@ -6544,6 +6809,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_10_qs)
@@ -6569,6 +6835,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.in_iso[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (in_iso_iso_11_qs)
@@ -6608,6 +6875,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[0]),
     .q      (reg2hw.data_toggle_clear[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6634,6 +6902,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[1]),
     .q      (reg2hw.data_toggle_clear[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6660,6 +6929,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[2]),
     .q      (reg2hw.data_toggle_clear[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6686,6 +6956,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[3]),
     .q      (reg2hw.data_toggle_clear[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6712,6 +6983,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[4]),
     .q      (reg2hw.data_toggle_clear[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6738,6 +7010,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[5]),
     .q      (reg2hw.data_toggle_clear[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6764,6 +7037,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[6]),
     .q      (reg2hw.data_toggle_clear[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6790,6 +7064,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[7]),
     .q      (reg2hw.data_toggle_clear[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6816,6 +7091,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[8]),
     .q      (reg2hw.data_toggle_clear[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6842,6 +7118,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[9]),
     .q      (reg2hw.data_toggle_clear[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6868,6 +7145,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[10]),
     .q      (reg2hw.data_toggle_clear[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6894,6 +7172,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (data_toggle_clear_flds_we[11]),
     .q      (reg2hw.data_toggle_clear[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -6913,6 +7192,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (phy_pins_sense_rx_dp_i_qs)
   );
 
@@ -6927,6 +7207,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (phy_pins_sense_rx_dn_i_qs)
   );
 
@@ -6941,6 +7222,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (phy_pins_sense_rx_d_i_qs)
   );
 
@@ -6955,6 +7237,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (phy_pins_sense_tx_dp_o_qs)
   );
 
@@ -6969,6 +7252,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (phy_pins_sense_tx_dn_o_qs)
   );
 
@@ -6983,6 +7267,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (phy_pins_sense_tx_d_o_qs)
   );
 
@@ -6997,6 +7282,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (phy_pins_sense_tx_se0_o_qs)
   );
 
@@ -7011,6 +7297,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (phy_pins_sense_tx_oe_o_qs)
   );
 
@@ -7025,6 +7312,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (phy_pins_sense_pwr_sense_qs)
   );
 
@@ -7050,6 +7338,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_pins_drive.dp_o.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_pins_drive_dp_o_qs)
@@ -7075,6 +7364,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_pins_drive.dn_o.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_pins_drive_dn_o_qs)
@@ -7100,6 +7390,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_pins_drive.d_o.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_pins_drive_d_o_qs)
@@ -7125,6 +7416,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_pins_drive.se0_o.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_pins_drive_se0_o_qs)
@@ -7150,6 +7442,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_pins_drive.oe_o.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_pins_drive_oe_o_qs)
@@ -7175,6 +7468,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_pins_drive.rx_enable_o.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_pins_drive_rx_enable_o_qs)
@@ -7200,6 +7494,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_pins_drive.dp_pullup_en_o.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_pins_drive_dp_pullup_en_o_qs)
@@ -7225,6 +7520,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_pins_drive.dn_pullup_en_o.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_pins_drive_dn_pullup_en_o_qs)
@@ -7250,6 +7546,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_pins_drive.en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_pins_drive_en_qs)
@@ -7277,6 +7574,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_config.use_diff_rcvr.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_config_use_diff_rcvr_qs)
@@ -7302,6 +7600,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_config.tx_use_d_se0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_config_tx_use_d_se0_qs)
@@ -7327,6 +7626,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_config.eop_single_bit.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_config_eop_single_bit_qs)
@@ -7352,6 +7652,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_config.pinflip.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_config_pinflip_qs)
@@ -7377,6 +7678,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_config.usb_ref_disable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_config_usb_ref_disable_qs)
@@ -7402,6 +7704,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_config.tx_osc_test_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_config_tx_osc_test_mode_qs)
@@ -7423,6 +7726,7 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (wake_control_flds_we[0]),
     .q      (reg2hw.wake_control.suspend_req.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.wake_control.suspend_req.qe = wake_control_qe;
@@ -7438,12 +7742,15 @@ module usbdev_reg_top (
     .qre    (),
     .qe     (wake_control_flds_we[1]),
     .q      (reg2hw.wake_control.wake_ack.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.wake_control.wake_ack.qe = wake_control_qe;
 
 
   // R[wake_events]: V(False)
+  logic [2:0] wake_events_flds_we;
+  assign aon_wake_events_qe = |wake_events_flds_we;
   //   F[module_active]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -7462,8 +7769,9 @@ module usbdev_reg_top (
     .d      (hw2reg.wake_events.module_active.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wake_events_flds_we[0]),
     .q      (),
+    .ds     (aon_wake_events_module_active_ds_int),
 
     // to register interface (read)
     .qs     (aon_wake_events_module_active_qs_int)
@@ -7487,8 +7795,9 @@ module usbdev_reg_top (
     .d      (hw2reg.wake_events.disconnected.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wake_events_flds_we[1]),
     .q      (),
+    .ds     (aon_wake_events_disconnected_ds_int),
 
     // to register interface (read)
     .qs     (aon_wake_events_disconnected_qs_int)
@@ -7512,8 +7821,9 @@ module usbdev_reg_top (
     .d      (hw2reg.wake_events.bus_reset.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wake_events_flds_we[2]),
     .q      (),
+    .ds     (aon_wake_events_bus_reset_ds_int),
 
     // to register interface (read)
     .qs     (aon_wake_events_bus_reset_qs_int)

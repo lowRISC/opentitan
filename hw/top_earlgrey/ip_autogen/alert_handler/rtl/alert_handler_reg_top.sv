@@ -1818,6 +1818,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.classa.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_classa_qs)
@@ -1843,6 +1844,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.classb.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_classb_qs)
@@ -1868,6 +1870,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.classc.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_classc_qs)
@@ -1893,6 +1896,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.classd.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_classd_qs)
@@ -1920,6 +1924,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.classa.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_classa_qs)
@@ -1945,6 +1950,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.classb.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_classb_qs)
@@ -1970,6 +1976,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.classc.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_classc_qs)
@@ -1995,6 +2002,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.classd.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_classd_qs)
@@ -2016,6 +2024,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.classa.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.classa.qe = intr_test_qe;
@@ -2031,6 +2040,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.classb.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.classb.qe = intr_test_qe;
@@ -2046,6 +2056,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.classc.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.classc.qe = intr_test_qe;
@@ -2061,6 +2072,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.classd.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.classd.qe = intr_test_qe;
@@ -2086,6 +2098,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ping_timer_regwen_qs)
@@ -2117,6 +2130,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ping_timeout_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ping_timeout_cyc_shadowed_qs),
@@ -2155,6 +2169,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ping_timer_en_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ping_timer_en_shadowed_qs),
@@ -2189,6 +2204,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_0_qs)
@@ -2216,6 +2232,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_1_qs)
@@ -2243,6 +2260,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_2_qs)
@@ -2270,6 +2288,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_3_qs)
@@ -2297,6 +2316,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_4_qs)
@@ -2324,6 +2344,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_5_qs)
@@ -2351,6 +2372,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_6_qs)
@@ -2378,6 +2400,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_7_qs)
@@ -2405,6 +2428,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_8_qs)
@@ -2432,6 +2456,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_9_qs)
@@ -2459,6 +2484,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_10_qs)
@@ -2486,6 +2512,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_11_qs)
@@ -2513,6 +2540,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_12_qs)
@@ -2540,6 +2568,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_13_qs)
@@ -2567,6 +2596,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_14_qs)
@@ -2594,6 +2624,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_15_qs)
@@ -2621,6 +2652,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[16].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_16_qs)
@@ -2648,6 +2680,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[17].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_17_qs)
@@ -2675,6 +2708,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[18].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_18_qs)
@@ -2702,6 +2736,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[19].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_19_qs)
@@ -2729,6 +2764,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[20].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_20_qs)
@@ -2756,6 +2792,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[21].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_21_qs)
@@ -2783,6 +2820,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[22].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_22_qs)
@@ -2810,6 +2848,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[23].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_23_qs)
@@ -2837,6 +2876,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[24].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_24_qs)
@@ -2864,6 +2904,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[25].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_25_qs)
@@ -2891,6 +2932,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[26].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_26_qs)
@@ -2918,6 +2960,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[27].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_27_qs)
@@ -2945,6 +2988,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[28].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_28_qs)
@@ -2972,6 +3016,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[29].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_29_qs)
@@ -2999,6 +3044,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[30].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_30_qs)
@@ -3026,6 +3072,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[31].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_31_qs)
@@ -3053,6 +3100,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[32].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_32_qs)
@@ -3080,6 +3128,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[33].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_33_qs)
@@ -3107,6 +3156,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[34].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_34_qs)
@@ -3134,6 +3184,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[35].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_35_qs)
@@ -3161,6 +3212,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[36].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_36_qs)
@@ -3188,6 +3240,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[37].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_37_qs)
@@ -3215,6 +3268,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[38].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_38_qs)
@@ -3242,6 +3296,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[39].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_39_qs)
@@ -3269,6 +3324,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[40].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_40_qs)
@@ -3296,6 +3352,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[41].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_41_qs)
@@ -3323,6 +3380,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[42].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_42_qs)
@@ -3350,6 +3408,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[43].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_43_qs)
@@ -3377,6 +3436,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[44].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_44_qs)
@@ -3404,6 +3464,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[45].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_45_qs)
@@ -3431,6 +3492,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[46].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_46_qs)
@@ -3458,6 +3520,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[47].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_47_qs)
@@ -3485,6 +3548,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[48].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_48_qs)
@@ -3512,6 +3576,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[49].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_49_qs)
@@ -3539,6 +3604,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[50].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_50_qs)
@@ -3566,6 +3632,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[51].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_51_qs)
@@ -3593,6 +3660,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[52].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_52_qs)
@@ -3620,6 +3688,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[53].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_53_qs)
@@ -3647,6 +3716,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[54].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_54_qs)
@@ -3674,6 +3744,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[55].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_55_qs)
@@ -3701,6 +3772,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[56].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_56_qs)
@@ -3728,6 +3800,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[57].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_57_qs)
@@ -3755,6 +3828,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[58].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_58_qs)
@@ -3782,6 +3856,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[59].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_59_qs)
@@ -3809,6 +3884,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_regwen[60].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_60_qs)
@@ -3841,6 +3917,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_0_qs),
@@ -3880,6 +3957,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_1_qs),
@@ -3919,6 +3997,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_2_qs),
@@ -3958,6 +4037,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_3_qs),
@@ -3997,6 +4077,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_4_qs),
@@ -4036,6 +4117,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_5_qs),
@@ -4075,6 +4157,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_6_qs),
@@ -4114,6 +4197,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_7_qs),
@@ -4153,6 +4237,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_8_qs),
@@ -4192,6 +4277,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_9_qs),
@@ -4231,6 +4317,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_10_qs),
@@ -4270,6 +4357,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_11_qs),
@@ -4309,6 +4397,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_12_qs),
@@ -4348,6 +4437,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_13_qs),
@@ -4387,6 +4477,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_14_qs),
@@ -4426,6 +4517,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_15_qs),
@@ -4465,6 +4557,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[16].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_16_qs),
@@ -4504,6 +4597,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[17].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_17_qs),
@@ -4543,6 +4637,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[18].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_18_qs),
@@ -4582,6 +4677,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[19].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_19_qs),
@@ -4621,6 +4717,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[20].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_20_qs),
@@ -4660,6 +4757,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[21].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_21_qs),
@@ -4699,6 +4797,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[22].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_22_qs),
@@ -4738,6 +4837,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[23].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_23_qs),
@@ -4777,6 +4877,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[24].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_24_qs),
@@ -4816,6 +4917,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[25].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_25_qs),
@@ -4855,6 +4957,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[26].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_26_qs),
@@ -4894,6 +4997,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[27].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_27_qs),
@@ -4933,6 +5037,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[28].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_28_qs),
@@ -4972,6 +5077,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[29].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_29_qs),
@@ -5011,6 +5117,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[30].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_30_qs),
@@ -5050,6 +5157,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[31].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_31_qs),
@@ -5089,6 +5197,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[32].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_32_qs),
@@ -5128,6 +5237,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[33].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_33_qs),
@@ -5167,6 +5277,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[34].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_34_qs),
@@ -5206,6 +5317,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[35].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_35_qs),
@@ -5245,6 +5357,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[36].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_36_qs),
@@ -5284,6 +5397,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[37].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_37_qs),
@@ -5323,6 +5437,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[38].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_38_qs),
@@ -5362,6 +5477,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[39].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_39_qs),
@@ -5401,6 +5517,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[40].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_40_qs),
@@ -5440,6 +5557,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[41].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_41_qs),
@@ -5479,6 +5597,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[42].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_42_qs),
@@ -5518,6 +5637,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[43].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_43_qs),
@@ -5557,6 +5677,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[44].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_44_qs),
@@ -5596,6 +5717,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[45].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_45_qs),
@@ -5635,6 +5757,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[46].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_46_qs),
@@ -5674,6 +5797,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[47].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_47_qs),
@@ -5713,6 +5837,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[48].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_48_qs),
@@ -5752,6 +5877,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[49].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_49_qs),
@@ -5791,6 +5917,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[50].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_50_qs),
@@ -5830,6 +5957,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[51].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_51_qs),
@@ -5869,6 +5997,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[52].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_52_qs),
@@ -5908,6 +6037,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[53].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_53_qs),
@@ -5947,6 +6077,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[54].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_54_qs),
@@ -5986,6 +6117,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[55].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_55_qs),
@@ -6025,6 +6157,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[56].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_56_qs),
@@ -6064,6 +6197,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[57].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_57_qs),
@@ -6103,6 +6237,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[58].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_58_qs),
@@ -6142,6 +6277,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[59].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_59_qs),
@@ -6181,6 +6317,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_en_shadowed[60].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_en_shadowed_60_qs),
@@ -6220,6 +6357,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_0_qs),
@@ -6259,6 +6397,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_1_qs),
@@ -6298,6 +6437,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_2_qs),
@@ -6337,6 +6477,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_3_qs),
@@ -6376,6 +6517,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_4_qs),
@@ -6415,6 +6557,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_5_qs),
@@ -6454,6 +6597,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_6_qs),
@@ -6493,6 +6637,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_7_qs),
@@ -6532,6 +6677,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_8_qs),
@@ -6571,6 +6717,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_9_qs),
@@ -6610,6 +6757,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_10_qs),
@@ -6649,6 +6797,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_11_qs),
@@ -6688,6 +6837,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_12_qs),
@@ -6727,6 +6877,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_13_qs),
@@ -6766,6 +6917,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_14_qs),
@@ -6805,6 +6957,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_15_qs),
@@ -6844,6 +6997,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[16].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_16_qs),
@@ -6883,6 +7037,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[17].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_17_qs),
@@ -6922,6 +7077,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[18].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_18_qs),
@@ -6961,6 +7117,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[19].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_19_qs),
@@ -7000,6 +7157,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[20].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_20_qs),
@@ -7039,6 +7197,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[21].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_21_qs),
@@ -7078,6 +7237,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[22].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_22_qs),
@@ -7117,6 +7277,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[23].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_23_qs),
@@ -7156,6 +7317,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[24].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_24_qs),
@@ -7195,6 +7357,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[25].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_25_qs),
@@ -7234,6 +7397,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[26].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_26_qs),
@@ -7273,6 +7437,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[27].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_27_qs),
@@ -7312,6 +7477,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[28].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_28_qs),
@@ -7351,6 +7517,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[29].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_29_qs),
@@ -7390,6 +7557,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[30].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_30_qs),
@@ -7429,6 +7597,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[31].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_31_qs),
@@ -7468,6 +7637,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[32].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_32_qs),
@@ -7507,6 +7677,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[33].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_33_qs),
@@ -7546,6 +7717,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[34].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_34_qs),
@@ -7585,6 +7757,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[35].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_35_qs),
@@ -7624,6 +7797,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[36].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_36_qs),
@@ -7663,6 +7837,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[37].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_37_qs),
@@ -7702,6 +7877,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[38].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_38_qs),
@@ -7741,6 +7917,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[39].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_39_qs),
@@ -7780,6 +7957,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[40].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_40_qs),
@@ -7819,6 +7997,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[41].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_41_qs),
@@ -7858,6 +8037,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[42].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_42_qs),
@@ -7897,6 +8077,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[43].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_43_qs),
@@ -7936,6 +8117,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[44].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_44_qs),
@@ -7975,6 +8157,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[45].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_45_qs),
@@ -8014,6 +8197,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[46].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_46_qs),
@@ -8053,6 +8237,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[47].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_47_qs),
@@ -8092,6 +8277,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[48].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_48_qs),
@@ -8131,6 +8317,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[49].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_49_qs),
@@ -8170,6 +8357,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[50].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_50_qs),
@@ -8209,6 +8397,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[51].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_51_qs),
@@ -8248,6 +8437,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[52].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_52_qs),
@@ -8287,6 +8477,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[53].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_53_qs),
@@ -8326,6 +8517,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[54].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_54_qs),
@@ -8365,6 +8557,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[55].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_55_qs),
@@ -8404,6 +8597,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[56].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_56_qs),
@@ -8443,6 +8637,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[57].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_57_qs),
@@ -8482,6 +8677,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[58].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_58_qs),
@@ -8521,6 +8717,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[59].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_59_qs),
@@ -8560,6 +8757,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_class_shadowed[60].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_class_shadowed_60_qs),
@@ -8594,6 +8792,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_0_qs)
@@ -8621,6 +8820,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_1_qs)
@@ -8648,6 +8848,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_2_qs)
@@ -8675,6 +8876,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_3_qs)
@@ -8702,6 +8904,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_4_qs)
@@ -8729,6 +8932,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_5_qs)
@@ -8756,6 +8960,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_6_qs)
@@ -8783,6 +8988,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_7_qs)
@@ -8810,6 +9016,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_8_qs)
@@ -8837,6 +9044,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_9_qs)
@@ -8864,6 +9072,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_10_qs)
@@ -8891,6 +9100,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_11_qs)
@@ -8918,6 +9128,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_12_qs)
@@ -8945,6 +9156,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_13_qs)
@@ -8972,6 +9184,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_14_qs)
@@ -8999,6 +9212,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_15_qs)
@@ -9026,6 +9240,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[16].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_16_qs)
@@ -9053,6 +9268,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[17].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_17_qs)
@@ -9080,6 +9296,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[18].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_18_qs)
@@ -9107,6 +9324,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[19].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_19_qs)
@@ -9134,6 +9352,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[20].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_20_qs)
@@ -9161,6 +9380,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[21].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_21_qs)
@@ -9188,6 +9408,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[22].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_22_qs)
@@ -9215,6 +9436,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[23].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_23_qs)
@@ -9242,6 +9464,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[24].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_24_qs)
@@ -9269,6 +9492,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[25].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_25_qs)
@@ -9296,6 +9520,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[26].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_26_qs)
@@ -9323,6 +9548,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[27].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_27_qs)
@@ -9350,6 +9576,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[28].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_28_qs)
@@ -9377,6 +9604,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[29].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_29_qs)
@@ -9404,6 +9632,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[30].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_30_qs)
@@ -9431,6 +9660,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[31].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_31_qs)
@@ -9458,6 +9688,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[32].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_32_qs)
@@ -9485,6 +9716,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[33].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_33_qs)
@@ -9512,6 +9744,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[34].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_34_qs)
@@ -9539,6 +9772,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[35].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_35_qs)
@@ -9566,6 +9800,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[36].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_36_qs)
@@ -9593,6 +9828,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[37].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_37_qs)
@@ -9620,6 +9856,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[38].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_38_qs)
@@ -9647,6 +9884,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[39].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_39_qs)
@@ -9674,6 +9912,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[40].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_40_qs)
@@ -9701,6 +9940,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[41].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_41_qs)
@@ -9728,6 +9968,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[42].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_42_qs)
@@ -9755,6 +9996,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[43].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_43_qs)
@@ -9782,6 +10024,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[44].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_44_qs)
@@ -9809,6 +10052,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[45].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_45_qs)
@@ -9836,6 +10080,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[46].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_46_qs)
@@ -9863,6 +10108,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[47].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_47_qs)
@@ -9890,6 +10136,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[48].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_48_qs)
@@ -9917,6 +10164,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[49].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_49_qs)
@@ -9944,6 +10192,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[50].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_50_qs)
@@ -9971,6 +10220,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[51].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_51_qs)
@@ -9998,6 +10248,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[52].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_52_qs)
@@ -10025,6 +10276,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[53].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_53_qs)
@@ -10052,6 +10304,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[54].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_54_qs)
@@ -10079,6 +10332,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[55].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_55_qs)
@@ -10106,6 +10360,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[56].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_56_qs)
@@ -10133,6 +10388,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[57].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_57_qs)
@@ -10160,6 +10416,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[58].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_58_qs)
@@ -10187,6 +10444,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[59].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_59_qs)
@@ -10214,6 +10472,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_cause[60].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_cause_60_qs)
@@ -10241,6 +10500,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_regwen_0_qs)
@@ -10268,6 +10528,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_regwen_1_qs)
@@ -10295,6 +10556,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_regwen_2_qs)
@@ -10322,6 +10584,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_regwen_3_qs)
@@ -10349,6 +10612,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_regwen_4_qs)
@@ -10376,6 +10640,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_regwen_5_qs)
@@ -10403,6 +10668,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_regwen_6_qs)
@@ -10435,6 +10701,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_en_shadowed[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_0_qs),
@@ -10474,6 +10741,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_en_shadowed[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_1_qs),
@@ -10513,6 +10781,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_en_shadowed[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_2_qs),
@@ -10552,6 +10821,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_en_shadowed[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_3_qs),
@@ -10591,6 +10861,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_en_shadowed[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_4_qs),
@@ -10630,6 +10901,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_en_shadowed[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_5_qs),
@@ -10669,6 +10941,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_en_shadowed[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_6_qs),
@@ -10709,6 +10982,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_class_shadowed[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_0_qs),
@@ -10749,6 +11023,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_class_shadowed[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_1_qs),
@@ -10789,6 +11064,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_class_shadowed[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_2_qs),
@@ -10829,6 +11105,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_class_shadowed[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_3_qs),
@@ -10869,6 +11146,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_class_shadowed[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_4_qs),
@@ -10909,6 +11187,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_class_shadowed[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_5_qs),
@@ -10949,6 +11228,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_class_shadowed[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_6_qs),
@@ -10983,6 +11263,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_cause[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_cause_0_qs)
@@ -11010,6 +11291,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_cause[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_cause_1_qs)
@@ -11037,6 +11319,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_cause[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_cause_2_qs)
@@ -11064,6 +11347,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_cause[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_cause_3_qs)
@@ -11091,6 +11375,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_cause[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_cause_4_qs)
@@ -11118,6 +11403,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_cause[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_cause_5_qs)
@@ -11145,6 +11431,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.loc_alert_cause[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (loc_alert_cause_6_qs)
@@ -11171,6 +11458,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_regwen_qs)
@@ -11203,6 +11491,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_ctrl_shadowed.en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_en_qs),
@@ -11237,6 +11526,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_ctrl_shadowed.lock.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_lock_qs),
@@ -11271,6 +11561,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_ctrl_shadowed.en_e0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_en_e0_qs),
@@ -11305,6 +11596,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_ctrl_shadowed.en_e1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_en_e1_qs),
@@ -11339,6 +11631,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_ctrl_shadowed.en_e2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_en_e2_qs),
@@ -11373,6 +11666,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_ctrl_shadowed.en_e3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_en_e3_qs),
@@ -11407,6 +11701,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_ctrl_shadowed.map_e0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_map_e0_qs),
@@ -11441,6 +11736,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_ctrl_shadowed.map_e1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_map_e1_qs),
@@ -11475,6 +11771,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_ctrl_shadowed.map_e2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_map_e2_qs),
@@ -11509,6 +11806,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_ctrl_shadowed.map_e3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_map_e3_qs),
@@ -11542,6 +11840,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_clr_regwen_qs)
@@ -11584,6 +11883,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (classa_clr_shadowed_flds_we[0]),
     .q      (reg2hw.classa_clr_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_clr_shadowed_qs),
@@ -11609,6 +11909,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classa_accum_cnt_qs)
   );
 
@@ -11638,6 +11939,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_accum_thresh_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_accum_thresh_shadowed_qs),
@@ -11676,6 +11978,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_timeout_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_timeout_cyc_shadowed_qs),
@@ -11715,6 +12018,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_crashdump_trigger_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_crashdump_trigger_shadowed_qs),
@@ -11753,6 +12057,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_phase0_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_phase0_cyc_shadowed_qs),
@@ -11791,6 +12096,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_phase1_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_phase1_cyc_shadowed_qs),
@@ -11829,6 +12135,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_phase2_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_phase2_cyc_shadowed_qs),
@@ -11867,6 +12174,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classa_phase3_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classa_phase3_cyc_shadowed_qs),
@@ -11891,6 +12199,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classa_esc_cnt_qs)
   );
 
@@ -11906,6 +12215,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classa_state_qs)
   );
 
@@ -11930,6 +12240,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_regwen_qs)
@@ -11962,6 +12273,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_ctrl_shadowed.en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_en_qs),
@@ -11996,6 +12308,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_ctrl_shadowed.lock.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_lock_qs),
@@ -12030,6 +12343,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_ctrl_shadowed.en_e0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_en_e0_qs),
@@ -12064,6 +12378,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_ctrl_shadowed.en_e1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_en_e1_qs),
@@ -12098,6 +12413,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_ctrl_shadowed.en_e2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_en_e2_qs),
@@ -12132,6 +12448,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_ctrl_shadowed.en_e3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_en_e3_qs),
@@ -12166,6 +12483,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_ctrl_shadowed.map_e0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_map_e0_qs),
@@ -12200,6 +12518,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_ctrl_shadowed.map_e1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_map_e1_qs),
@@ -12234,6 +12553,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_ctrl_shadowed.map_e2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_map_e2_qs),
@@ -12268,6 +12588,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_ctrl_shadowed.map_e3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_map_e3_qs),
@@ -12301,6 +12622,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_clr_regwen_qs)
@@ -12343,6 +12665,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (classb_clr_shadowed_flds_we[0]),
     .q      (reg2hw.classb_clr_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_clr_shadowed_qs),
@@ -12368,6 +12691,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classb_accum_cnt_qs)
   );
 
@@ -12397,6 +12721,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_accum_thresh_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_accum_thresh_shadowed_qs),
@@ -12435,6 +12760,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_timeout_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_timeout_cyc_shadowed_qs),
@@ -12474,6 +12800,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_crashdump_trigger_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_crashdump_trigger_shadowed_qs),
@@ -12512,6 +12839,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_phase0_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_phase0_cyc_shadowed_qs),
@@ -12550,6 +12878,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_phase1_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_phase1_cyc_shadowed_qs),
@@ -12588,6 +12917,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_phase2_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_phase2_cyc_shadowed_qs),
@@ -12626,6 +12956,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classb_phase3_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classb_phase3_cyc_shadowed_qs),
@@ -12650,6 +12981,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classb_esc_cnt_qs)
   );
 
@@ -12665,6 +12997,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classb_state_qs)
   );
 
@@ -12689,6 +13022,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_regwen_qs)
@@ -12721,6 +13055,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_ctrl_shadowed.en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_en_qs),
@@ -12755,6 +13090,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_ctrl_shadowed.lock.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_lock_qs),
@@ -12789,6 +13125,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_ctrl_shadowed.en_e0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_en_e0_qs),
@@ -12823,6 +13160,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_ctrl_shadowed.en_e1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_en_e1_qs),
@@ -12857,6 +13195,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_ctrl_shadowed.en_e2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_en_e2_qs),
@@ -12891,6 +13230,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_ctrl_shadowed.en_e3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_en_e3_qs),
@@ -12925,6 +13265,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_ctrl_shadowed.map_e0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_map_e0_qs),
@@ -12959,6 +13300,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_ctrl_shadowed.map_e1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_map_e1_qs),
@@ -12993,6 +13335,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_ctrl_shadowed.map_e2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_map_e2_qs),
@@ -13027,6 +13370,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_ctrl_shadowed.map_e3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_map_e3_qs),
@@ -13060,6 +13404,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_clr_regwen_qs)
@@ -13102,6 +13447,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (classc_clr_shadowed_flds_we[0]),
     .q      (reg2hw.classc_clr_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_clr_shadowed_qs),
@@ -13127,6 +13473,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classc_accum_cnt_qs)
   );
 
@@ -13156,6 +13503,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_accum_thresh_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_accum_thresh_shadowed_qs),
@@ -13194,6 +13542,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_timeout_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_timeout_cyc_shadowed_qs),
@@ -13233,6 +13582,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_crashdump_trigger_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_crashdump_trigger_shadowed_qs),
@@ -13271,6 +13621,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_phase0_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_phase0_cyc_shadowed_qs),
@@ -13309,6 +13660,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_phase1_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_phase1_cyc_shadowed_qs),
@@ -13347,6 +13699,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_phase2_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_phase2_cyc_shadowed_qs),
@@ -13385,6 +13738,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classc_phase3_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classc_phase3_cyc_shadowed_qs),
@@ -13409,6 +13763,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classc_esc_cnt_qs)
   );
 
@@ -13424,6 +13779,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classc_state_qs)
   );
 
@@ -13448,6 +13804,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_regwen_qs)
@@ -13480,6 +13837,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_ctrl_shadowed.en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_en_qs),
@@ -13514,6 +13872,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_ctrl_shadowed.lock.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_lock_qs),
@@ -13548,6 +13907,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_ctrl_shadowed.en_e0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_en_e0_qs),
@@ -13582,6 +13942,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_ctrl_shadowed.en_e1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_en_e1_qs),
@@ -13616,6 +13977,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_ctrl_shadowed.en_e2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_en_e2_qs),
@@ -13650,6 +14012,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_ctrl_shadowed.en_e3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_en_e3_qs),
@@ -13684,6 +14047,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_ctrl_shadowed.map_e0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_map_e0_qs),
@@ -13718,6 +14082,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_ctrl_shadowed.map_e1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_map_e1_qs),
@@ -13752,6 +14117,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_ctrl_shadowed.map_e2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_map_e2_qs),
@@ -13786,6 +14152,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_ctrl_shadowed.map_e3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_map_e3_qs),
@@ -13819,6 +14186,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_clr_regwen_qs)
@@ -13861,6 +14229,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (classd_clr_shadowed_flds_we[0]),
     .q      (reg2hw.classd_clr_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_clr_shadowed_qs),
@@ -13886,6 +14255,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classd_accum_cnt_qs)
   );
 
@@ -13915,6 +14285,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_accum_thresh_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_accum_thresh_shadowed_qs),
@@ -13953,6 +14324,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_timeout_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_timeout_cyc_shadowed_qs),
@@ -13992,6 +14364,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_crashdump_trigger_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_crashdump_trigger_shadowed_qs),
@@ -14030,6 +14403,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_phase0_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_phase0_cyc_shadowed_qs),
@@ -14068,6 +14442,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_phase1_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_phase1_cyc_shadowed_qs),
@@ -14106,6 +14481,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_phase2_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_phase2_cyc_shadowed_qs),
@@ -14144,6 +14520,7 @@ module alert_handler_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.classd_phase3_cyc_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (classd_phase3_cyc_shadowed_qs),
@@ -14168,6 +14545,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classd_esc_cnt_qs)
   );
 
@@ -14183,6 +14561,7 @@ module alert_handler_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (classd_state_qs)
   );
 

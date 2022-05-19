@@ -277,6 +277,7 @@ module rv_core_ibex_cfg_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.fatal_sw_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_sw_err.qe = alert_test_qe;
@@ -292,6 +293,7 @@ module rv_core_ibex_cfg_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.recov_sw_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_sw_err.qe = alert_test_qe;
@@ -307,6 +309,7 @@ module rv_core_ibex_cfg_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[2]),
     .q      (reg2hw.alert_test.fatal_hw_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_hw_err.qe = alert_test_qe;
@@ -322,6 +325,7 @@ module rv_core_ibex_cfg_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[3]),
     .q      (reg2hw.alert_test.recov_hw_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_hw_err.qe = alert_test_qe;
@@ -347,6 +351,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_recov_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_recov_err_qs)
@@ -373,6 +378,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_fatal_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_fatal_err_qs)
@@ -400,6 +406,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ibus_regwen_0_qs)
@@ -427,6 +434,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ibus_regwen_1_qs)
@@ -457,6 +465,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ibus_addr_en[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ibus_addr_en_0_qs)
@@ -487,6 +496,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ibus_addr_en[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ibus_addr_en_1_qs)
@@ -517,6 +527,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ibus_addr_matching[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ibus_addr_matching_0_qs)
@@ -547,6 +558,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ibus_addr_matching[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ibus_addr_matching_1_qs)
@@ -577,6 +589,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ibus_remap_addr[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ibus_remap_addr_0_qs)
@@ -607,6 +620,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ibus_remap_addr[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ibus_remap_addr_1_qs)
@@ -634,6 +648,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dbus_regwen_0_qs)
@@ -661,6 +676,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dbus_regwen_1_qs)
@@ -691,6 +707,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dbus_addr_en[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dbus_addr_en_0_qs)
@@ -721,6 +738,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dbus_addr_en[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dbus_addr_en_1_qs)
@@ -751,6 +769,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dbus_addr_matching[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dbus_addr_matching_0_qs)
@@ -781,6 +800,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dbus_addr_matching[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dbus_addr_matching_1_qs)
@@ -811,6 +831,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dbus_remap_addr[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dbus_remap_addr_0_qs)
@@ -841,6 +862,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dbus_remap_addr[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dbus_remap_addr_1_qs)
@@ -868,6 +890,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.nmi_enable.alert_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (nmi_enable_alert_en_qs)
@@ -893,6 +916,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.nmi_enable.wdog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (nmi_enable_wdog_en_qs)
@@ -920,6 +944,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.nmi_state.alert.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (nmi_state_alert_qs)
@@ -945,6 +970,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.nmi_state.wdog.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (nmi_state_wdog_qs)
@@ -972,6 +998,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_status_reg_intg_err_qs)
@@ -997,6 +1024,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_status_fatal_intg_err_qs)
@@ -1022,6 +1050,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_status_fatal_core_err_qs)
@@ -1047,6 +1076,7 @@ module rv_core_ibex_cfg_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_status_recov_core_err_qs)
@@ -1064,6 +1094,7 @@ module rv_core_ibex_cfg_reg_top (
     .qre    (reg2hw.rnd_data.re),
     .qe     (),
     .q      (reg2hw.rnd_data.q),
+    .ds     (),
     .qs     (rnd_data_qs)
   );
 
@@ -1080,6 +1111,7 @@ module rv_core_ibex_cfg_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (rnd_status_rnd_data_valid_qs)
   );
 
@@ -1094,6 +1126,7 @@ module rv_core_ibex_cfg_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (rnd_status_rnd_data_fips_qs)
   );
 
@@ -1109,6 +1142,7 @@ module rv_core_ibex_cfg_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (fpga_info_qs)
   );
 

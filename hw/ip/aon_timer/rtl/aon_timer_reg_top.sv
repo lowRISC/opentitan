@@ -116,18 +116,6 @@ module aon_timer_reg_top (
   );
 
   // cdc oversampling signals
-    logic sync_aon_update;
-  prim_sync_reqack u_aon_tgl (
-    .clk_src_i(clk_aon_i),
-    .rst_src_ni(rst_aon_ni),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .req_chk_i(1'b1),
-    .src_req_i(1'b1),
-    .src_ack_o(),
-    .dst_req_o(sync_aon_update),
-    .dst_ack_i(sync_aon_update)
-  );
 
   assign reg_rdata = reg_rdata_next ;
   assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
@@ -177,34 +165,36 @@ module aon_timer_reg_top (
 
   logic  aon_wkup_ctrl_enable_qs_int;
   logic [11:0]  aon_wkup_ctrl_prescaler_qs_int;
-  logic [12:0] aon_wkup_ctrl_d;
+  logic [12:0] aon_wkup_ctrl_qs;
   logic [12:0] aon_wkup_ctrl_wdata;
   logic aon_wkup_ctrl_we;
   logic unused_aon_wkup_ctrl_wdata;
 
   always_comb begin
-    aon_wkup_ctrl_d = '0;
-    aon_wkup_ctrl_d[0] = aon_wkup_ctrl_enable_qs_int;
-    aon_wkup_ctrl_d[12:1] = aon_wkup_ctrl_prescaler_qs_int;
+    aon_wkup_ctrl_qs = 13'h0;
+    aon_wkup_ctrl_qs[0] = aon_wkup_ctrl_enable_qs_int;
+    aon_wkup_ctrl_qs[12:1] = aon_wkup_ctrl_prescaler_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(13),
     .ResetVal(13'h0),
-    .BitMask(13'h1fff)
+    .BitMask(13'h1fff),
+    .DstWrReq(0)
   ) u_wkup_ctrl_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i ('0),
     .src_we_i     (wkup_ctrl_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[12:0]),
     .src_busy_o   (wkup_ctrl_busy),
     .src_qs_o     (wkup_ctrl_qs), // for software read back
-    .dst_d_i      (aon_wkup_ctrl_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_ctrl_qs),
     .dst_we_o     (aon_wkup_ctrl_we),
     .dst_re_o     (),
     .dst_regwen_o (),
@@ -214,33 +204,35 @@ module aon_timer_reg_top (
       ^aon_wkup_ctrl_wdata;
 
   logic [31:0]  aon_wkup_thold_qs_int;
-  logic [31:0] aon_wkup_thold_d;
+  logic [31:0] aon_wkup_thold_qs;
   logic [31:0] aon_wkup_thold_wdata;
   logic aon_wkup_thold_we;
   logic unused_aon_wkup_thold_wdata;
 
   always_comb begin
-    aon_wkup_thold_d = '0;
-    aon_wkup_thold_d = aon_wkup_thold_qs_int;
+    aon_wkup_thold_qs = 32'h0;
+    aon_wkup_thold_qs = aon_wkup_thold_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_wkup_thold_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i ('0),
     .src_we_i     (wkup_thold_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (wkup_thold_busy),
     .src_qs_o     (wkup_thold_qs), // for software read back
-    .dst_d_i      (aon_wkup_thold_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_thold_qs),
     .dst_we_o     (aon_wkup_thold_we),
     .dst_re_o     (),
     .dst_regwen_o (),
@@ -249,34 +241,41 @@ module aon_timer_reg_top (
   assign unused_aon_wkup_thold_wdata =
       ^aon_wkup_thold_wdata;
 
+  logic [31:0]  aon_wkup_count_ds_int;
   logic [31:0]  aon_wkup_count_qs_int;
-  logic [31:0] aon_wkup_count_d;
+  logic [31:0] aon_wkup_count_ds;
+  logic aon_wkup_count_qe;
+  logic [31:0] aon_wkup_count_qs;
   logic [31:0] aon_wkup_count_wdata;
   logic aon_wkup_count_we;
   logic unused_aon_wkup_count_wdata;
 
   always_comb begin
-    aon_wkup_count_d = '0;
-    aon_wkup_count_d = aon_wkup_count_qs_int;
+    aon_wkup_count_qs = 32'h0;
+    aon_wkup_count_ds = 32'h0;
+    aon_wkup_count_ds = aon_wkup_count_ds_int;
+    aon_wkup_count_qs = aon_wkup_count_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(1)
   ) u_wkup_count_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i ('0),
     .src_we_i     (wkup_count_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (wkup_count_busy),
     .src_qs_o     (wkup_count_qs), // for software read back
-    .dst_d_i      (aon_wkup_count_d),
+    .dst_update_i (aon_wkup_count_qe),
+    .dst_ds_i     (aon_wkup_count_ds),
+    .dst_qs_i     (aon_wkup_count_qs),
     .dst_we_o     (aon_wkup_count_we),
     .dst_re_o     (),
     .dst_regwen_o (),
@@ -287,35 +286,37 @@ module aon_timer_reg_top (
 
   logic  aon_wdog_ctrl_enable_qs_int;
   logic  aon_wdog_ctrl_pause_in_sleep_qs_int;
-  logic [1:0] aon_wdog_ctrl_d;
+  logic [1:0] aon_wdog_ctrl_qs;
   logic [1:0] aon_wdog_ctrl_wdata;
   logic aon_wdog_ctrl_we;
   logic unused_aon_wdog_ctrl_wdata;
   logic aon_wdog_ctrl_regwen;
 
   always_comb begin
-    aon_wdog_ctrl_d = '0;
-    aon_wdog_ctrl_d[0] = aon_wdog_ctrl_enable_qs_int;
-    aon_wdog_ctrl_d[1] = aon_wdog_ctrl_pause_in_sleep_qs_int;
+    aon_wdog_ctrl_qs = 2'h0;
+    aon_wdog_ctrl_qs[0] = aon_wdog_ctrl_enable_qs_int;
+    aon_wdog_ctrl_qs[1] = aon_wdog_ctrl_pause_in_sleep_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(2),
     .ResetVal(2'h0),
-    .BitMask(2'h3)
+    .BitMask(2'h3),
+    .DstWrReq(0)
   ) u_wdog_ctrl_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wdog_regwen_qs),
     .src_we_i     (wdog_ctrl_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[1:0]),
     .src_busy_o   (wdog_ctrl_busy),
     .src_qs_o     (wdog_ctrl_qs), // for software read back
-    .dst_d_i      (aon_wdog_ctrl_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wdog_ctrl_qs),
     .dst_we_o     (aon_wdog_ctrl_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wdog_ctrl_regwen),
@@ -325,34 +326,36 @@ module aon_timer_reg_top (
       ^aon_wdog_ctrl_wdata;
 
   logic [31:0]  aon_wdog_bark_thold_qs_int;
-  logic [31:0] aon_wdog_bark_thold_d;
+  logic [31:0] aon_wdog_bark_thold_qs;
   logic [31:0] aon_wdog_bark_thold_wdata;
   logic aon_wdog_bark_thold_we;
   logic unused_aon_wdog_bark_thold_wdata;
   logic aon_wdog_bark_thold_regwen;
 
   always_comb begin
-    aon_wdog_bark_thold_d = '0;
-    aon_wdog_bark_thold_d = aon_wdog_bark_thold_qs_int;
+    aon_wdog_bark_thold_qs = 32'h0;
+    aon_wdog_bark_thold_qs = aon_wdog_bark_thold_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_wdog_bark_thold_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wdog_regwen_qs),
     .src_we_i     (wdog_bark_thold_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (wdog_bark_thold_busy),
     .src_qs_o     (wdog_bark_thold_qs), // for software read back
-    .dst_d_i      (aon_wdog_bark_thold_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wdog_bark_thold_qs),
     .dst_we_o     (aon_wdog_bark_thold_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wdog_bark_thold_regwen),
@@ -362,34 +365,36 @@ module aon_timer_reg_top (
       ^aon_wdog_bark_thold_wdata;
 
   logic [31:0]  aon_wdog_bite_thold_qs_int;
-  logic [31:0] aon_wdog_bite_thold_d;
+  logic [31:0] aon_wdog_bite_thold_qs;
   logic [31:0] aon_wdog_bite_thold_wdata;
   logic aon_wdog_bite_thold_we;
   logic unused_aon_wdog_bite_thold_wdata;
   logic aon_wdog_bite_thold_regwen;
 
   always_comb begin
-    aon_wdog_bite_thold_d = '0;
-    aon_wdog_bite_thold_d = aon_wdog_bite_thold_qs_int;
+    aon_wdog_bite_thold_qs = 32'h0;
+    aon_wdog_bite_thold_qs = aon_wdog_bite_thold_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_wdog_bite_thold_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wdog_regwen_qs),
     .src_we_i     (wdog_bite_thold_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (wdog_bite_thold_busy),
     .src_qs_o     (wdog_bite_thold_qs), // for software read back
-    .dst_d_i      (aon_wdog_bite_thold_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wdog_bite_thold_qs),
     .dst_we_o     (aon_wdog_bite_thold_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wdog_bite_thold_regwen),
@@ -398,34 +403,41 @@ module aon_timer_reg_top (
   assign unused_aon_wdog_bite_thold_wdata =
       ^aon_wdog_bite_thold_wdata;
 
+  logic [31:0]  aon_wdog_count_ds_int;
   logic [31:0]  aon_wdog_count_qs_int;
-  logic [31:0] aon_wdog_count_d;
+  logic [31:0] aon_wdog_count_ds;
+  logic aon_wdog_count_qe;
+  logic [31:0] aon_wdog_count_qs;
   logic [31:0] aon_wdog_count_wdata;
   logic aon_wdog_count_we;
   logic unused_aon_wdog_count_wdata;
 
   always_comb begin
-    aon_wdog_count_d = '0;
-    aon_wdog_count_d = aon_wdog_count_qs_int;
+    aon_wdog_count_qs = 32'h0;
+    aon_wdog_count_ds = 32'h0;
+    aon_wdog_count_ds = aon_wdog_count_ds_int;
+    aon_wdog_count_qs = aon_wdog_count_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(1)
   ) u_wdog_count_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i ('0),
     .src_we_i     (wdog_count_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (wdog_count_busy),
     .src_qs_o     (wdog_count_qs), // for software read back
-    .dst_d_i      (aon_wdog_count_d),
+    .dst_update_i (aon_wdog_count_qe),
+    .dst_ds_i     (aon_wdog_count_ds),
+    .dst_qs_i     (aon_wdog_count_qs),
     .dst_we_o     (aon_wdog_count_we),
     .dst_re_o     (),
     .dst_regwen_o (),
@@ -434,34 +446,41 @@ module aon_timer_reg_top (
   assign unused_aon_wdog_count_wdata =
       ^aon_wdog_count_wdata;
 
+  logic  aon_wkup_cause_ds_int;
   logic  aon_wkup_cause_qs_int;
-  logic [0:0] aon_wkup_cause_d;
+  logic [0:0] aon_wkup_cause_ds;
+  logic aon_wkup_cause_qe;
+  logic [0:0] aon_wkup_cause_qs;
   logic [0:0] aon_wkup_cause_wdata;
   logic aon_wkup_cause_we;
   logic unused_aon_wkup_cause_wdata;
 
   always_comb begin
-    aon_wkup_cause_d = '0;
-    aon_wkup_cause_d = aon_wkup_cause_qs_int;
+    aon_wkup_cause_qs = 1'h0;
+    aon_wkup_cause_ds = 1'h0;
+    aon_wkup_cause_ds = aon_wkup_cause_ds_int;
+    aon_wkup_cause_qs = aon_wkup_cause_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(1),
     .ResetVal(1'h0),
-    .BitMask(1'h1)
+    .BitMask(1'h1),
+    .DstWrReq(1)
   ) u_wkup_cause_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i ('0),
     .src_we_i     (wkup_cause_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_cause_busy),
     .src_qs_o     (wkup_cause_qs), // for software read back
-    .dst_d_i      (aon_wkup_cause_d),
+    .dst_update_i (aon_wkup_cause_qe),
+    .dst_ds_i     (aon_wkup_cause_ds),
+    .dst_qs_i     (aon_wkup_cause_qs),
     .dst_we_o     (aon_wkup_cause_we),
     .dst_re_o     (),
     .dst_regwen_o (),
@@ -485,6 +504,7 @@ module aon_timer_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -511,6 +531,7 @@ module aon_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_ctrl.enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_ctrl_enable_qs_int)
@@ -536,6 +557,7 @@ module aon_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_ctrl.prescaler.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_ctrl_prescaler_qs_int)
@@ -562,6 +584,7 @@ module aon_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_thold.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_thold_qs_int)
@@ -569,6 +592,8 @@ module aon_timer_reg_top (
 
 
   // R[wkup_count]: V(False)
+  logic [0:0] wkup_count_flds_we;
+  assign aon_wkup_count_qe = |wkup_count_flds_we;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -586,8 +611,9 @@ module aon_timer_reg_top (
     .d      (hw2reg.wkup_count.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_count_flds_we[0]),
     .q      (reg2hw.wkup_count.q),
+    .ds     (aon_wkup_count_ds_int),
 
     // to register interface (read)
     .qs     (aon_wkup_count_qs_int)
@@ -614,6 +640,7 @@ module aon_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wdog_regwen_qs)
@@ -644,6 +671,7 @@ module aon_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wdog_ctrl.enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wdog_ctrl_enable_qs_int)
@@ -669,6 +697,7 @@ module aon_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wdog_ctrl.pause_in_sleep.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wdog_ctrl_pause_in_sleep_qs_int)
@@ -698,6 +727,7 @@ module aon_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wdog_bark_thold.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wdog_bark_thold_qs_int)
@@ -727,6 +757,7 @@ module aon_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wdog_bite_thold.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wdog_bite_thold_qs_int)
@@ -734,6 +765,8 @@ module aon_timer_reg_top (
 
 
   // R[wdog_count]: V(False)
+  logic [0:0] wdog_count_flds_we;
+  assign aon_wdog_count_qe = |wdog_count_flds_we;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -751,8 +784,9 @@ module aon_timer_reg_top (
     .d      (hw2reg.wdog_count.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wdog_count_flds_we[0]),
     .q      (reg2hw.wdog_count.q),
+    .ds     (aon_wdog_count_ds_int),
 
     // to register interface (read)
     .qs     (aon_wdog_count_qs_int)
@@ -780,6 +814,7 @@ module aon_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.wkup_timer_expired.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_wkup_timer_expired_qs)
@@ -805,6 +840,7 @@ module aon_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.wdog_timer_bark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_wdog_timer_bark_qs)
@@ -826,6 +862,7 @@ module aon_timer_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.wkup_timer_expired.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.wkup_timer_expired.qe = intr_test_qe;
@@ -841,12 +878,15 @@ module aon_timer_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.wdog_timer_bark.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.wdog_timer_bark.qe = intr_test_qe;
 
 
   // R[wkup_cause]: V(False)
+  logic [0:0] wkup_cause_flds_we;
+  assign aon_wkup_cause_qe = |wkup_cause_flds_we;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -864,8 +904,9 @@ module aon_timer_reg_top (
     .d      (hw2reg.wkup_cause.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_cause_flds_we[0]),
     .q      (reg2hw.wkup_cause.q),
+    .ds     (aon_wkup_cause_ds_int),
 
     // to register interface (read)
     .qs     (aon_wkup_cause_qs_int)

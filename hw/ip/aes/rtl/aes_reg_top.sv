@@ -246,6 +246,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_ctrl_update_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_ctrl_update_err.qe = alert_test_qe;
@@ -261,6 +262,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_fault.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_fault.qe = alert_test_qe;
@@ -281,6 +283,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share0_0_flds_we[0]),
     .q      (reg2hw.key_share0[0].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[0].qe = key_share0_0_qe;
@@ -301,6 +304,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share0_1_flds_we[0]),
     .q      (reg2hw.key_share0[1].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[1].qe = key_share0_1_qe;
@@ -321,6 +325,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share0_2_flds_we[0]),
     .q      (reg2hw.key_share0[2].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[2].qe = key_share0_2_qe;
@@ -341,6 +346,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share0_3_flds_we[0]),
     .q      (reg2hw.key_share0[3].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[3].qe = key_share0_3_qe;
@@ -361,6 +367,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share0_4_flds_we[0]),
     .q      (reg2hw.key_share0[4].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[4].qe = key_share0_4_qe;
@@ -381,6 +388,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share0_5_flds_we[0]),
     .q      (reg2hw.key_share0[5].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[5].qe = key_share0_5_qe;
@@ -401,6 +409,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share0_6_flds_we[0]),
     .q      (reg2hw.key_share0[6].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[6].qe = key_share0_6_qe;
@@ -421,6 +430,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share0_7_flds_we[0]),
     .q      (reg2hw.key_share0[7].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[7].qe = key_share0_7_qe;
@@ -441,6 +451,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share1_0_flds_we[0]),
     .q      (reg2hw.key_share1[0].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[0].qe = key_share1_0_qe;
@@ -461,6 +472,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share1_1_flds_we[0]),
     .q      (reg2hw.key_share1[1].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[1].qe = key_share1_1_qe;
@@ -481,6 +493,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share1_2_flds_we[0]),
     .q      (reg2hw.key_share1[2].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[2].qe = key_share1_2_qe;
@@ -501,6 +514,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share1_3_flds_we[0]),
     .q      (reg2hw.key_share1[3].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[3].qe = key_share1_3_qe;
@@ -521,6 +535,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share1_4_flds_we[0]),
     .q      (reg2hw.key_share1[4].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[4].qe = key_share1_4_qe;
@@ -541,6 +556,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share1_5_flds_we[0]),
     .q      (reg2hw.key_share1[5].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[5].qe = key_share1_5_qe;
@@ -561,6 +577,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share1_6_flds_we[0]),
     .q      (reg2hw.key_share1[6].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[6].qe = key_share1_6_qe;
@@ -581,6 +598,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (key_share1_7_flds_we[0]),
     .q      (reg2hw.key_share1[7].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[7].qe = key_share1_7_qe;
@@ -601,6 +619,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (iv_0_flds_we[0]),
     .q      (reg2hw.iv[0].q),
+    .ds     (),
     .qs     (iv_0_qs)
   );
   assign reg2hw.iv[0].qe = iv_0_qe;
@@ -621,6 +640,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (iv_1_flds_we[0]),
     .q      (reg2hw.iv[1].q),
+    .ds     (),
     .qs     (iv_1_qs)
   );
   assign reg2hw.iv[1].qe = iv_1_qe;
@@ -641,6 +661,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (iv_2_flds_we[0]),
     .q      (reg2hw.iv[2].q),
+    .ds     (),
     .qs     (iv_2_qs)
   );
   assign reg2hw.iv[2].qe = iv_2_qe;
@@ -661,6 +682,7 @@ module aes_reg_top (
     .qre    (),
     .qe     (iv_3_flds_we[0]),
     .q      (reg2hw.iv[3].q),
+    .ds     (),
     .qs     (iv_3_qs)
   );
   assign reg2hw.iv[3].qe = iv_3_qe;
@@ -698,6 +720,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (data_in_0_flds_we[0]),
     .q      (reg2hw.data_in[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -737,6 +760,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (data_in_1_flds_we[0]),
     .q      (reg2hw.data_in[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -776,6 +800,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (data_in_2_flds_we[0]),
     .q      (reg2hw.data_in[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -815,6 +840,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (data_in_3_flds_we[0]),
     .q      (reg2hw.data_in[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -834,6 +860,7 @@ module aes_reg_top (
     .qre    (reg2hw.data_out[0].re),
     .qe     (),
     .q      (reg2hw.data_out[0].q),
+    .ds     (),
     .qs     (data_out_0_qs)
   );
 
@@ -850,6 +877,7 @@ module aes_reg_top (
     .qre    (reg2hw.data_out[1].re),
     .qe     (),
     .q      (reg2hw.data_out[1].q),
+    .ds     (),
     .qs     (data_out_1_qs)
   );
 
@@ -866,6 +894,7 @@ module aes_reg_top (
     .qre    (reg2hw.data_out[2].re),
     .qe     (),
     .q      (reg2hw.data_out[2].q),
+    .ds     (),
     .qs     (data_out_2_qs)
   );
 
@@ -882,6 +911,7 @@ module aes_reg_top (
     .qre    (reg2hw.data_out[3].re),
     .qe     (),
     .q      (reg2hw.data_out[3].q),
+    .ds     (),
     .qs     (data_out_3_qs)
   );
 
@@ -901,6 +931,7 @@ module aes_reg_top (
     .qre    (reg2hw.ctrl_shadowed.operation.re),
     .qe     (ctrl_shadowed_flds_we[0]),
     .q      (reg2hw.ctrl_shadowed.operation.q),
+    .ds     (),
     .qs     (ctrl_shadowed_operation_qs)
   );
   assign reg2hw.ctrl_shadowed.operation.qe = ctrl_shadowed_qe;
@@ -916,6 +947,7 @@ module aes_reg_top (
     .qre    (reg2hw.ctrl_shadowed.mode.re),
     .qe     (ctrl_shadowed_flds_we[1]),
     .q      (reg2hw.ctrl_shadowed.mode.q),
+    .ds     (),
     .qs     (ctrl_shadowed_mode_qs)
   );
   assign reg2hw.ctrl_shadowed.mode.qe = ctrl_shadowed_qe;
@@ -931,6 +963,7 @@ module aes_reg_top (
     .qre    (reg2hw.ctrl_shadowed.key_len.re),
     .qe     (ctrl_shadowed_flds_we[2]),
     .q      (reg2hw.ctrl_shadowed.key_len.q),
+    .ds     (),
     .qs     (ctrl_shadowed_key_len_qs)
   );
   assign reg2hw.ctrl_shadowed.key_len.qe = ctrl_shadowed_qe;
@@ -946,6 +979,7 @@ module aes_reg_top (
     .qre    (reg2hw.ctrl_shadowed.sideload.re),
     .qe     (ctrl_shadowed_flds_we[3]),
     .q      (reg2hw.ctrl_shadowed.sideload.q),
+    .ds     (),
     .qs     (ctrl_shadowed_sideload_qs)
   );
   assign reg2hw.ctrl_shadowed.sideload.qe = ctrl_shadowed_qe;
@@ -961,6 +995,7 @@ module aes_reg_top (
     .qre    (reg2hw.ctrl_shadowed.prng_reseed_rate.re),
     .qe     (ctrl_shadowed_flds_we[4]),
     .q      (reg2hw.ctrl_shadowed.prng_reseed_rate.q),
+    .ds     (),
     .qs     (ctrl_shadowed_prng_reseed_rate_qs)
   );
   assign reg2hw.ctrl_shadowed.prng_reseed_rate.qe = ctrl_shadowed_qe;
@@ -976,6 +1011,7 @@ module aes_reg_top (
     .qre    (reg2hw.ctrl_shadowed.manual_operation.re),
     .qe     (ctrl_shadowed_flds_we[5]),
     .q      (reg2hw.ctrl_shadowed.manual_operation.q),
+    .ds     (),
     .qs     (ctrl_shadowed_manual_operation_qs)
   );
   assign reg2hw.ctrl_shadowed.manual_operation.qe = ctrl_shadowed_qe;
@@ -991,6 +1027,7 @@ module aes_reg_top (
     .qre    (reg2hw.ctrl_shadowed.force_zero_masks.re),
     .qe     (ctrl_shadowed_flds_we[6]),
     .q      (reg2hw.ctrl_shadowed.force_zero_masks.q),
+    .ds     (),
     .qs     (ctrl_shadowed_force_zero_masks_qs)
   );
   assign reg2hw.ctrl_shadowed.force_zero_masks.qe = ctrl_shadowed_qe;
@@ -1021,6 +1058,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl_aux_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_aux_shadowed_qs),
@@ -1054,6 +1092,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_aux_regwen_qs)
@@ -1081,6 +1120,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.trigger.start.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1106,6 +1146,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.trigger.key_iv_data_in_clear.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1131,6 +1172,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.trigger.data_out_clear.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1156,6 +1198,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.trigger.prng_reseed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1183,6 +1226,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.status.idle.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_idle_qs)
@@ -1208,6 +1252,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_stall_qs)
@@ -1233,6 +1278,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.status.output_lost.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_output_lost_qs)
@@ -1258,6 +1304,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_output_valid_qs)
@@ -1283,6 +1330,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_input_ready_qs)
@@ -1308,6 +1356,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_alert_recov_ctrl_update_err_qs)
@@ -1333,6 +1382,7 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_alert_fatal_fault_qs)

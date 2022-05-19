@@ -195,6 +195,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.done_ch0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_done_ch0_qs)
@@ -220,6 +221,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.done_ch1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_done_ch1_qs)
@@ -247,6 +249,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.done_ch0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_done_ch0_qs)
@@ -272,6 +275,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.done_ch1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_done_ch1_qs)
@@ -293,6 +297,7 @@ module pattgen_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.done_ch0.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.done_ch0.qe = intr_test_qe;
@@ -308,6 +313,7 @@ module pattgen_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.done_ch1.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.done_ch1.qe = intr_test_qe;
@@ -327,6 +333,7 @@ module pattgen_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -353,6 +360,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.enable_ch0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_enable_ch0_qs)
@@ -378,6 +386,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.enable_ch1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_enable_ch1_qs)
@@ -403,6 +412,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.polarity_ch0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_polarity_ch0_qs)
@@ -428,6 +438,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.polarity_ch1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_polarity_ch1_qs)
@@ -454,6 +465,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prediv_ch0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prediv_ch0_qs)
@@ -480,6 +492,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prediv_ch1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prediv_ch1_qs)
@@ -507,6 +520,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.data_ch0[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (data_ch0_0_qs)
@@ -534,6 +548,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.data_ch0[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (data_ch0_1_qs)
@@ -561,6 +576,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.data_ch1[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (data_ch1_0_qs)
@@ -588,6 +604,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.data_ch1[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (data_ch1_1_qs)
@@ -615,6 +632,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.size.len_ch0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (size_len_ch0_qs)
@@ -640,6 +658,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.size.reps_ch0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (size_reps_ch0_qs)
@@ -665,6 +684,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.size.len_ch1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (size_len_ch1_qs)
@@ -690,6 +710,7 @@ module pattgen_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.size.reps_ch1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (size_reps_ch1_qs)

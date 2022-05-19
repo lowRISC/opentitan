@@ -1289,6 +1289,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio0_qs)
@@ -1315,6 +1316,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio1_qs)
@@ -1341,6 +1343,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio2_qs)
@@ -1367,6 +1370,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio3_qs)
@@ -1393,6 +1397,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio4.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio4_qs)
@@ -1419,6 +1424,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio5.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio5_qs)
@@ -1445,6 +1451,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio6.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio6_qs)
@@ -1471,6 +1478,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio7.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio7_qs)
@@ -1497,6 +1505,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio8.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio8_qs)
@@ -1523,6 +1532,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio9.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio9_qs)
@@ -1549,6 +1559,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio10.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio10_qs)
@@ -1575,6 +1586,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio11.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio11_qs)
@@ -1601,6 +1613,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio12.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio12_qs)
@@ -1627,6 +1640,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio13.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio13_qs)
@@ -1653,6 +1667,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio14.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio14_qs)
@@ -1679,6 +1694,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio15.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio15_qs)
@@ -1705,6 +1721,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio16.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio16_qs)
@@ -1731,6 +1748,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio17.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio17_qs)
@@ -1757,6 +1775,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio18.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio18_qs)
@@ -1783,6 +1802,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio19.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio19_qs)
@@ -1809,6 +1829,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio20.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio20_qs)
@@ -1835,6 +1856,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio21.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio21_qs)
@@ -1861,6 +1883,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio22.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio22_qs)
@@ -1887,6 +1910,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio23.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio23_qs)
@@ -1913,6 +1937,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio24.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio24_qs)
@@ -1939,6 +1964,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio25.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio25_qs)
@@ -1965,6 +1991,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio26.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio26_qs)
@@ -1991,6 +2018,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio27.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio27_qs)
@@ -2017,6 +2045,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio28.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio28_qs)
@@ -2043,6 +2072,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio29.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio29_qs)
@@ -2069,6 +2099,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio30.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio30_qs)
@@ -2095,6 +2126,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio31.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio31_qs)
@@ -2121,6 +2153,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio32.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio32_qs)
@@ -2147,6 +2180,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio33.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio33_qs)
@@ -2173,6 +2207,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio34.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio34_qs)
@@ -2199,6 +2234,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio35.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio35_qs)
@@ -2225,6 +2261,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio36.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio36_qs)
@@ -2251,6 +2288,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio37.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio37_qs)
@@ -2277,6 +2315,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio38.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio38_qs)
@@ -2303,6 +2342,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio39.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio39_qs)
@@ -2329,6 +2369,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio40.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio40_qs)
@@ -2355,6 +2396,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio41.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio41_qs)
@@ -2381,6 +2423,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio42.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio42_qs)
@@ -2407,6 +2450,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio43.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio43_qs)
@@ -2433,6 +2477,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio44.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio44_qs)
@@ -2459,6 +2504,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio45.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio45_qs)
@@ -2485,6 +2531,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio46.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio46_qs)
@@ -2511,6 +2558,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio47.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio47_qs)
@@ -2537,6 +2585,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio48.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio48_qs)
@@ -2563,6 +2612,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio49.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio49_qs)
@@ -2589,6 +2639,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio50.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio50_qs)
@@ -2615,6 +2666,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio51.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio51_qs)
@@ -2641,6 +2693,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio52.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio52_qs)
@@ -2667,6 +2720,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio53.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio53_qs)
@@ -2693,6 +2747,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio54.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio54_qs)
@@ -2719,6 +2774,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio55.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio55_qs)
@@ -2745,6 +2801,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio56.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio56_qs)
@@ -2771,6 +2828,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio57.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio57_qs)
@@ -2797,6 +2855,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio58.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio58_qs)
@@ -2823,6 +2882,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio59.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio59_qs)
@@ -2849,6 +2909,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio60.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio60_qs)
@@ -2875,6 +2936,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio61.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio61_qs)
@@ -2901,6 +2963,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio62.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio62_qs)
@@ -2927,6 +2990,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio63.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio63_qs)
@@ -2953,6 +3017,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio64.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio64_qs)
@@ -2979,6 +3044,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio65.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio65_qs)
@@ -3005,6 +3071,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio66.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio66_qs)
@@ -3031,6 +3098,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio67.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio67_qs)
@@ -3057,6 +3125,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio68.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio68_qs)
@@ -3083,6 +3152,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio69.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio69_qs)
@@ -3109,6 +3179,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio70.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio70_qs)
@@ -3135,6 +3206,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio71.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio71_qs)
@@ -3161,6 +3233,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio72.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio72_qs)
@@ -3187,6 +3260,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio73.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio73_qs)
@@ -3213,6 +3287,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio74.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio74_qs)
@@ -3239,6 +3314,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio75.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio75_qs)
@@ -3265,6 +3341,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio76.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio76_qs)
@@ -3291,6 +3368,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio77.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio77_qs)
@@ -3317,6 +3395,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio78.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio78_qs)
@@ -3343,6 +3422,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio79.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio79_qs)
@@ -3369,6 +3449,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio80.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio80_qs)
@@ -3395,6 +3476,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio81.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio81_qs)
@@ -3421,6 +3503,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio82.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio82_qs)
@@ -3447,6 +3530,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio83.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio83_qs)
@@ -3473,6 +3557,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio84.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio84_qs)
@@ -3499,6 +3584,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio85.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio85_qs)
@@ -3525,6 +3611,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio86.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio86_qs)
@@ -3551,6 +3638,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio87.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio87_qs)
@@ -3577,6 +3665,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio88.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio88_qs)
@@ -3603,6 +3692,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio89.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio89_qs)
@@ -3629,6 +3719,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio90.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio90_qs)
@@ -3655,6 +3746,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio91.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio91_qs)
@@ -3681,6 +3773,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio92.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio92_qs)
@@ -3707,6 +3800,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio93.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio93_qs)
@@ -3733,6 +3827,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio94.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio94_qs)
@@ -3759,6 +3854,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio95.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio95_qs)
@@ -3785,6 +3881,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio96.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio96_qs)
@@ -3811,6 +3908,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio97.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio97_qs)
@@ -3837,6 +3935,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio98.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio98_qs)
@@ -3863,6 +3962,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio99.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio99_qs)
@@ -3889,6 +3989,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio100.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio100_qs)
@@ -3915,6 +4016,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio101.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio101_qs)
@@ -3941,6 +4043,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio102.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio102_qs)
@@ -3967,6 +4070,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio103.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio103_qs)
@@ -3993,6 +4097,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio104.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio104_qs)
@@ -4019,6 +4124,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio105.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio105_qs)
@@ -4045,6 +4151,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio106.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio106_qs)
@@ -4071,6 +4178,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio107.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio107_qs)
@@ -4097,6 +4205,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio108.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio108_qs)
@@ -4123,6 +4232,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio109.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio109_qs)
@@ -4149,6 +4259,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio110.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio110_qs)
@@ -4175,6 +4286,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio111.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio111_qs)
@@ -4201,6 +4313,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio112.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio112_qs)
@@ -4227,6 +4340,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio113.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio113_qs)
@@ -4253,6 +4367,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio114.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio114_qs)
@@ -4279,6 +4394,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio115.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio115_qs)
@@ -4305,6 +4421,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio116.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio116_qs)
@@ -4331,6 +4448,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio117.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio117_qs)
@@ -4357,6 +4475,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio118.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio118_qs)
@@ -4383,6 +4502,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio119.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio119_qs)
@@ -4409,6 +4529,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio120.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio120_qs)
@@ -4435,6 +4556,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio121.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio121_qs)
@@ -4461,6 +4583,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio122.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio122_qs)
@@ -4487,6 +4610,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio123.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio123_qs)
@@ -4513,6 +4637,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio124.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio124_qs)
@@ -4539,6 +4664,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio125.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio125_qs)
@@ -4565,6 +4691,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio126.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio126_qs)
@@ -4591,6 +4718,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio127.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio127_qs)
@@ -4617,6 +4745,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio128.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio128_qs)
@@ -4643,6 +4772,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio129.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio129_qs)
@@ -4669,6 +4799,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio130.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio130_qs)
@@ -4695,6 +4826,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio131.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio131_qs)
@@ -4721,6 +4853,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio132.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio132_qs)
@@ -4747,6 +4880,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio133.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio133_qs)
@@ -4773,6 +4907,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio134.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio134_qs)
@@ -4799,6 +4934,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio135.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio135_qs)
@@ -4825,6 +4961,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio136.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio136_qs)
@@ -4851,6 +4988,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio137.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio137_qs)
@@ -4877,6 +5015,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio138.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio138_qs)
@@ -4903,6 +5042,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio139.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio139_qs)
@@ -4929,6 +5069,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio140.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio140_qs)
@@ -4955,6 +5096,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio141.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio141_qs)
@@ -4981,6 +5123,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio142.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio142_qs)
@@ -5007,6 +5150,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio143.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio143_qs)
@@ -5033,6 +5177,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio144.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio144_qs)
@@ -5059,6 +5204,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio145.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio145_qs)
@@ -5085,6 +5231,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio146.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio146_qs)
@@ -5111,6 +5258,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio147.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio147_qs)
@@ -5137,6 +5285,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio148.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio148_qs)
@@ -5163,6 +5312,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio149.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio149_qs)
@@ -5189,6 +5339,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio150.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio150_qs)
@@ -5215,6 +5366,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio151.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio151_qs)
@@ -5241,6 +5393,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio152.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio152_qs)
@@ -5267,6 +5420,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio153.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio153_qs)
@@ -5293,6 +5447,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio154.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio154_qs)
@@ -5319,6 +5474,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio155.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio155_qs)
@@ -5345,6 +5501,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio156.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio156_qs)
@@ -5371,6 +5528,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio157.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio157_qs)
@@ -5397,6 +5555,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio158.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio158_qs)
@@ -5423,6 +5582,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio159.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio159_qs)
@@ -5449,6 +5609,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio160.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio160_qs)
@@ -5475,6 +5636,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio161.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio161_qs)
@@ -5501,6 +5663,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio162.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio162_qs)
@@ -5527,6 +5690,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio163.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio163_qs)
@@ -5553,6 +5717,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio164.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio164_qs)
@@ -5579,6 +5744,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio165.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio165_qs)
@@ -5605,6 +5771,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio166.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio166_qs)
@@ -5631,6 +5798,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio167.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio167_qs)
@@ -5657,6 +5825,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio168.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio168_qs)
@@ -5683,6 +5852,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio169.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio169_qs)
@@ -5709,6 +5879,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio170.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio170_qs)
@@ -5735,6 +5906,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio171.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio171_qs)
@@ -5761,6 +5933,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio172.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio172_qs)
@@ -5787,6 +5960,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio173.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio173_qs)
@@ -5813,6 +5987,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio174.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio174_qs)
@@ -5839,6 +6014,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio175.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio175_qs)
@@ -5865,6 +6041,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio176.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio176_qs)
@@ -5891,6 +6068,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio177.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio177_qs)
@@ -5917,6 +6095,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio178.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio178_qs)
@@ -5943,6 +6122,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio179.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio179_qs)
@@ -5969,6 +6149,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio180.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio180_qs)
@@ -5995,6 +6176,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio181.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio181_qs)
@@ -6021,6 +6203,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio182.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio182_qs)
@@ -6047,6 +6230,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio183.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio183_qs)
@@ -6073,6 +6257,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio184.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio184_qs)
@@ -6099,6 +6284,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio185.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio185_qs)
@@ -6125,6 +6311,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio186.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio186_qs)
@@ -6151,6 +6338,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prio187.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prio187_qs)
@@ -6179,6 +6367,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_0_qs)
@@ -6204,6 +6393,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_1_qs)
@@ -6229,6 +6419,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_2_qs)
@@ -6254,6 +6445,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_3_qs)
@@ -6279,6 +6471,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_4_qs)
@@ -6304,6 +6497,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_5_qs)
@@ -6329,6 +6523,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_6_qs)
@@ -6354,6 +6549,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_7_qs)
@@ -6379,6 +6575,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_8_qs)
@@ -6404,6 +6601,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_9_qs)
@@ -6429,6 +6627,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_10_qs)
@@ -6454,6 +6653,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_11_qs)
@@ -6479,6 +6679,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_12_qs)
@@ -6504,6 +6705,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_13_qs)
@@ -6529,6 +6731,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_14_qs)
@@ -6554,6 +6757,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_15_qs)
@@ -6579,6 +6783,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_16_qs)
@@ -6604,6 +6809,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_17_qs)
@@ -6629,6 +6835,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_18_qs)
@@ -6654,6 +6861,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_19_qs)
@@ -6679,6 +6887,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_20_qs)
@@ -6704,6 +6913,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_21_qs)
@@ -6729,6 +6939,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_22_qs)
@@ -6754,6 +6965,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_23_qs)
@@ -6779,6 +6991,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_24_qs)
@@ -6804,6 +7017,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_25_qs)
@@ -6829,6 +7043,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_26_qs)
@@ -6854,6 +7069,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_27_qs)
@@ -6879,6 +7095,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_28_qs)
@@ -6904,6 +7121,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_29_qs)
@@ -6929,6 +7147,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_30_qs)
@@ -6954,6 +7173,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_0_p_31_qs)
@@ -6982,6 +7202,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_32_qs)
@@ -7007,6 +7228,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_33_qs)
@@ -7032,6 +7254,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_34_qs)
@@ -7057,6 +7280,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_35_qs)
@@ -7082,6 +7306,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_36_qs)
@@ -7107,6 +7332,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_37_qs)
@@ -7132,6 +7358,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_38_qs)
@@ -7157,6 +7384,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_39_qs)
@@ -7182,6 +7410,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_40_qs)
@@ -7207,6 +7436,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_41_qs)
@@ -7232,6 +7462,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_42_qs)
@@ -7257,6 +7488,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_43_qs)
@@ -7282,6 +7514,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_44_qs)
@@ -7307,6 +7540,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_45_qs)
@@ -7332,6 +7566,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_46_qs)
@@ -7357,6 +7592,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_47_qs)
@@ -7382,6 +7618,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_48_qs)
@@ -7407,6 +7644,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_49_qs)
@@ -7432,6 +7670,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_50_qs)
@@ -7457,6 +7696,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_51_qs)
@@ -7482,6 +7722,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_52_qs)
@@ -7507,6 +7748,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_53_qs)
@@ -7532,6 +7774,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_54_qs)
@@ -7557,6 +7800,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_55_qs)
@@ -7582,6 +7826,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_56_qs)
@@ -7607,6 +7852,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_57_qs)
@@ -7632,6 +7878,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_58_qs)
@@ -7657,6 +7904,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_59_qs)
@@ -7682,6 +7930,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_60_qs)
@@ -7707,6 +7956,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_61_qs)
@@ -7732,6 +7982,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_62_qs)
@@ -7757,6 +8008,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_1_p_63_qs)
@@ -7785,6 +8037,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_64_qs)
@@ -7810,6 +8063,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_65_qs)
@@ -7835,6 +8089,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_66_qs)
@@ -7860,6 +8115,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_67_qs)
@@ -7885,6 +8141,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_68_qs)
@@ -7910,6 +8167,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_69_qs)
@@ -7935,6 +8193,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_70_qs)
@@ -7960,6 +8219,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_71_qs)
@@ -7985,6 +8245,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_72_qs)
@@ -8010,6 +8271,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_73_qs)
@@ -8035,6 +8297,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_74_qs)
@@ -8060,6 +8323,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_75_qs)
@@ -8085,6 +8349,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_76_qs)
@@ -8110,6 +8375,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_77_qs)
@@ -8135,6 +8401,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_78_qs)
@@ -8160,6 +8427,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_79_qs)
@@ -8185,6 +8453,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_80_qs)
@@ -8210,6 +8479,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_81_qs)
@@ -8235,6 +8505,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_82_qs)
@@ -8260,6 +8531,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_83_qs)
@@ -8285,6 +8557,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_84_qs)
@@ -8310,6 +8583,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_85_qs)
@@ -8335,6 +8609,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_86_qs)
@@ -8360,6 +8635,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_87_qs)
@@ -8385,6 +8661,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_88_qs)
@@ -8410,6 +8687,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_89_qs)
@@ -8435,6 +8713,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_90_qs)
@@ -8460,6 +8739,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_91_qs)
@@ -8485,6 +8765,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_92_qs)
@@ -8510,6 +8791,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_93_qs)
@@ -8535,6 +8817,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_94_qs)
@@ -8560,6 +8843,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_2_p_95_qs)
@@ -8588,6 +8872,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_96_qs)
@@ -8613,6 +8898,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_97_qs)
@@ -8638,6 +8924,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_98_qs)
@@ -8663,6 +8950,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_99_qs)
@@ -8688,6 +8976,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_100_qs)
@@ -8713,6 +9002,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_101_qs)
@@ -8738,6 +9028,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_102_qs)
@@ -8763,6 +9054,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_103_qs)
@@ -8788,6 +9080,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_104_qs)
@@ -8813,6 +9106,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_105_qs)
@@ -8838,6 +9132,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_106_qs)
@@ -8863,6 +9158,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_107_qs)
@@ -8888,6 +9184,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_108_qs)
@@ -8913,6 +9210,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_109_qs)
@@ -8938,6 +9236,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_110_qs)
@@ -8963,6 +9262,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_111_qs)
@@ -8988,6 +9288,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_112_qs)
@@ -9013,6 +9314,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_113_qs)
@@ -9038,6 +9340,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_114_qs)
@@ -9063,6 +9366,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_115_qs)
@@ -9088,6 +9392,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_116_qs)
@@ -9113,6 +9418,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_117_qs)
@@ -9138,6 +9444,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_118_qs)
@@ -9163,6 +9470,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_119_qs)
@@ -9188,6 +9496,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_120_qs)
@@ -9213,6 +9522,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_121_qs)
@@ -9238,6 +9548,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_122_qs)
@@ -9263,6 +9574,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_123_qs)
@@ -9288,6 +9600,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_124_qs)
@@ -9313,6 +9626,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_125_qs)
@@ -9338,6 +9652,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_126_qs)
@@ -9363,6 +9678,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_3_p_127_qs)
@@ -9391,6 +9707,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_128_qs)
@@ -9416,6 +9733,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_129_qs)
@@ -9441,6 +9759,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_130_qs)
@@ -9466,6 +9785,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_131_qs)
@@ -9491,6 +9811,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_132_qs)
@@ -9516,6 +9837,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_133_qs)
@@ -9541,6 +9863,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_134_qs)
@@ -9566,6 +9889,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_135_qs)
@@ -9591,6 +9915,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_136_qs)
@@ -9616,6 +9941,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_137_qs)
@@ -9641,6 +9967,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_138_qs)
@@ -9666,6 +9993,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_139_qs)
@@ -9691,6 +10019,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_140_qs)
@@ -9716,6 +10045,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_141_qs)
@@ -9741,6 +10071,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_142_qs)
@@ -9766,6 +10097,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_143_qs)
@@ -9791,6 +10123,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_144_qs)
@@ -9816,6 +10149,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_145_qs)
@@ -9841,6 +10175,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_146_qs)
@@ -9866,6 +10201,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_147_qs)
@@ -9891,6 +10227,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_148_qs)
@@ -9916,6 +10253,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_149_qs)
@@ -9941,6 +10279,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_150_qs)
@@ -9966,6 +10305,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_151_qs)
@@ -9991,6 +10331,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_152_qs)
@@ -10016,6 +10357,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_153_qs)
@@ -10041,6 +10383,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_154_qs)
@@ -10066,6 +10409,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_155_qs)
@@ -10091,6 +10435,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_156_qs)
@@ -10116,6 +10461,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_157_qs)
@@ -10141,6 +10487,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_158_qs)
@@ -10166,6 +10513,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_4_p_159_qs)
@@ -10194,6 +10542,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_160_qs)
@@ -10219,6 +10568,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_161_qs)
@@ -10244,6 +10594,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_162_qs)
@@ -10269,6 +10620,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_163_qs)
@@ -10294,6 +10646,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_164_qs)
@@ -10319,6 +10672,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_165_qs)
@@ -10344,6 +10698,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_166_qs)
@@ -10369,6 +10724,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_167_qs)
@@ -10394,6 +10750,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_168_qs)
@@ -10419,6 +10776,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_169_qs)
@@ -10444,6 +10802,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_170_qs)
@@ -10469,6 +10828,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_171_qs)
@@ -10494,6 +10854,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_172_qs)
@@ -10519,6 +10880,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_173_qs)
@@ -10544,6 +10906,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_174_qs)
@@ -10569,6 +10932,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_175_qs)
@@ -10594,6 +10958,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_176_qs)
@@ -10619,6 +10984,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_177_qs)
@@ -10644,6 +11010,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_178_qs)
@@ -10669,6 +11036,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_179_qs)
@@ -10694,6 +11062,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_180_qs)
@@ -10719,6 +11088,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_181_qs)
@@ -10744,6 +11114,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_182_qs)
@@ -10769,6 +11140,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_183_qs)
@@ -10794,6 +11166,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_184_qs)
@@ -10819,6 +11192,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_185_qs)
@@ -10844,6 +11218,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_186_qs)
@@ -10869,6 +11244,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ip_5_p_187_qs)
@@ -10897,6 +11273,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_0_qs)
@@ -10922,6 +11299,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_1_qs)
@@ -10947,6 +11325,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_2_qs)
@@ -10972,6 +11351,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_3_qs)
@@ -10997,6 +11377,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_4_qs)
@@ -11022,6 +11403,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_5_qs)
@@ -11047,6 +11429,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_6_qs)
@@ -11072,6 +11455,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_7_qs)
@@ -11097,6 +11481,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_8_qs)
@@ -11122,6 +11507,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_9_qs)
@@ -11147,6 +11533,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_10_qs)
@@ -11172,6 +11559,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_11_qs)
@@ -11197,6 +11585,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_12_qs)
@@ -11222,6 +11611,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_13_qs)
@@ -11247,6 +11637,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_14_qs)
@@ -11272,6 +11663,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_15_qs)
@@ -11297,6 +11689,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[16].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_16_qs)
@@ -11322,6 +11715,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[17].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_17_qs)
@@ -11347,6 +11741,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[18].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_18_qs)
@@ -11372,6 +11767,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[19].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_19_qs)
@@ -11397,6 +11793,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[20].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_20_qs)
@@ -11422,6 +11819,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[21].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_21_qs)
@@ -11447,6 +11845,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[22].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_22_qs)
@@ -11472,6 +11871,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[23].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_23_qs)
@@ -11497,6 +11897,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[24].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_24_qs)
@@ -11522,6 +11923,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[25].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_25_qs)
@@ -11547,6 +11949,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[26].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_26_qs)
@@ -11572,6 +11975,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[27].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_27_qs)
@@ -11597,6 +12001,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[28].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_28_qs)
@@ -11622,6 +12027,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[29].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_29_qs)
@@ -11647,6 +12053,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[30].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_30_qs)
@@ -11672,6 +12079,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[31].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_0_e_31_qs)
@@ -11700,6 +12108,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[32].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_32_qs)
@@ -11725,6 +12134,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[33].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_33_qs)
@@ -11750,6 +12160,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[34].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_34_qs)
@@ -11775,6 +12186,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[35].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_35_qs)
@@ -11800,6 +12212,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[36].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_36_qs)
@@ -11825,6 +12238,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[37].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_37_qs)
@@ -11850,6 +12264,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[38].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_38_qs)
@@ -11875,6 +12290,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[39].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_39_qs)
@@ -11900,6 +12316,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[40].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_40_qs)
@@ -11925,6 +12342,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[41].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_41_qs)
@@ -11950,6 +12368,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[42].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_42_qs)
@@ -11975,6 +12394,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[43].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_43_qs)
@@ -12000,6 +12420,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[44].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_44_qs)
@@ -12025,6 +12446,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[45].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_45_qs)
@@ -12050,6 +12472,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[46].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_46_qs)
@@ -12075,6 +12498,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[47].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_47_qs)
@@ -12100,6 +12524,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[48].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_48_qs)
@@ -12125,6 +12550,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[49].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_49_qs)
@@ -12150,6 +12576,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[50].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_50_qs)
@@ -12175,6 +12602,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[51].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_51_qs)
@@ -12200,6 +12628,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[52].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_52_qs)
@@ -12225,6 +12654,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[53].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_53_qs)
@@ -12250,6 +12680,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[54].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_54_qs)
@@ -12275,6 +12706,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[55].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_55_qs)
@@ -12300,6 +12732,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[56].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_56_qs)
@@ -12325,6 +12758,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[57].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_57_qs)
@@ -12350,6 +12784,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[58].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_58_qs)
@@ -12375,6 +12810,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[59].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_59_qs)
@@ -12400,6 +12836,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[60].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_60_qs)
@@ -12425,6 +12862,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[61].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_61_qs)
@@ -12450,6 +12888,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[62].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_62_qs)
@@ -12475,6 +12914,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[63].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_1_e_63_qs)
@@ -12503,6 +12943,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[64].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_64_qs)
@@ -12528,6 +12969,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[65].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_65_qs)
@@ -12553,6 +12995,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[66].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_66_qs)
@@ -12578,6 +13021,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[67].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_67_qs)
@@ -12603,6 +13047,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[68].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_68_qs)
@@ -12628,6 +13073,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[69].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_69_qs)
@@ -12653,6 +13099,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[70].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_70_qs)
@@ -12678,6 +13125,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[71].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_71_qs)
@@ -12703,6 +13151,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[72].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_72_qs)
@@ -12728,6 +13177,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[73].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_73_qs)
@@ -12753,6 +13203,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[74].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_74_qs)
@@ -12778,6 +13229,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[75].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_75_qs)
@@ -12803,6 +13255,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[76].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_76_qs)
@@ -12828,6 +13281,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[77].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_77_qs)
@@ -12853,6 +13307,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[78].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_78_qs)
@@ -12878,6 +13333,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[79].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_79_qs)
@@ -12903,6 +13359,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[80].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_80_qs)
@@ -12928,6 +13385,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[81].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_81_qs)
@@ -12953,6 +13411,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[82].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_82_qs)
@@ -12978,6 +13437,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[83].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_83_qs)
@@ -13003,6 +13463,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[84].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_84_qs)
@@ -13028,6 +13489,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[85].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_85_qs)
@@ -13053,6 +13515,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[86].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_86_qs)
@@ -13078,6 +13541,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[87].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_87_qs)
@@ -13103,6 +13567,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[88].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_88_qs)
@@ -13128,6 +13593,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[89].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_89_qs)
@@ -13153,6 +13619,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[90].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_90_qs)
@@ -13178,6 +13645,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[91].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_91_qs)
@@ -13203,6 +13671,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[92].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_92_qs)
@@ -13228,6 +13697,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[93].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_93_qs)
@@ -13253,6 +13723,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[94].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_94_qs)
@@ -13278,6 +13749,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[95].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_2_e_95_qs)
@@ -13306,6 +13778,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[96].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_96_qs)
@@ -13331,6 +13804,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[97].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_97_qs)
@@ -13356,6 +13830,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[98].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_98_qs)
@@ -13381,6 +13856,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[99].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_99_qs)
@@ -13406,6 +13882,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[100].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_100_qs)
@@ -13431,6 +13908,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[101].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_101_qs)
@@ -13456,6 +13934,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[102].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_102_qs)
@@ -13481,6 +13960,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[103].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_103_qs)
@@ -13506,6 +13986,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[104].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_104_qs)
@@ -13531,6 +14012,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[105].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_105_qs)
@@ -13556,6 +14038,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[106].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_106_qs)
@@ -13581,6 +14064,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[107].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_107_qs)
@@ -13606,6 +14090,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[108].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_108_qs)
@@ -13631,6 +14116,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[109].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_109_qs)
@@ -13656,6 +14142,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[110].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_110_qs)
@@ -13681,6 +14168,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[111].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_111_qs)
@@ -13706,6 +14194,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[112].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_112_qs)
@@ -13731,6 +14220,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[113].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_113_qs)
@@ -13756,6 +14246,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[114].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_114_qs)
@@ -13781,6 +14272,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[115].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_115_qs)
@@ -13806,6 +14298,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[116].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_116_qs)
@@ -13831,6 +14324,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[117].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_117_qs)
@@ -13856,6 +14350,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[118].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_118_qs)
@@ -13881,6 +14376,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[119].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_119_qs)
@@ -13906,6 +14402,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[120].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_120_qs)
@@ -13931,6 +14428,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[121].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_121_qs)
@@ -13956,6 +14454,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[122].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_122_qs)
@@ -13981,6 +14480,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[123].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_123_qs)
@@ -14006,6 +14506,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[124].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_124_qs)
@@ -14031,6 +14532,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[125].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_125_qs)
@@ -14056,6 +14558,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[126].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_126_qs)
@@ -14081,6 +14584,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[127].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_3_e_127_qs)
@@ -14109,6 +14613,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[128].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_128_qs)
@@ -14134,6 +14639,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[129].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_129_qs)
@@ -14159,6 +14665,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[130].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_130_qs)
@@ -14184,6 +14691,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[131].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_131_qs)
@@ -14209,6 +14717,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[132].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_132_qs)
@@ -14234,6 +14743,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[133].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_133_qs)
@@ -14259,6 +14769,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[134].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_134_qs)
@@ -14284,6 +14795,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[135].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_135_qs)
@@ -14309,6 +14821,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[136].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_136_qs)
@@ -14334,6 +14847,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[137].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_137_qs)
@@ -14359,6 +14873,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[138].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_138_qs)
@@ -14384,6 +14899,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[139].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_139_qs)
@@ -14409,6 +14925,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[140].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_140_qs)
@@ -14434,6 +14951,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[141].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_141_qs)
@@ -14459,6 +14977,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[142].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_142_qs)
@@ -14484,6 +15003,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[143].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_143_qs)
@@ -14509,6 +15029,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[144].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_144_qs)
@@ -14534,6 +15055,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[145].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_145_qs)
@@ -14559,6 +15081,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[146].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_146_qs)
@@ -14584,6 +15107,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[147].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_147_qs)
@@ -14609,6 +15133,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[148].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_148_qs)
@@ -14634,6 +15159,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[149].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_149_qs)
@@ -14659,6 +15185,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[150].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_150_qs)
@@ -14684,6 +15211,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[151].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_151_qs)
@@ -14709,6 +15237,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[152].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_152_qs)
@@ -14734,6 +15263,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[153].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_153_qs)
@@ -14759,6 +15289,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[154].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_154_qs)
@@ -14784,6 +15315,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[155].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_155_qs)
@@ -14809,6 +15341,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[156].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_156_qs)
@@ -14834,6 +15367,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[157].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_157_qs)
@@ -14859,6 +15393,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[158].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_158_qs)
@@ -14884,6 +15419,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[159].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_4_e_159_qs)
@@ -14912,6 +15448,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[160].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_160_qs)
@@ -14937,6 +15474,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[161].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_161_qs)
@@ -14962,6 +15500,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[162].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_162_qs)
@@ -14987,6 +15526,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[163].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_163_qs)
@@ -15012,6 +15552,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[164].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_164_qs)
@@ -15037,6 +15578,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[165].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_165_qs)
@@ -15062,6 +15604,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[166].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_166_qs)
@@ -15087,6 +15630,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[167].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_167_qs)
@@ -15112,6 +15656,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[168].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_168_qs)
@@ -15137,6 +15682,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[169].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_169_qs)
@@ -15162,6 +15708,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[170].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_170_qs)
@@ -15187,6 +15734,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[171].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_171_qs)
@@ -15212,6 +15760,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[172].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_172_qs)
@@ -15237,6 +15786,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[173].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_173_qs)
@@ -15262,6 +15812,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[174].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_174_qs)
@@ -15287,6 +15838,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[175].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_175_qs)
@@ -15312,6 +15864,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[176].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_176_qs)
@@ -15337,6 +15890,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[177].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_177_qs)
@@ -15362,6 +15916,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[178].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_178_qs)
@@ -15387,6 +15942,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[179].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_179_qs)
@@ -15412,6 +15968,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[180].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_180_qs)
@@ -15437,6 +15994,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[181].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_181_qs)
@@ -15462,6 +16020,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[182].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_182_qs)
@@ -15487,6 +16046,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[183].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_183_qs)
@@ -15512,6 +16072,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[184].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_184_qs)
@@ -15537,6 +16098,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[185].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_185_qs)
@@ -15562,6 +16124,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[186].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_186_qs)
@@ -15587,6 +16150,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ie0[187].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ie0_5_e_187_qs)
@@ -15613,6 +16177,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.threshold0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (threshold0_qs)
@@ -15633,6 +16198,7 @@ module rv_plic_reg_top (
     .qre    (reg2hw.cc0.re),
     .qe     (cc0_flds_we[0]),
     .q      (reg2hw.cc0.q),
+    .ds     (),
     .qs     (cc0_qs)
   );
   assign reg2hw.cc0.qe = cc0_qe;
@@ -15658,6 +16224,7 @@ module rv_plic_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.msip0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (msip0_qs)
@@ -15678,6 +16245,7 @@ module rv_plic_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;

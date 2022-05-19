@@ -151,6 +151,7 @@ module aes_ctrl_reg_shadowed
     .qe         (),
     .q          (hw2reg_ctrl_o.operation.d),
     .qs         (),
+    .ds         (),
     .phase      (phase_operation),
     .err_update (err_update_operation),
     .err_storage(err_storage_operation)
@@ -172,6 +173,7 @@ module aes_ctrl_reg_shadowed
     .qe         (),
     .q          (hw2reg_ctrl_o.mode.d),
     .qs         (),
+    .ds         (),
     .phase      (phase_mode),
     .err_update (err_update_mode),
     .err_storage(err_storage_mode)
@@ -193,6 +195,7 @@ module aes_ctrl_reg_shadowed
     .qe         (),
     .q          (hw2reg_ctrl_o.key_len.d),
     .qs         (),
+    .ds         (),
     .phase      (phase_key_len),
     .err_update (err_update_key_len),
     .err_storage(err_storage_key_len)
@@ -214,6 +217,7 @@ module aes_ctrl_reg_shadowed
     .qe         (),
     .q          (hw2reg_ctrl_o.sideload.d),
     .qs         (),
+    .ds         (),
     .phase      (phase_key_sideload),
     .err_update (err_update_sideload),
     .err_storage(err_storage_sideload)
@@ -235,6 +239,7 @@ module aes_ctrl_reg_shadowed
     .qe         (),
     .q          (hw2reg_ctrl_o.prng_reseed_rate.d),
     .qs         (),
+    .ds         (),
     .phase      (phase_prng_reseed_rate),
     .err_update (err_update_prng_reseed_rate),
     .err_storage(err_storage_prng_reseed_rate)
@@ -256,6 +261,7 @@ module aes_ctrl_reg_shadowed
     .qe         (),
     .q          (hw2reg_ctrl_o.manual_operation.d),
     .qs         (),
+    .ds         (),
     .phase      (phase_manual_operation),
     .err_update (err_update_manual_operation),
     .err_storage(err_storage_manual_operation)
@@ -277,6 +283,7 @@ module aes_ctrl_reg_shadowed
     .qe         (),
     .q          (hw2reg_ctrl_o.force_zero_masks.d),
     .qs         (),
+    .ds         (),
     .phase      (phase_force_zero_masks),
     .err_update (err_update_force_zero_masks),
     .err_storage(err_storage_force_zero_masks)

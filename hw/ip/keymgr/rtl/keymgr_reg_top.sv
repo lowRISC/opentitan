@@ -383,6 +383,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_qs)
@@ -409,6 +410,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_qs)
@@ -429,6 +431,7 @@ module keymgr_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.qe = intr_test_qe;
@@ -449,6 +452,7 @@ module keymgr_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_operation_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_operation_err.qe = alert_test_qe;
@@ -464,6 +468,7 @@ module keymgr_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_fault_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_fault_err.qe = alert_test_qe;
@@ -480,6 +485,7 @@ module keymgr_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (cfg_regwen_qs)
   );
 
@@ -507,6 +513,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.start.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (start_qs)
@@ -539,6 +546,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control_shadowed.operation.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_shadowed_operation_qs),
@@ -573,6 +581,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control_shadowed.cdi_sel.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_shadowed_cdi_sel_qs),
@@ -607,6 +616,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control_shadowed.dest_sel.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_shadowed_dest_sel_qs),
@@ -643,6 +653,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sideload_clear.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sideload_clear_qs)
@@ -669,6 +680,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reseed_interval_regwen_qs)
@@ -701,6 +713,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.reseed_interval_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reseed_interval_shadowed_qs),
@@ -728,6 +741,7 @@ module keymgr_reg_top (
     .qre    (),
     .qe     (sw_binding_regwen_flds_we[0]),
     .q      (reg2hw.sw_binding_regwen.q),
+    .ds     (),
     .qs     (sw_binding_regwen_qs)
   );
   assign reg2hw.sw_binding_regwen.qe = sw_binding_regwen_qe;
@@ -757,6 +771,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sealing_sw_binding[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sealing_sw_binding_0_qs)
@@ -787,6 +802,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sealing_sw_binding[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sealing_sw_binding_1_qs)
@@ -817,6 +833,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sealing_sw_binding[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sealing_sw_binding_2_qs)
@@ -847,6 +864,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sealing_sw_binding[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sealing_sw_binding_3_qs)
@@ -877,6 +895,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sealing_sw_binding[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sealing_sw_binding_4_qs)
@@ -907,6 +926,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sealing_sw_binding[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sealing_sw_binding_5_qs)
@@ -937,6 +957,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sealing_sw_binding[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sealing_sw_binding_6_qs)
@@ -967,6 +988,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sealing_sw_binding[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sealing_sw_binding_7_qs)
@@ -997,6 +1019,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.attest_sw_binding[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (attest_sw_binding_0_qs)
@@ -1027,6 +1050,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.attest_sw_binding[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (attest_sw_binding_1_qs)
@@ -1057,6 +1081,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.attest_sw_binding[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (attest_sw_binding_2_qs)
@@ -1087,6 +1112,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.attest_sw_binding[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (attest_sw_binding_3_qs)
@@ -1117,6 +1143,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.attest_sw_binding[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (attest_sw_binding_4_qs)
@@ -1147,6 +1174,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.attest_sw_binding[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (attest_sw_binding_5_qs)
@@ -1177,6 +1205,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.attest_sw_binding[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (attest_sw_binding_6_qs)
@@ -1207,6 +1236,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.attest_sw_binding[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (attest_sw_binding_7_qs)
@@ -1237,6 +1267,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.salt[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (salt_0_qs)
@@ -1267,6 +1298,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.salt[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (salt_1_qs)
@@ -1297,6 +1329,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.salt[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (salt_2_qs)
@@ -1327,6 +1360,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.salt[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (salt_3_qs)
@@ -1357,6 +1391,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.salt[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (salt_4_qs)
@@ -1387,6 +1422,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.salt[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (salt_5_qs)
@@ -1417,6 +1453,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.salt[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (salt_6_qs)
@@ -1447,6 +1484,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.salt[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (salt_7_qs)
@@ -1477,6 +1515,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.key_version[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (key_version_qs)
@@ -1503,6 +1542,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (max_creator_key_ver_regwen_qs)
@@ -1535,6 +1575,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.max_creator_key_ver_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (max_creator_key_ver_shadowed_qs),
@@ -1568,6 +1609,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (max_owner_int_key_ver_regwen_qs)
@@ -1600,6 +1642,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.max_owner_int_key_ver_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (max_owner_int_key_ver_shadowed_qs),
@@ -1633,6 +1676,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (max_owner_key_ver_regwen_qs)
@@ -1665,6 +1709,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.max_owner_key_ver_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (max_owner_key_ver_shadowed_qs),
@@ -1699,6 +1744,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share0_output_0_qs)
@@ -1726,6 +1772,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share0_output_1_qs)
@@ -1753,6 +1800,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share0_output_2_qs)
@@ -1780,6 +1828,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share0_output_3_qs)
@@ -1807,6 +1856,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share0_output_4_qs)
@@ -1834,6 +1884,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share0_output_5_qs)
@@ -1861,6 +1912,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share0_output_6_qs)
@@ -1888,6 +1940,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share0_output_7_qs)
@@ -1915,6 +1968,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share1_output_0_qs)
@@ -1942,6 +1996,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share1_output_1_qs)
@@ -1969,6 +2024,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share1_output_2_qs)
@@ -1996,6 +2052,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share1_output_3_qs)
@@ -2023,6 +2080,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share1_output_4_qs)
@@ -2050,6 +2108,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share1_output_5_qs)
@@ -2077,6 +2136,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share1_output_6_qs)
@@ -2104,6 +2164,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_share1_output_7_qs)
@@ -2130,6 +2191,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (working_state_qs)
@@ -2156,6 +2218,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (op_status_qs)
@@ -2183,6 +2246,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_invalid_op_qs)
@@ -2208,6 +2272,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_invalid_kmac_input_qs)
@@ -2233,6 +2298,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_invalid_shadow_update_qs)
@@ -2260,6 +2326,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.cmd.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_cmd_qs)
@@ -2285,6 +2352,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.kmac_fsm.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_kmac_fsm_qs)
@@ -2310,6 +2378,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.kmac_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_kmac_done_qs)
@@ -2335,6 +2404,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.kmac_op.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_kmac_op_qs)
@@ -2360,6 +2430,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.kmac_out.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_kmac_out_qs)
@@ -2385,6 +2456,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.regfile_intg.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_regfile_intg_qs)
@@ -2410,6 +2482,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.shadow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_shadow_qs)
@@ -2435,6 +2508,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.ctrl_fsm_intg.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_ctrl_fsm_intg_qs)
@@ -2460,6 +2534,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.ctrl_fsm_chk.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_ctrl_fsm_chk_qs)
@@ -2485,6 +2560,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.ctrl_fsm_cnt.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_ctrl_fsm_cnt_qs)
@@ -2510,6 +2586,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.reseed_cnt.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_reseed_cnt_qs)
@@ -2535,6 +2612,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.side_ctrl_fsm.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_side_ctrl_fsm_qs)
@@ -2560,6 +2638,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.side_ctrl_sel.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_side_ctrl_sel_qs)
@@ -2585,6 +2664,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.key_ecc.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_key_ecc_qs)
@@ -2612,6 +2692,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (debug_invalid_creator_seed_qs)
@@ -2637,6 +2718,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (debug_invalid_owner_seed_qs)
@@ -2662,6 +2744,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (debug_invalid_dev_id_qs)
@@ -2687,6 +2770,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (debug_invalid_health_state_qs)
@@ -2712,6 +2796,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (debug_invalid_key_version_qs)
@@ -2737,6 +2822,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (debug_invalid_key_qs)
@@ -2762,6 +2848,7 @@ module keymgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (debug_invalid_digest_qs)

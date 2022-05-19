@@ -241,6 +241,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.tx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_tx_watermark_qs)
@@ -266,6 +267,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_watermark_qs)
@@ -291,6 +293,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.tx_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_tx_empty_qs)
@@ -316,6 +319,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_overflow_qs)
@@ -341,6 +345,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_frame_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_frame_err_qs)
@@ -366,6 +371,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_break_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_break_err_qs)
@@ -391,6 +397,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_timeout.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_timeout_qs)
@@ -416,6 +423,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rx_parity_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rx_parity_err_qs)
@@ -443,6 +451,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.tx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_tx_watermark_qs)
@@ -468,6 +477,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_watermark_qs)
@@ -493,6 +503,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.tx_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_tx_empty_qs)
@@ -518,6 +529,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_overflow_qs)
@@ -543,6 +555,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_frame_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_frame_err_qs)
@@ -568,6 +581,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_break_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_break_err_qs)
@@ -593,6 +607,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_timeout.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_timeout_qs)
@@ -618,6 +633,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rx_parity_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rx_parity_err_qs)
@@ -639,6 +655,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.tx_watermark.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.tx_watermark.qe = intr_test_qe;
@@ -654,6 +671,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.rx_watermark.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_watermark.qe = intr_test_qe;
@@ -669,6 +687,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.tx_empty.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.tx_empty.qe = intr_test_qe;
@@ -684,6 +703,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.rx_overflow.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_overflow.qe = intr_test_qe;
@@ -699,6 +719,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[4]),
     .q      (reg2hw.intr_test.rx_frame_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_frame_err.qe = intr_test_qe;
@@ -714,6 +735,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[5]),
     .q      (reg2hw.intr_test.rx_break_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_break_err.qe = intr_test_qe;
@@ -729,6 +751,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[6]),
     .q      (reg2hw.intr_test.rx_timeout.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_timeout.qe = intr_test_qe;
@@ -744,6 +767,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[7]),
     .q      (reg2hw.intr_test.rx_parity_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rx_parity_err.qe = intr_test_qe;
@@ -763,6 +787,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -789,6 +814,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.tx.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_tx_qs)
@@ -814,6 +840,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.rx.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_rx_qs)
@@ -839,6 +866,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.nf.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_nf_qs)
@@ -864,6 +892,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.slpbk.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_slpbk_qs)
@@ -889,6 +918,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.llpbk.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_llpbk_qs)
@@ -914,6 +944,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.parity_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_parity_en_qs)
@@ -939,6 +970,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.parity_odd.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_parity_odd_qs)
@@ -964,6 +996,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.rxblvl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_rxblvl_qs)
@@ -989,6 +1022,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.nco.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_nco_qs)
@@ -1007,6 +1041,7 @@ module uart_reg_top (
     .qre    (reg2hw.status.txfull.re),
     .qe     (),
     .q      (reg2hw.status.txfull.q),
+    .ds     (),
     .qs     (status_txfull_qs)
   );
 
@@ -1021,6 +1056,7 @@ module uart_reg_top (
     .qre    (reg2hw.status.rxfull.re),
     .qe     (),
     .q      (reg2hw.status.rxfull.q),
+    .ds     (),
     .qs     (status_rxfull_qs)
   );
 
@@ -1035,6 +1071,7 @@ module uart_reg_top (
     .qre    (reg2hw.status.txempty.re),
     .qe     (),
     .q      (reg2hw.status.txempty.q),
+    .ds     (),
     .qs     (status_txempty_qs)
   );
 
@@ -1049,6 +1086,7 @@ module uart_reg_top (
     .qre    (reg2hw.status.txidle.re),
     .qe     (),
     .q      (reg2hw.status.txidle.q),
+    .ds     (),
     .qs     (status_txidle_qs)
   );
 
@@ -1063,6 +1101,7 @@ module uart_reg_top (
     .qre    (reg2hw.status.rxidle.re),
     .qe     (),
     .q      (reg2hw.status.rxidle.q),
+    .ds     (),
     .qs     (status_rxidle_qs)
   );
 
@@ -1077,6 +1116,7 @@ module uart_reg_top (
     .qre    (reg2hw.status.rxempty.re),
     .qe     (),
     .q      (reg2hw.status.rxempty.q),
+    .ds     (),
     .qs     (status_rxempty_qs)
   );
 
@@ -1092,6 +1132,7 @@ module uart_reg_top (
     .qre    (reg2hw.rdata.re),
     .qe     (),
     .q      (reg2hw.rdata.q),
+    .ds     (),
     .qs     (rdata_qs)
   );
 
@@ -1127,6 +1168,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (wdata_flds_we[0]),
     .q      (reg2hw.wdata.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1166,6 +1208,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (fifo_ctrl_flds_we[0]),
     .q      (reg2hw.fifo_ctrl.rxrst.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1192,6 +1235,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (fifo_ctrl_flds_we[1]),
     .q      (reg2hw.fifo_ctrl.txrst.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -1218,6 +1262,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (fifo_ctrl_flds_we[2]),
     .q      (reg2hw.fifo_ctrl.rxilvl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fifo_ctrl_rxilvl_qs)
@@ -1244,6 +1289,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (fifo_ctrl_flds_we[3]),
     .q      (reg2hw.fifo_ctrl.txilvl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fifo_ctrl_txilvl_qs)
@@ -1263,6 +1309,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (fifo_status_txlvl_qs)
   );
 
@@ -1277,6 +1324,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (fifo_status_rxlvl_qs)
   );
 
@@ -1302,6 +1350,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ovrd.txen.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ovrd_txen_qs)
@@ -1327,6 +1376,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ovrd.txval.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ovrd_txval_qs)
@@ -1344,6 +1394,7 @@ module uart_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (val_qs)
   );
 
@@ -1369,6 +1420,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timeout_ctrl.val.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timeout_ctrl_val_qs)
@@ -1394,6 +1446,7 @@ module uart_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timeout_ctrl.en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timeout_ctrl_en_qs)

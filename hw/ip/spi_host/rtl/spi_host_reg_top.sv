@@ -303,6 +303,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.error.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_error_qs)
@@ -328,6 +329,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.spi_event.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_spi_event_qs)
@@ -355,6 +357,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.error.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_error_qs)
@@ -380,6 +383,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.spi_event.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_spi_event_qs)
@@ -401,6 +405,7 @@ module spi_host_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.error.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.error.qe = intr_test_qe;
@@ -416,6 +421,7 @@ module spi_host_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.spi_event.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.spi_event.qe = intr_test_qe;
@@ -435,6 +441,7 @@ module spi_host_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -461,6 +468,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.rx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_rx_watermark_qs)
@@ -486,6 +494,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.tx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_tx_watermark_qs)
@@ -511,6 +520,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.output_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_output_en_qs)
@@ -536,6 +546,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.sw_rst.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_sw_rst_qs)
@@ -561,6 +572,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.spien.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_spien_qs)
@@ -588,6 +600,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_txqd_qs)
@@ -613,6 +626,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_rxqd_qs)
@@ -638,6 +652,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_cmdqd_qs)
@@ -663,6 +678,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_rxwm_qs)
@@ -688,6 +704,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_byteorder_qs)
@@ -713,6 +730,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_rxstall_qs)
@@ -738,6 +756,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_rxempty_qs)
@@ -763,6 +782,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_rxfull_qs)
@@ -788,6 +808,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_txwm_qs)
@@ -813,6 +834,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_txstall_qs)
@@ -838,6 +860,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_txempty_qs)
@@ -863,6 +886,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_txfull_qs)
@@ -888,6 +912,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_active_qs)
@@ -913,6 +938,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_ready_qs)
@@ -941,6 +967,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configopts[0].clkdiv.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configopts_clkdiv_0_qs)
@@ -966,6 +993,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configopts[0].csnidle.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configopts_csnidle_0_qs)
@@ -991,6 +1019,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configopts[0].csntrail.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configopts_csntrail_0_qs)
@@ -1016,6 +1045,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configopts[0].csnlead.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configopts_csnlead_0_qs)
@@ -1041,6 +1071,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configopts[0].fullcyc.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configopts_fullcyc_0_qs)
@@ -1066,6 +1097,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configopts[0].cpha.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configopts_cpha_0_qs)
@@ -1091,6 +1123,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.configopts[0].cpol.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (configopts_cpol_0_qs)
@@ -1117,6 +1150,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csid_qs)
@@ -1138,6 +1172,7 @@ module spi_host_reg_top (
     .qre    (),
     .qe     (command_flds_we[0]),
     .q      (reg2hw.command.len.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.command.len.qe = command_qe;
@@ -1153,6 +1188,7 @@ module spi_host_reg_top (
     .qre    (),
     .qe     (command_flds_we[1]),
     .q      (reg2hw.command.csaat.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.command.csaat.qe = command_qe;
@@ -1168,6 +1204,7 @@ module spi_host_reg_top (
     .qre    (),
     .qe     (command_flds_we[2]),
     .q      (reg2hw.command.speed.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.command.speed.qe = command_qe;
@@ -1183,6 +1220,7 @@ module spi_host_reg_top (
     .qre    (),
     .qe     (command_flds_we[3]),
     .q      (reg2hw.command.direction.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.command.direction.qe = command_qe;
@@ -1209,6 +1247,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.error_enable.cmdbusy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (error_enable_cmdbusy_qs)
@@ -1234,6 +1273,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.error_enable.overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (error_enable_overflow_qs)
@@ -1259,6 +1299,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.error_enable.underflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (error_enable_underflow_qs)
@@ -1284,6 +1325,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.error_enable.cmdinval.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (error_enable_cmdinval_qs)
@@ -1309,6 +1351,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.error_enable.csidinval.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (error_enable_csidinval_qs)
@@ -1336,6 +1379,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.error_status.cmdbusy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (error_status_cmdbusy_qs)
@@ -1361,6 +1405,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.error_status.overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (error_status_overflow_qs)
@@ -1386,6 +1431,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.error_status.underflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (error_status_underflow_qs)
@@ -1411,6 +1457,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.error_status.cmdinval.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (error_status_cmdinval_qs)
@@ -1436,6 +1483,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.error_status.csidinval.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (error_status_csidinval_qs)
@@ -1461,6 +1509,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.error_status.accessinval.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (error_status_accessinval_qs)
@@ -1488,6 +1537,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.event_enable.rxfull.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (event_enable_rxfull_qs)
@@ -1513,6 +1563,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.event_enable.txempty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (event_enable_txempty_qs)
@@ -1538,6 +1589,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.event_enable.rxwm.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (event_enable_rxwm_qs)
@@ -1563,6 +1615,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.event_enable.txwm.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (event_enable_txwm_qs)
@@ -1588,6 +1641,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.event_enable.ready.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (event_enable_ready_qs)
@@ -1613,6 +1667,7 @@ module spi_host_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.event_enable.idle.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (event_enable_idle_qs)

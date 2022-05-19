@@ -194,6 +194,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_qs)
@@ -220,6 +221,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_qs)
@@ -240,6 +242,7 @@ module pwrmgr_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.qe = intr_test_qe;
@@ -256,6 +259,7 @@ module pwrmgr_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (ctrl_cfg_regwen_qs)
   );
 
@@ -284,6 +288,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.low_power_hint.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_low_power_hint_qs)
@@ -309,6 +314,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.core_clk_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_core_clk_en_qs)
@@ -334,6 +340,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.io_clk_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_io_clk_en_qs)
@@ -359,6 +366,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.usb_clk_en_lp.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_usb_clk_en_lp_qs)
@@ -384,6 +392,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.usb_clk_en_active.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_usb_clk_en_active_qs)
@@ -409,6 +418,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.main_pd_n.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_main_pd_n_qs)
@@ -446,6 +456,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (cfg_cdc_sync_flds_we[0]),
     .q      (reg2hw.cfg_cdc_sync.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_cdc_sync_qs)
@@ -473,6 +484,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wakeup_en_regwen_qs)
@@ -503,6 +515,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wakeup_en[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wakeup_en_qs)
@@ -530,6 +543,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wake_status_qs)
@@ -556,6 +570,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_en_regwen_qs)
@@ -586,6 +601,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.reset_en[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_en_qs)
@@ -613,6 +629,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_status_qs)
@@ -639,6 +656,7 @@ module pwrmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wake_info_capture_dis.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wake_info_capture_dis_qs)
@@ -660,6 +678,7 @@ module pwrmgr_reg_top (
     .qre    (),
     .qe     (wake_info_flds_we[0]),
     .q      (reg2hw.wake_info.reasons.q),
+    .ds     (),
     .qs     (wake_info_reasons_qs)
   );
   assign reg2hw.wake_info.reasons.qe = wake_info_qe;
@@ -675,6 +694,7 @@ module pwrmgr_reg_top (
     .qre    (),
     .qe     (wake_info_flds_we[1]),
     .q      (reg2hw.wake_info.fall_through.q),
+    .ds     (),
     .qs     (wake_info_fall_through_qs)
   );
   assign reg2hw.wake_info.fall_through.qe = wake_info_qe;
@@ -690,6 +710,7 @@ module pwrmgr_reg_top (
     .qre    (),
     .qe     (wake_info_flds_we[2]),
     .q      (reg2hw.wake_info.abort.q),
+    .ds     (),
     .qs     (wake_info_abort_qs)
   );
   assign reg2hw.wake_info.abort.qe = wake_info_qe;

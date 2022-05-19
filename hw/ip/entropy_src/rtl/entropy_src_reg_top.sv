@@ -394,6 +394,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.es_entropy_valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_es_entropy_valid_qs)
@@ -419,6 +420,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.es_health_test_failed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_es_health_test_failed_qs)
@@ -444,6 +446,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.es_observe_fifo_ready.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_es_observe_fifo_ready_qs)
@@ -469,6 +472,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.es_fatal_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_es_fatal_err_qs)
@@ -496,6 +500,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.es_entropy_valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_es_entropy_valid_qs)
@@ -521,6 +526,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.es_health_test_failed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_es_health_test_failed_qs)
@@ -546,6 +552,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.es_observe_fifo_ready.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_es_observe_fifo_ready_qs)
@@ -571,6 +578,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.es_fatal_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_es_fatal_err_qs)
@@ -592,6 +600,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.es_entropy_valid.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.es_entropy_valid.qe = intr_test_qe;
@@ -607,6 +616,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.es_health_test_failed.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.es_health_test_failed.qe = intr_test_qe;
@@ -622,6 +632,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.es_observe_fifo_ready.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.es_observe_fifo_ready.qe = intr_test_qe;
@@ -637,6 +648,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.es_fatal_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.es_fatal_err.qe = intr_test_qe;
@@ -657,6 +669,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_alert.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_alert.qe = alert_test_qe;
@@ -672,6 +685,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_alert.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_alert.qe = alert_test_qe;
@@ -697,6 +711,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (me_regwen_qs)
@@ -723,6 +738,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_regupd.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_regupd_qs)
@@ -749,6 +765,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (regwen_qs)
@@ -792,6 +809,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.module_enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (module_enable_qs)
@@ -822,6 +840,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.conf.fips_enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (conf_fips_enable_qs)
@@ -847,6 +866,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.conf.entropy_data_reg_enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (conf_entropy_data_reg_enable_qs)
@@ -872,6 +892,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.conf.threshold_scope.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (conf_threshold_scope_qs)
@@ -897,6 +918,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.conf.rng_bit_enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (conf_rng_bit_enable_qs)
@@ -922,6 +944,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.conf.rng_bit_sel.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (conf_rng_bit_sel_qs)
@@ -952,6 +975,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.entropy_control.es_route.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (entropy_control_es_route_qs)
@@ -977,6 +1001,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.entropy_control.es_type.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (entropy_control_es_type_qs)
@@ -994,6 +1019,7 @@ module entropy_src_reg_top (
     .qre    (reg2hw.entropy_data.re),
     .qe     (),
     .q      (reg2hw.entropy_data.q),
+    .ds     (),
     .qs     (entropy_data_qs)
   );
 
@@ -1022,6 +1048,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.health_test_windows.fips_window.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (health_test_windows_fips_window_qs)
@@ -1047,6 +1074,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.health_test_windows.bypass_window.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (health_test_windows_bypass_window_qs)
@@ -1071,6 +1099,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (repcnt_thresholds_flds_we[0]),
     .q      (reg2hw.repcnt_thresholds.fips_thresh.q),
+    .ds     (),
     .qs     (repcnt_thresholds_fips_thresh_qs)
   );
   assign reg2hw.repcnt_thresholds.fips_thresh.qe = repcnt_thresholds_qe;
@@ -1086,6 +1115,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (repcnt_thresholds_flds_we[1]),
     .q      (reg2hw.repcnt_thresholds.bypass_thresh.q),
+    .ds     (),
     .qs     (repcnt_thresholds_bypass_thresh_qs)
   );
   assign reg2hw.repcnt_thresholds.bypass_thresh.qe = repcnt_thresholds_qe;
@@ -1109,6 +1139,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (repcnts_thresholds_flds_we[0]),
     .q      (reg2hw.repcnts_thresholds.fips_thresh.q),
+    .ds     (),
     .qs     (repcnts_thresholds_fips_thresh_qs)
   );
   assign reg2hw.repcnts_thresholds.fips_thresh.qe = repcnts_thresholds_qe;
@@ -1124,6 +1155,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (repcnts_thresholds_flds_we[1]),
     .q      (reg2hw.repcnts_thresholds.bypass_thresh.q),
+    .ds     (),
     .qs     (repcnts_thresholds_bypass_thresh_qs)
   );
   assign reg2hw.repcnts_thresholds.bypass_thresh.qe = repcnts_thresholds_qe;
@@ -1147,6 +1179,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (adaptp_hi_thresholds_flds_we[0]),
     .q      (reg2hw.adaptp_hi_thresholds.fips_thresh.q),
+    .ds     (),
     .qs     (adaptp_hi_thresholds_fips_thresh_qs)
   );
   assign reg2hw.adaptp_hi_thresholds.fips_thresh.qe = adaptp_hi_thresholds_qe;
@@ -1162,6 +1195,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (adaptp_hi_thresholds_flds_we[1]),
     .q      (reg2hw.adaptp_hi_thresholds.bypass_thresh.q),
+    .ds     (),
     .qs     (adaptp_hi_thresholds_bypass_thresh_qs)
   );
   assign reg2hw.adaptp_hi_thresholds.bypass_thresh.qe = adaptp_hi_thresholds_qe;
@@ -1185,6 +1219,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (adaptp_lo_thresholds_flds_we[0]),
     .q      (reg2hw.adaptp_lo_thresholds.fips_thresh.q),
+    .ds     (),
     .qs     (adaptp_lo_thresholds_fips_thresh_qs)
   );
   assign reg2hw.adaptp_lo_thresholds.fips_thresh.qe = adaptp_lo_thresholds_qe;
@@ -1200,6 +1235,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (adaptp_lo_thresholds_flds_we[1]),
     .q      (reg2hw.adaptp_lo_thresholds.bypass_thresh.q),
+    .ds     (),
     .qs     (adaptp_lo_thresholds_bypass_thresh_qs)
   );
   assign reg2hw.adaptp_lo_thresholds.bypass_thresh.qe = adaptp_lo_thresholds_qe;
@@ -1223,6 +1259,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (bucket_thresholds_flds_we[0]),
     .q      (reg2hw.bucket_thresholds.fips_thresh.q),
+    .ds     (),
     .qs     (bucket_thresholds_fips_thresh_qs)
   );
   assign reg2hw.bucket_thresholds.fips_thresh.qe = bucket_thresholds_qe;
@@ -1238,6 +1275,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (bucket_thresholds_flds_we[1]),
     .q      (reg2hw.bucket_thresholds.bypass_thresh.q),
+    .ds     (),
     .qs     (bucket_thresholds_bypass_thresh_qs)
   );
   assign reg2hw.bucket_thresholds.bypass_thresh.qe = bucket_thresholds_qe;
@@ -1261,6 +1299,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (markov_hi_thresholds_flds_we[0]),
     .q      (reg2hw.markov_hi_thresholds.fips_thresh.q),
+    .ds     (),
     .qs     (markov_hi_thresholds_fips_thresh_qs)
   );
   assign reg2hw.markov_hi_thresholds.fips_thresh.qe = markov_hi_thresholds_qe;
@@ -1276,6 +1315,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (markov_hi_thresholds_flds_we[1]),
     .q      (reg2hw.markov_hi_thresholds.bypass_thresh.q),
+    .ds     (),
     .qs     (markov_hi_thresholds_bypass_thresh_qs)
   );
   assign reg2hw.markov_hi_thresholds.bypass_thresh.qe = markov_hi_thresholds_qe;
@@ -1299,6 +1339,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (markov_lo_thresholds_flds_we[0]),
     .q      (reg2hw.markov_lo_thresholds.fips_thresh.q),
+    .ds     (),
     .qs     (markov_lo_thresholds_fips_thresh_qs)
   );
   assign reg2hw.markov_lo_thresholds.fips_thresh.qe = markov_lo_thresholds_qe;
@@ -1314,6 +1355,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (markov_lo_thresholds_flds_we[1]),
     .q      (reg2hw.markov_lo_thresholds.bypass_thresh.q),
+    .ds     (),
     .qs     (markov_lo_thresholds_bypass_thresh_qs)
   );
   assign reg2hw.markov_lo_thresholds.bypass_thresh.qe = markov_lo_thresholds_qe;
@@ -1337,6 +1379,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (extht_hi_thresholds_flds_we[0]),
     .q      (reg2hw.extht_hi_thresholds.fips_thresh.q),
+    .ds     (),
     .qs     (extht_hi_thresholds_fips_thresh_qs)
   );
   assign reg2hw.extht_hi_thresholds.fips_thresh.qe = extht_hi_thresholds_qe;
@@ -1352,6 +1395,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (extht_hi_thresholds_flds_we[1]),
     .q      (reg2hw.extht_hi_thresholds.bypass_thresh.q),
+    .ds     (),
     .qs     (extht_hi_thresholds_bypass_thresh_qs)
   );
   assign reg2hw.extht_hi_thresholds.bypass_thresh.qe = extht_hi_thresholds_qe;
@@ -1375,6 +1419,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (extht_lo_thresholds_flds_we[0]),
     .q      (reg2hw.extht_lo_thresholds.fips_thresh.q),
+    .ds     (),
     .qs     (extht_lo_thresholds_fips_thresh_qs)
   );
   assign reg2hw.extht_lo_thresholds.fips_thresh.qe = extht_lo_thresholds_qe;
@@ -1390,6 +1435,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (extht_lo_thresholds_flds_we[1]),
     .q      (reg2hw.extht_lo_thresholds.bypass_thresh.q),
+    .ds     (),
     .qs     (extht_lo_thresholds_bypass_thresh_qs)
   );
   assign reg2hw.extht_lo_thresholds.bypass_thresh.qe = extht_lo_thresholds_qe;
@@ -1407,6 +1453,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (repcnt_hi_watermarks_fips_watermark_qs)
   );
 
@@ -1421,6 +1468,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (repcnt_hi_watermarks_bypass_watermark_qs)
   );
 
@@ -1437,6 +1485,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (repcnts_hi_watermarks_fips_watermark_qs)
   );
 
@@ -1451,6 +1500,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (repcnts_hi_watermarks_bypass_watermark_qs)
   );
 
@@ -1467,6 +1517,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (adaptp_hi_watermarks_fips_watermark_qs)
   );
 
@@ -1481,6 +1532,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (adaptp_hi_watermarks_bypass_watermark_qs)
   );
 
@@ -1497,6 +1549,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (adaptp_lo_watermarks_fips_watermark_qs)
   );
 
@@ -1511,6 +1564,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (adaptp_lo_watermarks_bypass_watermark_qs)
   );
 
@@ -1527,6 +1581,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (extht_hi_watermarks_fips_watermark_qs)
   );
 
@@ -1541,6 +1596,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (extht_hi_watermarks_bypass_watermark_qs)
   );
 
@@ -1557,6 +1613,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (extht_lo_watermarks_fips_watermark_qs)
   );
 
@@ -1571,6 +1628,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (extht_lo_watermarks_bypass_watermark_qs)
   );
 
@@ -1587,6 +1645,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (bucket_hi_watermarks_fips_watermark_qs)
   );
 
@@ -1601,6 +1660,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (bucket_hi_watermarks_bypass_watermark_qs)
   );
 
@@ -1617,6 +1677,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (markov_hi_watermarks_fips_watermark_qs)
   );
 
@@ -1631,6 +1692,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (markov_hi_watermarks_bypass_watermark_qs)
   );
 
@@ -1647,6 +1709,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (markov_lo_watermarks_fips_watermark_qs)
   );
 
@@ -1661,6 +1724,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (markov_lo_watermarks_bypass_watermark_qs)
   );
 
@@ -1676,6 +1740,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (repcnt_total_fails_qs)
   );
 
@@ -1691,6 +1756,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (repcnts_total_fails_qs)
   );
 
@@ -1706,6 +1772,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (adaptp_hi_total_fails_qs)
   );
 
@@ -1721,6 +1788,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (adaptp_lo_total_fails_qs)
   );
 
@@ -1736,6 +1804,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (bucket_total_fails_qs)
   );
 
@@ -1751,6 +1820,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (markov_hi_total_fails_qs)
   );
 
@@ -1766,6 +1836,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (markov_lo_total_fails_qs)
   );
 
@@ -1781,6 +1852,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (extht_hi_total_fails_qs)
   );
 
@@ -1796,6 +1868,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (extht_lo_total_fails_qs)
   );
 
@@ -1824,6 +1897,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_threshold.alert_threshold.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_threshold_alert_threshold_qs)
@@ -1849,6 +1923,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_threshold.alert_threshold_inv.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_threshold_alert_threshold_inv_qs)
@@ -1866,6 +1941,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_summary_fail_counts_qs)
   );
 
@@ -1882,6 +1958,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_fail_counts_repcnt_fail_count_qs)
   );
 
@@ -1896,6 +1973,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_fail_counts_adaptp_hi_fail_count_qs)
   );
 
@@ -1910,6 +1988,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_fail_counts_adaptp_lo_fail_count_qs)
   );
 
@@ -1924,6 +2003,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_fail_counts_bucket_fail_count_qs)
   );
 
@@ -1938,6 +2018,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_fail_counts_markov_hi_fail_count_qs)
   );
 
@@ -1952,6 +2033,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_fail_counts_markov_lo_fail_count_qs)
   );
 
@@ -1966,6 +2048,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_fail_counts_repcnts_fail_count_qs)
   );
 
@@ -1982,6 +2065,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (extht_fail_counts_extht_hi_fail_count_qs)
   );
 
@@ -1996,6 +2080,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (extht_fail_counts_extht_lo_fail_count_qs)
   );
 
@@ -2024,6 +2109,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fw_ov_control.fw_ov_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fw_ov_control_fw_ov_mode_qs)
@@ -2049,6 +2135,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fw_ov_control.fw_ov_entropy_insert.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fw_ov_control_fw_ov_entropy_insert_qs)
@@ -2075,6 +2162,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fw_ov_sha3_start.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fw_ov_sha3_start_qs)
@@ -2092,6 +2180,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (fw_ov_wr_fifo_full_qs)
   );
 
@@ -2116,6 +2205,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fw_ov_rd_fifo_overflow_qs)
@@ -2133,6 +2223,7 @@ module entropy_src_reg_top (
     .qre    (reg2hw.fw_ov_rd_data.re),
     .qe     (),
     .q      (reg2hw.fw_ov_rd_data.q),
+    .ds     (),
     .qs     (fw_ov_rd_data_qs)
   );
 
@@ -2151,6 +2242,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (fw_ov_wr_data_flds_we[0]),
     .q      (reg2hw.fw_ov_wr_data.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.fw_ov_wr_data.qe = fw_ov_wr_data_qe;
@@ -2179,6 +2271,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.observe_fifo_thresh.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (observe_fifo_thresh_qs)
@@ -2196,6 +2289,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (observe_fifo_depth_qs)
   );
 
@@ -2212,6 +2306,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (debug_status_entropy_fifo_depth_qs)
   );
 
@@ -2226,6 +2321,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (debug_status_sha3_fsm_qs)
   );
 
@@ -2240,6 +2336,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (debug_status_sha3_block_pr_qs)
   );
 
@@ -2254,6 +2351,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (debug_status_sha3_squeezing_qs)
   );
 
@@ -2268,6 +2366,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (debug_status_sha3_absorbed_qs)
   );
 
@@ -2282,6 +2381,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (debug_status_sha3_err_qs)
   );
 
@@ -2296,6 +2396,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (debug_status_main_sm_idle_qs)
   );
 
@@ -2310,6 +2411,7 @@ module entropy_src_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (debug_status_main_sm_boot_done_qs)
   );
 
@@ -2335,6 +2437,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_fips_enable_field_alert_qs)
@@ -2360,6 +2463,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_entropy_data_reg_en_field_alert_qs)
@@ -2385,6 +2489,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_module_enable_field_alert_qs)
@@ -2410,6 +2515,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_threshold_scope_field_alert_qs)
@@ -2435,6 +2541,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_rng_bit_enable_field_alert_qs)
@@ -2460,6 +2567,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_fw_ov_sha3_start_field_alert_qs)
@@ -2485,6 +2593,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_fw_ov_mode_field_alert_qs)
@@ -2510,6 +2619,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_fw_ov_entropy_insert_field_alert_qs)
@@ -2535,6 +2645,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_es_route_field_alert_qs)
@@ -2560,6 +2671,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_es_type_field_alert_qs)
@@ -2585,6 +2697,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_es_main_sm_alert_qs)
@@ -2610,6 +2723,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_es_bus_cmp_alert_qs)
@@ -2635,6 +2749,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_es_thresh_cfg_alert_qs)
@@ -2662,6 +2777,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_esrng_err_qs)
@@ -2687,6 +2803,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_observe_err_qs)
@@ -2712,6 +2829,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_esfinal_err_qs)
@@ -2737,6 +2855,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_es_ack_sm_err_qs)
@@ -2762,6 +2881,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_es_main_sm_err_qs)
@@ -2787,6 +2907,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_es_cntr_err_qs)
@@ -2812,6 +2933,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_fifo_write_err_qs)
@@ -2837,6 +2959,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_fifo_read_err_qs)
@@ -2862,6 +2985,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_fifo_state_err_qs)
@@ -2902,6 +3026,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (err_code_test_flds_we[0]),
     .q      (reg2hw.err_code_test.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_test_qs)
@@ -2929,6 +3054,7 @@ module entropy_src_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (main_sm_state_qs)

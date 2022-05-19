@@ -173,6 +173,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_info_por_qs)
@@ -198,6 +199,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_info_low_power_exit_qs)
@@ -223,6 +225,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_info_ndm_reset_qs)
@@ -248,6 +251,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.reset_info.hw_req.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_info_hw_req_qs)
@@ -275,6 +279,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_info_ctrl.en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_info_ctrl_en_qs)
@@ -300,6 +305,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_info_ctrl.index.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_info_ctrl_index_qs)
@@ -317,6 +323,7 @@ module rstmgr_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_info_attr_qs)
   );
 
@@ -332,6 +339,7 @@ module rstmgr_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_info_qs)
   );
 
@@ -358,6 +366,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_rst_regwen[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_regwen_en_0_qs)
@@ -383,6 +392,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_rst_regwen[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_regwen_en_1_qs)
@@ -405,6 +415,7 @@ module rstmgr_reg_top (
     .qre    (),
     .qe     (sw_rst_ctrl_n_flds_we[0]),
     .q      (reg2hw.sw_rst_ctrl_n[0].q),
+    .ds     (),
     .qs     (sw_rst_ctrl_n_val_0_qs)
   );
   assign reg2hw.sw_rst_ctrl_n[0].qe = sw_rst_ctrl_n_qe;
@@ -420,6 +431,7 @@ module rstmgr_reg_top (
     .qre    (),
     .qe     (sw_rst_ctrl_n_flds_we[1]),
     .q      (reg2hw.sw_rst_ctrl_n[1].q),
+    .ds     (),
     .qs     (sw_rst_ctrl_n_val_1_qs)
   );
   assign reg2hw.sw_rst_ctrl_n[1].qe = sw_rst_ctrl_n_qe;
