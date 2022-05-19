@@ -1036,6 +1036,7 @@ module otbn_controller
   // Decode wide ISPR read data.
   logic [WLEN-1:0]                ispr_rdata;
   logic [2*BaseWordsPerWLEN-1:0]  ispr_rdata_intg_err_wide;
+  logic [BaseWordsPerWLEN-1:0]    ispr_rdata_intg_err_narrow;
   for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_ispr_rdata_dec
     prim_secded_inv_39_32_dec i_secded_dec (
       .data_i     (ispr_rdata_intg_i[i_word*39+:39]),
@@ -1044,47 +1045,56 @@ module otbn_controller
       .err_o      (ispr_rdata_intg_err_wide[i_word*2+:2])
     );
     assign ispr_rdata[i_word*32+:32] = ispr_rdata_intg_i[i_word*39+:32];
+    assign ispr_rdata_intg_err_narrow[i_word] = |(ispr_rdata_intg_err_wide[i_word*2+:2]);
   end
 
   // Propagate integrity error only if wide ISPR is used.
 
-  // `ispr_rdata` conditionally flows into `ispr_bignum_wdata_intg_o`.
-  logic ispr_rdata_into_ispr_bignum_wdata;
-  assign ispr_rdata_into_ispr_bignum_wdata = insn_dec_shared_i.ispr_rs_insn;
+  // Handle ISPR integrity error detection. We've got a bitmask of ISPR words that failed their
+  // integrity check (ispr_rdata_intg_err_narrow), but a nonzero entry may not be a problem if we
+  // don't actually use the data.
+  //
+  // The situations when the data is actually used are:
+  //
+  //   (1) This is a bignum instruction that writes back to the bignum register file by reading an
+  //       ISPR. In this case, we actually pass the data through with integrity bits, but it
+  //       shouldn't hurt to add fault detection at this point.
+  //
+  //   (2) This instruction consumes the data by selecting a word from an ISPR and then writing it
+  //       back. This happens for things like CSRRS instructions, where the data flows to the base
+  //       register file through rf_base_wr_data_no_intg_o and back to the ISPR through
+  //       ispr_base_wdata_o. The word used is given by the onehot ispr_word_sel_base mask.
+  //
+  // In both cases, there's a special case for the RND_PREFETCH register, which doesn't actually
+  // have any backing data. It reads as zero with invalid integrity bits which we want to ignore.
 
-  logic csr_rdata_mux_into_ispr_base_wdata;
-  assign csr_rdata_mux_into_ispr_base_wdata =
-      // `csr_rdata_mux` flows into `csr_rdata_raw`, which flows into `csr_rdata` except in one
-      // case.
-      (csr_addr != CsrRndPrefetch)
-      // `csr_rdata` conditionally flows into `csr_wdata_raw`.  `csr_wdata_raw` then flows into
-      // `csr_wdata`, which flows into `ispr_base_wdata_o`.
-      & insn_dec_shared_i.ispr_rs_insn;
+  // Are we reading all the ISPR data? (case (1) above)
+  logic all_ispr_words_used;
+  assign all_ispr_words_used = (insn_dec_bignum_i.rf_wdata_sel == RfWdSelIspr);
 
-  // Words of `ispr_rdata` flow into `ispr_base_wdata_o` through `csr_rdata_mux` conditional to the
-  // word-wise selection by `ispr_word_sel_base`.
-  logic [BaseWordsPerWLEN-1:0] ispr_rdata_into_ispr_base_wdata;
-  assign ispr_rdata_into_ispr_base_wdata  = csr_rdata_mux_into_ispr_base_wdata ? ispr_word_sel_base
-                                                                               : '0;
+  // Are we reading just one word of the ISPR data? (case (2) above).
+  logic one_ispr_word_used;
+  assign one_ispr_word_used = ispr_rd_insn & (insn_dec_shared_i.subset == InsnSubsetBase);
 
-  logic [BaseWordsPerWLEN-1:0] ispr_rdata_used;
-  // `ispr_rdata_intg_i` is only valid for valid instructions that read from the ISPR.
-  assign ispr_rdata_used = {BaseWordsPerWLEN{insn_valid_i & ispr_rd_insn & ~ispr_stall}} & (
-      // `ispr_rdata` then flows into `ispr_base_wdata_o` or into `ispr_bignum_wdata_intg_o`
-      ispr_rdata_into_ispr_base_wdata | {BaseWordsPerWLEN{ispr_rdata_into_ispr_bignum_wdata}}
-  );
+  // A bit-mask giving which ISPR words are being read
+  logic [BaseWordsPerWLEN-1:0] ispr_read_mask;
+  assign ispr_read_mask = all_ispr_words_used ? '1 :
+                          one_ispr_word_used  ? ispr_word_sel_base : '0;
 
-  `ASSERT_KNOWN(IsprRdataUsed_A, ispr_rdata_used)
-
-  // Determine if a used word had an integrity error.
-  logic [BaseWordsPerWLEN-1:0] ispr_rdata_intg_err_narrow;
-  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_ispr_rdata_err
-    assign ispr_rdata_intg_err_narrow[i_word] = |(ispr_rdata_intg_err_wide[i_word*2+:2]);
-  end
-
+  // Use ispr_read_mask to qualify the error bit-mask that came out of the integrity decoder.
   logic [BaseWordsPerWLEN-1:0] ispr_rdata_used_intg_err;
-  assign ispr_rdata_used_intg_err = ispr_rdata_used & ispr_rdata_intg_err_narrow;
-  assign ispr_rdata_intg_err      = |(ispr_rdata_used_intg_err);
+  assign ispr_rdata_used_intg_err = ispr_read_mask & ispr_rdata_intg_err_narrow;
+
+  // We only architecturally read the ISPR when there's a non-stalled instruction. This is also the
+  // place where we factor in the special RND_PREFETCH behaviour. We also need to squash any
+  // integrity errors if we're reading a sideload key which isn't currently valid (this will
+  // generate a key_invalid error, but we shouldn't have any behaviour that depends on what happens
+  // to be on the pins)
+  logic non_prefetch_insn_running;
+  assign non_prefetch_insn_running = (insn_valid_i & ~stall &
+                                      (csr_addr != CsrRndPrefetch) & ~key_invalid);
+
+  assign ispr_rdata_intg_err = non_prefetch_insn_running & |(ispr_rdata_used_intg_err);
 
   `ASSERT_KNOWN(IsprRdataIntgErrKnown_A, ispr_rdata_intg_err)
 
