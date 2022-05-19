@@ -1082,6 +1082,7 @@ def opentitan_flash_binary(
         srcs = all_targets,
         testonly = testonly,
     )
+
     # Create a filegroup with all binary targets.
     native.filegroup(
         name = name + "_bin",
