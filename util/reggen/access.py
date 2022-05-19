@@ -111,6 +111,14 @@ class SWAccess:
         '''
         return self.value[1] != SwAccess.RC and self.allows_write()
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, SWAccess):
+            return NotImplemented
+        return (self.key == other.key) and (self.value == other.value)
+
+    def __str__(self) -> str:
+        return '{}: {}'.format(self.key, self.value)
+
 
 class HWAccess:
     def __init__(self, where: str, raw: object):
@@ -126,3 +134,11 @@ class HWAccess:
 
     def allows_write(self) -> bool:
         return self.key in ['hrw', 'hwo']
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, HWAccess):
+            return NotImplemented
+        return (self.key == other.key) and (self.value == other.value)
+
+    def __str__(self) -> str:
+        return '{}: {}'.format(self.key, self.value)
