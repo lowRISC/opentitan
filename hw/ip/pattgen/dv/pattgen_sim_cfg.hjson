@@ -48,8 +48,8 @@
   // additional top for coverage
   sim_tops: [ "pattgen_bind", "pattgen_cov_bind"]
 
-  // Pattgen UNR coverage
-  xcelium_cov_refine_files: ["{proj_root}/hw/ip/pattgen/dv/cov/pattgen_unr.vRefine"]
+  // Pattgen coverage exclusion
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/pattgen/dv/cov/pattgen_cov.vRefine"]
 
   // List of test specifications.
   tests: [
