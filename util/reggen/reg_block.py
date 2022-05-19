@@ -275,7 +275,6 @@ class RegBlock:
             self._add_flat_reg(reg)
             if mr.dv_compact is False:
                 self.type_regs.append(reg)
-            self.name_to_offset[lname] = reg.offset
 
         self.multiregs.append(mr)
         self.all_regs.append(mr)
@@ -294,7 +293,6 @@ class RegBlock:
                              .format(reg.name, reg.offset,
                                      self.name_to_offset[lname]))
         self._add_flat_reg(reg)
-        self.name_to_offset[lname] = reg.offset
 
         self.registers.append(reg)
         self.all_regs.append(reg)
@@ -306,14 +304,16 @@ class RegBlock:
             self.wennames.append(reg.regwen)
 
     def _add_flat_reg(self, reg: Register) -> None:
+        lname = reg.name.lower()
         # The first assertion is checked at the call site (where we can print
         # out a nicer message for multiregs). The second assertion should be
         # implied by the first.
-        assert reg.name not in self.name_to_offset
-        assert reg.name not in self.name_to_flat_reg
+        assert lname not in self.name_to_offset
+        assert lname not in self.name_to_flat_reg
 
         self.flat_regs.append(reg)
-        self.name_to_flat_reg[reg.name.lower()] = reg
+        self.name_to_flat_reg[lname] = reg
+        self.name_to_offset[lname] = reg.offset
 
     def add_window(self, window: Window) -> None:
         if window.name is not None:
@@ -493,7 +493,7 @@ class RegBlock:
         return (self.offset - 1).bit_length()
 
     def has_shadowed_reg(self) -> bool:
-        '''Return boolean indication whether reg block contains shadowed reigsters'''
+        '''Returns true if reg block contains shadowed regs'''
         for r in self.flat_regs:
             if r.shadowed:
                 return True
@@ -501,9 +501,7 @@ class RegBlock:
         return False
 
     def has_internal_shadowed_reg(self) -> bool:
-        '''Return boolean indication whether reg block contains shadowed reigsters in
-           internal registers
-        '''
+        '''Returns true if reg block contains shadowed regs in internal regs'''
         for r in self.flat_regs:
             if r.shadowed and not r.hwext:
                 return True
