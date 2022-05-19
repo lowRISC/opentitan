@@ -90,6 +90,7 @@
     {
       name: flash_ctrl_hw_sec_otp
       uvm_test_seq: flash_ctrl_hw_sec_otp_vseq
+      run_opts: ["+test_timeout_ns=300000000000"]
       reseed: 5
     }
     {
@@ -101,13 +102,13 @@
     {
       name: flash_ctrl_hw_rma
       uvm_test_seq: flash_ctrl_hw_rma_vseq
-      run_opts: ["+test_timeout_ns=15000000000"]
+      run_opts: ["+test_timeout_ns=300000000000"]
       reseed: 3
     }
     {
       name: flash_ctrl_host_ctrl_arb
       uvm_test_seq: flash_ctrl_host_ctrl_arb_vseq
-      run_opts: ["+zero_delays=1", "+test_timeout_ns=15000000000"]
+      run_opts: ["+zero_delays=1", "+test_timeout_ns=300000000000"]
       reseed: 5
     }
     {
@@ -140,6 +141,7 @@
     {
       name: flash_ctrl_error_mp
       uvm_test_seq: flash_ctrl_error_mp_vseq
+      run_opts: ["+test_timeout_ns=300000000000"]
       reseed: 10
     }
     {
