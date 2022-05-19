@@ -157,6 +157,7 @@ module rom_ctrl_regs_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -183,6 +184,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_cause_checker_error_qs)
@@ -208,6 +210,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_cause_integrity_error_qs)
@@ -235,6 +238,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.digest[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (digest_0_qs)
@@ -262,6 +266,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.digest[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (digest_1_qs)
@@ -289,6 +294,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.digest[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (digest_2_qs)
@@ -316,6 +322,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.digest[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (digest_3_qs)
@@ -343,6 +350,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.digest[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (digest_4_qs)
@@ -370,6 +378,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.digest[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (digest_5_qs)
@@ -397,6 +406,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.digest[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (digest_6_qs)
@@ -424,6 +434,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.digest[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (digest_7_qs)
@@ -451,6 +462,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.exp_digest[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (exp_digest_0_qs)
@@ -478,6 +490,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.exp_digest[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (exp_digest_1_qs)
@@ -505,6 +518,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.exp_digest[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (exp_digest_2_qs)
@@ -532,6 +546,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.exp_digest[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (exp_digest_3_qs)
@@ -559,6 +574,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.exp_digest[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (exp_digest_4_qs)
@@ -586,6 +602,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.exp_digest[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (exp_digest_5_qs)
@@ -613,6 +630,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.exp_digest[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (exp_digest_6_qs)
@@ -640,6 +658,7 @@ module rom_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.exp_digest[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (exp_digest_7_qs)

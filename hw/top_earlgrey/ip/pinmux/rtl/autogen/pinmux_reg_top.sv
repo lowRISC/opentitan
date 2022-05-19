@@ -116,18 +116,6 @@ module pinmux_reg_top (
   );
 
   // cdc oversampling signals
-    logic sync_aon_update;
-  prim_sync_reqack u_aon_tgl (
-    .clk_src_i(clk_aon_i),
-    .rst_src_ni(rst_aon_ni),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .req_chk_i(1'b1),
-    .src_req_i(1'b1),
-    .src_ack_o(),
-    .dst_req_o(sync_aon_update),
-    .dst_ack_i(sync_aon_update)
-  );
 
   assign reg_rdata = reg_rdata_next ;
   assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
@@ -3033,34 +3021,36 @@ module pinmux_reg_top (
   // CDC handling is done on a per-reg instead of per-field boundary.
 
   logic  aon_wkup_detector_en_0_qs_int;
-  logic [0:0] aon_wkup_detector_en_0_d;
+  logic [0:0] aon_wkup_detector_en_0_qs;
   logic [0:0] aon_wkup_detector_en_0_wdata;
   logic aon_wkup_detector_en_0_we;
   logic unused_aon_wkup_detector_en_0_wdata;
   logic aon_wkup_detector_en_0_regwen;
 
   always_comb begin
-    aon_wkup_detector_en_0_d = '0;
-    aon_wkup_detector_en_0_d = aon_wkup_detector_en_0_qs_int;
+    aon_wkup_detector_en_0_qs = 1'h0;
+    aon_wkup_detector_en_0_qs = aon_wkup_detector_en_0_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(1),
     .ResetVal(1'h0),
-    .BitMask(1'h1)
+    .BitMask(1'h1),
+    .DstWrReq(0)
   ) u_wkup_detector_en_0_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_0_qs),
     .src_we_i     (wkup_detector_en_0_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_0_busy),
     .src_qs_o     (wkup_detector_en_0_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_en_0_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_en_0_qs),
     .dst_we_o     (aon_wkup_detector_en_0_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_en_0_regwen),
@@ -3070,34 +3060,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_en_0_wdata;
 
   logic  aon_wkup_detector_en_1_qs_int;
-  logic [0:0] aon_wkup_detector_en_1_d;
+  logic [0:0] aon_wkup_detector_en_1_qs;
   logic [0:0] aon_wkup_detector_en_1_wdata;
   logic aon_wkup_detector_en_1_we;
   logic unused_aon_wkup_detector_en_1_wdata;
   logic aon_wkup_detector_en_1_regwen;
 
   always_comb begin
-    aon_wkup_detector_en_1_d = '0;
-    aon_wkup_detector_en_1_d = aon_wkup_detector_en_1_qs_int;
+    aon_wkup_detector_en_1_qs = 1'h0;
+    aon_wkup_detector_en_1_qs = aon_wkup_detector_en_1_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(1),
     .ResetVal(1'h0),
-    .BitMask(1'h1)
+    .BitMask(1'h1),
+    .DstWrReq(0)
   ) u_wkup_detector_en_1_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_1_qs),
     .src_we_i     (wkup_detector_en_1_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_1_busy),
     .src_qs_o     (wkup_detector_en_1_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_en_1_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_en_1_qs),
     .dst_we_o     (aon_wkup_detector_en_1_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_en_1_regwen),
@@ -3107,34 +3099,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_en_1_wdata;
 
   logic  aon_wkup_detector_en_2_qs_int;
-  logic [0:0] aon_wkup_detector_en_2_d;
+  logic [0:0] aon_wkup_detector_en_2_qs;
   logic [0:0] aon_wkup_detector_en_2_wdata;
   logic aon_wkup_detector_en_2_we;
   logic unused_aon_wkup_detector_en_2_wdata;
   logic aon_wkup_detector_en_2_regwen;
 
   always_comb begin
-    aon_wkup_detector_en_2_d = '0;
-    aon_wkup_detector_en_2_d = aon_wkup_detector_en_2_qs_int;
+    aon_wkup_detector_en_2_qs = 1'h0;
+    aon_wkup_detector_en_2_qs = aon_wkup_detector_en_2_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(1),
     .ResetVal(1'h0),
-    .BitMask(1'h1)
+    .BitMask(1'h1),
+    .DstWrReq(0)
   ) u_wkup_detector_en_2_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_2_qs),
     .src_we_i     (wkup_detector_en_2_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_2_busy),
     .src_qs_o     (wkup_detector_en_2_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_en_2_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_en_2_qs),
     .dst_we_o     (aon_wkup_detector_en_2_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_en_2_regwen),
@@ -3144,34 +3138,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_en_2_wdata;
 
   logic  aon_wkup_detector_en_3_qs_int;
-  logic [0:0] aon_wkup_detector_en_3_d;
+  logic [0:0] aon_wkup_detector_en_3_qs;
   logic [0:0] aon_wkup_detector_en_3_wdata;
   logic aon_wkup_detector_en_3_we;
   logic unused_aon_wkup_detector_en_3_wdata;
   logic aon_wkup_detector_en_3_regwen;
 
   always_comb begin
-    aon_wkup_detector_en_3_d = '0;
-    aon_wkup_detector_en_3_d = aon_wkup_detector_en_3_qs_int;
+    aon_wkup_detector_en_3_qs = 1'h0;
+    aon_wkup_detector_en_3_qs = aon_wkup_detector_en_3_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(1),
     .ResetVal(1'h0),
-    .BitMask(1'h1)
+    .BitMask(1'h1),
+    .DstWrReq(0)
   ) u_wkup_detector_en_3_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_3_qs),
     .src_we_i     (wkup_detector_en_3_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_3_busy),
     .src_qs_o     (wkup_detector_en_3_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_en_3_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_en_3_qs),
     .dst_we_o     (aon_wkup_detector_en_3_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_en_3_regwen),
@@ -3181,34 +3177,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_en_3_wdata;
 
   logic  aon_wkup_detector_en_4_qs_int;
-  logic [0:0] aon_wkup_detector_en_4_d;
+  logic [0:0] aon_wkup_detector_en_4_qs;
   logic [0:0] aon_wkup_detector_en_4_wdata;
   logic aon_wkup_detector_en_4_we;
   logic unused_aon_wkup_detector_en_4_wdata;
   logic aon_wkup_detector_en_4_regwen;
 
   always_comb begin
-    aon_wkup_detector_en_4_d = '0;
-    aon_wkup_detector_en_4_d = aon_wkup_detector_en_4_qs_int;
+    aon_wkup_detector_en_4_qs = 1'h0;
+    aon_wkup_detector_en_4_qs = aon_wkup_detector_en_4_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(1),
     .ResetVal(1'h0),
-    .BitMask(1'h1)
+    .BitMask(1'h1),
+    .DstWrReq(0)
   ) u_wkup_detector_en_4_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_4_qs),
     .src_we_i     (wkup_detector_en_4_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_4_busy),
     .src_qs_o     (wkup_detector_en_4_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_en_4_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_en_4_qs),
     .dst_we_o     (aon_wkup_detector_en_4_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_en_4_regwen),
@@ -3218,34 +3216,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_en_4_wdata;
 
   logic  aon_wkup_detector_en_5_qs_int;
-  logic [0:0] aon_wkup_detector_en_5_d;
+  logic [0:0] aon_wkup_detector_en_5_qs;
   logic [0:0] aon_wkup_detector_en_5_wdata;
   logic aon_wkup_detector_en_5_we;
   logic unused_aon_wkup_detector_en_5_wdata;
   logic aon_wkup_detector_en_5_regwen;
 
   always_comb begin
-    aon_wkup_detector_en_5_d = '0;
-    aon_wkup_detector_en_5_d = aon_wkup_detector_en_5_qs_int;
+    aon_wkup_detector_en_5_qs = 1'h0;
+    aon_wkup_detector_en_5_qs = aon_wkup_detector_en_5_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(1),
     .ResetVal(1'h0),
-    .BitMask(1'h1)
+    .BitMask(1'h1),
+    .DstWrReq(0)
   ) u_wkup_detector_en_5_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_5_qs),
     .src_we_i     (wkup_detector_en_5_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_5_busy),
     .src_qs_o     (wkup_detector_en_5_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_en_5_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_en_5_qs),
     .dst_we_o     (aon_wkup_detector_en_5_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_en_5_regwen),
@@ -3255,34 +3255,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_en_5_wdata;
 
   logic  aon_wkup_detector_en_6_qs_int;
-  logic [0:0] aon_wkup_detector_en_6_d;
+  logic [0:0] aon_wkup_detector_en_6_qs;
   logic [0:0] aon_wkup_detector_en_6_wdata;
   logic aon_wkup_detector_en_6_we;
   logic unused_aon_wkup_detector_en_6_wdata;
   logic aon_wkup_detector_en_6_regwen;
 
   always_comb begin
-    aon_wkup_detector_en_6_d = '0;
-    aon_wkup_detector_en_6_d = aon_wkup_detector_en_6_qs_int;
+    aon_wkup_detector_en_6_qs = 1'h0;
+    aon_wkup_detector_en_6_qs = aon_wkup_detector_en_6_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(1),
     .ResetVal(1'h0),
-    .BitMask(1'h1)
+    .BitMask(1'h1),
+    .DstWrReq(0)
   ) u_wkup_detector_en_6_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_6_qs),
     .src_we_i     (wkup_detector_en_6_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_6_busy),
     .src_qs_o     (wkup_detector_en_6_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_en_6_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_en_6_qs),
     .dst_we_o     (aon_wkup_detector_en_6_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_en_6_regwen),
@@ -3292,34 +3294,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_en_6_wdata;
 
   logic  aon_wkup_detector_en_7_qs_int;
-  logic [0:0] aon_wkup_detector_en_7_d;
+  logic [0:0] aon_wkup_detector_en_7_qs;
   logic [0:0] aon_wkup_detector_en_7_wdata;
   logic aon_wkup_detector_en_7_we;
   logic unused_aon_wkup_detector_en_7_wdata;
   logic aon_wkup_detector_en_7_regwen;
 
   always_comb begin
-    aon_wkup_detector_en_7_d = '0;
-    aon_wkup_detector_en_7_d = aon_wkup_detector_en_7_qs_int;
+    aon_wkup_detector_en_7_qs = 1'h0;
+    aon_wkup_detector_en_7_qs = aon_wkup_detector_en_7_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(1),
     .ResetVal(1'h0),
-    .BitMask(1'h1)
+    .BitMask(1'h1),
+    .DstWrReq(0)
   ) u_wkup_detector_en_7_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_7_qs),
     .src_we_i     (wkup_detector_en_7_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[0:0]),
     .src_busy_o   (wkup_detector_en_7_busy),
     .src_qs_o     (wkup_detector_en_7_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_en_7_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_en_7_qs),
     .dst_we_o     (aon_wkup_detector_en_7_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_en_7_regwen),
@@ -3331,36 +3335,38 @@ module pinmux_reg_top (
   logic [2:0]  aon_wkup_detector_0_mode_0_qs_int;
   logic  aon_wkup_detector_0_filter_0_qs_int;
   logic  aon_wkup_detector_0_miodio_0_qs_int;
-  logic [4:0] aon_wkup_detector_0_d;
+  logic [4:0] aon_wkup_detector_0_qs;
   logic [4:0] aon_wkup_detector_0_wdata;
   logic aon_wkup_detector_0_we;
   logic unused_aon_wkup_detector_0_wdata;
   logic aon_wkup_detector_0_regwen;
 
   always_comb begin
-    aon_wkup_detector_0_d = '0;
-    aon_wkup_detector_0_d[2:0] = aon_wkup_detector_0_mode_0_qs_int;
-    aon_wkup_detector_0_d[3] = aon_wkup_detector_0_filter_0_qs_int;
-    aon_wkup_detector_0_d[4] = aon_wkup_detector_0_miodio_0_qs_int;
+    aon_wkup_detector_0_qs = 5'h0;
+    aon_wkup_detector_0_qs[2:0] = aon_wkup_detector_0_mode_0_qs_int;
+    aon_wkup_detector_0_qs[3] = aon_wkup_detector_0_filter_0_qs_int;
+    aon_wkup_detector_0_qs[4] = aon_wkup_detector_0_miodio_0_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(5),
     .ResetVal(5'h0),
-    .BitMask(5'h1f)
+    .BitMask(5'h1f),
+    .DstWrReq(0)
   ) u_wkup_detector_0_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_0_qs),
     .src_we_i     (wkup_detector_0_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_0_busy),
     .src_qs_o     (wkup_detector_0_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_0_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_0_qs),
     .dst_we_o     (aon_wkup_detector_0_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_0_regwen),
@@ -3372,36 +3378,38 @@ module pinmux_reg_top (
   logic [2:0]  aon_wkup_detector_1_mode_1_qs_int;
   logic  aon_wkup_detector_1_filter_1_qs_int;
   logic  aon_wkup_detector_1_miodio_1_qs_int;
-  logic [4:0] aon_wkup_detector_1_d;
+  logic [4:0] aon_wkup_detector_1_qs;
   logic [4:0] aon_wkup_detector_1_wdata;
   logic aon_wkup_detector_1_we;
   logic unused_aon_wkup_detector_1_wdata;
   logic aon_wkup_detector_1_regwen;
 
   always_comb begin
-    aon_wkup_detector_1_d = '0;
-    aon_wkup_detector_1_d[2:0] = aon_wkup_detector_1_mode_1_qs_int;
-    aon_wkup_detector_1_d[3] = aon_wkup_detector_1_filter_1_qs_int;
-    aon_wkup_detector_1_d[4] = aon_wkup_detector_1_miodio_1_qs_int;
+    aon_wkup_detector_1_qs = 5'h0;
+    aon_wkup_detector_1_qs[2:0] = aon_wkup_detector_1_mode_1_qs_int;
+    aon_wkup_detector_1_qs[3] = aon_wkup_detector_1_filter_1_qs_int;
+    aon_wkup_detector_1_qs[4] = aon_wkup_detector_1_miodio_1_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(5),
     .ResetVal(5'h0),
-    .BitMask(5'h1f)
+    .BitMask(5'h1f),
+    .DstWrReq(0)
   ) u_wkup_detector_1_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_1_qs),
     .src_we_i     (wkup_detector_1_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_1_busy),
     .src_qs_o     (wkup_detector_1_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_1_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_1_qs),
     .dst_we_o     (aon_wkup_detector_1_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_1_regwen),
@@ -3413,36 +3421,38 @@ module pinmux_reg_top (
   logic [2:0]  aon_wkup_detector_2_mode_2_qs_int;
   logic  aon_wkup_detector_2_filter_2_qs_int;
   logic  aon_wkup_detector_2_miodio_2_qs_int;
-  logic [4:0] aon_wkup_detector_2_d;
+  logic [4:0] aon_wkup_detector_2_qs;
   logic [4:0] aon_wkup_detector_2_wdata;
   logic aon_wkup_detector_2_we;
   logic unused_aon_wkup_detector_2_wdata;
   logic aon_wkup_detector_2_regwen;
 
   always_comb begin
-    aon_wkup_detector_2_d = '0;
-    aon_wkup_detector_2_d[2:0] = aon_wkup_detector_2_mode_2_qs_int;
-    aon_wkup_detector_2_d[3] = aon_wkup_detector_2_filter_2_qs_int;
-    aon_wkup_detector_2_d[4] = aon_wkup_detector_2_miodio_2_qs_int;
+    aon_wkup_detector_2_qs = 5'h0;
+    aon_wkup_detector_2_qs[2:0] = aon_wkup_detector_2_mode_2_qs_int;
+    aon_wkup_detector_2_qs[3] = aon_wkup_detector_2_filter_2_qs_int;
+    aon_wkup_detector_2_qs[4] = aon_wkup_detector_2_miodio_2_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(5),
     .ResetVal(5'h0),
-    .BitMask(5'h1f)
+    .BitMask(5'h1f),
+    .DstWrReq(0)
   ) u_wkup_detector_2_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_2_qs),
     .src_we_i     (wkup_detector_2_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_2_busy),
     .src_qs_o     (wkup_detector_2_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_2_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_2_qs),
     .dst_we_o     (aon_wkup_detector_2_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_2_regwen),
@@ -3454,36 +3464,38 @@ module pinmux_reg_top (
   logic [2:0]  aon_wkup_detector_3_mode_3_qs_int;
   logic  aon_wkup_detector_3_filter_3_qs_int;
   logic  aon_wkup_detector_3_miodio_3_qs_int;
-  logic [4:0] aon_wkup_detector_3_d;
+  logic [4:0] aon_wkup_detector_3_qs;
   logic [4:0] aon_wkup_detector_3_wdata;
   logic aon_wkup_detector_3_we;
   logic unused_aon_wkup_detector_3_wdata;
   logic aon_wkup_detector_3_regwen;
 
   always_comb begin
-    aon_wkup_detector_3_d = '0;
-    aon_wkup_detector_3_d[2:0] = aon_wkup_detector_3_mode_3_qs_int;
-    aon_wkup_detector_3_d[3] = aon_wkup_detector_3_filter_3_qs_int;
-    aon_wkup_detector_3_d[4] = aon_wkup_detector_3_miodio_3_qs_int;
+    aon_wkup_detector_3_qs = 5'h0;
+    aon_wkup_detector_3_qs[2:0] = aon_wkup_detector_3_mode_3_qs_int;
+    aon_wkup_detector_3_qs[3] = aon_wkup_detector_3_filter_3_qs_int;
+    aon_wkup_detector_3_qs[4] = aon_wkup_detector_3_miodio_3_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(5),
     .ResetVal(5'h0),
-    .BitMask(5'h1f)
+    .BitMask(5'h1f),
+    .DstWrReq(0)
   ) u_wkup_detector_3_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_3_qs),
     .src_we_i     (wkup_detector_3_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_3_busy),
     .src_qs_o     (wkup_detector_3_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_3_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_3_qs),
     .dst_we_o     (aon_wkup_detector_3_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_3_regwen),
@@ -3495,36 +3507,38 @@ module pinmux_reg_top (
   logic [2:0]  aon_wkup_detector_4_mode_4_qs_int;
   logic  aon_wkup_detector_4_filter_4_qs_int;
   logic  aon_wkup_detector_4_miodio_4_qs_int;
-  logic [4:0] aon_wkup_detector_4_d;
+  logic [4:0] aon_wkup_detector_4_qs;
   logic [4:0] aon_wkup_detector_4_wdata;
   logic aon_wkup_detector_4_we;
   logic unused_aon_wkup_detector_4_wdata;
   logic aon_wkup_detector_4_regwen;
 
   always_comb begin
-    aon_wkup_detector_4_d = '0;
-    aon_wkup_detector_4_d[2:0] = aon_wkup_detector_4_mode_4_qs_int;
-    aon_wkup_detector_4_d[3] = aon_wkup_detector_4_filter_4_qs_int;
-    aon_wkup_detector_4_d[4] = aon_wkup_detector_4_miodio_4_qs_int;
+    aon_wkup_detector_4_qs = 5'h0;
+    aon_wkup_detector_4_qs[2:0] = aon_wkup_detector_4_mode_4_qs_int;
+    aon_wkup_detector_4_qs[3] = aon_wkup_detector_4_filter_4_qs_int;
+    aon_wkup_detector_4_qs[4] = aon_wkup_detector_4_miodio_4_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(5),
     .ResetVal(5'h0),
-    .BitMask(5'h1f)
+    .BitMask(5'h1f),
+    .DstWrReq(0)
   ) u_wkup_detector_4_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_4_qs),
     .src_we_i     (wkup_detector_4_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_4_busy),
     .src_qs_o     (wkup_detector_4_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_4_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_4_qs),
     .dst_we_o     (aon_wkup_detector_4_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_4_regwen),
@@ -3536,36 +3550,38 @@ module pinmux_reg_top (
   logic [2:0]  aon_wkup_detector_5_mode_5_qs_int;
   logic  aon_wkup_detector_5_filter_5_qs_int;
   logic  aon_wkup_detector_5_miodio_5_qs_int;
-  logic [4:0] aon_wkup_detector_5_d;
+  logic [4:0] aon_wkup_detector_5_qs;
   logic [4:0] aon_wkup_detector_5_wdata;
   logic aon_wkup_detector_5_we;
   logic unused_aon_wkup_detector_5_wdata;
   logic aon_wkup_detector_5_regwen;
 
   always_comb begin
-    aon_wkup_detector_5_d = '0;
-    aon_wkup_detector_5_d[2:0] = aon_wkup_detector_5_mode_5_qs_int;
-    aon_wkup_detector_5_d[3] = aon_wkup_detector_5_filter_5_qs_int;
-    aon_wkup_detector_5_d[4] = aon_wkup_detector_5_miodio_5_qs_int;
+    aon_wkup_detector_5_qs = 5'h0;
+    aon_wkup_detector_5_qs[2:0] = aon_wkup_detector_5_mode_5_qs_int;
+    aon_wkup_detector_5_qs[3] = aon_wkup_detector_5_filter_5_qs_int;
+    aon_wkup_detector_5_qs[4] = aon_wkup_detector_5_miodio_5_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(5),
     .ResetVal(5'h0),
-    .BitMask(5'h1f)
+    .BitMask(5'h1f),
+    .DstWrReq(0)
   ) u_wkup_detector_5_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_5_qs),
     .src_we_i     (wkup_detector_5_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_5_busy),
     .src_qs_o     (wkup_detector_5_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_5_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_5_qs),
     .dst_we_o     (aon_wkup_detector_5_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_5_regwen),
@@ -3577,36 +3593,38 @@ module pinmux_reg_top (
   logic [2:0]  aon_wkup_detector_6_mode_6_qs_int;
   logic  aon_wkup_detector_6_filter_6_qs_int;
   logic  aon_wkup_detector_6_miodio_6_qs_int;
-  logic [4:0] aon_wkup_detector_6_d;
+  logic [4:0] aon_wkup_detector_6_qs;
   logic [4:0] aon_wkup_detector_6_wdata;
   logic aon_wkup_detector_6_we;
   logic unused_aon_wkup_detector_6_wdata;
   logic aon_wkup_detector_6_regwen;
 
   always_comb begin
-    aon_wkup_detector_6_d = '0;
-    aon_wkup_detector_6_d[2:0] = aon_wkup_detector_6_mode_6_qs_int;
-    aon_wkup_detector_6_d[3] = aon_wkup_detector_6_filter_6_qs_int;
-    aon_wkup_detector_6_d[4] = aon_wkup_detector_6_miodio_6_qs_int;
+    aon_wkup_detector_6_qs = 5'h0;
+    aon_wkup_detector_6_qs[2:0] = aon_wkup_detector_6_mode_6_qs_int;
+    aon_wkup_detector_6_qs[3] = aon_wkup_detector_6_filter_6_qs_int;
+    aon_wkup_detector_6_qs[4] = aon_wkup_detector_6_miodio_6_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(5),
     .ResetVal(5'h0),
-    .BitMask(5'h1f)
+    .BitMask(5'h1f),
+    .DstWrReq(0)
   ) u_wkup_detector_6_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_6_qs),
     .src_we_i     (wkup_detector_6_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_6_busy),
     .src_qs_o     (wkup_detector_6_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_6_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_6_qs),
     .dst_we_o     (aon_wkup_detector_6_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_6_regwen),
@@ -3618,36 +3636,38 @@ module pinmux_reg_top (
   logic [2:0]  aon_wkup_detector_7_mode_7_qs_int;
   logic  aon_wkup_detector_7_filter_7_qs_int;
   logic  aon_wkup_detector_7_miodio_7_qs_int;
-  logic [4:0] aon_wkup_detector_7_d;
+  logic [4:0] aon_wkup_detector_7_qs;
   logic [4:0] aon_wkup_detector_7_wdata;
   logic aon_wkup_detector_7_we;
   logic unused_aon_wkup_detector_7_wdata;
   logic aon_wkup_detector_7_regwen;
 
   always_comb begin
-    aon_wkup_detector_7_d = '0;
-    aon_wkup_detector_7_d[2:0] = aon_wkup_detector_7_mode_7_qs_int;
-    aon_wkup_detector_7_d[3] = aon_wkup_detector_7_filter_7_qs_int;
-    aon_wkup_detector_7_d[4] = aon_wkup_detector_7_miodio_7_qs_int;
+    aon_wkup_detector_7_qs = 5'h0;
+    aon_wkup_detector_7_qs[2:0] = aon_wkup_detector_7_mode_7_qs_int;
+    aon_wkup_detector_7_qs[3] = aon_wkup_detector_7_filter_7_qs_int;
+    aon_wkup_detector_7_qs[4] = aon_wkup_detector_7_miodio_7_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(5),
     .ResetVal(5'h0),
-    .BitMask(5'h1f)
+    .BitMask(5'h1f),
+    .DstWrReq(0)
   ) u_wkup_detector_7_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_7_qs),
     .src_we_i     (wkup_detector_7_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[4:0]),
     .src_busy_o   (wkup_detector_7_busy),
     .src_qs_o     (wkup_detector_7_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_7_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_7_qs),
     .dst_we_o     (aon_wkup_detector_7_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_7_regwen),
@@ -3657,34 +3677,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_7_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_0_qs_int;
-  logic [7:0] aon_wkup_detector_cnt_th_0_d;
+  logic [7:0] aon_wkup_detector_cnt_th_0_qs;
   logic [7:0] aon_wkup_detector_cnt_th_0_wdata;
   logic aon_wkup_detector_cnt_th_0_we;
   logic unused_aon_wkup_detector_cnt_th_0_wdata;
   logic aon_wkup_detector_cnt_th_0_regwen;
 
   always_comb begin
-    aon_wkup_detector_cnt_th_0_d = '0;
-    aon_wkup_detector_cnt_th_0_d = aon_wkup_detector_cnt_th_0_qs_int;
+    aon_wkup_detector_cnt_th_0_qs = 8'h0;
+    aon_wkup_detector_cnt_th_0_qs = aon_wkup_detector_cnt_th_0_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(8),
     .ResetVal(8'h0),
-    .BitMask(8'hff)
+    .BitMask(8'hff),
+    .DstWrReq(0)
   ) u_wkup_detector_cnt_th_0_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_0_qs),
     .src_we_i     (wkup_detector_cnt_th_0_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_0_busy),
     .src_qs_o     (wkup_detector_cnt_th_0_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_cnt_th_0_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_cnt_th_0_qs),
     .dst_we_o     (aon_wkup_detector_cnt_th_0_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_cnt_th_0_regwen),
@@ -3694,34 +3716,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_cnt_th_0_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_1_qs_int;
-  logic [7:0] aon_wkup_detector_cnt_th_1_d;
+  logic [7:0] aon_wkup_detector_cnt_th_1_qs;
   logic [7:0] aon_wkup_detector_cnt_th_1_wdata;
   logic aon_wkup_detector_cnt_th_1_we;
   logic unused_aon_wkup_detector_cnt_th_1_wdata;
   logic aon_wkup_detector_cnt_th_1_regwen;
 
   always_comb begin
-    aon_wkup_detector_cnt_th_1_d = '0;
-    aon_wkup_detector_cnt_th_1_d = aon_wkup_detector_cnt_th_1_qs_int;
+    aon_wkup_detector_cnt_th_1_qs = 8'h0;
+    aon_wkup_detector_cnt_th_1_qs = aon_wkup_detector_cnt_th_1_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(8),
     .ResetVal(8'h0),
-    .BitMask(8'hff)
+    .BitMask(8'hff),
+    .DstWrReq(0)
   ) u_wkup_detector_cnt_th_1_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_1_qs),
     .src_we_i     (wkup_detector_cnt_th_1_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_1_busy),
     .src_qs_o     (wkup_detector_cnt_th_1_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_cnt_th_1_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_cnt_th_1_qs),
     .dst_we_o     (aon_wkup_detector_cnt_th_1_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_cnt_th_1_regwen),
@@ -3731,34 +3755,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_cnt_th_1_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_2_qs_int;
-  logic [7:0] aon_wkup_detector_cnt_th_2_d;
+  logic [7:0] aon_wkup_detector_cnt_th_2_qs;
   logic [7:0] aon_wkup_detector_cnt_th_2_wdata;
   logic aon_wkup_detector_cnt_th_2_we;
   logic unused_aon_wkup_detector_cnt_th_2_wdata;
   logic aon_wkup_detector_cnt_th_2_regwen;
 
   always_comb begin
-    aon_wkup_detector_cnt_th_2_d = '0;
-    aon_wkup_detector_cnt_th_2_d = aon_wkup_detector_cnt_th_2_qs_int;
+    aon_wkup_detector_cnt_th_2_qs = 8'h0;
+    aon_wkup_detector_cnt_th_2_qs = aon_wkup_detector_cnt_th_2_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(8),
     .ResetVal(8'h0),
-    .BitMask(8'hff)
+    .BitMask(8'hff),
+    .DstWrReq(0)
   ) u_wkup_detector_cnt_th_2_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_2_qs),
     .src_we_i     (wkup_detector_cnt_th_2_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_2_busy),
     .src_qs_o     (wkup_detector_cnt_th_2_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_cnt_th_2_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_cnt_th_2_qs),
     .dst_we_o     (aon_wkup_detector_cnt_th_2_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_cnt_th_2_regwen),
@@ -3768,34 +3794,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_cnt_th_2_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_3_qs_int;
-  logic [7:0] aon_wkup_detector_cnt_th_3_d;
+  logic [7:0] aon_wkup_detector_cnt_th_3_qs;
   logic [7:0] aon_wkup_detector_cnt_th_3_wdata;
   logic aon_wkup_detector_cnt_th_3_we;
   logic unused_aon_wkup_detector_cnt_th_3_wdata;
   logic aon_wkup_detector_cnt_th_3_regwen;
 
   always_comb begin
-    aon_wkup_detector_cnt_th_3_d = '0;
-    aon_wkup_detector_cnt_th_3_d = aon_wkup_detector_cnt_th_3_qs_int;
+    aon_wkup_detector_cnt_th_3_qs = 8'h0;
+    aon_wkup_detector_cnt_th_3_qs = aon_wkup_detector_cnt_th_3_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(8),
     .ResetVal(8'h0),
-    .BitMask(8'hff)
+    .BitMask(8'hff),
+    .DstWrReq(0)
   ) u_wkup_detector_cnt_th_3_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_3_qs),
     .src_we_i     (wkup_detector_cnt_th_3_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_3_busy),
     .src_qs_o     (wkup_detector_cnt_th_3_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_cnt_th_3_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_cnt_th_3_qs),
     .dst_we_o     (aon_wkup_detector_cnt_th_3_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_cnt_th_3_regwen),
@@ -3805,34 +3833,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_cnt_th_3_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_4_qs_int;
-  logic [7:0] aon_wkup_detector_cnt_th_4_d;
+  logic [7:0] aon_wkup_detector_cnt_th_4_qs;
   logic [7:0] aon_wkup_detector_cnt_th_4_wdata;
   logic aon_wkup_detector_cnt_th_4_we;
   logic unused_aon_wkup_detector_cnt_th_4_wdata;
   logic aon_wkup_detector_cnt_th_4_regwen;
 
   always_comb begin
-    aon_wkup_detector_cnt_th_4_d = '0;
-    aon_wkup_detector_cnt_th_4_d = aon_wkup_detector_cnt_th_4_qs_int;
+    aon_wkup_detector_cnt_th_4_qs = 8'h0;
+    aon_wkup_detector_cnt_th_4_qs = aon_wkup_detector_cnt_th_4_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(8),
     .ResetVal(8'h0),
-    .BitMask(8'hff)
+    .BitMask(8'hff),
+    .DstWrReq(0)
   ) u_wkup_detector_cnt_th_4_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_4_qs),
     .src_we_i     (wkup_detector_cnt_th_4_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_4_busy),
     .src_qs_o     (wkup_detector_cnt_th_4_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_cnt_th_4_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_cnt_th_4_qs),
     .dst_we_o     (aon_wkup_detector_cnt_th_4_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_cnt_th_4_regwen),
@@ -3842,34 +3872,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_cnt_th_4_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_5_qs_int;
-  logic [7:0] aon_wkup_detector_cnt_th_5_d;
+  logic [7:0] aon_wkup_detector_cnt_th_5_qs;
   logic [7:0] aon_wkup_detector_cnt_th_5_wdata;
   logic aon_wkup_detector_cnt_th_5_we;
   logic unused_aon_wkup_detector_cnt_th_5_wdata;
   logic aon_wkup_detector_cnt_th_5_regwen;
 
   always_comb begin
-    aon_wkup_detector_cnt_th_5_d = '0;
-    aon_wkup_detector_cnt_th_5_d = aon_wkup_detector_cnt_th_5_qs_int;
+    aon_wkup_detector_cnt_th_5_qs = 8'h0;
+    aon_wkup_detector_cnt_th_5_qs = aon_wkup_detector_cnt_th_5_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(8),
     .ResetVal(8'h0),
-    .BitMask(8'hff)
+    .BitMask(8'hff),
+    .DstWrReq(0)
   ) u_wkup_detector_cnt_th_5_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_5_qs),
     .src_we_i     (wkup_detector_cnt_th_5_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_5_busy),
     .src_qs_o     (wkup_detector_cnt_th_5_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_cnt_th_5_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_cnt_th_5_qs),
     .dst_we_o     (aon_wkup_detector_cnt_th_5_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_cnt_th_5_regwen),
@@ -3879,34 +3911,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_cnt_th_5_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_6_qs_int;
-  logic [7:0] aon_wkup_detector_cnt_th_6_d;
+  logic [7:0] aon_wkup_detector_cnt_th_6_qs;
   logic [7:0] aon_wkup_detector_cnt_th_6_wdata;
   logic aon_wkup_detector_cnt_th_6_we;
   logic unused_aon_wkup_detector_cnt_th_6_wdata;
   logic aon_wkup_detector_cnt_th_6_regwen;
 
   always_comb begin
-    aon_wkup_detector_cnt_th_6_d = '0;
-    aon_wkup_detector_cnt_th_6_d = aon_wkup_detector_cnt_th_6_qs_int;
+    aon_wkup_detector_cnt_th_6_qs = 8'h0;
+    aon_wkup_detector_cnt_th_6_qs = aon_wkup_detector_cnt_th_6_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(8),
     .ResetVal(8'h0),
-    .BitMask(8'hff)
+    .BitMask(8'hff),
+    .DstWrReq(0)
   ) u_wkup_detector_cnt_th_6_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_6_qs),
     .src_we_i     (wkup_detector_cnt_th_6_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_6_busy),
     .src_qs_o     (wkup_detector_cnt_th_6_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_cnt_th_6_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_cnt_th_6_qs),
     .dst_we_o     (aon_wkup_detector_cnt_th_6_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_cnt_th_6_regwen),
@@ -3916,34 +3950,36 @@ module pinmux_reg_top (
       ^aon_wkup_detector_cnt_th_6_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_7_qs_int;
-  logic [7:0] aon_wkup_detector_cnt_th_7_d;
+  logic [7:0] aon_wkup_detector_cnt_th_7_qs;
   logic [7:0] aon_wkup_detector_cnt_th_7_wdata;
   logic aon_wkup_detector_cnt_th_7_we;
   logic unused_aon_wkup_detector_cnt_th_7_wdata;
   logic aon_wkup_detector_cnt_th_7_regwen;
 
   always_comb begin
-    aon_wkup_detector_cnt_th_7_d = '0;
-    aon_wkup_detector_cnt_th_7_d = aon_wkup_detector_cnt_th_7_qs_int;
+    aon_wkup_detector_cnt_th_7_qs = 8'h0;
+    aon_wkup_detector_cnt_th_7_qs = aon_wkup_detector_cnt_th_7_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(8),
     .ResetVal(8'h0),
-    .BitMask(8'hff)
+    .BitMask(8'hff),
+    .DstWrReq(0)
   ) u_wkup_detector_cnt_th_7_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i (wkup_detector_regwen_7_qs),
     .src_we_i     (wkup_detector_cnt_th_7_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_detector_cnt_th_7_busy),
     .src_qs_o     (wkup_detector_cnt_th_7_qs), // for software read back
-    .dst_d_i      (aon_wkup_detector_cnt_th_7_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_wkup_detector_cnt_th_7_qs),
     .dst_we_o     (aon_wkup_detector_cnt_th_7_we),
     .dst_re_o     (),
     .dst_regwen_o (aon_wkup_detector_cnt_th_7_regwen),
@@ -3952,48 +3988,69 @@ module pinmux_reg_top (
   assign unused_aon_wkup_detector_cnt_th_7_wdata =
       ^aon_wkup_detector_cnt_th_7_wdata;
 
+  logic  aon_wkup_cause_cause_0_ds_int;
   logic  aon_wkup_cause_cause_0_qs_int;
+  logic  aon_wkup_cause_cause_1_ds_int;
   logic  aon_wkup_cause_cause_1_qs_int;
+  logic  aon_wkup_cause_cause_2_ds_int;
   logic  aon_wkup_cause_cause_2_qs_int;
+  logic  aon_wkup_cause_cause_3_ds_int;
   logic  aon_wkup_cause_cause_3_qs_int;
+  logic  aon_wkup_cause_cause_4_ds_int;
   logic  aon_wkup_cause_cause_4_qs_int;
+  logic  aon_wkup_cause_cause_5_ds_int;
   logic  aon_wkup_cause_cause_5_qs_int;
+  logic  aon_wkup_cause_cause_6_ds_int;
   logic  aon_wkup_cause_cause_6_qs_int;
+  logic  aon_wkup_cause_cause_7_ds_int;
   logic  aon_wkup_cause_cause_7_qs_int;
-  logic [7:0] aon_wkup_cause_d;
+  logic [7:0] aon_wkup_cause_ds;
+  logic aon_wkup_cause_qe;
+  logic [7:0] aon_wkup_cause_qs;
   logic [7:0] aon_wkup_cause_wdata;
   logic aon_wkup_cause_we;
   logic unused_aon_wkup_cause_wdata;
 
   always_comb begin
-    aon_wkup_cause_d = '0;
-    aon_wkup_cause_d[0] = aon_wkup_cause_cause_0_qs_int;
-    aon_wkup_cause_d[1] = aon_wkup_cause_cause_1_qs_int;
-    aon_wkup_cause_d[2] = aon_wkup_cause_cause_2_qs_int;
-    aon_wkup_cause_d[3] = aon_wkup_cause_cause_3_qs_int;
-    aon_wkup_cause_d[4] = aon_wkup_cause_cause_4_qs_int;
-    aon_wkup_cause_d[5] = aon_wkup_cause_cause_5_qs_int;
-    aon_wkup_cause_d[6] = aon_wkup_cause_cause_6_qs_int;
-    aon_wkup_cause_d[7] = aon_wkup_cause_cause_7_qs_int;
+    aon_wkup_cause_qs = 8'h0;
+    aon_wkup_cause_ds = 8'h0;
+    aon_wkup_cause_ds[0] = aon_wkup_cause_cause_0_ds_int;
+    aon_wkup_cause_qs[0] = aon_wkup_cause_cause_0_qs_int;
+    aon_wkup_cause_ds[1] = aon_wkup_cause_cause_1_ds_int;
+    aon_wkup_cause_qs[1] = aon_wkup_cause_cause_1_qs_int;
+    aon_wkup_cause_ds[2] = aon_wkup_cause_cause_2_ds_int;
+    aon_wkup_cause_qs[2] = aon_wkup_cause_cause_2_qs_int;
+    aon_wkup_cause_ds[3] = aon_wkup_cause_cause_3_ds_int;
+    aon_wkup_cause_qs[3] = aon_wkup_cause_cause_3_qs_int;
+    aon_wkup_cause_ds[4] = aon_wkup_cause_cause_4_ds_int;
+    aon_wkup_cause_qs[4] = aon_wkup_cause_cause_4_qs_int;
+    aon_wkup_cause_ds[5] = aon_wkup_cause_cause_5_ds_int;
+    aon_wkup_cause_qs[5] = aon_wkup_cause_cause_5_qs_int;
+    aon_wkup_cause_ds[6] = aon_wkup_cause_cause_6_ds_int;
+    aon_wkup_cause_qs[6] = aon_wkup_cause_cause_6_qs_int;
+    aon_wkup_cause_ds[7] = aon_wkup_cause_cause_7_ds_int;
+    aon_wkup_cause_qs[7] = aon_wkup_cause_cause_7_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(8),
     .ResetVal(8'h0),
-    .BitMask(8'hff)
+    .BitMask(8'hff),
+    .DstWrReq(1)
   ) u_wkup_cause_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
-    .src_update_i (sync_aon_update),
     .src_regwen_i ('0),
     .src_we_i     (wkup_cause_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (wkup_cause_busy),
     .src_qs_o     (wkup_cause_qs), // for software read back
-    .dst_d_i      (aon_wkup_cause_d),
+    .dst_update_i (aon_wkup_cause_qe),
+    .dst_ds_i     (aon_wkup_cause_ds),
+    .dst_qs_i     (aon_wkup_cause_qs),
     .dst_we_o     (aon_wkup_cause_we),
     .dst_re_o     (),
     .dst_regwen_o (),
@@ -4017,6 +4074,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -4043,6 +4101,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_0_qs)
@@ -4070,6 +4129,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_1_qs)
@@ -4097,6 +4157,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_2_qs)
@@ -4124,6 +4185,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_3_qs)
@@ -4151,6 +4213,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_4_qs)
@@ -4178,6 +4241,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_5_qs)
@@ -4205,6 +4269,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_6_qs)
@@ -4232,6 +4297,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_7_qs)
@@ -4259,6 +4325,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_8_qs)
@@ -4286,6 +4353,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_9_qs)
@@ -4313,6 +4381,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_10_qs)
@@ -4340,6 +4409,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_11_qs)
@@ -4367,6 +4437,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_12_qs)
@@ -4394,6 +4465,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_13_qs)
@@ -4421,6 +4493,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_14_qs)
@@ -4448,6 +4521,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_15_qs)
@@ -4475,6 +4549,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_16_qs)
@@ -4502,6 +4577,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_17_qs)
@@ -4529,6 +4605,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_18_qs)
@@ -4556,6 +4633,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_19_qs)
@@ -4583,6 +4661,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_20_qs)
@@ -4610,6 +4689,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_21_qs)
@@ -4637,6 +4717,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_22_qs)
@@ -4664,6 +4745,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_23_qs)
@@ -4691,6 +4773,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_24_qs)
@@ -4718,6 +4801,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_25_qs)
@@ -4745,6 +4829,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_26_qs)
@@ -4772,6 +4857,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_27_qs)
@@ -4799,6 +4885,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_28_qs)
@@ -4826,6 +4913,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_29_qs)
@@ -4853,6 +4941,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_30_qs)
@@ -4880,6 +4969,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_31_qs)
@@ -4907,6 +4997,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_32_qs)
@@ -4934,6 +5025,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_33_qs)
@@ -4961,6 +5053,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_34_qs)
@@ -4988,6 +5081,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_35_qs)
@@ -5015,6 +5109,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_36_qs)
@@ -5042,6 +5137,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_37_qs)
@@ -5069,6 +5165,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_38_qs)
@@ -5096,6 +5193,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_39_qs)
@@ -5123,6 +5221,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_40_qs)
@@ -5150,6 +5249,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_41_qs)
@@ -5177,6 +5277,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_42_qs)
@@ -5204,6 +5305,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_43_qs)
@@ -5231,6 +5333,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_44_qs)
@@ -5258,6 +5361,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_45_qs)
@@ -5285,6 +5389,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_46_qs)
@@ -5312,6 +5417,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_47_qs)
@@ -5339,6 +5445,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_48_qs)
@@ -5366,6 +5473,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_49_qs)
@@ -5393,6 +5501,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_50_qs)
@@ -5420,6 +5529,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_51_qs)
@@ -5447,6 +5557,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_52_qs)
@@ -5474,6 +5585,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_53_qs)
@@ -5501,6 +5613,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_54_qs)
@@ -5528,6 +5641,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_55_qs)
@@ -5555,6 +5669,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_regwen_56_qs)
@@ -5585,6 +5700,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_0_qs)
@@ -5615,6 +5731,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_1_qs)
@@ -5645,6 +5762,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_2_qs)
@@ -5675,6 +5793,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_3_qs)
@@ -5705,6 +5824,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_4_qs)
@@ -5735,6 +5855,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_5_qs)
@@ -5765,6 +5886,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_6_qs)
@@ -5795,6 +5917,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_7_qs)
@@ -5825,6 +5948,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_8_qs)
@@ -5855,6 +5979,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_9_qs)
@@ -5885,6 +6010,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_10_qs)
@@ -5915,6 +6041,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_11_qs)
@@ -5945,6 +6072,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_12_qs)
@@ -5975,6 +6103,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_13_qs)
@@ -6005,6 +6134,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_14_qs)
@@ -6035,6 +6165,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_15_qs)
@@ -6065,6 +6196,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[16].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_16_qs)
@@ -6095,6 +6227,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[17].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_17_qs)
@@ -6125,6 +6258,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[18].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_18_qs)
@@ -6155,6 +6289,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[19].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_19_qs)
@@ -6185,6 +6320,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[20].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_20_qs)
@@ -6215,6 +6351,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[21].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_21_qs)
@@ -6245,6 +6382,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[22].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_22_qs)
@@ -6275,6 +6413,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[23].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_23_qs)
@@ -6305,6 +6444,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[24].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_24_qs)
@@ -6335,6 +6475,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[25].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_25_qs)
@@ -6365,6 +6506,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[26].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_26_qs)
@@ -6395,6 +6537,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[27].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_27_qs)
@@ -6425,6 +6568,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[28].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_28_qs)
@@ -6455,6 +6599,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[29].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_29_qs)
@@ -6485,6 +6630,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[30].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_30_qs)
@@ -6515,6 +6661,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[31].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_31_qs)
@@ -6545,6 +6692,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[32].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_32_qs)
@@ -6575,6 +6723,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[33].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_33_qs)
@@ -6605,6 +6754,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[34].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_34_qs)
@@ -6635,6 +6785,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[35].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_35_qs)
@@ -6665,6 +6816,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[36].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_36_qs)
@@ -6695,6 +6847,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[37].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_37_qs)
@@ -6725,6 +6878,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[38].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_38_qs)
@@ -6755,6 +6909,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[39].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_39_qs)
@@ -6785,6 +6940,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[40].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_40_qs)
@@ -6815,6 +6971,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[41].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_41_qs)
@@ -6845,6 +7002,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[42].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_42_qs)
@@ -6875,6 +7033,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[43].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_43_qs)
@@ -6905,6 +7064,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[44].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_44_qs)
@@ -6935,6 +7095,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[45].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_45_qs)
@@ -6965,6 +7126,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[46].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_46_qs)
@@ -6995,6 +7157,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[47].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_47_qs)
@@ -7025,6 +7188,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[48].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_48_qs)
@@ -7055,6 +7219,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[49].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_49_qs)
@@ -7085,6 +7250,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[50].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_50_qs)
@@ -7115,6 +7281,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[51].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_51_qs)
@@ -7145,6 +7312,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[52].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_52_qs)
@@ -7175,6 +7343,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[53].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_53_qs)
@@ -7205,6 +7374,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[54].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_54_qs)
@@ -7235,6 +7405,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[55].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_55_qs)
@@ -7265,6 +7436,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_periph_insel[56].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_periph_insel_56_qs)
@@ -7292,6 +7464,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_0_qs)
@@ -7319,6 +7492,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_1_qs)
@@ -7346,6 +7520,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_2_qs)
@@ -7373,6 +7548,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_3_qs)
@@ -7400,6 +7576,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_4_qs)
@@ -7427,6 +7604,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_5_qs)
@@ -7454,6 +7632,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_6_qs)
@@ -7481,6 +7660,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_7_qs)
@@ -7508,6 +7688,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_8_qs)
@@ -7535,6 +7716,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_9_qs)
@@ -7562,6 +7744,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_10_qs)
@@ -7589,6 +7772,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_11_qs)
@@ -7616,6 +7800,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_12_qs)
@@ -7643,6 +7828,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_13_qs)
@@ -7670,6 +7856,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_14_qs)
@@ -7697,6 +7884,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_15_qs)
@@ -7724,6 +7912,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_16_qs)
@@ -7751,6 +7940,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_17_qs)
@@ -7778,6 +7968,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_18_qs)
@@ -7805,6 +7996,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_19_qs)
@@ -7832,6 +8024,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_20_qs)
@@ -7859,6 +8052,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_21_qs)
@@ -7886,6 +8080,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_22_qs)
@@ -7913,6 +8108,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_23_qs)
@@ -7940,6 +8136,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_24_qs)
@@ -7967,6 +8164,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_25_qs)
@@ -7994,6 +8192,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_26_qs)
@@ -8021,6 +8220,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_27_qs)
@@ -8048,6 +8248,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_28_qs)
@@ -8075,6 +8276,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_29_qs)
@@ -8102,6 +8304,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_30_qs)
@@ -8129,6 +8332,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_31_qs)
@@ -8156,6 +8360,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_32_qs)
@@ -8183,6 +8388,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_33_qs)
@@ -8210,6 +8416,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_34_qs)
@@ -8237,6 +8444,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_35_qs)
@@ -8264,6 +8472,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_36_qs)
@@ -8291,6 +8500,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_37_qs)
@@ -8318,6 +8528,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_38_qs)
@@ -8345,6 +8556,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_39_qs)
@@ -8372,6 +8584,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_40_qs)
@@ -8399,6 +8612,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_41_qs)
@@ -8426,6 +8640,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_42_qs)
@@ -8453,6 +8668,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_43_qs)
@@ -8480,6 +8696,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_44_qs)
@@ -8507,6 +8724,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_45_qs)
@@ -8534,6 +8752,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_regwen_46_qs)
@@ -8564,6 +8783,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_0_qs)
@@ -8594,6 +8814,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_1_qs)
@@ -8624,6 +8845,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_2_qs)
@@ -8654,6 +8876,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_3_qs)
@@ -8684,6 +8907,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_4_qs)
@@ -8714,6 +8938,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_5_qs)
@@ -8744,6 +8969,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_6_qs)
@@ -8774,6 +9000,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_7_qs)
@@ -8804,6 +9031,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_8_qs)
@@ -8834,6 +9062,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_9_qs)
@@ -8864,6 +9093,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_10_qs)
@@ -8894,6 +9124,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_11_qs)
@@ -8924,6 +9155,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_12_qs)
@@ -8954,6 +9186,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_13_qs)
@@ -8984,6 +9217,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_14_qs)
@@ -9014,6 +9248,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_15_qs)
@@ -9044,6 +9279,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[16].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_16_qs)
@@ -9074,6 +9310,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[17].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_17_qs)
@@ -9104,6 +9341,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[18].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_18_qs)
@@ -9134,6 +9372,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[19].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_19_qs)
@@ -9164,6 +9403,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[20].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_20_qs)
@@ -9194,6 +9434,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[21].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_21_qs)
@@ -9224,6 +9465,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[22].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_22_qs)
@@ -9254,6 +9496,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[23].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_23_qs)
@@ -9284,6 +9527,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[24].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_24_qs)
@@ -9314,6 +9558,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[25].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_25_qs)
@@ -9344,6 +9589,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[26].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_26_qs)
@@ -9374,6 +9620,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[27].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_27_qs)
@@ -9404,6 +9651,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[28].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_28_qs)
@@ -9434,6 +9682,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[29].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_29_qs)
@@ -9464,6 +9713,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[30].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_30_qs)
@@ -9494,6 +9744,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[31].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_31_qs)
@@ -9524,6 +9775,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[32].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_32_qs)
@@ -9554,6 +9806,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[33].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_33_qs)
@@ -9584,6 +9837,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[34].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_34_qs)
@@ -9614,6 +9868,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[35].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_35_qs)
@@ -9644,6 +9899,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[36].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_36_qs)
@@ -9674,6 +9930,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[37].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_37_qs)
@@ -9704,6 +9961,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[38].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_38_qs)
@@ -9734,6 +9992,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[39].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_39_qs)
@@ -9764,6 +10023,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[40].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_40_qs)
@@ -9794,6 +10054,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[41].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_41_qs)
@@ -9824,6 +10085,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[42].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_42_qs)
@@ -9854,6 +10116,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[43].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_43_qs)
@@ -9884,6 +10147,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[44].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_44_qs)
@@ -9914,6 +10178,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[45].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_45_qs)
@@ -9944,6 +10209,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_outsel[46].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_outsel_46_qs)
@@ -9971,6 +10237,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_0_qs)
@@ -9998,6 +10265,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_1_qs)
@@ -10025,6 +10293,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_2_qs)
@@ -10052,6 +10321,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_3_qs)
@@ -10079,6 +10349,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_4_qs)
@@ -10106,6 +10377,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_5_qs)
@@ -10133,6 +10405,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_6_qs)
@@ -10160,6 +10433,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_7_qs)
@@ -10187,6 +10461,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_8_qs)
@@ -10214,6 +10489,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_9_qs)
@@ -10241,6 +10517,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_10_qs)
@@ -10268,6 +10545,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_11_qs)
@@ -10295,6 +10573,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_12_qs)
@@ -10322,6 +10601,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_13_qs)
@@ -10349,6 +10629,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_14_qs)
@@ -10376,6 +10657,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_15_qs)
@@ -10403,6 +10685,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_16_qs)
@@ -10430,6 +10713,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_17_qs)
@@ -10457,6 +10741,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_18_qs)
@@ -10484,6 +10769,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_19_qs)
@@ -10511,6 +10797,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_20_qs)
@@ -10538,6 +10825,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_21_qs)
@@ -10565,6 +10853,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_22_qs)
@@ -10592,6 +10881,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_23_qs)
@@ -10619,6 +10909,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_24_qs)
@@ -10646,6 +10937,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_25_qs)
@@ -10673,6 +10965,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_26_qs)
@@ -10700,6 +10993,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_27_qs)
@@ -10727,6 +11021,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_28_qs)
@@ -10754,6 +11049,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_29_qs)
@@ -10781,6 +11077,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_30_qs)
@@ -10808,6 +11105,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_31_qs)
@@ -10835,6 +11133,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_32_qs)
@@ -10862,6 +11161,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_33_qs)
@@ -10889,6 +11189,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_34_qs)
@@ -10916,6 +11217,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_35_qs)
@@ -10943,6 +11245,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_36_qs)
@@ -10970,6 +11273,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_37_qs)
@@ -10997,6 +11301,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_38_qs)
@@ -11024,6 +11329,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_39_qs)
@@ -11051,6 +11357,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_40_qs)
@@ -11078,6 +11385,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_41_qs)
@@ -11105,6 +11413,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_42_qs)
@@ -11132,6 +11441,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_43_qs)
@@ -11159,6 +11469,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_44_qs)
@@ -11186,6 +11497,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_45_qs)
@@ -11213,6 +11525,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_attr_regwen_46_qs)
@@ -11238,6 +11551,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_0_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[0].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_0_invert_0_qs)
   );
   assign reg2hw.mio_pad_attr[0].invert.qe = mio_pad_attr_0_qe;
@@ -11253,6 +11567,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_0_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[0].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_0_virtual_od_en_0_qs)
   );
   assign reg2hw.mio_pad_attr[0].virtual_od_en.qe = mio_pad_attr_0_qe;
@@ -11268,6 +11583,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_0_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[0].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_0_pull_en_0_qs)
   );
   assign reg2hw.mio_pad_attr[0].pull_en.qe = mio_pad_attr_0_qe;
@@ -11283,6 +11599,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_0_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[0].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_0_pull_select_0_qs)
   );
   assign reg2hw.mio_pad_attr[0].pull_select.qe = mio_pad_attr_0_qe;
@@ -11298,6 +11615,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_0_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[0].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_0_keeper_en_0_qs)
   );
   assign reg2hw.mio_pad_attr[0].keeper_en.qe = mio_pad_attr_0_qe;
@@ -11313,6 +11631,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_0_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[0].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_0_schmitt_en_0_qs)
   );
   assign reg2hw.mio_pad_attr[0].schmitt_en.qe = mio_pad_attr_0_qe;
@@ -11328,6 +11647,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_0_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[0].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_0_od_en_0_qs)
   );
   assign reg2hw.mio_pad_attr[0].od_en.qe = mio_pad_attr_0_qe;
@@ -11343,6 +11663,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_0_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[0].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_0_slew_rate_0_qs)
   );
   assign reg2hw.mio_pad_attr[0].slew_rate.qe = mio_pad_attr_0_qe;
@@ -11358,6 +11679,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_0_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[0].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_0_drive_strength_0_qs)
   );
   assign reg2hw.mio_pad_attr[0].drive_strength.qe = mio_pad_attr_0_qe;
@@ -11382,6 +11704,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_1_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[1].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_1_invert_1_qs)
   );
   assign reg2hw.mio_pad_attr[1].invert.qe = mio_pad_attr_1_qe;
@@ -11397,6 +11720,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_1_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[1].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_1_virtual_od_en_1_qs)
   );
   assign reg2hw.mio_pad_attr[1].virtual_od_en.qe = mio_pad_attr_1_qe;
@@ -11412,6 +11736,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_1_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[1].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_1_pull_en_1_qs)
   );
   assign reg2hw.mio_pad_attr[1].pull_en.qe = mio_pad_attr_1_qe;
@@ -11427,6 +11752,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_1_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[1].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_1_pull_select_1_qs)
   );
   assign reg2hw.mio_pad_attr[1].pull_select.qe = mio_pad_attr_1_qe;
@@ -11442,6 +11768,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_1_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[1].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_1_keeper_en_1_qs)
   );
   assign reg2hw.mio_pad_attr[1].keeper_en.qe = mio_pad_attr_1_qe;
@@ -11457,6 +11784,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_1_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[1].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_1_schmitt_en_1_qs)
   );
   assign reg2hw.mio_pad_attr[1].schmitt_en.qe = mio_pad_attr_1_qe;
@@ -11472,6 +11800,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_1_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[1].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_1_od_en_1_qs)
   );
   assign reg2hw.mio_pad_attr[1].od_en.qe = mio_pad_attr_1_qe;
@@ -11487,6 +11816,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_1_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[1].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_1_slew_rate_1_qs)
   );
   assign reg2hw.mio_pad_attr[1].slew_rate.qe = mio_pad_attr_1_qe;
@@ -11502,6 +11832,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_1_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[1].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_1_drive_strength_1_qs)
   );
   assign reg2hw.mio_pad_attr[1].drive_strength.qe = mio_pad_attr_1_qe;
@@ -11526,6 +11857,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_2_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[2].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_2_invert_2_qs)
   );
   assign reg2hw.mio_pad_attr[2].invert.qe = mio_pad_attr_2_qe;
@@ -11541,6 +11873,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_2_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[2].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_2_virtual_od_en_2_qs)
   );
   assign reg2hw.mio_pad_attr[2].virtual_od_en.qe = mio_pad_attr_2_qe;
@@ -11556,6 +11889,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_2_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[2].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_2_pull_en_2_qs)
   );
   assign reg2hw.mio_pad_attr[2].pull_en.qe = mio_pad_attr_2_qe;
@@ -11571,6 +11905,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_2_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[2].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_2_pull_select_2_qs)
   );
   assign reg2hw.mio_pad_attr[2].pull_select.qe = mio_pad_attr_2_qe;
@@ -11586,6 +11921,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_2_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[2].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_2_keeper_en_2_qs)
   );
   assign reg2hw.mio_pad_attr[2].keeper_en.qe = mio_pad_attr_2_qe;
@@ -11601,6 +11937,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_2_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[2].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_2_schmitt_en_2_qs)
   );
   assign reg2hw.mio_pad_attr[2].schmitt_en.qe = mio_pad_attr_2_qe;
@@ -11616,6 +11953,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_2_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[2].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_2_od_en_2_qs)
   );
   assign reg2hw.mio_pad_attr[2].od_en.qe = mio_pad_attr_2_qe;
@@ -11631,6 +11969,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_2_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[2].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_2_slew_rate_2_qs)
   );
   assign reg2hw.mio_pad_attr[2].slew_rate.qe = mio_pad_attr_2_qe;
@@ -11646,6 +11985,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_2_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[2].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_2_drive_strength_2_qs)
   );
   assign reg2hw.mio_pad_attr[2].drive_strength.qe = mio_pad_attr_2_qe;
@@ -11670,6 +12010,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_3_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[3].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_3_invert_3_qs)
   );
   assign reg2hw.mio_pad_attr[3].invert.qe = mio_pad_attr_3_qe;
@@ -11685,6 +12026,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_3_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[3].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_3_virtual_od_en_3_qs)
   );
   assign reg2hw.mio_pad_attr[3].virtual_od_en.qe = mio_pad_attr_3_qe;
@@ -11700,6 +12042,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_3_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[3].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_3_pull_en_3_qs)
   );
   assign reg2hw.mio_pad_attr[3].pull_en.qe = mio_pad_attr_3_qe;
@@ -11715,6 +12058,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_3_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[3].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_3_pull_select_3_qs)
   );
   assign reg2hw.mio_pad_attr[3].pull_select.qe = mio_pad_attr_3_qe;
@@ -11730,6 +12074,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_3_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[3].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_3_keeper_en_3_qs)
   );
   assign reg2hw.mio_pad_attr[3].keeper_en.qe = mio_pad_attr_3_qe;
@@ -11745,6 +12090,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_3_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[3].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_3_schmitt_en_3_qs)
   );
   assign reg2hw.mio_pad_attr[3].schmitt_en.qe = mio_pad_attr_3_qe;
@@ -11760,6 +12106,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_3_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[3].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_3_od_en_3_qs)
   );
   assign reg2hw.mio_pad_attr[3].od_en.qe = mio_pad_attr_3_qe;
@@ -11775,6 +12122,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_3_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[3].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_3_slew_rate_3_qs)
   );
   assign reg2hw.mio_pad_attr[3].slew_rate.qe = mio_pad_attr_3_qe;
@@ -11790,6 +12138,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_3_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[3].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_3_drive_strength_3_qs)
   );
   assign reg2hw.mio_pad_attr[3].drive_strength.qe = mio_pad_attr_3_qe;
@@ -11814,6 +12163,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_4_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[4].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_4_invert_4_qs)
   );
   assign reg2hw.mio_pad_attr[4].invert.qe = mio_pad_attr_4_qe;
@@ -11829,6 +12179,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_4_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[4].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_4_virtual_od_en_4_qs)
   );
   assign reg2hw.mio_pad_attr[4].virtual_od_en.qe = mio_pad_attr_4_qe;
@@ -11844,6 +12195,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_4_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[4].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_4_pull_en_4_qs)
   );
   assign reg2hw.mio_pad_attr[4].pull_en.qe = mio_pad_attr_4_qe;
@@ -11859,6 +12211,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_4_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[4].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_4_pull_select_4_qs)
   );
   assign reg2hw.mio_pad_attr[4].pull_select.qe = mio_pad_attr_4_qe;
@@ -11874,6 +12227,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_4_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[4].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_4_keeper_en_4_qs)
   );
   assign reg2hw.mio_pad_attr[4].keeper_en.qe = mio_pad_attr_4_qe;
@@ -11889,6 +12243,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_4_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[4].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_4_schmitt_en_4_qs)
   );
   assign reg2hw.mio_pad_attr[4].schmitt_en.qe = mio_pad_attr_4_qe;
@@ -11904,6 +12259,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_4_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[4].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_4_od_en_4_qs)
   );
   assign reg2hw.mio_pad_attr[4].od_en.qe = mio_pad_attr_4_qe;
@@ -11919,6 +12275,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_4_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[4].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_4_slew_rate_4_qs)
   );
   assign reg2hw.mio_pad_attr[4].slew_rate.qe = mio_pad_attr_4_qe;
@@ -11934,6 +12291,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_4_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[4].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_4_drive_strength_4_qs)
   );
   assign reg2hw.mio_pad_attr[4].drive_strength.qe = mio_pad_attr_4_qe;
@@ -11958,6 +12316,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_5_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[5].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_5_invert_5_qs)
   );
   assign reg2hw.mio_pad_attr[5].invert.qe = mio_pad_attr_5_qe;
@@ -11973,6 +12332,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_5_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[5].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_5_virtual_od_en_5_qs)
   );
   assign reg2hw.mio_pad_attr[5].virtual_od_en.qe = mio_pad_attr_5_qe;
@@ -11988,6 +12348,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_5_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[5].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_5_pull_en_5_qs)
   );
   assign reg2hw.mio_pad_attr[5].pull_en.qe = mio_pad_attr_5_qe;
@@ -12003,6 +12364,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_5_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[5].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_5_pull_select_5_qs)
   );
   assign reg2hw.mio_pad_attr[5].pull_select.qe = mio_pad_attr_5_qe;
@@ -12018,6 +12380,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_5_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[5].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_5_keeper_en_5_qs)
   );
   assign reg2hw.mio_pad_attr[5].keeper_en.qe = mio_pad_attr_5_qe;
@@ -12033,6 +12396,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_5_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[5].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_5_schmitt_en_5_qs)
   );
   assign reg2hw.mio_pad_attr[5].schmitt_en.qe = mio_pad_attr_5_qe;
@@ -12048,6 +12412,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_5_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[5].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_5_od_en_5_qs)
   );
   assign reg2hw.mio_pad_attr[5].od_en.qe = mio_pad_attr_5_qe;
@@ -12063,6 +12428,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_5_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[5].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_5_slew_rate_5_qs)
   );
   assign reg2hw.mio_pad_attr[5].slew_rate.qe = mio_pad_attr_5_qe;
@@ -12078,6 +12444,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_5_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[5].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_5_drive_strength_5_qs)
   );
   assign reg2hw.mio_pad_attr[5].drive_strength.qe = mio_pad_attr_5_qe;
@@ -12102,6 +12469,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_6_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[6].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_6_invert_6_qs)
   );
   assign reg2hw.mio_pad_attr[6].invert.qe = mio_pad_attr_6_qe;
@@ -12117,6 +12485,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_6_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[6].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_6_virtual_od_en_6_qs)
   );
   assign reg2hw.mio_pad_attr[6].virtual_od_en.qe = mio_pad_attr_6_qe;
@@ -12132,6 +12501,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_6_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[6].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_6_pull_en_6_qs)
   );
   assign reg2hw.mio_pad_attr[6].pull_en.qe = mio_pad_attr_6_qe;
@@ -12147,6 +12517,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_6_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[6].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_6_pull_select_6_qs)
   );
   assign reg2hw.mio_pad_attr[6].pull_select.qe = mio_pad_attr_6_qe;
@@ -12162,6 +12533,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_6_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[6].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_6_keeper_en_6_qs)
   );
   assign reg2hw.mio_pad_attr[6].keeper_en.qe = mio_pad_attr_6_qe;
@@ -12177,6 +12549,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_6_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[6].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_6_schmitt_en_6_qs)
   );
   assign reg2hw.mio_pad_attr[6].schmitt_en.qe = mio_pad_attr_6_qe;
@@ -12192,6 +12565,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_6_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[6].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_6_od_en_6_qs)
   );
   assign reg2hw.mio_pad_attr[6].od_en.qe = mio_pad_attr_6_qe;
@@ -12207,6 +12581,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_6_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[6].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_6_slew_rate_6_qs)
   );
   assign reg2hw.mio_pad_attr[6].slew_rate.qe = mio_pad_attr_6_qe;
@@ -12222,6 +12597,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_6_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[6].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_6_drive_strength_6_qs)
   );
   assign reg2hw.mio_pad_attr[6].drive_strength.qe = mio_pad_attr_6_qe;
@@ -12246,6 +12622,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_7_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[7].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_7_invert_7_qs)
   );
   assign reg2hw.mio_pad_attr[7].invert.qe = mio_pad_attr_7_qe;
@@ -12261,6 +12638,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_7_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[7].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_7_virtual_od_en_7_qs)
   );
   assign reg2hw.mio_pad_attr[7].virtual_od_en.qe = mio_pad_attr_7_qe;
@@ -12276,6 +12654,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_7_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[7].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_7_pull_en_7_qs)
   );
   assign reg2hw.mio_pad_attr[7].pull_en.qe = mio_pad_attr_7_qe;
@@ -12291,6 +12670,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_7_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[7].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_7_pull_select_7_qs)
   );
   assign reg2hw.mio_pad_attr[7].pull_select.qe = mio_pad_attr_7_qe;
@@ -12306,6 +12686,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_7_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[7].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_7_keeper_en_7_qs)
   );
   assign reg2hw.mio_pad_attr[7].keeper_en.qe = mio_pad_attr_7_qe;
@@ -12321,6 +12702,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_7_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[7].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_7_schmitt_en_7_qs)
   );
   assign reg2hw.mio_pad_attr[7].schmitt_en.qe = mio_pad_attr_7_qe;
@@ -12336,6 +12718,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_7_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[7].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_7_od_en_7_qs)
   );
   assign reg2hw.mio_pad_attr[7].od_en.qe = mio_pad_attr_7_qe;
@@ -12351,6 +12734,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_7_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[7].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_7_slew_rate_7_qs)
   );
   assign reg2hw.mio_pad_attr[7].slew_rate.qe = mio_pad_attr_7_qe;
@@ -12366,6 +12750,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_7_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[7].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_7_drive_strength_7_qs)
   );
   assign reg2hw.mio_pad_attr[7].drive_strength.qe = mio_pad_attr_7_qe;
@@ -12390,6 +12775,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_8_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[8].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_8_invert_8_qs)
   );
   assign reg2hw.mio_pad_attr[8].invert.qe = mio_pad_attr_8_qe;
@@ -12405,6 +12791,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_8_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[8].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_8_virtual_od_en_8_qs)
   );
   assign reg2hw.mio_pad_attr[8].virtual_od_en.qe = mio_pad_attr_8_qe;
@@ -12420,6 +12807,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_8_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[8].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_8_pull_en_8_qs)
   );
   assign reg2hw.mio_pad_attr[8].pull_en.qe = mio_pad_attr_8_qe;
@@ -12435,6 +12823,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_8_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[8].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_8_pull_select_8_qs)
   );
   assign reg2hw.mio_pad_attr[8].pull_select.qe = mio_pad_attr_8_qe;
@@ -12450,6 +12839,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_8_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[8].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_8_keeper_en_8_qs)
   );
   assign reg2hw.mio_pad_attr[8].keeper_en.qe = mio_pad_attr_8_qe;
@@ -12465,6 +12855,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_8_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[8].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_8_schmitt_en_8_qs)
   );
   assign reg2hw.mio_pad_attr[8].schmitt_en.qe = mio_pad_attr_8_qe;
@@ -12480,6 +12871,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_8_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[8].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_8_od_en_8_qs)
   );
   assign reg2hw.mio_pad_attr[8].od_en.qe = mio_pad_attr_8_qe;
@@ -12495,6 +12887,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_8_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[8].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_8_slew_rate_8_qs)
   );
   assign reg2hw.mio_pad_attr[8].slew_rate.qe = mio_pad_attr_8_qe;
@@ -12510,6 +12903,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_8_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[8].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_8_drive_strength_8_qs)
   );
   assign reg2hw.mio_pad_attr[8].drive_strength.qe = mio_pad_attr_8_qe;
@@ -12534,6 +12928,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_9_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[9].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_9_invert_9_qs)
   );
   assign reg2hw.mio_pad_attr[9].invert.qe = mio_pad_attr_9_qe;
@@ -12549,6 +12944,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_9_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[9].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_9_virtual_od_en_9_qs)
   );
   assign reg2hw.mio_pad_attr[9].virtual_od_en.qe = mio_pad_attr_9_qe;
@@ -12564,6 +12960,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_9_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[9].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_9_pull_en_9_qs)
   );
   assign reg2hw.mio_pad_attr[9].pull_en.qe = mio_pad_attr_9_qe;
@@ -12579,6 +12976,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_9_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[9].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_9_pull_select_9_qs)
   );
   assign reg2hw.mio_pad_attr[9].pull_select.qe = mio_pad_attr_9_qe;
@@ -12594,6 +12992,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_9_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[9].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_9_keeper_en_9_qs)
   );
   assign reg2hw.mio_pad_attr[9].keeper_en.qe = mio_pad_attr_9_qe;
@@ -12609,6 +13008,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_9_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[9].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_9_schmitt_en_9_qs)
   );
   assign reg2hw.mio_pad_attr[9].schmitt_en.qe = mio_pad_attr_9_qe;
@@ -12624,6 +13024,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_9_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[9].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_9_od_en_9_qs)
   );
   assign reg2hw.mio_pad_attr[9].od_en.qe = mio_pad_attr_9_qe;
@@ -12639,6 +13040,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_9_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[9].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_9_slew_rate_9_qs)
   );
   assign reg2hw.mio_pad_attr[9].slew_rate.qe = mio_pad_attr_9_qe;
@@ -12654,6 +13056,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_9_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[9].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_9_drive_strength_9_qs)
   );
   assign reg2hw.mio_pad_attr[9].drive_strength.qe = mio_pad_attr_9_qe;
@@ -12678,6 +13081,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_10_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[10].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_10_invert_10_qs)
   );
   assign reg2hw.mio_pad_attr[10].invert.qe = mio_pad_attr_10_qe;
@@ -12693,6 +13097,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_10_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[10].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_10_virtual_od_en_10_qs)
   );
   assign reg2hw.mio_pad_attr[10].virtual_od_en.qe = mio_pad_attr_10_qe;
@@ -12708,6 +13113,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_10_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[10].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_10_pull_en_10_qs)
   );
   assign reg2hw.mio_pad_attr[10].pull_en.qe = mio_pad_attr_10_qe;
@@ -12723,6 +13129,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_10_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[10].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_10_pull_select_10_qs)
   );
   assign reg2hw.mio_pad_attr[10].pull_select.qe = mio_pad_attr_10_qe;
@@ -12738,6 +13145,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_10_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[10].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_10_keeper_en_10_qs)
   );
   assign reg2hw.mio_pad_attr[10].keeper_en.qe = mio_pad_attr_10_qe;
@@ -12753,6 +13161,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_10_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[10].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_10_schmitt_en_10_qs)
   );
   assign reg2hw.mio_pad_attr[10].schmitt_en.qe = mio_pad_attr_10_qe;
@@ -12768,6 +13177,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_10_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[10].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_10_od_en_10_qs)
   );
   assign reg2hw.mio_pad_attr[10].od_en.qe = mio_pad_attr_10_qe;
@@ -12783,6 +13193,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_10_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[10].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_10_slew_rate_10_qs)
   );
   assign reg2hw.mio_pad_attr[10].slew_rate.qe = mio_pad_attr_10_qe;
@@ -12798,6 +13209,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_10_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[10].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_10_drive_strength_10_qs)
   );
   assign reg2hw.mio_pad_attr[10].drive_strength.qe = mio_pad_attr_10_qe;
@@ -12822,6 +13234,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_11_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[11].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_11_invert_11_qs)
   );
   assign reg2hw.mio_pad_attr[11].invert.qe = mio_pad_attr_11_qe;
@@ -12837,6 +13250,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_11_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[11].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_11_virtual_od_en_11_qs)
   );
   assign reg2hw.mio_pad_attr[11].virtual_od_en.qe = mio_pad_attr_11_qe;
@@ -12852,6 +13266,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_11_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[11].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_11_pull_en_11_qs)
   );
   assign reg2hw.mio_pad_attr[11].pull_en.qe = mio_pad_attr_11_qe;
@@ -12867,6 +13282,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_11_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[11].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_11_pull_select_11_qs)
   );
   assign reg2hw.mio_pad_attr[11].pull_select.qe = mio_pad_attr_11_qe;
@@ -12882,6 +13298,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_11_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[11].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_11_keeper_en_11_qs)
   );
   assign reg2hw.mio_pad_attr[11].keeper_en.qe = mio_pad_attr_11_qe;
@@ -12897,6 +13314,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_11_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[11].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_11_schmitt_en_11_qs)
   );
   assign reg2hw.mio_pad_attr[11].schmitt_en.qe = mio_pad_attr_11_qe;
@@ -12912,6 +13330,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_11_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[11].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_11_od_en_11_qs)
   );
   assign reg2hw.mio_pad_attr[11].od_en.qe = mio_pad_attr_11_qe;
@@ -12927,6 +13346,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_11_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[11].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_11_slew_rate_11_qs)
   );
   assign reg2hw.mio_pad_attr[11].slew_rate.qe = mio_pad_attr_11_qe;
@@ -12942,6 +13362,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_11_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[11].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_11_drive_strength_11_qs)
   );
   assign reg2hw.mio_pad_attr[11].drive_strength.qe = mio_pad_attr_11_qe;
@@ -12966,6 +13387,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_12_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[12].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_12_invert_12_qs)
   );
   assign reg2hw.mio_pad_attr[12].invert.qe = mio_pad_attr_12_qe;
@@ -12981,6 +13403,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_12_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[12].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_12_virtual_od_en_12_qs)
   );
   assign reg2hw.mio_pad_attr[12].virtual_od_en.qe = mio_pad_attr_12_qe;
@@ -12996,6 +13419,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_12_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[12].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_12_pull_en_12_qs)
   );
   assign reg2hw.mio_pad_attr[12].pull_en.qe = mio_pad_attr_12_qe;
@@ -13011,6 +13435,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_12_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[12].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_12_pull_select_12_qs)
   );
   assign reg2hw.mio_pad_attr[12].pull_select.qe = mio_pad_attr_12_qe;
@@ -13026,6 +13451,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_12_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[12].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_12_keeper_en_12_qs)
   );
   assign reg2hw.mio_pad_attr[12].keeper_en.qe = mio_pad_attr_12_qe;
@@ -13041,6 +13467,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_12_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[12].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_12_schmitt_en_12_qs)
   );
   assign reg2hw.mio_pad_attr[12].schmitt_en.qe = mio_pad_attr_12_qe;
@@ -13056,6 +13483,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_12_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[12].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_12_od_en_12_qs)
   );
   assign reg2hw.mio_pad_attr[12].od_en.qe = mio_pad_attr_12_qe;
@@ -13071,6 +13499,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_12_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[12].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_12_slew_rate_12_qs)
   );
   assign reg2hw.mio_pad_attr[12].slew_rate.qe = mio_pad_attr_12_qe;
@@ -13086,6 +13515,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_12_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[12].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_12_drive_strength_12_qs)
   );
   assign reg2hw.mio_pad_attr[12].drive_strength.qe = mio_pad_attr_12_qe;
@@ -13110,6 +13540,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_13_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[13].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_13_invert_13_qs)
   );
   assign reg2hw.mio_pad_attr[13].invert.qe = mio_pad_attr_13_qe;
@@ -13125,6 +13556,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_13_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[13].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_13_virtual_od_en_13_qs)
   );
   assign reg2hw.mio_pad_attr[13].virtual_od_en.qe = mio_pad_attr_13_qe;
@@ -13140,6 +13572,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_13_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[13].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_13_pull_en_13_qs)
   );
   assign reg2hw.mio_pad_attr[13].pull_en.qe = mio_pad_attr_13_qe;
@@ -13155,6 +13588,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_13_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[13].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_13_pull_select_13_qs)
   );
   assign reg2hw.mio_pad_attr[13].pull_select.qe = mio_pad_attr_13_qe;
@@ -13170,6 +13604,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_13_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[13].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_13_keeper_en_13_qs)
   );
   assign reg2hw.mio_pad_attr[13].keeper_en.qe = mio_pad_attr_13_qe;
@@ -13185,6 +13620,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_13_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[13].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_13_schmitt_en_13_qs)
   );
   assign reg2hw.mio_pad_attr[13].schmitt_en.qe = mio_pad_attr_13_qe;
@@ -13200,6 +13636,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_13_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[13].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_13_od_en_13_qs)
   );
   assign reg2hw.mio_pad_attr[13].od_en.qe = mio_pad_attr_13_qe;
@@ -13215,6 +13652,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_13_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[13].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_13_slew_rate_13_qs)
   );
   assign reg2hw.mio_pad_attr[13].slew_rate.qe = mio_pad_attr_13_qe;
@@ -13230,6 +13668,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_13_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[13].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_13_drive_strength_13_qs)
   );
   assign reg2hw.mio_pad_attr[13].drive_strength.qe = mio_pad_attr_13_qe;
@@ -13254,6 +13693,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_14_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[14].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_14_invert_14_qs)
   );
   assign reg2hw.mio_pad_attr[14].invert.qe = mio_pad_attr_14_qe;
@@ -13269,6 +13709,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_14_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[14].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_14_virtual_od_en_14_qs)
   );
   assign reg2hw.mio_pad_attr[14].virtual_od_en.qe = mio_pad_attr_14_qe;
@@ -13284,6 +13725,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_14_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[14].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_14_pull_en_14_qs)
   );
   assign reg2hw.mio_pad_attr[14].pull_en.qe = mio_pad_attr_14_qe;
@@ -13299,6 +13741,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_14_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[14].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_14_pull_select_14_qs)
   );
   assign reg2hw.mio_pad_attr[14].pull_select.qe = mio_pad_attr_14_qe;
@@ -13314,6 +13757,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_14_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[14].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_14_keeper_en_14_qs)
   );
   assign reg2hw.mio_pad_attr[14].keeper_en.qe = mio_pad_attr_14_qe;
@@ -13329,6 +13773,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_14_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[14].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_14_schmitt_en_14_qs)
   );
   assign reg2hw.mio_pad_attr[14].schmitt_en.qe = mio_pad_attr_14_qe;
@@ -13344,6 +13789,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_14_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[14].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_14_od_en_14_qs)
   );
   assign reg2hw.mio_pad_attr[14].od_en.qe = mio_pad_attr_14_qe;
@@ -13359,6 +13805,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_14_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[14].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_14_slew_rate_14_qs)
   );
   assign reg2hw.mio_pad_attr[14].slew_rate.qe = mio_pad_attr_14_qe;
@@ -13374,6 +13821,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_14_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[14].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_14_drive_strength_14_qs)
   );
   assign reg2hw.mio_pad_attr[14].drive_strength.qe = mio_pad_attr_14_qe;
@@ -13398,6 +13846,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_15_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[15].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_15_invert_15_qs)
   );
   assign reg2hw.mio_pad_attr[15].invert.qe = mio_pad_attr_15_qe;
@@ -13413,6 +13862,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_15_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[15].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_15_virtual_od_en_15_qs)
   );
   assign reg2hw.mio_pad_attr[15].virtual_od_en.qe = mio_pad_attr_15_qe;
@@ -13428,6 +13878,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_15_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[15].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_15_pull_en_15_qs)
   );
   assign reg2hw.mio_pad_attr[15].pull_en.qe = mio_pad_attr_15_qe;
@@ -13443,6 +13894,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_15_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[15].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_15_pull_select_15_qs)
   );
   assign reg2hw.mio_pad_attr[15].pull_select.qe = mio_pad_attr_15_qe;
@@ -13458,6 +13910,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_15_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[15].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_15_keeper_en_15_qs)
   );
   assign reg2hw.mio_pad_attr[15].keeper_en.qe = mio_pad_attr_15_qe;
@@ -13473,6 +13926,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_15_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[15].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_15_schmitt_en_15_qs)
   );
   assign reg2hw.mio_pad_attr[15].schmitt_en.qe = mio_pad_attr_15_qe;
@@ -13488,6 +13942,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_15_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[15].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_15_od_en_15_qs)
   );
   assign reg2hw.mio_pad_attr[15].od_en.qe = mio_pad_attr_15_qe;
@@ -13503,6 +13958,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_15_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[15].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_15_slew_rate_15_qs)
   );
   assign reg2hw.mio_pad_attr[15].slew_rate.qe = mio_pad_attr_15_qe;
@@ -13518,6 +13974,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_15_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[15].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_15_drive_strength_15_qs)
   );
   assign reg2hw.mio_pad_attr[15].drive_strength.qe = mio_pad_attr_15_qe;
@@ -13542,6 +13999,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_16_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[16].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_16_invert_16_qs)
   );
   assign reg2hw.mio_pad_attr[16].invert.qe = mio_pad_attr_16_qe;
@@ -13557,6 +14015,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_16_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[16].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_16_virtual_od_en_16_qs)
   );
   assign reg2hw.mio_pad_attr[16].virtual_od_en.qe = mio_pad_attr_16_qe;
@@ -13572,6 +14031,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_16_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[16].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_16_pull_en_16_qs)
   );
   assign reg2hw.mio_pad_attr[16].pull_en.qe = mio_pad_attr_16_qe;
@@ -13587,6 +14047,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_16_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[16].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_16_pull_select_16_qs)
   );
   assign reg2hw.mio_pad_attr[16].pull_select.qe = mio_pad_attr_16_qe;
@@ -13602,6 +14063,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_16_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[16].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_16_keeper_en_16_qs)
   );
   assign reg2hw.mio_pad_attr[16].keeper_en.qe = mio_pad_attr_16_qe;
@@ -13617,6 +14079,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_16_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[16].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_16_schmitt_en_16_qs)
   );
   assign reg2hw.mio_pad_attr[16].schmitt_en.qe = mio_pad_attr_16_qe;
@@ -13632,6 +14095,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_16_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[16].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_16_od_en_16_qs)
   );
   assign reg2hw.mio_pad_attr[16].od_en.qe = mio_pad_attr_16_qe;
@@ -13647,6 +14111,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_16_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[16].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_16_slew_rate_16_qs)
   );
   assign reg2hw.mio_pad_attr[16].slew_rate.qe = mio_pad_attr_16_qe;
@@ -13662,6 +14127,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_16_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[16].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_16_drive_strength_16_qs)
   );
   assign reg2hw.mio_pad_attr[16].drive_strength.qe = mio_pad_attr_16_qe;
@@ -13686,6 +14152,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_17_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[17].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_17_invert_17_qs)
   );
   assign reg2hw.mio_pad_attr[17].invert.qe = mio_pad_attr_17_qe;
@@ -13701,6 +14168,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_17_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[17].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_17_virtual_od_en_17_qs)
   );
   assign reg2hw.mio_pad_attr[17].virtual_od_en.qe = mio_pad_attr_17_qe;
@@ -13716,6 +14184,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_17_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[17].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_17_pull_en_17_qs)
   );
   assign reg2hw.mio_pad_attr[17].pull_en.qe = mio_pad_attr_17_qe;
@@ -13731,6 +14200,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_17_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[17].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_17_pull_select_17_qs)
   );
   assign reg2hw.mio_pad_attr[17].pull_select.qe = mio_pad_attr_17_qe;
@@ -13746,6 +14216,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_17_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[17].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_17_keeper_en_17_qs)
   );
   assign reg2hw.mio_pad_attr[17].keeper_en.qe = mio_pad_attr_17_qe;
@@ -13761,6 +14232,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_17_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[17].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_17_schmitt_en_17_qs)
   );
   assign reg2hw.mio_pad_attr[17].schmitt_en.qe = mio_pad_attr_17_qe;
@@ -13776,6 +14248,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_17_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[17].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_17_od_en_17_qs)
   );
   assign reg2hw.mio_pad_attr[17].od_en.qe = mio_pad_attr_17_qe;
@@ -13791,6 +14264,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_17_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[17].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_17_slew_rate_17_qs)
   );
   assign reg2hw.mio_pad_attr[17].slew_rate.qe = mio_pad_attr_17_qe;
@@ -13806,6 +14280,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_17_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[17].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_17_drive_strength_17_qs)
   );
   assign reg2hw.mio_pad_attr[17].drive_strength.qe = mio_pad_attr_17_qe;
@@ -13830,6 +14305,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_18_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[18].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_18_invert_18_qs)
   );
   assign reg2hw.mio_pad_attr[18].invert.qe = mio_pad_attr_18_qe;
@@ -13845,6 +14321,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_18_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[18].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_18_virtual_od_en_18_qs)
   );
   assign reg2hw.mio_pad_attr[18].virtual_od_en.qe = mio_pad_attr_18_qe;
@@ -13860,6 +14337,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_18_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[18].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_18_pull_en_18_qs)
   );
   assign reg2hw.mio_pad_attr[18].pull_en.qe = mio_pad_attr_18_qe;
@@ -13875,6 +14353,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_18_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[18].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_18_pull_select_18_qs)
   );
   assign reg2hw.mio_pad_attr[18].pull_select.qe = mio_pad_attr_18_qe;
@@ -13890,6 +14369,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_18_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[18].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_18_keeper_en_18_qs)
   );
   assign reg2hw.mio_pad_attr[18].keeper_en.qe = mio_pad_attr_18_qe;
@@ -13905,6 +14385,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_18_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[18].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_18_schmitt_en_18_qs)
   );
   assign reg2hw.mio_pad_attr[18].schmitt_en.qe = mio_pad_attr_18_qe;
@@ -13920,6 +14401,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_18_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[18].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_18_od_en_18_qs)
   );
   assign reg2hw.mio_pad_attr[18].od_en.qe = mio_pad_attr_18_qe;
@@ -13935,6 +14417,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_18_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[18].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_18_slew_rate_18_qs)
   );
   assign reg2hw.mio_pad_attr[18].slew_rate.qe = mio_pad_attr_18_qe;
@@ -13950,6 +14433,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_18_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[18].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_18_drive_strength_18_qs)
   );
   assign reg2hw.mio_pad_attr[18].drive_strength.qe = mio_pad_attr_18_qe;
@@ -13974,6 +14458,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_19_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[19].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_19_invert_19_qs)
   );
   assign reg2hw.mio_pad_attr[19].invert.qe = mio_pad_attr_19_qe;
@@ -13989,6 +14474,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_19_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[19].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_19_virtual_od_en_19_qs)
   );
   assign reg2hw.mio_pad_attr[19].virtual_od_en.qe = mio_pad_attr_19_qe;
@@ -14004,6 +14490,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_19_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[19].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_19_pull_en_19_qs)
   );
   assign reg2hw.mio_pad_attr[19].pull_en.qe = mio_pad_attr_19_qe;
@@ -14019,6 +14506,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_19_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[19].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_19_pull_select_19_qs)
   );
   assign reg2hw.mio_pad_attr[19].pull_select.qe = mio_pad_attr_19_qe;
@@ -14034,6 +14522,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_19_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[19].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_19_keeper_en_19_qs)
   );
   assign reg2hw.mio_pad_attr[19].keeper_en.qe = mio_pad_attr_19_qe;
@@ -14049,6 +14538,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_19_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[19].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_19_schmitt_en_19_qs)
   );
   assign reg2hw.mio_pad_attr[19].schmitt_en.qe = mio_pad_attr_19_qe;
@@ -14064,6 +14554,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_19_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[19].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_19_od_en_19_qs)
   );
   assign reg2hw.mio_pad_attr[19].od_en.qe = mio_pad_attr_19_qe;
@@ -14079,6 +14570,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_19_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[19].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_19_slew_rate_19_qs)
   );
   assign reg2hw.mio_pad_attr[19].slew_rate.qe = mio_pad_attr_19_qe;
@@ -14094,6 +14586,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_19_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[19].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_19_drive_strength_19_qs)
   );
   assign reg2hw.mio_pad_attr[19].drive_strength.qe = mio_pad_attr_19_qe;
@@ -14118,6 +14611,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_20_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[20].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_20_invert_20_qs)
   );
   assign reg2hw.mio_pad_attr[20].invert.qe = mio_pad_attr_20_qe;
@@ -14133,6 +14627,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_20_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[20].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_20_virtual_od_en_20_qs)
   );
   assign reg2hw.mio_pad_attr[20].virtual_od_en.qe = mio_pad_attr_20_qe;
@@ -14148,6 +14643,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_20_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[20].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_20_pull_en_20_qs)
   );
   assign reg2hw.mio_pad_attr[20].pull_en.qe = mio_pad_attr_20_qe;
@@ -14163,6 +14659,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_20_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[20].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_20_pull_select_20_qs)
   );
   assign reg2hw.mio_pad_attr[20].pull_select.qe = mio_pad_attr_20_qe;
@@ -14178,6 +14675,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_20_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[20].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_20_keeper_en_20_qs)
   );
   assign reg2hw.mio_pad_attr[20].keeper_en.qe = mio_pad_attr_20_qe;
@@ -14193,6 +14691,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_20_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[20].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_20_schmitt_en_20_qs)
   );
   assign reg2hw.mio_pad_attr[20].schmitt_en.qe = mio_pad_attr_20_qe;
@@ -14208,6 +14707,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_20_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[20].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_20_od_en_20_qs)
   );
   assign reg2hw.mio_pad_attr[20].od_en.qe = mio_pad_attr_20_qe;
@@ -14223,6 +14723,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_20_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[20].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_20_slew_rate_20_qs)
   );
   assign reg2hw.mio_pad_attr[20].slew_rate.qe = mio_pad_attr_20_qe;
@@ -14238,6 +14739,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_20_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[20].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_20_drive_strength_20_qs)
   );
   assign reg2hw.mio_pad_attr[20].drive_strength.qe = mio_pad_attr_20_qe;
@@ -14262,6 +14764,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_21_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[21].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_21_invert_21_qs)
   );
   assign reg2hw.mio_pad_attr[21].invert.qe = mio_pad_attr_21_qe;
@@ -14277,6 +14780,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_21_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[21].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_21_virtual_od_en_21_qs)
   );
   assign reg2hw.mio_pad_attr[21].virtual_od_en.qe = mio_pad_attr_21_qe;
@@ -14292,6 +14796,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_21_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[21].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_21_pull_en_21_qs)
   );
   assign reg2hw.mio_pad_attr[21].pull_en.qe = mio_pad_attr_21_qe;
@@ -14307,6 +14812,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_21_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[21].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_21_pull_select_21_qs)
   );
   assign reg2hw.mio_pad_attr[21].pull_select.qe = mio_pad_attr_21_qe;
@@ -14322,6 +14828,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_21_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[21].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_21_keeper_en_21_qs)
   );
   assign reg2hw.mio_pad_attr[21].keeper_en.qe = mio_pad_attr_21_qe;
@@ -14337,6 +14844,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_21_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[21].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_21_schmitt_en_21_qs)
   );
   assign reg2hw.mio_pad_attr[21].schmitt_en.qe = mio_pad_attr_21_qe;
@@ -14352,6 +14860,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_21_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[21].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_21_od_en_21_qs)
   );
   assign reg2hw.mio_pad_attr[21].od_en.qe = mio_pad_attr_21_qe;
@@ -14367,6 +14876,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_21_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[21].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_21_slew_rate_21_qs)
   );
   assign reg2hw.mio_pad_attr[21].slew_rate.qe = mio_pad_attr_21_qe;
@@ -14382,6 +14892,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_21_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[21].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_21_drive_strength_21_qs)
   );
   assign reg2hw.mio_pad_attr[21].drive_strength.qe = mio_pad_attr_21_qe;
@@ -14406,6 +14917,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_22_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[22].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_22_invert_22_qs)
   );
   assign reg2hw.mio_pad_attr[22].invert.qe = mio_pad_attr_22_qe;
@@ -14421,6 +14933,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_22_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[22].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_22_virtual_od_en_22_qs)
   );
   assign reg2hw.mio_pad_attr[22].virtual_od_en.qe = mio_pad_attr_22_qe;
@@ -14436,6 +14949,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_22_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[22].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_22_pull_en_22_qs)
   );
   assign reg2hw.mio_pad_attr[22].pull_en.qe = mio_pad_attr_22_qe;
@@ -14451,6 +14965,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_22_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[22].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_22_pull_select_22_qs)
   );
   assign reg2hw.mio_pad_attr[22].pull_select.qe = mio_pad_attr_22_qe;
@@ -14466,6 +14981,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_22_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[22].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_22_keeper_en_22_qs)
   );
   assign reg2hw.mio_pad_attr[22].keeper_en.qe = mio_pad_attr_22_qe;
@@ -14481,6 +14997,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_22_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[22].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_22_schmitt_en_22_qs)
   );
   assign reg2hw.mio_pad_attr[22].schmitt_en.qe = mio_pad_attr_22_qe;
@@ -14496,6 +15013,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_22_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[22].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_22_od_en_22_qs)
   );
   assign reg2hw.mio_pad_attr[22].od_en.qe = mio_pad_attr_22_qe;
@@ -14511,6 +15029,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_22_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[22].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_22_slew_rate_22_qs)
   );
   assign reg2hw.mio_pad_attr[22].slew_rate.qe = mio_pad_attr_22_qe;
@@ -14526,6 +15045,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_22_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[22].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_22_drive_strength_22_qs)
   );
   assign reg2hw.mio_pad_attr[22].drive_strength.qe = mio_pad_attr_22_qe;
@@ -14550,6 +15070,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_23_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[23].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_23_invert_23_qs)
   );
   assign reg2hw.mio_pad_attr[23].invert.qe = mio_pad_attr_23_qe;
@@ -14565,6 +15086,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_23_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[23].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_23_virtual_od_en_23_qs)
   );
   assign reg2hw.mio_pad_attr[23].virtual_od_en.qe = mio_pad_attr_23_qe;
@@ -14580,6 +15102,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_23_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[23].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_23_pull_en_23_qs)
   );
   assign reg2hw.mio_pad_attr[23].pull_en.qe = mio_pad_attr_23_qe;
@@ -14595,6 +15118,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_23_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[23].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_23_pull_select_23_qs)
   );
   assign reg2hw.mio_pad_attr[23].pull_select.qe = mio_pad_attr_23_qe;
@@ -14610,6 +15134,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_23_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[23].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_23_keeper_en_23_qs)
   );
   assign reg2hw.mio_pad_attr[23].keeper_en.qe = mio_pad_attr_23_qe;
@@ -14625,6 +15150,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_23_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[23].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_23_schmitt_en_23_qs)
   );
   assign reg2hw.mio_pad_attr[23].schmitt_en.qe = mio_pad_attr_23_qe;
@@ -14640,6 +15166,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_23_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[23].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_23_od_en_23_qs)
   );
   assign reg2hw.mio_pad_attr[23].od_en.qe = mio_pad_attr_23_qe;
@@ -14655,6 +15182,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_23_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[23].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_23_slew_rate_23_qs)
   );
   assign reg2hw.mio_pad_attr[23].slew_rate.qe = mio_pad_attr_23_qe;
@@ -14670,6 +15198,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_23_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[23].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_23_drive_strength_23_qs)
   );
   assign reg2hw.mio_pad_attr[23].drive_strength.qe = mio_pad_attr_23_qe;
@@ -14694,6 +15223,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_24_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[24].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_24_invert_24_qs)
   );
   assign reg2hw.mio_pad_attr[24].invert.qe = mio_pad_attr_24_qe;
@@ -14709,6 +15239,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_24_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[24].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_24_virtual_od_en_24_qs)
   );
   assign reg2hw.mio_pad_attr[24].virtual_od_en.qe = mio_pad_attr_24_qe;
@@ -14724,6 +15255,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_24_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[24].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_24_pull_en_24_qs)
   );
   assign reg2hw.mio_pad_attr[24].pull_en.qe = mio_pad_attr_24_qe;
@@ -14739,6 +15271,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_24_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[24].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_24_pull_select_24_qs)
   );
   assign reg2hw.mio_pad_attr[24].pull_select.qe = mio_pad_attr_24_qe;
@@ -14754,6 +15287,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_24_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[24].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_24_keeper_en_24_qs)
   );
   assign reg2hw.mio_pad_attr[24].keeper_en.qe = mio_pad_attr_24_qe;
@@ -14769,6 +15303,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_24_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[24].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_24_schmitt_en_24_qs)
   );
   assign reg2hw.mio_pad_attr[24].schmitt_en.qe = mio_pad_attr_24_qe;
@@ -14784,6 +15319,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_24_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[24].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_24_od_en_24_qs)
   );
   assign reg2hw.mio_pad_attr[24].od_en.qe = mio_pad_attr_24_qe;
@@ -14799,6 +15335,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_24_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[24].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_24_slew_rate_24_qs)
   );
   assign reg2hw.mio_pad_attr[24].slew_rate.qe = mio_pad_attr_24_qe;
@@ -14814,6 +15351,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_24_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[24].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_24_drive_strength_24_qs)
   );
   assign reg2hw.mio_pad_attr[24].drive_strength.qe = mio_pad_attr_24_qe;
@@ -14838,6 +15376,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_25_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[25].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_25_invert_25_qs)
   );
   assign reg2hw.mio_pad_attr[25].invert.qe = mio_pad_attr_25_qe;
@@ -14853,6 +15392,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_25_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[25].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_25_virtual_od_en_25_qs)
   );
   assign reg2hw.mio_pad_attr[25].virtual_od_en.qe = mio_pad_attr_25_qe;
@@ -14868,6 +15408,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_25_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[25].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_25_pull_en_25_qs)
   );
   assign reg2hw.mio_pad_attr[25].pull_en.qe = mio_pad_attr_25_qe;
@@ -14883,6 +15424,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_25_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[25].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_25_pull_select_25_qs)
   );
   assign reg2hw.mio_pad_attr[25].pull_select.qe = mio_pad_attr_25_qe;
@@ -14898,6 +15440,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_25_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[25].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_25_keeper_en_25_qs)
   );
   assign reg2hw.mio_pad_attr[25].keeper_en.qe = mio_pad_attr_25_qe;
@@ -14913,6 +15456,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_25_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[25].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_25_schmitt_en_25_qs)
   );
   assign reg2hw.mio_pad_attr[25].schmitt_en.qe = mio_pad_attr_25_qe;
@@ -14928,6 +15472,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_25_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[25].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_25_od_en_25_qs)
   );
   assign reg2hw.mio_pad_attr[25].od_en.qe = mio_pad_attr_25_qe;
@@ -14943,6 +15488,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_25_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[25].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_25_slew_rate_25_qs)
   );
   assign reg2hw.mio_pad_attr[25].slew_rate.qe = mio_pad_attr_25_qe;
@@ -14958,6 +15504,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_25_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[25].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_25_drive_strength_25_qs)
   );
   assign reg2hw.mio_pad_attr[25].drive_strength.qe = mio_pad_attr_25_qe;
@@ -14982,6 +15529,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_26_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[26].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_26_invert_26_qs)
   );
   assign reg2hw.mio_pad_attr[26].invert.qe = mio_pad_attr_26_qe;
@@ -14997,6 +15545,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_26_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[26].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_26_virtual_od_en_26_qs)
   );
   assign reg2hw.mio_pad_attr[26].virtual_od_en.qe = mio_pad_attr_26_qe;
@@ -15012,6 +15561,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_26_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[26].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_26_pull_en_26_qs)
   );
   assign reg2hw.mio_pad_attr[26].pull_en.qe = mio_pad_attr_26_qe;
@@ -15027,6 +15577,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_26_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[26].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_26_pull_select_26_qs)
   );
   assign reg2hw.mio_pad_attr[26].pull_select.qe = mio_pad_attr_26_qe;
@@ -15042,6 +15593,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_26_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[26].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_26_keeper_en_26_qs)
   );
   assign reg2hw.mio_pad_attr[26].keeper_en.qe = mio_pad_attr_26_qe;
@@ -15057,6 +15609,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_26_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[26].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_26_schmitt_en_26_qs)
   );
   assign reg2hw.mio_pad_attr[26].schmitt_en.qe = mio_pad_attr_26_qe;
@@ -15072,6 +15625,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_26_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[26].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_26_od_en_26_qs)
   );
   assign reg2hw.mio_pad_attr[26].od_en.qe = mio_pad_attr_26_qe;
@@ -15087,6 +15641,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_26_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[26].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_26_slew_rate_26_qs)
   );
   assign reg2hw.mio_pad_attr[26].slew_rate.qe = mio_pad_attr_26_qe;
@@ -15102,6 +15657,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_26_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[26].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_26_drive_strength_26_qs)
   );
   assign reg2hw.mio_pad_attr[26].drive_strength.qe = mio_pad_attr_26_qe;
@@ -15126,6 +15682,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_27_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[27].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_27_invert_27_qs)
   );
   assign reg2hw.mio_pad_attr[27].invert.qe = mio_pad_attr_27_qe;
@@ -15141,6 +15698,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_27_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[27].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_27_virtual_od_en_27_qs)
   );
   assign reg2hw.mio_pad_attr[27].virtual_od_en.qe = mio_pad_attr_27_qe;
@@ -15156,6 +15714,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_27_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[27].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_27_pull_en_27_qs)
   );
   assign reg2hw.mio_pad_attr[27].pull_en.qe = mio_pad_attr_27_qe;
@@ -15171,6 +15730,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_27_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[27].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_27_pull_select_27_qs)
   );
   assign reg2hw.mio_pad_attr[27].pull_select.qe = mio_pad_attr_27_qe;
@@ -15186,6 +15746,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_27_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[27].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_27_keeper_en_27_qs)
   );
   assign reg2hw.mio_pad_attr[27].keeper_en.qe = mio_pad_attr_27_qe;
@@ -15201,6 +15762,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_27_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[27].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_27_schmitt_en_27_qs)
   );
   assign reg2hw.mio_pad_attr[27].schmitt_en.qe = mio_pad_attr_27_qe;
@@ -15216,6 +15778,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_27_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[27].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_27_od_en_27_qs)
   );
   assign reg2hw.mio_pad_attr[27].od_en.qe = mio_pad_attr_27_qe;
@@ -15231,6 +15794,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_27_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[27].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_27_slew_rate_27_qs)
   );
   assign reg2hw.mio_pad_attr[27].slew_rate.qe = mio_pad_attr_27_qe;
@@ -15246,6 +15810,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_27_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[27].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_27_drive_strength_27_qs)
   );
   assign reg2hw.mio_pad_attr[27].drive_strength.qe = mio_pad_attr_27_qe;
@@ -15270,6 +15835,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_28_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[28].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_28_invert_28_qs)
   );
   assign reg2hw.mio_pad_attr[28].invert.qe = mio_pad_attr_28_qe;
@@ -15285,6 +15851,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_28_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[28].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_28_virtual_od_en_28_qs)
   );
   assign reg2hw.mio_pad_attr[28].virtual_od_en.qe = mio_pad_attr_28_qe;
@@ -15300,6 +15867,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_28_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[28].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_28_pull_en_28_qs)
   );
   assign reg2hw.mio_pad_attr[28].pull_en.qe = mio_pad_attr_28_qe;
@@ -15315,6 +15883,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_28_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[28].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_28_pull_select_28_qs)
   );
   assign reg2hw.mio_pad_attr[28].pull_select.qe = mio_pad_attr_28_qe;
@@ -15330,6 +15899,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_28_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[28].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_28_keeper_en_28_qs)
   );
   assign reg2hw.mio_pad_attr[28].keeper_en.qe = mio_pad_attr_28_qe;
@@ -15345,6 +15915,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_28_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[28].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_28_schmitt_en_28_qs)
   );
   assign reg2hw.mio_pad_attr[28].schmitt_en.qe = mio_pad_attr_28_qe;
@@ -15360,6 +15931,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_28_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[28].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_28_od_en_28_qs)
   );
   assign reg2hw.mio_pad_attr[28].od_en.qe = mio_pad_attr_28_qe;
@@ -15375,6 +15947,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_28_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[28].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_28_slew_rate_28_qs)
   );
   assign reg2hw.mio_pad_attr[28].slew_rate.qe = mio_pad_attr_28_qe;
@@ -15390,6 +15963,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_28_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[28].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_28_drive_strength_28_qs)
   );
   assign reg2hw.mio_pad_attr[28].drive_strength.qe = mio_pad_attr_28_qe;
@@ -15414,6 +15988,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_29_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[29].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_29_invert_29_qs)
   );
   assign reg2hw.mio_pad_attr[29].invert.qe = mio_pad_attr_29_qe;
@@ -15429,6 +16004,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_29_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[29].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_29_virtual_od_en_29_qs)
   );
   assign reg2hw.mio_pad_attr[29].virtual_od_en.qe = mio_pad_attr_29_qe;
@@ -15444,6 +16020,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_29_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[29].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_29_pull_en_29_qs)
   );
   assign reg2hw.mio_pad_attr[29].pull_en.qe = mio_pad_attr_29_qe;
@@ -15459,6 +16036,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_29_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[29].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_29_pull_select_29_qs)
   );
   assign reg2hw.mio_pad_attr[29].pull_select.qe = mio_pad_attr_29_qe;
@@ -15474,6 +16052,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_29_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[29].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_29_keeper_en_29_qs)
   );
   assign reg2hw.mio_pad_attr[29].keeper_en.qe = mio_pad_attr_29_qe;
@@ -15489,6 +16068,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_29_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[29].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_29_schmitt_en_29_qs)
   );
   assign reg2hw.mio_pad_attr[29].schmitt_en.qe = mio_pad_attr_29_qe;
@@ -15504,6 +16084,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_29_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[29].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_29_od_en_29_qs)
   );
   assign reg2hw.mio_pad_attr[29].od_en.qe = mio_pad_attr_29_qe;
@@ -15519,6 +16100,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_29_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[29].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_29_slew_rate_29_qs)
   );
   assign reg2hw.mio_pad_attr[29].slew_rate.qe = mio_pad_attr_29_qe;
@@ -15534,6 +16116,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_29_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[29].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_29_drive_strength_29_qs)
   );
   assign reg2hw.mio_pad_attr[29].drive_strength.qe = mio_pad_attr_29_qe;
@@ -15558,6 +16141,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_30_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[30].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_30_invert_30_qs)
   );
   assign reg2hw.mio_pad_attr[30].invert.qe = mio_pad_attr_30_qe;
@@ -15573,6 +16157,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_30_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[30].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_30_virtual_od_en_30_qs)
   );
   assign reg2hw.mio_pad_attr[30].virtual_od_en.qe = mio_pad_attr_30_qe;
@@ -15588,6 +16173,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_30_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[30].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_30_pull_en_30_qs)
   );
   assign reg2hw.mio_pad_attr[30].pull_en.qe = mio_pad_attr_30_qe;
@@ -15603,6 +16189,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_30_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[30].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_30_pull_select_30_qs)
   );
   assign reg2hw.mio_pad_attr[30].pull_select.qe = mio_pad_attr_30_qe;
@@ -15618,6 +16205,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_30_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[30].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_30_keeper_en_30_qs)
   );
   assign reg2hw.mio_pad_attr[30].keeper_en.qe = mio_pad_attr_30_qe;
@@ -15633,6 +16221,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_30_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[30].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_30_schmitt_en_30_qs)
   );
   assign reg2hw.mio_pad_attr[30].schmitt_en.qe = mio_pad_attr_30_qe;
@@ -15648,6 +16237,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_30_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[30].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_30_od_en_30_qs)
   );
   assign reg2hw.mio_pad_attr[30].od_en.qe = mio_pad_attr_30_qe;
@@ -15663,6 +16253,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_30_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[30].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_30_slew_rate_30_qs)
   );
   assign reg2hw.mio_pad_attr[30].slew_rate.qe = mio_pad_attr_30_qe;
@@ -15678,6 +16269,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_30_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[30].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_30_drive_strength_30_qs)
   );
   assign reg2hw.mio_pad_attr[30].drive_strength.qe = mio_pad_attr_30_qe;
@@ -15702,6 +16294,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_31_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[31].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_31_invert_31_qs)
   );
   assign reg2hw.mio_pad_attr[31].invert.qe = mio_pad_attr_31_qe;
@@ -15717,6 +16310,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_31_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[31].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_31_virtual_od_en_31_qs)
   );
   assign reg2hw.mio_pad_attr[31].virtual_od_en.qe = mio_pad_attr_31_qe;
@@ -15732,6 +16326,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_31_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[31].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_31_pull_en_31_qs)
   );
   assign reg2hw.mio_pad_attr[31].pull_en.qe = mio_pad_attr_31_qe;
@@ -15747,6 +16342,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_31_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[31].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_31_pull_select_31_qs)
   );
   assign reg2hw.mio_pad_attr[31].pull_select.qe = mio_pad_attr_31_qe;
@@ -15762,6 +16358,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_31_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[31].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_31_keeper_en_31_qs)
   );
   assign reg2hw.mio_pad_attr[31].keeper_en.qe = mio_pad_attr_31_qe;
@@ -15777,6 +16374,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_31_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[31].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_31_schmitt_en_31_qs)
   );
   assign reg2hw.mio_pad_attr[31].schmitt_en.qe = mio_pad_attr_31_qe;
@@ -15792,6 +16390,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_31_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[31].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_31_od_en_31_qs)
   );
   assign reg2hw.mio_pad_attr[31].od_en.qe = mio_pad_attr_31_qe;
@@ -15807,6 +16406,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_31_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[31].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_31_slew_rate_31_qs)
   );
   assign reg2hw.mio_pad_attr[31].slew_rate.qe = mio_pad_attr_31_qe;
@@ -15822,6 +16422,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_31_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[31].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_31_drive_strength_31_qs)
   );
   assign reg2hw.mio_pad_attr[31].drive_strength.qe = mio_pad_attr_31_qe;
@@ -15846,6 +16447,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_32_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[32].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_32_invert_32_qs)
   );
   assign reg2hw.mio_pad_attr[32].invert.qe = mio_pad_attr_32_qe;
@@ -15861,6 +16463,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_32_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[32].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_32_virtual_od_en_32_qs)
   );
   assign reg2hw.mio_pad_attr[32].virtual_od_en.qe = mio_pad_attr_32_qe;
@@ -15876,6 +16479,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_32_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[32].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_32_pull_en_32_qs)
   );
   assign reg2hw.mio_pad_attr[32].pull_en.qe = mio_pad_attr_32_qe;
@@ -15891,6 +16495,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_32_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[32].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_32_pull_select_32_qs)
   );
   assign reg2hw.mio_pad_attr[32].pull_select.qe = mio_pad_attr_32_qe;
@@ -15906,6 +16511,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_32_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[32].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_32_keeper_en_32_qs)
   );
   assign reg2hw.mio_pad_attr[32].keeper_en.qe = mio_pad_attr_32_qe;
@@ -15921,6 +16527,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_32_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[32].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_32_schmitt_en_32_qs)
   );
   assign reg2hw.mio_pad_attr[32].schmitt_en.qe = mio_pad_attr_32_qe;
@@ -15936,6 +16543,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_32_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[32].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_32_od_en_32_qs)
   );
   assign reg2hw.mio_pad_attr[32].od_en.qe = mio_pad_attr_32_qe;
@@ -15951,6 +16559,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_32_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[32].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_32_slew_rate_32_qs)
   );
   assign reg2hw.mio_pad_attr[32].slew_rate.qe = mio_pad_attr_32_qe;
@@ -15966,6 +16575,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_32_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[32].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_32_drive_strength_32_qs)
   );
   assign reg2hw.mio_pad_attr[32].drive_strength.qe = mio_pad_attr_32_qe;
@@ -15990,6 +16600,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_33_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[33].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_33_invert_33_qs)
   );
   assign reg2hw.mio_pad_attr[33].invert.qe = mio_pad_attr_33_qe;
@@ -16005,6 +16616,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_33_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[33].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_33_virtual_od_en_33_qs)
   );
   assign reg2hw.mio_pad_attr[33].virtual_od_en.qe = mio_pad_attr_33_qe;
@@ -16020,6 +16632,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_33_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[33].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_33_pull_en_33_qs)
   );
   assign reg2hw.mio_pad_attr[33].pull_en.qe = mio_pad_attr_33_qe;
@@ -16035,6 +16648,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_33_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[33].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_33_pull_select_33_qs)
   );
   assign reg2hw.mio_pad_attr[33].pull_select.qe = mio_pad_attr_33_qe;
@@ -16050,6 +16664,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_33_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[33].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_33_keeper_en_33_qs)
   );
   assign reg2hw.mio_pad_attr[33].keeper_en.qe = mio_pad_attr_33_qe;
@@ -16065,6 +16680,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_33_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[33].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_33_schmitt_en_33_qs)
   );
   assign reg2hw.mio_pad_attr[33].schmitt_en.qe = mio_pad_attr_33_qe;
@@ -16080,6 +16696,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_33_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[33].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_33_od_en_33_qs)
   );
   assign reg2hw.mio_pad_attr[33].od_en.qe = mio_pad_attr_33_qe;
@@ -16095,6 +16712,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_33_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[33].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_33_slew_rate_33_qs)
   );
   assign reg2hw.mio_pad_attr[33].slew_rate.qe = mio_pad_attr_33_qe;
@@ -16110,6 +16728,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_33_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[33].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_33_drive_strength_33_qs)
   );
   assign reg2hw.mio_pad_attr[33].drive_strength.qe = mio_pad_attr_33_qe;
@@ -16134,6 +16753,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_34_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[34].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_34_invert_34_qs)
   );
   assign reg2hw.mio_pad_attr[34].invert.qe = mio_pad_attr_34_qe;
@@ -16149,6 +16769,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_34_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[34].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_34_virtual_od_en_34_qs)
   );
   assign reg2hw.mio_pad_attr[34].virtual_od_en.qe = mio_pad_attr_34_qe;
@@ -16164,6 +16785,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_34_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[34].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_34_pull_en_34_qs)
   );
   assign reg2hw.mio_pad_attr[34].pull_en.qe = mio_pad_attr_34_qe;
@@ -16179,6 +16801,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_34_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[34].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_34_pull_select_34_qs)
   );
   assign reg2hw.mio_pad_attr[34].pull_select.qe = mio_pad_attr_34_qe;
@@ -16194,6 +16817,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_34_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[34].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_34_keeper_en_34_qs)
   );
   assign reg2hw.mio_pad_attr[34].keeper_en.qe = mio_pad_attr_34_qe;
@@ -16209,6 +16833,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_34_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[34].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_34_schmitt_en_34_qs)
   );
   assign reg2hw.mio_pad_attr[34].schmitt_en.qe = mio_pad_attr_34_qe;
@@ -16224,6 +16849,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_34_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[34].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_34_od_en_34_qs)
   );
   assign reg2hw.mio_pad_attr[34].od_en.qe = mio_pad_attr_34_qe;
@@ -16239,6 +16865,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_34_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[34].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_34_slew_rate_34_qs)
   );
   assign reg2hw.mio_pad_attr[34].slew_rate.qe = mio_pad_attr_34_qe;
@@ -16254,6 +16881,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_34_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[34].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_34_drive_strength_34_qs)
   );
   assign reg2hw.mio_pad_attr[34].drive_strength.qe = mio_pad_attr_34_qe;
@@ -16278,6 +16906,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_35_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[35].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_35_invert_35_qs)
   );
   assign reg2hw.mio_pad_attr[35].invert.qe = mio_pad_attr_35_qe;
@@ -16293,6 +16922,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_35_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[35].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_35_virtual_od_en_35_qs)
   );
   assign reg2hw.mio_pad_attr[35].virtual_od_en.qe = mio_pad_attr_35_qe;
@@ -16308,6 +16938,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_35_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[35].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_35_pull_en_35_qs)
   );
   assign reg2hw.mio_pad_attr[35].pull_en.qe = mio_pad_attr_35_qe;
@@ -16323,6 +16954,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_35_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[35].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_35_pull_select_35_qs)
   );
   assign reg2hw.mio_pad_attr[35].pull_select.qe = mio_pad_attr_35_qe;
@@ -16338,6 +16970,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_35_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[35].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_35_keeper_en_35_qs)
   );
   assign reg2hw.mio_pad_attr[35].keeper_en.qe = mio_pad_attr_35_qe;
@@ -16353,6 +16986,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_35_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[35].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_35_schmitt_en_35_qs)
   );
   assign reg2hw.mio_pad_attr[35].schmitt_en.qe = mio_pad_attr_35_qe;
@@ -16368,6 +17002,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_35_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[35].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_35_od_en_35_qs)
   );
   assign reg2hw.mio_pad_attr[35].od_en.qe = mio_pad_attr_35_qe;
@@ -16383,6 +17018,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_35_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[35].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_35_slew_rate_35_qs)
   );
   assign reg2hw.mio_pad_attr[35].slew_rate.qe = mio_pad_attr_35_qe;
@@ -16398,6 +17034,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_35_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[35].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_35_drive_strength_35_qs)
   );
   assign reg2hw.mio_pad_attr[35].drive_strength.qe = mio_pad_attr_35_qe;
@@ -16422,6 +17059,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_36_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[36].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_36_invert_36_qs)
   );
   assign reg2hw.mio_pad_attr[36].invert.qe = mio_pad_attr_36_qe;
@@ -16437,6 +17075,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_36_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[36].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_36_virtual_od_en_36_qs)
   );
   assign reg2hw.mio_pad_attr[36].virtual_od_en.qe = mio_pad_attr_36_qe;
@@ -16452,6 +17091,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_36_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[36].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_36_pull_en_36_qs)
   );
   assign reg2hw.mio_pad_attr[36].pull_en.qe = mio_pad_attr_36_qe;
@@ -16467,6 +17107,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_36_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[36].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_36_pull_select_36_qs)
   );
   assign reg2hw.mio_pad_attr[36].pull_select.qe = mio_pad_attr_36_qe;
@@ -16482,6 +17123,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_36_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[36].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_36_keeper_en_36_qs)
   );
   assign reg2hw.mio_pad_attr[36].keeper_en.qe = mio_pad_attr_36_qe;
@@ -16497,6 +17139,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_36_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[36].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_36_schmitt_en_36_qs)
   );
   assign reg2hw.mio_pad_attr[36].schmitt_en.qe = mio_pad_attr_36_qe;
@@ -16512,6 +17155,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_36_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[36].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_36_od_en_36_qs)
   );
   assign reg2hw.mio_pad_attr[36].od_en.qe = mio_pad_attr_36_qe;
@@ -16527,6 +17171,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_36_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[36].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_36_slew_rate_36_qs)
   );
   assign reg2hw.mio_pad_attr[36].slew_rate.qe = mio_pad_attr_36_qe;
@@ -16542,6 +17187,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_36_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[36].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_36_drive_strength_36_qs)
   );
   assign reg2hw.mio_pad_attr[36].drive_strength.qe = mio_pad_attr_36_qe;
@@ -16566,6 +17212,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_37_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[37].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_37_invert_37_qs)
   );
   assign reg2hw.mio_pad_attr[37].invert.qe = mio_pad_attr_37_qe;
@@ -16581,6 +17228,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_37_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[37].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_37_virtual_od_en_37_qs)
   );
   assign reg2hw.mio_pad_attr[37].virtual_od_en.qe = mio_pad_attr_37_qe;
@@ -16596,6 +17244,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_37_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[37].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_37_pull_en_37_qs)
   );
   assign reg2hw.mio_pad_attr[37].pull_en.qe = mio_pad_attr_37_qe;
@@ -16611,6 +17260,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_37_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[37].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_37_pull_select_37_qs)
   );
   assign reg2hw.mio_pad_attr[37].pull_select.qe = mio_pad_attr_37_qe;
@@ -16626,6 +17276,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_37_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[37].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_37_keeper_en_37_qs)
   );
   assign reg2hw.mio_pad_attr[37].keeper_en.qe = mio_pad_attr_37_qe;
@@ -16641,6 +17292,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_37_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[37].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_37_schmitt_en_37_qs)
   );
   assign reg2hw.mio_pad_attr[37].schmitt_en.qe = mio_pad_attr_37_qe;
@@ -16656,6 +17308,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_37_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[37].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_37_od_en_37_qs)
   );
   assign reg2hw.mio_pad_attr[37].od_en.qe = mio_pad_attr_37_qe;
@@ -16671,6 +17324,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_37_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[37].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_37_slew_rate_37_qs)
   );
   assign reg2hw.mio_pad_attr[37].slew_rate.qe = mio_pad_attr_37_qe;
@@ -16686,6 +17340,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_37_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[37].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_37_drive_strength_37_qs)
   );
   assign reg2hw.mio_pad_attr[37].drive_strength.qe = mio_pad_attr_37_qe;
@@ -16710,6 +17365,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_38_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[38].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_38_invert_38_qs)
   );
   assign reg2hw.mio_pad_attr[38].invert.qe = mio_pad_attr_38_qe;
@@ -16725,6 +17381,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_38_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[38].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_38_virtual_od_en_38_qs)
   );
   assign reg2hw.mio_pad_attr[38].virtual_od_en.qe = mio_pad_attr_38_qe;
@@ -16740,6 +17397,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_38_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[38].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_38_pull_en_38_qs)
   );
   assign reg2hw.mio_pad_attr[38].pull_en.qe = mio_pad_attr_38_qe;
@@ -16755,6 +17413,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_38_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[38].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_38_pull_select_38_qs)
   );
   assign reg2hw.mio_pad_attr[38].pull_select.qe = mio_pad_attr_38_qe;
@@ -16770,6 +17429,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_38_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[38].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_38_keeper_en_38_qs)
   );
   assign reg2hw.mio_pad_attr[38].keeper_en.qe = mio_pad_attr_38_qe;
@@ -16785,6 +17445,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_38_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[38].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_38_schmitt_en_38_qs)
   );
   assign reg2hw.mio_pad_attr[38].schmitt_en.qe = mio_pad_attr_38_qe;
@@ -16800,6 +17461,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_38_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[38].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_38_od_en_38_qs)
   );
   assign reg2hw.mio_pad_attr[38].od_en.qe = mio_pad_attr_38_qe;
@@ -16815,6 +17477,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_38_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[38].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_38_slew_rate_38_qs)
   );
   assign reg2hw.mio_pad_attr[38].slew_rate.qe = mio_pad_attr_38_qe;
@@ -16830,6 +17493,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_38_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[38].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_38_drive_strength_38_qs)
   );
   assign reg2hw.mio_pad_attr[38].drive_strength.qe = mio_pad_attr_38_qe;
@@ -16854,6 +17518,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_39_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[39].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_39_invert_39_qs)
   );
   assign reg2hw.mio_pad_attr[39].invert.qe = mio_pad_attr_39_qe;
@@ -16869,6 +17534,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_39_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[39].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_39_virtual_od_en_39_qs)
   );
   assign reg2hw.mio_pad_attr[39].virtual_od_en.qe = mio_pad_attr_39_qe;
@@ -16884,6 +17550,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_39_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[39].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_39_pull_en_39_qs)
   );
   assign reg2hw.mio_pad_attr[39].pull_en.qe = mio_pad_attr_39_qe;
@@ -16899,6 +17566,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_39_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[39].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_39_pull_select_39_qs)
   );
   assign reg2hw.mio_pad_attr[39].pull_select.qe = mio_pad_attr_39_qe;
@@ -16914,6 +17582,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_39_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[39].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_39_keeper_en_39_qs)
   );
   assign reg2hw.mio_pad_attr[39].keeper_en.qe = mio_pad_attr_39_qe;
@@ -16929,6 +17598,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_39_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[39].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_39_schmitt_en_39_qs)
   );
   assign reg2hw.mio_pad_attr[39].schmitt_en.qe = mio_pad_attr_39_qe;
@@ -16944,6 +17614,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_39_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[39].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_39_od_en_39_qs)
   );
   assign reg2hw.mio_pad_attr[39].od_en.qe = mio_pad_attr_39_qe;
@@ -16959,6 +17630,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_39_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[39].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_39_slew_rate_39_qs)
   );
   assign reg2hw.mio_pad_attr[39].slew_rate.qe = mio_pad_attr_39_qe;
@@ -16974,6 +17646,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_39_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[39].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_39_drive_strength_39_qs)
   );
   assign reg2hw.mio_pad_attr[39].drive_strength.qe = mio_pad_attr_39_qe;
@@ -16998,6 +17671,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_40_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[40].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_40_invert_40_qs)
   );
   assign reg2hw.mio_pad_attr[40].invert.qe = mio_pad_attr_40_qe;
@@ -17013,6 +17687,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_40_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[40].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_40_virtual_od_en_40_qs)
   );
   assign reg2hw.mio_pad_attr[40].virtual_od_en.qe = mio_pad_attr_40_qe;
@@ -17028,6 +17703,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_40_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[40].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_40_pull_en_40_qs)
   );
   assign reg2hw.mio_pad_attr[40].pull_en.qe = mio_pad_attr_40_qe;
@@ -17043,6 +17719,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_40_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[40].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_40_pull_select_40_qs)
   );
   assign reg2hw.mio_pad_attr[40].pull_select.qe = mio_pad_attr_40_qe;
@@ -17058,6 +17735,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_40_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[40].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_40_keeper_en_40_qs)
   );
   assign reg2hw.mio_pad_attr[40].keeper_en.qe = mio_pad_attr_40_qe;
@@ -17073,6 +17751,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_40_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[40].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_40_schmitt_en_40_qs)
   );
   assign reg2hw.mio_pad_attr[40].schmitt_en.qe = mio_pad_attr_40_qe;
@@ -17088,6 +17767,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_40_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[40].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_40_od_en_40_qs)
   );
   assign reg2hw.mio_pad_attr[40].od_en.qe = mio_pad_attr_40_qe;
@@ -17103,6 +17783,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_40_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[40].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_40_slew_rate_40_qs)
   );
   assign reg2hw.mio_pad_attr[40].slew_rate.qe = mio_pad_attr_40_qe;
@@ -17118,6 +17799,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_40_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[40].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_40_drive_strength_40_qs)
   );
   assign reg2hw.mio_pad_attr[40].drive_strength.qe = mio_pad_attr_40_qe;
@@ -17142,6 +17824,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_41_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[41].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_41_invert_41_qs)
   );
   assign reg2hw.mio_pad_attr[41].invert.qe = mio_pad_attr_41_qe;
@@ -17157,6 +17840,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_41_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[41].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_41_virtual_od_en_41_qs)
   );
   assign reg2hw.mio_pad_attr[41].virtual_od_en.qe = mio_pad_attr_41_qe;
@@ -17172,6 +17856,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_41_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[41].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_41_pull_en_41_qs)
   );
   assign reg2hw.mio_pad_attr[41].pull_en.qe = mio_pad_attr_41_qe;
@@ -17187,6 +17872,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_41_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[41].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_41_pull_select_41_qs)
   );
   assign reg2hw.mio_pad_attr[41].pull_select.qe = mio_pad_attr_41_qe;
@@ -17202,6 +17888,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_41_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[41].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_41_keeper_en_41_qs)
   );
   assign reg2hw.mio_pad_attr[41].keeper_en.qe = mio_pad_attr_41_qe;
@@ -17217,6 +17904,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_41_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[41].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_41_schmitt_en_41_qs)
   );
   assign reg2hw.mio_pad_attr[41].schmitt_en.qe = mio_pad_attr_41_qe;
@@ -17232,6 +17920,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_41_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[41].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_41_od_en_41_qs)
   );
   assign reg2hw.mio_pad_attr[41].od_en.qe = mio_pad_attr_41_qe;
@@ -17247,6 +17936,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_41_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[41].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_41_slew_rate_41_qs)
   );
   assign reg2hw.mio_pad_attr[41].slew_rate.qe = mio_pad_attr_41_qe;
@@ -17262,6 +17952,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_41_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[41].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_41_drive_strength_41_qs)
   );
   assign reg2hw.mio_pad_attr[41].drive_strength.qe = mio_pad_attr_41_qe;
@@ -17286,6 +17977,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_42_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[42].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_42_invert_42_qs)
   );
   assign reg2hw.mio_pad_attr[42].invert.qe = mio_pad_attr_42_qe;
@@ -17301,6 +17993,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_42_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[42].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_42_virtual_od_en_42_qs)
   );
   assign reg2hw.mio_pad_attr[42].virtual_od_en.qe = mio_pad_attr_42_qe;
@@ -17316,6 +18009,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_42_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[42].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_42_pull_en_42_qs)
   );
   assign reg2hw.mio_pad_attr[42].pull_en.qe = mio_pad_attr_42_qe;
@@ -17331,6 +18025,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_42_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[42].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_42_pull_select_42_qs)
   );
   assign reg2hw.mio_pad_attr[42].pull_select.qe = mio_pad_attr_42_qe;
@@ -17346,6 +18041,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_42_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[42].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_42_keeper_en_42_qs)
   );
   assign reg2hw.mio_pad_attr[42].keeper_en.qe = mio_pad_attr_42_qe;
@@ -17361,6 +18057,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_42_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[42].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_42_schmitt_en_42_qs)
   );
   assign reg2hw.mio_pad_attr[42].schmitt_en.qe = mio_pad_attr_42_qe;
@@ -17376,6 +18073,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_42_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[42].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_42_od_en_42_qs)
   );
   assign reg2hw.mio_pad_attr[42].od_en.qe = mio_pad_attr_42_qe;
@@ -17391,6 +18089,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_42_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[42].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_42_slew_rate_42_qs)
   );
   assign reg2hw.mio_pad_attr[42].slew_rate.qe = mio_pad_attr_42_qe;
@@ -17406,6 +18105,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_42_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[42].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_42_drive_strength_42_qs)
   );
   assign reg2hw.mio_pad_attr[42].drive_strength.qe = mio_pad_attr_42_qe;
@@ -17430,6 +18130,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_43_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[43].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_43_invert_43_qs)
   );
   assign reg2hw.mio_pad_attr[43].invert.qe = mio_pad_attr_43_qe;
@@ -17445,6 +18146,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_43_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[43].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_43_virtual_od_en_43_qs)
   );
   assign reg2hw.mio_pad_attr[43].virtual_od_en.qe = mio_pad_attr_43_qe;
@@ -17460,6 +18162,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_43_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[43].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_43_pull_en_43_qs)
   );
   assign reg2hw.mio_pad_attr[43].pull_en.qe = mio_pad_attr_43_qe;
@@ -17475,6 +18178,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_43_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[43].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_43_pull_select_43_qs)
   );
   assign reg2hw.mio_pad_attr[43].pull_select.qe = mio_pad_attr_43_qe;
@@ -17490,6 +18194,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_43_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[43].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_43_keeper_en_43_qs)
   );
   assign reg2hw.mio_pad_attr[43].keeper_en.qe = mio_pad_attr_43_qe;
@@ -17505,6 +18210,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_43_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[43].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_43_schmitt_en_43_qs)
   );
   assign reg2hw.mio_pad_attr[43].schmitt_en.qe = mio_pad_attr_43_qe;
@@ -17520,6 +18226,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_43_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[43].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_43_od_en_43_qs)
   );
   assign reg2hw.mio_pad_attr[43].od_en.qe = mio_pad_attr_43_qe;
@@ -17535,6 +18242,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_43_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[43].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_43_slew_rate_43_qs)
   );
   assign reg2hw.mio_pad_attr[43].slew_rate.qe = mio_pad_attr_43_qe;
@@ -17550,6 +18258,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_43_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[43].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_43_drive_strength_43_qs)
   );
   assign reg2hw.mio_pad_attr[43].drive_strength.qe = mio_pad_attr_43_qe;
@@ -17574,6 +18283,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_44_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[44].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_44_invert_44_qs)
   );
   assign reg2hw.mio_pad_attr[44].invert.qe = mio_pad_attr_44_qe;
@@ -17589,6 +18299,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_44_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[44].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_44_virtual_od_en_44_qs)
   );
   assign reg2hw.mio_pad_attr[44].virtual_od_en.qe = mio_pad_attr_44_qe;
@@ -17604,6 +18315,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_44_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[44].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_44_pull_en_44_qs)
   );
   assign reg2hw.mio_pad_attr[44].pull_en.qe = mio_pad_attr_44_qe;
@@ -17619,6 +18331,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_44_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[44].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_44_pull_select_44_qs)
   );
   assign reg2hw.mio_pad_attr[44].pull_select.qe = mio_pad_attr_44_qe;
@@ -17634,6 +18347,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_44_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[44].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_44_keeper_en_44_qs)
   );
   assign reg2hw.mio_pad_attr[44].keeper_en.qe = mio_pad_attr_44_qe;
@@ -17649,6 +18363,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_44_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[44].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_44_schmitt_en_44_qs)
   );
   assign reg2hw.mio_pad_attr[44].schmitt_en.qe = mio_pad_attr_44_qe;
@@ -17664,6 +18379,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_44_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[44].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_44_od_en_44_qs)
   );
   assign reg2hw.mio_pad_attr[44].od_en.qe = mio_pad_attr_44_qe;
@@ -17679,6 +18395,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_44_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[44].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_44_slew_rate_44_qs)
   );
   assign reg2hw.mio_pad_attr[44].slew_rate.qe = mio_pad_attr_44_qe;
@@ -17694,6 +18411,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_44_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[44].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_44_drive_strength_44_qs)
   );
   assign reg2hw.mio_pad_attr[44].drive_strength.qe = mio_pad_attr_44_qe;
@@ -17718,6 +18436,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_45_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[45].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_45_invert_45_qs)
   );
   assign reg2hw.mio_pad_attr[45].invert.qe = mio_pad_attr_45_qe;
@@ -17733,6 +18452,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_45_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[45].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_45_virtual_od_en_45_qs)
   );
   assign reg2hw.mio_pad_attr[45].virtual_od_en.qe = mio_pad_attr_45_qe;
@@ -17748,6 +18468,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_45_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[45].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_45_pull_en_45_qs)
   );
   assign reg2hw.mio_pad_attr[45].pull_en.qe = mio_pad_attr_45_qe;
@@ -17763,6 +18484,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_45_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[45].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_45_pull_select_45_qs)
   );
   assign reg2hw.mio_pad_attr[45].pull_select.qe = mio_pad_attr_45_qe;
@@ -17778,6 +18500,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_45_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[45].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_45_keeper_en_45_qs)
   );
   assign reg2hw.mio_pad_attr[45].keeper_en.qe = mio_pad_attr_45_qe;
@@ -17793,6 +18516,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_45_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[45].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_45_schmitt_en_45_qs)
   );
   assign reg2hw.mio_pad_attr[45].schmitt_en.qe = mio_pad_attr_45_qe;
@@ -17808,6 +18532,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_45_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[45].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_45_od_en_45_qs)
   );
   assign reg2hw.mio_pad_attr[45].od_en.qe = mio_pad_attr_45_qe;
@@ -17823,6 +18548,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_45_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[45].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_45_slew_rate_45_qs)
   );
   assign reg2hw.mio_pad_attr[45].slew_rate.qe = mio_pad_attr_45_qe;
@@ -17838,6 +18564,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_45_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[45].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_45_drive_strength_45_qs)
   );
   assign reg2hw.mio_pad_attr[45].drive_strength.qe = mio_pad_attr_45_qe;
@@ -17862,6 +18589,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_46_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[46].invert.q),
+    .ds     (),
     .qs     (mio_pad_attr_46_invert_46_qs)
   );
   assign reg2hw.mio_pad_attr[46].invert.qe = mio_pad_attr_46_qe;
@@ -17877,6 +18605,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_46_flds_we[1]),
     .q      (reg2hw.mio_pad_attr[46].virtual_od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_46_virtual_od_en_46_qs)
   );
   assign reg2hw.mio_pad_attr[46].virtual_od_en.qe = mio_pad_attr_46_qe;
@@ -17892,6 +18621,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_46_flds_we[2]),
     .q      (reg2hw.mio_pad_attr[46].pull_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_46_pull_en_46_qs)
   );
   assign reg2hw.mio_pad_attr[46].pull_en.qe = mio_pad_attr_46_qe;
@@ -17907,6 +18637,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_46_flds_we[3]),
     .q      (reg2hw.mio_pad_attr[46].pull_select.q),
+    .ds     (),
     .qs     (mio_pad_attr_46_pull_select_46_qs)
   );
   assign reg2hw.mio_pad_attr[46].pull_select.qe = mio_pad_attr_46_qe;
@@ -17922,6 +18653,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_46_flds_we[4]),
     .q      (reg2hw.mio_pad_attr[46].keeper_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_46_keeper_en_46_qs)
   );
   assign reg2hw.mio_pad_attr[46].keeper_en.qe = mio_pad_attr_46_qe;
@@ -17937,6 +18669,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_46_flds_we[5]),
     .q      (reg2hw.mio_pad_attr[46].schmitt_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_46_schmitt_en_46_qs)
   );
   assign reg2hw.mio_pad_attr[46].schmitt_en.qe = mio_pad_attr_46_qe;
@@ -17952,6 +18685,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_46_flds_we[6]),
     .q      (reg2hw.mio_pad_attr[46].od_en.q),
+    .ds     (),
     .qs     (mio_pad_attr_46_od_en_46_qs)
   );
   assign reg2hw.mio_pad_attr[46].od_en.qe = mio_pad_attr_46_qe;
@@ -17967,6 +18701,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_46_flds_we[7]),
     .q      (reg2hw.mio_pad_attr[46].slew_rate.q),
+    .ds     (),
     .qs     (mio_pad_attr_46_slew_rate_46_qs)
   );
   assign reg2hw.mio_pad_attr[46].slew_rate.qe = mio_pad_attr_46_qe;
@@ -17982,6 +18717,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (mio_pad_attr_46_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[46].drive_strength.q),
+    .ds     (),
     .qs     (mio_pad_attr_46_drive_strength_46_qs)
   );
   assign reg2hw.mio_pad_attr[46].drive_strength.qe = mio_pad_attr_46_qe;
@@ -18008,6 +18744,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_0_qs)
@@ -18035,6 +18772,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_1_qs)
@@ -18062,6 +18800,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_2_qs)
@@ -18089,6 +18828,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_3_qs)
@@ -18116,6 +18856,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_4_qs)
@@ -18143,6 +18884,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_5_qs)
@@ -18170,6 +18912,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_6_qs)
@@ -18197,6 +18940,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_7_qs)
@@ -18224,6 +18968,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_8_qs)
@@ -18251,6 +18996,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_9_qs)
@@ -18278,6 +19024,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_10_qs)
@@ -18305,6 +19052,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_11_qs)
@@ -18332,6 +19080,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_12_qs)
@@ -18359,6 +19108,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_13_qs)
@@ -18386,6 +19136,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_14_qs)
@@ -18413,6 +19164,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_attr_regwen_15_qs)
@@ -18438,6 +19190,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_0_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[0].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_0_invert_0_qs)
   );
   assign reg2hw.dio_pad_attr[0].invert.qe = dio_pad_attr_0_qe;
@@ -18453,6 +19206,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_0_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[0].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_0_virtual_od_en_0_qs)
   );
   assign reg2hw.dio_pad_attr[0].virtual_od_en.qe = dio_pad_attr_0_qe;
@@ -18468,6 +19222,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_0_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[0].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_0_pull_en_0_qs)
   );
   assign reg2hw.dio_pad_attr[0].pull_en.qe = dio_pad_attr_0_qe;
@@ -18483,6 +19238,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_0_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[0].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_0_pull_select_0_qs)
   );
   assign reg2hw.dio_pad_attr[0].pull_select.qe = dio_pad_attr_0_qe;
@@ -18498,6 +19254,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_0_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[0].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_0_keeper_en_0_qs)
   );
   assign reg2hw.dio_pad_attr[0].keeper_en.qe = dio_pad_attr_0_qe;
@@ -18513,6 +19270,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_0_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[0].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_0_schmitt_en_0_qs)
   );
   assign reg2hw.dio_pad_attr[0].schmitt_en.qe = dio_pad_attr_0_qe;
@@ -18528,6 +19286,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_0_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[0].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_0_od_en_0_qs)
   );
   assign reg2hw.dio_pad_attr[0].od_en.qe = dio_pad_attr_0_qe;
@@ -18543,6 +19302,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_0_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[0].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_0_slew_rate_0_qs)
   );
   assign reg2hw.dio_pad_attr[0].slew_rate.qe = dio_pad_attr_0_qe;
@@ -18558,6 +19318,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_0_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[0].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_0_drive_strength_0_qs)
   );
   assign reg2hw.dio_pad_attr[0].drive_strength.qe = dio_pad_attr_0_qe;
@@ -18582,6 +19343,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_1_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[1].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_1_invert_1_qs)
   );
   assign reg2hw.dio_pad_attr[1].invert.qe = dio_pad_attr_1_qe;
@@ -18597,6 +19359,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_1_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[1].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_1_virtual_od_en_1_qs)
   );
   assign reg2hw.dio_pad_attr[1].virtual_od_en.qe = dio_pad_attr_1_qe;
@@ -18612,6 +19375,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_1_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[1].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_1_pull_en_1_qs)
   );
   assign reg2hw.dio_pad_attr[1].pull_en.qe = dio_pad_attr_1_qe;
@@ -18627,6 +19391,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_1_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[1].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_1_pull_select_1_qs)
   );
   assign reg2hw.dio_pad_attr[1].pull_select.qe = dio_pad_attr_1_qe;
@@ -18642,6 +19407,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_1_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[1].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_1_keeper_en_1_qs)
   );
   assign reg2hw.dio_pad_attr[1].keeper_en.qe = dio_pad_attr_1_qe;
@@ -18657,6 +19423,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_1_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[1].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_1_schmitt_en_1_qs)
   );
   assign reg2hw.dio_pad_attr[1].schmitt_en.qe = dio_pad_attr_1_qe;
@@ -18672,6 +19439,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_1_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[1].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_1_od_en_1_qs)
   );
   assign reg2hw.dio_pad_attr[1].od_en.qe = dio_pad_attr_1_qe;
@@ -18687,6 +19455,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_1_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[1].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_1_slew_rate_1_qs)
   );
   assign reg2hw.dio_pad_attr[1].slew_rate.qe = dio_pad_attr_1_qe;
@@ -18702,6 +19471,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_1_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[1].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_1_drive_strength_1_qs)
   );
   assign reg2hw.dio_pad_attr[1].drive_strength.qe = dio_pad_attr_1_qe;
@@ -18726,6 +19496,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_2_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[2].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_2_invert_2_qs)
   );
   assign reg2hw.dio_pad_attr[2].invert.qe = dio_pad_attr_2_qe;
@@ -18741,6 +19512,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_2_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[2].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_2_virtual_od_en_2_qs)
   );
   assign reg2hw.dio_pad_attr[2].virtual_od_en.qe = dio_pad_attr_2_qe;
@@ -18756,6 +19528,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_2_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[2].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_2_pull_en_2_qs)
   );
   assign reg2hw.dio_pad_attr[2].pull_en.qe = dio_pad_attr_2_qe;
@@ -18771,6 +19544,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_2_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[2].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_2_pull_select_2_qs)
   );
   assign reg2hw.dio_pad_attr[2].pull_select.qe = dio_pad_attr_2_qe;
@@ -18786,6 +19560,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_2_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[2].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_2_keeper_en_2_qs)
   );
   assign reg2hw.dio_pad_attr[2].keeper_en.qe = dio_pad_attr_2_qe;
@@ -18801,6 +19576,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_2_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[2].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_2_schmitt_en_2_qs)
   );
   assign reg2hw.dio_pad_attr[2].schmitt_en.qe = dio_pad_attr_2_qe;
@@ -18816,6 +19592,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_2_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[2].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_2_od_en_2_qs)
   );
   assign reg2hw.dio_pad_attr[2].od_en.qe = dio_pad_attr_2_qe;
@@ -18831,6 +19608,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_2_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[2].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_2_slew_rate_2_qs)
   );
   assign reg2hw.dio_pad_attr[2].slew_rate.qe = dio_pad_attr_2_qe;
@@ -18846,6 +19624,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_2_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[2].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_2_drive_strength_2_qs)
   );
   assign reg2hw.dio_pad_attr[2].drive_strength.qe = dio_pad_attr_2_qe;
@@ -18870,6 +19649,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_3_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[3].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_3_invert_3_qs)
   );
   assign reg2hw.dio_pad_attr[3].invert.qe = dio_pad_attr_3_qe;
@@ -18885,6 +19665,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_3_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[3].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_3_virtual_od_en_3_qs)
   );
   assign reg2hw.dio_pad_attr[3].virtual_od_en.qe = dio_pad_attr_3_qe;
@@ -18900,6 +19681,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_3_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[3].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_3_pull_en_3_qs)
   );
   assign reg2hw.dio_pad_attr[3].pull_en.qe = dio_pad_attr_3_qe;
@@ -18915,6 +19697,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_3_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[3].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_3_pull_select_3_qs)
   );
   assign reg2hw.dio_pad_attr[3].pull_select.qe = dio_pad_attr_3_qe;
@@ -18930,6 +19713,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_3_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[3].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_3_keeper_en_3_qs)
   );
   assign reg2hw.dio_pad_attr[3].keeper_en.qe = dio_pad_attr_3_qe;
@@ -18945,6 +19729,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_3_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[3].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_3_schmitt_en_3_qs)
   );
   assign reg2hw.dio_pad_attr[3].schmitt_en.qe = dio_pad_attr_3_qe;
@@ -18960,6 +19745,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_3_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[3].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_3_od_en_3_qs)
   );
   assign reg2hw.dio_pad_attr[3].od_en.qe = dio_pad_attr_3_qe;
@@ -18975,6 +19761,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_3_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[3].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_3_slew_rate_3_qs)
   );
   assign reg2hw.dio_pad_attr[3].slew_rate.qe = dio_pad_attr_3_qe;
@@ -18990,6 +19777,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_3_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[3].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_3_drive_strength_3_qs)
   );
   assign reg2hw.dio_pad_attr[3].drive_strength.qe = dio_pad_attr_3_qe;
@@ -19014,6 +19802,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_4_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[4].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_4_invert_4_qs)
   );
   assign reg2hw.dio_pad_attr[4].invert.qe = dio_pad_attr_4_qe;
@@ -19029,6 +19818,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_4_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[4].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_4_virtual_od_en_4_qs)
   );
   assign reg2hw.dio_pad_attr[4].virtual_od_en.qe = dio_pad_attr_4_qe;
@@ -19044,6 +19834,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_4_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[4].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_4_pull_en_4_qs)
   );
   assign reg2hw.dio_pad_attr[4].pull_en.qe = dio_pad_attr_4_qe;
@@ -19059,6 +19850,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_4_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[4].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_4_pull_select_4_qs)
   );
   assign reg2hw.dio_pad_attr[4].pull_select.qe = dio_pad_attr_4_qe;
@@ -19074,6 +19866,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_4_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[4].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_4_keeper_en_4_qs)
   );
   assign reg2hw.dio_pad_attr[4].keeper_en.qe = dio_pad_attr_4_qe;
@@ -19089,6 +19882,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_4_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[4].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_4_schmitt_en_4_qs)
   );
   assign reg2hw.dio_pad_attr[4].schmitt_en.qe = dio_pad_attr_4_qe;
@@ -19104,6 +19898,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_4_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[4].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_4_od_en_4_qs)
   );
   assign reg2hw.dio_pad_attr[4].od_en.qe = dio_pad_attr_4_qe;
@@ -19119,6 +19914,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_4_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[4].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_4_slew_rate_4_qs)
   );
   assign reg2hw.dio_pad_attr[4].slew_rate.qe = dio_pad_attr_4_qe;
@@ -19134,6 +19930,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_4_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[4].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_4_drive_strength_4_qs)
   );
   assign reg2hw.dio_pad_attr[4].drive_strength.qe = dio_pad_attr_4_qe;
@@ -19158,6 +19955,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_5_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[5].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_5_invert_5_qs)
   );
   assign reg2hw.dio_pad_attr[5].invert.qe = dio_pad_attr_5_qe;
@@ -19173,6 +19971,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_5_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[5].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_5_virtual_od_en_5_qs)
   );
   assign reg2hw.dio_pad_attr[5].virtual_od_en.qe = dio_pad_attr_5_qe;
@@ -19188,6 +19987,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_5_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[5].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_5_pull_en_5_qs)
   );
   assign reg2hw.dio_pad_attr[5].pull_en.qe = dio_pad_attr_5_qe;
@@ -19203,6 +20003,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_5_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[5].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_5_pull_select_5_qs)
   );
   assign reg2hw.dio_pad_attr[5].pull_select.qe = dio_pad_attr_5_qe;
@@ -19218,6 +20019,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_5_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[5].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_5_keeper_en_5_qs)
   );
   assign reg2hw.dio_pad_attr[5].keeper_en.qe = dio_pad_attr_5_qe;
@@ -19233,6 +20035,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_5_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[5].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_5_schmitt_en_5_qs)
   );
   assign reg2hw.dio_pad_attr[5].schmitt_en.qe = dio_pad_attr_5_qe;
@@ -19248,6 +20051,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_5_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[5].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_5_od_en_5_qs)
   );
   assign reg2hw.dio_pad_attr[5].od_en.qe = dio_pad_attr_5_qe;
@@ -19263,6 +20067,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_5_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[5].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_5_slew_rate_5_qs)
   );
   assign reg2hw.dio_pad_attr[5].slew_rate.qe = dio_pad_attr_5_qe;
@@ -19278,6 +20083,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_5_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[5].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_5_drive_strength_5_qs)
   );
   assign reg2hw.dio_pad_attr[5].drive_strength.qe = dio_pad_attr_5_qe;
@@ -19302,6 +20108,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_6_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[6].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_6_invert_6_qs)
   );
   assign reg2hw.dio_pad_attr[6].invert.qe = dio_pad_attr_6_qe;
@@ -19317,6 +20124,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_6_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[6].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_6_virtual_od_en_6_qs)
   );
   assign reg2hw.dio_pad_attr[6].virtual_od_en.qe = dio_pad_attr_6_qe;
@@ -19332,6 +20140,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_6_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[6].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_6_pull_en_6_qs)
   );
   assign reg2hw.dio_pad_attr[6].pull_en.qe = dio_pad_attr_6_qe;
@@ -19347,6 +20156,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_6_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[6].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_6_pull_select_6_qs)
   );
   assign reg2hw.dio_pad_attr[6].pull_select.qe = dio_pad_attr_6_qe;
@@ -19362,6 +20172,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_6_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[6].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_6_keeper_en_6_qs)
   );
   assign reg2hw.dio_pad_attr[6].keeper_en.qe = dio_pad_attr_6_qe;
@@ -19377,6 +20188,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_6_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[6].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_6_schmitt_en_6_qs)
   );
   assign reg2hw.dio_pad_attr[6].schmitt_en.qe = dio_pad_attr_6_qe;
@@ -19392,6 +20204,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_6_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[6].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_6_od_en_6_qs)
   );
   assign reg2hw.dio_pad_attr[6].od_en.qe = dio_pad_attr_6_qe;
@@ -19407,6 +20220,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_6_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[6].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_6_slew_rate_6_qs)
   );
   assign reg2hw.dio_pad_attr[6].slew_rate.qe = dio_pad_attr_6_qe;
@@ -19422,6 +20236,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_6_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[6].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_6_drive_strength_6_qs)
   );
   assign reg2hw.dio_pad_attr[6].drive_strength.qe = dio_pad_attr_6_qe;
@@ -19446,6 +20261,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_7_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[7].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_7_invert_7_qs)
   );
   assign reg2hw.dio_pad_attr[7].invert.qe = dio_pad_attr_7_qe;
@@ -19461,6 +20277,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_7_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[7].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_7_virtual_od_en_7_qs)
   );
   assign reg2hw.dio_pad_attr[7].virtual_od_en.qe = dio_pad_attr_7_qe;
@@ -19476,6 +20293,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_7_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[7].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_7_pull_en_7_qs)
   );
   assign reg2hw.dio_pad_attr[7].pull_en.qe = dio_pad_attr_7_qe;
@@ -19491,6 +20309,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_7_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[7].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_7_pull_select_7_qs)
   );
   assign reg2hw.dio_pad_attr[7].pull_select.qe = dio_pad_attr_7_qe;
@@ -19506,6 +20325,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_7_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[7].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_7_keeper_en_7_qs)
   );
   assign reg2hw.dio_pad_attr[7].keeper_en.qe = dio_pad_attr_7_qe;
@@ -19521,6 +20341,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_7_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[7].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_7_schmitt_en_7_qs)
   );
   assign reg2hw.dio_pad_attr[7].schmitt_en.qe = dio_pad_attr_7_qe;
@@ -19536,6 +20357,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_7_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[7].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_7_od_en_7_qs)
   );
   assign reg2hw.dio_pad_attr[7].od_en.qe = dio_pad_attr_7_qe;
@@ -19551,6 +20373,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_7_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[7].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_7_slew_rate_7_qs)
   );
   assign reg2hw.dio_pad_attr[7].slew_rate.qe = dio_pad_attr_7_qe;
@@ -19566,6 +20389,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_7_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[7].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_7_drive_strength_7_qs)
   );
   assign reg2hw.dio_pad_attr[7].drive_strength.qe = dio_pad_attr_7_qe;
@@ -19590,6 +20414,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_8_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[8].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_8_invert_8_qs)
   );
   assign reg2hw.dio_pad_attr[8].invert.qe = dio_pad_attr_8_qe;
@@ -19605,6 +20430,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_8_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[8].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_8_virtual_od_en_8_qs)
   );
   assign reg2hw.dio_pad_attr[8].virtual_od_en.qe = dio_pad_attr_8_qe;
@@ -19620,6 +20446,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_8_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[8].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_8_pull_en_8_qs)
   );
   assign reg2hw.dio_pad_attr[8].pull_en.qe = dio_pad_attr_8_qe;
@@ -19635,6 +20462,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_8_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[8].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_8_pull_select_8_qs)
   );
   assign reg2hw.dio_pad_attr[8].pull_select.qe = dio_pad_attr_8_qe;
@@ -19650,6 +20478,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_8_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[8].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_8_keeper_en_8_qs)
   );
   assign reg2hw.dio_pad_attr[8].keeper_en.qe = dio_pad_attr_8_qe;
@@ -19665,6 +20494,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_8_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[8].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_8_schmitt_en_8_qs)
   );
   assign reg2hw.dio_pad_attr[8].schmitt_en.qe = dio_pad_attr_8_qe;
@@ -19680,6 +20510,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_8_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[8].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_8_od_en_8_qs)
   );
   assign reg2hw.dio_pad_attr[8].od_en.qe = dio_pad_attr_8_qe;
@@ -19695,6 +20526,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_8_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[8].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_8_slew_rate_8_qs)
   );
   assign reg2hw.dio_pad_attr[8].slew_rate.qe = dio_pad_attr_8_qe;
@@ -19710,6 +20542,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_8_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[8].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_8_drive_strength_8_qs)
   );
   assign reg2hw.dio_pad_attr[8].drive_strength.qe = dio_pad_attr_8_qe;
@@ -19734,6 +20567,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_9_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[9].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_9_invert_9_qs)
   );
   assign reg2hw.dio_pad_attr[9].invert.qe = dio_pad_attr_9_qe;
@@ -19749,6 +20583,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_9_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[9].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_9_virtual_od_en_9_qs)
   );
   assign reg2hw.dio_pad_attr[9].virtual_od_en.qe = dio_pad_attr_9_qe;
@@ -19764,6 +20599,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_9_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[9].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_9_pull_en_9_qs)
   );
   assign reg2hw.dio_pad_attr[9].pull_en.qe = dio_pad_attr_9_qe;
@@ -19779,6 +20615,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_9_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[9].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_9_pull_select_9_qs)
   );
   assign reg2hw.dio_pad_attr[9].pull_select.qe = dio_pad_attr_9_qe;
@@ -19794,6 +20631,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_9_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[9].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_9_keeper_en_9_qs)
   );
   assign reg2hw.dio_pad_attr[9].keeper_en.qe = dio_pad_attr_9_qe;
@@ -19809,6 +20647,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_9_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[9].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_9_schmitt_en_9_qs)
   );
   assign reg2hw.dio_pad_attr[9].schmitt_en.qe = dio_pad_attr_9_qe;
@@ -19824,6 +20663,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_9_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[9].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_9_od_en_9_qs)
   );
   assign reg2hw.dio_pad_attr[9].od_en.qe = dio_pad_attr_9_qe;
@@ -19839,6 +20679,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_9_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[9].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_9_slew_rate_9_qs)
   );
   assign reg2hw.dio_pad_attr[9].slew_rate.qe = dio_pad_attr_9_qe;
@@ -19854,6 +20695,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_9_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[9].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_9_drive_strength_9_qs)
   );
   assign reg2hw.dio_pad_attr[9].drive_strength.qe = dio_pad_attr_9_qe;
@@ -19878,6 +20720,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_10_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[10].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_10_invert_10_qs)
   );
   assign reg2hw.dio_pad_attr[10].invert.qe = dio_pad_attr_10_qe;
@@ -19893,6 +20736,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_10_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[10].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_10_virtual_od_en_10_qs)
   );
   assign reg2hw.dio_pad_attr[10].virtual_od_en.qe = dio_pad_attr_10_qe;
@@ -19908,6 +20752,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_10_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[10].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_10_pull_en_10_qs)
   );
   assign reg2hw.dio_pad_attr[10].pull_en.qe = dio_pad_attr_10_qe;
@@ -19923,6 +20768,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_10_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[10].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_10_pull_select_10_qs)
   );
   assign reg2hw.dio_pad_attr[10].pull_select.qe = dio_pad_attr_10_qe;
@@ -19938,6 +20784,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_10_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[10].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_10_keeper_en_10_qs)
   );
   assign reg2hw.dio_pad_attr[10].keeper_en.qe = dio_pad_attr_10_qe;
@@ -19953,6 +20800,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_10_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[10].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_10_schmitt_en_10_qs)
   );
   assign reg2hw.dio_pad_attr[10].schmitt_en.qe = dio_pad_attr_10_qe;
@@ -19968,6 +20816,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_10_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[10].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_10_od_en_10_qs)
   );
   assign reg2hw.dio_pad_attr[10].od_en.qe = dio_pad_attr_10_qe;
@@ -19983,6 +20832,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_10_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[10].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_10_slew_rate_10_qs)
   );
   assign reg2hw.dio_pad_attr[10].slew_rate.qe = dio_pad_attr_10_qe;
@@ -19998,6 +20848,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_10_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[10].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_10_drive_strength_10_qs)
   );
   assign reg2hw.dio_pad_attr[10].drive_strength.qe = dio_pad_attr_10_qe;
@@ -20022,6 +20873,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_11_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[11].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_11_invert_11_qs)
   );
   assign reg2hw.dio_pad_attr[11].invert.qe = dio_pad_attr_11_qe;
@@ -20037,6 +20889,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_11_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[11].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_11_virtual_od_en_11_qs)
   );
   assign reg2hw.dio_pad_attr[11].virtual_od_en.qe = dio_pad_attr_11_qe;
@@ -20052,6 +20905,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_11_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[11].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_11_pull_en_11_qs)
   );
   assign reg2hw.dio_pad_attr[11].pull_en.qe = dio_pad_attr_11_qe;
@@ -20067,6 +20921,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_11_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[11].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_11_pull_select_11_qs)
   );
   assign reg2hw.dio_pad_attr[11].pull_select.qe = dio_pad_attr_11_qe;
@@ -20082,6 +20937,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_11_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[11].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_11_keeper_en_11_qs)
   );
   assign reg2hw.dio_pad_attr[11].keeper_en.qe = dio_pad_attr_11_qe;
@@ -20097,6 +20953,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_11_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[11].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_11_schmitt_en_11_qs)
   );
   assign reg2hw.dio_pad_attr[11].schmitt_en.qe = dio_pad_attr_11_qe;
@@ -20112,6 +20969,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_11_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[11].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_11_od_en_11_qs)
   );
   assign reg2hw.dio_pad_attr[11].od_en.qe = dio_pad_attr_11_qe;
@@ -20127,6 +20985,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_11_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[11].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_11_slew_rate_11_qs)
   );
   assign reg2hw.dio_pad_attr[11].slew_rate.qe = dio_pad_attr_11_qe;
@@ -20142,6 +21001,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_11_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[11].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_11_drive_strength_11_qs)
   );
   assign reg2hw.dio_pad_attr[11].drive_strength.qe = dio_pad_attr_11_qe;
@@ -20166,6 +21026,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_12_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[12].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_12_invert_12_qs)
   );
   assign reg2hw.dio_pad_attr[12].invert.qe = dio_pad_attr_12_qe;
@@ -20181,6 +21042,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_12_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[12].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_12_virtual_od_en_12_qs)
   );
   assign reg2hw.dio_pad_attr[12].virtual_od_en.qe = dio_pad_attr_12_qe;
@@ -20196,6 +21058,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_12_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[12].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_12_pull_en_12_qs)
   );
   assign reg2hw.dio_pad_attr[12].pull_en.qe = dio_pad_attr_12_qe;
@@ -20211,6 +21074,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_12_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[12].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_12_pull_select_12_qs)
   );
   assign reg2hw.dio_pad_attr[12].pull_select.qe = dio_pad_attr_12_qe;
@@ -20226,6 +21090,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_12_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[12].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_12_keeper_en_12_qs)
   );
   assign reg2hw.dio_pad_attr[12].keeper_en.qe = dio_pad_attr_12_qe;
@@ -20241,6 +21106,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_12_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[12].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_12_schmitt_en_12_qs)
   );
   assign reg2hw.dio_pad_attr[12].schmitt_en.qe = dio_pad_attr_12_qe;
@@ -20256,6 +21122,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_12_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[12].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_12_od_en_12_qs)
   );
   assign reg2hw.dio_pad_attr[12].od_en.qe = dio_pad_attr_12_qe;
@@ -20271,6 +21138,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_12_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[12].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_12_slew_rate_12_qs)
   );
   assign reg2hw.dio_pad_attr[12].slew_rate.qe = dio_pad_attr_12_qe;
@@ -20286,6 +21154,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_12_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[12].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_12_drive_strength_12_qs)
   );
   assign reg2hw.dio_pad_attr[12].drive_strength.qe = dio_pad_attr_12_qe;
@@ -20310,6 +21179,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_13_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[13].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_13_invert_13_qs)
   );
   assign reg2hw.dio_pad_attr[13].invert.qe = dio_pad_attr_13_qe;
@@ -20325,6 +21195,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_13_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[13].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_13_virtual_od_en_13_qs)
   );
   assign reg2hw.dio_pad_attr[13].virtual_od_en.qe = dio_pad_attr_13_qe;
@@ -20340,6 +21211,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_13_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[13].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_13_pull_en_13_qs)
   );
   assign reg2hw.dio_pad_attr[13].pull_en.qe = dio_pad_attr_13_qe;
@@ -20355,6 +21227,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_13_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[13].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_13_pull_select_13_qs)
   );
   assign reg2hw.dio_pad_attr[13].pull_select.qe = dio_pad_attr_13_qe;
@@ -20370,6 +21243,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_13_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[13].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_13_keeper_en_13_qs)
   );
   assign reg2hw.dio_pad_attr[13].keeper_en.qe = dio_pad_attr_13_qe;
@@ -20385,6 +21259,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_13_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[13].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_13_schmitt_en_13_qs)
   );
   assign reg2hw.dio_pad_attr[13].schmitt_en.qe = dio_pad_attr_13_qe;
@@ -20400,6 +21275,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_13_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[13].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_13_od_en_13_qs)
   );
   assign reg2hw.dio_pad_attr[13].od_en.qe = dio_pad_attr_13_qe;
@@ -20415,6 +21291,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_13_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[13].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_13_slew_rate_13_qs)
   );
   assign reg2hw.dio_pad_attr[13].slew_rate.qe = dio_pad_attr_13_qe;
@@ -20430,6 +21307,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_13_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[13].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_13_drive_strength_13_qs)
   );
   assign reg2hw.dio_pad_attr[13].drive_strength.qe = dio_pad_attr_13_qe;
@@ -20454,6 +21332,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_14_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[14].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_14_invert_14_qs)
   );
   assign reg2hw.dio_pad_attr[14].invert.qe = dio_pad_attr_14_qe;
@@ -20469,6 +21348,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_14_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[14].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_14_virtual_od_en_14_qs)
   );
   assign reg2hw.dio_pad_attr[14].virtual_od_en.qe = dio_pad_attr_14_qe;
@@ -20484,6 +21364,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_14_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[14].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_14_pull_en_14_qs)
   );
   assign reg2hw.dio_pad_attr[14].pull_en.qe = dio_pad_attr_14_qe;
@@ -20499,6 +21380,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_14_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[14].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_14_pull_select_14_qs)
   );
   assign reg2hw.dio_pad_attr[14].pull_select.qe = dio_pad_attr_14_qe;
@@ -20514,6 +21396,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_14_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[14].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_14_keeper_en_14_qs)
   );
   assign reg2hw.dio_pad_attr[14].keeper_en.qe = dio_pad_attr_14_qe;
@@ -20529,6 +21412,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_14_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[14].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_14_schmitt_en_14_qs)
   );
   assign reg2hw.dio_pad_attr[14].schmitt_en.qe = dio_pad_attr_14_qe;
@@ -20544,6 +21428,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_14_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[14].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_14_od_en_14_qs)
   );
   assign reg2hw.dio_pad_attr[14].od_en.qe = dio_pad_attr_14_qe;
@@ -20559,6 +21444,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_14_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[14].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_14_slew_rate_14_qs)
   );
   assign reg2hw.dio_pad_attr[14].slew_rate.qe = dio_pad_attr_14_qe;
@@ -20574,6 +21460,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_14_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[14].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_14_drive_strength_14_qs)
   );
   assign reg2hw.dio_pad_attr[14].drive_strength.qe = dio_pad_attr_14_qe;
@@ -20598,6 +21485,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_15_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[15].invert.q),
+    .ds     (),
     .qs     (dio_pad_attr_15_invert_15_qs)
   );
   assign reg2hw.dio_pad_attr[15].invert.qe = dio_pad_attr_15_qe;
@@ -20613,6 +21501,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_15_flds_we[1]),
     .q      (reg2hw.dio_pad_attr[15].virtual_od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_15_virtual_od_en_15_qs)
   );
   assign reg2hw.dio_pad_attr[15].virtual_od_en.qe = dio_pad_attr_15_qe;
@@ -20628,6 +21517,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_15_flds_we[2]),
     .q      (reg2hw.dio_pad_attr[15].pull_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_15_pull_en_15_qs)
   );
   assign reg2hw.dio_pad_attr[15].pull_en.qe = dio_pad_attr_15_qe;
@@ -20643,6 +21533,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_15_flds_we[3]),
     .q      (reg2hw.dio_pad_attr[15].pull_select.q),
+    .ds     (),
     .qs     (dio_pad_attr_15_pull_select_15_qs)
   );
   assign reg2hw.dio_pad_attr[15].pull_select.qe = dio_pad_attr_15_qe;
@@ -20658,6 +21549,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_15_flds_we[4]),
     .q      (reg2hw.dio_pad_attr[15].keeper_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_15_keeper_en_15_qs)
   );
   assign reg2hw.dio_pad_attr[15].keeper_en.qe = dio_pad_attr_15_qe;
@@ -20673,6 +21565,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_15_flds_we[5]),
     .q      (reg2hw.dio_pad_attr[15].schmitt_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_15_schmitt_en_15_qs)
   );
   assign reg2hw.dio_pad_attr[15].schmitt_en.qe = dio_pad_attr_15_qe;
@@ -20688,6 +21581,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_15_flds_we[6]),
     .q      (reg2hw.dio_pad_attr[15].od_en.q),
+    .ds     (),
     .qs     (dio_pad_attr_15_od_en_15_qs)
   );
   assign reg2hw.dio_pad_attr[15].od_en.qe = dio_pad_attr_15_qe;
@@ -20703,6 +21597,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_15_flds_we[7]),
     .q      (reg2hw.dio_pad_attr[15].slew_rate.q),
+    .ds     (),
     .qs     (dio_pad_attr_15_slew_rate_15_qs)
   );
   assign reg2hw.dio_pad_attr[15].slew_rate.qe = dio_pad_attr_15_qe;
@@ -20718,6 +21613,7 @@ module pinmux_reg_top (
     .qre    (),
     .qe     (dio_pad_attr_15_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[15].drive_strength.q),
+    .ds     (),
     .qs     (dio_pad_attr_15_drive_strength_15_qs)
   );
   assign reg2hw.dio_pad_attr[15].drive_strength.qe = dio_pad_attr_15_qe;
@@ -20745,6 +21641,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_0_qs)
@@ -20770,6 +21667,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_1_qs)
@@ -20795,6 +21693,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_2_qs)
@@ -20820,6 +21719,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_3_qs)
@@ -20845,6 +21745,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_4_qs)
@@ -20870,6 +21771,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_5_qs)
@@ -20895,6 +21797,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_6_qs)
@@ -20920,6 +21823,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_7_qs)
@@ -20945,6 +21849,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_8_qs)
@@ -20970,6 +21875,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_9_qs)
@@ -20995,6 +21901,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_10_qs)
@@ -21020,6 +21927,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_11_qs)
@@ -21045,6 +21953,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_12_qs)
@@ -21070,6 +21979,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_13_qs)
@@ -21095,6 +22005,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_14_qs)
@@ -21120,6 +22031,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_15_qs)
@@ -21145,6 +22057,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[16].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_16_qs)
@@ -21170,6 +22083,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[17].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_17_qs)
@@ -21195,6 +22109,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[18].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_18_qs)
@@ -21220,6 +22135,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[19].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_19_qs)
@@ -21245,6 +22161,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[20].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_20_qs)
@@ -21270,6 +22187,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[21].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_21_qs)
@@ -21295,6 +22213,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[22].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_22_qs)
@@ -21320,6 +22239,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[23].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_23_qs)
@@ -21345,6 +22265,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[24].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_24_qs)
@@ -21370,6 +22291,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[25].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_25_qs)
@@ -21395,6 +22317,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[26].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_26_qs)
@@ -21420,6 +22343,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[27].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_27_qs)
@@ -21445,6 +22369,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[28].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_28_qs)
@@ -21470,6 +22395,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[29].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_29_qs)
@@ -21495,6 +22421,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[30].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_30_qs)
@@ -21520,6 +22447,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[31].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_0_en_31_qs)
@@ -21548,6 +22476,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[32].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_32_qs)
@@ -21573,6 +22502,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[33].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_33_qs)
@@ -21598,6 +22528,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[34].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_34_qs)
@@ -21623,6 +22554,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[35].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_35_qs)
@@ -21648,6 +22580,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[36].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_36_qs)
@@ -21673,6 +22606,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[37].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_37_qs)
@@ -21698,6 +22632,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[38].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_38_qs)
@@ -21723,6 +22658,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[39].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_39_qs)
@@ -21748,6 +22684,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[40].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_40_qs)
@@ -21773,6 +22710,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[41].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_41_qs)
@@ -21798,6 +22736,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[42].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_42_qs)
@@ -21823,6 +22762,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[43].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_43_qs)
@@ -21848,6 +22788,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[44].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_44_qs)
@@ -21873,6 +22814,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[45].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_45_qs)
@@ -21898,6 +22840,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_status[46].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_status_1_en_46_qs)
@@ -21925,6 +22868,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_0_qs)
@@ -21952,6 +22896,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_1_qs)
@@ -21979,6 +22924,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_2_qs)
@@ -22006,6 +22952,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_3_qs)
@@ -22033,6 +22980,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_4_qs)
@@ -22060,6 +23008,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_5_qs)
@@ -22087,6 +23036,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_6_qs)
@@ -22114,6 +23064,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_7_qs)
@@ -22141,6 +23092,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_8_qs)
@@ -22168,6 +23120,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_9_qs)
@@ -22195,6 +23148,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_10_qs)
@@ -22222,6 +23176,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_11_qs)
@@ -22249,6 +23204,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_12_qs)
@@ -22276,6 +23232,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_13_qs)
@@ -22303,6 +23260,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_14_qs)
@@ -22330,6 +23288,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_15_qs)
@@ -22357,6 +23316,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_16_qs)
@@ -22384,6 +23344,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_17_qs)
@@ -22411,6 +23372,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_18_qs)
@@ -22438,6 +23400,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_19_qs)
@@ -22465,6 +23428,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_20_qs)
@@ -22492,6 +23456,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_21_qs)
@@ -22519,6 +23484,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_22_qs)
@@ -22546,6 +23512,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_23_qs)
@@ -22573,6 +23540,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_24_qs)
@@ -22600,6 +23568,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_25_qs)
@@ -22627,6 +23596,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_26_qs)
@@ -22654,6 +23624,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_27_qs)
@@ -22681,6 +23652,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_28_qs)
@@ -22708,6 +23680,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_29_qs)
@@ -22735,6 +23708,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_30_qs)
@@ -22762,6 +23736,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_31_qs)
@@ -22789,6 +23764,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_32_qs)
@@ -22816,6 +23792,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_33_qs)
@@ -22843,6 +23820,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_34_qs)
@@ -22870,6 +23848,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_35_qs)
@@ -22897,6 +23876,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_36_qs)
@@ -22924,6 +23904,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_37_qs)
@@ -22951,6 +23932,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_38_qs)
@@ -22978,6 +23960,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_39_qs)
@@ -23005,6 +23988,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_40_qs)
@@ -23032,6 +24016,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_41_qs)
@@ -23059,6 +24044,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_42_qs)
@@ -23086,6 +24072,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_43_qs)
@@ -23113,6 +24100,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_44_qs)
@@ -23140,6 +24128,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_45_qs)
@@ -23167,6 +24156,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_regwen_46_qs)
@@ -23197,6 +24187,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_0_qs)
@@ -23227,6 +24218,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_1_qs)
@@ -23257,6 +24249,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_2_qs)
@@ -23287,6 +24280,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_3_qs)
@@ -23317,6 +24311,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_4_qs)
@@ -23347,6 +24342,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_5_qs)
@@ -23377,6 +24373,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_6_qs)
@@ -23407,6 +24404,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_7_qs)
@@ -23437,6 +24435,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_8_qs)
@@ -23467,6 +24466,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_9_qs)
@@ -23497,6 +24497,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_10_qs)
@@ -23527,6 +24528,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_11_qs)
@@ -23557,6 +24559,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_12_qs)
@@ -23587,6 +24590,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_13_qs)
@@ -23617,6 +24621,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_14_qs)
@@ -23647,6 +24652,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_15_qs)
@@ -23677,6 +24683,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[16].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_16_qs)
@@ -23707,6 +24714,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[17].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_17_qs)
@@ -23737,6 +24745,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[18].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_18_qs)
@@ -23767,6 +24776,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[19].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_19_qs)
@@ -23797,6 +24807,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[20].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_20_qs)
@@ -23827,6 +24838,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[21].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_21_qs)
@@ -23857,6 +24869,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[22].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_22_qs)
@@ -23887,6 +24900,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[23].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_23_qs)
@@ -23917,6 +24931,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[24].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_24_qs)
@@ -23947,6 +24962,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[25].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_25_qs)
@@ -23977,6 +24993,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[26].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_26_qs)
@@ -24007,6 +25024,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[27].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_27_qs)
@@ -24037,6 +25055,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[28].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_28_qs)
@@ -24067,6 +25086,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[29].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_29_qs)
@@ -24097,6 +25117,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[30].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_30_qs)
@@ -24127,6 +25148,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[31].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_31_qs)
@@ -24157,6 +25179,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[32].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_32_qs)
@@ -24187,6 +25210,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[33].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_33_qs)
@@ -24217,6 +25241,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[34].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_34_qs)
@@ -24247,6 +25272,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[35].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_35_qs)
@@ -24277,6 +25303,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[36].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_36_qs)
@@ -24307,6 +25334,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[37].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_37_qs)
@@ -24337,6 +25365,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[38].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_38_qs)
@@ -24367,6 +25396,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[39].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_39_qs)
@@ -24397,6 +25427,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[40].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_40_qs)
@@ -24427,6 +25458,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[41].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_41_qs)
@@ -24457,6 +25489,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[42].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_42_qs)
@@ -24487,6 +25520,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[43].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_43_qs)
@@ -24517,6 +25551,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[44].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_44_qs)
@@ -24547,6 +25582,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[45].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_45_qs)
@@ -24577,6 +25613,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_en[46].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_en_46_qs)
@@ -24607,6 +25644,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_0_qs)
@@ -24637,6 +25675,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_1_qs)
@@ -24667,6 +25706,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_2_qs)
@@ -24697,6 +25737,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_3_qs)
@@ -24727,6 +25768,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_4_qs)
@@ -24757,6 +25799,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_5_qs)
@@ -24787,6 +25830,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_6_qs)
@@ -24817,6 +25861,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_7_qs)
@@ -24847,6 +25892,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_8_qs)
@@ -24877,6 +25923,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_9_qs)
@@ -24907,6 +25954,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_10_qs)
@@ -24937,6 +25985,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_11_qs)
@@ -24967,6 +26016,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_12_qs)
@@ -24997,6 +26047,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_13_qs)
@@ -25027,6 +26078,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_14_qs)
@@ -25057,6 +26109,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_15_qs)
@@ -25087,6 +26140,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[16].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_16_qs)
@@ -25117,6 +26171,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[17].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_17_qs)
@@ -25147,6 +26202,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[18].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_18_qs)
@@ -25177,6 +26233,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[19].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_19_qs)
@@ -25207,6 +26264,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[20].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_20_qs)
@@ -25237,6 +26295,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[21].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_21_qs)
@@ -25267,6 +26326,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[22].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_22_qs)
@@ -25297,6 +26357,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[23].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_23_qs)
@@ -25327,6 +26388,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[24].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_24_qs)
@@ -25357,6 +26419,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[25].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_25_qs)
@@ -25387,6 +26450,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[26].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_26_qs)
@@ -25417,6 +26481,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[27].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_27_qs)
@@ -25447,6 +26512,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[28].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_28_qs)
@@ -25477,6 +26543,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[29].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_29_qs)
@@ -25507,6 +26574,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[30].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_30_qs)
@@ -25537,6 +26605,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[31].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_31_qs)
@@ -25567,6 +26636,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[32].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_32_qs)
@@ -25597,6 +26667,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[33].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_33_qs)
@@ -25627,6 +26698,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[34].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_34_qs)
@@ -25657,6 +26729,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[35].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_35_qs)
@@ -25687,6 +26760,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[36].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_36_qs)
@@ -25717,6 +26791,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[37].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_37_qs)
@@ -25747,6 +26822,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[38].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_38_qs)
@@ -25777,6 +26853,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[39].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_39_qs)
@@ -25807,6 +26884,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[40].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_40_qs)
@@ -25837,6 +26915,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[41].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_41_qs)
@@ -25867,6 +26946,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[42].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_42_qs)
@@ -25897,6 +26977,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[43].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_43_qs)
@@ -25927,6 +27008,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[44].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_44_qs)
@@ -25957,6 +27039,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[45].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_45_qs)
@@ -25987,6 +27070,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mio_pad_sleep_mode[46].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mio_pad_sleep_mode_46_qs)
@@ -26015,6 +27099,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_0_qs)
@@ -26040,6 +27125,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_1_qs)
@@ -26065,6 +27151,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_2_qs)
@@ -26090,6 +27177,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_3_qs)
@@ -26115,6 +27203,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_4_qs)
@@ -26140,6 +27229,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_5_qs)
@@ -26165,6 +27255,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_6_qs)
@@ -26190,6 +27281,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_7_qs)
@@ -26215,6 +27307,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_8_qs)
@@ -26240,6 +27333,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_9_qs)
@@ -26265,6 +27359,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_10_qs)
@@ -26290,6 +27385,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_11_qs)
@@ -26315,6 +27411,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_12_qs)
@@ -26340,6 +27437,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_13_qs)
@@ -26365,6 +27463,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_14_qs)
@@ -26390,6 +27489,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_status[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_status_en_15_qs)
@@ -26417,6 +27517,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_0_qs)
@@ -26444,6 +27545,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_1_qs)
@@ -26471,6 +27573,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_2_qs)
@@ -26498,6 +27601,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_3_qs)
@@ -26525,6 +27629,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_4_qs)
@@ -26552,6 +27657,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_5_qs)
@@ -26579,6 +27685,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_6_qs)
@@ -26606,6 +27713,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_7_qs)
@@ -26633,6 +27741,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_8_qs)
@@ -26660,6 +27769,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_9_qs)
@@ -26687,6 +27797,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_10_qs)
@@ -26714,6 +27825,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_11_qs)
@@ -26741,6 +27853,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_12_qs)
@@ -26768,6 +27881,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_13_qs)
@@ -26795,6 +27909,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_14_qs)
@@ -26822,6 +27937,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_15_qs)
@@ -26852,6 +27968,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_0_qs)
@@ -26882,6 +27999,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_1_qs)
@@ -26912,6 +28030,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_2_qs)
@@ -26942,6 +28061,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_3_qs)
@@ -26972,6 +28092,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_4_qs)
@@ -27002,6 +28123,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_5_qs)
@@ -27032,6 +28154,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_6_qs)
@@ -27062,6 +28185,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_7_qs)
@@ -27092,6 +28216,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_8_qs)
@@ -27122,6 +28247,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_9_qs)
@@ -27152,6 +28278,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_10_qs)
@@ -27182,6 +28309,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_11_qs)
@@ -27212,6 +28340,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_12_qs)
@@ -27242,6 +28371,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_13_qs)
@@ -27272,6 +28402,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_14_qs)
@@ -27302,6 +28433,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_en[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_en_15_qs)
@@ -27332,6 +28464,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_0_qs)
@@ -27362,6 +28495,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_1_qs)
@@ -27392,6 +28526,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_2_qs)
@@ -27422,6 +28557,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_3_qs)
@@ -27452,6 +28588,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_4_qs)
@@ -27482,6 +28619,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_5_qs)
@@ -27512,6 +28650,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_6_qs)
@@ -27542,6 +28681,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_7_qs)
@@ -27572,6 +28712,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_8_qs)
@@ -27602,6 +28743,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_9_qs)
@@ -27632,6 +28774,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_10_qs)
@@ -27662,6 +28805,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_11_qs)
@@ -27692,6 +28836,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_12_qs)
@@ -27722,6 +28867,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_13_qs)
@@ -27752,6 +28898,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_14_qs)
@@ -27782,6 +28929,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dio_pad_sleep_mode[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_15_qs)
@@ -27809,6 +28957,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_regwen_0_qs)
@@ -27836,6 +28985,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_regwen_1_qs)
@@ -27863,6 +29013,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_regwen_2_qs)
@@ -27890,6 +29041,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_regwen_3_qs)
@@ -27917,6 +29069,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_regwen_4_qs)
@@ -27944,6 +29097,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_regwen_5_qs)
@@ -27971,6 +29125,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_regwen_6_qs)
@@ -27998,6 +29153,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_regwen_7_qs)
@@ -28029,6 +29185,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_en[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_en_0_qs_int)
@@ -28060,6 +29217,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_en[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_en_1_qs_int)
@@ -28091,6 +29249,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_en[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_en_2_qs_int)
@@ -28122,6 +29281,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_en[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_en_3_qs_int)
@@ -28153,6 +29313,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_en[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_en_4_qs_int)
@@ -28184,6 +29345,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_en[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_en_5_qs_int)
@@ -28215,6 +29377,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_en[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_en_6_qs_int)
@@ -28246,6 +29409,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_en[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_en_7_qs_int)
@@ -28277,6 +29441,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[0].mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_0_mode_0_qs_int)
@@ -28302,6 +29467,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[0].filter.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_0_filter_0_qs_int)
@@ -28327,6 +29493,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[0].miodio.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_0_miodio_0_qs_int)
@@ -28358,6 +29525,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[1].mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_1_mode_1_qs_int)
@@ -28383,6 +29551,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[1].filter.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_1_filter_1_qs_int)
@@ -28408,6 +29577,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[1].miodio.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_1_miodio_1_qs_int)
@@ -28439,6 +29609,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[2].mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_2_mode_2_qs_int)
@@ -28464,6 +29635,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[2].filter.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_2_filter_2_qs_int)
@@ -28489,6 +29661,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[2].miodio.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_2_miodio_2_qs_int)
@@ -28520,6 +29693,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[3].mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_3_mode_3_qs_int)
@@ -28545,6 +29719,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[3].filter.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_3_filter_3_qs_int)
@@ -28570,6 +29745,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[3].miodio.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_3_miodio_3_qs_int)
@@ -28601,6 +29777,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[4].mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_4_mode_4_qs_int)
@@ -28626,6 +29803,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[4].filter.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_4_filter_4_qs_int)
@@ -28651,6 +29829,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[4].miodio.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_4_miodio_4_qs_int)
@@ -28682,6 +29861,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[5].mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_5_mode_5_qs_int)
@@ -28707,6 +29887,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[5].filter.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_5_filter_5_qs_int)
@@ -28732,6 +29913,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[5].miodio.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_5_miodio_5_qs_int)
@@ -28763,6 +29945,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[6].mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_6_mode_6_qs_int)
@@ -28788,6 +29971,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[6].filter.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_6_filter_6_qs_int)
@@ -28813,6 +29997,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[6].miodio.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_6_miodio_6_qs_int)
@@ -28844,6 +30029,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[7].mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_7_mode_7_qs_int)
@@ -28869,6 +30055,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[7].filter.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_7_filter_7_qs_int)
@@ -28894,6 +30081,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector[7].miodio.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_7_miodio_7_qs_int)
@@ -28925,6 +30113,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_cnt_th[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_cnt_th_0_qs_int)
@@ -28956,6 +30145,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_cnt_th[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_cnt_th_1_qs_int)
@@ -28987,6 +30177,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_cnt_th[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_cnt_th_2_qs_int)
@@ -29018,6 +30209,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_cnt_th[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_cnt_th_3_qs_int)
@@ -29049,6 +30241,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_cnt_th[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_cnt_th_4_qs_int)
@@ -29080,6 +30273,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_cnt_th[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_cnt_th_5_qs_int)
@@ -29111,6 +30305,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_cnt_th[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_cnt_th_6_qs_int)
@@ -29142,6 +30337,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_cnt_th[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_detector_cnt_th_7_qs_int)
@@ -29172,6 +30368,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_padsel[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_0_qs)
@@ -29202,6 +30399,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_padsel[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_1_qs)
@@ -29232,6 +30430,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_padsel[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_2_qs)
@@ -29262,6 +30461,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_padsel[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_3_qs)
@@ -29292,6 +30492,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_padsel[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_4_qs)
@@ -29322,6 +30523,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_padsel[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_5_qs)
@@ -29352,6 +30554,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_padsel[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_6_qs)
@@ -29382,6 +30585,7 @@ module pinmux_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wkup_detector_padsel[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (wkup_detector_padsel_7_qs)
@@ -29390,6 +30594,8 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg wkup_cause
   // R[wkup_cause]: V(False)
+  logic [7:0] wkup_cause_flds_we;
+  assign aon_wkup_cause_qe = |wkup_cause_flds_we;
   //   F[cause_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -29408,8 +30614,9 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[0].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_cause_flds_we[0]),
     .q      (reg2hw.wkup_cause[0].q),
+    .ds     (aon_wkup_cause_cause_0_ds_int),
 
     // to register interface (read)
     .qs     (aon_wkup_cause_cause_0_qs_int)
@@ -29433,8 +30640,9 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[1].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_cause_flds_we[1]),
     .q      (reg2hw.wkup_cause[1].q),
+    .ds     (aon_wkup_cause_cause_1_ds_int),
 
     // to register interface (read)
     .qs     (aon_wkup_cause_cause_1_qs_int)
@@ -29458,8 +30666,9 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[2].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_cause_flds_we[2]),
     .q      (reg2hw.wkup_cause[2].q),
+    .ds     (aon_wkup_cause_cause_2_ds_int),
 
     // to register interface (read)
     .qs     (aon_wkup_cause_cause_2_qs_int)
@@ -29483,8 +30692,9 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[3].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_cause_flds_we[3]),
     .q      (reg2hw.wkup_cause[3].q),
+    .ds     (aon_wkup_cause_cause_3_ds_int),
 
     // to register interface (read)
     .qs     (aon_wkup_cause_cause_3_qs_int)
@@ -29508,8 +30718,9 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[4].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_cause_flds_we[4]),
     .q      (reg2hw.wkup_cause[4].q),
+    .ds     (aon_wkup_cause_cause_4_ds_int),
 
     // to register interface (read)
     .qs     (aon_wkup_cause_cause_4_qs_int)
@@ -29533,8 +30744,9 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[5].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_cause_flds_we[5]),
     .q      (reg2hw.wkup_cause[5].q),
+    .ds     (aon_wkup_cause_cause_5_ds_int),
 
     // to register interface (read)
     .qs     (aon_wkup_cause_cause_5_qs_int)
@@ -29558,8 +30770,9 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[6].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_cause_flds_we[6]),
     .q      (reg2hw.wkup_cause[6].q),
+    .ds     (aon_wkup_cause_cause_6_ds_int),
 
     // to register interface (read)
     .qs     (aon_wkup_cause_cause_6_qs_int)
@@ -29583,8 +30796,9 @@ module pinmux_reg_top (
     .d      (hw2reg.wkup_cause[7].d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_cause_flds_we[7]),
     .q      (reg2hw.wkup_cause[7].q),
+    .ds     (aon_wkup_cause_cause_7_ds_int),
 
     // to register interface (read)
     .qs     (aon_wkup_cause_cause_7_qs_int)

@@ -199,6 +199,7 @@ module gpio_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_qs)
@@ -225,6 +226,7 @@ module gpio_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_qs)
@@ -245,6 +247,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.qe = intr_test_qe;
@@ -264,6 +267,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -289,6 +293,7 @@ module gpio_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (data_in_qs)
@@ -309,6 +314,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (direct_out_flds_we[0]),
     .q      (reg2hw.direct_out.q),
+    .ds     (),
     .qs     (direct_out_qs)
   );
   assign reg2hw.direct_out.qe = direct_out_qe;
@@ -329,6 +335,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (masked_out_lower_flds_we[0]),
     .q      (reg2hw.masked_out_lower.data.q),
+    .ds     (),
     .qs     (masked_out_lower_data_qs)
   );
   assign reg2hw.masked_out_lower.data.qe = masked_out_lower_qe;
@@ -344,6 +351,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (masked_out_lower_flds_we[1]),
     .q      (reg2hw.masked_out_lower.mask.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.masked_out_lower.mask.qe = masked_out_lower_qe;
@@ -364,6 +372,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (masked_out_upper_flds_we[0]),
     .q      (reg2hw.masked_out_upper.data.q),
+    .ds     (),
     .qs     (masked_out_upper_data_qs)
   );
   assign reg2hw.masked_out_upper.data.qe = masked_out_upper_qe;
@@ -379,6 +388,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (masked_out_upper_flds_we[1]),
     .q      (reg2hw.masked_out_upper.mask.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.masked_out_upper.mask.qe = masked_out_upper_qe;
@@ -398,6 +408,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (direct_oe_flds_we[0]),
     .q      (reg2hw.direct_oe.q),
+    .ds     (),
     .qs     (direct_oe_qs)
   );
   assign reg2hw.direct_oe.qe = direct_oe_qe;
@@ -418,6 +429,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (masked_oe_lower_flds_we[0]),
     .q      (reg2hw.masked_oe_lower.data.q),
+    .ds     (),
     .qs     (masked_oe_lower_data_qs)
   );
   assign reg2hw.masked_oe_lower.data.qe = masked_oe_lower_qe;
@@ -433,6 +445,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (masked_oe_lower_flds_we[1]),
     .q      (reg2hw.masked_oe_lower.mask.q),
+    .ds     (),
     .qs     (masked_oe_lower_mask_qs)
   );
   assign reg2hw.masked_oe_lower.mask.qe = masked_oe_lower_qe;
@@ -453,6 +466,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (masked_oe_upper_flds_we[0]),
     .q      (reg2hw.masked_oe_upper.data.q),
+    .ds     (),
     .qs     (masked_oe_upper_data_qs)
   );
   assign reg2hw.masked_oe_upper.data.qe = masked_oe_upper_qe;
@@ -468,6 +482,7 @@ module gpio_reg_top (
     .qre    (),
     .qe     (masked_oe_upper_flds_we[1]),
     .q      (reg2hw.masked_oe_upper.mask.q),
+    .ds     (),
     .qs     (masked_oe_upper_mask_qs)
   );
   assign reg2hw.masked_oe_upper.mask.qe = masked_oe_upper_qe;
@@ -493,6 +508,7 @@ module gpio_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_ctrl_en_rising.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_ctrl_en_rising_qs)
@@ -519,6 +535,7 @@ module gpio_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_ctrl_en_falling.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_ctrl_en_falling_qs)
@@ -545,6 +562,7 @@ module gpio_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_ctrl_en_lvlhigh.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_ctrl_en_lvlhigh_qs)
@@ -571,6 +589,7 @@ module gpio_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_ctrl_en_lvllow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_ctrl_en_lvllow_qs)
@@ -597,6 +616,7 @@ module gpio_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl_en_input_filter.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_en_input_filter_qs)

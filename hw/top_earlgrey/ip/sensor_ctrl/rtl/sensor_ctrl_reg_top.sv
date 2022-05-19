@@ -260,6 +260,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.io_status_change.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_io_status_change_qs)
@@ -285,6 +286,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.init_status_change.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_init_status_change_qs)
@@ -312,6 +314,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.io_status_change.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_io_status_change_qs)
@@ -337,6 +340,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.init_status_change.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_init_status_change_qs)
@@ -358,6 +362,7 @@ module sensor_ctrl_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.io_status_change.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.io_status_change.qe = intr_test_qe;
@@ -373,6 +378,7 @@ module sensor_ctrl_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.init_status_change.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.init_status_change.qe = intr_test_qe;
@@ -393,6 +399,7 @@ module sensor_ctrl_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_alert.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_alert.qe = alert_test_qe;
@@ -408,6 +415,7 @@ module sensor_ctrl_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_alert.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_alert.qe = alert_test_qe;
@@ -433,6 +441,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_regwen_qs)
@@ -461,6 +470,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_0_qs)
@@ -486,6 +496,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_1_qs)
@@ -511,6 +522,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_2_qs)
@@ -536,6 +548,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_3_qs)
@@ -561,6 +574,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_4_qs)
@@ -586,6 +600,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_5_qs)
@@ -611,6 +626,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_6_qs)
@@ -636,6 +652,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_7_qs)
@@ -661,6 +678,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_8_qs)
@@ -686,6 +704,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_9_qs)
@@ -711,6 +730,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_10_qs)
@@ -736,6 +756,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_11_qs)
@@ -761,6 +782,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_trig[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_trig_val_12_qs)
@@ -792,6 +814,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_0_qs)
@@ -817,6 +840,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_1_qs)
@@ -842,6 +866,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_2_qs)
@@ -867,6 +892,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_3_qs)
@@ -892,6 +918,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_4_qs)
@@ -917,6 +944,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_5_qs)
@@ -942,6 +970,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_6_qs)
@@ -967,6 +996,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_7_qs)
@@ -992,6 +1022,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_8_qs)
@@ -1017,6 +1048,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_9_qs)
@@ -1042,6 +1074,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_10_qs)
@@ -1067,6 +1100,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_11_qs)
@@ -1092,6 +1126,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert_en[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_en_val_12_qs)
@@ -1120,6 +1155,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_0_qs)
@@ -1145,6 +1181,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_1_qs)
@@ -1170,6 +1207,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_2_qs)
@@ -1195,6 +1233,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_3_qs)
@@ -1220,6 +1259,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_4_qs)
@@ -1245,6 +1285,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_5_qs)
@@ -1270,6 +1311,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_6_qs)
@@ -1295,6 +1337,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_7_qs)
@@ -1320,6 +1363,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_8_qs)
@@ -1345,6 +1389,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_9_qs)
@@ -1370,6 +1415,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_10_qs)
@@ -1395,6 +1441,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_11_qs)
@@ -1420,6 +1467,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.recov_alert[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_val_12_qs)
@@ -1448,6 +1496,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_0_qs)
@@ -1473,6 +1522,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_1_qs)
@@ -1498,6 +1548,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_2_qs)
@@ -1523,6 +1574,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_3_qs)
@@ -1548,6 +1600,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_4_qs)
@@ -1573,6 +1626,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_5_qs)
@@ -1598,6 +1652,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_6_qs)
@@ -1623,6 +1678,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_7_qs)
@@ -1648,6 +1704,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_8_qs)
@@ -1673,6 +1730,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_9_qs)
@@ -1698,6 +1756,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_10_qs)
@@ -1723,6 +1782,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_11_qs)
@@ -1748,6 +1808,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_12_qs)
@@ -1773,6 +1834,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fatal_alert[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_val_13_qs)
@@ -1800,6 +1862,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_ast_init_done_qs)
@@ -1825,6 +1888,7 @@ module sensor_ctrl_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_io_pok_qs)

@@ -232,6 +232,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.fatal_prog_error.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_prog_error.qe = alert_test_qe;
@@ -247,6 +248,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_state_error.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_state_error.qe = alert_test_qe;
@@ -262,6 +264,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[2]),
     .q      (reg2hw.alert_test.fatal_bus_integ_error.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_bus_integ_error.qe = alert_test_qe;
@@ -279,6 +282,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_ready_qs)
   );
 
@@ -293,6 +297,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_transition_successful_qs)
   );
 
@@ -307,6 +312,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_transition_count_error_qs)
   );
 
@@ -321,6 +327,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_transition_error_qs)
   );
 
@@ -335,6 +342,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_token_error_qs)
   );
 
@@ -349,6 +357,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_flash_rma_error_qs)
   );
 
@@ -363,6 +372,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_otp_error_qs)
   );
 
@@ -377,6 +387,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_state_error_qs)
   );
 
@@ -391,6 +402,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_bus_integ_error_qs)
   );
 
@@ -405,6 +417,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_otp_partition_error_qs)
   );
 
@@ -423,6 +436,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (claim_transition_if_flds_we[0]),
     .q      (reg2hw.claim_transition_if.q),
+    .ds     (),
     .qs     (claim_transition_if_qs)
   );
   assign reg2hw.claim_transition_if.qe = claim_transition_if_qe;
@@ -439,6 +453,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (transition_regwen_qs)
   );
 
@@ -460,6 +475,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (transition_cmd_flds_we[0]),
     .q      (reg2hw.transition_cmd.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.transition_cmd.qe = transition_cmd_qe;
@@ -482,6 +498,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (transition_ctrl_flds_we[0]),
     .q      (reg2hw.transition_ctrl.q),
+    .ds     (),
     .qs     (transition_ctrl_qs)
   );
   assign reg2hw.transition_ctrl.qe = transition_ctrl_qe;
@@ -505,6 +522,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (transition_token_0_flds_we[0]),
     .q      (reg2hw.transition_token[0].q),
+    .ds     (),
     .qs     (transition_token_0_qs)
   );
   assign reg2hw.transition_token[0].qe = transition_token_0_qe;
@@ -528,6 +546,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (transition_token_1_flds_we[0]),
     .q      (reg2hw.transition_token[1].q),
+    .ds     (),
     .qs     (transition_token_1_qs)
   );
   assign reg2hw.transition_token[1].qe = transition_token_1_qe;
@@ -551,6 +570,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (transition_token_2_flds_we[0]),
     .q      (reg2hw.transition_token[2].q),
+    .ds     (),
     .qs     (transition_token_2_qs)
   );
   assign reg2hw.transition_token[2].qe = transition_token_2_qe;
@@ -574,6 +594,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (transition_token_3_flds_we[0]),
     .q      (reg2hw.transition_token[3].q),
+    .ds     (),
     .qs     (transition_token_3_qs)
   );
   assign reg2hw.transition_token[3].qe = transition_token_3_qe;
@@ -596,6 +617,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (transition_target_flds_we[0]),
     .q      (reg2hw.transition_target.q),
+    .ds     (),
     .qs     (transition_target_qs)
   );
   assign reg2hw.transition_target.qe = transition_target_qe;
@@ -618,6 +640,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (otp_vendor_test_ctrl_flds_we[0]),
     .q      (reg2hw.otp_vendor_test_ctrl.q),
+    .ds     (),
     .qs     (otp_vendor_test_ctrl_qs)
   );
   assign reg2hw.otp_vendor_test_ctrl.qe = otp_vendor_test_ctrl_qe;
@@ -634,6 +657,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (otp_vendor_test_status_qs)
   );
 
@@ -649,6 +673,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (lc_state_qs)
   );
 
@@ -664,6 +689,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (lc_transition_cnt_qs)
   );
 
@@ -679,6 +705,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (lc_id_state_qs)
   );
 
@@ -695,6 +722,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (hw_rev_chip_rev_qs)
   );
 
@@ -709,6 +737,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (hw_rev_chip_gen_qs)
   );
 
@@ -725,6 +754,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (device_id_0_qs)
   );
 
@@ -741,6 +771,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (device_id_1_qs)
   );
 
@@ -757,6 +788,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (device_id_2_qs)
   );
 
@@ -773,6 +805,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (device_id_3_qs)
   );
 
@@ -789,6 +822,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (device_id_4_qs)
   );
 
@@ -805,6 +839,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (device_id_5_qs)
   );
 
@@ -821,6 +856,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (device_id_6_qs)
   );
 
@@ -837,6 +873,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (device_id_7_qs)
   );
 
@@ -853,6 +890,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (manuf_state_0_qs)
   );
 
@@ -869,6 +907,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (manuf_state_1_qs)
   );
 
@@ -885,6 +924,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (manuf_state_2_qs)
   );
 
@@ -901,6 +941,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (manuf_state_3_qs)
   );
 
@@ -917,6 +958,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (manuf_state_4_qs)
   );
 
@@ -933,6 +975,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (manuf_state_5_qs)
   );
 
@@ -949,6 +992,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (manuf_state_6_qs)
   );
 
@@ -965,6 +1009,7 @@ module lc_ctrl_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (manuf_state_7_qs)
   );
 

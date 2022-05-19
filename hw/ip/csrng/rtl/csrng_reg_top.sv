@@ -236,6 +236,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.cs_cmd_req_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_cs_cmd_req_done_qs)
@@ -261,6 +262,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.cs_entropy_req.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_cs_entropy_req_qs)
@@ -286,6 +288,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.cs_hw_inst_exc.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_cs_hw_inst_exc_qs)
@@ -311,6 +314,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.cs_fatal_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_cs_fatal_err_qs)
@@ -338,6 +342,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.cs_cmd_req_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_cs_cmd_req_done_qs)
@@ -363,6 +368,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.cs_entropy_req.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_cs_entropy_req_qs)
@@ -388,6 +394,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.cs_hw_inst_exc.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_cs_hw_inst_exc_qs)
@@ -413,6 +420,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.cs_fatal_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_cs_fatal_err_qs)
@@ -434,6 +442,7 @@ module csrng_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.cs_cmd_req_done.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.cs_cmd_req_done.qe = intr_test_qe;
@@ -449,6 +458,7 @@ module csrng_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.cs_entropy_req.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.cs_entropy_req.qe = intr_test_qe;
@@ -464,6 +474,7 @@ module csrng_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.cs_hw_inst_exc.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.cs_hw_inst_exc.qe = intr_test_qe;
@@ -479,6 +490,7 @@ module csrng_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.cs_fatal_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.cs_fatal_err.qe = intr_test_qe;
@@ -499,6 +511,7 @@ module csrng_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_alert.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_alert.qe = alert_test_qe;
@@ -514,6 +527,7 @@ module csrng_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_alert.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_alert.qe = alert_test_qe;
@@ -539,6 +553,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (regwen_qs)
@@ -569,6 +584,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_enable_qs)
@@ -594,6 +610,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.sw_app_enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_sw_app_enable_qs)
@@ -619,6 +636,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.read_int_state.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_read_int_state_qs)
@@ -656,6 +674,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (cmd_req_flds_we[0]),
     .q      (reg2hw.cmd_req.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -684,6 +703,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_cmd_sts_cmd_rdy_qs)
@@ -709,6 +729,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_cmd_sts_cmd_sts_qs)
@@ -727,6 +748,7 @@ module csrng_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (genbits_vld_genbits_vld_qs)
   );
 
@@ -741,6 +763,7 @@ module csrng_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (genbits_vld_genbits_fips_qs)
   );
 
@@ -756,6 +779,7 @@ module csrng_reg_top (
     .qre    (reg2hw.genbits.re),
     .qe     (),
     .q      (reg2hw.genbits.q),
+    .ds     (),
     .qs     (genbits_qs)
   );
 
@@ -791,6 +815,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (int_state_num_flds_we[0]),
     .q      (reg2hw.int_state_num.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (int_state_num_qs)
@@ -809,6 +834,7 @@ module csrng_reg_top (
     .qre    (reg2hw.int_state_val.re),
     .qe     (),
     .q      (reg2hw.int_state_val.q),
+    .ds     (),
     .qs     (int_state_val_qs)
   );
 
@@ -833,6 +859,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (hw_exc_sts_qs)
@@ -860,6 +887,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_enable_field_alert_qs)
@@ -885,6 +913,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_sw_app_enable_field_alert_qs)
@@ -910,6 +939,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_read_int_state_field_alert_qs)
@@ -935,6 +965,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_cs_bus_cmp_alert_qs)
@@ -962,6 +993,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_cmd_err_qs)
@@ -987,6 +1019,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_genbits_err_qs)
@@ -1012,6 +1045,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_cmdreq_err_qs)
@@ -1037,6 +1071,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_rcstage_err_qs)
@@ -1062,6 +1097,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_keyvrc_err_qs)
@@ -1087,6 +1123,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_updreq_err_qs)
@@ -1112,6 +1149,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_bencreq_err_qs)
@@ -1137,6 +1175,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_bencack_err_qs)
@@ -1162,6 +1201,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_pdata_err_qs)
@@ -1187,6 +1227,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_final_err_qs)
@@ -1212,6 +1253,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_gbencack_err_qs)
@@ -1237,6 +1279,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_grcstage_err_qs)
@@ -1262,6 +1305,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_ggenreq_err_qs)
@@ -1287,6 +1331,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_gadstage_err_qs)
@@ -1312,6 +1357,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_ggenbits_err_qs)
@@ -1337,6 +1383,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_blkenc_err_qs)
@@ -1362,6 +1409,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_cmd_stage_sm_err_qs)
@@ -1387,6 +1435,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_main_sm_err_qs)
@@ -1412,6 +1461,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_drbg_gen_sm_err_qs)
@@ -1437,6 +1487,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_drbg_updbe_sm_err_qs)
@@ -1462,6 +1513,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_drbg_updob_sm_err_qs)
@@ -1487,6 +1539,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_aes_cipher_sm_err_qs)
@@ -1512,6 +1565,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_cmd_gen_cnt_err_qs)
@@ -1537,6 +1591,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_fifo_write_err_qs)
@@ -1562,6 +1617,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_fifo_read_err_qs)
@@ -1587,6 +1643,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_fifo_state_err_qs)
@@ -1627,6 +1684,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (err_code_test_flds_we[0]),
     .q      (reg2hw.err_code_test.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_test_qs)
@@ -1654,6 +1712,7 @@ module csrng_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (main_sm_state_qs)

@@ -211,6 +211,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr0.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr0_field0_qs)
@@ -236,6 +237,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr0.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr0_field1_qs)
@@ -261,6 +263,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr0.field2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr0_field2_qs)
@@ -286,6 +289,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr0.field3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr0_field3_qs)
@@ -311,6 +315,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr0.field4.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr0_field4_qs)
@@ -338,6 +343,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr1.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr1_field0_qs)
@@ -363,6 +369,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr1.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr1_field1_qs)
@@ -388,6 +395,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr1.field2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr1_field2_qs)
@@ -413,6 +421,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr1.field3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr1_field3_qs)
@@ -438,6 +447,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr1.field4.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr1_field4_qs)
@@ -464,6 +474,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr2_qs)
@@ -491,6 +502,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr3.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr3_field0_qs)
@@ -516,6 +528,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr3.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr3_field1_qs)
@@ -541,6 +554,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr3.field2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr3_field2_qs)
@@ -566,6 +580,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr3.field3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr3_field3_qs)
@@ -593,6 +608,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr4.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr4_field0_qs)
@@ -618,6 +634,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr4.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr4_field1_qs)
@@ -643,6 +660,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr4.field2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr4_field2_qs)
@@ -668,6 +686,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr4.field3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr4_field3_qs)
@@ -695,6 +714,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr5.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr5_field0_qs)
@@ -720,6 +740,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr5.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr5_field1_qs)
@@ -745,6 +766,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr5.field2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr5_field2_qs)
@@ -770,6 +792,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr5.field3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr5_field3_qs)
@@ -795,6 +818,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr5.field4.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr5_field4_qs)
@@ -820,6 +844,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr5.field5.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr5_field5_qs)
@@ -845,6 +870,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr5.field6.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr5_field6_qs)
@@ -872,6 +898,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr6.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr6_field0_qs)
@@ -897,6 +924,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr6.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr6_field1_qs)
@@ -922,6 +950,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr6.field2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr6_field2_qs)
@@ -947,6 +976,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr6.field3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr6_field3_qs)
@@ -974,6 +1004,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr7.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr7_field0_qs)
@@ -999,6 +1030,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr7.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr7_field1_qs)
@@ -1024,6 +1056,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr7.field2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr7_field2_qs)
@@ -1049,6 +1082,7 @@ module otp_ctrl_prim_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.csr7.field3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (csr7_field3_qs)

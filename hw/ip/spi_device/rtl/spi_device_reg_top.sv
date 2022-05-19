@@ -1577,6 +1577,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.generic_rx_full.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_generic_rx_full_qs)
@@ -1602,6 +1603,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.generic_rx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_generic_rx_watermark_qs)
@@ -1627,6 +1629,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.generic_tx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_generic_tx_watermark_qs)
@@ -1652,6 +1655,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.generic_rx_error.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_generic_rx_error_qs)
@@ -1677,6 +1681,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.generic_rx_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_generic_rx_overflow_qs)
@@ -1702,6 +1707,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.generic_tx_underflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_generic_tx_underflow_qs)
@@ -1727,6 +1733,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.upload_cmdfifo_not_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_upload_cmdfifo_not_empty_qs)
@@ -1752,6 +1759,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.upload_payload_not_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_upload_payload_not_empty_qs)
@@ -1777,6 +1785,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.upload_payload_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_upload_payload_overflow_qs)
@@ -1802,6 +1811,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.readbuf_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_readbuf_watermark_qs)
@@ -1827,6 +1837,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.readbuf_flip.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_readbuf_flip_qs)
@@ -1852,6 +1863,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.tpm_header_not_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_tpm_header_not_empty_qs)
@@ -1879,6 +1891,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.generic_rx_full.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_generic_rx_full_qs)
@@ -1904,6 +1917,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.generic_rx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_generic_rx_watermark_qs)
@@ -1929,6 +1943,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.generic_tx_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_generic_tx_watermark_qs)
@@ -1954,6 +1969,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.generic_rx_error.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_generic_rx_error_qs)
@@ -1979,6 +1995,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.generic_rx_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_generic_rx_overflow_qs)
@@ -2004,6 +2021,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.generic_tx_underflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_generic_tx_underflow_qs)
@@ -2029,6 +2047,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.upload_cmdfifo_not_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_upload_cmdfifo_not_empty_qs)
@@ -2054,6 +2073,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.upload_payload_not_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_upload_payload_not_empty_qs)
@@ -2079,6 +2099,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.upload_payload_overflow.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_upload_payload_overflow_qs)
@@ -2104,6 +2125,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.readbuf_watermark.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_readbuf_watermark_qs)
@@ -2129,6 +2151,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.readbuf_flip.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_readbuf_flip_qs)
@@ -2154,6 +2177,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.tpm_header_not_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_tpm_header_not_empty_qs)
@@ -2175,6 +2199,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.generic_rx_full.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.generic_rx_full.qe = intr_test_qe;
@@ -2190,6 +2215,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.generic_rx_watermark.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.generic_rx_watermark.qe = intr_test_qe;
@@ -2205,6 +2231,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.generic_tx_watermark.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.generic_tx_watermark.qe = intr_test_qe;
@@ -2220,6 +2247,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.generic_rx_error.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.generic_rx_error.qe = intr_test_qe;
@@ -2235,6 +2263,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[4]),
     .q      (reg2hw.intr_test.generic_rx_overflow.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.generic_rx_overflow.qe = intr_test_qe;
@@ -2250,6 +2279,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[5]),
     .q      (reg2hw.intr_test.generic_tx_underflow.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.generic_tx_underflow.qe = intr_test_qe;
@@ -2265,6 +2295,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[6]),
     .q      (reg2hw.intr_test.upload_cmdfifo_not_empty.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.upload_cmdfifo_not_empty.qe = intr_test_qe;
@@ -2280,6 +2311,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[7]),
     .q      (reg2hw.intr_test.upload_payload_not_empty.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.upload_payload_not_empty.qe = intr_test_qe;
@@ -2295,6 +2327,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[8]),
     .q      (reg2hw.intr_test.upload_payload_overflow.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.upload_payload_overflow.qe = intr_test_qe;
@@ -2310,6 +2343,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[9]),
     .q      (reg2hw.intr_test.readbuf_watermark.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.readbuf_watermark.qe = intr_test_qe;
@@ -2325,6 +2359,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[10]),
     .q      (reg2hw.intr_test.readbuf_flip.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.readbuf_flip.qe = intr_test_qe;
@@ -2340,6 +2375,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[11]),
     .q      (reg2hw.intr_test.tpm_header_not_empty.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.tpm_header_not_empty.qe = intr_test_qe;
@@ -2359,6 +2395,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -2385,6 +2422,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.abort.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_abort_qs)
@@ -2410,6 +2448,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_mode_qs)
@@ -2435,6 +2474,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.rst_txfifo.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_rst_txfifo_qs)
@@ -2460,6 +2500,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.rst_rxfifo.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_rst_rxfifo_qs)
@@ -2485,6 +2526,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.sram_clk_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_sram_clk_en_qs)
@@ -2512,6 +2554,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cfg.cpol.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_cpol_qs)
@@ -2537,6 +2580,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cfg.cpha.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_cpha_qs)
@@ -2562,6 +2606,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cfg.tx_order.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_tx_order_qs)
@@ -2587,6 +2632,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cfg.rx_order.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_rx_order_qs)
@@ -2612,6 +2658,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cfg.timer_v.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_timer_v_qs)
@@ -2637,6 +2684,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cfg.addr_4b_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_addr_4b_en_qs)
@@ -2662,6 +2710,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cfg.mailbox_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_mailbox_en_qs)
@@ -2689,6 +2738,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fifo_level.rxlvl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fifo_level_rxlvl_qs)
@@ -2714,6 +2764,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fifo_level.txlvl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fifo_level_txlvl_qs)
@@ -2732,6 +2783,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (async_fifo_level_rxlvl_qs)
   );
 
@@ -2746,6 +2798,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (async_fifo_level_txlvl_qs)
   );
 
@@ -2762,6 +2815,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_rxf_full_qs)
   );
 
@@ -2776,6 +2830,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_rxf_empty_qs)
   );
 
@@ -2790,6 +2845,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_txf_full_qs)
   );
 
@@ -2804,6 +2860,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_txf_empty_qs)
   );
 
@@ -2818,6 +2875,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_abort_done_qs)
   );
 
@@ -2832,6 +2890,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_csb_qs)
   );
 
@@ -2857,6 +2916,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxf_ptr.rptr.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxf_ptr_rptr_qs)
@@ -2882,6 +2942,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxf_ptr_wptr_qs)
@@ -2909,6 +2970,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (txf_ptr_rptr_qs)
@@ -2934,6 +2996,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.txf_ptr.wptr.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (txf_ptr_wptr_qs)
@@ -2961,6 +3024,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxf_addr.base.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxf_addr_base_qs)
@@ -2986,6 +3050,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rxf_addr.limit.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rxf_addr_limit_qs)
@@ -3013,6 +3078,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.txf_addr.base.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (txf_addr_base_qs)
@@ -3038,6 +3104,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.txf_addr.limit.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (txf_addr_limit_qs)
@@ -3065,6 +3132,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intercept_en.status.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intercept_en_status_qs)
@@ -3090,6 +3158,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intercept_en.jedec.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intercept_en_jedec_qs)
@@ -3115,6 +3184,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intercept_en.sfdp.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intercept_en_sfdp_qs)
@@ -3140,6 +3210,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intercept_en.mbx.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intercept_en_mbx_qs)
@@ -3157,6 +3228,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (last_read_addr_qs)
   );
 
@@ -3176,6 +3248,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (flash_status_flds_we[0]),
     .q      (reg2hw.flash_status.busy.q),
+    .ds     (),
     .qs     (flash_status_busy_qs)
   );
   assign reg2hw.flash_status.busy.qe = flash_status_qe;
@@ -3191,6 +3264,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (flash_status_flds_we[1]),
     .q      (reg2hw.flash_status.status.q),
+    .ds     (),
     .qs     (flash_status_status_qs)
   );
   assign reg2hw.flash_status.status.qe = flash_status_qe;
@@ -3217,6 +3291,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.jedec_cc.cc.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (jedec_cc_cc_qs)
@@ -3242,6 +3317,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.jedec_cc.num_cc.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (jedec_cc_num_cc_qs)
@@ -3269,6 +3345,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.jedec_id.id.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (jedec_id_id_qs)
@@ -3294,6 +3371,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.jedec_id.mf.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (jedec_id_mf_qs)
@@ -3320,6 +3398,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.read_threshold.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (read_threshold_qs)
@@ -3346,6 +3425,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mailbox_addr.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mailbox_addr_qs)
@@ -3373,6 +3453,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (upload_status_cmdfifo_depth_qs)
@@ -3398,6 +3479,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (upload_status_cmdfifo_notempty_qs)
@@ -3423,6 +3505,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (upload_status_addrfifo_depth_qs)
@@ -3448,6 +3531,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (upload_status_addrfifo_notempty_qs)
@@ -3475,6 +3559,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (upload_status2_payload_depth_qs)
@@ -3500,6 +3585,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (upload_status2_payload_start_idx_qs)
@@ -3517,6 +3603,7 @@ module spi_device_reg_top (
     .qre    (reg2hw.upload_cmdfifo.re),
     .qe     (),
     .q      (reg2hw.upload_cmdfifo.q),
+    .ds     (),
     .qs     (upload_cmdfifo_qs)
   );
 
@@ -3532,6 +3619,7 @@ module spi_device_reg_top (
     .qre    (reg2hw.upload_addrfifo.re),
     .qe     (),
     .q      (reg2hw.upload_addrfifo.q),
+    .ds     (),
     .qs     (upload_addrfifo_qs)
   );
 
@@ -3558,6 +3646,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_0_qs)
@@ -3583,6 +3672,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_1_qs)
@@ -3608,6 +3698,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_2_qs)
@@ -3633,6 +3724,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_3_qs)
@@ -3658,6 +3750,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_4_qs)
@@ -3683,6 +3776,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_5_qs)
@@ -3708,6 +3802,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_6_qs)
@@ -3733,6 +3828,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_7_qs)
@@ -3758,6 +3854,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_8_qs)
@@ -3783,6 +3880,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_9_qs)
@@ -3808,6 +3906,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_10_qs)
@@ -3833,6 +3932,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[11].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_11_qs)
@@ -3858,6 +3958,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[12].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_12_qs)
@@ -3883,6 +3984,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[13].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_13_qs)
@@ -3908,6 +4010,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[14].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_14_qs)
@@ -3933,6 +4036,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[15].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_15_qs)
@@ -3958,6 +4062,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[16].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_16_qs)
@@ -3983,6 +4088,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[17].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_17_qs)
@@ -4008,6 +4114,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[18].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_18_qs)
@@ -4033,6 +4140,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[19].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_19_qs)
@@ -4058,6 +4166,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[20].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_20_qs)
@@ -4083,6 +4192,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[21].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_21_qs)
@@ -4108,6 +4218,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[22].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_22_qs)
@@ -4133,6 +4244,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[23].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_23_qs)
@@ -4158,6 +4270,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[24].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_24_qs)
@@ -4183,6 +4296,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[25].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_25_qs)
@@ -4208,6 +4322,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[26].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_26_qs)
@@ -4233,6 +4348,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[27].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_27_qs)
@@ -4258,6 +4374,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[28].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_28_qs)
@@ -4283,6 +4400,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[29].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_29_qs)
@@ -4308,6 +4426,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[30].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_30_qs)
@@ -4333,6 +4452,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[31].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_0_filter_31_qs)
@@ -4361,6 +4481,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[32].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_32_qs)
@@ -4386,6 +4507,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[33].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_33_qs)
@@ -4411,6 +4533,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[34].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_34_qs)
@@ -4436,6 +4559,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[35].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_35_qs)
@@ -4461,6 +4585,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[36].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_36_qs)
@@ -4486,6 +4611,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[37].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_37_qs)
@@ -4511,6 +4637,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[38].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_38_qs)
@@ -4536,6 +4663,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[39].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_39_qs)
@@ -4561,6 +4689,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[40].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_40_qs)
@@ -4586,6 +4715,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[41].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_41_qs)
@@ -4611,6 +4741,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[42].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_42_qs)
@@ -4636,6 +4767,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[43].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_43_qs)
@@ -4661,6 +4793,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[44].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_44_qs)
@@ -4686,6 +4819,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[45].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_45_qs)
@@ -4711,6 +4845,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[46].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_46_qs)
@@ -4736,6 +4871,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[47].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_47_qs)
@@ -4761,6 +4897,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[48].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_48_qs)
@@ -4786,6 +4923,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[49].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_49_qs)
@@ -4811,6 +4949,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[50].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_50_qs)
@@ -4836,6 +4975,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[51].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_51_qs)
@@ -4861,6 +5001,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[52].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_52_qs)
@@ -4886,6 +5027,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[53].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_53_qs)
@@ -4911,6 +5053,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[54].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_54_qs)
@@ -4936,6 +5079,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[55].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_55_qs)
@@ -4961,6 +5105,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[56].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_56_qs)
@@ -4986,6 +5131,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[57].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_57_qs)
@@ -5011,6 +5157,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[58].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_58_qs)
@@ -5036,6 +5183,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[59].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_59_qs)
@@ -5061,6 +5209,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[60].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_60_qs)
@@ -5086,6 +5235,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[61].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_61_qs)
@@ -5111,6 +5261,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[62].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_62_qs)
@@ -5136,6 +5287,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[63].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_1_filter_63_qs)
@@ -5164,6 +5316,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[64].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_64_qs)
@@ -5189,6 +5342,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[65].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_65_qs)
@@ -5214,6 +5368,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[66].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_66_qs)
@@ -5239,6 +5394,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[67].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_67_qs)
@@ -5264,6 +5420,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[68].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_68_qs)
@@ -5289,6 +5446,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[69].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_69_qs)
@@ -5314,6 +5472,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[70].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_70_qs)
@@ -5339,6 +5498,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[71].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_71_qs)
@@ -5364,6 +5524,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[72].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_72_qs)
@@ -5389,6 +5550,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[73].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_73_qs)
@@ -5414,6 +5576,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[74].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_74_qs)
@@ -5439,6 +5602,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[75].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_75_qs)
@@ -5464,6 +5628,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[76].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_76_qs)
@@ -5489,6 +5654,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[77].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_77_qs)
@@ -5514,6 +5680,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[78].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_78_qs)
@@ -5539,6 +5706,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[79].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_79_qs)
@@ -5564,6 +5732,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[80].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_80_qs)
@@ -5589,6 +5758,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[81].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_81_qs)
@@ -5614,6 +5784,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[82].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_82_qs)
@@ -5639,6 +5810,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[83].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_83_qs)
@@ -5664,6 +5836,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[84].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_84_qs)
@@ -5689,6 +5862,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[85].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_85_qs)
@@ -5714,6 +5888,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[86].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_86_qs)
@@ -5739,6 +5914,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[87].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_87_qs)
@@ -5764,6 +5940,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[88].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_88_qs)
@@ -5789,6 +5966,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[89].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_89_qs)
@@ -5814,6 +5992,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[90].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_90_qs)
@@ -5839,6 +6018,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[91].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_91_qs)
@@ -5864,6 +6044,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[92].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_92_qs)
@@ -5889,6 +6070,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[93].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_93_qs)
@@ -5914,6 +6096,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[94].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_94_qs)
@@ -5939,6 +6122,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[95].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_2_filter_95_qs)
@@ -5967,6 +6151,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[96].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_96_qs)
@@ -5992,6 +6177,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[97].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_97_qs)
@@ -6017,6 +6203,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[98].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_98_qs)
@@ -6042,6 +6229,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[99].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_99_qs)
@@ -6067,6 +6255,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[100].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_100_qs)
@@ -6092,6 +6281,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[101].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_101_qs)
@@ -6117,6 +6307,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[102].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_102_qs)
@@ -6142,6 +6333,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[103].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_103_qs)
@@ -6167,6 +6359,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[104].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_104_qs)
@@ -6192,6 +6385,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[105].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_105_qs)
@@ -6217,6 +6411,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[106].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_106_qs)
@@ -6242,6 +6437,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[107].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_107_qs)
@@ -6267,6 +6463,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[108].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_108_qs)
@@ -6292,6 +6489,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[109].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_109_qs)
@@ -6317,6 +6515,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[110].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_110_qs)
@@ -6342,6 +6541,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[111].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_111_qs)
@@ -6367,6 +6567,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[112].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_112_qs)
@@ -6392,6 +6593,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[113].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_113_qs)
@@ -6417,6 +6619,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[114].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_114_qs)
@@ -6442,6 +6645,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[115].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_115_qs)
@@ -6467,6 +6671,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[116].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_116_qs)
@@ -6492,6 +6697,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[117].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_117_qs)
@@ -6517,6 +6723,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[118].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_118_qs)
@@ -6542,6 +6749,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[119].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_119_qs)
@@ -6567,6 +6775,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[120].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_120_qs)
@@ -6592,6 +6801,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[121].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_121_qs)
@@ -6617,6 +6827,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[122].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_122_qs)
@@ -6642,6 +6853,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[123].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_123_qs)
@@ -6667,6 +6879,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[124].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_124_qs)
@@ -6692,6 +6905,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[125].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_125_qs)
@@ -6717,6 +6931,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[126].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_126_qs)
@@ -6742,6 +6957,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[127].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_3_filter_127_qs)
@@ -6770,6 +6986,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[128].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_128_qs)
@@ -6795,6 +7012,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[129].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_129_qs)
@@ -6820,6 +7038,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[130].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_130_qs)
@@ -6845,6 +7064,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[131].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_131_qs)
@@ -6870,6 +7090,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[132].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_132_qs)
@@ -6895,6 +7116,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[133].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_133_qs)
@@ -6920,6 +7142,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[134].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_134_qs)
@@ -6945,6 +7168,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[135].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_135_qs)
@@ -6970,6 +7194,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[136].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_136_qs)
@@ -6995,6 +7220,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[137].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_137_qs)
@@ -7020,6 +7246,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[138].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_138_qs)
@@ -7045,6 +7272,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[139].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_139_qs)
@@ -7070,6 +7298,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[140].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_140_qs)
@@ -7095,6 +7324,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[141].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_141_qs)
@@ -7120,6 +7350,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[142].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_142_qs)
@@ -7145,6 +7376,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[143].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_143_qs)
@@ -7170,6 +7402,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[144].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_144_qs)
@@ -7195,6 +7428,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[145].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_145_qs)
@@ -7220,6 +7454,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[146].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_146_qs)
@@ -7245,6 +7480,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[147].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_147_qs)
@@ -7270,6 +7506,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[148].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_148_qs)
@@ -7295,6 +7532,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[149].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_149_qs)
@@ -7320,6 +7558,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[150].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_150_qs)
@@ -7345,6 +7584,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[151].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_151_qs)
@@ -7370,6 +7610,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[152].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_152_qs)
@@ -7395,6 +7636,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[153].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_153_qs)
@@ -7420,6 +7662,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[154].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_154_qs)
@@ -7445,6 +7688,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[155].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_155_qs)
@@ -7470,6 +7714,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[156].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_156_qs)
@@ -7495,6 +7740,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[157].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_157_qs)
@@ -7520,6 +7766,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[158].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_158_qs)
@@ -7545,6 +7792,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[159].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_4_filter_159_qs)
@@ -7573,6 +7821,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[160].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_160_qs)
@@ -7598,6 +7847,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[161].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_161_qs)
@@ -7623,6 +7873,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[162].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_162_qs)
@@ -7648,6 +7899,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[163].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_163_qs)
@@ -7673,6 +7925,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[164].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_164_qs)
@@ -7698,6 +7951,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[165].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_165_qs)
@@ -7723,6 +7977,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[166].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_166_qs)
@@ -7748,6 +8003,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[167].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_167_qs)
@@ -7773,6 +8029,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[168].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_168_qs)
@@ -7798,6 +8055,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[169].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_169_qs)
@@ -7823,6 +8081,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[170].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_170_qs)
@@ -7848,6 +8107,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[171].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_171_qs)
@@ -7873,6 +8133,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[172].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_172_qs)
@@ -7898,6 +8159,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[173].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_173_qs)
@@ -7923,6 +8185,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[174].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_174_qs)
@@ -7948,6 +8211,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[175].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_175_qs)
@@ -7973,6 +8237,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[176].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_176_qs)
@@ -7998,6 +8263,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[177].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_177_qs)
@@ -8023,6 +8289,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[178].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_178_qs)
@@ -8048,6 +8315,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[179].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_179_qs)
@@ -8073,6 +8341,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[180].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_180_qs)
@@ -8098,6 +8367,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[181].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_181_qs)
@@ -8123,6 +8393,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[182].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_182_qs)
@@ -8148,6 +8419,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[183].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_183_qs)
@@ -8173,6 +8445,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[184].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_184_qs)
@@ -8198,6 +8471,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[185].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_185_qs)
@@ -8223,6 +8497,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[186].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_186_qs)
@@ -8248,6 +8523,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[187].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_187_qs)
@@ -8273,6 +8549,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[188].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_188_qs)
@@ -8298,6 +8575,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[189].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_189_qs)
@@ -8323,6 +8601,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[190].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_190_qs)
@@ -8348,6 +8627,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[191].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_5_filter_191_qs)
@@ -8376,6 +8656,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[192].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_192_qs)
@@ -8401,6 +8682,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[193].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_193_qs)
@@ -8426,6 +8708,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[194].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_194_qs)
@@ -8451,6 +8734,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[195].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_195_qs)
@@ -8476,6 +8760,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[196].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_196_qs)
@@ -8501,6 +8786,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[197].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_197_qs)
@@ -8526,6 +8812,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[198].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_198_qs)
@@ -8551,6 +8838,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[199].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_199_qs)
@@ -8576,6 +8864,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[200].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_200_qs)
@@ -8601,6 +8890,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[201].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_201_qs)
@@ -8626,6 +8916,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[202].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_202_qs)
@@ -8651,6 +8942,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[203].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_203_qs)
@@ -8676,6 +8968,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[204].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_204_qs)
@@ -8701,6 +8994,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[205].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_205_qs)
@@ -8726,6 +9020,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[206].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_206_qs)
@@ -8751,6 +9046,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[207].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_207_qs)
@@ -8776,6 +9072,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[208].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_208_qs)
@@ -8801,6 +9098,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[209].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_209_qs)
@@ -8826,6 +9124,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[210].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_210_qs)
@@ -8851,6 +9150,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[211].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_211_qs)
@@ -8876,6 +9176,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[212].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_212_qs)
@@ -8901,6 +9202,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[213].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_213_qs)
@@ -8926,6 +9228,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[214].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_214_qs)
@@ -8951,6 +9254,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[215].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_215_qs)
@@ -8976,6 +9280,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[216].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_216_qs)
@@ -9001,6 +9306,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[217].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_217_qs)
@@ -9026,6 +9332,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[218].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_218_qs)
@@ -9051,6 +9358,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[219].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_219_qs)
@@ -9076,6 +9384,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[220].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_220_qs)
@@ -9101,6 +9410,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[221].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_221_qs)
@@ -9126,6 +9436,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[222].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_222_qs)
@@ -9151,6 +9462,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[223].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_6_filter_223_qs)
@@ -9179,6 +9491,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[224].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_224_qs)
@@ -9204,6 +9517,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[225].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_225_qs)
@@ -9229,6 +9543,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[226].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_226_qs)
@@ -9254,6 +9569,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[227].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_227_qs)
@@ -9279,6 +9595,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[228].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_228_qs)
@@ -9304,6 +9621,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[229].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_229_qs)
@@ -9329,6 +9647,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[230].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_230_qs)
@@ -9354,6 +9673,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[231].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_231_qs)
@@ -9379,6 +9699,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[232].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_232_qs)
@@ -9404,6 +9725,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[233].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_233_qs)
@@ -9429,6 +9751,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[234].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_234_qs)
@@ -9454,6 +9777,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[235].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_235_qs)
@@ -9479,6 +9803,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[236].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_236_qs)
@@ -9504,6 +9829,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[237].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_237_qs)
@@ -9529,6 +9855,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[238].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_238_qs)
@@ -9554,6 +9881,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[239].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_239_qs)
@@ -9579,6 +9907,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[240].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_240_qs)
@@ -9604,6 +9933,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[241].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_241_qs)
@@ -9629,6 +9959,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[242].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_242_qs)
@@ -9654,6 +9985,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[243].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_243_qs)
@@ -9679,6 +10011,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[244].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_244_qs)
@@ -9704,6 +10037,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[245].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_245_qs)
@@ -9729,6 +10063,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[246].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_246_qs)
@@ -9754,6 +10089,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[247].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_247_qs)
@@ -9779,6 +10115,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[248].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_248_qs)
@@ -9804,6 +10141,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[249].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_249_qs)
@@ -9829,6 +10167,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[250].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_250_qs)
@@ -9854,6 +10193,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[251].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_251_qs)
@@ -9879,6 +10219,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[252].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_252_qs)
@@ -9904,6 +10245,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[253].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_253_qs)
@@ -9929,6 +10271,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[254].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_254_qs)
@@ -9954,6 +10297,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_filter[255].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_filter_7_filter_255_qs)
@@ -9980,6 +10324,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.addr_swap_mask.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (addr_swap_mask_qs)
@@ -10006,6 +10351,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.addr_swap_data.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (addr_swap_data_qs)
@@ -10032,6 +10378,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.payload_swap_mask.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (payload_swap_mask_qs)
@@ -10058,6 +10405,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.payload_swap_data.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (payload_swap_data_qs)
@@ -10086,6 +10434,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_opcode_0_qs)
@@ -10111,6 +10460,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_addr_mode_0_qs)
@@ -10136,6 +10486,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_addr_swap_en_0_qs)
@@ -10161,6 +10512,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_mbyte_en_0_qs)
@@ -10186,6 +10538,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_dummy_size_0_qs)
@@ -10211,6 +10564,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_dummy_en_0_qs)
@@ -10236,6 +10590,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_payload_en_0_qs)
@@ -10261,6 +10616,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_payload_dir_0_qs)
@@ -10286,6 +10642,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_payload_swap_en_0_qs)
@@ -10311,6 +10668,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_upload_0_qs)
@@ -10336,6 +10694,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_busy_0_qs)
@@ -10361,6 +10720,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[0].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_0_valid_0_qs)
@@ -10389,6 +10749,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_opcode_1_qs)
@@ -10414,6 +10775,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_addr_mode_1_qs)
@@ -10439,6 +10801,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_addr_swap_en_1_qs)
@@ -10464,6 +10827,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_mbyte_en_1_qs)
@@ -10489,6 +10853,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_dummy_size_1_qs)
@@ -10514,6 +10879,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_dummy_en_1_qs)
@@ -10539,6 +10905,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_payload_en_1_qs)
@@ -10564,6 +10931,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_payload_dir_1_qs)
@@ -10589,6 +10957,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_payload_swap_en_1_qs)
@@ -10614,6 +10983,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_upload_1_qs)
@@ -10639,6 +11009,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_busy_1_qs)
@@ -10664,6 +11035,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[1].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_1_valid_1_qs)
@@ -10692,6 +11064,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_opcode_2_qs)
@@ -10717,6 +11090,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_addr_mode_2_qs)
@@ -10742,6 +11116,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_addr_swap_en_2_qs)
@@ -10767,6 +11142,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_mbyte_en_2_qs)
@@ -10792,6 +11168,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_dummy_size_2_qs)
@@ -10817,6 +11194,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_dummy_en_2_qs)
@@ -10842,6 +11220,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_payload_en_2_qs)
@@ -10867,6 +11246,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_payload_dir_2_qs)
@@ -10892,6 +11272,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_payload_swap_en_2_qs)
@@ -10917,6 +11298,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_upload_2_qs)
@@ -10942,6 +11324,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_busy_2_qs)
@@ -10967,6 +11350,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[2].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_2_valid_2_qs)
@@ -10995,6 +11379,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_opcode_3_qs)
@@ -11020,6 +11405,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_addr_mode_3_qs)
@@ -11045,6 +11431,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_addr_swap_en_3_qs)
@@ -11070,6 +11457,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_mbyte_en_3_qs)
@@ -11095,6 +11483,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_dummy_size_3_qs)
@@ -11120,6 +11509,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_dummy_en_3_qs)
@@ -11145,6 +11535,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_payload_en_3_qs)
@@ -11170,6 +11561,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_payload_dir_3_qs)
@@ -11195,6 +11587,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_payload_swap_en_3_qs)
@@ -11220,6 +11613,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_upload_3_qs)
@@ -11245,6 +11639,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_busy_3_qs)
@@ -11270,6 +11665,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[3].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_3_valid_3_qs)
@@ -11298,6 +11694,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_opcode_4_qs)
@@ -11323,6 +11720,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_addr_mode_4_qs)
@@ -11348,6 +11746,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_addr_swap_en_4_qs)
@@ -11373,6 +11772,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_mbyte_en_4_qs)
@@ -11398,6 +11798,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_dummy_size_4_qs)
@@ -11423,6 +11824,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_dummy_en_4_qs)
@@ -11448,6 +11850,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_payload_en_4_qs)
@@ -11473,6 +11876,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_payload_dir_4_qs)
@@ -11498,6 +11902,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_payload_swap_en_4_qs)
@@ -11523,6 +11928,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_upload_4_qs)
@@ -11548,6 +11954,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_busy_4_qs)
@@ -11573,6 +11980,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[4].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_4_valid_4_qs)
@@ -11601,6 +12009,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_opcode_5_qs)
@@ -11626,6 +12035,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_addr_mode_5_qs)
@@ -11651,6 +12061,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_addr_swap_en_5_qs)
@@ -11676,6 +12087,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_mbyte_en_5_qs)
@@ -11701,6 +12113,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_dummy_size_5_qs)
@@ -11726,6 +12139,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_dummy_en_5_qs)
@@ -11751,6 +12165,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_payload_en_5_qs)
@@ -11776,6 +12191,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_payload_dir_5_qs)
@@ -11801,6 +12217,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_payload_swap_en_5_qs)
@@ -11826,6 +12243,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_upload_5_qs)
@@ -11851,6 +12269,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_busy_5_qs)
@@ -11876,6 +12295,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[5].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_5_valid_5_qs)
@@ -11904,6 +12324,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_opcode_6_qs)
@@ -11929,6 +12350,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_addr_mode_6_qs)
@@ -11954,6 +12376,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_addr_swap_en_6_qs)
@@ -11979,6 +12402,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_mbyte_en_6_qs)
@@ -12004,6 +12428,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_dummy_size_6_qs)
@@ -12029,6 +12454,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_dummy_en_6_qs)
@@ -12054,6 +12480,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_payload_en_6_qs)
@@ -12079,6 +12506,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_payload_dir_6_qs)
@@ -12104,6 +12532,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_payload_swap_en_6_qs)
@@ -12129,6 +12558,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_upload_6_qs)
@@ -12154,6 +12584,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_busy_6_qs)
@@ -12179,6 +12610,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[6].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_6_valid_6_qs)
@@ -12207,6 +12639,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_opcode_7_qs)
@@ -12232,6 +12665,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_addr_mode_7_qs)
@@ -12257,6 +12691,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_addr_swap_en_7_qs)
@@ -12282,6 +12717,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_mbyte_en_7_qs)
@@ -12307,6 +12743,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_dummy_size_7_qs)
@@ -12332,6 +12769,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_dummy_en_7_qs)
@@ -12357,6 +12795,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_payload_en_7_qs)
@@ -12382,6 +12821,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_payload_dir_7_qs)
@@ -12407,6 +12847,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_payload_swap_en_7_qs)
@@ -12432,6 +12873,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_upload_7_qs)
@@ -12457,6 +12899,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_busy_7_qs)
@@ -12482,6 +12925,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[7].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_7_valid_7_qs)
@@ -12510,6 +12954,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_opcode_8_qs)
@@ -12535,6 +12980,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_addr_mode_8_qs)
@@ -12560,6 +13006,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_addr_swap_en_8_qs)
@@ -12585,6 +13032,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_mbyte_en_8_qs)
@@ -12610,6 +13058,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_dummy_size_8_qs)
@@ -12635,6 +13084,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_dummy_en_8_qs)
@@ -12660,6 +13110,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_payload_en_8_qs)
@@ -12685,6 +13136,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_payload_dir_8_qs)
@@ -12710,6 +13162,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_payload_swap_en_8_qs)
@@ -12735,6 +13188,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_upload_8_qs)
@@ -12760,6 +13214,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_busy_8_qs)
@@ -12785,6 +13240,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[8].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_8_valid_8_qs)
@@ -12813,6 +13269,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_opcode_9_qs)
@@ -12838,6 +13295,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_addr_mode_9_qs)
@@ -12863,6 +13321,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_addr_swap_en_9_qs)
@@ -12888,6 +13347,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_mbyte_en_9_qs)
@@ -12913,6 +13373,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_dummy_size_9_qs)
@@ -12938,6 +13399,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_dummy_en_9_qs)
@@ -12963,6 +13425,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_payload_en_9_qs)
@@ -12988,6 +13451,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_payload_dir_9_qs)
@@ -13013,6 +13477,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_payload_swap_en_9_qs)
@@ -13038,6 +13503,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_upload_9_qs)
@@ -13063,6 +13529,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_busy_9_qs)
@@ -13088,6 +13555,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[9].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_9_valid_9_qs)
@@ -13116,6 +13584,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_opcode_10_qs)
@@ -13141,6 +13610,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_addr_mode_10_qs)
@@ -13166,6 +13636,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_addr_swap_en_10_qs)
@@ -13191,6 +13662,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_mbyte_en_10_qs)
@@ -13216,6 +13688,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_dummy_size_10_qs)
@@ -13241,6 +13714,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_dummy_en_10_qs)
@@ -13266,6 +13740,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_payload_en_10_qs)
@@ -13291,6 +13766,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_payload_dir_10_qs)
@@ -13316,6 +13792,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_payload_swap_en_10_qs)
@@ -13341,6 +13818,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_upload_10_qs)
@@ -13366,6 +13844,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_busy_10_qs)
@@ -13391,6 +13870,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[10].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_10_valid_10_qs)
@@ -13419,6 +13899,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_opcode_11_qs)
@@ -13444,6 +13925,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_addr_mode_11_qs)
@@ -13469,6 +13951,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_addr_swap_en_11_qs)
@@ -13494,6 +13977,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_mbyte_en_11_qs)
@@ -13519,6 +14003,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_dummy_size_11_qs)
@@ -13544,6 +14029,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_dummy_en_11_qs)
@@ -13569,6 +14055,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_payload_en_11_qs)
@@ -13594,6 +14081,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_payload_dir_11_qs)
@@ -13619,6 +14107,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_payload_swap_en_11_qs)
@@ -13644,6 +14133,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_upload_11_qs)
@@ -13669,6 +14159,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_busy_11_qs)
@@ -13694,6 +14185,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[11].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_11_valid_11_qs)
@@ -13722,6 +14214,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_opcode_12_qs)
@@ -13747,6 +14240,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_addr_mode_12_qs)
@@ -13772,6 +14266,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_addr_swap_en_12_qs)
@@ -13797,6 +14292,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_mbyte_en_12_qs)
@@ -13822,6 +14318,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_dummy_size_12_qs)
@@ -13847,6 +14344,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_dummy_en_12_qs)
@@ -13872,6 +14370,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_payload_en_12_qs)
@@ -13897,6 +14396,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_payload_dir_12_qs)
@@ -13922,6 +14422,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_payload_swap_en_12_qs)
@@ -13947,6 +14448,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_upload_12_qs)
@@ -13972,6 +14474,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_busy_12_qs)
@@ -13997,6 +14500,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[12].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_12_valid_12_qs)
@@ -14025,6 +14529,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_opcode_13_qs)
@@ -14050,6 +14555,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_addr_mode_13_qs)
@@ -14075,6 +14581,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_addr_swap_en_13_qs)
@@ -14100,6 +14607,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_mbyte_en_13_qs)
@@ -14125,6 +14633,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_dummy_size_13_qs)
@@ -14150,6 +14659,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_dummy_en_13_qs)
@@ -14175,6 +14685,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_payload_en_13_qs)
@@ -14200,6 +14711,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_payload_dir_13_qs)
@@ -14225,6 +14737,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_payload_swap_en_13_qs)
@@ -14250,6 +14763,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_upload_13_qs)
@@ -14275,6 +14789,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_busy_13_qs)
@@ -14300,6 +14815,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[13].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_13_valid_13_qs)
@@ -14328,6 +14844,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_opcode_14_qs)
@@ -14353,6 +14870,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_addr_mode_14_qs)
@@ -14378,6 +14896,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_addr_swap_en_14_qs)
@@ -14403,6 +14922,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_mbyte_en_14_qs)
@@ -14428,6 +14948,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_dummy_size_14_qs)
@@ -14453,6 +14974,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_dummy_en_14_qs)
@@ -14478,6 +15000,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_payload_en_14_qs)
@@ -14503,6 +15026,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_payload_dir_14_qs)
@@ -14528,6 +15052,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_payload_swap_en_14_qs)
@@ -14553,6 +15078,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_upload_14_qs)
@@ -14578,6 +15104,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_busy_14_qs)
@@ -14603,6 +15130,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[14].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_14_valid_14_qs)
@@ -14631,6 +15159,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_opcode_15_qs)
@@ -14656,6 +15185,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_addr_mode_15_qs)
@@ -14681,6 +15211,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_addr_swap_en_15_qs)
@@ -14706,6 +15237,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_mbyte_en_15_qs)
@@ -14731,6 +15263,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_dummy_size_15_qs)
@@ -14756,6 +15289,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_dummy_en_15_qs)
@@ -14781,6 +15315,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_payload_en_15_qs)
@@ -14806,6 +15341,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_payload_dir_15_qs)
@@ -14831,6 +15367,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_payload_swap_en_15_qs)
@@ -14856,6 +15393,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_upload_15_qs)
@@ -14881,6 +15419,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_busy_15_qs)
@@ -14906,6 +15445,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[15].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_15_valid_15_qs)
@@ -14934,6 +15474,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_opcode_16_qs)
@@ -14959,6 +15500,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_addr_mode_16_qs)
@@ -14984,6 +15526,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_addr_swap_en_16_qs)
@@ -15009,6 +15552,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_mbyte_en_16_qs)
@@ -15034,6 +15578,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_dummy_size_16_qs)
@@ -15059,6 +15604,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_dummy_en_16_qs)
@@ -15084,6 +15630,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_payload_en_16_qs)
@@ -15109,6 +15656,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_payload_dir_16_qs)
@@ -15134,6 +15682,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_payload_swap_en_16_qs)
@@ -15159,6 +15708,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_upload_16_qs)
@@ -15184,6 +15734,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_busy_16_qs)
@@ -15209,6 +15760,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[16].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_16_valid_16_qs)
@@ -15237,6 +15789,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_opcode_17_qs)
@@ -15262,6 +15815,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_addr_mode_17_qs)
@@ -15287,6 +15841,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_addr_swap_en_17_qs)
@@ -15312,6 +15867,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_mbyte_en_17_qs)
@@ -15337,6 +15893,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_dummy_size_17_qs)
@@ -15362,6 +15919,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_dummy_en_17_qs)
@@ -15387,6 +15945,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_payload_en_17_qs)
@@ -15412,6 +15971,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_payload_dir_17_qs)
@@ -15437,6 +15997,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_payload_swap_en_17_qs)
@@ -15462,6 +16023,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_upload_17_qs)
@@ -15487,6 +16049,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_busy_17_qs)
@@ -15512,6 +16075,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[17].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_17_valid_17_qs)
@@ -15540,6 +16104,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_opcode_18_qs)
@@ -15565,6 +16130,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_addr_mode_18_qs)
@@ -15590,6 +16156,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_addr_swap_en_18_qs)
@@ -15615,6 +16182,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_mbyte_en_18_qs)
@@ -15640,6 +16208,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_dummy_size_18_qs)
@@ -15665,6 +16234,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_dummy_en_18_qs)
@@ -15690,6 +16260,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_payload_en_18_qs)
@@ -15715,6 +16286,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_payload_dir_18_qs)
@@ -15740,6 +16312,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_payload_swap_en_18_qs)
@@ -15765,6 +16338,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_upload_18_qs)
@@ -15790,6 +16364,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_busy_18_qs)
@@ -15815,6 +16390,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[18].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_18_valid_18_qs)
@@ -15843,6 +16419,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_opcode_19_qs)
@@ -15868,6 +16445,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_addr_mode_19_qs)
@@ -15893,6 +16471,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_addr_swap_en_19_qs)
@@ -15918,6 +16497,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_mbyte_en_19_qs)
@@ -15943,6 +16523,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_dummy_size_19_qs)
@@ -15968,6 +16549,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_dummy_en_19_qs)
@@ -15993,6 +16575,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_payload_en_19_qs)
@@ -16018,6 +16601,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_payload_dir_19_qs)
@@ -16043,6 +16627,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_payload_swap_en_19_qs)
@@ -16068,6 +16653,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_upload_19_qs)
@@ -16093,6 +16679,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_busy_19_qs)
@@ -16118,6 +16705,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[19].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_19_valid_19_qs)
@@ -16146,6 +16734,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_opcode_20_qs)
@@ -16171,6 +16760,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_addr_mode_20_qs)
@@ -16196,6 +16786,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_addr_swap_en_20_qs)
@@ -16221,6 +16812,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_mbyte_en_20_qs)
@@ -16246,6 +16838,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_dummy_size_20_qs)
@@ -16271,6 +16864,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_dummy_en_20_qs)
@@ -16296,6 +16890,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_payload_en_20_qs)
@@ -16321,6 +16916,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_payload_dir_20_qs)
@@ -16346,6 +16942,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_payload_swap_en_20_qs)
@@ -16371,6 +16968,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_upload_20_qs)
@@ -16396,6 +16994,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_busy_20_qs)
@@ -16421,6 +17020,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[20].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_20_valid_20_qs)
@@ -16449,6 +17049,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_opcode_21_qs)
@@ -16474,6 +17075,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_addr_mode_21_qs)
@@ -16499,6 +17101,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_addr_swap_en_21_qs)
@@ -16524,6 +17127,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_mbyte_en_21_qs)
@@ -16549,6 +17153,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_dummy_size_21_qs)
@@ -16574,6 +17179,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_dummy_en_21_qs)
@@ -16599,6 +17205,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_payload_en_21_qs)
@@ -16624,6 +17231,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_payload_dir_21_qs)
@@ -16649,6 +17257,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_payload_swap_en_21_qs)
@@ -16674,6 +17283,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_upload_21_qs)
@@ -16699,6 +17309,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_busy_21_qs)
@@ -16724,6 +17335,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[21].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_21_valid_21_qs)
@@ -16752,6 +17364,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_opcode_22_qs)
@@ -16777,6 +17390,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_addr_mode_22_qs)
@@ -16802,6 +17416,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_addr_swap_en_22_qs)
@@ -16827,6 +17442,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_mbyte_en_22_qs)
@@ -16852,6 +17468,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_dummy_size_22_qs)
@@ -16877,6 +17494,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_dummy_en_22_qs)
@@ -16902,6 +17520,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_payload_en_22_qs)
@@ -16927,6 +17546,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_payload_dir_22_qs)
@@ -16952,6 +17572,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_payload_swap_en_22_qs)
@@ -16977,6 +17598,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_upload_22_qs)
@@ -17002,6 +17624,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_busy_22_qs)
@@ -17027,6 +17650,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[22].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_22_valid_22_qs)
@@ -17055,6 +17679,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_opcode_23_qs)
@@ -17080,6 +17705,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].addr_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_addr_mode_23_qs)
@@ -17105,6 +17731,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].addr_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_addr_swap_en_23_qs)
@@ -17130,6 +17757,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].mbyte_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_mbyte_en_23_qs)
@@ -17155,6 +17783,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].dummy_size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_dummy_size_23_qs)
@@ -17180,6 +17809,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].dummy_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_dummy_en_23_qs)
@@ -17205,6 +17835,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].payload_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_payload_en_23_qs)
@@ -17230,6 +17861,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].payload_dir.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_payload_dir_23_qs)
@@ -17255,6 +17887,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].payload_swap_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_payload_swap_en_23_qs)
@@ -17280,6 +17913,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].upload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_upload_23_qs)
@@ -17305,6 +17939,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].busy.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_busy_23_qs)
@@ -17330,6 +17965,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info[23].valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_23_valid_23_qs)
@@ -17357,6 +17993,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info_en4b.opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_en4b_opcode_qs)
@@ -17382,6 +18019,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info_en4b.valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_en4b_valid_qs)
@@ -17409,6 +18047,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info_ex4b.opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_ex4b_opcode_qs)
@@ -17434,6 +18073,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info_ex4b.valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_ex4b_valid_qs)
@@ -17461,6 +18101,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info_wren.opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_wren_opcode_qs)
@@ -17486,6 +18127,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info_wren.valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_wren_valid_qs)
@@ -17513,6 +18155,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info_wrdi.opcode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_wrdi_opcode_qs)
@@ -17538,6 +18181,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cmd_info_wrdi.valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cmd_info_wrdi_valid_qs)
@@ -17565,6 +18209,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_cap_rev_qs)
@@ -17590,6 +18235,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_cap_locality_qs)
@@ -17615,6 +18261,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_cap_max_xfer_size_qs)
@@ -17642,6 +18289,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_cfg.en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_cfg_en_qs)
@@ -17667,6 +18315,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_cfg.tpm_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_cfg_tpm_mode_qs)
@@ -17692,6 +18341,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_cfg.hw_reg_dis.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_cfg_hw_reg_dis_qs)
@@ -17717,6 +18367,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_cfg.tpm_reg_chk_dis.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_cfg_tpm_reg_chk_dis_qs)
@@ -17742,6 +18393,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_cfg.invalid_locality.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_cfg_invalid_locality_qs)
@@ -17769,6 +18421,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_status_cmdaddr_notempty_qs)
@@ -17794,6 +18447,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_status_rdfifo_notempty_qs)
@@ -17819,6 +18473,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_status_rdfifo_depth_qs)
@@ -17844,6 +18499,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_status_wrfifo_depth_qs)
@@ -17872,6 +18528,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_access[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_access_0_access_0_qs)
@@ -17897,6 +18554,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_access[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_access_0_access_1_qs)
@@ -17922,6 +18580,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_access[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_access_0_access_2_qs)
@@ -17947,6 +18606,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_access[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_access_0_access_3_qs)
@@ -17974,6 +18634,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_access[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_access_1_qs)
@@ -18000,6 +18661,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_sts.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_sts_qs)
@@ -18026,6 +18688,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_intf_capability.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_intf_capability_qs)
@@ -18052,6 +18715,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_int_enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_int_enable_qs)
@@ -18078,6 +18742,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_int_vector.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_int_vector_qs)
@@ -18104,6 +18769,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_int_status.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_int_status_qs)
@@ -18131,6 +18797,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_did_vid.vid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_did_vid_vid_qs)
@@ -18156,6 +18823,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_did_vid.did.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_did_vid_did_qs)
@@ -18182,6 +18850,7 @@ module spi_device_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.tpm_rid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (tpm_rid_qs)
@@ -18203,6 +18872,7 @@ module spi_device_reg_top (
     .qre    (reg2hw.tpm_cmd_addr.addr.re),
     .qe     (tpm_cmd_addr_flds_we[0]),
     .q      (reg2hw.tpm_cmd_addr.addr.q),
+    .ds     (),
     .qs     (tpm_cmd_addr_addr_qs)
   );
   assign reg2hw.tpm_cmd_addr.addr.qe = tpm_cmd_addr_qe;
@@ -18218,6 +18888,7 @@ module spi_device_reg_top (
     .qre    (reg2hw.tpm_cmd_addr.cmd.re),
     .qe     (tpm_cmd_addr_flds_we[1]),
     .q      (reg2hw.tpm_cmd_addr.cmd.q),
+    .ds     (),
     .qs     (tpm_cmd_addr_cmd_qs)
   );
   assign reg2hw.tpm_cmd_addr.cmd.qe = tpm_cmd_addr_qe;
@@ -18237,6 +18908,7 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (tpm_read_fifo_flds_we[0]),
     .q      (reg2hw.tpm_read_fifo.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.tpm_read_fifo.qe = tpm_read_fifo_qe;
@@ -18256,6 +18928,7 @@ module spi_device_reg_top (
     .qre    (reg2hw.tpm_write_fifo.re),
     .qe     (tpm_write_fifo_flds_we[0]),
     .q      (reg2hw.tpm_write_fifo.q),
+    .ds     (),
     .qs     (tpm_write_fifo_qs)
   );
   assign reg2hw.tpm_write_fifo.qe = tpm_write_fifo_qe;

@@ -415,6 +415,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.kmac_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_kmac_done_qs)
@@ -440,6 +441,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.fifo_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_fifo_empty_qs)
@@ -465,6 +467,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.kmac_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_kmac_err_qs)
@@ -492,6 +495,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.kmac_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_kmac_done_qs)
@@ -517,6 +521,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.fifo_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_fifo_empty_qs)
@@ -542,6 +547,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.kmac_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_kmac_err_qs)
@@ -563,6 +569,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.kmac_done.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.kmac_done.qe = intr_test_qe;
@@ -578,6 +585,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.fifo_empty.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.fifo_empty.qe = intr_test_qe;
@@ -593,6 +601,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.kmac_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.kmac_err.qe = intr_test_qe;
@@ -613,6 +622,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_operation_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_operation_err.qe = alert_test_qe;
@@ -628,6 +638,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_fault_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_fault_err.qe = alert_test_qe;
@@ -644,6 +655,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (cfg_regwen_qs)
   );
 
@@ -685,6 +697,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[0]),
     .q      (reg2hw.cfg_shadowed.kmac_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_kmac_en_qs),
@@ -720,6 +733,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[1]),
     .q      (reg2hw.cfg_shadowed.kstrength.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_kstrength_qs),
@@ -755,6 +769,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[2]),
     .q      (reg2hw.cfg_shadowed.mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_mode_qs),
@@ -790,6 +805,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[3]),
     .q      (reg2hw.cfg_shadowed.msg_endianness.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_msg_endianness_qs),
@@ -825,6 +841,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[4]),
     .q      (reg2hw.cfg_shadowed.state_endianness.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_state_endianness_qs),
@@ -860,6 +877,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[5]),
     .q      (reg2hw.cfg_shadowed.sideload.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_sideload_qs),
@@ -895,6 +913,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[6]),
     .q      (reg2hw.cfg_shadowed.entropy_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_entropy_mode_qs),
@@ -930,6 +949,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[7]),
     .q      (reg2hw.cfg_shadowed.entropy_fast_process.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_entropy_fast_process_qs),
@@ -965,6 +985,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[8]),
     .q      (reg2hw.cfg_shadowed.msg_mask.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_msg_mask_qs),
@@ -1000,6 +1021,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[9]),
     .q      (reg2hw.cfg_shadowed.entropy_ready.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_entropy_ready_qs),
@@ -1035,6 +1057,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[10]),
     .q      (reg2hw.cfg_shadowed.err_processed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_err_processed_qs),
@@ -1070,6 +1093,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (cfg_shadowed_flds_we[11]),
     .q      (reg2hw.cfg_shadowed.en_unsupported_modestrength.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg_shadowed_en_unsupported_modestrength_qs),
@@ -1099,6 +1123,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (cmd_flds_we[0]),
     .q      (reg2hw.cmd.cmd.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.cmd.cmd.qe = cmd_qe;
@@ -1114,6 +1139,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (cmd_flds_we[1]),
     .q      (reg2hw.cmd.entropy_req.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.cmd.entropy_req.qe = cmd_qe;
@@ -1129,6 +1155,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (cmd_flds_we[2]),
     .q      (reg2hw.cmd.hash_cnt_clr.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.cmd.hash_cnt_clr.qe = cmd_qe;
@@ -1146,6 +1173,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_sha3_idle_qs)
   );
 
@@ -1160,6 +1188,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_sha3_absorb_qs)
   );
 
@@ -1174,6 +1203,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_sha3_squeeze_qs)
   );
 
@@ -1188,6 +1218,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_fifo_depth_qs)
   );
 
@@ -1202,6 +1233,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_fifo_empty_qs)
   );
 
@@ -1216,6 +1248,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_fifo_full_qs)
   );
 
@@ -1230,6 +1263,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_alert_fatal_fault_qs)
   );
 
@@ -1244,6 +1278,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_alert_recov_ctrl_update_err_qs)
   );
 
@@ -1272,6 +1307,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.entropy_period.prescaler.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (entropy_period_prescaler_qs)
@@ -1297,6 +1333,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.entropy_period.wait_timer.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (entropy_period_wait_timer_qs)
@@ -1323,6 +1360,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (entropy_refresh_hash_cnt_qs)
@@ -1355,6 +1393,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.entropy_refresh_threshold_shadowed.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (entropy_refresh_threshold_shadowed_qs),
@@ -1386,6 +1425,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (entropy_seed_0_flds_we[0]),
     .q      (reg2hw.entropy_seed[0].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.entropy_seed[0].qe = entropy_seed_0_qe;
@@ -1409,6 +1449,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (entropy_seed_1_flds_we[0]),
     .q      (reg2hw.entropy_seed[1].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.entropy_seed[1].qe = entropy_seed_1_qe;
@@ -1432,6 +1473,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (entropy_seed_2_flds_we[0]),
     .q      (reg2hw.entropy_seed[2].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.entropy_seed[2].qe = entropy_seed_2_qe;
@@ -1455,6 +1497,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (entropy_seed_3_flds_we[0]),
     .q      (reg2hw.entropy_seed[3].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.entropy_seed[3].qe = entropy_seed_3_qe;
@@ -1478,6 +1521,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (entropy_seed_4_flds_we[0]),
     .q      (reg2hw.entropy_seed[4].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.entropy_seed[4].qe = entropy_seed_4_qe;
@@ -1501,6 +1545,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_0_flds_we[0]),
     .q      (reg2hw.key_share0[0].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[0].qe = key_share0_0_qe;
@@ -1524,6 +1569,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_1_flds_we[0]),
     .q      (reg2hw.key_share0[1].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[1].qe = key_share0_1_qe;
@@ -1547,6 +1593,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_2_flds_we[0]),
     .q      (reg2hw.key_share0[2].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[2].qe = key_share0_2_qe;
@@ -1570,6 +1617,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_3_flds_we[0]),
     .q      (reg2hw.key_share0[3].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[3].qe = key_share0_3_qe;
@@ -1593,6 +1641,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_4_flds_we[0]),
     .q      (reg2hw.key_share0[4].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[4].qe = key_share0_4_qe;
@@ -1616,6 +1665,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_5_flds_we[0]),
     .q      (reg2hw.key_share0[5].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[5].qe = key_share0_5_qe;
@@ -1639,6 +1689,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_6_flds_we[0]),
     .q      (reg2hw.key_share0[6].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[6].qe = key_share0_6_qe;
@@ -1662,6 +1713,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_7_flds_we[0]),
     .q      (reg2hw.key_share0[7].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[7].qe = key_share0_7_qe;
@@ -1685,6 +1737,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_8_flds_we[0]),
     .q      (reg2hw.key_share0[8].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[8].qe = key_share0_8_qe;
@@ -1708,6 +1761,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_9_flds_we[0]),
     .q      (reg2hw.key_share0[9].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[9].qe = key_share0_9_qe;
@@ -1731,6 +1785,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_10_flds_we[0]),
     .q      (reg2hw.key_share0[10].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[10].qe = key_share0_10_qe;
@@ -1754,6 +1809,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_11_flds_we[0]),
     .q      (reg2hw.key_share0[11].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[11].qe = key_share0_11_qe;
@@ -1777,6 +1833,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_12_flds_we[0]),
     .q      (reg2hw.key_share0[12].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[12].qe = key_share0_12_qe;
@@ -1800,6 +1857,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_13_flds_we[0]),
     .q      (reg2hw.key_share0[13].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[13].qe = key_share0_13_qe;
@@ -1823,6 +1881,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_14_flds_we[0]),
     .q      (reg2hw.key_share0[14].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[14].qe = key_share0_14_qe;
@@ -1846,6 +1905,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share0_15_flds_we[0]),
     .q      (reg2hw.key_share0[15].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share0[15].qe = key_share0_15_qe;
@@ -1869,6 +1929,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_0_flds_we[0]),
     .q      (reg2hw.key_share1[0].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[0].qe = key_share1_0_qe;
@@ -1892,6 +1953,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_1_flds_we[0]),
     .q      (reg2hw.key_share1[1].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[1].qe = key_share1_1_qe;
@@ -1915,6 +1977,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_2_flds_we[0]),
     .q      (reg2hw.key_share1[2].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[2].qe = key_share1_2_qe;
@@ -1938,6 +2001,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_3_flds_we[0]),
     .q      (reg2hw.key_share1[3].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[3].qe = key_share1_3_qe;
@@ -1961,6 +2025,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_4_flds_we[0]),
     .q      (reg2hw.key_share1[4].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[4].qe = key_share1_4_qe;
@@ -1984,6 +2049,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_5_flds_we[0]),
     .q      (reg2hw.key_share1[5].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[5].qe = key_share1_5_qe;
@@ -2007,6 +2073,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_6_flds_we[0]),
     .q      (reg2hw.key_share1[6].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[6].qe = key_share1_6_qe;
@@ -2030,6 +2097,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_7_flds_we[0]),
     .q      (reg2hw.key_share1[7].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[7].qe = key_share1_7_qe;
@@ -2053,6 +2121,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_8_flds_we[0]),
     .q      (reg2hw.key_share1[8].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[8].qe = key_share1_8_qe;
@@ -2076,6 +2145,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_9_flds_we[0]),
     .q      (reg2hw.key_share1[9].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[9].qe = key_share1_9_qe;
@@ -2099,6 +2169,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_10_flds_we[0]),
     .q      (reg2hw.key_share1[10].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[10].qe = key_share1_10_qe;
@@ -2122,6 +2193,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_11_flds_we[0]),
     .q      (reg2hw.key_share1[11].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[11].qe = key_share1_11_qe;
@@ -2145,6 +2217,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_12_flds_we[0]),
     .q      (reg2hw.key_share1[12].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[12].qe = key_share1_12_qe;
@@ -2168,6 +2241,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_13_flds_we[0]),
     .q      (reg2hw.key_share1[13].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[13].qe = key_share1_13_qe;
@@ -2191,6 +2265,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_14_flds_we[0]),
     .q      (reg2hw.key_share1[14].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[14].qe = key_share1_14_qe;
@@ -2214,6 +2289,7 @@ module kmac_reg_top (
     .qre    (),
     .qe     (key_share1_15_flds_we[0]),
     .q      (reg2hw.key_share1[15].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key_share1[15].qe = key_share1_15_qe;
@@ -2242,6 +2318,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.key_len.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -2272,6 +2349,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prefix[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prefix_0_qs)
@@ -2302,6 +2380,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prefix[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prefix_1_qs)
@@ -2332,6 +2411,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prefix[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prefix_2_qs)
@@ -2362,6 +2442,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prefix[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prefix_3_qs)
@@ -2392,6 +2473,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prefix[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prefix_4_qs)
@@ -2422,6 +2504,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prefix[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prefix_5_qs)
@@ -2452,6 +2535,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prefix[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prefix_6_qs)
@@ -2482,6 +2566,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prefix[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prefix_7_qs)
@@ -2512,6 +2597,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prefix[8].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prefix_8_qs)
@@ -2542,6 +2628,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prefix[9].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prefix_9_qs)
@@ -2572,6 +2659,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prefix[10].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prefix_10_qs)
@@ -2598,6 +2686,7 @@ module kmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_qs)

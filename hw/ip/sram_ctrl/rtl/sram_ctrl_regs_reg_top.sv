@@ -157,6 +157,7 @@ module sram_ctrl_regs_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -183,6 +184,7 @@ module sram_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.status.bus_integ_error.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_bus_integ_error_qs)
@@ -208,6 +210,7 @@ module sram_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.status.init_error.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_init_error_qs)
@@ -233,6 +236,7 @@ module sram_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.status.escalated.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_escalated_qs)
@@ -258,6 +262,7 @@ module sram_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_scr_key_valid_qs)
@@ -283,6 +288,7 @@ module sram_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.status.scr_key_seed_valid.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_scr_key_seed_valid_qs)
@@ -308,6 +314,7 @@ module sram_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.status.init_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_init_done_qs)
@@ -334,6 +341,7 @@ module sram_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (exec_regwen_qs)
@@ -363,6 +371,7 @@ module sram_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.exec.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (exec_qs)
@@ -389,6 +398,7 @@ module sram_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_regwen_qs)
@@ -430,6 +440,7 @@ module sram_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (ctrl_flds_we[0]),
     .q      (reg2hw.ctrl.renew_scr_key.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -456,6 +467,7 @@ module sram_ctrl_regs_reg_top (
     // to internal hardware
     .qe     (ctrl_flds_we[1]),
     .q      (reg2hw.ctrl.init.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()

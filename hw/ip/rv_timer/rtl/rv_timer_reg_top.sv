@@ -167,6 +167,7 @@ module rv_timer_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -193,6 +194,7 @@ module rv_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_qs)
@@ -220,6 +222,7 @@ module rv_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cfg0.prescale.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg0_prescale_qs)
@@ -245,6 +248,7 @@ module rv_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cfg0.step.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cfg0_step_qs)
@@ -271,6 +275,7 @@ module rv_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timer_v_lower0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timer_v_lower0_qs)
@@ -297,6 +302,7 @@ module rv_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.timer_v_upper0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (timer_v_upper0_qs)
@@ -334,6 +340,7 @@ module rv_timer_reg_top (
     // to internal hardware
     .qe     (compare_lower0_0_flds_we[0]),
     .q      (reg2hw.compare_lower0_0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (compare_lower0_0_qs)
@@ -372,6 +379,7 @@ module rv_timer_reg_top (
     // to internal hardware
     .qe     (compare_upper0_0_flds_we[0]),
     .q      (reg2hw.compare_upper0_0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (compare_upper0_0_qs)
@@ -400,6 +408,7 @@ module rv_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable0[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable0_qs)
@@ -427,6 +436,7 @@ module rv_timer_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state0[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state0_qs)
@@ -448,6 +458,7 @@ module rv_timer_reg_top (
     .qre    (),
     .qe     (intr_test0_flds_we[0]),
     .q      (reg2hw.intr_test0[0].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test0[0].qe = intr_test0_qe;

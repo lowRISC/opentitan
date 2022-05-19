@@ -318,6 +318,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.otp_operation_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_otp_operation_done_qs)
@@ -343,6 +344,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.otp_error.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_otp_error_qs)
@@ -370,6 +372,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.otp_operation_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_otp_operation_done_qs)
@@ -395,6 +398,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.otp_error.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_otp_error_qs)
@@ -416,6 +420,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.otp_operation_done.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.otp_operation_done.qe = intr_test_qe;
@@ -431,6 +436,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.otp_error.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.otp_error.qe = intr_test_qe;
@@ -451,6 +457,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.fatal_macro_error.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_macro_error.qe = alert_test_qe;
@@ -466,6 +473,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_check_error.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_check_error.qe = alert_test_qe;
@@ -481,6 +489,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[2]),
     .q      (reg2hw.alert_test.fatal_bus_integ_error.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_bus_integ_error.qe = alert_test_qe;
@@ -498,6 +507,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_vendor_test_error_qs)
   );
 
@@ -512,6 +522,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_creator_sw_cfg_error_qs)
   );
 
@@ -526,6 +537,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_owner_sw_cfg_error_qs)
   );
 
@@ -540,6 +552,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_hw_cfg_error_qs)
   );
 
@@ -554,6 +567,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_secret0_error_qs)
   );
 
@@ -568,6 +582,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_secret1_error_qs)
   );
 
@@ -582,6 +597,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_secret2_error_qs)
   );
 
@@ -596,6 +612,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_life_cycle_error_qs)
   );
 
@@ -610,6 +627,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_dai_error_qs)
   );
 
@@ -624,6 +642,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_lci_error_qs)
   );
 
@@ -638,6 +657,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_timeout_error_qs)
   );
 
@@ -652,6 +672,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_lfsr_fsm_error_qs)
   );
 
@@ -666,6 +687,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_scrambling_fsm_error_qs)
   );
 
@@ -680,6 +702,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_key_deriv_fsm_error_qs)
   );
 
@@ -694,6 +717,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_bus_integ_error_qs)
   );
 
@@ -708,6 +732,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_dai_idle_qs)
   );
 
@@ -722,6 +747,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_check_pending_qs)
   );
 
@@ -739,6 +765,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (err_code_err_code_0_qs)
   );
 
@@ -753,6 +780,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (err_code_err_code_1_qs)
   );
 
@@ -767,6 +795,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (err_code_err_code_2_qs)
   );
 
@@ -781,6 +810,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (err_code_err_code_3_qs)
   );
 
@@ -795,6 +825,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (err_code_err_code_4_qs)
   );
 
@@ -809,6 +840,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (err_code_err_code_5_qs)
   );
 
@@ -823,6 +855,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (err_code_err_code_6_qs)
   );
 
@@ -837,6 +870,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (err_code_err_code_7_qs)
   );
 
@@ -851,6 +885,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (err_code_err_code_8_qs)
   );
 
@@ -865,6 +900,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (err_code_err_code_9_qs)
   );
 
@@ -880,6 +916,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (direct_access_regwen_qs)
   );
 
@@ -902,6 +939,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (direct_access_cmd_flds_we[0]),
     .q      (reg2hw.direct_access_cmd.rd.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.direct_access_cmd.rd.qe = direct_access_cmd_qe;
@@ -917,6 +955,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (direct_access_cmd_flds_we[1]),
     .q      (reg2hw.direct_access_cmd.wr.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.direct_access_cmd.wr.qe = direct_access_cmd_qe;
@@ -932,6 +971,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (direct_access_cmd_flds_we[2]),
     .q      (reg2hw.direct_access_cmd.digest.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.direct_access_cmd.digest.qe = direct_access_cmd_qe;
@@ -960,6 +1000,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.direct_access_address.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (direct_access_address_qs)
@@ -990,6 +1031,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.direct_access_wdata[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (direct_access_wdata_0_qs)
@@ -1020,6 +1062,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.direct_access_wdata[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (direct_access_wdata_1_qs)
@@ -1038,6 +1081,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (direct_access_rdata_0_qs)
   );
 
@@ -1054,6 +1098,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (direct_access_rdata_1_qs)
   );
 
@@ -1078,6 +1123,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (check_trigger_regwen_qs)
@@ -1102,6 +1148,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (check_trigger_flds_we[0]),
     .q      (reg2hw.check_trigger.integrity.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.check_trigger.integrity.qe = check_trigger_qe;
@@ -1117,6 +1164,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (check_trigger_flds_we[1]),
     .q      (reg2hw.check_trigger.consistency.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.check_trigger.consistency.qe = check_trigger_qe;
@@ -1142,6 +1190,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (check_regwen_qs)
@@ -1171,6 +1220,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.check_timeout.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (check_timeout_qs)
@@ -1200,6 +1250,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.integrity_check_period.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (integrity_check_period_qs)
@@ -1229,6 +1280,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.consistency_check_period.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (consistency_check_period_qs)
@@ -1258,6 +1310,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.vendor_test_read_lock.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (vendor_test_read_lock_qs)
@@ -1287,6 +1340,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.creator_sw_cfg_read_lock.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (creator_sw_cfg_read_lock_qs)
@@ -1316,6 +1370,7 @@ module otp_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.owner_sw_cfg_read_lock.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (owner_sw_cfg_read_lock_qs)
@@ -1334,6 +1389,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (vendor_test_digest_0_qs)
   );
 
@@ -1350,6 +1406,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (vendor_test_digest_1_qs)
   );
 
@@ -1366,6 +1423,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (creator_sw_cfg_digest_0_qs)
   );
 
@@ -1382,6 +1440,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (creator_sw_cfg_digest_1_qs)
   );
 
@@ -1398,6 +1457,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (owner_sw_cfg_digest_0_qs)
   );
 
@@ -1414,6 +1474,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (owner_sw_cfg_digest_1_qs)
   );
 
@@ -1430,6 +1491,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (hw_cfg_digest_0_qs)
   );
 
@@ -1446,6 +1508,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (hw_cfg_digest_1_qs)
   );
 
@@ -1462,6 +1525,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (secret0_digest_0_qs)
   );
 
@@ -1478,6 +1542,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (secret0_digest_1_qs)
   );
 
@@ -1494,6 +1559,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (secret1_digest_0_qs)
   );
 
@@ -1510,6 +1576,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (secret1_digest_1_qs)
   );
 
@@ -1526,6 +1593,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (secret2_digest_0_qs)
   );
 
@@ -1542,6 +1610,7 @@ module otp_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (secret2_digest_1_qs)
   );
 

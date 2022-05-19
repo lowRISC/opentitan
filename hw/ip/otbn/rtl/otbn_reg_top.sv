@@ -270,6 +270,7 @@ module otbn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_qs)
@@ -296,6 +297,7 @@ module otbn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_qs)
@@ -316,6 +318,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.qe = intr_test_qe;
@@ -336,6 +339,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.fatal.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal.qe = alert_test_qe;
@@ -351,6 +355,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.recov.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov.qe = alert_test_qe;
@@ -370,6 +375,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (cmd_flds_we[0]),
     .q      (reg2hw.cmd.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.cmd.qe = cmd_qe;
@@ -389,6 +395,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (ctrl_flds_we[0]),
     .q      (reg2hw.ctrl.q),
+    .ds     (),
     .qs     (ctrl_qs)
   );
   assign reg2hw.ctrl.qe = ctrl_qe;
@@ -414,6 +421,7 @@ module otbn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_qs)
@@ -435,6 +443,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[0]),
     .q      (reg2hw.err_bits.bad_data_addr.q),
+    .ds     (),
     .qs     (err_bits_bad_data_addr_qs)
   );
   assign reg2hw.err_bits.bad_data_addr.qe = err_bits_qe;
@@ -450,6 +459,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[1]),
     .q      (reg2hw.err_bits.bad_insn_addr.q),
+    .ds     (),
     .qs     (err_bits_bad_insn_addr_qs)
   );
   assign reg2hw.err_bits.bad_insn_addr.qe = err_bits_qe;
@@ -465,6 +475,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[2]),
     .q      (reg2hw.err_bits.call_stack.q),
+    .ds     (),
     .qs     (err_bits_call_stack_qs)
   );
   assign reg2hw.err_bits.call_stack.qe = err_bits_qe;
@@ -480,6 +491,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[3]),
     .q      (reg2hw.err_bits.illegal_insn.q),
+    .ds     (),
     .qs     (err_bits_illegal_insn_qs)
   );
   assign reg2hw.err_bits.illegal_insn.qe = err_bits_qe;
@@ -495,6 +507,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[4]),
     .q      (reg2hw.err_bits.loop.q),
+    .ds     (),
     .qs     (err_bits_loop_qs)
   );
   assign reg2hw.err_bits.loop.qe = err_bits_qe;
@@ -510,6 +523,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[5]),
     .q      (reg2hw.err_bits.key_invalid.q),
+    .ds     (),
     .qs     (err_bits_key_invalid_qs)
   );
   assign reg2hw.err_bits.key_invalid.qe = err_bits_qe;
@@ -525,6 +539,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[6]),
     .q      (reg2hw.err_bits.rnd_rep_chk_fail.q),
+    .ds     (),
     .qs     (err_bits_rnd_rep_chk_fail_qs)
   );
   assign reg2hw.err_bits.rnd_rep_chk_fail.qe = err_bits_qe;
@@ -540,6 +555,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[7]),
     .q      (reg2hw.err_bits.rnd_fips_chk_fail.q),
+    .ds     (),
     .qs     (err_bits_rnd_fips_chk_fail_qs)
   );
   assign reg2hw.err_bits.rnd_fips_chk_fail.qe = err_bits_qe;
@@ -555,6 +571,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[8]),
     .q      (reg2hw.err_bits.imem_intg_violation.q),
+    .ds     (),
     .qs     (err_bits_imem_intg_violation_qs)
   );
   assign reg2hw.err_bits.imem_intg_violation.qe = err_bits_qe;
@@ -570,6 +587,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[9]),
     .q      (reg2hw.err_bits.dmem_intg_violation.q),
+    .ds     (),
     .qs     (err_bits_dmem_intg_violation_qs)
   );
   assign reg2hw.err_bits.dmem_intg_violation.qe = err_bits_qe;
@@ -585,6 +603,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[10]),
     .q      (reg2hw.err_bits.reg_intg_violation.q),
+    .ds     (),
     .qs     (err_bits_reg_intg_violation_qs)
   );
   assign reg2hw.err_bits.reg_intg_violation.qe = err_bits_qe;
@@ -600,6 +619,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[11]),
     .q      (reg2hw.err_bits.bus_intg_violation.q),
+    .ds     (),
     .qs     (err_bits_bus_intg_violation_qs)
   );
   assign reg2hw.err_bits.bus_intg_violation.qe = err_bits_qe;
@@ -615,6 +635,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[12]),
     .q      (reg2hw.err_bits.bad_internal_state.q),
+    .ds     (),
     .qs     (err_bits_bad_internal_state_qs)
   );
   assign reg2hw.err_bits.bad_internal_state.qe = err_bits_qe;
@@ -630,6 +651,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[13]),
     .q      (reg2hw.err_bits.illegal_bus_access.q),
+    .ds     (),
     .qs     (err_bits_illegal_bus_access_qs)
   );
   assign reg2hw.err_bits.illegal_bus_access.qe = err_bits_qe;
@@ -645,6 +667,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[14]),
     .q      (reg2hw.err_bits.lifecycle_escalation.q),
+    .ds     (),
     .qs     (err_bits_lifecycle_escalation_qs)
   );
   assign reg2hw.err_bits.lifecycle_escalation.qe = err_bits_qe;
@@ -660,6 +683,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (err_bits_flds_we[15]),
     .q      (reg2hw.err_bits.fatal_software.q),
+    .ds     (),
     .qs     (err_bits_fatal_software_qs)
   );
   assign reg2hw.err_bits.fatal_software.qe = err_bits_qe;
@@ -686,6 +710,7 @@ module otbn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_cause_imem_intg_violation_qs)
@@ -711,6 +736,7 @@ module otbn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_cause_dmem_intg_violation_qs)
@@ -736,6 +762,7 @@ module otbn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_cause_reg_intg_violation_qs)
@@ -761,6 +788,7 @@ module otbn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_cause_bus_intg_violation_qs)
@@ -786,6 +814,7 @@ module otbn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_cause_bad_internal_state_qs)
@@ -811,6 +840,7 @@ module otbn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_cause_illegal_bus_access_qs)
@@ -836,6 +866,7 @@ module otbn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_cause_lifecycle_escalation_qs)
@@ -861,6 +892,7 @@ module otbn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fatal_alert_cause_fatal_software_qs)
@@ -881,6 +913,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (insn_cnt_flds_we[0]),
     .q      (reg2hw.insn_cnt.q),
+    .ds     (),
     .qs     (insn_cnt_qs)
   );
   assign reg2hw.insn_cnt.qe = insn_cnt_qe;
@@ -900,6 +933,7 @@ module otbn_reg_top (
     .qre    (),
     .qe     (load_checksum_flds_we[0]),
     .q      (reg2hw.load_checksum.q),
+    .ds     (),
     .qs     (load_checksum_qs)
   );
   assign reg2hw.load_checksum.qe = load_checksum_qe;

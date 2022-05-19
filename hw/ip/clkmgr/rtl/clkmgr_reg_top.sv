@@ -156,6 +156,7 @@ module clkmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.clk_enables.clk_fixed_peri_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (clk_enables_clk_fixed_peri_en_qs)
@@ -181,6 +182,7 @@ module clkmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.clk_enables.clk_usb_48mhz_peri_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (clk_enables_clk_usb_48mhz_peri_en_qs)
@@ -208,6 +210,7 @@ module clkmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.clk_hints.clk_main_aes_hint.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (clk_hints_clk_main_aes_hint_qs)
@@ -233,6 +236,7 @@ module clkmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.clk_hints.clk_main_hmac_hint.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (clk_hints_clk_main_hmac_hint_qs)
@@ -260,6 +264,7 @@ module clkmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (clk_hints_status_clk_main_aes_val_qs)
@@ -285,6 +290,7 @@ module clkmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (clk_hints_status_clk_main_hmac_val_qs)

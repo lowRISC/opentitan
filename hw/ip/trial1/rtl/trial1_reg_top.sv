@@ -222,6 +222,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rwtype0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype0_qs)
@@ -249,6 +250,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rwtype1.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype1_field0_qs)
@@ -274,6 +276,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rwtype1.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype1_field1_qs)
@@ -299,6 +302,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rwtype1.field4.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype1_field4_qs)
@@ -324,6 +328,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rwtype1.field15_8.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype1_field15_8_qs)
@@ -350,6 +355,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rwtype2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype2_qs)
@@ -377,6 +383,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rwtype3.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype3_field0_qs)
@@ -402,6 +409,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rwtype3.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype3_field1_qs)
@@ -429,6 +437,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rwtype4.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype4_field0_qs)
@@ -454,6 +463,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rwtype4.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype4_field1_qs)
@@ -480,6 +490,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rotype0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rotype0_qs)
@@ -506,6 +517,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.w1ctype0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (w1ctype0_qs)
@@ -533,6 +545,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.w1ctype1.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (w1ctype1_field0_qs)
@@ -558,6 +571,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.w1ctype1.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (w1ctype1_field1_qs)
@@ -584,6 +598,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.w1ctype2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (w1ctype2_qs)
@@ -610,6 +625,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.w1stype2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (w1stype2_qs)
@@ -636,6 +652,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.w0ctype2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (w0ctype2_qs)
@@ -662,6 +679,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.r0w1ctype2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -688,6 +706,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rctype0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rctype0_qs)
@@ -714,6 +733,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.wotype0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -741,6 +761,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mixtype0.field0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mixtype0_field0_qs)
@@ -766,6 +787,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mixtype0.field1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mixtype0_field1_qs)
@@ -791,6 +813,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mixtype0.field2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mixtype0_field2_qs)
@@ -816,6 +839,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mixtype0.field3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mixtype0_field3_qs)
@@ -841,6 +865,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mixtype0.field4.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mixtype0_field4_qs)
@@ -866,6 +891,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mixtype0.field5.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mixtype0_field5_qs)
@@ -891,6 +917,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mixtype0.field6.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mixtype0_field6_qs)
@@ -916,6 +943,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mixtype0.field7.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -953,6 +981,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (rwtype5_flds_we[0]),
     .q      (reg2hw.rwtype5.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype5_qs)
@@ -974,6 +1003,7 @@ module trial1_reg_top (
     .qre    (),
     .qe     (rwtype6_flds_we[0]),
     .q      (reg2hw.rwtype6.q),
+    .ds     (),
     .qs     (rwtype6_qs)
   );
   assign reg2hw.rwtype6.qe = rwtype6_qe;
@@ -990,6 +1020,7 @@ module trial1_reg_top (
     .qre    (),
     .qe     (),
     .q      (reg2hw.rotype1.q),
+    .ds     (),
     .qs     (rotype1_qs)
   );
 
@@ -1028,6 +1059,7 @@ module trial1_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rwtype7_qs)

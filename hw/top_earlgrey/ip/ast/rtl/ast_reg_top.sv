@@ -268,6 +268,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega0.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega0_qs)
@@ -294,6 +295,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega1.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega1_qs)
@@ -320,6 +322,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega2.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega2_qs)
@@ -346,6 +349,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega3.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega3_qs)
@@ -372,6 +376,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega4.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega4_qs)
@@ -398,6 +403,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega5.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega5_qs)
@@ -424,6 +430,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega6.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega6_qs)
@@ -450,6 +457,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega7.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega7_qs)
@@ -476,6 +484,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega8.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega8_qs)
@@ -502,6 +511,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega9.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega9_qs)
@@ -528,6 +538,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega10.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega10_qs)
@@ -554,6 +565,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega11.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega11_qs)
@@ -580,6 +592,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega12.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega12_qs)
@@ -606,6 +619,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega13.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega13_qs)
@@ -632,6 +646,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega14.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega14_qs)
@@ -658,6 +673,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega15.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega15_qs)
@@ -684,6 +700,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega16.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega16_qs)
@@ -710,6 +727,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega17.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega17_qs)
@@ -736,6 +754,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega18.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega18_qs)
@@ -762,6 +781,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega19.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega19_qs)
@@ -788,6 +808,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega20.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega20_qs)
@@ -814,6 +835,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega21.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega21_qs)
@@ -840,6 +862,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega22.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega22_qs)
@@ -866,6 +889,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega23.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega23_qs)
@@ -892,6 +916,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega24.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega24_qs)
@@ -918,6 +943,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega25.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega25_qs)
@@ -944,6 +970,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega26.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega26_qs)
@@ -970,6 +997,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega27.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega27_qs)
@@ -996,6 +1024,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega28.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega28_qs)
@@ -1022,6 +1051,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega29.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega29_qs)
@@ -1048,6 +1078,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega30.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega30_qs)
@@ -1074,6 +1105,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega31.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega31_qs)
@@ -1100,6 +1132,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega32.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega32_qs)
@@ -1126,6 +1159,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega33.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega33_qs)
@@ -1152,6 +1186,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega34.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega34_qs)
@@ -1178,6 +1213,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega35.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega35_qs)
@@ -1204,6 +1240,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega36.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega36_qs)
@@ -1230,6 +1267,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.rega37.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (rega37_qs)
@@ -1250,6 +1288,7 @@ module ast_reg_top (
     .qre    (),
     .qe     (regal_flds_we[0]),
     .q      (reg2hw.regal.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.regal.qe = regal_qe;
@@ -1276,6 +1315,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.regb[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (regb_0_qs)
@@ -1303,6 +1343,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.regb[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (regb_1_qs)
@@ -1330,6 +1371,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.regb[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (regb_2_qs)
@@ -1357,6 +1399,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.regb[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (regb_3_qs)
@@ -1384,6 +1427,7 @@ module ast_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.regb[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (regb_4_qs)

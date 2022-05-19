@@ -232,6 +232,7 @@ module rstmgr_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.fatal_fault.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_fault.qe = alert_test_qe;
@@ -247,6 +248,7 @@ module rstmgr_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_cnsty_fault.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_cnsty_fault.qe = alert_test_qe;
@@ -272,6 +274,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.reset_req.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_req_qs)
@@ -299,6 +302,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_info_por_qs)
@@ -324,6 +328,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_info_low_power_exit_qs)
@@ -349,6 +354,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_info_ndm_reset_qs)
@@ -374,6 +380,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.reset_info.sw_reset.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_info_sw_reset_qs)
@@ -399,6 +406,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.reset_info.hw_req.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (reset_info_hw_req_qs)
@@ -425,6 +433,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_regwen_qs)
@@ -455,6 +464,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_info_ctrl.en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_info_ctrl_en_qs)
@@ -480,6 +490,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.alert_info_ctrl.index.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (alert_info_ctrl_index_qs)
@@ -497,6 +508,7 @@ module rstmgr_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_info_attr_qs)
   );
 
@@ -512,6 +524,7 @@ module rstmgr_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (alert_info_qs)
   );
 
@@ -536,6 +549,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cpu_regwen_qs)
@@ -566,6 +580,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cpu_info_ctrl.en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cpu_info_ctrl_en_qs)
@@ -591,6 +606,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.cpu_info_ctrl.index.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (cpu_info_ctrl_index_qs)
@@ -608,6 +624,7 @@ module rstmgr_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (cpu_info_attr_qs)
   );
 
@@ -623,6 +640,7 @@ module rstmgr_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (cpu_info_qs)
   );
 
@@ -648,6 +666,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_regwen_0_qs)
@@ -675,6 +694,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_regwen_1_qs)
@@ -702,6 +722,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_regwen_2_qs)
@@ -729,6 +750,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_regwen_3_qs)
@@ -756,6 +778,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_regwen_4_qs)
@@ -783,6 +806,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_regwen_5_qs)
@@ -810,6 +834,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_regwen_6_qs)
@@ -867,6 +892,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_rst_ctrl_n[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_ctrl_n_0_qs)
@@ -897,6 +923,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_rst_ctrl_n[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_ctrl_n_1_qs)
@@ -927,6 +954,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_rst_ctrl_n[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_ctrl_n_2_qs)
@@ -957,6 +985,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_rst_ctrl_n[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_ctrl_n_3_qs)
@@ -987,6 +1016,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_rst_ctrl_n[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_ctrl_n_4_qs)
@@ -1017,6 +1047,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_rst_ctrl_n[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_ctrl_n_5_qs)
@@ -1047,6 +1078,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_rst_ctrl_n[6].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_ctrl_n_6_qs)
@@ -1104,6 +1136,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_reg_intg_err_qs)
@@ -1129,6 +1162,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_reset_consistency_err_qs)

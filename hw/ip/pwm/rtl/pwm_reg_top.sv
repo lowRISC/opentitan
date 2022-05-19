@@ -115,18 +115,6 @@ module pwm_reg_top (
   );
 
   // cdc oversampling signals
-    logic sync_core_update;
-  prim_sync_reqack u_core_tgl (
-    .clk_src_i(clk_core_i),
-    .rst_src_ni(rst_core_ni),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .req_chk_i(1'b1),
-    .src_req_i(1'b1),
-    .src_ack_o(),
-    .dst_req_o(sync_core_update),
-    .dst_ack_i(sync_core_update)
-  );
 
   assign reg_rdata = reg_rdata_next ;
   assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
@@ -208,36 +196,38 @@ module pwm_reg_top (
   logic [26:0]  core_cfg_clk_div_qs_int;
   logic [3:0]  core_cfg_dc_resn_qs_int;
   logic  core_cfg_cntr_en_qs_int;
-  logic [31:0] core_cfg_d;
+  logic [31:0] core_cfg_qs;
   logic [31:0] core_cfg_wdata;
   logic core_cfg_we;
   logic unused_core_cfg_wdata;
   logic core_cfg_regwen;
 
   always_comb begin
-    core_cfg_d = '0;
-    core_cfg_d[26:0] = core_cfg_clk_div_qs_int;
-    core_cfg_d[30:27] = core_cfg_dc_resn_qs_int;
-    core_cfg_d[31] = core_cfg_cntr_en_qs_int;
+    core_cfg_qs = 32'h38008000;
+    core_cfg_qs[26:0] = core_cfg_clk_div_qs_int;
+    core_cfg_qs[30:27] = core_cfg_dc_resn_qs_int;
+    core_cfg_qs[31] = core_cfg_cntr_en_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h38008000),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_cfg_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (cfg_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (cfg_busy),
     .src_qs_o     (cfg_qs), // for software read back
-    .dst_d_i      (core_cfg_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_cfg_qs),
     .dst_we_o     (core_cfg_we),
     .dst_re_o     (),
     .dst_regwen_o (core_cfg_regwen),
@@ -252,39 +242,41 @@ module pwm_reg_top (
   logic  core_pwm_en_en_3_qs_int;
   logic  core_pwm_en_en_4_qs_int;
   logic  core_pwm_en_en_5_qs_int;
-  logic [5:0] core_pwm_en_d;
+  logic [5:0] core_pwm_en_qs;
   logic [5:0] core_pwm_en_wdata;
   logic core_pwm_en_we;
   logic unused_core_pwm_en_wdata;
   logic core_pwm_en_regwen;
 
   always_comb begin
-    core_pwm_en_d = '0;
-    core_pwm_en_d[0] = core_pwm_en_en_0_qs_int;
-    core_pwm_en_d[1] = core_pwm_en_en_1_qs_int;
-    core_pwm_en_d[2] = core_pwm_en_en_2_qs_int;
-    core_pwm_en_d[3] = core_pwm_en_en_3_qs_int;
-    core_pwm_en_d[4] = core_pwm_en_en_4_qs_int;
-    core_pwm_en_d[5] = core_pwm_en_en_5_qs_int;
+    core_pwm_en_qs = 6'h0;
+    core_pwm_en_qs[0] = core_pwm_en_en_0_qs_int;
+    core_pwm_en_qs[1] = core_pwm_en_en_1_qs_int;
+    core_pwm_en_qs[2] = core_pwm_en_en_2_qs_int;
+    core_pwm_en_qs[3] = core_pwm_en_en_3_qs_int;
+    core_pwm_en_qs[4] = core_pwm_en_en_4_qs_int;
+    core_pwm_en_qs[5] = core_pwm_en_en_5_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(6),
     .ResetVal(6'h0),
-    .BitMask(6'h3f)
+    .BitMask(6'h3f),
+    .DstWrReq(0)
   ) u_pwm_en_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_en_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[5:0]),
     .src_busy_o   (pwm_en_busy),
     .src_qs_o     (pwm_en_qs), // for software read back
-    .dst_d_i      (core_pwm_en_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_pwm_en_qs),
     .dst_we_o     (core_pwm_en_we),
     .dst_re_o     (),
     .dst_regwen_o (core_pwm_en_regwen),
@@ -299,39 +291,41 @@ module pwm_reg_top (
   logic  core_invert_invert_3_qs_int;
   logic  core_invert_invert_4_qs_int;
   logic  core_invert_invert_5_qs_int;
-  logic [5:0] core_invert_d;
+  logic [5:0] core_invert_qs;
   logic [5:0] core_invert_wdata;
   logic core_invert_we;
   logic unused_core_invert_wdata;
   logic core_invert_regwen;
 
   always_comb begin
-    core_invert_d = '0;
-    core_invert_d[0] = core_invert_invert_0_qs_int;
-    core_invert_d[1] = core_invert_invert_1_qs_int;
-    core_invert_d[2] = core_invert_invert_2_qs_int;
-    core_invert_d[3] = core_invert_invert_3_qs_int;
-    core_invert_d[4] = core_invert_invert_4_qs_int;
-    core_invert_d[5] = core_invert_invert_5_qs_int;
+    core_invert_qs = 6'h0;
+    core_invert_qs[0] = core_invert_invert_0_qs_int;
+    core_invert_qs[1] = core_invert_invert_1_qs_int;
+    core_invert_qs[2] = core_invert_invert_2_qs_int;
+    core_invert_qs[3] = core_invert_invert_3_qs_int;
+    core_invert_qs[4] = core_invert_invert_4_qs_int;
+    core_invert_qs[5] = core_invert_invert_5_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(6),
     .ResetVal(6'h0),
-    .BitMask(6'h3f)
+    .BitMask(6'h3f),
+    .DstWrReq(0)
   ) u_invert_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (invert_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[5:0]),
     .src_busy_o   (invert_busy),
     .src_qs_o     (invert_qs), // for software read back
-    .dst_d_i      (core_invert_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_invert_qs),
     .dst_we_o     (core_invert_we),
     .dst_re_o     (),
     .dst_regwen_o (core_invert_regwen),
@@ -343,36 +337,38 @@ module pwm_reg_top (
   logic [15:0]  core_pwm_param_0_phase_delay_0_qs_int;
   logic  core_pwm_param_0_htbt_en_0_qs_int;
   logic  core_pwm_param_0_blink_en_0_qs_int;
-  logic [31:0] core_pwm_param_0_d;
+  logic [31:0] core_pwm_param_0_qs;
   logic [31:0] core_pwm_param_0_wdata;
   logic core_pwm_param_0_we;
   logic unused_core_pwm_param_0_wdata;
   logic core_pwm_param_0_regwen;
 
   always_comb begin
-    core_pwm_param_0_d = '0;
-    core_pwm_param_0_d[15:0] = core_pwm_param_0_phase_delay_0_qs_int;
-    core_pwm_param_0_d[30] = core_pwm_param_0_htbt_en_0_qs_int;
-    core_pwm_param_0_d[31] = core_pwm_param_0_blink_en_0_qs_int;
+    core_pwm_param_0_qs = 32'h0;
+    core_pwm_param_0_qs[15:0] = core_pwm_param_0_phase_delay_0_qs_int;
+    core_pwm_param_0_qs[30] = core_pwm_param_0_htbt_en_0_qs_int;
+    core_pwm_param_0_qs[31] = core_pwm_param_0_blink_en_0_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hc000ffff)
+    .BitMask(32'hc000ffff),
+    .DstWrReq(0)
   ) u_pwm_param_0_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_0_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_0_busy),
     .src_qs_o     (pwm_param_0_qs), // for software read back
-    .dst_d_i      (core_pwm_param_0_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_pwm_param_0_qs),
     .dst_we_o     (core_pwm_param_0_we),
     .dst_re_o     (),
     .dst_regwen_o (core_pwm_param_0_regwen),
@@ -384,36 +380,38 @@ module pwm_reg_top (
   logic [15:0]  core_pwm_param_1_phase_delay_1_qs_int;
   logic  core_pwm_param_1_htbt_en_1_qs_int;
   logic  core_pwm_param_1_blink_en_1_qs_int;
-  logic [31:0] core_pwm_param_1_d;
+  logic [31:0] core_pwm_param_1_qs;
   logic [31:0] core_pwm_param_1_wdata;
   logic core_pwm_param_1_we;
   logic unused_core_pwm_param_1_wdata;
   logic core_pwm_param_1_regwen;
 
   always_comb begin
-    core_pwm_param_1_d = '0;
-    core_pwm_param_1_d[15:0] = core_pwm_param_1_phase_delay_1_qs_int;
-    core_pwm_param_1_d[30] = core_pwm_param_1_htbt_en_1_qs_int;
-    core_pwm_param_1_d[31] = core_pwm_param_1_blink_en_1_qs_int;
+    core_pwm_param_1_qs = 32'h0;
+    core_pwm_param_1_qs[15:0] = core_pwm_param_1_phase_delay_1_qs_int;
+    core_pwm_param_1_qs[30] = core_pwm_param_1_htbt_en_1_qs_int;
+    core_pwm_param_1_qs[31] = core_pwm_param_1_blink_en_1_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hc000ffff)
+    .BitMask(32'hc000ffff),
+    .DstWrReq(0)
   ) u_pwm_param_1_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_1_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_1_busy),
     .src_qs_o     (pwm_param_1_qs), // for software read back
-    .dst_d_i      (core_pwm_param_1_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_pwm_param_1_qs),
     .dst_we_o     (core_pwm_param_1_we),
     .dst_re_o     (),
     .dst_regwen_o (core_pwm_param_1_regwen),
@@ -425,36 +423,38 @@ module pwm_reg_top (
   logic [15:0]  core_pwm_param_2_phase_delay_2_qs_int;
   logic  core_pwm_param_2_htbt_en_2_qs_int;
   logic  core_pwm_param_2_blink_en_2_qs_int;
-  logic [31:0] core_pwm_param_2_d;
+  logic [31:0] core_pwm_param_2_qs;
   logic [31:0] core_pwm_param_2_wdata;
   logic core_pwm_param_2_we;
   logic unused_core_pwm_param_2_wdata;
   logic core_pwm_param_2_regwen;
 
   always_comb begin
-    core_pwm_param_2_d = '0;
-    core_pwm_param_2_d[15:0] = core_pwm_param_2_phase_delay_2_qs_int;
-    core_pwm_param_2_d[30] = core_pwm_param_2_htbt_en_2_qs_int;
-    core_pwm_param_2_d[31] = core_pwm_param_2_blink_en_2_qs_int;
+    core_pwm_param_2_qs = 32'h0;
+    core_pwm_param_2_qs[15:0] = core_pwm_param_2_phase_delay_2_qs_int;
+    core_pwm_param_2_qs[30] = core_pwm_param_2_htbt_en_2_qs_int;
+    core_pwm_param_2_qs[31] = core_pwm_param_2_blink_en_2_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hc000ffff)
+    .BitMask(32'hc000ffff),
+    .DstWrReq(0)
   ) u_pwm_param_2_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_2_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_2_busy),
     .src_qs_o     (pwm_param_2_qs), // for software read back
-    .dst_d_i      (core_pwm_param_2_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_pwm_param_2_qs),
     .dst_we_o     (core_pwm_param_2_we),
     .dst_re_o     (),
     .dst_regwen_o (core_pwm_param_2_regwen),
@@ -466,36 +466,38 @@ module pwm_reg_top (
   logic [15:0]  core_pwm_param_3_phase_delay_3_qs_int;
   logic  core_pwm_param_3_htbt_en_3_qs_int;
   logic  core_pwm_param_3_blink_en_3_qs_int;
-  logic [31:0] core_pwm_param_3_d;
+  logic [31:0] core_pwm_param_3_qs;
   logic [31:0] core_pwm_param_3_wdata;
   logic core_pwm_param_3_we;
   logic unused_core_pwm_param_3_wdata;
   logic core_pwm_param_3_regwen;
 
   always_comb begin
-    core_pwm_param_3_d = '0;
-    core_pwm_param_3_d[15:0] = core_pwm_param_3_phase_delay_3_qs_int;
-    core_pwm_param_3_d[30] = core_pwm_param_3_htbt_en_3_qs_int;
-    core_pwm_param_3_d[31] = core_pwm_param_3_blink_en_3_qs_int;
+    core_pwm_param_3_qs = 32'h0;
+    core_pwm_param_3_qs[15:0] = core_pwm_param_3_phase_delay_3_qs_int;
+    core_pwm_param_3_qs[30] = core_pwm_param_3_htbt_en_3_qs_int;
+    core_pwm_param_3_qs[31] = core_pwm_param_3_blink_en_3_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hc000ffff)
+    .BitMask(32'hc000ffff),
+    .DstWrReq(0)
   ) u_pwm_param_3_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_3_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_3_busy),
     .src_qs_o     (pwm_param_3_qs), // for software read back
-    .dst_d_i      (core_pwm_param_3_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_pwm_param_3_qs),
     .dst_we_o     (core_pwm_param_3_we),
     .dst_re_o     (),
     .dst_regwen_o (core_pwm_param_3_regwen),
@@ -507,36 +509,38 @@ module pwm_reg_top (
   logic [15:0]  core_pwm_param_4_phase_delay_4_qs_int;
   logic  core_pwm_param_4_htbt_en_4_qs_int;
   logic  core_pwm_param_4_blink_en_4_qs_int;
-  logic [31:0] core_pwm_param_4_d;
+  logic [31:0] core_pwm_param_4_qs;
   logic [31:0] core_pwm_param_4_wdata;
   logic core_pwm_param_4_we;
   logic unused_core_pwm_param_4_wdata;
   logic core_pwm_param_4_regwen;
 
   always_comb begin
-    core_pwm_param_4_d = '0;
-    core_pwm_param_4_d[15:0] = core_pwm_param_4_phase_delay_4_qs_int;
-    core_pwm_param_4_d[30] = core_pwm_param_4_htbt_en_4_qs_int;
-    core_pwm_param_4_d[31] = core_pwm_param_4_blink_en_4_qs_int;
+    core_pwm_param_4_qs = 32'h0;
+    core_pwm_param_4_qs[15:0] = core_pwm_param_4_phase_delay_4_qs_int;
+    core_pwm_param_4_qs[30] = core_pwm_param_4_htbt_en_4_qs_int;
+    core_pwm_param_4_qs[31] = core_pwm_param_4_blink_en_4_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hc000ffff)
+    .BitMask(32'hc000ffff),
+    .DstWrReq(0)
   ) u_pwm_param_4_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_4_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_4_busy),
     .src_qs_o     (pwm_param_4_qs), // for software read back
-    .dst_d_i      (core_pwm_param_4_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_pwm_param_4_qs),
     .dst_we_o     (core_pwm_param_4_we),
     .dst_re_o     (),
     .dst_regwen_o (core_pwm_param_4_regwen),
@@ -548,36 +552,38 @@ module pwm_reg_top (
   logic [15:0]  core_pwm_param_5_phase_delay_5_qs_int;
   logic  core_pwm_param_5_htbt_en_5_qs_int;
   logic  core_pwm_param_5_blink_en_5_qs_int;
-  logic [31:0] core_pwm_param_5_d;
+  logic [31:0] core_pwm_param_5_qs;
   logic [31:0] core_pwm_param_5_wdata;
   logic core_pwm_param_5_we;
   logic unused_core_pwm_param_5_wdata;
   logic core_pwm_param_5_regwen;
 
   always_comb begin
-    core_pwm_param_5_d = '0;
-    core_pwm_param_5_d[15:0] = core_pwm_param_5_phase_delay_5_qs_int;
-    core_pwm_param_5_d[30] = core_pwm_param_5_htbt_en_5_qs_int;
-    core_pwm_param_5_d[31] = core_pwm_param_5_blink_en_5_qs_int;
+    core_pwm_param_5_qs = 32'h0;
+    core_pwm_param_5_qs[15:0] = core_pwm_param_5_phase_delay_5_qs_int;
+    core_pwm_param_5_qs[30] = core_pwm_param_5_htbt_en_5_qs_int;
+    core_pwm_param_5_qs[31] = core_pwm_param_5_blink_en_5_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hc000ffff)
+    .BitMask(32'hc000ffff),
+    .DstWrReq(0)
   ) u_pwm_param_5_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_5_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (pwm_param_5_busy),
     .src_qs_o     (pwm_param_5_qs), // for software read back
-    .dst_d_i      (core_pwm_param_5_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_pwm_param_5_qs),
     .dst_we_o     (core_pwm_param_5_we),
     .dst_re_o     (),
     .dst_regwen_o (core_pwm_param_5_regwen),
@@ -588,35 +594,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_duty_cycle_0_a_0_qs_int;
   logic [15:0]  core_duty_cycle_0_b_0_qs_int;
-  logic [31:0] core_duty_cycle_0_d;
+  logic [31:0] core_duty_cycle_0_qs;
   logic [31:0] core_duty_cycle_0_wdata;
   logic core_duty_cycle_0_we;
   logic unused_core_duty_cycle_0_wdata;
   logic core_duty_cycle_0_regwen;
 
   always_comb begin
-    core_duty_cycle_0_d = '0;
-    core_duty_cycle_0_d[15:0] = core_duty_cycle_0_a_0_qs_int;
-    core_duty_cycle_0_d[31:16] = core_duty_cycle_0_b_0_qs_int;
+    core_duty_cycle_0_qs = 32'h7fff7fff;
+    core_duty_cycle_0_qs[15:0] = core_duty_cycle_0_a_0_qs_int;
+    core_duty_cycle_0_qs[31:16] = core_duty_cycle_0_b_0_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h7fff7fff),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_duty_cycle_0_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_0_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_0_busy),
     .src_qs_o     (duty_cycle_0_qs), // for software read back
-    .dst_d_i      (core_duty_cycle_0_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_duty_cycle_0_qs),
     .dst_we_o     (core_duty_cycle_0_we),
     .dst_re_o     (),
     .dst_regwen_o (core_duty_cycle_0_regwen),
@@ -627,35 +635,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_duty_cycle_1_a_1_qs_int;
   logic [15:0]  core_duty_cycle_1_b_1_qs_int;
-  logic [31:0] core_duty_cycle_1_d;
+  logic [31:0] core_duty_cycle_1_qs;
   logic [31:0] core_duty_cycle_1_wdata;
   logic core_duty_cycle_1_we;
   logic unused_core_duty_cycle_1_wdata;
   logic core_duty_cycle_1_regwen;
 
   always_comb begin
-    core_duty_cycle_1_d = '0;
-    core_duty_cycle_1_d[15:0] = core_duty_cycle_1_a_1_qs_int;
-    core_duty_cycle_1_d[31:16] = core_duty_cycle_1_b_1_qs_int;
+    core_duty_cycle_1_qs = 32'h7fff7fff;
+    core_duty_cycle_1_qs[15:0] = core_duty_cycle_1_a_1_qs_int;
+    core_duty_cycle_1_qs[31:16] = core_duty_cycle_1_b_1_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h7fff7fff),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_duty_cycle_1_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_1_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_1_busy),
     .src_qs_o     (duty_cycle_1_qs), // for software read back
-    .dst_d_i      (core_duty_cycle_1_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_duty_cycle_1_qs),
     .dst_we_o     (core_duty_cycle_1_we),
     .dst_re_o     (),
     .dst_regwen_o (core_duty_cycle_1_regwen),
@@ -666,35 +676,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_duty_cycle_2_a_2_qs_int;
   logic [15:0]  core_duty_cycle_2_b_2_qs_int;
-  logic [31:0] core_duty_cycle_2_d;
+  logic [31:0] core_duty_cycle_2_qs;
   logic [31:0] core_duty_cycle_2_wdata;
   logic core_duty_cycle_2_we;
   logic unused_core_duty_cycle_2_wdata;
   logic core_duty_cycle_2_regwen;
 
   always_comb begin
-    core_duty_cycle_2_d = '0;
-    core_duty_cycle_2_d[15:0] = core_duty_cycle_2_a_2_qs_int;
-    core_duty_cycle_2_d[31:16] = core_duty_cycle_2_b_2_qs_int;
+    core_duty_cycle_2_qs = 32'h7fff7fff;
+    core_duty_cycle_2_qs[15:0] = core_duty_cycle_2_a_2_qs_int;
+    core_duty_cycle_2_qs[31:16] = core_duty_cycle_2_b_2_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h7fff7fff),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_duty_cycle_2_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_2_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_2_busy),
     .src_qs_o     (duty_cycle_2_qs), // for software read back
-    .dst_d_i      (core_duty_cycle_2_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_duty_cycle_2_qs),
     .dst_we_o     (core_duty_cycle_2_we),
     .dst_re_o     (),
     .dst_regwen_o (core_duty_cycle_2_regwen),
@@ -705,35 +717,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_duty_cycle_3_a_3_qs_int;
   logic [15:0]  core_duty_cycle_3_b_3_qs_int;
-  logic [31:0] core_duty_cycle_3_d;
+  logic [31:0] core_duty_cycle_3_qs;
   logic [31:0] core_duty_cycle_3_wdata;
   logic core_duty_cycle_3_we;
   logic unused_core_duty_cycle_3_wdata;
   logic core_duty_cycle_3_regwen;
 
   always_comb begin
-    core_duty_cycle_3_d = '0;
-    core_duty_cycle_3_d[15:0] = core_duty_cycle_3_a_3_qs_int;
-    core_duty_cycle_3_d[31:16] = core_duty_cycle_3_b_3_qs_int;
+    core_duty_cycle_3_qs = 32'h7fff7fff;
+    core_duty_cycle_3_qs[15:0] = core_duty_cycle_3_a_3_qs_int;
+    core_duty_cycle_3_qs[31:16] = core_duty_cycle_3_b_3_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h7fff7fff),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_duty_cycle_3_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_3_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_3_busy),
     .src_qs_o     (duty_cycle_3_qs), // for software read back
-    .dst_d_i      (core_duty_cycle_3_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_duty_cycle_3_qs),
     .dst_we_o     (core_duty_cycle_3_we),
     .dst_re_o     (),
     .dst_regwen_o (core_duty_cycle_3_regwen),
@@ -744,35 +758,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_duty_cycle_4_a_4_qs_int;
   logic [15:0]  core_duty_cycle_4_b_4_qs_int;
-  logic [31:0] core_duty_cycle_4_d;
+  logic [31:0] core_duty_cycle_4_qs;
   logic [31:0] core_duty_cycle_4_wdata;
   logic core_duty_cycle_4_we;
   logic unused_core_duty_cycle_4_wdata;
   logic core_duty_cycle_4_regwen;
 
   always_comb begin
-    core_duty_cycle_4_d = '0;
-    core_duty_cycle_4_d[15:0] = core_duty_cycle_4_a_4_qs_int;
-    core_duty_cycle_4_d[31:16] = core_duty_cycle_4_b_4_qs_int;
+    core_duty_cycle_4_qs = 32'h7fff7fff;
+    core_duty_cycle_4_qs[15:0] = core_duty_cycle_4_a_4_qs_int;
+    core_duty_cycle_4_qs[31:16] = core_duty_cycle_4_b_4_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h7fff7fff),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_duty_cycle_4_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_4_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_4_busy),
     .src_qs_o     (duty_cycle_4_qs), // for software read back
-    .dst_d_i      (core_duty_cycle_4_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_duty_cycle_4_qs),
     .dst_we_o     (core_duty_cycle_4_we),
     .dst_re_o     (),
     .dst_regwen_o (core_duty_cycle_4_regwen),
@@ -783,35 +799,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_duty_cycle_5_a_5_qs_int;
   logic [15:0]  core_duty_cycle_5_b_5_qs_int;
-  logic [31:0] core_duty_cycle_5_d;
+  logic [31:0] core_duty_cycle_5_qs;
   logic [31:0] core_duty_cycle_5_wdata;
   logic core_duty_cycle_5_we;
   logic unused_core_duty_cycle_5_wdata;
   logic core_duty_cycle_5_regwen;
 
   always_comb begin
-    core_duty_cycle_5_d = '0;
-    core_duty_cycle_5_d[15:0] = core_duty_cycle_5_a_5_qs_int;
-    core_duty_cycle_5_d[31:16] = core_duty_cycle_5_b_5_qs_int;
+    core_duty_cycle_5_qs = 32'h7fff7fff;
+    core_duty_cycle_5_qs[15:0] = core_duty_cycle_5_a_5_qs_int;
+    core_duty_cycle_5_qs[31:16] = core_duty_cycle_5_b_5_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h7fff7fff),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_duty_cycle_5_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_5_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (duty_cycle_5_busy),
     .src_qs_o     (duty_cycle_5_qs), // for software read back
-    .dst_d_i      (core_duty_cycle_5_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_duty_cycle_5_qs),
     .dst_we_o     (core_duty_cycle_5_we),
     .dst_re_o     (),
     .dst_regwen_o (core_duty_cycle_5_regwen),
@@ -822,35 +840,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_blink_param_0_x_0_qs_int;
   logic [15:0]  core_blink_param_0_y_0_qs_int;
-  logic [31:0] core_blink_param_0_d;
+  logic [31:0] core_blink_param_0_qs;
   logic [31:0] core_blink_param_0_wdata;
   logic core_blink_param_0_we;
   logic unused_core_blink_param_0_wdata;
   logic core_blink_param_0_regwen;
 
   always_comb begin
-    core_blink_param_0_d = '0;
-    core_blink_param_0_d[15:0] = core_blink_param_0_x_0_qs_int;
-    core_blink_param_0_d[31:16] = core_blink_param_0_y_0_qs_int;
+    core_blink_param_0_qs = 32'h0;
+    core_blink_param_0_qs[15:0] = core_blink_param_0_x_0_qs_int;
+    core_blink_param_0_qs[31:16] = core_blink_param_0_y_0_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_blink_param_0_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_0_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_0_busy),
     .src_qs_o     (blink_param_0_qs), // for software read back
-    .dst_d_i      (core_blink_param_0_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_blink_param_0_qs),
     .dst_we_o     (core_blink_param_0_we),
     .dst_re_o     (),
     .dst_regwen_o (core_blink_param_0_regwen),
@@ -861,35 +881,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_blink_param_1_x_1_qs_int;
   logic [15:0]  core_blink_param_1_y_1_qs_int;
-  logic [31:0] core_blink_param_1_d;
+  logic [31:0] core_blink_param_1_qs;
   logic [31:0] core_blink_param_1_wdata;
   logic core_blink_param_1_we;
   logic unused_core_blink_param_1_wdata;
   logic core_blink_param_1_regwen;
 
   always_comb begin
-    core_blink_param_1_d = '0;
-    core_blink_param_1_d[15:0] = core_blink_param_1_x_1_qs_int;
-    core_blink_param_1_d[31:16] = core_blink_param_1_y_1_qs_int;
+    core_blink_param_1_qs = 32'h0;
+    core_blink_param_1_qs[15:0] = core_blink_param_1_x_1_qs_int;
+    core_blink_param_1_qs[31:16] = core_blink_param_1_y_1_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_blink_param_1_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_1_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_1_busy),
     .src_qs_o     (blink_param_1_qs), // for software read back
-    .dst_d_i      (core_blink_param_1_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_blink_param_1_qs),
     .dst_we_o     (core_blink_param_1_we),
     .dst_re_o     (),
     .dst_regwen_o (core_blink_param_1_regwen),
@@ -900,35 +922,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_blink_param_2_x_2_qs_int;
   logic [15:0]  core_blink_param_2_y_2_qs_int;
-  logic [31:0] core_blink_param_2_d;
+  logic [31:0] core_blink_param_2_qs;
   logic [31:0] core_blink_param_2_wdata;
   logic core_blink_param_2_we;
   logic unused_core_blink_param_2_wdata;
   logic core_blink_param_2_regwen;
 
   always_comb begin
-    core_blink_param_2_d = '0;
-    core_blink_param_2_d[15:0] = core_blink_param_2_x_2_qs_int;
-    core_blink_param_2_d[31:16] = core_blink_param_2_y_2_qs_int;
+    core_blink_param_2_qs = 32'h0;
+    core_blink_param_2_qs[15:0] = core_blink_param_2_x_2_qs_int;
+    core_blink_param_2_qs[31:16] = core_blink_param_2_y_2_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_blink_param_2_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_2_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_2_busy),
     .src_qs_o     (blink_param_2_qs), // for software read back
-    .dst_d_i      (core_blink_param_2_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_blink_param_2_qs),
     .dst_we_o     (core_blink_param_2_we),
     .dst_re_o     (),
     .dst_regwen_o (core_blink_param_2_regwen),
@@ -939,35 +963,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_blink_param_3_x_3_qs_int;
   logic [15:0]  core_blink_param_3_y_3_qs_int;
-  logic [31:0] core_blink_param_3_d;
+  logic [31:0] core_blink_param_3_qs;
   logic [31:0] core_blink_param_3_wdata;
   logic core_blink_param_3_we;
   logic unused_core_blink_param_3_wdata;
   logic core_blink_param_3_regwen;
 
   always_comb begin
-    core_blink_param_3_d = '0;
-    core_blink_param_3_d[15:0] = core_blink_param_3_x_3_qs_int;
-    core_blink_param_3_d[31:16] = core_blink_param_3_y_3_qs_int;
+    core_blink_param_3_qs = 32'h0;
+    core_blink_param_3_qs[15:0] = core_blink_param_3_x_3_qs_int;
+    core_blink_param_3_qs[31:16] = core_blink_param_3_y_3_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_blink_param_3_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_3_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_3_busy),
     .src_qs_o     (blink_param_3_qs), // for software read back
-    .dst_d_i      (core_blink_param_3_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_blink_param_3_qs),
     .dst_we_o     (core_blink_param_3_we),
     .dst_re_o     (),
     .dst_regwen_o (core_blink_param_3_regwen),
@@ -978,35 +1004,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_blink_param_4_x_4_qs_int;
   logic [15:0]  core_blink_param_4_y_4_qs_int;
-  logic [31:0] core_blink_param_4_d;
+  logic [31:0] core_blink_param_4_qs;
   logic [31:0] core_blink_param_4_wdata;
   logic core_blink_param_4_we;
   logic unused_core_blink_param_4_wdata;
   logic core_blink_param_4_regwen;
 
   always_comb begin
-    core_blink_param_4_d = '0;
-    core_blink_param_4_d[15:0] = core_blink_param_4_x_4_qs_int;
-    core_blink_param_4_d[31:16] = core_blink_param_4_y_4_qs_int;
+    core_blink_param_4_qs = 32'h0;
+    core_blink_param_4_qs[15:0] = core_blink_param_4_x_4_qs_int;
+    core_blink_param_4_qs[31:16] = core_blink_param_4_y_4_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_blink_param_4_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_4_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_4_busy),
     .src_qs_o     (blink_param_4_qs), // for software read back
-    .dst_d_i      (core_blink_param_4_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_blink_param_4_qs),
     .dst_we_o     (core_blink_param_4_we),
     .dst_re_o     (),
     .dst_regwen_o (core_blink_param_4_regwen),
@@ -1017,35 +1045,37 @@ module pwm_reg_top (
 
   logic [15:0]  core_blink_param_5_x_5_qs_int;
   logic [15:0]  core_blink_param_5_y_5_qs_int;
-  logic [31:0] core_blink_param_5_d;
+  logic [31:0] core_blink_param_5_qs;
   logic [31:0] core_blink_param_5_wdata;
   logic core_blink_param_5_we;
   logic unused_core_blink_param_5_wdata;
   logic core_blink_param_5_regwen;
 
   always_comb begin
-    core_blink_param_5_d = '0;
-    core_blink_param_5_d[15:0] = core_blink_param_5_x_5_qs_int;
-    core_blink_param_5_d[31:16] = core_blink_param_5_y_5_qs_int;
+    core_blink_param_5_qs = 32'h0;
+    core_blink_param_5_qs[15:0] = core_blink_param_5_x_5_qs_int;
+    core_blink_param_5_qs[31:16] = core_blink_param_5_y_5_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(32),
     .ResetVal(32'h0),
-    .BitMask(32'hffffffff)
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
   ) u_blink_param_5_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
     .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_5_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
     .src_busy_o   (blink_param_5_busy),
     .src_qs_o     (blink_param_5_qs), // for software read back
-    .dst_d_i      (core_blink_param_5_d),
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (core_blink_param_5_qs),
     .dst_we_o     (core_blink_param_5_we),
     .dst_re_o     (),
     .dst_regwen_o (core_blink_param_5_regwen),
@@ -1069,6 +1099,7 @@ module pwm_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -1094,6 +1125,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (regwen_qs)
@@ -1135,6 +1167,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (cfg_flds_we[0]),
     .q      (reg2hw.cfg.clk_div.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_cfg_clk_div_qs_int)
@@ -1161,6 +1194,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (cfg_flds_we[1]),
     .q      (reg2hw.cfg.dc_resn.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_cfg_dc_resn_qs_int)
@@ -1187,6 +1221,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (cfg_flds_we[2]),
     .q      (reg2hw.cfg.cntr_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_cfg_cntr_en_qs_int)
@@ -1230,6 +1265,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_en_flds_we[0]),
     .q      (reg2hw.pwm_en[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_0_qs_int)
@@ -1256,6 +1292,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_en_flds_we[1]),
     .q      (reg2hw.pwm_en[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_1_qs_int)
@@ -1282,6 +1319,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_en_flds_we[2]),
     .q      (reg2hw.pwm_en[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_2_qs_int)
@@ -1308,6 +1346,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_en_flds_we[3]),
     .q      (reg2hw.pwm_en[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_3_qs_int)
@@ -1334,6 +1373,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_en_flds_we[4]),
     .q      (reg2hw.pwm_en[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_4_qs_int)
@@ -1360,6 +1400,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_en_flds_we[5]),
     .q      (reg2hw.pwm_en[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_5_qs_int)
@@ -1403,6 +1444,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (invert_flds_we[0]),
     .q      (reg2hw.invert[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_invert_invert_0_qs_int)
@@ -1429,6 +1471,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (invert_flds_we[1]),
     .q      (reg2hw.invert[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_invert_invert_1_qs_int)
@@ -1455,6 +1498,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (invert_flds_we[2]),
     .q      (reg2hw.invert[2].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_invert_invert_2_qs_int)
@@ -1481,6 +1525,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (invert_flds_we[3]),
     .q      (reg2hw.invert[3].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_invert_invert_3_qs_int)
@@ -1507,6 +1552,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (invert_flds_we[4]),
     .q      (reg2hw.invert[4].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_invert_invert_4_qs_int)
@@ -1533,6 +1579,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (invert_flds_we[5]),
     .q      (reg2hw.invert[5].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_invert_invert_5_qs_int)
@@ -1576,6 +1623,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_0_flds_we[0]),
     .q      (reg2hw.pwm_param[0].phase_delay.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_0_phase_delay_0_qs_int)
@@ -1602,6 +1650,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_0_flds_we[1]),
     .q      (reg2hw.pwm_param[0].htbt_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_0_htbt_en_0_qs_int)
@@ -1628,6 +1677,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_0_flds_we[2]),
     .q      (reg2hw.pwm_param[0].blink_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_0_blink_en_0_qs_int)
@@ -1671,6 +1721,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_1_flds_we[0]),
     .q      (reg2hw.pwm_param[1].phase_delay.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_1_phase_delay_1_qs_int)
@@ -1697,6 +1748,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_1_flds_we[1]),
     .q      (reg2hw.pwm_param[1].htbt_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_1_htbt_en_1_qs_int)
@@ -1723,6 +1775,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_1_flds_we[2]),
     .q      (reg2hw.pwm_param[1].blink_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_1_blink_en_1_qs_int)
@@ -1766,6 +1819,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_2_flds_we[0]),
     .q      (reg2hw.pwm_param[2].phase_delay.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_2_phase_delay_2_qs_int)
@@ -1792,6 +1846,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_2_flds_we[1]),
     .q      (reg2hw.pwm_param[2].htbt_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_2_htbt_en_2_qs_int)
@@ -1818,6 +1873,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_2_flds_we[2]),
     .q      (reg2hw.pwm_param[2].blink_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_2_blink_en_2_qs_int)
@@ -1861,6 +1917,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_3_flds_we[0]),
     .q      (reg2hw.pwm_param[3].phase_delay.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_3_phase_delay_3_qs_int)
@@ -1887,6 +1944,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_3_flds_we[1]),
     .q      (reg2hw.pwm_param[3].htbt_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_3_htbt_en_3_qs_int)
@@ -1913,6 +1971,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_3_flds_we[2]),
     .q      (reg2hw.pwm_param[3].blink_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_3_blink_en_3_qs_int)
@@ -1956,6 +2015,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_4_flds_we[0]),
     .q      (reg2hw.pwm_param[4].phase_delay.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_4_phase_delay_4_qs_int)
@@ -1982,6 +2042,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_4_flds_we[1]),
     .q      (reg2hw.pwm_param[4].htbt_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_4_htbt_en_4_qs_int)
@@ -2008,6 +2069,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_4_flds_we[2]),
     .q      (reg2hw.pwm_param[4].blink_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_4_blink_en_4_qs_int)
@@ -2051,6 +2113,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_5_flds_we[0]),
     .q      (reg2hw.pwm_param[5].phase_delay.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_5_phase_delay_5_qs_int)
@@ -2077,6 +2140,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_5_flds_we[1]),
     .q      (reg2hw.pwm_param[5].htbt_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_5_htbt_en_5_qs_int)
@@ -2103,6 +2167,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (pwm_param_5_flds_we[2]),
     .q      (reg2hw.pwm_param[5].blink_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_pwm_param_5_blink_en_5_qs_int)
@@ -2146,6 +2211,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_0_flds_we[0]),
     .q      (reg2hw.duty_cycle[0].a.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_0_a_0_qs_int)
@@ -2172,6 +2238,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_0_flds_we[1]),
     .q      (reg2hw.duty_cycle[0].b.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_0_b_0_qs_int)
@@ -2215,6 +2282,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_1_flds_we[0]),
     .q      (reg2hw.duty_cycle[1].a.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_1_a_1_qs_int)
@@ -2241,6 +2309,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_1_flds_we[1]),
     .q      (reg2hw.duty_cycle[1].b.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_1_b_1_qs_int)
@@ -2284,6 +2353,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_2_flds_we[0]),
     .q      (reg2hw.duty_cycle[2].a.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_2_a_2_qs_int)
@@ -2310,6 +2380,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_2_flds_we[1]),
     .q      (reg2hw.duty_cycle[2].b.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_2_b_2_qs_int)
@@ -2353,6 +2424,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_3_flds_we[0]),
     .q      (reg2hw.duty_cycle[3].a.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_3_a_3_qs_int)
@@ -2379,6 +2451,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_3_flds_we[1]),
     .q      (reg2hw.duty_cycle[3].b.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_3_b_3_qs_int)
@@ -2422,6 +2495,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_4_flds_we[0]),
     .q      (reg2hw.duty_cycle[4].a.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_4_a_4_qs_int)
@@ -2448,6 +2522,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_4_flds_we[1]),
     .q      (reg2hw.duty_cycle[4].b.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_4_b_4_qs_int)
@@ -2491,6 +2566,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_5_flds_we[0]),
     .q      (reg2hw.duty_cycle[5].a.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_5_a_5_qs_int)
@@ -2517,6 +2593,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (duty_cycle_5_flds_we[1]),
     .q      (reg2hw.duty_cycle[5].b.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_duty_cycle_5_b_5_qs_int)
@@ -2560,6 +2637,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_0_flds_we[0]),
     .q      (reg2hw.blink_param[0].x.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_0_x_0_qs_int)
@@ -2586,6 +2664,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_0_flds_we[1]),
     .q      (reg2hw.blink_param[0].y.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_0_y_0_qs_int)
@@ -2629,6 +2708,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_1_flds_we[0]),
     .q      (reg2hw.blink_param[1].x.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_1_x_1_qs_int)
@@ -2655,6 +2735,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_1_flds_we[1]),
     .q      (reg2hw.blink_param[1].y.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_1_y_1_qs_int)
@@ -2698,6 +2779,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_2_flds_we[0]),
     .q      (reg2hw.blink_param[2].x.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_2_x_2_qs_int)
@@ -2724,6 +2806,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_2_flds_we[1]),
     .q      (reg2hw.blink_param[2].y.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_2_y_2_qs_int)
@@ -2767,6 +2850,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_3_flds_we[0]),
     .q      (reg2hw.blink_param[3].x.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_3_x_3_qs_int)
@@ -2793,6 +2877,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_3_flds_we[1]),
     .q      (reg2hw.blink_param[3].y.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_3_y_3_qs_int)
@@ -2836,6 +2921,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_4_flds_we[0]),
     .q      (reg2hw.blink_param[4].x.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_4_x_4_qs_int)
@@ -2862,6 +2948,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_4_flds_we[1]),
     .q      (reg2hw.blink_param[4].y.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_4_y_4_qs_int)
@@ -2905,6 +2992,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_5_flds_we[0]),
     .q      (reg2hw.blink_param[5].x.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_5_x_5_qs_int)
@@ -2931,6 +3019,7 @@ module pwm_reg_top (
     // to internal hardware
     .qe     (blink_param_5_flds_we[1]),
     .q      (reg2hw.blink_param[5].y.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (core_blink_param_5_y_5_qs_int)

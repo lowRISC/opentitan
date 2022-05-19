@@ -212,6 +212,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.edn_cmd_req_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_edn_cmd_req_done_qs)
@@ -237,6 +238,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.edn_fatal_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_edn_fatal_err_qs)
@@ -264,6 +266,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.edn_cmd_req_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_edn_cmd_req_done_qs)
@@ -289,6 +292,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.edn_fatal_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_edn_fatal_err_qs)
@@ -310,6 +314,7 @@ module edn_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.edn_cmd_req_done.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.edn_cmd_req_done.qe = intr_test_qe;
@@ -325,6 +330,7 @@ module edn_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.edn_fatal_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.edn_fatal_err.qe = intr_test_qe;
@@ -345,6 +351,7 @@ module edn_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_alert.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_alert.qe = alert_test_qe;
@@ -360,6 +367,7 @@ module edn_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_alert.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_alert.qe = alert_test_qe;
@@ -385,6 +393,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (regwen_qs)
@@ -415,6 +424,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.edn_enable.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_edn_enable_qs)
@@ -440,6 +450,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.boot_req_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_boot_req_mode_qs)
@@ -465,6 +476,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.auto_req_mode.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_auto_req_mode_qs)
@@ -490,6 +502,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ctrl.cmd_fifo_rst.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_cmd_fifo_rst_qs)
@@ -516,6 +529,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.boot_ins_cmd.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (boot_ins_cmd_qs)
@@ -542,6 +556,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.boot_gen_cmd.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (boot_gen_cmd_qs)
@@ -562,6 +577,7 @@ module edn_reg_top (
     .qre    (),
     .qe     (sw_cmd_req_flds_we[0]),
     .q      (reg2hw.sw_cmd_req.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.sw_cmd_req.qe = sw_cmd_req_qe;
@@ -588,6 +604,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_cmd_sts_cmd_rdy_qs)
@@ -613,6 +630,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_cmd_sts_cmd_sts_qs)
@@ -633,6 +651,7 @@ module edn_reg_top (
     .qre    (),
     .qe     (reseed_cmd_flds_we[0]),
     .q      (reg2hw.reseed_cmd.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.reseed_cmd.qe = reseed_cmd_qe;
@@ -652,6 +671,7 @@ module edn_reg_top (
     .qre    (),
     .qe     (generate_cmd_flds_we[0]),
     .q      (reg2hw.generate_cmd.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.generate_cmd.qe = generate_cmd_qe;
@@ -688,6 +708,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (max_num_reqs_between_reseeds_flds_we[0]),
     .q      (reg2hw.max_num_reqs_between_reseeds.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (max_num_reqs_between_reseeds_qs)
@@ -716,6 +737,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_edn_enable_field_alert_qs)
@@ -741,6 +763,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_boot_req_mode_field_alert_qs)
@@ -766,6 +789,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_auto_req_mode_field_alert_qs)
@@ -791,6 +815,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_cmd_fifo_rst_field_alert_qs)
@@ -816,6 +841,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (recov_alert_sts_edn_bus_cmp_alert_qs)
@@ -843,6 +869,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_rescmd_err_qs)
@@ -868,6 +895,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_sfifo_gencmd_err_qs)
@@ -893,6 +921,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_edn_ack_sm_err_qs)
@@ -918,6 +947,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_edn_main_sm_err_qs)
@@ -943,6 +973,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_edn_cntr_err_qs)
@@ -968,6 +999,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_fifo_write_err_qs)
@@ -993,6 +1025,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_fifo_read_err_qs)
@@ -1018,6 +1051,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_fifo_state_err_qs)
@@ -1055,6 +1089,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (err_code_test_flds_we[0]),
     .q      (reg2hw.err_code_test.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_test_qs)
@@ -1082,6 +1117,7 @@ module edn_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (main_sm_state_qs)

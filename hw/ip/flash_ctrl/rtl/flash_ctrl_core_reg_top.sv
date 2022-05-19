@@ -1040,6 +1040,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.prog_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_prog_empty_qs)
@@ -1065,6 +1066,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.prog_lvl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_prog_lvl_qs)
@@ -1090,6 +1092,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rd_full.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rd_full_qs)
@@ -1115,6 +1118,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.rd_lvl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_rd_lvl_qs)
@@ -1140,6 +1144,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.op_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_op_done_qs)
@@ -1165,6 +1170,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.corr_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_corr_err_qs)
@@ -1192,6 +1198,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.prog_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_prog_empty_qs)
@@ -1217,6 +1224,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.prog_lvl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_prog_lvl_qs)
@@ -1242,6 +1250,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rd_full.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rd_full_qs)
@@ -1267,6 +1276,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.rd_lvl.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_rd_lvl_qs)
@@ -1292,6 +1302,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.op_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_op_done_qs)
@@ -1317,6 +1328,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.corr_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_corr_err_qs)
@@ -1338,6 +1350,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.prog_empty.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.prog_empty.qe = intr_test_qe;
@@ -1353,6 +1366,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.prog_lvl.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.prog_lvl.qe = intr_test_qe;
@@ -1368,6 +1382,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.rd_full.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rd_full.qe = intr_test_qe;
@@ -1383,6 +1398,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.rd_lvl.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.rd_lvl.qe = intr_test_qe;
@@ -1398,6 +1414,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[4]),
     .q      (reg2hw.intr_test.op_done.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.op_done.qe = intr_test_qe;
@@ -1413,6 +1430,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[5]),
     .q      (reg2hw.intr_test.corr_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.corr_err.qe = intr_test_qe;
@@ -1433,6 +1451,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_err.qe = alert_test_qe;
@@ -1448,6 +1467,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_std_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_std_err.qe = alert_test_qe;
@@ -1463,6 +1483,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[2]),
     .q      (reg2hw.alert_test.fatal_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_err.qe = alert_test_qe;
@@ -1488,6 +1509,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.dis.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (dis_qs)
@@ -1514,6 +1536,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.exec.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (exec_qs)
@@ -1540,6 +1563,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.init.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (init_qs)
@@ -1557,6 +1581,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (ctrl_regwen_qs)
   );
 
@@ -1585,6 +1610,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.start.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_start_qs)
@@ -1610,6 +1636,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.op.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_op_qs)
@@ -1635,6 +1662,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.prog_sel.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_prog_sel_qs)
@@ -1660,6 +1688,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.erase_sel.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_erase_sel_qs)
@@ -1685,6 +1714,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.partition_sel.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_partition_sel_qs)
@@ -1710,6 +1740,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.info_sel.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_info_sel_qs)
@@ -1735,6 +1766,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.control.num.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (control_num_qs)
@@ -1761,6 +1793,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.addr.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (addr_qs)
@@ -1788,6 +1821,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prog_type_en.normal.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prog_type_en_normal_qs)
@@ -1813,6 +1847,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.prog_type_en.repair.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (prog_type_en_repair_qs)
@@ -1839,6 +1874,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.erase_suspend.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (erase_suspend_qs)
@@ -1866,6 +1902,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (region_cfg_regwen_0_qs)
@@ -1893,6 +1930,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (region_cfg_regwen_1_qs)
@@ -1920,6 +1958,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (region_cfg_regwen_2_qs)
@@ -1947,6 +1986,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (region_cfg_regwen_3_qs)
@@ -1974,6 +2014,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (region_cfg_regwen_4_qs)
@@ -2001,6 +2042,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (region_cfg_regwen_5_qs)
@@ -2028,6 +2070,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (region_cfg_regwen_6_qs)
@@ -2055,6 +2098,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (region_cfg_regwen_7_qs)
@@ -2086,6 +2130,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[0].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_en_0_qs)
@@ -2111,6 +2156,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[0].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_rd_en_0_qs)
@@ -2136,6 +2182,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[0].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_prog_en_0_qs)
@@ -2161,6 +2208,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[0].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_erase_en_0_qs)
@@ -2186,6 +2234,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[0].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_scramble_en_0_qs)
@@ -2211,6 +2260,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[0].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_ecc_en_0_qs)
@@ -2236,6 +2286,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[0].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_he_en_0_qs)
@@ -2267,6 +2318,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[1].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_en_1_qs)
@@ -2292,6 +2344,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[1].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_rd_en_1_qs)
@@ -2317,6 +2370,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[1].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_prog_en_1_qs)
@@ -2342,6 +2396,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[1].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_erase_en_1_qs)
@@ -2367,6 +2422,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[1].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_scramble_en_1_qs)
@@ -2392,6 +2448,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[1].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_ecc_en_1_qs)
@@ -2417,6 +2474,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[1].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_he_en_1_qs)
@@ -2448,6 +2506,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[2].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_en_2_qs)
@@ -2473,6 +2532,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[2].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_rd_en_2_qs)
@@ -2498,6 +2558,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[2].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_prog_en_2_qs)
@@ -2523,6 +2584,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[2].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_erase_en_2_qs)
@@ -2548,6 +2610,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[2].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_scramble_en_2_qs)
@@ -2573,6 +2636,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[2].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_ecc_en_2_qs)
@@ -2598,6 +2662,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[2].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_he_en_2_qs)
@@ -2629,6 +2694,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[3].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_en_3_qs)
@@ -2654,6 +2720,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[3].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_rd_en_3_qs)
@@ -2679,6 +2746,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[3].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_prog_en_3_qs)
@@ -2704,6 +2772,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[3].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_erase_en_3_qs)
@@ -2729,6 +2798,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[3].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_scramble_en_3_qs)
@@ -2754,6 +2824,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[3].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_ecc_en_3_qs)
@@ -2779,6 +2850,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[3].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_he_en_3_qs)
@@ -2810,6 +2882,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[4].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_en_4_qs)
@@ -2835,6 +2908,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[4].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_rd_en_4_qs)
@@ -2860,6 +2934,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[4].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_prog_en_4_qs)
@@ -2885,6 +2960,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[4].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_erase_en_4_qs)
@@ -2910,6 +2986,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[4].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_scramble_en_4_qs)
@@ -2935,6 +3012,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[4].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_ecc_en_4_qs)
@@ -2960,6 +3038,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[4].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_he_en_4_qs)
@@ -2991,6 +3070,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[5].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_en_5_qs)
@@ -3016,6 +3096,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[5].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_rd_en_5_qs)
@@ -3041,6 +3122,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[5].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_prog_en_5_qs)
@@ -3066,6 +3148,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[5].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_erase_en_5_qs)
@@ -3091,6 +3174,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[5].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_scramble_en_5_qs)
@@ -3116,6 +3200,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[5].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_ecc_en_5_qs)
@@ -3141,6 +3226,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[5].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_he_en_5_qs)
@@ -3172,6 +3258,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[6].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_en_6_qs)
@@ -3197,6 +3284,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[6].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_rd_en_6_qs)
@@ -3222,6 +3310,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[6].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_prog_en_6_qs)
@@ -3247,6 +3336,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[6].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_erase_en_6_qs)
@@ -3272,6 +3362,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[6].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_scramble_en_6_qs)
@@ -3297,6 +3388,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[6].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_ecc_en_6_qs)
@@ -3322,6 +3414,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[6].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_he_en_6_qs)
@@ -3353,6 +3446,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[7].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_en_7_qs)
@@ -3378,6 +3472,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[7].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_rd_en_7_qs)
@@ -3403,6 +3498,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[7].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_prog_en_7_qs)
@@ -3428,6 +3524,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[7].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_erase_en_7_qs)
@@ -3453,6 +3550,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[7].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_scramble_en_7_qs)
@@ -3478,6 +3576,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[7].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_ecc_en_7_qs)
@@ -3503,6 +3602,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region_cfg[7].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_he_en_7_qs)
@@ -3534,6 +3634,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[0].base.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_0_base_0_qs)
@@ -3559,6 +3660,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[0].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_0_size_0_qs)
@@ -3590,6 +3692,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[1].base.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_1_base_1_qs)
@@ -3615,6 +3718,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[1].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_1_size_1_qs)
@@ -3646,6 +3750,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[2].base.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_2_base_2_qs)
@@ -3671,6 +3776,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[2].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_2_size_2_qs)
@@ -3702,6 +3808,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[3].base.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_3_base_3_qs)
@@ -3727,6 +3834,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[3].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_3_size_3_qs)
@@ -3758,6 +3866,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[4].base.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_4_base_4_qs)
@@ -3783,6 +3892,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[4].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_4_size_4_qs)
@@ -3814,6 +3924,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[5].base.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_5_base_5_qs)
@@ -3839,6 +3950,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[5].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_5_size_5_qs)
@@ -3870,6 +3982,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[6].base.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_6_base_6_qs)
@@ -3895,6 +4008,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[6].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_6_size_6_qs)
@@ -3926,6 +4040,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[7].base.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_7_base_7_qs)
@@ -3951,6 +4066,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_region[7].size.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_region_7_size_7_qs)
@@ -3978,6 +4094,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.default_region.rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (default_region_rd_en_qs)
@@ -4003,6 +4120,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.default_region.prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (default_region_prog_en_qs)
@@ -4028,6 +4146,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.default_region.erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (default_region_erase_en_qs)
@@ -4053,6 +4172,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.default_region.scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (default_region_scramble_en_qs)
@@ -4078,6 +4198,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.default_region.ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (default_region_ecc_en_qs)
@@ -4103,6 +4224,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.default_region.he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (default_region_he_en_qs)
@@ -4130,6 +4252,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_regwen_0_qs)
@@ -4157,6 +4280,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_regwen_1_qs)
@@ -4184,6 +4308,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_regwen_2_qs)
@@ -4211,6 +4336,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_regwen_3_qs)
@@ -4238,6 +4364,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_regwen_4_qs)
@@ -4265,6 +4392,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_regwen_5_qs)
@@ -4292,6 +4420,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_regwen_6_qs)
@@ -4319,6 +4448,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_regwen_7_qs)
@@ -4346,6 +4476,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_regwen_8_qs)
@@ -4373,6 +4504,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_regwen_9_qs)
@@ -4404,6 +4536,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[0].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_en_0_qs)
@@ -4429,6 +4562,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[0].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_rd_en_0_qs)
@@ -4454,6 +4588,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[0].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_prog_en_0_qs)
@@ -4479,6 +4614,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[0].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_erase_en_0_qs)
@@ -4504,6 +4640,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[0].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_scramble_en_0_qs)
@@ -4529,6 +4666,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[0].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_ecc_en_0_qs)
@@ -4554,6 +4692,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[0].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_he_en_0_qs)
@@ -4585,6 +4724,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[1].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_en_1_qs)
@@ -4610,6 +4750,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[1].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_rd_en_1_qs)
@@ -4635,6 +4776,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[1].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_prog_en_1_qs)
@@ -4660,6 +4802,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[1].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_erase_en_1_qs)
@@ -4685,6 +4828,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[1].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_scramble_en_1_qs)
@@ -4710,6 +4854,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[1].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_ecc_en_1_qs)
@@ -4735,6 +4880,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[1].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_he_en_1_qs)
@@ -4766,6 +4912,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[2].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_en_2_qs)
@@ -4791,6 +4938,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[2].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_rd_en_2_qs)
@@ -4816,6 +4964,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[2].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_prog_en_2_qs)
@@ -4841,6 +4990,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[2].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_erase_en_2_qs)
@@ -4866,6 +5016,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[2].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_scramble_en_2_qs)
@@ -4891,6 +5042,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[2].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_ecc_en_2_qs)
@@ -4916,6 +5068,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[2].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_he_en_2_qs)
@@ -4947,6 +5100,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[3].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_en_3_qs)
@@ -4972,6 +5126,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[3].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_rd_en_3_qs)
@@ -4997,6 +5152,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[3].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_prog_en_3_qs)
@@ -5022,6 +5178,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[3].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_erase_en_3_qs)
@@ -5047,6 +5204,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[3].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_scramble_en_3_qs)
@@ -5072,6 +5230,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[3].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_ecc_en_3_qs)
@@ -5097,6 +5256,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[3].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_he_en_3_qs)
@@ -5128,6 +5288,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[4].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_en_4_qs)
@@ -5153,6 +5314,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[4].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_rd_en_4_qs)
@@ -5178,6 +5340,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[4].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_prog_en_4_qs)
@@ -5203,6 +5366,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[4].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_erase_en_4_qs)
@@ -5228,6 +5392,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[4].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_scramble_en_4_qs)
@@ -5253,6 +5418,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[4].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_ecc_en_4_qs)
@@ -5278,6 +5444,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[4].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_he_en_4_qs)
@@ -5309,6 +5476,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[5].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_en_5_qs)
@@ -5334,6 +5502,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[5].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_rd_en_5_qs)
@@ -5359,6 +5528,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[5].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_prog_en_5_qs)
@@ -5384,6 +5554,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[5].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_erase_en_5_qs)
@@ -5409,6 +5580,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[5].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_scramble_en_5_qs)
@@ -5434,6 +5606,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[5].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_ecc_en_5_qs)
@@ -5459,6 +5632,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[5].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_he_en_5_qs)
@@ -5490,6 +5664,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[6].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_en_6_qs)
@@ -5515,6 +5690,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[6].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_rd_en_6_qs)
@@ -5540,6 +5716,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[6].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_prog_en_6_qs)
@@ -5565,6 +5742,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[6].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_erase_en_6_qs)
@@ -5590,6 +5768,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[6].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_scramble_en_6_qs)
@@ -5615,6 +5794,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[6].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_ecc_en_6_qs)
@@ -5640,6 +5820,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[6].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_he_en_6_qs)
@@ -5671,6 +5852,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[7].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_en_7_qs)
@@ -5696,6 +5878,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[7].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_rd_en_7_qs)
@@ -5721,6 +5904,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[7].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_prog_en_7_qs)
@@ -5746,6 +5930,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[7].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_erase_en_7_qs)
@@ -5771,6 +5956,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[7].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_scramble_en_7_qs)
@@ -5796,6 +5982,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[7].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_ecc_en_7_qs)
@@ -5821,6 +6008,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[7].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_he_en_7_qs)
@@ -5852,6 +6040,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[8].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_en_8_qs)
@@ -5877,6 +6066,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[8].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_rd_en_8_qs)
@@ -5902,6 +6092,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[8].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_prog_en_8_qs)
@@ -5927,6 +6118,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[8].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_erase_en_8_qs)
@@ -5952,6 +6144,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[8].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_scramble_en_8_qs)
@@ -5977,6 +6170,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[8].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_ecc_en_8_qs)
@@ -6002,6 +6196,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[8].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_he_en_8_qs)
@@ -6033,6 +6228,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[9].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_en_9_qs)
@@ -6058,6 +6254,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[9].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_rd_en_9_qs)
@@ -6083,6 +6280,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[9].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_prog_en_9_qs)
@@ -6108,6 +6306,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[9].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_erase_en_9_qs)
@@ -6133,6 +6332,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[9].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_scramble_en_9_qs)
@@ -6158,6 +6358,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[9].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_ecc_en_9_qs)
@@ -6183,6 +6384,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info0_page_cfg[9].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_he_en_9_qs)
@@ -6210,6 +6412,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info1_regwen_qs)
@@ -6241,6 +6444,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info1_page_cfg[0].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_en_0_qs)
@@ -6266,6 +6470,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info1_page_cfg[0].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_rd_en_0_qs)
@@ -6291,6 +6496,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info1_page_cfg[0].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_prog_en_0_qs)
@@ -6316,6 +6522,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info1_page_cfg[0].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_erase_en_0_qs)
@@ -6341,6 +6548,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info1_page_cfg[0].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_scramble_en_0_qs)
@@ -6366,6 +6574,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info1_page_cfg[0].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_ecc_en_0_qs)
@@ -6391,6 +6600,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info1_page_cfg[0].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_he_en_0_qs)
@@ -6418,6 +6628,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_regwen_0_qs)
@@ -6445,6 +6656,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_regwen_1_qs)
@@ -6476,6 +6688,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[0].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_en_0_qs)
@@ -6501,6 +6714,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[0].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_rd_en_0_qs)
@@ -6526,6 +6740,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[0].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_prog_en_0_qs)
@@ -6551,6 +6766,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[0].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_erase_en_0_qs)
@@ -6576,6 +6792,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[0].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_scramble_en_0_qs)
@@ -6601,6 +6818,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[0].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_ecc_en_0_qs)
@@ -6626,6 +6844,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[0].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_he_en_0_qs)
@@ -6657,6 +6876,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[1].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_en_1_qs)
@@ -6682,6 +6902,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[1].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_rd_en_1_qs)
@@ -6707,6 +6928,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[1].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_prog_en_1_qs)
@@ -6732,6 +6954,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[1].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_erase_en_1_qs)
@@ -6757,6 +6980,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[1].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_scramble_en_1_qs)
@@ -6782,6 +7006,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[1].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_ecc_en_1_qs)
@@ -6807,6 +7032,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank0_info2_page_cfg[1].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_he_en_1_qs)
@@ -6834,6 +7060,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_regwen_0_qs)
@@ -6861,6 +7088,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_regwen_1_qs)
@@ -6888,6 +7116,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_regwen_2_qs)
@@ -6915,6 +7144,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_regwen_3_qs)
@@ -6942,6 +7172,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_regwen_4_qs)
@@ -6969,6 +7200,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_regwen_5_qs)
@@ -6996,6 +7228,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_regwen_6_qs)
@@ -7023,6 +7256,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_regwen_7_qs)
@@ -7050,6 +7284,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_regwen_8_qs)
@@ -7077,6 +7312,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_regwen_9_qs)
@@ -7108,6 +7344,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[0].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_en_0_qs)
@@ -7133,6 +7370,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[0].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_rd_en_0_qs)
@@ -7158,6 +7396,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[0].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_prog_en_0_qs)
@@ -7183,6 +7422,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[0].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_erase_en_0_qs)
@@ -7208,6 +7448,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[0].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_scramble_en_0_qs)
@@ -7233,6 +7474,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[0].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_ecc_en_0_qs)
@@ -7258,6 +7500,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[0].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_he_en_0_qs)
@@ -7289,6 +7532,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[1].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_en_1_qs)
@@ -7314,6 +7558,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[1].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_rd_en_1_qs)
@@ -7339,6 +7584,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[1].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_prog_en_1_qs)
@@ -7364,6 +7610,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[1].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_erase_en_1_qs)
@@ -7389,6 +7636,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[1].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_scramble_en_1_qs)
@@ -7414,6 +7662,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[1].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_ecc_en_1_qs)
@@ -7439,6 +7688,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[1].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_he_en_1_qs)
@@ -7470,6 +7720,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[2].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_en_2_qs)
@@ -7495,6 +7746,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[2].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_rd_en_2_qs)
@@ -7520,6 +7772,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[2].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_prog_en_2_qs)
@@ -7545,6 +7798,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[2].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_erase_en_2_qs)
@@ -7570,6 +7824,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[2].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_scramble_en_2_qs)
@@ -7595,6 +7850,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[2].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_ecc_en_2_qs)
@@ -7620,6 +7876,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[2].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_he_en_2_qs)
@@ -7651,6 +7908,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[3].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_en_3_qs)
@@ -7676,6 +7934,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[3].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_rd_en_3_qs)
@@ -7701,6 +7960,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[3].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_prog_en_3_qs)
@@ -7726,6 +7986,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[3].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_erase_en_3_qs)
@@ -7751,6 +8012,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[3].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_scramble_en_3_qs)
@@ -7776,6 +8038,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[3].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_ecc_en_3_qs)
@@ -7801,6 +8064,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[3].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_he_en_3_qs)
@@ -7832,6 +8096,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[4].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_en_4_qs)
@@ -7857,6 +8122,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[4].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_rd_en_4_qs)
@@ -7882,6 +8148,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[4].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_prog_en_4_qs)
@@ -7907,6 +8174,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[4].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_erase_en_4_qs)
@@ -7932,6 +8200,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[4].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_scramble_en_4_qs)
@@ -7957,6 +8226,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[4].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_ecc_en_4_qs)
@@ -7982,6 +8252,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[4].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_he_en_4_qs)
@@ -8013,6 +8284,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[5].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_en_5_qs)
@@ -8038,6 +8310,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[5].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_rd_en_5_qs)
@@ -8063,6 +8336,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[5].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_prog_en_5_qs)
@@ -8088,6 +8362,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[5].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_erase_en_5_qs)
@@ -8113,6 +8388,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[5].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_scramble_en_5_qs)
@@ -8138,6 +8414,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[5].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_ecc_en_5_qs)
@@ -8163,6 +8440,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[5].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_he_en_5_qs)
@@ -8194,6 +8472,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[6].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_en_6_qs)
@@ -8219,6 +8498,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[6].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_rd_en_6_qs)
@@ -8244,6 +8524,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[6].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_prog_en_6_qs)
@@ -8269,6 +8550,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[6].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_erase_en_6_qs)
@@ -8294,6 +8576,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[6].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_scramble_en_6_qs)
@@ -8319,6 +8602,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[6].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_ecc_en_6_qs)
@@ -8344,6 +8628,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[6].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_he_en_6_qs)
@@ -8375,6 +8660,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[7].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_en_7_qs)
@@ -8400,6 +8686,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[7].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_rd_en_7_qs)
@@ -8425,6 +8712,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[7].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_prog_en_7_qs)
@@ -8450,6 +8738,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[7].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_erase_en_7_qs)
@@ -8475,6 +8764,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[7].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_scramble_en_7_qs)
@@ -8500,6 +8790,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[7].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_ecc_en_7_qs)
@@ -8525,6 +8816,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[7].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_he_en_7_qs)
@@ -8556,6 +8848,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[8].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_en_8_qs)
@@ -8581,6 +8874,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[8].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_rd_en_8_qs)
@@ -8606,6 +8900,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[8].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_prog_en_8_qs)
@@ -8631,6 +8926,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[8].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_erase_en_8_qs)
@@ -8656,6 +8952,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[8].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_scramble_en_8_qs)
@@ -8681,6 +8978,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[8].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_ecc_en_8_qs)
@@ -8706,6 +9004,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[8].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_he_en_8_qs)
@@ -8737,6 +9036,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[9].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_en_9_qs)
@@ -8762,6 +9062,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[9].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_rd_en_9_qs)
@@ -8787,6 +9088,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[9].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_prog_en_9_qs)
@@ -8812,6 +9114,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[9].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_erase_en_9_qs)
@@ -8837,6 +9140,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[9].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_scramble_en_9_qs)
@@ -8862,6 +9166,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[9].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_ecc_en_9_qs)
@@ -8887,6 +9192,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info0_page_cfg[9].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_he_en_9_qs)
@@ -8914,6 +9220,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info1_regwen_qs)
@@ -8945,6 +9252,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info1_page_cfg[0].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_en_0_qs)
@@ -8970,6 +9278,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info1_page_cfg[0].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_rd_en_0_qs)
@@ -8995,6 +9304,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info1_page_cfg[0].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_prog_en_0_qs)
@@ -9020,6 +9330,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info1_page_cfg[0].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_erase_en_0_qs)
@@ -9045,6 +9356,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info1_page_cfg[0].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_scramble_en_0_qs)
@@ -9070,6 +9382,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info1_page_cfg[0].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_ecc_en_0_qs)
@@ -9095,6 +9408,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info1_page_cfg[0].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_he_en_0_qs)
@@ -9122,6 +9436,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_regwen_0_qs)
@@ -9149,6 +9464,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_regwen_1_qs)
@@ -9180,6 +9496,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[0].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_en_0_qs)
@@ -9205,6 +9522,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[0].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_rd_en_0_qs)
@@ -9230,6 +9548,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[0].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_prog_en_0_qs)
@@ -9255,6 +9574,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[0].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_erase_en_0_qs)
@@ -9280,6 +9600,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[0].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_scramble_en_0_qs)
@@ -9305,6 +9626,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[0].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_ecc_en_0_qs)
@@ -9330,6 +9652,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[0].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_he_en_0_qs)
@@ -9361,6 +9684,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[1].en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_en_1_qs)
@@ -9386,6 +9710,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[1].rd_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_rd_en_1_qs)
@@ -9411,6 +9736,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[1].prog_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_prog_en_1_qs)
@@ -9436,6 +9762,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[1].erase_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_erase_en_1_qs)
@@ -9461,6 +9788,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[1].scramble_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_scramble_en_1_qs)
@@ -9486,6 +9814,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[1].ecc_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_ecc_en_1_qs)
@@ -9511,6 +9840,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.bank1_info2_page_cfg[1].he_en.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_he_en_1_qs)
@@ -9537,6 +9867,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (bank_cfg_regwen_qs)
@@ -9570,6 +9901,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_bank_cfg_shadowed[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_bank_cfg_shadowed_erase_en_0_qs),
@@ -9604,6 +9936,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.mp_bank_cfg_shadowed[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (mp_bank_cfg_shadowed_erase_en_1_qs),
@@ -9638,6 +9971,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (op_status_done_qs)
@@ -9663,6 +9997,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (op_status_err_qs)
@@ -9690,6 +10025,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_rd_full_qs)
@@ -9715,6 +10051,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_rd_empty_qs)
@@ -9740,6 +10077,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_prog_full_qs)
@@ -9765,6 +10103,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_prog_empty_qs)
@@ -9790,6 +10129,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (status_init_wip_qs)
@@ -9807,6 +10147,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (debug_state_qs)
   );
 
@@ -9832,6 +10173,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_op_err_qs)
@@ -9857,6 +10199,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_mp_err_qs)
@@ -9882,6 +10225,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_rd_err_qs)
@@ -9907,6 +10251,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_prog_err_qs)
@@ -9932,6 +10277,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_prog_win_err_qs)
@@ -9957,6 +10303,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_prog_type_err_qs)
@@ -9982,6 +10329,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_flash_macro_err_qs)
@@ -10007,6 +10355,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_update_err_qs)
@@ -10034,6 +10383,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.std_fault_status.reg_intg_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (std_fault_status_reg_intg_err_qs)
@@ -10059,6 +10409,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.std_fault_status.prog_intg_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (std_fault_status_prog_intg_err_qs)
@@ -10084,6 +10435,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.std_fault_status.lcmgr_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (std_fault_status_lcmgr_err_qs)
@@ -10109,6 +10461,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.std_fault_status.lcmgr_intg_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (std_fault_status_lcmgr_intg_err_qs)
@@ -10134,6 +10487,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.std_fault_status.arb_fsm_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (std_fault_status_arb_fsm_err_qs)
@@ -10159,6 +10513,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.std_fault_status.storage_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (std_fault_status_storage_err_qs)
@@ -10184,6 +10539,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.std_fault_status.phy_fsm_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (std_fault_status_phy_fsm_err_qs)
@@ -10209,6 +10565,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.std_fault_status.ctrl_cnt_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (std_fault_status_ctrl_cnt_err_qs)
@@ -10234,6 +10591,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.std_fault_status.fifo_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (std_fault_status_fifo_err_qs)
@@ -10261,6 +10619,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.op_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_op_err_qs)
@@ -10286,6 +10645,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.mp_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_mp_err_qs)
@@ -10311,6 +10671,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.rd_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_rd_err_qs)
@@ -10336,6 +10697,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.prog_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_prog_err_qs)
@@ -10361,6 +10723,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.prog_win_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_prog_win_err_qs)
@@ -10386,6 +10749,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.prog_type_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_prog_type_err_qs)
@@ -10411,6 +10775,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.flash_macro_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_flash_macro_err_qs)
@@ -10436,6 +10801,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.seed_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_seed_err_qs)
@@ -10461,6 +10827,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.phy_relbl_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_phy_relbl_err_qs)
@@ -10486,6 +10853,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.phy_storage_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_phy_storage_err_qs)
@@ -10511,6 +10879,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.spurious_ack.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_spurious_ack_qs)
@@ -10536,6 +10905,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.arb_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_arb_err_qs)
@@ -10561,6 +10931,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fault_status.host_gnt_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fault_status_host_gnt_err_qs)
@@ -10587,6 +10958,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_addr_qs)
@@ -10615,6 +10987,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ecc_single_err_cnt[0].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ecc_single_err_cnt_ecc_single_err_cnt_0_qs)
@@ -10640,6 +11013,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.ecc_single_err_cnt[1].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ecc_single_err_cnt_ecc_single_err_cnt_1_qs)
@@ -10667,6 +11041,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ecc_single_err_addr_0_qs)
@@ -10694,6 +11069,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (ecc_single_err_addr_1_qs)
@@ -10721,6 +11097,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_alert_cfg.alert_ack.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_alert_cfg_alert_ack_qs)
@@ -10746,6 +11123,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.phy_alert_cfg.alert_trig.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_alert_cfg_alert_trig_qs)
@@ -10773,6 +11151,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_status_init_wip_qs)
@@ -10798,6 +11177,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_status_prog_normal_avail_qs)
@@ -10823,6 +11203,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (phy_status_prog_repair_avail_qs)
@@ -10849,6 +11230,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.scratch.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (scratch_qs)
@@ -10876,6 +11258,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fifo_lvl.prog.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fifo_lvl_prog_qs)
@@ -10901,6 +11284,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fifo_lvl.rd.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fifo_lvl_rd_qs)
@@ -10927,6 +11311,7 @@ module flash_ctrl_core_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.fifo_rst.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (fifo_rst_qs)
@@ -10945,6 +11330,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (curr_fifo_lvl_prog_qs)
   );
 
@@ -10959,6 +11345,7 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (curr_fifo_lvl_rd_qs)
   );
 

@@ -272,6 +272,7 @@ module hmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.hmac_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_hmac_done_qs)
@@ -297,6 +298,7 @@ module hmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.fifo_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_fifo_empty_qs)
@@ -322,6 +324,7 @@ module hmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_state.hmac_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_state_hmac_err_qs)
@@ -349,6 +352,7 @@ module hmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.hmac_done.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_hmac_done_qs)
@@ -374,6 +378,7 @@ module hmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.fifo_empty.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_fifo_empty_qs)
@@ -399,6 +404,7 @@ module hmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.intr_enable.hmac_err.q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (intr_enable_hmac_err_qs)
@@ -420,6 +426,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.hmac_done.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.hmac_done.qe = intr_test_qe;
@@ -435,6 +442,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.fifo_empty.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.fifo_empty.qe = intr_test_qe;
@@ -450,6 +458,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.hmac_err.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.intr_test.hmac_err.qe = intr_test_qe;
@@ -469,6 +478,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.qe = alert_test_qe;
@@ -489,6 +499,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (cfg_flds_we[0]),
     .q      (reg2hw.cfg.hmac_en.q),
+    .ds     (),
     .qs     (cfg_hmac_en_qs)
   );
   assign reg2hw.cfg.hmac_en.qe = cfg_qe;
@@ -504,6 +515,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (cfg_flds_we[1]),
     .q      (reg2hw.cfg.sha_en.q),
+    .ds     (),
     .qs     (cfg_sha_en_qs)
   );
   assign reg2hw.cfg.sha_en.qe = cfg_qe;
@@ -519,6 +531,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (cfg_flds_we[2]),
     .q      (reg2hw.cfg.endian_swap.q),
+    .ds     (),
     .qs     (cfg_endian_swap_qs)
   );
   assign reg2hw.cfg.endian_swap.qe = cfg_qe;
@@ -534,6 +547,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (cfg_flds_we[3]),
     .q      (reg2hw.cfg.digest_swap.q),
+    .ds     (),
     .qs     (cfg_digest_swap_qs)
   );
   assign reg2hw.cfg.digest_swap.qe = cfg_qe;
@@ -554,6 +568,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (cmd_flds_we[0]),
     .q      (reg2hw.cmd.hash_start.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.cmd.hash_start.qe = cmd_qe;
@@ -569,6 +584,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (cmd_flds_we[1]),
     .q      (reg2hw.cmd.hash_process.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.cmd.hash_process.qe = cmd_qe;
@@ -586,6 +602,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_fifo_empty_qs)
   );
 
@@ -600,6 +617,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_fifo_full_qs)
   );
 
@@ -614,6 +632,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (status_fifo_depth_qs)
   );
 
@@ -638,6 +657,7 @@ module hmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (err_code_qs)
@@ -658,6 +678,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (wipe_secret_flds_we[0]),
     .q      (reg2hw.wipe_secret.q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.wipe_secret.qe = wipe_secret_qe;
@@ -678,6 +699,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (key_0_flds_we[0]),
     .q      (reg2hw.key[0].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key[0].qe = key_0_qe;
@@ -698,6 +720,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (key_1_flds_we[0]),
     .q      (reg2hw.key[1].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key[1].qe = key_1_qe;
@@ -718,6 +741,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (key_2_flds_we[0]),
     .q      (reg2hw.key[2].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key[2].qe = key_2_qe;
@@ -738,6 +762,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (key_3_flds_we[0]),
     .q      (reg2hw.key[3].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key[3].qe = key_3_qe;
@@ -758,6 +783,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (key_4_flds_we[0]),
     .q      (reg2hw.key[4].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key[4].qe = key_4_qe;
@@ -778,6 +804,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (key_5_flds_we[0]),
     .q      (reg2hw.key[5].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key[5].qe = key_5_qe;
@@ -798,6 +825,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (key_6_flds_we[0]),
     .q      (reg2hw.key[6].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key[6].qe = key_6_qe;
@@ -818,6 +846,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (key_7_flds_we[0]),
     .q      (reg2hw.key[7].q),
+    .ds     (),
     .qs     ()
   );
   assign reg2hw.key[7].qe = key_7_qe;
@@ -835,6 +864,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (digest_0_qs)
   );
 
@@ -851,6 +881,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (digest_1_qs)
   );
 
@@ -867,6 +898,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (digest_2_qs)
   );
 
@@ -883,6 +915,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (digest_3_qs)
   );
 
@@ -899,6 +932,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (digest_4_qs)
   );
 
@@ -915,6 +949,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (digest_5_qs)
   );
 
@@ -931,6 +966,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (digest_6_qs)
   );
 
@@ -947,6 +983,7 @@ module hmac_reg_top (
     .qre    (),
     .qe     (),
     .q      (),
+    .ds     (),
     .qs     (digest_7_qs)
   );
 
@@ -971,6 +1008,7 @@ module hmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (msg_length_lower_qs)
@@ -997,6 +1035,7 @@ module hmac_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (msg_length_upper_qs)
