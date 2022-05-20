@@ -248,21 +248,6 @@ int OtbnModel::start() {
   return 0;
 }
 
-int OtbnModel::dmem_wipe() {
-  ISSWrapper *iss = ensure_wrapper();
-  if (!iss)
-    return -1;
-
-  try {
-    iss->dmem_wipe();
-  } catch (const std::runtime_error &err) {
-    std::cerr << "Error when stepping DMEM wipe: " << err.what() << "\n";
-    return -1;
-  }
-
-  return 0;
-}
-
 int OtbnModel::imem_wipe() {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
@@ -272,6 +257,21 @@ int OtbnModel::imem_wipe() {
     iss->imem_wipe();
   } catch (const std::runtime_error &err) {
     std::cerr << "Error when stepping IMEM wipe: " << err.what() << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
+int OtbnModel::dmem_wipe() {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  try {
+    iss->dmem_wipe();
+  } catch (const std::runtime_error &err) {
+    std::cerr << "Error when stepping DMEM wipe: " << err.what() << "\n";
     return -1;
   }
 
@@ -323,23 +323,16 @@ int OtbnModel::edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */) {
   return 0;
 }
 
-int OtbnModel::set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
-                                svLogicVecVal *key1 /* logic [383:0] */,
-                                unsigned char valid) {
+int OtbnModel::edn_rnd_cdc_done() {
   ISSWrapper *iss = ensure_wrapper();
-
-  std::array<uint32_t, 12> key0_arr;
-  std::array<uint32_t, 12> key1_arr;
-  assert(valid == 0 || valid == 1);
-  for (int i = 0; i < 12; i++) {
-    key0_arr[i] = key0[i].aval;
-    key1_arr[i] = key1[i].aval;
-  }
+  if (!iss)
+    return -1;
 
   try {
-    iss->set_keymgr_value(key0_arr, key1_arr, valid != 0);
+    iss->edn_rnd_cdc_done();
   } catch (const std::runtime_error &err) {
-    std::cerr << "Error when setting keymgr value: " << err.what() << "\n";
+    std::cerr << "Error when signalling CDC done for RND: " << err.what()
+              << "\n";
     return -1;
   }
 
@@ -362,22 +355,6 @@ int OtbnModel::edn_urnd_cdc_done() {
   return 0;
 }
 
-int OtbnModel::edn_rnd_cdc_done() {
-  ISSWrapper *iss = ensure_wrapper();
-  if (!iss)
-    return -1;
-
-  try {
-    iss->edn_rnd_cdc_done();
-  } catch (const std::runtime_error &err) {
-    std::cerr << "Error when signalling CDC done for RND: " << err.what()
-              << "\n";
-    return -1;
-  }
-
-  return 0;
-}
-
 int OtbnModel::otp_key_cdc_done() {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
@@ -388,6 +365,29 @@ int OtbnModel::otp_key_cdc_done() {
   } catch (const std::runtime_error &err) {
     std::cerr << "Error when signalling CDC done for OTP key: " << err.what()
               << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
+int OtbnModel::set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
+                                svLogicVecVal *key1 /* logic [383:0] */,
+                                unsigned char valid) {
+  ISSWrapper *iss = ensure_wrapper();
+
+  std::array<uint32_t, 12> key0_arr;
+  std::array<uint32_t, 12> key1_arr;
+  assert(valid == 0 || valid == 1);
+  for (int i = 0; i < 12; i++) {
+    key0_arr[i] = key0[i].aval;
+    key1_arr[i] = key1[i].aval;
+  }
+
+  try {
+    iss->set_keymgr_value(key0_arr, key1_arr, valid != 0);
+  } catch (const std::runtime_error &err) {
+    std::cerr << "Error when setting keymgr value: " << err.what() << "\n";
     return -1;
   }
 
@@ -817,6 +817,16 @@ OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
 
 void otbn_model_destroy(OtbnModel *model) { delete model; }
 
+void otbn_take_loop_warps(OtbnModel *model, OtbnMemUtil *memutil) {
+  assert(model && memutil);
+  model->take_loop_warps(*memutil);
+}
+
+int otbn_has_loop_warps(OtbnMemUtil *memutil) {
+  assert(memutil);
+  return memutil->GetLoopWarps().size() != 0;
+}
+
 int otbn_model_edn_flush(OtbnModel *model) {
   assert(model);
   return model->edn_flush();
@@ -834,11 +844,6 @@ int otbn_model_edn_urnd_step(OtbnModel *model,
   return model->edn_urnd_step(edn_urnd_data);
 }
 
-int otbn_model_otp_key_cdc_done(OtbnModel *model) {
-  assert(model);
-  return model->otp_key_cdc_done();
-}
-
 int otbn_model_rnd_cdc_done(OtbnModel *model) {
   assert(model);
   return model->edn_rnd_cdc_done();
@@ -847,6 +852,17 @@ int otbn_model_rnd_cdc_done(OtbnModel *model) {
 int otbn_model_urnd_cdc_done(OtbnModel *model) {
   assert(model);
   return model->edn_urnd_cdc_done();
+}
+
+int otbn_model_otp_key_cdc_done(OtbnModel *model) {
+  assert(model);
+  return model->otp_key_cdc_done();
+}
+
+int otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
+                                svLogicVecVal *key1, unsigned char valid) {
+  assert(model && key0 && key1);
+  return model->set_keymgr_value(key0, key1, valid);
 }
 
 unsigned otbn_model_step(OtbnModel *model, unsigned model_state,
@@ -964,6 +980,17 @@ int otbn_model_invalidate_dmem(OtbnModel *model) {
   return model->invalidate_dmem();
 }
 
+int otbn_model_set_software_errs_fatal(OtbnModel *model,
+                                       unsigned char new_val) {
+  assert(model);
+  return model->set_software_errs_fatal(new_val);
+}
+
+int otbn_set_no_sec_wipe_chk(OtbnModel *model) {
+  assert(model);
+  return model->set_no_sec_wipe_chk();
+}
+
 int otbn_model_step_crc(OtbnModel *model, svBitVecVal *item /* bit [47:0] */,
                         svBitVecVal *state /* inout bit [31:0] */) {
   assert(model && item && state);
@@ -975,36 +1002,8 @@ int otbn_model_reset(OtbnModel *model) {
   return model->reset();
 }
 
-void otbn_take_loop_warps(OtbnModel *model, OtbnMemUtil *memutil) {
-  assert(model && memutil);
-  model->take_loop_warps(*memutil);
-}
-
-int otbn_has_loop_warps(OtbnMemUtil *memutil) {
-  assert(memutil);
-
-  return memutil->GetLoopWarps().size() != 0;
-}
-
-int otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
-                                svLogicVecVal *key1, unsigned char valid) {
-  assert(model && key0 && key1);
-  return model->set_keymgr_value(key0, key1, valid);
-}
-
 int otbn_model_send_err_escalation(OtbnModel *model,
                                    svBitVecVal *err_val /* bit [31:0] */) {
   assert(model);
   return model->send_err_escalation(err_val);
-}
-
-int otbn_model_set_software_errs_fatal(OtbnModel *model,
-                                       unsigned char new_val) {
-  assert(model);
-  return model->set_software_errs_fatal(new_val);
-}
-
-int otbn_set_no_sec_wipe_chk(OtbnModel *model) {
-  assert(model);
-  return model->set_no_sec_wipe_chk();
 }
