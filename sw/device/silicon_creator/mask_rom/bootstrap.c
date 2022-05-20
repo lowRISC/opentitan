@@ -312,8 +312,10 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
 #endif
       break;
     default:
-      // We don't expect any other commands.
-      error = kErrorBootstrapInvalidOpcode;
+      // We don't expect any other commands but we can potentially end up
+      // here with a 0x0 opcode due to glitches on SPI or strap lines (see
+      // #11871).
+      error = kErrorOk;
   }
   HARDENED_RETURN_IF_ERROR(error);
 
