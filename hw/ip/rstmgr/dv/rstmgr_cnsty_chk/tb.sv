@@ -237,6 +237,10 @@ module tb;
     .fsm_err_o(rstmgr_cnsty_chk_if.fsm_err_o)
   );
 
+  // set this to one to avoid a SVA error
+  // This SVA is to ensure we have a fatal alert check attached to the FSM error, but this is unit
+  // level testbench, no alert will occur.
+  assign dut.u_state_regs.unused_assert_connected = 1;
   initial begin
     automatic dv_utils_pkg::dv_report_server dv_report_server = new();
     $timeformat(-12, 0, " ps", 12);
