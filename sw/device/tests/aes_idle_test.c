@@ -80,8 +80,10 @@ bool test_main(void) {
 
   initialize_clkmgr();
 
+#if !OT_IS_ENGLISH_BREAKFAST
   // First of all, we need to get the entropy complex up and running.
   entropy_testutils_boot_mode_init();
+#endif
 
   // Initialise AES.
   CHECK_DIF_OK(
@@ -97,15 +99,17 @@ bool test_main(void) {
 
   // "Convert" key share byte arrays to `dif_aes_key_share_t`.
   dif_aes_key_share_t key;
-  memcpy(key.share0, key_share0, ARRAYSIZE(kKey));
-  memcpy(key.share1, kKeyShare1, ARRAYSIZE(kKey));
+  memcpy(key.share0, key_share0, sizeof(kKey));
+  memcpy(key.share1, kKeyShare1, sizeof(kKey));
 
   // Setup ECB encryption transaction.
   dif_aes_transaction_t transaction = {
       .operation = kDifAesOperationEncrypt,
       .mode = kDifAesModeEcb,
       .key_len = kDifAesKey256,
-      .manual_operation = kDifAesManualOperationAuto,
+      .manual_operation = kDifAesManualOperationManual,
+      .masking = kDifAesMaskingInternalPrng,
+      .mask_reseeding = kDifAesReseedPerBlock,
   };
 
   // Write the AES clk hint to 0 within clkmgr to indicate AES clk can be
@@ -126,12 +130,15 @@ bool test_main(void) {
 
   // "Convert" plain data byte arrays to `dif_aes_data_t`.
   dif_aes_data_t in_data_plain;
-  memcpy(in_data_plain.data, kPlainText, ARRAYSIZE(kPlainText));
+  memcpy(in_data_plain.data, kPlainText, sizeof(kPlainText));
 
   // Load the plain text to trigger the encryption operation.
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true, TIMEOUT);
   CHECK_DIF_OK(dif_aes_load_data(&aes, in_data_plain));
 
+  // Write the PRNG_RESEED bit to reseed the internal state of the PRNG.
+  CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
+  CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerStart));
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kAesClock, kDifToggleDisabled, kDifToggleEnabled);
 
