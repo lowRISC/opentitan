@@ -165,9 +165,9 @@ handler_irq_software:
   csrr t0, mstatus
   sw t0, 29 * OTTF_WORD_SIZE(sp)
 
-  // Save MEPC to the stack after updating it to the next instruction (since
-  // this is a synchronous IRQ).
-  jal compute_mepc_on_synchronous_irq
+  // Save MEPC to the stack.
+  // NOTE: this IRQ is asynchronous, therefore, we do not need to modify MEPC.
+  csrr t0, mepc
   sw t0, 0(sp)
 
   // Store stack pointer to current TCB (only if concurrency is enabled, i.e.,
