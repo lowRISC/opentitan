@@ -13,26 +13,23 @@ import "DPI-C" context function chandle otbn_model_init(string mem_scope,
 
 import "DPI-C" function void otbn_model_destroy(chandle model);
 
-import "DPI-C" function void edn_model_flush(chandle model);
+import "DPI-C" function void otbn_model_edn_flush(chandle model);
 
-import "DPI-C" function void edn_model_rnd_step(chandle model,
-                                                logic [31:0] edn_rnd_data);
+import "DPI-C" function void otbn_model_edn_rnd_step(chandle model,
+                                                     logic [31:0] edn_rnd_data);
 
-import "DPI-C" function void edn_model_urnd_step(chandle model,
-                                                 logic [31:0] edn_urnd_data);
+import "DPI-C" function void otbn_model_edn_urnd_step(chandle model,
+                                                      logic [31:0] edn_urnd_data);
 
-import "DPI-C" function
-  void edn_model_urnd_cdc_done(chandle model);
+import "DPI-C" function void otbn_model_urnd_cdc_done(chandle model);
 
 import "DPI-C" function
   int otbn_model_set_keymgr_value(chandle model, logic [383:0] key0,
                                   logic [383:0] key1, bit valid);
 
-import "DPI-C" function
-  void edn_model_rnd_cdc_done(chandle model);
+import "DPI-C" function void otbn_model_rnd_cdc_done(chandle model);
 
-import "DPI-C" function
-  void otp_key_cdc_done(chandle model);
+import "DPI-C" function void otbn_model_otp_key_cdc_done(chandle model);
 
 import "DPI-C" context function
   int unsigned otbn_model_step(chandle          model,
