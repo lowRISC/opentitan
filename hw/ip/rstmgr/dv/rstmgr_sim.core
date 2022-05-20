@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:rstmgr_sva
     files:
       - tb.sv
+      - cov/rstmgr_cov_bind.sv
     file_type: systemVerilogSource
 
 targets:
