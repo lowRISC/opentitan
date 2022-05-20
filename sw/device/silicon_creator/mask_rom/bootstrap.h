@@ -17,7 +17,7 @@ enum {
    *
    * TODO(#11934): The actual chip will have 3 strapping pins.
    */
-  kBootstrapPinMask = 0x00020000,
+  kBootstrapPinMask = 0x00400000,
 };
 
 /**
