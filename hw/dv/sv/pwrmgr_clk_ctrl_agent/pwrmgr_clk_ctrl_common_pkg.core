@@ -2,18 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:pwrmgr_rstmgr_sva_if:0.1"
-description: "PWRMGR to RSTMGR assertion interface."
+name: "lowrisc:dv:pwrmgr_clk_ctrl_common_pkg:0.1"
+description: "A target for common pwrmgr_clk_ctrl package to share among dv and fpv"
 filesets:
   files_dv:
-    depend:
-      - lowrisc:ip:pwrmgr_pkg
-      - lowrisc:dv:pwrmgr_clk_ctrl_common_pkg
     files:
-      - pwrmgr_rstmgr_sva_if.sv
+      - pwrmgr_clk_ctrl_common_pkg.sv
     file_type: systemVerilogSource
 
 targets:
-  default:
+  default: &default_target
     filesets:
       - files_dv

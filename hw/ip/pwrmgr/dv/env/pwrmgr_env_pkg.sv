@@ -21,6 +21,7 @@ package pwrmgr_env_pkg;
   import prim_mubi_pkg::MuBi4Width;
   import sec_cm_pkg::*;
   import pwrmgr_clk_ctrl_agent_pkg::*;
+  import pwrmgr_clk_ctrl_common_pkg::*;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -29,10 +30,10 @@ package pwrmgr_env_pkg;
   parameter int NUM_INTERRUPTS = 1;
 
   // clk enable disable delay
-  parameter uint MAIN_CLK_DELAY_MIN = pwrmgr_clk_ctrl_agent_pkg::MAIN_CLK_DELAY_MIN;
-  parameter uint MAIN_CLK_DELAY_MAX = pwrmgr_clk_ctrl_agent_pkg::MAIN_CLK_DELAY_MAX;
-  parameter uint ESC_CLK_DELAY_MIN = pwrmgr_clk_ctrl_agent_pkg::ESC_CLK_DELAY_MIN;
-  parameter uint ESC_CLK_DELAY_MAX = pwrmgr_clk_ctrl_agent_pkg::ESC_CLK_DELAY_MAX;
+  parameter uint MAIN_CLK_DELAY_MIN = pwrmgr_clk_ctrl_common_pkg::MAIN_CLK_DELAY_MIN;
+  parameter uint MAIN_CLK_DELAY_MAX = pwrmgr_clk_ctrl_common_pkg::MAIN_CLK_DELAY_MAX;
+  parameter uint ESC_CLK_DELAY_MIN = pwrmgr_clk_ctrl_common_pkg::ESC_CLK_DELAY_MIN;
+  parameter uint ESC_CLK_DELAY_MAX = pwrmgr_clk_ctrl_common_pkg::ESC_CLK_DELAY_MAX;
 
   // alerts
   parameter uint NUM_ALERTS = 1;

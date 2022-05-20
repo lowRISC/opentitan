@@ -7,7 +7,7 @@
 // these assertions will also be useful at full chip level.
 interface pwrmgr_rstmgr_sva_if
   import pwrmgr_pkg::*, pwrmgr_reg_pkg::NumRstReqs;
-  import pwrmgr_clk_ctrl_agent_pkg::*;
+  import pwrmgr_clk_ctrl_common_pkg::*;
 (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -43,11 +43,11 @@ interface pwrmgr_rstmgr_sva_if
 
   // output reset cycle with a clk enalbe disable
   localparam int MIN_MAIN_RST_CYCLES = 0;
-  localparam int MAX_MAIN_RST_CYCLES = pwrmgr_clk_ctrl_agent_pkg::MAIN_CLK_DELAY_MAX;
+  localparam int MAX_MAIN_RST_CYCLES = pwrmgr_clk_ctrl_common_pkg::MAIN_CLK_DELAY_MAX;
   `define MAIN_RST_CYCLES ##[MIN_MAIN_RST_CYCLES:MAX_MAIN_RST_CYCLES]
 
   localparam int MIN_ESC_RST_CYCLES = 0;
-  localparam int MAX_ESC_RST_CYCLES = pwrmgr_clk_ctrl_agent_pkg::ESC_CLK_DELAY_MAX * 8;
+  localparam int MAX_ESC_RST_CYCLES = pwrmgr_clk_ctrl_common_pkg::ESC_CLK_DELAY_MAX * 8;
   `define ESC_RST_CYCLES ##[MIN_ESC_RST_CYCLES:MAX_ESC_RST_CYCLES]
 
   bit disable_sva;
