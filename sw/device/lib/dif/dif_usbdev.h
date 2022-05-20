@@ -199,7 +199,18 @@ dif_result_t dif_usbdev_endpoint_setup_enable(const dif_usbdev_t *usbdev,
                                               dif_toggle_t new_state);
 
 /**
- * Enable or disable reception of OUT packets for an endpoint.
+ * Enable or disable reception of OUT packets for an active endpoint.
+ *
+ * When disabling reception of OUT packets, what the endpoint will do depends
+ * on other factors. If the endpoint is currently configured as a control
+ * endpoint (receives SETUP packets) or it is configured as an isochronous
+ * endpoint, disabling reception of OUT packets will cause them to be ignored.
+ *
+ * If the endpoint is neither a control nor isochronous endpoint, then its
+ * behavior depends on whether it is configured to respond with STALL. If the
+ * STALL response is not active, then disabling reception will cause usbdev to
+ * NAK the packet. Otherwise, the STALL response takes priority, regardless of
+ * the setting here.
  *
  * @param usbdev A USB device.
  * @param endpoint An OUT endpoint number.
