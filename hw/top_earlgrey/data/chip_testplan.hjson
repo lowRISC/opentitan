@@ -932,7 +932,7 @@
             chip_pwrmgr_sleep_all_reset_reqs, except `control.main_pd_n` is set to 0.
             '''
       milestone: V2
-      tests: ["chip_aon_timer_wdog_bite_reset"]
+      tests: ["chip_sw_aon_timer_wdog_bite_reset"]
     }
     {
       name: chip_sw_pwrmgr_all_reset_reqs
