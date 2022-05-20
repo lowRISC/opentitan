@@ -394,4 +394,16 @@ def opentitan_functest(
     native.test_suite(
         name = name,
         tests = all_tests,
+        # In test_suites, tags perform a filtering function and will select
+        # matching tags internally instead of allowing filters to select
+        # test_suites.
+        # There are exceptions: "small", "medium", "large", "enourmous", "manual"
+        tags = [
+            # The manual tag is a special case and is applied to the test suite
+            # it prevents it from being included in wildcards so that
+            # --build_tag_filters=-verilator works as expected and excludes
+            # building verilator tests so the verilator build wont be invoked.
+            "manual",
+            # For more see https://bazel.build/reference/be/general#test_suite.tags
+        ],
     )
