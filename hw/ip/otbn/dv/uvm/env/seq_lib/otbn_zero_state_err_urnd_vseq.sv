@@ -7,6 +7,7 @@ class otbn_zero_state_err_urnd_vseq extends otbn_single_vseq;
   `uvm_object_new
 
   task body();
+    do_end_addr_check = 0;
     fork
       begin
         super.body();
