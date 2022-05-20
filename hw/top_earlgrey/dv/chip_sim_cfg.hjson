@@ -375,6 +375,7 @@
       name: chip_sw_flash_ctrl_lc_rw_en
       uvm_test_seq: chip_sw_flash_ctrl_lc_rw_en_vseq
       sw_images: ["sw/device/tests/flash_ctrl_lc_rw_en_test:1"]
+      run_opts: ["+bypass_alert_ready_to_end_check=1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
