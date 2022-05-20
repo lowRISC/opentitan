@@ -330,6 +330,8 @@ hardened_bool_t bootstrap_requested(void) {
   }
   HARDENED_CHECK_EQ(res, kHardenedBoolTrue);
 
+  // A single read is sufficient since we expect strong pull-ups on the strap
+  // pins.
   res ^= kBootstrapPinMask;
   res ^=
       abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET) &
