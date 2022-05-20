@@ -607,14 +607,20 @@ A FIFO is used to synchronize the incoming package to the OTBN clock domain.
 Synchronized packages are then set starting from bottom up to a single `WLEN` value of 256b.
 In order to service a single EDN request, a total of 8 transactions are required from EDN interface.
 
+The `RND` CSR and WSR take their bits from the same source.
+A read from the `RND` CSR returns the bottom 32b; the other 192b are discarded.
+On a read from the `RND` CSR or WSR, OTBN will stall while it waits for data.
+It will resume execution on the cycle after it receives the final word of data from the EDN.
+
 As an EDN request can take time, `RND` is backed by a single-entry cache containing the result of the most recent EDN request in OTBN core level.
-A read from `RND` empties this cache.
-A prefetch into the cache, which can be used to hide the EDN latency, is triggered on any write to the `RND_PREFETCH` CSR.
+Writing any value to the `RND_PREFETCH` CSR initiates a prefetch.
+This requests data from the EDN, storing it in the cache, and can hide the EDN latency.
 Writes to `RND_PREFETCH` will be ignored whilst a prefetch is in progress or when the cache is already full.
-OTBN will stall until the request provides bits.
-Both the `RND` CSR and WSR take their bits from the same cache.
-`RND` CSR reads get bottom 32b and simply discard the other 192b on a read.
-When stalling on an `RND` read, OTBN will unstall on the cycle after it receives WLEN RND data from the EDN.
+If the cache is full, a read from `RND` returns immediately with the contents of the cache, which is then emptied.
+If the cache is not full, a read from `RND` will block as described above until OTBN receives the final word of data from the EDN.
+
+OTBN discards any data that is in the cache at the start of an operation.
+If there is still a pending prefetch when an OTBN operation starts, the results of the prefetch will also discarded.
 
 `URND` provides bits from a local XoShiRo256++ PRNG within OTBN; reads from it never stall.
 This PRNG is seeded once from the EDN connected via `edn_urnd` when OTBN starts execution.
