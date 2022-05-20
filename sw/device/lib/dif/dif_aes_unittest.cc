@@ -428,7 +428,7 @@ TEST_F(DataProcessTest, ThreeBlocksSuccess) {
   dif_aes_data_t out[kBlockCount];
   EXPECT_DIF_OK(dif_aes_process_data(&aes_, kDataIn, out, kBlockCount));
 
-  for (int i = 0; i < kBlockCount; ++i) {
+  for (size_t i = 0; i < kBlockCount; ++i) {
     EXPECT_THAT(out[i].data, ElementsAreArray(kDataOut[i].data));
   }
 }
