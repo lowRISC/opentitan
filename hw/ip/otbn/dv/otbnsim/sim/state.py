@@ -100,7 +100,6 @@ class OTBNState:
 
         self.rnd_set_flag = False
 
-        self.rnd_req = 0
         self.rnd_cdc_pending = False
         self.urnd_cdc_pending = False
 
