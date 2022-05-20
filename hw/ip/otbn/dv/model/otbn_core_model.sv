@@ -147,15 +147,13 @@ module otbn_core_model
   // EDN Stepping is done with the EDN clock for also asserting the CDC measures in the design.
   always_ff @(posedge clk_edn_i or negedge rst_edn_ni) begin
     if (!rst_edn_ni) begin
-      edn_model_flush(model_handle);
+      otbn_model_edn_flush(model_handle);
     end else begin
       if (edn_rnd_i.edn_ack) begin
-        edn_model_rnd_step(model_handle,
-                           edn_rnd_i.edn_bus);
+        otbn_model_edn_rnd_step(model_handle, edn_rnd_i.edn_bus);
       end
       if (edn_urnd_i.edn_ack) begin
-        edn_model_urnd_step(model_handle,
-                             edn_urnd_i.edn_bus);
+        otbn_model_edn_urnd_step(model_handle, edn_urnd_i.edn_bus);
       end
     end
   end
@@ -236,13 +234,13 @@ module otbn_core_model
                                                             keymgr_key_i.valid) != 0);
       end
       if (edn_urnd_cdc_done_i) begin
-        edn_model_urnd_cdc_done(model_handle);
+        otbn_model_urnd_cdc_done(model_handle);
       end
       if (edn_rnd_cdc_done_i) begin
-        edn_model_rnd_cdc_done(model_handle);
+        otbn_model_rnd_cdc_done(model_handle);
       end
       if (otp_key_cdc_done_i) begin
-        otp_key_cdc_done(model_handle);
+        otbn_model_otp_key_cdc_done(model_handle);
       end
       if (step_iss) begin
         model_state <= otbn_model_step(model_handle,

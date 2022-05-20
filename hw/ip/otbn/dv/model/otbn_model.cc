@@ -748,23 +748,29 @@ OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
 
 void otbn_model_destroy(OtbnModel *model) { delete model; }
 
-void edn_model_flush(OtbnModel *model) { model->edn_flush(); }
+void otbn_model_edn_flush(OtbnModel *model) { model->edn_flush(); }
 
-void edn_model_rnd_step(OtbnModel *model,
-                        svLogicVecVal *edn_rnd_data /* logic [31:0] */) {
+void otbn_model_edn_rnd_step(OtbnModel *model,
+                             svLogicVecVal *edn_rnd_data /* logic [31:0] */) {
   model->edn_rnd_step(edn_rnd_data);
 }
 
-void edn_model_urnd_step(OtbnModel *model,
-                         svLogicVecVal *edn_urnd_data /* logic [31:0] */) {
+void otbn_model_edn_urnd_step(OtbnModel *model,
+                              svLogicVecVal *edn_urnd_data /* logic [31:0] */) {
   model->edn_urnd_step(edn_urnd_data);
 }
 
-void otp_key_cdc_done(OtbnModel *model) { model->otp_key_cdc_done(); }
+void otbn_model_otp_key_cdc_done(OtbnModel *model) {
+  return model->otp_key_cdc_done();
+}
 
-void edn_model_rnd_cdc_done(OtbnModel *model) { model->edn_rnd_cdc_done(); }
+void otbn_model_rnd_cdc_done(OtbnModel *model) {
+  return model->edn_rnd_cdc_done();
+}
 
-void edn_model_urnd_cdc_done(OtbnModel *model) { model->edn_urnd_cdc_done(); }
+void otbn_model_urnd_cdc_done(OtbnModel *model) {
+  return model->edn_urnd_cdc_done();
+}
 
 unsigned otbn_model_step(OtbnModel *model, unsigned model_state,
                          svBitVecVal *cmd /* bit [7:0] */,

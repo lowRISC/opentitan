@@ -23,24 +23,24 @@ OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
 void otbn_model_destroy(OtbnModel *model);
 
 // Flush URND and RND EDN data from model because of edn_rst_n signal
-void edn_model_flush(OtbnModel *model);
+void otbn_model_edn_flush(OtbnModel *model);
 
 // Call edn_rnd_step function of OtbnModel
-void edn_model_rnd_step(OtbnModel *model,
-                        svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+void otbn_model_edn_rnd_step(OtbnModel *model,
+                             svLogicVecVal *edn_rnd_data /* logic [31:0] */);
 
 // Call edn_urnd_step function of OtbnModel
-void edn_model_urnd_step(OtbnModel *model,
-                         svLogicVecVal *edn_urnd_data /* logic [31:0] */);
+void otbn_model_edn_urnd_step(OtbnModel *model,
+                              svLogicVecVal *edn_urnd_data /* logic [31:0] */);
 
 // Signal RTL is finished processing RND data to Model
-void edn_model_rnd_cdc_done(OtbnModel *model);
+void otbn_model_otp_key_cdc_done(OtbnModel *model);
 
 // Signal RTL is finished processing OTP key to the Model
-void otp_key_cdc_done(OtbnModel *model);
+void otbn_model_rnd_cdc_done(OtbnModel *model);
 
 // Signal RTL is finished processing EDN data for URND to Model
-void edn_model_urnd_cdc_done(OtbnModel *model);
+void otbn_model_urnd_cdc_done(OtbnModel *model);
 
 // Pass keymgr data to model. Returns 0 on success; -1 on error.
 int otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
