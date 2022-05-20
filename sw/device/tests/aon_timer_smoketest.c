@@ -14,8 +14,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
-
 static void aon_timer_test_wakeup_timer(dif_aon_timer_t *aon) {
   // Test the wake-up timer functionality by setting a single cycle counter.
   // Delay to compensate for AON Timer 200kHz clock (less should suffice, but

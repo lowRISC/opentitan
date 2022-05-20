@@ -18,8 +18,6 @@ OTBN_DECLARE_APP_SYMBOLS(err_test);
 
 static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
 
-const test_config_t kTestConfig;
-
 static dif_rv_plic_t plic;
 static volatile bool otbn_finished;
 

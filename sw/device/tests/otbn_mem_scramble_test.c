@@ -14,8 +14,6 @@
 OTBN_DECLARE_APP_SYMBOLS(randomness);
 static const otbn_app_t kOtbnAppCfiTest = OTBN_APP_T_INIT(randomness);
 
-const test_config_t kTestConfig;
-
 static volatile bool has_exception_fired;
 
 /**

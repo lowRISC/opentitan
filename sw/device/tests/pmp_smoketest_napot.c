@@ -49,8 +49,6 @@ static void pmp_configure_load_napot(void) {
         "Load configuration failed, error code = %d", result);
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   pmp_load_exception = false;
   char load = pmp_load_store_test_data[PMP_LOAD_RANGE_BOTTOM_OFFSET];

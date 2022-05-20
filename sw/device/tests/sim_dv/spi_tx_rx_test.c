@@ -324,8 +324,6 @@ static bool execute_test(dif_spi_device_handle_t *spi_device) {
   return true;
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   mmio_region_t spi_device_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);

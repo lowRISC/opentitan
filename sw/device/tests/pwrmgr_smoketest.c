@@ -15,8 +15,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   // Issue a wakeup signal in ~150us through the AON timer.
   //

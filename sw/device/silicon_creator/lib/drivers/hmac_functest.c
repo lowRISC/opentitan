@@ -52,8 +52,6 @@ rom_error_t hmac_test(void) {
   return kErrorOk;
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   rom_error_t result = kErrorOk;
   EXECUTE_TEST(result, hmac_test);

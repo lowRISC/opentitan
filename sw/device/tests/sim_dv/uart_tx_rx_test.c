@@ -528,8 +528,6 @@ void config_external_clock(void) {
   CHECK_DIF_OK(dif_clkmgr_wait_for_ext_clk_switch(&clkmgr));
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   update_uart_base_addr_and_irq_id();
 

@@ -25,8 +25,6 @@
 
 static dif_pwrmgr_t pwrmgr;
 
-const test_config_t kTestConfig;
-
 static bool compare_wakeup_reasons(dif_pwrmgr_wakeup_reason_t lhs,
                                    dif_pwrmgr_wakeup_reason_t rhs) {
   return lhs.types == rhs.types && lhs.request_sources == rhs.request_sources;

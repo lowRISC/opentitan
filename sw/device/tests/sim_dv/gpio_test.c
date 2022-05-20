@@ -240,8 +240,6 @@ void ottf_external_isr(void) {
                                         plic_irq_id));
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   // Initialize the pinmux - this assigns MIO0-31 to GPIOs.
   CHECK_DIF_OK(dif_pinmux_init(

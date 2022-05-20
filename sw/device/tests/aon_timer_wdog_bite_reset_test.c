@@ -19,8 +19,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
-
 /**
  * Configure the wdog.
  */

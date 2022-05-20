@@ -27,8 +27,6 @@
  */
 extern noreturn void _asm_exception_handler(void);
 
-const test_config_t kTestConfig;
-
 // The test phases are tracked in retention RAM so that we ensure the reset
 // happened in the correct phase of the test.
 typedef enum TestPhase {

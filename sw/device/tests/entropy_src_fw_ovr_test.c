@@ -11,8 +11,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-const test_config_t kTestConfig;
-
 enum {
   /**
    * The size of the buffer used in firmware to process the entropy bits in

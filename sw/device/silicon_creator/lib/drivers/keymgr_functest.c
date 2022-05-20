@@ -91,8 +91,6 @@ const uint32_t kMaxVerRomExt = 1;
 /** BL0 key manager maximum version. */
 const uint32_t kMaxVerBl0 = 2;
 
-const test_config_t kTestConfig;
-
 static dif_flash_ctrl_state_t flash;
 
 /**

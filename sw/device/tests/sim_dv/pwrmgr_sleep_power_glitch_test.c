@@ -13,8 +13,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
-
 // When the test first runs the rstmgr's `reset_info` CSR should have the POR
 // bit set, the code clears reset_info and puts the chip in deep sleep. The WFI
 // causes core_sleeping to rise, and that causes the SV side to glitch the main

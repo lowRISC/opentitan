@@ -21,7 +21,6 @@
 #define WDOG_BARK_TIME_US 1300
 #define WDOG_BITE_TIME_US 1600
 #define WKUP_TIME_US 2000
-const test_config_t kTestConfig;
 
 bool test_main(void) {
   // Initialize pwrmgr.

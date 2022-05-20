@@ -81,8 +81,6 @@ rom_error_t alert_escalate_test(void) {
   return kErrorUnknown;
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   rom_error_t result = kErrorOk;
   uint32_t reason = rstmgr_reason_get();

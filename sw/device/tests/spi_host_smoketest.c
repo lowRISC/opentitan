@@ -20,8 +20,6 @@ static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
 
 #define SFDP_SIGNATURE 0x50444653
 
-const test_config_t kTestConfig;
-
 void read_sfdp(dif_spi_host_t *spi_host) {
   uint8_t buf[256];
   dif_spi_host_segment_t segments[] = {

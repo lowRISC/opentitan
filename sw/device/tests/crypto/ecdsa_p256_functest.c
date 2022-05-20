@@ -87,8 +87,6 @@ bool sign_then_verify_test(void) {
   return true;
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   entropy_testutils_boot_mode_init();
 

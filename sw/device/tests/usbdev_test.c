@@ -89,8 +89,6 @@ static void usb_receipt_callback(uint8_t c) {
   }
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
   CHECK(kDeviceType == kDeviceSimVerilator,
         "This test is not expected to run on platforms other than the "

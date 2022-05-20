@@ -24,8 +24,6 @@ static void spin_180(void) {
   }
 }
 
-const test_config_t kTestConfig;
-
 /**
  * A simple program for testing the coverage functionality.
  *

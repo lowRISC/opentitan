@@ -18,8 +18,6 @@
 
 static dif_flash_ctrl_state_t flash;
 
-const test_config_t kTestConfig;
-
 enum {
   kFlashInfoPageIdCreatorSecret = 1,
   kFlashInfoPageIdOwnerSecret = 2,
