@@ -579,6 +579,17 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_address_get(const dif_usbdev_t *usbdev, uint8_t *addr);
 
 /**
+ * Clear the data toggle bits for the selected endpoint.
+ *
+ * @param usbdev A USB device.
+ * @param endpoint An endpoint number.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_clear_data_toggle(const dif_usbdev_t *usbdev,
+                                          uint8_t endpoint);
+
+/**
  * Get USB frame index.
  *
  * @param usbdev A USB device.
@@ -690,6 +701,138 @@ dif_result_t dif_usbdev_status_get_rx_fifo_depth(const dif_usbdev_t *usbdev,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_status_get_rx_fifo_empty(const dif_usbdev_t *usbdev,
                                                  bool *is_empty);
+
+/**
+ * Control whether oscillator test mode is enabled.
+ *
+ * In oscillator test mode, usbdev transmits a continuous 0101 pattern for
+ * evaluating the reference clock's quality.
+ *
+ * @param usbdev A USB device.
+ * @param enable Whether the test mode should be enabled.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_set_osc_test_mode(const dif_usbdev_t *usbdev,
+                                          dif_toggle_t enable);
+
+/**
+ * Control whether the AON wake module is active.
+ *
+ * @param usbdev A USB device.
+ * @param enable Whether the AON wake module is enabled.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_set_wake_enable(const dif_usbdev_t *usbdev,
+                                        dif_toggle_t enable);
+
+typedef struct dif_usbdev_wake_status {
+  /** Whether the AON wake module is active. */
+  bool active;
+  /** Whether the USB disconnected while the AON wake module was active. */
+  bool disconnected;
+  /** Whether the USB was reset while the AON wake module was active. */
+  bool bus_reset;
+} dif_usbdev_wake_status_t;
+
+/**
+ * Get the status of the AON wake module.
+ *
+ * Note that the conditions triggering exit from suspended state must be read
+ * before disabling the AON wake module. Once the AON wake module is
+ * deactivated, that status information is lost.
+ *
+ * Also note that the ordinary resume condition does not report to the usbdev
+ * module. Instead, it should be obtained from the module monitoring wakeup
+ * sources.
+ *
+ * @param usbdev A USB device.
+ * @param[out] status The status of the module.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_get_wake_status(const dif_usbdev_t *usbdev,
+                                        dif_usbdev_wake_status_t *status);
+
+/**
+ * Force the link state machine to resume to an active state.
+ *
+ * This is used when waking from a low-power suspended state to resume to an
+ * active state. It moves the usbdev out of the Powered state (from the USB
+ * device state machine in the spec) without receiving a bus reset. Without help
+ * from software, the usbdev module cannot determine on its own when a bus reset
+ * is required.
+ *
+ * @param usbdev A USB device.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_resume_link_to_active(const dif_usbdev_t *usbdev);
+
+typedef struct dif_usbdev_phy_pins_sense {
+  /** USB D+ input. */
+  bool rx_dp : 1;
+  /** USB D- input. */
+  bool rx_dn : 1;
+  /** USB data input from an external differential receiver, if available. */
+  bool rx_d : 1;
+  /** USB transmit D+ output. */
+  bool tx_dp : 1;
+  /** USB transmit D- output. */
+  bool tx_dn : 1;
+  /** USB transmit data value output. */
+  bool tx_d : 1;
+  /** USB single-ended zero output. */
+  bool tx_se0 : 1;
+  /** USB output enable for D+ / D-. */
+  bool output_enable : 1;
+  /** USB VBUS sense pin. */
+  bool vbus_sense : 1;
+} dif_usbdev_phy_pins_sense_t;
+
+/**
+ * Get the current state of the USB PHY pins.
+ *
+ * @param usbdev A USB device.
+ * @param[out] status The current state of the pins.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_get_phy_pins_status(
+    const dif_usbdev_t *usbdev, dif_usbdev_phy_pins_sense_t *status);
+
+typedef struct dif_usbdev_phy_pins_drive {
+  /** USB D+ output, for use with dn. */
+  bool dp : 1;
+  /** USB D- output. for use with dp. */
+  bool dn : 1;
+  /** USB data output, encoding K and J when se0 is 0. */
+  bool data : 1;
+  /** USB single-ended zero output. */
+  bool se0 : 1;
+  /** USB output enable for D+ / D-. */
+  bool output_enable : 1;
+  /** Enable control pin for the differential receiver. */
+  bool diff_receiver_enable : 1;
+  /** Controls whether to pull up the D+ pin. */
+  bool dp_pullup_en : 1;
+  /** Controls whether to pull up the D- pin. */
+  bool dn_pullup_en : 1;
+} dif_usbdev_phy_pins_drive_t;
+
+/**
+ * Control whether to override the USB PHY and drive pins as GPIOs.
+ *
+ * @param usbdev A USB device.
+ * @param override_enable Enable / disable the GPIO-like overrides.
+ * @param overrides The values to set the pins to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_set_phy_pins_state(
+    const dif_usbdev_t *usbdev, dif_toggle_t override_enable,
+    dif_usbdev_phy_pins_drive_t overrides);
 
 #ifdef __cplusplus
 }  // extern "C"
