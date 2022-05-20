@@ -116,6 +116,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
     uint16_t [3:0] get_duration;
     uvm_reg_data_t [3:0] get_action;
     bit[4:0] get_trigger_combo[4];
+    int past_cycles;
 
     `uvm_info(`gfn, "Starting the body from combo detect", UVM_LOW)
 
@@ -131,6 +132,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       bit bat_act_triggered, ec_act_triggered, rst_act_triggered;
       bit [3:0] intr_actions;
       int ec_act_occur_cyc = cycles;
+      int exit_cyc;
       repeat ($urandom_range(1, 2)) begin
         // Trigger the input pins
         cfg.clk_aon_rst_vif.wait_clks(1);
@@ -188,10 +190,11 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
           if (get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i])) begin
             ec_act_triggered = 1;
             // record which cycle the ec_rst occurs
-            ec_act_occur_cyc = min2(ec_act_occur_cyc, get_duration[i] + set_key_timer);
+            ec_act_occur_cyc = get_duration[i] + set_key_timer + 1;
           end
         end
       end
+       
       if (ec_act_triggered) begin
         // we don't check ec_rst_pulse right after it occurs. past_cycles indicates how many
         // cycles the pulse has been active
@@ -201,7 +204,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       end else begin
         check_ec_rst_inactive(set_pulse_width);
         `DV_CHECK_EQ(cfg.vif.ec_rst_l_out, 1);
-      end
+      end 
 
       cfg.clk_aon_rst_vif.wait_clks(1);
       csr_rd(ral.combo_intr_status, rdata);
