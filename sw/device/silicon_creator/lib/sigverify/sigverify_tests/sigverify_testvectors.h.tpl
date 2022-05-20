@@ -8,7 +8,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SIGVERIFY_TESTS_SIGVERIFY_TESTVECTORS_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SIGVERIFY_TESTS_SIGVERIFY_TESTVECTORS_H_
 
-#include "sw/device/silicon_creator/lib/sigverify/sigverify_rsa_key.h"
+#include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,4 +64,4 @@ static const sigverify_test_vector_t sigverify_tests[${len(tests)}] = {
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_TESTS_SIGVERIFY_TESTVECTORS_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SIGVERIFY_TESTS_SIGVERIFY_TESTVECTORS_H_
