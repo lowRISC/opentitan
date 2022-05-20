@@ -77,6 +77,36 @@ typedef struct dif_rv_core_ibex_addr_translation_region {
 } dif_rv_core_ibex_addr_translation_region_t;
 
 /**
+ * Ibex error status detected by `rv_core_ibex` peripheral.
+ */
+typedef enum dif_rv_core_ibex_error_status {
+  /**
+   * Register transmission integrity error.
+   */
+  kDifRvCoreIbexErrorStatusRegisterTransmissionIntegrity = 1 << 0,
+
+  /**
+   * Response integrity error.
+   */
+  kDifRvCoreIbexErrorStatusFatalResponseIntegrity = 1 << 8,
+
+  /**
+   * Fatal internal error (`alert_major_internal_o` from Ibex seen).
+   */
+  kDifRvCoreIbexErrorStatusFatalInternalError = 1 << 9,
+
+  /**
+   * recoverable internal error (`alert_minor` from Ibex seen).
+   */
+  kDifRvCoreIbexErrorStatusRecoverableInternal = 1 << 10,
+
+  /**
+   * All errors combined.
+   */
+  kDifRvCoreIbexErrorStatusAll = (1 << 0 | 1 << 8 | 1 << 9 | 1 << 10),
+} dif_rv_core_ibex_error_status_t;
+
+/**
  * Configure the instruction and data bus in the address translation `slot`.
  *
  * @param rv_core_ibex Handle.
@@ -115,6 +145,31 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_core_ibex_lock_addr_translation(
     const dif_rv_core_ibex_t *rv_core_ibex,
     dif_rv_core_ibex_addr_translation_slot_t slot);
+
+/**
+ * Read the ibex error status.
+ *
+ * @param rv_core_ibex Handle.
+ * @param error_status Pointer to receive the error status value.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_get_error_status(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_error_status_t *error_status);
+
+/**
+ * Clear the ibex error status, after the software has handled it.
+ *
+ * @param rv_core_ibex Handle.
+ * @param error_status The error to be cleared.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_clear_error_status(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_error_status_t error_status);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

@@ -14,6 +14,23 @@
 // #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_core_ibex_regs.h"
 
+/**
+ * Error code constants of `dif_rv_core_ibex_error_status_t` are masks for the
+ * bits of RV_CORE_IBEX_ERR_STATUS_REG register.
+ */
+static_assert(kDifRvCoreIbexErrorStatusRegisterTransmissionIntegrity ==
+                  1 << RV_CORE_IBEX_ERR_STATUS_REG_INTG_ERR_BIT,
+              "Layout of RV_CORE_IBEX_ERR_STATUS_REG register changed.");
+static_assert(kDifRvCoreIbexErrorStatusFatalResponseIntegrity ==
+                  1 << RV_CORE_IBEX_ERR_STATUS_FATAL_INTG_ERR_BIT,
+              "Layout of RV_CORE_IBEX_ERR_STATUS_REG register changed.");
+static_assert(kDifRvCoreIbexErrorStatusFatalInternalError ==
+                  1 << RV_CORE_IBEX_ERR_STATUS_FATAL_CORE_ERR_BIT,
+              "Layout of RV_CORE_IBEX_ERR_STATUS_REG register changed.");
+static_assert(kDifRvCoreIbexErrorStatusRecoverableInternal ==
+                  1 << RV_CORE_IBEX_ERR_STATUS_RECOV_CORE_ERR_BIT,
+              "Layout of RV_CORE_IBEX_ERR_STATUS_REG register changed.");
+
 typedef struct ibex_addr_translation_regs {
   uint32_t ibus_maching;
   uint32_t ibus_remap;
@@ -158,6 +175,33 @@ dif_result_t dif_rv_core_ibex_lock_addr_translation(
   if (mmio_region_read32(rv_core_ibex->base_addr, regs.ibus_lock) == 1) {
     mmio_region_write32(rv_core_ibex->base_addr, regs.ibus_lock, 0);
   }
+
+  return kDifOk;
+}
+
+dif_result_t dif_rv_core_ibex_get_error_status(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_error_status_t *error_status) {
+  if (rv_core_ibex == NULL || error_status == NULL) {
+    return kDifBadArg;
+  }
+
+  *error_status = mmio_region_read32(rv_core_ibex->base_addr,
+                                     RV_CORE_IBEX_ERR_STATUS_REG_OFFSET);
+
+  return kDifOk;
+}
+
+dif_result_t dif_rv_core_ibex_clear_error_status(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_error_status_t error_status) {
+  if (rv_core_ibex == NULL ||
+      (error_status & ~kDifRvCoreIbexErrorStatusAll) != 0) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(rv_core_ibex->base_addr,
+                      RV_CORE_IBEX_ERR_STATUS_REG_OFFSET, error_status);
 
   return kDifOk;
 }
