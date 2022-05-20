@@ -652,6 +652,16 @@ dif_result_t dif_usbdev_address_get(const dif_usbdev_t *usbdev, uint8_t *addr) {
   return kDifOk;
 }
 
+dif_result_t dif_usbdev_clear_data_toggle(const dif_usbdev_t *usbdev,
+                                          uint8_t endpoint) {
+  if (usbdev == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(usbdev->base_addr, USBDEV_DATA_TOGGLE_CLEAR_REG_OFFSET,
+                      1u << endpoint);
+  return kDifOk;
+}
+
 dif_result_t dif_usbdev_status_get_frame(const dif_usbdev_t *usbdev,
                                          uint16_t *frame_index) {
   if (usbdev == NULL || frame_index == NULL) {
@@ -781,5 +791,125 @@ dif_result_t dif_usbdev_status_get_rx_fifo_empty(const dif_usbdev_t *usbdev,
       mmio_region_read32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET);
   *is_empty = bitfield_bit32_read(reg_val, USBDEV_USBSTAT_RX_EMPTY_BIT);
 
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_set_osc_test_mode(const dif_usbdev_t *usbdev,
+                                          dif_toggle_t enable) {
+  if (usbdev == NULL || !dif_is_valid_toggle(enable)) {
+    return kDifBadArg;
+  }
+  bool set_tx_osc_mode = dif_toggle_to_bool(enable);
+  uint32_t reg_val =
+      mmio_region_read32(usbdev->base_addr, USBDEV_PHY_CONFIG_REG_OFFSET);
+  reg_val = bitfield_bit32_write(
+      reg_val, USBDEV_PHY_CONFIG_TX_OSC_TEST_MODE_BIT, set_tx_osc_mode);
+  mmio_region_write32(usbdev->base_addr, USBDEV_PHY_CONFIG_REG_OFFSET, reg_val);
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_set_wake_enable(const dif_usbdev_t *usbdev,
+                                        dif_toggle_t enable) {
+  if (usbdev == NULL || !dif_is_valid_toggle(enable)) {
+    return kDifBadArg;
+  }
+  uint32_t reg_val;
+  if (dif_toggle_to_bool(enable)) {
+    reg_val =
+        bitfield_bit32_write(0, USBDEV_WAKE_CONTROL_SUSPEND_REQ_BIT, true);
+  } else {
+    reg_val = bitfield_bit32_write(0, USBDEV_WAKE_CONTROL_WAKE_ACK_BIT, true);
+  }
+  mmio_region_write32(usbdev->base_addr, USBDEV_WAKE_CONTROL_REG_OFFSET,
+                      reg_val);
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_get_wake_status(const dif_usbdev_t *usbdev,
+                                        dif_usbdev_wake_status_t *status) {
+  if (usbdev == NULL || status == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg_val =
+      mmio_region_read32(usbdev->base_addr, USBDEV_WAKE_EVENTS_REG_OFFSET);
+  status->active =
+      bitfield_bit32_read(reg_val, USBDEV_WAKE_EVENTS_MODULE_ACTIVE_BIT);
+  status->disconnected =
+      bitfield_bit32_read(reg_val, USBDEV_WAKE_EVENTS_DISCONNECTED_BIT);
+  status->bus_reset =
+      bitfield_bit32_read(reg_val, USBDEV_WAKE_EVENTS_BUS_RESET_BIT);
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_resume_link_to_active(const dif_usbdev_t *usbdev) {
+  if (usbdev == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg_val =
+      mmio_region_read32(usbdev->base_addr, USBDEV_USBCTRL_REG_OFFSET);
+  reg_val = bitfield_bit32_write(reg_val, USBDEV_USBCTRL_RESUME_LINK_ACTIVE_BIT,
+                                 true);
+  mmio_region_write32(usbdev->base_addr, USBDEV_USBCTRL_REG_OFFSET, reg_val);
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_get_phy_pins_status(
+    const dif_usbdev_t *usbdev, dif_usbdev_phy_pins_sense_t *status) {
+  if (usbdev == NULL || status == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg_val =
+      mmio_region_read32(usbdev->base_addr, USBDEV_PHY_PINS_SENSE_REG_OFFSET);
+  status->rx_dp =
+      bitfield_bit32_read(reg_val, USBDEV_PHY_PINS_SENSE_RX_DP_I_BIT);
+  status->rx_dn =
+      bitfield_bit32_read(reg_val, USBDEV_PHY_PINS_SENSE_RX_DN_I_BIT);
+  status->rx_d = bitfield_bit32_read(reg_val, USBDEV_PHY_PINS_SENSE_RX_D_I_BIT);
+  status->tx_dp =
+      bitfield_bit32_read(reg_val, USBDEV_PHY_PINS_SENSE_TX_DP_O_BIT);
+  status->tx_dn =
+      bitfield_bit32_read(reg_val, USBDEV_PHY_PINS_SENSE_TX_DN_O_BIT);
+  status->tx_d = bitfield_bit32_read(reg_val, USBDEV_PHY_PINS_SENSE_TX_D_O_BIT);
+  status->tx_se0 =
+      bitfield_bit32_read(reg_val, USBDEV_PHY_PINS_SENSE_TX_SE0_O_BIT);
+  status->output_enable =
+      bitfield_bit32_read(reg_val, USBDEV_PHY_PINS_SENSE_TX_OE_O_BIT);
+  status->vbus_sense =
+      bitfield_bit32_read(reg_val, USBDEV_PHY_PINS_SENSE_PWR_SENSE_BIT);
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_set_phy_pins_state(
+    const dif_usbdev_t *usbdev, dif_toggle_t override_enable,
+    dif_usbdev_phy_pins_drive_t overrides) {
+  if (usbdev == NULL || !dif_is_valid_toggle(override_enable)) {
+    return kDifBadArg;
+  }
+  bool drive_en = dif_toggle_to_bool(override_enable);
+  uint32_t reg_val =
+      bitfield_bit32_write(0, USBDEV_PHY_PINS_DRIVE_EN_BIT, drive_en);
+  if (drive_en) {
+    reg_val = bitfield_bit32_write(reg_val, USBDEV_PHY_PINS_DRIVE_DP_O_BIT,
+                                   overrides.dp);
+    reg_val = bitfield_bit32_write(reg_val, USBDEV_PHY_PINS_DRIVE_DN_O_BIT,
+                                   overrides.dn);
+    reg_val = bitfield_bit32_write(reg_val, USBDEV_PHY_PINS_DRIVE_D_O_BIT,
+                                   overrides.data);
+    reg_val = bitfield_bit32_write(reg_val, USBDEV_PHY_PINS_DRIVE_SE0_O_BIT,
+                                   overrides.se0);
+    reg_val = bitfield_bit32_write(reg_val, USBDEV_PHY_PINS_DRIVE_OE_O_BIT,
+                                   overrides.output_enable);
+    reg_val =
+        bitfield_bit32_write(reg_val, USBDEV_PHY_PINS_DRIVE_RX_ENABLE_O_BIT,
+                             overrides.diff_receiver_enable);
+    reg_val =
+        bitfield_bit32_write(reg_val, USBDEV_PHY_PINS_DRIVE_DP_PULLUP_EN_O_BIT,
+                             overrides.dp_pullup_en);
+    reg_val =
+        bitfield_bit32_write(reg_val, USBDEV_PHY_PINS_DRIVE_DN_PULLUP_EN_O_BIT,
+                             overrides.dn_pullup_en);
+  }
+  mmio_region_write32(usbdev->base_addr, USBDEV_PHY_PINS_DRIVE_REG_OFFSET,
+                      reg_val);
   return kDifOk;
 }
