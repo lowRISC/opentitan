@@ -13,6 +13,10 @@ import "DPI-C" context function chandle otbn_model_init(string mem_scope,
 
 import "DPI-C" function void otbn_model_destroy(chandle model);
 
+import "DPI-C" function void otbn_take_loop_warps(chandle model, chandle memutil);
+
+import "DPI-C" function int otbn_has_loop_warps(chandle memutil);
+
 import "DPI-C" function int otbn_model_edn_flush(chandle model);
 
 import "DPI-C" function int otbn_model_edn_rnd_step(chandle model,
@@ -21,15 +25,15 @@ import "DPI-C" function int otbn_model_edn_rnd_step(chandle model,
 import "DPI-C" function int otbn_model_edn_urnd_step(chandle model,
                                                      logic [31:0] edn_urnd_data);
 
+import "DPI-C" function int otbn_model_rnd_cdc_done(chandle model);
+
 import "DPI-C" function int otbn_model_urnd_cdc_done(chandle model);
+
+import "DPI-C" function int otbn_model_otp_key_cdc_done(chandle model);
 
 import "DPI-C" function
   int otbn_model_set_keymgr_value(chandle model, logic [383:0] key0,
                                   logic [383:0] key1, bit valid);
-
-import "DPI-C" function int otbn_model_rnd_cdc_done(chandle model);
-
-import "DPI-C" function int otbn_model_otp_key_cdc_done(chandle model);
 
 import "DPI-C" context function
   int unsigned otbn_model_step(chandle          model,
@@ -45,22 +49,18 @@ import "DPI-C" context function int otbn_model_check(chandle model, inout bit mi
 
 import "DPI-C" function int otbn_model_invalidate_imem(chandle model);
 
+import "DPI-C" function int otbn_model_invalidate_dmem(chandle model);
+
+import "DPI-C" function int otbn_model_set_software_errs_fatal(chandle model, bit new_val);
+
+import "DPI-C" function int otbn_set_no_sec_wipe_chk(chandle model);
+
 import "DPI-C" function int otbn_model_step_crc(chandle          model,
                                                 bit [47:0]       item,
                                                 inout bit [31:0] state);
 
-import "DPI-C" context function int otbn_model_invalidate_dmem(chandle model);
-
 import "DPI-C" function int otbn_model_reset(chandle model);
 
-import "DPI-C" function void otbn_take_loop_warps(chandle model, chandle memutil);
-
-import "DPI-C" function int otbn_has_loop_warps(chandle memutil);
-
 import "DPI-C" function int otbn_model_send_err_escalation(chandle model, bit [31:0] err_val);
-
-import "DPI-C" context function int otbn_model_set_software_errs_fatal(chandle model, bit new_val);
-
-import "DPI-C" context function int otbn_set_no_sec_wipe_chk(chandle model);
 
 `endif // SYNTHESIS

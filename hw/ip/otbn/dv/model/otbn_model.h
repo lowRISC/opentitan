@@ -49,16 +49,6 @@ class OtbnModel {
   // Send ISS some URND data from EDN. Returns 0 on success or -1 on error.
   int edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */);
 
-  // Set or unset the two keys from keymgr. Returns 0 on success or -1
-  // on error.
-  int set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
-                       svLogicVecVal *key1 /* logic [383:0] */,
-                       unsigned char valid);
-
-  // Signal that RTL is finished processing OTP key. Returns 0 on success or -1
-  // on error.
-  int otp_key_cdc_done();
-
   // Signal that RTL is finished processing RND data from EDN. Returns 0 on
   // success or -1 on error.
   int edn_rnd_cdc_done();
@@ -66,6 +56,16 @@ class OtbnModel {
   // Signal that RTL is finished processing data from EDN for URND. Returns 0
   // on success or -1 on error.
   int edn_urnd_cdc_done();
+
+  // Signal that RTL is finished processing OTP key. Returns 0 on success or -1
+  // on error.
+  int otp_key_cdc_done();
+
+  // Set or unset the two keys from keymgr. Returns 0 on success or -1
+  // on error.
+  int set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
+                       svLogicVecVal *key1 /* logic [383:0] */,
+                       unsigned char valid);
 
   // Step once in the model. Returns 1 if the model has finished, 0 if not and
   // -1 on failure. If gen_trace is true, pass trace entries to the trace
