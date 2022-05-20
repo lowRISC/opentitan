@@ -216,6 +216,7 @@ module otbn_core_model
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       otbn_model_reset(model_handle);
+      failed_keymgr_value <= 0;
       model_state <= 0;
       status_q <= 0;
       insn_cnt_q <= 0;
@@ -265,6 +266,7 @@ module otbn_core_model
   logic failed_check, check_mismatch_d, check_mismatch_q;
   always_ff @(negedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      failed_lc_escalate <= 0;
       failed_check <= 0;
       check_mismatch_q <= 0;
     end else begin
