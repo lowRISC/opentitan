@@ -634,7 +634,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/aes_idle_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=15000000"]
+      run_opts: ["+sw_test_timeout_ns=25000000"]
     }
     {
       name: chip_sw_alert_test
