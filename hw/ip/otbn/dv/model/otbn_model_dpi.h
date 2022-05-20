@@ -22,25 +22,29 @@ OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
 // Delete an OtbnModel
 void otbn_model_destroy(OtbnModel *model);
 
-// Flush URND and RND EDN data from model because of edn_rst_n signal
-void otbn_model_edn_flush(OtbnModel *model);
+// Flush URND and RND EDN data from model because of edn_rst_n signal. Returns
+// 0 on success; -1 on error.
+int otbn_model_edn_flush(OtbnModel *model);
 
-// Call edn_rnd_step function of OtbnModel
-void otbn_model_edn_rnd_step(OtbnModel *model,
-                             svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+// Call edn_rnd_step function of OtbnModel. Returns 0 on success; -1 on error.
+int otbn_model_edn_rnd_step(OtbnModel *model,
+                            svLogicVecVal *edn_rnd_data /* logic [31:0] */);
 
-// Call edn_urnd_step function of OtbnModel
-void otbn_model_edn_urnd_step(OtbnModel *model,
-                              svLogicVecVal *edn_urnd_data /* logic [31:0] */);
+// Call edn_urnd_step function of OtbnModel. Returns 0 on success; -1 on error.
+int otbn_model_edn_urnd_step(OtbnModel *model,
+                             svLogicVecVal *edn_urnd_data /* logic [31:0] */);
 
-// Signal RTL is finished processing RND data to Model
-void otbn_model_otp_key_cdc_done(OtbnModel *model);
+// Signal RTL is finished processing OTP key to the Model. Returns 0 on
+// success; -1 on error.
+int otbn_model_otp_key_cdc_done(OtbnModel *model);
 
-// Signal RTL is finished processing OTP key to the Model
-void otbn_model_rnd_cdc_done(OtbnModel *model);
+// Signal RTL is finished processing RND data to Model. Returns 0 on success;
+// -1 on error.
+int otbn_model_rnd_cdc_done(OtbnModel *model);
 
-// Signal RTL is finished processing EDN data for URND to Model
-void otbn_model_urnd_cdc_done(OtbnModel *model);
+// Signal RTL is finished processing EDN data for URND to Model. Returns 0 on
+// success; -1 on error.
+int otbn_model_urnd_cdc_done(OtbnModel *model);
 
 // Pass keymgr data to model. Returns 0 on success; -1 on error.
 int otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
@@ -105,8 +109,8 @@ int otbn_model_invalidate_dmem(OtbnModel *model);
 int otbn_model_step_crc(OtbnModel *model, svBitVecVal *item /* bit [47:0] */,
                         svBitVecVal *state /* inout bit [31:0] */);
 
-// Flush any information in the model
-void otbn_model_reset(OtbnModel *model);
+// Flush any information in the model. Returns 0 on success; -1 on error.
+int otbn_model_reset(OtbnModel *model);
 
 // Take loop warps from an OtbnMemUtil
 void otbn_take_loop_warps(OtbnModel *model, OtbnMemUtil *memutil);

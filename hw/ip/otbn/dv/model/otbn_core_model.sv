@@ -95,7 +95,6 @@ module otbn_core_model
   bit [31:0] raw_err_bits_d, raw_err_bits_q;
   bit [31:0] stop_pc_d, stop_pc_q;
   bit        rnd_req_start_d, rnd_req_start_q;
-  bit        failed_lc_escalate, failed_keymgr_value;
 
   bit unused_raw_err_bits;
   logic unused_edn_rsp_fips;
@@ -145,15 +144,18 @@ module otbn_core_model
   end
 
   // EDN Stepping is done with the EDN clock for also asserting the CDC measures in the design.
+  logic failed_edn_flush, failed_rnd_step, failed_urnd_step;
   always_ff @(posedge clk_edn_i or negedge rst_edn_ni) begin
     if (!rst_edn_ni) begin
-      otbn_model_edn_flush(model_handle);
+      failed_rnd_step <= 0;
+      failed_urnd_step <= 0;
+      failed_edn_flush <= (otbn_model_edn_flush(model_handle) != 0);
     end else begin
       if (edn_rnd_i.edn_ack) begin
-        otbn_model_edn_rnd_step(model_handle, edn_rnd_i.edn_bus);
+        failed_rnd_step <= (otbn_model_edn_rnd_step(model_handle, edn_rnd_i.edn_bus) != 0);
       end
       if (edn_urnd_i.edn_ack) begin
-        otbn_model_edn_urnd_step(model_handle, edn_urnd_i.edn_bus);
+        failed_urnd_step <= (otbn_model_edn_urnd_step(model_handle, edn_urnd_i.edn_bus) != 0);
       end
     end
   end
@@ -213,10 +215,16 @@ module otbn_core_model
 
   // Note: This can't be an always_ff block because we write to model_state here and also in an
   // initial block (see declaration of the variable above)
+  bit failed_reset, failed_lc_escalate, failed_keymgr_value;
+  bit failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      otbn_model_reset(model_handle);
+      failed_reset <= (otbn_model_reset(model_handle) != 0);
+      failed_lc_escalate <= 0;
       failed_keymgr_value <= 0;
+      failed_urnd_cdc <= 0;
+      failed_rnd_cdc <= 0;
+      failed_otp_key_cdc <= 0;
       model_state <= 0;
       status_q <= 0;
       insn_cnt_q <= 0;
@@ -235,13 +243,13 @@ module otbn_core_model
                                                             keymgr_key_i.valid) != 0);
       end
       if (edn_urnd_cdc_done_i) begin
-        otbn_model_urnd_cdc_done(model_handle);
+        failed_urnd_cdc <= (otbn_model_urnd_cdc_done(model_handle) != 0);
       end
       if (edn_rnd_cdc_done_i) begin
-        otbn_model_rnd_cdc_done(model_handle);
+        failed_rnd_cdc <= (otbn_model_rnd_cdc_done(model_handle) != 0);
       end
       if (otp_key_cdc_done_i) begin
-        otbn_model_otp_key_cdc_done(model_handle);
+        failed_otp_key_cdc <= (otbn_model_otp_key_cdc_done(model_handle) != 0);
       end
       if (step_iss) begin
         model_state <= otbn_model_step(model_handle,
@@ -263,10 +271,10 @@ module otbn_core_model
 
   // If a check is requested, run it on the following negedge. This guarantees that both the ISS and
   // RTL are "at the end" of a cycle.
-  logic failed_check, check_mismatch_d, check_mismatch_q;
+  logic check_mismatch_d, check_mismatch_q;
+  bit   failed_check;
   always_ff @(negedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      failed_lc_escalate <= 0;
       failed_check <= 0;
       check_mismatch_q <= 0;
     end else begin
@@ -315,7 +323,9 @@ module otbn_core_model
     );
 
   assign err_o = |{failed_step, failed_check, check_mismatch_q,
-                   failed_lc_escalate, failed_keymgr_value};
+                   failed_reset, failed_lc_escalate, failed_keymgr_value,
+                   failed_edn_flush, failed_rnd_step, failed_urnd_step,
+                   failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc};
 
   // Derive a "done" signal. This should trigger for a single cycle when OTBN finishes its work.
   // It's analogous to the done_o signal on otbn_core, but this signal is delayed by a single cycle

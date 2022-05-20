@@ -39,11 +39,15 @@ class OtbnModel {
   // Starts an DMEM Secure wipe operation
   int dmem_wipe();
 
-  // Flush EDN data from model because of edn_rst_n
-  void edn_flush();
+  // Flush EDN data from model because of edn_rst_n. Returns 0 on success or -1
+  // on error.
+  int edn_flush();
 
-  // EDN Step sends ISS the RND data when ACK signal is high.
-  void edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+  // Send ISS some RND data from EDN. Returns 0 on success or -1 on error.
+  int edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+
+  // Send ISS some URND data from EDN. Returns 0 on success or -1 on error.
+  int edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */);
 
   // Set or unset the two keys from keymgr. Returns 0 on success or -1
   // on error.
@@ -51,17 +55,17 @@ class OtbnModel {
                        svLogicVecVal *key1 /* logic [383:0] */,
                        unsigned char valid);
 
-  // EDN Step sends ISS the URND related EDN data when ACK signal is high.
-  void edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */);
+  // Signal that RTL is finished processing OTP key. Returns 0 on success or -1
+  // on error.
+  int otp_key_cdc_done();
 
-  // Signals that RTL is finished processing OTP key
-  void otp_key_cdc_done();
+  // Signal that RTL is finished processing RND data from EDN. Returns 0 on
+  // success or -1 on error.
+  int edn_rnd_cdc_done();
 
-  // Signals that RTL is finished processing RND data from EDN
-  void edn_rnd_cdc_done();
-
-  // Signals that RTL is finished processing data from EDN for URND
-  void edn_urnd_cdc_done();
+  // Signal that RTL is finished processing data from EDN for URND. Returns 0
+  // on success or -1 on error.
+  int edn_urnd_cdc_done();
 
   // Step once in the model. Returns 1 if the model has finished, 0 if not and
   // -1 on failure. If gen_trace is true, pass trace entries to the trace
@@ -105,8 +109,8 @@ class OtbnModel {
   int step_crc(const svBitVecVal *item /* bit [47:0] */,
                svBitVecVal *state /* bit [31:0] */);
 
-  // Flush any information in the model
-  void reset();
+  // Flush any information in the model. Returns 0 on success or -1 on error.
+  int reset();
 
   // Escalate errors. Returns 0 on success; -1 on failure.
   int send_err_escalation(svBitVecVal *err_val /* bit [31:0] */);
