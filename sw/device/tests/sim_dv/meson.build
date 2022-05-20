@@ -509,3 +509,28 @@ sw_tests += {
     'library': adc_ctrl_sleep_debug_cable_wakeup_test_lib,
   }
 }
+
+pwrmgr_random_sleep_lib = declare_dependency(
+  link_with: static_library(
+    'pwrmgr_random_sleep_lib',
+    sources: ['pwrmgr_random_sleep.c'],
+    dependencies: [
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_flash_ctrl,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_rstmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_pwrmgr_testutils,
+      sw_lib_testing_rstmgr_testutils,
+      sw_lib_testing_flash_ctrl_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'pwrmgr_random_sleep': {
+    'library': pwrmgr_random_sleep_lib,
+  }
+}
