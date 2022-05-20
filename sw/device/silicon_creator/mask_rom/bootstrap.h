@@ -13,11 +13,11 @@ extern "C" {
 
 enum {
   /**
-   * Mask for the bootstrap pin.
+   * Mask for the bootstrap pins.
    *
-   * TODO(#11934): The actual chip will have 3 strapping pins.
+   * We expect strong pull-ups on GPIO pins 22, 23, and 24.
    */
-  kBootstrapPinMask = 0x00400000,
+  kBootstrapPinMask = (1 << 22) | (1 << 23) | (1 << 24),
 };
 
 /**
