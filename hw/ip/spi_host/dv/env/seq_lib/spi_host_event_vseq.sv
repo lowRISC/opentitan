@@ -18,25 +18,6 @@ class spi_host_event_vseq extends spi_host_tx_rx_vseq;
   spi_host_command_t command[$];
   spi_host_command_t command_snd;
 
-  // TODO - to be removed when issue #12262
-  constraint spi_config_regs_c {
-      // configopts regs
-      foreach (spi_config_regs.cpol[i]) {spi_config_regs.cpol[i] == 1'b0;}
-      foreach (spi_config_regs.cpha[i]) {spi_config_regs.cpha[i] == 1'b0;}
-      foreach (spi_config_regs.csnlead[i]) {
-        spi_config_regs.csnlead[i] == cfg.seq_cfg.host_spi_max_csn_latency;
-      }
-      foreach (spi_config_regs.csntrail[i]) {
-        spi_config_regs.csntrail[i] == cfg.seq_cfg.host_spi_max_csn_latency;
-      }
-      foreach (spi_config_regs.csnidle[i]) {
-        spi_config_regs.csnidle[i] == cfg.seq_cfg.host_spi_max_csn_latency;
-      }
-      foreach (spi_config_regs.clkdiv[i]) {
-        spi_config_regs.clkdiv[i] == cfg.seq_cfg.host_spi_max_clkdiv;
-      }
-  }
-
   constraint spi_host_command_reg_c {
     spi_host_command_reg.direction == Bidir;
     spi_host_command_reg.mode == Standard;

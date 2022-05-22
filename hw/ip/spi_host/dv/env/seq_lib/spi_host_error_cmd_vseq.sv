@@ -10,40 +10,36 @@ class spi_host_error_cmd_vseq extends spi_host_tx_rx_vseq;
   `uvm_object_new
 
   spi_segment_item segment;
+  int cmdq_depth = 0;
 
   virtual task body();
-    bit [7:0] read_q[$];
-    bit [7:0] txqd;
-    spi_host_intr_state_t intr_state;
-    int num_transactions = 6;
-    int cmdq_depth = 5;
-    bit cmd_not_ready = 1'b0;
-
     program_spi_host_regs();
+    csr_wr(.ptr(ral.control.spien), .value(1'b0));
     cfg.seq_cfg.host_spi_min_len = 4;
-    cfg.seq_cfg.host_spi_max_len = 16;
-    for (int i = 0; i < (cmdq_depth + 2); i++) begin
-      generate_transaction();
-      segment = new();
-      if(i < (cmdq_depth + 1)) begin
-        check_error(ral.error_status.cmdbusy, 0);
-      end else begin
-        check_error(ral.error_status.cmdbusy, 1);
-      end
-      while (transaction.segments.size() > 0) begin
-        segment = transaction.segments.pop_back();
-        if (segment.command_reg.direction != RxOnly) begin
-          access_data_fifo(segment.spi_data, TxFifo,1'b0);
-        end
-      end
-      program_command_reg(segment.command_reg);
-    end // endfor
-
+    cfg.seq_cfg.host_spi_max_len = 4;
+    while (cmdq_depth <= (SPI_HOST_CMD_DEPTH )) begin
+      check_error(ral.error_status.cmdbusy, 0);
+      send_cmd();
+    end
+    check_error(ral.error_status.cmdbusy, 1);
   endtask : body
+
+  virtual task send_cmd();
+    generate_transaction();
+    segment = new();
+    while (transaction.segments.size() > 0) begin
+      segment = transaction.segments.pop_back();
+      if (segment.command_reg.direction != RxOnly) begin
+        access_data_fifo(segment.spi_data, TxFifo);
+      end
+    end
+    program_command_reg(segment.command_reg);
+    cmdq_depth++;
+  endtask
 
   virtual task generate_transaction();
     transaction_init();
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(transaction,num_segments == 2;)
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(transaction,num_segments == 1;cmd == ReadStd;)
   endtask
 
 endclass : spi_host_error_cmd_vseq

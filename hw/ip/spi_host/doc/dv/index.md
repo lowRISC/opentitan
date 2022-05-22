@@ -48,6 +48,7 @@ The following utilities provide generic helper tasks and functions to perform ac
   parameter int NumCS = 1;
 ```
 Currently there verification only covers NumCS = 1 since this is the configuration that will be used in tapeout.
+Endianess implemented and verified is only Little Endian with ByteOrder set to 1
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in

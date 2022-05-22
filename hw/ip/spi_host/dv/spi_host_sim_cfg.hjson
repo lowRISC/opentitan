@@ -79,6 +79,7 @@
     {
       name: spi_host_sw_reset
       uvm_test_seq: spi_host_sw_reset_vseq
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
     }
     {
       name: spi_host_overflow_underflow
