@@ -38,7 +38,6 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     bit rxempty;
     spi_host_status_t status;
 
-    csr_spinwait(.ptr(ral.status.active), .exp_data(1'b1));
     csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0));
     forever begin
       do begin
@@ -112,11 +111,12 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     spi_host_intr_state_t intr_state;
     uvm_reg_field enable_fld = ral.error_enable.get_field_by_name(fld.get_name);
     csr_rd_check(.ptr(fld), .compare_value(value));
-    if (enable_fld != null) begin
-      bit enable = `gmv(enable_fld);
-      check_interrupts(1 << intr_state.error, value & enable);
-    end else begin
-      check_interrupts(1 << intr_state.error, 0);
-    end
+      if ((enable_fld != null) && enable_fld.get()) begin
+        bit enable = `gmv(enable_fld);
+        `DV_CHECK(ral.intr_enable.predict(.value(intr_enable.error), .kind(UVM_PREDICT_DIRECT)))
+        check_interrupts(1 << intr_state.error, value & enable);
+      end else begin
+        check_interrupts(1 << intr_state.error, 0);
+      end
   endtask
 endclass : spi_host_tx_rx_vseq

@@ -302,6 +302,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           if (cfg.en_cov) begin
             cov.duplex_cg.sample(spi_cmd_reg.direction);
             cov.command_cg.sample(spi_cmd_reg);
+            cov.segment_speed_cg.sample(spi_cmd_reg);
           end
           // clear item
           host_wr_segment = new();
@@ -324,25 +325,6 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
                 cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
               end
             end
-          end
-        end
-        "status": begin
-         spi_status_reg.ready       =  get_field_val(ral.status.ready, item.a_data);
-         spi_status_reg.active      =  get_field_val(ral.status.active, item.a_data);
-         spi_status_reg.txfull      =  get_field_val(ral.status.txfull, item.a_data);
-         spi_status_reg.txempty     =  get_field_val(ral.status.txempty, item.a_data);
-         spi_status_reg.txstall     =  get_field_val(ral.status.txstall, item.a_data);
-         spi_status_reg.tx_wm       =  get_field_val(ral.status.txwm, item.a_data);
-         spi_status_reg.rxfull      =  get_field_val(ral.status.rxfull, item.a_data);
-         spi_status_reg.rxempty     =  get_field_val(ral.status.rxempty, item.a_data);
-         spi_status_reg.rxstall     =  get_field_val(ral.status.rxstall, item.a_data);
-         spi_status_reg.byteorder   =  get_field_val(ral.status.byteorder, item.a_data);
-         spi_status_reg.rx_wm       =  get_field_val(ral.status.rxwm, item.a_data);
-         spi_status_reg.cmd_qd      =  get_field_val(ral.status.cmdqd, item.a_data);
-         spi_status_reg.rx_qd       =  get_field_val(ral.status.rxqd, item.a_data);
-         spi_status_reg.tx_qd       =  get_field_val(ral.status.txqd, item.a_data);
-          if (cfg.en_cov) begin
-            cov.status_cg.sample(spi_status_reg);
           end
         end
         "csid": begin
@@ -418,6 +400,25 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
                                                                   item.a_data));
           if (cfg.en_cov) begin
             cov.error_status_cg.sample(spi_error_status_reg, spi_error_enable_reg);
+          end
+        end
+        "status": begin
+          spi_status_reg.ready       =  get_field_val(ral.status.ready, item.a_data);
+          spi_status_reg.active      =  get_field_val(ral.status.active, item.a_data);
+          spi_status_reg.txfull      =  get_field_val(ral.status.txfull, item.a_data);
+          spi_status_reg.txempty     =  get_field_val(ral.status.txempty, item.a_data);
+          spi_status_reg.txstall     =  get_field_val(ral.status.txstall, item.a_data);
+          spi_status_reg.tx_wm       =  get_field_val(ral.status.txwm, item.a_data);
+          spi_status_reg.rxfull      =  get_field_val(ral.status.rxfull, item.a_data);
+          spi_status_reg.rxempty     =  get_field_val(ral.status.rxempty, item.a_data);
+          spi_status_reg.rxstall     =  get_field_val(ral.status.rxstall, item.a_data);
+          spi_status_reg.byteorder   =  get_field_val(ral.status.byteorder, item.a_data);
+          spi_status_reg.rx_wm       =  get_field_val(ral.status.rxwm, item.a_data);
+          spi_status_reg.cmd_qd      =  get_field_val(ral.status.cmdqd, item.a_data);
+          spi_status_reg.rx_qd       =  get_field_val(ral.status.rxqd, item.a_data);
+          spi_status_reg.tx_qd       =  get_field_val(ral.status.txqd, item.a_data);
+          if (cfg.en_cov) begin
+            cov.status_cg.sample(spi_status_reg);
           end
         end
         default: begin

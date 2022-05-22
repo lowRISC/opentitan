@@ -16,6 +16,9 @@ class spi_host_base_vseq extends cip_base_vseq #(
   rand spi_host_command_t    spi_host_command_reg;
   rand spi_host_ctrl_t       spi_host_ctrl_reg;
   rand spi_host_configopts_t spi_config_regs;
+  rand spi_host_event_enable_t event_enable;
+  rand spi_host_intr_enable_t intr_enable;
+  rand spi_host_error_enable_t error_enable;
   // random variables
   rand uint                  num_runs;
   rand uint                  tx_fifo_access_dly;
@@ -157,15 +160,12 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
   virtual task program_spi_host_regs();
     // IMPORTANT: configopt regs must be programmed before command reg
-    `DV_CHECK_RANDOMIZE_FATAL(ral.error_enable)
-    csr_update(.csr(ral.error_enable));
-    `DV_CHECK_RANDOMIZE_FATAL(ral.event_enable)
-    csr_update(.csr(ral.event_enable));
-    `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
-    csr_update(.csr(ral.intr_enable));
     program_configopt_regs();
     program_control_reg();
     program_csid_reg();
+    csr_wr(.ptr(ral.error_enable), .value(error_enable));
+    csr_wr(.ptr(ral.event_enable), .value(event_enable));
+    csr_wr(.ptr(ral.intr_enable), .value(intr_enable));
     // TODO
     update_spi_agent_regs();
   endtask : program_spi_host_regs

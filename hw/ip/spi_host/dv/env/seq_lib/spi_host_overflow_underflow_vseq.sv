@@ -6,36 +6,24 @@
 // empty read error underflow
 // write tx full fifo error overflow
 
-class spi_host_error_txrx_vseq extends spi_host_tx_rx_vseq;
-  `uvm_object_utils(spi_host_error_txrx_vseq)
+class spi_host_overflow_underflow_vseq extends spi_host_tx_rx_vseq;
+  `uvm_object_utils(spi_host_overflow_underflow_vseq)
   `uvm_object_new
 
   spi_segment_item segment;
   int txfifo_ptr = 0;
   int segms_size;
-
-constraint spi_config_regs_c {
-      // configopts regs
-      foreach (spi_config_regs.cpol[i]) {spi_config_regs.cpol[i] == 1'b0;}
-      foreach (spi_config_regs.cpha[i]) {spi_config_regs.cpha[i] == 1'b0;}
-      foreach (spi_config_regs.csnlead[i]) {
-        spi_config_regs.csnlead[i] == cfg.seq_cfg.host_spi_max_csn_latency;
-      }
-      foreach (spi_config_regs.csntrail[i]) {
-        spi_config_regs.csntrail[i] == cfg.seq_cfg.host_spi_max_csn_latency;
-      }
-      foreach (spi_config_regs.csnidle[i]) {
-        spi_config_regs.csnidle[i] == cfg.seq_cfg.host_spi_max_csn_latency;
-      }
-      foreach (spi_config_regs.clkdiv[i]) {
-        spi_config_regs.clkdiv[i] == cfg.seq_cfg.host_spi_max_clkdiv;
-      }
-  }
+  int segms_words;
+  spi_host_command_t command[$];
 
   virtual task body();
     bit [7:0] read_q[$];
     bit [7:0] txqd;
     spi_host_intr_state_t intr_state;
+    segms_size = 0;
+    segms_words = 0;
+    cfg.seq_cfg.host_spi_min_len = 4;
+    cfg.seq_cfg.host_spi_max_len = 4;
 
      fork
       begin : isolation_fork
@@ -60,36 +48,32 @@ constraint spi_config_regs_c {
     check_error(ral.error_status.underflow,1);
 
     csr_wr(.ptr(ral.configopts[0].clkdiv), .value(16'h28)); // clk div set to 20
-    cfg.seq_cfg.host_spi_min_len = 4;
-    cfg.seq_cfg.host_spi_max_len = 4;
-    // loop for depth X no of bytes and 5 words short of SPI_HOST_TX_DEPTH
-    while(txfifo_ptr < ((SPI_HOST_TX_DEPTH*4)-4)) begin
-      segms_size = 0;
-      if(txfifo_ptr < ((SPI_HOST_TX_DEPTH*4)-4)) begin
-        check_error(ral.error_status.overflow, 0);
-      end else begin
-        check_error(ral.error_status.overflow, 1);
-      end
-      gen_txn_filltx();
-      txfifo_ptr = segms_size + txfifo_ptr;
-      `uvm_info(`gfn, $sformatf("\n txfifo_ptr Value %d",txfifo_ptr), UVM_LOW)
-      program_command_reg(segment.command_reg);
-    end // end while
 
-    gen_txn_filltx(0); // segsize not incremented
+    while (segms_words <= (SPI_HOST_TX_DEPTH + 1))  begin
+      check_error(ral.error_status.overflow,0);
+      gen_trans();
+    end
     check_error(ral.error_status.overflow,1);
   endtask : body
 
-  task gen_txn_filltx(bit do_seqsize_increase = 1);
+  virtual task gen_trans();
     generate_transaction();
     segment = new();
     while (transaction.segments.size() > 0) begin
       segment = transaction.segments.pop_back();
       if (segment.command_reg.direction != RxOnly) begin
-        if(do_seqsize_increase) segms_size = segment.spi_data.size() + segms_size;
-        access_data_fifo(segment.spi_data, TxFifo,1'b0); // write tx fifo to overflow
+        segms_size = segment.spi_data.size() + segms_size;
+        segms_words = segms_size/4;
+        access_data_fifo(segment.spi_data, TxFifo,0);
       end
+      command.push_back(segment.command_reg);
     end
-  endtask:gen_txn_filltx
+  endtask
 
-endclass : spi_host_error_txrx_vseq
+  virtual task generate_transaction();
+    transaction_init();
+    transaction.tx_only_weight = 0;
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(transaction,num_segments == 1;cmd == ReadStd;)
+  endtask
+
+endclass : spi_host_overflow_underflow_vseq

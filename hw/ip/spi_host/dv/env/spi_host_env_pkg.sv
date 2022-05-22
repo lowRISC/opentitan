@@ -20,6 +20,7 @@ package spi_host_env_pkg;
   parameter uint SPI_HOST_NUM_CS         = spi_host_reg_pkg::NumCS;
   parameter uint SPI_HOST_TX_DEPTH       = spi_host_reg_pkg::TxDepth;
   parameter uint SPI_HOST_RX_DEPTH       = spi_host_reg_pkg::RxDepth;
+  parameter uint SPI_HOST_CMD_DEPTH      = spi_host_reg_pkg::CmdDepth;
   parameter bit  SPI_HOST_BYTEORDER      = spi_host_reg_pkg::ByteOrder;
   parameter uint SPI_HOST_BLOCK_AW       = spi_host_reg_pkg::BlockAw;
   parameter uint SPI_HOST_TX_FIFO_START  = spi_host_reg_pkg::SPI_HOST_TXDATA_OFFSET;
@@ -133,17 +134,17 @@ package spi_host_env_pkg;
     bit rxfull;
   } spi_host_event_enable_t;
 
-  typedef struct{
+  typedef struct packed{
     bit spi_event;
     bit error;
   } spi_host_intr_state_t;
 
-  typedef struct{
+  typedef struct packed{
     bit spi_event;
     bit error;
   } spi_host_intr_enable_t;
 
-  typedef struct{
+  typedef struct packed{
     bit spi_event;
     bit error;
   } spi_host_intr_test_t;

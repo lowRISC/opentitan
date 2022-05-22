@@ -26,8 +26,7 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
     }
     clkdiv_cp : coverpoint spi_configopts.clkdiv[SPI_HOST_NUM_CS-1]{
     bins clk_divl = {0};
-    bins clk_divm[30] = {[16'h1:16'hfffe]};
-    bins clk_divh = {16'hffff};
+    bins clk_divm[30] = {[16'h1:16'h00fe]};
     }
     csntrail_cp : coverpoint spi_configopts.csntrail[SPI_HOST_NUM_CS-1]{
       bins csntrail[] = {[0:15]};
@@ -144,7 +143,7 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-   
+
     config_opts_cg = new();
     unaligned_data_cg = new();
     duplex_cg = new();
