@@ -50,7 +50,6 @@
     # Site Assets
     'site/**/assets/scss/**',
     'site/landing/static/js/tiny-slider.js',
-    'util/opentitan-pgm-fpga/vivado_pgm.tcl',
     # Code taken from Chromium, so covered by the BSD licence
     'sw/otbn/crypto/modexp.s',
     'sw/otbn/crypto/p256.s',
