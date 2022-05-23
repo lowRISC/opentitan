@@ -190,9 +190,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           // disable signal integrity checking via `check_alert_sig_int_err` flag.
           end else if (check_alert_sig_int_err && item.alert_esc_type == AlertEscIntFail) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected signal int error", alert_name))
-          end else if (item.ping_timeout) begin
+          end else if (item.ping_timeout && cfg.en_scb_ping_chk == 1) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected timeout error", alert_name))
-          end else if (item.alert_esc_type == AlertEscPingTrans) begin
+          end else if (item.alert_esc_type == AlertEscPingTrans && cfg.en_scb_ping_chk == 1) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected alert ping response", alert_name))
           end
         end
