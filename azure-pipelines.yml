@@ -425,6 +425,34 @@ jobs:
 - job: execute_fpga_tests_cw310
   displayName: Execute tests on ChipWhisperer CW310 FPGA board
   pool: FPGA
+  timeoutInMinutes: 8
+  dependsOn:
+    - chip_earlgrey_cw310
+    - sw_build
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_earlgrey_cw310
+        - sw_build
+  - bash: |
+      set -e
+
+      # Install an additional pytest dependency for result upload.
+      pip3 install pytest-azurepipelines
+
+      . util/build_consts.sh
+      pytest --version
+      pytest test/systemtest/earlgrey/test_fpga_cw310.py \
+        --log-cli-level=DEBUG \
+        --test-run-title="Run system tests on ChipWhisperer CW310 FPGA board" \
+        --napoleon-docstrings
+    displayName: Execute tests
+
+- job: execute_fpga_tests_cw310_bazel_ott
+  displayName: Execute tests on ChipWhisperer CW310 FPGA board with bazel and opentitan tool
+  pool: FPGA
   timeoutInMinutes: 24
   dependsOn:
     - chip_earlgrey_cw310
@@ -457,6 +485,7 @@ jobs:
           --define cw310=lowrisc \
           $(./bazelisk.sh query 'rdeps(//sw/...,@bitstreams//:bitstream_test_rom)') \
           # All the tests that depend on the test rom
+    continueOnError: true
     displayName: Execute tests
 
 - job: deploy_release_artifacts
