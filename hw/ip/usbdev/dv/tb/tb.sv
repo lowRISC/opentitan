@@ -63,39 +63,37 @@ module tb;
 
     // USB Interface
     // TOOD: need to hook up an interface
-    .cio_usb_dp_i         (1'b1),
-    .cio_usb_dn_i         (1'b0),
-    .usb_rx_d_i           (1'b0),
-    .cio_usb_dp_o         (),
-    .cio_usb_dp_en_o      (),
-    .cio_usb_dn_o         (),
-    .cio_usb_dn_en_o      (),
-    .usb_tx_d_o           (),
-    .usb_tx_se0_o         (),
+    .cio_usb_dp_i           (1'b1),
+    .cio_usb_dn_i           (1'b0),
+    .usb_rx_d_i             (1'b0),
+    .cio_usb_dp_o           (),
+    .cio_usb_dp_en_o        (),
+    .cio_usb_dn_o           (),
+    .cio_usb_dn_en_o        (),
+    .usb_tx_d_o             (),
+    .usb_tx_se0_o           (),
 
-    .cio_sense_i          (1'b0),
-    .usb_dp_pullup_o      (),
-    .usb_dn_pullup_o      (),
-    .usb_rx_enable_o      (),
-    .usb_tx_use_d_se0_o   (),
+    .cio_sense_i            (1'b0),
+    .usb_dp_pullup_o        (),
+    .usb_dn_pullup_o        (),
+    .usb_rx_enable_o        (),
+    .usb_tx_use_d_se0_o     (),
 
     // Direct pinmux aon detect connections
-    .usb_out_of_rst_o     (),
-    .usb_aon_wake_en_o    (),
-    .usb_aon_wake_ack_o   (),
-    .usb_suspend_o        (),
+    .usb_aon_suspend_req_o  (),
+    .usb_aon_wake_ack_o     (),
 
     // Events and debug info from wakeup module
-    .usb_aon_bus_reset_i  ('0),
-    .usb_aon_sense_lost_i ('0),
-    .usb_state_debug_i    (usbdev_pkg::AwkIdle),
+    .usb_aon_bus_reset_i          ('0),
+    .usb_aon_sense_lost_i         ('0),
+    .usb_aon_wake_detect_active_i ('0),
 
     // SOF reference for clock calibration
-    .usb_ref_val_o        (),
-    .usb_ref_pulse_o      (),
+    .usb_ref_val_o          (),
+    .usb_ref_pulse_o        (),
 
     // memory configuration
-    .ram_cfg_i            ('0),
+    .ram_cfg_i              ('0),
 
     // Interrupts
     .intr_pkt_received_o    (intr_pkt_received    ),

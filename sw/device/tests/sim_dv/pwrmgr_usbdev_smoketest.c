@@ -65,8 +65,7 @@ bool test_main(void) {
   // Fake low power entry through usb
   // Force usb to output suspend indication
   if (!low_power_exit) {
-    usbdev_wake(true);
-    usbdev_force_suspend();
+    usbdev_set_wake_module_active(true);
     usbdev_force_dx_pullup(kDpSel, true);
     usbdev_force_dx_pullup(kDnSel, false);
 

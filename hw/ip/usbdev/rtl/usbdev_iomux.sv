@@ -34,7 +34,6 @@ module usbdev_iomux
   input  logic                          cio_usb_sense_i,
   output logic                          usb_dp_pullup_en_o,
   output logic                          usb_dn_pullup_en_o,
-  output logic                          usb_suspend_o,
   output logic                          usb_rx_enable_o,
 
   // Internal USB Interface (usb clk)
@@ -48,7 +47,6 @@ module usbdev_iomux
   input  logic                          usb_tx_oe_i,
   input  logic                          usb_dp_pullup_en_i,
   input  logic                          usb_dn_pullup_en_i,
-  input  logic                          usb_suspend_i,
   input  logic                          usb_rx_enable_i,
   output logic                          usb_pwr_sense_o
 );
@@ -60,7 +58,7 @@ module usbdev_iomux
 
   // USB pins sense (to sysclk)
   prim_flop_2sync #(
-    .Width (10)
+    .Width (9)
   ) cdc_io_to_sys (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -72,7 +70,6 @@ module usbdev_iomux
               usb_tx_d_i,
               usb_tx_se0_i,
               usb_tx_oe_i,
-              usb_suspend_i,
               cio_usb_sense_i}),
     .q_o   ({sys_hw2reg_sense_o.rx_dp_i.d,
               sys_hw2reg_sense_o.rx_dn_i.d,
@@ -82,7 +79,6 @@ module usbdev_iomux
               sys_hw2reg_sense_o.tx_d_o.d,
               sys_hw2reg_sense_o.tx_se0_o.d,
               sys_hw2reg_sense_o.tx_oe_o.d,
-              sys_hw2reg_sense_o.suspend_o.d,
               sys_usb_sense})
   );
 
@@ -113,13 +109,11 @@ module usbdev_iomux
       // Override from registers
       usb_dp_pullup_en_o = sys_reg2hw_drive_i.dp_pullup_en_o.q;
       usb_dn_pullup_en_o = sys_reg2hw_drive_i.dn_pullup_en_o.q;
-      usb_suspend_o      = sys_reg2hw_drive_i.suspend_o.q;
       usb_rx_enable_o    = sys_reg2hw_drive_i.rx_enable_o.q;
     end else begin
       // Signals from the peripheral core
       usb_dp_pullup_en_o = usb_dp_pullup_en_i;
       usb_dn_pullup_en_o = usb_dn_pullup_en_i;
-      usb_suspend_o      = usb_suspend_i;
       usb_rx_enable_o    = usb_rx_enable_i;
     end
   end

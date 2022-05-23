@@ -365,21 +365,14 @@ void usbdev_force_dx_pullup(line_sel_t line, bool set) {
   REG32(USBDEV_BASE_ADDR + USBDEV_PHY_PINS_DRIVE_REG_OFFSET) = reg_val;
 }
 
-void usbdev_force_suspend() {
-  // Force usb to pretend it is in suspend
-  REG32(USBDEV_BASE_ADDR + USBDEV_PHY_PINS_DRIVE_REG_OFFSET) |=
-      1 << USBDEV_PHY_PINS_DRIVE_SUSPEND_O_BIT |
-      1 << USBDEV_PHY_PINS_DRIVE_EN_BIT;
-}
-
-void usbdev_wake(bool set) {
-  uint32_t reg_val = REG32(USBDEV_BASE_ADDR + USBDEV_WAKE_CONFIG_REG_OFFSET);
+void usbdev_set_wake_module_active(bool set) {
+  uint32_t reg_val = REG32(USBDEV_BASE_ADDR + USBDEV_WAKE_CONTROL_REG_OFFSET);
   if (set) {
-    reg_val = SETBIT(reg_val, USBDEV_WAKE_CONFIG_WAKE_EN_BIT);
+    reg_val = SETBIT(reg_val, USBDEV_WAKE_CONTROL_SUSPEND_REQ_BIT);
   } else {
-    reg_val = CLRBIT(reg_val, USBDEV_WAKE_CONFIG_WAKE_EN_BIT);
+    reg_val = SETBIT(reg_val, USBDEV_WAKE_CONTROL_WAKE_ACK_BIT);
   }
-  REG32(USBDEV_BASE_ADDR + USBDEV_WAKE_CONFIG_REG_OFFSET) = reg_val;
+  REG32(USBDEV_BASE_ADDR + USBDEV_WAKE_CONTROL_REG_OFFSET) = reg_val;
 }
 
 // `extern` declarations to give the inline functions in the

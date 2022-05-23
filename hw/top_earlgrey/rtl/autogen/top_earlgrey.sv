@@ -176,7 +176,6 @@ module top_earlgrey #(
   output logic       usbdev_usb_tx_d_o,
   output logic       usbdev_usb_tx_se0_o,
   output logic       usbdev_usb_tx_use_d_se0_o,
-  output logic       usbdev_usb_suspend_o,
   output logic       usbdev_usb_rx_enable_o,
   output logic       usbdev_usb_ref_val_o,
   output logic       usbdev_usb_ref_pulse_o,
@@ -561,13 +560,11 @@ module top_earlgrey #(
   rom_ctrl_pkg::keymgr_data_t       rom_ctrl_keymgr_data;
   logic       usbdev_usb_dp_pullup;
   logic       usbdev_usb_dn_pullup;
-  logic       usbdev_usb_out_of_rst;
-  logic       usbdev_usb_aon_wake_en;
+  logic       usbdev_usb_aon_suspend_req;
   logic       usbdev_usb_aon_wake_ack;
-  logic       usbdev_usb_suspend;
   logic       usbdev_usb_aon_bus_reset;
   logic       usbdev_usb_aon_sense_lost;
-  usbdev_pkg::awk_state_t       pinmux_aon_usb_state_debug;
+  logic       pinmux_aon_usbdev_wake_detect_active;
   edn_pkg::edn_req_t [7:0] edn0_edn_req;
   edn_pkg::edn_rsp_t [7:0] edn0_edn_rsp;
   edn_pkg::edn_req_t [7:0] edn1_edn_req;
@@ -749,7 +746,6 @@ module top_earlgrey #(
   assign ast_ram_1p_cfg = ram_1p_cfg_i;
   assign ast_ram_2p_cfg = ram_2p_cfg_i;
   assign ast_rom_cfg = rom_cfg_i;
-  assign usbdev_usb_suspend_o = usbdev_usb_suspend;
 
   // define partial inter-module tie-off
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
@@ -1417,13 +1413,11 @@ module top_earlgrey #(
       .usb_rx_enable_o(usbdev_usb_rx_enable_o),
       .usb_ref_val_o(usbdev_usb_ref_val_o),
       .usb_ref_pulse_o(usbdev_usb_ref_pulse_o),
-      .usb_out_of_rst_o(usbdev_usb_out_of_rst),
-      .usb_aon_wake_en_o(usbdev_usb_aon_wake_en),
+      .usb_aon_suspend_req_o(usbdev_usb_aon_suspend_req),
       .usb_aon_wake_ack_o(usbdev_usb_aon_wake_ack),
-      .usb_suspend_o(usbdev_usb_suspend),
       .usb_aon_bus_reset_i(usbdev_usb_aon_bus_reset),
       .usb_aon_sense_lost_i(usbdev_usb_aon_sense_lost),
-      .usb_state_debug_i(pinmux_aon_usb_state_debug),
+      .usb_aon_wake_detect_active_i(pinmux_aon_usbdev_wake_detect_active),
       .ram_cfg_i(ast_ram_2p_cfg),
       .tl_i(usbdev_tl_req),
       .tl_o(usbdev_tl_rsp),
@@ -1903,18 +1897,16 @@ module top_earlgrey #(
       .sleep_en_i(pwrmgr_aon_low_power),
       .strap_en_i(pwrmgr_aon_strap),
       .pin_wkup_req_o(pwrmgr_aon_wakeups[2]),
-      .usb_dppullup_en_upwr_i(usbdev_usb_dp_pullup),
-      .usb_dnpullup_en_upwr_i(usbdev_usb_dn_pullup),
+      .usbdev_dppullup_en_i(usbdev_usb_dp_pullup),
+      .usbdev_dnpullup_en_i(usbdev_usb_dn_pullup),
       .usb_dppullup_en_o(usb_dp_pullup_en_o),
       .usb_dnpullup_en_o(usb_dn_pullup_en_o),
       .usb_wkup_req_o(pwrmgr_aon_wakeups[3]),
-      .usb_out_of_rst_i(usbdev_usb_out_of_rst),
-      .usb_aon_wake_en_i(usbdev_usb_aon_wake_en),
-      .usb_aon_wake_ack_i(usbdev_usb_aon_wake_ack),
-      .usb_suspend_i(usbdev_usb_suspend),
-      .usb_bus_reset_o(usbdev_usb_aon_bus_reset),
-      .usb_sense_lost_o(usbdev_usb_aon_sense_lost),
-      .usb_state_debug_o(pinmux_aon_usb_state_debug),
+      .usbdev_suspend_req_i(usbdev_usb_aon_suspend_req),
+      .usbdev_wake_ack_i(usbdev_usb_aon_wake_ack),
+      .usbdev_bus_reset_o(usbdev_usb_aon_bus_reset),
+      .usbdev_sense_lost_o(usbdev_usb_aon_sense_lost),
+      .usbdev_wake_detect_active_o(pinmux_aon_usbdev_wake_detect_active),
       .tl_i(pinmux_aon_tl_req),
       .tl_o(pinmux_aon_tl_rsp),
 
