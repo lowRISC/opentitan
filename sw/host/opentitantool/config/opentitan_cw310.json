@@ -4,17 +4,27 @@
   "pins": [
     {
       "name": "RESET",
-      "mode": "OpenDrain",
-      "level": true,
-      "pullup": true,
       "alias_of": "USB_A14"
     },
     {
-      "name": "BOOTSTRAP",
-      "mode": "PushPull",
-      "level": false,
-      "pullup": false,
+      "name": "SW_STRAP0",
       "alias_of": "USB_A15"
+    },
+    {
+      "name": "SW_STRAP1",
+      "alias_of": "USB_A16"
+    },
+    {
+      "name": "SW_STRAP2",
+      "alias_of": "USB_A17"
+    },
+    {
+      "name": "TAP_STRAP0",
+      "alias_of": "USB_A18"
+    },
+    {
+      "name": "TAP_STRAP1",
+      "alias_of": "USB_A19"
     }
   ],
   "uarts": [
