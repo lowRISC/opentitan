@@ -289,9 +289,9 @@ void usbdev_force_suspend(void);
 void usbdev_force_dx_pullup(line_sel_t line, bool set);
 
 /**
- * Enable usb wake
+ * Enable usb wake module to go active / inactive.
  */
-void usbdev_wake(bool set);
+void usbdev_set_wake_module_active(bool set);
 
 // Used for tracing what is going on. This may impact timing which is critical
 // when simulating with the USB DPI module.

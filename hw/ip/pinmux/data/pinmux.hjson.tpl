@@ -116,14 +116,14 @@
       package: "",
       default: "1'b0"
     },
-    { name:    "usb_dppullup_en_upwr",
+    { name:    "usbdev_dppullup_en",
       type:    "uni",
       act:     "rcv",
       package: "",
       struct:  "logic",
       width:   "1"
     },
-    { name:    "usb_dnpullup_en_upwr",
+    { name:    "usbdev_dnpullup_en",
       type:    "uni",
       act:     "rcv",
       package: "",
@@ -153,35 +153,21 @@
       package: "",
       default: "1'b0"
     },
-    { name:    "usb_out_of_rst",
+    { name:    "usbdev_suspend_req",
       type:    "uni",
       act:     "rcv",
       package: "",
       struct:  "logic",
       width:   "1"
     },
-    { name:    "usb_aon_wake_en",
+    { name:    "usbdev_wake_ack",
       type:    "uni",
       act:     "rcv",
       package: "",
       struct:  "logic",
       width:   "1"
     },
-    { name:    "usb_aon_wake_ack",
-      type:    "uni",
-      act:     "rcv",
-      package: "",
-      struct:  "logic",
-      width:   "1"
-    },
-    { name:    "usb_suspend",
-      type:    "uni",
-      act:     "rcv",
-      package: "",
-      struct:  "logic",
-      width:   "1"
-    },
-    { name:    "usb_bus_reset",
+    { name:    "usbdev_bus_reset",
       type:    "uni",
       act:     "req",
       package: "",
@@ -189,7 +175,7 @@
       width:   "1",
       default: "1'b0"
     },
-    { name:    "usb_sense_lost",
+    { name:    "usbdev_sense_lost",
       type:    "uni",
       act:     "req",
       package: "",
@@ -197,11 +183,13 @@
       width:   "1",
       default: "1'b0"
     },
-    { name:    "usb_state_debug",
+    { name:    "usbdev_wake_detect_active",
       type:    "uni",
       act:     "req",
-      package: "usbdev_pkg",
-      struct:  "awk_state",
+      package: "",
+      struct:  "logic",
+      width:   1,
+      default: "1'b0"
     },
   ]
 

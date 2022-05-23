@@ -21,7 +21,6 @@ module chip_englishbreakfast_verilator (
   logic cio_usbdev_se0_d2p;
   logic cio_usbdev_dp_pullup_d2p;
   logic cio_usbdev_dn_pullup_d2p;
-  logic cio_usbdev_suspend_d2p;
   logic cio_usbdev_rx_enable_d2p;
   logic cio_usbdev_tx_use_d_se0_d2p;
   logic cio_usbdev_d_p2d, cio_usbdev_d_d2p, cio_usbdev_d_en_d2p;
@@ -50,14 +49,12 @@ module chip_englishbreakfast_verilator (
   logic usb_tx_d;
   logic usb_tx_se0;
   logic usb_tx_use_d_se0;
-  logic usb_suspend;
   logic usb_rx_enable;
 
   assign usb_rx_d = cio_usbdev_d_p2d;
   assign cio_usbdev_dn_d2p = dio_out[DioUsbdevUsbDn];
   assign cio_usbdev_dp_d2p = dio_out[DioUsbdevUsbDp];
   assign cio_usbdev_d_d2p  = usb_tx_d;
-  assign cio_usbdev_suspend_d2p = usb_suspend;
   assign cio_usbdev_rx_enable_d2p = usb_rx_enable;
   assign cio_usbdev_tx_use_d_se0_d2p = usb_tx_use_d_se0;
   assign cio_usbdev_dn_pullup_d2p = usb_dn_pullup;
@@ -198,7 +195,6 @@ module chip_englishbreakfast_verilator (
     .usbdev_usb_tx_d_o            (usb_tx_d),
     .usbdev_usb_tx_se0_o          (usb_tx_se0),
     .usbdev_usb_tx_use_d_se0_o      (usb_tx_use_d_se0),
-    .usbdev_usb_suspend_o         (usb_suspend),
     .usbdev_usb_rx_enable_o       (usb_rx_enable),
 
     // Multiplexed I/O

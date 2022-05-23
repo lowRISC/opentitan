@@ -19,7 +19,6 @@ module chip_sim_tb (
   logic cio_usbdev_se0_d2p;
   logic cio_usbdev_dp_pullup_d2p;
   logic cio_usbdev_dn_pullup_d2p;
-  logic cio_usbdev_suspend_d2p;
   logic cio_usbdev_rx_enable_d2p;
   logic cio_usbdev_tx_use_d_se0_d2p;
   logic cio_usbdev_d_p2d, cio_usbdev_d_d2p, cio_usbdev_d_en_d2p;
@@ -61,8 +60,7 @@ module chip_sim_tb (
     .cio_usbdev_d_en_d2p_o(cio_usbdev_d_en_d2p),
     .cio_usbdev_se0_d2p_o(cio_usbdev_se0_d2p),
     .cio_usbdev_rx_enable_d2p_o(cio_usbdev_rx_enable_d2p),
-    .cio_usbdev_tx_use_d_se0_d2p_o(cio_usbdev_tx_use_d_se0_d2p),
-    .cio_usbdev_suspend_d2p_o(cio_usbdev_suspend_d2p)
+    .cio_usbdev_tx_use_d_se0_d2p_o(cio_usbdev_tx_use_d_se0_d2p)
   );
 
   // GPIO DPI

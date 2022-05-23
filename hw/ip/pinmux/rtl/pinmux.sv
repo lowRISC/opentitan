@@ -46,17 +46,15 @@ module pinmux
   output jtag_pkg::jtag_req_t      dft_jtag_o,
   input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
   // Direct USB connection
-  input                            usb_dppullup_en_upwr_i,
-  input                            usb_dnpullup_en_upwr_i,
+  input                            usbdev_dppullup_en_i,
+  input                            usbdev_dnpullup_en_i,
   output                           usb_dppullup_en_o,
   output                           usb_dnpullup_en_o,
-  input                            usb_out_of_rst_i,
-  input                            usb_aon_wake_en_i,
-  input                            usb_aon_wake_ack_i,
-  input                            usb_suspend_i,
-  output                           usb_bus_reset_o,
-  output                           usb_sense_lost_o,
-  output usbdev_pkg::awk_state_t   usb_state_debug_o,
+  input                            usbdev_suspend_req_i,
+  input                            usbdev_wake_ack_i,
+  output                           usbdev_bus_reset_o,
+  output                           usbdev_sense_lost_o,
+  output                           usbdev_wake_detect_active_o,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t        tl_i,
   output tlul_pkg::tl_d2h_t        tl_o,
@@ -306,34 +304,26 @@ module pinmux
     .clk_aon_i,
     .rst_aon_ni,
 
-    // input signals for usb entering low power
-    // This will be different per system integration.
-    // It specifically refers to situations where the system
-    // containing usb has gone to low power.
-    .low_power_alw_i(sleep_en_i),
-
     // input signals for resume detection
-    .usb_dp_async_alw_i(dio_to_periph_o[TargetCfg.usb_dp_idx]),
-    .usb_dn_async_alw_i(dio_to_periph_o[TargetCfg.usb_dn_idx]),
-    .usb_sense_async_alw_i(mio_to_periph_o[TargetCfg.usb_sense_idx]),
-    .usb_dppullup_en_upwr_i(usb_dppullup_en_upwr_i),
-    .usb_dnpullup_en_upwr_i(usb_dnpullup_en_upwr_i),
+    .usb_dp_i(dio_to_periph_o[TargetCfg.usb_dp_idx]),
+    .usb_dn_i(dio_to_periph_o[TargetCfg.usb_dn_idx]),
+    .usb_sense_i(mio_to_periph_o[TargetCfg.usb_sense_idx]),
+    .usbdev_dppullup_en_i(usbdev_dppullup_en_i),
+    .usbdev_dnpullup_en_i(usbdev_dnpullup_en_i),
 
     // output signals for pullup connectivity
     .usb_dppullup_en_o(usb_dppullup_en_o),
     .usb_dnpullup_en_o(usb_dnpullup_en_o),
 
     // tie this to something from usbdev to indicate its out of reset
-    .usb_out_of_rst_upwr_i(usb_out_of_rst_i),
-    .usb_aon_wake_en_upwr_i(usb_aon_wake_en_i),
-    .usb_aon_woken_upwr_i(usb_aon_wake_ack_i),
-    .usb_suspended_upwr_i(usb_suspend_i),
+    .suspend_req_aon_i(usbdev_suspend_req_i),
+    .wake_ack_aon_i(usbdev_wake_ack_i),
 
     // wake/powerup request
-    .wake_req_alw_o(usb_wkup_req_o),
-    .bus_reset_alw_o(usb_bus_reset_o),
-    .sense_lost_alw_o(usb_sense_lost_o),
-    .state_debug_o(usb_state_debug_o)
+    .wake_req_aon_o(usb_wkup_req_o),
+    .bus_reset_aon_o(usbdev_bus_reset_o),
+    .sense_lost_aon_o(usbdev_sense_lost_o),
+    .wake_detect_active_aon_o(usbdev_wake_detect_active_o)
   );
 
   /////////////////////////
@@ -546,7 +536,7 @@ module pinmux
   // running on slow AON clock
   `ASSERT_KNOWN(AonWkupReqKnownO_A, pin_wkup_req_o, clk_aon_i, !rst_aon_ni)
   `ASSERT_KNOWN(UsbWkupReqKnownO_A, usb_wkup_req_o, clk_aon_i, !rst_aon_ni)
-  `ASSERT_KNOWN(UsbStateDebugKnownO_A, usb_state_debug_o, clk_aon_i, !rst_aon_ni)
+  `ASSERT_KNOWN(UsbWakeDetectActiveKnownO_A, usbdev_wake_detect_active_o, clk_aon_i, !rst_aon_ni)
 
   // The wakeup signal is not latched in the pwrmgr so must be held until acked by software
   `ASSERT(PinmuxWkupStable_A, pin_wkup_req_o |=> pin_wkup_req_o ||

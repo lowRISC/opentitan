@@ -867,15 +867,13 @@
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
 
       // usbdev connection to pinmux
-      'usbdev.usb_dp_pullup'      : ['pinmux_aon.usb_dppullup_en_upwr'],
-      'usbdev.usb_dn_pullup'      : ['pinmux_aon.usb_dnpullup_en_upwr'],
-      'usbdev.usb_out_of_rst'     : ['pinmux_aon.usb_out_of_rst'],
-      'usbdev.usb_aon_wake_en'    : ['pinmux_aon.usb_aon_wake_en'],
-      'usbdev.usb_aon_wake_ack'   : ['pinmux_aon.usb_aon_wake_ack'],
-      'usbdev.usb_suspend'        : ['pinmux_aon.usb_suspend'],
-      'usbdev.usb_aon_bus_reset'  : ['pinmux_aon.usb_bus_reset'],
-      'usbdev.usb_aon_sense_lost' : ['pinmux_aon.usb_sense_lost'],
-      'pinmux_aon.usb_state_debug' : ['usbdev.usb_state_debug'],
+      'usbdev.usb_dp_pullup'      : ['pinmux_aon.usbdev_dppullup_en'],
+      'usbdev.usb_dn_pullup'      : ['pinmux_aon.usbdev_dnpullup_en'],
+      'usbdev.usb_aon_suspend_req': ['pinmux_aon.usbdev_suspend_req'],
+      'usbdev.usb_aon_wake_ack'   : ['pinmux_aon.usbdev_wake_ack'],
+      'usbdev.usb_aon_bus_reset'  : ['pinmux_aon.usbdev_bus_reset'],
+      'usbdev.usb_aon_sense_lost' : ['pinmux_aon.usbdev_sense_lost'],
+      'pinmux_aon.usbdev_wake_detect_active' : ['usbdev.usb_aon_wake_detect_active'],
 
       // Edn connections
       'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast.edn', 'kmac.entropy',
@@ -1065,7 +1063,6 @@
         'usbdev.usb_tx_d'                 : '',
         'usbdev.usb_tx_se0'               : '',
         'usbdev.usb_tx_use_d_se0'         : '',
-        'usbdev.usb_suspend'              : '',
         'usbdev.usb_rx_enable'            : '',
         'usbdev.usb_ref_val'              : '',
         'usbdev.usb_ref_pulse'            : '',

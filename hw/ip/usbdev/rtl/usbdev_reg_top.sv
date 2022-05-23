@@ -670,7 +670,6 @@ module usbdev_reg_top (
   logic phy_pins_sense_tx_d_o_qs;
   logic phy_pins_sense_tx_se0_o_qs;
   logic phy_pins_sense_tx_oe_o_qs;
-  logic phy_pins_sense_suspend_o_qs;
   logic phy_pins_sense_pwr_sense_qs;
   logic phy_pins_drive_we;
   logic phy_pins_drive_dp_o_qs;
@@ -689,8 +688,6 @@ module usbdev_reg_top (
   logic phy_pins_drive_dp_pullup_en_o_wd;
   logic phy_pins_drive_dn_pullup_en_o_qs;
   logic phy_pins_drive_dn_pullup_en_o_wd;
-  logic phy_pins_drive_suspend_o_qs;
-  logic phy_pins_drive_suspend_o_wd;
   logic phy_pins_drive_en_qs;
   logic phy_pins_drive_en_wd;
   logic phy_config_we;
@@ -706,9 +703,9 @@ module usbdev_reg_top (
   logic phy_config_usb_ref_disable_wd;
   logic phy_config_tx_osc_test_mode_qs;
   logic phy_config_tx_osc_test_mode_wd;
-  logic wake_config_we;
-  logic [1:0] wake_config_qs;
-  logic wake_config_busy;
+  logic wake_control_we;
+  logic [1:0] wake_control_qs;
+  logic wake_control_busy;
   logic [9:0] wake_events_qs;
   logic wake_events_busy;
   // Define register CDC handling.
@@ -810,50 +807,48 @@ module usbdev_reg_top (
   assign unused_usb_48mhz_rxenable_out_wdata =
       ^usb_48mhz_rxenable_out_wdata;
 
-  logic  aon_wake_config_wake_en_qs_int;
-  logic [1:0] aon_wake_config_d;
-  logic [1:0] aon_wake_config_wdata;
-  logic aon_wake_config_we;
-  logic unused_aon_wake_config_wdata;
+  logic [1:0] aon_wake_control_d;
+  logic [1:0] aon_wake_control_wdata;
+  logic aon_wake_control_we;
+  logic unused_aon_wake_control_wdata;
 
   always_comb begin
-    aon_wake_config_d = '0;
-    aon_wake_config_d[0] = aon_wake_config_wake_en_qs_int;
+    aon_wake_control_d = '0;
   end
 
   prim_reg_cdc #(
     .DataWidth(2),
     .ResetVal(2'h0),
     .BitMask(2'h3)
-  ) u_wake_config_cdc (
+  ) u_wake_control_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
     .src_update_i (sync_aon_update),
     .src_regwen_i ('0),
-    .src_we_i     (wake_config_we),
+    .src_we_i     (wake_control_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[1:0]),
-    .src_busy_o   (wake_config_busy),
-    .src_qs_o     (wake_config_qs), // for software read back
-    .dst_d_i      (aon_wake_config_d),
-    .dst_we_o     (aon_wake_config_we),
+    .src_busy_o   (wake_control_busy),
+    .src_qs_o     (wake_control_qs), // for software read back
+    .dst_d_i      (aon_wake_control_d),
+    .dst_we_o     (aon_wake_control_we),
     .dst_re_o     (),
     .dst_regwen_o (),
-    .dst_wd_o     (aon_wake_config_wdata)
+    .dst_wd_o     (aon_wake_control_wdata)
   );
-  assign unused_aon_wake_config_wdata =
-      ^aon_wake_config_wdata;
+  assign unused_aon_wake_control_wdata =
+      ^aon_wake_control_wdata;
 
-  logic [2:0]  aon_wake_events_state_qs_int;
+  logic  aon_wake_events_module_active_qs_int;
   logic  aon_wake_events_disconnected_qs_int;
   logic  aon_wake_events_bus_reset_qs_int;
   logic [9:0] aon_wake_events_d;
 
   always_comb begin
     aon_wake_events_d = '0;
-    aon_wake_events_d[2:0] = aon_wake_events_state_qs_int;
+    aon_wake_events_d[0] = aon_wake_events_module_active_qs_int;
     aon_wake_events_d[8] = aon_wake_events_disconnected_qs_int;
     aon_wake_events_d[9] = aon_wake_events_bus_reset_qs_int;
   end
@@ -861,7 +856,7 @@ module usbdev_reg_top (
   prim_reg_cdc #(
     .DataWidth(10),
     .ResetVal(10'h0),
-    .BitMask(10'h307)
+    .BitMask(10'h301)
   ) u_wake_events_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
@@ -7019,20 +7014,6 @@ module usbdev_reg_top (
     .qs     (phy_pins_sense_tx_oe_o_qs)
   );
 
-  //   F[suspend_o]: 13:13
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_phy_pins_sense_suspend_o (
-    .re     (phy_pins_sense_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.phy_pins_sense.suspend_o.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (phy_pins_sense_suspend_o_qs)
-  );
-
   //   F[pwr_sense]: 16:16
   prim_subreg_ext #(
     .DW    (1)
@@ -7249,31 +7230,6 @@ module usbdev_reg_top (
     .qs     (phy_pins_drive_dn_pullup_en_o_qs)
   );
 
-  //   F[suspend_o]: 8:8
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_phy_pins_drive_suspend_o (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (phy_pins_drive_we),
-    .wd     (phy_pins_drive_suspend_o_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.phy_pins_drive.suspend_o.q),
-
-    // to register interface (read)
-    .qs     (phy_pins_drive_suspend_o_qs)
-  );
-
   //   F[en]: 16:16
   prim_subreg #(
     .DW      (1),
@@ -7452,77 +7408,48 @@ module usbdev_reg_top (
   );
 
 
-  // R[wake_config]: V(False)
-  logic wake_config_qe;
-  logic [1:0] wake_config_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_wake_config0_qe (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
-    .d_i(&wake_config_flds_we),
-    .q_o(wake_config_qe)
-  );
-  //   F[wake_en]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_wake_config_wake_en (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
-
-    // from register interface
-    .we     (aon_wake_config_we),
-    .wd     (aon_wake_config_wdata[0]),
-
-    // from internal hardware
-    .de     (1'b0),
+  // R[wake_control]: V(True)
+  logic wake_control_qe;
+  logic [1:0] wake_control_flds_we;
+  assign wake_control_qe = &wake_control_flds_we;
+  //   F[suspend_req]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_wake_control_suspend_req (
+    .re     (1'b0),
+    .we     (aon_wake_control_we),
+    .wd     (aon_wake_control_wdata[0]),
     .d      ('0),
-
-    // to internal hardware
-    .qe     (wake_config_flds_we[0]),
-    .q      (reg2hw.wake_config.wake_en.q),
-
-    // to register interface (read)
-    .qs     (aon_wake_config_wake_en_qs_int)
-  );
-
-  //   F[wake_ack]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
-  ) u_wake_config_wake_ack (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
-
-    // from register interface
-    .we     (aon_wake_config_we),
-    .wd     (aon_wake_config_wdata[1]),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (wake_config_flds_we[1]),
-    .q      (reg2hw.wake_config.wake_ack.q),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (wake_control_flds_we[0]),
+    .q      (reg2hw.wake_control.suspend_req.q),
     .qs     ()
   );
-  assign reg2hw.wake_config.wake_ack.qe = wake_config_qe;
+  assign reg2hw.wake_control.suspend_req.qe = wake_control_qe;
+
+  //   F[wake_ack]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_wake_control_wake_ack (
+    .re     (1'b0),
+    .we     (aon_wake_control_we),
+    .wd     (aon_wake_control_wdata[1]),
+    .d      ('0),
+    .qre    (),
+    .qe     (wake_control_flds_we[1]),
+    .q      (reg2hw.wake_control.wake_ack.q),
+    .qs     ()
+  );
+  assign reg2hw.wake_control.wake_ack.qe = wake_control_qe;
 
 
   // R[wake_events]: V(False)
-  //   F[state]: 2:0
+  //   F[module_active]: 0:0
   prim_subreg #(
-    .DW      (3),
+    .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (3'h0)
-  ) u_wake_events_state (
+    .RESVAL  (1'h0)
+  ) u_wake_events_module_active (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -7531,15 +7458,15 @@ module usbdev_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.wake_events.state.de),
-    .d      (hw2reg.wake_events.state.d),
+    .de     (hw2reg.wake_events.module_active.de),
+    .d      (hw2reg.wake_events.module_active.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (aon_wake_events_state_qs_int)
+    .qs     (aon_wake_events_module_active_qs_int)
   );
 
   //   F[disconnected]: 8:8
@@ -7631,7 +7558,7 @@ module usbdev_reg_top (
     addr_hit[31] = (reg_addr == USBDEV_PHY_PINS_SENSE_OFFSET);
     addr_hit[32] = (reg_addr == USBDEV_PHY_PINS_DRIVE_OFFSET);
     addr_hit[33] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
-    addr_hit[34] = (reg_addr == USBDEV_WAKE_CONFIG_OFFSET);
+    addr_hit[34] = (reg_addr == USBDEV_WAKE_CONTROL_OFFSET);
     addr_hit[35] = (reg_addr == USBDEV_WAKE_EVENTS_OFFSET);
   end
 
@@ -8186,8 +8113,6 @@ module usbdev_reg_top (
 
   assign phy_pins_drive_dn_pullup_en_o_wd = reg_wdata[7];
 
-  assign phy_pins_drive_suspend_o_wd = reg_wdata[8];
-
   assign phy_pins_drive_en_wd = reg_wdata[16];
   assign phy_config_we = addr_hit[33] & reg_we & !reg_error;
 
@@ -8202,7 +8127,7 @@ module usbdev_reg_top (
   assign phy_config_usb_ref_disable_wd = reg_wdata[6];
 
   assign phy_config_tx_osc_test_mode_wd = reg_wdata[7];
-  assign wake_config_we = addr_hit[34] & reg_we & !reg_error;
+  assign wake_control_we = addr_hit[34] & reg_we & !reg_error;
 
 
 
@@ -8243,7 +8168,7 @@ module usbdev_reg_top (
     reg_we_check[31] = 1'b0;
     reg_we_check[32] = phy_pins_drive_we;
     reg_we_check[33] = phy_config_we;
-    reg_we_check[34] = wake_config_we;
+    reg_we_check[34] = wake_control_we;
     reg_we_check[35] = 1'b0;
   end
 
@@ -8586,7 +8511,6 @@ module usbdev_reg_top (
         reg_rdata_next[10] = phy_pins_sense_tx_d_o_qs;
         reg_rdata_next[11] = phy_pins_sense_tx_se0_o_qs;
         reg_rdata_next[12] = phy_pins_sense_tx_oe_o_qs;
-        reg_rdata_next[13] = phy_pins_sense_suspend_o_qs;
         reg_rdata_next[16] = phy_pins_sense_pwr_sense_qs;
       end
 
@@ -8599,7 +8523,6 @@ module usbdev_reg_top (
         reg_rdata_next[5] = phy_pins_drive_rx_enable_o_qs;
         reg_rdata_next[6] = phy_pins_drive_dp_pullup_en_o_qs;
         reg_rdata_next[7] = phy_pins_drive_dn_pullup_en_o_qs;
-        reg_rdata_next[8] = phy_pins_drive_suspend_o_qs;
         reg_rdata_next[16] = phy_pins_drive_en_qs;
       end
 
@@ -8613,7 +8536,7 @@ module usbdev_reg_top (
       end
 
       addr_hit[34]: begin
-        reg_rdata_next = DW'(wake_config_qs);
+        reg_rdata_next = DW'(wake_control_qs);
       end
       addr_hit[35]: begin
         reg_rdata_next = DW'(wake_events_qs);
@@ -8641,7 +8564,7 @@ module usbdev_reg_top (
         reg_busy_sel = rxenable_out_busy;
       end
       addr_hit[34]: begin
-        reg_busy_sel = wake_config_busy;
+        reg_busy_sel = wake_control_busy;
       end
       addr_hit[35]: begin
         reg_busy_sel = wake_events_busy;

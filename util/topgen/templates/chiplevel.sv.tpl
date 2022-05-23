@@ -354,7 +354,6 @@ module chip_${top["name"]}_${target["name"]} (
   logic usb_tx_d;
   logic usb_tx_se0;
   logic usb_tx_use_d_se0;
-  logic usb_suspend;
   logic usb_rx_enable;
 
   // Connect the DP pad
@@ -395,7 +394,6 @@ module chip_${top["name"]}_${target["name"]} (
   logic usb_rx_d;
   logic usb_tx_d;
   logic usb_tx_se0;
-  logic usb_suspend;
   logic usb_rx_enable;
 
   // DioUsbdevUsbDn
@@ -427,7 +425,7 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_oe_io_usb_speed = 1'b1;
 
   // TUSB1106 low-power mode
-  assign manual_out_io_usb_suspend = usb_suspend;
+  assign manual_out_io_usb_suspend = !usb_rx_enable;
   assign manual_oe_io_usb_suspend = 1'b1;
 
   logic unused_usb_sigs;
@@ -435,7 +433,6 @@ module chip_${top["name"]}_${target["name"]} (
     usb_dn_pullup_en,
     usb_tx_d,
     usb_tx_se0,
-    usb_rx_enable,
     manual_in_io_usb_connect,
     manual_in_io_usb_oe_n,
     manual_in_io_usb_speed,
@@ -933,7 +930,6 @@ module chip_${top["name"]}_${target["name"]} (
     .usbdev_usb_tx_d_o            (                            ),
     .usbdev_usb_tx_se0_o          (                            ),
     .usbdev_usb_tx_use_d_se0_o    (                            ),
-    .usbdev_usb_suspend_o         (                            ),
     .usbdev_usb_rx_enable_o       ( usb_rx_enable              ),
     .usbdev_usb_ref_val_o         ( usb_ref_val                ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse              ),
@@ -1103,7 +1099,6 @@ module chip_${top["name"]}_${target["name"]} (
     .usbdev_usb_tx_d_o            ( usb_tx_d              ),
     .usbdev_usb_tx_se0_o          ( usb_tx_se0            ),
     .usbdev_usb_tx_use_d_se0_o    ( usb_tx_use_d_se0      ),
-    .usbdev_usb_suspend_o         ( usb_suspend           ),
     .usbdev_usb_rx_enable_o       ( usb_rx_enable         ),
     .usbdev_usb_ref_val_o         ( usb_ref_val           ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse         ),

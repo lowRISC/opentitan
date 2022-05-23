@@ -89,14 +89,7 @@
       struct:  "logic",
       width:   "1"
     },
-    { name:    "usb_out_of_rst",
-      type:    "uni",
-      act:     "req",
-      package: "",
-      struct:  "logic",
-      width:   "1"
-    },
-    { name:    "usb_aon_wake_en",
+    { name:    "usb_aon_suspend_req",
       type:    "uni",
       act:     "req",
       package: "",
@@ -104,13 +97,6 @@
       width:   "1"
     },
     { name:    "usb_aon_wake_ack",
-      type:    "uni",
-      act:     "req",
-      package: "",
-      struct:  "logic",
-      width:   "1"
-    },
-    { name:    "usb_suspend",
       type:    "uni",
       act:     "req",
       package: "",
@@ -131,11 +117,12 @@
       struct:  "logic",
       width:   "1"
     },
-    { name:    "usb_state_debug",
+    { name:    "usb_aon_wake_detect_active",
       type:    "uni",
       act:     "rcv",
-      package: "usbdev_pkg",
-      struct:  "awk_state",
+      package: "",
+      struct:  "logic",
+      width:   "1"
     },
     { struct:  "ram_2p_cfg",
       package: "prim_ram_2p_pkg",
@@ -809,11 +796,6 @@
           desc: "USB OE output (readback)."
         }
         {
-          bits: "13",
-          name: "suspend_o",
-          desc: "USB suspend output (readback)."
-        }
-        {
           bits: "16",
           name: "pwr_sense",
           desc: "USB power sense signal."
@@ -871,11 +853,6 @@
           bits: "7",
           name: "dn_pullup_en_o",
           desc: "USB D- pullup enable output."
-        }
-        {
-          bits: "8",
-          name: "suspend_o",
-          desc: "USB suspend output."
         }
         {
           bits: "16",
@@ -959,22 +936,24 @@
       ]
     }
 
-    { name: "wake_config",
-      desc: "USB wake configuration for suspend / resume",
-      swaccess: "rw",
+    { name: "wake_control",
+      desc: "USB wake module control for suspend / resume",
+      swaccess: "wo",
       hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
       async: "clk_aon_i",
       fields: [
         {
           bits: "0",
           resval: "0",
-          name: "wake_en",
+          name: "suspend_req",
           desc: '''
-                Enable the usb resume wake function.  When this is set, a resume indication from
-                a usb host can be used to drive a wake from sleep event.
+                Suspend request to the wake detection module.
 
-                Note this function is meant to be set as a mode and not toggled on/off every time
-                usb enters / exit suspend.
+                Trigger the wake detection module to begin monitoring for wake-from-suspend events.
+                When written with a 1, the wake detection module will activate.
+                Activation may not happen immediately, and its status can be verified by checking wake_events.module_active.
                 '''
           tags: [// Prevent usb wake functions from being turned on outside of directed tests
                  "excl:CsrNonInitTests:CsrExclWrite"]
@@ -983,15 +962,14 @@
           bits: "1",
           resval: "0",
           name: "wake_ack",
-          swaccess: "wo",
-          hwaccess: "hro",
-          hwqe: "true",
           desc: '''
-                Wake acknowledgement. Once the usb device resumes from suspend, this acknowledgement is used
-                to transition the module back to normal operation.
+                Wake acknowledgement.
 
-                Note wake acknowledgement is only necessary if wake_en was '1' when the usb device was suspended.
-                However, setting/clearing this bit during other conditions has no side effects.
+                Signal to the wake detection module that it may release control of the pull-ups back to the main block and return to an inactive state.
+                The release back to normal state may not happen immediately.
+                The status can be confirmed via wake_events.module_active.
+
+                Note that this bit can also be used without powering down, such as when usbdev detects resume signaling before transitions to low power states have begun.
                 '''
         },
       ]
@@ -1004,11 +982,11 @@
       async: "clk_aon_i",
       fields: [
         {
-          bits: "2:0",
+          bits: "0",
           resval: "0",
-          name: "state",
+          name: "module_active",
           desc: '''
-                USB aon wake module state read back
+                USB aon wake module is active, monitoring events and controlling the pull-ups.
                 '''
         }
         {

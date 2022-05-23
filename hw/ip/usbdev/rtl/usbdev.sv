@@ -55,15 +55,13 @@ module usbdev
   output logic       usb_tx_use_d_se0_o,
 
   // Direct pinmux aon detect connections
-  output logic       usb_out_of_rst_o,
-  output logic       usb_aon_wake_en_o,
+  output logic       usb_aon_suspend_req_o,
   output logic       usb_aon_wake_ack_o,
-  output logic       usb_suspend_o,
 
-  // Events and debug info from wakeup module
-  input              usb_aon_bus_reset_i,
-  input              usb_aon_sense_lost_i,
-  input awk_state_t  usb_state_debug_i,
+  // Events and state from wakeup module
+  input  logic       usb_aon_bus_reset_i,
+  input  logic       usb_aon_sense_lost_i,
+  input  logic       usb_aon_wake_detect_active_i,
 
   // SOF reference for clock calibration
   output logic       usb_ref_val_o,
@@ -1109,7 +1107,6 @@ module usbdev
     .cio_usb_sense_i        (cio_sense_i),
     .usb_dp_pullup_en_o     (usb_dp_pullup_o),
     .usb_dn_pullup_en_o     (usb_dn_pullup_o),
-    .usb_suspend_o          (usb_suspend_o),
     .usb_rx_enable_o        (usb_rx_enable_o),
 
     // Internal interface
@@ -1124,7 +1121,6 @@ module usbdev
     .usb_pwr_sense_o        (usb_pwr_sense),
     .usb_dp_pullup_en_i     (usb_dp_pullup_en),
     .usb_dn_pullup_en_i     (usb_dn_pullup_en),
-    .usb_suspend_i          (usb_event_link_suspend),
     .usb_rx_enable_i        (usb_rx_enable)
   );
 
@@ -1139,7 +1135,7 @@ module usbdev
   );
   // enable rx only when the single-ended input is enabled and the device is
   // not suspended (unless it is forced on in the I/O mux).
-  assign usb_rx_enable = usb_use_diff_rcvr & ~usb_suspend_o;
+  assign usb_rx_enable = usb_use_diff_rcvr & ~usb_event_link_suspend;
 
   // Symbols from the differential receiver are invalid until it has finished
   // waking up / powering on
@@ -1208,25 +1204,17 @@ module usbdev
   /////////////////////////////////////////
   // USB aon detector signaling          //
   /////////////////////////////////////////
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      usb_out_of_rst_o <= 1'b0;
-    end else begin
-      usb_out_of_rst_o <= 1'b1;
-    end
-  end
-
-  assign usb_aon_wake_en_o = reg2hw.wake_config.wake_en.q;
-  assign usb_aon_wake_ack_o = reg2hw.wake_config.wake_ack.qe &
-                              reg2hw.wake_config.wake_ack.q;
+  assign usb_aon_suspend_req_o = reg2hw.wake_control.suspend_req.qe &
+                                 reg2hw.wake_control.suspend_req.q;
+  assign usb_aon_wake_ack_o = reg2hw.wake_control.wake_ack.qe &
+                              reg2hw.wake_control.wake_ack.q;
 
   /////////////////////////////////////////
   // capture async event and debug info  //
   /////////////////////////////////////////
 
-  assign hw2reg.wake_events.state.de = 1'b1;
-  assign hw2reg.wake_events.state.d = usb_state_debug_i;
+  assign hw2reg.wake_events.module_active.de = 1'b1;
+  assign hw2reg.wake_events.module_active.d = usb_aon_wake_detect_active_i;
   assign hw2reg.wake_events.disconnected.de = 1'b1;
   assign hw2reg.wake_events.disconnected.d = usb_aon_sense_lost_i;
   assign hw2reg.wake_events.bus_reset.de = 1'b1;
@@ -1248,9 +1236,8 @@ module usbdev
   `ASSERT_KNOWN(USBTxSe0Known_A, usb_tx_se0_o)
   `ASSERT_KNOWN(USBDpPUKnown_A, usb_dp_pullup_o)
   `ASSERT_KNOWN(USBDnPUKnown_A, usb_dn_pullup_o)
-  `ASSERT_KNOWN(USBSuspendKnown_A, usb_suspend_o)
-  `ASSERT_KNOWN(USBOoRKnown_A, usb_out_of_rst_o)
-  `ASSERT_KNOWN(USBAonWakeEnKnown_A, usb_aon_wake_en_o)
+  `ASSERT_KNOWN(USBRxEnableKnown_A, usb_rx_enable_o)
+  `ASSERT_KNOWN(USBAonSuspendReqKnown_A, usb_aon_suspend_req_o)
   `ASSERT_KNOWN(USBAonWakeAckKnown_A, usb_aon_wake_ack_o)
   `ASSERT_KNOWN(USBRefValKnown_A, usb_ref_val_o, clk_usb_48mhz_i, !rst_usb_48mhz_ni)
   `ASSERT_KNOWN(USBRefPulseKnown_A, usb_ref_pulse_o, clk_usb_48mhz_i, !rst_usb_48mhz_ni)
