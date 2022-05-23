@@ -11,9 +11,15 @@
 // top_earlgrey.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
 // Verify pimux.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED* and
 // RMA, regardless of the value on DFT SW straps.
-// TODO, only RMA and Dev states are tested
 class chip_tap_straps_vseq extends chip_sw_base_vseq;
   string path_dft_strap_test_o = {`DUT_HIER_STR, ".top_earlgrey.dft_strap_test_o"};
+  string path_dft_tap_req = {`DUT_HIER_STR, ".top_earlgrey.u_dft_tap_breakout.req_i"};
+  string path_dft_tap_rsp = {`DUT_HIER_STR, ".top_earlgrey.u_dft_tap_breakout.rsp_o"};
+  string path_tb_jtag_tck = "tb.jtag_tck";
+  string path_tb_jtag_tms = "tb.jtag_tms";
+  string path_tb_jtag_trst_n = "tb.jtag_trst_n";
+  string path_tb_jtag_tdi    = "tb.jtag_tdi";
+
   lc_ctrl_state_pkg::lc_state_e cur_lc_state;
 
   local uvm_reg lc_csrs[$];
@@ -23,8 +29,25 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   virtual task pre_start();
+    bit lc_at_prod;
+
+    // path check
+    `DV_CHECK_FATAL(uvm_hdl_check_path(path_dft_strap_test_o))
+    `DV_CHECK_FATAL(uvm_hdl_check_path(path_dft_tap_req))
+    `DV_CHECK_FATAL(uvm_hdl_check_path(path_tb_jtag_tck))
+    `DV_CHECK_FATAL(uvm_hdl_check_path(path_tb_jtag_tms))
+    `DV_CHECK_FATAL(uvm_hdl_check_path(path_tb_jtag_trst_n))
+    `DV_CHECK_FATAL(uvm_hdl_check_path(path_tb_jtag_tdi))
+
     // Disable checking as pinmux isn't enabled for uart
     foreach (cfg.m_uart_agent_cfgs[i]) cfg.m_uart_agent_cfgs[i].en_tx_monitor = 0;
+
+    void'($value$plusargs("lc_at_prod=%0d", lc_at_prod));
+    if (lc_at_prod) begin
+      cur_lc_state = LcStProd;
+    end else begin
+      cur_lc_state = cfg.use_otp_image;
+    end
 
     super.pre_start();
     enable_asserts_in_hw_reset_rand_wr = 0;
@@ -35,9 +58,13 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     `DV_CHECK_STD_RANDOMIZE_FATAL(select_jtag)
     cfg.tap_straps_vif.drive(select_jtag);
 
-    cur_lc_state = cfg.use_otp_image;
-
     super.dut_init(reset_kind);
+    // in LcStProd, we can only select LC tap at boot.
+    // If it's not LC tap, effectively, no tap is selected.
+    if (cur_lc_state == LcStProd) begin
+      cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
+      if (select_jtag != SelectLCJtagTap) select_jtag = DeselectJtagTap;
+    end
   endtask
 
   // no need to wait for SW test to complete, as we only need rom image for init
@@ -48,7 +75,6 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     bit dft_straps_en = 1;
     chip_tap_type_e allowed_taps_q[$];
 
-    `DV_CHECK_FATAL(uvm_hdl_check_path(path_dft_strap_test_o))
     ral.lc_ctrl.get_registers(lc_csrs);
 
     // load rom/flash and wait for rom_check to complete
@@ -83,6 +109,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   virtual task enable_jtag_tap(chip_tap_type_e tap);
     if (select_jtag != tap) begin
       select_jtag = tap;
+      // switching tap needs to reset the agent and re-init the tap
       reset_jtag_tap();
     end
     cfg.tap_straps_vif.drive(select_jtag);
@@ -95,7 +122,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
       SelectLCJtagTap:begin
         cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 0;
       end
-      DeselectJtagTap: begin
+      SelectDftJtagTap, DeselectJtagTap: begin
       end
       default: begin
         `uvm_fatal(`gfn, "Unexpected tap")
@@ -134,6 +161,9 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
       SelectLCJtagTap:begin
         test_lc_access_via_jtag();
       end
+      SelectDftJtagTap: begin
+        test_dft_tap(.dft_tap_en(1));
+      end
       DeselectJtagTap: begin
         test_no_tap_selected();
       end
@@ -160,6 +190,50 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     end
   endtask
 
+  // DFT tap is a dummy block in open-source. Only do connectivity test here.
+  virtual task test_dft_tap(bit dft_tap_en);
+    virtual jtag_if jtag_vif = cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif;
+    jtag_pkg::jtag_req_t exp_jtag_req, act_jtag_req;
+    jtag_pkg::jtag_rsp_t exp_jtag_rsp;
+
+    // forcing the internal jtag tdo causes this check to fail.
+    $assertoff(1, "tb.dut.top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.DftTapOff1_A");
+
+    `uvm_info(`gfn, $sformatf("Testing DFT tap with dft_tap_en: %0d", dft_tap_en), UVM_LOW)
+    repeat ($urandom_range(10, 5)) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(exp_jtag_req)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(exp_jtag_rsp)
+
+      // drive jtag
+      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_tck,    act_jtag_req.tck))
+      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_trst_n, act_jtag_req.trst_n))
+      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_tms,    act_jtag_req.tms))
+      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_tdi,    act_jtag_req.tdi))
+      `DV_CHECK_FATAL(uvm_hdl_force(path_dft_tap_rsp,    exp_jtag_rsp))
+
+      // avoid race condition
+      #1ps;
+
+      // check jtag
+      `DV_CHECK_FATAL(uvm_hdl_read(path_dft_tap_req, act_jtag_req))
+      if (dft_tap_en) begin
+        `DV_CHECK_EQ(act_jtag_req, exp_jtag_req)
+        if (exp_jtag_rsp.tdo_oe) `DV_CHECK_EQ(jtag_vif.tdo, exp_jtag_rsp.tdo)
+        else                     `DV_CHECK_EQ(jtag_vif.tdo, 0)
+      end else begin
+        `DV_CHECK_EQ(act_jtag_req, 0)
+        `DV_CHECK_EQ(jtag_vif.tdo, 0)
+      end
+    end
+    `DV_CHECK_FATAL(uvm_hdl_release(path_tb_jtag_tck))
+    `DV_CHECK_FATAL(uvm_hdl_release(path_tb_jtag_trst_n))
+    `DV_CHECK_FATAL(uvm_hdl_release(path_tb_jtag_tms))
+    `DV_CHECK_FATAL(uvm_hdl_release(path_tb_jtag_tdi))
+    `DV_CHECK_FATAL(uvm_hdl_release(path_dft_tap_rsp))
+
+    $asserton(1, "tb.dut.top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.DftTapOff1_A");
+  endtask
+
   // if no tap is selected, expect to read all 0s
   virtual task test_no_tap_selected();
     repeat (10) begin
@@ -178,6 +252,10 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
                                               p_sequencer.jtag_sequencer_h,
                                               rdata);
           `DV_CHECK_EQ(rdata, 0)
+        end
+        // test dft tap
+        1: begin
+          test_dft_tap(.dft_tap_en(0));
         end
       endcase
     end
