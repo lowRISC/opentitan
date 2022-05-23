@@ -62,6 +62,8 @@ package lc_ctrl_pkg;
 
   // This is a prerequisite for the multibit functions below to work.
   `ASSERT_STATIC_IN_PACKAGE(CheckLcTxValsComplementary_A, On == ~Off)
+  // Check for bit-width matching between lc_tx_t and mubi4_t
+  `ASSERT_STATIC_IN_PACKAGE(LcMuBiWidthCheck_A, $bits(TxWidth) == $bits(prim_mubi_pkg::MuBi4Width))
 
   // Convert a life cycle signal to mubi4
   // If in the future other versions are desired, this should really be
