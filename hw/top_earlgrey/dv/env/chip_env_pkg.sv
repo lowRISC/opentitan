@@ -18,6 +18,8 @@ package chip_env_pkg;
   import dv_lib_pkg::*;
   import dv_utils_pkg::*;
   import flash_ctrl_pkg::*;
+  import jtag_pkg::*;
+  import jtag_agent_pkg::*;
   import jtag_riscv_agent_pkg::*;
   import kmac_pkg::*;
   import lc_ctrl_state_pkg::*;
@@ -103,7 +105,8 @@ package chip_env_pkg;
   typedef enum bit [1:0] {
     DeselectJtagTap = 2'b00,
     SelectLCJtagTap = 2'b01,
-    SelectRVJtagTap = 2'b10
+    SelectRVJtagTap = 2'b10,
+    SelectDftJtagTap = 2'b11
   } chip_tap_type_e;
 
   // Two status for LC JTAG to identify if LC state transition is successful.

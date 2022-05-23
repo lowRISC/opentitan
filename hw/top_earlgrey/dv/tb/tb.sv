@@ -107,7 +107,6 @@ module tb;
   bit uart0_sel = 1;
   initial begin
     void'($value$plusargs("uart0_sel=%0b", uart0_sel));
-    $display("wcy uart0_sel %0d",uart0_sel );
   end
   assign ioc3 = (uart0_sel) ? uart_if[0].uart_rx : dft_straps[0];
   assign ioc4 = (uart0_sel) ? 1'bz : dft_straps[1];

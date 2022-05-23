@@ -218,6 +218,16 @@
       reseed: 20
     }
     {
+      name: strap_tests_mode
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+create_jtag_riscv_map=1",
+                 // select DFT tap
+                 "+uart0_sel=0",
+                 // test will exit while SW is still running
+                 "+disable_assert_final_checks"]
+      reseed: 5
+    }
+    {
       name: xbar_run_mode
       en_run_modes: ["gen_otp_images_mode"]
       run_opts: ["+xbar_mode=1"]
@@ -865,24 +875,20 @@
     {
       name: chip_tap_straps_dev
       uvm_test_seq: chip_tap_straps_vseq
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+use_otp_image=LcStDev",
-                 "+create_jtag_riscv_map=1",
-                 // select DFT tap
-                 "+uart0_sel=0",
-                 // test will exit while SW is still running
-                 "+disable_assert_final_checks"]
+      en_run_modes: ["strap_tests_mode"]
+      run_opts: ["+use_otp_image=LcStDev"]
     }
     {
       name: chip_tap_straps_rma
       uvm_test_seq: chip_tap_straps_vseq
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+use_otp_image=LcStRma",
-                 "+create_jtag_riscv_map=1",
-                 // select DFT tap
-                 "+uart0_sel=0",
-                 // test will exit while SW is still running
-                 "+disable_assert_final_checks"]
+      en_run_modes: ["strap_tests_mode"]
+      run_opts: ["+use_otp_image=LcStRma"]
+    }
+    {
+      name: chip_tap_straps_prod
+      uvm_test_seq: chip_tap_straps_vseq
+      en_run_modes: ["strap_tests_mode"]
+      run_opts: ["+lc_at_prod=1"]
     }
   ]
 
