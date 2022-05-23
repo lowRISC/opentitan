@@ -26,7 +26,7 @@ Utility script to load ROM contents into the FPGA bitstream.
 
 Usage: $0 [-t TARGET_BOARD] [-T TARGET_TOP] [-b DV | PROD]
 
-  - t: Target board: cw310, nexysvideo.
+  - t: Target board: cw310, cw305.
   - T: Target top: earlgrey.
   - b: Mask ROM binary, set to either DV or PROD.
 

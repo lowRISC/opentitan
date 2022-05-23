@@ -309,12 +309,7 @@
                     }
                   ]
              },
-             // these two currently cause compilation issues in AscentLint
-             //{    name: chip_earlgrey_nexysvideo
-             //     fusesoc_core: lowrisc:systems:chip_earlgrey_nexysvideo
-             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-             //     rel_path: "hw/chip_earlgrey_nexysvideo/lint/{tool}"
-             //},
+             // this currently causes compilation issues in AscentLint
              //{    name: chip_earlgrey_verilator
              //     fusesoc_core: lowrisc:systems:chip_earlgrey_verilator
              //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

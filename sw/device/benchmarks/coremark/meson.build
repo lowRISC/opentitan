@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 foreach device_name, device_lib : sw_lib_arch_core_devices
-  if device_name == 'fpga_nexysvideo'
+  if device_name == 'fpga_cw310'
     coremark_iterations = 100
   else
     coremark_iterations = 1

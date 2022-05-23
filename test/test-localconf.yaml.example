@@ -15,11 +15,6 @@
 
 # connected FPGA boards
 boards:
-  nexysvideo:
-    uart_device: /dev/ttyUSB0
-    uart_speed: 115200
-    # hw_server_url: "hw-server-host:3121"
-
   cw310:
     uart_device: /dev/ttyACM1
     uart_speed: 115200
