@@ -104,7 +104,6 @@ pub struct Bootstrap<'a> {
     pub uart_params: &'a UartParams,
     pub spi_params: &'a SpiParams,
     reset_pin: Rc<dyn GpioPin>,
-    bootstrap_pin: Rc<dyn GpioPin>,
     reset_delay: Duration,
 }
 
@@ -145,7 +144,6 @@ impl<'a> Bootstrap<'a> {
             uart_params: &options.uart_params,
             spi_params: &options.spi_params,
             reset_pin: transport.gpio_pin("RESET")?,
-            bootstrap_pin: transport.gpio_pin("BOOTSTRAP")?,
             reset_delay: options.reset_delay.unwrap_or(Self::RESET_DELAY),
         }
         .do_update(updater, transport, payload)
@@ -162,12 +160,12 @@ impl<'a> Bootstrap<'a> {
 
         if perform_bootstrap_reset {
             log::info!("Asserting bootstrap pins...");
-            self.bootstrap_pin.write(true)?;
+            transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
 
             log::info!("Reseting the target...");
-            self.reset_pin.write(false)?; // Low active
+            transport.apply_pin_strapping("RESET")?;
             std::thread::sleep(self.reset_delay);
-            self.reset_pin.write(true)?; // Release reset
+            transport.remove_pin_strapping("RESET")?;
             std::thread::sleep(self.reset_delay);
 
             log::info!("Performing bootstrap...");
@@ -176,7 +174,7 @@ impl<'a> Bootstrap<'a> {
 
         if perform_bootstrap_reset {
             log::info!("Releasing bootstrap pins...");
-            self.bootstrap_pin.write(false)?;
+            transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
         }
         result
     }
