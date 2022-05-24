@@ -114,10 +114,10 @@ impl CommandDispatch for ManifestUpdateCommand {
     ) -> Result<Option<Box<dyn Serialize>>> {
         let mut image = image::Image::read_from_file(&self.image)?;
 
-        self.hjson_file.as_ref().map(|hjson| -> Result<()> {
+        if let Some(hjson) = &self.hjson_file {
             let def = ManifestDef::read_from_file(&hjson)?;
-            image.overwrite_manifest(def)
-        });
+            image.overwrite_manifest(def)?;
+        }
 
         // TODO: Add signature update.
 

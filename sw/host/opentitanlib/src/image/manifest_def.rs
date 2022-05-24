@@ -53,6 +53,7 @@ macro_rules! manifest_def {
         $access struct $name {
             $(
                 $(#[$doc])?
+                #[serde(default)]
                 $field_name: $field_type,
             )*
         }
@@ -294,6 +295,16 @@ mod tests {
             from_str(&std::fs::read_to_string(testdata!("manifest.hjson")).unwrap()).unwrap();
 
         let _: Manifest = def.try_into().unwrap();
+    }
+
+    #[test]
+    fn test_manifest_from_hjson_missing() {
+        let def: ManifestDef =
+            from_str(&std::fs::read_to_string(testdata!("manifest_missing.hjson")).unwrap())
+                .unwrap();
+
+        let res: Result<Manifest> = def.try_into();
+        assert!(res.is_err())
     }
 
     #[test]

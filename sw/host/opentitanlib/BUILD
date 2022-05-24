@@ -144,6 +144,7 @@ rust_test(
     data = [
         "src/image/testdata/hello.txt",
         "src/image/testdata/manifest.hjson",
+        "src/image/testdata/manifest_missing.hjson",
         "src/image/testdata/test_image.bin",
         "src/image/testdata/world.txt",
         "src/otp/testdata/lc_ctrl_state.hjson",
