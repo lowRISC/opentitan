@@ -326,7 +326,7 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=80_000_000", "+use_otp_image=LcStRma",
+      run_opts: ["+sw_test_timeout_ns=80_000_000",
                  "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1"]
       reseed: 5
     }
@@ -335,7 +335,7 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=80_000_000", "+use_otp_image=LcStRma",
+      run_opts: ["+sw_test_timeout_ns=80_000_000",
                  "+ext_clk_type=ExtClkLowSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
       reseed: 5
     }
@@ -349,7 +349,7 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=80_000_000", "+use_otp_image=LcStRma",
+      run_opts: ["+sw_test_timeout_ns=80_000_000",
                  "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
       reseed: 5
     }
@@ -889,7 +889,6 @@
       name: chip_tap_straps_rma
       uvm_test_seq: chip_tap_straps_vseq
       en_run_modes: ["strap_tests_mode"]
-      run_opts: ["+use_otp_image=LcStRma"]
     }
     {
       name: chip_tap_straps_prod
