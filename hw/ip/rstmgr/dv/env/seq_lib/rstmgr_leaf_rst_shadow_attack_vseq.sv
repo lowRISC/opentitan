@@ -58,10 +58,8 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
   endtask // wait_and_check
 
   function void remove_glitch(string path);
-    string spath = {path, "_shadowed"};
-    string epath = {spath, ".rst_en_o"};
-    string opath = {spath, ".leaf_rst_o"};
-
+    string epath = {path, ".rst_en_o"};
+    string opath = {path, ".leaf_rst_o"};
     `DV_CHECK(uvm_hdl_release(epath))
     `DV_CHECK(uvm_hdl_release(opath))
   endfunction
