@@ -105,9 +105,9 @@ static void usb_send_str(const char *string, usb_ss_ctx_t *ss_ctx) {
 }
 
 // These GPIO bits control USB PHY configuration
-static const uint32_t kPinflipMask = 1;
-static const uint32_t kDiffXcvrMask = 2;
-static const uint32_t kUPhyMask = 4;
+static const uint32_t kPinflipMask = (1 << 8);
+static const uint32_t kDiffXcvrMask = (1 << 9);
+static const uint32_t kUPhyMask = (1 << 10);
 
 void _ottf_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
@@ -148,7 +148,7 @@ void _ottf_main(void) {
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
-  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0x0ff00));
+  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0x000ff));
 
   LOG_INFO("Hello, USB!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
@@ -173,7 +173,7 @@ void _ottf_main(void) {
   } else {
     CHECK_DIF_OK(dif_pinmux_input_select(
         &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-        kTopEarlgreyPinmuxInselIor1));
+        kTopEarlgreyPinmuxInselConstantOne));
   }
   CHECK_DIF_OK(dif_spi_device_send(&spi, "SPI!", 4, /*bytes_sent=*/NULL));
 
