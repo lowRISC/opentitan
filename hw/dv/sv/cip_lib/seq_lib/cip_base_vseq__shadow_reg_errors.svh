@@ -226,6 +226,11 @@ virtual task glitch_shadowed_reset(ref dv_base_reg shadowed_csr[$],
     `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
                  cfg.clk_rst_vif.wait_clks(1);,
                  $sformatf("expect fatal alert:%0s to fire after rst_ni glitched", alert_name))
+
+    // `dut_init` task is used to toggle IP reset pin. If the IP has more than one reset pin, alert
+    // might already fire when the main reset is deasserted. So the below line we wait for a full
+    // alert handshake before check fatal alert.
+    cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();
     check_fatal_alert_nonblocking(alert_name);
   end
 
