@@ -41,6 +41,13 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  //overrides: [
+  //  {
+  //    name: "timescale"
+  //    value: "1ns/1ns"
+  //  }
+  //]
+
   // Default UVM test and seq class name.
   uvm_test: spi_device_base_test
   uvm_test_seq: spi_device_base_vseq
