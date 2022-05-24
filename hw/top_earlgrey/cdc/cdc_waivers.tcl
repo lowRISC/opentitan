@@ -27,3 +27,33 @@ foreach mod $modules {
 
 # Common Waivers
 
+# Muxed PAD output
+# For IO PADs, Clock does not matter.
+set_rule_status -rule {W_DATA W_MASYNC} -status {Waived} \
+  -expression {(ReceivingFlop =~ "IO*")}                 \
+  -comment {Direct output without flop}
+
+# SPI Device PADS output
+set_rule_status -rule {W_DATA} -status {Waived} -expression             \
+  {(MultiClockDomains =~ "*::SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK") &&      \
+  (ReceivingFlop =~ "SPI_DEV_*")} -comment {Direct output without flop}
+set_rule_status -rule {W_MASYNC} -status {Waived} -expression           \
+  {(MultiClockDomains =~ "*::SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK") &&      \
+  (ReceivingFlop =~ "SPI_DEV_*")} -comment {Direct output without flop}
+
+set_rule_status -rule {W_DATA} -status {Waived} -expression               \
+  {(MultiClockDomains =~ "*::SPI_HOST_CLK,SPI_HOST_PASSTHRU_CLK") &&      \
+  (ReceivingFlop =~ "SPI_HOST_*")} -comment {Direct output without flop}
+set_rule_status -rule {W_MASYNC} -status {Waived} -expression             \
+  {(MultiClockDomains =~ "*::SPI_HOST_CLK,SPI_HOST_PASSTHRU_CLK") &&      \
+  (ReceivingFlop =~ "SPI_HOST_*")} -comment {Direct output without flop}
+
+## ASYNC FIFO Gray Pointer
+set_rule_status -rule {W_CNTL} -status {Waived}                              \
+  -expression {(Signal=~"*ptr_gray_q*") && (ReceivingFlop =~ "*.u_sync_1*")} \
+  -comment {Gray Pointer sync}
+
+## Waive pinmux attr: static
+set_rule_status -rule {W_MASYNC} -status {Waived}        \
+  -expression {(Driver=~"*u_pinmux_aon.dio_pad_attr_*")} \
+  -comment {PAD Attributes are static signals.}
