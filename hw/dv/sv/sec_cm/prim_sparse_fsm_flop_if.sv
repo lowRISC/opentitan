@@ -50,7 +50,8 @@ interface prim_sparse_fsm_flop_if #(
                                     custom_signal_forced, orig_value, force_value), UVM_LOW)
         `DV_CHECK(uvm_hdl_force(custom_signal_forced, force_value))
       end
-      @(negedge clk_i);
+      repeat(2)
+        @(posedge clk_i);
       `DV_CHECK(uvm_hdl_release(signal_forced))
       if (CustomForceName != "") `DV_CHECK(uvm_hdl_release(custom_signal_forced))
     endtask
@@ -64,6 +65,10 @@ interface prim_sparse_fsm_flop_if #(
                   orig_value), UVM_LOW)
         `DV_CHECK(uvm_hdl_deposit(custom_signal_forced, orig_value))
       end
+      repeat(2)
+        @(posedge clk_i);
+      `DV_CHECK(uvm_hdl_release(signal_forced))
+      if (CustomForceName != "") `DV_CHECK(uvm_hdl_release(custom_signal_forced))
     endtask
   endclass
 
