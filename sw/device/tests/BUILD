@@ -97,6 +97,30 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "alert_handler_ping_timeout_test",
+    srcs = ["alert_handler_ping_timeout_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
+    deps = [
+        "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib:irq",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "aon_timer_irq_test",
     srcs = ["aon_timer_irq_test.c"],
     cw310 = cw310_params(
