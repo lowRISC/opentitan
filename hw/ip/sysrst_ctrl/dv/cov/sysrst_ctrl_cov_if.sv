@@ -94,35 +94,6 @@ interface sysrst_ctrl_cov_if
 
   endgroup // sysrst_ctrl_key_intr_status_cg
 
-  ///////////////////////////////
-  // Wakeup event cover points //
-  ///////////////////////////////
-
-  covergroup sysrst_ctrl_wkup_event_cg with function sample (
-    bit wakeup_sts,
-    bit h2l_pwrb,
-    bit l2h_lid_open,
-    bit h_ac_present,
-    bit interrupt_gen
-  );
-    option.per_instance = 1;
-    option.name = "sysrst_ctrl_wkup_event_cg";
-
-    cp_wakeup_sts: coverpoint wakeup_sts;
-    cp_h2l_pwrb: coverpoint h2l_pwrb;
-    cp_l2h_lid_open: coverpoint l2h_lid_open;
-    cp_h_ac_present: coverpoint h_ac_present;
-    cp_interrupt_gen: coverpoint interrupt_gen;
-    cross_wkup_sts: cross cp_wakeup_sts, cp_h2l_pwrb, cp_l2h_lid_open, cp_h_ac_present,
-      cp_interrupt_gen {
-        ignore_bins invalid = binsof(cp_h2l_pwrb) intersect {1} &&
-                            binsof(cp_l2h_lid_open) intersect {0} &&
-                            binsof(cp_h_ac_present) intersect {0} &&
-                            binsof(cp_wakeup_sts) intersect {0} &&
-                            binsof(cp_interrupt_gen) intersect {0};
-      }
-  endgroup // sysrst_ctrl_wkup_event_cg
-
   //////////////////////////////////////
   // Pin in value register cover points //
   //////////////////////////////////////
@@ -155,7 +126,6 @@ interface sysrst_ctrl_cov_if
   ///////////////////////////////////
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_auto_block_debounce_ctl_cg)
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_key_intr_status_cg)
-  `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_wkup_event_cg)
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_pin_in_value_cg)
 
   sysrst_ctrl_combo_detect_det_cg combo_detect_det_cg_inst[4];
@@ -203,17 +173,6 @@ interface sysrst_ctrl_cov_if
     sysrst_ctrl_key_intr_status_cg_inst.sample(pwrb_h2l, key0_in_h2l, key1_in_h2l, key2_in_h2l,
            ac_present_h2l, ec_rst_l_h2l, flash_wp_l_h2l, pwrb_l2h, key0_in_l2h, key1_in_l2h,
            key2_in_l2h, ac_present_l2h, ec_rst_l_l2h, flash_wp_l_l2h);
-  endfunction
-
-  function automatic void cg_wkup_event_sample (
-    bit wakeup_sts,
-    bit h2l_pwrb,
-    bit l2h_lid_open,
-    bit h_ac_present,
-    bit interrupt_gen
-  );
-    sysrst_ctrl_wkup_event_cg_inst.sample(wakeup_sts, h2l_pwrb, l2h_lid_open, h_ac_present,
-       interrupt_gen);
   endfunction
 
   function automatic void cg_pin_in_value_sample (

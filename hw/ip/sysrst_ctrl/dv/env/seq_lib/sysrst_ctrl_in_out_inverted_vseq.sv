@@ -55,9 +55,19 @@ class sysrst_ctrl_in_out_inverted_vseq extends sysrst_ctrl_base_vseq;
     pwrb_inXval: cross cp_pwrb_in, cfg.vif.pwrb_in;
     pwrb_outXval: cross cp_pwrb_out, cfg.vif.pwrb_out;
     ac_presentXval: cross cp_ac_present, cfg.vif.ac_present;
-    bat_disableXval: cross cp_bat_disable, cfg.vif.bat_disable;
+    bat_disableXval: cross cp_bat_disable, cfg.vif.bat_disable {
+      ignore_bins invalid0 = binsof(cp_bat_disable) intersect {0} &&
+                             binsof(cfg.vif.bat_disable) intersect {1};
+      ignore_bins invalid1 = binsof(cp_bat_disable) intersect {1} &&
+                             binsof(cfg.vif.bat_disable) intersect {0};
+    }
     lid_openXval: cross cp_lid_open, cfg.vif.lid_open;
-    z3_wakeupXval: cross cp_z3_wakeup, cfg.vif.z3_wakeup;
+    z3_wakeupXval: cross cp_z3_wakeup, cfg.vif.z3_wakeup {
+      ignore_bins invalid0 = binsof(cp_z3_wakeup) intersect {0} &&
+                             binsof(cfg.vif.z3_wakeup) intersect {1};
+      ignore_bins invalid1 = binsof(cp_z3_wakeup) intersect {1} &&
+                             binsof(cfg.vif.z3_wakeup) intersect {0};
+    }
 
   endgroup // sysrst_ctrl_key_invert_ctl_cg
 
@@ -74,6 +84,8 @@ class sysrst_ctrl_in_out_inverted_vseq extends sysrst_ctrl_base_vseq;
     csr_wr(ral.pin_allowed_ctl, 'h0);
 
     repeat (num_trans) begin
+
+      `DV_CHECK_RANDOMIZE_FATAL(this)
 
       // Randomize the input pins
       cfg.vif.randomize_input();

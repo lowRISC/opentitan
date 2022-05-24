@@ -52,8 +52,8 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
     forever begin
       @(posedge cfg.vif.z3_wakeup);
       if (cfg.en_cov) begin
-        cov_if.cg_wkup_event_sample (
-          ral.wkup_status.get_mirrored_value(),
+        cov.wakeup_event.sysrst_ctrl_wkup_event_cg.sample(
+          ral.wkup_status.wakeup_sts.get_mirrored_value(),
           cfg.vif.pwrb_in,
           cfg.vif.lid_open,
           cfg.vif.ac_present,
