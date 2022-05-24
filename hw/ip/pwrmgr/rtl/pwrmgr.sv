@@ -606,7 +606,10 @@ module pwrmgr
 
   `endif
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(FsmCheck_A, u_fsm.u_state_regs, alert_tx_o[0])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SlowFsmCheck_A, u_slow_fsm.u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(FsmCheck_A, u_fsm.u_state_regs,
+      pwr_rst_o.rst_lc_req && pwr_rst_o.rst_sys_req)
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(SlowFsmCheck_A, u_slow_fsm.u_state_regs,
+      pwr_ast_o.pwr_clamp && !pwr_ast_o.main_pd_n, 0, 2,
+      clk_slow_i, !rst_slow_ni)
 
 endmodule // pwrmgr

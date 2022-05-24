@@ -18,7 +18,15 @@
   `ASSUME_FPV(``NAME_``TriggerAfterAlertInit_S, $stable(rst_ni) == 0 |-> \
               PRIM_HIER_.ERR_NAME_ == 0 [*10])
 
-// macros for security countermeasures
+`define ASSERT_ERROR_TRIGGER_ERR(NAME_, PRIM_HIER_, ERR_, GATE_, MAX_CYCLES_, ERR_NAME_, CLK_, RST_) \
+  `ASSERT(FpvSecCm``NAME_``, \
+          $rose(PRIM_HIER_.ERR_NAME_) && !(GATE_) \
+          |-> ##[0:MAX_CYCLES_] (ERR_), CLK_, RST_) \
+  `ifdef INC_ASSERT \
+  assign PRIM_HIER_.unused_assert_connected = 1'b1; \
+  `endif
+
+// macros for security countermeasures that will trigger alert
 `define ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = 7) \
   `ASSERT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
 
@@ -26,6 +34,10 @@
   `ASSERT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
 
 `define ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = 7) \
-  `ASSERT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, GATE_, MAX_CYCLES_, unused_err_o)
+    `ASSERT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, GATE_, MAX_CYCLES_, unused_err_o)
+
+// macros for security countermeasures that will trigger other errors
+`define ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(NAME_, PRIM_HIER_, ERR_, GATE_ = 0, MAX_CYCLES_ = 2, CLK_ = clk_i, RST_ = !rst_ni) \
+    `ASSERT_ERROR_TRIGGER_ERR(NAME_, PRIM_HIER_, ERR_, GATE_, MAX_CYCLES_, unused_err_o, CLK_, RST_)
 
 `endif // PRIM_ASSERT_SEC_CM_SVH
