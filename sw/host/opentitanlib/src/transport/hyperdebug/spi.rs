@@ -4,11 +4,14 @@
 
 use anyhow::{ensure, Result};
 use rusb::{Direction, Recipient, RequestType};
+use std::cell::Cell;
 use std::mem::size_of;
 use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
-use crate::io::spi::{SpiError, Target, Transfer, TransferMode};
+use crate::io::spi::{
+    AssertChipSelect, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
+};
 use crate::transport::hyperdebug::{BulkInterface, Inner};
 use crate::transport::TransportError;
 
@@ -17,6 +20,7 @@ pub struct HyperdebugSpiTarget {
     interface: BulkInterface,
     _target_idx: u8,
     max_chunk_size: usize,
+    cs_asserted_count: Cell<u32>,
 }
 
 const USB_SPI_PKT_ID_CMD_GET_USB_SPI_CONFIG: u16 = 0;
@@ -26,6 +30,8 @@ const USB_SPI_PKT_ID_CMD_TRANSFER_CONTINUE: u16 = 3;
 //const USB_SPI_PKT_ID_CMD_RESTART_RESPONSE: u16 = 4;
 const USB_SPI_PKT_ID_RSP_TRANSFER_START: u16 = 5;
 const USB_SPI_PKT_ID_RSP_TRANSFER_CONTINUE: u16 = 6;
+const USB_SPI_PKT_ID_CMD_CHIP_SELECT: u16 = 7;
+const USB_SPI_PKT_ID_RSP_CHIP_SELECT: u16 = 8;
 
 //const USB_SPI_REQ_DISABLE: u8 = 1;
 const USB_SPI_REQ_ENABLE: u8 = 0;
@@ -112,6 +118,36 @@ impl RspTransferContinue {
     }
 }
 
+#[derive(AsBytes, FromBytes, Debug)]
+#[repr(C)]
+struct CmdChipSelect {
+    packet_id: u16,
+    flags: u16,
+}
+impl CmdChipSelect {
+    fn new(assert_chip_select: bool) -> Self {
+        Self {
+            packet_id: USB_SPI_PKT_ID_CMD_CHIP_SELECT,
+            flags: if assert_chip_select { 1 } else { 0 },
+        }
+    }
+}
+
+#[derive(AsBytes, FromBytes, Debug, Default)]
+#[repr(C)]
+struct RspChipSelect {
+    packet_id: u16,
+    status_code: u16,
+}
+impl RspChipSelect {
+    fn new() -> Self {
+        Self {
+            packet_id: 0,
+            status_code: 0,
+        }
+    }
+}
+
 impl HyperdebugSpiTarget {
     pub fn open(inner: &Rc<Inner>, spi_interface: &BulkInterface, idx: u8) -> Result<Self> {
         let mut usb_handle = inner.usb_device.borrow_mut();
@@ -160,6 +196,7 @@ impl HyperdebugSpiTarget {
             interface: *spi_interface,
             _target_idx: idx,
             max_chunk_size: std::cmp::min(resp.max_write_chunk, resp.max_read_chunk) as usize,
+            cs_asserted_count: Cell::new(0),
         })
     }
 
@@ -232,6 +269,28 @@ impl HyperdebugSpiTarget {
             rbuf[index..index + databytes].clone_from_slice(&resp.data[0..0 + databytes]);
             index += databytes;
         }
+        Ok(())
+    }
+
+    /// Request assertion or deassertion of chip select
+    fn do_assert_cs(&self, assert: bool) -> Result<()> {
+        let req = CmdChipSelect::new(assert);
+        self.usb_write_bulk(&req.as_bytes())?;
+
+        let mut resp = RspChipSelect::new();
+        let bytecount = self.usb_read_bulk(&mut resp.as_bytes_mut())?;
+        ensure!(
+            bytecount >= 4,
+            TransportError::CommunicationError("Unrecognized reponse to CHIP_SELECT".to_string())
+        );
+        ensure!(
+            resp.packet_id == USB_SPI_PKT_ID_RSP_CHIP_SELECT,
+            TransportError::CommunicationError("Unrecognized reponse to CHIP_SELECT".to_string())
+        );
+        ensure!(
+            resp.status_code == 0,
+            TransportError::CommunicationError("SPI error".to_string())
+        );
         Ok(())
     }
 
@@ -345,5 +404,29 @@ impl Target for HyperdebugSpiTarget {
             idx += 1;
         }
         Ok(())
+    }
+
+    fn assert_cs(self: Rc<Self>) -> Result<AssertChipSelect> {
+        {
+            let cs_asserted_count = self.cs_asserted_count.get();
+            if cs_asserted_count == 0 {
+                self.do_assert_cs(true)?;
+            }
+            self.cs_asserted_count.set(cs_asserted_count + 1);
+        }
+        Ok(AssertChipSelect::new(self))
+    }
+}
+
+impl TargetChipDeassert for HyperdebugSpiTarget {
+    fn deassert_cs(&self) {
+        let cs_asserted_count = self.cs_asserted_count.get();
+        if cs_asserted_count - 1 == 0 {
+            // We cannot propagate errors through `Drop::drop()`, so panic on any error.  (Logging
+            // would be another option.)
+            self.do_assert_cs(false)
+                .expect("Error while deasserting CS");
+        }
+        self.cs_asserted_count.set(cs_asserted_count - 1);
     }
 }

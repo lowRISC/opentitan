@@ -159,7 +159,7 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer
                 }
                 if event.is_readable() {
                     conn.read()?;
-                    Self::process_any_requests(conn, &self.command_handler)?;
+                    Self::process_any_requests(conn, &mut self.command_handler)?;
                 }
                 // Return whether this connection object should be dropped.
                 return Ok((conn.rx_eof && (conn.tx_buf.len() == 0)) || conn.broken);
@@ -199,7 +199,7 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer
     }
 
     // Look for any completely received requests in the rx_buf, and handle them one by one.
-    fn process_any_requests(conn: &mut Connection, command_handler: &T) -> Result<()> {
+    fn process_any_requests(conn: &mut Connection, command_handler: &mut T) -> Result<()> {
         while let Some(request) = Self::get_complete_request(conn)? {
             // One complete request received, execute it.
             let resp = command_handler.execute_cmd(&request)?;

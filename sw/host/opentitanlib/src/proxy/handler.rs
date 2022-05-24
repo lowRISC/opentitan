@@ -4,6 +4,7 @@
 
 use anyhow::{bail, Result};
 
+use std::collections::HashMap;
 use std::time::Duration;
 
 use super::errors::SerializedError;
@@ -18,23 +19,28 @@ use crate::app::TransportWrapper;
 use crate::bootstrap::Bootstrap;
 use crate::io::i2c;
 use crate::io::spi;
+use crate::transport::TransportError;
 
 /// Implementation of the handling of each protocol request, by means of an underlying
 /// `Transport` implementation.
 pub struct TransportCommandHandler<'a> {
     transport: &'a TransportWrapper,
+    spi_chip_select: HashMap<String, Vec<spi::AssertChipSelect>>,
 }
 
 impl<'a> TransportCommandHandler<'a> {
     pub fn new(transport: &'a TransportWrapper) -> Self {
-        Self { transport }
+        Self {
+            transport,
+            spi_chip_select: HashMap::new(),
+        }
     }
 
     /// This method will perform whatever action on the underlying `Transport` that is requested
     /// by the given `Request`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be propagated to the remote client, without any server-side
     /// logging.
-    fn do_execute_cmd(&self, req: &Request) -> Result<Response> {
+    fn do_execute_cmd(&mut self, req: &Request) -> Result<Response> {
         match req {
             Request::GetCapabilities => {
                 Ok(Response::GetCapabilities(self.transport.capabilities()?))
@@ -175,6 +181,25 @@ impl<'a> TransportCommandHandler<'a> {
                             transaction: resps,
                         }))
                     }
+                    SpiRequest::AssertChipSelect => {
+                        // Add a `spi::AssertChipSelect` object to the stack for this particular
+                        // SPI instance.
+                        self.spi_chip_select
+                            .entry(id.to_string())
+                            .or_insert(Vec::new())
+                            .push(instance.assert_cs()?);
+                        Ok(Response::Spi(SpiResponse::AssertChipSelect))
+                    }
+                    SpiRequest::DeassertChipSelect => {
+                        // Remove a `spi::AssertChipSelect` object from the stack for this
+                        // particular SPI instance.
+                        self.spi_chip_select
+                            .get_mut(id)
+                            .ok_or(TransportError::InvalidOperation)?
+                            .pop()
+                            .ok_or(TransportError::InvalidOperation)?;
+                        Ok(Response::Spi(SpiResponse::DeassertChipSelect))
+                    }
                 }
             }
             Request::I2c { id, command } => {
@@ -258,7 +283,7 @@ impl<'a> CommandHandler<Message> for TransportCommandHandler<'a> {
     /// by the given `Message`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be treated as an irrecoverable protocol error, causing an
     /// error message in the server log, and the connection to be terminated.
-    fn execute_cmd(&self, msg: &Message) -> Result<Message> {
+    fn execute_cmd(&mut self, msg: &Message) -> Result<Message> {
         if let Message::Req(req) = msg {
             // Package either `Ok()` or `Err()` into a `Message`, to be sent via network.
             return Ok(Message::Res(
