@@ -233,6 +233,7 @@ class OtpVendorTestRegTest : public LcCtrlTest {};
 
 TEST_F(OtpVendorTestRegTest, Read) {
   uint32_t settings_read = 0;
+  EXPECT_READ32(LC_CTRL_TRANSITION_REGWEN_REG_OFFSET, true);
   EXPECT_READ32(LC_CTRL_OTP_VENDOR_TEST_CTRL_REG_OFFSET, 0x5A);
   EXPECT_DIF_OK(dif_lc_ctrl_get_otp_vendor_test_reg(&lc_, &settings_read));
   EXPECT_EQ(settings_read, 0x5A);

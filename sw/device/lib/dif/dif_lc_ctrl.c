@@ -363,6 +363,7 @@ dif_result_t dif_lc_ctrl_transition(const dif_lc_ctrl_t *lc,
         ctrl_reg, LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT, false);
   }
 
+  // Check that the mutex has been acquired.
   uint32_t busy =
       mmio_region_read32(lc->base_addr, LC_CTRL_TRANSITION_REGWEN_REG_OFFSET);
   if (busy == 0) {
@@ -414,6 +415,12 @@ dif_result_t dif_lc_ctrl_get_otp_vendor_test_reg(const dif_lc_ctrl_t *lc,
                                                  uint32_t *settings) {
   if (lc == NULL || settings == NULL) {
     return kDifBadArg;
+  }
+
+  uint32_t busy =
+      mmio_region_read32(lc->base_addr, LC_CTRL_TRANSITION_REGWEN_REG_OFFSET);
+  if (busy == 0) {
+    return kDifUnavailable;
   }
 
   *settings = mmio_region_read32(lc->base_addr,
