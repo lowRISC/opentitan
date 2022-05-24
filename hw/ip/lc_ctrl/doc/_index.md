@@ -168,7 +168,7 @@ This ensures that secrets cannot be scanned out, and specific values cannot be s
 - The TAP controller is unable to issue any kind of self test that would disrupt and scramble live logic which could lead to unpredictable behavior
 - The TAP controller or test function is unable to alter the non-volatile contents of flash or OTP
 
-See [TAP isolation]({{< relref "#tap-isolation" >}}) for more implementation details.
+See [TAP isolation]({{< relref "#tap-and-isolation" >}}) for more implementation details.
 
 #### NVM_DEBUG_EN
 
@@ -645,7 +645,7 @@ Then, the debbuger can issue a CSR read or write operation via the 0x11 register
 
 As currently defined, the life cycle controller TAP is a separate entity from the main SOC DFT TAP and the processor TAP.
 This physical separation aids in logical isolation, as the SOC DFT tap can be disabled by DFT_EN, while the processor TAP can be disabled by DEBUG_EN.
-The TAP isolation and multiplexing is implemented in the pinmux IP as [described here]({{< relref "hw/ip/pinmux/doc" >}}).
+The TAP isolation and multiplexing is implemented in the pinmux IP as [described here]({{< relref "hw/ip/pinmux/doc/#strap-sampling-and-tap-isolation" >}}).
 
 # Programmer's Guide
 
