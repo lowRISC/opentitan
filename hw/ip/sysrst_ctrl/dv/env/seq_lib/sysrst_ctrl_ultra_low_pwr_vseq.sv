@@ -72,7 +72,7 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
 
    task body();
 
-    uvm_reg_data_t rdata;
+    uvm_reg_data_t rdata, wkup_sts_rdata;
     uint16_t get_ac_timer, get_pwrb_timer, get_lid_timer;
     bit enable_ulp;
 
@@ -126,6 +126,7 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
             lid_cycles >= get_lid_timer)) begin
        cfg.clk_aon_rst_vif.wait_clks(1);
        `DV_CHECK_EQ(cfg.vif.z3_wakeup, 1);
+       csr_rd(ral.wkup_status, wkup_sts_rdata);
        csr_rd_check(ral.wkup_status, .compare_value(1));
        // Check if the ulp wakeup event is detected
        csr_rd_check(ral.ulp_status, .compare_value(1));
@@ -148,9 +149,18 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
        csr_rd_check(ral.wkup_status, .compare_value(0));
      end else begin
       `DV_CHECK_EQ(cfg.vif.z3_wakeup, 0);
+      csr_rd(ral.wkup_status,wkup_sts_rdata);
       csr_rd_check(ral.wkup_status, .compare_value(0));
       csr_rd_check(ral.ulp_status, .compare_value(0));
      end
+     // Sample the wakeup event covergroup before clearing the status register
+     cov.wakeup_event.sysrst_ctrl_wkup_event_cg.sample(
+       get_field_val(ral.wkup_status.wakeup_sts, wkup_sts_rdata),
+       cfg.vif.pwrb_in,
+       cfg.vif.lid_open,
+       cfg.vif.ac_present,
+       cfg.intr_vif.pins
+     );
      cfg.clk_aon_rst_vif.wait_clks(10);
     end
    endtask : body
