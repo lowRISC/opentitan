@@ -7,12 +7,15 @@ use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::io::spi::{ClockPolarity, SpiError, Target, Transfer, TransferMode};
+use crate::io::spi::{
+    AssertChipSelect, ClockPolarity, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
+};
 use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
 
 struct Inner {
     mode: TransferMode,
+    cs_asserted_count: u32,
 }
 
 /// Represents the Ultradebug SPI device.
@@ -26,6 +29,7 @@ impl UltradebugSpi {
     pub const PIN_MOSI: u8 = 1;
     pub const PIN_MISO: u8 = 2;
     pub const PIN_CHIP_SELECT: u8 = 3;
+    pub const MASK_CHIP_SELECT: u8 = 1u8 << Self::PIN_CHIP_SELECT;
     pub const PIN_SPI_ZB: u8 = 4;
     pub fn open(ultradebug: &Ultradebug) -> Result<Self> {
         let mpsse = ultradebug.mpsse(ftdi::Interface::B)?;
@@ -42,8 +46,25 @@ impl UltradebugSpi {
             device: mpsse,
             inner: RefCell::new(Inner {
                 mode: TransferMode::Mode0,
+                cs_asserted_count: 0,
             }),
         })
+    }
+
+    fn do_assert_cs(&self, assert: bool) -> Result<()> {
+        let device = self.device.borrow();
+        // Assert or deassert CS#
+        device
+            .execute(&mut [mpsse::Command::SetLowGpio(
+                device.gpio_direction,
+                if assert {
+                    device.gpio_value & !Self::MASK_CHIP_SELECT
+                } else {
+                    device.gpio_value | Self::MASK_CHIP_SELECT
+                },
+            )])
+            .context("FTDI error")?;
+        Ok(())
     }
 }
 
@@ -96,12 +117,14 @@ impl Target for UltradebugSpi {
 
         let mut command = Vec::new();
         let device = self.device.borrow();
-        let chip_select = 1u8 << UltradebugSpi::PIN_CHIP_SELECT;
-        // Assert CS# (drive low).
-        command.push(mpsse::Command::SetLowGpio(
-            device.gpio_direction,
-            device.gpio_value & !chip_select,
-        ));
+        let cs_not_already_asserted = self.inner.borrow().cs_asserted_count == 0;
+        if cs_not_already_asserted {
+            // Assert CS# (drive low).
+            command.push(mpsse::Command::SetLowGpio(
+                device.gpio_direction,
+                device.gpio_value & !Self::MASK_CHIP_SELECT,
+            ));
+        }
         // Translate SPI Read/Write Transactions into MPSSE Commands.
         for transfer in transaction.iter_mut() {
             command.push(match transfer {
@@ -137,12 +160,38 @@ impl Target for UltradebugSpi {
                 ),
             });
         }
-        // Release CS# (allow to float high).
-        command.push(mpsse::Command::SetLowGpio(
-            device.gpio_direction,
-            device.gpio_value | chip_select,
-        ));
+        if cs_not_already_asserted {
+            // Release CS# (allow to float high).
+            command.push(mpsse::Command::SetLowGpio(
+                device.gpio_direction,
+                device.gpio_value | Self::MASK_CHIP_SELECT,
+            ));
+        }
         device.execute(&mut command).context("FTDI error")?;
         Ok(())
+    }
+
+    fn assert_cs(self: Rc<Self>) -> Result<AssertChipSelect> {
+        {
+            let mut inner = self.inner.borrow_mut();
+            if inner.cs_asserted_count == 0 {
+                self.do_assert_cs(true)?;
+            }
+            inner.cs_asserted_count += 1;
+        }
+        Ok(AssertChipSelect::new(self))
+    }
+}
+
+impl TargetChipDeassert for UltradebugSpi {
+    fn deassert_cs(&self) {
+        let mut inner = self.inner.borrow_mut();
+        inner.cs_asserted_count -= 1;
+        if inner.cs_asserted_count == 0 {
+            // We cannot propagate errors through `Drop::drop()`, so panic on any error.  (Logging
+            // would be another option.)
+            self.do_assert_cs(false)
+                .expect("Error while deasserting CS");
+        }
     }
 }

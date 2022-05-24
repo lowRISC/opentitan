@@ -151,6 +151,37 @@ pub trait Target {
         Err(SpiError::InvalidOption("This target does not support set_voltage".to_string()).into())
     }
 
-    /// Runs a SPI transaction composed from the slice of [`Transfer`] objects.
+    /// Runs a SPI transaction composed from the slice of [`Transfer`] objects.  Will assert the
+    /// CS for the duration of the entire transactions.
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()>;
+
+    /// Assert the CS signal.  Uses reference counting, will be deasserted when each and every
+    /// returned `AssertChipSelect` object have gone out of scope.
+    fn assert_cs(self: Rc<Self>) -> Result<AssertChipSelect>;
+}
+
+/// Object that keeps the CS asserted, deasserting when it goes out of scope, (unless another
+/// instance keeps CS asserted longer.)
+pub struct AssertChipSelect {
+    target: Rc<dyn TargetChipDeassert>,
+}
+
+impl AssertChipSelect {
+    // Needs to be public in order for implementation of `Target` to be able to call it.  Never
+    // called by users of `Target`.
+    pub fn new(target: Rc<dyn TargetChipDeassert>) -> Self {
+        Self { target }
+    }
+}
+
+impl Drop for AssertChipSelect {
+    fn drop(&mut self) {
+        self.target.deassert_cs()
+    }
+}
+
+// Needs to be public in order for implementation of `Target` to be able to implement it.  Never
+// called by users of `Target`.
+pub trait TargetChipDeassert {
+    fn deassert_cs(&self);
 }

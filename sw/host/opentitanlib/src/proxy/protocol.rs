@@ -116,6 +116,8 @@ pub enum SpiRequest {
     RunTransaction {
         transaction: Vec<SpiTransferRequest>,
     },
+    AssertChipSelect,
+    DeassertChipSelect,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -142,6 +144,8 @@ pub enum SpiResponse {
     RunTransaction {
         transaction: Vec<SpiTransferResponse>,
     },
+    AssertChipSelect,
+    DeassertChipSelect,
 }
 
 #[derive(Serialize, Deserialize)]

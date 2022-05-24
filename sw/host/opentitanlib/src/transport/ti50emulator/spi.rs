@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use std::rc::Rc;
 
-use crate::io::spi::{SpiError, Target, Transfer, TransferMode};
+use crate::io::spi::{AssertChipSelect, SpiError, Target, Transfer, TransferMode};
 use crate::transport::TransportError;
 use crate::util::voltage::Voltage;
 
@@ -57,6 +58,12 @@ impl Target for Ti50Spi {
 
     /// Runs a SPI transaction composed from the slice of [`Transfer`] objects.
     fn run_transaction(&self, _transaction: &mut [Transfer]) -> Result<()> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
+    /// Assert the CS signal.  Uses reference counting, will be deasserted when each and every
+    /// returned `AssertChipSelect` object have gone out of scope.
+    fn assert_cs(self: Rc<Self>) -> Result<AssertChipSelect> {
         Err(TransportError::UnsupportedOperation.into())
     }
 }

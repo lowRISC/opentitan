@@ -41,6 +41,8 @@ pub enum TransportError {
     InvalidStrappingName(String),
     #[error("Transport does not support the requested operation")]
     UnsupportedOperation,
+    #[error("Requested operation invalid at this time")]
+    InvalidOperation,
     #[error("Error communicating with FTDI: {0}")]
     FtdiError(String),
     #[error("Error communicating with debugger: {0}")]

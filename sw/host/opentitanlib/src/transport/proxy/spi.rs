@@ -6,7 +6,9 @@ use anyhow::{bail, ensure, Result};
 use std::rc::Rc;
 
 use super::ProxyError;
-use crate::io::spi::{SpiError, Target, Transfer, TransferMode};
+use crate::io::spi::{
+    AssertChipSelect, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
+};
 use crate::proxy::protocol::{
     Request, Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse,
 };
@@ -141,6 +143,25 @@ impl Target for ProxySpi {
                 Ok(())
             }
             _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn assert_cs(self: Rc<Self>) -> Result<AssertChipSelect> {
+        match self.execute_command(SpiRequest::AssertChipSelect)? {
+            SpiResponse::AssertChipSelect => Ok(AssertChipSelect::new(self)),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+}
+
+impl TargetChipDeassert for ProxySpi {
+    fn deassert_cs(&self) {
+        match self
+            .execute_command(SpiRequest::DeassertChipSelect)
+            .expect("Error deactivating chip select")
+        {
+            SpiResponse::DeassertChipSelect => (),
+            _ => panic!("Error deactivating chip select"),
         }
     }
 }

@@ -6,9 +6,10 @@ use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::io::spi::{SpiError, Target, Transfer, TransferMode};
+use crate::io::spi::{AssertChipSelect, SpiError, Target, Transfer, TransferMode};
 use crate::transport::cw310::usb::Backend;
 use crate::transport::cw310::CW310;
+use crate::transport::TransportError;
 
 pub struct CW310Spi {
     device: Rc<RefCell<Backend>>,
@@ -100,5 +101,9 @@ impl Target for CW310Spi {
         // Release CS# (allow to float high).
         self.device.borrow().spi1_set_cs_pin(true)?;
         result
+    }
+
+    fn assert_cs(self: Rc<Self>) -> Result<AssertChipSelect> {
+        Err(TransportError::UnsupportedOperation.into())
     }
 }
