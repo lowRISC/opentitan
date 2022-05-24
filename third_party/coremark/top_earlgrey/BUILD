@@ -22,12 +22,11 @@ opentitan_functest(
     copts = [
         "-Wno-implicit-fallthrough",
         "-Wno-strict-prototypes",
-        "-DITERATIONS=1",
+        "-DITERATIONS=1", #TODO: Should be 100 if CW310
         "-DPERFORMANCE_RUN=1",
         "-DTOTAL_DATA_SIZE=2000",
         "-DMAIN_HAS_NOARGC=1",
     ],
-    linkopts = ["-Wl,--no-relax"],
     verilator = verilator_params(
         timeout = "long",
     ),

@@ -2,31 +2,27 @@
 title: "CoreMark Benchmark"
 ---
 
-## Building CoreMark
+## Running CoreMark
 
-To build CoreMark under meson:
+To build and run CoreMark on the CW310:
 
 ```sh
-cd "${REPO_TOP}"
-./meson_init.sh
-ninja -C build-out sw/device/benchmarks/coremark/coremark_export_${DEVICE}
+bazel test --test_tag_filters=cw310 \
+//third_party/coremark/top_earlgrey:coremark_test
 ```
 
-Where ${DEVICE} is one of 'sim_verilator' or 'fpga_nexysvideo'
+To build and run CoreMark on Verilator:
 
-This will give you a .bin and .elf file (suitable for either spiflash or
-giving directly to `--meminit` for Verilator) which can be found in
-`build-bin/sw/device/fpga/benchmarks/coremark`
+```sh
+bazel test --test_tag_filters=verilator \
+//third_party/coremark/top_earlgrey:coremark_test
+```
 
 ## CoreMark Options
 
-The meson build script alters ITERATIONS (specifying how many iterations
-CoreMark does) depending on whether it is a sim-verilator or an fpga build. 1
-iteration is used for sim-verilator, 100 for fpga.
-
-The meson script is hardcoded to give PERFORMANCE_RUN with
-TOTAL_DATA_SIZE=2000. These are settings required for reportable CoreMark
-figures. If you wish to use other options please alter
-`sw/device/benchmarks/coremark/meson.build` appropriately. See the CoreMark
-README in `sw/vendor/eembc_coremark/README.md` for further information on the
-possibilities.
+The BUILD file is hardcoded to give a PERFORMANCE_RUN with
+TOTAL_DATA_SIZE=2000. These settings are required for reportable CoreMark
+figures. If you wish to use other options, please modify
+`third_party/coremark/top_earlgrey/BUILD` appropriately. See the CoreMark
+[README](https://github.com/eembc/coremark/blob/main/README.md) for
+further information on the possibilities.
