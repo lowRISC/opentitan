@@ -10,6 +10,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "coremark.h"
@@ -123,6 +124,7 @@ void portable_init(core_portable *p, int *argc, char *argv[]) {
                                     .parity_enable = kDifToggleDisabled,
                                     .parity = kDifUartParityEven,
                                 }));
+  base_uart_stdout(&uart);
 
   if (sizeof(ee_ptr_int) != sizeof(ee_u8 *)) {
     ee_printf(
@@ -131,7 +133,6 @@ void portable_init(core_portable *p, int *argc, char *argv[]) {
   if (sizeof(ee_u32) != 4) {
     ee_printf("ERROR! Please define ee_u32 to a 32b unsigned type!\n");
   }
-  base_printf("coremark starting\n");
   p->portable_id = 1;
   test_status_set(kTestStatusInTest);
 }
