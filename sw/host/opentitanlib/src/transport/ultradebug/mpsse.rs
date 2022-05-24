@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use bitflags::bitflags;
 use log;
 use safe_ftdi as ftdi;
 use std::time::{Duration, Instant};
 use thiserror::Error;
 
-use crate::bail;
 use crate::io::gpio::GpioError;
 use crate::io::spi::SpiError;
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -19,12 +20,13 @@ pub mod common;
 pub mod cw310;
 pub mod hyperdebug;
 pub mod proxy;
+pub mod ti50emulator;
 pub mod ultradebug;
 pub mod verilator;
 
 // Export custom error types
 mod errors;
-pub use errors::{Result, TransportError, TransportInterfaceType, WrapInTransportError};
+pub use errors::{TransportError, TransportInterfaceType};
 
 bitflags! {
     /// A bitmap of capabilities which may be provided by a transport.
@@ -78,10 +80,7 @@ impl NeededCapabilities {
     /// Checks that the requested capabilities are provided.
     pub fn ok(&self) -> Result<()> {
         if self.capabilities & self.needed != self.needed {
-            Err(TransportError::MissingCapabilities(
-                self.needed,
-                self.capabilities,
-            ))
+            Err(TransportError::MissingCapabilities(self.needed, self.capabilities).into())
         } else {
             Ok(())
         }
@@ -97,45 +96,33 @@ pub trait Transport {
 
     /// Returns a SPI [`Target`] implementation.
     fn spi(&self, _instance: &str) -> Result<Rc<dyn Target>> {
-        Err(TransportError::InvalidInterface(
-            TransportInterfaceType::Spi,
-        ))
+        Err(TransportError::InvalidInterface(TransportInterfaceType::Spi).into())
     }
     /// Returns a I2C [`Bus`] implementation.
     fn i2c(&self, _instance: &str) -> Result<Rc<dyn Bus>> {
-        Err(TransportError::InvalidInterface(
-            TransportInterfaceType::I2c,
-        ))
+        Err(TransportError::InvalidInterface(TransportInterfaceType::I2c).into())
     }
     /// Returns a [`Uart`] implementation.
     fn uart(&self, _instance: &str) -> Result<Rc<dyn Uart>> {
-        Err(TransportError::InvalidInterface(
-            TransportInterfaceType::Uart,
-        ))
+        Err(TransportError::InvalidInterface(TransportInterfaceType::Uart).into())
     }
     /// Returns a [`GpioPin`] implementation.
     fn gpio_pin(&self, _instance: &str) -> Result<Rc<dyn GpioPin>> {
-        Err(TransportError::InvalidInterface(
-            TransportInterfaceType::Gpio,
-        ))
+        Err(TransportError::InvalidInterface(TransportInterfaceType::Gpio).into())
     }
     /// Returns a [`Emulator`] implementation.
     fn emulator(&self) -> Result<Rc<dyn Emulator>> {
-        Err(TransportError::InvalidInterface(
-            TransportInterfaceType::Emulator,
-        ))
+        Err(TransportError::InvalidInterface(TransportInterfaceType::Emulator).into())
     }
 
     /// Methods available only on Proxy implementation.
     fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
-        Err(TransportError::InvalidInterface(
-            TransportInterfaceType::ProxyOps,
-        ))
+        Err(TransportError::InvalidInterface(TransportInterfaceType::ProxyOps).into())
     }
 
     /// Invoke non-standard functionality of some Transport implementations.
     fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        Err(TransportError::UnsupportedOperation)
+        Err(TransportError::UnsupportedOperation.into())
     }
 }
 
@@ -168,14 +155,14 @@ pub mod tests {
 
     #[test]
     fn test_capabilities_met() -> anyhow::Result<()> {
-        let mut cap = Capabilities::new(Capability::UART | Capability::SPI);
+        let cap = Capabilities::new(Capability::UART | Capability::SPI);
         assert!(cap.request(Capability::UART).ok().is_ok());
         Ok(())
     }
 
     #[test]
     fn test_capabilities_not_met() -> anyhow::Result<()> {
-        let mut cap = Capabilities::new(Capability::UART | Capability::SPI);
+        let cap = Capabilities::new(Capability::UART | Capability::SPI);
         assert!(cap.request(Capability::GPIO).ok().is_err());
         Ok(())
     }

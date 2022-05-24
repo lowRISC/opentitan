@@ -19,7 +19,7 @@ pylibs := $(filter-out $(pyscripts),$(wildcard *.py))
 
 lint-stamps := $(foreach s,$(pyscripts),$(lint-build-dir)/$(s).stamp)
 $(lint-build-dir)/%.stamp: % $(pylibs) | $(lint-build-dir)
-	mypy --strict $< $(pylibs)
+	PYTHONPATH=$(repo-top) mypy --strict $< $(pylibs)
 	touch $@
 
 .PHONY: lint

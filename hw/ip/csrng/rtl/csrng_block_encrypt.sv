@@ -152,7 +152,8 @@ module csrng_block_encrypt import csrng_pkg::*; #(
     .rready_i (sfifo_blkenc_pop),
     .rdata_o  (sfifo_blkenc_rdata),
     .full_o   (sfifo_blkenc_full),
-    .depth_o  ()
+    .depth_o  (),
+    .err_o    ()
   );
 
   assign sfifo_blkenc_push = block_encrypt_req_i && !sfifo_blkenc_full;

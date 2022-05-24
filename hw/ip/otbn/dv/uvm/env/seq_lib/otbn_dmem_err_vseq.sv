@@ -47,20 +47,8 @@ class otbn_dmem_err_vseq extends otbn_base_vseq;
 
     // At this point, our status has changed. We're probably actually seeing the alert now, but make
     // sure that it has gone out in at most 100 cycles.
-    if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked) begin
-      fork
-        begin
-          csr_utils_pkg::csr_rd(.ptr(ral.status), .value(act_val));
-          csr_utils_pkg::csr_rd(.ptr(ral.err_bits), .value(act_val));
-          csr_utils_pkg::csr_rd(.ptr(ral.fatal_alert_cause), .value(act_val));
-        end
-        begin
-          repeat (3) wait_alert_trigger("fatal", .wait_complete(1));
-        end
-      join
-      do_apply_reset = 1'b1;
-      dut_init("HARD");
-    end
+    reset_if_locked();
+
   endtask
 
 endclass

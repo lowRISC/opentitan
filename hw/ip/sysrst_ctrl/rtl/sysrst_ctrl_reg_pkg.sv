@@ -606,4 +606,3 @@ package sysrst_ctrl_reg_pkg;
   };
 
 endpackage
-

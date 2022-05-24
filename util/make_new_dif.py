@@ -99,6 +99,7 @@ def main():
         sys.exit(1)
     templated_modules = lib.get_templated_modules(topcfg)
     ipgen_modules = lib.get_ipgen_modules(topcfg)
+    reggen_top_modules = lib.get_top_reggen_modules(topcfg)
 
     # Check for regeneration mode (used in CI check:
     # ci/scripts/check-generated.sh)
@@ -116,13 +117,14 @@ def main():
             # NOTE: ip.name_long_* not needed for auto-generated files which
             # are the only files (re-)generated in regen mode.
             ips.append(
-                Ip(ip_name_snake, "AUTOGEN", templated_modules, ipgen_modules))
+                Ip(ip_name_snake, "AUTOGEN", templated_modules, ipgen_modules,
+                   reggen_top_modules))
     else:
         assert args.ip_name_snake and args.ip_name_long, \
             "ERROR: pass --ip-name-snake and --ip-name-long when --mode=new."
         ips.append(
             Ip(args.ip_name_snake, args.ip_name_long, templated_modules,
-               ipgen_modules))
+               ipgen_modules, reggen_top_modules))
 
     # Default to generating all parts.
     if len(args.only) == 0:

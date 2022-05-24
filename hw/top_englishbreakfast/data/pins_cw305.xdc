@@ -2,15 +2,15 @@
 ## Tested with a A100T FPGA configuration.
 
 ## Clock Signal
-set_property -dict { PACKAGE_PIN N13 IOSTANDARD LVCMOS33 } [get_ports { IO_CLK }]
+set_property -dict { PACKAGE_PIN N13 IOSTANDARD LVCMOS33 } [get_ports { IO_CLK }];
 
 ## Clock constraints
 ## set via clocks.xdc
 
 ## LEDs
-set_property -dict { PACKAGE_PIN T2  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports { IOA8 }]
-set_property -dict { PACKAGE_PIN T3  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports { IOB0 }]
-set_property -dict { PACKAGE_PIN T4  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports { IOB1 }]
+set_property -dict { PACKAGE_PIN T2  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports { IOA8 }];
+set_property -dict { PACKAGE_PIN T3  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports { IOB0 }];
+set_property -dict { PACKAGE_PIN T4  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports { IOB1 }];
 
 ## Buttons
 set_property -dict { PACKAGE_PIN R1 IOSTANDARD LVCMOS33 } [get_ports { POR_N }]; #pushbutton
@@ -21,15 +21,22 @@ set_property -dict { PACKAGE_PIN K16 IOSTANDARD LVCMOS33 } [get_ports { IOA1 }];
 set_property -dict { PACKAGE_PIN K15 IOSTANDARD LVCMOS33 } [get_ports { IOA2 }]; #sw3
 set_property -dict { PACKAGE_PIN L14 IOSTANDARD LVCMOS33 } [get_ports { IOA3 }]; #sw4
 
-## SPI/JTAG
-set_property -dict { PACKAGE_PIN L2 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_CLK }]; #SCK (USB_A13)
-set_property -dict { PACKAGE_PIN J3 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_D0 }]; #SDI (USB_A14)
-set_property -dict { PACKAGE_PIN B2 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_D1 }]; #SDO (USB_A15)
-set_property -dict { PACKAGE_PIN C7 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_CS_L }]; #CSB (USB_A16)
-set_property -dict { PACKAGE_PIN C6 IOSTANDARD LVCMOS33 } [get_ports { IOB9 }]; #JTAG TRST (USB_A17)
-set_property -dict { PACKAGE_PIN D6 IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IO_JSRST_N }]; #JTAG SRST (USB_A18)
-set_property -dict { PACKAGE_PIN C4 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOB7 }]; #JTAG/SPI (USB_A19)
-set_property -dict { PACKAGE_PIN D5 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOB8 }]; #Bootstrap (USB_A20)
+## SPI / JTAG (part of it, other JTAG signals further below)
+set_property -dict { PACKAGE_PIN E2 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_CLK }];  #USB_A9(SAM3X)
+set_property -dict { PACKAGE_PIN D1 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_D0 }];   #USB_A10 (SAM3X)
+set_property -dict { PACKAGE_PIN C1 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_D1 }];   #USB_A11 (SAM3X)
+set_property -dict { PACKAGE_PIN K3 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_CS_L }]; #USB_A12 (SAM3X)
+
+# JTAG (second part)
+set_property -dict { PACKAGE_PIN L2 IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR4 }];       #USB_A13 (SAM3X)
+set_property -dict { PACKAGE_PIN J3 IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IO_JSRST_N }]; #USB_A14 (SAM3X)
+# SW Straps
+set_property -dict { PACKAGE_PIN B2 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC0 }]; #USB_A15 (SAM3X)
+set_property -dict { PACKAGE_PIN C7 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC1 }]; #USB_A16 (SAM3X)
+set_property -dict { PACKAGE_PIN C6 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC2 }]; #USB_A17 (SAM3X)
+# TAP Straps
+set_property -dict { PACKAGE_PIN D6 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC8 }]; #USB_A18 (SAM3X)
+set_property -dict { PACKAGE_PIN C4 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC5 }]; #USB_A19 (SAM3X)
 
 ## OTHER IO
 set_property -dict { PACKAGE_PIN B16 IOSTANDARD LVCMOS33 } [get_ports { IOA4 }]; #JP3.B16
@@ -75,7 +82,7 @@ set_property -dict { PACKAGE_PIN M16 IOSTANDARD LVCMOS33 } [get_ports { IO_CLKOU
 #set_property PACKAGE_PIN K1 [get_ports {usb_data[6]}]
 #set_property PACKAGE_PIN K2 [get_ports {usb_data[7]}]
 
-#set_property PACKAGE_PIN F4 [get_ports {usb_addr[0]}]
+#set_property PACKAGE_PIN F4 [get_ports {usb_addr[0]]]
 #set_property PACKAGE_PIN G5 [get_ports {usb_addr[1]}]
 #set_property PACKAGE_PIN J1 [get_ports {usb_addr[2]}]
 #set_property PACKAGE_PIN H1 [get_ports {usb_addr[3]}]

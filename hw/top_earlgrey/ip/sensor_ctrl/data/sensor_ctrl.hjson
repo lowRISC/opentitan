@@ -20,6 +20,14 @@
       width: "9"
     }
   ],
+  interrupt_list: [
+    { name: "io_status_change",
+      desc: "io power status has changed",
+    }
+    { name: "init_status_change",
+      desc: "ast init status has changed",
+    }
+  ],
   regwidth: "32",
   param_list: [
     { name:    "NumAlertEvents",
@@ -151,8 +159,7 @@ registers: [
         name: "FATAL_ALERT_EN",
         regwen: "CFG_REGWEN",
         desc: '''
-          Each bit represents that a corresponding alert is marked fatal instead of
-          recoverable
+          Each bit marks a corresponding alert as fatal or recoverable.
         ''',
         count: "NumAlertEvents",
         swaccess: "rw",
@@ -174,7 +181,7 @@ registers: [
         cname: "SENSOR_CTRL",
         name: "RECOV_ALERT",
         desc: '''
-          Each bit represents that a recoverable alert has been triggered by Ast.
+          Each bit represents a recoverable alert that has been triggered by AST.
           Since these are recoverable alerts, they can be cleared by software.
         ''',
         count: "NumAlertEvents",
@@ -197,7 +204,7 @@ registers: [
         cname: "SENSOR_CTRL",
         name: "FATAL_ALERT",
         desc: '''
-          Each bit represents that a fatal alert has been triggered by Ast.
+          Each bit represents a fatal alert that has been triggered by AST.
           Since these registers represent fatal alerts, they cannot be cleared.
 
           The lower bits are used for ast alert events.
@@ -239,7 +246,7 @@ registers: [
           desc: '''
             IO power is ready
           ''',
-          resval: "3",
+          resval: "0",
         },
       ],
       tags: [// The status readback depends on state of ast and do not always have a set value

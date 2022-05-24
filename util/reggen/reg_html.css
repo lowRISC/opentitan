@@ -6,7 +6,7 @@
 table.regpic {
     width: 95%;
     border-collapse: collapse;
-    margin-left:auto; 
+    margin-left:auto;
     margin-right:auto;
     table-layout:fixed;
 }
@@ -15,7 +15,7 @@ table.regdef {
     border: 1px solid black;
     width: 80%;
     border-collapse: collapse;
-    margin-left:auto; 
+    margin-left:auto;
     margin-right:auto;
     table-layout:auto;
 }

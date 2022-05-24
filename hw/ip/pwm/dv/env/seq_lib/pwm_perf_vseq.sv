@@ -6,7 +6,7 @@
 class pwm_perf_vseq extends pwm_rand_output_vseq;
   `uvm_object_utils(pwm_perf_vseq)
   `uvm_object_new
-   
+
   // variables
   rand bit [15:0] rand_dc;
   rand bit [15:0] rand_blink;
@@ -35,15 +35,15 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   }
 
   constraint rand_dc_c {
-      rand_dc dist {16'h7FF_FFFF:/1, 16'h1:/1, 16'h0:/1};
+    rand_dc dist {16'h7FFF:/1, 16'h1:/1, 16'h0:/1};
   }
-  
+
   constraint rand_blink_c {
-      rand_blink dist {16'h7FF_FFFF:/1, 16'h1:/1, 16'h0:/1};
+    rand_blink dist {16'h7FFF:/1, 16'h1:/1, 16'h0:/1};
   }
 
   virtual task body();
-    
+
     set_reg_en(Enable);
     set_ch_enables(32'h0);
     rand_pwm_cfg_reg();
@@ -52,7 +52,7 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
       cfg.duty_cycle[i].A = rand_dc[i];
       cfg.duty_cycle[i].B = rand_dc[i];
       set_duty_cycle(i, cfg.duty_cycle[i]);
-  
+
       cfg.blink[i].A = rand_blink[i];
       cfg.blink[i].B = rand_blink[i];
       set_blink(i, cfg.blink[i]);

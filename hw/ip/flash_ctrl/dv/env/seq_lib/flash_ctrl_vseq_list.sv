@@ -19,3 +19,7 @@
 `include "flash_ctrl_host_ctrl_arb_vseq.sv"
 `include "flash_ctrl_mp_regions_vseq.sv"
 `include "flash_ctrl_fetch_code_vseq.sv"
+`include "flash_ctrl_full_mem_access_vseq.sv"
+`include "flash_ctrl_error_prog_type_vseq.sv"
+`include "flash_ctrl_error_prog_win_vseq.sv"
+`include "flash_ctrl_error_mp_vseq.sv"

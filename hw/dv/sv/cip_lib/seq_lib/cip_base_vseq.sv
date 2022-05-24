@@ -495,7 +495,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     // - 20 cycles includes ack response and ack stable time.
     // - 10 is the max difference between alert clock and dut clock.
     int max_alert_handshake_cycles = 20 * 10;
-    if (cfg.list_of_alerts.size() > 0) begin
+
+    // Please only use `bypass_alert_ready_to_end_check` in top-level test.
+    // Because in top-level issuing an reset takes a large amount of simulation time.
+    // For IP level test, please set `exp_fatal_alert` in post_start() instead.
+    bit bypass_alert_ready_to_end_check;
+    void'($value$plusargs("bypass_alert_ready_to_end_check=%0b",
+          bypass_alert_ready_to_end_check));
+    if (cfg.list_of_alerts.size() > 0 && !bypass_alert_ready_to_end_check) begin
       int check_cycles = $urandom_range(max_alert_handshake_cycles,
                                         max_alert_handshake_cycles * 3);
 
@@ -643,6 +650,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     run_seq_with_rand_reset_vseq(create_seq_by_name(stress_seq_name), num_times);
   endtask
 
+  // Some blocks needs input ports and status / intr csr clean up
+  // for multi loop rand_reset tests
+  // override this task from {block}_common_vseq if needed
+  virtual task rand_reset_eor_clean_up();
+  endtask
   // Run the given sequence and possibly a TL errors vseq (if do_tl_err is set). Suddenly inject a
   // reset after at most reset_delay_bound cycles. When we come out of reset, check all CSR values
   // to ensure they are the documented reset values.
@@ -702,6 +714,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           if (do_read_and_check_all_csrs) read_and_check_all_csrs_after_reset();
         end : isolation_fork
       join
+      rand_reset_eor_clean_up();
     end
   endtask
 

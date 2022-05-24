@@ -14,12 +14,6 @@ module kmac
   // If it is enabled, the result digest will be two set of 1600bit.
   parameter bit EnMasking = 1,
 
-  // ReuseShare: If set, keccak_round logic only consumes small portion of
-  // entropy, not 1600bit of entropy at every round. It uses adjacent shares
-  // as entropy inside Domain-Oriented Masking AND logic.
-  // This parameter only affects when `EnMasking` is set.
-  parameter bit ReuseShare = 0,
-
   // Command delay, useful for SCA measurements only. A value of e.g. 40 allows the processor to go
   // into sleep before KMAC starts operation. If a value > 0 is chosen, the processor can provide
   // two commands subsquently and then go to sleep. The second command is buffered internally and
@@ -31,9 +25,8 @@ module kmac
 
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
+  parameter lfsr_fwd_perm_t RndCnstLfsrFwdPerm = RndCnstLfsrFwdPermDefault,
   parameter msg_perm_t  RndCnstMsgPerm  = RndCnstMsgPermDefault,
-
-  parameter storage_perm_t RndCnstStoragePerm = RndCnstStoragePermDefault,
 
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -189,8 +182,8 @@ module kmac
   logic [sha3_pkg::StateW-1:0] reg_state [Share];
 
   // SHA3 Entropy interface
-  logic sha3_rand_valid, sha3_rand_consumed;
-  logic [sha3_pkg::StateW-1:0] sha3_rand_data;
+  logic sha3_rand_valid, sha3_rand_early, sha3_rand_consumed;
+  logic [sha3_pkg::StateW/2-1:0] sha3_rand_data;
 
   // FIFO related signals
   logic msgfifo_empty, msgfifo_full;
@@ -277,10 +270,9 @@ module kmac
   // Entropy configurations
   logic [9:0]  wait_timer_prescaler;
   logic [15:0] wait_timer_limit;
-  logic        entropy_seed_update;
-  logic        unused_entropy_seed_upper_qe;
-  logic [63:0] entropy_seed_data;
   logic        entropy_refresh_req;
+  logic [NumSeedsEntropyLfsr-1:0]       entropy_seed_update;
+  logic [NumSeedsEntropyLfsr-1:0][31:0] entropy_seed_data;
 
   logic [HashCntW-1:0] entropy_hash_threshold;
   logic [HashCntW-1:0] entropy_hash_cnt;
@@ -497,14 +489,12 @@ module kmac
   // Entropy configurations
   assign wait_timer_prescaler = reg2hw.entropy_period.prescaler.q;
   assign wait_timer_limit     = reg2hw.entropy_period.wait_timer.q;
-
-  // Seed updated when the software writes Entropy Seed [31:0]
-  assign unused_entropy_seed_upper_qe = reg2hw.entropy_seed_upper.qe;
-  assign entropy_seed_update = reg2hw.entropy_seed_lower.qe ;
-  assign entropy_seed_data = { reg2hw.entropy_seed_lower.q,
-                               reg2hw.entropy_seed_upper.q};
   assign entropy_refresh_req = reg2hw.cmd.entropy_req.q
                             && reg2hw.cmd.entropy_req.qe;
+  for (genvar i = 0; i < NumSeedsEntropyLfsr; i++) begin : gen_entropy_seed
+    assign entropy_seed_update[i] = reg2hw.entropy_seed[i].qe;
+    assign entropy_seed_data[i] = reg2hw.entropy_seed[i].q;
+  end
 
   assign entropy_hash_threshold = reg2hw.entropy_refresh_threshold_shadowed.q;
   assign hw2reg.entropy_refresh_hash_cnt.de = 1'b 1;
@@ -634,10 +624,6 @@ module kmac
       end
     endcase
   end
-
-  // LFSR errors
-  logic lfsr_error, kmac_entropy_lfsr_error;
-  assign lfsr_error = kmac_entropy_lfsr_error;
 
   // Counter errors
   logic counter_error, sha3_count_error, key_index_error;
@@ -834,8 +820,7 @@ module kmac
     assign unused_msgmask = ^{msg_mask, cfg_msg_mask, msg_mask_en};
   end
   sha3 #(
-    .EnMasking (EnMasking),
-    .ReuseShare (ReuseShare)
+    .EnMasking (EnMasking)
   ) u_sha3 (
     .clk_i,
     .rst_ni,
@@ -848,6 +833,7 @@ module kmac
 
     // Entropy interface
     .rand_valid_i    (sha3_rand_valid),
+    .rand_early_i    (sha3_rand_early),
     .rand_data_i     (sha3_rand_data),
     .rand_consumed_o (sha3_rand_consumed),
 
@@ -1103,36 +1089,37 @@ module kmac
 
   // Entropy Generator
   if (EnMasking == 1) begin : gen_entropy
-    logic entropy_req, entropy_ack, entropy_fips;
-    logic [MsgWidth-1:0] entropy_data;
-    logic unused_entropy_fips;
-    assign unused_entropy_fips = entropy_fips;
 
-    // EDN Request
-    prim_edn_req #(
-      .OutWidth   (MsgWidth),
-      .MaxLatency (500000)  // 5ms expected
-    ) u_edn_req (
-      // Design side
-      .clk_i,
-      .rst_ni,
+    logic entropy_req, entropy_ack;
+    logic [edn_pkg::ENDPOINT_BUS_WIDTH-1:0] entropy_data;
+    logic unused_entropy_fips;
+
+    // Synchronize EDN interface
+    prim_sync_reqack_data #(
+      .Width(edn_pkg::ENDPOINT_BUS_WIDTH),
+      .DataSrc2Dst(1'b0),
+      .DataReg(1'b0)
+    ) u_prim_sync_reqack_data (
+      .clk_src_i (clk_i),
+      .rst_src_ni(rst_ni),
+      .clk_dst_i (clk_edn_i),
+      .rst_dst_ni(rst_edn_ni),
       .req_chk_i (1'b1),
-      .req_i     (entropy_req),
-      .ack_o     (entropy_ack),
-      .data_o    (entropy_data),
-      .fips_o    (entropy_fips),
-      .err_o     (),
-      // EDN side
-      .clk_edn_i,
-      .rst_edn_ni,
-      .edn_o (entropy_o),
-      .edn_i (entropy_i)
+      .src_req_i (entropy_req),
+      .src_ack_o (entropy_ack),
+      .dst_req_o (entropy_o.edn_req),
+      .dst_ack_i (entropy_i.edn_ack),
+      .data_i    (entropy_i.edn_bus),
+      .data_o    (entropy_data)
     );
+
+    // We don't track whether the entropy is pre-FIPS or not inside KMAC.
+    assign unused_entropy_fips = entropy_i.edn_fips;
 
     kmac_entropy #(
      .RndCnstLfsrPerm(RndCnstLfsrPerm),
      .RndCnstLfsrSeed(RndCnstLfsrSeed),
-     .RndCnstStoragePerm(RndCnstStoragePerm)
+     .RndCnstLfsrFwdPerm(RndCnstLfsrFwdPerm)
     ) u_entropy (
       .clk_i,
       .rst_ni,
@@ -1144,6 +1131,7 @@ module kmac
 
       // Entropy to internal logic (DOM AND)
       .rand_valid_o    (sha3_rand_valid),
+      .rand_early_o    (sha3_rand_early),
       .rand_data_o     (sha3_rand_data),
       .rand_consumed_i (sha3_rand_consumed),
 
@@ -1162,7 +1150,7 @@ module kmac
 
       //// Message Masking
       .msg_mask_en_i (msg_mask_en),
-      .lfsr_data_o   (msg_mask),
+      .msg_mask_o    (msg_mask),
 
       //// SW update of seed
       .seed_update_i         (entropy_seed_update),
@@ -1180,7 +1168,6 @@ module kmac
       // Error
       .err_o              (entropy_err),
       .sparse_fsm_error_o (kmac_entropy_state_error),
-      .lfsr_error_o       (kmac_entropy_lfsr_error),
       .count_error_o      (kmac_entropy_hash_counter_error),
       .err_processed_i    (err_processed)
     );
@@ -1198,11 +1185,12 @@ module kmac
 
     logic unused_sha3_rand_consumed;
     assign sha3_rand_valid = 1'b 1;
+    assign sha3_rand_early = 1'b 1;
     assign sha3_rand_data = '0;
     assign unused_sha3_rand_consumed = sha3_rand_consumed;
 
-    logic unused_seed_update;
-    logic [63:0] unused_seed_data;
+    logic [NumSeedsEntropyLfsr-1:0]       unused_seed_update;
+    logic [NumSeedsEntropyLfsr-1:0][31:0] unused_seed_data;
     logic [31:0] unused_refresh_period;
     logic unused_entropy_refresh_req;
     assign unused_seed_data = entropy_seed_data;
@@ -1217,7 +1205,6 @@ module kmac
     assign entropy_err = '{valid: 1'b 0, code: ErrNone, info: '0};
 
     assign kmac_entropy_state_error = 1'b 0;
-    assign kmac_entropy_lfsr_error  = 1'b 0;
     assign kmac_entropy_hash_counter_error  = 1'b 0;
 
     logic [1:0] unused_entropy_status;
@@ -1299,7 +1286,6 @@ module kmac
                      | alert_intg_err
                      | sparse_fsm_error
                      | counter_error
-                     | lfsr_error
                      ;
 
   // Make the fatal alert observable via status register.
@@ -1419,11 +1405,11 @@ module kmac
   if (EnMasking == 1) begin : g_testassertion
     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(EntropyFsmCheck_A, gen_entropy.u_entropy.u_state_regs,
                                          alert_tx_o[1])
-    // Alert assertions for double LFSR.
-    `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(DoubleLfsrCheck_A,
-        gen_entropy.u_entropy.u_lfsr, alert_tx_o[1])
 
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(HashCountCheck_A, gen_entropy.u_entropy.u_hash_count,
                                          alert_tx_o[1])
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SeedIdxCountCheck_A,
+                                           gen_entropy.u_entropy.u_seed_idx_count,
+                                           alert_tx_o[1])
   end
 endmodule

@@ -57,18 +57,31 @@ module keymgr_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [61:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(62)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -457,6 +470,9 @@ module keymgr_reg_top (
 
 
   // R[start]: V(False)
+  // Create REGWEN-gated WE signal
+  logic start_gated_we;
+  assign start_gated_we = start_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -466,7 +482,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (start_we & cfg_regwen_qs),
+    .we     (start_gated_we),
     .wd     (start_wd),
 
     // from internal hardware
@@ -483,6 +499,9 @@ module keymgr_reg_top (
 
 
   // R[control_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic control_shadowed_gated_we;
+  assign control_shadowed_gated_we = control_shadowed_we & cfg_regwen_qs;
   //   F[operation]: 6:4
   prim_subreg_shadow #(
     .DW      (3),
@@ -495,7 +514,7 @@ module keymgr_reg_top (
 
     // from register interface
     .re     (control_shadowed_re),
-    .we     (control_shadowed_we & cfg_regwen_qs),
+    .we     (control_shadowed_gated_we),
     .wd     (control_shadowed_operation_wd),
 
     // from internal hardware
@@ -529,7 +548,7 @@ module keymgr_reg_top (
 
     // from register interface
     .re     (control_shadowed_re),
-    .we     (control_shadowed_we & cfg_regwen_qs),
+    .we     (control_shadowed_gated_we),
     .wd     (control_shadowed_cdi_sel_wd),
 
     // from internal hardware
@@ -563,7 +582,7 @@ module keymgr_reg_top (
 
     // from register interface
     .re     (control_shadowed_re),
-    .we     (control_shadowed_we & cfg_regwen_qs),
+    .we     (control_shadowed_gated_we),
     .wd     (control_shadowed_dest_sel_wd),
 
     // from internal hardware
@@ -587,6 +606,9 @@ module keymgr_reg_top (
 
 
   // R[sideload_clear]: V(False)
+  // Create REGWEN-gated WE signal
+  logic sideload_clear_gated_we;
+  assign sideload_clear_gated_we = sideload_clear_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -596,7 +618,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sideload_clear_we & cfg_regwen_qs),
+    .we     (sideload_clear_gated_we),
     .wd     (sideload_clear_wd),
 
     // from internal hardware
@@ -639,6 +661,10 @@ module keymgr_reg_top (
 
 
   // R[reseed_interval_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic reseed_interval_shadowed_gated_we;
+  assign reseed_interval_shadowed_gated_we =
+    reseed_interval_shadowed_we & reseed_interval_regwen_qs;
   prim_subreg_shadow #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -650,7 +676,7 @@ module keymgr_reg_top (
 
     // from register interface
     .re     (reseed_interval_shadowed_re),
-    .we     (reseed_interval_shadowed_we & reseed_interval_regwen_qs),
+    .we     (reseed_interval_shadowed_gated_we),
     .wd     (reseed_interval_shadowed_wd),
 
     // from internal hardware
@@ -694,6 +720,9 @@ module keymgr_reg_top (
 
   // Subregister 0 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic sealing_sw_binding_0_gated_we;
+  assign sealing_sw_binding_0_gated_we = sealing_sw_binding_0_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -703,7 +732,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sealing_sw_binding_0_we & sw_binding_regwen_qs),
+    .we     (sealing_sw_binding_0_gated_we),
     .wd     (sealing_sw_binding_0_wd),
 
     // from internal hardware
@@ -721,6 +750,9 @@ module keymgr_reg_top (
 
   // Subregister 1 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic sealing_sw_binding_1_gated_we;
+  assign sealing_sw_binding_1_gated_we = sealing_sw_binding_1_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -730,7 +762,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sealing_sw_binding_1_we & sw_binding_regwen_qs),
+    .we     (sealing_sw_binding_1_gated_we),
     .wd     (sealing_sw_binding_1_wd),
 
     // from internal hardware
@@ -748,6 +780,9 @@ module keymgr_reg_top (
 
   // Subregister 2 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic sealing_sw_binding_2_gated_we;
+  assign sealing_sw_binding_2_gated_we = sealing_sw_binding_2_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -757,7 +792,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sealing_sw_binding_2_we & sw_binding_regwen_qs),
+    .we     (sealing_sw_binding_2_gated_we),
     .wd     (sealing_sw_binding_2_wd),
 
     // from internal hardware
@@ -775,6 +810,9 @@ module keymgr_reg_top (
 
   // Subregister 3 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic sealing_sw_binding_3_gated_we;
+  assign sealing_sw_binding_3_gated_we = sealing_sw_binding_3_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -784,7 +822,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sealing_sw_binding_3_we & sw_binding_regwen_qs),
+    .we     (sealing_sw_binding_3_gated_we),
     .wd     (sealing_sw_binding_3_wd),
 
     // from internal hardware
@@ -802,6 +840,9 @@ module keymgr_reg_top (
 
   // Subregister 4 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic sealing_sw_binding_4_gated_we;
+  assign sealing_sw_binding_4_gated_we = sealing_sw_binding_4_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -811,7 +852,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sealing_sw_binding_4_we & sw_binding_regwen_qs),
+    .we     (sealing_sw_binding_4_gated_we),
     .wd     (sealing_sw_binding_4_wd),
 
     // from internal hardware
@@ -829,6 +870,9 @@ module keymgr_reg_top (
 
   // Subregister 5 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic sealing_sw_binding_5_gated_we;
+  assign sealing_sw_binding_5_gated_we = sealing_sw_binding_5_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -838,7 +882,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sealing_sw_binding_5_we & sw_binding_regwen_qs),
+    .we     (sealing_sw_binding_5_gated_we),
     .wd     (sealing_sw_binding_5_wd),
 
     // from internal hardware
@@ -856,6 +900,9 @@ module keymgr_reg_top (
 
   // Subregister 6 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic sealing_sw_binding_6_gated_we;
+  assign sealing_sw_binding_6_gated_we = sealing_sw_binding_6_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -865,7 +912,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sealing_sw_binding_6_we & sw_binding_regwen_qs),
+    .we     (sealing_sw_binding_6_gated_we),
     .wd     (sealing_sw_binding_6_wd),
 
     // from internal hardware
@@ -883,6 +930,9 @@ module keymgr_reg_top (
 
   // Subregister 7 of Multireg sealing_sw_binding
   // R[sealing_sw_binding_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic sealing_sw_binding_7_gated_we;
+  assign sealing_sw_binding_7_gated_we = sealing_sw_binding_7_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -892,7 +942,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sealing_sw_binding_7_we & sw_binding_regwen_qs),
+    .we     (sealing_sw_binding_7_gated_we),
     .wd     (sealing_sw_binding_7_wd),
 
     // from internal hardware
@@ -910,6 +960,9 @@ module keymgr_reg_top (
 
   // Subregister 0 of Multireg attest_sw_binding
   // R[attest_sw_binding_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic attest_sw_binding_0_gated_we;
+  assign attest_sw_binding_0_gated_we = attest_sw_binding_0_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -919,7 +972,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (attest_sw_binding_0_we & sw_binding_regwen_qs),
+    .we     (attest_sw_binding_0_gated_we),
     .wd     (attest_sw_binding_0_wd),
 
     // from internal hardware
@@ -937,6 +990,9 @@ module keymgr_reg_top (
 
   // Subregister 1 of Multireg attest_sw_binding
   // R[attest_sw_binding_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic attest_sw_binding_1_gated_we;
+  assign attest_sw_binding_1_gated_we = attest_sw_binding_1_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -946,7 +1002,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (attest_sw_binding_1_we & sw_binding_regwen_qs),
+    .we     (attest_sw_binding_1_gated_we),
     .wd     (attest_sw_binding_1_wd),
 
     // from internal hardware
@@ -964,6 +1020,9 @@ module keymgr_reg_top (
 
   // Subregister 2 of Multireg attest_sw_binding
   // R[attest_sw_binding_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic attest_sw_binding_2_gated_we;
+  assign attest_sw_binding_2_gated_we = attest_sw_binding_2_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -973,7 +1032,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (attest_sw_binding_2_we & sw_binding_regwen_qs),
+    .we     (attest_sw_binding_2_gated_we),
     .wd     (attest_sw_binding_2_wd),
 
     // from internal hardware
@@ -991,6 +1050,9 @@ module keymgr_reg_top (
 
   // Subregister 3 of Multireg attest_sw_binding
   // R[attest_sw_binding_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic attest_sw_binding_3_gated_we;
+  assign attest_sw_binding_3_gated_we = attest_sw_binding_3_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1000,7 +1062,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (attest_sw_binding_3_we & sw_binding_regwen_qs),
+    .we     (attest_sw_binding_3_gated_we),
     .wd     (attest_sw_binding_3_wd),
 
     // from internal hardware
@@ -1018,6 +1080,9 @@ module keymgr_reg_top (
 
   // Subregister 4 of Multireg attest_sw_binding
   // R[attest_sw_binding_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic attest_sw_binding_4_gated_we;
+  assign attest_sw_binding_4_gated_we = attest_sw_binding_4_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1027,7 +1092,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (attest_sw_binding_4_we & sw_binding_regwen_qs),
+    .we     (attest_sw_binding_4_gated_we),
     .wd     (attest_sw_binding_4_wd),
 
     // from internal hardware
@@ -1045,6 +1110,9 @@ module keymgr_reg_top (
 
   // Subregister 5 of Multireg attest_sw_binding
   // R[attest_sw_binding_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic attest_sw_binding_5_gated_we;
+  assign attest_sw_binding_5_gated_we = attest_sw_binding_5_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1054,7 +1122,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (attest_sw_binding_5_we & sw_binding_regwen_qs),
+    .we     (attest_sw_binding_5_gated_we),
     .wd     (attest_sw_binding_5_wd),
 
     // from internal hardware
@@ -1072,6 +1140,9 @@ module keymgr_reg_top (
 
   // Subregister 6 of Multireg attest_sw_binding
   // R[attest_sw_binding_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic attest_sw_binding_6_gated_we;
+  assign attest_sw_binding_6_gated_we = attest_sw_binding_6_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1081,7 +1152,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (attest_sw_binding_6_we & sw_binding_regwen_qs),
+    .we     (attest_sw_binding_6_gated_we),
     .wd     (attest_sw_binding_6_wd),
 
     // from internal hardware
@@ -1099,6 +1170,9 @@ module keymgr_reg_top (
 
   // Subregister 7 of Multireg attest_sw_binding
   // R[attest_sw_binding_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic attest_sw_binding_7_gated_we;
+  assign attest_sw_binding_7_gated_we = attest_sw_binding_7_we & sw_binding_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1108,7 +1182,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (attest_sw_binding_7_we & sw_binding_regwen_qs),
+    .we     (attest_sw_binding_7_gated_we),
     .wd     (attest_sw_binding_7_wd),
 
     // from internal hardware
@@ -1126,6 +1200,9 @@ module keymgr_reg_top (
 
   // Subregister 0 of Multireg salt
   // R[salt_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic salt_0_gated_we;
+  assign salt_0_gated_we = salt_0_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1135,7 +1212,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (salt_0_we & cfg_regwen_qs),
+    .we     (salt_0_gated_we),
     .wd     (salt_0_wd),
 
     // from internal hardware
@@ -1153,6 +1230,9 @@ module keymgr_reg_top (
 
   // Subregister 1 of Multireg salt
   // R[salt_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic salt_1_gated_we;
+  assign salt_1_gated_we = salt_1_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1162,7 +1242,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (salt_1_we & cfg_regwen_qs),
+    .we     (salt_1_gated_we),
     .wd     (salt_1_wd),
 
     // from internal hardware
@@ -1180,6 +1260,9 @@ module keymgr_reg_top (
 
   // Subregister 2 of Multireg salt
   // R[salt_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic salt_2_gated_we;
+  assign salt_2_gated_we = salt_2_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1189,7 +1272,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (salt_2_we & cfg_regwen_qs),
+    .we     (salt_2_gated_we),
     .wd     (salt_2_wd),
 
     // from internal hardware
@@ -1207,6 +1290,9 @@ module keymgr_reg_top (
 
   // Subregister 3 of Multireg salt
   // R[salt_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic salt_3_gated_we;
+  assign salt_3_gated_we = salt_3_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1216,7 +1302,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (salt_3_we & cfg_regwen_qs),
+    .we     (salt_3_gated_we),
     .wd     (salt_3_wd),
 
     // from internal hardware
@@ -1234,6 +1320,9 @@ module keymgr_reg_top (
 
   // Subregister 4 of Multireg salt
   // R[salt_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic salt_4_gated_we;
+  assign salt_4_gated_we = salt_4_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1243,7 +1332,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (salt_4_we & cfg_regwen_qs),
+    .we     (salt_4_gated_we),
     .wd     (salt_4_wd),
 
     // from internal hardware
@@ -1261,6 +1350,9 @@ module keymgr_reg_top (
 
   // Subregister 5 of Multireg salt
   // R[salt_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic salt_5_gated_we;
+  assign salt_5_gated_we = salt_5_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1270,7 +1362,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (salt_5_we & cfg_regwen_qs),
+    .we     (salt_5_gated_we),
     .wd     (salt_5_wd),
 
     // from internal hardware
@@ -1288,6 +1380,9 @@ module keymgr_reg_top (
 
   // Subregister 6 of Multireg salt
   // R[salt_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic salt_6_gated_we;
+  assign salt_6_gated_we = salt_6_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1297,7 +1392,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (salt_6_we & cfg_regwen_qs),
+    .we     (salt_6_gated_we),
     .wd     (salt_6_wd),
 
     // from internal hardware
@@ -1315,6 +1410,9 @@ module keymgr_reg_top (
 
   // Subregister 7 of Multireg salt
   // R[salt_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic salt_7_gated_we;
+  assign salt_7_gated_we = salt_7_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1324,7 +1422,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (salt_7_we & cfg_regwen_qs),
+    .we     (salt_7_gated_we),
     .wd     (salt_7_wd),
 
     // from internal hardware
@@ -1342,6 +1440,9 @@ module keymgr_reg_top (
 
   // Subregister 0 of Multireg key_version
   // R[key_version]: V(False)
+  // Create REGWEN-gated WE signal
+  logic key_version_gated_we;
+  assign key_version_gated_we = key_version_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1351,7 +1452,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_version_we & cfg_regwen_qs),
+    .we     (key_version_gated_we),
     .wd     (key_version_wd),
 
     // from internal hardware
@@ -1394,6 +1495,10 @@ module keymgr_reg_top (
 
 
   // R[max_creator_key_ver_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic max_creator_key_ver_shadowed_gated_we;
+  assign max_creator_key_ver_shadowed_gated_we =
+    max_creator_key_ver_shadowed_we & max_creator_key_ver_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1405,7 +1510,7 @@ module keymgr_reg_top (
 
     // from register interface
     .re     (max_creator_key_ver_shadowed_re),
-    .we     (max_creator_key_ver_shadowed_we & max_creator_key_ver_regwen_qs),
+    .we     (max_creator_key_ver_shadowed_gated_we),
     .wd     (max_creator_key_ver_shadowed_wd),
 
     // from internal hardware
@@ -1455,6 +1560,10 @@ module keymgr_reg_top (
 
 
   // R[max_owner_int_key_ver_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic max_owner_int_key_ver_shadowed_gated_we;
+  assign max_owner_int_key_ver_shadowed_gated_we =
+    max_owner_int_key_ver_shadowed_we & max_owner_int_key_ver_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1466,7 +1575,7 @@ module keymgr_reg_top (
 
     // from register interface
     .re     (max_owner_int_key_ver_shadowed_re),
-    .we     (max_owner_int_key_ver_shadowed_we & max_owner_int_key_ver_regwen_qs),
+    .we     (max_owner_int_key_ver_shadowed_gated_we),
     .wd     (max_owner_int_key_ver_shadowed_wd),
 
     // from internal hardware
@@ -1516,6 +1625,10 @@ module keymgr_reg_top (
 
 
   // R[max_owner_key_ver_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic max_owner_key_ver_shadowed_gated_we;
+  assign max_owner_key_ver_shadowed_gated_we =
+    max_owner_key_ver_shadowed_we & max_owner_key_ver_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1527,7 +1640,7 @@ module keymgr_reg_top (
 
     // from register interface
     .re     (max_owner_key_ver_shadowed_re),
-    .we     (max_owner_key_ver_shadowed_we & max_owner_key_ver_regwen_qs),
+    .we     (max_owner_key_ver_shadowed_gated_we),
     .wd     (max_owner_key_ver_shadowed_wd),
 
     // from internal hardware
@@ -2599,6 +2712,8 @@ module keymgr_reg_top (
                (addr_hit[60] & (|(KEYMGR_PERMIT[60] & ~reg_be))) |
                (addr_hit[61] & (|(KEYMGR_PERMIT[61] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_wd = reg_wdata[0];
@@ -2793,6 +2908,73 @@ module keymgr_reg_top (
   assign err_code_invalid_kmac_input_wd = reg_wdata[1];
 
   assign err_code_invalid_shadow_update_wd = reg_wdata[2];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = start_gated_we;
+    reg_we_check[6] = control_shadowed_gated_we;
+    reg_we_check[7] = sideload_clear_gated_we;
+    reg_we_check[8] = reseed_interval_regwen_we;
+    reg_we_check[9] = reseed_interval_shadowed_gated_we;
+    reg_we_check[10] = sw_binding_regwen_we;
+    reg_we_check[11] = sealing_sw_binding_0_gated_we;
+    reg_we_check[12] = sealing_sw_binding_1_gated_we;
+    reg_we_check[13] = sealing_sw_binding_2_gated_we;
+    reg_we_check[14] = sealing_sw_binding_3_gated_we;
+    reg_we_check[15] = sealing_sw_binding_4_gated_we;
+    reg_we_check[16] = sealing_sw_binding_5_gated_we;
+    reg_we_check[17] = sealing_sw_binding_6_gated_we;
+    reg_we_check[18] = sealing_sw_binding_7_gated_we;
+    reg_we_check[19] = attest_sw_binding_0_gated_we;
+    reg_we_check[20] = attest_sw_binding_1_gated_we;
+    reg_we_check[21] = attest_sw_binding_2_gated_we;
+    reg_we_check[22] = attest_sw_binding_3_gated_we;
+    reg_we_check[23] = attest_sw_binding_4_gated_we;
+    reg_we_check[24] = attest_sw_binding_5_gated_we;
+    reg_we_check[25] = attest_sw_binding_6_gated_we;
+    reg_we_check[26] = attest_sw_binding_7_gated_we;
+    reg_we_check[27] = salt_0_gated_we;
+    reg_we_check[28] = salt_1_gated_we;
+    reg_we_check[29] = salt_2_gated_we;
+    reg_we_check[30] = salt_3_gated_we;
+    reg_we_check[31] = salt_4_gated_we;
+    reg_we_check[32] = salt_5_gated_we;
+    reg_we_check[33] = salt_6_gated_we;
+    reg_we_check[34] = salt_7_gated_we;
+    reg_we_check[35] = key_version_gated_we;
+    reg_we_check[36] = max_creator_key_ver_regwen_we;
+    reg_we_check[37] = max_creator_key_ver_shadowed_gated_we;
+    reg_we_check[38] = max_owner_int_key_ver_regwen_we;
+    reg_we_check[39] = max_owner_int_key_ver_shadowed_gated_we;
+    reg_we_check[40] = max_owner_key_ver_regwen_we;
+    reg_we_check[41] = max_owner_key_ver_shadowed_gated_we;
+    reg_we_check[42] = 1'b0;
+    reg_we_check[43] = 1'b0;
+    reg_we_check[44] = 1'b0;
+    reg_we_check[45] = 1'b0;
+    reg_we_check[46] = 1'b0;
+    reg_we_check[47] = 1'b0;
+    reg_we_check[48] = 1'b0;
+    reg_we_check[49] = 1'b0;
+    reg_we_check[50] = 1'b0;
+    reg_we_check[51] = 1'b0;
+    reg_we_check[52] = 1'b0;
+    reg_we_check[53] = 1'b0;
+    reg_we_check[54] = 1'b0;
+    reg_we_check[55] = 1'b0;
+    reg_we_check[56] = 1'b0;
+    reg_we_check[57] = 1'b0;
+    reg_we_check[58] = 1'b0;
+    reg_we_check[59] = op_status_we;
+    reg_we_check[60] = err_code_we;
+    reg_we_check[61] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

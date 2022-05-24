@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import sys
 import logging
 import time
+import random
+import traceback
 import multiprocessing
 sys.path.append("pygen/")
 from pygen_src.riscv_instr_pkg import *
@@ -33,9 +35,28 @@ class riscv_instr_base_test:
 
     def run(self):
         with multiprocessing.Pool(processes = cfg.num_of_tests) as pool:
-            pool.map(self.run_phase, list(range(cfg.num_of_tests)))
+            ret = pool.map(self.run_phase, list(range(cfg.num_of_tests)))
+        if 1 in ret:
+            raise Exception("Test-generation jobs failed")
 
     def run_phase(self, num):
+        try:
+            self._run_phase(num)
+            return 0
+        except Exception as e:
+            traceback.print_exc()
+            return 1
+
+    def _run_phase(self, num):
+        if num == 0:
+            '''Get the user specified seed value otherwise
+               generate a random seed value from SeedGen method of run.py'''
+            rand_seed = cfg.argv.seed.split("--")[0]
+        else:
+            # Generate random seed value everytime for multiple test iterations
+            rand_seed = random.getrandbits(31)
+        # Assign the global seed value for a particular iteration
+        random.seed(rand_seed)
         self.randomize_cfg()
         self.asm = riscv_asm_program_gen()
         riscv_instr.create_instr_list(cfg)
@@ -49,6 +70,7 @@ class riscv_instr_base_test:
         logging.info("All directed instruction is applied")
         self.asm.gen_program()
         self.asm.gen_test_file(test_name)
+        logging.info("TEST GENERATED USING SEED VALUE = {}".format(rand_seed))
         logging.info("TEST GENERATION DONE")
 
     def randomize_cfg(self):

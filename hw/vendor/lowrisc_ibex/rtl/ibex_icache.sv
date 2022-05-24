@@ -28,8 +28,6 @@ module ibex_icache import ibex_pkg::*; #(
 
   // Set the cache's address counter
   input  logic                           branch_i,
-  input  logic                           branch_mispredict_i,
-  input  logic [31:0]                    mispredict_addr_i,
   input  logic [31:0]                    addr_i,
 
   // IF stage interface: Pass fetched instructions to the core
@@ -77,7 +75,6 @@ module ibex_icache import ibex_pkg::*; #(
   logic [ADDR_W-1:0]                      lookup_addr_aligned;
   logic [ADDR_W-1:0]                      prefetch_addr_d, prefetch_addr_q;
   logic                                   prefetch_addr_en;
-  logic                                   branch_or_mispredict;
   // Cache pipelipe IC0 signals
   logic                                   lookup_throttle;
   logic                                   lookup_req_ic0;
@@ -195,8 +192,6 @@ module ibex_icache import ibex_pkg::*; #(
   // Instruction prefetch //
   //////////////////////////
 
-  assign branch_or_mispredict = branch_i | branch_mispredict_i;
-
   assign lookup_addr_aligned = {lookup_addr_ic0[ADDR_W-1:IC_LINE_W], {IC_LINE_W{1'b0}}};
 
   // The prefetch address increments by one cache line for each granted request.
@@ -208,10 +203,9 @@ module ibex_icache import ibex_pkg::*; #(
   assign prefetch_addr_d     =
       lookup_grant_ic0 ? (lookup_addr_aligned +
                           {{ADDR_W-IC_LINE_W-1{1'b0}}, 1'b1, {IC_LINE_W{1'b0}}}) :
-      branch_i         ? addr_i :
-                         mispredict_addr_i;
+                         addr_i;
 
-  assign prefetch_addr_en    = branch_or_mispredict | lookup_grant_ic0;
+  assign prefetch_addr_en    = branch_i | lookup_grant_ic0;
 
   if (ResetAll) begin : g_prefetch_addr_ra
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -236,11 +230,9 @@ module ibex_icache import ibex_pkg::*; #(
   // Cache lookup
   assign lookup_throttle  = (fb_fill_level > FB_THRESHOLD[$clog2(NUM_FB)-1:0]);
 
-  assign lookup_req_ic0   = req_i & ~&fill_busy_q & (branch_or_mispredict | ~lookup_throttle) &
+  assign lookup_req_ic0   = req_i & ~&fill_busy_q & (branch_i | ~lookup_throttle) &
                             ~ecc_write_req;
-  assign lookup_addr_ic0  = branch_i            ? addr_i :
-                            branch_mispredict_i ? mispredict_addr_i :
-                                                  prefetch_addr_q;
+  assign lookup_addr_ic0  = branch_i ? addr_i : prefetch_addr_q;
   assign lookup_index_ic0 = lookup_addr_ic0[IC_INDEX_HI:IC_LINE_W];
 
   // Cache write
@@ -568,7 +560,7 @@ module ibex_icache import ibex_pkg::*; #(
   assign fill_new_alloc = lookup_grant_ic0;
   // Track whether a speculative external request was made from IC0, and whether it was granted
   // Speculative requests are only made for branches, or if the cache is disabled
-  assign fill_spec_req  = (~icache_enable_i | branch_or_mispredict) & ~|fill_ext_req;
+  assign fill_spec_req  = (~icache_enable_i | branch_i) & ~|fill_ext_req;
   assign fill_spec_done = fill_spec_req & instr_gnt_i;
   assign fill_spec_hold = fill_spec_req & ~instr_gnt_i;
 
@@ -597,7 +589,7 @@ module ibex_icache import ibex_pkg::*; #(
     assign fill_done[fb]       = (fill_ram_done_q[fb] | fill_hit_q[fb] | ~fill_cache_q[fb] |
                                   (|fill_err_q[fb])) &
                                  // all data output unless stale due to intervening branch
-                                 (fill_out_done[fb] | fill_stale_q[fb] | branch_or_mispredict) &
+                                 (fill_out_done[fb] | fill_stale_q[fb] | branch_i) &
                                  // all external requests completed
                                  fill_rvd_done[fb];
 
@@ -606,7 +598,7 @@ module ibex_icache import ibex_pkg::*; #(
     /////////////////////////////////
 
     // Track staleness (requests become stale when a branch intervenes)
-    assign fill_stale_d[fb]    = fill_busy_q[fb] & (branch_or_mispredict | fill_stale_q[fb]);
+    assign fill_stale_d[fb]    = fill_busy_q[fb] & (branch_i | fill_stale_q[fb]);
     // Track whether or not this request should allocate to the cache
     // Any invalidation or disabling of the cache while the buffer is busy will stop allocation
     assign fill_cache_d[fb]    = (fill_alloc[fb] & fill_cache_new) |
@@ -636,7 +628,7 @@ module ibex_icache import ibex_pkg::*; #(
                                   // external requests are considered complete if the request hit
                                   fill_hit_ic1[fb] | fill_hit_q[fb] |
                                   // cancel if the line won't be cached and, it is stale
-                                  (~fill_cache_q[fb] & (branch_or_mispredict | fill_stale_q[fb] |
+                                  (~fill_cache_q[fb] & (branch_i | fill_stale_q[fb] |
                                    // or we're already at the end of the line
                                                         fill_ext_beat[fb][IC_LINE_BEATS_W]))) &
                                  // can't cancel while we are waiting for a grant on the bus
@@ -895,7 +887,7 @@ module ibex_icache import ibex_pkg::*; #(
   // External requests //
   ///////////////////////
 
-  assign instr_req  = ((~icache_enable_i | branch_or_mispredict) & lookup_grant_ic0) |
+  assign instr_req  = ((~icache_enable_i | branch_i) & lookup_grant_ic0) |
                       (|fill_ext_req);
 
   assign instr_addr = |fill_ext_req ? fill_ext_req_addr :
@@ -972,7 +964,7 @@ module ibex_icache import ibex_pkg::*; #(
 
   assign skid_valid_d =
       // Branches invalidate the skid buffer
-      branch_or_mispredict ? 1'b0 :
+      branch_i ? 1'b0 :
       // Once valid, the skid buffer stays valid until a compressed instruction realigns the stream
       (skid_valid_q ? ~(ready_i & ((skid_data_q[1:0] != 2'b11) | skid_err_q)) :
       // The skid buffer becomes valid when:
@@ -1001,7 +993,7 @@ module ibex_icache import ibex_pkg::*; #(
                                        output_err | (output_data[17:16] != 2'b11)));
 
   // Update the address on branches and every time an instruction is driven
-  assign output_addr_en = branch_or_mispredict | (ready_i & valid_o);
+  assign output_addr_en = branch_i | (ready_i & valid_o);
 
   // Increment the address by two every time a compressed instruction is popped
   assign addr_incr_two = output_compressed & ~err_o;
@@ -1011,10 +1003,8 @@ module ibex_icache import ibex_pkg::*; #(
                              // Increment address by 4 or 2
                              {29'd0, ~addr_incr_two, addr_incr_two});
 
-  // Redirect the address on branches or mispredicts
-  assign output_addr_d = branch_i            ? addr_i[31:1] :
-                         branch_mispredict_i ? mispredict_addr_i[31:1] :
-                                               output_addr_incr;
+  // Redirect the address on branches
+  assign output_addr_d = branch_i ? addr_i[31:1] : output_addr_incr;
 
   if (ResetAll) begin : g_output_addr_ra
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -1058,7 +1048,7 @@ module ibex_icache import ibex_pkg::*; #(
     end
   end
 
-  assign valid_o     = output_valid & ~branch_mispredict_i;
+  assign valid_o     = output_valid;
   assign rdata_o     = {output_data_hi, (skid_valid_q ? skid_data_q : output_data_lo)};
   assign addr_o      = {output_addr_q, 1'b0};
   assign err_o       = (skid_valid_q & skid_err_q) | (~skid_complete_instr & output_err);

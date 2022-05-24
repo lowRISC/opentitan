@@ -10,6 +10,8 @@
 // This package defines common multibit signal types, active high and active low values and
 // the corresponding functions to test whether the values are set or not.
 
+`include "prim_assert.sv"
+
 package prim_mubi_pkg;
 
 <%
@@ -28,6 +30,9 @@ from mubi import prim_mubi
     MuBi${nbits}True = ${nbits}'h${prim_mubi.mubi_value_as_hexstr(True, nbits)}, // enabled
     MuBi${nbits}False = ${nbits}'h${prim_mubi.mubi_value_as_hexstr(False, nbits)}  // disabled
   } mubi${nbits}_t;
+
+  // This is a prerequisite for the multibit functions below to work.
+  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi${nbits}ValsComplementary_A, MuBi${nbits}True == ~MuBi${nbits}False)
 
   // Test whether the value is supplied is one of the valid enumerations
   function automatic logic mubi${nbits}_test_invalid(mubi${nbits}_t val);

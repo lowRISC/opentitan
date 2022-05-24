@@ -81,14 +81,22 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual aes_cov_if)::set(null, "*.env", "aes_cov_if", dut.u_aes_cov_if );
     uvm_config_db#(virtual key_sideload_if)
-                  ::set(null, "*.env.keymgr_sideload_agent*", "vif", sideload_if);
+                   ::set(null, "*.env.keymgr_sideload_agent*", "vif", sideload_if);
 
     uvm_config_db#(virtual pins_if #($bits(lc_ctrl_pkg::lc_tx_t) + 1))
                    ::set(null, "*.env", "lc_escalate_vif", lc_escalate_if);
     uvm_config_db#(virtual pins_if #(1))
                    ::set(null, "*.env", "idle_vif", idle_if);
+    uvm_config_db#(virtual aes_reseed_if)::set(null, "*.env", "aes_reseed_vif",
+                                               dut.u_aes_reseed_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
 
+  if (`EN_MASKING) begin : gen_aes_masking_reseed_vif
+    initial begin
+      uvm_config_db#(virtual aes_masking_reseed_if)::set(null, "*.env", "aes_masking_reseed_vif",
+        dut.u_aes_core.u_aes_cipher_core.gen_masks.u_aes_prng_masking.u_aes_masking_reseed_if);
+    end
+  end
 endmodule

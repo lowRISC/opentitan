@@ -153,9 +153,6 @@ module spi_host
 
   end                   : gen_passthrough_ignore
 
-  logic unused_pt_sck_gate_en;
-  assign unused_pt_sck_gate_en = passthrough_i.sck_gate_en;
-
   assign passthrough_o.s = cio_sd_i;
   assign sd_i            = cio_sd_i;
 

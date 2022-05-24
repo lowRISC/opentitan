@@ -6,7 +6,7 @@
 
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 void hmac_testutils_check_message_length(const dif_hmac_t *hmac,
                                          uint64_t expected_sent_bits) {
@@ -51,7 +51,7 @@ void hmac_testutils_finish_and_check_polled(const dif_hmac_t *hmac,
                                             const dif_hmac_digest_t *expected) {
   dif_hmac_digest_t digest;
   hmac_testutils_finish_polled(hmac, &digest);
-  CHECK_BUFFER(digest.digest, expected, ARRAYSIZE(digest.digest));
+  CHECK_ARRAYS_EQ(digest.digest, expected->digest, ARRAYSIZE(digest.digest));
 }
 
 void hmac_testutils_push_message(const dif_hmac_t *hmac, const char *data,

@@ -6,6 +6,9 @@
 # This is a wrapper script for `bazelisk` that downloads and executes bazelisk.
 # Bazelisk is a wrapper for `bazel` that can download and execute the project's
 # required bazel version.
+# 
+# CI jobs should use ci/bazelisk.sh instead, which performs CI-friendly additional
+# setup.
 
 set -euo pipefail
 
@@ -43,8 +46,8 @@ function prepare() {
     local file="${bindir}/bazelisk"
     local url="https://github.com/bazelbuild/bazelisk/releases/download/${release}/bazelisk-${target}"
 
-    echo "Downloading bazelisk ${release} (${url})."
     mkdir -p "$bindir"
+    echo "Downloading bazelisk ${release} (${url})." >> $bindir/bazelisk.log
     curl ${CURL_FLAGS} --location "$url" --output "$file"
     chmod +x "$file"
 }

@@ -96,16 +96,20 @@ In order to run the co-simulation flow, you'll need:
 
 - The Spike RISC-V instruction set simulator
 
+  lowRISC maintains a `lowRISC-specific Spike fork <LRSpike_>`_, needed to model:
+  + Cosimulation (needed for verification)
+  + Some custom CSRs
+  + Custom NMI behavior
+
+  Ibex verification should work with the Spike version that is tagged as ``ibex-cosim-v0.2``.
+  Other, later, versions called ``ibex-cosim-v*`` may also work but there's no guarantee of backwards compatibility.
+
   Spike must be built with the ``--enable-commitlog`` and ``--enable-misaligned`` options.
   ``--enable-commitlog`` is needed to produce log output to track the instructions that were executed.
   ``--enable-misaligned`` tells Spike to simulate a core that handles misaligned accesses in hardware (rather than jumping to a trap handler).
 
-  Ibex supports v.1.0.0 of the RISC-V Bit-Manipulation Extension together with the remaining sub-extensions of draft v.0.93 of the bitmanip spec.
-  lowRISC maintains a `lowRISC-specific branch of Spike <LRSpike_>`_ that matches the supported Bitmanip specification plus some custom CSRs.
-  This branch must also be used in order to to simulate the core with the Icache enabled.
-
   Note that Ibex used to support the commercial OVPsim simulator.
-  This is not currently possble because OVPsim doesn't support the co-simulation approach that we use.
+  This is not currently possible because OVPsim doesn't support the co-simulation approach that we use.
 
 - A working RISC-V toolchain (to compile / assemble the generated programs before simulating them).
 
@@ -123,7 +127,7 @@ to tell the RISCV-DV code where to find them:
     export RISCV_OBJCOPY="$RISCV_TOOLCHAIN/bin/riscv32-unknown-elf-objcopy"
     export SPIKE_PATH=/path/to/spike/bin
 
-.. _LRSpike: https://github.com/lowRISC/riscv-isa-sim/tree/ibex_cosim
+.. _LRSpike: https://github.com/lowRISC/riscv-isa-sim
 .. _riscv-toolchain-source: https://github.com/riscv/riscv-gnu-toolchain
 .. _riscv-toolchain-releases: https://github.com/lowRISC/lowrisc-toolchains/releases
 .. _bitmanip-patches: https://github.com/lowRISC/lowrisc-toolchains#how-to-generate-the-bitmanip-patches
@@ -200,9 +204,6 @@ The entirety of this flow is controlled by the Makefile found at
 
    # Generate the assembly tests only
    make gen
-
-   # Pass addtional options to the generator
-   make GEN_OPTS="xxxx"  ...
 
    # Compile and run RTL simulation
    make TEST=xxx compile,rtl_sim

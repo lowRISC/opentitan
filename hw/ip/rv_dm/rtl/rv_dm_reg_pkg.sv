@@ -50,4 +50,3 @@ package rv_dm_reg_pkg;
   parameter int unsigned      RV_DM_ROM_SIZE   = 'h 1000;
 
 endpackage
-

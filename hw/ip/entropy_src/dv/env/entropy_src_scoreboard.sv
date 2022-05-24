@@ -630,15 +630,30 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         `uvm_info(`gfn, $sformatf("seed_tl_read_cnt: %01d", seed_tl_read_cnt), UVM_FULL)
         match_found = try_seed_tl(entropy_data_q[0], item.d_data, prediction);
         if (match_found) begin
+          bit full_seed_found = 0;
           `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
           seed_tl_read_cnt++;
           if (seed_tl_read_cnt == CSRNG_BUS_WIDTH / TL_DW) begin
+            full_seed_found = 1;
             seed_tl_read_cnt = 0;
             entropy_data_q.pop_front();
             entropy_data_seeds++;
           end else if (seed_tl_read_cnt > CSRNG_BUS_WIDTH / TL_DW) begin
             `uvm_error(`gfn, "testbench error: too many segments read from candidate seed")
           end
+          cov_vif.cg_seed_output_csr_sample(
+              ral.conf.fips_enable.get_mirrored_value(),
+              ral.conf.threshold_scope.get_mirrored_value(),
+              ral.conf.rng_bit_enable.get_mirrored_value(),
+              ral.conf.rng_bit_sel.get_mirrored_value(),
+              ral.entropy_control.es_route.get_mirrored_value(),
+              ral.entropy_control.es_type.get_mirrored_value(),
+              ral.conf.entropy_data_reg_enable.get_mirrored_value(),
+              cfg.otp_en_es_fw_read,
+              ral.fw_ov_control.fw_ov_mode.get_mirrored_value(),
+              ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value(),
+              full_seed_found
+          );
           break;
         end else begin
           entropy_data_q.pop_front();

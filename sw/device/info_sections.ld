@@ -77,6 +77,8 @@
 .debug_line_str 0x0 : { *(.debug_line_str) }
 .debug_loclists 0x0 : { *(.debug_loclists) }
 .debug_rnglists 0x0 : { *(.debug_rnglists) }
+.debug_addr 0x0 : { *(.debug_addr) }
+.debug_str_offsets 0x0 : { *(.debug_str_offsets) }
 
 /* Discarded Sections (Not needed in device images). */
 /DISCARD/ : {

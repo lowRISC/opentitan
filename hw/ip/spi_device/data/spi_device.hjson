@@ -47,9 +47,18 @@
       desc: "Upload Command FIFO is not empty"
     }
     { name: "upload_payload_not_empty"
-      desc: '''Upload paylod is not empty.
+      desc: '''Upload payload is not empty.
 
         The event occurs after SPI transaction completed
+        '''
+    }
+    { name: "upload_payload_overflow"
+      desc: '''Upload payload overflow event.
+
+        When a SPI Host system issues a command with payload more than 256B,
+        this event is reported. When it happens, SW should read the last
+        written payload index CSR to figure out the starting address of the
+        last 256B.
         '''
     }
     { name: "readbuf_watermark"
@@ -514,6 +523,13 @@
       hwaccess: "hrw"
       hwext: true
       hwqe: true
+      tags: [
+        // SW is not able to read back the STATUS register right after write.
+        // The read back value is committed value, which needs at least a SPI
+        // transaction.
+        // So excluded from CSR automation test.
+        "excl:CsrNonInitTests:CsrExclWrite"
+      ]
       fields: [
         { bits: "0"
           name: "busy"
@@ -521,11 +537,6 @@
             back the register to confirm the value is cleared.'''
           swaccess: "rw0c"
           hwaccess: "hrw"
-          tags: [
-            // STATUS[0] is updated by HW when CSb is de-asserted.
-            // So excluded from CSR automation test.
-            "excl:CsrNonInitTests:CsrExclWrite"
-          ]
         } // f: busy
         { bits: "23:1"
           name: "status"
@@ -606,6 +617,7 @@
           name: "threshold"
           desc: '''If 0, disable the watermark. If non-zero, when the host
             access above or equal to the threshold, it reports an interrupt.
+            The value is byte-granularity not SRAM index.
             '''
         } // f: threshold
       ]
@@ -647,13 +659,35 @@
           name: "addrfifo_notempty"
           desc: "Upload Address FIFO Not Empty"
         } // f: addrfifo_notempty
-        { bits: "24:16"
+      ]
+    } // R: UPLOAD_STATUS
+    { name: "UPLOAD_STATUS2"
+      desc: '''Upload module status 2 register.
+
+        This register contains payload related status. payload_depth indicates
+        the payload size (from 0 to 256 bytes).
+
+        payload_start_idx indicates the start of the 256B. This stays 0
+        usually. However, when the SPI host system issues more than 256B of
+        payload in a command, this field may not be 0. For example, if the
+        system issues 258B payload, the payload_depth is 256 (as the IP only
+        holds 256B of payload), the payload_start_idx is 2. SW should read from
+        2 to 255 then 0 and 1.
+        '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "8:0"
           name: "payload_depth"
           desc: '''Payload buffer depth
             '''
         } // f: payload_depth
+        { bits: "23:16"
+          name: "payload_start_idx"
+          desc: '''Payload Start Index'''
+        } // f: payload_start_idx
       ]
-    } // R: UPLOAD_STATUS
+    } // R: UPLOAD_STATUS2
     { name: "UPLOAD_CMDFIFO"
       desc: '''Command Fifo Read Port.
         '''
@@ -944,6 +978,40 @@
         } // f: opcode
       ]
     } // R: CMD_INFO_EX4B
+    { name: "CMD_INFO_WREN"
+      swaccess: "rw"
+      hwaccess: "hro"
+      desc: '''Opcode for Write Enable (WREN)
+        '''
+      fields: [
+        { bits: "31"
+          name: "valid"
+          desc: "If 1, opcode affects"
+        } // f: valid
+        { bits: "7:0"
+          name: "opcode"
+          desc: "WREN opcode"
+          // Leave default value 0 to be consistent
+        } // f: opcode
+      ]
+    } // R: CMD_INFO_WREN
+    { name: "CMD_INFO_WRDI"
+      swaccess: "rw"
+      hwaccess: "hro"
+      desc: '''Opcode for Write Disable (WRDI)
+        '''
+      fields: [
+        { bits: "31"
+          name: "valid"
+          desc: "If 1, opcode affects"
+        } // f: valid
+        { bits: "7:0"
+          name: "opcode"
+          desc: "WRDI opcode"
+          // Leave default value 0 to be consistent
+        } // f: opcode
+      ]
+    } // R: CMD_INFO_WRDI
 
     //===============================================================
     // TPM registers

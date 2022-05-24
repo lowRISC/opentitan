@@ -10,9 +10,10 @@ filesets:
     depend:
       - lowrisc:prim:assert
     files:
+      - rtl/prim_arbiter_fixed.sv
       - rtl/prim_arbiter_ppc.sv
       - rtl/prim_arbiter_tree.sv
-      - rtl/prim_arbiter_fixed.sv
+      - rtl/prim_arbiter_tree_dup.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

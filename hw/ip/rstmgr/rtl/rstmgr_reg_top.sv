@@ -53,18 +53,31 @@ module rstmgr_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [5:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(6)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -436,6 +449,8 @@ module rstmgr_reg_top (
                (addr_hit[4] & (|(RSTMGR_PERMIT[4] & ~reg_be))) |
                (addr_hit[5] & (|(RSTMGR_PERMIT[5] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign reset_info_we = addr_hit[0] & reg_we & !reg_error;
 
   assign reset_info_por_wd = reg_wdata[0];
@@ -463,6 +478,17 @@ module rstmgr_reg_top (
   assign sw_rst_ctrl_n_val_0_wd = reg_wdata[0];
 
   assign sw_rst_ctrl_n_val_1_wd = reg_wdata[1];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = reset_info_we;
+    reg_we_check[1] = alert_info_ctrl_we;
+    reg_we_check[2] = 1'b0;
+    reg_we_check[3] = 1'b0;
+    reg_we_check[4] = sw_rst_regwen_we;
+    reg_we_check[5] = sw_rst_ctrl_n_we;
+  end
 
   // Read data return
   always_comb begin

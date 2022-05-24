@@ -9,8 +9,11 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
 
   `uvm_object_new
 
-  // This is measured in aon clocks.
-  localparam int CyclesToGetOneMeasurement = 2;
+  // This is measured in aon clocks. This is cannot be too precise because of a synchronizer.
+  localparam int CyclesToGetMeasurements = 6;
+
+  // The aon cycles between measurements, to make sure the previous measurement settles.
+  localparam int CyclesBetweenMeasurements = 6;
 
   // This is measured in clkmgr clk_i clocks. It is set to cover worst case delays.
   // The clk_i frequency is randomized for IPs, but the clkmgr is hooked to io_div4, which would
@@ -73,19 +76,26 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   endtask
 
   // This waits a number of cycles so that:
-  // - only one measurement completes, or we could end up with multiple alerts which cause trouble
-  //   for the cip exp_alert functionality, and,
+  // - at least one measurement completes, and,
   // - the measurement has had time to update the recov_err_code CSR.
   task wait_before_read_recov_err_code(bit expect_alert);
     // Wait for one measurement (takes an extra cycle to really start).
-    cfg.aon_clk_rst_vif.wait_clks(CyclesToGetOneMeasurement);
+    cfg.aon_clk_rst_vif.wait_clks(CyclesToGetMeasurements);
     // Wait for the result to propagate to the recov_err_code CSR.
     cfg.clk_rst_vif.wait_clks(CyclesForErrUpdate);
   endtask
 
   task body();
     logic [TL_DW-1:0] value;
+    int prior_alert_count;
+    int current_alert_count;
+
     csr_wr(.ptr(ral.measure_ctrl_regwen), .value(1));
+
+    // Disable alert checks since we cannot make sure a single alert will fire: there is too
+    // much uncertainty on the cycles for one measurement to complete due to synchronizers.
+    // This test will instead check whether alerts fire using the alert count.
+    cfg.scoreboard.do_alert_check = 0;
 
     // Make sure the aon clock is running as slow as it is meant to.
     cfg.aon_clk_rst_vif.set_freq_khz(AonClkHz / 1_000);
@@ -105,7 +115,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       clk_mesr_e clk_mesr = clk_mesr_e'(clk);
       disable_frequency_measurement(clk_mesr);
     end
-    cfg.aon_clk_rst_vif.wait_clks(2);
+    cfg.aon_clk_rst_vif.wait_clks(CyclesBetweenMeasurements);
     // And clear errors.
     csr_wr(.ptr(ral.recov_err_code), .value('1));
 
@@ -116,6 +126,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, "New round", UVM_MEDIUM)
+      prior_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
       if (cause_saturation) `uvm_info(`gfn, "Will cause saturation", UVM_MEDIUM)
       foreach (ExpectedCounts[clk]) begin
         clk_mesr_e clk_mesr = clk_mesr_e'(clk);
@@ -133,8 +144,6 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
                       (cause_saturation ? " due to saturation" : "")
                       ), UVM_MEDIUM)
             expect_alert = 1;
-            cfg.scoreboard.set_exp_alert(.alert_name("recov_fault"), .max_delay(4000));
-            `uvm_info(`gfn, "Setting exp_alert[recov_fault]", UVM_MEDIUM)
             expected_recov_meas_err[clk] = 1;
           end
         end else begin
@@ -168,6 +177,14 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       if (actual_recov_err.shadow_update != 0) begin
         `uvm_error(`gfn, "Unexpected recoverable shadow update error")
       end
+      // Check alerts.
+      current_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
+      if (expect_alert) begin
+        `DV_CHECK_NE(current_alert_count, prior_alert_count, "expected some alerts to fire")
+      end else begin
+        `DV_CHECK_EQ(current_alert_count, prior_alert_count, "expected no alerts to fire")
+      end
+
       foreach (ExpectedCounts[clk]) begin
         clk_mesr_e clk_mesr = clk_mesr_e'(clk);
         disable_frequency_measurement(clk_mesr);
@@ -175,7 +192,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
 
       // Wait enough time for measurements to complete, and for alerts to get processed
       // by the alert agents so expected alerts are properly wound down.
-      cfg.aon_clk_rst_vif.wait_clks(4);
+      cfg.aon_clk_rst_vif.wait_clks(CyclesBetweenMeasurements);
       // And clear errors.
       csr_wr(.ptr(ral.recov_err_code), .value('1));
       cfg.aon_clk_rst_vif.wait_clks(12);

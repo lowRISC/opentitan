@@ -46,7 +46,11 @@ module tlul_assert #(
 
   pend_req_t [2**TL_AIW-1:0] pend_req;
 
+  // set `disable_sva` before testing TLUL error cases
   bit disable_sva;
+  // d_error related SVA doesn't work for xbar, as it doesn't return d_error for protocol errors
+  // set this to disable the check
+  bit disable_d_error_sva;
 
   logic [7:0]  a_mask, d_mask;
   logic [63:0] a_data, d_data;
@@ -269,13 +273,13 @@ module tlul_assert #(
           !clk_i, !rst_ni || disable_sva)
     // d2h error cases
     `ASSERT(legalAOpcodeErr_A, d_error_pre_S and legalAOpcodeErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
     `ASSERT(sizeGTEMaskErr_A, d_error_pre_S and sizeGTEMaskErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
     `ASSERT(sizeMatchesMaskErr_A, d_error_pre_S and sizeMatchesMaskErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
     `ASSERT(addrSizeAlignedErr_A, d_error_pre_S and addrSizeAlignedErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
   end else begin : gen_unknown
     initial begin : p_unknonw
       `ASSERT_I(unknownConfig_A, 0 == 1)
@@ -401,6 +405,14 @@ module tlul_assert #(
         `uvm_fatal("tlul_assert", "Can't find tlul_assert_en")
       end
       disable_sva = !tlul_assert_en;
+    end
+    initial forever begin
+      bit tlul_assert_en;
+      uvm_config_db#(bit)::wait_modified(null, "%m", "tlul_d_error_assert_en");
+      if (!uvm_config_db#(bit)::get(null, "%m", "tlul_d_error_assert_en", tlul_assert_en)) begin
+        `uvm_fatal("tlul_assert", "Can't find tlul_d_error_assert_en")
+      end
+      disable_d_error_sva = !tlul_assert_en;
     end
   `endif
 

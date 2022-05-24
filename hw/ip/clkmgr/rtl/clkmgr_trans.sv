@@ -28,13 +28,16 @@ module clkmgr_trans
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_false_loose;
 
-  localparam int TransIdleCnt = int'(MuBi4True);
+  // Note this value is specifically chosen.
+  // The binary value is 1010, which is a balanced 4-bit value
+  // that should in theory be resistant to all 0 or all 1 attacks.
+  localparam int TransIdleCnt = 10;
   localparam int IdleCntWidth = $clog2(TransIdleCnt + 1);
 
   logic [IdleCntWidth-1:0] idle_cnt;
   logic idle_valid;
   logic sw_hint_synced;
-  assign idle_valid = (idle_cnt == MuBi4True);
+  assign idle_valid = (idle_cnt == TransIdleCnt);
   assign clk_en_o = sw_hint_synced | ~idle_valid;
 
   prim_flop_2sync #(

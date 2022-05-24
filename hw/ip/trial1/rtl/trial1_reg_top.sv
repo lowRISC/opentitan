@@ -53,18 +53,31 @@ module trial1_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [19:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(20)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -1073,6 +1086,8 @@ module trial1_reg_top (
                (addr_hit[18] & (|(TRIAL1_PERMIT[18] & ~reg_be))) |
                (addr_hit[19] & (|(TRIAL1_PERMIT[19] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign rwtype0_we = addr_hit[0] & reg_we & !reg_error;
 
   assign rwtype0_wd = reg_wdata[31:0];
@@ -1148,6 +1163,31 @@ module trial1_reg_top (
   assign rwtype7_we = addr_hit[19] & reg_we & !reg_error;
 
   assign rwtype7_wd = reg_wdata[31:0];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = rwtype0_we;
+    reg_we_check[1] = rwtype1_we;
+    reg_we_check[2] = rwtype2_we;
+    reg_we_check[3] = rwtype3_we;
+    reg_we_check[4] = rwtype4_we;
+    reg_we_check[5] = 1'b0;
+    reg_we_check[6] = w1ctype0_we;
+    reg_we_check[7] = w1ctype1_we;
+    reg_we_check[8] = w1ctype2_we;
+    reg_we_check[9] = w1stype2_we;
+    reg_we_check[10] = w0ctype2_we;
+    reg_we_check[11] = r0w1ctype2_we;
+    reg_we_check[12] = 1'b0;
+    reg_we_check[13] = wotype0_we;
+    reg_we_check[14] = mixtype0_we;
+    reg_we_check[15] = rwtype5_we;
+    reg_we_check[16] = rwtype6_we;
+    reg_we_check[17] = 1'b0;
+    reg_we_check[18] = 1'b0;
+    reg_we_check[19] = rwtype7_we;
+  end
 
   // Read data return
   always_comb begin

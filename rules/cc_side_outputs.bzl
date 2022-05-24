@@ -5,7 +5,7 @@
 """Aspects and rules for making cc_* libraries emit more outputs."""
 
 load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES", "C_COMPILE_ACTION_NAME")
-load("//rules:bugfix.bzl", "find_cc_toolchain")
+load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("//rules:rv.bzl", "rv_rule")
 
 CcSideProductInfo = provider(fields = ["files"])
@@ -63,7 +63,7 @@ def _cc_compile_different_output(name, target, ctx, extension, flags, process_al
         )
     cc_compile_ctx = cc_info.compilation_context
 
-    cc_toolchain = find_cc_toolchain(ctx)
+    cc_toolchain = find_cc_toolchain(ctx).cc
     feature_configuration = cc_common.configure_features(
         ctx = ctx,
         cc_toolchain = cc_toolchain,
@@ -226,7 +226,7 @@ cc_asm_aspect = aspect(
 )
 
 def _cc_llvm_aspect_impl(target, ctx):
-    cc_toolchain = find_cc_toolchain(ctx)
+    cc_toolchain = find_cc_toolchain(ctx).cc
     if cc_toolchain.compiler.find("clang") == -1:
         return CcSideProductInfo(files = depset())
     return _cc_compile_different_output("LLVMOutput", target, ctx, "ll", ["-S", "-emit-llvm"])
@@ -273,7 +273,7 @@ def _cc_relink_with_linkmap_aspect_impl(target, ctx):
 
     output_file = ctx.actions.declare_file(target.label.name + ".ldmap")
 
-    cc_toolchain = find_cc_toolchain(ctx)
+    cc_toolchain = find_cc_toolchain(ctx).cc
     feature_configuration = cc_common.configure_features(
         ctx = ctx,
         cc_toolchain = cc_toolchain,

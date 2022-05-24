@@ -7,6 +7,7 @@ title: "Python Coding Style Guide"
 ### Summary
 
 Python3 is the main language used for simple tools.
+As tools grow in complexity, or the requirements on them develop, they serve as valuable prototypes to re-implement tools or their behaviors more maintainably.
 
 Python can be written in vastly different styles, which can lead to code conflicts and code review latency.
 This style guide aims to promote Python readability across groups.
@@ -192,3 +193,8 @@ This will provide support for `--help` and `-h` to get usage information.
 Every command line program should provide `--version` to provide standard version information.
 This lists the git repositary information for the tool and the version numbers of any Python packages that are used.
 The `show_and_exit` routine in `reggen/version.py` can be used to do this.
+
+Options that consume an arbitrary number of command line arguments with `nargs="*"` or `nargs="+"` should be avoided wherever possible.
+Comma separated lists can be passed to form single arguments and can be split after arguments are parsed.
+Args that allow for lists should mention that capability and the separator using the help keyword.
+To display proper delimiting of lists, args that allow for lists may demonstrate the separator with the metavar keyword.

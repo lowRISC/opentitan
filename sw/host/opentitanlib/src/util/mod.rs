@@ -8,6 +8,7 @@ pub mod file;
 pub mod num_de;
 pub mod parse_int;
 pub mod present;
+pub mod rom_detect;
 pub mod usb;
 pub mod voltage;
 

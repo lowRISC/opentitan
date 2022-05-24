@@ -122,3 +122,56 @@ virtual function void rom_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1:
   // Write the scrambled data to memory
   write39integ(bus_addr, scrambled_data);
 endfunction
+
+virtual function bit [7:0] rom_encrypt_read8(bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                             logic [SRAM_KEY_WIDTH-1:0]       key,
+                                             logic [SRAM_BLOCK_WIDTH-1:0]     nonce,
+                                             bit                              unscramble_data = 1);
+  int byte_offset = addr % bytes_per_word;
+  bit [bus_params_pkg::BUS_AW-1:0] aligned_addr = (addr >> addr_lsb) << addr_lsb;
+  bit [38:0] data = rom_encrypt_read32(aligned_addr, key, nonce, unscramble_data);
+  return (data >> (byte_offset * byte_width)) & 8'hff;
+endfunction
+
+virtual function void rom_encrypt_write8(bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                         logic [7:0]                      data,
+                                         logic [SRAM_KEY_WIDTH-1:0]       key,
+                                         logic [SRAM_BLOCK_WIDTH-1:0]     nonce,
+                                         bit                              scramble_data = 1);
+  bit [bus_params_pkg::BUS_AW-1:0] aligned_addr = (addr >> addr_lsb) << addr_lsb;
+  int byte_offset = addr % bytes_per_word;
+  bit [31:0] rw_data = 32'(rom_encrypt_read32(addr, key, nonce, scramble_data));
+
+  rw_data[byte_offset * 8 +: 8] = data;
+  rom_encrypt_write32_integ(aligned_addr, rw_data, key, nonce, scramble_data);
+endfunction
+
+virtual function void update_rom_digest(logic [SRAM_KEY_WIDTH-1:0]   key,
+                                        logic [SRAM_BLOCK_WIDTH-1:0] nonce);
+  bit [63:0] kmac_data[$];
+  bit [7:0] kmac_data_arr[];
+  bit [7:0] dpi_digest[kmac_pkg::AppDigestW / 8];
+  int kmac_data_bytes = size_bytes - ROM_DIGEST_BYTES;
+  int digest_start_addr = kmac_data_bytes;
+  bit scramble_data = 0; // digest and kmac data aren't scrambled
+
+  // kmac data is twice of kmac_data_bytes as we use 64 bit bus to send 32 bit data + 7 intg
+  kmac_data_arr = new[kmac_data_bytes * 2];
+
+  for (int i = 0; i < kmac_data_bytes; i += 4) begin
+    bit [63:0] data64;
+
+    // it returns 39 bits, including integrity. and the 39 bits data will be sent to 64 bits bus to
+    // the kmac
+    data64 = 64'(rom_encrypt_read32(i, key, nonce, scramble_data));
+    for (int j = 0; j < 8; j++) begin
+      kmac_data_arr[i * 2 + j] = data64[j * 8 +: 8];
+    end
+  end
+  digestpp_dpi_pkg::c_dpi_cshake256(kmac_data_arr, "", "ROM_CTRL", kmac_data_arr.size,
+                                    kmac_pkg::AppDigestW / 8, dpi_digest);
+
+  for (int i = 0; i < ROM_DIGEST_BYTES; i++) begin
+    rom_encrypt_write8(digest_start_addr + i, dpi_digest[i], key, nonce, scramble_data);
+  end
+endfunction

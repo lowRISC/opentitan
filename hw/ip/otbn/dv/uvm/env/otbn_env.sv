@@ -60,6 +60,10 @@ class otbn_env extends cip_base_env #(
                                                          cfg.alu_bignum_vif)) begin
       `uvm_fatal(`gfn, "failed to get otbn_alu_bignum_if handle from uvm_config_db")
     end
+    if (!uvm_config_db#(virtual otbn_controller_if)::get(this, "", "controller_vif",
+                                                         cfg.controller_vif)) begin
+      `uvm_fatal(`gfn, "failed to get otbn_controller_if handle from uvm_config_db")
+    end
     if (!uvm_config_db#(virtual otbn_mac_bignum_if)::get(this, "", "mac_bignum_vif",
                                                          cfg.mac_bignum_vif)) begin
       `uvm_fatal(`gfn, "failed to get otbn_mac_bignum_if handle from uvm_config_db")
@@ -67,10 +71,6 @@ class otbn_env extends cip_base_env #(
     if (!uvm_config_db#(virtual otbn_rf_base_if)::get(this, "", "rf_base_vif",
                                                       cfg.rf_base_vif)) begin
       `uvm_fatal(`gfn, "failed to get otbn_rf_base_if handle from uvm_config_db")
-    end
-    if (!uvm_config_db#(virtual otbn_controller_if)::get(this, "", "controller_vif",
-                                                      cfg.controller_vif)) begin
-      `uvm_fatal(`gfn, "failed to get otbn_controller_if handle from uvm_config_db")
     end
     if (!uvm_config_db#(virtual otbn_escalate_if)::get(this, "", "escalate_vif",
                                                        cfg.escalate_vif)) begin

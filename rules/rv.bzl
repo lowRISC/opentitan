@@ -4,7 +4,7 @@
 
 """Helpers for transitioning to the RISC-V target."""
 
-OPENTITAN_CPU = "@bazel_embedded//constraints/cpu:riscv32"
+OPENTITAN_CPU = "@platforms//cpu:riscv32"
 OPENTITAN_PLATFORM = "@bazel_embedded//platforms:opentitan_rv32imc"
 
 # This constant holds a dictionary of per-device dependencies which are used to
@@ -14,7 +14,6 @@ OPENTITAN_PLATFORM = "@bazel_embedded//platforms:opentitan_rv32imc"
 PER_DEVICE_DEPS = {
     "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
     "sim_dv": ["//sw/device/lib/arch:sim_dv"],
-    "fpga_nexysvideo": ["//sw/device/lib/arch:fpga_nexysvideo"],
     "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
 }
 

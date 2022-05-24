@@ -10,7 +10,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   local uint total_rd_bytes;
 
   virtual task body();
-    bit do_interrupt = 1'b0;
+    bit do_interrupt = 1'b1;
     initialization(.mode(Host));
     `uvm_info(`gfn, "\n--> start of sequence", UVM_DEBUG)
     fork
@@ -25,7 +25,8 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     `uvm_info(`gfn, "\n--> end of sequence", UVM_DEBUG)
   endtask : body
 
-  virtual task host_send_trans(int max_trans = num_trans, tran_type_e trans_type = ReadWrite);
+  virtual task host_send_trans(int max_trans = num_trans, tran_type_e trans_type = ReadWrite,
+                               bit read = 1'b1, bit stopbyte = 1'b0);
     bit last_tran, chained_read;
 
     fmt_item = new("fmt_item");
@@ -74,7 +75,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
             program_control_read_to_target(last_tran);
           end else begin
             if (rw_bit) program_control_read_to_target(last_tran);
-            else        program_write_data_to_target(last_tran);
+            else        program_write_data_to_target(last_tran,stopbyte);
           end
 
           `uvm_info(`gfn, $sformatf("\n  finish sending %s transaction, %0s at the end, %0d/%0d, ",
@@ -89,7 +90,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         end
         complete_program_fmt_fifo = 1'b1;
       end
-      begin
+      if (read) begin
         read_data_from_target();
         `uvm_info(`gfn, "\n  read_data_from_target task ended", UVM_DEBUG)
       end
@@ -182,7 +183,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     end
   endtask : read_data_from_target
 
-  virtual task program_write_data_to_target(bit last_tran);
+  virtual task program_write_data_to_target(bit last_tran, bit stopbyte);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_wr_bytes)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wr_data)
     if (num_wr_bytes == 256) begin
@@ -197,7 +198,11 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           start == 1'b0;
           read  == 1'b0;
         )
+        if (stopbyte && (i == num_wr_bytes)) begin
+        fmt_item.fbyte = 8'hee;
+        end else begin
         fmt_item.fbyte = wr_data[i-1];
+        end
       end while (!fmt_item.nakok && !fmt_item.rcont && !fmt_item.fbyte);
 
       // last write byte of last  tran., stop flag must be set to issue stop bit

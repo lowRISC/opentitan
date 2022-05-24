@@ -60,12 +60,6 @@
       tests: []
     }
     {
-      name: sec_cm_prng_lfsr_redun
-      desc: "Verify the countermeasure(s) PRNG.LFSR.REDUN."
-      milestone: V2S
-      tests: []
-    }
-    {
       name: sec_cm_ctr_redun
       desc: "Verify the countermeasure(s) CTR.REDUN."
       milestone: V2S

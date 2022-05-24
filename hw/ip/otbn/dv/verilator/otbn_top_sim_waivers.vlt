@@ -13,10 +13,14 @@ public -module "otbn_loop_controller" -var "insn_addr_i"
 public -module "otbn_loop_controller" -var "loop_start_req_i"
 public -module "otbn_loop_controller" -var "loop_start_commit_i"
 public -module "otbn_loop_controller" -var "loop_iterations_i"
-public -module "otbn_loop_controller" -var "loop_active_q"
-public -module "otbn_loop_controller" -var "current_loop_q"
-public -module "otbn_loop_controller" -var "current_loop_d"
+public -module "otbn_loop_controller" -var "current_loop_valid"
+public -module "otbn_loop_controller" -var "current_loop"
 public -module "otbn_loop_controller" -var "current_loop_finish"
+public -module "otbn_loop_controller" -var "loop_stack_rd_idx"
+public -module "otbn_loop_controller" -var "prefetch_loop_iterations_o"
+public -module "prim_count" -var "max_val"
+public -module "prim_count" -var "down_cnt"
+public -module "prim_generic_flop" -var "d_i"
 
 // Mark the "model_handle" variable in the core model as public. We
 // use this to pass the information from the ELF file to the ISS on

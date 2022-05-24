@@ -34,6 +34,11 @@ The unit `.sv` exists and meets comportability requirements.
 The unit is able to be instantiated and connected in top level RTL files.
 The design must compile and elaborate cleanly without errors.
 The unit must not break top level functionality such as propagating X through TL-UL interfaces, continuously asserting alerts or interrupts, or creating undesired TL-UL transactions.
+To that end, the unit must fulfill the following V1 checklist requirements:
+- TB_TOP_CREATED
+- SIM_RAL_MODEL_GEN_AUTOMATED
+- CSR_CHECK_GEN_AUTOMATED
+- SIM_CSR_MEM_TEST_SUITE_PASSING
 
 ### PHYSICAL_MACROS_DEFINED_80
 
@@ -167,14 +172,23 @@ Note the SEC_CM_DOCUMENTED item in the D2 checklist, which is a precursor to thi
 ### SEC_CM_IMPLEMENTED
 
 Any appropriate security counter-measures are implemented.
+Implementations must follow the [OpenTitan Secure Hardware Design Guidelines]({{< relref "../security/implementation_guidelines/hardware" >}}).
 
-
-Note:
+In particular, note that:
 
 - For duplicated counters [`prim_count`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_count.sv) must be used.
 - For duplicated LFSRs [`prim_double_lfsr`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_double_lfsr.sv) must be used.
 - For redundantly encoded FSMs, [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py) must be used to generate the encoding (in conjunction with the [`PRIM_FLOP_SPARSE_FSM`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_flop_macros.sv)) macro.
 - For multibit signals, the `mubi` types in [`prim_mubi_pkg`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_mubi_pkg.sv) should be used if possible.
+
+### SEC_CM_NON_RESET_FLOPS
+
+A review of sensitive security-critical storage flops was completed.
+Where appropriate, non-reset flops are used to store secure material.
+
+### SEC_CM_SHADOW_REGS
+
+Shadow registers are implemented for all appropriate storage of critical control functions.
 
 ### SEC_CM_RTL_REVIEWED
 
@@ -195,6 +209,7 @@ Any approved new features since D2 have been documented and reviewed with DV/SW/
 ### TODO_COMPLETE
 
 All TODOs are resolved.
+Deferred TODOs have been marked as "iceboxed" in the code and have been attached an issue as follows: `// ICEBOX(#issue-nr)`.
 
 ### LINT_COMPLETE
 
@@ -204,7 +219,14 @@ Any lint waiver files have been reviewed and signed off by the technical steerin
 ### CDC_COMPLETE
 
 The CDC checking flow is clean.
-CDC waiver files have been reviewed and signed off by the technical steering committee.
+CDC waiver files have been reviewed and understood.
+If there is no CDC flow at the block-level, this requirement can be waived.
+
+### RDC_COMPLETE
+
+The RDC checking flow is clean.
+RDC waiver files have been reviewed and understood.
+If there is no RDC flow at the block-level, this requirement can be waived.
 
 ### REVIEW_RTL
 
@@ -213,31 +235,15 @@ A simple design review has been conducted by an independent designer.
 ### REVIEW_DELETED_FF
 
 Any deleted flops have been reviewed and signed off.
-
-### REVIEW_SW_CSR
-
-Any design changes which affect CSRs have been reviewed by the software team.
-
-### REVIEW_SW_FATAL_ERR
-
-Any fatal error mechanisms have been reviewed by the software team.
+If there is no synthesis flow at the block-level, this requirement can be waived.
 
 ### REVIEW_SW_CHANGE
 
-Any other software-visible design changes have been reviewed by the software team.
+Any software-visible design changes have been reviewed by the software team.
 
 ### REVIEW_SW_ERRATA
 
 All known "Won't Fix" bugs and "Errata" have been reviewed by the software team.
-
-### SEC_NON_RESET_FLOPS
-
-A review of sensitive security-critical storage flops was completed.
-Where appropriate, non-reset flops are used to store secure material.
-
-### SEC_SHADOW_REGS
-
-Shadow registers are implemented for all appropriate storage of critical control functions.
 
 ## V1
 
@@ -258,14 +264,14 @@ A testplan has been written (in Hjson format) indicating:
 
 If the DUT has a CPU for which a ROM firmware is developed (burnt-in during manufacturing):
 - A detailed ROM firmware testplan has been written to adequately verify all functions of the ROM firmware in a pre-silicon simulation environment (i.e. a DV testbench).
-- The testing framework may validate each functionality of the ROM firmware discretetly as an individual unit test.
+- The testing framework may validate each functionality of the ROM firmware discretely as an individual unit test.
 - Depending on the ROM firmware development progress, this may be postponed for V2.
 
 ### TB_TOP_CREATED
 
 A top level testbench has been created with the DUT instantiated.
-The following interfaces are connected (as applicable): TileLink, clocks and resets, interrupts and major DUT interfaces.
-Some minor interfaces may not be connected at this point.
+The following interfaces are connected (as applicable): TileLink, clocks and resets, interrupts and alerts.
+Other interfaces may not be connected at this point (connecting these is part of SIM_TB_ENV_CREATED).
 Inputs for which interfaces have not yet been created are tied off to 0.
 
 ### PRELIMINARY_ASSERTION_CHECKS_ADDED
@@ -298,7 +304,7 @@ These requirements are captured when the testplan is reviewed by the key stakeho
 
 ### SIM_CSR_MEM_TEST_SUITE_PASSING
 
-CSR test suites have been added for ALL interfaces (including, but not limited to the DUT's SW device acess port, JTAG access port etc.) that have access to the system memory map:
+CSR test suites have been added for ALL interfaces (including, but not limited to the DUT's SW device access port, JTAG access port etc.) that have access to the system memory map:
 - HW reset test (test all resets)
 - CSR read/write
 - Bit Bash
@@ -459,11 +465,6 @@ Branch, statement and functional code coverage for FPV testbenches has reached 9
 
 COI coverage for FPV testbenches has reached 75%.
 
-### TB_LINT_PASS
-
-The lint checking flow for the testbench passes cleanly.
-Any waiver files have been reviewed.
-
 ### PRE_VERIFIED_SUB_MODULES_V2
 
 Sub-modules that are pre-verified with their own testbenches have already reached V2 or a higher stage.
@@ -471,7 +472,6 @@ The coverage level of the pre-verified sub-modules that are not tracked (i.e., n
 
 ### SEC_CM_PLANNED
 
-<!-- TODO, add the link to security hardening guidelines doc -->
 Security countermeasures are planned and documented.
 - Common countermeasure features (such as shadowed reg, hardened counter etc) can be tested by importing common sec_cm testplans, tests and adding the bind file `cm_sec_bind`.
 - Additional checks and sequences may be needed to verify those features. Document those in the individual testplan.
@@ -496,7 +496,7 @@ The DV document and testplan are complete and have been reviewed by key stakehol
 - Chip DV lead
 - Security architect
 
-This review will focus on the design deltas captured in the tesplan since the last review.
+This review will focus on the design deltas captured in the testplan since the last review.
 In addition, the fully implemented functional coverage plan, the observed coverage and the coverage exclusions are expected to be scrutinized to ensure there are no verification holes or any gaps in achieving the required stimulus quality, before the work towards progressing to V3 can commence.
 
 ### V3_CHECKLIST_SCOPED

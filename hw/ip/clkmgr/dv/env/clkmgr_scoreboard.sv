@@ -295,6 +295,16 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "measure_ctrl_regwen": begin
         if (addr_phase_write) measure_ctrl_regwen = item.a_data;
       end
+      "io_meas_ctrl_en": begin
+      end
+      "io_div2_meas_ctrl_en": begin
+      end
+      "io_div4_meas_ctrl_en": begin
+      end
+      "main_meas_ctrl_en": begin
+      end
+      "usb_meas_ctrl_en": begin
+      end
       "io_meas_ctrl_shadowed": begin
       end
       "io_div2_meas_ctrl_shadowed": begin

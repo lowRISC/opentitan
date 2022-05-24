@@ -8,6 +8,8 @@
 #
 # This doesn't install dependencies, but should otherwise behave the
 # same as what CI would do on a pull request.
+#
+# These tasks should ideally take less than a minute each
 
 set -e
 
@@ -58,12 +60,6 @@ ci/scripts/include-guard.sh $tgt_branch
 
 echo -e "\n### Use rustfmt to check Rust coding style"
 ci/scripts/rust-format.sh $tgt_branch
-
-echo -e "\n### Style-Lint RTL Verilog source files with Verible"
-ci/scripts/verible-lint.sh rtl
-
-echo -e "\n### Style-Lint DV Verilog source files with Verible"
-ci/scripts/verible-lint.sh dv
 
 echo -e "\n### Render documentation"
 ci/scripts/build-docs.sh

@@ -53,18 +53,31 @@ module csrng_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [16:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(17)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -533,17 +546,20 @@ module csrng_reg_top (
 
 
   // R[ctrl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic ctrl_gated_we;
+  assign ctrl_gated_we = ctrl_we & regwen_qs;
   //   F[enable]: 3:0
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_ctrl_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_we & regwen_qs),
+    .we     (ctrl_gated_we),
     .wd     (ctrl_enable_wd),
 
     // from internal hardware
@@ -562,13 +578,13 @@ module csrng_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_ctrl_sw_app_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_we & regwen_qs),
+    .we     (ctrl_gated_we),
     .wd     (ctrl_sw_app_enable_wd),
 
     // from internal hardware
@@ -587,13 +603,13 @@ module csrng_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_ctrl_read_int_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ctrl_we & regwen_qs),
+    .we     (ctrl_gated_we),
     .wd     (ctrl_read_int_state_wd),
 
     // from internal hardware
@@ -1589,6 +1605,9 @@ module csrng_reg_top (
     .d_i(&err_code_test_flds_we),
     .q_o(err_code_test_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic err_code_test_gated_we;
+  assign err_code_test_gated_we = err_code_test_we & regwen_qs;
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1598,7 +1617,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (err_code_test_we & regwen_qs),
+    .we     (err_code_test_gated_we),
     .wd     (err_code_test_wd),
 
     // from internal hardware
@@ -1687,6 +1706,8 @@ module csrng_reg_top (
                (addr_hit[15] & (|(CSRNG_PERMIT[15] & ~reg_be))) |
                (addr_hit[16] & (|(CSRNG_PERMIT[16] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_cs_cmd_req_done_wd = reg_wdata[0];
@@ -1753,6 +1774,28 @@ module csrng_reg_top (
   assign err_code_test_we = addr_hit[15] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = regwen_we;
+    reg_we_check[5] = ctrl_gated_we;
+    reg_we_check[6] = cmd_req_we;
+    reg_we_check[7] = 1'b0;
+    reg_we_check[8] = 1'b0;
+    reg_we_check[9] = 1'b0;
+    reg_we_check[10] = int_state_num_we;
+    reg_we_check[11] = 1'b0;
+    reg_we_check[12] = hw_exc_sts_we;
+    reg_we_check[13] = recov_alert_sts_we;
+    reg_we_check[14] = 1'b0;
+    reg_we_check[15] = err_code_test_gated_we;
+    reg_we_check[16] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

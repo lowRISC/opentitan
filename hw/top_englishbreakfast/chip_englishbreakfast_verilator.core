@@ -78,7 +78,7 @@ targets:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
       - RVFI=true
       - VERILATOR_MEM_BASE=0x10000000
-      - VERILATOR_TEST_STATUS_ADDR=0x30000000
+      - VERILATOR_TEST_STATUS_ADDR=0x411f0080
       - flashinit
       - rominit
       - DMIDirectTAP

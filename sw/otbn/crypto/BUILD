@@ -2,9 +2,26 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:otbn.bzl", "otbn_binary", "otbn_library")
+load("//rules:otbn.bzl", "otbn_binary", "otbn_library", "otbn_sim_test")
 
 package(default_visibility = ["//visibility:public"])
+
+otbn_library(
+    name = "field25519",
+    srcs = [
+        "field25519.s",
+    ],
+)
+
+otbn_sim_test(
+    name = "field25519_test",
+    srcs = [
+        "field25519_test.s",
+    ],
+    deps = [
+        ":field25519",
+    ],
+)
 
 otbn_library(
     name = "modexp",
@@ -236,7 +253,7 @@ otbn_binary(
 otbn_library(
     name = "rsa_verify_3072",
     srcs = [
-        "//sw/vendor:veri-titan/gen/rsa_verify_3072.s",
+        "//sw/vendor:veri-titan/gen/otbn_modexp.s",
     ],
 )
 

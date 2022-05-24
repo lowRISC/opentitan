@@ -29,6 +29,8 @@ class ErrBits(IntEnum):
     ILLEGAL_INSN = 1 << 3
     LOOP = 1 << 4
     KEY_INVALID = 1 << 5
+    RND_REP_CHK_FAIL = 1 << 6
+    RND_FIPS_CHK_FAIL = 1 << 7
     IMEM_INTG_VIOLATION = 1 << 16
     DMEM_INTG_VIOLATION = 1 << 17
     REG_INTG_VIOLATION = 1 << 18

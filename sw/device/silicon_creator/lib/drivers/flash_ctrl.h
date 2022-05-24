@@ -152,6 +152,7 @@ enum {
   kFlashCtrlSecMmioExecSet = 1,
   kFlashCtrlSecMmioInfoCfgSet = 1,
   kFlashCtrlSecMmioInfoPermsSet = 1,
+  kFlashCtrlSecMmioBankErasePermsSet = 1,
   kFlashCtrlSecMmioInit = 5,
 };
 
@@ -336,27 +337,31 @@ rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
 
 /**
  * A struct for specifying access permissions.
+ *
+ * flash_ctrl config registers use 4-bits for boolean values. Use
+ * `kMultiBitBool4True` to enable and `kMultiBitBool4False` to disable
+ * permissions.
  */
 typedef struct flash_ctrl_perms {
   /**
    * Read.
    */
-  hardened_bool_t read;
+  multi_bit_bool_t read;
   /**
    * Write.
    */
-  hardened_bool_t write;
+  multi_bit_bool_t write;
   /**
    * Erase.
    */
-  hardened_bool_t erase;
+  multi_bit_bool_t erase;
 } flash_ctrl_perms_t;
 
 /**
  * Sets default access permissions for the data partition.
  *
  * A permission is enabled only if the corresponding field in `perms` is
- * `kHardenedBoolTrue`.
+ * `kMultiBitBool4True`.
  *
  * The caller is responsible for calling
  * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataDefaultPermsSet)` when
@@ -370,7 +375,7 @@ void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms);
  * Sets access permissions for an info page.
  *
  * A permission is enabled only if the corresponding field in `perms` is
- * `kHardenedBoolTrue`.
+ * `kMultiBitBool4True`.
  *
  * * The caller is responsible for calling
  * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoPermsSet)` when sec_mmio is
@@ -384,6 +389,10 @@ void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
 
 /**
  * A struct for flash configuration settings.
+ *
+ * flash_ctrl config registers use 4-bits for boolean values. Use
+ * `kMultiBitBool4True` to enable and `kMultiBitBool4False` to disable
+ * these settings.
  */
 typedef struct flash_ctrl_cfg {
   /**
@@ -422,6 +431,17 @@ void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg);
  * @param cfg New configuration settings.
  */
 void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page, flash_ctrl_cfg_t cfg);
+
+/**
+ * Set bank erase permissions for both flash banks.
+ *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioBankErasePermsSet)` when
+ * sec_mmio is being used to check expectations.
+ *
+ * @param enable Whether to enable bank erase.
+ */
+void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable);
 
 /**
  * Enable execution from flash.

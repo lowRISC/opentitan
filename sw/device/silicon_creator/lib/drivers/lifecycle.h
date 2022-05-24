@@ -68,6 +68,16 @@ typedef struct lifecycle_device_id {
 } lifecycle_device_id_t;
 
 /**
+ * Hardware revision.
+ *
+ * Consists of a 16-bit chip generation and a 16-bit chip revision.
+ */
+typedef struct lifecycle_hw_rev {
+  uint16_t chip_gen;
+  uint16_t chip_rev;
+} lifecycle_hw_rev_t;
+
+/**
  * Get the life cycle state.
  *
  * This function checks the value read from the hardware and returns a
@@ -93,6 +103,13 @@ uint32_t lifecycle_raw_state_get(void);
  * `HW_CFG` partition in OTP.
  */
 void lifecycle_device_id_get(lifecycle_device_id_t *device_id);
+
+/**
+ * Get the hardware revision.
+ *
+ * @param[out] hw_rev Hardware revision.
+ */
+void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev);
 
 #ifdef __cplusplus
 }

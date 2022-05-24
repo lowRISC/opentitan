@@ -35,13 +35,27 @@ module otbn_instruction_fetch
   output logic [31:0]              insn_fetch_resp_data_o,
   input  logic                     insn_fetch_resp_clear_i,
 
+  output rf_predec_bignum_t   rf_predec_bignum_o,
+  output alu_predec_bignum_t  alu_predec_bignum_o,
+  output ispr_predec_bignum_t ispr_predec_bignum_o,
+  output mac_predec_bignum_t  mac_predec_bignum_o,
+  output logic                lsu_addr_en_predec_o,
+
+  input logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot_i,
+  input logic [NWdr-1:0] rf_bignum_rd_b_indirect_onehot_i,
+  input logic [NWdr-1:0] rf_bignum_wr_indirect_onehot_i,
+  input logic            rf_bignum_indirect_en_i,
+
   output logic insn_fetch_err_o,  // ECC error seen in instruction fetch
 
   input logic                     prefetch_en_i,
   input logic                     prefetch_loop_active_i,
   input logic [31:0]              prefetch_loop_iterations_i,
   input logic [ImemAddrWidth:0]   prefetch_loop_end_addr_i,
-  input logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_i
+  input logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_i,
+
+  input logic                     sec_wipe_wdr_en_i,
+  input logic [4:0]               sec_wipe_wdr_addr_i
 );
 
   function automatic logic insn_is_branch(logic [31:0] insn_data);
@@ -62,6 +76,19 @@ module otbn_instruction_fetch
   logic                     insn_prefetch;
   logic                     insn_prefetch_fail;
 
+  rf_predec_bignum_t   rf_predec_bignum_indirect, rf_predec_bignum_sec_wipe;
+  rf_predec_bignum_t   rf_predec_bignum_q, rf_predec_bignum_d, rf_predec_bignum_insn;
+  alu_predec_bignum_t  alu_predec_bignum_q, alu_predec_bignum_d;
+  ispr_predec_bignum_t ispr_predec_bignum_q, ispr_predec_bignum_d;
+  ispr_predec_bignum_t ispr_predec_bignum;
+  mac_predec_bignum_t  mac_predec_bignum_q, mac_predec_bignum_d;
+  logic                lsu_addr_en_predec_q, lsu_addr_en_predec_d;
+  logic                lsu_addr_en_predec_insn;
+
+  logic [NWdr-1:0] rf_bignum_wr_sec_wipe_onehot;
+
+  logic rf_predec_bignum_en, other_predec_en;
+
   // The prefetch has failed if a fetch is requested and either no prefetch has done or was done to
   // the wrong address.
   assign insn_prefetch_fail = insn_fetch_req_valid_i &
@@ -81,12 +108,91 @@ module otbn_instruction_fetch
     end
   end
 
+  // SEC_CM: DATA_REG_SW.SCA
+  otbn_predecode u_otbn_predecode (
+    .clk_i,
+    .rst_ni,
+
+    .imem_rdata_i (imem_rdata_i[31:0]),
+    .imem_rvalid_i,
+
+    .rf_predec_bignum_o   (rf_predec_bignum_insn),
+    .alu_predec_bignum_o  (alu_predec_bignum_d),
+    .ispr_predec_bignum_o (ispr_predec_bignum),
+    .mac_predec_bignum_o  (mac_predec_bignum_d),
+    .lsu_addr_en_predec_o (lsu_addr_en_predec_insn)
+  );
+
+  prim_onehot_enc #(
+    .OneHotWidth(NWdr)
+  ) rf_we_bignum_sec_wipe_onehot_enc (
+    .in_i  (sec_wipe_wdr_addr_i),
+    .en_i  (sec_wipe_wdr_en_i),
+    .out_o (rf_bignum_wr_sec_wipe_onehot)
+  );
+
+  // Indirect register addressing
+  // For instructions using indirect addressing (BN.LID/BN.SID/BN.MOVR) the base register read to
+  // determine which bignum register is used occurs in the first cycle of the instruction
+  // execution. The onehot encoded version of the register index is passed back here (via the
+  // `rf_bignum_*_indirect_onehot_i` signals to set the enables for the following cycle.
+  assign rf_predec_bignum_indirect = '{rf_ren_a : rf_bignum_rd_a_indirect_onehot_i,
+                                       rf_ren_b : rf_bignum_rd_b_indirect_onehot_i,
+                                       rf_we    : rf_bignum_wr_indirect_onehot_i};
+
+  assign rf_predec_bignum_sec_wipe = '{rf_ren_a : '0,
+                                            rf_ren_b : '0,
+                                            rf_we    : rf_bignum_wr_sec_wipe_onehot};
+
+  // Register enables for bignum come from precode unless indirect register accesses are used
+  assign rf_predec_bignum_d = sec_wipe_wdr_en_i       ? rf_predec_bignum_sec_wipe :
+                              rf_bignum_indirect_en_i ? rf_predec_bignum_indirect :
+                              insn_fetch_en           ? rf_predec_bignum_insn     :
+                                                        '0;
+
+  assign rf_predec_bignum_en =
+    insn_fetch_en | rf_bignum_indirect_en_i | sec_wipe_wdr_en_i | insn_fetch_resp_clear_i;
+
+  assign ispr_predec_bignum_d = insn_fetch_en ? ispr_predec_bignum : '0;
+
+  assign lsu_addr_en_predec_d = lsu_addr_en_predec_insn & insn_fetch_en;
+
+  assign other_predec_en = insn_fetch_en | insn_fetch_resp_clear_i;
+
   assign insn_fetch_en = imem_rvalid_i & insn_fetch_req_valid_i;
 
   always_ff @(posedge clk_i) begin
     if (insn_fetch_en) begin
       insn_fetch_resp_data_intg_q <= imem_rdata_i;
       insn_fetch_resp_addr_q      <= insn_prefetch_addr;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      alu_predec_bignum_q <= '0;
+      mac_predec_bignum_q <= '0;
+    end else if (insn_fetch_en) begin
+      alu_predec_bignum_q <= alu_predec_bignum_d;
+      mac_predec_bignum_q <= mac_predec_bignum_d;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rf_predec_bignum_q <= '0;
+    end else if (rf_predec_bignum_en) begin
+      rf_predec_bignum_q <= rf_predec_bignum_d;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ispr_predec_bignum_q <= '0;
+      lsu_addr_en_predec_q <= 1'b0;
+    end else if (other_predec_en) begin
+      ispr_predec_bignum_q <= ispr_predec_bignum_d;
+      lsu_addr_en_predec_q <= lsu_addr_en_predec_d;
     end
   end
 
@@ -140,8 +246,15 @@ module otbn_instruction_fetch
 
   assign insn_fetch_err_o = |insn_fetch_resp_intg_error_vec & insn_fetch_resp_valid_q;
 
+  assign rf_predec_bignum_o   = rf_predec_bignum_q;
+  assign alu_predec_bignum_o  = alu_predec_bignum_q;
+  assign ispr_predec_bignum_o = ispr_predec_bignum_q;
+  assign mac_predec_bignum_o  = mac_predec_bignum_q;
+  assign lsu_addr_en_predec_o = lsu_addr_en_predec_q;
+
   // We should always get prefetches correct, the check exists as an integrity check only
   `ASSERT(NoAddressMismatch,
           imem_rvalid_i && insn_fetch_req_valid_i |-> insn_fetch_req_addr_i == insn_prefetch_addr)
   `ASSERT(FetchEnOnlyIfValidIMem, insn_fetch_en |-> imem_rvalid_i)
+  `ASSERT(NoFetchEnAndIndirectEn, !(insn_fetch_en && rf_bignum_indirect_en_i))
 endmodule

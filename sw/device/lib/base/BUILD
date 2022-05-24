@@ -122,6 +122,7 @@ cc_library(
 cc_test(
     name = "hardened_memory_unittest",
     srcs = ["hardened_memory_unittest.cc"],
+    tags = ["broken"],
     deps = [
         ":hardened_memory",
         ":random_order",

@@ -262,4 +262,3 @@ package rstmgr_reg_pkg;
   };
 
 endpackage
-

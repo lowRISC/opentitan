@@ -48,6 +48,7 @@ module spi_device
   // INTR: Flash mode
   output logic intr_upload_cmdfifo_not_empty_o,
   output logic intr_upload_payload_not_empty_o,
+  output logic intr_upload_payload_overflow_o,
   output logic intr_readbuf_watermark_o,
   output logic intr_readbuf_flip_o,
 
@@ -120,6 +121,8 @@ module spi_device
 
 
   // Submoule SRAM Requests
+  sram_l2m_t flash_sram_l2m;
+  sram_m2l_t flash_sram_m2l;
   sram_l2m_t sub_sram_l2m [IoModeEnd];
   sram_m2l_t sub_sram_m2l [IoModeEnd];
 
@@ -157,22 +160,26 @@ module spi_device
   logic       cmdfifo_rvalid, cmdfifo_rready;
   logic [7:0] cmdfifo_rdata;
   logic       cmdfifo_notempty;
+  logic       cmdfifo_set_pulse;
 
   logic        addrfifo_rvalid, addrfifo_rready;
   logic [31:0] addrfifo_rdata;
   logic        addrfifo_notempty;
 
   logic payload_notempty;
+  logic payload_overflow;
 
   localparam int unsigned CmdFifoPtrW = $clog2(SramCmdFifoDepth+1);
   localparam int unsigned AddrFifoPtrW = $clog2(SramAddrFifoDepth+1);
 
   localparam int unsigned PayloadByte = SramPayloadDepth * (SramDw/$bits(spi_byte_t));
   localparam int unsigned PayloadDepthW = $clog2(PayloadByte+1);
+  localparam int unsigned PayloadIdxW   = $clog2(PayloadByte);
 
   logic [CmdFifoPtrW-1:0]    cmdfifo_depth;
   logic [AddrFifoPtrW-1:0]   addrfifo_depth;
   logic [PayloadDepthW-1:0]  payload_depth;
+  logic [PayloadIdxW-1:0]    payload_start_idx;
 
   assign payload_notempty = payload_depth != '0;
 
@@ -306,11 +313,16 @@ module spi_device
   logic sck_status_busy_set;       // set by HW (upload)
   logic csb_status_busy_broadcast; // from spid_status
 
+  // WREN / WRDI HW signal
+  logic sck_status_wr_set;
+  logic sck_status_wr_clr;
+
   // Jedec ID
   jedec_cfg_t jedec_cfg;
 
   // Interrupts in Flash mode
   logic intr_upload_cmdfifo_not_empty, intr_upload_payload_not_empty;
+  logic intr_upload_payload_overflow;
   logic intr_readbuf_watermark, intr_readbuf_flip;
   logic flash_sck_readbuf_watermark, flash_sck_readbuf_flip;
 
@@ -589,12 +601,13 @@ module spi_device
     .clk_i,
     .rst_ni,
 
-    .d_i               ({cmdfifo_notempty, payload_notempty}),
+    .d_i               ({payload_notempty, payload_overflow}),
     .q_sync_o          (),
-    .q_posedge_pulse_o ({intr_upload_cmdfifo_not_empty,
-                         intr_upload_payload_not_empty}),
+    .q_posedge_pulse_o ({intr_upload_payload_not_empty,
+                         intr_upload_payload_overflow}),
     .q_negedge_pulse_o ()
   );
+  assign intr_upload_cmdfifo_not_empty = cmdfifo_set_pulse;
 
   prim_intr_hw #(.Width(1)) u_intr_cmdfifo_not_empty (
     .clk_i,
@@ -621,6 +634,20 @@ module spi_device
     .hw2reg_intr_state_de_o (hw2reg.intr_state.upload_payload_not_empty.de),
     .intr_o                 (intr_upload_payload_not_empty_o              )
   );
+
+  prim_intr_hw #(.Width(1)) u_intr_payload_overflow (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_upload_payload_overflow                ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.upload_payload_overflow.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.upload_payload_overflow.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.upload_payload_overflow.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.upload_payload_overflow.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.upload_payload_overflow.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.upload_payload_overflow.de),
+    .intr_o                 (intr_upload_payload_overflow_o              )
+  );
+
 
   prim_pulse_sync u_flash_readbuf_watermark_pulse_sync (
     .clk_src_i   (clk_spi_in_buf             ),
@@ -755,11 +782,18 @@ module spi_device
       cmd_info[i] = CmdInfoInput;
     end
 
+    // Hand crafted command information slots
     cmd_info[CmdInfoEn4B].valid  = reg2hw.cmd_info_en4b.valid.q;
     cmd_info[CmdInfoEn4B].opcode = reg2hw.cmd_info_en4b.opcode.q;
 
     cmd_info[CmdInfoEx4B].valid  = reg2hw.cmd_info_ex4b.valid.q;
     cmd_info[CmdInfoEx4B].opcode = reg2hw.cmd_info_ex4b.opcode.q;
+
+    cmd_info[CmdInfoWrEn].valid  = reg2hw.cmd_info_wren.valid.q;
+    cmd_info[CmdInfoWrEn].opcode = reg2hw.cmd_info_wren.opcode.q;
+
+    cmd_info[CmdInfoWrDi].valid  = reg2hw.cmd_info_wrdi.valid.q;
+    cmd_info[CmdInfoWrDi].opcode = reg2hw.cmd_info_wrdi.opcode.q;
 
   end
 
@@ -991,6 +1025,39 @@ module spi_device
     else            cmd_dp_sel_outclk <= cmd_dp_sel;
   end
 
+  // SCK clock domain MUX for SRAM access for Flash and Passthrough
+  always_comb begin
+    flash_sram_l2m = '{ default: '0 };
+
+    for (int unsigned i = IoModeCmdParse ; i < IoModeEnd ; i++) begin
+      sub_sram_m2l[i] = '{
+        rvalid: 1'b 0,
+        rdata: '0,
+        rerror: '{uncorr: 1'b 0, corr: 1'b 0}
+      };
+    end
+
+    unique case (cmd_dp_sel)
+      DpReadCmd, DpReadSFDP: begin
+        // SRAM:: Remember this has glitch
+        // switch should happen only when clock gate is disabled.
+        flash_sram_l2m = sub_sram_l2m[IoModeReadCmd];
+        sub_sram_m2l[IoModeReadCmd] = flash_sram_m2l;
+      end
+
+      DpUpload: begin
+        flash_sram_l2m = sub_sram_l2m[IoModeUpload];
+        sub_sram_m2l[IoModeUpload] = flash_sram_m2l;
+      end
+
+      default: begin
+        // DpNone, DpReadStatus, DpReadJEDEC
+        flash_sram_l2m = '{default: '0 };
+      end
+    endcase
+  end
+
+  // inverted SCK clock domain MUX for IO Mode and P2S
   always_comb begin
     io_mode = SingleIO;
     p2s_valid = 1'b 0;
@@ -998,13 +1065,18 @@ module spi_device
     sub_p2s_sent = '{default: 1'b 0};
 
     mem_b_l2m = '{ default: '0 };
-    for (int unsigned i = 0 ; i < IoModeEnd ; i++) begin
-      sub_sram_m2l[i] = '{
-        rvalid: 1'b 0,
-        rdata: '0,
-        rerror: '{uncorr: 1'b 0, corr: 1'b 0}
-      };
-    end
+
+    sub_sram_m2l[IoModeFw] = '{
+      rvalid: 1'b 0,
+      rdata: '0,
+      rerror: '{uncorr: 1'b 0, corr: 1'b 0}
+    };
+
+    flash_sram_m2l = '{
+      rvalid: 1'b 0,
+      rdata: '0,
+      rerror: '{uncorr: 1'b 0, corr: 1'b 0}
+    };
 
     unique case (spi_mode)
       FwMode: begin
@@ -1021,13 +1093,16 @@ module spi_device
       end
 
       FlashMode, PassThrough: begin
+        // SRAM comb logic is in SCK clock domain
+        mem_b_l2m = flash_sram_l2m;
+        flash_sram_m2l = mem_b_m2l;
+
         unique case (cmd_dp_sel_outclk)
           DpNone: begin
             io_mode = sub_iomode[IoModeCmdParse];
 
             sub_p2s_sent[IoModeCmdParse] = p2s_sent;
 
-            // Leave SRAM default;
           end
           DpReadCmd, DpReadSFDP: begin
             io_mode = sub_iomode[IoModeReadCmd];
@@ -1035,11 +1110,6 @@ module spi_device
             p2s_valid = sub_p2s_valid[IoModeReadCmd];
             p2s_data  = sub_p2s_data[IoModeReadCmd];
             sub_p2s_sent[IoModeReadCmd] = p2s_sent;
-
-            // SRAM:: Remember this has glitch
-            // switch should happen only when clock gate is disabled.
-            mem_b_l2m = sub_sram_l2m[IoModeReadCmd];
-            sub_sram_m2l[IoModeReadCmd] = mem_b_m2l;
           end
           DpReadStatus: begin
             io_mode = sub_iomode[IoModeStatus];
@@ -1048,7 +1118,6 @@ module spi_device
             p2s_data  = sub_p2s_data[IoModeStatus];
             sub_p2s_sent[IoModeStatus] = p2s_sent;
 
-            // default memory (tied)
           end
 
           DpReadJEDEC: begin
@@ -1065,9 +1134,6 @@ module spi_device
             p2s_valid = sub_p2s_valid[IoModeUpload];
             p2s_data  = sub_p2s_data[IoModeUpload];
             sub_p2s_sent[IoModeUpload] = p2s_sent;
-
-            mem_b_l2m = sub_sram_l2m[IoModeUpload];
-            sub_sram_m2l[IoModeUpload] = mem_b_m2l;
           end
           // DpUnknown:
           default: begin
@@ -1181,6 +1247,9 @@ module spi_device
     .rst_rxfifo_ni (rst_rxfifo_n),
     .clk_spi_out_i (clk_spi_out_buf),
     .rst_txfifo_ni (rst_txfifo_n),
+
+    // Mode
+    .spi_mode_i (spi_mode),
 
     .rxf_overflow_o  (rxf_overflow),
     .txf_underflow_o (txf_underflow),
@@ -1328,6 +1397,9 @@ module spi_device
   assign hw2reg.flash_status.busy.d   = readstatus_d[0];
   assign hw2reg.flash_status.status.d = readstatus_d[23:1];
 
+  assign sck_status_wr_set = (cmd_dp_sel == DpWrEn);
+  assign sck_status_wr_clr = (cmd_dp_sel == DpWrDi);
+
   spid_status u_spid_status (
     .clk_i  (clk_spi_in_buf),
     .rst_ni (rst_spi_n),
@@ -1338,6 +1410,8 @@ module spi_device
 
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
+
+    .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
 
     .sys_status_we_i (readstatus_qe),
     .sys_status_i    (readstatus_q),
@@ -1354,6 +1428,9 @@ module spi_device
     .io_mode_o   (sub_iomode[IoModeStatus]),
 
     .inclk_busy_set_i  (sck_status_busy_set), // SCK domain
+
+    .inclk_we_set_i (sck_status_wr_set),
+    .inclk_we_clr_i (sck_status_wr_clr),
 
     .csb_busy_broadcast_o (csb_status_busy_broadcast) // SCK domain
   );
@@ -1413,6 +1490,9 @@ module spi_device
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
 
+    .clk_csb_i (clk_csb),
+
+    .sck_csb_asserted_pulse_i   (sck_csb_asserted_pulse),
     .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
 
     .sel_dp_i (cmd_dp_sel),
@@ -1458,14 +1538,17 @@ module spi_device
 
     .set_busy_o (sck_status_busy_set),
 
+    .sys_cmdfifo_set_o       (cmdfifo_set_pulse),
     .sys_cmdfifo_notempty_o  (cmdfifo_notempty),
     .sys_cmdfifo_full_o      (), // not used
     .sys_addrfifo_notempty_o (addrfifo_notempty),
     .sys_addrfifo_full_o     (), // not used
+    .sys_payload_overflow_o  (payload_overflow),
 
-    .sys_cmdfifo_depth_o  (cmdfifo_depth),
-    .sys_addrfifo_depth_o (addrfifo_depth),
-    .sys_payload_depth_o  (payload_depth)
+    .sys_cmdfifo_depth_o     (cmdfifo_depth),
+    .sys_addrfifo_depth_o    (addrfifo_depth),
+    .sys_payload_depth_o     (payload_depth),
+    .sys_payload_start_idx_o (payload_start_idx)
   );
   // FIFO connect
   assign cmdfifo_rready = reg2hw.upload_cmdfifo.re;
@@ -1491,8 +1574,13 @@ module spi_device
   assign hw2reg.upload_status.addrfifo_notempty.de = 1'b 1;
   assign hw2reg.upload_status.addrfifo_notempty.d  = addrfifo_notempty;
 
-  assign hw2reg.upload_status.payload_depth.de = 1'b 1;
-  assign hw2reg.upload_status.payload_depth.d  = payload_depth;
+  assign hw2reg.upload_status2.payload_depth.de = 1'b 1;
+  assign hw2reg.upload_status2.payload_depth.d  = payload_depth;
+
+  assign hw2reg.upload_status2.payload_start_idx.de = 1'b 1;
+  assign hw2reg.upload_status2.payload_start_idx.d = payload_start_idx;
+  `ASSERT_INIT(PayloadStartIdxWidthMatch_A,
+    $bits(hw2reg.upload_status2.payload_start_idx.d) == PayloadIdxW)
 
   // End:   Upload ---------------------------------------------------
 
@@ -1924,6 +2012,8 @@ module spi_device
                 intr_upload_cmdfifo_not_empty_o)
   `ASSERT_KNOWN(IntrUploadPayloadNotEmptyOKnown,
                 intr_upload_payload_not_empty_o)
+  `ASSERT_KNOWN(IntrUploadPayloadOverflowOKnown,
+                intr_upload_payload_overflow_o)
   `ASSERT_KNOWN(IntrReadbufWatermarkOKnown,  intr_readbuf_watermark_o)
   `ASSERT_KNOWN(IntrReadbufFlipOKnown,       intr_readbuf_flip_o)
   `ASSERT_KNOWN(IntrTpmHeaderNotEmptyOKnown, intr_tpm_header_not_empty_o)

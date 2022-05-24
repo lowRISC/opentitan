@@ -2,18 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{bail, Result};
 use std::rc::Rc;
 
-use crate::bail;
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
 use crate::transport::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
-use crate::transport::{Result, TransportError};
+use crate::transport::TransportError;
 
-/// The C2D2 (Case Closed Debugging Debugger) is used to bring up GSC and EC chips sitting
-/// inside a Chrome OS devices, such that those GSC chips can provide Case Closed Debugging
-/// support to allow bringup of the rest of the Chrome OS device.  C2D2 devices happen to speak
+/// The C2D2 (Case Closed Debugging Debugger) is used to bring up OT and EC chips sitting
+/// inside a computing device, such that those OT chips can provide Case Closed Debugging
+/// support to allow bringup of the rest of the computing device.  C2D2 devices happen to speak
 /// almost exactly the same USB protocol as HyperDebug.  This `Flavor` implementation defines
-/// the few deviations: USB PID value, and the handling of GSC reset signal.
+/// the few deviations: USB PID value, and the handling of OT reset signal.
 pub struct C2d2Flavor {}
 
 impl C2d2Flavor {
@@ -52,9 +52,8 @@ impl C2d2ResetPin {
 impl GpioPin for C2d2ResetPin {
     /// Reads the value of the the reset pin.
     fn read(&self) -> Result<bool> {
-        let mut result: Result<bool> = Err(TransportError::CommunicationError(
-            "No output from gpioget".to_string(),
-        ));
+        let mut result: Result<bool> =
+            Err(TransportError::CommunicationError("No output from gpioget".to_string()).into());
         self.inner
             .execute_command("gpioget SPIVREF_RSVD_H1VREF_H1_RST_ODL", |line| {
                 result = Ok(line.trim_start().starts_with("1"))

@@ -50,6 +50,7 @@ interface otbn_trace_if
   input logic                      rf_bignum_rd_en_b,
 
   input logic [1:0]                   rf_bignum_wr_en,
+  input logic                         rf_bignum_wr_commit,
   input logic [otbn_pkg::WLEN-1:0]    rf_bignum_wr_data_no_intg,
   input logic [otbn_pkg::ExtWLEN-1:0] rf_bignum_wr_data_intg,
   input logic                         rf_bignum_wr_data_intg_sel,
@@ -81,7 +82,8 @@ interface otbn_trace_if
 
   input logic [1:0][otbn_pkg::SideloadKeyWidth-1:0] sideload_key_shares_i,
 
-  input logic secure_wipe_running
+  input logic start_secure_wipe,
+  input logic secure_wipe_done
 );
   import otbn_pkg::*;
 
@@ -227,10 +229,12 @@ interface otbn_trace_if
 
   assign ispr_write[IsprMod] = |u_otbn_alu_bignum.mod_wr_en & ~ispr_init;
 
-  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_mod_words
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_mod_and_acc_words
     assign ispr_write_data[IsprMod][i_word*32+:32] =
-      u_otbn_alu_bignum.mod_wr_en[i_word] ? u_otbn_alu_bignum.mod_d[i_word*32+:32] :
-                                            u_otbn_alu_bignum.mod_q[i_word*32+:32];
+      u_otbn_alu_bignum.mod_wr_en[i_word] ? u_otbn_alu_bignum.mod_intg_d[i_word*39+:32] :
+                                            u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
+    assign ispr_read_data[IsprMod][i_word*32+:32] = u_otbn_alu_bignum.mod_intg_q[i_word*39+:32];
+    assign ispr_write_data[IsprAcc][i_word*32+:32] = u_otbn_mac_bignum.acc_intg_d[i_word*39+:32];
   end
 
   assign ispr_read[IsprMod] =
@@ -238,16 +242,14 @@ interface otbn_trace_if
     (insn_fetch_resp_valid &
      (alu_bignum_operation.op inside {AluOpBignumAddm, AluOpBignumSubm}));
 
-  assign ispr_read_data[IsprMod] = u_otbn_alu_bignum.mod_q;
-
   assign ispr_write[IsprAcc] = u_otbn_mac_bignum.acc_en & ~ispr_init;
-  assign ispr_write_data[IsprAcc] = u_otbn_mac_bignum.acc_d;
 
   assign ispr_read[IsprAcc] = (any_ispr_read & (ispr_addr == IsprAcc)) | mac_bignum_en;
-  // For ISPR reads look at the ACC flops directly. For other ACC reads look at the `acc` signal in
-  // order to read ACC as 0 for the BN.MULQACC.Z instruction variant.
+  // For ISPR reads look at the ACC flops directly. For other ACC reads look at the `acc_blanked`
+  // signal in order to read ACC as 0 for the BN.MULQACC.Z instruction variant.
   assign ispr_read_data[IsprAcc] =
-      (any_ispr_read & (ispr_addr == IsprAcc)) ? u_otbn_mac_bignum.acc_q : u_otbn_mac_bignum.acc;
+      (any_ispr_read & (ispr_addr == IsprAcc)) ? u_otbn_mac_bignum.acc_no_intg_q  :
+                                                 u_otbn_mac_bignum.acc_blanked;
 
   assign ispr_write[IsprRnd] = 1'b0;
   assign ispr_write_data[IsprRnd] = '0;
@@ -308,16 +310,14 @@ interface otbn_trace_if
     assign flags_read_data[i_fg] = u_otbn_alu_bignum.flags_q[i_fg];
   end
 
-  // Detect negative edges of the secure wipe signal
-  logic secure_wipe_running_r, secure_wipe_done;
+  logic secure_wipe_running;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      secure_wipe_running_r <= 0;
+      secure_wipe_running <= 0;
     end else begin
-      secure_wipe_running_r <= secure_wipe_running;
+      secure_wipe_running <= start_secure_wipe | (secure_wipe_running & ~secure_wipe_done);
     end
   end
-  assign secure_wipe_done = secure_wipe_running_r & ~secure_wipe_running;
 
 endinterface
 

@@ -20,10 +20,6 @@ set_expr_coverable_statements -all
 // disable the scoring of Verilog modules defined with the 'celldefine compiler directive.
 set_libcell_scoring
 
-// Enables scoring of block and expression coverage for functions and tasks defined directly inside
-// SystemVerilog packages.
-set_subprogram_scoring -svpackage
-
 // Enables scoring of SystemVerilog continuous assignments, which is by disabled by default.
 set_assign_scoring
 
@@ -33,8 +29,6 @@ set_branch_scoring
 // Scores statements within a block.
 set_statement_scoring
 
-// Enables expression coverage for expression containing structs (packed and unpacked).
-set_expr_scoring -struct
 
 // Enables Toggle scoring and reporting of SystemVerilog enumerations and multidimensional static
 // arrays , vectors, packed union, modport and generate blocks.
@@ -43,18 +37,12 @@ set_toggle_scoring -sv_enum enable_mda -sv_struct_with_enum -sv_modport -sv_mda 
 // Enables scoring of reset states and transitions for identified FSMs.
 set_fsm_reset_scoring
 
-// Enables scoring of immediate assertions inside a class in a package and assertions inside AMS
-// modules.
-select_functional  -ams_control  -imm_asrt_class_package
-
-// Improve the scoping and naming of covergroup instances.
-set_covergroup -new_instance_reporting
-
 // Enable toggle coverage only on ports.
 set_toggle_portsonly
 
 // Enable scoring of FSM arcs (state transitions).
-set_fsm_arc_scoring
+// TODO: re-enable this setting, temp disable due to #12544
+// set_fsm_arc_scoring
 
 // Include X->1|0 for toggle coverage collection. #10332
 set_toggle_includex

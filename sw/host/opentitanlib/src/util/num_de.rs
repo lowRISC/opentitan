@@ -27,14 +27,6 @@ use std::ops::Deref;
 
 use crate::util::parse_int::{ParseInt, ParseIntError};
 
-pub fn _serialize<S, T>(_r: T, _ser: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-    T: Serialize + Copy,
-{
-    unimplemented!();
-}
-
 /// Deserialize numeric types from HJSON config files.
 pub fn deserialize<'de, D, T>(deserializer: D) -> Result<T, D::Error>
 where
@@ -105,7 +97,7 @@ enum DeferredInit {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct DeferredValue(#[serde(with = "self")] DeferredInit);
+pub struct DeferredValue(#[serde(deserialize_with = "deserialize")] DeferredInit);
 
 impl DeferredValue {
     pub fn resolve(&self, size: usize, rng: &mut dyn RngCore) -> Vec<u8> {
@@ -157,20 +149,26 @@ impl Deref for DeferredValue {
 }
 
 /// Wrapper type to force deserialization assuming octal encoding.
-#[derive(Deserialize, Debug)]
-pub struct OctEncoded<T: ParseInt>(#[serde(with = "self")] pub T);
+#[derive(Clone, Deserialize, Debug)]
+pub struct OctEncoded<T>(#[serde(deserialize_with = "deserialize")] pub T)
+where
+    T: ParseInt + fmt::Octal;
 
 /// Wrapper type to force deserialization assuming decimal encoding.
-#[derive(Deserialize, Debug)]
-pub struct DecEncoded<T: ParseInt>(#[serde(with = "self")] pub T);
+#[derive(Clone, Deserialize, Debug)]
+pub struct DecEncoded<T>(#[serde(deserialize_with = "deserialize")] pub T)
+where
+    T: ParseInt + fmt::Display;
 
 /// Wrapper type to force deserialization assuming hexadecimal encoding.
-#[derive(Deserialize, Debug)]
-pub struct HexEncoded<T: ParseInt>(#[serde(with = "self")] pub T);
+#[derive(Clone, Deserialize, Debug)]
+pub struct HexEncoded<T>(#[serde(deserialize_with = "deserialize")] pub T)
+where
+    T: ParseInt + fmt::UpperHex;
 
 macro_rules! impl_parse_int_enc {
-    ($ty:ident, $radix:expr) => {
-        impl<T: ParseInt> std::ops::Deref for $ty<T> {
+    ($ty:ident, $radix:expr, $fmt:path) => {
+        impl<T: ParseInt + $fmt> std::ops::Deref for $ty<T> {
             type Target = T;
 
             fn deref(&self) -> &Self::Target {
@@ -178,7 +176,7 @@ macro_rules! impl_parse_int_enc {
             }
         }
 
-        impl<T: ParseInt> ParseInt for $ty<T> {
+        impl<T: ParseInt + $fmt> ParseInt for $ty<T> {
             type FromStrRadixErr = T::FromStrRadixErr;
 
             fn from_str_radix(src: &str, radix: u32) -> Result<Self, T::FromStrRadixErr> {
@@ -189,12 +187,27 @@ macro_rules! impl_parse_int_enc {
                 Self::from_str_radix(src, $radix).map_err(|e| e.into())
             }
         }
+
+        impl<T: ParseInt + $fmt> fmt::Display for $ty<T> {
+            fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+                <_ as $fmt>::fmt(&self.0, f)
+            }
+        }
+
+        impl<T: ParseInt + $fmt> Serialize for $ty<T> {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer,
+            {
+                serializer.serialize_str(&self.to_string())
+            }
+        }
     };
 }
 
-impl_parse_int_enc!(OctEncoded, 8);
-impl_parse_int_enc!(DecEncoded, 10);
-impl_parse_int_enc!(HexEncoded, 16);
+impl_parse_int_enc!(OctEncoded, 8, fmt::Octal);
+impl_parse_int_enc!(DecEncoded, 10, fmt::Display);
+impl_parse_int_enc!(HexEncoded, 16, fmt::UpperHex);
 
 #[cfg(test)]
 mod test {
@@ -205,11 +218,11 @@ mod test {
     fn de_u8() -> Result<()> {
         #[derive(Debug, Deserialize)]
         struct TestData {
-            #[serde(with = "super")]
+            #[serde(deserialize_with = "deserialize")]
             oct: OctEncoded<u8>,
-            #[serde(with = "super")]
+            #[serde(deserialize_with = "deserialize")]
             dec: DecEncoded<u8>,
-            #[serde(with = "super")]
+            #[serde(deserialize_with = "deserialize")]
             hex: HexEncoded<u8>,
         }
 

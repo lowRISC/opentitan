@@ -1,15 +1,27 @@
-From 86e72060181e099985454de3321b229a62ddd423 Mon Sep 17 00:00:00 2001
-From: Philipp Wagner <phw@lowrisc.org>
-Date: Fri, 22 Feb 2019 14:48:46 +0000
-Subject: [PATCH] Use lowrisc instead of PULP primitives
+From 083977618f162badfe0bca957454c266c1cf38dd Mon Sep 17 00:00:00 2001
+From: Timothy Chen <timothytim@google.com>
+Date: Wed, 11 May 2022 09:16:11 -0700
+Subject: [PATCH 1/2] [PATCH] Use lowrisc instead of PULP primitives
 
 Signed-off-by: Michael Schaffner <msf@google.com>
 
+[PATCH] Simplify reset synchronization in dmi_cdc
+This can be done because trst_n and other reset timing
+can be assumed to be done during graceful periods only.
+
+Signed-off-by: Timothy Chen <timothytim@google.com>
+---
+ src/dm_csrs.sv      |  45 +++++++---------
+ src/dmi_cdc.sv      | 127 ++++++++++++++++++++++++--------------------
+ src/dmi_jtag.sv     |   8 ++-
+ src/dmi_jtag_tap.sv |  21 ++++----
+ 4 files changed, 105 insertions(+), 96 deletions(-)
+
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
-index f742a2b..373f481 100644
+index 350c6c5..38d7b51 100644
 --- a/src/dm_csrs.sv
 +++ b/src/dm_csrs.sv
-@@ -78,6 +78,7 @@ module dm_csrs #(
+@@ -79,6 +79,7 @@ module dm_csrs #(
    input  logic                              sberror_valid_i, // bus error occurred
    input  logic [2:0]                        sberror_i // bus error occurred
  );
@@ -17,7 +29,7 @@ index f742a2b..373f481 100644
    // the amount of bits we need to represent all harts
    localparam int unsigned HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
    localparam int unsigned NrHartsAligned = 2**HartSelLen;
-@@ -85,10 +86,6 @@ module dm_csrs #(
+@@ -86,10 +87,6 @@ module dm_csrs #(
    dm::dtm_op_e dtm_op;
    assign dtm_op = dm::dtm_op_e'(dmi_req_i.op);
  
@@ -28,7 +40,7 @@ index f742a2b..373f481 100644
    logic [31:0] resp_queue_data;
  
    localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'h0, dm::DataCount} - 8'h1);
-@@ -180,9 +177,6 @@ module dm_csrs #(
+@@ -181,9 +178,6 @@ module dm_csrs #(
  
    // a successful response returns zero
    assign dmi_resp_o.resp = dm::DTM_SUCCESS;
@@ -38,7 +50,7 @@ index f742a2b..373f481 100644
    // SBA
    assign sbautoincrement_o = sbcs_q.sbautoincrement;
    assign sbreadonaddr_o    = sbcs_q.sbreadonaddr;
-@@ -550,27 +544,28 @@ module dm_csrs #(
+@@ -551,28 +545,29 @@ module dm_csrs #(
    assign progbuf_o   = progbuf_q;
    assign data_o      = data_q;
  
@@ -58,9 +70,10 @@ index f742a2b..373f481 100644
 +    .Pass    (1'b0),
 +    .Depth   (2)
    ) i_fifo (
--    .clk_i            ( clk_i                ),
--    .rst_ni           ( dmi_rst_ni           ), // reset only when system is re-set
--    .flush_i          ( 1'b0                 ), // we do not need to flush this queue
+-    .clk_i,
+-    .rst_ni,
+-    .flush_i          ( ~dmi_rst_ni          ), // Flush the queue if the DTM is
+-                                                // reset
 -    .testmode_i       ( testmode_i           ),
 -    .full_o           ( resp_queue_full      ),
 -    .empty_o          ( resp_queue_empty     ),
@@ -80,34 +93,114 @@ index f742a2b..373f481 100644
 +    .rvalid_o( dmi_resp_valid_o     ),
 +    .rready_i( dmi_resp_ready_i     ),
 +    .full_o  (                      ), // Unused
-+    .depth_o (                      )  // Unused
++    .depth_o (                      ), // Unused
++    .err_o   (                      )  // Unused
    );
  
    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
 diff --git a/src/dmi_cdc.sv b/src/dmi_cdc.sv
-index 4665c91..1299b09 100644
+index f9d66fd..debb070 100644
 --- a/src/dmi_cdc.sv
 +++ b/src/dmi_cdc.sv
-@@ -42,32 +42,44 @@ module dmi_cdc (
+@@ -17,6 +17,10 @@
+ *              This is mainly a wrapper around the existing CDCs.
+ */
+ module dmi_cdc (
++  // Test controls
++  input  logic             testmode_i,
++  input  logic             test_rst_ni,
++
+   // JTAG side (master side)
+   input  logic             tck_i,
+   input  logic             trst_ni,
+@@ -45,70 +49,79 @@ module dmi_cdc (
    input  logic             core_dmi_valid_i
  );
  
--  cdc_2phase #(.T(dm::dmi_req_t)) i_cdc_req (
--    .src_rst_ni  ( trst_ni          ),
--    .src_clk_i   ( tck_i            ),
--    .src_data_i  ( jtag_dmi_req_i   ),
--    .src_valid_i ( jtag_dmi_valid_i ),
--    .src_ready_o ( jtag_dmi_ready_o ),
+-  logic                    core_clear_pending;
+-
+-  cdc_2phase_clearable #(.T(dm::dmi_req_t)) i_cdc_req (
+-    .src_rst_ni  ( trst_ni              ),
+-    .src_clear_i ( jtag_dmi_cdc_clear_i ),
+-    .src_clk_i   ( tck_i                ),
+-    .src_clear_pending_o(), // Not used
+-    .src_data_i  ( jtag_dmi_req_i       ),
+-    .src_valid_i ( jtag_dmi_valid_i     ),
+-    .src_ready_o ( jtag_dmi_ready_o     ),
+-
+-    .dst_rst_ni  ( rst_ni               ),
+-    .dst_clear_i ( 1'b0                 ), // No functional reset from core side
+-                                           // used (only async).
+-    .dst_clear_pending_o( core_clear_pending ), // use the clear pending signal
+-                                                // to synchronously clear the
+-                                                // response FIFO in the dm_top
+-                                                // csrs
+-    .dst_clk_i   ( clk_i                ),
+-    .dst_data_o  ( core_dmi_req_o       ),
+-    .dst_valid_o ( core_dmi_valid_o     ),
+-    .dst_ready_i ( core_dmi_ready_i     )
++
 +  // TODO: Make it clean for synthesis.
++  logic jtag_combined_rstn;
++  always_ff @(posedge tck_i or negedge trst_ni) begin
++    if (!trst_ni) begin
++      jtag_combined_rstn <= '0;
++    end else if (jtag_dmi_cdc_clear_i) begin
++      jtag_combined_rstn <= '0;
++    end else begin
++      jtag_combined_rstn <= 1'b1;
++    end
++  end
++
++  logic combined_rstn_premux;
++  prim_flop_2sync #(
++    .Width(1),
++    .ResetValue(0)
++  ) u_combined_rstn_sync (
++    .clk_i,
++    .rst_ni(rst_ni & jtag_combined_rstn),
++    .d_i(1'b1),
++    .q_o(combined_rstn_premux)
+   );
  
--    .dst_rst_ni  ( rst_ni           ),
--    .dst_clk_i   ( clk_i            ),
--    .dst_data_o  ( core_dmi_req_o   ),
--    .dst_valid_o ( core_dmi_valid_o ),
--    .dst_ready_i ( core_dmi_ready_i )
+-  cdc_2phase_clearable #(.T(dm::dmi_resp_t)) i_cdc_resp (
+-    .src_rst_ni  ( rst_ni               ),
+-    .src_clear_i ( 1'b0                 ), // No functional reset from core side
+-                                           // used (only async ).
+-    .src_clear_pending_o(), // Not used
+-    .src_clk_i   ( clk_i                ),
+-    .src_data_i  ( core_dmi_resp_i      ),
+-    .src_valid_i ( core_dmi_valid_i     ),
+-    .src_ready_o ( core_dmi_ready_o     ),
+-
+-    .dst_rst_ni  ( trst_ni              ),
+-    .dst_clear_i ( jtag_dmi_cdc_clear_i ),
+-    .dst_clear_pending_o(), //Not used
+-    .dst_clk_i   ( tck_i                ),
+-    .dst_data_o  ( jtag_dmi_resp_o      ),
+-    .dst_valid_o ( jtag_dmi_valid_o     ),
+-    .dst_ready_i ( jtag_dmi_ready_i     )
++  logic combined_rstn;
++  prim_clock_mux2 #(
++    .NoFpgaBufG(1'b1)
++  ) u_rst_mux (
++    .clk0_i(combined_rstn_premux),
++    .clk1_i(test_rst_ni),
++    .sel_i(testmode_i),
++    .clk_o(combined_rstn)
+   );
+ 
+-  // We need to flush the DMI response FIFO in DM top using the core clock
+-  // synchronous clear signal core_dmi_rst_no. We repurpose the clear
+-  // pending signal in the core clock domain by generating a 1 cycle pulse from
+-  // it.
+ 
+-  logic                    core_clear_pending_q;
+-  logic                    core_dmi_rst_nq;
+-  logic                    clear_pending_rise_edge_detect;
 +  prim_fifo_async #(
 +    .Width       ( $bits(dm::dmi_req_t) ),
-+    .Depth       ( 4 )
++    .Depth       ( 1 )
 +  ) i_cdc_req (
 +    .clk_wr_i    ( tck_i            ),
 +    .rst_wr_ni   ( trst_ni          ),
@@ -115,24 +208,28 @@ index 4665c91..1299b09 100644
 +    .wready_o    ( jtag_dmi_ready_o ), // wrclk
 +    .wdata_i     ( jtag_dmi_req_i   ),
 +    .wdepth_o    (                  ),
-+
+ 
+-  assign clear_pending_rise_edge_detect = !core_clear_pending_q && core_clear_pending;
 +    .clk_rd_i    ( clk_i            ),
-+    .rst_rd_ni   ( rst_ni           ),
++    .rst_rd_ni   ( combined_rstn    ),
 +    .rvalid_o    ( core_dmi_valid_o ),
 +    .rready_i    ( core_dmi_ready_i ),
 +    .rdata_o     ( core_dmi_req_o   ),
 +    .rdepth_o    (                  )
-   );
++  );
  
--  cdc_2phase #(.T(dm::dmi_resp_t)) i_cdc_resp (
--    .src_rst_ni  ( rst_ni           ),
--    .src_clk_i   ( clk_i            ),
--    .src_data_i  ( core_dmi_resp_i  ),
--    .src_valid_i ( core_dmi_valid_i ),
--    .src_ready_o ( core_dmi_ready_o ),
+-  always_ff @(posedge clk_i, negedge rst_ni) begin
+-    if (!rst_ni) begin
+-      core_dmi_rst_nq       <= 1'b1;
+-      core_clear_pending_q <= 1'b0;
+-    end else begin
+-      core_dmi_rst_nq       <= ~clear_pending_rise_edge_detect; // active-low!
+-      core_clear_pending_q <= core_clear_pending;
+-    end
+-  end
 +  prim_fifo_async #(
 +    .Width       ( $bits(dm::dmi_resp_t) ),
-+    .Depth       ( 4 )
++    .Depth       ( 1 )
 +  ) i_cdc_resp (
 +    .clk_wr_i    ( clk_i            ),
 +    .rst_wr_ni   ( rst_ni           ),
@@ -140,26 +237,51 @@ index 4665c91..1299b09 100644
 +    .wready_o    ( core_dmi_ready_o ), // wrclk
 +    .wdata_i     ( core_dmi_resp_i  ),
 +    .wdepth_o    (                  ),
- 
--    .dst_rst_ni  ( trst_ni          ),
--    .dst_clk_i   ( tck_i            ),
--    .dst_data_o  ( jtag_dmi_resp_o  ),
--    .dst_valid_o ( jtag_dmi_valid_o ),
--    .dst_ready_i ( jtag_dmi_ready_i )
++
 +    .clk_rd_i    ( tck_i            ),
-+    .rst_rd_ni   ( trst_ni          ),
++    .rst_rd_ni   ( combined_rstn    ),
 +    .rvalid_o    ( jtag_dmi_valid_o ),
 +    .rready_i    ( jtag_dmi_ready_i ),
 +    .rdata_o     ( jtag_dmi_resp_o  ),
 +    .rdepth_o    (                  )
-   );
++  );
+ 
+-  assign core_dmi_rst_no = core_dmi_rst_nq;
++  assign core_dmi_rst_no = combined_rstn;
  
  endmodule : dmi_cdc
+diff --git a/src/dmi_jtag.sv b/src/dmi_jtag.sv
+index 0712f8c..e040a3a 100644
+--- a/src/dmi_jtag.sv
++++ b/src/dmi_jtag.sv
+@@ -22,9 +22,10 @@ module dmi_jtag #(
+   input  logic         clk_i,      // DMI Clock
+   input  logic         rst_ni,     // Asynchronous reset active low
+   input  logic         testmode_i,
++  input  logic         test_rst_ni,
+ 
+-  // active-low glitch free reset signal. Is asserted for one dmi clock cycle
+-  // (clk_i) whenever the dmi_jtag is reset (POR or functional reset).
++  // active-low glitch free reset signal. Is asserted
++  // (clk_i) whenever the dmi_jtag is reset.
+   output logic         dmi_rst_no,
+   output dm::dmi_req_t dmi_req_o,
+   output logic         dmi_req_valid_o,
+@@ -301,6 +302,9 @@ module dmi_jtag #(
+   // CDC
+   // ---------
+   dmi_cdc i_dmi_cdc (
++    // Test controls
++    .testmode_i,
++    .test_rst_ni,
+     // JTAG side (master side)
+     .tck_i                ( tck              ),
+     .trst_ni              ( trst_ni          ),
 diff --git a/src/dmi_jtag_tap.sv b/src/dmi_jtag_tap.sv
-index c2e8d6e..809d4a6 100644
+index 0c188c0..a804da0 100644
 --- a/src/dmi_jtag_tap.sv
 +++ b/src/dmi_jtag_tap.sv
-@@ -216,18 +216,15 @@ module dmi_jtag_tap #(
+@@ -178,18 +178,15 @@ module dmi_jtag_tap #(
    // ----------------
    // DFT
    // ----------------
@@ -187,3 +309,6 @@ index c2e8d6e..809d4a6 100644
    );
  
    // TDO changes state at negative edge of TCK
+-- 
+2.36.1.124.g0e6072fb45-goog
+

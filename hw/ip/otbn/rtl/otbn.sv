@@ -94,8 +94,9 @@ module otbn
 
   logic start_d, start_q;
   logic busy_execute_d, busy_execute_q;
-  logic done, done_core, locked, idle;
+  logic done, done_core, locking, locking_q;
   logic illegal_bus_access_d, illegal_bus_access_q;
+  logic missed_gnt_error_d, missed_gnt_error_q;
   logic dmem_sec_wipe;
   logic imem_sec_wipe;
   logic mems_sec_wipe;
@@ -118,7 +119,7 @@ module otbn
 
   otbn_reg2hw_t reg2hw;
   otbn_hw2reg_t hw2reg;
-  logic [7:0]   hw2reg_status_d;
+  status_e      status_d, status_q;
 
   // Bus device windows, as specified in otbn.hjson
   typedef enum logic {
@@ -131,21 +132,18 @@ module otbn
 
   // The clock can be gated and some registers can be updated as long as OTBN isn't currently
   // running. Other registers can only be updated when OTBN is in the Idle state (which also implies
-  // !locked).
-  logic is_not_running, is_not_running_r;
+  // we are not locked).
+  logic is_not_running_d, is_not_running_q;
   logic otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy;
 
-  assign is_not_running =
-    ~(busy_execute_q | otbn_dmem_scramble_key_req_busy | otbn_imem_scramble_key_req_busy);
+  assign is_not_running_d =
+    ~(busy_execute_d | otbn_dmem_scramble_key_req_busy | otbn_imem_scramble_key_req_busy);
 
-  // Add a register stage so we have an `is_not_running_r` which changes with the same timing as
-  // `status.q`. Without this `idle_o` will be asserted a cycle before `status.q` changes resulting
-  // in bad interrupt timing where the interrupt is seen the cycle after `idle_o`.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if(!rst_ni) begin
-      is_not_running_r <= 1'b1;
+      is_not_running_q  <= 1'b1;
     end else begin
-      is_not_running_r <= is_not_running;
+      is_not_running_q  <= is_not_running_d;
     end
   end
 
@@ -153,7 +151,14 @@ module otbn
 
   // Note: This is not the same thing as STATUS == IDLE. For example, we want to allow clock gating
   // when locked.
-  assign idle_o = mubi4_bool_to_mubi(is_not_running_r);
+  prim_mubi4_sender #(
+    .ResetValue(prim_mubi_pkg::MuBi4True)
+  ) u_prim_mubi4_sender (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi4_bool_to_mubi(is_not_running_q)),
+    .mubi_o(idle_o)
+  );
 
   // Lifecycle ==================================================================
 
@@ -170,12 +175,10 @@ module otbn
 
   // Interrupts ================================================================
 
-  assign done = is_busy_status(status_e'(reg2hw.status.q)) &
-    !is_busy_status(status_e'(hw2reg_status_d));
+  assign done = is_busy_status(status_q) & ~is_busy_status(status_d);
 
   prim_intr_hw #(
-    .Width(1),
-    .FlopOutput(0)
+    .Width(1)
   ) u_intr_hw_done (
     .clk_i,
     .rst_ni                (rst_n),
@@ -198,6 +201,7 @@ module otbn
   logic imem_access_core;
 
   logic imem_req;
+  logic imem_gnt;
   logic imem_write;
   logic [ImemIndexWidth-1:0] imem_index;
   logic [38:0] imem_wdata;
@@ -205,6 +209,7 @@ module otbn
   logic [38:0] imem_rdata;
   logic imem_rvalid;
   logic imem_illegal_bus_access;
+  logic imem_missed_gnt;
 
   logic imem_req_core;
   logic imem_write_core;
@@ -218,7 +223,8 @@ module otbn
   logic [ImemIndexWidth-1:0] imem_index_bus;
   logic [38:0] imem_wdata_bus;
   logic [38:0] imem_wmask_bus;
-  logic [38:0] imem_rdata_bus;
+  logic [38:0] imem_rdata_bus, imem_rdata_bus_raw;
+  logic imem_rdata_bus_en_q, imem_rdata_bus_en_d;
   logic [top_pkg::TL_DBW-1:0] imem_byte_mask_bus;
   logic imem_rvalid_bus;
   logic [1:0] imem_rerror_bus;
@@ -304,14 +310,12 @@ module otbn
     .nonce_i    (otbn_imem_scramble_nonce),
 
     .req_i       (imem_req),
-    // TODO: OTBN should always get grant when active, wire up grant and add check it occurs,
-    // trigger fatal alert if it doesn't.
-    .gnt_o       (),
+    .gnt_o       (imem_gnt),
     .write_i     (imem_write),
     .addr_i      (imem_index),
     .wdata_i     (imem_wdata),
     .wmask_i     (imem_wmask),
-    .intg_error_i(locked),
+    .intg_error_i(locking),
 
     .rdata_o (imem_rdata),
     .rvalid_o(imem_rvalid),
@@ -319,6 +323,9 @@ module otbn
     .rerror_o(),
     .cfg_i   (ram_cfg_i)
   );
+
+  // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.
+  assign imem_missed_gnt = imem_req & ~imem_gnt;
 
   // IMEM access from main TL-UL bus
   logic imem_gnt_bus;
@@ -382,10 +389,43 @@ module otbn
   assign imem_wmask = imem_access_core ? '1 : imem_wmask_bus;
   `ASSERT(ImemWmaskBusIsFullWord_A, imem_req_bus && imem_write_bus |-> imem_wmask_bus == '1)
 
-  // Explicitly tie off bus interface during core operation to avoid leaking
-  // the currently executed instruction from IMEM through the bus
-  // unintentionally.
-  assign imem_rdata_bus = !imem_access_core && !illegal_bus_access_q ? imem_rdata : 39'b0;
+  // Blank bus read data interface during core operation to avoid leaking the currently executed
+  // instruction from IMEM through the bus unintentionally. Also blank when OTBN is returning
+  // a dummy response (responding to an illegal bus access) and when OTBN is locked.
+  assign imem_rdata_bus_en_d = ~(busy_execute_d | start_d) & ~imem_dummy_response_d & ~locking;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+        imem_rdata_bus_en_q <= 1'b1;
+    end else begin
+        imem_rdata_bus_en_q <= imem_rdata_bus_en_d;
+    end
+  end
+
+  prim_blanker #(.Width(39)) u_imem_rdata_bus_blanker (
+    .in_i (imem_rdata),
+    .en_i (imem_rdata_bus_en_q),
+    .out_o(imem_rdata_bus_raw)
+  );
+
+  // When OTBN is locked all imem bus reads should return 0. The blanker produces the 0s, this adds
+  // the appropriate ECC. When OTBN is not locked the output of the blanker is passed straight
+  // through. Data bits are always left un-modified. A registered version of `locking` is used for
+  // timing reasons. When a read comes in when `locking` has just been asserted, `locking_q` will be
+  // set the following cycle and the rdata will be forced to 0 with appropriate ECC. When `locking`
+  // is asserted the cycle the rdata is being returned no locking was ocurring when the request came
+  // in so it is reasonable to proceed with returning the supplied integrity.
+  assign imem_rdata_bus =
+    {locking_q ? prim_secded_pkg::SecdedInv3932ZeroEcc : imem_rdata_bus_raw[38:32],
+     imem_rdata_bus_raw[31:0]};
+
+  `ASSERT(ImemRDataBusDisabledWhenCoreAccess_A, imem_access_core |-> !imem_rdata_bus_en_q)
+  `ASSERT(ImemRDataBusEnabledWhenNoCoreAccess_A,
+    !imem_access_core && ~locking && !imem_dummy_response_q |-> imem_rdata_bus_en_q)
+  `ASSERT(ImemRDataBusDisabledWhenLocked_A, locking |=> !imem_rdata_bus_en_q)
+  `ASSERT(ImemRDataBusReadAsZeroWhenLocked_A,
+    imem_rvalid_bus & locking |-> imem_rdata_bus_raw == '0)
+
   assign imem_rdata_core = imem_rdata;
 
   // When an illegal bus access is seen, always return a dummy response the follow cycle.
@@ -407,6 +447,7 @@ module otbn
   logic dmem_access_core;
 
   logic dmem_req;
+  logic dmem_gnt;
   logic dmem_write;
   logic [DmemIndexWidth-1:0] dmem_index;
   logic [ExtWLEN-1:0] dmem_wdata;
@@ -416,6 +457,7 @@ module otbn
   logic [BaseWordsPerWLEN*2-1:0] dmem_rerror_vec;
   logic dmem_rerror;
   logic dmem_illegal_bus_access;
+  logic dmem_missed_gnt;
 
   logic dmem_req_core;
   logic dmem_write_core;
@@ -433,7 +475,8 @@ module otbn
   logic [DmemIndexWidth-2:0] dmem_index_bus;
   logic [ExtWLEN-1:0] dmem_wdata_bus;
   logic [ExtWLEN-1:0] dmem_wmask_bus;
-  logic [ExtWLEN-1:0] dmem_rdata_bus;
+  logic [ExtWLEN-1:0] dmem_rdata_bus, dmem_rdata_bus_raw;
+  logic dmem_rdata_bus_en_q, dmem_rdata_bus_en_d;
   logic [DmemAddrWidth-1:0] dmem_addr_bus;
   logic unused_dmem_addr_bus;
   logic [31:0] dmem_wdata_narrow_bus;
@@ -465,14 +508,12 @@ module otbn
     .nonce_i    (otbn_dmem_scramble_nonce),
 
     .req_i       (dmem_req),
-    // TODO: OTBN should always get grant when active, wire up grant and add check it occurs,
-    // trigger fatal alert if it doesn't.
-    .gnt_o       (),
+    .gnt_o       (dmem_gnt),
     .write_i     (dmem_write),
     .addr_i      (dmem_index),
     .wdata_i     (dmem_wdata),
     .wmask_i     (dmem_wmask),
-    .intg_error_i(locked),
+    .intg_error_i(locking),
 
     .rdata_o (dmem_rdata),
     .rvalid_o(dmem_rvalid),
@@ -480,6 +521,9 @@ module otbn
     .rerror_o(),
     .cfg_i   (ram_cfg_i)
   );
+
+  // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.
+  assign dmem_missed_gnt = dmem_req & !dmem_gnt;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -567,10 +611,47 @@ module otbn
     end
   end
 
-  // Explicitly tie off bus interface during core operation to avoid leaking
-  // DMEM data through the bus unintentionally. Once an illegal bus access is seen always return
-  // 0 data.
-  assign dmem_rdata_bus  = !dmem_access_core && !illegal_bus_access_q ? dmem_rdata : '0;
+  // Blank bus read data interface during core operation to avoid leaking DMEM data through the bus
+  // unintentionally. Also blank when OTBN is returning a dummy response (responding to an illegal
+  // bus access) and when OTBN is locked.
+
+  assign dmem_rdata_bus_en_d = ~(busy_execute_d | start_d) & ~imem_dummy_response_d & ~locking;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+        dmem_rdata_bus_en_q <= 1'b1;
+    end else begin
+        dmem_rdata_bus_en_q <= dmem_rdata_bus_en_d;
+    end
+  end
+
+  prim_blanker #(.Width(ExtWLEN)) u_dmem_rdata_bus_blanker (
+    .in_i (dmem_rdata),
+    .en_i (dmem_rdata_bus_en_q),
+    .out_o(dmem_rdata_bus_raw)
+  );
+
+  // When OTBN is locked all dmem bus reads should return 0. The blanker produces the 0s, this adds
+  // the appropriate ECC. When OTBN is not locked the output of the blanker is passed straight
+  // through. Data bits are always left un-modified. A registered version of `locking` is used for
+  // timing reasons. When a read comes in when `locking` has just been asserted, `locking_q` will be
+  // timing reasons. When a read comes in when `locking` has just been asserted, `locking_q` will be
+  // set the following cycle and the rdata will be forced to 0 with appropriate ECC. When `locking`
+  // is asserted the cycle the rdata is being returned no locking was ocurring when the request came
+  // in so it is reasonable to proceed with returning the supplied integrity.
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; ++i_word) begin : g_dmem_rdata_bus
+    assign dmem_rdata_bus[i_word*39+:39] =
+      {locking_q ? prim_secded_pkg::SecdedInv3932ZeroEcc : dmem_rdata_bus_raw[i_word*39+32+:7],
+       dmem_rdata_bus_raw[i_word*39+:32]};
+  end
+
+  `ASSERT(DmemRDataBusDisabledWhenCoreAccess_A, dmem_access_core |-> !dmem_rdata_bus_en_q)
+  `ASSERT(DmemRDataBusEnabledWhenNoCoreAccess_A,
+    !dmem_access_core && ~locking && !dmem_dummy_response_q |-> dmem_rdata_bus_en_q)
+  `ASSERT(DmemRDataBusDisabledWhenLocked_A, locking |=> !dmem_rdata_bus_en_q)
+  `ASSERT(DmemRDataBusReadAsZeroWhenLocked_A,
+    dmem_rvalid_bus & locking |-> dmem_rdata_bus_raw == '0)
+
   assign dmem_rdata_core = dmem_rdata;
 
   // When an illegal bus access is seen, always return a dummy response the follow cycle.
@@ -655,7 +736,7 @@ module otbn
     imem_sec_wipe = 1'b0;
 
     // Can only start a new command when idle.
-    if (idle) begin
+    if (status_q == StatusIdle) begin
       if (reg2hw.cmd.qe) begin
         unique case (reg2hw.cmd.q)
           CmdExecute:     start_d       = 1'b1;
@@ -678,46 +759,73 @@ module otbn
 
   assign illegal_bus_access_d = dmem_illegal_bus_access | imem_illegal_bus_access;
 
-  // Flop `illegal_bus_access_q` so we know an illegal bus access has happened and to break a timing
-  // path from the TL interface into the OTBN core.
+  // It should not be possible to request an imem or dmem access without it being granted. Either
+  // a scramble key is present so the request will be granted or the core is busy obtaining a new
+  // key, so no request can occur (the core won't generate one whilst awaiting a scrambling key and
+  // the bus requests get an immediate dummy response bypassing the dmem or imem). A fatal error is
+  // raised if request is seen without a grant.
+  assign missed_gnt_error_d = dmem_missed_gnt | imem_missed_gnt;
+
+  // Flop `illegal_bus_access_q` and `missed_gnt_error_q` to break timing paths from the TL
+  // interface into the OTBN core.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       start_q              <= 1'b0;
       illegal_bus_access_q <= 1'b0;
+      missed_gnt_error_q   <= 1'b0;
     end else begin
       start_q              <= start_d;
       illegal_bus_access_q <= illegal_bus_access_d;
+      missed_gnt_error_q   <= missed_gnt_error_d;
     end
   end
 
   // STATUS register
   // imem/dmem scramble req can be busy when locked, so use a priority selection so locked status
   // always takes priority.
-  assign hw2reg_status_d = locked                          ? StatusLocked          :
-                           busy_execute_q                  ? StatusBusyExecute     :
-                           otbn_dmem_scramble_key_req_busy ? StatusBusySecWipeDmem :
-                           otbn_imem_scramble_key_req_busy ? StatusBusySecWipeImem :
-                           idle                            ? StatusIdle            :
-                                                             StatusLocked;
+  //
+  // Note that these signals are all "a cycle early". For example, the locking signal gets asserted
+  // combinatorially on the cycle that an error is injected. The STATUS register change, done
+  // interrupt and any change to the idle signal will be delayed by 2 cycles.
+  assign status_d = locking                         ? StatusLocked          :
+                    busy_execute_d                  ? StatusBusyExecute     :
+                    otbn_dmem_scramble_key_req_busy ? StatusBusySecWipeDmem :
+                    otbn_imem_scramble_key_req_busy ? StatusBusySecWipeImem :
+                                                      StatusIdle;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      status_q <= StatusIdle;
+    end else begin
+      status_q <= status_d;
+    end
+  end
 
-  assign hw2reg.status.d = hw2reg_status_d;
+  assign hw2reg.status.d = status_q;
   assign hw2reg.status.de = 1'b1;
 
-  `ASSERT(OtbnStateDefined, |{locked,
-                              busy_execute_q,
-                              otbn_dmem_scramble_key_req_busy,
-                              otbn_imem_scramble_key_req_busy,
-                              idle})
+  // Only certain combinations of the state variable {locking, busy_execute_d,
+  // otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy} are possible.
+  //
+  // (1) When we finish (with a pulse on "done_core", which might stay high in the "locking"
+  //     signal), busy_execute_d is guaranteed to be low. (Assertion: NotBusyAndDone_A)
+  //
+  // (2) There aren't really any other restrictions when locking is low: if there is an error during
+  //     an operation, we'll start rotating memory keys while doing the internal secure wipe, so
+  //     may see all of the signals high except locking.
+  //
+  // (3) Once locking is high, we guarantee never to see a new execution or the start of a key
+  //     rotation. (Assertion: NoStartWhenLocked_A)
 
-  `ASSERT(OtbnOnlyIdleIfNoActivity, idle |-> ~|{locked,
-                                                busy_execute_q,
-                                                otbn_dmem_scramble_key_req_busy,
-                                                otbn_imem_scramble_key_req_busy})
+  `ASSERT(NotBusyAndDone_A, !((done_core | locking) && busy_execute_d))
+  `ASSERT(NoStartWhenLocked_A,
+          locking |=> !($rose(busy_execute_d) ||
+                        $rose(otbn_dmem_scramble_key_req_busy) ||
+                        $rose(otbn_imem_scramble_key_req_busy)))
 
   // CTRL register
   assign software_errs_fatal_d =
-    reg2hw.ctrl.qe && idle ? reg2hw.ctrl.q :
-                             software_errs_fatal_q;
+    reg2hw.ctrl.qe && (status_q == StatusIdle) ? reg2hw.ctrl.q :
+                                                 software_errs_fatal_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -739,6 +847,8 @@ module otbn
   assign hw2reg.err_bits.illegal_insn.d = err_bits_q.illegal_insn;
   assign hw2reg.err_bits.loop.d = err_bits_q.loop;
   assign hw2reg.err_bits.key_invalid.d = err_bits_q.key_invalid;
+  assign hw2reg.err_bits.rnd_rep_chk_fail.d = err_bits_q.rnd_rep_chk_fail;
+  assign hw2reg.err_bits.rnd_fips_chk_fail.d = err_bits_q.rnd_fips_chk_fail;
   assign hw2reg.err_bits.imem_intg_violation.d = err_bits_q.imem_intg_violation;
   assign hw2reg.err_bits.dmem_intg_violation.d = err_bits_q.dmem_intg_violation;
   assign hw2reg.err_bits.reg_intg_violation.d = err_bits_q.reg_intg_violation;
@@ -748,7 +858,7 @@ module otbn
   assign hw2reg.err_bits.lifecycle_escalation.d = err_bits_q.lifecycle_escalation;
   assign hw2reg.err_bits.fatal_software.d = err_bits_q.fatal_software;
 
-  assign err_bits_clear = reg2hw.err_bits.bad_data_addr.qe & is_not_running;
+  assign err_bits_clear = reg2hw.err_bits.bad_data_addr.qe & is_not_running_q;
   assign err_bits_d = err_bits_clear ? '0 : err_bits;
   assign err_bits_en = err_bits_clear | done_core;
 
@@ -762,6 +872,8 @@ module otbn
                                     reg2hw.err_bits.illegal_insn,
                                     reg2hw.err_bits.loop,
                                     reg2hw.err_bits.key_invalid,
+                                    reg2hw.err_bits.rnd_rep_chk_fail,
+                                    reg2hw.err_bits.rnd_fips_chk_fail,
                                     reg2hw.err_bits.imem_intg_violation,
                                     reg2hw.err_bits.dmem_intg_violation,
                                     reg2hw.err_bits.reg_intg_violation,
@@ -813,7 +925,7 @@ module otbn
   logic        insn_cnt_clear;
   logic        unused_insn_cnt_q;
   assign hw2reg.insn_cnt.d = insn_cnt;
-  assign insn_cnt_clear = reg2hw.insn_cnt.qe & is_not_running;
+  assign insn_cnt_clear = reg2hw.insn_cnt.qe & is_not_running_q;
   // Ignore all write data to insn_cnt. All writes zero the register.
   assign unused_insn_cnt_q = ^reg2hw.insn_cnt.q;
 
@@ -855,6 +967,7 @@ module otbn
   // EDN Connections ============================================================
   logic edn_rnd_req, edn_rnd_ack;
   logic [EdnDataWidth-1:0] edn_rnd_data;
+  logic edn_rnd_fips, edn_rnd_err;
 
   logic edn_urnd_req, edn_urnd_ack;
   logic [EdnDataWidth-1:0] edn_urnd_data;
@@ -872,8 +985,8 @@ module otbn
     .req_i      ( edn_rnd_req  ),
     .ack_o      ( edn_rnd_ack  ),
     .data_o     ( edn_rnd_data ),
-    .fips_o     (              ), // unused
-    .err_o      (              ),
+    .fips_o     ( edn_rnd_fips ),
+    .err_o      ( edn_rnd_err  ),
     .clk_edn_i,
     .rst_edn_ni,
     .edn_o      ( edn_rnd_o ),
@@ -921,7 +1034,7 @@ module otbn
 
     .start_i                     (start_q),
     .done_o                      (done_core),
-    .locked_o                    (locked),
+    .locking_o                   (locking),
 
     .err_bits_o                  (core_err_bits),
     .recoverable_err_o           (core_recoverable_err),
@@ -944,6 +1057,8 @@ module otbn
     .edn_rnd_req_o               (edn_rnd_req),
     .edn_rnd_ack_i               (edn_rnd_ack),
     .edn_rnd_data_i              (edn_rnd_data),
+    .edn_rnd_fips_i              (edn_rnd_fips),
+    .edn_rnd_err_i               (edn_rnd_err),
 
     .edn_urnd_req_o              (edn_urnd_req),
     .edn_urnd_ack_i              (edn_urnd_ack),
@@ -965,17 +1080,25 @@ module otbn
     .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
   );
 
+  always @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
+      locking_q <= 1'b0;
+    end else begin
+      locking_q <= locking;
+    end
+  end
+
   // Collect up the error bits that don't come from the core itself and latch them so that they'll
   // be available when an operation finishes.
   assign non_core_err_bits = '{
     lifecycle_escalation: lc_escalate_en[0] != lc_ctrl_pkg::Off,
     illegal_bus_access:   illegal_bus_access_q,
-    bad_internal_state:   otbn_scramble_state_error,
+    bad_internal_state:   otbn_scramble_state_error | missed_gnt_error_q,
     bus_intg_violation:   bus_intg_violation
   };
 
   assign non_core_err_bits_d = non_core_err_bits_q | non_core_err_bits;
-  always @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       non_core_err_bits_q <= '0;
     end else begin
@@ -994,6 +1117,8 @@ module otbn
     reg_intg_violation:   core_err_bits.reg_intg_violation,
     dmem_intg_violation:  core_err_bits.dmem_intg_violation,
     imem_intg_violation:  core_err_bits.imem_intg_violation,
+    rnd_fips_chk_fail:    core_err_bits.rnd_fips_chk_fail,
+    rnd_rep_chk_fail:     core_err_bits.rnd_rep_chk_fail,
     key_invalid:          core_err_bits.key_invalid,
     loop:                 core_err_bits.loop,
     illegal_insn:         core_err_bits.illegal_insn,
@@ -1010,15 +1135,18 @@ module otbn
       lc_ctrl_pkg::lc_to_mubi4(lc_escalate_en[1])
   );
 
-  // We're idle if we're neither busy executing something nor locked
-  assign idle = ~(busy_execute_q | locked | otbn_dmem_scramble_key_req_busy |
-                  otbn_imem_scramble_key_req_busy);
-
   // The core can never signal a write to IMEM
   assign imem_write_core = 1'b0;
 
 
   // Asserts ===================================================================
+  for (genvar i = 0;i < LoopStackDepth; ++i) begin : gen_loop_stack_cntr_asserts
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+      LoopStackCntAlertCheck_A,
+      u_otbn_core.u_otbn_controller.u_otbn_loop_controller.g_loop_counters[i].u_loop_count,
+      alert_tx_o[AlertFatal]
+    )
+  end
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
@@ -1051,10 +1179,16 @@ module otbn
   `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnStartStopFsmCheck_A,
-    u_otbn_core.u_otbn_start_stop_control.u_state_regs, alert_tx_o[1])
+    u_otbn_core.u_otbn_start_stop_control.u_state_regs, alert_tx_o[AlertFatal])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnControllerFsmCheck_A,
-    u_otbn_core.u_otbn_controller.u_state_regs, alert_tx_o[1])
+    u_otbn_core.u_otbn_controller.u_state_regs, alert_tx_o[AlertFatal])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnScrambleCtrlFsmCheck_A,
-    u_otbn_scramble_ctrl.u_state_regs, alert_tx_o[1])
+    u_otbn_scramble_ctrl.u_state_regs, alert_tx_o[AlertFatal])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(OtbnCallStackWrPtrAlertCheck_A,
+    u_otbn_core.u_otbn_rf_base.u_call_stack.u_stack_wr_ptr, alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(OtbnLoopInfoStackWrPtrAlertCheck_A,
+    u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.u_stack_wr_ptr,
+    alert_tx_o[AlertFatal])
 
 endmodule

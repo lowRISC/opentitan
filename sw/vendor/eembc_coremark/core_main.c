@@ -86,11 +86,11 @@ char *mem_name[3] = {"Static","Heap","Stack"};
 */
 
 #if MAIN_HAS_NOARGC
-MAIN_RETURN_TYPE main(void) {
+MAIN_RETURN_TYPE _ottf_main(void) {
 	int argc=0;
 	char *argv[1];
 #else
-MAIN_RETURN_TYPE main(int argc, char *argv[]) {
+MAIN_RETURN_TYPE _ottf_main(int argc, char *argv[]) {
 #endif
 	ee_u16 i,j=0,num_algorithms=0;
 	ee_s16 known_id=-1,total_errors=0;

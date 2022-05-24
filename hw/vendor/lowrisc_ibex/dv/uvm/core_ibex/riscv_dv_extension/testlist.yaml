@@ -1,0 +1,770 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+- test: riscv_arithmetic_basic_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  rtl_test: core_ibex_base_test
+
+- test: riscv_machine_mode_rand_test
+  description: >
+    Machine mode random instruction test
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +boot_mode=m
+  rtl_test: core_ibex_base_test
+
+- test: riscv_rand_instr_test
+  description: >
+    Random instruction stress test
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+  rtl_test: core_ibex_base_test
+
+- test: riscv_rand_jump_test
+  description: >
+    Jump among large number of sub-programs, stress testing iTLB operations.
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=15000
+    +num_of_sub_program=20
+    +directed_instr_0=riscv_load_store_rand_instr_stream,8
+  rtl_test: core_ibex_base_test
+
+- test: riscv_jump_stress_test
+  description: >
+    Stress back to back jump instruction
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=5000
+    +num_of_sub_program=5
+    +directed_instr_1=riscv_jal_instr,20
+  rtl_test: core_ibex_base_test
+
+- test: riscv_loop_test
+  description: >
+    Loop test
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +directed_instr_1=riscv_loop_instr,20
+  rtl_test: core_ibex_base_test
+
+- test: riscv_mmu_stress_test
+  description: >
+    Test with different patterns of load/store instructions, stress test MMU
+    operations.
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_rand_instr_stream,40
+    +directed_instr_1=riscv_load_store_hazard_instr_stream,40
+    +directed_instr_2=riscv_multi_page_load_store_instr_stream,40
+    +directed_instr_3=riscv_load_store_rand_addr_instr_stream,40
+  rtl_test: core_ibex_base_test
+
+- test: riscv_illegal_instr_test
+  description: >
+    Illegal instruction test, verify the processor can detect illegal
+    instruction and handle corresponding exception properly. An exception
+    handling routine is designed to resume execution after illegal
+    instruction exception.
+  iterations: 15
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +illegal_instr_ratio=25
+  rtl_test: core_ibex_base_test
+
+- test: riscv_hint_instr_test
+  description: >
+    HINT instruction test, verify the processor can detect HINT instruction
+    treat it as NOP. No illegal instruction exception is expected
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +hint_instr_ratio=5
+  rtl_test: core_ibex_base_test
+
+- test: riscv_ebreak_test
+  description: >
+    Random instruction test with ebreak instruction enabled. Debug mode is not
+    enabled for this test, processor should raise ebreak exception.
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +no_ebreak=0
+  rtl_test: core_ibex_base_test
+
+- test: riscv_debug_basic_test
+  description: >
+    Randomly assert debug_req_i, random instruction sequence in debug_rom section
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +no_ebreak=1
+    +no_branch_jump=1
+    +instr_cnt=6000
+    +no_csr_instr=1
+    +no_fence=1
+    +num_of_sub_program=0
+    +randomize_csr=1
+  rtl_test: core_ibex_debug_intr_basic_test
+  sim_opts: >
+    +require_signature_addr=1
+    +max_interval=500
+    +enable_debug_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+    verbose: 1
+
+- test: riscv_debug_stress_test
+  description: >
+    Randomly assert debug_req_i more often, debug_rom is empty, with only a dret instruction
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +no_ebreak=1
+    +instr_cnt=6000
+    +no_csr_instr=1
+    +no_fence=1
+  rtl_test: core_ibex_debug_intr_basic_test
+  iterations: 15
+  sim_opts: >
+    +max_interval=250
+    +enable_debug_seq=1
+    +require_signature_addr=1
+  compare_opts:
+    verbose: 1
+
+- test: riscv_debug_branch_jump_test
+  description: >
+    Randomly assert debug_req_i, insert branch instructions and subprograms into debug_rom to make core
+    jump around within the debug_rom
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +no_ebreak=1
+    +instr_cnt=6000
+    +no_csr_instr=1
+    +no_fence=1
+    +num_of_sub_program=0
+    +num_debug_sub_program=2
+    +randomize_csr=1
+  rtl_test: core_ibex_debug_intr_basic_test
+  sim_opts: >
+    +require_signature_addr=1
+    +max_interval=3000
+    +enable_debug_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+    verbose: 1
+
+- test: riscv_debug_instr_test
+  description: >
+    At a high level, this test checks that Ibex can correctly respond after receiving debug
+    stimulus while every supported instruction is in its decoding stage.
+    e.g. If the test detects a LUI instruction in the decoding stage, a debug request is
+    generated and sent into Ibex. We never send a debug request if we see a LUI instruction again,
+    as we don't want to send in debug requests for every instruction that is executed.
+  iterations: 25
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +randomize_csr=1
+    +no_csr_instr=0
+    +no_ebreak=1
+    +no_fence=0
+    +no_wfi=0
+    +directed_instr_0=riscv_load_store_rand_instr_stream,40
+    +directed_instr_1=riscv_load_store_hazard_instr_stream,40
+  rtl_test: core_ibex_debug_instr_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+    verbose: 1
+
+- test: riscv_debug_wfi_test
+  description: >
+    Assert debug_req while core is in WFI sleep state, should jump to debug mode
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +no_ebreak=1
+    +instr_cnt=6000
+    +no_csr_instr=1
+    +no_fence=1
+    +no_wfi=0
+    +randomize_csr=1
+    +num_of_sub_program=0
+  rtl_test: core_ibex_debug_wfi_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+    verbose: 1
+
+- test: riscv_dret_test
+  description: >
+    Dret instructions will be inserted into generated code, ibex should treat these
+    like illegal instructions.
+  iterations: 5
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +no_dret=0
+    +instr_cnt=6000
+  rtl_test: core_ibex_dret_test
+  sim_opts: >
+    +require_signature_addr=1
+
+- test: riscv_debug_ebreak_test
+  description: >
+    A directed ebreak sequence will be inserted into the debug rom, upon encountering it,
+    ibex should jump back to the beginning of debug mode. The sequence is designed to avoid an
+    infinite loop.
+  iterations: 15
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +enable_ebreak_in_debug_rom=1
+    +no_csr_instr=1
+    +no_fence=1
+    +no_wfi=1
+    +no_ebreak=1
+    +instr_cnt=10000
+    +randomize_csr=1
+  rtl_test: core_ibex_debug_ebreak_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_debug_ebreakmu_test
+  description: >
+    dcsr.ebreakm will be set at the beginning of the test upon the first entry into the debug rom.
+    From then on, every ebreak instruction should cause debug mode to be entered.
+  iterations: 15
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +set_dcsr_ebreak=1
+    +no_ebreak=0
+    +no_csr_instr=1
+    +no_fence=1
+    +no_wfi=1
+    +instr_cnt=6000
+    +randomize_csr=1
+    +num_of_sub_program=0
+  rtl_test: core_ibex_debug_ebreakmu_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_debug_csr_entry_test
+  description: >
+    Inject debug stimulus during writes to xSTATUS and xIE
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +randomize_csr=1
+    +no_csr_instr=1
+    +enable_dummy_csr_write=1
+    +boot_mode=m
+  rtl_test: core_ibex_debug_csr_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_irq_in_debug_mode_test
+  description: >
+    Send interrupts while the core is executing in debug mode, should ignore everything
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +enable_interrupt=1
+    +randomize_csr=1
+    +no_csr_instr=1
+    +no_fence=1
+  rtl_test: core_ibex_irq_in_debug_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_seq=1
+    +enable_irq_multiple_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_debug_in_irq_test
+  description: >
+    Send debug stimulus while core is in an interrupt handler
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +enable_interrupt=1
+    +randomize_csr=1
+    +no_csr_instr=1
+    +no_fence=1
+  rtl_test: core_ibex_debug_in_irq_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_seq=1
+    +enable_irq_multiple_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_single_interrupt_test
+  description: >
+    Random instruction test with complete interrupt handling
+  iterations: 15
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=10000
+    +require_signature_addr=1
+    +enable_interrupt=1
+    +randomize_csr=1
+  rtl_test: core_ibex_debug_intr_basic_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_irq_single_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_multiple_interrupt_test
+  description: >
+    Random instruction test with complete interrupt handling
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=10000
+    +require_signature_addr=1
+    +enable_interrupt=1
+    +randomize_csr=1
+  rtl_test: core_ibex_debug_intr_basic_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_irq_multiple_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_nested_interrupt_test
+  description: >
+    Assert interrupt, and then assert another interrupt during the first irq_handler routine
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=10000
+    +require_signature_addr=1
+    +enable_interrupt=1
+    +enable_nested_interrupt=1
+    +randomize_csr=1
+    +no_csr_instr=1
+  rtl_test: core_ibex_nested_irq_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_irq_multiple_seq=1
+    +enable_irq_nmi_seq=1
+    +enable_nested_irq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_interrupt_instr_test
+  description: >
+    At a high level, this test checks that Ibex can correctly respond after receiving interrupt
+    stimulus while every supported instruction is in its decoding stage.
+    e.g. If the test detects a LUI instruction in the decoding stage, an interrupt is
+    generated and sent into Ibex. We never send an interrupt if we see a LUI instruction again,
+    as we don't want to send interrupts for every instruction that is executed.
+  iterations: 25
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +require_signature_addr=1
+    +enable_interrupt=1
+    +enable_timer_irq=1
+    +randomize_csr=1
+    +no_csr_instr=0
+    +no_ebreak=1
+    +no_fence=0
+    +directed_instr_0=riscv_load_store_rand_instr_stream,40
+    +directed_instr_1=riscv_load_store_hazard_instr_stream,40
+  rtl_test: core_ibex_interrupt_instr_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_irq_single_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_interrupt_wfi_test
+  description: >
+    Inject interrupts after a encountering wfi instructions.
+  iterations: 15
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +require_signature_addr=1
+    +enable_interrupt=1
+    +randomize_csr=1
+    +no_wfi=0
+  rtl_test: core_ibex_irq_wfi_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_irq_single_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_interrupt_csr_test
+  description: >
+    Inject interrupts during dummy writes to xSTATUS and xIE
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +enable_interrupt=1
+    +randomize_csr=1
+    +enable_dummy_csr_write=1
+    +boot_mode=m
+  rtl_test: core_ibex_irq_csr_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_irq_single_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_csr_test
+  description: >
+    Test all CSR instructions on all implemented CSR registers
+  iterations: 5
+  no_iss: 1
+  rtl_test: core_ibex_csr_test
+  sim_opts: >
+    +disable_cosim=1
+  no_post_compare: true
+
+- test: riscv_unaligned_load_store_test
+  description: >
+    Unaligned load/store test, ibex should handle it correctly without raising any exception
+  iterations: 5
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_rand_instr_stream,20
+    +directed_instr_1=riscv_load_store_hazard_instr_stream,20
+    +directed_instr_2=riscv_multi_page_load_store_instr_stream,20
+    +enable_unaligned_load_store=1
+  rtl_test: core_ibex_base_test
+
+- test: riscv_mem_error_test
+  description: >
+    Normal random instruction test, but randomly insert instruction fetch or memory load/store errors
+  iterations: 15
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +instr_cnt=10000
+    +randomize_csr=1
+    +enable_unaligned_load_store=1
+  rtl_test: core_ibex_mem_error_test
+  sim_opts: >
+    +require_signature_addr=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_perf_counter_test
+  description: >
+    Dump performance counters at EOT for any analysis
+  iterations: 5
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +instr_cnt=10000
+    +num_of_sub_program=5
+  rtl_test: core_ibex_perf_test
+  sim_opts: >
+    +require_signature_addr=1
+
+- test: riscv_debug_single_step_test
+  description: >
+    Randomly assert debug_req_i, and set dcsr.step to make ibex execute one isntruction and then re-enter debug mode
+  iterations: 15
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +no_ebreak=1
+    +no_branch_jump=0
+    +instr_cnt=10000
+    +no_csr_instr=1
+    +no_fence=1
+    +num_of_sub_program=2
+    +randomize_csr=1
+    +enable_debug_single_step=1
+  rtl_test: core_ibex_debug_single_step_test
+  sim_opts: >
+    +require_signature_addr=1
+    +max_interval=1500
+    +enable_debug_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+    verbose: 1
+
+- test: riscv_reset_test
+  description: >
+    Randomly reset the core once in the middle of program execution
+  iterations: 15
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +num_of_sub_program=5
+    +enable_unaligned_load_store=1
+    +directed_instr_0=riscv_load_store_rand_instr_stream,10
+  rtl_test: core_ibex_reset_test
+  compare_opts:
+    compare_final_value_only: 1
+    verbose: 1
+
+- test: riscv_rv32im_instr_test
+  description: >
+    Random instruction test without compressed instructions
+  iterations: 5
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +disable_compressed_instr=1
+  gcc_opts: >
+    -march=rv32im
+  rtl_test: core_ibex_base_test
+
+- test: riscv_user_mode_rand_test
+  description: >
+    User mode random instruction tes
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +boot_mode=u
+  rtl_test: core_ibex_base_test
+
+- test: riscv_umode_tw_test
+  desc: >
+    Set mstatus.tw and enable generation of WFI instructions.
+    Boot into U-mode, upon encountering WFI instruction, core should trap to M-mode
+    due to illegal instruction exception.
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +no_ebreak=1
+    +instr_cnt=6000
+    +no_csr_instr=1
+    +no_fence=1
+    +no_wfi=0
+    +set_mstatus_tw=1
+    +randomize_csr=1
+    +num_of_sub_program=0
+    +boot_mode=u
+  rtl_test: core_ibex_umode_tw_test
+  sim_ops: >
+    +require_signature_addr=1
+  compare_opts:
+    compare_final_value_only: 1
+    verbose: 1
+
+# TODO: Only enable U-mode booting for right now, as OVPsim doesn't support some debug CSRs
+- test: riscv_invalid_csr_test
+  desc: >
+    Boot core into random priv mode and generate csr accesses to invalid CSRs (at a higher priv mode)
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +instr_cnt=6000
+    +num_of_sub_program=0
+    +no_csr_instr=0
+    +enable_access_invalid_csr_level=1
+    +boot_mode=u
+  rtl_test: core_ibex_invalid_csr_test
+  sim_opts: >
+    +require_signature_addr=1
+
+- test: riscv_pmp_basic_test
+  desc: >
+    Basic PMP test - all PMP regions will be configured to default setting,
+    enabling all forms of accesses, expect that no exception will be thrown.
+    Randomize mstatus.mprv.
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +pmp_max_offset=00024000
+    +enable_write_pmp_csr=1
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    PMPEnable: 1
+
+- test: riscv_pmp_disable_all_regions_test
+  desc: >
+    Disable all permissions from PMP regions, randomize the boot mode,
+    and randomize mstatus.mprv.
+    Expect that all appropriate faults are taken, and that the core
+    finishes executing successfully.
+  iterations: 20
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +pmp_max_offset=00024000
+    +pmp_region_1=X:0,W:0,R:0
+    +pmp_region_2=X:0,W:0,R:0
+    +pmp_region_3=X:0,W:0,R:0
+    +pmp_region_4=X:0,W:0,R:0
+    +pmp_region_5=X:0,W:0,R:0
+    +pmp_region_6=X:0,W:0,R:0
+    +pmp_region_7=X:0,W:0,R:0
+    +pmp_region_8=X:0,W:0,R:0
+    +pmp_region_9=X:0,W:0,R:0
+    +pmp_region_10=X:0,W:0,R:0
+    +pmp_region_11=X:0,W:0,R:0
+    +pmp_region_12=X:0,W:0,R:0
+    +pmp_region_13=X:0,W:0,R:0
+    +pmp_region_14=X:0,W:0,R:0
+    +pmp_region_15=X:0,W:0,R:0
+    +enable_write_pmp_csr=1
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    PMPEnable: 1
+
+- test: riscv_pmp_out_of_bounds_test
+  desc: >
+    Default PMP settings - enable all regions with full permissions.
+    Randomize mstatus.mprv and the boot mode.
+    Insert streams of memory instructions that access addresses out of PMP boundaries.
+  iterations: 25
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +pmp_max_offset=00024000
+    +enable_write_pmp_csr=1
+    +directed_instr_0=riscv_load_store_rand_addr_instr_stream,50
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    PMPEnable: 1
+
+    # TODO(udinator) this test is failing with arbitrary timeouts, need to fix this.
+    #- test: riscv_pmp_full_random_test
+    #  desc: >
+    #    Completely randomize the boot mode, mstatus.mprv, and all PMP configuration,
+    #    and allow PMP regions to overlap.
+    #    A large number of iterations will be required since this introduces a huge
+    #    state space of configurations.
+    #  iterations: 100
+    #  gen_test: riscv_rand_instr_test
+    #  gen_opts: >
+    #    +instr_cnt=6000
+    #    +pmp_max_offset=00024000
+    #    +pmp_randomize=1
+    #    +pmp_allow_addr_overlap=1
+    #    +enable_write_pmp_csr=1
+    #  rtl_test: core_ibex_base_test
+    #  rtl_params:
+    #    PMPEnable: 1
+
+  # Disable cosim for bitmanip tests for now as Ibex implements a different
+  # version of the spec compared to the Spike version used for the cosim.
+
+# Both an updated compiler and ISS are required to verify the bitmanip v.1.00
+# and draft v.0.93 extensions. For now, disable the bitmanip tests.
+# For details, refer to https://github.com/lowRISC/ibex/issues/1470
+- test: riscv_bitmanip_full_test
+  desc: >
+    Random instruction test with supported B extension instructions in full configuration
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
+    +enable_b_extension=1
+    +enable_bitmanip_groups=zbe,zbf,zbp,zbr,zbt
+    +disable_cosim=1
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    RV32B: "ibex_pkg::RV32BFull"
+
+- test: riscv_bitmanip_otearlgrey_test
+  desc: >
+    Random instruction test with supported B extension instructions in OTEarlGrey configuration
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
+    +enable_b_extension=1
+    +enable_bitmanip_groups=zbf,zbp,zbr,zbt
+    +disable_cosim=1
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    RV32B: ["ibex_pkg::RV32BFull", "ibex_pkg::RV32BOTEarlGrey"]
+
+- test: riscv_bitmanip_balanced_test
+  desc: >
+    Random instruction test with supported B extension instructions in balanced configuration
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbs_extension=1
+    +enable_b_extension=1
+    +enable_bitmanip_groups=zbf,zbt
+    +disable_cosim=1
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    RV32B: ["ibex_pkg::RV32BFull", "ibex_pkg::RV32BOTEarlGrey", "ibex_pkg::RV32BBalanced"]

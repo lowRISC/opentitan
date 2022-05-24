@@ -103,7 +103,8 @@ OT_WARN_UNUSED_RESULT
 inline bitfield_field32_t bitfield_bit32_to_field32(
     bitfield_bit32_index_t bit_index) {
   return (bitfield_field32_t){
-      .mask = 0x1, .index = bit_index,
+      .mask = 0x1,
+      .index = bit_index,
   };
 }
 
@@ -135,6 +136,24 @@ inline uint32_t bitfield_bit32_write(uint32_t bitfield,
                                      bool value) {
   return bitfield_field32_write(bitfield, bitfield_bit32_to_field32(bit_index),
                                 value ? 0x1u : 0x0u);
+}
+
+/**
+ * Copies a bit from one bit set to the other.
+ *
+ * @param dest Bitfield to write to.
+ * @param dest_bit Bit to write to.
+ * @param src Bitfield to read from.
+ * @param src_bit Bit to read from.
+ * @return `dest` with the copied bit applied.
+ */
+OT_WARN_UNUSED_RESULT
+inline uint32_t bitfield_bit32_copy(uint32_t dest,
+                                    bitfield_bit32_index_t dest_bit,
+                                    uint32_t src,
+                                    bitfield_bit32_index_t src_bit) {
+  return bitfield_bit32_write(dest, dest_bit,
+                              bitfield_bit32_read(src, src_bit));
 }
 
 /**
@@ -272,6 +291,18 @@ inline int32_t bitfield_parity32(uint32_t bitfield) {
 OT_WARN_UNUSED_RESULT
 inline uint32_t bitfield_byteswap32(uint32_t bitfield) {
   return __builtin_bswap32(bitfield);
+}
+
+/**
+ * Check whether the bitfield value is power of two aligned.
+ *
+ * Zero will also return false.
+ *
+ * @param bitfield Value to be verified.
+ * @return True if bitfield is power of two, otherwise false.
+ */
+inline bool bitfield_is_power_of_two32(uint32_t bitfield) {
+  return bitfield != 0 && (bitfield & (bitfield - 1)) == 0;
 }
 
 #ifdef __cplusplus

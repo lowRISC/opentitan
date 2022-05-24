@@ -56,7 +56,8 @@ module tlul_fifo_sync #(
                      tl_d_o.a_user   ,
                      spare_req_o}),
     .full_o        (),
-    .depth_o       ());
+    .depth_o       (),
+    .err_o         ());
 
   // Put everything on the response side into the other FIFO
 
@@ -90,6 +91,7 @@ module tlul_fifo_sync #(
                      tl_h_o.d_error ,
                      spare_rsp_o}),
     .full_o        (),
-    .depth_o       ());
+    .depth_o       (),
+    .err_o         ());
 
 endmodule

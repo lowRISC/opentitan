@@ -6,8 +6,8 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -28,13 +28,10 @@ static const uint32_t kGpioVals[] = {0xAAAAAAAA, 0x55555555, 0xA5A5A5A5,
 /**
  * Pins to be tested.
  *
- * This test only uses pins 0-15 to be compatible with both FPGA and DV:
- * - On the nexys video board (chip_earlgrey_nexysvideo.sv), pins 20-23 are
- *   grounded and pins 16-19 are reserved for JTAG, while
- * - On the OpenTitan ASIC (chip_earlgrey_asic.sv), pins 20-31 are grounded and
- *   pins 16-19 are reserved for JTAG.
+ * This test only uses pins 0-12 to be compatible with both FPGA and DV.
+ * See chip-level testbenches and top-level hjson file for actual configuration.
  */
-static const uint32_t kGpioMask = 0x0000FFFF;
+static const uint32_t kGpioMask = 0x00000FFF;
 
 /**
  * Writes the given value to GPIO pins and compares it against the value read.

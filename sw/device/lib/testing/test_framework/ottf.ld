@@ -49,6 +49,17 @@ SECTIONS {
   } > eflash
 
   /**
+   * Non-volatile Scratch area in flash.
+   *
+   * This is a separate section for tests to read/write data to/from to persist
+   * across resets.
+   */
+  .non_volatile_scratch : ALIGN(2048){
+    _non_volatile_scratch_start = .;
+    KEEP(*(.non_volatile_scratch))
+  } > eflash
+
+  /**
    * Ibex interrupt vector. See 'ottf_start.S' for more information.
    *
    * This has to be set up at a 256-byte offset, so that we can use it with

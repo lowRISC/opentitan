@@ -312,8 +312,8 @@
       reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "sys"},
       base_addr: "0x40140000",
       param_decl: {
-        ChipGen: "16'h 00001",
-        ChipRev: "16'h 00001",
+        ChipGen: "16'h 00000",
+        ChipRev: "16'h 00000",
         IdcodeValue: "jtag_id_pkg::JTAG_IDCODE",
       },
     },
@@ -598,7 +598,6 @@
       type: "kmac",
       param_decl: {
         EnMasking: "1",
-        ReuseShare: "0"
       }
       clock_srcs: {clk_i: "main", clk_edn_i: "main"}
       clock_group: "trans"
@@ -721,6 +720,7 @@
                    ICacheScramble: "1",
                    BranchPredictor: "0",
                    DbgTriggerEn: "1",
+                   DbgHwBreakNum: "4",
                    SecureIbex: "1",
                    DmHaltAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0]",
                    DmExceptionAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0]",
@@ -1033,6 +1033,7 @@
         'clkmgr_aon.all_clk_byp_ack'      : 'all_clk_byp_ack',
         'clkmgr_aon.hi_speed_sel'         : 'hi_speed_sel',
         'clkmgr_aon.div_step_down_req'    : 'div_step_down_req',
+        'clkmgr_aon.calib_rdy'            : 'calib_rdy',
         'flash_ctrl.flash_alert'          : 'flash_alert',
         'flash_ctrl.flash_bist_enable'    : 'flash_bist_enable',
         'flash_ctrl.flash_power_down_h'   : 'flash_power_down_h',
@@ -1377,9 +1378,9 @@
           'SPI_DEV_D2', 'SPI_DEV_D3'
           'FLASH_TEST_VOLT', 'OTP_EXT_VOLT'
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
-          'IOB10', 'IOB11', 'IOB12',
-          'IOC0', 'IOC1', 'IOC12',
-          'IOR1', 'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13',
+          'IOB3', 'IOB6', 'IOB7', 'IOB8', 'IOB9', 'IOB10', 'IOB11', 'IOB12',
+          'IOC12',
+          'IOR1', 'IOR2', 'IOR3', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13',
           'USB_P', 'USB_N'
         ],
 
@@ -1406,63 +1407,14 @@
       pinmux: {
         special_signals: [
           // Straps
-          { name: 'tap0',   pad: 'IOC0' ,        desc: 'TAP strap signal, maps to a stubbed-off MIO.'  },
-          { name: 'tap1',   pad: 'IOB7',         desc: 'TAP strap signal, maps to MIO pad 16.'         },
-          { name: 'dft0',   pad: 'IOC1' ,        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
-          { name: 'dft1',   pad: 'IOC12',        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
+          { name: 'tap0',   pad: 'IOC8',         desc: 'TAP strap signal.'                       },
+          { name: 'tap1',   pad: 'IOC5',         desc: 'TAP strap signal.'                       },
+          { name: 'dft0',   pad: 'IOC3',         desc: 'DFT strap signal.'                       },
+          { name: 'dft1',   pad: 'IOC4',         desc: 'DFT strap signal.'                       },
           // JTAG
           { name: 'tck',    pad: 'SPI_DEV_CLK' , desc: 'JTAG tck signal, overlaid on SPI_DEV.'   },
           { name: 'tms',    pad: 'SPI_DEV_CS_L', desc: 'JTAG tms signal, overlaid on SPI_DEV.'   },
-          { name: 'trst_n', pad: 'IOB9'        , desc: 'JTAG trst_n signal, maps to MIO pad 18.' },
-          { name: 'tdi',    pad: 'SPI_DEV_D0'  , desc: 'JTAG tdi signal, overlaid on SPI_DEV.'   },
-          { name: 'tdo',    pad: 'SPI_DEV_D1'  , desc: 'JTAG tdo signal, overlaid on SPI_DEV.'   },
-        ],
-      }
-    }
-    { name: 'nexysvideo',
-
-      pinout: {
-        remove_ports: [],
-        remove_pads: [
-          'CC1', 'CC2',
-          'SPI_DEV_D2', 'SPI_DEV_D3'
-          'SPI_HOST_CLK', 'SPI_HOST_CS_L',
-          'SPI_HOST_D0', 'SPI_HOST_D1', 'SPI_HOST_D2', 'SPI_HOST_D3',
-          'FLASH_TEST_VOLT', 'OTP_EXT_VOLT'
-          'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
-          'IOB10', 'IOB11', 'IOB12',
-          'IOC0', 'IOC1', 'IOC12',
-          'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
-        ],
-
-        add_pads: [
-          // Additional infrastructure pads
-          { name: 'IO_CLK',           type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra clock input for FPGA target'}
-          { name: 'IO_JSRST_N',       type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Dedicated JTAG system reset input'}
-          // Custom USB pads
-          { name: 'IO_USB_DNPULLUP0', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
-          { name: 'IO_USB_DPPULLUP0', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
-          { name: 'IO_UPHY_DP_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_DN_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_DP_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_DN_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_D_RX',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_DPPULLUP', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-        ],
-      },
-
-      pinmux: {
-        special_signals: [
-          // Straps
-          { name: 'tap0',   pad: 'IOC0' ,        desc: 'TAP strap signal, maps to a stubbed-off MIO.'  },
-          { name: 'tap1',   pad: 'IOB7',         desc: 'TAP strap signal, maps to MIO pad 16.'         },
-          { name: 'dft0',   pad: 'IOC1' ,        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
-          { name: 'dft1',   pad: 'IOC12',        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
-          // JTAG
-          { name: 'tck',    pad: 'SPI_DEV_CLK' , desc: 'JTAG tck signal, overlaid on SPI_DEV.'   },
-          { name: 'tms',    pad: 'SPI_DEV_CS_L', desc: 'JTAG tms signal, overlaid on SPI_DEV.'   },
-          { name: 'trst_n', pad: 'IOB9'        , desc: 'JTAG trst_n signal, maps to MIO pad 18.' },
+          { name: 'trst_n', pad: 'IOR4',         desc: 'JTAG trst_n signal.'                     },
           { name: 'tdi',    pad: 'SPI_DEV_D0'  , desc: 'JTAG tdi signal, overlaid on SPI_DEV.'   },
           { name: 'tdo',    pad: 'SPI_DEV_D1'  , desc: 'JTAG tdo signal, overlaid on SPI_DEV.'   },
         ],

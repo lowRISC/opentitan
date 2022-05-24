@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:edge_detector
       - lowrisc:systems:sensor_ctrl_pkg
     files:
       - rtl/sensor_ctrl.sv

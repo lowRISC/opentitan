@@ -6,7 +6,7 @@
 sw_lib_testing_test_status = declare_dependency(
   link_with: static_library(
     'test_status_ot',
-    sources: ['test_status.c'],
+    sources: ['status.c'],
     dependencies: [
       sw_lib_mmio,
       sw_lib_runtime_log,
@@ -19,7 +19,7 @@ sw_lib_testing_test_status = declare_dependency(
 sw_lib_testing_test_coverage = declare_dependency(
   link_with: static_library(
     'test_coverage_none',
-    sources: [files('test_coverage_none.c')],
+    sources: [files('coverage_none.c')],
   ),
 )
 collect_coverage = declare_dependency()
@@ -32,7 +32,7 @@ if coverage
       include_directories: sw_vendor_llvm_clang_rt_inc_dir,
       sources: [
         sw_vendor_llvm_clang_rt_sources,
-        files('test_coverage_llvm.c'),
+        files('coverage_llvm.c'),
       ],
       dependencies: [
         sw_lib_mem,
@@ -72,7 +72,7 @@ ottf_linker_args = [
 # OTTF startup library. Every OpenTitan (RISC-V) test executable
 # should depend on this target.
 #
-# The crt defines the interrupt vector, the symbols of which are defined in 
+# The crt defines the interrupt vector, the symbols of which are defined in
 # in `sw/device/lib/testing/test_framework/ottf_isrs.S`.
 ottf_start_lib = declare_dependency(
   # The following assembly files need to be included as a source, not a
@@ -111,7 +111,7 @@ ottf_lib = declare_dependency(
   link_with: static_library(
     'ottf_lib',
     sources: [
-      'ottf.c',
+      'ottf_main.c',
       'freertos_hooks.c',
       'freertos_port.S',
       'freertos_port.c',

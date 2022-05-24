@@ -1,0 +1,4 @@
+__skip__
+
+# This is not a real bitstream, but a magic value that causes opentitantool
+# to skip loading a bitstream.

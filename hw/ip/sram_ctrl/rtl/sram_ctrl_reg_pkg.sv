@@ -128,4 +128,3 @@ package sram_ctrl_reg_pkg;
   };
 
 endpackage
-

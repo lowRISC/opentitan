@@ -157,11 +157,33 @@ virtual task tl_write_ro_mem_err(string ral_name);
   end
 endtask
 
-virtual task tl_write_w_instr_type(string ral_name);
-  bit [BUS_DW-1:0] data;
+virtual task tl_instr_type_err(string ral_name);
   repeat ($urandom_range(10, 100)) begin
-    tl_access(.addr($urandom()), .write(1), .data(data),
-              .instr_type(MuBi4True), .exp_err_rsp(1),
+    bit [BUS_AW-1:0] addr;
+    bit              write;
+    bit [BUS_DW-1:0] data;
+    mubi4_t          instr_type;
+
+    `DV_CHECK_STD_RANDOMIZE_FATAL(addr);
+    `DV_CHECK_STD_RANDOMIZE_FATAL(data);
+
+    randcase
+      1: begin
+        // invalid instr_type
+        bit[3:0] instr_type_bits;
+        `DV_CHECK_STD_RANDOMIZE_FATAL(write);
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_type_bits,
+                                           !(instr_type_bits inside {MuBi4True, MuBi4False});)
+        instr_type = mubi4_t'(instr_type_bits);
+      end
+      1: begin
+        // write with instr_type = MuBi4True
+        write = 1'b1;
+        instr_type = MuBi4True;
+      end
+    endcase
+
+    tl_access(.addr(addr), .write(write), .data(data), .instr_type(instr_type), .exp_err_rsp(1),
               .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
   end
 endtask
@@ -243,7 +265,7 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
                 has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name);
                 has_wo_mem: tl_read_wo_mem_err(ral_name);
                 has_ro_mem: tl_write_ro_mem_err(ral_name);
-                1: tl_write_w_instr_type(ral_name);
+                1: tl_instr_type_err(ral_name);
               endcase
             end
           join_none

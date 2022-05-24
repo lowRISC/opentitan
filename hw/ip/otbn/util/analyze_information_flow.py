@@ -5,10 +5,10 @@
 
 import argparse
 import sys
-from typing import Dict, List, Optional, Set, Tuple
 
 from shared.control_flow import program_control_graph, subroutine_control_graph
 from shared.decode import decode_elf
+from shared.information_flow import InformationFlowGraph
 from shared.information_flow_analysis import (get_program_iflow,
                                               get_subroutine_iflow,
                                               stringify_control_deps)
@@ -50,12 +50,20 @@ def main() -> int:
     if args.verbose:
         print('Control-flow graph:')
         print(graph.pretty(program, indent=2))
+        cycle_pcs = graph.get_cycle_starts()
+        if cycle_pcs:
+            print('Control flow has cycles starting at the following PCs:')
+            for pc in cycle_pcs:
+                symbols = program.get_symbols_for_pc(pc)
+                label_str = ' <{}>'.format(
+                    ', '.join(symbols)) if symbols else ''
+                print('{:#x}{}'.format(pc, label_str))
 
     # Compute information-flow graph(s).
-    ret_iflow, end_iflow = None, None
     if args.subroutine is None:
         what = 'program'
         end_iflow, control_deps = get_program_iflow(program, graph)
+        ret_iflow = InformationFlowGraph.nonexistent()
     else:
         what = 'subroutine'
         ret_iflow, end_iflow, control_deps = get_subroutine_iflow(
@@ -64,14 +72,14 @@ def main() -> int:
     # If no secrets were given or the --verbose flag is set, then print the
     # full information-flow graphs.
     if (args.verbose or args.secrets is None):
-        if ret_iflow is not None:
+        if ret_iflow.exists:
             print(
                 'Information flow for paths ending in a return to the caller:')
             print(ret_iflow.pretty(indent=2))
-            if end_iflow is not None:
+            if end_iflow.exists:
                 print('--------')
 
-        if end_iflow is not None:
+        if end_iflow.exists:
             print('Information flow for paths ending the program:')
             print(end_iflow.pretty(indent=2))
 
@@ -101,14 +109,14 @@ def main() -> int:
 
     # Print final secrets (if initial secrets were provided).
     if args.secrets is not None:
-        if ret_iflow is not None:
+        if ret_iflow.exists:
             final_secrets = {
                 sink
                 for node in args.secrets for sink in ret_iflow.sinks(node)
             }
             print('Final secrets for paths ending in a return to the caller:',
                   ', '.join(sorted(final_secrets)))
-        if end_iflow is not None:
+        if end_iflow.exists:
             final_secrets = {
                 sink
                 for node in args.secrets for sink in end_iflow.sinks(node)

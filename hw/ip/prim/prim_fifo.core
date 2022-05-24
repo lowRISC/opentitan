@@ -11,10 +11,12 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:util
       - lowrisc:prim:flop_2sync
+      - lowrisc:prim:count_pkg
     files:
       - rtl/prim_fifo_async_sram_adapter.sv
       - rtl/prim_fifo_async.sv
       - rtl/prim_fifo_sync.sv
+      - rtl/prim_fifo_sync_cnt.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

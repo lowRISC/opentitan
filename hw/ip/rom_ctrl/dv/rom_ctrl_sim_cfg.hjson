@@ -48,8 +48,7 @@
 
   // Add ROM_CTRL specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/rom_ctrl/dv/cov/rom_ctrl_cov_unr_excl.el",
-                       "{proj_root}/hw/ip/rom_ctrl/dv/cov/rom_ctrl_cov_excl.el",
-                       "{proj_root}/hw/ip/rom_ctrl/dv/cov/rom_ctrl_cov_v2_excl.el"]
+                       "{proj_root}/hw/ip/rom_ctrl/dv/cov/rom_ctrl_cov_excl.el"]
 
   // Default UVM test and seq class name.
   uvm_test: rom_ctrl_base_test
@@ -63,7 +62,7 @@
     }
     {
       name: rom_ctrl_stress_all
-      uvm_test_seq: rom_ctrl_stress_all_vseq 
+      uvm_test_seq: rom_ctrl_stress_all_vseq
     }
     {
       name: rom_ctrl_max_throughput_chk

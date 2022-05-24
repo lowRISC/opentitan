@@ -71,31 +71,26 @@ rom_error_t run_otbn_rsa_3072_modexp(
 
   // Initialize OTBN and load the RSA app.
   otbn_init(&otbn);
-  RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
+  HARDENED_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
 
   // Set the modulus (n).
-  RETURN_IF_ERROR(
+  HARDENED_RETURN_IF_ERROR(
       write_rsa_3072_int_to_otbn(&otbn, &public_key->n, kOtbnVarRsaInMod));
 
   // Set the signature.
-  RETURN_IF_ERROR(
+  HARDENED_RETURN_IF_ERROR(
       write_rsa_3072_int_to_otbn(&otbn, signature, kOtbnVarRsaInBuf));
 
   // Set the precomputed constant m0_inv.
-  RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kOtbnWideWordNumWords,
-                                         public_key->n0_inv, kOtbnVarRsaM0Inv));
+  HARDENED_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
+      &otbn, kOtbnWideWordNumWords, public_key->n0_inv, kOtbnVarRsaM0Inv));
 
   // Start the OTBN routine.
-  RETURN_IF_ERROR(otbn_execute_app(&otbn));
-
-  // Spin here waiting for OTBN to complete.
-  RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+  HARDENED_RETURN_IF_ERROR(otbn_execute_app(&otbn));
 
   // Read recovered message out of OTBN dmem.
-  RETURN_IF_ERROR(
-      read_rsa_3072_int_from_otbn(&otbn, kOtbnVarRsaOutBuf, recovered_message));
-
-  return kErrorOk;
+  return read_rsa_3072_int_from_otbn(&otbn, kOtbnVarRsaOutBuf,
+                                     recovered_message);
 }
 
 rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
@@ -108,7 +103,5 @@ rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
   }
 
   // Run OTBN application.
-  RETURN_IF_ERROR(run_otbn_rsa_3072_modexp(key, sig, result));
-
-  return kErrorOk;
+  return run_otbn_rsa_3072_modexp(key, sig, result);
 }

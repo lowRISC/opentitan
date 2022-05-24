@@ -27,7 +27,6 @@ opentitan_rom_binary(
     deps = [
         ":linker_script",
         ":test_rom_lib",
-        "//sw/device/lib/base:mmio",
     ],
 )
 
@@ -51,17 +50,22 @@ cc_library(
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:ibex_peri",
-        "//sw/device/lib:pinmux",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:manifest",
     ],
 )
@@ -77,20 +81,24 @@ cc_library(
     ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib:flash_ctrl",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
 opentitan_functest(
     name = "test_rom_test",
     srcs = ["test_rom_test.c"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )

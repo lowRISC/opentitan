@@ -99,7 +99,7 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
         seen_err_ = true;
         return;
       }
-      rtl_entry_.take_writes(trace_entry);
+      rtl_entry_.take_writes(trace_entry, false);
     } else {
       // This is the first partial entry. Set the rtl_started_ flag and save
       // trace_entry.
@@ -127,7 +127,7 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
       return;
     }
 
-    trace_entry.take_writes(rtl_entry_);
+    trace_entry.take_writes(rtl_entry_, true);
   }
 
   rtl_pending_ = true;
@@ -174,7 +174,7 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
     // We have some changes associated with a stall. Merge in the changes that
     // we've just seen. We do it "backwards" so that if trace_entry is an
     // final entry then so is the result.
-    trace_entry.take_writes(iss_entry_);
+    trace_entry.take_writes(iss_entry_, true);
   }
 
   iss_started_ = true;
@@ -193,6 +193,7 @@ void OtbnTraceChecker::Flush() {
   rtl_started_ = false;
   iss_pending_ = false;
   iss_started_ = false;
+  no_sec_wipe_data_chk_ = false;
 }
 
 bool OtbnTraceChecker::Finish() {
@@ -228,6 +229,8 @@ const OtbnIssTraceEntry::IssData *OtbnTraceChecker::PopIssData() {
   return &last_data_;
 }
 
+void OtbnTraceChecker::set_no_sec_wipe_chk() { no_sec_wipe_data_chk_ = true; }
+
 bool OtbnTraceChecker::MatchPair() {
   if (!(rtl_pending_ && iss_pending_)) {
     return true;
@@ -235,17 +238,21 @@ bool OtbnTraceChecker::MatchPair() {
   rtl_pending_ = false;
   iss_pending_ = false;
   iss_started_ = false;
-  if (!(rtl_entry_.compare_rtl_iss_entries(iss_entry_))) {
-    std::cerr
-        << ("ERROR: Mismatch between RTL and ISS trace entries.\n"
-            "  RTL entry is:\n");
+
+  std::string err_desc;
+  if (!(rtl_entry_.compare_rtl_iss_entries(iss_entry_, no_sec_wipe_data_chk_,
+                                           &err_desc))) {
+    std::cerr << "ERROR: Mismatch between RTL and ISS trace entries: "
+              << err_desc << "\n  RTL entry is:\n";
     rtl_entry_.print("    ", std::cerr);
     std::cerr << "  ISS entry is:\n";
     iss_entry_.print("    ", std::cerr);
     seen_err_ = true;
     return false;
+    if (rtl_entry_.trace_type() == OtbnTraceEntry::WipeComplete) {
+      no_sec_wipe_data_chk_ = false;
+    }
   }
-
   // We've got a matching pair of entries. Move the ISS data out of the (now
   // defunct) iss_entry_ and into last_data_.
   if (rtl_entry_.trace_type() == OtbnTraceEntry::Exec) {

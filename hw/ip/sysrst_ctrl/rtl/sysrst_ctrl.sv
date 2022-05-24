@@ -332,20 +332,33 @@ module sysrst_ctrl
   assign hw2reg.wkup_status.d = 1'b1;
   assign wkup_req_o = reg2hw.wkup_status.q;
 
-  // Detect a rising edge so that the interrupt can be cleared
-  // independently of the wakeup request.
+  logic aon_intr_req, aon_intr_ack;
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin : p_intr_req_hold_reg
+    if(~rst_aon_ni) begin
+      aon_intr_req <= 1'b0;
+    end else begin
+      if (aon_intr_ack) begin
+        aon_intr_req <= 1'b0;
+      end else begin
+        aon_intr_req <= aon_intr_req || aon_intr_event_pulse;
+      end
+    end
+  end
+
+  // This synchronizes over a pulse if there is a pending request.
+  // If the main bus clock is not active, this will stall the synchronization until
+  // the clock becomes live again so that no interrupt requests are missed.
   logic intr_event_pulse;
-  prim_edge_detector #(
-    .Width(1),
-    .ResetValue('0),
-    .EnSync(1)
-  ) u_prim_edge_detector (
-    .clk_i,
-    .rst_ni,
-    .d_i              (aon_intr_event_pulse),
-    .q_sync_o         ( ),
-    .q_posedge_pulse_o(intr_event_pulse),
-    .q_negedge_pulse_o( )
+  prim_sync_reqack u_prim_sync_reqack (
+    .clk_src_i(clk_aon_i),
+    .rst_src_ni(rst_aon_ni),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .req_chk_i(1'b1),
+    .src_req_i(aon_intr_req),
+    .src_ack_o(aon_intr_ack),
+    .dst_req_o(intr_event_pulse),
+    .dst_ack_i(intr_event_pulse)
   );
 
   // Instantiate the interrupt module

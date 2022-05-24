@@ -9,20 +9,6 @@ subdir('dif')
 subdir('runtime')
 subdir('crypto')
 
-# Flash controller library (sw_lib_flash_ctrl)
-sw_lib_flash_ctrl = declare_dependency(
-  link_with: static_library(
-    'flash_ctrl_ot',
-    sources: [
-      hw_ip_flash_ctrl_reg_h,
-      'flash_ctrl.c',
-    ],
-    dependencies: [
-      top_earlgrey,
-    ]
-  )
-)
-
 # Temp ibex peri library (sw_lib_ibex)
 sw_lib_ibex = declare_dependency(
   link_with: static_library(
@@ -30,20 +16,6 @@ sw_lib_ibex = declare_dependency(
     sources: [
       hw_ip_ibex_reg_h,
       'ibex_peri.c',
-    ],
-    dependencies: [
-      top_earlgrey,
-    ]
-  )
-)
-
-# PINMUX library (sw_lib_pinmux)
-sw_lib_pinmux = declare_dependency(
-  link_with: static_library(
-    'pinmux_ot',
-    sources: [
-      hw_top_earlgrey_pinmux_reg_h,
-      'pinmux.c',
     ],
     dependencies: [
       top_earlgrey,

@@ -47,22 +47,6 @@
       default: "1"
       desc:    '''
         Disable(0) or enable(1) first-order masking of Keccak round.
-
-        If masking is enabled, ReuseShare parameter will impact the design.
-        '''
-      local:   "false"
-      expose:  "true"
-    }
-    { name:    "ReuseShare"
-      type:    "int"
-      default: "0"
-      desc:    '''
-        If enabled (1), the internal Keccak round logic will re-use the
-        adjacent shares as entropy in Domain-Oriented Masking AND logic.
-        It improves the throughput of Keccak, as it only requires small
-        amount of entropy rather than 1600 bit per round.
-
-        This feature is not implemented yet.
         '''
       local:   "false"
       expose:  "true"
@@ -108,28 +92,34 @@
       desc:    "Width of the hash counter in the entropy"
       local:   "true"
     }
+    { name:    "NumSeedsEntropyLfsr",
+      type:    "int",
+      default: "5",
+      desc:    "Number of words for the LFSR seed used for entropy generation",
+      local:   "true"
+    }
     { name:      "RndCnstLfsrSeed"
       desc:      "Compile-time random data for LFSR default seed"
       type:      "kmac_pkg::lfsr_seed_t"
-      randcount: "64"
+      randcount: "800"
       randtype:  "data"
     }
     { name:      "RndCnstLfsrPerm",
       desc:      "Compile-time random permutation for LFSR output",
       type:      "kmac_pkg::lfsr_perm_t"
-      randcount: "64",
+      randcount: "800",
+      randtype:  "perm",
+    }
+    { name:      "RndCnstLfsrFwdPerm",
+      desc:      "Compile-time random permutation for forwarding LFSR state",
+      type:      "kmac_pkg::lfsr_fwd_perm_t"
+      randcount: "32",
       randtype:  "perm",
     }
     { name:      "RndCnstMsgPerm"
       desc:      "Compile-time random permutation for LFSR Message output"
       type:      "kmac_pkg::msg_perm_t"
       randcount: "64"
-      randtype:  "perm"
-    }
-    { name:      "RndCnstStoragePerm"
-      desc:      "Compile-time random permutation for Storage Entropy"
-      type:      "kmac_pkg::storage_perm_t"
-      randcount: "1600"
       randtype:  "perm"
     }
   ]
@@ -193,9 +183,6 @@
     }
     { name: "FSM.SPARSE"
       desc: "FSMs in KMAC are sparsely encoded."
-    }
-    { name: "PRNG.LFSR.REDUN"
-      desc: "LFSR in the entropy generator uses prim_double_lfsr"
     }
     { name: "CTR.REDUN"
       desc: '''Round counter, key index counter, sentmsg counter and hash counter
@@ -370,7 +357,7 @@
           received entropy is fed into internal LFSR.
 
           In SwMode, the software should update the internal LFSR seed
-          through !!ENTROPY_SEED_LOWER and !!ENTROPY_SEED_UPPER.
+          through !!ENTROPY_SEED_0 etc.
 
           Out of the reset, the entropy module inside KMAC IP generates LFSR to
           support the ROM_CTRL operation. The logic does not go back to the
@@ -666,41 +653,37 @@
         }
       ]
     } // R: ENTROPY_REFRESH_THRESHOLD_SHADOWED
-    { name: "ENTROPY_SEED_LOWER"
-      desc: '''Entropy Seed [31:0].
+    { multireg: {
+        name: "ENTROPY_SEED"
+        desc: '''Entropy Seed
 
-      Everytime when the software writes into this register, LFSR is reseeded
-      with the value of {ENTROPY_SEED_UPPER, ENTROPY_SEED_LOWER}.
-      '''
-      swaccess: "rw"
-      hwaccess: "hro"
-      hwqe: "true"
-      regwen: "CFG_REGWEN"
-      fields: [
-        { bits: "31:0"
-          name: "seed"
-          desc: "Seed [31:0]"
-        }
-      ]
-    } // R: ENTROPY_SEED_LOWER
-    { name: "ENTROPY_SEED_UPPER"
-      desc: '''Entropy Seed [63:32].
+              Entropy seed registers for the integrated entropy generator.
 
-      Everytime when the software writes into !!ENTROPY_SEED_LOWER register,
-      LFSR is reseeded with the value of {ENTROPY_SEED_UPPER,
-      ENTROPY_SEED_LOWER}.
-      '''
-      swaccess: "rw"
-      hwaccess: "hro"
-      hwqe: "true"
-      regwen: "CFG_REGWEN"
-      fields: [
-        { bits: "31:0"
-          name: "seed"
-          desc: "Seed [63:32]"
-        }
-      ]
-    } // R: ENTROPY_SEED_UPPER
+              If !!CFG_SHADOWED.entropy_mode is set to sw_mode, software first needs to set
+              !!CFG_SHADOWED.entropy_ready and then write the !!ENTROPY_SEED_0 -
+              !!ENTROPY_SEED_4 registers in ascending order. Software writes one 32-bit value
+              to every register which is subsequently loaded into the corresponding 32-bit LFSR
+              chunk of the entropy generator.
+
+              After writing all !!ENTROPY_SEED_0 registers, the entropy generator will start
+              its operation. After this point, writing these registers has no longer any
+              effect.
+              '''
+        count: "NumSeedsEntropyLfsr"
+        cname: "KMAC"
+        hwext: "true"
+        hwqe : "true"
+        regwen: "CFG_REGWEN"
+        swaccess: "wo"
+        hwaccess: "hro"
+        fields: [
+          { bits: "31:0"
+            name: "seed"
+            desc: "32-bit chunk of the entropy generator seed"
+          }
+        ]
+      } // R: ENTROPY_SEED
+    } // multireg: ENTROPY_SEED
     { multireg: {
         name: "KEY_SHARE0"
         desc: '''KMAC Secret Key

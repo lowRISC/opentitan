@@ -521,6 +521,24 @@ dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
                                      uint64_t digest);
 
 /**
+ * Checks if the digest value for the given partition has been computed. Once a
+ * digest has been computed for a partition, the partition is write-locked
+ * (additionally, read-locked if the partition is secret).
+ *
+ * The lifecycle partition does not have a digest, and checking if this region
+ * has a computed digest will return an error.
+ *
+ * @param otp An OTP handle.
+ * @param partition The partition to check the digest of.
+ * @param[out] is_computed Indicates if the digest has been computed.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otp_ctrl_is_digest_computed(const dif_otp_ctrl_t *otp,
+                                             dif_otp_ctrl_partition_t partition,
+                                             bool *is_computed);
+
+/**
  * Gets the buffered digest value for the given partition.
  *
  * Note that this value is only updated when the device is reset; if the digest

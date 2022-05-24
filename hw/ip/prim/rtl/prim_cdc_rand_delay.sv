@@ -60,6 +60,10 @@ module prim_cdc_rand_delay #(
 `ifdef SIMULATION
 `ifndef DISABLE_PRIM_CDC_RAND_DELAY
 
+  // macro includes
+  `include "uvm_macros.svh"
+  `include "dv_macros.svh"
+
   typedef enum bit [1:0] {
     RandDelayModeDisable,
     RandDelayModeSlow,

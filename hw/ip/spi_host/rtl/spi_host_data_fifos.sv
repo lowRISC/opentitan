@@ -87,7 +87,8 @@ module spi_host_data_fifos #(
     .rready_i (core_tx_ready_i),
     .rdata_o  (core_tx_data_be),
     .full_o   (),
-    .depth_o  (tx_depth)
+    .depth_o  (tx_depth),
+    .err_o    ()
   );
 
   logic [RxDepthW-1:0] rx_depth;
@@ -109,7 +110,8 @@ module spi_host_data_fifos #(
     .rready_i (rx_ready_i),
     .rdata_o  (rx_data_unordered),
     .full_o   (),
-    .depth_o  (rx_depth)
+    .depth_o  (rx_depth),
+    .err_o    ()
   );
 
   assign tx_empty_o = (tx_qd_o == 0);

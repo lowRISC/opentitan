@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{bail, ensure, Context, Result};
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -13,17 +14,16 @@ use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
+use crate::collection;
 use crate::io::gpio::GpioPin;
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::common::uart::SerialPortUart;
 use crate::transport::{
-    Capabilities, Capability, Result, Transport, TransportError, TransportInterfaceType,
-    WrapInTransportError,
+    Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 use crate::util::usb::UsbBackend;
-use crate::{bail, collection, ensure};
 
 pub mod c2d2;
 pub mod gpio;
@@ -197,20 +197,15 @@ impl<T: Flavor> Hyperdebug<T> {
     /// Locates the /dev/ttyUSBn node corresponding to a given interface in the sys directory
     /// tree, e.g. /sys/bus/usb/devices/1-4/1-4:1.0 .
     fn find_tty(path: &Path) -> Result<PathBuf> {
-        for entry in fs::read_dir(path)
-            .wrap(|e| TransportError::ReadError(path.to_str().unwrap().to_string(), e))?
-        {
-            let entry =
-                entry.wrap(|e| TransportError::ReadError(path.to_str().unwrap().to_string(), e))?;
+        for entry in fs::read_dir(path).context(format!("find TTY: read_dir({:?})", path))? {
+            let entry = entry.context(format!("find TTY: entity {:?}", path))?;
             if let Ok(filename) = entry.file_name().into_string() {
                 if filename.starts_with("tty") {
                     return Ok(PathBuf::from("/dev").join(entry.file_name()));
                 }
             }
         }
-        Err(TransportError::CommunicationError(
-            "Did not find ttyUSBn device".to_string(),
-        ))
+        Err(TransportError::CommunicationError("Did not find ttyUSBn device".to_string()).into())
     }
 
     fn find_endpoints_for_interface(
@@ -303,13 +298,13 @@ impl Inner {
                 Err(error) if error.kind() == ErrorKind::TimedOut => {
                     break;
                 }
-                Err(error) => return Err(error).wrap(TransportError::CommunicationError),
+                Err(error) => return Err(error).context("communication error"),
             }
         }
         // Send Ctrl-C, followed by the command, then newline.  This will discard any previous
         // partial input, before executing our command.
         port.write(format!("\x03{}\n", cmd).as_bytes())
-            .wrap(TransportError::CommunicationError)?;
+            .context("communication error")?;
 
         // Now process response from HyperDebug.  First we expect to see the echo of the command
         // we just "typed". Then zero, one or more lines of useful output, which we want to pass
@@ -336,7 +331,7 @@ impl Inner {
                                 line_end -= 1;
                             }
                             let line = std::str::from_utf8(&buf[line_start..line_end])
-                                .wrap(TransportError::CommunicationError)?;
+                                .context("communication error")?;
                             if seen_echo {
                                 callback(line);
                             } else {
@@ -355,9 +350,7 @@ impl Inner {
                     }
                 }
                 Err(error) if error.kind() == ErrorKind::TimedOut => {
-                    if std::str::from_utf8(&buf[0..len]).wrap(TransportError::CommunicationError)?
-                        == "> "
-                    {
+                    if std::str::from_utf8(&buf[0..len]).context("communication error")? == "> " {
                         // No data arrived for a while, and the last we got was a command
                         // prompt, this is what we expect when the command has finished
                         // successfully.
@@ -370,11 +363,11 @@ impl Inner {
                         // setting of the underlying serial port object.)
                         repeated_timeouts += 1;
                         if repeated_timeouts == 10 {
-                            return Err(error).wrap(TransportError::CommunicationError);
+                            return Err(error).context("communication error");
                         }
                     }
                 }
-                Err(error) => return Err(error).wrap(TransportError::CommunicationError),
+                Err(error) => return Err(error).context("communication error"),
             }
         }
     }
@@ -445,7 +438,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             }
             _ => Err(TransportError::InvalidInstance(
                 TransportInterfaceType::Uart,
-                instance.to_string(),
+                instance.to_string().into(),
             )
             .into()),
         }

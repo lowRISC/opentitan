@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:dv:dv_macros
     files:
       - rtl/prim_cdc_rand_delay.sv
     file_type: systemVerilogSource

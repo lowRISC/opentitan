@@ -9,7 +9,6 @@ filesets:
     depend:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
-      - lowrisc:prim:edge_detector
       - lowrisc:ip:tlul
     files:
       - rtl/sysrst_ctrl_reg_pkg.sv

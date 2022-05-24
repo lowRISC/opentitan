@@ -199,8 +199,11 @@
     { name: "FSM.SPARSE",
       desc: "Sparse encoding for slow and fast state machines."
     }
-    { name: "FSM.LOCAL_ESC",
-      desc: "When FSMs reach a bad state, escalate directly and force user reset."
+    { name: "FSM.TERMINAL",
+      desc: '''
+        When FSMs reach a bad state, go into a terminate state that does not
+        recover without user or external host intervention.
+      '''
     }
     { name: "CTRL_FLOW.GLOBAL_ESC",
       desc: "When global escalation is received, proceed directly to reset."
@@ -373,7 +376,7 @@
           ]
           tags: [// Turning off USB clock in active state impacts other CSRs
                  // at the chip level (in other blocks, such as clkmgr).
-                 "excl:CsrNonInitTests:CsrExclWrite"]
+                 "excl:CsrAllTests:CsrExclWrite"]
         },
 
         { bits: "8",
@@ -638,6 +641,13 @@
           name: "ESC_TIMEOUT",
           desc: '''
             When 1, an escalation clock / reset timeout has occurred.
+          ''',
+        },
+
+        { bits: "2",
+          name: "MAIN_PD_GLITCH",
+          desc: '''
+            When 1, unexpected power glitch was observed on main PD.
           ''',
         },
       ]

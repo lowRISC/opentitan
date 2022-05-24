@@ -1,0 +1,127 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:ibex:tb_cs_registers"
+description: "CS registers testbench"
+filesets:
+  files_so:
+    files:
+      - Makefile
+      - rst_driver/rst_dpi.cc
+      - rst_driver/reset_driver.cc
+      - rst_driver/reset_driver.h
+      - reg_driver/csr_listing.def
+      - reg_driver/reg_dpi.cc
+      - reg_driver/register_driver.cc
+      - reg_driver/register_driver.h
+      - reg_driver/register_transaction.cc
+      - reg_driver/register_transaction.h
+      - env/env_dpi.cc
+      - env/register_environment.cc
+      - env/register_environment.h
+      - env/simctrl.cc
+      - env/simctrl.h
+      - env/register_types.h
+      - model/base_register.cc
+      - model/base_register.h
+      - model/register_model.cc
+      - model/register_model.h
+    file_type: user
+
+  files_verilator:
+    depend:
+      - lowrisc:dv_verilator:simutil_verilator
+    files:
+      - tb/tb_cs_registers.cc: { file_type: cppSource }
+      - lint/verilator_waiver.vlt: {file_type: vlt}
+
+  files_sim:
+    depend:
+      - lowrisc:ibex:ibex_core
+    files:
+      - env/env_dpi.sv
+      - rst_driver/rst_dpi.sv
+      - reg_driver/reg_dpi.sv
+      - tb/tb_cs_registers.sv
+    file_type: systemVerilogSource
+
+# Call make to build C++ shared object (workaround until natively supported by
+# fusesoc) see olofk/fusesoc#311
+scripts:
+  build_so:
+    filesets:
+      - files_so
+    cmd:
+      - make
+      - -C
+      - ../src/lowrisc_ibex_tb_cs_registers_0
+
+parameters:
+  PMPEnable:
+    datatype: int
+    paramtype: vlogparam
+    default: 1
+    description: PMP enabled [1/0]
+  PMPNumRegions:
+    datatype: int
+    paramtype: vlogparam
+    default: 4
+    description: Number of implemented PMP regions [0/16]
+  PMPGranularity:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: Minimum PMP matching granularity [0/31]
+  MHPMCounterNum:
+    datatype: int
+    paramtype: vlogparam
+    default: 8
+    description: Number of performance monitor event counters [0/29]
+  MHPMCounterWidth:
+    datatype: int
+    paramtype: vlogparam
+    default: 40
+    description: Bit width of performance monitor event counters [32/64]
+
+targets:
+  sim:
+    default_tool: verilator
+    toplevel: tb_cs_registers
+    filesets:
+      - files_sim
+      - tool_verilator ? (files_verilator)
+    hooks:
+      pre_build:
+        - build_so
+    parameters:
+      - PMPEnable
+      - PMPNumRegions
+      - PMPGranularity
+      - MHPMCounterNum
+      - MHPMCounterWidth
+
+    tools:
+      vcs:
+        vcs_options:
+          - '-xlrm uniq_prior_final'
+          - '../src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
+          - '-debug_access+all'
+
+      verilator:
+        mode: cc
+        libs:
+          - '../src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
+        verilator_options:
+          # Disabling tracing reduces compile times but doesn't have a
+          # huge influence on runtime performance.
+          - '--trace'
+          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+          - '--trace-structs'
+          - '--trace-params'
+          - '--trace-max-array 1024'
+          - '-CFLAGS "-std=c++14 -Wall -DTOPLEVEL_NAME=tb_cs_registers -DVM_TRACE_FMT_FST -g"'
+          - '-LDFLAGS "-pthread -lutil -lelf"'
+          - "-Wall"
+          - '-Wno-fatal' # Do not fail on (style) issues, only warn about them.

@@ -317,7 +317,8 @@ module  i2c_core #(
     .rvalid_o(fmt_fifo_rvalid),
     .rready_i(fmt_fifo_rready),
     .rdata_o (fmt_fifo_rdata),
-    .full_o  ()
+    .full_o  (),
+    .err_o   ()
   );
 
   assign rx_fifo_rready = reg2hw.rdata.re;
@@ -337,7 +338,8 @@ module  i2c_core #(
     .rvalid_o(rx_fifo_rvalid),
     .rready_i(rx_fifo_rready),
     .rdata_o (rx_fifo_rdata),
-    .full_o  ()
+    .full_o  (),
+    .err_o   ()
   );
 
   // Target TX and ACQ FIFOs
@@ -362,7 +364,8 @@ module  i2c_core #(
     .rvalid_o(tx_fifo_rvalid),
     .rready_i(tx_fifo_rready),
     .rdata_o (tx_fifo_rdata),
-    .full_o  ()
+    .full_o  (),
+    .err_o   ()
   );
 
   assign acq_fifo_rready = reg2hw.acqdata.abyte.re & reg2hw.acqdata.signal.re;
@@ -382,7 +385,8 @@ module  i2c_core #(
     .rvalid_o(acq_fifo_rvalid),
     .rready_i(acq_fifo_rready),
     .rdata_o (acq_fifo_rdata),
-    .full_o  ()
+    .full_o  (),
+    .err_o   ()
   );
 
   // sync the incoming SCL and SDA signals

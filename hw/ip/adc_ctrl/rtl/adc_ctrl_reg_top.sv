@@ -55,18 +55,31 @@ module adc_ctrl_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [30:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(31)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -3765,6 +3778,8 @@ module adc_ctrl_reg_top (
                (addr_hit[29] & (|(ADC_CTRL_PERMIT[29] & ~reg_be))) |
                (addr_hit[30] & (|(ADC_CTRL_PERMIT[30] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_wd = reg_wdata[0];
@@ -3896,6 +3911,42 @@ module adc_ctrl_reg_top (
   assign adc_intr_status_cc_discon_wd = reg_wdata[7];
 
   assign adc_intr_status_oneshot_wd = reg_wdata[8];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = adc_en_ctl_we;
+    reg_we_check[5] = adc_pd_ctl_we;
+    reg_we_check[6] = adc_lp_sample_ctl_we;
+    reg_we_check[7] = adc_sample_ctl_we;
+    reg_we_check[8] = adc_fsm_rst_we;
+    reg_we_check[9] = adc_chn0_filter_ctl_0_we;
+    reg_we_check[10] = adc_chn0_filter_ctl_1_we;
+    reg_we_check[11] = adc_chn0_filter_ctl_2_we;
+    reg_we_check[12] = adc_chn0_filter_ctl_3_we;
+    reg_we_check[13] = adc_chn0_filter_ctl_4_we;
+    reg_we_check[14] = adc_chn0_filter_ctl_5_we;
+    reg_we_check[15] = adc_chn0_filter_ctl_6_we;
+    reg_we_check[16] = adc_chn0_filter_ctl_7_we;
+    reg_we_check[17] = adc_chn1_filter_ctl_0_we;
+    reg_we_check[18] = adc_chn1_filter_ctl_1_we;
+    reg_we_check[19] = adc_chn1_filter_ctl_2_we;
+    reg_we_check[20] = adc_chn1_filter_ctl_3_we;
+    reg_we_check[21] = adc_chn1_filter_ctl_4_we;
+    reg_we_check[22] = adc_chn1_filter_ctl_5_we;
+    reg_we_check[23] = adc_chn1_filter_ctl_6_we;
+    reg_we_check[24] = adc_chn1_filter_ctl_7_we;
+    reg_we_check[25] = 1'b0;
+    reg_we_check[26] = 1'b0;
+    reg_we_check[27] = adc_wakeup_ctl_we;
+    reg_we_check[28] = filter_status_we;
+    reg_we_check[29] = adc_intr_ctl_we;
+    reg_we_check[30] = adc_intr_status_we;
+  end
 
   // Read data return
   always_comb begin

@@ -180,6 +180,55 @@ extern "C" int OtbnTopInstallLoopWarps() {
   return 0;
 }
 
+template <typename PrimCountT>
+void set_up_down_prim_count(PrimCountT *prim_count, uint32_t new_cnt) {
+  // There are both up and down counters. The down counter gives the remaining
+  // iterations and the up counter is the inverse. They must always sum to a
+  // constant value given by `max_val`.
+
+  // Loop warping occurs on the negative clock edge. When writing signal values
+  // here that won't trigger any processes within the verilator simulation. At
+  // the next positive clock edge @(posedge clk) processes will run before any
+  // _d update processes so write the relevant _d values here.
+
+  // down_cnt doesn't have seperate _d and _q values. Instead the logic to
+  // update down_cnt is within the @always(posedge clk) that writes the flop.
+  prim_count->gen_cross_cnt_hardening__DOT__down_cnt = new_cnt;
+
+  auto up_cnt_flop = prim_count->gen_cnts__BRA__0__KET____DOT__u_cnt_flop;
+
+  up_cnt_flop->gen_generic__DOT__u_impl_generic->d_i =
+      prim_count->max_val - new_cnt;
+}
+
+template <typename LoopControllerT>
+auto get_loop_counter(LoopControllerT *loop_controller, uint32_t counter_idx)
+    -> decltype(
+        loop_controller->g_loop_counters__BRA__0__KET____DOT__u_loop_count) {
+  assert(counter_idx < 8);
+
+  switch (counter_idx) {
+    case 0:
+      return loop_controller->g_loop_counters__BRA__0__KET____DOT__u_loop_count;
+    case 1:
+      return loop_controller->g_loop_counters__BRA__1__KET____DOT__u_loop_count;
+    case 2:
+      return loop_controller->g_loop_counters__BRA__2__KET____DOT__u_loop_count;
+    case 3:
+      return loop_controller->g_loop_counters__BRA__3__KET____DOT__u_loop_count;
+    case 4:
+      return loop_controller->g_loop_counters__BRA__4__KET____DOT__u_loop_count;
+    case 5:
+      return loop_controller->g_loop_counters__BRA__5__KET____DOT__u_loop_count;
+    case 6:
+      return loop_controller->g_loop_counters__BRA__6__KET____DOT__u_loop_count;
+    case 7:
+      return loop_controller->g_loop_counters__BRA__7__KET____DOT__u_loop_count;
+    default:
+      return nullptr;
+  }
+}
+
 // This is executed over DPI on every negedge of the clock and is in charge of
 // updating the top of the loop stack if necessary to match loop warp symbols
 // in the ELF file.
@@ -203,45 +252,32 @@ extern "C" void OtbnTopApplyLoopWarp() {
   }
 
   if (!loop_count_stack.empty()) {
-    // There is a loop that's currently active. Its state for next cycle is
-    // stored in current_loop_q and current_loop_d and is laid out as {start,
-    // end, iters} where start is of size ImemAddrWidth (12), end is one bit
-    // bigger (to allow for addresses that lie outside of the memory) and iters
-    // is 32-bit, giving 57 bits in total. Verilator stores this as a single
-    // "QData" value and we have to unpack the fields manually. Here "iters"
-    // gives the number of iterations remaining.
+    // There is a loop that's currently active. Its iteration count for the
+    // next cycle is provided to the prefetcher via `prefetch_loop_iterations_o`
+    // which we capture here.
     uint32_t total = loop_count_stack.back();
-    uint32_t old_iters_q = loop_controller->current_loop_q & 0xffffffffu;
-    uint32_t old_iters_d = loop_controller->current_loop_d & 0xffffffffu;
+    uint32_t old_iters = loop_controller->prefetch_loop_iterations_o;
 
     // The RTL's view of "iterations remaining" counts down rather than up and
     // for the final iteration the count will be 1 (not zero). Convert to the
     // indexing we use in loop warp symbols (counting up, starting at zero) by
     // subtracting old_iters_d from total. The result should never be negative
     // (unless we messed up something somewhere).
-    assert(old_iters_d <= total);
+    assert(old_iters <= total);
 
-    uint32_t old_cnt = total - old_iters_d;
+    uint32_t old_cnt = total - old_iters;
     uint32_t insn_addr = loop_controller->insn_addr_i;
 
     uint32_t new_cnt = otbn_memutil.GetLoopWarp(insn_addr, old_cnt);
     if (old_cnt != new_cnt) {
       // Convert from new_cnt back to the "iters" format by subtracting from
       // the total, but bottom out at 1 (the last iteration).
-      uint32_t new_iters_d = (new_cnt < total) ? (total - new_cnt) : 1;
+      uint32_t new_iters = (new_cnt < total) ? (total - new_cnt) : 1;
 
-      // We can't control which process gets run next (d -> q or q -> d), so we
-      // need to update both values. To keep things consistent, ensure that the
-      // difference "q - d" stays the same.
-      uint32_t new_iters_q = new_iters_d + (old_iters_q - old_iters_d);
-
-      // Replace the iters counts, zeroing out the old versions by shifting
-      // down and up again (which avoids us needing to construct a mask of a
-      // particular type).
-      loop_controller->current_loop_q =
-          ((loop_controller->current_loop_q >> 32) << 32) | new_iters_q;
-      loop_controller->current_loop_d =
-          ((loop_controller->current_loop_d >> 32) << 32) | new_iters_d;
+      set_up_down_prim_count(
+          get_loop_counter(loop_controller,
+                           (uint32_t)loop_controller->loop_stack_rd_idx),
+          new_iters);
     }
   }
 }

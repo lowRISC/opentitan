@@ -16,7 +16,6 @@ declare -a blocks=(
   "uart"
   "hmac"
   "flash_ctrl"
-  "usbuart"
   "usbdev"
   "usb_fs_nb_pe"
   "tlul_adapter_sram"

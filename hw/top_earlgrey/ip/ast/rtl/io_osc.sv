@@ -28,7 +28,9 @@ reg init_start;
 initial init_start = 1'b0;
 
 initial begin
-  #1; init_start  = 1'b1;
+  #1;
+  init_start  = 1'b1;
+  #1;
   $display("\n%m: IO Clock Power-up Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
 end
 
@@ -62,11 +64,11 @@ logic en_osc;
 logic en_clk, clk;
 
 always_latch begin
-  if ( !clk_osc ) en_clk <= en_osc;
+  if ( !clk_osc ) en_clk = en_osc;
 end
 
 assign clk = clk_osc && en_clk;
-`else  // of SYBTHESIS
+`else  // of SYNTHESIS
 // SYNTHESIS/LINTER
 ///////////////////////////////////////
 logic en_osc_re;
@@ -74,7 +76,7 @@ assign en_osc_re = vcore_pok_h_i && io_en_i;
 
 logic clk, en_osc;
 assign clk = 1'b0;
-`endif  // of SYBTHESIS
+`endif  // of SYNTHESIS
 `else  // of AST_BYPASS_CLK
 // VERILATOR/FPGA
 ///////////////////////////////////////

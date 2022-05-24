@@ -9,10 +9,11 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/test_status.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -159,7 +160,7 @@ static void test_crt_section_copy(void) {
   }
 }
 
-int main(int argc, char **argv) {
+void _ottf_main(void) {
   // NOTE: we cannot call any external functions until all checks of post-CRT
   // state are complete; this is to ensure that our checks are not tainted by
   // external functions.
@@ -176,11 +177,8 @@ int main(int argc, char **argv) {
   // cause this entire function to get deleted by the compiler.
   if (&_bss_start > &_bss_end || &_data_start > &_data_end) {
     // Something has gone terribly wrong and we have no hope of continuing the
-    // test, so we're going to return and let the test time out.
-    //
-    // The best method for debugging a failure like this is to stare at an
-    // instruction trace.
-    return 1;
+    // test, so we're going to just abort.
+    abort();
   }
 
   // Ensure that .bss was *actually* zeroed at the start of execution. If it
@@ -236,7 +234,4 @@ int main(int argc, char **argv) {
   test_crt_section_copy();
 
   test_status_set(kTestStatusPassed);
-
-  // Unreachable code.
-  return 1;
 }

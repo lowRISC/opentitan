@@ -115,7 +115,7 @@ void rbs_tick(unsigned char *jtag_tck, unsigned char *jtag_tms,
 
 void rbs_reset()
 {
-    // trstn = 0;
+    trstn = 0;
 }
 
 void rbs_set_pins(char _tck, char _tms, char _tdi)

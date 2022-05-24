@@ -261,7 +261,7 @@ module otp_ctrl_kdi
       key_out_d[seed_cnt[1]] = scrmbl_data_i;
     end
     if (nonce_reg_en) begin
-      nonce_out_d[entropy_cnt] = edn_data_i;
+      nonce_out_d[entropy_cnt[$clog2(NumNonceChunks)-1:0]] = edn_data_i;
     end
     if (seed_valid_reg_en) begin
       seed_valid_d = req_bundle.seed_valid;

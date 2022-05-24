@@ -47,11 +47,23 @@ class IrqTestPeripheral(TestPeripheral):
         self.plic_start_irq = plic_start_irq
 
 
+class AlertTestPeripheral(TestPeripheral):
+    """Captures a peripheral instance's attributes for use in IRQ test."""
+    def __init__(self, name: str, inst_name: str, base_addr_name: str,
+                 is_templated: bool, top_alert_name: str,
+                 dif_alert_name: str, num_alerts: int):
+        super().__init__(name, inst_name, base_addr_name, is_templated)
+        self.top_alert_name = top_alert_name
+        self.dif_alert_name = dif_alert_name
+        self.num_alerts = num_alerts
+
+
 class TopGenCTest(TopGenC):
     def __init__(self, top_info, name_to_block: Dict[str, IpBlock]):
         super().__init__(top_info, name_to_block)
 
         self.irq_peripherals = self._get_irq_peripherals()
+        self.alert_peripherals = self._get_alert_peripherals()
 
     def _get_irq_peripherals(self):
         irq_peripherals = []
@@ -103,3 +115,52 @@ class TopGenCTest(TopGenC):
 
         irq_peripherals.sort(key=lambda p: p.inst_name)
         return irq_peripherals
+
+    def _get_alert_peripherals(self):
+        alert_peripherals = []
+        self.devices()
+        for entry in self.top['module']:
+            inst_name = entry['name']
+            if inst_name not in self.top["alert_module"]:
+                continue
+
+            # TODO: remove when DIF is ready
+            if inst_name in ["rom_ctrl", "rv_core_ibex", "rv_dm"]:
+                continue
+
+            for item in self.top['module']:
+                if item['name'] == inst_name:
+                    name = item['type']
+
+                    regions = self.device_regions[inst_name]
+                    if "core" in regions:
+                        if_name = "core"
+                    elif "regs" in regions:
+                        if_name = "regs"
+                    elif "cfg" in regions:
+                        if_name = "cfg"
+                    else:
+                        if_name = None
+                    region = regions[if_name]
+                    base_addr_name = region.base_addr_name().as_c_define()
+                    break
+
+            is_templated = 'attr' in entry and entry['attr'] == 'templated'
+            dif_alert_name = self.device_alerts[inst_name][0]
+            num_alerts = len(self.device_alerts[inst_name])
+
+            top_alert_name = (self._top_name +
+                              Name(["Alert", "Id"]) +
+                              Name.from_snake_case(dif_alert_name))
+            top_alert_name = top_alert_name.as_c_enum()
+
+            # Get DIF compliant, instance-agnostic alert names.
+            dif_alert_name = dif_alert_name.replace(inst_name, f"dif_{name}_alert", 1)
+            dif_alert_name = Name.from_snake_case(dif_alert_name).as_c_enum()
+
+            alert_peripheral = AlertTestPeripheral(name, inst_name, base_addr_name, is_templated,
+                                                   top_alert_name, dif_alert_name, num_alerts)
+            alert_peripherals.append(alert_peripheral)
+
+        alert_peripherals.sort(key=lambda p: p.inst_name)
+        return alert_peripherals

@@ -777,7 +777,7 @@ module usbdev
   prim_ram_2p_async_adv #(
     .Depth (SramDepth),
     .Width (SramDw),    // 32 x 512 --> 2kB
-    .DataBitsPerMask(SramDw),
+    .DataBitsPerMask(8),
 
     .EnableECC           (0), // No Protection
     .EnableParity        (0),
@@ -1145,7 +1145,7 @@ module usbdev
   // waking up / powering on
   // Add 1 to the specified time to account for uncertainty in the
   // free-running counter for us_tick.
-  localparam int RcvrWakeTimeWidth = vbits(RcvrWakeTimeUs + 1);
+  localparam int RcvrWakeTimeWidth = vbits(RcvrWakeTimeUs + 2);
   logic [RcvrWakeTimeWidth-1:0] usb_rcvr_ok_counter_d, usb_rcvr_ok_counter_q;
 
   assign usb_diff_rx_ok = (usb_rcvr_ok_counter_q == '0);
@@ -1153,7 +1153,7 @@ module usbdev
     // When don't need to use a differential receiver, RX is always ready
     usb_rcvr_ok_counter_d = '0;
     if (usb_use_diff_rcvr & !usb_rx_enable_o) begin
-      usb_rcvr_ok_counter_d = RcvrWakeTimeUs[0 +: RcvrWakeTimeWidth] + 1;
+      usb_rcvr_ok_counter_d = RcvrWakeTimeWidth'(RcvrWakeTimeUs + 1);
     end else if (us_tick && (usb_rcvr_ok_counter_q > '0)) begin
       usb_rcvr_ok_counter_d = usb_rcvr_ok_counter_q - 1;
     end
@@ -1161,7 +1161,7 @@ module usbdev
 
   always_ff @(posedge clk_usb_48mhz_i or negedge rst_usb_48mhz_ni) begin
     if (!rst_usb_48mhz_ni) begin
-      usb_rcvr_ok_counter_q <= RcvrWakeTimeUs[0 +: RcvrWakeTimeWidth] + 1;
+      usb_rcvr_ok_counter_q <= RcvrWakeTimeWidth'(RcvrWakeTimeUs + 1);
     end else begin
       usb_rcvr_ok_counter_q <= usb_rcvr_ok_counter_d;
     end

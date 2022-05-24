@@ -77,14 +77,15 @@ def main():
 
         with open(PARTITIONS_TABLE_FILE, 'w') as outfile:
             outfile.write(TABLE_HEADER_COMMENT +
-                          otp_mmap.create_partitions_table())
+                          otp_mmap.create_partitions_table() + '\n')
 
         with open(DIGESTS_TABLE_FILE, 'w') as outfile:
             outfile.write(TABLE_HEADER_COMMENT +
-                          otp_mmap.create_digests_table())
+                          otp_mmap.create_digests_table() + '\n')
 
         with open(MMAP_TABLE_FILE, 'w') as outfile:
-            outfile.write(TABLE_HEADER_COMMENT + otp_mmap.create_mmap_table())
+            outfile.write(TABLE_HEADER_COMMENT + otp_mmap.create_mmap_table() +
+                          '\n')
 
         # render all templates
         for template in TEMPLATES:

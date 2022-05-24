@@ -79,6 +79,11 @@
   input mubi4_t all_clk_byp_ack_i,
   output mubi4_t hi_speed_sel_o,
 
+  // clock calibration has been done.
+  // If this is signal is 0, assume clock frequencies to be
+  // uncalibrated.
+  input calib_rdy_i,
+
   // jittery enable to ast
   output mubi4_t jitter_en_o,
 
@@ -97,6 +102,7 @@
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_true_loose;
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -172,7 +178,6 @@
   ////////////////////////////////////////////////////
 
   logic [NumAlerts-1:0] alert_test, alerts;
-  logic shadowed_storage_err, shadowed_update_err;
   clkmgr_reg_pkg::clkmgr_reg2hw_t reg2hw;
   clkmgr_reg_pkg::clkmgr_hw2reg_t hw2reg;
 
@@ -197,14 +202,15 @@
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .shadowed_storage_err_o(shadowed_storage_err),
-    .shadowed_update_err_o(shadowed_update_err),
+    .shadowed_storage_err_o(hw2reg.fatal_err_code.shadow_storage_err.de),
+    .shadowed_update_err_o(hw2reg.recov_err_code.shadow_update_err.de),
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o(hw2reg.fatal_err_code.reg_intg.de),
     .devmode_i(1'b1)
   );
   assign hw2reg.fatal_err_code.reg_intg.d = 1'b1;
-
+  assign hw2reg.recov_err_code.shadow_update_err.d = 1'b1;
+  assign hw2reg.fatal_err_code.shadow_storage_err.d = 1'b1;
 
   ////////////////////////////////////////////////////
   // Alerts
@@ -271,6 +277,7 @@
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
     .byp_req_i(extclk_ctrl_sel),
+    .byp_ack_o(hw2reg.extclk_status.d),
     .hi_speed_sel_i(extclk_ctrl_hi_speed_sel),
     .all_clk_byp_req_o,
     .all_clk_byp_ack_i,
@@ -487,270 +494,161 @@
   // SEC_CM: TIMEOUT.CLK.BKGN_CHK, MEAS.CLK.BKGN_CHK
   ////////////////////////////////////////////////////
 
-  assign hw2reg.recov_err_code.shadow_update_err.d = 1'b1;
-  assign hw2reg.recov_err_code.shadow_update_err.de = shadowed_update_err;
-  assign hw2reg.fatal_err_code.shadow_storage_err.d = 1'b1;
-  assign hw2reg.fatal_err_code.shadow_storage_err.de = shadowed_storage_err;
-
-  logic io_fast_err;
-  logic io_slow_err;
-  logic io_timeout_err;
-    prim_clock_meas #(
-    .Cnt(960),
-    .RefCnt(1),
-    .ClkTimeOutChkEn(1'b1),
-    .RefTimeOutChkEn(1'b0)
-  ) u_io_meas (
-    .clk_i(clk_io_i),
-    .rst_ni(rst_io_ni),
-    .clk_ref_i(clk_aon_i),
-    .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_io_en & reg2hw.io_meas_ctrl_shadowed.en.q),
-    .max_cnt(reg2hw.io_meas_ctrl_shadowed.hi.q),
-    .min_cnt(reg2hw.io_meas_ctrl_shadowed.lo.q),
-    .valid_o(),
-    .fast_o(io_fast_err),
-    .slow_o(io_slow_err),
-    .timeout_clk_ref_o(),
-    .ref_timeout_clk_o(io_timeout_err)
-  );
-
-  logic synced_io_err;
-  prim_pulse_sync u_io_err_sync (
-    .clk_src_i(clk_io_i),
-    .rst_src_ni(rst_io_ni),
-    .src_pulse_i(io_fast_err | io_slow_err),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .dst_pulse_o(synced_io_err)
-  );
-
-  logic synced_io_timeout_err;
-  prim_edge_detector #(
+  // if clocks become uncalibrated, allow the measurement control configurations to change
+  logic calib_rdy;
+  prim_flop_2sync #(
     .Width(1),
-    .ResetValue('0),
-    .EnSync(1'b1)
-  ) u_io_timeout_err_sync (
+    .ResetValue(0)
+  ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
-    .d_i(io_timeout_err),
-    .q_sync_o(),
-    .q_posedge_pulse_o(synced_io_timeout_err),
-    .q_negedge_pulse_o()
+    .d_i(calib_rdy_i),
+    .q_o(calib_rdy)
+  );
+
+  always_comb begin
+    hw2reg.measure_ctrl_regwen.de = '0;
+    hw2reg.measure_ctrl_regwen.d = reg2hw.measure_ctrl_regwen;
+
+    if (!calib_rdy) begin
+      hw2reg.measure_ctrl_regwen.de = 1'b1;
+      hw2reg.measure_ctrl_regwen.d = 1'b1;
+    end
+  end
+
+  clkmgr_meas_chk #(
+    .Cnt(960),
+    .RefCnt(1)
+  ) u_io_meas (
+    .clk_i,
+    .rst_ni,
+    .clk_src_i(clk_io_i),
+    .rst_src_ni(rst_io_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    // signals on source domain
+    .src_en_i(clk_io_en & mubi4_test_true_loose(mubi4_t'(reg2hw.io_meas_ctrl_en))),
+    .src_max_cnt_i(reg2hw.io_meas_ctrl_shadowed.hi.q),
+    .src_min_cnt_i(reg2hw.io_meas_ctrl_shadowed.lo.q),
+    .src_cfg_meas_en_i(mubi4_t'(reg2hw.io_meas_ctrl_en.q)),
+    .src_cfg_meas_en_valid_o(hw2reg.io_meas_ctrl_en.de),
+    .src_cfg_meas_en_o(hw2reg.io_meas_ctrl_en.d),
+    // signals on local clock domain
+    .calib_rdy_i(calib_rdy),
+    .meas_err_o(hw2reg.recov_err_code.io_measure_err.de),
+    .timeout_err_o(hw2reg.recov_err_code.io_timeout_err.de)
   );
 
   assign hw2reg.recov_err_code.io_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.io_measure_err.de = synced_io_err;
   assign hw2reg.recov_err_code.io_timeout_err.d = 1'b1;
-  assign hw2reg.recov_err_code.io_timeout_err.de = synced_io_timeout_err;
 
-  logic io_div2_fast_err;
-  logic io_div2_slow_err;
-  logic io_div2_timeout_err;
-    prim_clock_meas #(
+
+  clkmgr_meas_chk #(
     .Cnt(480),
-    .RefCnt(1),
-    .ClkTimeOutChkEn(1'b1),
-    .RefTimeOutChkEn(1'b0)
+    .RefCnt(1)
   ) u_io_div2_meas (
-    .clk_i(clk_io_div2_i),
-    .rst_ni(rst_io_div2_ni),
-    .clk_ref_i(clk_aon_i),
-    .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_io_div2_en & reg2hw.io_div2_meas_ctrl_shadowed.en.q),
-    .max_cnt(reg2hw.io_div2_meas_ctrl_shadowed.hi.q),
-    .min_cnt(reg2hw.io_div2_meas_ctrl_shadowed.lo.q),
-    .valid_o(),
-    .fast_o(io_div2_fast_err),
-    .slow_o(io_div2_slow_err),
-    .timeout_clk_ref_o(),
-    .ref_timeout_clk_o(io_div2_timeout_err)
-  );
-
-  logic synced_io_div2_err;
-  prim_pulse_sync u_io_div2_err_sync (
-    .clk_src_i(clk_io_div2_i),
-    .rst_src_ni(rst_io_div2_ni),
-    .src_pulse_i(io_div2_fast_err | io_div2_slow_err),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .dst_pulse_o(synced_io_div2_err)
-  );
-
-  logic synced_io_div2_timeout_err;
-  prim_edge_detector #(
-    .Width(1),
-    .ResetValue('0),
-    .EnSync(1'b1)
-  ) u_io_div2_timeout_err_sync (
     .clk_i,
     .rst_ni,
-    .d_i(io_div2_timeout_err),
-    .q_sync_o(),
-    .q_posedge_pulse_o(synced_io_div2_timeout_err),
-    .q_negedge_pulse_o()
+    .clk_src_i(clk_io_div2_i),
+    .rst_src_ni(rst_io_div2_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    // signals on source domain
+    .src_en_i(clk_io_div2_en & mubi4_test_true_loose(mubi4_t'(reg2hw.io_div2_meas_ctrl_en))),
+    .src_max_cnt_i(reg2hw.io_div2_meas_ctrl_shadowed.hi.q),
+    .src_min_cnt_i(reg2hw.io_div2_meas_ctrl_shadowed.lo.q),
+    .src_cfg_meas_en_i(mubi4_t'(reg2hw.io_div2_meas_ctrl_en.q)),
+    .src_cfg_meas_en_valid_o(hw2reg.io_div2_meas_ctrl_en.de),
+    .src_cfg_meas_en_o(hw2reg.io_div2_meas_ctrl_en.d),
+    // signals on local clock domain
+    .calib_rdy_i(calib_rdy),
+    .meas_err_o(hw2reg.recov_err_code.io_div2_measure_err.de),
+    .timeout_err_o(hw2reg.recov_err_code.io_div2_timeout_err.de)
   );
 
   assign hw2reg.recov_err_code.io_div2_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.io_div2_measure_err.de = synced_io_div2_err;
   assign hw2reg.recov_err_code.io_div2_timeout_err.d = 1'b1;
-  assign hw2reg.recov_err_code.io_div2_timeout_err.de = synced_io_div2_timeout_err;
 
-  logic io_div4_fast_err;
-  logic io_div4_slow_err;
-  logic io_div4_timeout_err;
-    prim_clock_meas #(
+
+  clkmgr_meas_chk #(
     .Cnt(240),
-    .RefCnt(1),
-    .ClkTimeOutChkEn(1'b1),
-    .RefTimeOutChkEn(1'b0)
+    .RefCnt(1)
   ) u_io_div4_meas (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_io_div4_ni),
-    .clk_ref_i(clk_aon_i),
-    .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_io_div4_en & reg2hw.io_div4_meas_ctrl_shadowed.en.q),
-    .max_cnt(reg2hw.io_div4_meas_ctrl_shadowed.hi.q),
-    .min_cnt(reg2hw.io_div4_meas_ctrl_shadowed.lo.q),
-    .valid_o(),
-    .fast_o(io_div4_fast_err),
-    .slow_o(io_div4_slow_err),
-    .timeout_clk_ref_o(),
-    .ref_timeout_clk_o(io_div4_timeout_err)
-  );
-
-  logic synced_io_div4_err;
-  prim_pulse_sync u_io_div4_err_sync (
-    .clk_src_i(clk_io_div4_i),
-    .rst_src_ni(rst_io_div4_ni),
-    .src_pulse_i(io_div4_fast_err | io_div4_slow_err),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .dst_pulse_o(synced_io_div4_err)
-  );
-
-  logic synced_io_div4_timeout_err;
-  prim_edge_detector #(
-    .Width(1),
-    .ResetValue('0),
-    .EnSync(1'b1)
-  ) u_io_div4_timeout_err_sync (
     .clk_i,
     .rst_ni,
-    .d_i(io_div4_timeout_err),
-    .q_sync_o(),
-    .q_posedge_pulse_o(synced_io_div4_timeout_err),
-    .q_negedge_pulse_o()
+    .clk_src_i(clk_io_div4_i),
+    .rst_src_ni(rst_io_div4_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    // signals on source domain
+    .src_en_i(clk_io_div4_en & mubi4_test_true_loose(mubi4_t'(reg2hw.io_div4_meas_ctrl_en))),
+    .src_max_cnt_i(reg2hw.io_div4_meas_ctrl_shadowed.hi.q),
+    .src_min_cnt_i(reg2hw.io_div4_meas_ctrl_shadowed.lo.q),
+    .src_cfg_meas_en_i(mubi4_t'(reg2hw.io_div4_meas_ctrl_en.q)),
+    .src_cfg_meas_en_valid_o(hw2reg.io_div4_meas_ctrl_en.de),
+    .src_cfg_meas_en_o(hw2reg.io_div4_meas_ctrl_en.d),
+    // signals on local clock domain
+    .calib_rdy_i(calib_rdy),
+    .meas_err_o(hw2reg.recov_err_code.io_div4_measure_err.de),
+    .timeout_err_o(hw2reg.recov_err_code.io_div4_timeout_err.de)
   );
 
   assign hw2reg.recov_err_code.io_div4_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.io_div4_measure_err.de = synced_io_div4_err;
   assign hw2reg.recov_err_code.io_div4_timeout_err.d = 1'b1;
-  assign hw2reg.recov_err_code.io_div4_timeout_err.de = synced_io_div4_timeout_err;
 
-  logic main_fast_err;
-  logic main_slow_err;
-  logic main_timeout_err;
-    prim_clock_meas #(
+
+  clkmgr_meas_chk #(
     .Cnt(1000),
-    .RefCnt(1),
-    .ClkTimeOutChkEn(1'b1),
-    .RefTimeOutChkEn(1'b0)
+    .RefCnt(1)
   ) u_main_meas (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_main_ni),
-    .clk_ref_i(clk_aon_i),
-    .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_main_en & reg2hw.main_meas_ctrl_shadowed.en.q),
-    .max_cnt(reg2hw.main_meas_ctrl_shadowed.hi.q),
-    .min_cnt(reg2hw.main_meas_ctrl_shadowed.lo.q),
-    .valid_o(),
-    .fast_o(main_fast_err),
-    .slow_o(main_slow_err),
-    .timeout_clk_ref_o(),
-    .ref_timeout_clk_o(main_timeout_err)
-  );
-
-  logic synced_main_err;
-  prim_pulse_sync u_main_err_sync (
-    .clk_src_i(clk_main_i),
-    .rst_src_ni(rst_main_ni),
-    .src_pulse_i(main_fast_err | main_slow_err),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .dst_pulse_o(synced_main_err)
-  );
-
-  logic synced_main_timeout_err;
-  prim_edge_detector #(
-    .Width(1),
-    .ResetValue('0),
-    .EnSync(1'b1)
-  ) u_main_timeout_err_sync (
     .clk_i,
     .rst_ni,
-    .d_i(main_timeout_err),
-    .q_sync_o(),
-    .q_posedge_pulse_o(synced_main_timeout_err),
-    .q_negedge_pulse_o()
+    .clk_src_i(clk_main_i),
+    .rst_src_ni(rst_main_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    // signals on source domain
+    .src_en_i(clk_main_en & mubi4_test_true_loose(mubi4_t'(reg2hw.main_meas_ctrl_en))),
+    .src_max_cnt_i(reg2hw.main_meas_ctrl_shadowed.hi.q),
+    .src_min_cnt_i(reg2hw.main_meas_ctrl_shadowed.lo.q),
+    .src_cfg_meas_en_i(mubi4_t'(reg2hw.main_meas_ctrl_en.q)),
+    .src_cfg_meas_en_valid_o(hw2reg.main_meas_ctrl_en.de),
+    .src_cfg_meas_en_o(hw2reg.main_meas_ctrl_en.d),
+    // signals on local clock domain
+    .calib_rdy_i(calib_rdy),
+    .meas_err_o(hw2reg.recov_err_code.main_measure_err.de),
+    .timeout_err_o(hw2reg.recov_err_code.main_timeout_err.de)
   );
 
   assign hw2reg.recov_err_code.main_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.main_measure_err.de = synced_main_err;
   assign hw2reg.recov_err_code.main_timeout_err.d = 1'b1;
-  assign hw2reg.recov_err_code.main_timeout_err.de = synced_main_timeout_err;
 
-  logic usb_fast_err;
-  logic usb_slow_err;
-  logic usb_timeout_err;
-    prim_clock_meas #(
+
+  clkmgr_meas_chk #(
     .Cnt(480),
-    .RefCnt(1),
-    .ClkTimeOutChkEn(1'b1),
-    .RefTimeOutChkEn(1'b0)
+    .RefCnt(1)
   ) u_usb_meas (
-    .clk_i(clk_usb_i),
-    .rst_ni(rst_usb_ni),
-    .clk_ref_i(clk_aon_i),
-    .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_usb_en & reg2hw.usb_meas_ctrl_shadowed.en.q),
-    .max_cnt(reg2hw.usb_meas_ctrl_shadowed.hi.q),
-    .min_cnt(reg2hw.usb_meas_ctrl_shadowed.lo.q),
-    .valid_o(),
-    .fast_o(usb_fast_err),
-    .slow_o(usb_slow_err),
-    .timeout_clk_ref_o(),
-    .ref_timeout_clk_o(usb_timeout_err)
-  );
-
-  logic synced_usb_err;
-  prim_pulse_sync u_usb_err_sync (
-    .clk_src_i(clk_usb_i),
-    .rst_src_ni(rst_usb_ni),
-    .src_pulse_i(usb_fast_err | usb_slow_err),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .dst_pulse_o(synced_usb_err)
-  );
-
-  logic synced_usb_timeout_err;
-  prim_edge_detector #(
-    .Width(1),
-    .ResetValue('0),
-    .EnSync(1'b1)
-  ) u_usb_timeout_err_sync (
     .clk_i,
     .rst_ni,
-    .d_i(usb_timeout_err),
-    .q_sync_o(),
-    .q_posedge_pulse_o(synced_usb_timeout_err),
-    .q_negedge_pulse_o()
+    .clk_src_i(clk_usb_i),
+    .rst_src_ni(rst_usb_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    // signals on source domain
+    .src_en_i(clk_usb_en & mubi4_test_true_loose(mubi4_t'(reg2hw.usb_meas_ctrl_en))),
+    .src_max_cnt_i(reg2hw.usb_meas_ctrl_shadowed.hi.q),
+    .src_min_cnt_i(reg2hw.usb_meas_ctrl_shadowed.lo.q),
+    .src_cfg_meas_en_i(mubi4_t'(reg2hw.usb_meas_ctrl_en.q)),
+    .src_cfg_meas_en_valid_o(hw2reg.usb_meas_ctrl_en.de),
+    .src_cfg_meas_en_o(hw2reg.usb_meas_ctrl_en.d),
+    // signals on local clock domain
+    .calib_rdy_i(calib_rdy),
+    .meas_err_o(hw2reg.recov_err_code.usb_measure_err.de),
+    .timeout_err_o(hw2reg.recov_err_code.usb_timeout_err.de)
   );
 
   assign hw2reg.recov_err_code.usb_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.usb_measure_err.de = synced_usb_err;
   assign hw2reg.recov_err_code.usb_timeout_err.d = 1'b1;
-  assign hw2reg.recov_err_code.usb_timeout_err.de = synced_usb_timeout_err;
 
 
   ////////////////////////////////////////////////////
@@ -1049,7 +947,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainAesCountCheck_A,
     u_clk_main_aes_trans.u_idle_cnt,
-    alert_tx_o[0])
+    alert_tx_o[1])
 
   clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
@@ -1069,7 +967,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainHmacCountCheck_A,
     u_clk_main_hmac_trans.u_idle_cnt,
-    alert_tx_o[0])
+    alert_tx_o[1])
 
   clkmgr_trans #(
     .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
@@ -1089,7 +987,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainKmacCountCheck_A,
     u_clk_main_kmac_trans.u_idle_cnt,
-    alert_tx_o[0])
+    alert_tx_o[1])
 
   clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
@@ -1109,7 +1007,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainOtbnCountCheck_A,
     u_clk_main_otbn_trans.u_idle_cnt,
-    alert_tx_o[0])
+    alert_tx_o[1])
   assign hw2reg.fatal_err_code.idle_cnt.d = 1'b1;
   assign hw2reg.fatal_err_code.idle_cnt.de = |idle_cnt_err;
 

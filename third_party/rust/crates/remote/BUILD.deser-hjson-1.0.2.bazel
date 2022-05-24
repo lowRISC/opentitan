@@ -1,0 +1,75 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:defs.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_proc_macro",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//third_party/rust/crates", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT"
+])
+
+# Generated Targets
+
+# Unsupported target "parse" with type "bench" omitted
+
+rust_library(
+    name = "deser_hjson",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+    ],
+    crate_root = "src/lib.rs",
+    data = [],
+    edition = "2018",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "crate-name=deser-hjson",
+        "manual",
+    ],
+    version = "1.0.2",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__serde__1_0_137//:serde",
+    ],
+)
+
+# Unsupported target "bad_format" with type "test" omitted
+
+# Unsupported target "crlf" with type "test" omitted
+
+# Unsupported target "enum" with type "test" omitted
+
+# Unsupported target "guess" with type "test" omitted
+
+# Unsupported target "mix" with type "test" omitted
+
+# Unsupported target "serde-error" with type "test" omitted
+
+# Unsupported target "spacing" with type "test" omitted
+
+# Unsupported target "strings" with type "test" omitted
+
+# Unsupported target "trailing_chars" with type "test" omitted

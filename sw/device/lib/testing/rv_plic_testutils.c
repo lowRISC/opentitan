@@ -7,8 +7,8 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 void rv_plic_testutils_irq_range_enable(dif_rv_plic_t *plic,
                                         dif_rv_plic_target_t target,

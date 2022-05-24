@@ -18,6 +18,8 @@ module spi_fwm_rxf_ctrl #(
   input clk_i,
   input rst_ni,
 
+  input spi_device_pkg::spi_mode_e spi_mode_i,
+
   // Configuration
   input      [SramAw-1:0] base_index_i,
   input      [SramAw-1:0] limit_index_i,
@@ -42,6 +44,8 @@ module spi_fwm_rxf_ctrl #(
   input        [SramDw-1:0] sram_rdata,
   input               [1:0] sram_error
 );
+
+  logic active;
 
   // Internal variable
   logic [NumBytes-1:0] byte_enable;
@@ -77,6 +81,7 @@ module spi_fwm_rxf_ctrl #(
     else         st <= st_next;
   end
 
+  assign active = (spi_mode_i == spi_device_pkg::FwMode);
 
   logic [PtrW-1:0] ptr_cmp;
   assign ptr_cmp = rptr ^ wptr;
@@ -184,7 +189,7 @@ module spi_fwm_rxf_ctrl #(
       StIdle: begin
         // Out of reset state. If SRAM Fifo is not full and RX Fifo is not empty,
         // state machine starts process incoming data
-        if (fifo_valid && !sramf_full) begin
+        if (active && fifo_valid && !sramf_full) begin
           st_next = StPop;
           fifo_ready = 1'b1;
           update_wdata = 1'b1;

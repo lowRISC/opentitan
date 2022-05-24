@@ -70,18 +70,12 @@ name:
 
   run_opts: ["+otbn_elf_dir={otbn_elf_dir}"]
 
-  // A default build mode, used for the tests explicitly listed below. This
-  // runs meson to set up a .env file, needed by gen-binaries.py to find a
-  // toolchain. This isn't needed for things like the automated CSR tests, and
-  // they won't use it because they build in a different mode anyway.
-  //
-  // This step could run either as a pre-build command or a post-build command.
-  // Since it's much quicker than the SV build, we do it first so that you get
-  // a quick result if something has gone wrong.
+  // The default build mode, used for the tests explicitly listed below does not
+  // require any pre-build steps.
   build_modes: [
     {
       name: default
-      pre_build_cmds: ["cd {proj_root} && BUILD_ROOT={build_dir} ./meson_init.sh"]
+      pre_build_cmds: []
     }
   ]
 
@@ -89,12 +83,13 @@ name:
   // controls the number of instructions that are run before ECALL or error.
   binary_size: 2000
 
-  otbn_obj_dir: "{build_dir}/build-out"
-  gen_binaries_py: "{otbn_dir}/dv/uvm/gen-binaries.py"
+  // This runs bazel to locate the RV32 toolchain, needed by gen-binaries.py.
+  setup_env: "pushd {proj_root}; source hw/ip/otbn/dv/uvm/get-toolchain-paths.sh; popd;"
+  gen_binaries_py: "{setup_env} {otbn_dir}/dv/uvm/gen-binaries.py"
 
   rnd_args: "--seed {seed} --size {binary_size}"
-  gen_fixed: "{gen_binaries_py} --obj-dir {otbn_obj_dir}"
-  gen_rnd: "{gen_binaries_py} --obj-dir {otbn_obj_dir} {rnd_args}"
+  gen_fixed: "{gen_binaries_py}"
+  gen_rnd: "{gen_binaries_py} {rnd_args}"
 
   smoke_dir: "{otbn_dir}/dv/smoke"
   multi_err_dir: "{otbn_dir}/dv/otbnsim/test/simple/multi"
@@ -223,6 +218,27 @@ name:
       reseed: 5
     }
 
+    {
+      name: "otbn_alu_bignum_mod_err"
+      uvm_test_seq: "otbn_alu_bignum_mod_err_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 5
+    }
+
+    {
+      name: "otbn_controller_ispr_rdata_err"
+      uvm_test_seq: "otbn_controller_ispr_rdata_err_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 5
+    }
+
+    {
+      name: "otbn_mac_bignum_acc_err"
+      uvm_test_seq: "otbn_mac_bignum_acc_err_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 5
+    }
+
     // This test runs several sequences back-to-back. Unlike otbn_multi, these
     // sequences can include imem or dmem error sequences. We shouldn't need
     // many seeds here because each test runs several operations.
@@ -251,7 +267,12 @@ name:
       en_run_modes: ["build_otbn_rig_binary_mode"]
       reseed: 5
     }
-
+    {
+      name: "otbn_sw_errs_fatal_chk"
+      uvm_test_seq: "otbn_sw_errs_fatal_chk_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 5
+    }
   ]
 
   // List of regressions.
@@ -266,7 +287,8 @@ name:
       tests: [
         "otbn_smoke", "otbn_single", "otbn_multi", "otbn_reset",
          "otbn_multi_err", "otbn_imem_err", "otbn_dmem_err",
-         "otbn_stress_all", "otbn_escalate"
+         "otbn_stress_all", "otbn_escalate", "otbn_illegal_mem_acc",
+         "otbn_zero_state_err_urnd"
       ]
     }
   ]

@@ -28,11 +28,11 @@ The diagram below shows how `sensor control` helps `analog sensor top` integrati
 
 The `analog sensor top` sends alert requests in independent, differential form to the `sensor control`.
 Each alert request consists of a pair of signals, one active high and one active low.
-The active polarity of each signal is independent.   This is due to the imprecise timing sensor that drives the alert.
+The active polarity of each signal is independent, due to the imprecise sensor timing that drives the alert.
 This means that the `sensor control` recognizes an active alert as long as one of the lines is active, and not the pair of signals being in a particular state.
 Each signal in the differential pair is thus a separate dedicated alert indicator.
 
-Once an alert request is detected as active, the `sensor control` then formulates a proper alert event through the `prim_alert_sender` and sends a notification to the `alert handler`.
+Once an alert request is detected as active, the `sensor control` formulates a proper alert event through the `prim_alert_sender` and sends a notification to the `alert handler`.
 
 The `sensor control` can optionally generate alert acknowledgements back to the `analog sensor top`.
 
@@ -69,11 +69,10 @@ Signal               | Direction        | Type                                  
 
 # Programmer's Guide
 
-Each available alert has a corresponding acknowledgment control.
-Program {{< regref "ACK_MODE.VAL" >}} to the appropriate value for no acknowledgment, software acknowledgment or hardware acknowledgment.
+Each available alert has a corresponding fatality configuration.
+If an alert event is set to 1 in {{< regref "FATAL_ALERT_EN" >}}, `sensor_ctrl` treats it as a fatal event instead of a recoverable event.
+Fatal events are not acknowledged, and continuously send alert events in the system until some kind of escalation is seen.
 
-If software acknowledge is selected, {{< regref "ALERT_STATE" >}} can be used to determine the current state of an alert.
-When the alert state is cleared (`rw1c`), the `analog sensor top` alert will also be acknowledged.
 
 ## Register Table
 

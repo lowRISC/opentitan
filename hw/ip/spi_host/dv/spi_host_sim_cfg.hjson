@@ -80,6 +80,30 @@
       name: spi_host_sw_reset
       uvm_test_seq: spi_host_sw_reset_vseq
     }
+    {
+      name: spi_host_overflow_underflow
+      uvm_test_seq: spi_host_overflow_underflow_vseq
+      run_opts: ["+en_scb=0"]
+    }
+    {
+      name: spi_host_error_cmd
+      uvm_test_seq: spi_host_error_cmd_vseq
+      run_opts: ["+en_scb=0"]
+    }
+    {
+      name: spi_host_event
+      uvm_test_seq: spi_host_event_vseq
+      run_opts: ["+en_scb=0", "+test_timeout_ns=1_000_000_000"]
+    }
+    {
+      name: spi_host_stress_all
+      uvm_test_seq: spi_host_stress_all_vseq
+    }
+    {
+      name: spi_host_passthrough_mode
+      uvm_test_seq: spi_host_passthrough_mode_vseq
+      run_opts: ["+en_scb=0"]
+    }
     // TODO: add more tests here
   ]
 

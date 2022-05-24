@@ -58,12 +58,12 @@
   build_modes: [
     {
       name: enable_mask_mode
-      build_opts: ["+define+EN_MASKING=1", "+define+REUSE_SHARE=0"]
+      build_opts: ["+define+EN_MASKING=1"]
       run_opts: ["+enable_masking=1"]
     }
     {
       name: disable_mask_mode
-      build_opts: ["+define+EN_MASKING=0", "+define+REUSE_SHARE=0"]
+      build_opts: ["+define+EN_MASKING=0"]
       run_opts: ["+enable_masking=0"]
     }
   ]

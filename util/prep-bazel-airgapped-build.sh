@@ -13,6 +13,9 @@ set -euo pipefail
 : "${BAZEL_AIRGAPPED_DIR:=bazel-airgapped}"
 : "${BAZEL_DISTDIR:=bazel-distdir}"
 : "${BAZEL_CACHEDIR:=bazel-cache}"
+: "${BAZEL_BITSTREAMS_CACHEDIR:=bitstreams-cache}"
+: "${BAZEL_PYTHON_WHEEL_REPO:=ot_python_wheels}"
+: "${BAZEL_BITSTREAMS_REPO:=bitstreams}"
 
 LINE_SEP="====================================================================="
 
@@ -24,7 +27,7 @@ function usage() {
 Utility script to prepare a directory with all bazel dependencies needed to
 build project artifacts with bazel in an airgapped environment.
 
-Usage: $0 [-c all | distdir | cache]
+Usage: $0 [-c ALL | DISTDIR | CACHE]
 
   - c: airgapped directory contents, set to either ALL or DISTDIR or CACHE.
   - f: force rebuild of airgapped directory, overwriting any existing one.
@@ -142,13 +145,19 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @local_config_platform//... \
     @local_config_sh//... \
     @python3_toolchains//... \
+    @remotejdk11_linux//... \
     @riscv-compliance//... \
+    @rust_linux_x86_64//... \
     @rust_darwin_aarch64_toolchains//... \
     @rust_darwin_x86_64_toolchains//... \
     @rust_freebsd_x86_64_toolchains//... \
     @rust_linux_aarch64_toolchains//... \
     @rust_linux_x86_64_toolchains//... \
     @rust_windows_x86_64_toolchains//...
+  cp -R $(${BAZELISK} info output_base)/external/${BAZEL_PYTHON_WHEEL_REPO} \
+    ${BAZEL_AIRGAPPED_DIR}/
+  cp -R $(dirname $(readlink -f $(bazel info output_base)/external/${BAZEL_BITSTREAMS_REPO}/cache)) \
+    ${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}
   echo "Done."
 fi
 

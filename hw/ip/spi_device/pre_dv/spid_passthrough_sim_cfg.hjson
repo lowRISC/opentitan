@@ -1,0 +1,72 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: spid_passthrough
+  dut:  spid_passthrough
+  tb:   tb
+  tool: vcs
+  fusesoc_core: lowrisc:dv:spid_passthrough_sim:0.1
+  import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
+  reseed: 1
+
+  build_modes: [
+  ]
+
+  tests: [
+    {
+      name: spid_passthrough_readbasic
+      run_opts: [
+        "+TESTNAME=readbasic"
+      ]
+    }
+    {
+      name: spid_passthrough_addr4b
+      run_opts: [
+        "+TESTNAME=addr_4b"
+      ]
+    }
+    {
+      name: spid_passthrough_wel
+      // WREN/ WRDI test
+      // Mainly to check if spi_device to set/clear wel bit in the status
+      run_opts: [
+        "+TESTNAME=wel"
+      ]
+    }
+    {
+      name: spid_passthrough_program
+      // WEL + PageProgram test
+      // Randomly issue Program with/without WEL, then check if the values are
+      // written or not by reading them back.
+      run_opts: [
+        "+TESTNAME=program"
+      ]
+    }
+    {
+      name: spid_passthrough_upload
+      // Chip Erase + Read Status + Page Program test
+      run_opts: [
+        "+TESTNAME=upload"
+      ]
+    }
+  ]
+
+  regressions: [
+    {
+      name: smoke
+      tests: [
+        "spid_passthrough_readbasic",
+        "spid_passthrough_addr4b",
+        "spid_passthrough_wel"
+      ]
+    }
+    {
+      name: nightly
+      tests: [
+        "spid_passthrough_readbasic",
+        "spid_passthrough_addr4b"
+      ]
+    }
+  ]
+}

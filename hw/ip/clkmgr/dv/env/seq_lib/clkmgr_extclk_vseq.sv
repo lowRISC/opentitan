@@ -74,9 +74,8 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     if (mubi_mode == ClkmgrMubiHand && value == MuBi4True) begin
       repeat ($urandom_range(1, 10)) begin
         cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-        cfg.clkmgr_vif.update_all_clk_byp_ack(get_rand_mubi4_val(.t_weight(0),
-                                                                 .f_weight(1),
-                                                                 .other_weight(1)));
+        cfg.clkmgr_vif.update_all_clk_byp_ack(get_rand_mubi4_val(
+                                              .t_weight(0), .f_weight(1), .other_weight(1)));
       end
     end
     cfg.clk_rst_vif.wait_clks(cycles);
@@ -84,12 +83,11 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   endtask
 
   local task delayed_update_div_step_down_req(mubi4_t value, int cycles);
-    if (mubi_mode ==  ClkmgrMubiDiv && value == MuBi4True) begin
+    if (mubi_mode == ClkmgrMubiDiv && value == MuBi4True) begin
       repeat ($urandom_range(1, 10)) begin
         cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-        cfg.clkmgr_vif.update_div_step_down_req(get_rand_mubi4_val(.t_weight(0),
-                                                                   .f_weight(1),
-                                                                   .other_weight(1)));
+        cfg.clkmgr_vif.update_div_step_down_req(get_rand_mubi4_val(
+                                                .t_weight(0), .f_weight(1), .other_weight(1)));
       end
     end
     cfg.clk_rst_vif.wait_clks(cycles);
@@ -100,9 +98,8 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     if (mubi_mode == ClkmgrMubiHand && value == MuBi4True) begin
       repeat ($urandom_range(1, 10)) begin
         cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-        cfg.clkmgr_vif.update_io_clk_byp_ack(get_rand_mubi4_val(.t_weight(0),
-                                                                .f_weight(1),
-                                                                .other_weight(1)));
+        cfg.clkmgr_vif.update_io_clk_byp_ack(get_rand_mubi4_val(
+                                             .t_weight(0), .f_weight(1), .other_weight(1)));
       end
     end
     cfg.clk_rst_vif.wait_clks(cycles);
@@ -122,8 +119,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
           `uvm_info(`gfn, "Got all_clk_byp_req off", UVM_MEDIUM)
           // Set inputs to mubi4 non-True.
           fork
-            delayed_update_all_clk_byp_ack(all_clk_byp_ack_non_true,
-                                           cycles_before_all_clk_byp_ack);
+            delayed_update_all_clk_byp_ack(all_clk_byp_ack_non_true, cycles_before_all_clk_byp_ack);
             delayed_update_div_step_down_req(div_step_down_req_non_true,
                                              cycles_before_div_step_down_req);
           join
@@ -144,8 +140,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
           `uvm_info(`gfn, "Got io_clk_byp_req non True", UVM_MEDIUM)
           // Set inputs to mubi4 non-True.
           fork
-            delayed_update_io_clk_byp_ack(io_clk_byp_ack_non_true,
-                                          cycles_before_io_clk_byp_ack);
+            delayed_update_io_clk_byp_ack(io_clk_byp_ack_non_true, cycles_before_io_clk_byp_ack);
             delayed_update_div_step_down_req(div_step_down_req_non_true,
                                              cycles_before_div_step_down_req);
           join

@@ -10,14 +10,17 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/cfi.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
@@ -25,14 +28,16 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/rom_print.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/boot_policy.h"
+#include "sw/device/silicon_creator/mask_rom/bootstrap.h"
 #include "sw/device/silicon_creator/mask_rom/mask_rom_epmp.h"
-#include "sw/device/silicon_creator/mask_rom/primitive_bootstrap.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 /**
  * Table of forward branch Control Flow Integrity (CFI) counters.
@@ -108,19 +113,25 @@ static rom_error_t mask_rom_init(void) {
   // Initialize in-memory copy of the ePMP register configuration.
   mask_rom_epmp_state_init(&epmp, lc_state);
 
-  // Initialize the retention SRAM at power-on.
-  //
-  // The reset reason is treated as power-on if the POR bit is asserted
-  // regardless of whether or not any other reset reason bits are set. This is
-  // because we cannot guarantee that the retention SRAM was fully initialized
-  // if the device was reset before the POR bit was cleared.
-  //
-  // TODO(lowRISC/opentitan#7887): once the retention SRAM is initialized the
-  // reset reason should probably be saved into either main SRAM or the
-  // retention SRAM and the reset reason register cleared.
+  // Initialize the retention RAM based on the reset reason and the OTP value.
+  // Note: Retention RAM is always reset on PoR regardless of the OTP value.
   uint32_t reset_reasons = rstmgr_reason_get();
-  if (bitfield_bit32_read(reset_reasons, kRstmgrReasonPowerOn)) {
-    retention_sram_clear();
+  uint32_t reset_mask = (1 << kRstmgrReasonPowerOn)
+      | otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RET_RAM_RESET_MASK_OFFSET);
+  if ((reset_reasons & reset_mask) != 0) {
+    retention_sram_init();
+  }
+  // Store the reset reason in retention RAM and clear the register.
+  retention_sram_get()->reset_reasons = reset_reasons;
+  rstmgr_reason_clear(reset_reasons);
+
+  // If running on an FPGA, print the FPGA version-id.
+  // This value is guaranteed to be zero on all non-FPGA implementations.
+  uint32_t fpga = ibex_fpga_version();
+  if (fpga != 0) {
+    // The cast to unsigned int stops GCC from complaining about uint32_t
+    // being a `long unsigned int` while the %x specifier takes `unsigned int`.
+    rom_printf("MaskROM:%x\r\n", (unsigned int)fpga);
   }
 
   // Read boot data from flash
@@ -181,6 +192,23 @@ static rom_error_t mask_rom_verify(const manifest_t *manifest,
                               flash_exec);
 }
 
+/* These symbols are defined in
+* `opentitan/sw/device/silicon_creator/mask_rom/mask_rom.ld`, and describes the
+* location of the flash header.
+*/
+extern char _rom_ext_virtual_start_address[];
+extern char _rom_ext_virtual_size[];
+/**
+ * Compute the virtual address corresponding to the physical address `lma_addr`.
+ *
+ * @param manifest Pointer to the current manifest.
+ * @param lma_addr Load address or physical address.
+ * @return the computed virtual address.
+ */
+static inline  uintptr_t rom_ext_vma_get(const manifest_t *manifest, uintptr_t lma_addr){
+  return (lma_addr - (uintptr_t)manifest + (uintptr_t)_rom_ext_virtual_start_address);
+}
+
 /**
  * Boots a ROM_EXT.
  *
@@ -210,22 +238,51 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest,
   // Check cached boot data.
   HARDENED_RETURN_IF_ERROR(boot_data_check(&boot_data));
 
-  sec_mmio_check_values(rnd_uint32());
-  sec_mmio_check_counters(/*expected_check_count=*/3);
+  sec_mmio_check_counters(/*expected_check_count=*/2);
+
+  // Configure address translation, compute the epmp regions and the entry
+  // point for the virtual address in case the address translation is enabled.
+  // Otherwise, compute the epmp regions and the entry point for the load address.
+  epmp_region_t text_region = manifest_code_region_get(manifest);
+  uintptr_t entry_point = manifest_entry_point_get(manifest);
+  switch(launder32(manifest->address_translation)){
+    case kHardenedBoolTrue:
+      HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
+      ibex_addr_remap_0_set((uintptr_t)_rom_ext_virtual_start_address,
+                           (uintptr_t)manifest, (size_t)_rom_ext_virtual_size);
+      SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
+
+      // Unlock read-only for the whole rom_ext virtual memory.
+      HARDENED_RETURN_IF_ERROR(epmp_state_check(&epmp));
+      mask_rom_epmp_unlock_rom_ext_r(&epmp, (epmp_region_t) {
+        .start = (uintptr_t)_rom_ext_virtual_start_address,
+        .end = (uintptr_t)_rom_ext_virtual_start_address + (uintptr_t)_rom_ext_virtual_size});
+
+      // Move the ROM_EXT execution section from the load address to the virtual address.
+      text_region.start = rom_ext_vma_get(manifest, text_region.start);
+      text_region.end = rom_ext_vma_get(manifest, text_region.end);
+      entry_point = rom_ext_vma_get(manifest, entry_point);
+      break;
+    case kHardenedBoolFalse:
+      HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
+      break;
+    default:
+      HARDENED_UNREACHABLE();
+  }
 
   // Unlock execution of ROM_EXT executable code (text) sections.
   HARDENED_RETURN_IF_ERROR(epmp_state_check(&epmp));
-  mask_rom_epmp_unlock_rom_ext_rx(&epmp, manifest_code_region_get(manifest));
+  mask_rom_epmp_unlock_rom_ext_rx(&epmp, text_region);
   HARDENED_RETURN_IF_ERROR(epmp_state_check(&epmp));
 
   // Enable execution of code from flash if signature is verified.
   flash_ctrl_exec_set(flash_exec);
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioExecSet);
 
+  sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/4);
 
   // Jump to ROM_EXT entry point.
-  uintptr_t entry_point = manifest_entry_point_get(manifest);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 2);
   ((rom_ext_entry_point *)entry_point)();
 
@@ -274,9 +331,13 @@ void mask_rom_main(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
 
-  // TODO(lowrisc/opentitan#1513): Switch to EEPROM SPI device bootstrap
-  // protocol.
-  SHUTDOWN_IF_ERROR(primitive_bootstrap(lc_state));
+  hardened_bool_t bootstrap_req = bootstrap_requested();
+  if (launder32(bootstrap_req) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(bootstrap_req, kHardenedBoolTrue);
+    // TODO(lowRISC/opentitan#10631): decide on watchdog strategy for bootstrap.
+    watchdog_disable();
+    shutdown_finalize(bootstrap());
+  }
 
   // `mask_rom_try_boot` will not return unless there is an error.
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 4, kCfiRomTryBoot);

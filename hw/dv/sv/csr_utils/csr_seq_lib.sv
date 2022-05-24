@@ -74,8 +74,7 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
       num_csr_chunks = all_csrs.size / num_test_csrs + 1;
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(test_csr_chunk,
           test_csr_chunk inside {[1:num_csr_chunks]};)
-    end
-    else begin
+    end else begin
       // extract test_csr_chunk, num_csr_chunks from plusargs
       void'($value$plusargs("test_csr_chunk=%0d", test_csr_chunk));
       void'($value$plusargs("num_csr_chunks=%0d", num_csr_chunks));
@@ -89,8 +88,7 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
     chunk_size = (num_test_csrs != 0) ? num_test_csrs : (all_csrs.size / num_csr_chunks + 1);
     start_idx = (test_csr_chunk - 1) * chunk_size;
     end_idx = test_csr_chunk * chunk_size;
-    if (end_idx >= all_csrs.size())
-      end_idx = all_csrs.size() - 1;
+    if (end_idx >= all_csrs.size()) end_idx = all_csrs.size() - 1;
 
     test_csrs = all_csrs[start_idx:end_idx];
     `uvm_info(`gtn, $sformatf("Testing %0d csrs [%0d - %0d] in all supplied models.",

@@ -10,12 +10,6 @@ cc_library(
 )
 
 cc_library(
-    name = "fpga_nexysvideo",
-    srcs = ["device_fpga_nexysvideo.c"],
-    deps = [":device"],
-)
-
-cc_library(
     name = "fpga_cw310",
     srcs = ["device_fpga_cw310.c"],
     deps = [":device"],

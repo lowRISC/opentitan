@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use structopt::clap::arg_enum;
 use thiserror::Error;
 
-use crate::transport::Result;
+use crate::impl_serializable_error;
 
-/// Errors related to the GPIO interface.  These error messages will be printed in the context of
-/// a TransportError::GpioError, that is "GPIO error: {}".  So including the words "error" or
-/// "gpio" in texts below will probably be redundant.
+/// Errors related to the GPIO interface.
 #[derive(Debug, Error, Serialize, Deserialize)]
 pub enum GpioError {
     #[error("Invalid pin name {0}")]
@@ -28,6 +27,7 @@ pub enum GpioError {
     #[error("Unsupported pull mode {0} requested")]
     UnsupportedPullMode(PullMode),
 }
+impl_serializable_error!(GpioError);
 
 arg_enum! {
     /// Mode of I/O pins.

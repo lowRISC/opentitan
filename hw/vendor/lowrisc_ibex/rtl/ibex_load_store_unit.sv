@@ -98,7 +98,7 @@ module ibex_load_store_unit #(
                                                           // part of a misaligned access
   logic         pmp_err_q, pmp_err_d;
   logic         lsu_err_q, lsu_err_d;
-  logic         data_err, data_intg_err, data_or_pmp_err;
+  logic         data_intg_err, data_or_pmp_err;
 
   typedef enum logic [2:0]  {
     IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT,
@@ -353,8 +353,6 @@ module ibex_load_store_unit #(
     assign data_intg_err = 1'b0;
   end
 
-  assign data_err = data_intg_err | data_bus_err_i;
-
   /////////////
   // LSU FSM //
   /////////////
@@ -428,13 +426,13 @@ module ibex_load_store_unit #(
           // Update the PMP error for the second part
           pmp_err_d = data_pmp_err_i;
           // Record the error status of the first part
-          lsu_err_d = data_err | pmp_err_q;
+          lsu_err_d = data_bus_err_i | pmp_err_q;
           // Capture the first rdata for loads
           rdata_update = ~data_we_q;
           // If already granted, wait for second rvalid
           ls_fsm_ns = data_gnt_i ? IDLE : WAIT_GNT;
           // Update the address for the second part, if no error
-          addr_update = data_gnt_i & ~(data_err | pmp_err_q);
+          addr_update = data_gnt_i & ~(data_bus_err_i | pmp_err_q);
           // clear handle_misaligned if second request is granted
           handle_misaligned_d = ~data_gnt_i;
         end else begin
@@ -469,9 +467,9 @@ module ibex_load_store_unit #(
           // Update the pmp error for the second part
           pmp_err_d = data_pmp_err_i;
           // The first part cannot see a PMP error in this state
-          lsu_err_d = data_err;
+          lsu_err_d = data_bus_err_i;
           // Now we can update the address for the second part if no error
-          addr_update = ~data_err;
+          addr_update = ~data_bus_err_i;
           // Capture the first rdata for loads
           rdata_update = ~data_we_q;
           // Wait for second rvalid
@@ -506,9 +504,10 @@ module ibex_load_store_unit #(
   // Outputs //
   /////////////
 
-  assign data_or_pmp_err    = lsu_err_q | data_err | pmp_err_q;
+  assign data_or_pmp_err    = lsu_err_q | data_bus_err_i | pmp_err_q;
   assign lsu_resp_valid_o   = (data_rvalid_i | pmp_err_q) & (ls_fsm_cs == IDLE);
-  assign lsu_rdata_valid_o  = (ls_fsm_cs == IDLE) & data_rvalid_i & ~data_or_pmp_err & ~data_we_q;
+  assign lsu_rdata_valid_o  =
+    (ls_fsm_cs == IDLE) & data_rvalid_i & ~data_or_pmp_err & ~data_we_q & ~data_intg_err;
 
   // output to register file
   assign lsu_rdata_o = data_rdata_ext;
@@ -541,6 +540,14 @@ module ibex_load_store_unit #(
   // Signal a load or store error depending on the transaction type outstanding
   assign load_err_o      = data_or_pmp_err & ~data_we_q & lsu_resp_valid_o;
   assign store_err_o     = data_or_pmp_err &  data_we_q & lsu_resp_valid_o;
+  // Integrity errors are their own category for timing reasons. load_err_o is factored directly
+  // into data_req_o to enable synchronous exception on load errors without performance loss (An
+  // upcoming load cannot request until the current load has seen its response, so the earliest
+  // point the new request can be sent is the same cycle the response is seen). If load_err_o isn't
+  // factored into data_req_o there would have to be a stall cycle between all back to back loads.
+  // The data_intg_err signal is generated combinatorially from the incoming data_rdata_i. Were it
+  // to be factored into load_err_o there would be a feedthrough path from data_rdata_i to
+  // data_req_o which is undesirable.
   assign load_intg_err_o = data_intg_err & data_rvalid_i;
 
   assign busy_o = (ls_fsm_cs != IDLE);
@@ -551,6 +558,9 @@ module ibex_load_store_unit #(
 
   `DV_FCOV_SIGNAL(logic, ls_error_exception, (load_err_o | store_err_o) & ~pmp_err_q)
   `DV_FCOV_SIGNAL(logic, ls_pmp_exception, (load_err_o | store_err_o) & pmp_err_q)
+  `DV_FCOV_SIGNAL(logic, ls_first_req, lsu_req_i & (ls_fsm_cs == IDLE))
+  `DV_FCOV_SIGNAL(logic, ls_second_req,
+    (ls_fsm_cs inside {WAIT_GNT, WAIT_RVALID_MIS}) & data_req_o & addr_incr_req_o)
 
   ////////////////
   // Assertions //

@@ -296,7 +296,7 @@ To set up the FPV security check environment, please follow the steps below:
 This entry tells the tcl file to black-box security prim modules in the FPV environment, and define required macros.
 This "task" entry also tells the tcl file to disable regular assertions and only analyze macro defined security assertions with prefix `FpvSecCm`.
 3. Under the item add an entry "stopats" if design has sparse FSMs.
-This is an optional step. If design contains more than one stopat path, user can input them with bracket `stopat: "{path1}, {path2}"`.
+This is an optional step. Because some designs contain more than one stopat path, the entry "stopats" is declared as a list of strings.
 
 Here is an example on csrng module:
 ```
@@ -308,7 +308,7 @@ Here is an example on csrng module:
   rel_path: "hw/ip/csrng/{sub_flow}/{tool}"
   cov: false
   task: "FpvSecCm"
-  stopats: "*u_state_regs.state_o"
+  stopats: ["*u_state_regs.state_o"]
 }
 ```
 

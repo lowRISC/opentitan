@@ -98,9 +98,4 @@ module rstmgr_bind;
     })
   );
 
-  // sec cm coverage bind
-  bind rstmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_scanmode_mubi_cov_if (
-    .rst_ni (rst_ni),
-    .mubi   (scanmode_i)
-  );
 endmodule

@@ -25,8 +25,7 @@ prog_otbn_build = meson.project_source_root() / 'util/otbn_build.py'
 
 otbn_build_command = [
   prog_env,
-  'OTBN_AS=@0@'.format(prog_otbn_as),
-  'OTBN_LD=@0@'.format(prog_otbn_ld),
+  'OTBN_TOOLS=@0@'.format(path_otbn_tools),
   'RV32_TOOL_OBJCOPY=@0@'.format(prog_objcopy.full_path()),
   'RV32_TOOL_AS=@0@'.format(prog_as.full_path()),
   'RV32_TOOL_LD=@0@'.format(prog_ld.full_path()),

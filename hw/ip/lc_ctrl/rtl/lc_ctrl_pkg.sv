@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+`include "prim_assert.sv"
+
 package lc_ctrl_pkg;
 
   import prim_util_pkg::vbits;
@@ -37,8 +39,8 @@ package lc_ctrl_pkg;
   parameter int TxWidth = 4;
 
   typedef enum logic [TxWidth-1:0] {
-    On  = 4'b1001,
-    Off = 4'b0110
+    On  = 4'b0101,
+    Off = 4'b1010
   } lc_tx_t;
   parameter lc_tx_t LC_TX_DEFAULT = lc_tx_t'(Off);
 
@@ -60,6 +62,8 @@ package lc_ctrl_pkg;
 
   // This is a prerequisite for the multibit functions below to work.
   `ASSERT_STATIC_IN_PACKAGE(CheckLcTxValsComplementary_A, On == ~Off)
+  // Check for bit-width matching between lc_tx_t and mubi4_t
+  `ASSERT_STATIC_IN_PACKAGE(LcMuBiWidthCheck_A, $bits(TxWidth) == $bits(prim_mubi_pkg::MuBi4Width))
 
   // Convert a life cycle signal to mubi4
   // If in the future other versions are desired, this should really be

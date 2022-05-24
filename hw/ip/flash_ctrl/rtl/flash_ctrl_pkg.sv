@@ -126,74 +126,48 @@ package flash_ctrl_pkg;
   } flash_lcmgr_phase_e;
 
   import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_bank_cfg_shadowed_mreg_t;
-  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_cfg_shadowed_mreg_t;
-  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info0_page_cfg_shadowed_mreg_t;
-  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_default_region_shadowed_reg_t;
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_mreg_t;
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_cfg_mreg_t;
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t;
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_default_region_reg_t;
 
   typedef flash_ctrl_reg2hw_mp_bank_cfg_shadowed_mreg_t sw_bank_cfg_t;
-  typedef flash_ctrl_reg2hw_mp_region_cfg_shadowed_mreg_t sw_region_cfg_t;
-  typedef flash_ctrl_reg2hw_default_region_shadowed_reg_t sw_default_cfg_t;
-  typedef flash_ctrl_reg2hw_bank0_info0_page_cfg_shadowed_mreg_t sw_info_cfg_t;
+  typedef flash_ctrl_reg2hw_mp_region_mreg_t sw_region_t;
+  typedef flash_ctrl_reg2hw_mp_region_cfg_mreg_t sw_region_cfg_t;
+  typedef flash_ctrl_reg2hw_default_region_reg_t sw_default_cfg_t;
+  typedef flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t sw_info_cfg_t;
 
   // alias for super long reg_pkg typedef
   typedef struct packed {
     logic        q;
   } bank_cfg_t;
 
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::MuBi4False;
+
   // This is identical to the reg structures but do not have err_updates / storage
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } en;
-    struct packed {
-      logic        q;
-    } rd_en;
-    struct packed {
-      logic        q;
-    } prog_en;
-    struct packed {
-      logic        q;
-    } erase_en;
-    struct packed {
-      logic        q;
-    } scramble_en;
-    struct packed {
-      logic        q;
-    } ecc_en;
-    struct packed {
-      logic        q;
-    } he_en;
+    mubi4_t en;
+    mubi4_t rd_en;
+    mubi4_t prog_en;
+    mubi4_t erase_en;
+    mubi4_t scramble_en;
+    mubi4_t ecc_en;
+    mubi4_t he_en;
   } info_page_cfg_t;
 
   // This is identical to the reg structures but do not have err_updates / storage
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } en;
-    struct packed {
-      logic        q;
-    } rd_en;
-    struct packed {
-      logic        q;
-    } prog_en;
-    struct packed {
-      logic        q;
-    } erase_en;
-    struct packed {
-      logic        q;
-    } scramble_en;
-    struct packed {
-      logic        q;
-    } ecc_en;
-    struct packed {
-      logic        q;
-    } he_en;
-    struct packed {
-      logic [8:0]  q;
-    } base;
-    struct packed {
-      logic [9:0] q;
-    } size;
+    mubi4_t en;
+    mubi4_t rd_en;
+    mubi4_t prog_en;
+    mubi4_t erase_en;
+    mubi4_t scramble_en;
+    mubi4_t ecc_en;
+    mubi4_t he_en;
+    logic [8:0] base;
+    logic [9:0] size;
   } mp_region_cfg_t;
 
   // memory protection specific structs
@@ -250,23 +224,33 @@ package flash_ctrl_pkg;
   parameter int HwDataRules = 1;
 
   parameter info_page_cfg_t CfgAllowRead = '{
-    en:          1'b1,
-    rd_en:       1'b1,
-    prog_en:     1'b0,
-    erase_en:    1'b0,
-    scramble_en: 1'b0,
-    ecc_en:      1'b0, // TBD, update to 1 once tb supports ECC
-    he_en:       1'b1
+    en:          MuBi4True,
+    rd_en:       MuBi4True,
+    prog_en:     MuBi4False,
+    erase_en:    MuBi4False,
+    scramble_en: MuBi4False,
+    ecc_en:      MuBi4False, // TODO, update to 1 once tb supports ECC
+    he_en:       MuBi4True
   };
 
   parameter info_page_cfg_t CfgAllowReadProgErase = '{
-    en:          1'b1,
-    rd_en:       1'b1,
-    prog_en:     1'b1,
-    erase_en:    1'b1,
-    scramble_en: 1'b1,
-    ecc_en:      1'b1,
-    he_en:       1'b1   // HW assumes high endurance
+    en:          MuBi4True,
+    rd_en:       MuBi4True,
+    prog_en:     MuBi4True,
+    erase_en:    MuBi4True,
+    scramble_en: MuBi4True,
+    ecc_en:      MuBi4True,
+    he_en:       MuBi4True   // HW assumes high endurance
+  };
+
+  parameter info_page_cfg_t CfgInfoDisable = '{
+    en:          MuBi4False,
+    rd_en:       MuBi4False,
+    prog_en:     MuBi4False,
+    erase_en:    MuBi4False,
+    scramble_en: MuBi4False,
+    ecc_en:      MuBi4False,
+    he_en:       MuBi4False
   };
 
   parameter info_page_attr_t HwInfoPageAttr[HwInfoRules] = '{
@@ -305,15 +289,15 @@ package flash_ctrl_pkg;
     '{
        phase: PhaseRma,
        cfg:   '{
-                 en:          1'b1,
-                 rd_en:       1'b1,
-                 prog_en:     1'b1,
-                 erase_en:    1'b1,
-                 scramble_en: 1'b1,
-                 ecc_en:      1'b1,
-                 he_en:       1'b1, // HW assumes high endurance
+                 en:          MuBi4True,
+                 rd_en:       MuBi4True,
+                 prog_en:     MuBi4True,
+                 erase_en:    MuBi4True,
+                 scramble_en: MuBi4True,
+                 ecc_en:      MuBi4True,
+                 he_en:       MuBi4True, // HW assumes high endurance
                  base:        '0,
-                 size:        '1
+                 size:        NumBanks * PagesPerBank
                 }
      }
   };
@@ -446,6 +430,10 @@ package flash_ctrl_pkg;
     logic                    storage_relbl_err;
     logic                    storage_intg_err;
     logic                    fsm_err;
+    logic                    spurious_ack;
+    logic                    arb_err;
+    logic                    host_gnt_err;
+    logic                    fifo_err;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)
@@ -464,7 +452,11 @@ package flash_ctrl_pkg;
     prog_intg_err:      '0,
     storage_relbl_err:  '0,
     storage_intg_err:   '0,
-    fsm_err:            '0
+    fsm_err:            '0,
+    spurious_ack:       '0,
+    arb_err:            '0,
+    host_gnt_err:       '0,
+    fifo_err:           '0
   };
 
   // RMA entries
@@ -545,6 +537,7 @@ package flash_ctrl_pkg;
 
   // Error bit positioning
   typedef struct packed {
+    logic invalid_op_err;
     logic oob_err;
     logic mp_err;
     logic rd_err;
@@ -599,17 +592,37 @@ package flash_ctrl_pkg;
   // Minimum Hamming weight: 3
   // Maximum Hamming weight: 6
   //
-  localparam int RmaStateWidth = 10;
+  localparam int RmaStateWidth = 11;
   typedef enum logic [RmaStateWidth-1:0] {
-    StRmaIdle        = 10'b1101000011,
-    StRmaPageSel     = 10'b0010111001,
-    StRmaErase       = 10'b1111010100,
-    StRmaEraseWait   = 10'b0111010101,
-    StRmaWordSel     = 10'b0001011111,
-    StRmaProgram     = 10'b0110001110,
-    StRmaProgramWait = 10'b1000110110,
-    StRmaRdVerify    = 10'b1011101010,
-    StRmaInvalid     = 10'b1100101101
+    StRmaIdle        = 11'b11110001010,
+    StRmaPageSel     = 11'b10111100111,
+    StRmaErase       = 11'b11000010111,
+    StRmaEraseWait   = 11'b01010100110,
+    StRmaWordSel     = 11'b00010011001,
+    StRmaProgram     = 11'b11011111101,
+    StRmaProgramWait = 11'b00111110000,
+    StRmaRdVerify    = 11'b00101001100,
+    StRmaDisabled    = 11'b01001011010,
+    StRmaInvalid     = 11'b10100111011
   } rma_state_e;
+
+
+  // find the max number pages among info types
+  function automatic info_page_cfg_t info_cfg_qual(info_page_cfg_t in_cfg,
+                                                   info_page_cfg_t qual_cfg);
+
+    info_page_cfg_t out_cfg;
+    out_cfg = '{
+      en:          prim_mubi_pkg::mubi4_and_hi(in_cfg.en,          qual_cfg.en),
+      rd_en:       prim_mubi_pkg::mubi4_and_hi(in_cfg.rd_en,       qual_cfg.rd_en),
+      prog_en:     prim_mubi_pkg::mubi4_and_hi(in_cfg.prog_en,     qual_cfg.prog_en),
+      erase_en:    prim_mubi_pkg::mubi4_and_hi(in_cfg.erase_en,    qual_cfg.erase_en),
+      scramble_en: prim_mubi_pkg::mubi4_and_hi(in_cfg.scramble_en, qual_cfg.scramble_en),
+      ecc_en:      prim_mubi_pkg::mubi4_and_hi(in_cfg.ecc_en,      qual_cfg.ecc_en),
+      he_en :      prim_mubi_pkg::mubi4_and_hi(in_cfg.he_en,       qual_cfg.he_en)
+    };
+
+    return out_cfg;
+  endfunction // max_info_banks
 
 endpackage : flash_ctrl_pkg

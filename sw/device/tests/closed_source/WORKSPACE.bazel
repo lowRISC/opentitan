@@ -1,0 +1,13 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+workspace(name = "test_hooks")
+
+# This is a sample workspace to demonstrate how to write test hooks for
+# the OpenTitan Test Framework (ottf).  This bazel repository is not
+# a stand-alone project: it must be connected into the main OpenTitan
+# repository by way of the `hooks_setup` call in OpenTitan's WORKSPACE file.
+
+# See this repository's BUILD.bazel file to understand how to write rules
+# for the test hooks.
