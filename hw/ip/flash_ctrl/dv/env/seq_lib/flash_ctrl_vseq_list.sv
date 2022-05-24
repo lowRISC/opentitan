@@ -23,3 +23,4 @@
 `include "flash_ctrl_error_prog_type_vseq.sv"
 `include "flash_ctrl_error_prog_win_vseq.sv"
 `include "flash_ctrl_error_mp_vseq.sv"
+`include "flash_ctrl_invalid_op_vseq.sv"

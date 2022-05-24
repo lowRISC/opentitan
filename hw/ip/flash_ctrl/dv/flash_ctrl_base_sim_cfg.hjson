@@ -142,6 +142,11 @@
       uvm_test_seq: flash_ctrl_error_mp_vseq
       reseed: 10
     }
+    {
+      name: flash_ctrl_invalid_op
+      uvm_test_seq: flash_ctrl_invalid_op_vseq
+      reseed: 5
+    }
   ]
 
   // List of regressions.

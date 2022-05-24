@@ -1006,6 +1006,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       "prog_type_err" : csr_rd_check(.ptr(ral.err_code.prog_type_err), .compare_value(exp_alert));
       "prog_win_err"  : csr_rd_check(.ptr(ral.err_code.prog_win_err),  .compare_value(exp_alert));
       "mp_err"        : csr_rd_check(.ptr(ral.err_code.mp_err),        .compare_value(exp_alert));
+      "op_err"        : csr_rd_check(.ptr(ral.err_code.op_err),        .compare_value(exp_alert));
       default : `uvm_fatal(`gfn, "Unrecognized alert_name, FAIL")
     endcase
     csr_rd_check(.ptr(ral.op_status.err), .compare_value(exp_alert));
@@ -1023,6 +1024,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       "prog_win_err"  : reg_data = get_csr_val_with_updated_field(ral.err_code.prog_win_err,
                                                                   reg_data, 1);
       "mp_err"        : reg_data = get_csr_val_with_updated_field(ral.err_code.mp_err,
+                                                                  reg_data, 1);
+      "op_err"        : reg_data = get_csr_val_with_updated_field(ral.err_code.op_err,
                                                                   reg_data, 1);
       default : `uvm_fatal(`gfn, "Unrecognized alert_name")
     endcase
