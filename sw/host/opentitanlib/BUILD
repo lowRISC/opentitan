@@ -77,6 +77,8 @@ rust_library(
         "src/test_utils/mod.rs",
         "src/test_utils/rpc.rs",
         "src/test_utils/status.rs",
+        "src/tpm/driver.rs",
+        "src/tpm/mod.rs",
         "src/transport/common/mod.rs",
         "src/transport/common/uart.rs",
         "src/transport/cw310/gpio.rs",

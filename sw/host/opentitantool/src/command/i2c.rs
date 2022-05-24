@@ -10,6 +10,7 @@ use structopt::StructOpt;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::io::i2c::{I2cParams, Transfer};
+use opentitanlib::tpm;
 use opentitanlib::transport::Capability;
 
 /// Read plain data bytes from a I2C device.
@@ -65,11 +66,31 @@ impl CommandDispatch for I2cRawWrite {
     }
 }
 
+#[derive(Debug, StructOpt)]
+pub struct I2cTpm {
+    #[structopt(subcommand)]
+    command: super::tpm::TpmSubCommand,
+}
+
+impl CommandDispatch for I2cTpm {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let context = context.downcast_ref::<I2cCommand>().unwrap();
+        let tpm_driver = tpm::I2cDriver::new(context.params.create(transport)?, context.addr);
+        let bus: Box<dyn tpm::Driver> = Box::new(tpm_driver);
+        self.command.run(&bus, transport)
+    }
+}
+
 /// Commands for interacting with a generic I2C bus.
 #[derive(Debug, StructOpt, CommandDispatch)]
 pub enum InternalI2cCommand {
     RawRead(I2cRawRead),
     RawWrite(I2cRawWrite),
+    Tpm(I2cTpm),
 }
 
 #[derive(Debug, StructOpt)]
