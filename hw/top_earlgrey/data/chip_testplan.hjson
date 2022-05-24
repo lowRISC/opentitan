@@ -410,7 +410,7 @@
             and RMA, regardless of the value on DFT SW straps.
             '''
       milestone: V2
-      tests: ["chip_tap_straps_dev", "chip_tap_straps_rma"]
+      tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma"]
     }
 
     // PADCTRL tests:
@@ -1259,7 +1259,7 @@
             correctness.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma"]
     }
     {
       name: chip_sw_lc_ctrl_jtag_trst
