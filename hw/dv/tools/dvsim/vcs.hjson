@@ -7,7 +7,7 @@
   run_cmd:    "{job_prefix} {build_ex}"
 
   build_opts: ["-sverilog -full64 -licqueue -ntb_opts uvm-1.2",
-               "-timescale=1ns/1ps",
+               "-timescale={timescale}",
                "-Mdir={build_ex}.csrc",
                "-o {build_ex}",
                "-f {sv_flist}",
@@ -183,7 +183,7 @@
   cov_unr_dir:     "{scratch_path}/cov_unr"
 
   cov_unr_common_build_opts: ["-sverilog -full64 -licqueue -ntb_opts uvm-1.2",
-                              "-timescale=1ns/1ps"]
+                              "-timescale={timescale}"]
 
   // Use recommended UUM (Unified usage model) 3 steps flow. The other flow defines macro
   // "SYNTHESIS", which we have used in design
