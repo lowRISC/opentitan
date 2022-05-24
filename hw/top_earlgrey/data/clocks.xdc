@@ -8,7 +8,7 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports IO_
 ## Clock Domain Crossings
 set clks_10_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT0]]
 set clks_48_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT1]]
-set clks_aon_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT2]]
+set clks_aon_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT4]]
 
 ## Divided clock
 ## This is not really recommended per Vivado's guidelines, but hopefully these clocks are slow enough and their
@@ -21,9 +21,9 @@ create_generated_clock -name clk_io_div2 -source [get_pin ${u_pll}/CLKOUT0] -div
 set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div
 create_generated_clock -name clk_io_div4 -source [get_pin ${u_pll}/CLKOUT0] -divide_by 4 [get_pin ${u_div4}/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.bufg_i/O]
 
-# the step-down mux is implemented with a LUT right now and the mux switches on the falling edge. 
+# the step-down mux is implemented with a LUT right now and the mux switches on the falling edge.
 # therefore, Vivado propagates both clock edges down the clock network.
-# this implementation is not ideal - but we can at least tell Vivado to only honour the rising edge for 
+# this implementation is not ideal - but we can at least tell Vivado to only honour the rising edge for
 # timing analysis.
 set_clock_sense -positive top_*/u_clkmgr_aon/u_no_scan_io_div2_div/gen_div2.u_div2/gen_fpga_buf.bufg_i_i_1__0/O
 
