@@ -15,6 +15,7 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{self, TransportWrapper};
 use opentitanlib::io::spi::{SpiParams, Transfer};
 use opentitanlib::spiflash::SpiFlash;
+use opentitanlib::tpm;
 use opentitanlib::transport::Capability;
 
 /// Read and parse an SFDP table.
@@ -270,6 +271,26 @@ impl CommandDispatch for SpiProgram {
     }
 }
 
+#[derive(Debug, StructOpt)]
+pub struct SpiTpm {
+    #[structopt(subcommand)]
+    command: super::tpm::TpmSubCommand,
+}
+
+impl CommandDispatch for SpiTpm {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let bus: Box<dyn tpm::Driver> = Box::new(tpm::SpiDriver::new(
+            context.params.create(transport, "TPM")?,
+        ));
+        self.command.run(&bus, transport)
+    }
+}
+
 /// Commands for interacting with a SPI EEPROM.
 #[derive(Debug, StructOpt, CommandDispatch)]
 pub enum InternalSpiCommand {
@@ -278,6 +299,7 @@ pub enum InternalSpiCommand {
     Read(SpiRead),
     Erase(SpiErase),
     Program(SpiProgram),
+    Tpm(SpiTpm),
 }
 
 #[derive(Debug, StructOpt)]

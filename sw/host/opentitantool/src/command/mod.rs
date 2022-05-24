@@ -17,6 +17,7 @@ pub mod reset_sam3x;
 pub mod rsa;
 pub mod set_pll;
 pub mod spi;
+pub mod tpm;
 pub mod transport;
 pub mod update_usr_access;
 pub mod version;
