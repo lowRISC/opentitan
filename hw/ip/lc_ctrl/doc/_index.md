@@ -609,7 +609,7 @@ See diagram below.
 In order to claim the hardware mutex, the value kMuBi8True must be written to the claim register ({{< regref "CLAIM_TRANSITION_IF" >}}).
 If the register reads back as kMuBi8True, then the mutex is claimed, and the interface that won arbitration can continue operations.
 If the value is not read back, then the requesting interface should wait and try again later.
-Note that all transition registers read back all-zero if the mutex is not claimed.
+Note that all transition registers (with the exception of the {{< regref "STATUS" >}} register) read back all-zero if the mutex is not claimed.
 
 When an agent is done with the mutex, it releases the mutex by explicitly writing a 0 to the claim register.
 This resets the mux to select no one and also holds the request interface in reset.
@@ -622,7 +622,7 @@ To this end, the life cycle CSRs contain the {{< regref OTP_VENDOR_TEST_CTRL >}}
 These registers are only active during RAW, TEST_* and RMA life cycle states.
 In all other life cycle states, the status register reads back all-zero, and the control register value will be tied to 0 before forwarding it to the OTP macro.
 
-Similarly to the [Life Cycle Request Interface]({{< relref "#life-cycle-request-interface" >}}), the hardware mutex must be claimed in order to access these registers.
+Similarly to the [Life Cycle Request Interface]({{< relref "#life-cycle-request-interface" >}}), the hardware mutex must be claimed in order to access both of these registers.
 Note that these registers read back all-zero if the mutex is not claimed.
 
 ### TAP Construction and Isolation
@@ -659,7 +659,7 @@ Hence the following programming sequence applies to both SW running on the devic
 3. Claim exclusive access to the transition interface by writing kMuBi8True to the {{< regref "CLAIM_TRANSITION_IF" >}} register, and reading it back. If the value read back equals to kMuBi8True, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
 Note that all transition interface registers are protected by the hardware-governed {{< regref "TRANSITION_REGWEN" >}} register, which will only be set to 1 if the mutex has been claimed successfully.
 
-4. If required, enable the external clock and other vendor-specific OTP settings in the {{< regref "OTP_TEST_CTRL" >}} register.
+4. If required, enable the external clock and other vendor-specific OTP settings in the {{< regref "OTP_VENDOR_TEST_CTRL" >}} register.
 Note that these settings only take effect in RAW, TEST* and RMA life cycle states.
 They are ignored in the PROD* and DEV states.
 

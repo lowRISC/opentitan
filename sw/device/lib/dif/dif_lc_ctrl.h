@@ -421,6 +421,8 @@ dif_result_t dif_lc_ctrl_transition(const dif_lc_ctrl_t *lc,
 /**
  * Writes settings to the vendor-specific OTP test control register.
  *
+ * This returns `kDifUnavailable` if the mutex has not been acquired.
+ *
  * @param lc A lifecycle handle.
  * @param settings The settings to write to the register.
  * @return The result of the operation.
@@ -431,6 +433,8 @@ dif_result_t dif_lc_ctrl_set_otp_vendor_test_reg(const dif_lc_ctrl_t *lc,
 
 /**
  * Reads settings from the vendor-specific OTP test control register.
+ *
+ * This returns `kDifUnavailable` if the mutex has not been acquired.
  *
  * @param lc A lifecycle handle.
  * @param settings Output parameter for the settings.
