@@ -30,6 +30,7 @@ class otbn_single_vseq extends otbn_base_vseq;
     if (cfg.under_reset) begin
         `uvm_info(`gfn, "under reset", UVM_LOW)
         cfg.clk_rst_vif.wait_for_reset(.wait_negedge(1'b0), .wait_posedge(1'b1));
+        return;
     end
     // We've loaded the binary. Run the processor to see what happens!
     run_otbn();
