@@ -216,6 +216,17 @@ impl Transport for CW310 {
             usb.spi1_enable(false)?;
             usb.fpga_program(&fpga_program.bitstream)?;
             Ok(None)
+        } else if let Some(_set_pll) = action.downcast_ref::<SetPll>() {
+            const TARGET_FREQ: u32 = 100_000_000;
+            let usb = self.device.borrow();
+            usb.pll_enable(true)?;
+            usb.pll_out_freq_set(1, TARGET_FREQ)?;
+            usb.pll_out_freq_set(2, TARGET_FREQ)?;
+            usb.pll_out_enable(0, false)?;
+            usb.pll_out_enable(1, true)?;
+            usb.pll_out_enable(2, false)?;
+            usb.pll_write_defaults()?;
+            Ok(None)
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
@@ -233,3 +244,6 @@ pub struct FpgaProgram {
     /// How long to wait for the ROM to print its type and version.
     pub rom_timeout: Duration,
 }
+
+/// Command for Transport::dispatch().
+pub struct SetPll {}
