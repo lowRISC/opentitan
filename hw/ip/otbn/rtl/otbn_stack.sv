@@ -73,11 +73,14 @@ module otbn_stack
   assign stack_rd_idx = stack_top_idx[StackDepthW-1:0] - 1'b1;
   assign stack_wr_idx = pop_i ? stack_rd_idx : stack_top_idx[StackDepthW-1:0];
 
-  logic signed [StackDepthW:0] stack_wr_ptr_step;
+  // This allows us to get around declaring a signed logic, which in turn needs several casts to
+  // avoid lint messages.
+  localparam logic [StackDepthW:0] Neg1Val = {StackDepthW+1{1'b1}};
+  logic [StackDepthW:0] stack_wr_ptr_step;
   always_comb begin
     unique case ({stack_write, stack_read})
       2'b10:   stack_wr_ptr_step = 1;
-      2'b01:   stack_wr_ptr_step = -1;
+      2'b01:   stack_wr_ptr_step = Neg1Val; // two's complement representation
       default: stack_wr_ptr_step = '0;
     endcase
   end
@@ -92,9 +95,9 @@ module otbn_stack
   always_comb begin
     stack_wr_ptr_step_err_d = stack_wr_ptr_step_err_q;
     if (clear_i) stack_wr_ptr_step_err_d = 1'b0;
-    if (stack_wr_ptr_step > 1 || stack_wr_ptr_step < -1) stack_wr_ptr_step_err_d = 1'b1;
+    if (!(stack_wr_ptr_step inside {Neg1Val, 0, 1})) stack_wr_ptr_step_err_d = 1'b1;
     if (stack_wr_ptr_step == 1 && !stack_write) stack_wr_ptr_step_err_d = 1'b1;
-    if (stack_wr_ptr_step == -1 && !stack_read) stack_wr_ptr_step_err_d = 1'b1;
+    if (stack_wr_ptr_step == Neg1Val && !stack_read) stack_wr_ptr_step_err_d = 1'b1;
     if (stack_wr_ptr_step == 0 && (stack_write ^ stack_read)) stack_wr_ptr_step_err_d = 1'b1;
   end
 
@@ -132,7 +135,7 @@ module otbn_stack
     .en_i       (stack_wr_ptr_en),
     // Since this signal has the same width as the counter, negative values will
     // be correctly be subtracted due to the 2s complement representation.
-    .step_i     (unsigned'(stack_wr_ptr_step)),
+    .step_i     (stack_wr_ptr_step),
     .cnt_o      (stack_wr_ptr),
     .err_o      (stack_wr_ptr_err)
   );

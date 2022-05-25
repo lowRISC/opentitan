@@ -260,10 +260,14 @@ module otbn_loop_controller
   // - If the current loop iterations are being decremented new iterations are the decremented value
   // - If a new loop is starting it's iterations are the new iterations
   // - Otherwise next loop iterations is just the current loop iterations
+  logic [31:0] current_loop_iterations_dec;
+  logic [StackDepthW-1:0] loop_stack_rd_idx_dec;
+  assign current_loop_iterations_dec = current_loop.loop_iterations - 32'd1;
+  assign loop_stack_rd_idx_dec = loop_stack_rd_idx - 1'b1;
   assign prefetch_loop_iterations_o =
-    loop_stack_pop           ? loop_counters[loop_stack_rd_idx - 1'b1] :
-    current_loop_counter_dec ? current_loop.loop_iterations - 32'd1    :
-    loop_stack_write         ? new_loop.loop_iterations                :
+    loop_stack_pop           ? loop_counters[loop_stack_rd_idx_dec] :
+    current_loop_counter_dec ? current_loop_iterations_dec          :
+    loop_stack_write         ? new_loop.loop_iterations             :
                                current_loop.loop_iterations;
 
   logic unused_next_loop_addr_info_intg;
