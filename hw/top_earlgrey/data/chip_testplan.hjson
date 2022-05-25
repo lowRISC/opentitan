@@ -676,7 +676,7 @@
       desc: '''Verify that the LC escalation signal disables the AON timer wdog.
 
             - Program the AON timer wdog to 'bark' after some time and enable the bark interrupt.
-            - Stop the escalation process and fail the test in the interrupt handler in case the
+            - Start the escalation process and fail the test in the interrupt handler in case the
               bark interrupt is fired.
             - Program the alert handler to escalate on alerts upto phase 2 (i.e. reset) but the
               phase 1 (i.e. wipe secrets) should occur and last during the time the wdog is

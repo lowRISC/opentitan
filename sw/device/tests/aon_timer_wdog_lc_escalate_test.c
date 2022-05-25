@@ -37,8 +37,13 @@ enum {
   kWdogBarkMicros = 3 * 1000,          // 3 ms
   kWdogBiteMicros = 4 * 1000,          // 4 ms
   kEscalationPhase0Micros = 1 * 1000,  // 1 ms
-  kEscalationPhase1Micros = 5 * 1000,  // 5 ms
-  kEscalationPhase2Micros = 500,       // 500 us
+  // The cpu value is slightly larger as the busy_spin_micros
+  // routine cycle count comes out slightly smaller due to the
+  // fact that it does not divide by exactly 1M
+  // see sw/device/lib/runtime/hart.c
+  kEscalationPhase0MicrosCpu = kEscalationPhase0Micros + 200,  // 1.2 ms
+  kEscalationPhase1Micros = 5 * 1000,                          // 5 ms
+  kEscalationPhase2Micros = 500,                               // 500 us
 };
 
 static_assert(
@@ -209,7 +214,7 @@ static void execute_test(dif_aon_timer_t *aon_timer) {
   // Trigger the alert handler to escalate.
   dif_pwrmgr_alert_t alert = kDifPwrmgrAlertFatalFault;
   CHECK_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr, alert));
-  busy_spin_micros(kEscalationPhase0Micros);
+  busy_spin_micros(kEscalationPhase0MicrosCpu);
   CHECK(false, "The alert handler failed to escalate");
 }
 
