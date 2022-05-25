@@ -12,7 +12,7 @@ load(
 def rust_deps():
     rust_repositories(
         edition = "2018",
-        version = "1.58.0",
+        version = "1.60.0",
     )
     raze_fetch_remote_crates()
     ftdi_fetch_remote_crates()
