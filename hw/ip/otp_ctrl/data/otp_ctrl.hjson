@@ -303,6 +303,18 @@
       default: "4",
       local: "true"
     },
+    { name: "CreatorSwCfgManufStateOffset",
+      desc: "Offset of CREATOR_SW_CFG_MANUF_STATE",
+      type: "int",
+      default: "260",
+      local: "true"
+    },
+    { name: "CreatorSwCfgManufStateSize",
+      desc: "Size of CREATOR_SW_CFG_MANUF_STATE",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "CreatorSwCfgDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_DIGEST",
       type: "int",
@@ -455,6 +467,18 @@
     },
     { name: "RomWatchdogBiteThresholdCyclesSize",
       desc: "Size of ROM_WATCHDOG_BITE_THRESHOLD_CYCLES",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "OwnerSwCfgManufStateOffset",
+      desc: "Offset of OWNER_SW_CFG_MANUF_STATE",
+      type: "int",
+      default: "1368",
+      local: "true"
+    },
+    { name: "OwnerSwCfgManufStateSize",
+      desc: "Size of OWNER_SW_CFG_MANUF_STATE",
       type: "int",
       default: "4",
       local: "true"
