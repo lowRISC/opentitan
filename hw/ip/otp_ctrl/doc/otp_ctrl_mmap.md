@@ -17,6 +17,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |                 CREATOR_SW_CFG_RNG_EN                 |     0x0F8      |     4      |
 |         |                |            |      32bit       |               CREATOR_SW_CFG_JITTER_EN                |     0x0FC      |     4      |
 |         |                |            |      32bit       |           CREATOR_SW_CFG_RET_RAM_RESET_MASK           |     0x100      |     4      |
+|         |                |            |      32bit       |              CREATOR_SW_CFG_MANUF_STATE               |     0x104      |     4      |
 |         |                |            |      64bit       | [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0) |     0x358      |     8      |
 |    2    |  OWNER_SW_CFG  |    800     |      32bit       |                  ROM_ERROR_REPORTING                  |     0x360      |     4      |
 |         |                |            |      32bit       |                   ROM_BOOTSTRAP_EN                    |     0x364      |     4      |
@@ -29,6 +30,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |               ROM_ALERT_TIMEOUT_CYCLES                |     0x504      |     16     |
 |         |                |            |      32bit       |                ROM_ALERT_PHASE_CYCLES                 |     0x514      |     64     |
 |         |                |            |      32bit       |          ROM_WATCHDOG_BITE_THRESHOLD_CYCLES           |     0x554      |     4      |
+|         |                |            |      32bit       |               OWNER_SW_CFG_MANUF_STATE                |     0x558      |     4      |
 |         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x678      |     8      |
 |    3    |     HW_CFG     |     80     |      32bit       |                       DEVICE_ID                       |     0x680      |     32     |
 |         |                |            |      32bit       |                      MANUF_STATE                      |     0x6A0      |     32     |
