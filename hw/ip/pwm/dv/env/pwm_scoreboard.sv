@@ -90,14 +90,16 @@ class pwm_scoreboard extends cip_base_scoreboard #(
         (!uvm_re_match("pwm_en", csr_name)): begin
           channel_en = item.a_data[PWM_NUM_CHANNELS-1:0];
           foreach(channel_en[ii]) begin
-            // if channel was disabled
             if (prev_channel_en[ii] & ~channel_en[ii]) begin
-              `uvm_info(`gfn, $sformatf("detected disable of channel[%d]", ii), UVM_HIGH)
+              `uvm_info(`gfn, $sformatf("detected toggle of channel[%d]", ii), UVM_HIGH)
               generate_exp_item(exp_item, ii);
               `downcast(exp_clone, exp_item.clone());
-              exp_item_q[ii].push_front(exp_clone);
+              // ignore items when resolution would round the duty cycle to 0 or 100
+              if ((exp_clone.duty_cycle) && (exp_clone.duty_cycle != 100)) begin
+                exp_item_q[ii].push_front(exp_clone);
+              end
             end
-            txt = { txt, $sformatf("\n Channel[%d] : %0b",ii, channel_en[ii]) };
+            txt = {txt, $sformatf("\n Channel[%d] : %0b",ii, channel_en[ii])};
           end
           `uvm_info(`gfn, $sformatf("Setting channel enables %s ", txt), UVM_HIGH)
           txt = "";
@@ -116,10 +118,9 @@ class pwm_scoreboard extends cip_base_scoreboard #(
         (!uvm_re_match("invert", csr_name)): begin
           invert = item.a_data[PWM_NUM_CHANNELS-1:0];
           foreach(invert[ii]) begin
-            txt = { txt, $sformatf("\n Invert Channel[%d] : %0b",ii, invert[ii]) };
+            txt = {txt, $sformatf("\n Invert Channel[%d] : %0b",ii, invert[ii])};
           end
           `uvm_info(`gfn, $sformatf("Setting channel Inverts %s ", txt), UVM_HIGH)
-
         end
 
         (!uvm_re_match("pwm_param_*", csr_name)): begin
@@ -139,7 +140,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
           int idx = get_multireg_idx(csr_name);
           duty_cycle[idx].A = get_field_val(ral.duty_cycle[idx].a, item.a_data);
           duty_cycle[idx].B = get_field_val(ral.duty_cycle[idx].b, item.a_data);
-          `uvm_info(`gfn, $sformatf("\n Seeting channel[%d] duty cycle A:%0h B:%0h",
+          `uvm_info(`gfn, $sformatf("\n Setting channel[%d] duty cycle A:%0h B:%0h",
                                     idx, duty_cycle[idx].A ,duty_cycle[idx].B), UVM_HIGH)
         end
 
@@ -169,7 +170,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task compare_trans(int channel);
-    pwm_item compare_item = new();
+    pwm_item compare_item = new($sformatf("compare_item_%d", channel));
     pwm_item input_item   = new($sformatf("input_item_%d", channel));
     string txt            = "";
     int    p = 0;
@@ -184,25 +185,30 @@ class pwm_scoreboard extends cip_base_scoreboard #(
     // it will have no information
     item_fifo[channel].get(input_item);
     // wait for the first expected item
-    wait( exp_item_q[channel].size() > 0);
+    wait(exp_item_q[channel].size() > 0);
     compare_item = exp_item_q[channel].pop_front();
     // drop the first pwm pulse as it will not match
     item_fifo[channel].get(input_item);
     `uvm_info(`gfn, $sformatf("dropped first item %s", input_item.convert2string()), UVM_HIGH)
     // keep going until channel is disabled.
-    while (item_fifo[channel].used() > 1) begin
+    while (item_fifo[channel].used() > 0) begin
       // get next item and compare
       item_fifo[channel].get(input_item);
       if (!compare_item.compare(input_item)) begin
         txt = "\n.......| Exp Item |.......";
-        txt = {txt, $sformatf("\n %s", compare_item.convert2string()) };
-        txt = { txt, "\n.......| Actual Item |......."};
-        txt = {txt, $sformatf("\n %s", input_item.convert2string()) };
+        txt = {txt, $sformatf("\n %s", compare_item.convert2string())};
+        txt = {txt, "\n.......| Actual Item |......."};
+        txt = {txt, $sformatf("\n %s", input_item.convert2string())};
         `uvm_fatal(`gfn, $sformatf("\n PWM pulse on Channel %d did not match %s", channel, txt ))
       end else begin
-        `uvm_info(`gfn, $sformatf("Item %d Matched", p++), UVM_HIGH)
-        // generate next predicted item - based on current
+        txt = "\n.......| Exp Item |.......";
+        txt = {txt, $sformatf("\n %s", compare_item.convert2string())};
+        txt = {txt, "\n.......| Actual Item |......."};
+        txt = {txt, $sformatf("\n %s", input_item.convert2string())};
+        `uvm_info(`gfn, $sformatf("\n PWM pulse on Channel %d MATCHED %s", channel, txt),
+          UVM_HIGH)
       end
+      // generate next predicted item - based on current
       generate_exp_item(compare_item, channel);
     end
     // drop last item as it is not expected to match settings
@@ -210,16 +216,15 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   endtask : compare_trans
 
   virtual task generate_exp_item(ref pwm_item item, input bit [PWM_NUM_CHANNELS-1:0] channel);
-    int int_dc;
-    int beats_cycle;
-    int period;
-    int high_cycles;
-    int low_cycles;
-    int initial_dc = 0;
-    int subcycle_cnt = 0;
+    uint int_dc          = 0;
+    uint beats_cycle     = 0;
+    uint period          = 0;
+    uint high_cycles     = 0;
+    uint low_cycles      = 0;
+    uint initial_dc      = 0;
+    uint subcycle_cnt    = 0;
+    uint phase_count     = 0;
     dc_mod_e dc_mod;
-    bit [15:0] resn_mask = '0;
-    bit [15:0] phase_count = '0;
 
     // compare duty cycle for modifier
     dc_mod = (duty_cycle[channel].A > duty_cycle[channel].B) ? LargeA : LargeB;
@@ -338,18 +343,17 @@ class pwm_scoreboard extends cip_base_scoreboard #(
     period      = beats_cycle * (channel_cfg.ClkDiv + 1);
     high_cycles = (int_dc >> (16 - (channel_cfg.DcResn + 1))) * (channel_cfg.ClkDiv + 1);
     low_cycles  = period - high_cycles;
-    // only interested in DcRsn+1 MSB
-    resn_mask = {16{1'b1}} << (16 - (channel_cfg.DcResn + 1));
-    // During each beat, the 16-bit phase counter increments by 2^(16-DC_RESN-1)
-    phase_count = beats_cycle * (2**(16 - (channel_cfg.DcResn - 1)));
+    // Each PWM pulse cycle is divided into 2^DC_RESN+1 beats, per beat the 16-bit phase counter
+    // increments by 2^(16-DC_RESN-1)(modulo 65536)
+    phase_count = (period / (2**(channel_cfg.DcResn + 1)) * (2**(16 - (channel_cfg.DcResn - 1))));
 
     item.monitor_id      = channel;
     item.invert          = invert[channel];
     item.period          = period;
-    item.active_cnt      = invert[channel] ? low_cycles : high_cycles;
-    item.inactive_cnt    = invert[channel] ? high_cycles : low_cycles;
+    item.active_cnt      = high_cycles;
+    item.inactive_cnt    = low_cycles;
     item.duty_cycle      = item.get_duty_cycle();
-    item.phase           = phase_count;
+    item.phase           = (phase_count % 65536);
 
   endtask // generate_exp_item
 
