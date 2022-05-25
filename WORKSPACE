@@ -76,7 +76,7 @@ hooks_setup(
 
 # Declare the external test_hooks repository.
 load("@hooks_setup//:repos.bzl", "hooks_repo")
-hooks_repo(name = "test_hooks")
+hooks_repo(name = "manufacturer_test_hooks")
 
 # The nonhermetic_repo imports environment variables needed to run vivado.
 load("//rules:nonhermetic.bzl", "nonhermetic_repo")

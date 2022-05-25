@@ -99,6 +99,7 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//third_party/freertos",
+        "@manufacturer_test_hooks//:test_hooks",
     ],
     # `:ottf` depends on `:ottf_start`, but `:ottf_start` gets its main function from
     # `:ottf`. Thus we need to include all of the objects in `:ottf` unconditionally

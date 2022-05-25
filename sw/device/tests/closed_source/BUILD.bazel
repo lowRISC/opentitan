@@ -5,12 +5,12 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     # The name is the label that will be used to refer to this library.
-    # Tests will use the full label `@test_hooks//:ip_config_hooks`.
-    name = "ip_config_hooks",
+    # Tests will use the full label `@manufacturer_test_hooks//:test_hooks`.
+    name = "test_hooks",
 
     # `srcs` is a list of source files and private header files.
     srcs = [
-        "sample_hooks.c",
+        "test_hooks.c",
     ],
 
     # `hdrs` is a list of public header files for this library.
