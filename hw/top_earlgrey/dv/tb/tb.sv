@@ -128,9 +128,10 @@ module tb;
   // TODO: the external clk is currently not connected.
   // We will need to feed this in via a muxed pin, once that function implemented.
 
+  wire por_n = rst_n & por_rstn_if.pins;
   chip_earlgrey_asic dut (
     // Clock and Reset (VCC domain)
-    .POR_N(rst_n & por_rstn_if.pins),
+    .POR_N(por_n),
     // Dedicated SPI Host (VIOA domain)
     .SPI_HOST_D0(spi_host_tie_off[0]),
     .SPI_HOST_D1(spi_host_tie_off[1]),
