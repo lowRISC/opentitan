@@ -95,16 +95,12 @@ class OTBNState:
         self._err_bits = 0
         self.pending_halt = False
 
-        self.rnd_256b_counter = 0
         self.urnd_256b_counter = 0
 
-        self.rnd_cdc_pending = False
         self.urnd_cdc_pending = False
 
-        self.rnd_cdc_counter = 0
         self.urnd_cdc_counter = 0
 
-        self.rnd_256b = 0
         self.urnd_256b = 4 * [0]
         self.urnd_64b = 0
 
@@ -184,39 +180,13 @@ class OTBNState:
         self.urnd_256b_counter = 0
 
     def edn_rnd_step(self, rnd_data: int) -> None:
-        # Take the new data
-        assert 0 <= rnd_data < (1 << 32)
-
-        # There should not be a pending RND result before an EDN step.
-        assert not self.rnd_cdc_pending
-
-        # Collect 32b packages in a 256b variable
-        new_word = rnd_data << (32 * self.rnd_256b_counter)
-        assert new_word < (1 << 256)
-        self.rnd_256b = self.rnd_256b | new_word
-
-        if self.rnd_256b_counter == 7:
-            # Reset the 32b package counter and wait until receiving done
-            # signal from RTL
-            self.rnd_256b_counter = 0
-            self.rnd_cdc_pending = True
-        else:
-            # Count until 8 valid packages are received
-            self.rnd_256b_counter += 1
-            return
-
-        # Reset the 32b package counter and wait until receiving done
-        # signal from RTL
-        self.rnd_256b_counter = 0
+        self.ext_regs.rnd_take_word(rnd_data)
 
     def edn_flush(self) -> None:
         # EDN Flush gets called after a reset signal from EDN clock domain
         # arrives. It clears out internals of the model regarding EDN data
         # processing on both RND and URND side.
-        self.rnd_256b = 0
-        self.rnd_cdc_pending = False
-        self.rnd_cdc_counter = 0
-        self.rnd_256b_counter = 0
+        self.ext_regs.rnd_reset()
 
         self.urnd_64b = 0
         self.urnd_256b = 4 * [0]
@@ -225,20 +195,11 @@ class OTBNState:
         self.urnd_cdc_counter = 0
 
     def rnd_completed(self) -> None:
-        # This will be called when all the packages are received and processed
-        # by RTL. Model will set RND register, pending flag and internal
-        # variables will be cleared.
-
-        # These must be true since model calculates RND data faster than RTL.
-        # But the synchronisation of the data should not take more than
-        # 5 cycles ideally.
-        assert self.rnd_cdc_counter < 6
-
-        self.wsrs.RND.set_unsigned(self.rnd_256b)
-        self.rnd_256b = 0
-        self.rnd_cdc_pending = False
-        self.rnd_set_flag = False
-        self.rnd_cdc_counter = 0
+        '''Called when CDC completes for the EDN RND interface'''
+        # Set the RND WSR with the value. This will be committed at the end of
+        # the next step on the main clock.
+        rnd_val = self.ext_regs.rnd_cdc_complete()
+        self.wsrs.RND.set_unsigned(rnd_val)
 
     def urnd_completed(self) -> None:
         # URND completed gets called after RTL signals that the processing
@@ -292,6 +253,11 @@ class OTBNState:
     def wiping(self) -> bool:
         return self._fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]
 
+    def step(self, handle_injected_error: bool) -> None:
+        if handle_injected_error:
+            self.take_injected_err_bits()
+        self.ext_regs.step()
+
     def commit(self, sim_stalled: bool) -> None:
         if self._time_to_imem_invalidation is not None:
             self._time_to_imem_invalidation -= 1
@@ -299,13 +265,7 @@ class OTBNState:
                 self.invalidated_imem = True
                 self._time_to_imem_invalidation = None
 
-        # If model is waiting for the RND register to cross CDC, increment a
-        # counter to say how long we've waited. This lets us spot if the CDC
-        # gets stuck for some reason.
-        if self.rnd_cdc_pending:
-            self.rnd_cdc_counter += 1
-
-        # If model is waiting for the RND register to cross CDC, increment a
+        # If model is waiting for the URND register to cross CDC, increment a
         # counter to say how long we've waited. This lets us spot if the CDC
         # gets stuck for some reason.
         if self.urnd_cdc_pending:

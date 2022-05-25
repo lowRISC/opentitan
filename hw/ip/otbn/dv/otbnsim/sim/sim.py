@@ -172,8 +172,7 @@ class OTBNSim:
         }
 
         stepper, handles_injected_err = steppers[fsm_state]
-        if not handles_injected_err:
-            self.state.take_injected_err_bits()
+        self.state.step(not handles_injected_err)
 
         return stepper(verbose)
 
