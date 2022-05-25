@@ -39,13 +39,13 @@ class riscv_instr_gen_config:
         self.main_program_instr_cnt = vsc.rand_int32_t()
 
         # Instruction count of each sub-program
-        self.sub_program_instr_cnt = []
+        self.sub_program_instr_cnt = vsc.randsz_list_t(vsc.int32_t())
 
         # Instruction count of the debug rom
         self.debug_program_instr_cnt = 0
 
         # Instruction count of debug sub-programs
-        self.debug_sub_program_instr_cnt = []
+        self.debug_sub_program_instr_cnt = vsc.randsz_list_t(vsc.int32_t())
 
         # Pattern of data section: RAND_DATA, ALL_ZERO, INCR_VAL
         self.data_page_pattern = vsc.rand_enum_t(data_pattern_t)
@@ -241,6 +241,7 @@ class riscv_instr_gen_config:
         self.force_m_delegation = self.argv.force_m_delegation
         self.force_s_delegation = self.argv.force_s_delegation
         self.support_supervisor_mode = 0  # TODO
+        self.disable_compressed_instr = vsc.uint8_t(1)
         self.disable_compressed_instr = self.argv.disable_compressed_instr
         self.require_signature_addr = self.argv.require_signature_addr
         if self.require_signature_addr:
@@ -315,8 +316,11 @@ class riscv_instr_gen_config:
 
     @vsc.constraint
     def default_c(self):
-        # TODO Add constraint related to sub_program
+        self.sub_program_instr_cnt.size == self.num_of_sub_program
+        self.debug_sub_program_instr_cnt.size == self.num_debug_sub_program
         self.main_program_instr_cnt in vsc.rangelist(vsc.rng(10, self.instr_cnt))
+        with vsc.foreach(self.sub_program_instr_cnt, idx=True) as i:
+            self.sub_program_instr_cnt[i].inside(vsc.rangelist(vsc.rng(10, self.instr_cnt)))
 
     @vsc.constraint
     def debug_mode_c(self):
@@ -662,6 +666,7 @@ class riscv_instr_gen_config:
         parse.add_argument("--enable_visualization", action="store_true", default=False,
                            help="Enabling coverage report visualization for pyflow")
         parse.add_argument('--trace_csv', help='List of csv traces', default="")
+        parse.add_argument('--seed', help='Seed value', default=None)
         args, unknown = parse.parse_known_args()
         # TODO
         '''

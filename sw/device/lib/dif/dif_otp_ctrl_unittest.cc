@@ -496,6 +496,40 @@ TEST_F(DaiDigestTest, NullArgs) {
                                             /*digest=*/0xabcdef0000abcdef));
 }
 
+class IsDigestComputed : public OtpTest {};
+
+TEST_F(IsDigestComputed, NullArgs) {
+  bool is_computed;
+  EXPECT_DIF_BADARG(dif_otp_ctrl_is_digest_computed(
+      nullptr, kDifOtpCtrlPartitionSecret2, &is_computed));
+  EXPECT_DIF_BADARG(dif_otp_ctrl_is_digest_computed(
+      &otp_, kDifOtpCtrlPartitionSecret2, nullptr));
+  EXPECT_DIF_BADARG(dif_otp_ctrl_is_digest_computed(
+      nullptr, kDifOtpCtrlPartitionSecret2, nullptr));
+}
+
+TEST_F(IsDigestComputed, BadPartition) {
+  bool is_computed;
+  EXPECT_DIF_BADARG(dif_otp_ctrl_is_digest_computed(
+      &otp_, kDifOtpCtrlPartitionLifeCycle, &is_computed));
+}
+
+TEST_F(IsDigestComputed, Success) {
+  bool is_computed;
+
+  EXPECT_READ32(OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET, 0x98abcdef);
+  EXPECT_READ32(OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET, 0xabcdef01);
+  EXPECT_DIF_OK(dif_otp_ctrl_is_digest_computed(
+      &otp_, kDifOtpCtrlPartitionSecret2, &is_computed));
+  EXPECT_TRUE(is_computed);
+
+  EXPECT_READ32(OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET, 0);
+  EXPECT_READ32(OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_otp_ctrl_is_digest_computed(
+      &otp_, kDifOtpCtrlPartitionSecret2, &is_computed));
+  EXPECT_FALSE(is_computed);
+}
+
 struct DigestParams {
   dif_otp_ctrl_partition_t partition;
   ptrdiff_t reg0, reg1;

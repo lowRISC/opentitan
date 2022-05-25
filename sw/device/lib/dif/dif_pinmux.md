@@ -12,7 +12,7 @@ All checklist items refer to the content in the [Checklist]({{< relref "/doc/pro
 Type           | Item                 | Resolution  | Note/Collaterals
 ---------------|----------------------|-------------|------------------
 Implementation | [DIF_EXISTS][]       | Done        |
-Implementation | [DIF_USED_IN_TREE][] | In Progress |
+Implementation | [DIF_USED_IN_TREE][] | Done        |
 Tests          | [DIF_TEST_SMOKE][]   | Not Started |
 
 [DIF_EXISTS]:       {{< relref "/doc/project/checklist.md#dif_exists" >}}
@@ -39,7 +39,7 @@ Coordination   | [DIF_HW_DESIGN_COMPLETE][]       | Not Started |
 Coordination   | [DIF_HW_VERIFICATION_COMPLETE][] | Not Started |
 Documentation  | [DIF_DOC_HW][]                   | Not Started |
 Code Quality   | [DIF_CODE_STYLE][]               | Not Started |
-Tests          | [DIF_TEST_UNIT][]                | Not Started |
+Tests          | [DIF_TEST_UNIT][]                | Done        |
 Review         | [DIF_TODO_COMPLETE][]            | Not Started |
 Review         | Reviewer(s)                      | Not Started |
 Review         | Signoff date                     | Not Started |

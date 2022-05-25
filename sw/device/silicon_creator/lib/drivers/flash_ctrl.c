@@ -258,16 +258,16 @@ typedef struct info_cfg_regs {
  * @return Config and config write-enable register addresses of the info page.
  */
 static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
-#define INFO_CFG_REGS_CASE_(name_, value_, bank_, page_)                           \
-  case (name_):                                                                    \
-    HARDENED_CHECK_EQ(launder32(info_page), (name_));                              \
-    return (info_cfg_regs_t){                                                      \
-        .cfg_wen_addr =                                                            \
-            kBase +                                                                \
-            FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,            \
-        .cfg_addr =                                                                \
-            kBase +                                                                \
-            FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_SHADOWED_##page_##_REG_OFFSET, \
+#define INFO_CFG_REGS_CASE_(name_, value_, bank_, page_)                  \
+  case (name_):                                                           \
+    HARDENED_CHECK_EQ(launder32(info_page), (name_));                     \
+    return (info_cfg_regs_t){                                             \
+        .cfg_wen_addr =                                                   \
+            kBase +                                                       \
+            FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,   \
+        .cfg_addr =                                                       \
+            kBase +                                                       \
+            FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_##page_##_REG_OFFSET, \
     };
 
   switch (launder32(info_page)) {
@@ -289,7 +289,7 @@ static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
  */
 static void page_lockdown(flash_ctrl_info_page_t info_page) {
   const info_cfg_regs_t regs = info_cfg_regs(info_page);
-  sec_mmio_write32_shadowed(regs.cfg_addr, 0);
+  sec_mmio_write32(regs.cfg_addr, 0);
   sec_mmio_write32(regs.cfg_wen_addr, 0);
 }
 
@@ -467,18 +467,14 @@ void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataDefaultPermsSet, 1);
 
   // Read first to preserve ECC, scrambling, and high endurance bits.
-  uint32_t reg =
-      sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_RD_EN_BIT,
-                             perms.read == kHardenedBoolTrue);
-  reg =
-      bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_PROG_EN_BIT,
-                           perms.write == kHardenedBoolTrue);
-  reg =
-      bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_ERASE_EN_BIT,
-                           perms.erase == kHardenedBoolTrue);
-  sec_mmio_write32_shadowed(
-      kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET, reg);
+  uint32_t reg = sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_RD_EN_FIELD,
+                               perms.read);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_PROG_EN_FIELD,
+                               perms.write);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_ERASE_EN_FIELD,
+                               perms.erase);
+  sec_mmio_write32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
 }
 
 void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
@@ -488,35 +484,29 @@ void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
   const uint32_t cfg_addr = info_cfg_regs(info_page).cfg_addr;
   // Read first to preserve ECC, scrambling, and high endurance bits.
   uint32_t reg = sec_mmio_read32(cfg_addr);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_EN_0_BIT, true);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_RD_EN_0_BIT,
-      perms.read == kHardenedBoolTrue);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_PROG_EN_0_BIT,
-      perms.write == kHardenedBoolTrue);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ERASE_EN_0_BIT,
-      perms.erase == kHardenedBoolTrue);
-  sec_mmio_write32_shadowed(cfg_addr, reg);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0_FIELD, perms.read);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0_FIELD, perms.write);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0_FIELD, perms.erase);
+  sec_mmio_write32(cfg_addr, reg);
 }
 
 void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataDefaultCfgSet, 1);
 
   // Read first to preserve permission bits.
-  uint32_t reg =
-      sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET);
-  reg = bitfield_bit32_write(reg,
-                             FLASH_CTRL_DEFAULT_REGION_SHADOWED_SCRAMBLE_EN_BIT,
-                             cfg.scrambling == kMultiBitBool8True);
-  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_ECC_EN_BIT,
-                             cfg.ecc == kMultiBitBool8True);
-  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_HE_EN_BIT,
-                             cfg.he == kMultiBitBool8True);
-  sec_mmio_write32_shadowed(
-      kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET, reg);
+  uint32_t reg = sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD,
+                               cfg.scrambling);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_ECC_EN_FIELD,
+                               cfg.ecc);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_HE_EN_FIELD,
+                               cfg.he);
+  sec_mmio_write32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
 }
 
 void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
@@ -526,18 +516,37 @@ void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
   const uint32_t cfg_addr = info_cfg_regs(info_page).cfg_addr;
   // Read first to preserve permission bits.
   uint32_t reg = sec_mmio_read32(cfg_addr);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_EN_0_BIT, true);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_SCRAMBLE_EN_0_BIT,
-      cfg.scrambling == kMultiBitBool8True);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ECC_EN_0_BIT,
-      cfg.ecc == kMultiBitBool8True);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_HE_EN_0_BIT,
-      cfg.he == kMultiBitBool8True);
-  sec_mmio_write32_shadowed(cfg_addr, reg);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0_FIELD,
+      cfg.scrambling);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ECC_EN_0_FIELD, cfg.ecc);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_HE_EN_0_FIELD, cfg.he);
+  sec_mmio_write32(cfg_addr, reg);
+}
+
+void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
+  uint32_t reg;
+  switch (launder32(enable)) {
+    case kHardenedBoolTrue:
+      HARDENED_CHECK_EQ(enable, kHardenedBoolTrue);
+      reg = bitfield_bit32_write(
+          0, FLASH_CTRL_MP_BANK_CFG_SHADOWED_ERASE_EN_0_BIT, true);
+      reg = bitfield_bit32_write(
+          reg, FLASH_CTRL_MP_BANK_CFG_SHADOWED_ERASE_EN_1_BIT, true);
+      break;
+    case kHardenedBoolFalse:
+      HARDENED_CHECK_EQ(enable, kHardenedBoolFalse);
+      reg = 0;
+      break;
+    default:
+      HARDENED_UNREACHABLE();
+  }
+  sec_mmio_write32_shadowed(kBase + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET,
+                            reg);
 }
 
 /**

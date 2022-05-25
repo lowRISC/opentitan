@@ -75,6 +75,11 @@ class OtbnTraceChecker : public OtbnTraceListener {
   // through MatchPair if there is any.
   const OtbnIssTraceEntry::IssData *PopIssData();
 
+  // Tell the model not to execute checks to see if secure wiping has written
+  // random data to all registers before wiping them with zeroes on the next
+  // secure wipe entry.
+  void set_no_sec_wipe_chk();
+
  private:
   // If rtl_pending_ and iss_pending_ are not both true, return true
   // immediately with no other change. Otherwise, compare the two pending trace
@@ -97,6 +102,7 @@ class OtbnTraceChecker : public OtbnTraceListener {
   // MatchPair.
   bool last_data_vld_;
   OtbnIssTraceEntry::IssData last_data_;
+  bool no_sec_wipe_data_chk_;
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_TRACE_CHECKER_H_

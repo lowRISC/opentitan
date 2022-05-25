@@ -43,7 +43,5 @@ filegroup(
         "//hw/ip/trial1:all_files",
         "//hw/ip/uart:all_files",
         "//hw/ip/usbdev:all_files",
-        "//hw/ip/usb_fs_nb_pe:all_files",
-        "//hw/ip/usbuart:all_files",
     ],
 )

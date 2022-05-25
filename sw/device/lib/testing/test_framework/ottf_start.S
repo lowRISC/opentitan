@@ -209,10 +209,7 @@ init_array_loop:
 init_array_loop_end:
 
  /**
-  * Jump into the OTTF C entry point. This is your standard C `main()`, so we
-  * need to pass dummy values for `argc` and `argv`.
+  * Jump into the OTTF C entry point.
   */
-  li   a0, 0x0  // argc = 0
-  li   a1, 0x0  // argv = NULL
-  tail main
+  tail _ottf_main
   .size _ottf_start, .-_ottf_start

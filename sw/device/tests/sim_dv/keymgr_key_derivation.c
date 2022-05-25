@@ -15,11 +15,11 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "keymgr_regs.h"  // Generated.
@@ -111,10 +111,10 @@ static void write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
             kDifFlashCtrlPartitionTypeInfo, kSecretWordSize) == 0);
 
   uint32_t readback_data[kSecretWordSize];
-  CHECK(flash_ctrl_testutils_read_page(
-            flash, address, kFlashInfoPartitionId, readback_data,
-            kDifFlashCtrlPartitionTypeInfo, kSecretWordSize, 0) == 0);
-  CHECK_BUFFER(data, readback_data, kSecretWordSize);
+  CHECK(flash_ctrl_testutils_read(flash, address, kFlashInfoPartitionId,
+                                  readback_data, kDifFlashCtrlPartitionTypeInfo,
+                                  kSecretWordSize, 0) == 0);
+  CHECK_ARRAYS_EQ(data, readback_data, kSecretWordSize);
 }
 
 static void init_flash(void) {

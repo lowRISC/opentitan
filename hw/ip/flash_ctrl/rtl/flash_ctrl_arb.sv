@@ -118,11 +118,12 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   //
   localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
-    StReset    = 10'b1010101011,
-    StHw       = 10'b1111010001,
-    StSwActive = 10'b1011001100,
-    StSwIdle   = 10'b0101100111,
-    StInvalid  = 10'b0111111010
+    StReset    = 10'b0011010110,
+    StHw       = 10'b1111101110,
+    StSwActive = 10'b1100101001,
+    StSwIdle   = 10'b1000000010,
+    StDisabled = 10'b0100010101,
+    StInvalid  = 10'b0011001001
   } arb_state_e;
 
   flash_sel_e func_sel;
@@ -167,7 +168,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
         if (prim_mubi_pkg::mubi4_test_true_loose(disable_i)) begin
           // Do not randomly switch unless idle as it may cause stateful operations to be
           // disturbed
-          state_d = StInvalid;
+          state_d = StDisabled;
         end else if (hw_req_i) begin
           // if hardware request comes in the middle, wipe fifos and enable
           // switch to hardware interface
@@ -188,7 +189,13 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
         end
       end
 
+      StDisabled: begin
+        state_d = StDisabled;
+      end
+
+
       StInvalid: begin
+        state_d = StInvalid;
         fsm_err_o = 1'b1;
       end
 
@@ -278,7 +285,15 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
         ctrl_err_addr_o = rd_err_addr_i;
       end
 
-      default:;
+      default: begin
+        // if operation is started but does not match
+        // any valid operation, error back
+        if (muxed_ctrl_o.start) begin
+          ctrl_ack = 1'b1;
+          ctrl_err.invalid_op_err = 1'b1;
+        end
+      end
+
     endcase // unique case (muxed_ctrl_o.op.q)
   end
 

@@ -193,8 +193,8 @@ static void init_aes(void) {
  * Initializes peripherals and processes simple serial packets received over
  * UART.
  */
-int main(void) {
-  sca_init(kScaTriggerSourceAes, kScaPeripheralAes);
+void _ottf_main(void) {
+  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralAes);
 
   LOG_INFO("Running AES serial");
 

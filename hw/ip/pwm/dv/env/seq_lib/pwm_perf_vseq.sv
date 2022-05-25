@@ -21,13 +21,13 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   }
 
   constraint rand_reg_param_c {
-   rand_reg_param.HtbtEn == 1'b1 -> rand_reg_param.BlinkEn == 1'b1;
-   rand_reg_param.RsvParam == 0;
-   rand_reg_param.PhaseDelay dist {MAX_16:/1, 0:/1};
+    rand_reg_param.HtbtEn == 1'b1 -> rand_reg_param.BlinkEn == 1'b1;
+    rand_reg_param.RsvParam == 0;
+    rand_reg_param.PhaseDelay dist {MAX_16:/1, 0:/1};
   }
 
   constraint duration_cycles_c {
-    duration_cycles dist {MIN_NUM_CYCLES:/1, MAX_NUM_CYCLES:/1};
+    duration_cycles == {NUM_CYCLES}};
   }
 
   constraint low_power_c {
@@ -35,11 +35,11 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   }
 
   constraint rand_dc_c {
-      rand_dc dist {16'h7FF_FFFF:/1, 16'h1:/1, 16'h0:/1};
+    rand_dc dist {16'h7FFF:/1, 16'h1:/1, 16'h0:/1};
   }
 
   constraint rand_blink_c {
-      rand_blink dist {16'h7FF_FFFF:/1, 16'h1:/1, 16'h0:/1};
+    rand_blink dist {16'h7FFF:/1, 16'h1:/1, 16'h0:/1};
   }
 
   virtual task body();

@@ -222,10 +222,12 @@ The CHECK_BYP_EN signal is only asserted when a transition command is issued.
 
 #### CLK_BYP_REQ
 
-If the life cycle state is in RAW, TEST* or RMA, and if {{< regref OTP_TEST_CTRL.EXT_CLOCK >}} is set to one, the CLK_BYP_REQ signal is asserted in order to switch the main system clock to an external clock signal.
+If the life cycle state is in RAW, TEST* or RMA, and if {{< regref TRANSITION_CTRL.EXT_CLOCK_EN >}} is set to one, the CLK_BYP_REQ signal is asserted in order to switch the main system clock to an external clock signal.
 This functionality is needed in certain life cycle states where the internal clock source may not be fully calibrated yet, since the OTP macro requires a stable clock frequency in order to reliably program the fuse array.
 The CLK_BYP_REQ signal is only asserted when a transition command is issued.
 This function is not available in production life cycle states.
+
+For details on the clock switch, please see [clkmgr]({{< relref "hw/ip/clkmgr/doc/_index.md#life-cycle-requested-external-clock" >}}).
 
 
 ### Life Cycle Access Control Signals
@@ -604,9 +606,10 @@ See diagram below.
 
 ![LC Request Interface](lc_ctrl_request_interface.svg)
 
-In order to claim the hardware mutex, the value 0x5A must be written to the claim register ({{< regref "CLAIM_TRANSITION_IF" >}}).
-If the register reads back as 0x5A, then the mutex is claimed, and the interface that won arbitration can continue operations.
+In order to claim the hardware mutex, the value kMuBi8True must be written to the claim register ({{< regref "CLAIM_TRANSITION_IF" >}}).
+If the register reads back as kMuBi8True, then the mutex is claimed, and the interface that won arbitration can continue operations.
 If the value is not read back, then the requesting interface should wait and try again later.
+Note that all transition registers read back all-zero if the mutex is not claimed.
 
 When an agent is done with the mutex, it releases the mutex by explicitly writing a 0 to the claim register.
 This resets the mux to select no one and also holds the request interface in reset.
@@ -620,6 +623,7 @@ These registers are only active during RAW, TEST_* and RMA life cycle states.
 In all other life cycle states, the status register reads back all-zero, and the control register value will be tied to 0 before forwarding it to the OTP macro.
 
 Similarly to the [Life Cycle Request Interface]({{< relref "#life-cycle-request-interface" >}}), the hardware mutex must be claimed in order to access these registers.
+Note that these registers read back all-zero if the mutex is not claimed.
 
 ### TAP Construction and Isolation
 
@@ -652,16 +656,16 @@ Hence the following programming sequence applies to both SW running on the devic
 
 2. Read the {{< regref "LC_STATE" >}} and {{< regref "LC_TRANSITION_CNT" >}} registers to determine which life cycle state the device currently is in, and how many transition attempts are still available.
 
-3. Claim exclusive access to the transition interface by writing 0x5A to the {{< regref "CLAIM_TRANSITION_IF" >}} register, and reading it back. If the value read back equals to 0x5A, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
+3. Claim exclusive access to the transition interface by writing kMuBi8True to the {{< regref "CLAIM_TRANSITION_IF" >}} register, and reading it back. If the value read back equals to kMuBi8True, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
 Note that all transition interface registers are protected by the hardware-governed {{< regref "TRANSITION_REGWEN" >}} register, which will only be set to 1 if the mutex has been claimed successfully.
 
-4. Write the desired target state to {{< regref "TRANSITION_TARGET" >}}. For conditional transitions, the corresponding token has to be written to {{< regref "TRANSITION_TOKEN_0" >}}. For all unconditional transitions, the token registers have to be set to zero.
-
-5. If required, enable the external clock and other vendor-specific OTP settings in the {{< regref "OTP_TEST_CTRL" >}} register.
+4. If required, enable the external clock and other vendor-specific OTP settings in the {{< regref "OTP_TEST_CTRL" >}} register.
 Note that these settings only take effect in RAW, TEST* and RMA life cycle states.
 They are ignored in the PROD* and DEV states.
 
-6. An optional, but recommended step is to read back and verify the values written in steps 4. and 5. before proceeding with step 6.
+5. Write the desired target state to {{< regref "TRANSITION_TARGET" >}}. For conditional transitions, the corresponding token has to be written to {{< regref "TRANSITION_TOKEN_0" >}}. For all unconditional transitions, the token registers have to be set to zero.
+
+6. An optional, but recommended step is to read back and verify the values written in steps 4. and 5. before proceeding with step 7.
 
 7. Write 1 to the {{< regref "TRANSITION_CMD.START" >}} register to initiate the life cycle transition.
 
@@ -669,7 +673,7 @@ They are ignored in the PROD* and DEV states.
 The {{< regref "TRANSITION_REGWEN" >}} register will be set to 0 while a transition is in progress in order to prevent any accidental modifications of the transition interface registers during this phase.
 
 Note that any life cycle state transition - no matter whether successful or not - increments the LC_TRANSITION_CNT and moves the life cycle state into the temporary POST_TRANSITION state.
-Hence, step 6. cannot be carried out in case device SW is used to implement the programming sequence above, since the processor is disabled in the POST_TRANSITION life cycle state.
+Hence, step 8. cannot be carried out in case device SW is used to implement the programming sequence above, since the processor is disabled in the POST_TRANSITION life cycle state.
 
 This behavior is however not of concern, since access to the transition interface via the CSRs is considered a convenience feature for bringup in the lab.
 It is expected that the JTAG TAP interface is used to access the life cycle transition interface in production settings.

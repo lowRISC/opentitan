@@ -52,7 +52,7 @@ module spid_jedec_tb;
   sel_datapath_e dut_sel_dp;
   // Command info for Read Status
   // CmdReadStauts1, CmdReadStatus2, CmdReadStatus3
-  cmd_info_index_e cmd_info_idx;
+  logic [CmdInfoIdxW-1:0] cmd_info_idx;
   cmd_info_t cmd_info;
 
   // Status Signals
@@ -95,6 +95,7 @@ module spid_jedec_tb;
   end
 
   static task host();
+    automatic int unsigned num_cc;
     logic [23:0] jedec_id;
 
     // Initial config
@@ -103,7 +104,9 @@ module spid_jedec_tb;
     repeat(10) @(sck_clk.cbn);
 
     // Expect 5 continuous codes and jedec ID
-    spiflash_readjedec(tb_sif, CmdJedecId, 8'h 5, ContinuousCode, jedec_id);
+    spiflash_readjedec(tb_sif, CmdJedecId, ContinuousCode, num_cc, jedec_id);
+    assert(num_cc == 5)
+      else $display("Num_CC count (%2d) does not match to 5", num_cc);
 
     $display("SPI Flash Read JEDEC ID Tested!!:");
   endtask : host

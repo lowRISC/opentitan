@@ -15,6 +15,7 @@ filesets:
     files:
       - rtl/clkmgr_byp.sv
       - rtl/clkmgr_clk_status.sv
+      - rtl/clkmgr_meas_chk.sv
       - rtl/clkmgr_root_ctrl.sv
       - rtl/clkmgr_trans.sv
     file_type: systemVerilogSource

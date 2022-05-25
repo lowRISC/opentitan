@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use mundane::hash::{Digest, Hasher, Sha256};
+use anyhow::Result;
+use sha2::{Digest, Sha256};
 use std::time::Duration;
 use zerocopy::AsBytes;
 
 use crate::app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
 use crate::io::spi::Transfer;
-use crate::transport::{Capability, Result};
+use crate::transport::Capability;
 
 #[derive(AsBytes, Debug, Default)]
 #[repr(C)]
@@ -43,22 +44,20 @@ impl Frame {
     /// Computes the hash in the header.
     fn header_hash(&self) -> [u8; Frame::HASH_LEN] {
         let frame = self.as_bytes();
-        let sha = Sha256::hash(&frame[Frame::HASH_LEN..]);
-        let mut digest = sha.bytes();
+        let mut digest = Sha256::digest(&frame[Frame::HASH_LEN..]);
         // Note: the OpenTitan HMAC produces the digest in little-endian order,
         // so we reverse the order of the bytes in the digest.
         digest.reverse();
-        digest
+        digest.into()
     }
 
     /// Computes the hash over the entire frame.
     fn frame_hash(&self) -> [u8; Frame::HASH_LEN] {
-        let sha = Sha256::hash(self.as_bytes());
-        let mut digest = sha.bytes();
+        let mut digest = Sha256::digest(self.as_bytes());
         // Note: the OpenTitan HMAC produces the digest in little-endian order,
         // so we reverse the order of the bytes in the digest.
         digest.reverse();
-        digest
+        digest.into()
     }
 
     /// Creates a sequence of frames based on a `payload` binary.

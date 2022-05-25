@@ -27,28 +27,39 @@ module otbn_rf_bignum
   // Register file implementation selection, see otbn_pkg.sv.
   parameter regfile_e RegFile = RegFileFF
 )(
-  input  logic               clk_i,
-  input  logic               rst_ni,
+  input  logic                   clk_i,
+  input  logic                   rst_ni,
 
-  input  logic [WdrAw-1:0]   wr_addr_i,
-  input  logic [1:0]         wr_en_i,
-  input  logic [WLEN-1:0]    wr_data_no_intg_i,
-  input  logic [ExtWLEN-1:0] wr_data_intg_i,
-  input  logic               wr_data_intg_sel_i,
+  input  logic [WdrAw-1:0]       wr_addr_i,
+  input  logic [1:0]             wr_en_i,
+  input  logic                   wr_commit_i,
+  input  logic [WLEN-1:0]        wr_data_no_intg_i,
+  input  logic [ExtWLEN-1:0]     wr_data_intg_i,
+  input  logic                   wr_data_intg_sel_i,
 
-  input  logic               rd_en_a_i,
-  input  logic [WdrAw-1:0]   rd_addr_a_i,
-  output logic [ExtWLEN-1:0] rd_data_a_intg_o,
+  input  logic                   rd_en_a_i,
+  input  logic [WdrAw-1:0]       rd_addr_a_i,
+  output logic [ExtWLEN-1:0]     rd_data_a_intg_o,
 
-  input  logic               rd_en_b_i,
-  input  logic [WdrAw-1:0]   rd_addr_b_i,
-  output logic [ExtWLEN-1:0] rd_data_b_intg_o,
+  input  logic                   rd_en_b_i,
+  input  logic [WdrAw-1:0]       rd_addr_b_i,
+  output logic [ExtWLEN-1:0]     rd_data_b_intg_o,
 
-  output logic               rd_data_err_o
+  output logic                   rf_err_o,
+
+  input  rf_predec_bignum_t      rf_predec_bignum_i,
+  output logic                   predec_error_o
 );
 
+  logic                          spurious_we_err;
   logic [ExtWLEN-1:0]            wr_data_intg_mux_out, wr_data_intg_calc;
+  logic [1:0]                    wr_en_internal;
   logic [BaseWordsPerWLEN*2-1:0] rd_data_a_err, rd_data_b_err;
+  logic [NWdr-1:0]               expected_rd_en_a_onehot, expected_rd_en_b_onehot;
+  logic [NWdr-1:0]               expected_wr_en_onehot;
+  logic                          rd_en_a_mismatch, rd_en_b_mismatch, wr_en_mismatch;
+
+  assign wr_en_internal = wr_en_i & {2{wr_commit_i}};
 
   if (RegFile == RegFileFF) begin : gen_rf_bignum_ff
     otbn_rf_bignum_ff #(
@@ -58,14 +69,18 @@ module otbn_rf_bignum
       .rst_ni,
 
       .wr_addr_i,
-      .wr_en_i,
+      .wr_en_i(wr_en_internal),
       .wr_data_i(wr_data_intg_mux_out),
 
       .rd_addr_a_i,
       .rd_data_a_o(rd_data_a_intg_o),
 
       .rd_addr_b_i,
-      .rd_data_b_o(rd_data_b_intg_o)
+      .rd_data_b_o(rd_data_b_intg_o),
+
+      .rf_predec_bignum_i,
+
+      .we_err_o(spurious_we_err)
     );
   end else if (RegFile == RegFileFPGA) begin : gen_rf_bignum_fpga
     otbn_rf_bignum_fpga #(
@@ -75,16 +90,49 @@ module otbn_rf_bignum
       .rst_ni,
 
       .wr_addr_i,
-      .wr_en_i,
+      .wr_en_i(wr_en_internal),
       .wr_data_i(wr_data_intg_mux_out),
 
       .rd_addr_a_i,
       .rd_data_a_o(rd_data_a_intg_o),
 
       .rd_addr_b_i,
-      .rd_data_b_o(rd_data_b_intg_o)
+      .rd_data_b_o(rd_data_b_intg_o),
+
+      .we_err_o(spurious_we_err)
     );
   end
+
+  prim_onehot_enc #(
+    .OneHotWidth(NWdr)
+  ) u_rf_ren_a_onehot_enc (
+    .in_i  (rd_addr_a_i),
+    .en_i  (rd_en_a_i),
+    .out_o (expected_rd_en_a_onehot)
+  );
+
+  prim_onehot_enc #(
+    .OneHotWidth(NWdr)
+  ) u_rf_ren_b_onehot_enc (
+    .in_i  (rd_addr_b_i),
+    .en_i  (rd_en_b_i),
+    .out_o (expected_rd_en_b_onehot)
+  );
+
+  prim_onehot_enc #(
+    .OneHotWidth(NWdr)
+  ) u_rf_we_onehot_enc (
+    .in_i  (wr_addr_i),
+    .en_i  (|wr_en_i),
+    .out_o (expected_wr_en_onehot)
+  );
+
+  // SEC_CM: DATA_REG_SW.SCA
+  assign rd_en_a_mismatch = expected_rd_en_a_onehot != rf_predec_bignum_i.rf_ren_a;
+  assign rd_en_b_mismatch = expected_rd_en_b_onehot != rf_predec_bignum_i.rf_ren_b;
+  assign wr_en_mismatch   = expected_wr_en_onehot   != rf_predec_bignum_i.rf_we;
+
+  assign predec_error_o = rd_en_a_mismatch | rd_en_b_mismatch | wr_en_mismatch;
 
   // New data can have its integrity from an external source or the integrity can be calculated here
   assign wr_data_intg_mux_out = wr_data_intg_sel_i ? wr_data_intg_i : wr_data_intg_calc;
@@ -112,5 +160,7 @@ module otbn_rf_bignum
     );
   end
 
-  assign rd_data_err_o = ((|rd_data_a_err) & rd_en_a_i) | ((|rd_data_b_err) & rd_en_b_i);
+  assign rf_err_o = ((|rd_data_a_err) & rd_en_a_i) |
+                    ((|rd_data_b_err) & rd_en_b_i) |
+                    spurious_we_err;
 endmodule

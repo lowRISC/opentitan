@@ -10,6 +10,7 @@ filesets:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_lib
       - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:dv:pwrmgr_clk_ctrl_common_pkg
     files:
       - pwrmgr_clk_ctrl_if.sv
       - pwrmgr_clk_ctrl_agent_pkg.sv

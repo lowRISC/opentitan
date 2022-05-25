@@ -62,12 +62,14 @@ module tb;
   pins_if #(2) dft_straps_if(.pins(dft_straps));
   pins_if #(3) sw_straps_if(.pins(sw_straps));
   pins_if #(1) rst_n_mon_if(.pins(cpu_rst_n));
+
   spi_if spi_if(.rst_n);
   tl_if cpu_d_tl_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
   uart_if uart_if[NUM_UARTS-1:0]();
   jtag_if jtag_if();
   pwm_if pwm_if[NUM_PWM_CHANNELS]();
   pwrmgr_low_power_if pwrmgr_low_power_if(.clk(`CLKMGR_HIER.clocks_o.clk_aon_powerup),
+                      .fast_clk(`CLKMGR_HIER.clocks_o.clk_io_div4_powerup),
                       .rst_n(`RSTMGR_HIER.resets_o.rst_por_io_div4_n[0]));
 
   assign pwrmgr_low_power_if.low_power = `PWRMGR_HIER.low_power_o;
@@ -77,9 +79,21 @@ module tb;
     .trigger(top_earlgrey.rv_core_ibex_pwrmgr.core_sleeping)
   );
 
+  // POR reset if
+  pins_if #(1) por_rstn_if();
+  assign (weak0, weak1) por_rstn_if.pins = 1;
+
+  // power button if
+  pins_if #(1) pwrb_in_if();
+  assign (weak0, weak1) pwrb_in_if.pins = 1;
+
+  // pinmux wakeup detector trigger
+  pins_if #(1) pinmux_wkup_if();
+  assign (weak0, weak1) pinmux_wkup_if.pins = 0;
+
   // TODO: Replace with correct interfaces once
   // pinmux/padring and pinout have been updated.
-  wire [25:0] tie_off;
+  wire [16:0] tie_off;
   wire [5:0] spi_host_tie_off;
   wire [1:0] spi_dev_tie_off;
   assign (weak0, weak1) tie_off = '0;
@@ -90,8 +104,10 @@ module tb;
   // in the agent/interface.
   wire ioc3;
   wire ioc4;
-  wire uart0_sel;
-  assign uart0_sel = 1'b1;
+  bit uart0_sel = 1;
+  initial begin
+    void'($value$plusargs("uart0_sel=%0b", uart0_sel));
+  end
   assign ioc3 = (uart0_sel) ? uart_if[0].uart_rx : dft_straps[0];
   assign ioc4 = (uart0_sel) ? 1'bz : dft_straps[1];
   assign uart_if[0].uart_tx = ioc4;
@@ -114,7 +130,7 @@ module tb;
 
   chip_earlgrey_asic dut (
     // Clock and Reset (VCC domain)
-    .POR_N(rst_n),
+    .POR_N(rst_n & por_rstn_if.pins),
     // Dedicated SPI Host (VIOA domain)
     .SPI_HOST_D0(spi_host_tie_off[0]),
     .SPI_HOST_D1(spi_host_tie_off[1]),
@@ -143,29 +159,27 @@ module tb;
     .IOB0(gpio_pins[9]),   // MIO 9
     .IOB1(gpio_pins[10]),  // MIO 10
     .IOB2(gpio_pins[11]),  // MIO 11
-    .IOB3(gpio_pins[12]),  // MIO 12
-    .IOB4(gpio_pins[13]),  // MIO 13
-    .IOB5(gpio_pins[14]),  // MIO 14
-    .IOB6(gpio_pins[15]),  // MIO 15
-    .IOB7(tie_off[0]),     // MIO 16
-    // TODO, we probably need to change this when we have the final pinout configuration
-    // Connect this to IOB8 to align with SW bootstrap.c
-    .IOB8(sw_straps[0]),   // MIO 17
-    .IOB9(tie_off[1]),     // MIO 18
+    .IOB3(tie_off[0]),     // MIO 12
+    .IOB4(uart_rx[1]),     // MIO 13
+    .IOB5(uart_tx[1]),     // MIO 14
+    .IOB6(tie_off[1]),     // MIO 15
+    .IOB7(pinmux_wkup_if.pins),  // MIO 16
+    .IOB8(tie_off[2]),     // MIO 17
+    .IOB9(tie_off[3]),     // MIO 18
     .IOB10(iob10),         // MIO 19
     .IOB11(iob11),         // MIO 20
     .IOB12(iob12),         // MIO 21
     // Bank C (VCC domain)
-    .IOC0(tie_off[5]),     // MIO 22
+    .IOC0(sw_straps[0]),   // MIO 22
     .IOC1(sw_straps[1]),   // MIO 23
     .IOC2(sw_straps[2]),   // MIO 24
     .IOC3(ioc3),           // MIO 25
     .IOC4(ioc4),           // MIO 26
     .IOC5(tap_straps[1]),  // MIO 27
     .IOC6(clk),            // MIO 28 - external clock fed in at a fixed position
-    .IOC7(tie_off[7]),     // MIO 29
+    .IOC7(tie_off[4]),     // MIO 29
     .IOC8(tap_straps[0]),  // MIO 30
-    .IOC9(tie_off[8]),     // MIO 31
+    .IOC9(tie_off[5]),     // MIO 31
     .IOC10(ioc10),         // MIO 32
     .IOC11(ioc11),         // MIO 33
     .IOC12(ioc12),         // MIO 34
@@ -175,29 +189,29 @@ module tb;
     .IOR2(jtag_tdi),       // MIO 37
     .IOR3(jtag_tck),       // MIO 38
     .IOR4(jtag_trst_n),    // MIO 39
-    .IOR5(uart_rx[1]),     // MIO 40
-    .IOR6(uart_tx[1]),     // MIO 41
+    .IOR5(tie_off[6]),     // MIO 40
+    .IOR6(tie_off[7]),     // MIO 41
     .IOR7(uart_rx[2]),     // MIO 42
-    .IOR8(tie_off[13]),    // MIO 43, Dedicated sysrst_ctrl output (ec_rst_l)
-    .IOR9(tie_off[14]),    // MIO 44, Dedicated sysrst_ctrl output (pwrb_out)
+    .IOR8(tie_off[8]),     // MIO 43, Dedicated sysrst_ctrl output (ec_rst_l)
+    .IOR9(tie_off[9]),     // MIO 44, Dedicated sysrst_ctrl output (pwrb_out)
     .IOR10(uart_tx[2]),    // MIO 45
     .IOR11(uart_rx[3]),    // MIO 46
     .IOR12(uart_tx[3]),    // MIO 47
-    .IOR13(tie_off[18]),   // MIO 48
+    .IOR13(pwrb_in_if.pins),   // MIO 48
     // DCD (VCC domain)
-    .CC1(tie_off[19]),
-    .CC2(tie_off[20]),
+    .CC1(tie_off[10]),
+    .CC2(tie_off[11]),
     // USB (VCC domain)
     .USB_P(usb_dp0),
     .USB_N(usb_dn0),
     // FLASH
-    .FLASH_TEST_MODE0(tie_off[21]),
-    .FLASH_TEST_MODE1(tie_off[22]),
-    .FLASH_TEST_VOLT(tie_off[23]),
+    .FLASH_TEST_MODE0(tie_off[12]),
+    .FLASH_TEST_MODE1(tie_off[13]),
+    .FLASH_TEST_VOLT(tie_off[14]),
     // OTP
-    .OTP_EXT_VOLT(tie_off[24]),
+    .OTP_EXT_VOLT(tie_off[15]),
     // MISC pad
-    .AST_MISC(tie_off[25])
+    .AST_MISC(tie_off[16])
   );
 
   // connect signals
@@ -235,18 +249,17 @@ module tb;
   sim_sram u_sim_sram (
     .clk_i    (`CPU_HIER.clk_i),
     .rst_ni   (`CPU_HIER.rst_ni),
-    .tl_in_i  (`CPU_HIER.tl_d_o_int),
+    .tl_in_i  (tlul_pkg::tl_h2d_t'(`CPU_HIER.u_tlul_req_buf.out_o)),
     .tl_in_o  (),
     .tl_out_o (),
-    .tl_out_i (`CPU_HIER.cored_tl_h_i)
+    .tl_out_i ()
   );
 
   initial begin
     void'($value$plusargs("en_sim_sram=%0b", en_sim_sram));
     if (!stub_cpu && en_sim_sram) begin
       `SIM_SRAM_IF.start_addr = SW_DV_START_ADDR;
-      force `CPU_HIER.tl_d_i_int = u_sim_sram.tl_in_o;
-      force `CPU_HIER.cored_tl_h_o = u_sim_sram.tl_out_o;
+      force `CPU_HIER.u_tlul_rsp_buf.in_i = u_sim_sram.tl_in_o;
     end else begin
       force u_sim_sram.clk_i = 1'b0;
     end
@@ -296,6 +309,11 @@ module tb;
         null, "*.env", "sw_straps_vif", sw_straps_if);
     uvm_config_db#(virtual pins_if #(1))::set(
         null, "*.env", "rst_n_mon_vif", rst_n_mon_if);
+    uvm_config_db#(virtual pins_if #(1))::set(
+        null, "*.env", "pinmux_wkup_vif", pinmux_wkup_if);
+    uvm_config_db#(virtual pins_if #(1))::set(
+        null, "*.env", "pwrb_in_vif", pwrb_in_if);
+
 
     // SW logger and test status interfaces.
     uvm_config_db#(virtual sw_test_status_if)::set(
@@ -310,6 +328,14 @@ module tb;
     // PWRGMR.low_power_o only
     uvm_config_db#(virtual pwrmgr_low_power_if)::set(
         null, "*.env*", "pwrmgr_low_power_vif", pwrmgr_low_power_if);
+
+
+    // POR reset handle
+    uvm_config_db#(virtual pins_if #(1))::set(
+       null, "*.env", "por_rstn_vif", por_rstn_if);
+
+    uvm_config_db#(virtual pins_if #(1))::set(
+       null, "*.env", "pwrb_in_vif", pwrb_in_if);
 
     // temp disable pinmux assertion AonWkupReqKnownO_A because driving X in spi_device.sdi and
     // WkupPadSel choose IO_DPS1 in MIO will trigger this assertion
@@ -500,7 +526,6 @@ module tb;
         csr_seq_type == "mem_walk") begin
       force tb.dut.top_earlgrey.u_otp_ctrl.lc_dft_en_i = lc_ctrl_pkg::On;
     end
-//    void'($value$plusargs("pwm_chk_enable=%0d", pwm_chk_en));
   end
 
   // Control assertions in the DUT with UVM resource string "dut_assert_en".

@@ -61,7 +61,7 @@
                 once the event interrupt pin is asserted
             '''
       milestone: V2
-      tests: ["spi_host_error_txrx", "spi_host_error_cmd", "spi_host_event"]
+      tests: ["spi_host_overflow_underflow", "spi_host_error_cmd", "spi_host_event"]
     }
     {
       name: clock_rate
@@ -126,9 +126,9 @@
             - Verify the function of spi_host in passthrough_mode
 
             Stimulus:
-              - TBD
+              - Enable Passthrough Mode
             Checking:
-              - TBD
+              - Ensure Host to Device and Device to Host paths are switched to Passthrough ports
       '''
       milestone: V2
       tests: ["spi_host_passthrough_mode"]
@@ -153,19 +153,6 @@
 
             Checking:
               - Check that the data can be read one full cycle after the data was asserted
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: endian
-      desc: '''
-            Stimulus:
-              - set the compile time parameter to configure the DUT in both modes.
-              if possible this should be randomized for all test to verify support in both modes
-
-            Checking:
-              - Check all features are supported correctly in both little and big endian mode
             '''
       milestone: V2
       tests: []
@@ -225,7 +212,7 @@
             - Verify the DUT against the WindBond bfm by making the spi agent passive
               to verify that we comply with the spi targeted for opentitan
             '''
-      milestone: V2
+      milestone: V3
       tests: []
     }
   ]
@@ -285,12 +272,6 @@
       name: interrupts_cg
       desc: '''
             Collect coverage that all types of interrupt was seen
-            '''
-    }
-    {
-      name: alert_cg
-      desc: '''
-            Collect coverage to verify all alerts are triggered correctly
             '''
     }
     {

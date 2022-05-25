@@ -73,6 +73,11 @@ from topgen.lib import Name
   input mubi4_t all_clk_byp_ack_i,
   output mubi4_t hi_speed_sel_o,
 
+  // clock calibration has been done.
+  // If this is signal is 0, assume clock frequencies to be
+  // uncalibrated.
+  input calib_rdy_i,
+
   // jittery enable to ast
   output mubi4_t jitter_en_o,
 
@@ -94,6 +99,7 @@ from topgen.lib import Name
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_true_loose;
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -151,7 +157,6 @@ from topgen.lib import Name
   ////////////////////////////////////////////////////
 
   logic [NumAlerts-1:0] alert_test, alerts;
-  logic shadowed_storage_err, shadowed_update_err;
   clkmgr_reg_pkg::clkmgr_reg2hw_t reg2hw;
   clkmgr_reg_pkg::clkmgr_hw2reg_t hw2reg;
 
@@ -170,14 +175,15 @@ from topgen.lib import Name
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .shadowed_storage_err_o(shadowed_storage_err),
-    .shadowed_update_err_o(shadowed_update_err),
+    .shadowed_storage_err_o(hw2reg.fatal_err_code.shadow_storage_err.de),
+    .shadowed_update_err_o(hw2reg.recov_err_code.shadow_update_err.de),
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o(hw2reg.fatal_err_code.reg_intg.de),
     .devmode_i(1'b1)
   );
   assign hw2reg.fatal_err_code.reg_intg.d = 1'b1;
-
+  assign hw2reg.recov_err_code.shadow_update_err.d = 1'b1;
+  assign hw2reg.fatal_err_code.shadow_storage_err.d = 1'b1;
 
   ////////////////////////////////////////////////////
   // Alerts
@@ -238,6 +244,7 @@ from topgen.lib import Name
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
     .byp_req_i(extclk_ctrl_sel),
+    .byp_ack_o(hw2reg.extclk_status.d),
     .hi_speed_sel_i(extclk_ctrl_hi_speed_sel),
     .all_clk_byp_req_o,
     .all_clk_byp_ack_i,
@@ -317,68 +324,58 @@ from topgen.lib import Name
   // SEC_CM: TIMEOUT.CLK.BKGN_CHK, MEAS.CLK.BKGN_CHK
   ////////////////////////////////////////////////////
 
-  assign hw2reg.recov_err_code.shadow_update_err.d = 1'b1;
-  assign hw2reg.recov_err_code.shadow_update_err.de = shadowed_update_err;
-  assign hw2reg.fatal_err_code.shadow_storage_err.d = 1'b1;
-  assign hw2reg.fatal_err_code.shadow_storage_err.de = shadowed_storage_err;
-
-<% aon_freq = clocks.all_srcs['aon'].freq %>\
-% for src in typed_clocks.rg_srcs:
-  logic ${src}_fast_err;
-  logic ${src}_slow_err;
-  logic ${src}_timeout_err;
-  <%
-   freq = clocks.all_srcs[src].freq
-   cnt = int(freq*2 / aon_freq)
-  %>\
-  prim_clock_meas #(
-    .Cnt(${cnt}),
-    .RefCnt(1),
-    .ClkTimeOutChkEn(1'b1),
-    .RefTimeOutChkEn(1'b0)
-  ) u_${src}_meas (
-    .clk_i(clk_${src}_i),
-    .rst_ni(rst_${src}_ni),
-    .clk_ref_i(clk_aon_i),
-    .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_${src}_en & reg2hw.${src}_meas_ctrl_shadowed.en.q),
-    .max_cnt(reg2hw.${src}_meas_ctrl_shadowed.hi.q),
-    .min_cnt(reg2hw.${src}_meas_ctrl_shadowed.lo.q),
-    .valid_o(),
-    .fast_o(${src}_fast_err),
-    .slow_o(${src}_slow_err),
-    .timeout_clk_ref_o(),
-    .ref_timeout_clk_o(${src}_timeout_err)
-  );
-
-  logic synced_${src}_err;
-  prim_pulse_sync u_${src}_err_sync (
-    .clk_src_i(clk_${src}_i),
-    .rst_src_ni(rst_${src}_ni),
-    .src_pulse_i(${src}_fast_err | ${src}_slow_err),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .dst_pulse_o(synced_${src}_err)
-  );
-
-  logic synced_${src}_timeout_err;
-  prim_edge_detector #(
+  // if clocks become uncalibrated, allow the measurement control configurations to change
+  logic calib_rdy;
+  prim_flop_2sync #(
     .Width(1),
-    .ResetValue('0),
-    .EnSync(1'b1)
-  ) u_${src}_timeout_err_sync (
+    .ResetValue(0)
+  ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
-    .d_i(${src}_timeout_err),
-    .q_sync_o(),
-    .q_posedge_pulse_o(synced_${src}_timeout_err),
-    .q_negedge_pulse_o()
+    .d_i(calib_rdy_i),
+    .q_o(calib_rdy)
+  );
+
+  always_comb begin
+    hw2reg.measure_ctrl_regwen.de = '0;
+    hw2reg.measure_ctrl_regwen.d = reg2hw.measure_ctrl_regwen;
+
+    if (!calib_rdy) begin
+      hw2reg.measure_ctrl_regwen.de = 1'b1;
+      hw2reg.measure_ctrl_regwen.d = 1'b1;
+    end
+  end
+<% aon_freq = clocks.all_srcs['aon'].freq %>\
+% for src in typed_clocks.rg_srcs:
+<%
+ freq = clocks.all_srcs[src].freq
+ cnt = int(freq*2 / aon_freq)
+%>
+  clkmgr_meas_chk #(
+    .Cnt(${cnt}),
+    .RefCnt(1)
+  ) u_${src}_meas (
+    .clk_i,
+    .rst_ni,
+    .clk_src_i(clk_${src}_i),
+    .rst_src_ni(rst_${src}_ni),
+    .clk_ref_i(clk_aon_i),
+    .rst_ref_ni(rst_aon_ni),
+    // signals on source domain
+    .src_en_i(clk_${src}_en & mubi4_test_true_loose(mubi4_t'(reg2hw.${src}_meas_ctrl_en))),
+    .src_max_cnt_i(reg2hw.${src}_meas_ctrl_shadowed.hi.q),
+    .src_min_cnt_i(reg2hw.${src}_meas_ctrl_shadowed.lo.q),
+    .src_cfg_meas_en_i(mubi4_t'(reg2hw.${src}_meas_ctrl_en.q)),
+    .src_cfg_meas_en_valid_o(hw2reg.${src}_meas_ctrl_en.de),
+    .src_cfg_meas_en_o(hw2reg.${src}_meas_ctrl_en.d),
+    // signals on local clock domain
+    .calib_rdy_i(calib_rdy),
+    .meas_err_o(hw2reg.recov_err_code.${src}_measure_err.de),
+    .timeout_err_o(hw2reg.recov_err_code.${src}_timeout_err.de)
   );
 
   assign hw2reg.recov_err_code.${src}_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.${src}_measure_err.de = synced_${src}_err;
   assign hw2reg.recov_err_code.${src}_timeout_err.d = 1'b1;
-  assign hw2reg.recov_err_code.${src}_timeout_err.de = synced_${src}_timeout_err;
 
 % endfor
 
@@ -484,7 +481,7 @@ from topgen.lib import Name
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ${assert_name.as_camel_case()}CountCheck_A,
     u_${clk}_trans.u_idle_cnt,
-    alert_tx_o[0])
+    alert_tx_o[1])
 % endfor
   assign hw2reg.fatal_err_code.idle_cnt.d = 1'b1;
   assign hw2reg.fatal_err_code.idle_cnt.de = |idle_cnt_err;

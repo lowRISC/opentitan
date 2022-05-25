@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="626 425 464 806" width="464" height="806">
+  <defs/>
+  <g id="SRAM_space" stroke="none" fill="none" stroke-opacity="1" stroke-dasharray="none" fill-opacity="1">
+    <title>SRAM space</title>
+    <g id="SRAM_space_SRAM">
+      <title>SRAM</title>
+      <g id="Graphic_2">
+        <rect x="687" y="428" width="400" height="800" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+      </g>
+      <g id="Graphic_3">
+        <rect x="687" y="428" width="400" height="300" fill="#bff41e"/>
+        <rect x="687" y="428" width="400" height="300" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+        <text transform="translate(692 566)" fill="black">
+          <tspan font-family="Inter" font-size="20" fill="black" x="117.80895" y="19">Read Command</tspan>
+        </text>
+      </g>
+      <g id="Graphic_4">
+        <rect x="687" y="728" width="400" height="120" fill="#c6ecdd"/>
+        <rect x="687" y="728" width="400" height="120" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+        <text transform="translate(692 776)" fill="black">
+          <tspan font-family="Inter" font-size="20" fill="black" x="156.5838" y="19">Mailbox</tspan>
+        </text>
+      </g>
+      <g id="Graphic_5">
+        <rect x="687" y="848" width="400" height="90" fill="#ffc6c8"/>
+        <rect x="687" y="848" width="400" height="90" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+        <text transform="translate(692 881)" fill="black">
+          <tspan font-family="Apple SD Gothic Neo" font-size="20" fill="black" x="171.49" y="18">SFDP</tspan>
+        </text>
+      </g>
+      <g id="Graphic_6">
+        <rect x="687" y="938" width="400" height="90" fill="#9ed2ff"/>
+        <rect x="687" y="938" width="400" height="90" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+        <text transform="translate(692 971)" fill="black">
+          <tspan font-family="Apple SD Gothic Neo" font-size="20" fill="black" x="136.29" y="18">Payload FIFO</tspan>
+        </text>
+      </g>
+      <g id="Graphic_7">
+        <rect x="687" y="1028" width="400" height="50" fill="#9ed2ff"/>
+        <rect x="687" y="1028" width="400" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+        <text transform="translate(692 1041)" fill="black">
+          <tspan font-family="Apple SD Gothic Neo" font-size="20" fill="black" x="126.56" y="18">Command FIFO</tspan>
+        </text>
+      </g>
+      <g id="Graphic_8">
+        <rect x="687" y="1078" width="400" height="50" fill="#9ed2ff"/>
+        <rect x="687" y="1078" width="400" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+        <text transform="translate(692 1091)" fill="black">
+          <tspan font-family="Apple SD Gothic Neo" font-size="20" fill="black" x="135.48" y="18">Address FIFO</tspan>
+        </text>
+      </g>
+      <g id="Graphic_9">
+        <rect x="687" y="1128" width="400" height="100" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+        <text transform="translate(692 1166)" fill="black">
+          <tspan font-family="Apple SD Gothic Neo" font-size="20" fill="black" x="154.85" y="18">Not used</tspan>
+        </text>
+      </g>
+      <g id="Graphic_10">
+        <text transform="translate(631.4773 433)" fill="black">
+          <tspan font-family="Inter" font-size="16" fill="black" x="66080474e-20" y="16">0x000</tspan>
+        </text>
+      </g>
+      <g id="Graphic_11">
+        <text transform="translate(631.4773 733)" fill="black">
+          <tspan font-family="Inter" font-size="16" fill="black" x="4973799e-19" y="16">0x800</tspan>
+        </text>
+      </g>
+      <g id="Graphic_12">
+        <text transform="translate(631.6023 853)" fill="black">
+          <tspan font-family="Inter" font-size="16" fill="black" x="33040237e-20" y="16">0xC00</tspan>
+        </text>
+      </g>
+      <g id="Graphic_13">
+        <text transform="translate(632.2432 943)" fill="black">
+          <tspan font-family="Inter" font-size="16" fill="black" x="8917311e-19" y="16">0x</tspan>
+          <tspan font-family="Apple SD Gothic Neo" font-size="16" fill="black" y="16">D</tspan>
+          <tspan font-family="Inter" font-size="16" fill="black" y="16">00</tspan>
+        </text>
+      </g>
+      <g id="Graphic_14">
+        <text transform="translate(634.01 1033)" fill="black">
+          <tspan font-family="Inter" font-size="16" fill="black" x="0" y="16">0x</tspan>
+          <tspan font-family="Apple SD Gothic Neo" font-size="16" fill="black" y="16">E</tspan>
+          <tspan font-family="Inter" font-size="16" fill="black" y="16">00</tspan>
+        </text>
+      </g>
+      <g id="Graphic_15">
+        <text transform="translate(633.3543 1083)" fill="black">
+          <tspan font-family="Inter" font-size="16" fill="black" x="6288303e-19" y="16">0x</tspan>
+          <tspan font-family="Apple SD Gothic Neo" font-size="16" fill="black" y="16">E</tspan>
+          <tspan font-family="Inter" font-size="16" fill="black" y="16">20</tspan>
+        </text>
+      </g>
+      <g id="Graphic_16">
+        <text transform="translate(632.8338 1133)" fill="black">
+          <tspan font-family="Inter" font-size="16" fill="black" x="0" y="16">0xE40</tspan>
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>

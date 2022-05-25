@@ -168,7 +168,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
       .rready_i(sram_a_ack),
       .rdata_o(held_data),
       .full_o(),
-      .depth_o()
+      .depth_o(),
+      .err_o()
     );
 
     // captured read data
@@ -279,7 +280,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
       .rready_i(d_ack),
       .rdata_o(a_size),
       .full_o(),
-      .depth_o(pending_txn_cnt)
+      .depth_o(pending_txn_cnt),
+      .err_o()
     );
 
     always_comb begin

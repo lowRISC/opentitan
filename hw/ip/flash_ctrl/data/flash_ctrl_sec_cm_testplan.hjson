@@ -24,8 +24,20 @@
 {
   testpoints: [
     {
-      name: sec_cm_bus_integrity
-      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      name: sec_cm_reg_bus_integrity
+      desc: "Verify the countermeasure(s) REG.BUS.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_host_bus_integrity
+      desc: "Verify the countermeasure(s) HOST.BUS.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_bus_integrity
+      desc: "Verify the countermeasure(s) MEM.BUS.INTEGRITY."
       milestone: V2S
       tests: []
     }
@@ -146,6 +158,24 @@
     {
       name: sec_cm_ctr_redun
       desc: "Verify the countermeasure(s) CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_phy_arbiter_ctrl_redun
+      desc: "Verify the countermeasure(s) PHY_ARBITER.CTRL.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_phy_host_grant_ctrl_consistency
+      desc: "Verify the countermeasure(s) PHY_HOST_GRANT.CTRL.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_phy_ack_ctrl_consistency
+      desc: "Verify the countermeasure(s) PHY_ACK.CTRL.CONSISTENCY."
       milestone: V2S
       tests: []
     }

@@ -116,8 +116,9 @@ module flash_ctrl
   logic storage_err;
   logic update_err;
   logic intg_err;
+  logic eflash_cmd_intg_err;
 
-  // SEC_CM: BUS.INTEGRITY
+  // SEC_CM: REG.BUS.INTEGRITY
   // SEC_CM: CTRL.CONFIG.REGWEN
   // SEC_CM: DATA_REGIONS.CONFIG.REGWEN, DATA_REGIONS.CONFIG.SHADOW
   // SEC_CM: INFO_REGIONS.CONFIG.REGWEN, INFO_REGIONS.CONFIG.SHADOW
@@ -155,14 +156,15 @@ module flash_ctrl
     .lc_iso_part_sw_wr_en_i,
     .lc_iso_part_sw_rd_en_i,
     .bank_cfg_i(reg2hw.mp_bank_cfg_shadowed),
-    .region_cfg_i(reg2hw.mp_region_cfg_shadowed),
-    .default_cfg_i(reg2hw.default_region_shadowed),
-    .bank0_info0_cfg_i(reg2hw.bank0_info0_page_cfg_shadowed),
-    .bank0_info1_cfg_i(reg2hw.bank0_info1_page_cfg_shadowed),
-    .bank0_info2_cfg_i(reg2hw.bank0_info2_page_cfg_shadowed),
-    .bank1_info0_cfg_i(reg2hw.bank1_info0_page_cfg_shadowed),
-    .bank1_info1_cfg_i(reg2hw.bank1_info1_page_cfg_shadowed),
-    .bank1_info2_cfg_i(reg2hw.bank1_info2_page_cfg_shadowed),
+    .region_i(reg2hw.mp_region),
+    .region_cfg_i(reg2hw.mp_region_cfg),
+    .default_cfg_i(reg2hw.default_region),
+    .bank0_info0_cfg_i(reg2hw.bank0_info0_page_cfg),
+    .bank0_info1_cfg_i(reg2hw.bank0_info1_page_cfg),
+    .bank0_info2_cfg_i(reg2hw.bank0_info2_page_cfg),
+    .bank1_info0_cfg_i(reg2hw.bank1_info0_page_cfg),
+    .bank1_info1_cfg_i(reg2hw.bank1_info1_page_cfg),
+    .bank1_info2_cfg_i(reg2hw.bank1_info2_page_cfg),
     .bank_cfg_o(bank_cfgs),
     .region_cfgs_o(region_cfgs),
     .info_page_cfgs_o(info_page_cfgs)
@@ -539,9 +541,10 @@ module flash_ctrl
     .full_o  (),
     .rvalid_o(prog_fifo_rvalid),
     .rready_i(prog_fifo_ren),
-    .rdata_o (prog_fifo_rdata)
+    .rdata_o (prog_fifo_rdata),
+    .err_o   ()
   );
-  assign hw2reg.curr_fifo_lvl.prog.d = prog_fifo_depth;
+  assign hw2reg.curr_fifo_lvl.prog.d = MaxFifoWidth'(prog_fifo_depth);
 
   // Program handler is consumer of prog_fifo
   logic [1:0] prog_type_en;
@@ -646,7 +649,8 @@ module flash_ctrl
     .depth_o (rd_fifo_depth),
     .rvalid_o(rd_fifo_rvalid),
     .rready_i(rd_fifo_rready),
-    .rdata_o (rd_fifo_rdata)
+    .rdata_o (rd_fifo_rdata),
+    .err_o   ()
   );
   assign hw2reg.curr_fifo_lvl.rd.d = rd_fifo_depth;
 
@@ -987,14 +991,12 @@ module flash_ctrl
                            mubi4_t'(sw_flash_exec_en)
                          );
 
-  // the above statement only works if mubi true/false are fully complement
-  `ASSERT_INIT(MuBiComplCheck_A, prim_mubi_pkg::MuBi4True == ~prim_mubi_pkg::MuBi4False)
-
   //////////////////////////////////////
   // Errors and Interrupts
   //////////////////////////////////////
 
   // all software interface errors are treated as synchronous errors
+  assign hw2reg.err_code.op_err.d           = 1'b1;
   assign hw2reg.err_code.mp_err.d           = 1'b1;
   assign hw2reg.err_code.rd_err.d           = 1'b1;
   assign hw2reg.err_code.prog_err.d         = 1'b1;
@@ -1002,6 +1004,7 @@ module flash_ctrl
   assign hw2reg.err_code.prog_type_err.d    = 1'b1;
   assign hw2reg.err_code.flash_macro_err.d  = 1'b1;
   assign hw2reg.err_code.update_err.d       = 1'b1;
+  assign hw2reg.err_code.op_err.de          = sw_ctrl_err.invalid_op_err;
   assign hw2reg.err_code.mp_err.de          = sw_ctrl_err.mp_err;
   assign hw2reg.err_code.rd_err.de          = sw_ctrl_err.rd_err;
   assign hw2reg.err_code.prog_err.de        = sw_ctrl_err.prog_err;
@@ -1019,6 +1022,7 @@ module flash_ctrl
   // There are two types of faults
   // standard faults - things like fsm / counter / tlul integrity
   // custom faults - things like hardware interface not working correctly
+  assign hw2reg.fault_status.op_err.d           = 1'b1;
   assign hw2reg.fault_status.mp_err.d           = 1'b1;
   assign hw2reg.fault_status.rd_err.d           = 1'b1;
   assign hw2reg.fault_status.prog_err.d         = 1'b1;
@@ -1028,6 +1032,10 @@ module flash_ctrl
   assign hw2reg.fault_status.seed_err.d         = 1'b1;
   assign hw2reg.fault_status.phy_relbl_err.d    = 1'b1;
   assign hw2reg.fault_status.phy_storage_err.d  = 1'b1;
+  assign hw2reg.fault_status.spurious_ack.d     = 1'b1;
+  assign hw2reg.fault_status.arb_err.d          = 1'b1;
+  assign hw2reg.fault_status.host_gnt_err.d     = 1'b1;
+  assign hw2reg.fault_status.op_err.de          = hw_err.invalid_op_err;
   assign hw2reg.fault_status.mp_err.de          = hw_err.mp_err;
   assign hw2reg.fault_status.rd_err.de          = hw_err.rd_err;
   assign hw2reg.fault_status.prog_err.de        = hw_err.prog_err;
@@ -1037,6 +1045,9 @@ module flash_ctrl
   assign hw2reg.fault_status.seed_err.de        = seed_err;
   assign hw2reg.fault_status.phy_relbl_err.de   = flash_phy_rsp.storage_relbl_err;
   assign hw2reg.fault_status.phy_storage_err.de = flash_phy_rsp.storage_intg_err;
+  assign hw2reg.fault_status.spurious_ack.de    = flash_phy_rsp.spurious_ack;
+  assign hw2reg.fault_status.arb_err.de         = flash_phy_rsp.arb_err;
+  assign hw2reg.fault_status.host_gnt_err.de    = flash_phy_rsp.host_gnt_err;
 
   // standard faults
   assign hw2reg.std_fault_status.reg_intg_err.d    = 1'b1;
@@ -1047,7 +1058,8 @@ module flash_ctrl
   assign hw2reg.std_fault_status.storage_err.d     = 1'b1;
   assign hw2reg.std_fault_status.phy_fsm_err.d     = 1'b1;
   assign hw2reg.std_fault_status.ctrl_cnt_err.d    = 1'b1;
-  assign hw2reg.std_fault_status.reg_intg_err.de   = intg_err;
+  assign hw2reg.std_fault_status.fifo_err.d        = 1'b1;
+  assign hw2reg.std_fault_status.reg_intg_err.de   = intg_err | eflash_cmd_intg_err;
   assign hw2reg.std_fault_status.prog_intg_err.de  = flash_phy_rsp.prog_intg_err;
   assign hw2reg.std_fault_status.lcmgr_err.de      = lcmgr_err;
   assign hw2reg.std_fault_status.lcmgr_intg_err.de = lcmgr_intg_err;
@@ -1055,6 +1067,7 @@ module flash_ctrl
   assign hw2reg.std_fault_status.storage_err.de    = storage_err;
   assign hw2reg.std_fault_status.phy_fsm_err.de    = flash_phy_rsp.fsm_err;
   assign hw2reg.std_fault_status.ctrl_cnt_err.de   = rd_cnt_err | prog_cnt_err;
+  assign hw2reg.std_fault_status.fifo_err.de       = flash_phy_rsp.fifo_err;
 
   // Correctable ECC count / address
   for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg
@@ -1101,7 +1114,7 @@ module flash_ctrl
   ) u_prog_lvl_event (
     .clk_i,
     .rst_ni,
-    .d_i(reg2hw.fifo_lvl.prog.q == prog_fifo_depth),
+    .d_i(reg2hw.fifo_lvl.prog.q == MaxFifoWidth'(prog_fifo_depth)),
     .q_sync_o(),
     .q_posedge_pulse_o(intr_event[ProgLvl]),
     .q_negedge_pulse_o()
@@ -1236,6 +1249,7 @@ module flash_ctrl
     .lc_en_i(host_enable)
   );
 
+  // SEC_CM: HOST.BUS.INTEGRITY
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
     .SramDw(BusWidth),
@@ -1259,7 +1273,7 @@ module flash_ctrl
     .addr_o      (flash_host_addr),
     .wdata_o     (),
     .wmask_o     (),
-    .intg_error_o(),
+    .intg_error_o(eflash_cmd_intg_err),
     .rdata_i     (flash_host_rdata),
     .rvalid_i    (flash_host_req_done),
     .rerror_i    ({flash_host_rderr,1'b0})
@@ -1357,5 +1371,33 @@ module flash_ctrl
      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyProgFsmCheck_A,
        u_eflash.gen_flash_cores[i].u_core.gen_prog_data.u_prog.u_state_regs, alert_tx_o[1])
    end
+
+  `ifdef INC_ASSERT
+   `define PHY u_eflash.gen_flash_cores[i]
+   `define PHY_CORE `PHY.u_core
+   for (genvar i=0; i<NumBanks; i++) begin : gen_phy_cnt_errs
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRspFifoWPtr_A,
+       `PHY.u_host_rsp_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr, alert_tx_o[1])
+
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRspFifoRPtr_A,
+       `PHY.u_host_rsp_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr, alert_tx_o[1])
+
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdRspFifoWPtr_A,
+       `PHY_CORE.u_rd.u_rsp_order_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+       alert_tx_o[1])
+
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdRspFifoRPtr_A,
+       `PHY_CORE.u_rd.u_rsp_order_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+       alert_tx_o[1])
+
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdDataFifoWPtr_A,
+       `PHY_CORE.u_rd.u_rd_storage.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+       alert_tx_o[1])
+
+     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdDataFifoRPtr_A,
+       `PHY_CORE.u_rd.u_rd_storage.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+       alert_tx_o[1])
+   end
+   `endif
 
 endmodule

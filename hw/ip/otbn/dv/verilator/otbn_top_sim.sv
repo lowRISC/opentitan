@@ -77,7 +77,7 @@ module otbn_top_sim (
 
     .start_i                     ( otbn_start                 ),
     .done_o                      ( otbn_done                  ),
-    .locked_o                    (                            ),
+    .locking_o                   (                            ),
 
     .err_bits_o                  ( core_err_bits              ),
     .recoverable_err_o           (                            ),
@@ -100,6 +100,8 @@ module otbn_top_sim (
     .edn_rnd_req_o               ( edn_rnd_req                ),
     .edn_rnd_ack_i               ( edn_rnd_ack                ),
     .edn_rnd_data_i              ( edn_rnd_data               ),
+    .edn_rnd_fips_i              ( 1'b1                       ),
+    .edn_rnd_err_i               ( 1'b0                       ),
 
     .edn_urnd_req_o              ( edn_urnd_req               ),
     .edn_urnd_ack_i              ( edn_urnd_ack               ),
@@ -178,6 +180,8 @@ module otbn_top_sim (
     reg_intg_violation:   core_err_bits.reg_intg_violation,
     dmem_intg_violation:  core_err_bits.dmem_intg_violation,
     imem_intg_violation:  core_err_bits.imem_intg_violation,
+    rnd_fips_chk_fail:    core_err_bits.rnd_fips_chk_fail,
+    rnd_rep_chk_fail:     core_err_bits.rnd_rep_chk_fail,
     key_invalid:          core_err_bits.key_invalid,
     loop:                 core_err_bits.loop,
     illegal_insn:         core_err_bits.illegal_insn,
@@ -446,7 +450,10 @@ module otbn_top_sim (
   export "DPI-C" function otbn_base_call_stack_get_size;
 
   function automatic int unsigned otbn_base_call_stack_get_size();
-    return u_otbn_core.u_otbn_rf_base.u_call_stack.stack_wr_ptr_q;
+    // Explicit zero extension required because Verilator (tested with v4.216) otherwise raises
+    // a `WIDTH` warning (which is promoted to an error).
+    return {{(32-$bits(u_otbn_core.u_otbn_rf_base.u_call_stack.stack_wr_ptr)){1'b0}},
+            u_otbn_core.u_otbn_rf_base.u_call_stack.stack_wr_ptr};
   endfunction
 
   export "DPI-C" function otbn_base_call_stack_get_element;

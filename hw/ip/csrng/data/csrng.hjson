@@ -198,7 +198,7 @@
             name: "ENABLE",
             mubi: true
             desc: '''
-                  Setting this field to kMuBi4True will enable the CSRNG module.
+                  Setting this field to kMultiBitBool4True will enable the CSRNG module.
                   '''
           resval: false
         },
@@ -207,7 +207,7 @@
             name: "SW_APP_ENABLE",
             mubi: true
             desc: '''
-                  Setting this field to kMuBi4True will enable reading from the !!GENBITS register.
+                  Setting this field to kMultiBitBool4True will enable reading from the !!GENBITS register.
                   This application interface for software (register based) will be enabled
                   only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
                   '''
@@ -218,7 +218,7 @@
             name: "READ_INT_STATE",
             mubi: true
             desc: '''
-                  Setting this field to kMuBi4True will enable reading from the !!INT_STATE_VAL register.
+                  Setting this field to kMultiBitBool4True will enable reading from the !!INT_STATE_VAL register.
                   Reading the internal state of the enable instances will be enabled
                   only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
                   '''
@@ -380,7 +380,7 @@
           name: "ENABLE_FIELD_ALERT",
           desc: '''
                 This bit is set when the ENABLE field in the !!CTRL register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -388,7 +388,7 @@
           name: "SW_APP_ENABLE_FIELD_ALERT",
           desc: '''
                 This bit is set when the SW_APP_ENABLE field in the !!CTRL register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -396,7 +396,7 @@
           name: "READ_INT_STATE_FIELD_ALERT",
           desc: '''
                 This bit is set when the READ_INT_STATE field in the !!CTRL register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
         }

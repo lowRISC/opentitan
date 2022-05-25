@@ -16,12 +16,16 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:prim:crc32
       - lowrisc:prim:sparse_fsm
+      - lowrisc:prim:onehot
+      - lowrisc:prim:blanker
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:otbn_pkg
+      - lowrisc:prim:onehot_check
     files:
       - rtl/otbn_controller.sv
       - rtl/otbn_decoder.sv
+      - rtl/otbn_predecode.sv
       - rtl/otbn_instruction_fetch.sv
       - rtl/otbn_rf_base.sv
       - rtl/otbn_rf_bignum.sv

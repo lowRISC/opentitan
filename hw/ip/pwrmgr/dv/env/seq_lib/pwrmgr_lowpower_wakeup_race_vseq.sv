@@ -38,6 +38,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
       setup_interrupt(.enable(en_intr));
+
       csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeups_en));
       `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x", wakeups_en & wakeups), UVM_MEDIUM)
 
@@ -103,11 +104,21 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
       wait_for_fast_fsm_active();
       `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
 
-      check_reset_status('0);
-      check_wake_info(.reasons(wakeups_en), .prior_reasons(prior_reasons), .fall_through(1'b0),
-                      .prior_fall_through(prior_fall_through), .abort(1'b0),
-                      .prior_abort(prior_abort));
-
+      // make this check parallel.
+      // to avoid csr rd blocking later status read request and
+      // miss status update window.
+      @cfg.clk_rst_vif.cb;
+      fork
+        begin
+          fast_check_reset_status(0);
+        end
+        begin
+          fast_check_wake_info(.reasons(wakeups_en), .prior_reasons(prior_reasons),
+                               .fall_through(1'b0), .abort(1'b0),
+                               .prior_fall_through(prior_fall_through),
+                               .prior_abort(prior_abort));
+        end
+      join
       // This is the expected side-effect of the low power entry reset, since the source of the
       // non-aon wakeup sources will deassert it as a consequence of their reset.
       // Some aon wakeups may remain active until software clears them. If they didn't, such wakeups
@@ -115,6 +126,10 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
       cfg.pwrmgr_vif.update_wakeups('0);
       cfg.slow_clk_rst_vif.wait_clks(10);
       cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
+
+      // wait for clock is on
+      cfg.clk_rst_vif.wait_clks(10);
+
       check_wake_status('0);
 
       // Wait for interrupt to be generated whether or not it is enabled.

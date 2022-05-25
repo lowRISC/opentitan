@@ -503,6 +503,27 @@ Software can access the first share of the key through the [`KEY_S0_L`](#key-s0-
 It is up to host software to configure the Key Manager so that it provides the right key to OTBN at the start of the operation, and to remove the key again once the operation on OTBN has completed.
 A `KEY_INVALID` software error is raised if OTBN software accesses any of the `KEY_*` WSRs when the Key Manager has not presented a key.
 
+## Blanking {#blanking}
+
+To reduce side channel leakage OTBN employs a blanking technique on certain control and data paths.
+When a path is blanked it is forced to 0 (by ANDing the path with a blanking signal) preventing sensitive data bits producing a power signature via that path where that path isn't needed for the current instruction.
+
+Blanking controls all come directly from flops to prevent glitches in decode logic reducing the effectiveness of the blanking.
+These control signals are determined in the [prefetch stage]({{<relref "#instruction-prefetch">}}) via pre-decode logic.
+Full decoding is still performed in the execution stage with the full decode results checked against the pre-decode blanking control.
+If the full decode disagrees with the pre-decode OTBN raises a `BAD_INTERNAL_STATE` fatal error.
+
+Blanking is applied in the following locations:
+
+* Read path from the bignum, CSR and WDR register files.
+  This is achieved with a one-hot mux with a two-level AND-OR structure.
+* Write data into the bignum, CSR and WDR register files.
+  Blanking is done separately for each register (as opposed to once on incoming write data that fans out to each register).
+* All relevant data paths within the bignum ALU and MAC.
+  Data paths not required for the instruction being executed are blanked.
+
+Note there is no blanking on the base side (save for the CSRs as these provide access to WDRs such as ACC).
+
 # Theory of Operations
 
 ## Block Diagram
@@ -553,8 +574,14 @@ Both memories can be accessed through OTBN's register interface ({{< regref "DME
 All memory accesses through the register interface must be word-aligned 32b word accesses.
 
 When OTBN is in any state other than [idle](#design-details-operational-states), reads return zero and writes have no effect.
-Furthermore, a memory access when OTBN is neither idle nor locked will cause OTBN to generate a fatal alert with code `ILLEGAL_BUS_ACCESS`.
+Furthermore, a memory access when OTBN is neither idle nor locked will cause OTBN to generate a fatal error with code `ILLEGAL_BUS_ACCESS`.
 A host processor can check whether OTBN is busy by reading the {{< regref "STATUS">}} register.
+
+The underlying memories used to implement the IMEM and DMEM may not grant all access requests (see [Memory Scrambling](#design-details-memory-scrambling) for details).
+A request won't be granted if new scrambling keys have been requested for the memory that aren't yet available.
+Functionally it should be impossible for either OTBN or a host processor to make a memory request whilst new scrambling keys are unavailable.
+OTBN is in the busy state whilst keys are requested so OTBN will not execute any programs and a host processor access will generated an `ILLEGAL_BUS_ACCESS` fatal error.
+Should a request not be granted due to a fault, a `BAD_INTERNAL_STATE` fatal error will be raised.
 
 While DMEM is 4kiB, only the first 2kiB (at addresses `0x0` to `0x7ff`) is visible through the register interface.
 This is to allow OTBN applications to store sensitive information in the other half, making it harder for that information to leak back to Ibex.
@@ -562,10 +589,9 @@ This is to allow OTBN applications to store sensitive information in the other h
 Each memory write through the register interface updates a checksum.
 See the [Memory Load Integrity]({{< relref "#mem-load-integrity" >}}) section for more details.
 
-### Instruction Prefetch
+### Instruction Prefetch {#instruction-prefetch}
 
-OTBN employs an instruction prefetch stage which allows register file inputs to be taken directly from registers by pre-decoding instructions in the prefetch stage.
-This is required to enable the blanking SCA hardening measure (TODO: Not yet implemented or documented).
+OTBN employs an instruction prefetch stage to enable pre-decoding of instructions to enable the [blanking SCA hardening measure]({{<relref "#blanking">}}).
 Its operation is entirely transparent to software.
 It does not speculate and will only prefetch where the next instruction address can be known.
 This results in a stall cycle for all conditional branches and jumps as the result is neither predicted nor known ahead of time.
@@ -581,17 +607,23 @@ A FIFO is used to synchronize the incoming package to the OTBN clock domain.
 Synchronized packages are then set starting from bottom up to a single `WLEN` value of 256b.
 In order to service a single EDN request, a total of 8 transactions are required from EDN interface.
 
-As an EDN request can take time, `RND` is backed by a single-entry cache containing the result of the most recent EDN request in OTBN core level.
-A read from `RND` empties this cache.
-A prefetch into the cache, which can be used to hide the EDN latency, is triggered on any write to the `RND_PREFETCH` CSR.
-Writes to `RND_PREFETCH` will be ignored whilst a prefetch is in progress or when the cache is already full.
-OTBN will stall until the request provides bits.
-Both the `RND` CSR and WSR take their bits from the same cache.
-`RND` CSR reads get bottom 32b and simply discard the other 192b on a read.
-When stalling on an `RND` read, OTBN will unstall on the cycle after it receives WLEN RND data from the EDN.
+The `RND` CSR and WSR take their bits from the same source.
+A read from the `RND` CSR returns the bottom 32b; the other 192b are discarded.
+On a read from the `RND` CSR or WSR, OTBN will stall while it waits for data.
+It will resume execution on the cycle after it receives the final word of data from the EDN.
 
-`URND` provides bits from an local PRNG within OTBN; reads from it never stall.
-The `URND` LFSR is seeded once from the EDN connected via `edn_urnd` when OTBN starts execution.
+As an EDN request can take time, `RND` is backed by a single-entry cache containing the result of the most recent EDN request in OTBN core level.
+Writing any value to the `RND_PREFETCH` CSR initiates a prefetch.
+This requests data from the EDN, storing it in the cache, and can hide the EDN latency.
+Writes to `RND_PREFETCH` will be ignored whilst a prefetch is in progress or when the cache is already full.
+If the cache is full, a read from `RND` returns immediately with the contents of the cache, which is then emptied.
+If the cache is not full, a read from `RND` will block as described above until OTBN receives the final word of data from the EDN.
+
+OTBN discards any data that is in the cache at the start of an operation.
+If there is still a pending prefetch when an OTBN operation starts, the results of the prefetch will also discarded.
+
+`URND` provides bits from a local XoShiRo256++ PRNG within OTBN; reads from it never stall.
+This PRNG is seeded once from the EDN connected via `edn_urnd` when OTBN starts execution.
 Each new execution of OTBN will reseed the `URND` PRNG.
 The PRNG state is advanced every cycle when OTBN is running.
 
@@ -721,77 +753,91 @@ This way, no alert is generated without setting an error code somewhere.
   </thead>
   <tbody>
     <tr>
-      <td><code>BAD_DATA_ADDR<code></td>
+      <td><code>BAD_DATA_ADDR</code></td>
       <td>software</td>
       <td>A data memory access occurred with an out of bounds or unaligned access.</td>
     </tr>
     <tr>
-      <td><code>BAD_INSN_ADDR<code></td>
+      <td><code>BAD_INSN_ADDR</code></td>
       <td>software</td>
       <td>An instruction memory access occurred with an out of bounds or unaligned access.</td>
     </tr>
     <tr>
-      <td><code>CALL_STACK<code></td>
+      <td><code>CALL_STACK</code></td>
       <td>software</td>
       <td>An instruction tried to pop from an empty call stack or push to a full call stack.</td>
     </tr>
     <tr>
-      <td><code>ILLEGAL_INSN<code></td>
+      <td><code>ILLEGAL_INSN</code></td>
       <td>software</td>
       <td>
         An illegal instruction was about to be executed.
       </td>
     <tr>
-      <td><code>LOOP<code></td>
+      <td><code>LOOP</code></td>
       <td>software</td>
       <td>
         A loop stack-related error was detected.
       </td>
     </tr>
     <tr>
-      <td><code>KEY_INVALID<code></td>
+      <td><code>KEY_INVALID</code></td>
       <td>software</td>
       <td>
         An attempt to read a `KEY_*` WSR was detected, but no key was provided by the key manager.
       </td>
     </tr>
     <tr>
-      <td><code>IMEM_INTG_VIOLATION<code></td>
+      <td><code>RND_REP_CHK_FAIL</code></td>
+      <td>recoverable</td>
+      <td>
+        The RND END interface returned identical random numbers on two subsequent entropy requests.
+      </td>
+    </tr>
+    <tr>
+      <td><code>RND_FIPS_CHK_FAIL</code></td>
+      <td>recoverable</td>
+      <td>
+        The random numbers received via the RND EDN interface have been generated from entropy that at least partially failed the FIPS health checks in the entropy source.
+      </td>
+    </tr>
+    <tr>
+      <td><code>IMEM_INTG_VIOLATION</code></td>
       <td>fatal</td>
       <td>Data read from the instruction memory failed the integrity checks.</td>
     </tr>
     <tr>
-      <td><code>DMEM_INTG_VIOLATION<code></td>
+      <td><code>DMEM_INTG_VIOLATION</code></td>
       <td>fatal</td>
       <td>Data read from the data memory failed the integrity checks.</td>
     </tr>
     <tr>
-      <td><code>REG_INTG_VIOLATION<code></td>
+      <td><code>REG_INTG_VIOLATION</code></td>
       <td>fatal</td>
       <td>Data read from a GPR or WDR failed the integrity checks.</td>
     </tr>
     <tr>
-      <td><code>BUS_INTG_VIOLATION<code></td>
+      <td><code>BUS_INTG_VIOLATION</code></td>
       <td>fatal</td>
       <td>An incoming bus transaction failed the integrity checks.</td>
     </tr>
     <tr>
-      <td><code>BAD_INTERNAL_STATE<code></td>
+      <td><code>BAD_INTERNAL_STATE</code></td>
       <td>fatal</td>
       <td>The internal state of OTBN has become corrupt.</td>
     </tr>
     <tr>
-      <td><code>ILLEGAL_BUS_ACCESS<code></td>
+      <td><code>ILLEGAL_BUS_ACCESS</code></td>
       <td>fatal</td>
       <td>A bus-accessible register or memory was accessed when not allowed.</td>
     </tr>
     <tr>
-      <td><code>LIFECYCLE_ESCALATION<code></td>
+      <td><code>LIFECYCLE_ESCALATION</code></td>
       <td>fatal</td>
       <td>A life cycle escalation request was received.</td>
     </tr>
     <tr>
-      <td><code>FATAL_SOFTWARE<code></td>
+      <td><code>FATAL_SOFTWARE</code></td>
       <td>fatal</td>
       <td>A software error was seen and {{< regref "CTRL.software_errs_fatal" >}} was set.</td>
     </tr>
@@ -1083,9 +1129,9 @@ OTBN comes with a toolchain consisting of an assembler, a linker, and helper too
 The toolchain wraps a RV32 GCC toolchain and supports many of its features.
 
 The following tools are available:
-* `otbn-as`: The OTBN assembler.
-* `otbn-ld`: The OTBN linker.
-* `otbn-objdump`: objdump for OTBN.
+* `otbn_as.py`: The OTBN assembler.
+* `otbn_ld.py`: The OTBN linker.
+* `otbn_objdump.py`: objdump for OTBN.
 
 Other tools from the RV32 toolchain can be used directly, such as objcopy.
 
@@ -1392,4 +1438,4 @@ Code snippets giving examples of 256x256 and 384x384 multiplies can be found in 
 
 <a name="ref-chen08">[CHEN08]</a> L. Chen, "Hsiao-Code Check Matrices and Recursively Balanced Matrices," arXiv:0803.1217 [cs], Mar. 2008 [Online]. Available: http://arxiv.org/abs/0803.1217
 
-<a name="ref-symbiotic21">[SYMBIOTIC21]</a> RISC-V Bitmanip Extension v0.93 Available: https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf 
+<a name="ref-symbiotic21">[SYMBIOTIC21]</a> RISC-V Bitmanip Extension v0.93 Available: https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf

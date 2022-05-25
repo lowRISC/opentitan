@@ -315,4 +315,3 @@ package adc_ctrl_reg_pkg;
   };
 
 endpackage
-

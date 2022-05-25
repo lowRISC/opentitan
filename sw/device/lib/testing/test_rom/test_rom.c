@@ -4,16 +4,20 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_clkmgr.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/ibex_peri.h"
-#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/test_status.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_rom/bootstrap.h"
 #include "sw/device/lib/testing/test_rom/chip_info.h"  // Generated.
 #include "sw/device/silicon_creator/lib/manifest.h"
@@ -38,15 +42,30 @@ extern manifest_t _manifest;
  */
 typedef void ottf_entry(void);
 
+static dif_clkmgr_t clkmgr;
+static dif_flash_ctrl_state_t flash_ctrl;
+static dif_pinmux_t pinmux;
 static dif_uart_t uart0;
 
-void _boot_start(void) {
-  test_status_set(kTestStatusInBootRom);
-  pinmux_init();
-  flash_init();
-  while (flash_get_init_status())
-    ;
+// `test_in_rom = True` tests can override this symbol to provide their own
+// rom tests. By default, it simply jumps into the OTTF's flash.
+OT_WEAK
+bool rom_test_main(void) {
+  // Configure the pinmux.
+  CHECK_DIF_OK(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  pinmux_testutils_init(&pinmux);
 
+  // Initialize the flash.
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash_ctrl,
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(dif_flash_ctrl_start_controller_init(&flash_ctrl));
+  flash_ctrl_testutils_wait_for_init(&flash_ctrl);
+  CHECK_DIF_OK(
+      dif_flash_ctrl_set_flash_enablement(&flash_ctrl, kDifToggleEnabled));
+
+  // Setup the UART for printing messages to the console.
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
   CHECK_DIF_OK(
@@ -58,14 +77,35 @@ void _boot_start(void) {
                                  }));
   base_uart_stdout(&uart0);
 
+  // Print the chip version information
   LOG_INFO("%s", chip_info);
 
-  int bootstrap_err = bootstrap();
+  // Print the FPGA version-id.
+  // This is guaranteed to be zero on all non-FPGA implementations.
+  uint32_t fpga = fpga_version();
+  if (fpga != 0) {
+    LOG_INFO("TestROM:%08x", fpga);
+  }
+
+  // Enable clock jitter if requested.
+  // The kJitterEnabled symbol defaults to false across all hardware platforms.
+  // However, in DV simulation, it may be overridden via a backdoor write with
+  // the plusarg: `+en_jitter=1`.
+  if (kJitterEnabled) {
+    CHECK_DIF_OK(dif_clkmgr_init(
+        mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+    CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
+    LOG_INFO("Jitter is enabled");
+  }
+
+  int bootstrap_err = bootstrap(&flash_ctrl);
   if (bootstrap_err != 0) {
     LOG_ERROR("Bootstrap failed with status code: %d", bootstrap_err);
     // Currently the only way to recover is by a hard reset.
     test_status_set(kTestStatusFailed);
   }
+  CHECK_DIF_OK(
+      dif_flash_ctrl_set_exec_enablement(&flash_ctrl, kDifToggleEnabled));
 
   // TODO(lowrisc/opentitan:#10712): setup Ibex address translation
 
@@ -76,5 +116,12 @@ void _boot_start(void) {
   ((ottf_entry *)manifest_entry_point)();
 
   // If the flash image returns, we should abort anyway.
+  abort();
+}
+
+void _boot_start(void) {
+  test_status_set(kTestStatusInBootRom);
+  test_status_set(rom_test_main() ? kTestStatusPassed : kTestStatusFailed);
+
   abort();
 }

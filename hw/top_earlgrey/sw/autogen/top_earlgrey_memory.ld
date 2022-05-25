@@ -13,4 +13,5 @@ MEMORY {
   ram_main(rwx) : ORIGIN = 0x10000000, LENGTH = 0x20000
   rom(rx) : ORIGIN = 0x00008000, LENGTH = 0x8000
   eflash_virtual(rx) : ORIGIN = 0x80000000, LENGTH = 0x100000
+  rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = 0x80000
 }

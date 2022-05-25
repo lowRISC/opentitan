@@ -9,6 +9,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/testing/mock_abs_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
@@ -17,11 +18,14 @@
 
 namespace spi_device_unittest {
 namespace {
+using ::testing::NotNull;
+using ::testing::SetArgPointee;
 
 class SpiDeviceTest : public mask_rom_test::MaskRomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR;
   mask_rom_test::MockAbsMmio mmio_;
+  mask_rom_test::MockLifecycle lifecycle_;
 };
 
 class InitTest : public SpiDeviceTest {};
@@ -44,12 +48,17 @@ TEST_F(InitTest, Init) {
           {SPI_DEVICE_JEDEC_CC_CC_OFFSET, kSpiDeviceJedecContCode},
           {SPI_DEVICE_JEDEC_CC_NUM_CC_OFFSET, kSpiDeviceJedecContCodeCount},
       });
+  lifecycle_hw_rev_t hw_rev{
+      .chip_gen = 1,
+      .chip_rev = 3,
+  };
+  EXPECT_CALL(lifecycle_, HwRev(NotNull())).WillOnce(SetArgPointee<0>(hw_rev));
   EXPECT_ABS_WRITE32(
       base_ + SPI_DEVICE_JEDEC_ID_REG_OFFSET,
       {
-          {SPI_DEVICE_DEV_ID_CHIP_REV_FIELD.index, 0},
+          {SPI_DEVICE_DEV_ID_CHIP_REV_FIELD.index, hw_rev.chip_rev},
           {SPI_DEVICE_DEV_ID_ROM_BOOTSTRAP_BIT, 1},
-          {SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD.index, 0},
+          {SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD.index, hw_rev.chip_gen},
           {SPI_DEVICE_DEV_ID_DENSITY_FIELD.index, kSpiDeviceJedecDensity},
           {SPI_DEVICE_JEDEC_ID_MF_OFFSET, kSpiDeviceJedecManufId},
       });
@@ -119,6 +128,20 @@ TEST_F(InitTest, Init) {
           {SPI_DEVICE_CMD_INFO_14_VALID_14_BIT, 1},
       });
 
+  EXPECT_ABS_WRITE32(
+      base_ + SPI_DEVICE_CMD_INFO_WREN_REG_OFFSET,
+      {
+          {SPI_DEVICE_CMD_INFO_WREN_OPCODE_OFFSET, kSpiDeviceOpcodeWriteEnable},
+          {SPI_DEVICE_CMD_INFO_WREN_VALID_BIT, 1},
+      });
+
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_CMD_INFO_WRDI_REG_OFFSET,
+                     {
+                         {SPI_DEVICE_CMD_INFO_WRDI_OPCODE_OFFSET,
+                          kSpiDeviceOpcodeWriteDisable},
+                         {SPI_DEVICE_CMD_INFO_WRDI_VALID_BIT, 1},
+                     });
+
   std::array<uint32_t, kSpiDeviceSfdpAreaNumBytes / sizeof(uint32_t)>
       sfdp_buffer;
   sfdp_buffer.fill(std::numeric_limits<uint32_t>::max());
@@ -165,6 +188,12 @@ TEST_F(SpiDeviceTest, FlashStatusClear) {
   spi_device_flash_status_clear();
 }
 
+TEST_F(SpiDeviceTest, FlashStatusGet) {
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0xa5);
+
+  EXPECT_EQ(0xa5, spi_device_flash_status_get());
+}
+
 struct CmdGetTestCase {
   spi_device_opcode_t opcode;
   uint32_t address;
@@ -174,21 +203,35 @@ struct CmdGetTestCase {
 class CmdGetTest : public SpiDeviceTest,
                    public testing::WithParamInterface<CmdGetTestCase> {};
 
+TEST_F(CmdGetTest, PayloadOverflow) {
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET, 0);
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                    {
+                        {SPI_DEVICE_INTR_STATE_UPLOAD_CMDFIFO_NOT_EMPTY_BIT, 1},
+                        {SPI_DEVICE_INTR_STATE_UPLOAD_PAYLOAD_OVERFLOW_BIT, 1},
+                    });
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                     std::numeric_limits<uint32_t>::max());
+
+  spi_device_cmd_t cmd;
+  EXPECT_EQ(spi_device_cmd_get(&cmd), kErrorSpiDevicePayloadOverflow);
+}
+
 TEST_P(CmdGetTest, CmdGet) {
   bool has_address = GetParam().address != kSpiDeviceNoAddress;
 
-  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET, 0);
-  EXPECT_ABS_READ32(
-      base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET,
-      {
-          {SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_NOTEMPTY_BIT, 1},
-          {SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT, has_address},
-          {SPI_DEVICE_UPLOAD_STATUS_PAYLOAD_DEPTH_OFFSET,
-           GetParam().payload.size()},
-      });
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET, 0);
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                    {{SPI_DEVICE_INTR_STATE_UPLOAD_CMDFIFO_NOT_EMPTY_BIT, 1}});
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                     std::numeric_limits<uint32_t>::max());
+
   EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET,
                     GetParam().opcode);
 
+  EXPECT_ABS_READ32(
+      base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET,
+      {{SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT, has_address}});
   if (has_address) {
     EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET,
                       GetParam().address);
@@ -198,6 +241,9 @@ TEST_P(CmdGetTest, CmdGet) {
                                      std::numeric_limits<uint32_t>::max());
   std::memcpy(payload_area.data(), GetParam().payload.data(),
               GetParam().payload.size());
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET,
+                    {{SPI_DEVICE_UPLOAD_STATUS2_PAYLOAD_DEPTH_OFFSET,
+                      GetParam().payload.size()}});
   uint32_t offset =
       base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
   for (size_t i = 0; i < GetParam().payload.size(); i += sizeof(uint32_t)) {
@@ -205,8 +251,7 @@ TEST_P(CmdGetTest, CmdGet) {
   }
 
   spi_device_cmd_t cmd;
-  spi_device_cmd_get(&cmd);
-
+  EXPECT_EQ(spi_device_cmd_get(&cmd), kErrorOk);
   EXPECT_EQ(cmd.opcode, GetParam().opcode);
   EXPECT_EQ(cmd.address, GetParam().address);
   EXPECT_EQ(cmd.payload_byte_count, GetParam().payload.size());

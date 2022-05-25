@@ -62,6 +62,16 @@ dif_result_t dif_aon_timer_wakeup_stop(const dif_aon_timer_t *aon);
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aon_timer_wakeup_restart(const dif_aon_timer_t *aon);
 
+/** Clear Always-On Timer wakeup cause
+ *
+ * Clears WKUP_CAUSE register
+ *
+ * @param aon An Always-On Timer handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_clear_wakeup_cause(const dif_aon_timer_t *aon);
+
 /** Retrieves Always-On Timer (wake-up timer) tick count.
  *
  * @param aon An Always-On Timer handle.

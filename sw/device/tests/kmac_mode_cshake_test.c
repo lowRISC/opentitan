@@ -6,10 +6,9 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -100,7 +99,8 @@ bool test_main() {
   // Configure KMAC hardware using software entropy.
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,
-      .entropy_seed = 0xffff,
+      .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
+                       0x70410fef},
       .entropy_fast_process = kDifToggleEnabled,
   };
   CHECK_DIF_OK(dif_kmac_configure(&kmac, config));

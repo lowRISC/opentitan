@@ -153,12 +153,6 @@ interface rstmgr_cascading_sva_if (
     // The latter is checked independently in pwrmgr_rstmgr_sva_if.
     `CASCADED_ASSERTS(CascadeLcToSys, lc_rst_or_sys_req_n[pd], rst_sys_src_n[pd], SysCycles, clk_i)
 
-    // Controlled by rst_lc_src_n.
-    `CASCADED_ASSERTS(CascadeLcToLcIoDiv4, rst_lc_src_n[pd], resets_o.rst_lc_io_div4_n[pd],
-                      SysCycles, clk_io_div4_i)
-    `CASCADED_ASSERTS(CascadeLcToLcIoDiv4Shadowed, rst_lc_src_n[pd],
-                      resets_o.rst_lc_io_div4_shadowed_n[pd], SysCycles, clk_io_div4_i)
-
     // Controlled by rst_sys_src_n.
     `CASCADED_ASSERTS(CascadeSysToSysAon, rst_sys_src_n[pd], resets_o.rst_sys_aon_n[pd], SysCycles,
                       clk_aon_i)

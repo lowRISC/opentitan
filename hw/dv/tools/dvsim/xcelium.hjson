@@ -80,6 +80,12 @@
     // Export the cov_report path so that the tcl file can read these as env vars.
     { cov_merge_db_dir: "{cov_merge_db_dir}" },
     { cov_report_dir: "{cov_report_dir}" }
+
+    // Export unr related paths for make
+    {cov_unr_dir:     "{cov_unr_dir}" }
+    // Add an additional single quotation because `cov_merge_cmd` has an empty space, it will cause
+    // trouble when exporting the entire command in the environment.
+    {cov_merge_cmd: "'{cov_merge_cmd}'"}
   ]
 
   // Supported wave dumping formats (in order of preference).

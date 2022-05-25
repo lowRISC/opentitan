@@ -50,16 +50,14 @@ foreach slot, slot_link_args : bare_metal_link_info
         sw_silicon_creator_lib_driver_pinmux,
         sw_silicon_creator_lib_driver_uart,
         sw_silicon_creator_lib_fake_deps,
-        sw_silicon_creator_lib_manifest_section,
+        sw_silicon_creator_lib_manifest_def,
         sw_lib_crt,
         sw_lib_runtime_print,
 
       ],
       link_with: static_library(
         slot + '_bare_metal_lib',
-        sources: [
-          'bare_metal_example.c',
-        ],
+        sources: ['bare_metal_example.c'],
         link_depends: [slot_link_args[1]],
     )
   )

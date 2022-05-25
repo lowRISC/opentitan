@@ -46,6 +46,22 @@ TEST_F(LifecycleTest, DeviceId) {
   EXPECT_THAT(device_id.device_id, ElementsAreArray(kDeviceId));
 }
 
+TEST_F(LifecycleTest, HwRev) {
+  uint16_t exp_chip_gen = 0xa5;
+  uint16_t exp_chip_rev = 0xc3;
+
+  EXPECT_SEC_READ32(base_ + LC_CTRL_HW_REV_REG_OFFSET,
+                    {
+                        {LC_CTRL_HW_REV_CHIP_GEN_OFFSET, exp_chip_gen},
+                        {LC_CTRL_HW_REV_CHIP_REV_OFFSET, exp_chip_rev},
+                    });
+
+  lifecycle_hw_rev_t hw_rev;
+  lifecycle_hw_rev_get(&hw_rev);
+  EXPECT_EQ(hw_rev.chip_gen, exp_chip_gen);
+  EXPECT_EQ(hw_rev.chip_rev, exp_chip_rev);
+}
+
 struct ValidStateTestCase {
   /**
    * Value reported by hardware.

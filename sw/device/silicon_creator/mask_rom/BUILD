@@ -83,9 +83,9 @@ opentitan_rom_binary(
     extract_sw_logs_db = False,
     deps = [
         ":boot_policy",
+        ":bootstrap",
         ":linker_script",
         ":mask_rom_epmp",
-        ":primitive_bootstrap",
         ":sigverify_keys",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/ip/csrng/data:csrng_regs",
@@ -94,12 +94,14 @@ opentitan_rom_binary(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_regs",
+        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:stdasm",
@@ -110,12 +112,15 @@ opentitan_rom_binary(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:irq_asm",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:pinmux",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rnd",
@@ -129,8 +134,8 @@ opentitan_rom_binary(
 cc_library(
     name = "mask_rom_epmp",
     srcs = [
-        "mask_rom_epmp.S",
         "mask_rom_epmp.c",
+        "mask_rom_epmp_init.S",
     ],
     hdrs = ["mask_rom_epmp.h"],
     target_compatible_with = [OPENTITAN_CPU],
@@ -150,7 +155,6 @@ opentitan_functest(
         "mask_rom_start.S",
     ],
     # This test doesn't use the OTTF.
-    ottf = [],
     targets = ["verilator"],  # Can only run in verilator right now.
     # This test is designed to run and complete entirely in the ROM boot stage.
     # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
@@ -169,10 +173,10 @@ opentitan_functest(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_regs",
+        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib:pinmux",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -180,10 +184,13 @@ opentitan_functest(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
+        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:epmp",
         "//sw/device/silicon_creator/lib:epmp_test_unlock",
         "//sw/device/silicon_creator/lib:irq_asm",
@@ -194,24 +201,35 @@ opentitan_functest(
 )
 
 cc_library(
-    name = "primitive_bootstrap",
-    srcs = ["primitive_bootstrap.c"],
-    hdrs = ["primitive_bootstrap.h"],
+    name = "bootstrap",
+    srcs = ["bootstrap.c"],
+    hdrs = ["bootstrap.h"],
     deps = [
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//hw/ip/gpio/data:gpio_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib:flash_ctrl",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/testing/test_rom:bootstrap",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:rom_print",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:watchdog",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:spi_device",
+    ],
+)
+
+cc_test(
+    name = "bootstrap_unittest",
+    srcs = ["bootstrap_unittest.cc"],
+    deps = [
+        ":bootstrap",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//hw/ip/gpio/data:gpio_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -273,11 +291,15 @@ cc_test(
 # MASK ROM E2E TESTS
 
 # Bootup tests
-BOOT_FAILURE_MSG = "BFV_[0-9a-z]{{8}}\nLCV_[0-9a-z]{{8}}\n"
+BOOT_FAILURE_MSG = "BFV:[0-9a-z]{{8}}\r\nLCV:[0-9a-z]{{8}}\r\n"
 
 opentitan_functest(
     name = "e2e_bootup_success",
     srcs = ["mask_rom_test.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:mask_rom",
+        tags = ["broken"],
+    ),
     signed = True,
     targets = [
         "verilator",
@@ -286,10 +308,13 @@ opentitan_functest(
     verilator = verilator_params(
         rom = ":mask_rom_sim_verilator_scr_vmem",
         tags = [
+            "broken",
             "cpu:4",
-            "failing_verilator",
         ],
     ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )
 
 # TODO: Add verilator test
@@ -298,14 +323,19 @@ opentitan_functest(
     srcs = ["mask_rom_test.c"],
     cw310 = cw310_params(
         args = [
-            "--exec=\"console -q -t0\"",
-            "--exec=\"bootstrap $(location {flash})\"",
+            "--exec=\"load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
+            "--exec=\"bootstrap --protocol {bootstrap_protocol} $(location {flash})\"",
             "console",
-            "--timeout=3600",
+            "--timeout=3600s",
             "--exit-success='{}'".format(BOOT_FAILURE_MSG),
             "--exit-failure='PASS!'",
         ],
+        bitstream = "//hw/bitstream:mask_rom",
+        tags = ["broken"],
     ),
     signed = False,
     targets = ["cw310"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )

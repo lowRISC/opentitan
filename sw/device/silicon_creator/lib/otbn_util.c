@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -44,7 +45,7 @@ rom_error_t otbn_busy_wait_for_done(otbn_t *ctx) {
  * @param app the OTBN application to check
  * @return true if the addresses are valid, otherwise false.
  */
-bool check_app_address_ranges(const otbn_app_t *app) {
+static bool check_app_address_ranges(const otbn_app_t *app) {
   // IMEM must have a strictly positive range (cannot be backwards or empty)
   if (app->imem_end <= app->imem_start) {
     return false;
@@ -66,11 +67,13 @@ rom_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
 
   ctx->app_is_loaded = kHardenedBoolFalse;
 
-  RETURN_IF_ERROR(otbn_imem_write(0, app.imem_start, imem_num_words));
+  HARDENED_RETURN_IF_ERROR(otbn_imem_sec_wipe());
+  HARDENED_RETURN_IF_ERROR(otbn_imem_write(0, app.imem_start, imem_num_words));
 
-  otbn_zero_dmem();
+  HARDENED_RETURN_IF_ERROR(otbn_dmem_sec_wipe());
   if (data_num_words > 0) {
-    RETURN_IF_ERROR(otbn_dmem_write(0, app.dmem_data_start, data_num_words));
+    HARDENED_RETURN_IF_ERROR(
+        otbn_dmem_write(0, app.dmem_data_start, data_num_words));
   }
 
   ctx->app = app;
@@ -84,20 +87,17 @@ rom_error_t otbn_execute_app(otbn_t *ctx) {
   }
   HARDENED_CHECK_EQ(ctx->app_is_loaded, kHardenedBoolTrue);
 
-  otbn_execute();
-  return kErrorOk;
+  rom_error_t err = otbn_execute();
+  SEC_MMIO_WRITE_INCREMENT(kOtbnSecMmioExecute);
+  return err;
 }
 
 rom_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len, const uint32_t *src,
                                    otbn_addr_t dest) {
-  RETURN_IF_ERROR(otbn_dmem_write(dest, src, len));
-
-  return kErrorOk;
+  return otbn_dmem_write(dest, src, len);
 }
 
 rom_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len_bytes,
                                      otbn_addr_t src, uint32_t *dest) {
-  RETURN_IF_ERROR(otbn_dmem_read(src, dest, len_bytes));
-
-  return kErrorOk;
+  return otbn_dmem_read(src, dest, len_bytes);
 }

@@ -113,9 +113,6 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // transaction, the reset will have caused them to be forgotten.
     exp_read_values.delete();
 
-    model_status = otbn_pkg::StatusIdle;
-    pending_start_tl_trans = 1'b0;
-
     // Clear the locked bit (this is modelling RTL state that should be cleared on reset)
     locked = 1'b0;
 
@@ -143,7 +140,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     operational_state_e  state;
     otbn_exp_read_data_t exp_read_data = '{upd: 1'b0, chk: 'x, val: 'x};
 
-    state = cfg.controller_vif.get_operational_state();
+    state = get_operational_state(status_e'(model_status));
 
     aligned_addr = ral.get_word_aligned_addr(item.a_addr);
     masked_addr  = aligned_addr & ral.get_addr_mask();
@@ -183,9 +180,9 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           // We start any operation when we see a write of the related command and we are currently
           // in the IDLE operational state. See the comment above pending_start_tl_trans to see how
           // this tracking works.
-          bit cmd_operation = item.a_data inside {otbn_pkg::CmdSecWipeImem,
-                                                  otbn_pkg::CmdSecWipeDmem,
-                                                  otbn_pkg::CmdExecute};
+          bit cmd_operation = item.a_data[7:0] inside {otbn_pkg::CmdSecWipeImem,
+                                                       otbn_pkg::CmdSecWipeDmem,
+                                                       otbn_pkg::CmdExecute};
           if (cmd_operation && (model_status == otbn_pkg::StatusIdle)) begin
             // Set a flag: we're expecting the model to start on the next posedge. Also, spawn off a
             // checking thread that will make sure the flag has been cleared again by the following
@@ -296,7 +293,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // Track coverage for read accesses through the bus to external CSRs.
     if (cfg.en_cov) begin
       cov.on_ext_csr_access(csr, otbn_env_pkg::AccessSoftwareRead, item.d_data,
-                            cfg.controller_vif.get_operational_state());
+                            get_operational_state(status_e'(model_status)));
     end
 
     // Look up the expected read data for item and then clear it (to get a quick error if something
@@ -361,7 +358,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
               UVM_HIGH);
 
     if (cfg.en_cov) begin
-      cov.on_mem_write(mem, offset, item.a_data, cfg.controller_vif.get_operational_state());
+      cov.on_mem_write(mem, offset, item.a_data, get_operational_state(status_e'(model_status)));
     end
 
     // Predict the resulting value of LOAD_CHECKSUM
@@ -404,7 +401,9 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
           model_status = item.status;
 
-          if (cfg.en_cov) cov.on_state_change(model_status);
+          if (cfg.en_cov) begin
+            cov.on_state_change(get_operational_state(status_e'(model_status)));
+          end
         end
 
         OtbnModelInsn: begin

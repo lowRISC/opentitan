@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::app::TransportWrapper;
-use crate::transport::Result;
+use crate::impl_serializable_error;
 
 #[derive(Debug, StructOpt)]
 pub struct I2cParams {
@@ -23,9 +24,7 @@ impl I2cParams {
     }
 }
 
-/// Errors related to the I2C interface and I2C transactions.  These error messages will be
-/// printed in the context of a TransportError::I2cError, that is "I2C error: {}".  So
-/// including the words "error" or "i2c" in texts below will probably be redundant.
+/// Errors related to the I2C interface and I2C transactions.
 #[derive(Error, Debug, Deserialize, Serialize)]
 pub enum I2cError {
     #[error("Invalid data length: {0}")]
@@ -35,6 +34,7 @@ pub enum I2cError {
     #[error("Bus busy")]
     Busy,
 }
+impl_serializable_error!(I2cError);
 
 /// Represents a I2C transfer.
 pub enum Transfer<'rd, 'wr> {

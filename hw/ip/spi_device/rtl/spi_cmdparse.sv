@@ -82,7 +82,7 @@ module spi_cmdparse
   ////////////////
   // Definition //
   ////////////////
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
     // At Idle, FSM waits command valid signal.
     // The last 8th bit in the command byte determines the last two bit from
     // `upload_mask`. Then triggers proper downstream modules based on
@@ -102,6 +102,9 @@ module spi_cmdparse
 
     // EN4B/ EX4B fall into this state
     StAddr4B,
+
+    // Write Enable / Disable state
+    StWrEn,
 
     // If opcode does not matched, FSM moves to here and wait the reset.
     StWait
@@ -152,6 +155,7 @@ module spi_cmdparse
   // configurable CSRs `cmd_info_i`.
   logic opcode_readstatus, opcode_readjedec, opcode_readsfdp, opcode_readcmd;
   logic opcode_en4b, opcode_ex4b;
+  logic opcode_wren, opcode_wrdi;
 
   always_comb begin
     opcode_readstatus = 1'b 0;
@@ -169,6 +173,8 @@ module spi_cmdparse
                          && (data_i == cmd_info_i[CmdInfoReadSfdp].opcode);
   assign opcode_en4b = (data_i == cmd_info_i[CmdInfoEn4B].opcode);
   assign opcode_ex4b = (data_i == cmd_info_i[CmdInfoEx4B].opcode);
+  assign opcode_wren = (data_i == cmd_info_i[CmdInfoWrEn].opcode);
+  assign opcode_wrdi = (data_i == cmd_info_i[CmdInfoWrDi].opcode);
 
   always_comb begin
     opcode_readcmd = 1'b 0;
@@ -357,6 +363,13 @@ module spi_cmdparse
               sel_dp = (opcode_en4b) ? DpEn4B : DpEx4B ;
             end
 
+            opcode_wren, opcode_wrdi: begin
+              st_d = StWrEn;
+
+              // opcode only commands. Need to assert DP before transition
+              sel_dp = (opcode_wren) ? DpWrEn : DpWrDi ;
+            end
+
             default: begin
               st_d = StWait;
 
@@ -378,6 +391,8 @@ module spi_cmdparse
       StUpload:  sel_dp = DpUpload;
 
       StAddr4B: sel_dp = DpNone; // Terminal state wait reset
+
+      StWrEn: sel_dp = DpNone; // Terminal state wait reset
 
       StWait: begin
         st_d = StWait;

@@ -29,6 +29,7 @@ sw_lib_testing_isr_testutils = declare_dependency(
       sw_lib_dif_pattgen,
       sw_lib_dif_pwrmgr,
       sw_lib_dif_rv_timer,
+      sw_lib_dif_sensor_ctrl,
       sw_lib_dif_spi_device,
       sw_lib_dif_spi_host,
       sw_lib_dif_sysrst_ctrl,

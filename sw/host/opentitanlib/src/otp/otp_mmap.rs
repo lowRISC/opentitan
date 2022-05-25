@@ -13,11 +13,14 @@ use std::convert::TryInto;
 use std::fs;
 use std::path::Path;
 
+// FIXME: The OTP module is not being used yet.  When we write the OTP
+// configuration utility, remove the `dead_code`s and clean up the warnings.
+
 #[derive(Deserialize, Debug)]
 struct OtpMapConfig {
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     width: usize,
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     depth: usize,
 }
 
@@ -36,11 +39,11 @@ struct OtpMapDigest {
 
 #[derive(Deserialize, Debug)]
 struct OtpMapScrambling {
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     key_size: usize,
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     iv_size: usize,
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     cnst_size: usize,
     keys: Vec<OtpMapKey>,
     digests: Vec<OtpMapDigest>,
@@ -49,18 +52,21 @@ struct OtpMapScrambling {
 #[derive(Deserialize, Debug)]
 struct OtpMapItem {
     name: String,
-    #[serde(with = "num_de")]
+    #[serde(deserialize_with = "num_de::deserialize")]
     size: usize,
     #[serde(default)]
+    #[allow(dead_code)]
     isdigest: bool,
+    #[allow(dead_code)]
     inv_default: Option<DeferredValue>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct OtpMapPartition {
     name: String,
+    #[allow(dead_code)]
     secret: bool,
-    #[serde(default, with = "num_de")]
+    #[serde(default, deserialize_with = "num_de::deserialize")]
     size: usize,
     sw_digest: bool,
     hw_digest: bool,
@@ -70,6 +76,7 @@ pub struct OtpMapPartition {
 
 #[derive(Deserialize, Debug)]
 pub struct OtpMap {
+    #[allow(dead_code)]
     seed: String,
     otp: OtpMapConfig,
     scrambling: OtpMapScrambling,

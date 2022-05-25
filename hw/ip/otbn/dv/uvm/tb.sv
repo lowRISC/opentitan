@@ -21,7 +21,7 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
-  wire idle, intr_done;
+  wire intr_done;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // Configure internal secure wipe
@@ -30,7 +30,6 @@ module tb;
   // interfaces
   clk_rst_if                    clk_rst_if  (.clk(clk), .rst_n(rst_n));
   tl_if                         tl_if       (.clk(clk), .rst_n(rst_n));
-  pins_if #(1)                  idle_if     (idle);
   otbn_escalate_if              escalate_if (.clk_i (clk), .rst_ni (rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if     (interrupts);
   assign interrupts[0] = {intr_done};
@@ -126,7 +125,8 @@ module tb;
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),
 
-    .idle_o(idle),
+    // Correct behaviour of the idle output is ensured by the bound-in otbn_idle_checker instance.
+    .idle_o(),
 
     .intr_done_o(intr_done),
 
@@ -140,7 +140,9 @@ module tb;
     .clk_edn_i (edn_clk),
     .rst_edn_ni(edn_rst_n),
     .edn_rnd_o (edn_if[0].req),
-    .edn_rnd_i ({edn_if[0].ack, edn_if[0].d_data}),
+    // For now, we force the FIPS bit to 1 as the model cannot yet deal with RND FIPS check
+    // failures. For details, see https://github.com/lowRISC/opentitan/issues/11915
+    .edn_rnd_i ({edn_if[0].ack, 1'b1, edn_if[0].d_data[31:0]}),
 
     .edn_urnd_o(edn_if[1].req),
     .edn_urnd_i({edn_if[1].ack, edn_if[1].d_data}),
@@ -161,7 +163,12 @@ module tb;
   bind dut.u_otbn_core otbn_tracer #(.SecWipeEn(SecWipeEn))
     u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
-  bind dut.u_otbn_core.u_otbn_controller otbn_controller_if i_otbn_controller_if (.*);
+  logic [31:0] otbn_loop_count_max_vals [otbn_pkg::LoopStackDepth];
+
+  for (genvar i = 0; i < otbn_pkg::LoopStackDepth; ++i) begin : gen_otbn_loop_count_max_vals
+    assign otbn_loop_count_max_vals[i] = dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.
+        g_loop_counters[i].u_loop_count.max_val;
+  end
 
   bind dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller
     otbn_loop_if i_otbn_loop_if (
@@ -171,7 +178,7 @@ module tb;
       // 32-bit address here to avoid having to parameterise the type of the interface.
       .insn_addr_i (32'(insn_addr_i)),
       .at_current_loop_end_insn,
-      .loop_active_q,
+      .current_loop_valid,
       .loop_stack_full,
       .current_loop_finish,
       .next_loop_valid,
@@ -183,16 +190,20 @@ module tb;
       // These addresses are start/end addresses for entries in the loop stack. As with insn_addr_i,
       // we expand them to 32 bits. Also the loop stack entries have a type that's not exposed
       // outside of the loop controller module so we need to extract the fields here.
-      .current_loop_start (32'(current_loop_q.loop_start)),
-      .current_loop_end   (32'(current_loop_q.loop_end)),
-      .next_loop_end      (32'(next_loop.loop_end)),
+      .current_loop_start (32'(current_loop.loop_addr_info.loop_start)),
+      .current_loop_end   (32'(current_loop.loop_addr_info.loop_end)),
+      .next_loop_end      (32'(prefetch_loop_end_addr_o)),
 
       // These counts are used by the loop warping code.
-      .current_loop_d_iterations (current_loop_d.loop_iterations),
-      .current_loop_q_iterations (current_loop_q.loop_iterations)
+      .current_loop_d_iterations (prefetch_loop_iterations_o),
+      .current_loop_q_iterations (current_loop.loop_iterations),
+
+      .loop_stack_rd_idx,
+      .loop_count_max_vals($root.tb.otbn_loop_count_max_vals)
     );
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);
+  bind dut.u_otbn_core.u_otbn_controller otbn_controller_if i_otbn_controller_if (.*);
   bind dut.u_otbn_core.u_otbn_mac_bignum otbn_mac_bignum_if i_otbn_mac_bignum_if (.*);
   bind dut.u_otbn_core.u_otbn_rf_base otbn_rf_base_if i_otbn_rf_base_if (.*);
 
@@ -236,7 +247,7 @@ module tb;
 
     .err_bits_o   (model_if.err_bits),
 
-    .edn_rnd_i           ({edn_if[0].ack, edn_if[0].d_data}),
+    .edn_rnd_i           ({edn_if[0].ack, 1'b1, edn_if[0].d_data[31:0]}),
     .edn_rnd_o           (edn_rnd_req_model),
     .edn_rnd_cdc_done_i  (edn_rnd_cdc_done),
 
@@ -303,7 +314,6 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "otp_clk_rst_vif", otp_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(idle_vif)::set(null, "*.env", "idle_vif", idle_if);
     uvm_config_db#(escalate_vif)::set(null, "*.env", "escalate_vif", escalate_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual otbn_model_if)::set(null, "*.env.model_agent", "vif", model_if);
@@ -315,15 +325,15 @@ module tb;
 
     uvm_config_db#(virtual otbn_trace_if)::set(null, "*.env", "trace_vif",
                                                dut.u_otbn_core.i_otbn_trace_if);
-    uvm_config_db#(virtual otbn_controller_if)::set(
-      null, "*.env", "controller_vif",
-      dut.u_otbn_core.u_otbn_controller.i_otbn_controller_if);
     uvm_config_db#(virtual otbn_loop_if)::set(
       null, "*.env", "loop_vif",
       dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.i_otbn_loop_if);
     uvm_config_db#(virtual otbn_alu_bignum_if)::set(
       null, "*.env", "alu_bignum_vif",
       dut.u_otbn_core.u_otbn_alu_bignum.i_otbn_alu_bignum_if);
+    uvm_config_db#(virtual otbn_controller_if)::set(
+      null, "*.env", "controller_vif",
+      dut.u_otbn_core.u_otbn_controller.i_otbn_controller_if);
     uvm_config_db#(virtual otbn_mac_bignum_if)::set(
       null, "*.env", "mac_bignum_vif",
       dut.u_otbn_core.u_otbn_mac_bignum.i_otbn_mac_bignum_if);

@@ -1,0 +1,167 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:ibex_simple_system_cosim"
+description: "Generic simple system for running binaries on ibex using verilator"
+filesets:
+  files_cosim:
+    depend:
+      - lowrisc:dv:cosim_dpi
+      - lowrisc:ibex:ibex_simple_system_core
+      - lowrisc:tool:ibex_cosim_setup_check
+    files:
+      - simple_system_cosim.cc: { file_type: cppSource }
+      - ibex_simple_system_cosim_checker.sv
+      - ibex_simple_system_cosim_checker_bind.sv
+    file_type: systemVerilogSource
+
+parameters:
+  RV32E:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enable the E ISA extension (reduced register set) [0/1]"
+
+  RV32M:
+    datatype: str
+    default: ibex_pkg::RV32MFast
+    paramtype: vlogdefine
+    description: "RV32M implementation parameter enum. See the ibex_pkg::rv32m_e enum in ibex_pkg.sv for permitted values."
+
+  RV32B:
+    datatype: str
+    default: ibex_pkg::RV32BNone
+    paramtype: vlogdefine
+    description: "Bitmanip implementation parameter enum. See the ibex_pkg::rv32b_e enum in ibex_pkg.sv for permitted values."
+
+  RegFile:
+    datatype: str
+    default: ibex_pkg::RegFileFF
+    paramtype: vlogdefine
+    description: "Register file implementation parameter enum. See the ibex_pkg::regfile_e enum in ibex_pkg.sv for permitted values."
+
+  ICache:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable instruction cache"
+
+  ICacheECC:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable ECC protection in instruction cache"
+
+  SRAMInitFile:
+    datatype: str
+    paramtype: vlogparam
+    description: "Path to a vmem file to initialize the RAM with"
+
+  BranchTargetALU:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables separate branch target ALU (increasing branch performance EXPERIMENTAL)"
+
+  WritebackStage:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables third pipeline stage (EXPERIMENTAL)"
+
+  SecureIbex:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enables security hardening features (EXPERIMENTAL) [0/1]"
+
+  BranchPredictor:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables static branch prediction (EXPERIMENTAL)"
+
+  PMPEnable:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable PMP"
+
+  PMPGranularity:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Granularity of NAPOT range, 0 = 4 byte, 1 = byte, 2 = 16 byte, 3 = 32 byte etc"
+
+  PMPNumRegions:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+    description: "Number of PMP regions"
+
+  ICacheScramble:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enables ICache scrambling feature (EXPERIMENTAL) [0/1]"
+
+targets:
+  default: &default_target
+    filesets:
+      - files_cosim
+    toplevel: ibex_simple_system
+    parameters:
+      - RV32E
+      - RV32M
+      - RV32B
+      - RegFile
+      - ICache
+      - ICacheECC
+      - BranchTargetALU
+      - WritebackStage
+      - SecureIbex
+      - BranchPredictor
+      - PMPEnable
+      - PMPGranularity
+      - PMPNumRegions
+      - ICacheScramble
+      - SRAMInitFile
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+          # RAM primitives wider than 64bit (required for ECC) fail to build in
+          # Verilator without increasing the unroll count (see Verilator#1266)
+          - "--unroll-count 72"
+
+  sim:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      vcs:
+        vcs_options:
+          - '-xlrm uniq_prior_final'
+          - '-debug_access+r'
+      verilator:
+        mode: cc
+        verilator_options:
+          # Disabling tracing reduces compile times but doesn't have a
+          # huge influence on runtime performance.
+          - '--trace'
+          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+          - '--trace-structs'
+          - '--trace-params'
+          - '--trace-max-array 1024'
+          - '-CFLAGS "-std=c++11 -Wall -DVL_USER_STOP -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_simple_system -g `pkg-config --cflags riscv-riscv riscv-disasm riscv-fdt`"'
+          - '-LDFLAGS "-pthread -lutil -lelf `pkg-config --libs riscv-riscv riscv-disasm riscv-fdt`"'
+          - "-Wall"
+          - "-Wwarn-IMPERFECTSCH"
+          # RAM primitives wider than 64bit (required for ECC) fail to build in
+          # Verilator without increasing the unroll count (see Verilator#1266)
+          - "--unroll-count 72"

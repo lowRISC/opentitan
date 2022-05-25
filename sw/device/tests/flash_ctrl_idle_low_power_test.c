@@ -11,11 +11,11 @@
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
@@ -114,10 +114,10 @@ bool test_main(void) {
               &flash, address, kPartitionId, data,
               kDifFlashCtrlPartitionTypeData, kNumWords) == 0);
     uint32_t readback_data[kNumWords];
-    CHECK(flash_ctrl_testutils_read_page(
+    CHECK(flash_ctrl_testutils_read(
               &flash, address, kPartitionId, readback_data,
               kDifFlashCtrlPartitionTypeData, kNumWords, 0) == 0);
-    CHECK_BUFFER(data, readback_data, kNumWords);
+    CHECK_ARRAYS_EQ(data, readback_data, kNumWords);
 
     // Setting up low power hint and starting watchdog timer followed by
     // a flash operation (page erase) and WFI. This will create a bite
@@ -150,12 +150,12 @@ bool test_main(void) {
 
     CHECK(flash_ctrl_testutils_wait_transaction_end(&flash) == 0);
 
-    CHECK(flash_ctrl_testutils_read_page(
+    CHECK(flash_ctrl_testutils_read(
               &flash, address, kPartitionId, readback_data,
               kDifFlashCtrlPartitionTypeData, kNumWords, 0) == 0);
     uint32_t expected_data[kNumWords];
     memset(expected_data, 0xff, sizeof(expected_data));
-    CHECK_BUFFER(readback_data, expected_data, kNumWords);
+    CHECK_ARRAYS_EQ(readback_data, expected_data, kNumWords);
 
     CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
   } else {

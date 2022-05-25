@@ -25,7 +25,7 @@ It is disabled by default in the UVM DV environment currently, however it is int
 Setup and Usage
 ---------------
 
-Clone the `lowRISC fork of Spike <https://github.com/lowRISC/riscv-isa-sim>`_ and check out the ``ibex-cosim-v0.1`` tag.
+Clone the `lowRISC fork of Spike <https://github.com/lowRISC/riscv-isa-sim>`_ and check out the ``ibex-cosim-v0.2`` tag.
 Other, later, versions called ``ibex-cosim-v*`` may also work but there's no guarantee of backwards compatibility.
 Follow the Spike build instructions to build and install Spike.
 The build will install multiple header files and libraries, it is recommended a custom install location (using ``--prefix=<path>`` with ``configure``) is used to avoid cluttering system directories.

@@ -138,9 +138,12 @@ module spid_upload_tb;
   logic addrfifo_rvalid, addrfifo_rready;
   logic [31:0] addrfifo_rdata;
   logic cmdfifo_notempty, addrfifo_notempty;
-  logic [$clog2(SramCmdFifoDepth+1)-1:0]  cmdfifo_depth;
+  logic cmdfifo_set_pulse;
+  logic payload_overflow;
+  logic [ $clog2(SramCmdFifoDepth+1)-1:0] cmdfifo_depth;
   logic [$clog2(SramAddrFifoDepth+1)-1:0] addrfifo_depth;
-  logic [$clog2(SramPayloadDepth*(SramDw/8)+1)-1:0]  payload_depth;
+  logic [      $clog2(PayloadByte+1)-1:0] payload_depth;
+  logic [        $clog2(PayloadByte)-1:0] payload_start_idx;
 
   // Upload module signals
   logic cfg_addr_4b_en;
@@ -169,7 +172,7 @@ module spid_upload_tb;
 
     fork
       begin
-        #20us
+        #300us
         $display("TEST TIMED OUT!!");
         $finish();
       end
@@ -181,6 +184,10 @@ module spid_upload_tb;
   end
 
   static task host();
+    //  Prep data
+    automatic logic [7:0] payload [$];
+    automatic int unsigned payload_bytes;
+
     // Wait
     #200ns
 
@@ -215,7 +222,71 @@ module spid_upload_tb;
 
     // Cmd & Payload : Write Status
 
-    #300ns
+    // Cmd & Addr & Payload : less than 256B
+    repeat (100) @(sck_clk.cbn);
+    for (int i = 0 ; i < 255 ; i++) begin
+      payload[i] = i;
+    end
+    spiflash_program(
+      sif.tb,
+      8'h 02,         // opcode
+      32'h 00AB_CDEF, // addr
+      1'b 0,          // addr_4b_en
+      payload
+    );
+    payload = {};
+
+    repeat(256) @(sck_clk.cbn); // Wait payload size (4clk per word read?)
+
+    // Cmd & Addr & Payload : equal to 256B
+    for (int i = 0 ; i < 256 ; i++) begin
+      payload[i] = i;
+    end
+    spiflash_program(
+      sif.tb,
+      8'h 02,         // opcode
+      32'h 00_0000, // addr
+      1'b 0,          // addr_4b_en
+      payload
+    );
+    payload = {};
+
+    repeat(256) @(sck_clk.cbn); // Wait payload size (4clk per word read?)
+
+    // Cmd & Addr & Payload : 256B < x <= 512B
+    payload_bytes = $urandom_range(512, 257);
+    for (int i = 0 ; i < payload_bytes; i++ ) begin
+      payload[i] = i % PayloadByte;
+    end
+    spiflash_program(
+      sif.tb,
+      8'h 02,         // opcode
+      32'h 00_0000, // addr
+      1'b 0,          // addr_4b_en
+      payload
+    );
+    payload = {};
+
+    repeat(payload_bytes) @(sck_clk.cbn); // Wait payload size (4clk per word read?)
+
+    // Cmd & Addr & Payload : greater than 512B
+    payload_bytes = $urandom_range(1024, 513);
+    for (int i = 0 ; i < payload_bytes; i++ ) begin
+      payload[i] = i % PayloadByte ^ 8'(i/PayloadByte) ;
+    end
+    spiflash_program(
+      sif.tb,
+      8'h 02,         // opcode
+      32'h 00_0000, // addr
+      1'b 0,          // addr_4b_en
+      payload
+    );
+    payload = {};
+
+    repeat(payload_bytes) @(sck_clk.cbn); // Wait payload size (4clk per word read?)
+
+
+    #10us // Wait enough for SW to pop
     @(sck_clk.cbn);
   endtask : host
 
@@ -230,7 +301,7 @@ module spid_upload_tb;
       // it takes one more cycle to have valid read data
       // due to the latency that FIFO reads from DPSRAM.
       // Check cmdfifo_rvalid rather than cmdfifo_notempty
-      @(posedge clk iff (cmdfifo_rvalid == 1'b 1));
+      @(posedge clk iff (cmdfifo_set_pulse == 1'b 1));
       cmd = cmdfifo_rdata;
       $display("Cmd %x is uploaded", cmd);
       cmdfifo_rready = 1'b 1;
@@ -283,15 +354,27 @@ module spid_upload_tb;
           repeat (5) @(posedge clk);
 
           // fetch payload buffer
-          read_sram(sw_l2m, sw_m2l,
-            SramPayloadIdx, payload_depth, payload);
+          if (payload_overflow) begin
+            $display("Payload Overflow: Read from offset and max depth(%d)", payload_depth);
+            $display("  Start Addr: 'h %8X",
+                     SramPayloadIdx + (payload_start_idx >> OffsetW));
+            read_sram_wrap(sw_l2m, sw_m2l,
+              SramPayloadIdx,
+              PayloadByte,
+              SramPayloadIdx + (payload_start_idx >> OffsetW),
+              payload_start_idx[0+:OffsetW],
+              payload_depth,
+              payload);
+          end else begin
+            assert(payload_start_idx == '0);
+            read_sram(sw_l2m, sw_m2l,
+              SramPayloadIdx, payload_depth, payload);
+          end
         end
 
       endcase
     end
 
-
-    forever @(posedge clk); // Wait host transaction done
   endtask : sw
 
   // CSb pulse
@@ -351,6 +434,8 @@ module spid_upload_tb;
     .sys_clk_i  (clk),
     .sys_rst_ni (rst_n),
 
+    .clk_csb_i  (sif.csb),
+
     .sys_csb_deasserted_pulse_i (csb_deasserted_busclk),
 
     .sel_dp_i (dut_sel_dp),
@@ -396,14 +481,17 @@ module spid_upload_tb;
 
     .set_busy_o (sck_busy_set),
 
+    .sys_cmdfifo_set_o       (cmdfifo_set_pulse),
     .sys_cmdfifo_notempty_o  (cmdfifo_notempty),
     .sys_cmdfifo_full_o      (), // not used
     .sys_addrfifo_notempty_o (addrfifo_notempty),
     .sys_addrfifo_full_o     (), // not used
+    .sys_payload_overflow_o  (payload_overflow),
 
-    .sys_cmdfifo_depth_o  (cmdfifo_depth),
-    .sys_addrfifo_depth_o (addrfifo_depth),
-    .sys_payload_depth_o  (payload_depth)
+    .sys_cmdfifo_depth_o     (cmdfifo_depth),
+    .sys_addrfifo_depth_o    (addrfifo_depth),
+    .sys_payload_depth_o     (payload_depth),
+    .sys_payload_start_idx_o (payload_start_idx)
   );
 
   spi_cmdparse cmdparse (
@@ -570,5 +658,82 @@ module spid_upload_tb;
 
     data = result;
   endtask : read_sram
+
+  static task read_sram_wrap(
+    ref       sram_l2m_t      l2m,
+    const ref sram_m2l_t      m2l,
+    input logic [SramAw-1:0]  BaseAddr, // Buffer Base Address
+    input int                 MaxSize,  // Max buffer size (in bytes)
+    input logic [SramAw-1:0]  addr,
+    input logic [OffsetW-1:0] offset,
+    input int unsigned        size,     // in byte
+    output logic [7:0]        data [$]
+  );
+    automatic logic [7:0] result    [$];
+    automatic logic [7:0] sram_data [$];
+    automatic logic [SramAw-1:0]  current_addr;
+    automatic logic [OffsetW-1:0] current_offset;
+    automatic int                 remained_bytes;
+    automatic int                 request_bytes; // sram request bytes
+
+    // Check if wrap
+    automatic bit wrap = (({BaseAddr, {OffsetW{1'b0}}} + MaxSize)
+                       > ({addr, offset} + size)) ? 1'b 1 : 1'b 0;
+
+    if (wrap) begin
+      $display("Overflow: Read will be twice");
+    end
+    //  don't wrap: just read. loop depends on the offset, size
+    //
+    //  wrap: first:  (2*size - MaxSize) bytes
+    //        second: (MaxSize - size)   bytes
+    current_addr   = addr;
+    current_offset = offset;
+    remained_bytes = size;
+
+    do begin
+      $display("Transaction: CurAddr('h%X) / CurOffset('h%X) / RemainedByte('d%3d)",
+               current_addr, current_offset, remained_bytes);
+      // start addr of current transaction
+
+      // end addr of current transaction
+      if (({BaseAddr, {OffsetW{1'b0}}} + MaxSize) < ({current_addr, current_offset} + remained_bytes)) begin
+        // Read to the end of the buffer
+        request_bytes = MaxSize - (current_addr - BaseAddr)*(SramDw/8);
+      end else begin
+        // Request only remained bytes
+        request_bytes = remained_bytes;
+      end
+
+      // request SRAM read
+      $display("Sending SRAM request");
+      read_sram(l2m, m2l, current_addr, request_bytes, sram_data);
+
+      // push to result (based on current_offset, currnt_size)
+      $display("Pushing the return data(from SRAM) into the result queue");
+      data = {data, sram_data[current_offset:$]}; // push back the sram read
+
+      // start addr of next transaction
+      $display("Calculating for the next SRAM transaction");
+      remained_bytes = remained_bytes - (request_bytes - current_offset);
+      current_offset = '0; // always word based for the next transaction
+      current_addr = BaseAddr; // always read from the first entry of buffer
+
+      sram_data = {}; // Delete all
+
+      if (remained_bytes == 0) begin
+        $display("All payloads are read out.");
+      end else begin
+        $display("Still pending bytes ('d%3d). Requesting the next transaction",
+          remained_bytes);
+      end
+    end while (remained_bytes != 0);
+
+
+    // Check the # entires per transaction
+    // first entry, addr
+    // last entry,  ceil({addr,offset} + size)/(SramDw/8)
+
+  endtask : read_sram_wrap
 
 endmodule : spid_upload_tb

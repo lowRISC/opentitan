@@ -2,15 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use mundane::hash::{Digest, Hasher, Sha256};
+use anyhow::Result;
+use sha2::{Digest, Sha256};
 use std::time::Duration;
 use thiserror::Error;
 use zerocopy::AsBytes;
 
 use crate::app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
+use crate::impl_serializable_error;
 use crate::io::spi::Transfer;
-use crate::transport::{Capability, Result};
+use crate::transport::Capability;
 
 #[derive(AsBytes, Debug, Default)]
 #[repr(C)]
@@ -49,21 +51,20 @@ impl Frame {
     /// Computes the hash in the header.
     fn header_hash(&self) -> [u8; Frame::HASH_LEN] {
         let frame = self.as_bytes();
-        let sha = Sha256::hash(&frame[Frame::HASH_LEN..]);
-        sha.bytes()
+        let sha = Sha256::digest(&frame[Frame::HASH_LEN..]);
+        sha.into()
     }
 
     /// Computes the hash over the entire frame.
     fn frame_hash(&self) -> [u8; Frame::HASH_LEN] {
-        let sha = Sha256::hash(self.as_bytes());
-        let mut digest = sha.bytes();
+        let mut digest = Sha256::digest(self.as_bytes());
         // Touch up zeroes into ones, as that is what the old chips are doing.
         for b in &mut digest {
             if *b == 0 {
                 *b = 1;
             }
         }
-        digest
+        digest.into()
     }
 
     /// Creates a sequence of frames based on a `payload` binary.
@@ -178,6 +179,7 @@ pub enum LegacyBootstrapError {
     #[error("Repeated errors communicating with boot rom")]
     RepeatedErrors,
 }
+impl_serializable_error!(LegacyBootstrapError);
 
 impl From<u8> for LegacyBootstrapError {
     fn from(value: u8) -> LegacyBootstrapError {

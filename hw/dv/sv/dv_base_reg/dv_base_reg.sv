@@ -19,6 +19,11 @@ class dv_base_reg extends uvm_reg;
   local string         update_err_alert_name;
   local string         storage_err_alert_name;
 
+  // This is used for get_alias_name
+  string alias_name = "";
+  // Lookup table for alias fields (used for get_field_by_name)
+  string field_alias_lookup[string];
+
   // atomic_en_shadow_wr: semaphore to guarantee setting or resetting en_shadow_wr is unchanged
   // through the 1st/2nd (or both) writes
   semaphore            atomic_en_shadow_wr;
@@ -29,6 +34,21 @@ class dv_base_reg extends uvm_reg;
     super.new(name, n_bits, has_coverage);
     atomic_en_shadow_wr = new(1);
   endfunction : new
+
+  // this is similar to get_name, but it gets the
+  // simple name of the aliased register instead.
+  function string get_alias_name ();
+    return this.alias_name;
+  endfunction: get_alias_name
+
+  // this is similar to set_name, but it sets the
+  // simple name of the aliased register instead.
+  function void set_alias_name (string alias_name);
+    dv_base_reg_block reg_block;
+    `downcast(reg_block, get_parent())
+    reg_block.register_alias_lookup[alias_name] = this.get_name();
+    this.alias_name = alias_name;
+  endfunction: set_alias_name
 
   function void get_dv_base_reg_fields(ref dv_base_reg_field dv_fields[$]);
     foreach (m_fields[i]) `downcast(dv_fields[i], m_fields[i])
@@ -379,6 +399,17 @@ class dv_base_reg extends uvm_reg;
 
     // top-level alert name is ${ip_name} + alert name from hjson
     return ($sformatf("%0s_%0s", get_dv_base_reg_block().get_ip_name(), storage_err_alert_name));
+  endfunction
+
+  // this overrides the get_field_by_name function
+  function dv_base_reg_field get_field_by_name(string name);
+    dv_base_reg_field retval;
+    if (field_alias_lookup.exists(name)) begin
+      `downcast(retval, super.get_field_by_name(field_alias_lookup[name]))
+    end else begin
+      `downcast(retval, super.get_field_by_name(name))
+    end
+    return retval;
   endfunction
 
 endclass

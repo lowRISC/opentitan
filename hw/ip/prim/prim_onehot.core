@@ -26,8 +26,8 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-    #files:
-    #  - lint/prim_onehot.waiver
+    files:
+      - lint/prim_onehot_mux.waiver
     file_type: waiver
 
   files_veriblelint_waiver:

@@ -283,6 +283,7 @@ class TopGenC:
 
         sources.add_last_constant("Final Alert peripheral")
 
+        self.device_alerts = defaultdict(list)
         for alert in self.top["alert"]:
             if "width" in alert and int(alert["width"]) != 1:
                 for i in range(int(alert["width"])):
@@ -292,11 +293,14 @@ class TopGenC:
                                                      alert["name"], i))
                     source_name = source_name_map[alert["module_name"]]
                     alert_mapping.add_entry(irq_id, source_name)
+                    self.device_alerts[alert["module_name"]].append(alert["name"] +
+                                                                    str(i))
             else:
                 name = Name.from_snake_case(alert["name"])
                 alert_id = alerts.add_constant(name, docstring=alert["name"])
                 source_name = source_name_map[alert["module_name"]]
                 alert_mapping.add_entry(alert_id, source_name)
+                self.device_alerts[alert["module_name"]].append(alert["name"])
 
         alerts.add_last_constant("The Last Valid Alert ID.")
 

@@ -28,14 +28,16 @@ module otbn_rf_base_ff
   output logic [BaseIntgWidth-1:0] rd_data_a_o,
 
   input  logic [4:0]               rd_addr_b_i,
-  output logic [BaseIntgWidth-1:0] rd_data_b_o
+  output logic [BaseIntgWidth-1:0] rd_data_b_o,
+
+  // Indicates whether a spurious WE has been seen in the last cycle.
+  output logic                     we_err_o
 );
 
   logic [BaseIntgWidth-1:0] rf_reg [NGpr];
-  logic [31:1] we_onehot;
+  logic [31:0] we_onehot;
 
-  // No write-enable for register 0 as writes to it are ignored
-  for (genvar i = 1; i < NGpr; i++) begin : g_we_onehot
+  for (genvar i = 0; i < NGpr; i++) begin : g_we_onehot
     assign we_onehot[i] = (wr_addr_i == i) && wr_en_i;
   end
 
@@ -59,4 +61,40 @@ module otbn_rf_base_ff
 
   assign rd_data_a_o = rf_reg[rd_addr_a_i];
   assign rd_data_b_o = rf_reg[rd_addr_b_i];
+
+  // Buffer the decoded write enable bits so that the checker
+  // is not optimized into the address decoding logic.
+  logic [31:0] we_onehot_buf;
+  prim_buf #(
+    .Width(32)
+  ) u_prim_buf (
+    .in_i(we_onehot),
+    .out_o(we_onehot_buf)
+  );
+
+  // SEC_CM: RF_BASE.DATA_REG_SW.GLITCH_DETECT
+  // This checks for spurious WE strobes on the regfile.
+  logic we_err;
+  prim_onehot_check #(
+    .AddrWidth(5),
+    .AddrCheck(1),
+    .EnableCheck(1)
+  ) u_prim_onehot_check (
+    .clk_i,
+    .rst_ni,
+    .oh_i(we_onehot_buf),
+    .addr_i(wr_addr_i),
+    .en_i(wr_en_i),
+    .err_o(we_err)
+  );
+
+  // We need to register this to avoid timing loops.
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_err
+    if (!rst_ni) begin
+      we_err_o <= '0;
+    end else begin
+      we_err_o <= we_err;
+    end
+  end
+
 endmodule

@@ -34,7 +34,7 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
 
       csr_rd(.ptr(ral.clk_hints_status), .value(value));
 
-      `uvm_info(`gfn, $sformatf("Initial clk_hints_status: %b",value),UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("Initial clk_hints_status: %b", value), UVM_MEDIUM)
       cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode));
 
       // add random value if mubi idle test
@@ -74,13 +74,12 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
   task drive_idle(ref mubi_hintables_t tbl);
     int period;
     mubi_hintables_t rand_idle;
-    foreach (rand_idle[i]) rand_idle[i] = get_rand_mubi4_val(.t_weight(0),
-                                                             .f_weight(0),
-                                                             .other_weight(1));
+    foreach (rand_idle[i])
+      rand_idle[i] = get_rand_mubi4_val(.t_weight(0), .f_weight(0), .other_weight(1));
 
     @cfg.clkmgr_vif.trans_cb;
     cfg.clkmgr_vif.idle_i = rand_idle;
 
     tbl = rand_idle;
-  endtask // drive_idle
+  endtask : drive_idle
 endclass : clkmgr_trans_vseq

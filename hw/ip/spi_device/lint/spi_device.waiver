@@ -70,6 +70,9 @@ waive -rules TWO_STATE_TYPE -location {spi_device.sv} \
 waive -rules TWO_STATE_TYPE -location {spid_upload.sv} \
       -regexp {'sramintf_e' is of two state type} \
       -comment "Enum int unsigned is used as a index. OK to be two state"
+waive -rules TWO_STATE_TYPE -location {spid_status.sv} \
+      -regexp {'status_bit_e' is of two state type} \
+      -comment "Enum status_bit_e is used as an index. OK to be two state"
 
 waive -rules ONE_BIT_MEM_WIDTH -location {spi_device.sv spi_fwmode.sv} -regexp {Memory 'fwm_sram_.*' has word} \
       -comment "Intended implementation to make it consistent with other signals"
@@ -89,7 +92,7 @@ waive -rules CONST_FF -location {spi_device.sv} -msg {Flip-flop 'fwm_rxerr_q' is
       -comment "This is an unimplemented error signal which is currently tied to 0."
 
 # intentional terminal states
-waive -rules TERMINAL_STATE -location {spi_cmdparse.sv} -regexp {Terminal state 'St(Status|Jedec|Sfdp|ReadCmd|Upload|Addr4B)' is detected}
+waive -rules TERMINAL_STATE -location {spi_cmdparse.sv} -regexp {Terminal state 'St(Status|Jedec|Sfdp|ReadCmd|Upload|Addr4B|WrEn)' is detected}
 waive -rules TERMINAL_STATE -location {spi_readcmd.sv} \
       -regexp {Terminal state 'Main(Output|Error)' is detected} \
       -comment "Intentional dead-end. CSb will reset"

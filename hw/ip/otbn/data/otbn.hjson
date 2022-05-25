@@ -89,10 +89,10 @@
       package: "edn_pkg"
     },
 
-    // OTBN is not performing any operation and can be clock/power-gated. 
+    // OTBN is not performing any operation and can be clock/power-gated.
     { name:    "idle",
       type:    "uni",
-      struct:  "mubi4", 
+      struct:  "mubi4",
       width:   "1",
       act:     "req",
       package: "prim_mubi_pkg"
@@ -159,6 +159,39 @@
     }
     { name: "START_STOP_CTRL.FSM.SPARSE",
       desc: "The start-stop control FSM uses a sparse state encoding."
+    }
+    { name: "DATA_REG_SW.SCA",
+      desc: "Blanking of bignum data paths when unused by the executing instruction."
+    }
+    { name: "CTRL.REDUN",
+      desc: "Check pre-decoded control used for blanking matches seperately decoded control from main decoder."
+    }
+    { name: "RND.BUS.CONSISTENCY",
+      desc: "Comparison on successive bus values received over the EDN RND interface."
+    }
+    { name: "RND.RNG.DIGEST",
+      desc: "Checking that the random numbers received over the EDN RND interface have not been generated from entropy that failed the FIPS health checks in the entropy source."
+    }
+    { name: "RF_BASE.DATA_REG_SW.GLITCH_DETECT"
+      desc: '''
+        This countermeasure checks for spurious write-enable signals on the register
+        file by monitoring the one-hot0 property of the individual write-enable strobes.
+      '''
+    }
+    { name: "STACK_WR_PTR.CTR.REDUN"
+      desc: '''
+        The write pointer of the stack (used for calls and loops) is redundant.  If the two
+        instances of the counter mismatch, an error is emitted.
+      '''
+    }
+    { name: "STACK_WR_PTR.CTR.GLITCH_DETECT"
+      desc: "Glitches are detected on the stack counter increment / decrement control signal."
+    }
+    { name: "RF_BIGNUM.DATA_REG_SW.GLITCH_DETECT"
+      desc: '''
+        This countermeasure checks for spurious write-enable signals on the register
+        file by monitoring the one-hot0 property of the individual write-enable strobes.
+      '''
     }
   ]
 
@@ -259,7 +292,7 @@
     { name: "STATUS",
       desc: "Status Register",
       swaccess: "ro",
-      hwaccess: "hrw",
+      hwaccess: "hwo",
       fields: [
         { bits: "7:0",
           name: "status",
@@ -377,6 +410,18 @@
           name: "key_invalid"
           resval: 0,
           desc: "A `KEY_INVALID` error was observed."
+        }
+
+        // Recoverable errors
+        { bits: "6",
+          name: "rnd_rep_chk_fail"
+          resval: 0,
+          desc: "An `RND_REP_CHK_FAIL` error was observed."
+        }
+        { bits: "7",
+          name: "rnd_fips_chk_fail"
+          resval: 0,
+          desc: "An `RND_FIPS_CHK_FAIL` error was observed."
         }
 
         // Fatal errors. Keep in sync with list in FATAL_ALERT_CAUSE.

@@ -351,11 +351,9 @@ module lc_ctrl_fsm
           // If any of these RMA are conditions are true,
           // all of them must be true at the same time.
           if ((trans_target_i != {DecLcStateNumRep{DecLcStRma}} &&
-               lc_flash_rma_req_o == Off    &&
-               lc_flash_rma_ack[1] == Off)   ||
+               lc_flash_rma_req_o == Off && lc_flash_rma_ack[1] == Off) ||
               (trans_target_i == {DecLcStateNumRep{DecLcStRma}} &&
-               lc_flash_rma_req_o == On     &&
-               lc_flash_rma_ack[1] == On)) begin
+               lc_flash_rma_req_o == On && lc_flash_rma_ack[1] == On)) begin
             if (hashed_token_i == hashed_token_mux &&
                 !token_hash_err_i &&
                 &hashed_token_valid_mux) begin
@@ -388,11 +386,17 @@ module lc_ctrl_fsm
         // If the clock mux has been steered, double check that this is still the case.
         // Otherwise abort the transition operation.
         if (lc_clk_byp_req_o != lc_clk_byp_ack[2]) begin
-            fsm_state_d = PostTransSt;
-            otp_prog_error_o = 1'b1;
-        end
-
-        if (otp_prog_ack_i) begin
+          fsm_state_d = PostTransSt;
+          otp_prog_error_o = 1'b1;
+        // Also double check that the RMA signals remain stable.
+        // Otherwise abort the transition operation.
+        end else if ((trans_target_i != {DecLcStateNumRep{DecLcStRma}} &&
+                      (lc_flash_rma_req_o != Off || lc_flash_rma_ack[1] != Off)) ||
+                     (trans_target_i == {DecLcStateNumRep{DecLcStRma}} &&
+                      (lc_flash_rma_req_o != On || lc_flash_rma_ack[1] != On))) begin
+          fsm_state_d = PostTransSt;
+          flash_rma_error_o = 1'b1;
+        end else if (otp_prog_ack_i) begin
           fsm_state_d = PostTransSt;
           otp_prog_error_o = otp_prog_err_i;
           trans_success_o  = ~otp_prog_err_i;
@@ -423,17 +427,17 @@ module lc_ctrl_fsm
       ///////////////////////////////////////////////////////////////////
     endcase
 
+    // SEC_CM: MAIN.FSM.GLOBAL_ESC
+    if (esc_scrap_state0_i || esc_scrap_state1_i) begin
+      fsm_state_d = EscalateSt;
+    // SEC_CM: MAIN.FSM.LOCAL_ESC
     // If at any time the life cycle state encoding or any other FSM state within this module
     // is not valid, we jump into the terminal error state right away.
     // Note that state_invalid_error is a multibit error signal
     // with different error sources - need to reduce this to one bit here.
-    // SEC_CM: MAIN.FSM.LOCAL_ESC
-    if (|state_invalid_error | token_if_fsm_err_i) begin
+    end else if ((|state_invalid_error | token_if_fsm_err_i) && (fsm_state_q != EscalateSt)) begin
       fsm_state_d = InvalidSt;
       state_invalid_error_o = 1'b1;
-    // SEC_CM: MAIN.FSM.GLOBAL_ESC
-    end else if (esc_scrap_state0_i || esc_scrap_state1_i) begin
-      fsm_state_d = EscalateSt;
     end
   end
 
@@ -677,5 +681,28 @@ module lc_ctrl_fsm
       lc_state_q inside {LcStProd, LcStProdEnd, LcStDev}
       |=>
       lc_clk_byp_req_o == Off)
+
+  `ASSERT(SecCmCFITerminal0_A,
+      fsm_state_q == PostTransSt
+      |=>
+      fsm_state_q inside {PostTransSt, InvalidSt, EscalateSt})
+
+  `ASSERT(SecCmCFITerminal1_A,
+      fsm_state_q == ScrapSt
+      |=>
+      fsm_state_q inside {ScrapSt, InvalidSt, EscalateSt})
+
+  `ASSERT(SecCmCFITerminal2_A,
+      fsm_state_q == EscalateSt
+      |=>
+      fsm_state_q == EscalateSt)
+
+  `ASSERT(SecCmCFITerminal3_A,
+      fsm_state_q == InvalidSt
+      |=>
+      fsm_state_q inside {InvalidSt, EscalateSt})
+
+  // Check that the FSM is linear and does not contain any loops
+  `ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, fsm_state_q, fsm_state_e)
 
 endmodule : lc_ctrl_fsm

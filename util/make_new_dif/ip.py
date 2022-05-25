@@ -5,6 +5,7 @@
 from collections import OrderedDict
 from pathlib import Path
 from typing import List
+
 import hjson
 
 # This file is $REPO_TOP/util/make_new_dif/ip.py, so it takes three parent()
@@ -22,6 +23,7 @@ class Alert:
         description (str): Full description of the alert.
 
     """
+
     def __init__(self, alert: OrderedDict) -> None:
         self.name_snake = alert["name"]
         self.name_upper = self.name_snake.upper()
@@ -41,6 +43,7 @@ class Irq:
         description (str): full description of the IRQ.
 
     """
+
     def __init__(self, irq: OrderedDict) -> None:
         self.name_snake = irq["name"]
         self.name_upper = self.name_snake.upper()
@@ -60,6 +63,7 @@ class Parameter:
         default (int): Default parameter value.
 
     """
+
     def __init__(self, parameter: OrderedDict) -> None:
         self.name = parameter["name"]
         self.description = parameter["desc"]
@@ -81,8 +85,10 @@ class Ip:
         irqs (List[Irq]): List of Irq objs constructed from HJSON data.
 
     """
+
     def __init__(self, name_snake: str, name_long_lower: str,
-                 templated_modules: List[str], ipgen_modules: List[str]) -> None:
+                 templated_modules: List[str], ipgen_modules: List[str],
+                 reggen_top_modules: List[str]) -> None:
         """Mines metadata to populate this Ip object.
 
         Args:
@@ -90,6 +96,7 @@ class Ip:
             name_long_lower: IP full name in lower case (e.g., power manager).
             templated_modules: Templated modules where hjson is under top_*
             ipgen_modules: Ipgen modules where hjson is under ip_autogen
+            reggen_top_modules: Top Reggen modules where hjson is under top_*
         """
         # Generate various IP name formats.
         self.name_snake = name_snake
@@ -108,6 +115,9 @@ class Ip:
                 self.name_snake)
         elif self.name_snake in templated_modules:
             data_dir = REPO_TOP / "hw/top_earlgrey/ip/{0}/data/autogen".format(
+                self.name_snake)
+        elif self.name_snake in reggen_top_modules:
+            data_dir = REPO_TOP / "hw/top_earlgrey/ip/{0}/data/".format(
                 self.name_snake)
         else:
             data_dir = REPO_TOP / "hw/ip/{0}/data".format(self.name_snake)

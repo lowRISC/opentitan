@@ -42,7 +42,6 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
-        "//sw/device/lib:pinmux",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
@@ -51,10 +50,12 @@ cc_library(
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )

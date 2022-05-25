@@ -30,12 +30,12 @@ module pwrmgr_sec_cm_checker_assert (
   `ASYNC_ASSERT(RomIntgChkDisTrue_A,
                 rom_intg_chk_dis == prim_mubi_pkg::MuBi4True |->
                 (lc_dft_en_i == lc_ctrl_pkg::On && lc_hw_debug_en_i == lc_ctrl_pkg::On),
-                rom_intg_chk_dis or lc_dft_en_i or lc_hw_debug_en_i, reset_or_disable)
+                (rom_intg_chk_dis | lc_dft_en_i | lc_hw_debug_en_i), reset_or_disable)
 
   `ASYNC_ASSERT(RomIntgChkDisFalse_A,
                 rom_intg_chk_dis == prim_mubi_pkg::MuBi4False |->
                 (lc_dft_en_i != lc_ctrl_pkg::On || lc_hw_debug_en_i != lc_ctrl_pkg::On),
-                rom_intg_chk_dis or lc_dft_en_i or lc_hw_debug_en_i, reset_or_disable)
+                (rom_intg_chk_dis | lc_dft_en_i | lc_hw_debug_en_i), reset_or_disable)
 
   // check rom_intg_chk_ok
   // rom_ctrl_i go through cdc. So use synchronous assertion.
@@ -46,7 +46,7 @@ module pwrmgr_sec_cm_checker_assert (
                  rom_ctrl_done_i == prim_mubi_pkg::MuBi4True) ||
                 (rom_ctrl_done_i == prim_mubi_pkg::MuBi4True &&
                  rom_ctrl_good_i == prim_mubi_pkg::MuBi4True),
-                rom_intg_chk_ok or rom_intg_chk_dis or rom_ctrl_done_i or rom_ctrl_good_i,
+                (rom_intg_chk_ok | rom_intg_chk_dis | rom_ctrl_done_i | rom_ctrl_good_i),
                 reset_or_disable)
 
   `ASYNC_ASSERT(RomIntgChkOkFalse_A,
@@ -55,7 +55,7 @@ module pwrmgr_sec_cm_checker_assert (
                  rom_ctrl_done_i != prim_mubi_pkg::MuBi4True) &&
                 (rom_ctrl_done_i != prim_mubi_pkg::MuBi4True ||
                  rom_ctrl_good_i != prim_mubi_pkg::MuBi4True),
-                rom_intg_chk_ok or rom_intg_chk_dis or rom_ctrl_done_i or rom_ctrl_good_i,
+                (rom_intg_chk_ok | rom_intg_chk_dis | rom_ctrl_done_i | rom_ctrl_good_i),
                 reset_or_disable)
 
 `undef ASYNC_ASSERT

@@ -28,6 +28,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
   // Weights to enable read / program and erase for each mem region.
   // TODO: Should these be per region?
+  uint mp_region_en_pc;
   uint mp_region_read_en_pc;
   uint mp_region_program_en_pc;
   uint mp_region_erase_en_pc;
@@ -35,12 +36,6 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint mp_region_ecc_en_pc;
   uint mp_region_he_en_pc;
   uint mp_region_max_pages;
-
-  // mem for scoreboard
-  data_t                 scb_flash_data  [addr_t]  = '{default: 1};
-  data_t                 scb_flash_info  [addr_t]  = '{default: 1};
-  data_t                 scb_flash_info1 [addr_t]  = '{default: 1};
-  data_t                 scb_flash_info2 [addr_t]  = '{default: 1};
 
   // Knob to control bank level erasability.
   uint bank_erase_en_pc;
@@ -74,10 +69,12 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint op_on_info1_partition_pc;  // Choose info1 partition.
   uint op_on_info2_partition_pc;  // Choose info2 partition.
 
-  bit op_readonly_on_info_partition;  // Make info partition read-only.
+  bit op_readonly_on_info_partition;   // Make info  partition read-only.
   bit op_readonly_on_info1_partition;  // Make info1 partition read-only.
+  bit op_readonly_on_info2_partition;  // Make info2 partition read-only.
 
   uint op_erase_type_bank_pc;
+  uint op_prog_type_repair_pc;
   uint op_max_words;
   bit op_allow_invalid;
 
@@ -87,7 +84,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Chances to start flash with all 1s and not with random values (default is 30%).
   uint flash_init_set_pc;
 
-  //  Set by a higher level vseq that invokes this vseq 
+  // Set by a higher level vseq that invokes this vseq.
   bit external_cfg;
 
   // If pre-transaction back-door memory preperation isn't needed, set do_tran_prep_mem to 0.
@@ -148,6 +145,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
     allow_mp_region_overlap       = 1'b0;
 
+    mp_region_en_pc               = 50;
     mp_region_read_en_pc          = 50;
     mp_region_program_en_pc       = 50;
     mp_region_erase_en_pc         = 50;
@@ -184,6 +182,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
     op_readonly_on_info1_partition = 1;
 
     op_erase_type_bank_pc = 20;
+    op_prog_type_repair_pc = 10;
     op_max_words = 512;
     op_allow_invalid = 1'b0;
 

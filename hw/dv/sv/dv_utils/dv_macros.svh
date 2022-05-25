@@ -423,7 +423,7 @@
 // PLUSARG_: the name of the plusarg (as raw text). This is typically the same as the enum variable.
 // CHECK_EXISTS_: Throws a fatal error if the plusarg is not set.
 `ifndef DV_GET_ENUM_PLUSARG
-`define DV_GET_ENUM_PLUSARG(ENUM_, VAR_, PLUSARG_ = VAR_, CHECK_EXISTS_ = 0, ID_ = `gfn) \
+`define DV_GET_ENUM_PLUSARG(ENUM_, VAR_, PLUSARG_, CHECK_EXISTS_ = 0, ID_ = `gfn) \
   begin \
     string str; \
     if ($value$plusargs("``PLUSARG_``=%0s", str)) begin \

@@ -57,18 +57,31 @@ module alert_handler_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [333:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(334)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -2080,6 +2093,9 @@ module alert_handler_reg_top (
 
 
   // R[ping_timeout_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic ping_timeout_cyc_shadowed_gated_we;
+  assign ping_timeout_cyc_shadowed_gated_we = ping_timeout_cyc_shadowed_we & ping_timer_regwen_qs;
   prim_subreg_shadow #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2091,7 +2107,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (ping_timeout_cyc_shadowed_re),
-    .we     (ping_timeout_cyc_shadowed_we & ping_timer_regwen_qs),
+    .we     (ping_timeout_cyc_shadowed_gated_we),
     .wd     (ping_timeout_cyc_shadowed_wd),
 
     // from internal hardware
@@ -2115,6 +2131,9 @@ module alert_handler_reg_top (
 
 
   // R[ping_timer_en_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic ping_timer_en_shadowed_gated_we;
+  assign ping_timer_en_shadowed_gated_we = ping_timer_en_shadowed_we & ping_timer_regwen_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1S),
@@ -2126,7 +2145,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (ping_timer_en_shadowed_re),
-    .we     (ping_timer_en_shadowed_we & ping_timer_regwen_qs),
+    .we     (ping_timer_en_shadowed_gated_we),
     .wd     (ping_timer_en_shadowed_wd),
 
     // from internal hardware
@@ -3798,6 +3817,9 @@ module alert_handler_reg_top (
 
   // Subregister 0 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_0_gated_we;
+  assign alert_en_shadowed_0_gated_we = alert_en_shadowed_0_we & alert_regwen_0_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3809,7 +3831,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_0_re),
-    .we     (alert_en_shadowed_0_we & alert_regwen_0_qs),
+    .we     (alert_en_shadowed_0_gated_we),
     .wd     (alert_en_shadowed_0_wd),
 
     // from internal hardware
@@ -3834,6 +3856,9 @@ module alert_handler_reg_top (
 
   // Subregister 1 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_1_gated_we;
+  assign alert_en_shadowed_1_gated_we = alert_en_shadowed_1_we & alert_regwen_1_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3845,7 +3870,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_1_re),
-    .we     (alert_en_shadowed_1_we & alert_regwen_1_qs),
+    .we     (alert_en_shadowed_1_gated_we),
     .wd     (alert_en_shadowed_1_wd),
 
     // from internal hardware
@@ -3870,6 +3895,9 @@ module alert_handler_reg_top (
 
   // Subregister 2 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_2_gated_we;
+  assign alert_en_shadowed_2_gated_we = alert_en_shadowed_2_we & alert_regwen_2_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3881,7 +3909,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_2_re),
-    .we     (alert_en_shadowed_2_we & alert_regwen_2_qs),
+    .we     (alert_en_shadowed_2_gated_we),
     .wd     (alert_en_shadowed_2_wd),
 
     // from internal hardware
@@ -3906,6 +3934,9 @@ module alert_handler_reg_top (
 
   // Subregister 3 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_3_gated_we;
+  assign alert_en_shadowed_3_gated_we = alert_en_shadowed_3_we & alert_regwen_3_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3917,7 +3948,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_3_re),
-    .we     (alert_en_shadowed_3_we & alert_regwen_3_qs),
+    .we     (alert_en_shadowed_3_gated_we),
     .wd     (alert_en_shadowed_3_wd),
 
     // from internal hardware
@@ -3942,6 +3973,9 @@ module alert_handler_reg_top (
 
   // Subregister 4 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_4_gated_we;
+  assign alert_en_shadowed_4_gated_we = alert_en_shadowed_4_we & alert_regwen_4_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3953,7 +3987,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_4_re),
-    .we     (alert_en_shadowed_4_we & alert_regwen_4_qs),
+    .we     (alert_en_shadowed_4_gated_we),
     .wd     (alert_en_shadowed_4_wd),
 
     // from internal hardware
@@ -3978,6 +4012,9 @@ module alert_handler_reg_top (
 
   // Subregister 5 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_5_gated_we;
+  assign alert_en_shadowed_5_gated_we = alert_en_shadowed_5_we & alert_regwen_5_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3989,7 +4026,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_5_re),
-    .we     (alert_en_shadowed_5_we & alert_regwen_5_qs),
+    .we     (alert_en_shadowed_5_gated_we),
     .wd     (alert_en_shadowed_5_wd),
 
     // from internal hardware
@@ -4014,6 +4051,9 @@ module alert_handler_reg_top (
 
   // Subregister 6 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_6_gated_we;
+  assign alert_en_shadowed_6_gated_we = alert_en_shadowed_6_we & alert_regwen_6_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4025,7 +4065,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_6_re),
-    .we     (alert_en_shadowed_6_we & alert_regwen_6_qs),
+    .we     (alert_en_shadowed_6_gated_we),
     .wd     (alert_en_shadowed_6_wd),
 
     // from internal hardware
@@ -4050,6 +4090,9 @@ module alert_handler_reg_top (
 
   // Subregister 7 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_7_gated_we;
+  assign alert_en_shadowed_7_gated_we = alert_en_shadowed_7_we & alert_regwen_7_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4061,7 +4104,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_7_re),
-    .we     (alert_en_shadowed_7_we & alert_regwen_7_qs),
+    .we     (alert_en_shadowed_7_gated_we),
     .wd     (alert_en_shadowed_7_wd),
 
     // from internal hardware
@@ -4086,6 +4129,9 @@ module alert_handler_reg_top (
 
   // Subregister 8 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_8_gated_we;
+  assign alert_en_shadowed_8_gated_we = alert_en_shadowed_8_we & alert_regwen_8_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4097,7 +4143,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_8_re),
-    .we     (alert_en_shadowed_8_we & alert_regwen_8_qs),
+    .we     (alert_en_shadowed_8_gated_we),
     .wd     (alert_en_shadowed_8_wd),
 
     // from internal hardware
@@ -4122,6 +4168,9 @@ module alert_handler_reg_top (
 
   // Subregister 9 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_9_gated_we;
+  assign alert_en_shadowed_9_gated_we = alert_en_shadowed_9_we & alert_regwen_9_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4133,7 +4182,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_9_re),
-    .we     (alert_en_shadowed_9_we & alert_regwen_9_qs),
+    .we     (alert_en_shadowed_9_gated_we),
     .wd     (alert_en_shadowed_9_wd),
 
     // from internal hardware
@@ -4158,6 +4207,9 @@ module alert_handler_reg_top (
 
   // Subregister 10 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_10]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_10_gated_we;
+  assign alert_en_shadowed_10_gated_we = alert_en_shadowed_10_we & alert_regwen_10_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4169,7 +4221,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_10_re),
-    .we     (alert_en_shadowed_10_we & alert_regwen_10_qs),
+    .we     (alert_en_shadowed_10_gated_we),
     .wd     (alert_en_shadowed_10_wd),
 
     // from internal hardware
@@ -4194,6 +4246,9 @@ module alert_handler_reg_top (
 
   // Subregister 11 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_11]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_11_gated_we;
+  assign alert_en_shadowed_11_gated_we = alert_en_shadowed_11_we & alert_regwen_11_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4205,7 +4260,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_11_re),
-    .we     (alert_en_shadowed_11_we & alert_regwen_11_qs),
+    .we     (alert_en_shadowed_11_gated_we),
     .wd     (alert_en_shadowed_11_wd),
 
     // from internal hardware
@@ -4230,6 +4285,9 @@ module alert_handler_reg_top (
 
   // Subregister 12 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_12_gated_we;
+  assign alert_en_shadowed_12_gated_we = alert_en_shadowed_12_we & alert_regwen_12_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4241,7 +4299,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_12_re),
-    .we     (alert_en_shadowed_12_we & alert_regwen_12_qs),
+    .we     (alert_en_shadowed_12_gated_we),
     .wd     (alert_en_shadowed_12_wd),
 
     // from internal hardware
@@ -4266,6 +4324,9 @@ module alert_handler_reg_top (
 
   // Subregister 13 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_13_gated_we;
+  assign alert_en_shadowed_13_gated_we = alert_en_shadowed_13_we & alert_regwen_13_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4277,7 +4338,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_13_re),
-    .we     (alert_en_shadowed_13_we & alert_regwen_13_qs),
+    .we     (alert_en_shadowed_13_gated_we),
     .wd     (alert_en_shadowed_13_wd),
 
     // from internal hardware
@@ -4302,6 +4363,9 @@ module alert_handler_reg_top (
 
   // Subregister 14 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_14_gated_we;
+  assign alert_en_shadowed_14_gated_we = alert_en_shadowed_14_we & alert_regwen_14_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4313,7 +4377,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_14_re),
-    .we     (alert_en_shadowed_14_we & alert_regwen_14_qs),
+    .we     (alert_en_shadowed_14_gated_we),
     .wd     (alert_en_shadowed_14_wd),
 
     // from internal hardware
@@ -4338,6 +4402,9 @@ module alert_handler_reg_top (
 
   // Subregister 15 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_15_gated_we;
+  assign alert_en_shadowed_15_gated_we = alert_en_shadowed_15_we & alert_regwen_15_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4349,7 +4416,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_15_re),
-    .we     (alert_en_shadowed_15_we & alert_regwen_15_qs),
+    .we     (alert_en_shadowed_15_gated_we),
     .wd     (alert_en_shadowed_15_wd),
 
     // from internal hardware
@@ -4374,6 +4441,9 @@ module alert_handler_reg_top (
 
   // Subregister 16 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_16]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_16_gated_we;
+  assign alert_en_shadowed_16_gated_we = alert_en_shadowed_16_we & alert_regwen_16_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4385,7 +4455,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_16_re),
-    .we     (alert_en_shadowed_16_we & alert_regwen_16_qs),
+    .we     (alert_en_shadowed_16_gated_we),
     .wd     (alert_en_shadowed_16_wd),
 
     // from internal hardware
@@ -4410,6 +4480,9 @@ module alert_handler_reg_top (
 
   // Subregister 17 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_17]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_17_gated_we;
+  assign alert_en_shadowed_17_gated_we = alert_en_shadowed_17_we & alert_regwen_17_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4421,7 +4494,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_17_re),
-    .we     (alert_en_shadowed_17_we & alert_regwen_17_qs),
+    .we     (alert_en_shadowed_17_gated_we),
     .wd     (alert_en_shadowed_17_wd),
 
     // from internal hardware
@@ -4446,6 +4519,9 @@ module alert_handler_reg_top (
 
   // Subregister 18 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_18]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_18_gated_we;
+  assign alert_en_shadowed_18_gated_we = alert_en_shadowed_18_we & alert_regwen_18_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4457,7 +4533,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_18_re),
-    .we     (alert_en_shadowed_18_we & alert_regwen_18_qs),
+    .we     (alert_en_shadowed_18_gated_we),
     .wd     (alert_en_shadowed_18_wd),
 
     // from internal hardware
@@ -4482,6 +4558,9 @@ module alert_handler_reg_top (
 
   // Subregister 19 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_19]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_19_gated_we;
+  assign alert_en_shadowed_19_gated_we = alert_en_shadowed_19_we & alert_regwen_19_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4493,7 +4572,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_19_re),
-    .we     (alert_en_shadowed_19_we & alert_regwen_19_qs),
+    .we     (alert_en_shadowed_19_gated_we),
     .wd     (alert_en_shadowed_19_wd),
 
     // from internal hardware
@@ -4518,6 +4597,9 @@ module alert_handler_reg_top (
 
   // Subregister 20 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_20]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_20_gated_we;
+  assign alert_en_shadowed_20_gated_we = alert_en_shadowed_20_we & alert_regwen_20_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4529,7 +4611,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_20_re),
-    .we     (alert_en_shadowed_20_we & alert_regwen_20_qs),
+    .we     (alert_en_shadowed_20_gated_we),
     .wd     (alert_en_shadowed_20_wd),
 
     // from internal hardware
@@ -4554,6 +4636,9 @@ module alert_handler_reg_top (
 
   // Subregister 21 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_21]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_21_gated_we;
+  assign alert_en_shadowed_21_gated_we = alert_en_shadowed_21_we & alert_regwen_21_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4565,7 +4650,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_21_re),
-    .we     (alert_en_shadowed_21_we & alert_regwen_21_qs),
+    .we     (alert_en_shadowed_21_gated_we),
     .wd     (alert_en_shadowed_21_wd),
 
     // from internal hardware
@@ -4590,6 +4675,9 @@ module alert_handler_reg_top (
 
   // Subregister 22 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_22]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_22_gated_we;
+  assign alert_en_shadowed_22_gated_we = alert_en_shadowed_22_we & alert_regwen_22_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4601,7 +4689,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_22_re),
-    .we     (alert_en_shadowed_22_we & alert_regwen_22_qs),
+    .we     (alert_en_shadowed_22_gated_we),
     .wd     (alert_en_shadowed_22_wd),
 
     // from internal hardware
@@ -4626,6 +4714,9 @@ module alert_handler_reg_top (
 
   // Subregister 23 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_23]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_23_gated_we;
+  assign alert_en_shadowed_23_gated_we = alert_en_shadowed_23_we & alert_regwen_23_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4637,7 +4728,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_23_re),
-    .we     (alert_en_shadowed_23_we & alert_regwen_23_qs),
+    .we     (alert_en_shadowed_23_gated_we),
     .wd     (alert_en_shadowed_23_wd),
 
     // from internal hardware
@@ -4662,6 +4753,9 @@ module alert_handler_reg_top (
 
   // Subregister 24 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_24]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_24_gated_we;
+  assign alert_en_shadowed_24_gated_we = alert_en_shadowed_24_we & alert_regwen_24_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4673,7 +4767,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_24_re),
-    .we     (alert_en_shadowed_24_we & alert_regwen_24_qs),
+    .we     (alert_en_shadowed_24_gated_we),
     .wd     (alert_en_shadowed_24_wd),
 
     // from internal hardware
@@ -4698,6 +4792,9 @@ module alert_handler_reg_top (
 
   // Subregister 25 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_25]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_25_gated_we;
+  assign alert_en_shadowed_25_gated_we = alert_en_shadowed_25_we & alert_regwen_25_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4709,7 +4806,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_25_re),
-    .we     (alert_en_shadowed_25_we & alert_regwen_25_qs),
+    .we     (alert_en_shadowed_25_gated_we),
     .wd     (alert_en_shadowed_25_wd),
 
     // from internal hardware
@@ -4734,6 +4831,9 @@ module alert_handler_reg_top (
 
   // Subregister 26 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_26]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_26_gated_we;
+  assign alert_en_shadowed_26_gated_we = alert_en_shadowed_26_we & alert_regwen_26_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4745,7 +4845,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_26_re),
-    .we     (alert_en_shadowed_26_we & alert_regwen_26_qs),
+    .we     (alert_en_shadowed_26_gated_we),
     .wd     (alert_en_shadowed_26_wd),
 
     // from internal hardware
@@ -4770,6 +4870,9 @@ module alert_handler_reg_top (
 
   // Subregister 27 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_27]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_27_gated_we;
+  assign alert_en_shadowed_27_gated_we = alert_en_shadowed_27_we & alert_regwen_27_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4781,7 +4884,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_27_re),
-    .we     (alert_en_shadowed_27_we & alert_regwen_27_qs),
+    .we     (alert_en_shadowed_27_gated_we),
     .wd     (alert_en_shadowed_27_wd),
 
     // from internal hardware
@@ -4806,6 +4909,9 @@ module alert_handler_reg_top (
 
   // Subregister 28 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_28]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_28_gated_we;
+  assign alert_en_shadowed_28_gated_we = alert_en_shadowed_28_we & alert_regwen_28_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4817,7 +4923,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_28_re),
-    .we     (alert_en_shadowed_28_we & alert_regwen_28_qs),
+    .we     (alert_en_shadowed_28_gated_we),
     .wd     (alert_en_shadowed_28_wd),
 
     // from internal hardware
@@ -4842,6 +4948,9 @@ module alert_handler_reg_top (
 
   // Subregister 29 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_29]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_29_gated_we;
+  assign alert_en_shadowed_29_gated_we = alert_en_shadowed_29_we & alert_regwen_29_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4853,7 +4962,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_29_re),
-    .we     (alert_en_shadowed_29_we & alert_regwen_29_qs),
+    .we     (alert_en_shadowed_29_gated_we),
     .wd     (alert_en_shadowed_29_wd),
 
     // from internal hardware
@@ -4878,6 +4987,9 @@ module alert_handler_reg_top (
 
   // Subregister 30 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_30]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_30_gated_we;
+  assign alert_en_shadowed_30_gated_we = alert_en_shadowed_30_we & alert_regwen_30_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4889,7 +5001,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_30_re),
-    .we     (alert_en_shadowed_30_we & alert_regwen_30_qs),
+    .we     (alert_en_shadowed_30_gated_we),
     .wd     (alert_en_shadowed_30_wd),
 
     // from internal hardware
@@ -4914,6 +5026,9 @@ module alert_handler_reg_top (
 
   // Subregister 31 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_31]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_31_gated_we;
+  assign alert_en_shadowed_31_gated_we = alert_en_shadowed_31_we & alert_regwen_31_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4925,7 +5040,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_31_re),
-    .we     (alert_en_shadowed_31_we & alert_regwen_31_qs),
+    .we     (alert_en_shadowed_31_gated_we),
     .wd     (alert_en_shadowed_31_wd),
 
     // from internal hardware
@@ -4950,6 +5065,9 @@ module alert_handler_reg_top (
 
   // Subregister 32 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_32]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_32_gated_we;
+  assign alert_en_shadowed_32_gated_we = alert_en_shadowed_32_we & alert_regwen_32_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4961,7 +5079,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_32_re),
-    .we     (alert_en_shadowed_32_we & alert_regwen_32_qs),
+    .we     (alert_en_shadowed_32_gated_we),
     .wd     (alert_en_shadowed_32_wd),
 
     // from internal hardware
@@ -4986,6 +5104,9 @@ module alert_handler_reg_top (
 
   // Subregister 33 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_33]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_33_gated_we;
+  assign alert_en_shadowed_33_gated_we = alert_en_shadowed_33_we & alert_regwen_33_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4997,7 +5118,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_33_re),
-    .we     (alert_en_shadowed_33_we & alert_regwen_33_qs),
+    .we     (alert_en_shadowed_33_gated_we),
     .wd     (alert_en_shadowed_33_wd),
 
     // from internal hardware
@@ -5022,6 +5143,9 @@ module alert_handler_reg_top (
 
   // Subregister 34 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_34]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_34_gated_we;
+  assign alert_en_shadowed_34_gated_we = alert_en_shadowed_34_we & alert_regwen_34_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5033,7 +5157,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_34_re),
-    .we     (alert_en_shadowed_34_we & alert_regwen_34_qs),
+    .we     (alert_en_shadowed_34_gated_we),
     .wd     (alert_en_shadowed_34_wd),
 
     // from internal hardware
@@ -5058,6 +5182,9 @@ module alert_handler_reg_top (
 
   // Subregister 35 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_35]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_35_gated_we;
+  assign alert_en_shadowed_35_gated_we = alert_en_shadowed_35_we & alert_regwen_35_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5069,7 +5196,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_35_re),
-    .we     (alert_en_shadowed_35_we & alert_regwen_35_qs),
+    .we     (alert_en_shadowed_35_gated_we),
     .wd     (alert_en_shadowed_35_wd),
 
     // from internal hardware
@@ -5094,6 +5221,9 @@ module alert_handler_reg_top (
 
   // Subregister 36 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_36]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_36_gated_we;
+  assign alert_en_shadowed_36_gated_we = alert_en_shadowed_36_we & alert_regwen_36_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5105,7 +5235,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_36_re),
-    .we     (alert_en_shadowed_36_we & alert_regwen_36_qs),
+    .we     (alert_en_shadowed_36_gated_we),
     .wd     (alert_en_shadowed_36_wd),
 
     // from internal hardware
@@ -5130,6 +5260,9 @@ module alert_handler_reg_top (
 
   // Subregister 37 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_37]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_37_gated_we;
+  assign alert_en_shadowed_37_gated_we = alert_en_shadowed_37_we & alert_regwen_37_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5141,7 +5274,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_37_re),
-    .we     (alert_en_shadowed_37_we & alert_regwen_37_qs),
+    .we     (alert_en_shadowed_37_gated_we),
     .wd     (alert_en_shadowed_37_wd),
 
     // from internal hardware
@@ -5166,6 +5299,9 @@ module alert_handler_reg_top (
 
   // Subregister 38 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_38]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_38_gated_we;
+  assign alert_en_shadowed_38_gated_we = alert_en_shadowed_38_we & alert_regwen_38_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5177,7 +5313,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_38_re),
-    .we     (alert_en_shadowed_38_we & alert_regwen_38_qs),
+    .we     (alert_en_shadowed_38_gated_we),
     .wd     (alert_en_shadowed_38_wd),
 
     // from internal hardware
@@ -5202,6 +5338,9 @@ module alert_handler_reg_top (
 
   // Subregister 39 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_39]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_39_gated_we;
+  assign alert_en_shadowed_39_gated_we = alert_en_shadowed_39_we & alert_regwen_39_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5213,7 +5352,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_39_re),
-    .we     (alert_en_shadowed_39_we & alert_regwen_39_qs),
+    .we     (alert_en_shadowed_39_gated_we),
     .wd     (alert_en_shadowed_39_wd),
 
     // from internal hardware
@@ -5238,6 +5377,9 @@ module alert_handler_reg_top (
 
   // Subregister 40 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_40]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_40_gated_we;
+  assign alert_en_shadowed_40_gated_we = alert_en_shadowed_40_we & alert_regwen_40_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5249,7 +5391,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_40_re),
-    .we     (alert_en_shadowed_40_we & alert_regwen_40_qs),
+    .we     (alert_en_shadowed_40_gated_we),
     .wd     (alert_en_shadowed_40_wd),
 
     // from internal hardware
@@ -5274,6 +5416,9 @@ module alert_handler_reg_top (
 
   // Subregister 41 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_41]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_41_gated_we;
+  assign alert_en_shadowed_41_gated_we = alert_en_shadowed_41_we & alert_regwen_41_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5285,7 +5430,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_41_re),
-    .we     (alert_en_shadowed_41_we & alert_regwen_41_qs),
+    .we     (alert_en_shadowed_41_gated_we),
     .wd     (alert_en_shadowed_41_wd),
 
     // from internal hardware
@@ -5310,6 +5455,9 @@ module alert_handler_reg_top (
 
   // Subregister 42 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_42]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_42_gated_we;
+  assign alert_en_shadowed_42_gated_we = alert_en_shadowed_42_we & alert_regwen_42_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5321,7 +5469,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_42_re),
-    .we     (alert_en_shadowed_42_we & alert_regwen_42_qs),
+    .we     (alert_en_shadowed_42_gated_we),
     .wd     (alert_en_shadowed_42_wd),
 
     // from internal hardware
@@ -5346,6 +5494,9 @@ module alert_handler_reg_top (
 
   // Subregister 43 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_43]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_43_gated_we;
+  assign alert_en_shadowed_43_gated_we = alert_en_shadowed_43_we & alert_regwen_43_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5357,7 +5508,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_43_re),
-    .we     (alert_en_shadowed_43_we & alert_regwen_43_qs),
+    .we     (alert_en_shadowed_43_gated_we),
     .wd     (alert_en_shadowed_43_wd),
 
     // from internal hardware
@@ -5382,6 +5533,9 @@ module alert_handler_reg_top (
 
   // Subregister 44 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_44]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_44_gated_we;
+  assign alert_en_shadowed_44_gated_we = alert_en_shadowed_44_we & alert_regwen_44_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5393,7 +5547,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_44_re),
-    .we     (alert_en_shadowed_44_we & alert_regwen_44_qs),
+    .we     (alert_en_shadowed_44_gated_we),
     .wd     (alert_en_shadowed_44_wd),
 
     // from internal hardware
@@ -5418,6 +5572,9 @@ module alert_handler_reg_top (
 
   // Subregister 45 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_45]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_45_gated_we;
+  assign alert_en_shadowed_45_gated_we = alert_en_shadowed_45_we & alert_regwen_45_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5429,7 +5586,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_45_re),
-    .we     (alert_en_shadowed_45_we & alert_regwen_45_qs),
+    .we     (alert_en_shadowed_45_gated_we),
     .wd     (alert_en_shadowed_45_wd),
 
     // from internal hardware
@@ -5454,6 +5611,9 @@ module alert_handler_reg_top (
 
   // Subregister 46 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_46]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_46_gated_we;
+  assign alert_en_shadowed_46_gated_we = alert_en_shadowed_46_we & alert_regwen_46_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5465,7 +5625,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_46_re),
-    .we     (alert_en_shadowed_46_we & alert_regwen_46_qs),
+    .we     (alert_en_shadowed_46_gated_we),
     .wd     (alert_en_shadowed_46_wd),
 
     // from internal hardware
@@ -5490,6 +5650,9 @@ module alert_handler_reg_top (
 
   // Subregister 47 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_47]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_47_gated_we;
+  assign alert_en_shadowed_47_gated_we = alert_en_shadowed_47_we & alert_regwen_47_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5501,7 +5664,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_47_re),
-    .we     (alert_en_shadowed_47_we & alert_regwen_47_qs),
+    .we     (alert_en_shadowed_47_gated_we),
     .wd     (alert_en_shadowed_47_wd),
 
     // from internal hardware
@@ -5526,6 +5689,9 @@ module alert_handler_reg_top (
 
   // Subregister 48 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_48]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_48_gated_we;
+  assign alert_en_shadowed_48_gated_we = alert_en_shadowed_48_we & alert_regwen_48_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5537,7 +5703,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_48_re),
-    .we     (alert_en_shadowed_48_we & alert_regwen_48_qs),
+    .we     (alert_en_shadowed_48_gated_we),
     .wd     (alert_en_shadowed_48_wd),
 
     // from internal hardware
@@ -5562,6 +5728,9 @@ module alert_handler_reg_top (
 
   // Subregister 49 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_49]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_49_gated_we;
+  assign alert_en_shadowed_49_gated_we = alert_en_shadowed_49_we & alert_regwen_49_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5573,7 +5742,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_49_re),
-    .we     (alert_en_shadowed_49_we & alert_regwen_49_qs),
+    .we     (alert_en_shadowed_49_gated_we),
     .wd     (alert_en_shadowed_49_wd),
 
     // from internal hardware
@@ -5598,6 +5767,9 @@ module alert_handler_reg_top (
 
   // Subregister 50 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_50]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_50_gated_we;
+  assign alert_en_shadowed_50_gated_we = alert_en_shadowed_50_we & alert_regwen_50_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5609,7 +5781,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_50_re),
-    .we     (alert_en_shadowed_50_we & alert_regwen_50_qs),
+    .we     (alert_en_shadowed_50_gated_we),
     .wd     (alert_en_shadowed_50_wd),
 
     // from internal hardware
@@ -5634,6 +5806,9 @@ module alert_handler_reg_top (
 
   // Subregister 51 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_51]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_51_gated_we;
+  assign alert_en_shadowed_51_gated_we = alert_en_shadowed_51_we & alert_regwen_51_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5645,7 +5820,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_51_re),
-    .we     (alert_en_shadowed_51_we & alert_regwen_51_qs),
+    .we     (alert_en_shadowed_51_gated_we),
     .wd     (alert_en_shadowed_51_wd),
 
     // from internal hardware
@@ -5670,6 +5845,9 @@ module alert_handler_reg_top (
 
   // Subregister 52 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_52]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_52_gated_we;
+  assign alert_en_shadowed_52_gated_we = alert_en_shadowed_52_we & alert_regwen_52_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5681,7 +5859,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_52_re),
-    .we     (alert_en_shadowed_52_we & alert_regwen_52_qs),
+    .we     (alert_en_shadowed_52_gated_we),
     .wd     (alert_en_shadowed_52_wd),
 
     // from internal hardware
@@ -5706,6 +5884,9 @@ module alert_handler_reg_top (
 
   // Subregister 53 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_53]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_53_gated_we;
+  assign alert_en_shadowed_53_gated_we = alert_en_shadowed_53_we & alert_regwen_53_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5717,7 +5898,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_53_re),
-    .we     (alert_en_shadowed_53_we & alert_regwen_53_qs),
+    .we     (alert_en_shadowed_53_gated_we),
     .wd     (alert_en_shadowed_53_wd),
 
     // from internal hardware
@@ -5742,6 +5923,9 @@ module alert_handler_reg_top (
 
   // Subregister 54 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_54]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_54_gated_we;
+  assign alert_en_shadowed_54_gated_we = alert_en_shadowed_54_we & alert_regwen_54_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5753,7 +5937,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_54_re),
-    .we     (alert_en_shadowed_54_we & alert_regwen_54_qs),
+    .we     (alert_en_shadowed_54_gated_we),
     .wd     (alert_en_shadowed_54_wd),
 
     // from internal hardware
@@ -5778,6 +5962,9 @@ module alert_handler_reg_top (
 
   // Subregister 55 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_55]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_55_gated_we;
+  assign alert_en_shadowed_55_gated_we = alert_en_shadowed_55_we & alert_regwen_55_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5789,7 +5976,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_55_re),
-    .we     (alert_en_shadowed_55_we & alert_regwen_55_qs),
+    .we     (alert_en_shadowed_55_gated_we),
     .wd     (alert_en_shadowed_55_wd),
 
     // from internal hardware
@@ -5814,6 +6001,9 @@ module alert_handler_reg_top (
 
   // Subregister 56 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_56]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_56_gated_we;
+  assign alert_en_shadowed_56_gated_we = alert_en_shadowed_56_we & alert_regwen_56_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5825,7 +6015,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_56_re),
-    .we     (alert_en_shadowed_56_we & alert_regwen_56_qs),
+    .we     (alert_en_shadowed_56_gated_we),
     .wd     (alert_en_shadowed_56_wd),
 
     // from internal hardware
@@ -5850,6 +6040,9 @@ module alert_handler_reg_top (
 
   // Subregister 57 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_57]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_57_gated_we;
+  assign alert_en_shadowed_57_gated_we = alert_en_shadowed_57_we & alert_regwen_57_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5861,7 +6054,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_57_re),
-    .we     (alert_en_shadowed_57_we & alert_regwen_57_qs),
+    .we     (alert_en_shadowed_57_gated_we),
     .wd     (alert_en_shadowed_57_wd),
 
     // from internal hardware
@@ -5886,6 +6079,9 @@ module alert_handler_reg_top (
 
   // Subregister 58 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_58]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_58_gated_we;
+  assign alert_en_shadowed_58_gated_we = alert_en_shadowed_58_we & alert_regwen_58_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5897,7 +6093,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_58_re),
-    .we     (alert_en_shadowed_58_we & alert_regwen_58_qs),
+    .we     (alert_en_shadowed_58_gated_we),
     .wd     (alert_en_shadowed_58_wd),
 
     // from internal hardware
@@ -5922,6 +6118,9 @@ module alert_handler_reg_top (
 
   // Subregister 59 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_59]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_59_gated_we;
+  assign alert_en_shadowed_59_gated_we = alert_en_shadowed_59_we & alert_regwen_59_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5933,7 +6132,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_59_re),
-    .we     (alert_en_shadowed_59_we & alert_regwen_59_qs),
+    .we     (alert_en_shadowed_59_gated_we),
     .wd     (alert_en_shadowed_59_wd),
 
     // from internal hardware
@@ -5958,6 +6157,9 @@ module alert_handler_reg_top (
 
   // Subregister 60 of Multireg alert_en_shadowed
   // R[alert_en_shadowed_60]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_en_shadowed_60_gated_we;
+  assign alert_en_shadowed_60_gated_we = alert_en_shadowed_60_we & alert_regwen_60_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5969,7 +6171,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_en_shadowed_60_re),
-    .we     (alert_en_shadowed_60_we & alert_regwen_60_qs),
+    .we     (alert_en_shadowed_60_gated_we),
     .wd     (alert_en_shadowed_60_wd),
 
     // from internal hardware
@@ -5994,6 +6196,9 @@ module alert_handler_reg_top (
 
   // Subregister 0 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_0_gated_we;
+  assign alert_class_shadowed_0_gated_we = alert_class_shadowed_0_we & alert_regwen_0_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6005,7 +6210,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_0_re),
-    .we     (alert_class_shadowed_0_we & alert_regwen_0_qs),
+    .we     (alert_class_shadowed_0_gated_we),
     .wd     (alert_class_shadowed_0_wd),
 
     // from internal hardware
@@ -6030,6 +6235,9 @@ module alert_handler_reg_top (
 
   // Subregister 1 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_1_gated_we;
+  assign alert_class_shadowed_1_gated_we = alert_class_shadowed_1_we & alert_regwen_1_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6041,7 +6249,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_1_re),
-    .we     (alert_class_shadowed_1_we & alert_regwen_1_qs),
+    .we     (alert_class_shadowed_1_gated_we),
     .wd     (alert_class_shadowed_1_wd),
 
     // from internal hardware
@@ -6066,6 +6274,9 @@ module alert_handler_reg_top (
 
   // Subregister 2 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_2_gated_we;
+  assign alert_class_shadowed_2_gated_we = alert_class_shadowed_2_we & alert_regwen_2_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6077,7 +6288,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_2_re),
-    .we     (alert_class_shadowed_2_we & alert_regwen_2_qs),
+    .we     (alert_class_shadowed_2_gated_we),
     .wd     (alert_class_shadowed_2_wd),
 
     // from internal hardware
@@ -6102,6 +6313,9 @@ module alert_handler_reg_top (
 
   // Subregister 3 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_3_gated_we;
+  assign alert_class_shadowed_3_gated_we = alert_class_shadowed_3_we & alert_regwen_3_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6113,7 +6327,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_3_re),
-    .we     (alert_class_shadowed_3_we & alert_regwen_3_qs),
+    .we     (alert_class_shadowed_3_gated_we),
     .wd     (alert_class_shadowed_3_wd),
 
     // from internal hardware
@@ -6138,6 +6352,9 @@ module alert_handler_reg_top (
 
   // Subregister 4 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_4_gated_we;
+  assign alert_class_shadowed_4_gated_we = alert_class_shadowed_4_we & alert_regwen_4_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6149,7 +6366,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_4_re),
-    .we     (alert_class_shadowed_4_we & alert_regwen_4_qs),
+    .we     (alert_class_shadowed_4_gated_we),
     .wd     (alert_class_shadowed_4_wd),
 
     // from internal hardware
@@ -6174,6 +6391,9 @@ module alert_handler_reg_top (
 
   // Subregister 5 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_5_gated_we;
+  assign alert_class_shadowed_5_gated_we = alert_class_shadowed_5_we & alert_regwen_5_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6185,7 +6405,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_5_re),
-    .we     (alert_class_shadowed_5_we & alert_regwen_5_qs),
+    .we     (alert_class_shadowed_5_gated_we),
     .wd     (alert_class_shadowed_5_wd),
 
     // from internal hardware
@@ -6210,6 +6430,9 @@ module alert_handler_reg_top (
 
   // Subregister 6 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_6_gated_we;
+  assign alert_class_shadowed_6_gated_we = alert_class_shadowed_6_we & alert_regwen_6_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6221,7 +6444,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_6_re),
-    .we     (alert_class_shadowed_6_we & alert_regwen_6_qs),
+    .we     (alert_class_shadowed_6_gated_we),
     .wd     (alert_class_shadowed_6_wd),
 
     // from internal hardware
@@ -6246,6 +6469,9 @@ module alert_handler_reg_top (
 
   // Subregister 7 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_7_gated_we;
+  assign alert_class_shadowed_7_gated_we = alert_class_shadowed_7_we & alert_regwen_7_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6257,7 +6483,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_7_re),
-    .we     (alert_class_shadowed_7_we & alert_regwen_7_qs),
+    .we     (alert_class_shadowed_7_gated_we),
     .wd     (alert_class_shadowed_7_wd),
 
     // from internal hardware
@@ -6282,6 +6508,9 @@ module alert_handler_reg_top (
 
   // Subregister 8 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_8_gated_we;
+  assign alert_class_shadowed_8_gated_we = alert_class_shadowed_8_we & alert_regwen_8_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6293,7 +6522,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_8_re),
-    .we     (alert_class_shadowed_8_we & alert_regwen_8_qs),
+    .we     (alert_class_shadowed_8_gated_we),
     .wd     (alert_class_shadowed_8_wd),
 
     // from internal hardware
@@ -6318,6 +6547,9 @@ module alert_handler_reg_top (
 
   // Subregister 9 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_9_gated_we;
+  assign alert_class_shadowed_9_gated_we = alert_class_shadowed_9_we & alert_regwen_9_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6329,7 +6561,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_9_re),
-    .we     (alert_class_shadowed_9_we & alert_regwen_9_qs),
+    .we     (alert_class_shadowed_9_gated_we),
     .wd     (alert_class_shadowed_9_wd),
 
     // from internal hardware
@@ -6354,6 +6586,9 @@ module alert_handler_reg_top (
 
   // Subregister 10 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_10]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_10_gated_we;
+  assign alert_class_shadowed_10_gated_we = alert_class_shadowed_10_we & alert_regwen_10_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6365,7 +6600,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_10_re),
-    .we     (alert_class_shadowed_10_we & alert_regwen_10_qs),
+    .we     (alert_class_shadowed_10_gated_we),
     .wd     (alert_class_shadowed_10_wd),
 
     // from internal hardware
@@ -6390,6 +6625,9 @@ module alert_handler_reg_top (
 
   // Subregister 11 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_11]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_11_gated_we;
+  assign alert_class_shadowed_11_gated_we = alert_class_shadowed_11_we & alert_regwen_11_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6401,7 +6639,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_11_re),
-    .we     (alert_class_shadowed_11_we & alert_regwen_11_qs),
+    .we     (alert_class_shadowed_11_gated_we),
     .wd     (alert_class_shadowed_11_wd),
 
     // from internal hardware
@@ -6426,6 +6664,9 @@ module alert_handler_reg_top (
 
   // Subregister 12 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_12_gated_we;
+  assign alert_class_shadowed_12_gated_we = alert_class_shadowed_12_we & alert_regwen_12_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6437,7 +6678,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_12_re),
-    .we     (alert_class_shadowed_12_we & alert_regwen_12_qs),
+    .we     (alert_class_shadowed_12_gated_we),
     .wd     (alert_class_shadowed_12_wd),
 
     // from internal hardware
@@ -6462,6 +6703,9 @@ module alert_handler_reg_top (
 
   // Subregister 13 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_13_gated_we;
+  assign alert_class_shadowed_13_gated_we = alert_class_shadowed_13_we & alert_regwen_13_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6473,7 +6717,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_13_re),
-    .we     (alert_class_shadowed_13_we & alert_regwen_13_qs),
+    .we     (alert_class_shadowed_13_gated_we),
     .wd     (alert_class_shadowed_13_wd),
 
     // from internal hardware
@@ -6498,6 +6742,9 @@ module alert_handler_reg_top (
 
   // Subregister 14 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_14_gated_we;
+  assign alert_class_shadowed_14_gated_we = alert_class_shadowed_14_we & alert_regwen_14_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6509,7 +6756,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_14_re),
-    .we     (alert_class_shadowed_14_we & alert_regwen_14_qs),
+    .we     (alert_class_shadowed_14_gated_we),
     .wd     (alert_class_shadowed_14_wd),
 
     // from internal hardware
@@ -6534,6 +6781,9 @@ module alert_handler_reg_top (
 
   // Subregister 15 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_15_gated_we;
+  assign alert_class_shadowed_15_gated_we = alert_class_shadowed_15_we & alert_regwen_15_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6545,7 +6795,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_15_re),
-    .we     (alert_class_shadowed_15_we & alert_regwen_15_qs),
+    .we     (alert_class_shadowed_15_gated_we),
     .wd     (alert_class_shadowed_15_wd),
 
     // from internal hardware
@@ -6570,6 +6820,9 @@ module alert_handler_reg_top (
 
   // Subregister 16 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_16]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_16_gated_we;
+  assign alert_class_shadowed_16_gated_we = alert_class_shadowed_16_we & alert_regwen_16_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6581,7 +6834,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_16_re),
-    .we     (alert_class_shadowed_16_we & alert_regwen_16_qs),
+    .we     (alert_class_shadowed_16_gated_we),
     .wd     (alert_class_shadowed_16_wd),
 
     // from internal hardware
@@ -6606,6 +6859,9 @@ module alert_handler_reg_top (
 
   // Subregister 17 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_17]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_17_gated_we;
+  assign alert_class_shadowed_17_gated_we = alert_class_shadowed_17_we & alert_regwen_17_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6617,7 +6873,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_17_re),
-    .we     (alert_class_shadowed_17_we & alert_regwen_17_qs),
+    .we     (alert_class_shadowed_17_gated_we),
     .wd     (alert_class_shadowed_17_wd),
 
     // from internal hardware
@@ -6642,6 +6898,9 @@ module alert_handler_reg_top (
 
   // Subregister 18 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_18]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_18_gated_we;
+  assign alert_class_shadowed_18_gated_we = alert_class_shadowed_18_we & alert_regwen_18_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6653,7 +6912,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_18_re),
-    .we     (alert_class_shadowed_18_we & alert_regwen_18_qs),
+    .we     (alert_class_shadowed_18_gated_we),
     .wd     (alert_class_shadowed_18_wd),
 
     // from internal hardware
@@ -6678,6 +6937,9 @@ module alert_handler_reg_top (
 
   // Subregister 19 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_19]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_19_gated_we;
+  assign alert_class_shadowed_19_gated_we = alert_class_shadowed_19_we & alert_regwen_19_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6689,7 +6951,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_19_re),
-    .we     (alert_class_shadowed_19_we & alert_regwen_19_qs),
+    .we     (alert_class_shadowed_19_gated_we),
     .wd     (alert_class_shadowed_19_wd),
 
     // from internal hardware
@@ -6714,6 +6976,9 @@ module alert_handler_reg_top (
 
   // Subregister 20 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_20]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_20_gated_we;
+  assign alert_class_shadowed_20_gated_we = alert_class_shadowed_20_we & alert_regwen_20_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6725,7 +6990,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_20_re),
-    .we     (alert_class_shadowed_20_we & alert_regwen_20_qs),
+    .we     (alert_class_shadowed_20_gated_we),
     .wd     (alert_class_shadowed_20_wd),
 
     // from internal hardware
@@ -6750,6 +7015,9 @@ module alert_handler_reg_top (
 
   // Subregister 21 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_21]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_21_gated_we;
+  assign alert_class_shadowed_21_gated_we = alert_class_shadowed_21_we & alert_regwen_21_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6761,7 +7029,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_21_re),
-    .we     (alert_class_shadowed_21_we & alert_regwen_21_qs),
+    .we     (alert_class_shadowed_21_gated_we),
     .wd     (alert_class_shadowed_21_wd),
 
     // from internal hardware
@@ -6786,6 +7054,9 @@ module alert_handler_reg_top (
 
   // Subregister 22 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_22]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_22_gated_we;
+  assign alert_class_shadowed_22_gated_we = alert_class_shadowed_22_we & alert_regwen_22_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6797,7 +7068,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_22_re),
-    .we     (alert_class_shadowed_22_we & alert_regwen_22_qs),
+    .we     (alert_class_shadowed_22_gated_we),
     .wd     (alert_class_shadowed_22_wd),
 
     // from internal hardware
@@ -6822,6 +7093,9 @@ module alert_handler_reg_top (
 
   // Subregister 23 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_23]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_23_gated_we;
+  assign alert_class_shadowed_23_gated_we = alert_class_shadowed_23_we & alert_regwen_23_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6833,7 +7107,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_23_re),
-    .we     (alert_class_shadowed_23_we & alert_regwen_23_qs),
+    .we     (alert_class_shadowed_23_gated_we),
     .wd     (alert_class_shadowed_23_wd),
 
     // from internal hardware
@@ -6858,6 +7132,9 @@ module alert_handler_reg_top (
 
   // Subregister 24 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_24]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_24_gated_we;
+  assign alert_class_shadowed_24_gated_we = alert_class_shadowed_24_we & alert_regwen_24_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6869,7 +7146,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_24_re),
-    .we     (alert_class_shadowed_24_we & alert_regwen_24_qs),
+    .we     (alert_class_shadowed_24_gated_we),
     .wd     (alert_class_shadowed_24_wd),
 
     // from internal hardware
@@ -6894,6 +7171,9 @@ module alert_handler_reg_top (
 
   // Subregister 25 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_25]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_25_gated_we;
+  assign alert_class_shadowed_25_gated_we = alert_class_shadowed_25_we & alert_regwen_25_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6905,7 +7185,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_25_re),
-    .we     (alert_class_shadowed_25_we & alert_regwen_25_qs),
+    .we     (alert_class_shadowed_25_gated_we),
     .wd     (alert_class_shadowed_25_wd),
 
     // from internal hardware
@@ -6930,6 +7210,9 @@ module alert_handler_reg_top (
 
   // Subregister 26 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_26]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_26_gated_we;
+  assign alert_class_shadowed_26_gated_we = alert_class_shadowed_26_we & alert_regwen_26_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6941,7 +7224,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_26_re),
-    .we     (alert_class_shadowed_26_we & alert_regwen_26_qs),
+    .we     (alert_class_shadowed_26_gated_we),
     .wd     (alert_class_shadowed_26_wd),
 
     // from internal hardware
@@ -6966,6 +7249,9 @@ module alert_handler_reg_top (
 
   // Subregister 27 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_27]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_27_gated_we;
+  assign alert_class_shadowed_27_gated_we = alert_class_shadowed_27_we & alert_regwen_27_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6977,7 +7263,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_27_re),
-    .we     (alert_class_shadowed_27_we & alert_regwen_27_qs),
+    .we     (alert_class_shadowed_27_gated_we),
     .wd     (alert_class_shadowed_27_wd),
 
     // from internal hardware
@@ -7002,6 +7288,9 @@ module alert_handler_reg_top (
 
   // Subregister 28 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_28]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_28_gated_we;
+  assign alert_class_shadowed_28_gated_we = alert_class_shadowed_28_we & alert_regwen_28_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7013,7 +7302,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_28_re),
-    .we     (alert_class_shadowed_28_we & alert_regwen_28_qs),
+    .we     (alert_class_shadowed_28_gated_we),
     .wd     (alert_class_shadowed_28_wd),
 
     // from internal hardware
@@ -7038,6 +7327,9 @@ module alert_handler_reg_top (
 
   // Subregister 29 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_29]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_29_gated_we;
+  assign alert_class_shadowed_29_gated_we = alert_class_shadowed_29_we & alert_regwen_29_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7049,7 +7341,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_29_re),
-    .we     (alert_class_shadowed_29_we & alert_regwen_29_qs),
+    .we     (alert_class_shadowed_29_gated_we),
     .wd     (alert_class_shadowed_29_wd),
 
     // from internal hardware
@@ -7074,6 +7366,9 @@ module alert_handler_reg_top (
 
   // Subregister 30 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_30]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_30_gated_we;
+  assign alert_class_shadowed_30_gated_we = alert_class_shadowed_30_we & alert_regwen_30_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7085,7 +7380,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_30_re),
-    .we     (alert_class_shadowed_30_we & alert_regwen_30_qs),
+    .we     (alert_class_shadowed_30_gated_we),
     .wd     (alert_class_shadowed_30_wd),
 
     // from internal hardware
@@ -7110,6 +7405,9 @@ module alert_handler_reg_top (
 
   // Subregister 31 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_31]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_31_gated_we;
+  assign alert_class_shadowed_31_gated_we = alert_class_shadowed_31_we & alert_regwen_31_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7121,7 +7419,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_31_re),
-    .we     (alert_class_shadowed_31_we & alert_regwen_31_qs),
+    .we     (alert_class_shadowed_31_gated_we),
     .wd     (alert_class_shadowed_31_wd),
 
     // from internal hardware
@@ -7146,6 +7444,9 @@ module alert_handler_reg_top (
 
   // Subregister 32 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_32]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_32_gated_we;
+  assign alert_class_shadowed_32_gated_we = alert_class_shadowed_32_we & alert_regwen_32_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7157,7 +7458,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_32_re),
-    .we     (alert_class_shadowed_32_we & alert_regwen_32_qs),
+    .we     (alert_class_shadowed_32_gated_we),
     .wd     (alert_class_shadowed_32_wd),
 
     // from internal hardware
@@ -7182,6 +7483,9 @@ module alert_handler_reg_top (
 
   // Subregister 33 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_33]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_33_gated_we;
+  assign alert_class_shadowed_33_gated_we = alert_class_shadowed_33_we & alert_regwen_33_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7193,7 +7497,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_33_re),
-    .we     (alert_class_shadowed_33_we & alert_regwen_33_qs),
+    .we     (alert_class_shadowed_33_gated_we),
     .wd     (alert_class_shadowed_33_wd),
 
     // from internal hardware
@@ -7218,6 +7522,9 @@ module alert_handler_reg_top (
 
   // Subregister 34 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_34]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_34_gated_we;
+  assign alert_class_shadowed_34_gated_we = alert_class_shadowed_34_we & alert_regwen_34_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7229,7 +7536,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_34_re),
-    .we     (alert_class_shadowed_34_we & alert_regwen_34_qs),
+    .we     (alert_class_shadowed_34_gated_we),
     .wd     (alert_class_shadowed_34_wd),
 
     // from internal hardware
@@ -7254,6 +7561,9 @@ module alert_handler_reg_top (
 
   // Subregister 35 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_35]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_35_gated_we;
+  assign alert_class_shadowed_35_gated_we = alert_class_shadowed_35_we & alert_regwen_35_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7265,7 +7575,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_35_re),
-    .we     (alert_class_shadowed_35_we & alert_regwen_35_qs),
+    .we     (alert_class_shadowed_35_gated_we),
     .wd     (alert_class_shadowed_35_wd),
 
     // from internal hardware
@@ -7290,6 +7600,9 @@ module alert_handler_reg_top (
 
   // Subregister 36 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_36]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_36_gated_we;
+  assign alert_class_shadowed_36_gated_we = alert_class_shadowed_36_we & alert_regwen_36_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7301,7 +7614,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_36_re),
-    .we     (alert_class_shadowed_36_we & alert_regwen_36_qs),
+    .we     (alert_class_shadowed_36_gated_we),
     .wd     (alert_class_shadowed_36_wd),
 
     // from internal hardware
@@ -7326,6 +7639,9 @@ module alert_handler_reg_top (
 
   // Subregister 37 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_37]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_37_gated_we;
+  assign alert_class_shadowed_37_gated_we = alert_class_shadowed_37_we & alert_regwen_37_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7337,7 +7653,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_37_re),
-    .we     (alert_class_shadowed_37_we & alert_regwen_37_qs),
+    .we     (alert_class_shadowed_37_gated_we),
     .wd     (alert_class_shadowed_37_wd),
 
     // from internal hardware
@@ -7362,6 +7678,9 @@ module alert_handler_reg_top (
 
   // Subregister 38 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_38]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_38_gated_we;
+  assign alert_class_shadowed_38_gated_we = alert_class_shadowed_38_we & alert_regwen_38_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7373,7 +7692,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_38_re),
-    .we     (alert_class_shadowed_38_we & alert_regwen_38_qs),
+    .we     (alert_class_shadowed_38_gated_we),
     .wd     (alert_class_shadowed_38_wd),
 
     // from internal hardware
@@ -7398,6 +7717,9 @@ module alert_handler_reg_top (
 
   // Subregister 39 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_39]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_39_gated_we;
+  assign alert_class_shadowed_39_gated_we = alert_class_shadowed_39_we & alert_regwen_39_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7409,7 +7731,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_39_re),
-    .we     (alert_class_shadowed_39_we & alert_regwen_39_qs),
+    .we     (alert_class_shadowed_39_gated_we),
     .wd     (alert_class_shadowed_39_wd),
 
     // from internal hardware
@@ -7434,6 +7756,9 @@ module alert_handler_reg_top (
 
   // Subregister 40 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_40]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_40_gated_we;
+  assign alert_class_shadowed_40_gated_we = alert_class_shadowed_40_we & alert_regwen_40_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7445,7 +7770,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_40_re),
-    .we     (alert_class_shadowed_40_we & alert_regwen_40_qs),
+    .we     (alert_class_shadowed_40_gated_we),
     .wd     (alert_class_shadowed_40_wd),
 
     // from internal hardware
@@ -7470,6 +7795,9 @@ module alert_handler_reg_top (
 
   // Subregister 41 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_41]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_41_gated_we;
+  assign alert_class_shadowed_41_gated_we = alert_class_shadowed_41_we & alert_regwen_41_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7481,7 +7809,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_41_re),
-    .we     (alert_class_shadowed_41_we & alert_regwen_41_qs),
+    .we     (alert_class_shadowed_41_gated_we),
     .wd     (alert_class_shadowed_41_wd),
 
     // from internal hardware
@@ -7506,6 +7834,9 @@ module alert_handler_reg_top (
 
   // Subregister 42 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_42]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_42_gated_we;
+  assign alert_class_shadowed_42_gated_we = alert_class_shadowed_42_we & alert_regwen_42_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7517,7 +7848,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_42_re),
-    .we     (alert_class_shadowed_42_we & alert_regwen_42_qs),
+    .we     (alert_class_shadowed_42_gated_we),
     .wd     (alert_class_shadowed_42_wd),
 
     // from internal hardware
@@ -7542,6 +7873,9 @@ module alert_handler_reg_top (
 
   // Subregister 43 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_43]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_43_gated_we;
+  assign alert_class_shadowed_43_gated_we = alert_class_shadowed_43_we & alert_regwen_43_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7553,7 +7887,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_43_re),
-    .we     (alert_class_shadowed_43_we & alert_regwen_43_qs),
+    .we     (alert_class_shadowed_43_gated_we),
     .wd     (alert_class_shadowed_43_wd),
 
     // from internal hardware
@@ -7578,6 +7912,9 @@ module alert_handler_reg_top (
 
   // Subregister 44 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_44]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_44_gated_we;
+  assign alert_class_shadowed_44_gated_we = alert_class_shadowed_44_we & alert_regwen_44_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7589,7 +7926,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_44_re),
-    .we     (alert_class_shadowed_44_we & alert_regwen_44_qs),
+    .we     (alert_class_shadowed_44_gated_we),
     .wd     (alert_class_shadowed_44_wd),
 
     // from internal hardware
@@ -7614,6 +7951,9 @@ module alert_handler_reg_top (
 
   // Subregister 45 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_45]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_45_gated_we;
+  assign alert_class_shadowed_45_gated_we = alert_class_shadowed_45_we & alert_regwen_45_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7625,7 +7965,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_45_re),
-    .we     (alert_class_shadowed_45_we & alert_regwen_45_qs),
+    .we     (alert_class_shadowed_45_gated_we),
     .wd     (alert_class_shadowed_45_wd),
 
     // from internal hardware
@@ -7650,6 +7990,9 @@ module alert_handler_reg_top (
 
   // Subregister 46 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_46]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_46_gated_we;
+  assign alert_class_shadowed_46_gated_we = alert_class_shadowed_46_we & alert_regwen_46_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7661,7 +8004,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_46_re),
-    .we     (alert_class_shadowed_46_we & alert_regwen_46_qs),
+    .we     (alert_class_shadowed_46_gated_we),
     .wd     (alert_class_shadowed_46_wd),
 
     // from internal hardware
@@ -7686,6 +8029,9 @@ module alert_handler_reg_top (
 
   // Subregister 47 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_47]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_47_gated_we;
+  assign alert_class_shadowed_47_gated_we = alert_class_shadowed_47_we & alert_regwen_47_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7697,7 +8043,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_47_re),
-    .we     (alert_class_shadowed_47_we & alert_regwen_47_qs),
+    .we     (alert_class_shadowed_47_gated_we),
     .wd     (alert_class_shadowed_47_wd),
 
     // from internal hardware
@@ -7722,6 +8068,9 @@ module alert_handler_reg_top (
 
   // Subregister 48 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_48]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_48_gated_we;
+  assign alert_class_shadowed_48_gated_we = alert_class_shadowed_48_we & alert_regwen_48_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7733,7 +8082,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_48_re),
-    .we     (alert_class_shadowed_48_we & alert_regwen_48_qs),
+    .we     (alert_class_shadowed_48_gated_we),
     .wd     (alert_class_shadowed_48_wd),
 
     // from internal hardware
@@ -7758,6 +8107,9 @@ module alert_handler_reg_top (
 
   // Subregister 49 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_49]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_49_gated_we;
+  assign alert_class_shadowed_49_gated_we = alert_class_shadowed_49_we & alert_regwen_49_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7769,7 +8121,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_49_re),
-    .we     (alert_class_shadowed_49_we & alert_regwen_49_qs),
+    .we     (alert_class_shadowed_49_gated_we),
     .wd     (alert_class_shadowed_49_wd),
 
     // from internal hardware
@@ -7794,6 +8146,9 @@ module alert_handler_reg_top (
 
   // Subregister 50 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_50]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_50_gated_we;
+  assign alert_class_shadowed_50_gated_we = alert_class_shadowed_50_we & alert_regwen_50_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7805,7 +8160,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_50_re),
-    .we     (alert_class_shadowed_50_we & alert_regwen_50_qs),
+    .we     (alert_class_shadowed_50_gated_we),
     .wd     (alert_class_shadowed_50_wd),
 
     // from internal hardware
@@ -7830,6 +8185,9 @@ module alert_handler_reg_top (
 
   // Subregister 51 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_51]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_51_gated_we;
+  assign alert_class_shadowed_51_gated_we = alert_class_shadowed_51_we & alert_regwen_51_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7841,7 +8199,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_51_re),
-    .we     (alert_class_shadowed_51_we & alert_regwen_51_qs),
+    .we     (alert_class_shadowed_51_gated_we),
     .wd     (alert_class_shadowed_51_wd),
 
     // from internal hardware
@@ -7866,6 +8224,9 @@ module alert_handler_reg_top (
 
   // Subregister 52 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_52]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_52_gated_we;
+  assign alert_class_shadowed_52_gated_we = alert_class_shadowed_52_we & alert_regwen_52_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7877,7 +8238,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_52_re),
-    .we     (alert_class_shadowed_52_we & alert_regwen_52_qs),
+    .we     (alert_class_shadowed_52_gated_we),
     .wd     (alert_class_shadowed_52_wd),
 
     // from internal hardware
@@ -7902,6 +8263,9 @@ module alert_handler_reg_top (
 
   // Subregister 53 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_53]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_53_gated_we;
+  assign alert_class_shadowed_53_gated_we = alert_class_shadowed_53_we & alert_regwen_53_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7913,7 +8277,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_53_re),
-    .we     (alert_class_shadowed_53_we & alert_regwen_53_qs),
+    .we     (alert_class_shadowed_53_gated_we),
     .wd     (alert_class_shadowed_53_wd),
 
     // from internal hardware
@@ -7938,6 +8302,9 @@ module alert_handler_reg_top (
 
   // Subregister 54 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_54]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_54_gated_we;
+  assign alert_class_shadowed_54_gated_we = alert_class_shadowed_54_we & alert_regwen_54_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7949,7 +8316,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_54_re),
-    .we     (alert_class_shadowed_54_we & alert_regwen_54_qs),
+    .we     (alert_class_shadowed_54_gated_we),
     .wd     (alert_class_shadowed_54_wd),
 
     // from internal hardware
@@ -7974,6 +8341,9 @@ module alert_handler_reg_top (
 
   // Subregister 55 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_55]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_55_gated_we;
+  assign alert_class_shadowed_55_gated_we = alert_class_shadowed_55_we & alert_regwen_55_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7985,7 +8355,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_55_re),
-    .we     (alert_class_shadowed_55_we & alert_regwen_55_qs),
+    .we     (alert_class_shadowed_55_gated_we),
     .wd     (alert_class_shadowed_55_wd),
 
     // from internal hardware
@@ -8010,6 +8380,9 @@ module alert_handler_reg_top (
 
   // Subregister 56 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_56]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_56_gated_we;
+  assign alert_class_shadowed_56_gated_we = alert_class_shadowed_56_we & alert_regwen_56_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8021,7 +8394,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_56_re),
-    .we     (alert_class_shadowed_56_we & alert_regwen_56_qs),
+    .we     (alert_class_shadowed_56_gated_we),
     .wd     (alert_class_shadowed_56_wd),
 
     // from internal hardware
@@ -8046,6 +8419,9 @@ module alert_handler_reg_top (
 
   // Subregister 57 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_57]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_57_gated_we;
+  assign alert_class_shadowed_57_gated_we = alert_class_shadowed_57_we & alert_regwen_57_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8057,7 +8433,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_57_re),
-    .we     (alert_class_shadowed_57_we & alert_regwen_57_qs),
+    .we     (alert_class_shadowed_57_gated_we),
     .wd     (alert_class_shadowed_57_wd),
 
     // from internal hardware
@@ -8082,6 +8458,9 @@ module alert_handler_reg_top (
 
   // Subregister 58 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_58]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_58_gated_we;
+  assign alert_class_shadowed_58_gated_we = alert_class_shadowed_58_we & alert_regwen_58_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8093,7 +8472,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_58_re),
-    .we     (alert_class_shadowed_58_we & alert_regwen_58_qs),
+    .we     (alert_class_shadowed_58_gated_we),
     .wd     (alert_class_shadowed_58_wd),
 
     // from internal hardware
@@ -8118,6 +8497,9 @@ module alert_handler_reg_top (
 
   // Subregister 59 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_59]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_59_gated_we;
+  assign alert_class_shadowed_59_gated_we = alert_class_shadowed_59_we & alert_regwen_59_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8129,7 +8511,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_59_re),
-    .we     (alert_class_shadowed_59_we & alert_regwen_59_qs),
+    .we     (alert_class_shadowed_59_gated_we),
     .wd     (alert_class_shadowed_59_wd),
 
     // from internal hardware
@@ -8154,6 +8536,9 @@ module alert_handler_reg_top (
 
   // Subregister 60 of Multireg alert_class_shadowed
   // R[alert_class_shadowed_60]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_class_shadowed_60_gated_we;
+  assign alert_class_shadowed_60_gated_we = alert_class_shadowed_60_we & alert_regwen_60_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8165,7 +8550,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (alert_class_shadowed_60_re),
-    .we     (alert_class_shadowed_60_we & alert_regwen_60_qs),
+    .we     (alert_class_shadowed_60_gated_we),
     .wd     (alert_class_shadowed_60_wd),
 
     // from internal hardware
@@ -10026,6 +10411,9 @@ module alert_handler_reg_top (
 
   // Subregister 0 of Multireg loc_alert_en_shadowed
   // R[loc_alert_en_shadowed_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_en_shadowed_0_gated_we;
+  assign loc_alert_en_shadowed_0_gated_we = loc_alert_en_shadowed_0_we & loc_alert_regwen_0_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10037,7 +10425,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_en_shadowed_0_re),
-    .we     (loc_alert_en_shadowed_0_we & loc_alert_regwen_0_qs),
+    .we     (loc_alert_en_shadowed_0_gated_we),
     .wd     (loc_alert_en_shadowed_0_wd),
 
     // from internal hardware
@@ -10062,6 +10450,9 @@ module alert_handler_reg_top (
 
   // Subregister 1 of Multireg loc_alert_en_shadowed
   // R[loc_alert_en_shadowed_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_en_shadowed_1_gated_we;
+  assign loc_alert_en_shadowed_1_gated_we = loc_alert_en_shadowed_1_we & loc_alert_regwen_1_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10073,7 +10464,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_en_shadowed_1_re),
-    .we     (loc_alert_en_shadowed_1_we & loc_alert_regwen_1_qs),
+    .we     (loc_alert_en_shadowed_1_gated_we),
     .wd     (loc_alert_en_shadowed_1_wd),
 
     // from internal hardware
@@ -10098,6 +10489,9 @@ module alert_handler_reg_top (
 
   // Subregister 2 of Multireg loc_alert_en_shadowed
   // R[loc_alert_en_shadowed_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_en_shadowed_2_gated_we;
+  assign loc_alert_en_shadowed_2_gated_we = loc_alert_en_shadowed_2_we & loc_alert_regwen_2_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10109,7 +10503,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_en_shadowed_2_re),
-    .we     (loc_alert_en_shadowed_2_we & loc_alert_regwen_2_qs),
+    .we     (loc_alert_en_shadowed_2_gated_we),
     .wd     (loc_alert_en_shadowed_2_wd),
 
     // from internal hardware
@@ -10134,6 +10528,9 @@ module alert_handler_reg_top (
 
   // Subregister 3 of Multireg loc_alert_en_shadowed
   // R[loc_alert_en_shadowed_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_en_shadowed_3_gated_we;
+  assign loc_alert_en_shadowed_3_gated_we = loc_alert_en_shadowed_3_we & loc_alert_regwen_3_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10145,7 +10542,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_en_shadowed_3_re),
-    .we     (loc_alert_en_shadowed_3_we & loc_alert_regwen_3_qs),
+    .we     (loc_alert_en_shadowed_3_gated_we),
     .wd     (loc_alert_en_shadowed_3_wd),
 
     // from internal hardware
@@ -10170,6 +10567,9 @@ module alert_handler_reg_top (
 
   // Subregister 4 of Multireg loc_alert_en_shadowed
   // R[loc_alert_en_shadowed_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_en_shadowed_4_gated_we;
+  assign loc_alert_en_shadowed_4_gated_we = loc_alert_en_shadowed_4_we & loc_alert_regwen_4_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10181,7 +10581,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_en_shadowed_4_re),
-    .we     (loc_alert_en_shadowed_4_we & loc_alert_regwen_4_qs),
+    .we     (loc_alert_en_shadowed_4_gated_we),
     .wd     (loc_alert_en_shadowed_4_wd),
 
     // from internal hardware
@@ -10206,6 +10606,9 @@ module alert_handler_reg_top (
 
   // Subregister 5 of Multireg loc_alert_en_shadowed
   // R[loc_alert_en_shadowed_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_en_shadowed_5_gated_we;
+  assign loc_alert_en_shadowed_5_gated_we = loc_alert_en_shadowed_5_we & loc_alert_regwen_5_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10217,7 +10620,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_en_shadowed_5_re),
-    .we     (loc_alert_en_shadowed_5_we & loc_alert_regwen_5_qs),
+    .we     (loc_alert_en_shadowed_5_gated_we),
     .wd     (loc_alert_en_shadowed_5_wd),
 
     // from internal hardware
@@ -10242,6 +10645,9 @@ module alert_handler_reg_top (
 
   // Subregister 6 of Multireg loc_alert_en_shadowed
   // R[loc_alert_en_shadowed_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_en_shadowed_6_gated_we;
+  assign loc_alert_en_shadowed_6_gated_we = loc_alert_en_shadowed_6_we & loc_alert_regwen_6_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10253,7 +10659,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_en_shadowed_6_re),
-    .we     (loc_alert_en_shadowed_6_we & loc_alert_regwen_6_qs),
+    .we     (loc_alert_en_shadowed_6_gated_we),
     .wd     (loc_alert_en_shadowed_6_wd),
 
     // from internal hardware
@@ -10278,6 +10684,10 @@ module alert_handler_reg_top (
 
   // Subregister 0 of Multireg loc_alert_class_shadowed
   // R[loc_alert_class_shadowed_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_class_shadowed_0_gated_we;
+  assign loc_alert_class_shadowed_0_gated_we =
+    loc_alert_class_shadowed_0_we & loc_alert_regwen_0_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10289,7 +10699,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_class_shadowed_0_re),
-    .we     (loc_alert_class_shadowed_0_we & loc_alert_regwen_0_qs),
+    .we     (loc_alert_class_shadowed_0_gated_we),
     .wd     (loc_alert_class_shadowed_0_wd),
 
     // from internal hardware
@@ -10314,6 +10724,10 @@ module alert_handler_reg_top (
 
   // Subregister 1 of Multireg loc_alert_class_shadowed
   // R[loc_alert_class_shadowed_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_class_shadowed_1_gated_we;
+  assign loc_alert_class_shadowed_1_gated_we =
+    loc_alert_class_shadowed_1_we & loc_alert_regwen_1_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10325,7 +10739,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_class_shadowed_1_re),
-    .we     (loc_alert_class_shadowed_1_we & loc_alert_regwen_1_qs),
+    .we     (loc_alert_class_shadowed_1_gated_we),
     .wd     (loc_alert_class_shadowed_1_wd),
 
     // from internal hardware
@@ -10350,6 +10764,10 @@ module alert_handler_reg_top (
 
   // Subregister 2 of Multireg loc_alert_class_shadowed
   // R[loc_alert_class_shadowed_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_class_shadowed_2_gated_we;
+  assign loc_alert_class_shadowed_2_gated_we =
+    loc_alert_class_shadowed_2_we & loc_alert_regwen_2_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10361,7 +10779,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_class_shadowed_2_re),
-    .we     (loc_alert_class_shadowed_2_we & loc_alert_regwen_2_qs),
+    .we     (loc_alert_class_shadowed_2_gated_we),
     .wd     (loc_alert_class_shadowed_2_wd),
 
     // from internal hardware
@@ -10386,6 +10804,10 @@ module alert_handler_reg_top (
 
   // Subregister 3 of Multireg loc_alert_class_shadowed
   // R[loc_alert_class_shadowed_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_class_shadowed_3_gated_we;
+  assign loc_alert_class_shadowed_3_gated_we =
+    loc_alert_class_shadowed_3_we & loc_alert_regwen_3_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10397,7 +10819,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_class_shadowed_3_re),
-    .we     (loc_alert_class_shadowed_3_we & loc_alert_regwen_3_qs),
+    .we     (loc_alert_class_shadowed_3_gated_we),
     .wd     (loc_alert_class_shadowed_3_wd),
 
     // from internal hardware
@@ -10422,6 +10844,10 @@ module alert_handler_reg_top (
 
   // Subregister 4 of Multireg loc_alert_class_shadowed
   // R[loc_alert_class_shadowed_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_class_shadowed_4_gated_we;
+  assign loc_alert_class_shadowed_4_gated_we =
+    loc_alert_class_shadowed_4_we & loc_alert_regwen_4_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10433,7 +10859,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_class_shadowed_4_re),
-    .we     (loc_alert_class_shadowed_4_we & loc_alert_regwen_4_qs),
+    .we     (loc_alert_class_shadowed_4_gated_we),
     .wd     (loc_alert_class_shadowed_4_wd),
 
     // from internal hardware
@@ -10458,6 +10884,10 @@ module alert_handler_reg_top (
 
   // Subregister 5 of Multireg loc_alert_class_shadowed
   // R[loc_alert_class_shadowed_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_class_shadowed_5_gated_we;
+  assign loc_alert_class_shadowed_5_gated_we =
+    loc_alert_class_shadowed_5_we & loc_alert_regwen_5_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10469,7 +10899,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_class_shadowed_5_re),
-    .we     (loc_alert_class_shadowed_5_we & loc_alert_regwen_5_qs),
+    .we     (loc_alert_class_shadowed_5_gated_we),
     .wd     (loc_alert_class_shadowed_5_wd),
 
     // from internal hardware
@@ -10494,6 +10924,10 @@ module alert_handler_reg_top (
 
   // Subregister 6 of Multireg loc_alert_class_shadowed
   // R[loc_alert_class_shadowed_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic loc_alert_class_shadowed_6_gated_we;
+  assign loc_alert_class_shadowed_6_gated_we =
+    loc_alert_class_shadowed_6_we & loc_alert_regwen_6_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10505,7 +10939,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (loc_alert_class_shadowed_6_re),
-    .we     (loc_alert_class_shadowed_6_we & loc_alert_regwen_6_qs),
+    .we     (loc_alert_class_shadowed_6_gated_we),
     .wd     (loc_alert_class_shadowed_6_wd),
 
     // from internal hardware
@@ -10744,6 +11178,9 @@ module alert_handler_reg_top (
 
 
   // R[classa_ctrl_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classa_ctrl_shadowed_gated_we;
+  assign classa_ctrl_shadowed_gated_we = classa_ctrl_shadowed_we & classa_regwen_qs;
   //   F[en]: 0:0
   prim_subreg_shadow #(
     .DW      (1),
@@ -10756,7 +11193,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
-    .we     (classa_ctrl_shadowed_we & classa_regwen_qs),
+    .we     (classa_ctrl_shadowed_gated_we),
     .wd     (classa_ctrl_shadowed_en_wd),
 
     // from internal hardware
@@ -10790,7 +11227,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
-    .we     (classa_ctrl_shadowed_we & classa_regwen_qs),
+    .we     (classa_ctrl_shadowed_gated_we),
     .wd     (classa_ctrl_shadowed_lock_wd),
 
     // from internal hardware
@@ -10824,7 +11261,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
-    .we     (classa_ctrl_shadowed_we & classa_regwen_qs),
+    .we     (classa_ctrl_shadowed_gated_we),
     .wd     (classa_ctrl_shadowed_en_e0_wd),
 
     // from internal hardware
@@ -10858,7 +11295,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
-    .we     (classa_ctrl_shadowed_we & classa_regwen_qs),
+    .we     (classa_ctrl_shadowed_gated_we),
     .wd     (classa_ctrl_shadowed_en_e1_wd),
 
     // from internal hardware
@@ -10892,7 +11329,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
-    .we     (classa_ctrl_shadowed_we & classa_regwen_qs),
+    .we     (classa_ctrl_shadowed_gated_we),
     .wd     (classa_ctrl_shadowed_en_e2_wd),
 
     // from internal hardware
@@ -10926,7 +11363,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
-    .we     (classa_ctrl_shadowed_we & classa_regwen_qs),
+    .we     (classa_ctrl_shadowed_gated_we),
     .wd     (classa_ctrl_shadowed_en_e3_wd),
 
     // from internal hardware
@@ -10960,7 +11397,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
-    .we     (classa_ctrl_shadowed_we & classa_regwen_qs),
+    .we     (classa_ctrl_shadowed_gated_we),
     .wd     (classa_ctrl_shadowed_map_e0_wd),
 
     // from internal hardware
@@ -10994,7 +11431,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
-    .we     (classa_ctrl_shadowed_we & classa_regwen_qs),
+    .we     (classa_ctrl_shadowed_gated_we),
     .wd     (classa_ctrl_shadowed_map_e1_wd),
 
     // from internal hardware
@@ -11028,7 +11465,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
-    .we     (classa_ctrl_shadowed_we & classa_regwen_qs),
+    .we     (classa_ctrl_shadowed_gated_we),
     .wd     (classa_ctrl_shadowed_map_e2_wd),
 
     // from internal hardware
@@ -11062,7 +11499,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_ctrl_shadowed_re),
-    .we     (classa_ctrl_shadowed_we & classa_regwen_qs),
+    .we     (classa_ctrl_shadowed_gated_we),
     .wd     (classa_ctrl_shadowed_map_e3_wd),
 
     // from internal hardware
@@ -11123,6 +11560,9 @@ module alert_handler_reg_top (
     .d_i(&classa_clr_shadowed_flds_we),
     .q_o(classa_clr_shadowed_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic classa_clr_shadowed_gated_we;
+  assign classa_clr_shadowed_gated_we = classa_clr_shadowed_we & classa_clr_regwen_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11134,7 +11574,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_clr_shadowed_re),
-    .we     (classa_clr_shadowed_we & classa_clr_regwen_qs),
+    .we     (classa_clr_shadowed_gated_we),
     .wd     (classa_clr_shadowed_wd),
 
     // from internal hardware
@@ -11174,6 +11614,9 @@ module alert_handler_reg_top (
 
 
   // R[classa_accum_thresh_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classa_accum_thresh_shadowed_gated_we;
+  assign classa_accum_thresh_shadowed_gated_we = classa_accum_thresh_shadowed_we & classa_regwen_qs;
   prim_subreg_shadow #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11185,7 +11628,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_accum_thresh_shadowed_re),
-    .we     (classa_accum_thresh_shadowed_we & classa_regwen_qs),
+    .we     (classa_accum_thresh_shadowed_gated_we),
     .wd     (classa_accum_thresh_shadowed_wd),
 
     // from internal hardware
@@ -11209,6 +11652,9 @@ module alert_handler_reg_top (
 
 
   // R[classa_timeout_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classa_timeout_cyc_shadowed_gated_we;
+  assign classa_timeout_cyc_shadowed_gated_we = classa_timeout_cyc_shadowed_we & classa_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11220,7 +11666,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_timeout_cyc_shadowed_re),
-    .we     (classa_timeout_cyc_shadowed_we & classa_regwen_qs),
+    .we     (classa_timeout_cyc_shadowed_gated_we),
     .wd     (classa_timeout_cyc_shadowed_wd),
 
     // from internal hardware
@@ -11244,6 +11690,10 @@ module alert_handler_reg_top (
 
 
   // R[classa_crashdump_trigger_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classa_crashdump_trigger_shadowed_gated_we;
+  assign classa_crashdump_trigger_shadowed_gated_we =
+    classa_crashdump_trigger_shadowed_we & classa_regwen_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11255,7 +11705,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_crashdump_trigger_shadowed_re),
-    .we     (classa_crashdump_trigger_shadowed_we & classa_regwen_qs),
+    .we     (classa_crashdump_trigger_shadowed_gated_we),
     .wd     (classa_crashdump_trigger_shadowed_wd),
 
     // from internal hardware
@@ -11279,6 +11729,9 @@ module alert_handler_reg_top (
 
 
   // R[classa_phase0_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classa_phase0_cyc_shadowed_gated_we;
+  assign classa_phase0_cyc_shadowed_gated_we = classa_phase0_cyc_shadowed_we & classa_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11290,7 +11743,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_phase0_cyc_shadowed_re),
-    .we     (classa_phase0_cyc_shadowed_we & classa_regwen_qs),
+    .we     (classa_phase0_cyc_shadowed_gated_we),
     .wd     (classa_phase0_cyc_shadowed_wd),
 
     // from internal hardware
@@ -11314,6 +11767,9 @@ module alert_handler_reg_top (
 
 
   // R[classa_phase1_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classa_phase1_cyc_shadowed_gated_we;
+  assign classa_phase1_cyc_shadowed_gated_we = classa_phase1_cyc_shadowed_we & classa_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11325,7 +11781,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_phase1_cyc_shadowed_re),
-    .we     (classa_phase1_cyc_shadowed_we & classa_regwen_qs),
+    .we     (classa_phase1_cyc_shadowed_gated_we),
     .wd     (classa_phase1_cyc_shadowed_wd),
 
     // from internal hardware
@@ -11349,6 +11805,9 @@ module alert_handler_reg_top (
 
 
   // R[classa_phase2_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classa_phase2_cyc_shadowed_gated_we;
+  assign classa_phase2_cyc_shadowed_gated_we = classa_phase2_cyc_shadowed_we & classa_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11360,7 +11819,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_phase2_cyc_shadowed_re),
-    .we     (classa_phase2_cyc_shadowed_we & classa_regwen_qs),
+    .we     (classa_phase2_cyc_shadowed_gated_we),
     .wd     (classa_phase2_cyc_shadowed_wd),
 
     // from internal hardware
@@ -11384,6 +11843,9 @@ module alert_handler_reg_top (
 
 
   // R[classa_phase3_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classa_phase3_cyc_shadowed_gated_we;
+  assign classa_phase3_cyc_shadowed_gated_we = classa_phase3_cyc_shadowed_we & classa_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11395,7 +11857,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classa_phase3_cyc_shadowed_re),
-    .we     (classa_phase3_cyc_shadowed_we & classa_regwen_qs),
+    .we     (classa_phase3_cyc_shadowed_gated_we),
     .wd     (classa_phase3_cyc_shadowed_wd),
 
     // from internal hardware
@@ -11475,6 +11937,9 @@ module alert_handler_reg_top (
 
 
   // R[classb_ctrl_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classb_ctrl_shadowed_gated_we;
+  assign classb_ctrl_shadowed_gated_we = classb_ctrl_shadowed_we & classb_regwen_qs;
   //   F[en]: 0:0
   prim_subreg_shadow #(
     .DW      (1),
@@ -11487,7 +11952,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
-    .we     (classb_ctrl_shadowed_we & classb_regwen_qs),
+    .we     (classb_ctrl_shadowed_gated_we),
     .wd     (classb_ctrl_shadowed_en_wd),
 
     // from internal hardware
@@ -11521,7 +11986,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
-    .we     (classb_ctrl_shadowed_we & classb_regwen_qs),
+    .we     (classb_ctrl_shadowed_gated_we),
     .wd     (classb_ctrl_shadowed_lock_wd),
 
     // from internal hardware
@@ -11555,7 +12020,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
-    .we     (classb_ctrl_shadowed_we & classb_regwen_qs),
+    .we     (classb_ctrl_shadowed_gated_we),
     .wd     (classb_ctrl_shadowed_en_e0_wd),
 
     // from internal hardware
@@ -11589,7 +12054,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
-    .we     (classb_ctrl_shadowed_we & classb_regwen_qs),
+    .we     (classb_ctrl_shadowed_gated_we),
     .wd     (classb_ctrl_shadowed_en_e1_wd),
 
     // from internal hardware
@@ -11623,7 +12088,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
-    .we     (classb_ctrl_shadowed_we & classb_regwen_qs),
+    .we     (classb_ctrl_shadowed_gated_we),
     .wd     (classb_ctrl_shadowed_en_e2_wd),
 
     // from internal hardware
@@ -11657,7 +12122,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
-    .we     (classb_ctrl_shadowed_we & classb_regwen_qs),
+    .we     (classb_ctrl_shadowed_gated_we),
     .wd     (classb_ctrl_shadowed_en_e3_wd),
 
     // from internal hardware
@@ -11691,7 +12156,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
-    .we     (classb_ctrl_shadowed_we & classb_regwen_qs),
+    .we     (classb_ctrl_shadowed_gated_we),
     .wd     (classb_ctrl_shadowed_map_e0_wd),
 
     // from internal hardware
@@ -11725,7 +12190,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
-    .we     (classb_ctrl_shadowed_we & classb_regwen_qs),
+    .we     (classb_ctrl_shadowed_gated_we),
     .wd     (classb_ctrl_shadowed_map_e1_wd),
 
     // from internal hardware
@@ -11759,7 +12224,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
-    .we     (classb_ctrl_shadowed_we & classb_regwen_qs),
+    .we     (classb_ctrl_shadowed_gated_we),
     .wd     (classb_ctrl_shadowed_map_e2_wd),
 
     // from internal hardware
@@ -11793,7 +12258,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_ctrl_shadowed_re),
-    .we     (classb_ctrl_shadowed_we & classb_regwen_qs),
+    .we     (classb_ctrl_shadowed_gated_we),
     .wd     (classb_ctrl_shadowed_map_e3_wd),
 
     // from internal hardware
@@ -11854,6 +12319,9 @@ module alert_handler_reg_top (
     .d_i(&classb_clr_shadowed_flds_we),
     .q_o(classb_clr_shadowed_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic classb_clr_shadowed_gated_we;
+  assign classb_clr_shadowed_gated_we = classb_clr_shadowed_we & classb_clr_regwen_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11865,7 +12333,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_clr_shadowed_re),
-    .we     (classb_clr_shadowed_we & classb_clr_regwen_qs),
+    .we     (classb_clr_shadowed_gated_we),
     .wd     (classb_clr_shadowed_wd),
 
     // from internal hardware
@@ -11905,6 +12373,9 @@ module alert_handler_reg_top (
 
 
   // R[classb_accum_thresh_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classb_accum_thresh_shadowed_gated_we;
+  assign classb_accum_thresh_shadowed_gated_we = classb_accum_thresh_shadowed_we & classb_regwen_qs;
   prim_subreg_shadow #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11916,7 +12387,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_accum_thresh_shadowed_re),
-    .we     (classb_accum_thresh_shadowed_we & classb_regwen_qs),
+    .we     (classb_accum_thresh_shadowed_gated_we),
     .wd     (classb_accum_thresh_shadowed_wd),
 
     // from internal hardware
@@ -11940,6 +12411,9 @@ module alert_handler_reg_top (
 
 
   // R[classb_timeout_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classb_timeout_cyc_shadowed_gated_we;
+  assign classb_timeout_cyc_shadowed_gated_we = classb_timeout_cyc_shadowed_we & classb_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11951,7 +12425,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_timeout_cyc_shadowed_re),
-    .we     (classb_timeout_cyc_shadowed_we & classb_regwen_qs),
+    .we     (classb_timeout_cyc_shadowed_gated_we),
     .wd     (classb_timeout_cyc_shadowed_wd),
 
     // from internal hardware
@@ -11975,6 +12449,10 @@ module alert_handler_reg_top (
 
 
   // R[classb_crashdump_trigger_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classb_crashdump_trigger_shadowed_gated_we;
+  assign classb_crashdump_trigger_shadowed_gated_we =
+    classb_crashdump_trigger_shadowed_we & classb_regwen_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11986,7 +12464,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_crashdump_trigger_shadowed_re),
-    .we     (classb_crashdump_trigger_shadowed_we & classb_regwen_qs),
+    .we     (classb_crashdump_trigger_shadowed_gated_we),
     .wd     (classb_crashdump_trigger_shadowed_wd),
 
     // from internal hardware
@@ -12010,6 +12488,9 @@ module alert_handler_reg_top (
 
 
   // R[classb_phase0_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classb_phase0_cyc_shadowed_gated_we;
+  assign classb_phase0_cyc_shadowed_gated_we = classb_phase0_cyc_shadowed_we & classb_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12021,7 +12502,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_phase0_cyc_shadowed_re),
-    .we     (classb_phase0_cyc_shadowed_we & classb_regwen_qs),
+    .we     (classb_phase0_cyc_shadowed_gated_we),
     .wd     (classb_phase0_cyc_shadowed_wd),
 
     // from internal hardware
@@ -12045,6 +12526,9 @@ module alert_handler_reg_top (
 
 
   // R[classb_phase1_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classb_phase1_cyc_shadowed_gated_we;
+  assign classb_phase1_cyc_shadowed_gated_we = classb_phase1_cyc_shadowed_we & classb_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12056,7 +12540,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_phase1_cyc_shadowed_re),
-    .we     (classb_phase1_cyc_shadowed_we & classb_regwen_qs),
+    .we     (classb_phase1_cyc_shadowed_gated_we),
     .wd     (classb_phase1_cyc_shadowed_wd),
 
     // from internal hardware
@@ -12080,6 +12564,9 @@ module alert_handler_reg_top (
 
 
   // R[classb_phase2_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classb_phase2_cyc_shadowed_gated_we;
+  assign classb_phase2_cyc_shadowed_gated_we = classb_phase2_cyc_shadowed_we & classb_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12091,7 +12578,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_phase2_cyc_shadowed_re),
-    .we     (classb_phase2_cyc_shadowed_we & classb_regwen_qs),
+    .we     (classb_phase2_cyc_shadowed_gated_we),
     .wd     (classb_phase2_cyc_shadowed_wd),
 
     // from internal hardware
@@ -12115,6 +12602,9 @@ module alert_handler_reg_top (
 
 
   // R[classb_phase3_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classb_phase3_cyc_shadowed_gated_we;
+  assign classb_phase3_cyc_shadowed_gated_we = classb_phase3_cyc_shadowed_we & classb_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12126,7 +12616,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classb_phase3_cyc_shadowed_re),
-    .we     (classb_phase3_cyc_shadowed_we & classb_regwen_qs),
+    .we     (classb_phase3_cyc_shadowed_gated_we),
     .wd     (classb_phase3_cyc_shadowed_wd),
 
     // from internal hardware
@@ -12206,6 +12696,9 @@ module alert_handler_reg_top (
 
 
   // R[classc_ctrl_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classc_ctrl_shadowed_gated_we;
+  assign classc_ctrl_shadowed_gated_we = classc_ctrl_shadowed_we & classc_regwen_qs;
   //   F[en]: 0:0
   prim_subreg_shadow #(
     .DW      (1),
@@ -12218,7 +12711,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
-    .we     (classc_ctrl_shadowed_we & classc_regwen_qs),
+    .we     (classc_ctrl_shadowed_gated_we),
     .wd     (classc_ctrl_shadowed_en_wd),
 
     // from internal hardware
@@ -12252,7 +12745,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
-    .we     (classc_ctrl_shadowed_we & classc_regwen_qs),
+    .we     (classc_ctrl_shadowed_gated_we),
     .wd     (classc_ctrl_shadowed_lock_wd),
 
     // from internal hardware
@@ -12286,7 +12779,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
-    .we     (classc_ctrl_shadowed_we & classc_regwen_qs),
+    .we     (classc_ctrl_shadowed_gated_we),
     .wd     (classc_ctrl_shadowed_en_e0_wd),
 
     // from internal hardware
@@ -12320,7 +12813,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
-    .we     (classc_ctrl_shadowed_we & classc_regwen_qs),
+    .we     (classc_ctrl_shadowed_gated_we),
     .wd     (classc_ctrl_shadowed_en_e1_wd),
 
     // from internal hardware
@@ -12354,7 +12847,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
-    .we     (classc_ctrl_shadowed_we & classc_regwen_qs),
+    .we     (classc_ctrl_shadowed_gated_we),
     .wd     (classc_ctrl_shadowed_en_e2_wd),
 
     // from internal hardware
@@ -12388,7 +12881,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
-    .we     (classc_ctrl_shadowed_we & classc_regwen_qs),
+    .we     (classc_ctrl_shadowed_gated_we),
     .wd     (classc_ctrl_shadowed_en_e3_wd),
 
     // from internal hardware
@@ -12422,7 +12915,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
-    .we     (classc_ctrl_shadowed_we & classc_regwen_qs),
+    .we     (classc_ctrl_shadowed_gated_we),
     .wd     (classc_ctrl_shadowed_map_e0_wd),
 
     // from internal hardware
@@ -12456,7 +12949,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
-    .we     (classc_ctrl_shadowed_we & classc_regwen_qs),
+    .we     (classc_ctrl_shadowed_gated_we),
     .wd     (classc_ctrl_shadowed_map_e1_wd),
 
     // from internal hardware
@@ -12490,7 +12983,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
-    .we     (classc_ctrl_shadowed_we & classc_regwen_qs),
+    .we     (classc_ctrl_shadowed_gated_we),
     .wd     (classc_ctrl_shadowed_map_e2_wd),
 
     // from internal hardware
@@ -12524,7 +13017,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_ctrl_shadowed_re),
-    .we     (classc_ctrl_shadowed_we & classc_regwen_qs),
+    .we     (classc_ctrl_shadowed_gated_we),
     .wd     (classc_ctrl_shadowed_map_e3_wd),
 
     // from internal hardware
@@ -12585,6 +13078,9 @@ module alert_handler_reg_top (
     .d_i(&classc_clr_shadowed_flds_we),
     .q_o(classc_clr_shadowed_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic classc_clr_shadowed_gated_we;
+  assign classc_clr_shadowed_gated_we = classc_clr_shadowed_we & classc_clr_regwen_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12596,7 +13092,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_clr_shadowed_re),
-    .we     (classc_clr_shadowed_we & classc_clr_regwen_qs),
+    .we     (classc_clr_shadowed_gated_we),
     .wd     (classc_clr_shadowed_wd),
 
     // from internal hardware
@@ -12636,6 +13132,9 @@ module alert_handler_reg_top (
 
 
   // R[classc_accum_thresh_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classc_accum_thresh_shadowed_gated_we;
+  assign classc_accum_thresh_shadowed_gated_we = classc_accum_thresh_shadowed_we & classc_regwen_qs;
   prim_subreg_shadow #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12647,7 +13146,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_accum_thresh_shadowed_re),
-    .we     (classc_accum_thresh_shadowed_we & classc_regwen_qs),
+    .we     (classc_accum_thresh_shadowed_gated_we),
     .wd     (classc_accum_thresh_shadowed_wd),
 
     // from internal hardware
@@ -12671,6 +13170,9 @@ module alert_handler_reg_top (
 
 
   // R[classc_timeout_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classc_timeout_cyc_shadowed_gated_we;
+  assign classc_timeout_cyc_shadowed_gated_we = classc_timeout_cyc_shadowed_we & classc_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12682,7 +13184,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_timeout_cyc_shadowed_re),
-    .we     (classc_timeout_cyc_shadowed_we & classc_regwen_qs),
+    .we     (classc_timeout_cyc_shadowed_gated_we),
     .wd     (classc_timeout_cyc_shadowed_wd),
 
     // from internal hardware
@@ -12706,6 +13208,10 @@ module alert_handler_reg_top (
 
 
   // R[classc_crashdump_trigger_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classc_crashdump_trigger_shadowed_gated_we;
+  assign classc_crashdump_trigger_shadowed_gated_we =
+    classc_crashdump_trigger_shadowed_we & classc_regwen_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12717,7 +13223,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_crashdump_trigger_shadowed_re),
-    .we     (classc_crashdump_trigger_shadowed_we & classc_regwen_qs),
+    .we     (classc_crashdump_trigger_shadowed_gated_we),
     .wd     (classc_crashdump_trigger_shadowed_wd),
 
     // from internal hardware
@@ -12741,6 +13247,9 @@ module alert_handler_reg_top (
 
 
   // R[classc_phase0_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classc_phase0_cyc_shadowed_gated_we;
+  assign classc_phase0_cyc_shadowed_gated_we = classc_phase0_cyc_shadowed_we & classc_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12752,7 +13261,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_phase0_cyc_shadowed_re),
-    .we     (classc_phase0_cyc_shadowed_we & classc_regwen_qs),
+    .we     (classc_phase0_cyc_shadowed_gated_we),
     .wd     (classc_phase0_cyc_shadowed_wd),
 
     // from internal hardware
@@ -12776,6 +13285,9 @@ module alert_handler_reg_top (
 
 
   // R[classc_phase1_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classc_phase1_cyc_shadowed_gated_we;
+  assign classc_phase1_cyc_shadowed_gated_we = classc_phase1_cyc_shadowed_we & classc_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12787,7 +13299,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_phase1_cyc_shadowed_re),
-    .we     (classc_phase1_cyc_shadowed_we & classc_regwen_qs),
+    .we     (classc_phase1_cyc_shadowed_gated_we),
     .wd     (classc_phase1_cyc_shadowed_wd),
 
     // from internal hardware
@@ -12811,6 +13323,9 @@ module alert_handler_reg_top (
 
 
   // R[classc_phase2_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classc_phase2_cyc_shadowed_gated_we;
+  assign classc_phase2_cyc_shadowed_gated_we = classc_phase2_cyc_shadowed_we & classc_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12822,7 +13337,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_phase2_cyc_shadowed_re),
-    .we     (classc_phase2_cyc_shadowed_we & classc_regwen_qs),
+    .we     (classc_phase2_cyc_shadowed_gated_we),
     .wd     (classc_phase2_cyc_shadowed_wd),
 
     // from internal hardware
@@ -12846,6 +13361,9 @@ module alert_handler_reg_top (
 
 
   // R[classc_phase3_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classc_phase3_cyc_shadowed_gated_we;
+  assign classc_phase3_cyc_shadowed_gated_we = classc_phase3_cyc_shadowed_we & classc_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12857,7 +13375,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classc_phase3_cyc_shadowed_re),
-    .we     (classc_phase3_cyc_shadowed_we & classc_regwen_qs),
+    .we     (classc_phase3_cyc_shadowed_gated_we),
     .wd     (classc_phase3_cyc_shadowed_wd),
 
     // from internal hardware
@@ -12937,6 +13455,9 @@ module alert_handler_reg_top (
 
 
   // R[classd_ctrl_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classd_ctrl_shadowed_gated_we;
+  assign classd_ctrl_shadowed_gated_we = classd_ctrl_shadowed_we & classd_regwen_qs;
   //   F[en]: 0:0
   prim_subreg_shadow #(
     .DW      (1),
@@ -12949,7 +13470,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
-    .we     (classd_ctrl_shadowed_we & classd_regwen_qs),
+    .we     (classd_ctrl_shadowed_gated_we),
     .wd     (classd_ctrl_shadowed_en_wd),
 
     // from internal hardware
@@ -12983,7 +13504,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
-    .we     (classd_ctrl_shadowed_we & classd_regwen_qs),
+    .we     (classd_ctrl_shadowed_gated_we),
     .wd     (classd_ctrl_shadowed_lock_wd),
 
     // from internal hardware
@@ -13017,7 +13538,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
-    .we     (classd_ctrl_shadowed_we & classd_regwen_qs),
+    .we     (classd_ctrl_shadowed_gated_we),
     .wd     (classd_ctrl_shadowed_en_e0_wd),
 
     // from internal hardware
@@ -13051,7 +13572,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
-    .we     (classd_ctrl_shadowed_we & classd_regwen_qs),
+    .we     (classd_ctrl_shadowed_gated_we),
     .wd     (classd_ctrl_shadowed_en_e1_wd),
 
     // from internal hardware
@@ -13085,7 +13606,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
-    .we     (classd_ctrl_shadowed_we & classd_regwen_qs),
+    .we     (classd_ctrl_shadowed_gated_we),
     .wd     (classd_ctrl_shadowed_en_e2_wd),
 
     // from internal hardware
@@ -13119,7 +13640,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
-    .we     (classd_ctrl_shadowed_we & classd_regwen_qs),
+    .we     (classd_ctrl_shadowed_gated_we),
     .wd     (classd_ctrl_shadowed_en_e3_wd),
 
     // from internal hardware
@@ -13153,7 +13674,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
-    .we     (classd_ctrl_shadowed_we & classd_regwen_qs),
+    .we     (classd_ctrl_shadowed_gated_we),
     .wd     (classd_ctrl_shadowed_map_e0_wd),
 
     // from internal hardware
@@ -13187,7 +13708,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
-    .we     (classd_ctrl_shadowed_we & classd_regwen_qs),
+    .we     (classd_ctrl_shadowed_gated_we),
     .wd     (classd_ctrl_shadowed_map_e1_wd),
 
     // from internal hardware
@@ -13221,7 +13742,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
-    .we     (classd_ctrl_shadowed_we & classd_regwen_qs),
+    .we     (classd_ctrl_shadowed_gated_we),
     .wd     (classd_ctrl_shadowed_map_e2_wd),
 
     // from internal hardware
@@ -13255,7 +13776,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_ctrl_shadowed_re),
-    .we     (classd_ctrl_shadowed_we & classd_regwen_qs),
+    .we     (classd_ctrl_shadowed_gated_we),
     .wd     (classd_ctrl_shadowed_map_e3_wd),
 
     // from internal hardware
@@ -13316,6 +13837,9 @@ module alert_handler_reg_top (
     .d_i(&classd_clr_shadowed_flds_we),
     .q_o(classd_clr_shadowed_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic classd_clr_shadowed_gated_we;
+  assign classd_clr_shadowed_gated_we = classd_clr_shadowed_we & classd_clr_regwen_qs;
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13327,7 +13851,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_clr_shadowed_re),
-    .we     (classd_clr_shadowed_we & classd_clr_regwen_qs),
+    .we     (classd_clr_shadowed_gated_we),
     .wd     (classd_clr_shadowed_wd),
 
     // from internal hardware
@@ -13367,6 +13891,9 @@ module alert_handler_reg_top (
 
 
   // R[classd_accum_thresh_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classd_accum_thresh_shadowed_gated_we;
+  assign classd_accum_thresh_shadowed_gated_we = classd_accum_thresh_shadowed_we & classd_regwen_qs;
   prim_subreg_shadow #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13378,7 +13905,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_accum_thresh_shadowed_re),
-    .we     (classd_accum_thresh_shadowed_we & classd_regwen_qs),
+    .we     (classd_accum_thresh_shadowed_gated_we),
     .wd     (classd_accum_thresh_shadowed_wd),
 
     // from internal hardware
@@ -13402,6 +13929,9 @@ module alert_handler_reg_top (
 
 
   // R[classd_timeout_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classd_timeout_cyc_shadowed_gated_we;
+  assign classd_timeout_cyc_shadowed_gated_we = classd_timeout_cyc_shadowed_we & classd_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13413,7 +13943,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_timeout_cyc_shadowed_re),
-    .we     (classd_timeout_cyc_shadowed_we & classd_regwen_qs),
+    .we     (classd_timeout_cyc_shadowed_gated_we),
     .wd     (classd_timeout_cyc_shadowed_wd),
 
     // from internal hardware
@@ -13437,6 +13967,10 @@ module alert_handler_reg_top (
 
 
   // R[classd_crashdump_trigger_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classd_crashdump_trigger_shadowed_gated_we;
+  assign classd_crashdump_trigger_shadowed_gated_we =
+    classd_crashdump_trigger_shadowed_we & classd_regwen_qs;
   prim_subreg_shadow #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13448,7 +13982,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_crashdump_trigger_shadowed_re),
-    .we     (classd_crashdump_trigger_shadowed_we & classd_regwen_qs),
+    .we     (classd_crashdump_trigger_shadowed_gated_we),
     .wd     (classd_crashdump_trigger_shadowed_wd),
 
     // from internal hardware
@@ -13472,6 +14006,9 @@ module alert_handler_reg_top (
 
 
   // R[classd_phase0_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classd_phase0_cyc_shadowed_gated_we;
+  assign classd_phase0_cyc_shadowed_gated_we = classd_phase0_cyc_shadowed_we & classd_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13483,7 +14020,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_phase0_cyc_shadowed_re),
-    .we     (classd_phase0_cyc_shadowed_we & classd_regwen_qs),
+    .we     (classd_phase0_cyc_shadowed_gated_we),
     .wd     (classd_phase0_cyc_shadowed_wd),
 
     // from internal hardware
@@ -13507,6 +14044,9 @@ module alert_handler_reg_top (
 
 
   // R[classd_phase1_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classd_phase1_cyc_shadowed_gated_we;
+  assign classd_phase1_cyc_shadowed_gated_we = classd_phase1_cyc_shadowed_we & classd_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13518,7 +14058,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_phase1_cyc_shadowed_re),
-    .we     (classd_phase1_cyc_shadowed_we & classd_regwen_qs),
+    .we     (classd_phase1_cyc_shadowed_gated_we),
     .wd     (classd_phase1_cyc_shadowed_wd),
 
     // from internal hardware
@@ -13542,6 +14082,9 @@ module alert_handler_reg_top (
 
 
   // R[classd_phase2_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classd_phase2_cyc_shadowed_gated_we;
+  assign classd_phase2_cyc_shadowed_gated_we = classd_phase2_cyc_shadowed_we & classd_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13553,7 +14096,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_phase2_cyc_shadowed_re),
-    .we     (classd_phase2_cyc_shadowed_we & classd_regwen_qs),
+    .we     (classd_phase2_cyc_shadowed_gated_we),
     .wd     (classd_phase2_cyc_shadowed_wd),
 
     // from internal hardware
@@ -13577,6 +14120,9 @@ module alert_handler_reg_top (
 
 
   // R[classd_phase3_cyc_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic classd_phase3_cyc_shadowed_gated_we;
+  assign classd_phase3_cyc_shadowed_gated_we = classd_phase3_cyc_shadowed_we & classd_regwen_qs;
   prim_subreg_shadow #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -13588,7 +14134,7 @@ module alert_handler_reg_top (
 
     // from register interface
     .re     (classd_phase3_cyc_shadowed_re),
-    .we     (classd_phase3_cyc_shadowed_we & classd_regwen_qs),
+    .we     (classd_phase3_cyc_shadowed_gated_we),
     .wd     (classd_phase3_cyc_shadowed_wd),
 
     // from internal hardware
@@ -14321,6 +14867,8 @@ module alert_handler_reg_top (
                (addr_hit[332] & (|(ALERT_HANDLER_PERMIT[332] & ~reg_be))) |
                (addr_hit[333] & (|(ALERT_HANDLER_PERMIT[333] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_classa_wd = reg_wdata[0];
@@ -15563,6 +16111,345 @@ module alert_handler_reg_top (
   assign classd_phase3_cyc_shadowed_wd = reg_wdata[31:0];
   assign classd_esc_cnt_re = addr_hit[332] & reg_re & !reg_error;
   assign classd_state_re = addr_hit[333] & reg_re & !reg_error;
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = ping_timer_regwen_we;
+    reg_we_check[4] = ping_timeout_cyc_shadowed_gated_we;
+    reg_we_check[5] = ping_timer_en_shadowed_gated_we;
+    reg_we_check[6] = alert_regwen_0_we;
+    reg_we_check[7] = alert_regwen_1_we;
+    reg_we_check[8] = alert_regwen_2_we;
+    reg_we_check[9] = alert_regwen_3_we;
+    reg_we_check[10] = alert_regwen_4_we;
+    reg_we_check[11] = alert_regwen_5_we;
+    reg_we_check[12] = alert_regwen_6_we;
+    reg_we_check[13] = alert_regwen_7_we;
+    reg_we_check[14] = alert_regwen_8_we;
+    reg_we_check[15] = alert_regwen_9_we;
+    reg_we_check[16] = alert_regwen_10_we;
+    reg_we_check[17] = alert_regwen_11_we;
+    reg_we_check[18] = alert_regwen_12_we;
+    reg_we_check[19] = alert_regwen_13_we;
+    reg_we_check[20] = alert_regwen_14_we;
+    reg_we_check[21] = alert_regwen_15_we;
+    reg_we_check[22] = alert_regwen_16_we;
+    reg_we_check[23] = alert_regwen_17_we;
+    reg_we_check[24] = alert_regwen_18_we;
+    reg_we_check[25] = alert_regwen_19_we;
+    reg_we_check[26] = alert_regwen_20_we;
+    reg_we_check[27] = alert_regwen_21_we;
+    reg_we_check[28] = alert_regwen_22_we;
+    reg_we_check[29] = alert_regwen_23_we;
+    reg_we_check[30] = alert_regwen_24_we;
+    reg_we_check[31] = alert_regwen_25_we;
+    reg_we_check[32] = alert_regwen_26_we;
+    reg_we_check[33] = alert_regwen_27_we;
+    reg_we_check[34] = alert_regwen_28_we;
+    reg_we_check[35] = alert_regwen_29_we;
+    reg_we_check[36] = alert_regwen_30_we;
+    reg_we_check[37] = alert_regwen_31_we;
+    reg_we_check[38] = alert_regwen_32_we;
+    reg_we_check[39] = alert_regwen_33_we;
+    reg_we_check[40] = alert_regwen_34_we;
+    reg_we_check[41] = alert_regwen_35_we;
+    reg_we_check[42] = alert_regwen_36_we;
+    reg_we_check[43] = alert_regwen_37_we;
+    reg_we_check[44] = alert_regwen_38_we;
+    reg_we_check[45] = alert_regwen_39_we;
+    reg_we_check[46] = alert_regwen_40_we;
+    reg_we_check[47] = alert_regwen_41_we;
+    reg_we_check[48] = alert_regwen_42_we;
+    reg_we_check[49] = alert_regwen_43_we;
+    reg_we_check[50] = alert_regwen_44_we;
+    reg_we_check[51] = alert_regwen_45_we;
+    reg_we_check[52] = alert_regwen_46_we;
+    reg_we_check[53] = alert_regwen_47_we;
+    reg_we_check[54] = alert_regwen_48_we;
+    reg_we_check[55] = alert_regwen_49_we;
+    reg_we_check[56] = alert_regwen_50_we;
+    reg_we_check[57] = alert_regwen_51_we;
+    reg_we_check[58] = alert_regwen_52_we;
+    reg_we_check[59] = alert_regwen_53_we;
+    reg_we_check[60] = alert_regwen_54_we;
+    reg_we_check[61] = alert_regwen_55_we;
+    reg_we_check[62] = alert_regwen_56_we;
+    reg_we_check[63] = alert_regwen_57_we;
+    reg_we_check[64] = alert_regwen_58_we;
+    reg_we_check[65] = alert_regwen_59_we;
+    reg_we_check[66] = alert_regwen_60_we;
+    reg_we_check[67] = alert_en_shadowed_0_gated_we;
+    reg_we_check[68] = alert_en_shadowed_1_gated_we;
+    reg_we_check[69] = alert_en_shadowed_2_gated_we;
+    reg_we_check[70] = alert_en_shadowed_3_gated_we;
+    reg_we_check[71] = alert_en_shadowed_4_gated_we;
+    reg_we_check[72] = alert_en_shadowed_5_gated_we;
+    reg_we_check[73] = alert_en_shadowed_6_gated_we;
+    reg_we_check[74] = alert_en_shadowed_7_gated_we;
+    reg_we_check[75] = alert_en_shadowed_8_gated_we;
+    reg_we_check[76] = alert_en_shadowed_9_gated_we;
+    reg_we_check[77] = alert_en_shadowed_10_gated_we;
+    reg_we_check[78] = alert_en_shadowed_11_gated_we;
+    reg_we_check[79] = alert_en_shadowed_12_gated_we;
+    reg_we_check[80] = alert_en_shadowed_13_gated_we;
+    reg_we_check[81] = alert_en_shadowed_14_gated_we;
+    reg_we_check[82] = alert_en_shadowed_15_gated_we;
+    reg_we_check[83] = alert_en_shadowed_16_gated_we;
+    reg_we_check[84] = alert_en_shadowed_17_gated_we;
+    reg_we_check[85] = alert_en_shadowed_18_gated_we;
+    reg_we_check[86] = alert_en_shadowed_19_gated_we;
+    reg_we_check[87] = alert_en_shadowed_20_gated_we;
+    reg_we_check[88] = alert_en_shadowed_21_gated_we;
+    reg_we_check[89] = alert_en_shadowed_22_gated_we;
+    reg_we_check[90] = alert_en_shadowed_23_gated_we;
+    reg_we_check[91] = alert_en_shadowed_24_gated_we;
+    reg_we_check[92] = alert_en_shadowed_25_gated_we;
+    reg_we_check[93] = alert_en_shadowed_26_gated_we;
+    reg_we_check[94] = alert_en_shadowed_27_gated_we;
+    reg_we_check[95] = alert_en_shadowed_28_gated_we;
+    reg_we_check[96] = alert_en_shadowed_29_gated_we;
+    reg_we_check[97] = alert_en_shadowed_30_gated_we;
+    reg_we_check[98] = alert_en_shadowed_31_gated_we;
+    reg_we_check[99] = alert_en_shadowed_32_gated_we;
+    reg_we_check[100] = alert_en_shadowed_33_gated_we;
+    reg_we_check[101] = alert_en_shadowed_34_gated_we;
+    reg_we_check[102] = alert_en_shadowed_35_gated_we;
+    reg_we_check[103] = alert_en_shadowed_36_gated_we;
+    reg_we_check[104] = alert_en_shadowed_37_gated_we;
+    reg_we_check[105] = alert_en_shadowed_38_gated_we;
+    reg_we_check[106] = alert_en_shadowed_39_gated_we;
+    reg_we_check[107] = alert_en_shadowed_40_gated_we;
+    reg_we_check[108] = alert_en_shadowed_41_gated_we;
+    reg_we_check[109] = alert_en_shadowed_42_gated_we;
+    reg_we_check[110] = alert_en_shadowed_43_gated_we;
+    reg_we_check[111] = alert_en_shadowed_44_gated_we;
+    reg_we_check[112] = alert_en_shadowed_45_gated_we;
+    reg_we_check[113] = alert_en_shadowed_46_gated_we;
+    reg_we_check[114] = alert_en_shadowed_47_gated_we;
+    reg_we_check[115] = alert_en_shadowed_48_gated_we;
+    reg_we_check[116] = alert_en_shadowed_49_gated_we;
+    reg_we_check[117] = alert_en_shadowed_50_gated_we;
+    reg_we_check[118] = alert_en_shadowed_51_gated_we;
+    reg_we_check[119] = alert_en_shadowed_52_gated_we;
+    reg_we_check[120] = alert_en_shadowed_53_gated_we;
+    reg_we_check[121] = alert_en_shadowed_54_gated_we;
+    reg_we_check[122] = alert_en_shadowed_55_gated_we;
+    reg_we_check[123] = alert_en_shadowed_56_gated_we;
+    reg_we_check[124] = alert_en_shadowed_57_gated_we;
+    reg_we_check[125] = alert_en_shadowed_58_gated_we;
+    reg_we_check[126] = alert_en_shadowed_59_gated_we;
+    reg_we_check[127] = alert_en_shadowed_60_gated_we;
+    reg_we_check[128] = alert_class_shadowed_0_gated_we;
+    reg_we_check[129] = alert_class_shadowed_1_gated_we;
+    reg_we_check[130] = alert_class_shadowed_2_gated_we;
+    reg_we_check[131] = alert_class_shadowed_3_gated_we;
+    reg_we_check[132] = alert_class_shadowed_4_gated_we;
+    reg_we_check[133] = alert_class_shadowed_5_gated_we;
+    reg_we_check[134] = alert_class_shadowed_6_gated_we;
+    reg_we_check[135] = alert_class_shadowed_7_gated_we;
+    reg_we_check[136] = alert_class_shadowed_8_gated_we;
+    reg_we_check[137] = alert_class_shadowed_9_gated_we;
+    reg_we_check[138] = alert_class_shadowed_10_gated_we;
+    reg_we_check[139] = alert_class_shadowed_11_gated_we;
+    reg_we_check[140] = alert_class_shadowed_12_gated_we;
+    reg_we_check[141] = alert_class_shadowed_13_gated_we;
+    reg_we_check[142] = alert_class_shadowed_14_gated_we;
+    reg_we_check[143] = alert_class_shadowed_15_gated_we;
+    reg_we_check[144] = alert_class_shadowed_16_gated_we;
+    reg_we_check[145] = alert_class_shadowed_17_gated_we;
+    reg_we_check[146] = alert_class_shadowed_18_gated_we;
+    reg_we_check[147] = alert_class_shadowed_19_gated_we;
+    reg_we_check[148] = alert_class_shadowed_20_gated_we;
+    reg_we_check[149] = alert_class_shadowed_21_gated_we;
+    reg_we_check[150] = alert_class_shadowed_22_gated_we;
+    reg_we_check[151] = alert_class_shadowed_23_gated_we;
+    reg_we_check[152] = alert_class_shadowed_24_gated_we;
+    reg_we_check[153] = alert_class_shadowed_25_gated_we;
+    reg_we_check[154] = alert_class_shadowed_26_gated_we;
+    reg_we_check[155] = alert_class_shadowed_27_gated_we;
+    reg_we_check[156] = alert_class_shadowed_28_gated_we;
+    reg_we_check[157] = alert_class_shadowed_29_gated_we;
+    reg_we_check[158] = alert_class_shadowed_30_gated_we;
+    reg_we_check[159] = alert_class_shadowed_31_gated_we;
+    reg_we_check[160] = alert_class_shadowed_32_gated_we;
+    reg_we_check[161] = alert_class_shadowed_33_gated_we;
+    reg_we_check[162] = alert_class_shadowed_34_gated_we;
+    reg_we_check[163] = alert_class_shadowed_35_gated_we;
+    reg_we_check[164] = alert_class_shadowed_36_gated_we;
+    reg_we_check[165] = alert_class_shadowed_37_gated_we;
+    reg_we_check[166] = alert_class_shadowed_38_gated_we;
+    reg_we_check[167] = alert_class_shadowed_39_gated_we;
+    reg_we_check[168] = alert_class_shadowed_40_gated_we;
+    reg_we_check[169] = alert_class_shadowed_41_gated_we;
+    reg_we_check[170] = alert_class_shadowed_42_gated_we;
+    reg_we_check[171] = alert_class_shadowed_43_gated_we;
+    reg_we_check[172] = alert_class_shadowed_44_gated_we;
+    reg_we_check[173] = alert_class_shadowed_45_gated_we;
+    reg_we_check[174] = alert_class_shadowed_46_gated_we;
+    reg_we_check[175] = alert_class_shadowed_47_gated_we;
+    reg_we_check[176] = alert_class_shadowed_48_gated_we;
+    reg_we_check[177] = alert_class_shadowed_49_gated_we;
+    reg_we_check[178] = alert_class_shadowed_50_gated_we;
+    reg_we_check[179] = alert_class_shadowed_51_gated_we;
+    reg_we_check[180] = alert_class_shadowed_52_gated_we;
+    reg_we_check[181] = alert_class_shadowed_53_gated_we;
+    reg_we_check[182] = alert_class_shadowed_54_gated_we;
+    reg_we_check[183] = alert_class_shadowed_55_gated_we;
+    reg_we_check[184] = alert_class_shadowed_56_gated_we;
+    reg_we_check[185] = alert_class_shadowed_57_gated_we;
+    reg_we_check[186] = alert_class_shadowed_58_gated_we;
+    reg_we_check[187] = alert_class_shadowed_59_gated_we;
+    reg_we_check[188] = alert_class_shadowed_60_gated_we;
+    reg_we_check[189] = alert_cause_0_we;
+    reg_we_check[190] = alert_cause_1_we;
+    reg_we_check[191] = alert_cause_2_we;
+    reg_we_check[192] = alert_cause_3_we;
+    reg_we_check[193] = alert_cause_4_we;
+    reg_we_check[194] = alert_cause_5_we;
+    reg_we_check[195] = alert_cause_6_we;
+    reg_we_check[196] = alert_cause_7_we;
+    reg_we_check[197] = alert_cause_8_we;
+    reg_we_check[198] = alert_cause_9_we;
+    reg_we_check[199] = alert_cause_10_we;
+    reg_we_check[200] = alert_cause_11_we;
+    reg_we_check[201] = alert_cause_12_we;
+    reg_we_check[202] = alert_cause_13_we;
+    reg_we_check[203] = alert_cause_14_we;
+    reg_we_check[204] = alert_cause_15_we;
+    reg_we_check[205] = alert_cause_16_we;
+    reg_we_check[206] = alert_cause_17_we;
+    reg_we_check[207] = alert_cause_18_we;
+    reg_we_check[208] = alert_cause_19_we;
+    reg_we_check[209] = alert_cause_20_we;
+    reg_we_check[210] = alert_cause_21_we;
+    reg_we_check[211] = alert_cause_22_we;
+    reg_we_check[212] = alert_cause_23_we;
+    reg_we_check[213] = alert_cause_24_we;
+    reg_we_check[214] = alert_cause_25_we;
+    reg_we_check[215] = alert_cause_26_we;
+    reg_we_check[216] = alert_cause_27_we;
+    reg_we_check[217] = alert_cause_28_we;
+    reg_we_check[218] = alert_cause_29_we;
+    reg_we_check[219] = alert_cause_30_we;
+    reg_we_check[220] = alert_cause_31_we;
+    reg_we_check[221] = alert_cause_32_we;
+    reg_we_check[222] = alert_cause_33_we;
+    reg_we_check[223] = alert_cause_34_we;
+    reg_we_check[224] = alert_cause_35_we;
+    reg_we_check[225] = alert_cause_36_we;
+    reg_we_check[226] = alert_cause_37_we;
+    reg_we_check[227] = alert_cause_38_we;
+    reg_we_check[228] = alert_cause_39_we;
+    reg_we_check[229] = alert_cause_40_we;
+    reg_we_check[230] = alert_cause_41_we;
+    reg_we_check[231] = alert_cause_42_we;
+    reg_we_check[232] = alert_cause_43_we;
+    reg_we_check[233] = alert_cause_44_we;
+    reg_we_check[234] = alert_cause_45_we;
+    reg_we_check[235] = alert_cause_46_we;
+    reg_we_check[236] = alert_cause_47_we;
+    reg_we_check[237] = alert_cause_48_we;
+    reg_we_check[238] = alert_cause_49_we;
+    reg_we_check[239] = alert_cause_50_we;
+    reg_we_check[240] = alert_cause_51_we;
+    reg_we_check[241] = alert_cause_52_we;
+    reg_we_check[242] = alert_cause_53_we;
+    reg_we_check[243] = alert_cause_54_we;
+    reg_we_check[244] = alert_cause_55_we;
+    reg_we_check[245] = alert_cause_56_we;
+    reg_we_check[246] = alert_cause_57_we;
+    reg_we_check[247] = alert_cause_58_we;
+    reg_we_check[248] = alert_cause_59_we;
+    reg_we_check[249] = alert_cause_60_we;
+    reg_we_check[250] = loc_alert_regwen_0_we;
+    reg_we_check[251] = loc_alert_regwen_1_we;
+    reg_we_check[252] = loc_alert_regwen_2_we;
+    reg_we_check[253] = loc_alert_regwen_3_we;
+    reg_we_check[254] = loc_alert_regwen_4_we;
+    reg_we_check[255] = loc_alert_regwen_5_we;
+    reg_we_check[256] = loc_alert_regwen_6_we;
+    reg_we_check[257] = loc_alert_en_shadowed_0_gated_we;
+    reg_we_check[258] = loc_alert_en_shadowed_1_gated_we;
+    reg_we_check[259] = loc_alert_en_shadowed_2_gated_we;
+    reg_we_check[260] = loc_alert_en_shadowed_3_gated_we;
+    reg_we_check[261] = loc_alert_en_shadowed_4_gated_we;
+    reg_we_check[262] = loc_alert_en_shadowed_5_gated_we;
+    reg_we_check[263] = loc_alert_en_shadowed_6_gated_we;
+    reg_we_check[264] = loc_alert_class_shadowed_0_gated_we;
+    reg_we_check[265] = loc_alert_class_shadowed_1_gated_we;
+    reg_we_check[266] = loc_alert_class_shadowed_2_gated_we;
+    reg_we_check[267] = loc_alert_class_shadowed_3_gated_we;
+    reg_we_check[268] = loc_alert_class_shadowed_4_gated_we;
+    reg_we_check[269] = loc_alert_class_shadowed_5_gated_we;
+    reg_we_check[270] = loc_alert_class_shadowed_6_gated_we;
+    reg_we_check[271] = loc_alert_cause_0_we;
+    reg_we_check[272] = loc_alert_cause_1_we;
+    reg_we_check[273] = loc_alert_cause_2_we;
+    reg_we_check[274] = loc_alert_cause_3_we;
+    reg_we_check[275] = loc_alert_cause_4_we;
+    reg_we_check[276] = loc_alert_cause_5_we;
+    reg_we_check[277] = loc_alert_cause_6_we;
+    reg_we_check[278] = classa_regwen_we;
+    reg_we_check[279] = classa_ctrl_shadowed_gated_we;
+    reg_we_check[280] = classa_clr_regwen_we;
+    reg_we_check[281] = classa_clr_shadowed_gated_we;
+    reg_we_check[282] = 1'b0;
+    reg_we_check[283] = classa_accum_thresh_shadowed_gated_we;
+    reg_we_check[284] = classa_timeout_cyc_shadowed_gated_we;
+    reg_we_check[285] = classa_crashdump_trigger_shadowed_gated_we;
+    reg_we_check[286] = classa_phase0_cyc_shadowed_gated_we;
+    reg_we_check[287] = classa_phase1_cyc_shadowed_gated_we;
+    reg_we_check[288] = classa_phase2_cyc_shadowed_gated_we;
+    reg_we_check[289] = classa_phase3_cyc_shadowed_gated_we;
+    reg_we_check[290] = 1'b0;
+    reg_we_check[291] = 1'b0;
+    reg_we_check[292] = classb_regwen_we;
+    reg_we_check[293] = classb_ctrl_shadowed_gated_we;
+    reg_we_check[294] = classb_clr_regwen_we;
+    reg_we_check[295] = classb_clr_shadowed_gated_we;
+    reg_we_check[296] = 1'b0;
+    reg_we_check[297] = classb_accum_thresh_shadowed_gated_we;
+    reg_we_check[298] = classb_timeout_cyc_shadowed_gated_we;
+    reg_we_check[299] = classb_crashdump_trigger_shadowed_gated_we;
+    reg_we_check[300] = classb_phase0_cyc_shadowed_gated_we;
+    reg_we_check[301] = classb_phase1_cyc_shadowed_gated_we;
+    reg_we_check[302] = classb_phase2_cyc_shadowed_gated_we;
+    reg_we_check[303] = classb_phase3_cyc_shadowed_gated_we;
+    reg_we_check[304] = 1'b0;
+    reg_we_check[305] = 1'b0;
+    reg_we_check[306] = classc_regwen_we;
+    reg_we_check[307] = classc_ctrl_shadowed_gated_we;
+    reg_we_check[308] = classc_clr_regwen_we;
+    reg_we_check[309] = classc_clr_shadowed_gated_we;
+    reg_we_check[310] = 1'b0;
+    reg_we_check[311] = classc_accum_thresh_shadowed_gated_we;
+    reg_we_check[312] = classc_timeout_cyc_shadowed_gated_we;
+    reg_we_check[313] = classc_crashdump_trigger_shadowed_gated_we;
+    reg_we_check[314] = classc_phase0_cyc_shadowed_gated_we;
+    reg_we_check[315] = classc_phase1_cyc_shadowed_gated_we;
+    reg_we_check[316] = classc_phase2_cyc_shadowed_gated_we;
+    reg_we_check[317] = classc_phase3_cyc_shadowed_gated_we;
+    reg_we_check[318] = 1'b0;
+    reg_we_check[319] = 1'b0;
+    reg_we_check[320] = classd_regwen_we;
+    reg_we_check[321] = classd_ctrl_shadowed_gated_we;
+    reg_we_check[322] = classd_clr_regwen_we;
+    reg_we_check[323] = classd_clr_shadowed_gated_we;
+    reg_we_check[324] = 1'b0;
+    reg_we_check[325] = classd_accum_thresh_shadowed_gated_we;
+    reg_we_check[326] = classd_timeout_cyc_shadowed_gated_we;
+    reg_we_check[327] = classd_crashdump_trigger_shadowed_gated_we;
+    reg_we_check[328] = classd_phase0_cyc_shadowed_gated_we;
+    reg_we_check[329] = classd_phase1_cyc_shadowed_gated_we;
+    reg_we_check[330] = classd_phase2_cyc_shadowed_gated_we;
+    reg_we_check[331] = classd_phase3_cyc_shadowed_gated_we;
+    reg_we_check[332] = 1'b0;
+    reg_we_check[333] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

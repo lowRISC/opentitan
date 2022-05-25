@@ -127,10 +127,11 @@ sw_silicon_creator_lib_driver_keymgr_functest = declare_dependency(
     ],
     dependencies: [
       sw_lib_dif_aon_timer,
+      sw_lib_dif_flash_ctrl,
       sw_lib_dif_kmac,
       sw_lib_dif_pwrmgr,
       sw_lib_dif_otp_ctrl,
-      sw_lib_flash_ctrl,
+      sw_lib_testing_flash_ctrl_testutils,
       sw_lib_testing_pwrmgr_testutils,
       sw_silicon_creator_lib_base_sec_mmio,
       sw_silicon_creator_lib_driver_keymgr,
@@ -488,6 +489,7 @@ test('sw_silicon_creator_lib_driver_watchdog_unittest', executable(
   suite: 'mask_rom',
 )
 
+
 # Mask ROM otbn driver
 sw_silicon_creator_lib_driver_otbn = declare_dependency(
   link_with: static_library(
@@ -498,6 +500,7 @@ sw_silicon_creator_lib_driver_otbn = declare_dependency(
     ],
     dependencies: [
       sw_lib_abs_mmio,
+      sw_silicon_creator_lib_driver_rnd,
     ],
   ),
 )
@@ -594,8 +597,43 @@ sw_silicon_creator_lib_driver_spi_device = declare_dependency(
     dependencies: [
       sw_lib_abs_mmio,
       sw_lib_mem,
+      sw_silicon_creator_lib_driver_lifecycle,
     ],
   ),
+)
+
+# Mask ROM ibex driver
+sw_silicon_creator_lib_driver_ibex = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_ibex',
+    sources: [
+      hw_ip_ibex_reg_h,
+      'ibex.c',
+    ],
+    dependencies: [
+      sw_lib_abs_mmio,
+    ],
+  ),
+)
+
+
+test('sw_silicon_creator_lib_driver_ibex_unittest', executable(
+    'sw_silicon_creator_lib_driver_ibex_unittest',
+    sources: [
+       hw_ip_ibex_reg_h,
+      'ibex_unittest.cc',
+      'ibex.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_testing_hardened,
+      sw_silicon_creator_lib_base_mock_sec_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],
+  ),
+  suite: 'mask_rom',
 )
 
 test('sw_silicon_creator_lib_driver_spi_device_unittest', executable(

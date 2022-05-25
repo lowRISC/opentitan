@@ -43,7 +43,7 @@
       mutex).
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_regwen_during_op"]
     }
     {
       name: sec_cm_manuf_state_sparse
@@ -53,7 +53,7 @@
       Verify this countermeasure with a standardized test.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
       name: sec_cm_transition_ctr_sparse
@@ -131,7 +131,7 @@
         invalid encoding (MANUF.STATE.BKGN_CHK, TRANSITION.CTR.BKGN_CHK).
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
       name: sec_cm_main_fsm_global_esc
@@ -142,7 +142,7 @@
       any of the two escalation channels (`esc_scrap_state0/1`) is asserted.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_security_escalation"]
     }
     {
       name: sec_cm_main_ctrl_flow_consistency
@@ -153,9 +153,12 @@
       direction - i.e. that there are no transitions that move backwards into
       a state where the FSM has previously been (e.g. from `InvalidSt` back
       into `IdleSt`).
+
+      Note: This is expected to be formally proven by FPV test lc_ctrl_sec_cm_fsm but
+      there is currently no mechanism to include this in the testplan.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_state_post_trans", "lc_ctrl_jtag_state_post_trans"]
     }
     {
       name: sec_cm_intersig_mubi
@@ -191,7 +194,7 @@
       this error occurs.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_mubi"]
     }
     {
       name: sec_cm_token_valid_ctrl_mubi
@@ -204,7 +207,7 @@
       error occurs.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_mubi"]
     }
     {
       name: sec_cm_token_digest
@@ -226,7 +229,7 @@
         these checks will lead to a TOKEN_ERROR.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_token_digest"]
     }
     {
       name: sec_cm_token_mux_ctrl_redun
@@ -243,7 +246,7 @@
       Note: the same test as for TOKEN_VALID.MUX.REDUN can be used.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_token_mux"]
     }
     {
       name: sec_cm_token_valid_mux_redun
@@ -261,7 +264,24 @@
       Note: the same test as for TOKEN_MUX.CTRL.REDUN can be used.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_token_mux"]
     }
   ]
+
+  covergroups: [
+    {
+      name: sec_token_mux_idx_error_cg
+      desc: '''
+        Indicates FSM states that a token mux index error is detected
+      '''
+    }
+
+    {
+      name: sec_token_digest_error_cg
+      desc: '''
+        Indicates FSM states that a token digest error is detected
+      '''
+    }
+  ]
+
 }

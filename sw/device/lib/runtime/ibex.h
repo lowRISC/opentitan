@@ -13,6 +13,9 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/stdasm.h"
 
+// IBEX_SPIN_FOR needs a dependency on check.h, but the build fails if a
+// dependency on sw_lib_testing_check is added.
+
 /**
  * @file
  * @brief This header provides Ibex-specific functions, such as cycle-accurate

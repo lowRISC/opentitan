@@ -77,11 +77,15 @@ Security      | [SEC_RND_CNST][]        | Done        |
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
 Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
+Security      | [SEC_CM_NON_RESET_FLOPS][]   | Done        |
+Security      | [SEC_CM_SHADOW_REGS][]       | Done        |
 Security      | [SEC_CM_RTL_REVIEWED][]      | Done        |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Done        |
 
 [SEC_CM_ASSETS_LISTED]:    {{<relref "/doc/project/checklist.md#sec_cm_assets_listed" >}}
 [SEC_CM_IMPLEMENTED]:      {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+[SEC_CM_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_cm_non_reset_flops" >}}
+[SEC_CM_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_cm_shadow_regs" >}}
 [SEC_CM_RTL_REVIEWED]:     {{<relref "/doc/project/checklist.md#sec_cm_rtl_reviewed" >}}
 [SEC_CM_COUNCIL_REVIEWED]: {{<relref "/doc/project/checklist.md#sec_cm_council_reviewed" >}}
 
@@ -93,30 +97,23 @@ Documentation | [NEW_FEATURES_D3][]     | Not Started |
 RTL           | [TODO_COMPLETE][]       | Not Started |
 Code Quality  | [LINT_COMPLETE][]       | Not Started |
 Code Quality  | [CDC_COMPLETE][]        | Not Started |
+Code Quality  | [RDC_COMPLETE][]        | Not Started |
 Review        | [REVIEW_RTL][]          | Not Started |
 Review        | [REVIEW_DELETED_FF][]   | Not Started |
-Review        | [REVIEW_SW_CSR][]       | Not Started |
-Review        | [REVIEW_SW_FATAL_ERR][] | Not Started |
 Review        | [REVIEW_SW_CHANGE][]    | Not Started |
 Review        | [REVIEW_SW_ERRATA][]    | Not Started |
-Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
-Security      | [SEC_SHADOW_REGS][]     | Not Started |
-Review        | Reviewer(s)             |             |
-Review        | Signoff date            |             |
+Review        | Reviewer(s)             | Not Started |
+Review        | Signoff date            | Not Started |
 
 [NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new_features_d3" >}}
 [TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo_complete" >}}
 [LINT_COMPLETE]:        {{<relref "/doc/project/checklist.md#lint_complete" >}}
 [CDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#cdc_complete" >}}
+[RDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#rdc_complete" >}}
 [REVIEW_RTL]:           {{<relref "/doc/project/checklist.md#review_rtl" >}}
-[REVIEW_DBG]:           {{<relref "/doc/project/checklist.md#review_dbg" >}}
 [REVIEW_DELETED_FF]:    {{<relref "/doc/project/checklist.md#review_deleted_ff" >}}
-[REVIEW_SW_CSR]:        {{<relref "/doc/project/checklist.md#review_sw_csr" >}}
-[REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review_sw_fatal_err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
-[SEC_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
-[SEC_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
 
 ## Verification Checklist
 
@@ -190,7 +187,6 @@ Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        |
 Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
-Code Quality  | [TB_LINT_PASS][]                        | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Done        | prim_alert_sender
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
@@ -212,7 +208,6 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 [SIM_FUNCTIONAL_COVERAGE_V2]:         {{<relref "/doc/project/checklist.md#sim_functional_coverage_v2" >}}
 [FPV_CODE_COVERAGE_V2]:               {{<relref "/doc/project/checklist.md#fpv_code_coverage_v2" >}}
 [FPV_COI_COVERAGE_V2]:                {{<relref "/doc/project/checklist.md#fpv_coi_coverage_v2" >}}
-[TB_LINT_PASS]:                       {{<relref "/doc/project/checklist.md#tb_lint_pass" >}}
 [PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v2" >}}
 [NO_HIGH_PRIORITY_ISSUES_PENDING]:    {{<relref "/doc/project/checklist.md#no_high_priority_issues_pending" >}}
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all_low_priority_issues_root_caused" >}}

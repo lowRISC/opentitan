@@ -1,0 +1,144 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "ibex_icache"
+
+  testpoints: [
+    {
+      name: smoke
+      desc: '''Basic smoke test for icache
+
+            Make a series of requests with unconstrained addresses, branching
+            occasionally and disabling the request line occasionally (modelling
+            the core going to sleep). Toggle whether the cache is enabled.
+            Invalidate the cache very occasionally.
+
+            Self-checking performed as described in the DV plan (the same
+            self-check tests are run for all the tests described below, as well
+            as any extra tests they describe).'''
+      milestone: V1
+      tests: ["ibex_icache_smoke"]
+    }
+
+    {
+      name: passthru
+      desc: '''Check the icache does no caching when disabled
+
+            Randomly pick a base address and then constrain all branch targets
+            to lie within 64 bytes of the base address and all runs of
+            instructions to at most 100 instructions (totalling at most 400
+            bytes of code). Leave the cache disabled and make memory seed
+            changes reasonably frequent.
+
+            If any data is wrongly cached, the scoreboard in this test should
+            probably spot it happening. Note that the smoke test theoretically
+            could check this, but the unconstrained branch addresses mean it's
+            very unlikely to see much caching going on.'''
+      milestone: V2
+      tests: ["ibex_icache_passthru"]
+    }
+
+    {
+      name: caching
+      desc: '''Check the icache does actually cache tight loops
+
+            Set up requests as in the passthru test to ensure lots of cache
+            hits. Enable the cache.
+
+            Once the cache's busy flag goes low (signalling that invalidation on
+            reset has finished), start fetching and check that most results are
+            cached by counting transactions on the instruction bus versus
+            instructions fetched.'''
+      milestone: V2
+      tests: ["ibex_icache_caching"]
+    }
+
+    {
+      name: invalidation
+      desc: '''Check the cache invalidates when asked
+
+            Set up requests as in the passthru test to ensure lots of cache
+            hits. Enable the cache but increase frequency of cache invalidations
+            and seed updates for the memory to try and hit any race conditions
+            between the request tracking logic and the invalidation logic.'''
+      milestone: V2
+      tests: ["ibex_icache_invalidation"]
+    }
+
+    {
+      name: oldval
+      desc: '''Check the cache can be enabled and disabled without invalidation
+
+            Set up requests as in the passthru test to ensure lots of cache
+            hits. Toggle between enable/disable reasonably frequently compared
+            to how often the cache is invalidated.
+
+            Compare bus transactions and instructions fetched to make sure that
+            cached instructions survive enable/disable toggles.'''
+      milestone: V2
+      tests: ["ibex_icache_oldval"]
+    }
+
+    {
+      name: back_line
+      desc: '''Check the cache fills correctly from the middle of a line
+
+            With the cache enabled, branch to an arbitrary address, read a few
+            instructions (to pull in the rest of the cache line) and then branch
+            back to a few bytes before the address where we started. Repeat.
+
+            Since the initial branch target needn't lie at the start of a cache
+            line, this will stress-test the logic that the cache has for filling
+            lines (it starts at the requested word, runs to the top of the line,
+            and then goes back to the start to get what it missed). This will
+            spot if there are any bugs that cause it to cache bogus data just
+            before the original branch target.'''
+      milestone: V2
+      tests: ["ibex_icache_back_line"]
+    }
+
+    {
+      name: many_errors
+      desc: '''Return very frequent errors from the instruction memory
+
+            This will cause very frequent branching and stress-test the cache's
+            error handling. Constrain branch targets as in the caching test so
+            that we are actually caching something.'''
+      milestone: V2
+      tests: ["ibex_icache_many_errors"]
+    }
+
+    {
+      name: ecc
+      desc: '''Insert single-bit errors into cached data
+
+            With the cache (as in the caching test), interpose a fake
+            memory for the cache RAMs, which occasionally inserts a single
+            bit error. Check that the invalid cached data is correctly
+            ignored.'''
+      milestone: V2
+      tests: ["ibex_icache_ecc"]
+    }
+
+    {
+      name: stress_all
+      desc: '''Run sequences back-to-back
+
+            Tests are selected from the sequences above. With 50% probability,
+            reset between the sequences.'''
+      milestone: V2
+      tests: ["ibex_icache_stress_all"]
+    }
+
+    {
+      name: stress_all_with_reset
+      desc: '''Run a sequence from above, resetting occasionally
+
+            Tests are selected from the sequences above. Add occasional
+            resets (in the middle of sequences)'''
+      milestone: V2
+      tests: ["ibex_icache_stress_all_with_reset"]
+    }
+  ]
+}

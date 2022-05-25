@@ -16,6 +16,7 @@ module flash_mp_data_region_sel import flash_ctrl_pkg::*; #(
   input data_region_attr_t region_attrs_i [Regions],
   output mp_region_cfg_t sel_cfg_o
 );
+  import prim_mubi_pkg::mubi4_test_true_strict;
 
   // There could be multiple region matches due to region overlap
   // Lower indices always have priority
@@ -32,13 +33,13 @@ module flash_mp_data_region_sel import flash_ctrl_pkg::*; #(
   // check for region match
   always_comb begin
     for (int i = 0; i < Regions; i++) begin: gen_region_comps
-      region_end[i] = {1'b0, region_attrs_i[i].cfg.base.q} + region_attrs_i[i].cfg.size.q;
+      region_end[i] = {1'b0, region_attrs_i[i].cfg.base} + region_attrs_i[i].cfg.size;
 
       // region matches if address within range and if the partition matches
-      region_match[i] = addr_i >= region_attrs_i[i].cfg.base.q &
+      region_match[i] = addr_i >= region_attrs_i[i].cfg.base &
                         {1'b0, addr_i} < region_end[i] &
                         phase_i == region_attrs_i[i].phase &
-                        region_attrs_i[i].cfg.en.q &
+                        mubi4_test_true_strict(region_attrs_i[i].cfg.en) &
                         req_i;
     end
   end

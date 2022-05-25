@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
 use crate::transport::hyperdebug::Inner;
-use crate::transport::{Result, TransportError};
+use crate::transport::TransportError;
 
 pub struct HyperdebugGpioPin {
     inner: Rc<Inner>,
@@ -26,9 +27,8 @@ impl HyperdebugGpioPin {
 impl GpioPin for HyperdebugGpioPin {
     /// Reads the value of the the GPIO pin `id`.
     fn read(&self) -> Result<bool> {
-        let mut result: Result<bool> = Err(TransportError::CommunicationError(
-            "No output from gpioget".to_string(),
-        ));
+        let mut result: Result<bool> =
+            Err(TransportError::CommunicationError("No output from gpioget".to_string()).into());
         self.inner
             .execute_command(&format!("gpioget {}", &self.pinname), |line| {
                 result = Ok(line.trim_start().starts_with("1"))

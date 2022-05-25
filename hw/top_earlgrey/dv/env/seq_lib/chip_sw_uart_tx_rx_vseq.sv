@@ -62,7 +62,7 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_base_vseq;
     // Check if we received the right data set over the TX port.
     `uvm_info(`gfn, "Checking the received UART TX data for consistency.", UVM_LOW)
     foreach (uart_tx_data_q[i]) begin
-      `DV_CHECK_EQ(uart_tx_data_q[i], exp_uart_tx_data[i])
+      `DV_CHECK_EQ(uart_tx_data_q[i], exp_uart_tx_data[i], $sformatf("index: %0d", i))
     end
 
     // Send UART_RX_FIFO_SIZE+1 random bytes over RX to create an overflow condition.

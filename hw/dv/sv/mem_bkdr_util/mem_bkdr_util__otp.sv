@@ -53,6 +53,37 @@ virtual function void otp_write_secret0_partition(
   write64(Secret0DigestOffset, digest);
 endfunction
 
+virtual function void otp_write_secret2_partition(bit [RmaTokenSize*8-1:0] rma_unlock_token,
+                                                  bit [CreatorRootKeyShare0Size*8-1:0] creator_root_key0,
+                                                  bit [CreatorRootKeyShare1Size*8-1:0] creator_root_key1
+);
+
+  bit [Secret2DigestSize*8-1:0] digest;
+
+  bit [RmaTokenSize*8-1:0] scrambled_unlock_token;
+  bit [CreatorRootKeyShare0Size*8-1:0] scrambled_root_key0;
+  bit [CreatorRootKeyShare1Size*8-1:0] scrambled_root_key1;
+  bit [bus_params_pkg::BUS_DW-1:0] secret_data[$];
+
+  for (int i = 0; i < RmaTokenSize; i+=8) begin
+    scrambled_unlock_token[i*8+:64] = scramble_data(rma_unlock_token[i*8+:64], Secret2Idx);
+    write64(i + RmaTokenOffset, scrambled_unlock_token[i*8+:64]);
+  end
+  for (int i = 0; i < CreatorRootKeyShare0Size; i+=8) begin
+    scrambled_root_key0[i*8+:64] = scramble_data(creator_root_key0[i*8+:64], Secret2Idx);
+    write64(i + CreatorRootKeyShare0Offset, scrambled_root_key0[i*8+:64]);
+  end
+  for (int i = 0; i < CreatorRootKeyShare1Size; i+=8) begin
+    scrambled_root_key1[i*8+:64] = scramble_data(creator_root_key1[i*8+:64], Secret2Idx);
+    write64(i + CreatorRootKeyShare1Offset, scrambled_root_key1[i*8+:64]);
+  end
+
+  secret_data = {<<32 {scrambled_root_key1, scrambled_root_key0, scrambled_unlock_token}};
+  digest = cal_digest(Secret2Idx, secret_data);
+
+  write64(Secret2DigestOffset, digest);
+endfunction
+
 virtual function void otp_write_hw_cfg_partition(
     bit [DeviceIdSize*8-1:0] device_id, bit [ManufStateSize*8-1:0] manuf_state,
     bit [EnSramIfetchSize*8-1:0] en_sram_ifetch,

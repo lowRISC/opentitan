@@ -6,7 +6,7 @@
     Simple tests of the addi instruction
 
     This test also uses a comment syntax that broke the parser in a
-    previous version of otbn-as: if editing it, keep the block
+    previous version of otbn_as.py: if editing it, keep the block
     comments on the same lines as instructions to keep that test in
     place.
 

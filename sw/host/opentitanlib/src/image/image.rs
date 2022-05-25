@@ -2,17 +2,51 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::util::parse_int::ParseInt;
 use anyhow::{ensure, Result};
+use memoffset::offset_of;
+use sha2::{Digest, Sha256};
+use std::convert::TryInto;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
+use std::mem::size_of;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
+
+use zerocopy::LayoutVerified;
+
+use crate::image::manifest::Manifest;
+use crate::image::manifest_def::ManifestDef;
+use crate::util::parse_int::ParseInt;
 
 #[derive(Debug, Error)]
 pub enum ImageError {
     #[error("Incomplete read: expected to read {0} bytes but read {1} bytes")]
     IncompleteRead(usize, usize),
+    #[error("Failed to parse image manifest.")]
+    Parse,
+}
+
+/// A buffer with the same alignment as `Manifest` for storing image data.
+#[repr(C)]
+#[derive(Debug)]
+pub struct ImageData {
+    pub bytes: [u8; Image::MAX_SIZE],
+    _align: [Manifest; 0],
+}
+
+impl Default for ImageData {
+    fn default() -> Self {
+        ImageData {
+            bytes: [0xFF; Image::MAX_SIZE],
+            _align: [],
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct Image {
+    data: Box<ImageData>,
+    size: usize,
 }
 
 #[derive(Debug)]
@@ -26,6 +60,66 @@ pub struct ImageAssembler {
     pub size: usize,
     pub mirrored: bool,
     pub chunks: Vec<ImageChunk>,
+}
+
+impl Image {
+    const MAX_SIZE: usize = 512 * 1024;
+    /// Reads in an `Image`.
+    pub fn from_reader(mut r: impl Read) -> Result<Self> {
+        let mut image = Image::default();
+        image.size = r.read(&mut image.data.bytes)?;
+        Ok(image)
+    }
+
+    /// Writes out the `Image`.
+    pub fn to_writer(&self, w: &mut impl Write) -> Result<()> {
+        w.write_all(&self.data.bytes[..self.size])?;
+        Ok(())
+    }
+
+    /// Creates an `Image` from a given input binary.
+    pub fn read_from_file(path: &Path) -> Result<Image> {
+        let file = File::open(path)?;
+        Self::from_reader(file)
+    }
+
+    /// Write out the `Image` to a file at the given `path`.
+    pub fn write_to_file(self, path: &Path) -> Result<()> {
+        let mut file = File::create(path)?;
+        self.to_writer(&mut file)
+    }
+
+    /// Overwrites all fields in the image's manifest that are defined in `other`.
+    pub fn overwrite_manifest(&mut self, other: ManifestDef) -> Result<()> {
+        let manifest = self.borrow_manifest_mut()?;
+        let mut manifest_def: ManifestDef = (&*manifest).try_into()?;
+        manifest_def.overwrite_fields(other);
+        *manifest = manifest_def.try_into()?;
+        Ok(())
+    }
+
+    pub fn borrow_manifest(&self) -> Result<&Manifest> {
+        let manifest_slice = &self.data.bytes[0..size_of::<Manifest>()];
+        let manifest_layout: LayoutVerified<&[u8], Manifest> =
+            LayoutVerified::new(manifest_slice).ok_or(ImageError::Parse)?;
+        let manifest: &Manifest = manifest_layout.into_ref();
+        Ok(manifest)
+    }
+
+    pub fn borrow_manifest_mut(&mut self) -> Result<&mut Manifest> {
+        let manifest_slice = &mut self.data.bytes[0..size_of::<Manifest>()];
+        let manifest_layout: LayoutVerified<&mut [u8], Manifest> =
+            LayoutVerified::new(&mut *manifest_slice).ok_or(ImageError::Parse)?;
+        let manifest: &mut Manifest = manifest_layout.into_mut();
+        Ok(manifest)
+    }
+
+    /// Compute the SHA256 digest for the signed portion of the `Image`.
+    pub fn compute_digest(&self) -> Vec<u8> {
+        let mut hasher = Sha256::new();
+        hasher.update(&self.data.bytes[offset_of!(Manifest, usage_constraints)..self.size]);
+        hasher.finalize().to_vec()
+    }
 }
 
 impl ImageAssembler {
@@ -156,5 +250,26 @@ mod tests {
             "Incomplete read: expected to read 5 bytes but read 3 bytes"
         );
         Ok(())
+    }
+
+    #[test]
+    fn test_load_image() {
+        // Read and write back image.
+        let image = Image::read_from_file(&testdata!("test_image.bin")).unwrap();
+        image
+            .write_to_file(&testdata!("test_image_out.bin"))
+            .unwrap();
+
+        // Ensure the result is identical to the original.
+        let (mut orig_bytes, mut res_bytes) = (Vec::<u8>::new(), Vec::<u8>::new());
+        File::open(&testdata!("test_image.bin"))
+            .unwrap()
+            .read_to_end(&mut orig_bytes)
+            .unwrap();
+        File::open(&testdata!("test_image_out.bin"))
+            .unwrap()
+            .read_to_end(&mut res_bytes)
+            .unwrap();
+        assert_eq!(orig_bytes, res_bytes);
     }
 }

@@ -13,12 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
-import sys
 import vsc
 import logging
 from importlib import import_module
-from enum import Enum, IntEnum, auto
+from enum import IntEnum, auto
 from pygen_src.riscv_instr_pkg import *
 from pygen_src.riscv_instr_gen_config import cfg
 rcs = import_module("pygen_src.target." + cfg.argv.target + ".riscv_core_setting")
@@ -77,14 +75,14 @@ class riscv_cov_instr:
         # self.operands = "None"  # Instruction operands (srcss/dests)
         # self.pad = None  # Not used
 
-        self.rs1_value = vsc.int_t(rcs.XLEN)
-        self.rs2_value = vsc.int_t(rcs.XLEN)
-        self.rs3_value = vsc.int_t(rcs.XLEN)
-        self.rd_value = vsc.int_t(rcs.XLEN)
-        self.fs1_value = vsc.int_t(rcs.XLEN)
-        self.fs2_value = vsc.int_t(rcs.XLEN)
-        self.fs3_value = vsc.int_t(rcs.XLEN)
-        self.fd_value = vsc.int_t(rcs.XLEN)
+        self.rs1_value = vsc.bit_t(rcs.XLEN)
+        self.rs2_value = vsc.bit_t(rcs.XLEN)
+        self.rs3_value = vsc.bit_t(rcs.XLEN)
+        self.rd_value = vsc.bit_t(rcs.XLEN)
+        self.fs1_value = vsc.bit_t(rcs.XLEN)
+        self.fs2_value = vsc.bit_t(rcs.XLEN)
+        self.fs3_value = vsc.bit_t(rcs.XLEN)
+        self.fd_value = vsc.bit_t(rcs.XLEN)
 
         self.mem_addr = vsc.int_t(rcs.XLEN)
         self.unaligned_pc = 0
@@ -117,8 +115,9 @@ class riscv_cov_instr:
         self.imm_type = None
 
         self.csr = vsc.bit_t(12)
-        ''' TODO: rs2, rs1, rd, group, format, category, imm_type will be
-        changed to vsc.enum_t once the issue with set/get_val is fixed '''
+        ''' TODO: rs2, rs1, rd, group, format, category, imm_type
+            fs1, fs2, fs3, fd will be changed to vsc.enum_t once
+            the issue with set/get_val is fixed '''
         self.rs2 = 0
         self.rs1 = 0
         self.rd = 0
@@ -128,6 +127,14 @@ class riscv_cov_instr:
         self.has_rd = 1
         self.has_imm = 1
         self.imm_len = 0
+        self.has_fs1 = 1
+        self.has_fs2 = 1
+        self.has_fs3 = 0
+        self.has_fd = 1
+        self.fs1 = 0
+        self.fs2 = 0
+        self.fs3 = 0
+        self.fd = 0
 
     def assign_attributes(self):
         attr_list = get_attr_list(self.instr)
@@ -139,6 +146,8 @@ class riscv_cov_instr:
             self.imm_type = attr_list[3]
         self.set_imm_len()
         self.set_mode()
+        if self.group.name in ["RV32D", "RV32F"]:
+            self.set_fd_mode()
 
     def set_imm_len(self):
         if self.format.name in ["U_FORMAT", "J_FORMAT"]:
@@ -166,6 +175,50 @@ class riscv_cov_instr:
             self.has_rs2 = 0
             if self.format.name == "I_FORMAT":
                 self.has_rs1 = 0
+
+    # mode setting for F and D Instruction
+    def set_fd_mode(self):
+        if self.format == riscv_instr_format_t.I_FORMAT:
+            self.has_fs2 = 0
+            if self.category == riscv_instr_category_t.LOAD:
+                self.has_imm = 1
+            elif self.instr.name in ['FMV_X_W', 'FMV_X_D', 'FCVT_W_S', 'FCVT_WU_S',
+                                     'FCVT_L_S', 'FCVT_LU_S', 'FCVT_L_D', 'FCVT_LU_D',
+                                     'FCVT_LU_S', 'FCVT_W_D', 'FCVT_WU_D']:
+                self.has_fd = 0
+                self.has_rd = 1
+            elif self.instr.name in ['FMV_W_X', 'FMV_D_X', 'FCVT_S_W', 'FCVT_S_WU',
+                                     'FCVT_S_L', 'FCVT_D_L', 'FCVT_S_LU', 'FCVT_D_W',
+                                     'FCVT_D_LU', 'FCVT_D_WU']:
+                self.has_rs1 = 1
+                self.has_fs1 = 0
+        elif self.format == riscv_instr_format_t.S_FORMAT:
+            self.has_imm = 1
+            self.has_rs1 = 1
+            self.has_fs1 = 0
+            self.has_fs3 = 0
+        elif self.format == riscv_instr_format_t.R_FORMAT:
+            if self.category == riscv_instr_category_t.COMPARE:
+                self.has_rd = 1
+                self.has_fd = 0
+            elif self.instr.name in ['FCLASS_S', 'FCLASS_D']:
+                self.has_rd = 1
+                self.has_fd = 0
+                self.has_fs2 = 0
+        elif self.format == riscv_instr_format_t.R4_FORMAT:
+            self.has_fs3 = 1
+        elif self.format == riscv_instr_format_t.CL_FORMAT:
+            self.has_imm = 1
+            self.has_rs1 = 1
+            self.has_fs1 = 0
+            self.has_fs2 = 0
+        elif self.format == riscv_instr_format_t.CS_FORMAT:
+            self.has_imm = 1
+            self.has_rs1 = 1
+            self.has_fs1 = 0
+            self.has_fd = 0
+        else:
+            logging.info("Unsupported format {}".format(self.format.name))
 
     def pre_sample(self):
         unaligned_pc = self.pc.get_val() % 4 != 0
@@ -326,7 +379,7 @@ class riscv_cov_instr:
         explicitly extract the destination register from the operands '''
         if pre_instr.has_rd:
             if ((self.has_rs1 and (self.rs1 == pre_instr.rd)) or
-                    (self.has_rs2 and (self.rs1 == pre_instr.rd))):
+                    (self.has_rs2 and (self.rs2 == pre_instr.rd))):
                 logging.info("pre_instr {}".format(pre_instr.instr.name))
                 self.gpr_hazard = hazard_e["RAW_HAZARD"]
             elif self.has_rd and (self.rd == pre_instr.rd):
@@ -352,6 +405,20 @@ class riscv_cov_instr:
                 self.lsu_hazard = hazard_e["WAR_HAZARD"]
             else:
                 self.lsu_hazard = hazard_e["NO_HAZARD"]
+        # Hazard Condition check for RV32D and RV32F instructions
+        if pre_instr.has_fd:
+            if ((self.has_fs1 and (self.fs1 == pre_instr.fd)) or
+                 (self.has_fs2 and (self.fs2 == pre_instr.fd)) or
+                 (self.has_fs3 and (self.fs3 == pre_instr.fd))):
+                self.gpr_hazard = hazard_e["RAW_HAZARD"]
+            elif (self.has_fd and (self.fd == pre_instr.fd)):
+                self.gpr_hazard = hazard_e["WAW_HAZARD"]
+            elif (self.has_fd and ((pre_instr.has_fs1 and (pre_instr.fs1 == self.fd)) or
+                                      (pre_instr.has_fs2 and (pre_instr.fs2 == self.fd)) or
+                                      (pre_instr.has_fs3 and (pre_instr.fs3 == self.fd)))):
+                self.gpr_hazard = hazard_e["WAR_HAZARD"]
+            else:
+                self.gpr_hazard = hazard_e["NO_HAZARD"]
         logging.debug("Pre PC/name: {}/{}, Cur PC/name: {}/{}, "
                       "Hazard: {}/{}".format(pre_instr.pc.get_val(),
                                              pre_instr.instr.name,

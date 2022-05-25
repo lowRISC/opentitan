@@ -1,0 +1,72 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("//rules:fusesoc.bzl", "fusesoc_build")
+load("//rules:splice.bzl", "bitstream_splice")
+
+package(default_visibility = ["//visibility:public"])
+
+# The readmem directives in the fusesoc-ized build tree will be in the subdir
+# ${build_root}/src/lowrisc_prim_util_memload_0/rtl/prim_util_memload.svh,
+# and ${build_root} will be a subdirectory called `build.fpga_cw310` inside of
+# bazel-out/k8-{configname}/bin/hw/bitstream/vivado.
+# Therefore, the relative path between prim_util_memload.svh and the project-root
+# relative $(location ...) resolved labels is up 10 subdirectories.
+_PREFIX = "../../../../../../../../../.."
+
+_FPGA_CW310_TESTROM = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem"
+
+_FPGA_CW310_OTP_RMA = "//hw/ip/otp_ctrl/data:rma_image_verilator"
+
+_FPGA_CW310_TESTROM_PATH = "{}/$(location {})".format(_PREFIX, _FPGA_CW310_TESTROM)
+
+_FPGA_CW310_OTP_RMA_PATH = "{}/$(location {})".format(_PREFIX, _FPGA_CW310_OTP_RMA)
+
+# Note: all of the targets are tagged with "manual" to prevent them from being
+# matched by bazel wildcards like "//...".  In order to build the bitstream,
+# you need to ask for it directly or by dependency via another rule, such as
+# a functest.
+fusesoc_build(
+    name = "fpga_cw310",
+    srcs = [
+        "//hw:all_files",
+        _FPGA_CW310_TESTROM,
+        _FPGA_CW310_OTP_RMA,
+    ],
+    cores = ["//:cores"],
+    data = ["//hw/ip/otbn:all_files"],
+    flags = [
+        "--BootRomInitFile=" + _FPGA_CW310_TESTROM_PATH,
+        "--OtpCtrlMemInitFile=" + _FPGA_CW310_OTP_RMA_PATH,
+    ],
+    output_groups = {
+        "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"],
+        "mmi": ["synth-vivado/rom.mmi"],
+    },
+    systems = ["lowrisc:systems:chip_earlgrey_cw310"],
+    tags = ["manual"],
+    target = "synth",
+)
+
+filegroup(
+    name = "fpga_cw310_test_rom",
+    srcs = [":fpga_cw310"],
+    output_group = "bitstream",
+    tags = ["manual"],
+)
+
+filegroup(
+    name = "rom_mmi",
+    srcs = [":fpga_cw310"],
+    output_group = "mmi",
+    tags = ["manual"],
+)
+
+bitstream_splice(
+    name = "fpga_cw310_mask_rom",
+    src = ":fpga_cw310_test_rom",
+    data = "//sw/device/silicon_creator/mask_rom:mask_rom_fpga_cw310_scr_vmem",
+    meminfo = ":rom_mmi",
+    tags = ["manual"],
+)

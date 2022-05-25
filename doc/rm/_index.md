@@ -10,7 +10,8 @@ title: "Reference Manuals"
    * [Ipgen Tool]({{< relref "ipgen_tool" >}}): Describes `ipgen.py` and its Hjson control file. Used to generate IP blocks from IP templates.
    * [Crossbar Tool]({{< relref "crossbar_tool" >}}): Describes `tlgen.py` and its Hjson format source. Used to generate self-documentation, rtl files of the crossbars at the toplevel.
    * [Vendor-In Tool]({{< relref "vendor_in_tool" >}}): Describes `util/vendor.py` and its Hjson control file. Used to pull a local copy of code maintained in other upstream repositories and apply local patch sets.
-* Coding Style Guides
+* Coding Style Guides (_To avoid conflict, toil and confusion regarding code style, OpenTitan's CI enforces
+what it can of the following guides_):
   * [Verilog Coding Style](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md)
   * [Python Coding Style]({{< relref "python_coding_style.md" >}})
   * [Hjson Usage and Style Guide]({{< relref "hjson_usage_style.md" >}})

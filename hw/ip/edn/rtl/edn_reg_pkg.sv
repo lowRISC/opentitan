@@ -287,4 +287,3 @@ package edn_reg_pkg;
   };
 
 endpackage
-

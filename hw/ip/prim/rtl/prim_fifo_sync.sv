@@ -11,6 +11,7 @@ module prim_fifo_sync #(
   parameter bit Pass                 = 1'b1, // if == 1 allow requests to pass through empty FIFO
   parameter int unsigned Depth       = 4,
   parameter bit OutputZeroIfEmpty    = 1'b1, // if == 1 always output 0 when FIFO is empty
+  parameter bit Secure               = 1'b0, // use prim count for pointers
   // derived parameter
   localparam int          DepthW     = prim_util_pkg::vbits(Depth+1)
 ) (
@@ -28,7 +29,8 @@ module prim_fifo_sync #(
   output  [Width-1:0]     rdata_o,
   // occupancy
   output                  full_o,
-  output  [DepthW-1:0]    depth_o
+  output  [DepthW-1:0]    depth_o,
+  output                  err_o
 );
 
 
@@ -49,6 +51,9 @@ module prim_fifo_sync #(
     // this avoids lint warnings
     logic unused_clr;
     assign unused_clr = clr_i;
+
+    // No error
+    assign err_o = 1'b 0;
 
   // Normal FIFO construction
   end else begin : gen_normal_fifo
@@ -94,33 +99,48 @@ module prim_fifo_sync #(
     assign full_o   = full;
     assign rvalid_o = ~empty & ~under_rst;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        fifo_wptr <= {(PTR_WIDTH){1'b0}};
-      end else if (clr_i) begin
-        fifo_wptr <= {(PTR_WIDTH){1'b0}};
-      end else if (fifo_incr_wptr) begin
-        if (fifo_wptr[PTR_WIDTH-2:0] == (PTR_WIDTH-1)'(Depth-1)) begin
-          fifo_wptr <= {~fifo_wptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
-        end else begin
-          fifo_wptr <= fifo_wptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
-        end
-      end
-    end
+    prim_fifo_sync_cnt #(
+      .Width(PTR_WIDTH),
+      .Depth(Depth),
+      .Secure(Secure)
+    ) u_fifo_cnt (
+      .clk_i,
+      .rst_ni,
+      .clr_i,
+      .incr_wptr_i(fifo_incr_wptr),
+      .incr_rptr_i(fifo_incr_rptr),
+      .wptr_o(fifo_wptr),
+      .rptr_o(fifo_rptr),
+      .err_o
+    );
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        fifo_rptr <= {(PTR_WIDTH){1'b0}};
-      end else if (clr_i) begin
-        fifo_rptr <= {(PTR_WIDTH){1'b0}};
-      end else if (fifo_incr_rptr) begin
-        if (fifo_rptr[PTR_WIDTH-2:0] == (PTR_WIDTH-1)'(Depth-1)) begin
-          fifo_rptr <= {~fifo_rptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
-        end else begin
-          fifo_rptr <= fifo_rptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
-        end
-      end
-    end
+    //always_ff @(posedge clk_i or negedge rst_ni) begin
+    //  if (!rst_ni) begin
+    //    fifo_wptr <= {(PTR_WIDTH){1'b0}};
+    //  end else if (clr_i) begin
+    //    fifo_wptr <= {(PTR_WIDTH){1'b0}};
+    //  end else if (fifo_incr_wptr) begin
+    //    if (fifo_wptr[PTR_WIDTH-2:0] == (PTR_WIDTH-1)'(Depth-1)) begin
+    //      fifo_wptr <= {~fifo_wptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
+    //    end else begin
+    //      fifo_wptr <= fifo_wptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
+    //    end
+    //  end
+    //end
+    //
+    //always_ff @(posedge clk_i or negedge rst_ni) begin
+    //  if (!rst_ni) begin
+    //    fifo_rptr <= {(PTR_WIDTH){1'b0}};
+    //  end else if (clr_i) begin
+    //    fifo_rptr <= {(PTR_WIDTH){1'b0}};
+    //  end else if (fifo_incr_rptr) begin
+    //    if (fifo_rptr[PTR_WIDTH-2:0] == (PTR_WIDTH-1)'(Depth-1)) begin
+    //      fifo_rptr <= {~fifo_rptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
+    //    end else begin
+    //      fifo_rptr <= fifo_rptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
+    //    end
+    //  end
+    //end
 
     assign  full       = (fifo_wptr == (fifo_rptr ^ {1'b1,{(PTR_WIDTH-1){1'b0}}}));
     assign  fifo_empty = (fifo_wptr ==  fifo_rptr);

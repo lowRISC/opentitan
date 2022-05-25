@@ -485,6 +485,8 @@
           desc: '''Indicates that TLUL attempted to write to TXDATA with no bytes enabled. Such
                    'zero byte' writes are not supported.''',
           resval: "0x0"
+          tags: [// Updated by the hw. Exclude from init and write-checks.
+                 "excl:CsrAllTests:CsrExclCheck"]
         },
         { bits: "4",
           name: "CSIDINVAL",
@@ -508,6 +510,8 @@
           name: "OVERFLOW",
           desc: '''Indicates that firmware has overflowed the TX FIFO'''
           resval: "0x0"
+          tags: [// Updated by the hw. Exclude from init and write-checks.
+                 "excl:CsrAllTests:CsrExclCheck"]
         },
         { bits: "0",
           name: "CMDBUSY",

@@ -97,9 +97,13 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   // ensure that clock controls are constantly re-evaluated and not just
   // in one specific state
-  assign core_clk_en_d = ~fsm_invalid_q & (clk_active | core_clk_en);
-  assign io_clk_en_d   = ~fsm_invalid_q & (clk_active | io_clk_en);
-  assign usb_clk_en_d  = ~fsm_invalid_q & (clk_active ? usb_clk_en_active_i : usb_clk_en_lp);
+  // When fsm is invalid, force the clocks to be on such that the fast fsm
+  // can forcibly reset the system.
+  // In the event the clocks cannot be turned on even when forced, the fsm
+  // invalid signal forces power to turn off.
+  assign core_clk_en_d = fsm_invalid_q | (clk_active | core_clk_en);
+  assign io_clk_en_d   = fsm_invalid_q | (clk_active | io_clk_en);
+  assign usb_clk_en_d  = fsm_invalid_q | (clk_active ? usb_clk_en_active_i : usb_clk_en_lp);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -145,7 +149,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
     ack_pwrdn_d    = ack_pwrdn_q;
     fsm_invalid_d  = fsm_invalid_q;
 
-    mon_main_pok   = '0;
     set_main_pok   = '0;
 
     clk_active     = '0;
@@ -158,9 +161,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       end
 
       SlowPwrStateLowPower: begin
-        // if main power was not turned off, monitor power for stability
-        mon_main_pok = main_pd_ni;
-
         // reset request behaves identically to a wakeup, other than the power-up cause being
         // different
         if (wakeup_i || reset_req_i) begin
@@ -209,7 +209,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
         // ack_pwrup_i should be 0 here to indicate
         // the ack from the previous round has definitively completed
         clk_active = 1'b1;
-        mon_main_pok = 1'b1;
 
         if (req_pwrdn_i && !ack_pwrup_i) begin
           state_d = SlowPwrStateAckPwrDn;
@@ -253,7 +252,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       // Signal the fast FSM if it somehow is still running.
       // Both FSMs are now permanently out of sync and the device
       // must be rebooted.
-      // SEC_CM: FSM.LOCAL_ESC
+      // SEC_CM: FSM.TERMINAL
       default: begin
         fsm_invalid_d = 1'b1;
         pd_nd         = 1'b0;
@@ -282,6 +281,16 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
     end else if (!main_pok_st && clr_req_i) begin
       // when requested by fast FSM as it is about to reset
       main_pok_st <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      mon_main_pok <= '0;
+    end else if (!pd_nd && mon_main_pok) begin
+      mon_main_pok <= 1'b0;
+    end else if (set_main_pok) begin
+      mon_main_pok <= 1'b1;
     end
   end
 

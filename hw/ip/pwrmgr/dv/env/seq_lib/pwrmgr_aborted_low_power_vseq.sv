@@ -13,12 +13,14 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
   // If set causes an abort because the CPU gets an interrupt, which shows up as
   // pwr_cpu.core_sleeping being low when the fast FSM is in FastPwrStateFallThrough.
   rand bit cpu_interrupt;
+
   constraint cpu_interrupt_c {
     cpu_interrupt dist {
-      1 := 2,
-      0 := 6
-    };
+                        1 := 2,
+                        0 := 6
+                        };
   }
+
   rand bit flash_idle;
   rand bit lc_idle;
   rand bit otp_idle;
@@ -51,26 +53,32 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
       setup_interrupt(.enable(en_intr));
       // Enable wakeups.
       enabled_wakeups = wakeups_en & wakeups;
-      `DV_CHECK(enabled_wakeups, $sformatf(
-                "Some wakeup must be enabled: wkups=%b, wkup_en=%b", wakeups, wakeups_en))
-      `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x", enabled_wakeups), UVM_MEDIUM)
+      `DV_CHECK(enabled_wakeups,
+                $sformatf("Some wakeup must be enabled: wkups=%b, wkup_en=%b",
+                          wakeups, wakeups_en))
+      `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x (wkups=%x  wkup_en=%x)",
+                                enabled_wakeups, wakeups, wakeups_en), UVM_MEDIUM)
       csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeups_en));
       `uvm_info(`gfn, $sformatf("%0sabling wakeup capture", disable_wakeup_capture ? "Dis" : "En"),
                 UVM_MEDIUM)
       csr_wr(.ptr(ral.wake_info_capture_dis), .value(disable_wakeup_capture));
-
       low_power_hint = 1'b1;
-      update_control_csr();
 
-      wait_for_csr_to_propagate_to_slow_domain();
+      fork
+        begin
+          update_control_csr();
+        end
+        begin
+          // Prepare for an abort ahead of time.
+          if (!cpu_interrupt) begin
+            `uvm_info(`gfn, $sformatf(
+                                      "Expecting an abort (0x80): fi=%b, li=%b, oi=%b",
+                                      flash_idle, lc_idle, otp_idle), UVM_MEDIUM)
+            set_nvms_idle(flash_idle, lc_idle, otp_idle);
+          end
+        end
+      join
 
-      // Prepare for an abort ahead of time.
-      if (!cpu_interrupt) begin
-        `uvm_info(`gfn, $sformatf(
-                  "Expecting an abort (0x80): fi=%b, li=%b, oi=%b", flash_idle, lc_idle, otp_idle),
-                  UVM_MEDIUM)
-        set_nvms_idle(flash_idle, lc_idle, otp_idle);
-      end
       cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
 
       // Defeat the low power entry.
@@ -88,14 +96,20 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
 
       wait_for_fast_fsm_active();
       `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
-      check_reset_status('0);
+      @cfg.clk_rst_vif.cb;
 
       // No wakeups, but check abort and fall_through.
-      if (cpu_interrupt) begin
-        check_wake_info(.reasons('0), .fall_through(1'b1), .abort(1'b0));
-      end else begin
-        check_wake_info(.reasons('0), .fall_through(1'b0), .abort(1'b1));
-      end
+      fork
+        begin
+          fast_check_reset_status(0);
+        end
+        begin
+          fast_check_wake_info(.reasons('0),
+                               .fall_through(cpu_interrupt),
+                               .abort(~cpu_interrupt));
+        end
+      join
+
       clear_wake_info();
 
       // And check interrupt is set.

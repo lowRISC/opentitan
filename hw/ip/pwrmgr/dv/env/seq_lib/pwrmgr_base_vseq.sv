@@ -144,7 +144,15 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   task post_apply_reset(string reset_kind = "HARD");
     super.post_apply_reset(reset_kind);
     `uvm_info(`gfn, "waiting for fast active after applying reset", UVM_MEDIUM)
-    wait_for_fast_fsm_active();
+
+    // There is tb lock up case
+    // when reset come while rom_ctrl = {false, false}.
+    // So we need rom_ctrl driver runs in parallel with
+    // wait_for_fast_fsm_active
+    fork
+      wait_for_fast_fsm_active();
+      init_rom_response();
+    join
   endtask
 
   task post_start();
@@ -424,8 +432,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   task process_low_power_hint();
     // Timeout if the low power transition waits too long for WFI.
-    `DV_SPINWAIT(wait(cfg.pwrmgr_vif.pwr_cpu.core_sleeping);, "timeout waiting for core_sleeping",
-                 10_000,)
+    `DV_SPINWAIT(wait(cfg.pwrmgr_vif.pwr_cpu.core_sleeping);,
+                 "timeout waiting for core_sleeping", 100_000)
     `uvm_info(`gfn, "In process_low_power_hint pre forks", UVM_MEDIUM)
     fork
       begin : isolation_fork
@@ -512,18 +520,64 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                  .err_msg("reset_status"));
   endtask
 
+  task fast_check_reset_status(resets_t expected_resets);
+    logic [pwrmgr_reg_pkg::NumRstReqs-1:0] init_reset_status;
+    `uvm_info(`gfn, "init reset status", UVM_HIGH);
+    init_reset_status = cfg.pwrmgr_vif.reset_status;
+
+    if (expected_resets != init_reset_status) begin
+      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.reset_status != init_reset_status);,
+                   $sformatf("reset_status wait timeout exp:%x  init:%x",
+                             expected_resets, init_reset_status), 15_000)
+    end
+    `DV_CHECK_EQ(cfg.pwrmgr_vif.reset_status, expected_resets)
+  endtask
+
   // Checks the wake_status CSR matches expectations.
   task check_wake_status(wakeups_t expected_wakeups);
     csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(expected_wakeups),
                  .err_msg("wake_status"));
   endtask
 
+  task fast_check_wake_status(wakeups_t expected_wakeups);
+    logic [pwrmgr_reg_pkg::NumWkups-1:0] init_wakeup_status;
+    `uvm_info(`gfn, "init wakeup", UVM_HIGH);
+    init_wakeup_status = cfg.pwrmgr_vif.wakeup_status;
+
+    if (expected_wakeups != init_wakeup_status) begin
+      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.wakeup_status != init_wakeup_status);,
+                   $sformatf("wakeup_status wait timeout exp:%x init:%x",
+                             expected_wakeups, init_wakeup_status), 15_000)
+    end
+    `DV_CHECK_EQ(cfg.pwrmgr_vif.wakeup_status, expected_wakeups)
+  endtask
+
+  task fast_check_wake_info(wakeups_t reasons, wakeups_t prior_reasons = '0, bit fall_through,
+                       bit prior_fall_through = '0, bit abort, bit prior_abort = '0);
+     pwrmgr_reg_pkg::pwrmgr_hw2reg_wake_info_reg_t initial_value, exp_value;
+     initial_value = cfg.pwrmgr_vif.wake_info;
+
+    if (disable_wakeup_capture) begin
+      exp_value.reasons = prior_reasons;
+      exp_value.fall_through = prior_fall_through;
+      exp_value.abort = prior_abort;
+    end else begin
+      exp_value.reasons = (reasons | prior_reasons);
+      exp_value.fall_through = (fall_through | prior_fall_through);
+      exp_value.abort = (abort | prior_abort);
+    end
+    if (exp_value != initial_value) begin
+      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.wake_info != initial_value);,
+                   $sformatf("wake info wait timeout  exp:%p  init:%p",
+                             exp_value, initial_value), 15_000)
+    end
+  endtask // fast_check_wake_info
+
   // Checks the wake_info CSR matches expectations depending on capture disable.
   // The per-field "prior_" arguments support cases where the wake_info register was not
   // cleared and may contain residual values.
   task check_wake_info(wakeups_t reasons, wakeups_t prior_reasons = '0, bit fall_through,
                        bit prior_fall_through = '0, bit abort, bit prior_abort = '0);
-
     if (disable_wakeup_capture) begin
       csr_rd_check(.ptr(ral.wake_info.reasons), .compare_value(prior_reasons),
                    .err_msg("With capture disabled"));
@@ -574,5 +628,27 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       #(delay * 10ns);
     end
   endtask // add_rom_rsp_nose
+
+  // Drive rom_ctrl at post reset stage
+  virtual task init_rom_response();
+    if (cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateActive ||
+        cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp ||
+        cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheck) begin
+      cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+      cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+    end else begin
+      cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4False;
+      cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
+      @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp);
+      cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+      @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheck);
+      cfg.aon_clk_rst_vif.wait_clks(10);
+      cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
+      cfg.aon_clk_rst_vif.wait_clks(5);
+      cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+      cfg.aon_clk_rst_vif.wait_clks(5);
+      cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+    end
+  endtask
 
 endclass : pwrmgr_base_vseq

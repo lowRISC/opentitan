@@ -7,6 +7,12 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
   .RAL_T(sysrst_ctrl_reg_block),
   .COV_T(sysrst_ctrl_env_cov)
 );
+
+  // Expected intr_state register
+  protected bit m_expected_intr_state;
+  // Interrupt line
+  protected logic m_interrupt;
+
   `uvm_component_utils(sysrst_ctrl_scoreboard)
 
   // local variables
@@ -38,7 +44,23 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      sample_wkup_event_cg();
     join_none
+  endtask
+
+  protected virtual task sample_wkup_event_cg();
+    forever begin
+      @(posedge cfg.vif.z3_wakeup);
+      if (cfg.en_cov) begin
+        cov_if.cg_wkup_event_sample (
+          ral.wkup_status.get_mirrored_value(),
+          cfg.vif.pwrb_in,
+          cfg.vif.lid_open,
+          cfg.vif.ac_present,
+          cfg.intr_vif.pins
+        );
+      end
+    end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -71,43 +93,44 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
+        bit intr_en = ral.intr_enable.sysrst_ctrl.get_mirrored_value();
+        m_interrupt = cfg.intr_vif.sample_pin(IntrSysrstCtrl);
         do_read_check = 1'b0;
+        if (addr_phase_write) begin
+          // Implement W1C
+          m_expected_intr_state &= !get_field_val(cfg.ral.intr_state.sysrst_ctrl, item.a_data);
+        end
+        if (addr_phase_read) begin
+          `DV_CHECK(csr.predict(.value(m_expected_intr_state), .kind(UVM_PREDICT_READ)))
+        end
+        if (cfg.en_cov && data_phase_read) begin
+          cov.intr_cg.sample(IntrSysrstCtrl, intr_en, get_field_val(
+                             cfg.ral.intr_state.sysrst_ctrl, item.a_data));
+          // Sample interrupt pin coverage for interrupt pins
+          cov.intr_pins_cg.sample(IntrSysrstCtrl, m_interrupt);
+        end
       end
       "intr_enable": begin
         // FIXME
       end
       "intr_test": begin
+        bit intr_test_val = get_field_val(cfg.ral.intr_test.sysrst_ctrl, item.a_data);
+        bit intr_en = ral.intr_enable.sysrst_ctrl.get_mirrored_value();
+        if (addr_phase_write) begin
+          m_expected_intr_state |= intr_test_val;
+          if (cfg.en_cov) begin
+            cov.intr_test_cg.sample(IntrSysrstCtrl, intr_test_val, intr_en,
+                                    m_expected_intr_state);
+          end
+        end
       end
       "pin_out_ctl","pin_allowed_ctl","pin_out_value": begin
       end
       "key_invert_ctl": begin
       end
       "com_out_ctl_0","com_out_ctl_1","com_out_ctl_2","com_out_ctl_3": begin
-        if (addr_phase_write) begin
-          string csr_name = csr.get_name();
-          string str_idx = csr_name.getc(csr_name.len - 1);
-          int idx = str_idx.atoi();
-          cov_if.cg_combo_detect_actions_sample (idx,
-            get_field_val(ral.com_out_ctl[idx].bat_disable, item.a_data),
-            get_field_val(ral.com_out_ctl[idx].interrupt, item.a_data),
-            get_field_val(ral.com_out_ctl[idx].ec_rst, item.a_data),
-            get_field_val(ral.com_out_ctl[idx].rst_req, item.a_data)
-          );
-        end
       end
       "com_sel_ctl_0","com_sel_ctl_1","com_sel_ctl_2","com_sel_ctl_3": begin
-         if (addr_phase_write) begin
-           string csr_name = csr.get_name();
-           string str_idx = csr_name.getc(csr_name.len - 1);
-           int idx = str_idx.atoi();
-           cov_if.cg_combo_detect_sel_sample (idx,
-             get_field_val(ral.com_sel_ctl[idx].key0_in_sel, item.a_data),
-             get_field_val(ral.com_sel_ctl[idx].key1_in_sel, item.a_data),
-             get_field_val(ral.com_sel_ctl[idx].key2_in_sel, item.a_data),
-             get_field_val(ral.com_sel_ctl[idx].pwrb_in_sel, item.a_data),
-             get_field_val(ral.com_sel_ctl[idx].ac_present_sel, item.a_data)
-           );
-         end
       end
       "com_det_ctl_0","com_det_ctl_1","com_det_ctl_2","com_det_ctl_3": begin
          if (addr_phase_write) begin
@@ -128,14 +151,6 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "combo_intr_status": begin
         do_read_check = 1'b0;  //This check is done in sequence
-        if (data_phase_read) begin
-          cov_if.cg_combo_intr_status_sample (
-            get_field_val(ral.combo_intr_status.combo0_h2l, item.d_data),
-            get_field_val(ral.combo_intr_status.combo1_h2l, item.d_data),
-            get_field_val(ral.combo_intr_status.combo2_h2l, item.d_data),
-            get_field_val(ral.combo_intr_status.combo3_h2l, item.d_data)
-          );
-        end
       end
       "key_intr_status", "key_intr_ctl": begin
         do_read_check = 1'b0;
@@ -180,24 +195,9 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
         );
       end
       "auto_block_out_ctl": begin
-        if (addr_phase_write) begin
-          cov_if.cg_auto_blk_out_ctl_sample (
-            get_field_val(ral.auto_block_out_ctl.key0_out_sel, item.a_data),
-            get_field_val(ral.auto_block_out_ctl.key1_out_sel, item.a_data),
-            get_field_val(ral.auto_block_out_ctl.key2_out_sel, item.a_data),
-            get_field_val(ral.auto_block_out_ctl.key0_out_value, item.a_data),
-            get_field_val(ral.auto_block_out_ctl.key1_out_value, item.a_data),
-            get_field_val(ral.auto_block_out_ctl.key2_out_value, item.a_data)
-          );
-        end
       end
       "wkup_status": begin
         do_read_check = 1'b0;  //This check is done in sequence
-        if (data_phase_read) begin
-          cov_if.cg_wkup_status_sample (
-            get_field_val(ral.wkup_status.wakeup_sts, item.d_data)
-          );
-        end
       end
       "ulp_ctl": begin
       end
@@ -231,13 +231,10 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "ulp_status": begin
         do_read_check = 1'b0; // This check is done in sequence
-        if (data_phase_read) begin
-          cov_if.cg_ulp_status_sample (
-            get_field_val(ral.ulp_status.ulp_wakeup, item.d_data)
-          );
-        end
       end
       "regwen":begin
+      end
+      "alert_test":begin
       end
       default: begin
        `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
@@ -258,6 +255,7 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
     super.reset(kind);
     // reset local fifos queues and variables
     intr_exp    = ral.intr_state.get_reset();
+    m_expected_intr_state = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);

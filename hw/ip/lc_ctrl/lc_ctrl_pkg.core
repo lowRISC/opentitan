@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:ip:lc_ctrl_state_pkg
+      - lowrisc:prim:assert
     files:
       - rtl/lc_ctrl_reg_pkg.sv
       - rtl/lc_ctrl_pkg.sv
@@ -18,7 +19,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
     files:
       - lint/lc_ctrl_pkg.vlt
     file_type: vlt
@@ -27,7 +27,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
     files:
       - lint/lc_ctrl_pkg.waiver
     file_type: waiver
@@ -36,7 +35,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
     files:
       - lint/lc_ctrl_pkg.vbl
     file_type: veribleLintWaiver

@@ -2,16 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use mundane::hash::{Digest, Hasher, Sha256};
+use anyhow::{bail, ensure, Result};
+use sha2::{Digest, Sha256};
 use std::time::{Duration, Instant};
 use thiserror::Error;
 use zerocopy::AsBytes;
 
 use crate::app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
+use crate::impl_serializable_error;
 use crate::io::uart::Uart;
-use crate::transport::{Capability, Result};
-use crate::{bail, ensure};
+use crate::transport::Capability;
 
 #[derive(AsBytes, Debug, Default)]
 #[repr(C)]
@@ -46,25 +47,25 @@ impl Frame {
     const DATA_LEN: usize = 1024 - std::mem::size_of::<FrameHeader>();
     const HASH_LEN: usize = 32;
     const MAGIC_HEADER: [u8; 4] = [0xfd, 0xff, 0xff, 0xff];
+    const CRYPTOLIB_TELL: [u8; 4] = [0x53, 0x53, 0x53, 0x53];
 
     /// Computes the hash in the header.
     fn header_hash(&self) -> [u8; Frame::HASH_LEN] {
         let frame = self.as_bytes();
-        let sha = Sha256::hash(&frame[Frame::HASH_LEN..]);
-        sha.bytes()
+        let sha = Sha256::digest(&frame[Frame::HASH_LEN..]);
+        sha.into()
     }
 
     /// Computes the hash over the entire frame.
     fn frame_hash(&self) -> [u8; Frame::HASH_LEN] {
-        let sha = Sha256::hash(self.as_bytes());
-        let mut digest = sha.bytes();
+        let mut digest = Sha256::digest(self.as_bytes());
         // Touch up zeroes into ones, as that is what the old chips are doing.
         for b in &mut digest {
             if *b == 0 {
                 *b = 1;
             }
         }
-        digest
+        digest.into()
     }
 
     /// Creates a sequence of frames based on a `payload` binary.
@@ -82,10 +83,11 @@ impl Frame {
             RescueError::ImageFormatError
         );
 
-        // Find second occurrence of magic value.
+        // Find second occurrence of magic value, not followed by signature of encrypted
+        // cryptolib.
         let min_addr = match payload[256..]
             .chunks(256)
-            .position(|c| &c[0..4] == &Self::MAGIC_HEADER)
+            .position(|c| &c[0..4] == &Self::MAGIC_HEADER && &c[4..8] != &Self::CRYPTOLIB_TELL)
         {
             Some(n) => (n + 1) * 256,
             None => bail!(RescueError::ImageFormatError),
@@ -158,6 +160,7 @@ pub enum RescueError {
     #[error("Repeated errors communicating with boot rom")]
     RepeatedErrors,
 }
+impl_serializable_error!(RescueError);
 
 /// Implements the UART rescue protocol of Google Ti50 firmware.
 pub struct Rescue {}
@@ -272,7 +275,7 @@ impl Rescue {
             }
             eprintln!(" Failed to enter rescue mode.");
         }
-        bail!(RescueError::RepeatedErrors);
+        Err(RescueError::RepeatedErrors.into())
     }
 }
 

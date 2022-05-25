@@ -107,25 +107,39 @@
     {
       name: pattgen_op_cg
       desc: '''
-            The following coverage strategy is implemented:
-            * The counters are covered at the max
-              and min corner cases and for the middle values
-            * Data bus has functional coverage using walking ones and zeroes
-            * One bit width variables are wrapped in one cover point
-              while counters and data have designated cover points
-            * Channel enable signal is stand alone cover point
+            Covers the ch0 pattern generation complete interrupt and event done.
+            Covers the ch1 pattern generation complete interrupt and event done.
             '''
     }
     {
-      name: roll_cg
+      name: pattgen_counters_max_values_cg
       desc: '''
-            Covers that all the counters revert to zero when they reach
-            the maximum value.
-            Individual initial and maximum counter values
-            that will be covered include:
+            Covers the initial and maximum counter values of the following:
             - Initial and maximum values of clock divide counter
             - Initial and maximum values of length counter
-            - Initial and maxim values of repetition counter
+            - Initial and maximum values of repetition counter
+            All valid combinations of the above will also be crossed.
+            '''
+    }
+    {
+      name: pattgen_ch0_cnt_reset_cg
+      desc: '''
+            Covers that ch0 counter values resets to zero when it reaches the assigned value.
+            It includes:
+            - Clock divide counter value
+            - Length counter value
+            - Repetition counter value
+            All valid combinations of the above will also be crossed.
+            '''
+    }
+    {
+      name: pattgen_ch1_cnt_reset_cg
+      desc: '''
+            Covers that ch1 counter values resets to zero when it reaches the assigned value.
+            It includes:
+            - Clock divide counter value
+            - Length counter value
+            - Repetition counter value
             All valid combinations of the above will also be crossed.
             '''
     }

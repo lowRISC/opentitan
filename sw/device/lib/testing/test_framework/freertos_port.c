@@ -5,8 +5,8 @@
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 // TODO: make this toplevel agnostic.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.

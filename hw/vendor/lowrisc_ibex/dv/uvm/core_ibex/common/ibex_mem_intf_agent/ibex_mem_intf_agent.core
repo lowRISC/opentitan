@@ -1,0 +1,27 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:ibex_mem_intf_agent:0.1"
+description: "IBEX DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:mem_model
+    files:
+      - ibex_mem_intf.sv
+      - ibex_mem_intf_agent_pkg.sv
+      - ibex_mem_intf_request_agent.sv: {is_include_file: true}
+      - ibex_mem_intf_request_driver.sv: {is_include_file: true}
+      - ibex_mem_intf_monitor.sv: {is_include_file: true}
+      - ibex_mem_intf_seq_item.sv: {is_include_file: true}
+      - ibex_mem_intf_response_agent.sv: {is_include_file: true}
+      - ibex_mem_intf_response_driver.sv: {is_include_file: true}
+      - ibex_mem_intf_response_seq_lib.sv: {is_include_file: true}
+      - ibex_mem_intf_response_sequencer.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

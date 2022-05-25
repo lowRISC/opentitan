@@ -6,14 +6,16 @@
 
 `include "prim_assert.sv"
 
-interface otbn_loop_if (
+interface otbn_loop_if #(
+  localparam int LoopStackIdxWidth = prim_util_pkg::vbits(otbn_pkg::LoopStackDepth)
+) (
   input              clk_i,
   input              rst_ni,
 
   // Signal names from the otbn_loop_controller module (where we are bound)
   input logic [31:0] insn_addr_i,
   input logic        at_current_loop_end_insn,
-  input logic        loop_active_q,
+  input logic        current_loop_valid,
   input logic        loop_stack_full,
   input logic        current_loop_finish,
   input logic        next_loop_valid,
@@ -27,17 +29,41 @@ interface otbn_loop_if (
   input logic [31:0] next_loop_end,
 
   input logic [31:0] current_loop_d_iterations,
-  input logic [31:0] current_loop_q_iterations
+  input logic [31:0] current_loop_q_iterations,
+
+  input logic [LoopStackIdxWidth-1:0] loop_stack_rd_idx,
+  input logic [31:0]                  loop_count_max_vals [otbn_pkg::LoopStackDepth],
+
+  input logic loop_stack_push,
+  input logic loop_stack_pop
 );
 
   function automatic otbn_env_pkg::stack_fullness_e get_fullness();
     if (loop_stack_full) begin
       return otbn_env_pkg::StackFull;
     end
-    if (loop_active_q) begin
+    if (current_loop_valid) begin
       return otbn_env_pkg::StackPartial;
     end
     return otbn_env_pkg::StackEmpty;
+  endfunction
+
+  // Are assertions in the loop counters currently enabled?
+  bit loop_counter_assertions_enabled = 1'b1;
+
+  // Enables or disables all assertions in the loop controller. One assertion in the counter
+  // (OutSet_A) is not compatible with loop warping and a more targetted disable for that assertion
+  // does not work under Xcelium.
+  function automatic void control_loop_counters_out_set_assertion(bit enable);
+    if (enable == loop_counter_assertions_enabled) begin
+      return;
+    end
+    if (enable) begin
+      $asserton(0, tb.dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller);
+    end else begin
+      $assertoff(0, tb.dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller);
+    end
+    loop_counter_assertions_enabled = enable;
   endfunction
 
   // Track completing some loop. This is implied by the next item, but much easier to hit so maybe
@@ -71,7 +97,7 @@ interface otbn_loop_if (
   // final instruction of the inner loop for the last time (to make sure we actually get there,
   // where a bug would cause the fireworks).
   `COVER(BadNestingEnd_C,
-         loop_active_q && next_loop_valid &&
+         current_loop_valid && next_loop_valid &&
          current_loop_finish && (current_loop_end == next_loop_end))
 
   // Try to see loops with "bad nesting", where the final instruction for an outer loop occurs in
@@ -81,7 +107,7 @@ interface otbn_loop_if (
   // don't condition on next_loop.loop_iterations: even if there are several more iterations left,
   // we'd expect to see a back edge on a spurious match, so it shouldn't matter.
   `COVER(BadNestingMiddle_C,
-         loop_active_q && next_loop_valid &&
+         current_loop_valid && next_loop_valid &&
          (insn_addr_i != current_loop_end) &&
          (insn_addr_i == next_loop_end) &&
          !otbn_stall_i)
@@ -90,14 +116,14 @@ interface otbn_loop_if (
   // code sequence is fixed, we know we can't get here through a straight line instruction because
   // we check that !loop_start_req_i.
   `COVER(JumpIntoLoop_C,
-         (!loop_start_req_i && loop_active_q &&
+         (!loop_start_req_i && current_loop_valid &&
           !((current_loop_start <= insn_addr_i) && (insn_addr_i <= current_loop_end))) ##1
          ((current_loop_start <= insn_addr_i) && (insn_addr_i <= current_loop_end)))
 
   // Jump to the last instruction of a loop body from outside. This is a stronger version of
   // JumpIntoLoop_C.
   `COVER(JumpToLoopEnd_C,
-         (!loop_start_req_i && loop_active_q &&
+         (!loop_start_req_i && current_loop_valid &&
           !((current_loop_start <= insn_addr_i) && (insn_addr_i <= current_loop_end))) ##1
          (insn_addr_i == current_loop_end))
 

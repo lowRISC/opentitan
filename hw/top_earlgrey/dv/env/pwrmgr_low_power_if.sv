@@ -10,11 +10,16 @@
 // probing low_power_o
 interface pwrmgr_low_power_if (
   input logic clk,
+  input logic fast_clk,
   input logic rst_n
 );
   logic       low_power;
 
+  // slow clock
   clocking cb @(posedge clk);
-    input     low_power;
+  endclocking
+
+  // main clock
+  clocking fast_cb @(posedge fast_clk);
   endclocking
 endinterface // pwrmgr_low_power_if

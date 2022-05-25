@@ -46,7 +46,8 @@ module spid_upload
   localparam int unsigned AddrPtrW = $clog2(AddrFifoDepth+1),
 
   localparam int unsigned PayloadByte = PayloadDepth * (SramDw/SpiByte),
-  localparam int unsigned PayloadPtrW = $clog2(PayloadByte+1)
+  localparam int unsigned PayloadPtrW = $clog2(PayloadByte+1),
+  localparam int unsigned PayloadIdxW = $clog2(PayloadByte)
 ) (
   input clk_i,
   input rst_ni,
@@ -54,6 +55,9 @@ module spid_upload
   input sys_clk_i,
   input sys_rst_ni,
 
+  input clk_csb_i, // CSb as a clock source
+
+  input sck_csb_asserted_pulse_i,
   input sys_csb_deasserted_pulse_i,
 
   input sel_datapath_e sel_dp_i,
@@ -103,14 +107,21 @@ module spid_upload
 
   output logic set_busy_o,
 
+  // cmdfifo_set: Pulse event to notify SW the command fifo has entries
+  output logic sys_cmdfifo_set_o,
+  // cmdfifo_notempty: The SYS domain Command FIFO not empty.
+  // cmdfifo_set occurs at the end of SPI transaction. cmdfifo_notempty can be
+  // changed in the middle of SPI transaction.
   output logic sys_cmdfifo_notempty_o,
   output logic sys_cmdfifo_full_o,
   output logic sys_addrfifo_notempty_o,
   output logic sys_addrfifo_full_o,
+  output logic sys_payload_overflow_o,
 
   output logic [CmdPtrW-1:0]     sys_cmdfifo_depth_o,
   output logic [AddrPtrW-1:0]    sys_addrfifo_depth_o,
-  output logic [PayloadPtrW-1:0] sys_payload_depth_o
+  output logic [PayloadPtrW-1:0] sys_payload_depth_o,
+  output logic [PayloadIdxW-1:0] sys_payload_start_idx_o
 );
 
   localparam int unsigned CmdFifoWidth  =  8;
@@ -170,12 +181,15 @@ module spid_upload
   logic [SramDw-1:0]      sys_sram_rdata  [NumSramIntf-1]; // not used
   logic [1:0]             sys_sram_rerror [NumSramIntf-1]; // not used
 
-  logic        cmdfifo_wvalid;
-  logic        cmdfifo_wready; // Assume always ready
-  logic [7:0]  cmdfifo_wdata ;
+  logic               cmdfifo_wvalid;
+  logic               cmdfifo_wready; // Assume always ready
+  logic [7:0]         cmdfifo_wdata ;
+  logic [CmdPtrW-1:0] cmdfifo_depth; // Write side depth to check if FIFO empty
+
   logic        addrfifo_wvalid;
   logic        addrfifo_wready; // Assume always ready
   logic [31:0] addrfifo_wdata ;
+
   logic        payload_wvalid;
   logic        payload_wready; // Assume always ready
   logic [7:0]  payload_wdata ;
@@ -250,20 +264,93 @@ module spid_upload
     end
   end
 
+  // sys_cmdfifo_not_empty_o -> sys_cmdfifo_set_o
+  //
+  // The signal is generated from SCK domain write fifo depth signal. The
+  // reason is to delay the interrupt. If the notempty interrupt comes from
+  // the CMDFIFO directly, then SW waits the SPI transaction to be completed
+  // in order to get the correct address and payload.
+  //
+  // cmdfifo_depth (SCK) is a registered signal. So, it becomes notempty after
+  // 8th beat of the SCK. The CSb as a clock latches the signal to be != 0,
+  // then sys_csb_deasserted_pulse_i signal let SYS_CLK latch the notemtpy
+  // signal. as CSb as a clock is synced clock to the SCK, there is no CDC
+  // issue here. Please check the chip Synopsys Design Constraints (SDC) file.
+  //
+  // The case to be considered: If two commands are back-to-back and uploaded
+  // into the CMDFIFO. Then, if SW pops the first one, the notempty keeps
+  // high. The edge detector could not catch the change.
+  //
+  // To resolve the issue describe above, the notempty interrupt @ SCK catches
+  // the current transaction only. It means that the notempty becomes one if
+  // the FIFO is empty and becomes notempty. If the FIFO is not empty and
+  // the logic pushes one more to the FIFO, it does not generate event
+  // signal.
+  //
+  // In the SYS_CLK, logics see the event. If it is high, the logic generates
+  // a pulse to set the interrupt (along with the status). So that the SW can
+  // get the event.
+
+  logic sck_cmdfifo_set;
+  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
+    // Can't use rst_ni, as it is basically CSb. conflict to @posedge CSb
+    if (!sys_rst_ni)                           sck_cmdfifo_set <= 1'b 0;
+    // Can't use cmdfifo_depth != '0 as cmdfifo_depth is latched by SCK
+    // CmdOnly SPI transaction cannot catch
+    else if (cmdfifo_wvalid && cmdfifo_wready) sck_cmdfifo_set <= 1'b 1;
+    else if (sck_csb_asserted_pulse_i)         sck_cmdfifo_set <= 1'b 0;
+  end
+  `ASSERT(CmdFifoPush_A,
+          cmdfifo_wvalid && cmdfifo_wready |=> cmdfifo_depth != 0,
+          clk_i, !sys_rst_ni)
+
+  logic csb_cmdfifo_set;
+  always_ff @(posedge clk_csb_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) csb_cmdfifo_set <= 1'b 0;
+    else             csb_cmdfifo_set <= sck_cmdfifo_set;
+  end
+
+  logic sys_cmdfifo_set;
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) sys_cmdfifo_set <= 1'b 0;
+    else if (sys_csb_deasserted_pulse_i && csb_cmdfifo_set) begin
+      sys_cmdfifo_set <= 1'b 1;
+    end else begin
+      sys_cmdfifo_set <= 1'b 0;
+    end
+  end
+
+  assign sys_cmdfifo_set_o = sys_cmdfifo_set;
 
   // payloadptr manage: spid_fifo2sram_adapter's fifoptr (wdepth) is reset by
   // CSb everytime. the written payload size should be visible to SW even CSb
   // is de-asserted.
   //
-  // The logic observes payload_wvalid && payload_wready and increments the
-  // payload pointer reset by sys_rst_ni not by rst_ni.
+  // payloadptr maintains the pointer inside the Payload buffer (256B
+  // currently). If the host system issues equal to or more than 256B of the
+  // size, the payload_max is set to 1 then SW will sees always PayloadByte
+  // value from the CSR. Inside the HW, SPI_DEVICE keeps storing the incoming
+  // bytes into the payload buffer as a circular FIFO manner. The payload
+  // start index CSR represents the next pointer inside the buffer IFF the
+  // payload buffer is full. If it has not been received the full payload, the
+  // start index is 0, which means SW should read from 0.
   logic payloadptr_inc, payloadptr_clr;
-  logic [PayloadPtrW-1:0] payloadptr;
+  logic [PayloadIdxW-1:0] payloadptr;
+  // Indicate the payload reached the max value (PayloadByte)
+  logic                   payload_max;
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni)      payloadptr <= '0;
-    else if (payloadptr_clr) payloadptr <= '0;
-    else if ((payloadptr != PayloadPtrW'(PayloadByte)) && payloadptr_inc) begin
-      payloadptr <= payloadptr + PayloadPtrW'(1);
+    if (!sys_rst_ni) begin
+      payload_max <= 1'b 0;
+      payloadptr     <= '0;
+    end else if (payloadptr_clr) begin
+      payloadptr     <= '0;
+      payload_max <= 1'b 0;
+    end else if (payloadptr_inc) begin
+      if (payloadptr == PayloadIdxW'(PayloadByte-1)) begin
+        // payloadptr reached max
+        payload_max <= 1'b 1;
+      end
+      payloadptr <= payloadptr + PayloadIdxW'(1);
     end
   end
 
@@ -275,7 +362,11 @@ module spid_upload
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) sys_payload_depth_o <= '0;
     else if (sys_payloadptr_clr_posedge) sys_payload_depth_o <= '0;
-    else if (sys_csb_deasserted_pulse_i) sys_payload_depth_o <= payloadptr;
+    else if (sys_csb_deasserted_pulse_i && payload_max) begin
+      sys_payload_depth_o <= PayloadPtrW'(PayloadByte);
+    end else if (sys_csb_deasserted_pulse_i && !payload_max) begin
+      sys_payload_depth_o <= PayloadPtrW'(payloadptr);
+    end
   end
 
   // payloadptr_clr --> sys domain
@@ -289,6 +380,45 @@ module spid_upload
     .rst_dst_ni  (sys_rst_ni),
     .dst_pulse_o (sys_payloadptr_clr_posedge)
   );
+
+  // Latch payloadptr @ CSb events
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni)                     sys_payload_start_idx_o <= '0;
+    else if (sys_payloadptr_clr_posedge) sys_payload_start_idx_o <= '0;
+    else if (sys_csb_deasserted_pulse_i && payload_max) begin
+      // Payload reached the max, need to tell SW the exact location SW shoul
+      // read
+      sys_payload_start_idx_o <= payloadptr;
+    end else if (sys_csb_deasserted_pulse_i && !payload_max) begin
+      // Payload buffer has not been reached to the max, the start index
+      // should be 0 for SW to read from the first of the buffer.
+      sys_payload_start_idx_o <= '0;
+    end
+  end
+
+  // Overflow event
+  // When the SPI host system issues more than 256B payload, HW stores the
+  // overflow event in SCK then notify to SW when CSb is deasserted
+  logic  event_payload_overflow;
+  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni)         event_payload_overflow <= 1'b 0;
+    else if (payloadptr_clr) event_payload_overflow <= 1'b 0;
+    else if (payloadptr_inc && payload_max) begin
+      event_payload_overflow <= 1'b 1;
+    end
+  end
+
+  // Sync to SYSCLK when CSb release. Edge detection on the spi_device top
+  logic sys_event_payload_overflow;
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni)                     sys_event_payload_overflow <= 1'b 0;
+    else if (sys_payloadptr_clr_posedge) sys_event_payload_overflow <= 1'b 0;
+    else if (sys_csb_deasserted_pulse_i) begin
+      sys_event_payload_overflow <= event_payload_overflow;
+    end
+  end
+
+  assign sys_payload_overflow_o = sys_event_payload_overflow;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -399,7 +529,7 @@ module spid_upload
     .wvalid_i  (cmdfifo_wvalid),
     .wready_o  (cmdfifo_wready),
     .wdata_i   (cmdfifo_wdata ),
-    .wdepth_o  (),
+    .wdepth_o  (cmdfifo_depth),
 
     .clk_rd_i  (sys_clk_i),
     .rst_rd_ni (sys_rst_ni),
@@ -409,6 +539,9 @@ module spid_upload
     .rdepth_o  (sys_cmdfifo_depth_o),
 
     .r_full_o     (sys_cmdfifo_full_o),
+    // Not directly use `notempty` as an interrupt. Rather generated from the
+    // upload logic to delay the cmdfifo_notempty interrupt.
+    // See #11871
     .r_notempty_o (sys_cmdfifo_notempty_o),
 
     .w_full_o (),

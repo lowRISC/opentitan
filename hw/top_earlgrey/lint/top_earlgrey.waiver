@@ -39,9 +39,6 @@ waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} -regexp {'tx' driven
 waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} -regexp {'cio_key2_out_o' driven in module 'sysrst_ctrl_inv' by 'key2_out_int' at sysrst_ctrl_inv.sv} \
       -comment "sysrst_ctrl creates a feed through path directly for certain muxed pins"
 
-waive -rules {SAME_NAME_TYPE} -location {*} -regexp {.*} \
-      -comment "same names across modules are allowed to exist at the top level"
-
 # intentionally unused
 waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_earlgrey.sv} -regexp {.*cio_otp_ctrl_test_(en_)?d2p\[7:1\].* is not read} \
       -comment "otp test bus made deliberately larger on purpose"

@@ -149,7 +149,7 @@ dif_result_t dif_adc_ctrl_configure_filter(const dif_adc_ctrl_t *adc_ctrl,
   filter_ctrl_reg = bitfield_field32_write(filter_ctrl_reg, max_voltage_field,
                                            config.max_voltage);
   filter_ctrl_reg =
-      bitfield_bit32_write(filter_ctrl_reg, in_range_bit, config.in_range);
+      bitfield_bit32_write(filter_ctrl_reg, in_range_bit, !config.in_range);
   filter_ctrl_reg = bitfield_bit32_write(filter_ctrl_reg, enable_bit,
                                          dif_toggle_to_bool(enabled));
   mmio_region_write32(adc_ctrl->base_addr, filter_ctrl_reg_offset,

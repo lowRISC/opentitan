@@ -14,10 +14,9 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     {clock: "clk_edn_i", reset: "rst_edn_ni"}
   ]
   bus_interfaces: [
-    { protocol: "tlul", direction: "device" }
+    { protocol: "tlul", direction: "device", hier_path: "u_reg_wrap.u_reg" }
   ],
   regwidth: "32",
-  hier_path: "u_reg_wrap.u_reg"
 ##############################################################################
   param_list: [
     // Random netlist constants

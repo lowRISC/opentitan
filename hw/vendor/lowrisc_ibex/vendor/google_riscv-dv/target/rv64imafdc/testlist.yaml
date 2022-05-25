@@ -1,0 +1,149 @@
+# Copyright Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ================================================================================
+#                  Regression test list format
+# --------------------------------------------------------------------------------
+# test            : Assembly test name
+# description     : Description of this test
+# gen_opts        : Instruction generator options
+# iterations      : Number of iterations of this test
+# no_iss          : Enable/disable ISS simulator (Optional)
+# gen_test        : Test name used by the instruction generator
+# asm_tests       : Path to directed, hand-coded assembly test file or directory
+# rtl_test        : RTL simulation test name
+# cmp_opts        : Compile options passed to the instruction generator
+# sim_opts        : Simulation options passed to the instruction generator
+# no_post_compare : Enable/disable comparison of trace log and ISS log (Optional)
+# compare_opts    : Options for the RTL & ISS trace comparison
+# gcc_opts        : gcc compile options
+# --------------------------------------------------------------------------------
+
+- import: <riscv_dv_root>/target/rv64imc/testlist.yaml
+
+
+- test: riscv_machine_mode_rand_test
+  description: >
+    Machine mode random instruction test
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +boot_mode=m
+  rtl_test: core_base_test
+
+- test: riscv_privileged_mode_rand_test
+  description: >
+    Random previliged mode test
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+  rtl_test: core_base_test
+
+# TODO: Only enable booting into U-mode for now, as OVPsim doesn't support some debug CSRs
+- test: riscv_invalid_csr_test
+  description: >
+    Boot core into random privileged mode and generate csr accesses to invalid CSRs (at a higher priv mode)
+  iterations: 2
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +num_of_sub_program=0
+    +enable_access_invalid_csr_level=1
+    +boot_mode=u
+  rtl_test: core_invalid_csr_test
+  sim_opts: >
+    +require_signature_addr=1
+# TODO: Re-enable this test after all the data/instruction page organization changes are done
+- test: riscv_page_table_exception_test
+  description: >
+    Test random page table exception handling. An exception handling routine is
+    designed to fix the page table error and resume execution.
+  iterations: 0
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +enable_page_table_exception=1
+  rtl_test: core_base_test
+
+- test: riscv_sfence_exception_test
+  description: >
+    Random instruction test with S.FENCE exceptions
+  iterations: 2
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +allow_sfence_exception=1
+  rtl_test: core_base_test
+
+
+- test: riscv_amo_test
+  description: >
+    RISC-V atomic instruction extension test
+  iterations: 2
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=5000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_lr_sc_instr_stream,10
+    +directed_instr_1=riscv_amo_instr_stream,10
+  rtl_test: core_base_test
+
+- test: riscv_floating_point_arithmetic_test
+  description: >
+    Enable floating point instructions
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +enable_floating_point=1
+    +boot_mode=m
+  iterations: 1
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_floating_point_rand_test
+  description: >
+    Enable floating point instructions
+  gen_opts: >
+    +enable_floating_point=1
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_rand_instr_stream,4
+    +directed_instr_1=riscv_loop_instr,4
+    +directed_instr_2=riscv_multi_page_load_store_instr_stream,4
+    +directed_instr_3=riscv_mem_region_stress_test,4
+    +directed_instr_4=riscv_jal_instr,4
+  iterations: 1
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_floating_point_mmu_stress_test
+  description: >
+    Test with different patterns of load/store instructions, stress test MMU
+    operations.
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=5000
+    +num_of_sub_program=5
+    +enable_floating_point=1
+    +directed_instr_0=riscv_load_store_rand_instr_stream,40
+    +directed_instr_1=riscv_load_store_hazard_instr_stream,40
+    +directed_instr_2=riscv_multi_page_load_store_instr_stream,10
+    +directed_instr_3=riscv_mem_region_stress_test,10
+  rtl_test: core_base_test

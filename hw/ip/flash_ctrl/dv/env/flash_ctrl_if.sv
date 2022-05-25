@@ -30,7 +30,7 @@ interface flash_ctrl_if ();
   lc_tx_t                           rma_ack;
 
   otp_ctrl_pkg::flash_otp_key_req_t otp_req;
-  otp_ctrl_pkg::flash_otp_key_rsp_t otp_rsp = flash_ctrl_env_pkg::FLASH_OTP_RSP_DEFAULT;
+  otp_ctrl_pkg::flash_otp_key_rsp_t otp_rsp;
 
   // JTAG
   logic                             cio_tck;

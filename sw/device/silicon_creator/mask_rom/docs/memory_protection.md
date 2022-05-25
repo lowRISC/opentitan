@@ -57,7 +57,7 @@ The entry allocation is shown here:
 | 1     | ROM TEXT                      | RX          | TOR             |
 | 2     | ROM                           | R           | NAPOT           |
 | 3     |                               |             | OFF\*           |
-| 4     | `ROM_EXT` TEXT                 | RX          | TOR             |
+| 4     | `ROM_EXT` TEXT                | RX          | TOR             |
 | 5     | eFlash                        | R           | NAPOT           |
 | 6     | \<Reserved - see test plan\>  |             | OFF             |
 | 7     |                               |             | OFF             |
@@ -89,13 +89,16 @@ Entries that are OFF but for which the address register is in use are marked wit
 Once signature verification is complete the `ROM_EXT` text section can be made executable.
 It is critical that the memory region that is unlocked matches the memory region specified in the verified manifest.
 The unlock address space module will provide an API for unlocking the `ROM_EXT` text section based on a memory region provided to it.
+In case the address translation is enabled, indicated by the `address_translation` field of the manifest, a read-only section will be added
+for the `ROM_EXT` virtual address.
 
 | Entry | Description                   | Permissions | Addressing Mode |
 |-------|-------------------------------|-------------|-----------------|
 | 1     | ROM TEXT                      | RX          | TOR             |
 | 2     | ROM                           | R           | NAPOT           |
-| **4** | **`ROM_EXT` TEXT**             | **RX**      | **TOR**         |
+| **4** | **`ROM_EXT` TEXT**            | **RX**      | **TOR**         |
 | 5     | eFlash                        | R           | NAPOT           |
+| **6** | **`ROM_EXT` section**         | **R**       | **NAPOT**       |
 | 11    | MMIO (includes retention RAM) | RW          | TOR             |
 | 14    | Stack Guard (4 bytes)         | \<none\>    | NA4             |
 | 15    | RAM                           | RW          | NAPOT           |

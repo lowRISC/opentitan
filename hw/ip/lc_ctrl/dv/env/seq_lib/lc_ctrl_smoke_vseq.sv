@@ -31,14 +31,17 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
   virtual task post_start();
     // Kill sub processes
-    disable run_clk_byp_rsp_nonblocking;
-    disable run_flash_rma_rsp_nonblocking;
+    disable run_clk_byp_rsp;
+    disable run_flash_rma_rsp;
     super.post_start();
   endtask
 
   task body();
-    run_clk_byp_rsp_nonblocking(clk_byp_error_rsp);
-    run_flash_rma_rsp_nonblocking(flash_rma_error_rsp);
+
+    fork
+      run_clk_byp_rsp(clk_byp_error_rsp);
+      run_flash_rma_rsp(flash_rma_error_rsp);
+    join_none
 
     //
     // Check OTP read only regs (static ones)
@@ -133,4 +136,6 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
     clear_kmac_user_digest_share();
     cfg.m_kmac_app_agent_cfg.add_user_digest_share(kmac_digest);
   endfunction
+
 endclass : lc_ctrl_smoke_vseq
+

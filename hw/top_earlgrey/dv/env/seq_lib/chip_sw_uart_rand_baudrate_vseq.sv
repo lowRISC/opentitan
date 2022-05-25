@@ -37,12 +37,12 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
       if (extclk_low_speed_sel) uart_clk_freq_khz = uart_clk_freq_khz * 2;
     end else begin
       // internal uart bus clock is 24Mhz
-      uart_clk_freq_khz = 24_0000;
+      uart_clk_freq_khz = 24_000;
     end
     `uvm_info(`gfn,
               $sformatf("External clock freq: %0dmhz, use_extclk: %0d, extclk_low_speed_sel: %0d",
               cfg.clk_freq_mhz, use_extclk, extclk_low_speed_sel),
-              UVM_MEDIUM)
+              UVM_LOW)
   endfunction
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -65,18 +65,12 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
       bit [7:0] uart_clk_freq_arr[8] = {<< byte {uart_clk_freq_khz * 1000}};
 
       sw_symbol_backdoor_overwrite("kUseExtClk", use_extclk_arr);
-      `uvm_info(`gfn, $sformatf("Backdoor_overwrite: configure uart use_extclk: %0d", use_extclk),
-                UVM_LOW)
 
       sw_symbol_backdoor_overwrite("kUseLowSpeedSel", low_speed_sel_arr);
-      `uvm_info(`gfn, $sformatf("Backdoor_overwrite: configure low_speed_sel: %0d",
-                extclk_low_speed_sel), UVM_LOW)
 
       // SW relies on kClockFreqPeripheralHz to calcuate NCO and it's hard-coded to 24Mhz in SW.
       // this value is changed when extclk is used
       sw_symbol_backdoor_overwrite("kClockFreqPeripheralHz", uart_clk_freq_arr);
-      `uvm_info(`gfn, $sformatf("Backdoor_overwrite: configure uart use_extclk: %0d",
-                uart_clk_freq_khz), UVM_LOW)
     end
   endtask
 

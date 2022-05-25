@@ -27,12 +27,13 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
     `DV_SPINWAIT(while(cfg.vif.ec_rst_l_out != 0) begin
                    cfg.clk_aon_rst_vif.wait_clks(1);
                    wait_cycles++;
-                 end, , aon_period_ns * 20)
+                 end,"time out waiting for ec_rst == 0", aon_period_ns * 20)
     `DV_SPINWAIT(while (cfg.vif.ec_rst_l_out != 1) begin
                    cfg.clk_aon_rst_vif.wait_clks(1);
                    act_cycles++;
-                 end, ,aon_period_ns * (exp_cycles + 3))
-    `DV_CHECK(act_cycles inside {[exp_cycles - 3 : exp_cycles + 3]})
+                 end,"time out waiting for ec_rst == 1",aon_period_ns * (exp_cycles + 3))
+    `DV_CHECK(act_cycles inside {[exp_cycles - 3 : exp_cycles + 3]},
+              $sformatf("act(%0d) vs exp(%0d) +/-3", act_cycles, exp_cycles))
   endtask
 
   virtual task driver_ec_rst_l_in(int cycles);

@@ -8,15 +8,16 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
-#include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -92,6 +93,8 @@ const uint32_t kMaxVerBl0 = 2;
 
 const test_config_t kTestConfig;
 
+static dif_flash_ctrl_state_t flash;
+
 /**
  * Writes `size` words of `data` into flash info page.
  *
@@ -101,37 +104,60 @@ const test_config_t kTestConfig;
  */
 static void write_info_page(uint32_t page_id, const uint32_t *data,
                             size_t size) {
-  mp_region_t info_region = {.num = page_id,
-                             .base = 0x0,  // only used to calculate bank id.
-                             .size = 0x1,  // unused for info pages.
-                             .part = kInfoPartition,
-                             .rd_en = true,
-                             .prog_en = true,
-                             .erase_en = true,
-                             .scramble_en = false};
-  flash_cfg_region(&info_region);
+  // The info partition has no default access. Specifically set up a region.
+  dif_flash_ctrl_info_region_t info_region = {
+      .bank = 0, .partition_id = 0, .page = page_id};
 
-  uint32_t address = FLASH_MEM_BASE_ADDR + page_id * flash_get_page_size();
+  dif_flash_ctrl_region_properties_t region_properties = {
+      .rd_en = kMultiBitBool4True,
+      .prog_en = kMultiBitBool4True,
+      .erase_en = kMultiBitBool4True,
+      .scramble_en = kMultiBitBool4False,
+      .ecc_en = kMultiBitBool4False,
+      .high_endurance_en = kMultiBitBool4False};
 
-  ASSERT_EQZ(flash_page_erase(address, kInfoPartition));
-  ASSERT_EQZ(flash_write(address, kInfoPartition, data, size));
+  CHECK_DIF_OK(dif_flash_ctrl_set_info_region_properties(&flash, info_region,
+                                                         region_properties));
+
+  dif_flash_ctrl_device_info_t flash_info = dif_flash_ctrl_get_device_info();
+  uint32_t address = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+                     page_id * flash_info.bytes_per_page;
+
+  ASSERT_EQZ(flash_ctrl_testutils_erase_page(
+      &flash, address, /*partition_id=*/0, kDifFlashCtrlPartitionTypeInfo));
+  ASSERT_EQZ(flash_ctrl_testutils_write(&flash, address, /*partition_id=*/0,
+                                        data, kDifFlashCtrlPartitionTypeInfo,
+                                        size));
 
   for (size_t i = 0; i < size; ++i) {
     uint32_t got_data;
-    ASSERT_EQZ(flash_read(address + i * sizeof(uint32_t), kInfoPartition,
-                          /*size=*/1, &got_data));
+    ASSERT_EQZ(flash_ctrl_testutils_read(
+        &flash, address + i * sizeof(uint32_t), /*partition_id=*/0, &got_data,
+        kDifFlashCtrlPartitionTypeInfo, /*size=*/1, /*delay=*/0));
     CHECK(got_data == data[i]);
   }
-  info_region.rd_en = false;
-  info_region.prog_en = false;
-  info_region.erase_en = false;
-  flash_cfg_region(&info_region);
+
+  region_properties.rd_en = kMultiBitBool4False;
+  region_properties.prog_en = kMultiBitBool4False;
+  region_properties.erase_en = kMultiBitBool4False;
+  CHECK_DIF_OK(dif_flash_ctrl_set_info_region_properties(&flash, info_region,
+                                                         region_properties));
 }
 
 static void init_flash(void) {
-  // setup default access for data partition
-  flash_default_region_access(/*rd_en=*/true, /*prog_en=*/true,
-                              /*erase_en=*/true);
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  flash_ctrl_testutils_wait_for_init(&flash);
+
+  // Set up default access for the data partition.
+  flash_ctrl_testutils_default_region_access(&flash,
+                                             /*rd_en=*/true,
+                                             /*prog_en=*/true,
+                                             /*erase_en=*/true,
+                                             /*scramble_en=*/false,
+                                             /*ecc_en=*/false,
+                                             /*high_endurance_en=*/false);
+
   // Initialize flash secrets.
   write_info_page(kFlashInfoPageIdCreatorSecret, kCreatorSecret,
                   ARRAYSIZE(kCreatorSecret));
@@ -185,8 +211,8 @@ static void wait_for_dai(void) {
 }
 
 /**
- * Lock otp secret 2 partition so that on reboot flash seeds can be
- * automatically loaded
+ * Lock otp secret 2 partition so that on reboot, flash seeds can be
+ * automatically loaded.
  */
 static void lock_otp_secret_partition2(void) {
   // initialize otp
@@ -211,11 +237,11 @@ static void init_kmac_for_keymgr(void) {
   CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 }
 
-/** Soft reboot device */
+/** Soft reboot device. */
 static void soft_reboot(dif_pwrmgr_t *pwrmgr, dif_aon_timer_t *aon_timer) {
   aon_timer_wakeup_config(aon_timer, 1);
 
-  // Place device into low power and immediately wake
+  // Place device into low power and immediately wake.
   dif_pwrmgr_domain_config_t config;
   config = kDifPwrmgrDomainOptionUsbClockInActivePower;
 
@@ -279,30 +305,30 @@ bool test_main(void) {
   // This test is expected to run in DEV, PROD or PROD_END states.
   LOG_INFO("lifecycle state: 0x%x", lifecycle_raw_state_get());
 
-  // Initialize pwrmgr
+  // Initialize pwrmgr.
   dif_pwrmgr_t pwrmgr;
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
-  // Initialize aon_timer
+  // Initialize aon_timer.
   dif_aon_timer_t aon_timer;
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
-  // Get wakeup reason
+  // Get wakeup reason.
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
 
   if (compare_wakeup_reasons(&wakeup_reason, &kWakeUpReasonPor)) {
     LOG_INFO("Powered up for the first time, program flash");
 
-    // Initialize flash
+    // Initialize flash.
     init_flash();
 
-    // Lock otp secret partition
+    // Lock otp secret partition.
     lock_otp_secret_partition2();
 
-    // reboot device
+    // Reboot device.
     soft_reboot(&pwrmgr, &aon_timer);
 
   } else {

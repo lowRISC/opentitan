@@ -31,8 +31,16 @@ TEST_F(ConfigTest, NullArgs) {
 }
 
 TEST_F(ConfigTest, ConfigOk) {
-  EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET, 0xaaa);
+  constexpr uint32_t exp =
+      kMultiBitBool4True | kMultiBitBool4True << 4 | kMultiBitBool4True << 8;
+  EXPECT_READ32(CSRNG_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET, exp);
   EXPECT_DIF_OK(dif_csrng_configure(&csrng_));
+}
+
+TEST_F(ConfigTest, Locked) {
+  EXPECT_READ32(CSRNG_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(dif_csrng_configure(&csrng_), kDifLocked);
 }
 
 class GetCmdInterfaceStatusTest : public DifCsrngTest {};
@@ -44,35 +52,132 @@ TEST_F(GetCmdInterfaceStatusTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_csrng_get_cmd_interface_status(&csrng_, nullptr));
 }
 
-struct GetCmdInterfaceStatusParams {
+struct StatusTestCase {
   bool cmd_ready;
   bool cmd_status;
+  uint32_t err_codes;
   dif_csrng_cmd_status_t expected_status;
 };
 
+template <typename... Ints>
+uint32_t BitSet(Ints... bits) {
+  uint32_t x = 0;
+  auto ignored = {x |= 1 << static_cast<int>(bits)...};
+  (void)ignored;
+  return x;
+}
+
 class GetCmdInterfaceStatusTestAllParams
     : public GetCmdInterfaceStatusTest,
-      public testing::WithParamInterface<GetCmdInterfaceStatusParams> {};
+      public testing::WithParamInterface<StatusTestCase> {};
 
 TEST_P(GetCmdInterfaceStatusTestAllParams, ValidConfigurationMode) {
-  const GetCmdInterfaceStatusParams &test_param = GetParam();
-  dif_csrng_cmd_status_t status;
+  const auto &test_param = GetParam();
+  dif_csrng_cmd_status_t status{};
   EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
                 {
                     {CSRNG_SW_CMD_STS_CMD_RDY_BIT, test_param.cmd_ready},
                     {CSRNG_SW_CMD_STS_CMD_STS_BIT, test_param.cmd_status},
                 });
+  if (test_param.expected_status.kind == kDifCsrngCmdStatusError) {
+    EXPECT_READ32(CSRNG_ERR_CODE_REG_OFFSET, test_param.err_codes);
+  }
   EXPECT_DIF_OK(dif_csrng_get_cmd_interface_status(&csrng_, &status));
-  EXPECT_EQ(status, test_param.expected_status);
+  EXPECT_EQ(status.kind, test_param.expected_status.kind);
+  EXPECT_EQ(status.unhealthy_fifos, test_param.expected_status.unhealthy_fifos);
+  EXPECT_EQ(status.errors, test_param.expected_status.errors);
 }
 
 INSTANTIATE_TEST_SUITE_P(
     GetCmdInterfaceStatusTestAllParams, GetCmdInterfaceStatusTestAllParams,
-    testing::Values(
-        GetCmdInterfaceStatusParams{true, false, kDifCsrngCmdStatusReady},
-        GetCmdInterfaceStatusParams{true, true, kDifCsrngCmdStatusError},
-        GetCmdInterfaceStatusParams{false, true, kDifCsrngCmdStatusError},
-        GetCmdInterfaceStatusParams{false, false, kDifCsrngCmdStatusBusy}));
+    testing::Values(StatusTestCase{true, false, 0, {kDifCsrngCmdStatusReady}},
+                    StatusTestCase{false, false, 0, {kDifCsrngCmdStatusBusy}},
+                    StatusTestCase{true, true, 0, {kDifCsrngCmdStatusError}},
+                    StatusTestCase{
+                        false,
+                        true,
+                        BitSet(CSRNG_ERR_CODE_SFIFO_GENBITS_ERR_BIT,
+                               CSRNG_ERR_CODE_SFIFO_PDATA_ERR_BIT,
+                               CSRNG_ERR_CODE_AES_CIPHER_SM_ERR_BIT,
+                               CSRNG_ERR_CODE_FIFO_STATE_ERR_BIT),
+                        {
+                            .kind = kDifCsrngCmdStatusError,
+                            .unhealthy_fifos = BitSet(kDifCsrngFifoGenBits,
+                                                      kDifCsrngFifoPData),
+                            .errors = BitSet(kDifCsrngErrorAesSm,
+                                             kDifCsrngErrorFifoFullAndEmpty),
+                        },
+                    }));
+
+class ForceErrorTest : public DifCsrngTest {};
+
+TEST_F(ForceErrorTest, BadArgs) {
+  EXPECT_DIF_BADARG(dif_csrng_get_cmd_force_unhealthy_fifo(
+      &csrng_, static_cast<dif_csrng_fifo_t>(-1)));
+  EXPECT_DIF_BADARG(
+      dif_csrng_get_cmd_force_unhealthy_fifo(nullptr, kDifCsrngFifoGenBits));
+  EXPECT_DIF_BADARG(dif_csrng_get_cmd_force_error(
+      &csrng_, static_cast<dif_csrng_error_t>(-1)));
+  EXPECT_DIF_BADARG(
+      dif_csrng_get_cmd_force_error(nullptr, kDifCsrngErrorAesSm));
+}
+
+TEST_F(ForceErrorTest, ForceFifo) {
+  EXPECT_READ32(CSRNG_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(CSRNG_ERR_CODE_TEST_REG_OFFSET,
+                 CSRNG_ERR_CODE_SFIFO_GENBITS_ERR_BIT);
+  EXPECT_DIF_OK(
+      dif_csrng_get_cmd_force_unhealthy_fifo(&csrng_, kDifCsrngFifoGenBits));
+}
+
+TEST_F(ForceErrorTest, ForceError) {
+  EXPECT_READ32(CSRNG_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(CSRNG_ERR_CODE_TEST_REG_OFFSET,
+                 CSRNG_ERR_CODE_AES_CIPHER_SM_ERR_BIT);
+  EXPECT_DIF_OK(dif_csrng_get_cmd_force_error(&csrng_, kDifCsrngErrorAesSm));
+}
+
+TEST_F(ForceErrorTest, Locked) {
+  EXPECT_READ32(CSRNG_REGWEN_REG_OFFSET, 0);
+  EXPECT_READ32(CSRNG_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(
+      dif_csrng_get_cmd_force_unhealthy_fifo(&csrng_, kDifCsrngFifoGenBits),
+      kDifLocked);
+  EXPECT_EQ(dif_csrng_get_cmd_force_error(&csrng_, kDifCsrngErrorAesSm),
+            kDifLocked);
+}
+
+class MiscStatusTest : public DifCsrngTest {};
+
+TEST_F(MiscStatusTest, BadArgs) {
+  uint32_t out;
+  EXPECT_DIF_BADARG(dif_csrng_get_main_state_machine(nullptr, &out));
+  EXPECT_DIF_BADARG(dif_csrng_get_main_state_machine(&csrng_, nullptr));
+  EXPECT_DIF_BADARG(dif_csrng_get_hw_csrng_exceptions(nullptr, &out));
+  EXPECT_DIF_BADARG(dif_csrng_get_hw_csrng_exceptions(&csrng_, nullptr));
+  EXPECT_DIF_BADARG(dif_csrng_clear_hw_csrng_exceptions(nullptr));
+}
+
+TEST_F(MiscStatusTest, GetMainSm) {
+  EXPECT_READ32(CSRNG_MAIN_SM_STATE_REG_OFFSET, 42);
+
+  uint32_t out;
+  EXPECT_DIF_OK(dif_csrng_get_main_state_machine(&csrng_, &out));
+  EXPECT_EQ(out, 42);
+}
+
+TEST_F(MiscStatusTest, GetExceptions) {
+  EXPECT_READ32(CSRNG_HW_EXC_STS_REG_OFFSET, 42);
+
+  uint32_t out;
+  EXPECT_DIF_OK(dif_csrng_get_hw_csrng_exceptions(&csrng_, &out));
+  EXPECT_EQ(out, 42);
+}
+
+TEST_F(MiscStatusTest, ClearExceptions) {
+  EXPECT_WRITE32(CSRNG_HW_EXC_STS_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_csrng_clear_hw_csrng_exceptions(&csrng_));
+}
 
 class GetOutputStatusTest : public DifCsrngTest {};
 
@@ -210,15 +315,15 @@ TEST_F(GenerateEndTest, ReadOk) {
   }
 
   std::vector<uint32_t> got(kExpected.size());
-  EXPECT_DIF_OK(dif_csrng_generate_end(&csrng_, got.data(), got.size()));
+  EXPECT_DIF_OK(dif_csrng_generate_read(&csrng_, got.data(), got.size()));
   EXPECT_THAT(got, testing::ElementsAreArray(kExpected));
 }
 
 TEST_F(GenerateEndTest, ReadBadArgs) {
-  EXPECT_DIF_BADARG(dif_csrng_generate_end(&csrng_, nullptr, /*len=*/0));
+  EXPECT_DIF_BADARG(dif_csrng_generate_read(&csrng_, nullptr, /*len=*/0));
 
   uint32_t data;
-  EXPECT_DIF_BADARG(dif_csrng_generate_end(nullptr, &data, /*len=*/1));
+  EXPECT_DIF_BADARG(dif_csrng_generate_read(nullptr, &data, /*len=*/1));
 }
 
 class GetInternalStateTest : public DifCsrngTest {};
@@ -265,6 +370,73 @@ TEST_F(GetInternalStateTest, GetInternalStateBadArgs) {
   dif_csrng_internal_state unused;
   EXPECT_DIF_BADARG(
       dif_csrng_get_internal_state(nullptr, kCsrngInternalStateIdSw, &unused));
+}
+
+class LockTest : public DifCsrngTest {};
+
+TEST_F(LockTest, BadArgs) {
+  bool flag;
+  EXPECT_DIF_BADARG(dif_csrng_lock(nullptr));
+  EXPECT_DIF_BADARG(dif_csrng_is_locked(nullptr, &flag));
+  EXPECT_DIF_BADARG(dif_csrng_is_locked(&csrng_, nullptr));
+}
+
+TEST_F(LockTest, Lock) {
+  EXPECT_WRITE32(CSRNG_REGWEN_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_csrng_lock(&csrng_));
+}
+
+TEST_F(LockTest, IsLocked) {
+  bool flag;
+
+  EXPECT_READ32(CSRNG_REGWEN_REG_OFFSET, 1);
+  EXPECT_DIF_OK(dif_csrng_is_locked(&csrng_, &flag));
+  EXPECT_FALSE(flag);
+
+  EXPECT_READ32(CSRNG_REGWEN_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_csrng_is_locked(&csrng_, &flag));
+  EXPECT_TRUE(flag);
+}
+
+class StopTest : public DifCsrngTest {};
+
+TEST_F(StopTest, BadArgs) { EXPECT_DIF_BADARG(dif_csrng_stop(nullptr)); }
+
+TEST_F(StopTest, Stop) {
+  EXPECT_READ32(CSRNG_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
+  EXPECT_DIF_OK(dif_csrng_stop(&csrng_));
+}
+
+TEST_F(StopTest, Locked) {
+  EXPECT_READ32(CSRNG_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(dif_csrng_stop(&csrng_), kDifLocked);
+}
+
+class AlertTest : public DifCsrngTest {};
+
+TEST_F(AlertTest, BadArgs) {
+  uint32_t out;
+  EXPECT_DIF_BADARG(dif_csrng_get_recoverable_alerts(nullptr, &out));
+  EXPECT_DIF_BADARG(dif_csrng_get_recoverable_alerts(&csrng_, nullptr));
+  EXPECT_DIF_BADARG(dif_csrng_clear_recoverable_alerts(nullptr));
+}
+
+TEST_F(AlertTest, Get) {
+  uint32_t out;
+  EXPECT_READ32(CSRNG_RECOV_ALERT_STS_REG_OFFSET,
+                {
+                    {CSRNG_RECOV_ALERT_STS_ENABLE_FIELD_ALERT_BIT, true},
+                    {CSRNG_RECOV_ALERT_STS_CS_BUS_CMP_ALERT_BIT, true},
+                });
+  EXPECT_DIF_OK(dif_csrng_get_recoverable_alerts(&csrng_, &out));
+  EXPECT_EQ(out, BitSet(kDifCsrngRecoverableAlertBadEnable,
+                        kDifCsrngRecoverableAlertRepeatedGenBits));
+}
+
+TEST_F(AlertTest, Clear) {
+  EXPECT_WRITE32(CSRNG_RECOV_ALERT_STS_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_csrng_clear_recoverable_alerts(&csrng_));
 }
 
 }  // namespace

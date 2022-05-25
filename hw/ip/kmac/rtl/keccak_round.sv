@@ -24,14 +24,8 @@ module keccak_round
   localparam int DInAddr  = $clog2(DInEntry),
 
   // Control parameters
-  parameter  bit EnMasking = 1'b0,  // Enable secure hardening
-  localparam int Share     = EnMasking ? 2 : 1,
-
-  // If ReuseShare is not 0, the logic will use unused sheet as an entropy
-  // at Chi stage. It still needs small portion of the fresh entropy from
-  // rand_data_i but the amount required are significantly small.
-  // TODO: Implement the feature inside keccak_2share
-  parameter  bit ReuseShare = 1'b0  // Re-use adjacent share for entropy
+  parameter  bit EnMasking = 1'b0,  // Enable SCA hardening, requires Width >= 50
+  localparam int Share     = EnMasking ? 2 : 1
 ) (
   input clk_i,
   input rst_ni,
@@ -45,7 +39,8 @@ module keccak_round
   // In-process control
   input                    run_i,  // Pulse signal to initiates Keccak full round
   input                    rand_valid_i,
-  input        [Width-1:0] rand_data_i,
+  input                    rand_early_i,
+  input      [Width/2-1:0] rand_data_i,
   output logic             rand_consumed_o,
 
   output logic             complete_o, // Indicates full round is done
@@ -80,10 +75,12 @@ module keccak_round
   // Select Keccak_p datapath
   // 0: Select Phase1 (Theta -> Rho -> Pi)
   // 1: Select Phase2 (Chi -> Iota)
-  // `sel_mux` need to be asserted until the Chi stage is consumed,
-  // It means sel_mux should be 1 until one cycle after `rand_valid_i` is asserted.
-  mubi4_t sel_mux;
+  // `phase_sel` needs to be asserted until the Chi stage is consumed,
+  mubi4_t phase_sel;
 
+  // Cycle index used for controlling input/output muxes and write enables inside
+  // keccak_2share.
+  logic [1:0] cycle;
 
   // Increase/ Reset Round number
   logic inc_rnd_num;
@@ -116,19 +113,8 @@ module keccak_round
   logic [RndW-1:0] round;
 
   // Random value and valid signal used in Keccak_p
-  // There's plan to make random value generation configurable.
-  // 1. Tied to 0 in case of random value is not needed. It means the Keccak
-  //    doesn't need to be masked and throughput is the most important thing.
-  // 2. Receive random value from entropy source. This requires to fill 1600b
-  //    of entropy. It takes long time so generally it will have smaller bits
-  //    from tru entropy source and expands to 1600b (Width).
-  // 3. Reuse Share. This option is to reuse the other part of share. Chi stage
-  //    uses 3 sheets to create a sheet. (newX = X ^ (~(X+1) & (X+2))). So the
-  //    other two shares (X-1, X-2) can be assumed as random values, and may be
-  //    used as entropy source. It is weaker than the use of true entropy, but
-  //    much faster.
-  logic             keccak_rand_valid, keccak_rand_consumed;
-  logic [Width-1:0] keccak_rand_data;
+  logic               keccak_rand_consumed;
+  logic [Width/2-1:0] keccak_rand_data;
 
   //////////////////////
   // Keccak Round FSM //
@@ -138,7 +124,7 @@ module keccak_round
   assign rnd_eq_end = (int'(round) == MaxRound - 1);
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
   //      -s 1363425333 --language=sv
   //
   // Hamming distance histogram:
@@ -164,22 +150,28 @@ module keccak_round
       // It handles keccak round in a cycle
       StActive = 6'b000100,
 
-      // Phase1 --> Phase2 --> Phase3
+      // Phase1 --> Phase2Cycle1 --> Phase2Cycle2 --> Phase2Cycle3
       // Activated only in Masked version.
       // Phase1 processes Theta, Rho, Pi steps in a cycle and stores the states
-      // into storage. It unconditionally moves to Phase2.
+      // into storage. It only moves to Phase2 once the randomness required for
+      // Phase2 is available.
       StPhase1 = 6'b101101,
 
-      // First half part of Chi step. It waits random value is ready
-      // then move to Phase 3.
-      StPhase2 = 6'b000011,
+      // Chi Stage 1 for first lane halves. Unconditionally move to Phase2Cycle2.
+      StPhase2Cycle1 = 6'b000011,
 
-      // Second half of Chi step and Iota step.
+      // Chi Stage 2 and Iota for first lane halves. Chi Stage 1 for second
+      // lane halves. We don't need fresh randomness at this point as we can use
+      // intermediate results from StPhase1 for remasking. Unconditionally move
+      // to Phase2Cycle3.
+      StPhase2Cycle2 = 6'b011000,
+
+      // Chi Stage 2 and Iota for second lane halves.
       // This state doesn't require random value as it is XORed into the states
-      // in Phase2. If round is reached to the end (MaxRound -1) then it
-      // completes the process and goes back to Idle. If not, repeats the Phase
-      // again.
-      StPhase3 = 6'b011000,
+      // in Phase1 and Phase2Cycle2. When doing the last round (MaxRound -1)
+      // it completes the process and goes back to Idle. If not, it repeats
+      // the phases again.
+      StPhase2Cycle3 = 6'b101010,
 
       // Error state. Not clearly defined yet.
       // Intention is if any unexpected input in the process, state moves to
@@ -206,7 +198,8 @@ module keccak_round
 
     keccak_rand_consumed = 1'b 0;
 
-    sel_mux = MuBi4False;
+    phase_sel = MuBi4False;
+    cycle = 2'h 0;
 
     complete_d = 1'b 0;
 
@@ -256,28 +249,59 @@ module keccak_round
       end
 
       StPhase1: begin
-        // Unconditionally move to next phase.
-        keccak_st_d = StPhase2;
+        // Theta, Rho and Pi
+        phase_sel = MuBi4False;
+        cycle =  2'h 0;
 
-        update_storage = 1'b 1;
-        sel_mux        = MuBi4False;
-      end
-
-      StPhase2: begin
-        // Second phase (Chi 1/2)
-        sel_mux = MuBi4True;
-
-        if (keccak_rand_valid) begin
-          keccak_st_d = StPhase3;
-
-          keccak_rand_consumed = 1'b 1;
+        // Only update state and move on once we know the randomness required
+        // for Phase2 will be available in the next clock cycle. This way the
+        // DOM multipliers inside keccak_2share will be presented the new
+        // state (updated with update_storage) at the same time as the new
+        // randomness (updated with rand_early_i). Otherwise, stale entropy is
+        // paired with fresh data or vice versa. This could lead to undesired
+        // SCA leakage.
+        if (rand_early_i || rand_valid_i) begin
+          keccak_st_d = StPhase2Cycle1;
+          update_storage = 1'b 1;
         end else begin
-          keccak_st_d = StPhase2;
+          keccak_st_d = StPhase1;
         end
       end
 
-      StPhase3: begin
-        sel_mux = MuBi4True;
+      StPhase2Cycle1: begin
+        // Chi Stage 1 for first lane halves.
+        phase_sel = MuBi4True;
+        cycle =  2'h 1;
+
+        // Trigger randomness update for next cycle.
+        keccak_rand_consumed = 1'b 1;
+
+        // Unconditionally move to next phase/cycle.
+        keccak_st_d = StPhase2Cycle2;
+      end
+
+      StPhase2Cycle2: begin
+        // Chi Stage 1 for second lane halves.
+        // Chi Stage 2 and Iota for first lane halves.
+        phase_sel = MuBi4True;
+        cycle =  2'h 2;
+
+        // Trigger randomness update for next round.
+        keccak_rand_consumed = 1'b 1;
+
+        // Update first lane halves.
+        update_storage = 1'b 1;
+
+        // Unconditionally move to next phase/cycle.
+        keccak_st_d = StPhase2Cycle3;
+      end
+
+      StPhase2Cycle3: begin
+        // Chi Stage 2 and Iota for second lane halves.
+        phase_sel = MuBi4True;
+        cycle =  2'h 3;
+
+        // Update second lane halves.
         update_storage = 1'b 1;
 
         if (rnd_eq_end) begin
@@ -383,20 +407,17 @@ module keccak_round
     .rst_ni,
 
     .rnd_i           (round),
-    .rand_valid_i    (keccak_rand_valid),
+    .phase_sel_i     (phase_sel),
+    .cycle_i         (cycle),
     .rand_i          (keccak_rand_data),
-    .sel_i           (sel_mux),
     .s_i             (storage),
     .s_o             (keccak_out)
   );
 
   // keccak entropy handling
-  // TODO: Consider reuse of internal share
-  assign keccak_rand_valid = rand_valid_i;
   assign rand_consumed_o = keccak_rand_consumed;
 
   assign keccak_rand_data = rand_data_i;
-  `ASSERT_INIT(NoReuseShare_A, ReuseShare == 0)
 
   // Round number
   // This primitive is used to place a hardened counter
@@ -449,8 +470,9 @@ module keccak_round
   if (EnMasking) begin : gen_mask_st_chk
     `ASSERT(EnMaskingValidStates_A, keccak_st != StActive, clk_i, !rst_ni)
   end else begin : gen_unmask_st_chk
-    `ASSERT(UnmaskValidStates_A, !(keccak_st inside {StPhase1, StPhase2, StPhase3}),
-            clk_i, !rst_ni)
+    `ASSERT(UnmaskValidStates_A, !(keccak_st
+        inside {StPhase1, StPhase2Cycle1, StPhase2Cycle2, StPhase2Cycle3}),
+        clk_i, !rst_ni)
   end
 
   // If message is fed, it shall start from 0
@@ -461,4 +483,3 @@ module keccak_round
 
 
 endmodule
-

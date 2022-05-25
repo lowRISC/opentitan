@@ -186,21 +186,17 @@ class SimOpts:
         for parameter, value in config_dict.items():
             if isinstance(value, str):
                 parameter_define = args.string_define_prefix + parameter
-                define_set_str = self.define_set_fn(parameter_define, value)
-
-                if define_set_str:
-                    sim_opts.append(shlex.quote(define_set_str))
+                define_opts = self.define_set_fn(parameter_define, value)
+                sim_opts += [shlex.quote(arg) for arg in define_opts]
             else:
                 if isinstance(value, bool):
                     val_str = '1' if value else '0'
                 else:
                     val_str = str(value)
 
-                param_set_str = self.param_set_fn(ins_hier_path + parameter,
-                                                  val_str)
-
-                if param_set_str:
-                    sim_opts.append(shlex.quote(param_set_str))
+                full_param = ins_hier_path + parameter
+                param_opts = self.param_set_fn(full_param, val_str)
+                sim_opts += [shlex.quote(arg) for arg in param_opts]
 
         return ' '.join(sim_opts)
 
@@ -252,26 +248,26 @@ def main():
     outputters = [
         FusesocOpts(),
         SimOpts('vcs_opts', 'VCS compile',
-                lambda p, v: '-pvalue+' + p + '=' + v,
-                lambda d, v: '+define+' + d + '=' + v, '.'),
+                lambda p, v: ['-pvalue+' + p + '=' + v],
+                lambda d, v: ['+define+' + d + '=' + v], '.'),
         SimOpts('riviera_sim_opts', 'Riviera simulate',
-                lambda p, v: '-g/' + p + '=' + v,
-                lambda d, v: None, '/'),
+                lambda p, v: ['-g/' + p + '=' + v],
+                lambda d, v: [], '/'),
         SimOpts('riviera_compile_opts', 'Riviera compile',
-                lambda p, v: None,
-                lambda d, v: '+define+' + d + '=' + v, '/'),
+                lambda p, v: [],
+                lambda d, v: ['+define+' + d + '=' + v], '/'),
         SimOpts('questa_sim_opts', 'Questa simulate',
-                lambda p, v: '-g/' + p + '=' + v,
-                lambda d, v: None, '/'),
+                lambda p, v: ['-g/' + p + '=' + v],
+                lambda d, v: [], '/'),
         SimOpts('questa_compile_opts', 'Questa compile',
-                lambda p, v: None,
-                lambda d, v: '+define+' + d + '=' + v, '/'),
+                lambda p, v: [],
+                lambda d, v: ['+define+' + d + '=' + v], '/'),
         SimOpts('xlm_opts', 'Xcelium compile',
-                lambda p, v: '-defparam ' + p + '=' + v,
-                lambda d, v: '-define ' + d + '=' + v, '.'),
+                lambda p, v: ['-defparam',  p + '=' + v],
+                lambda d, v: ['-define', d + '=' + v], '.'),
         SimOpts('dsim_compile_opts', 'DSim compile',
-                lambda p, v: '+define+' + p + '=' + v,
-                lambda d, v: None, '/'),
+                lambda p, v: ['+define+' + p + '=' + v],
+                lambda d, v: [], '/'),
     ]
 
     argparser = argparse.ArgumentParser(description=(

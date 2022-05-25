@@ -82,7 +82,7 @@ module ibex_alu #(
 
   // prepare operand a
   always_comb begin
-    unique case(1'b1)
+    unique case (1'b1)
       multdiv_sel_i:     adder_in_a = multdiv_operand_a_i;
       adder_op_a_shift1: adder_in_a = {operand_a_i[30:0],2'b01};
       adder_op_a_shift2: adder_in_a = {operand_a_i[29:0],3'b001};
@@ -456,7 +456,7 @@ module ibex_alu #(
     assign zbe_op = (operator_i == ALU_BCOMPRESS) | (operator_i == ALU_BDECOMPRESS);
 
     always_comb begin
-      case (1'b1)
+      unique case (1'b1)
         zbe_op:      bitcnt_bits = operand_b_i;
         bitcnt_cz:   bitcnt_bits = bitcnt_bit_mask & ~bitcnt_mask_op; // clz / ctz
         default:     bitcnt_bits = operand_a_i; // cpop
@@ -977,7 +977,7 @@ module ibex_alu #(
       // clmulr_result = rev(clmul(rev(a), rev(b)))
       // clmulh_result = clmulr_result >> 1
       always_comb begin
-        case (1'b1)
+        unique case (1'b1)
           clmul_rmode: clmul_result = clmul_result_rev;
           clmul_hmode: clmul_result = {1'b0, clmul_result_rev[31:1]};
           default:     clmul_result = clmul_result_raw;

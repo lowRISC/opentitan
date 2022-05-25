@@ -18,8 +18,8 @@ See that document for integration overview within the broader OpenTitan top leve
 - 64b x 9 depth Message FIFO
 - 1600b of internal state (internally represented in two shares for 1st-order masking)
 - Performance goals of >= 72 Mb/s @ 100MHz (when entropy is available always)
-    - SHA3-512: roughly 88 MB/s at most
-    - SHA3-224: 160 MB/s at most
+    - SHA3-512: roughly 66 MB/s at most
+    - SHA3-224: 120 MB/s at most
 - Implement 1st-order masked Keccak permutations for Side-Channel Analysis (SCA) protection
 
 ## Description
@@ -35,7 +35,7 @@ The KMAC HWIP also performs the SHA3 hash functions without the authentication, 
 The KMAC IP supports various SHA3 hashing functions including SHA3 Extended Output Function (XOF) known as SHAKE functions.
 
 The KMAC HWIP implements a defense mechanism to deter SCA attacks.
-It is expected to protect against 1st order SCA attacks by implementing masked storage and Domain Oriented Masking (DOM) AND logic inside the Keccak function.
+It is expected to protect against 1st-order SCA attacks by implementing masked storage and [Domain-Oriented Masking (DOM)][] inside the Keccak function.
 
 # Theory of Operation
 
@@ -70,7 +70,7 @@ If cSHAKE mode is set, the padding logic also prepends the encoded function name
 
 Both the internal state width and the masking of the Keccak core are configurable via compile-time Verilog parameters.
 By default, 1600 bits of internal state are used and stored in two shares (1st order masking).
-The masked Keccak core takes 3 clock cycles per round if sufficient entropy is available.
+The masked Keccak core takes 4 clock cycles per round if sufficient entropy is available.
 If desired, the masking can be disabled and the internal state width can be reduced to 25, 50, or 100 bits at compile time.
 
 ## Hardware Interface
@@ -82,7 +82,8 @@ If desired, the masking can be disabled and the internal state width can be redu
 ### Keccak Round
 
 A Keccak round implements the Keccak_f function described in the SHA3 specification.
-Keccak round logic in KMAC/SHA3 HWIP not only supports 1600 bit internal states but also all possible values {25, 50, 100, 200, 400, 800, 1600} based on a parameter `Width`.
+Keccak round logic in KMAC/SHA3 HWIP not only supports 1600 bit internal states but also all possible values {50, 100, 200, 400, 800, 1600} based on a parameter `Width`.
+If masking is disabled via compile-time Verilog parameter `EnMasking`, also 25 can be selected as state width.
 Keccak permutations in the specification allow arbitrary number of rounds.
 This module, however, supports Keccak_f which always runs `12 + 2*L` rounds, where $$ L = log_2 {( {Width \over 25} )} $$ .
 For instance, 200 bits of internal state run 18 rounds.
@@ -93,19 +94,24 @@ KMAC/SHA3 instantiates the Keccak round module with 1600 bit.
 Keccak round logic has two phases inside.
 Theta, Rho, Pi functions are executed at the 1st phase.
 Chi and Iota functions run at the 2nd phase.
-If the compile-time Verilog parameter `EnMasking` is not set, the first phase and the second phase run at the same cycle.
+If the compile-time Verilog parameter `EnMasking` is not set, i.e., if masking is not enabled, the first phase and the second phase run at the same cycle.
 
-If the masking feature is enabled, Keccak round logic stores the intermediate state after processing the 1st phase.
-The stored value are fed into the Chi function at the next cycle.
-Chi function implements [Domain-Oriented Masking (DOM) AND][] logic inside to protect against the 1st order SCA attacks.
-The DOM AND logic needs entropy to disperse the power peaks.
-Chi function moves forward only when there is valid entropy.
+If masking is enabled, the Keccak round logic stores the intermediate state after processing the 1st phase.
+The stored values are then fed into the 2nd phase computing the Chi and Iota functions.
+The Chi function leverages first-order [Domain-Oriented Masking (DOM)][] to aggravate SCA attacks.
 
-The 2nd phase takes a least two cycles due to the intrinsic behavior of DOM AND logic.
-If the entropy is not ready, it may not complete the DOM AND.
-Processing a Keccak_f (1600 bit state) takes a total of 72 cycles (24 rounds X 3 cycles/round) including the 1st and 2nd phases.
+To balance circuit area and SCA hardening, the Chi function uses 800 instead 1600 DOM multipliers but the multipliers are fully pipelined.
+The Chi and Iota functions are thus separately applied to the two halves of the state and the 2nd phase takes in total three clock cycles to complete.
+In the first clock cycle of the 2nd phase, the first stage of Chi is computed for the first lane halves of the state.
+In the second clock cycle, the new first lane halves are output and written to state register.
+At the same time, the first stage of Chi is computed for the second lane halves.
+In the third clock cycle, the new second lane halves are output and written to the state register.
 
-If the masking compile time option is enabled, Keccak round logic requires an additional 1600 bit to store the state value partially inside DOM AND logic.
+The 800 DOM multipliers need 800 bits of fresh entropy for remasking.
+If fresh entropy is not available, the DOM multipliers do not move forward and the 2nd phase will take more than three clock cycles.
+Processing a Keccak_f (1600 bit state) takes a total of 96 cycles (24 rounds X 4 cycles/round) including the 1st and 2nd phases.
+
+If the masking compile time option is enabled, Keccak round logic requires an additional 3200 flip flops to store the intermediate half state inside the 800 DOM multipliers.
 In addition to that Keccak round logic needs two sets of the same Theta, Rho, and Pi functions.
 As a result, the masked Keccak round logic takes more than twice as much as area than the unmasked version of it.
 
@@ -176,11 +182,11 @@ Details are in `kmac_pkg::MsgFifoDepth` parameter.
 Default design parameters assume the system characteristics as below:
 
 - `kmac_pkg::RegLatency`: The register write takes 5 cycles.
-- `kmac_pkg::Sha3Latency`: Keccak round latency takes 72 cycles, which is the masked version of the Keccak round.
+- `kmac_pkg::Sha3Latency`: Keccak round latency takes 96 cycles, which is the masked version of the Keccak round.
 
 The message FIFO does not generate the masked message data.
 Incoming message bistream is not sensitive to the leakage.
-So if the `EnMasking` parameter is set, the second share of the message bistream is zero.
+If the `EnMasking` parameter is set and {{<regref "CFG_SHADOWED.msg_mask" >}} is enabled, the message is masked upon loading into the Keccak core using the internal entropy generator.
 The secret key, however, is stored as masked form always.
 
 ### Keccak State Access
@@ -245,28 +251,27 @@ If the `EnMasking` parameter is not set, the second share is always zero.
 
 This section explains the entropy generator inside the KMAC HWIP.
 
+KMAC has an entropy generator to provide the design with pseudo-random numbers while processing the secret key block.
+The entropy is used for both remasking the DOM multipliers inside the Chi function of the Keccak core as well as for masking the message if {{<regref "CFG_SHADOWED.msg_mask" >}} is enabled.
+
 ![Entropy block](kmac-entropy.svg)
 
-KMAC has an entropy generator to feed the random value while KMAC is processing the secret key block.
-The entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module.
-The `prim_lfsr` module in this entropy generator consumes the seed entropy from EDN.
+The entropy generator is made up of 25 32-bit linear feedback shift registers (LFSRs).
+This allows the module to generate 800 bits of fresh, pseudo-random numbers required by the 800 DOM multipliers for remasking in every clock cycle.
+To break linear shift patterns, each LFSR features a non-linear layer.
+In addition an 800-bit wide permutation spanning across all LFSRs is used.
+
+Depending on {{<regref "CFG_SHADOWED.entropy_mode" >}}, the entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module or software has to provide a seed by writing the {{<regref "ENTROPY_SEED_0" >}} - {{<regref "ENTROPY_SEED_4" >}} registers in ascending order.
+The module periodically refreshes the LFSR seeds with the new entropy from EDN.
+
+To limit the entropy consumption for reseeding, a cascaded reseeding mechanism is used.
+Per reseeding operation, the entropy generator consumes five times 32 bits of entropy from [EDN][edn], one 32-bit word at a time.
+These five 32-bit words are directly fed into LFSRs 0/5/10/15/20 for reseeding.
+At the same time, the previous states of LFSRs 0/5/10/15/20 from before the reseeding operation are permuted and then forwarded to reseed LFSRs 1/6/11/16/21.
+Similarly, the previous states of LFSRs 1/6/11/16/21 from before the reseeding operation are permuted and then forwarded to reseed LFSRs 2/7/12/17/22.
+Software can still request a complete reseed of all 25 LFSRs from EDN by subsequently triggering five reseeding operations through {{<regref "CMD.entropy_req" >}}.
 
 [edn]: {{<relref "/hw/ip/edn/doc/_index.md">}}
-
-Internal entropy size used in KMAC operation is the length of Keccak state, which is 1600 bit.
-However, EDN provides the entropy in much less size.
-Requesting multiple entropy to EDN module degrades the KMAC throughput.
-This module requests the entropy to EDN then expands the entropy to 1600 bit.
-
-This module, at first, expands the generated random values to 320 bits by stacking the values in every cycle.
-Then the 320b of the entropy is duplicated into 1600bit.
-Internally, the module stores only 320bit of entropy.
-We choose 320bit to cover one plane (5x 64bit).
-No requirement of the entropy bit size exists.
-But we have decided to prepare the entropy size bigger than the security strength and also cover one plane (5x 64bit).
-
-The module periodically refreshes the LFSR with the new entropy from EDN.
-The refresh does not block the internal entropy expansion operation.
 
 ### Error Report
 
@@ -442,4 +447,4 @@ It could restore the previous hashing state later and continue the operation.
 
 [SHA3 specification, FIPS 202]: https://csrc.nist.gov/publications/detail/fips/202/final
 [NIST SP 800-185]: https://csrc.nist.gov/publications/detail/sp/800-185/final
-[Domain-Oriented Masking (DOM) AND]: https://eprint.iacr.org/2017/395.pdf
+[Domain-Oriented Masking (DOM)]: https://eprint.iacr.org/2017/395.pdf

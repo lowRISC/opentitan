@@ -35,7 +35,7 @@
       desc: '''
            Compare cypher text from DUT with the output of a C model using same key and data.'''
            milestone: V2
-      tests: ["aes_smoke", "aes_config_error"]
+      tests: ["aes_smoke", "aes_stress", "aes_config_error"]
     }
     {
       name: key_length
@@ -47,8 +47,8 @@
     {
       name: back2back
       desc: '''
-           Randomly select the spacing between consecutive messages and blocks from 0 - n clock cycles.
-           The distribution will be weighted toward no and small gaps (0-10 cycles) but will also cover larger gaps.'''
+           Back to back Messages are not possible as the DUT need to be idle before writing a new configuration.
+           But Back2back verifies that DUT can handle back to back data blocks and other spacings.'''
       milestone: V2
       tests: ["aes_b2b", "aes_stress"]
     }
@@ -124,6 +124,15 @@
       milestone: V2
       tests: ["aes_deinit"]
     }
+    {
+      name: reseeding
+      desc: '''
+            excercise the different reseeding configuations
+            for reseeding every 8k blocks the DUT internal block counter will be manually changed to something close to 8k.
+            to provoke the reseeding within reasonable simulation time '''
+      milestone: V2
+      tests: ["aes_deinit"]
+    }
   ]
 
 
@@ -149,7 +158,7 @@ covergroups: [
            - sideload
            - prng_reseed_rate(all + illegal)
            - manual operation
-           - force zero mask
+
            All valid combinations of these will be crossed.
            '''
     }
@@ -182,6 +191,7 @@ covergroups: [
      name: reseed_cg
      desc: '''
            Cover that the different reseed configurations has been used.
+           - reseed_rate (per_1, per_64, per_8k)
            '''
     }
     {

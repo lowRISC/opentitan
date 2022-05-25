@@ -228,6 +228,8 @@ class URNDWSR(WSR):
     def set_seed(self, value: List[int]) -> None:
         self.running = True
         self.state[0] = value
+        # Step immediately to update the internal state with the new seed
+        self.step()
 
     def step(self) -> None:
         if self.running:

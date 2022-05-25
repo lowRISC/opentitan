@@ -52,7 +52,7 @@ sw_silicon_creator_mask_rom_epmp = declare_dependency(
   link_with: static_library(
     'sw_silicon_creator_mask_rom_epmp',
     sources: [
-      'mask_rom_epmp.S',
+      'mask_rom_epmp_init.S',
       'mask_rom_epmp.c',
     ],
     dependencies: [
@@ -66,6 +66,7 @@ mask_rom_epmp_test_lib = declare_dependency(
   sources: [
     hw_ip_aon_timer_reg_h,
     hw_ip_ast_reg_h,
+    hw_ip_clkmgr_reg_h,
     hw_ip_csrng_reg_h,
     hw_ip_edn_reg_h,
     hw_ip_entropy_src_reg_h,
@@ -86,8 +87,8 @@ mask_rom_epmp_test_lib = declare_dependency(
     sw_silicon_creator_lib_irq_asm,
     sw_silicon_creator_mask_rom_epmp,
     sw_lib_crt,
-    sw_lib_pinmux,
     sw_lib_runtime_print,
+    sw_lib_testing_pinmux_testutils,
     sw_lib_testing_test_status,
   ],
   link_with: static_library(
@@ -145,6 +146,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   mask_rom_epmp_test_scrambled = custom_target(
     target_name.format('scrambled'),
     command: scramble_image_command,
+    env: {'PYTHONPATH': meson.project_source_root()},
     depend_files: scramble_image_depend_files,
     input: mask_rom_epmp_test_elf,
     output: scramble_image_outputs,
@@ -169,22 +171,43 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   )
 endforeach
 
-# TODO(lowrisc/opentitan#1513): Switch to EEPROM SPI device bootstrap protocol.
-# Primitive Bootstrap
-primitive_bootstrap_lib = declare_dependency(
+sw_silicon_creator_mask_rom_bootstrap = declare_dependency(
   link_with: static_library (
-    'primitive_bootstrap_lib',
+    'sw_silicon_creator_mask_rom_bootstrap',
     sources: [
-      'primitive_bootstrap.c'
+      'bootstrap.c',
+      hw_ip_gpio_reg_h,
+      hw_ip_flash_ctrl_reg_h,
+      hw_ip_otp_ctrl_reg_h,
     ],
     dependencies: [
-      sw_lib_flash_ctrl,
-      sw_lib_dif_gpio,
-      sw_lib_dif_spi_device,
-      sw_silicon_creator_lib_driver_hmac,
-      sw_silicon_creator_lib_log,
+      sw_silicon_creator_lib_driver_flash_ctrl,
+      sw_silicon_creator_lib_driver_otp,
+      sw_silicon_creator_lib_driver_rstmgr,
+      sw_silicon_creator_lib_driver_spi_device,
     ],
   ),
+)
+
+test('sw_silicon_creator_mask_rom_bootstrap_unittest', executable(
+    'sw_silicon_creator_mask_rom_bootstrap_unittest',
+    sources: [
+      'bootstrap_unittest.cc',
+      'bootstrap.c',
+      hw_ip_gpio_reg_h,
+      hw_ip_flash_ctrl_reg_h,
+      hw_ip_otp_ctrl_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_testing_bitfield,
+      sw_lib_testing_hardened,
+    ],
+    native: true,
+    c_args: ['-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DOT_OFF_TARGET_TEST'],
+  ),
+  suite: 'mask_rom',
 )
 
 # MaskROM library.
@@ -192,6 +215,7 @@ mask_rom_lib = declare_dependency(
   sources: [
     hw_ip_aon_timer_reg_h,
     hw_ip_ast_reg_h,
+    hw_ip_clkmgr_reg_h,
     hw_ip_csrng_reg_h,
     hw_ip_edn_reg_h,
     hw_ip_entropy_src_reg_h,
@@ -205,11 +229,12 @@ mask_rom_lib = declare_dependency(
     link_args: rom_link_args,
     dependencies: [
       freestanding_headers,
-      primitive_bootstrap_lib,
       sw_silicon_creator_lib_driver_hmac,
       sw_silicon_creator_lib_driver_flash_ctrl,
+      sw_silicon_creator_lib_driver_ibex,
       sw_silicon_creator_lib_driver_keymgr,
       sw_silicon_creator_lib_driver_lifecycle,
+      sw_silicon_creator_lib_driver_otp,
       sw_silicon_creator_lib_driver_pinmux,
       sw_silicon_creator_lib_driver_retention_sram,
       sw_silicon_creator_lib_driver_rnd,
@@ -218,16 +243,19 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_driver_watchdog,
       sw_silicon_creator_lib_fake_deps,
       sw_silicon_creator_lib_irq_asm,
+      sw_silicon_creator_lib_log,
       sw_silicon_creator_lib_manifest,
       sw_silicon_creator_lib_shutdown,
+      sw_silicon_creator_mask_rom_boot_policy,
+      sw_silicon_creator_mask_rom_bootstrap,
       sw_silicon_creator_mask_rom_epmp,
       sw_silicon_creator_mask_rom_sigverify,
-      sw_silicon_creator_mask_rom_boot_policy,
       sw_lib_crt,
     ],
     link_with: static_library(
       'mask_rom_lib',
       sources: [
+        hw_ip_otp_ctrl_reg_h,
         'mask_rom.c',
       ],
       link_depends: [rom_linkfile],
@@ -278,6 +306,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   mask_rom_scrambled = custom_target(
     target_name.format('scrambled'),
     command: scramble_image_command,
+    env: {'PYTHONPATH': meson.project_source_root()},
     depend_files: scramble_image_depend_files,
     input: mask_rom_elf,
     output: scramble_image_outputs,

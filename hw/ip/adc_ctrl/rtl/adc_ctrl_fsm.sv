@@ -44,8 +44,8 @@ module adc_ctrl_fsm
   logic lp_sample_cnt_clr, lp_sample_cnt_en;
   logic [23:0] wakeup_timer_cnt_d, wakeup_timer_cnt_q;
   logic wakeup_timer_cnt_clr, wakeup_timer_cnt_en;
-  logic [NumAdcFilter-1:0] adc_ctrl_match_q, fst_lp_match;
-  logic any_fst_lp_match, stay_match;
+  logic [NumAdcFilter-1:0] adc_ctrl_match_q;
+  logic stay_match;
   logic [15:0] np_sample_cnt_d, np_sample_cnt_q;
   logic np_sample_cnt_clr, np_sample_cnt_en;
   logic [7:0] lp_sample_cnt_thresh;
@@ -149,12 +149,15 @@ module adc_ctrl_fsm
     end
   end
 
-  for (genvar k = 0 ; k < NumAdcFilter ; k++) begin : gen_fst_lp_match
-    assign fst_lp_match[k] =
-    ((lp_sample_cnt_q == 8'd1) && (fsm_state_q == LP_EVAL)) ? adc_ctrl_match_i[k] : 1'b0;
-  end
-
-  assign any_fst_lp_match = |fst_lp_match;
+  // At one point the low power periodic scan was supposed to trigger a switch to normal scan
+  // when there is "ANY" match. This does not appear to be the use case anymore, but just in case
+  // keep the code below as a reference.
+  // for (genvar k = 0 ; k < NumAdcFilter ; k++) begin : gen_fst_lp_match
+  //   assign fst_lp_match[k] =
+  //   ((lp_sample_cnt_q == 8'd1) && (fsm_state_q == LP_EVAL)) ? adc_ctrl_match_i[k] : 1'b0;
+  // end
+  //
+  // assign any_fst_lp_match = |fst_lp_match;
 
   logic ld_match;
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
@@ -177,8 +180,7 @@ module adc_ctrl_fsm
                     ((adc_ctrl_match_i == adc_ctrl_match_q) |
                     ~|adc_ctrl_match_q);
 
-  assign stay_match = any_fst_lp_match |
-                      np_match;
+  assign stay_match = np_match;
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
     if (!rst_aon_ni) begin

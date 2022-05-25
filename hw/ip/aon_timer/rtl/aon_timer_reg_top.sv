@@ -55,18 +55,31 @@ module aon_timer_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [11:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(12)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -608,6 +621,9 @@ module aon_timer_reg_top (
 
 
   // R[wdog_ctrl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wdog_ctrl_gated_we;
+  assign aon_wdog_ctrl_gated_we = aon_wdog_ctrl_we & aon_wdog_ctrl_regwen;
   //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -618,7 +634,7 @@ module aon_timer_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wdog_ctrl_we & aon_wdog_ctrl_regwen),
+    .we     (aon_wdog_ctrl_gated_we),
     .wd     (aon_wdog_ctrl_wdata[0]),
 
     // from internal hardware
@@ -643,7 +659,7 @@ module aon_timer_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wdog_ctrl_we & aon_wdog_ctrl_regwen),
+    .we     (aon_wdog_ctrl_gated_we),
     .wd     (aon_wdog_ctrl_wdata[1]),
 
     // from internal hardware
@@ -660,6 +676,9 @@ module aon_timer_reg_top (
 
 
   // R[wdog_bark_thold]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wdog_bark_thold_gated_we;
+  assign aon_wdog_bark_thold_gated_we = aon_wdog_bark_thold_we & aon_wdog_bark_thold_regwen;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -669,7 +688,7 @@ module aon_timer_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wdog_bark_thold_we & aon_wdog_bark_thold_regwen),
+    .we     (aon_wdog_bark_thold_gated_we),
     .wd     (aon_wdog_bark_thold_wdata[31:0]),
 
     // from internal hardware
@@ -686,6 +705,9 @@ module aon_timer_reg_top (
 
 
   // R[wdog_bite_thold]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wdog_bite_thold_gated_we;
+  assign aon_wdog_bite_thold_gated_we = aon_wdog_bite_thold_we & aon_wdog_bite_thold_regwen;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -695,7 +717,7 @@ module aon_timer_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wdog_bite_thold_we & aon_wdog_bite_thold_regwen),
+    .we     (aon_wdog_bite_thold_gated_we),
     .wd     (aon_wdog_bite_thold_wdata[31:0]),
 
     // from internal hardware
@@ -886,6 +908,8 @@ module aon_timer_reg_top (
                (addr_hit[10] & (|(AON_TIMER_PERMIT[10] & ~reg_be))) |
                (addr_hit[11] & (|(AON_TIMER_PERMIT[11] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
@@ -920,6 +944,23 @@ module aon_timer_reg_top (
   assign intr_test_wdog_timer_bark_wd = reg_wdata[1];
   assign wkup_cause_we = addr_hit[11] & reg_we & !reg_error;
 
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = alert_test_we;
+    reg_we_check[1] = wkup_ctrl_we;
+    reg_we_check[2] = wkup_thold_we;
+    reg_we_check[3] = wkup_count_we;
+    reg_we_check[4] = wdog_regwen_we;
+    reg_we_check[5] = wdog_ctrl_we;
+    reg_we_check[6] = wdog_bark_thold_we;
+    reg_we_check[7] = wdog_bite_thold_we;
+    reg_we_check[8] = wdog_count_we;
+    reg_we_check[9] = intr_state_we;
+    reg_we_check[10] = intr_test_we;
+    reg_we_check[11] = wkup_cause_we;
+  end
 
   // Read data return
   always_comb begin

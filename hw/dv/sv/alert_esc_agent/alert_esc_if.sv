@@ -27,7 +27,7 @@ interface alert_esc_if(input clk, input rst_n);
   prim_esc_pkg::esc_rx_t     esc_rx_int;   // internal esc_rx
 
   wire                    async_clk;
-  bit                     is_async, is_alert;
+  bit                     is_async, is_alert, is_active;
   dv_utils_pkg::if_mode_e if_mode;
   clk_rst_if              clk_rst_async_if(.clk(async_clk), .rst_n(rst_n));
 
@@ -79,10 +79,10 @@ interface alert_esc_if(input clk, input rst_n);
     input esc_rx;
   endclocking
 
-  assign alert_tx = (if_mode == dv_utils_pkg::Host && is_alert)    ? alert_tx_int : 'z;
-  assign alert_rx = (if_mode == dv_utils_pkg::Device && is_alert)  ? alert_rx_int : 'z;
-  assign esc_tx   = (if_mode == dv_utils_pkg::Host && !is_alert)   ? esc_tx_int   : 'z;
-  assign esc_rx   = (if_mode == dv_utils_pkg::Device && !is_alert) ? esc_rx_int   : 'z;
+  assign alert_tx = (if_mode == dv_utils_pkg::Host && is_alert && is_active)   ? alert_tx_int : 'z;
+  assign alert_rx = (if_mode == dv_utils_pkg::Device && is_alert && is_active) ? alert_rx_int : 'z;
+  assign esc_tx = (if_mode == dv_utils_pkg::Host && !is_alert && is_active)   ? esc_tx_int   : 'z;
+  assign esc_rx = (if_mode == dv_utils_pkg::Device && !is_alert && is_active) ? esc_rx_int   : 'z;
 
   task automatic wait_ack_complete();
     while (alert_tx_final.alert_p === 1'b1) @(monitor_cb);

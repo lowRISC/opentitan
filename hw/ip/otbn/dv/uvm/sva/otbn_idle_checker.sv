@@ -25,6 +25,20 @@ module otbn_idle_checker
   input logic [ExtWLEN-1:0] dmem_rdata_bus
 );
 
+  // Several of the internal signals that we snoop from the otbn module run "a cycle early". This
+  // lets the design flop some outputs, but we need to do some converting here to get everything to
+  // line up.
+  logic rotating_keys, done;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rotating_keys <= 1'b0;
+      done          <= 1'b0;
+    end else begin
+      rotating_keys <= otbn_dmem_scramble_key_req_busy_i | otbn_imem_scramble_key_req_busy_i;
+      done          <= done_i;
+    end
+  end
+
   // Detect writes to CMD. They only take effect if we are in state IDLE
   logic cmd_operation, start_req, do_start;
 
@@ -38,7 +52,7 @@ module otbn_idle_checker
 
   // Our model of whether OTBN is running or not. We start on do_start and stop on done.
   logic running_qq, running_q, running_d;
-  always @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       running_q  <= 1'b0;
       running_qq <= 1'b0;
@@ -47,21 +61,20 @@ module otbn_idle_checker
       running_qq <= running_q;
     end
   end
-  assign running_d = (do_start & ~running_q) | (running_q & ~done_i);
+  assign running_d = (do_start & ~running_q) | (running_q & ~done);
 
-  // We should never see done_i when we're not already running. The converse assertion, that we
-  // never see cmd_start when we are running, need not be true: the host can do that if it likes and
-  // OTBN will ignore it. But we should never see do_start when we think we're running.
-  `ASSERT(RunningIfDone_A, done_i |-> running_q)
+  // We should never see done when we're not already running. The converse assertion, that we never
+  // see cmd_start when we are running, need not be true: the host can do that if it likes and OTBN
+  // will ignore it. But we should never see do_start when we think we're running.
+  `ASSERT(RunningIfDone_A, done |-> running_q)
   `ASSERT(IdleIfStart_A, do_start |-> !running_q)
 
   // Key rotation (used in the logic below) can delay the idle signal. This signal is flopped an
   // extra time to stay "busy" for an extra cycle, so we mirror that here.
-  logic rotating_keys, rotating_keys_q, keys_busy;
-  assign rotating_keys = otbn_dmem_scramble_key_req_busy_i | otbn_imem_scramble_key_req_busy_i;
+  logic rotating_keys_q, keys_busy;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      rotating_keys_q <= 0;
+      rotating_keys_q <= 1'b0;
     end else begin
       rotating_keys_q <= rotating_keys;
     end
@@ -104,18 +117,26 @@ module otbn_idle_checker
           ((status_q_i == otbn_pkg::StatusLocked) && keys_busy) |->
           (idle_o_i == prim_mubi_pkg::MuBi4False))
   `ASSERT(IdleIfLockedAndNotRotatingKeys_A,
-          ((status_q_i == otbn_pkg::StatusLocked) && !keys_busy) |->
+          ((status_q_i == otbn_pkg::StatusLocked) && !keys_busy) |=>
           (idle_o_i == prim_mubi_pkg::MuBi4True))
 
   `ASSERT(NoStartKeyRotationWhenLocked_A,
-          (status_q_i == otbn_pkg::StatusLocked) |-> !$rose(keys_busy))
+          (status_q_i == otbn_pkg::StatusLocked) |=> !$rose(keys_busy))
 
   `ASSERT(OnlyKeyRotationWhenRunningOrLocked_A,
           keys_busy |-> (running_q || (status_q_i == otbn_pkg::StatusLocked)))
 
   `ASSERT(NotRunningWhenLocked_A,
-          !((status_q_i == otbn_pkg::StatusLocked) && running_q))
+          !((status_q_i == otbn_pkg::StatusLocked) && running_d))
 
-   `ASSERT(NoMemRdataWhenBusy_A, running_q |-> imem_rdata_bus == 'b0 && dmem_rdata_bus == 'b0)
+  // When OTBN locks bus read data integrity is forced to the correct value for 0 data (so reads to
+  // a locked OTBN don't cause an integrity error). There is a small window where running_q is set
+  // with status_q reporting 'StatusLocked'. So expected bus read data depends upon locked status
+  // when running.
+  `ASSERT(NoMemRdataWhenBusy_A,
+    running_q |-> ((status_q_i == otbn_pkg::StatusLocked) ?
+      imem_rdata_bus == EccZeroWord && dmem_rdata_bus == EccWideZeroWord :
+      imem_rdata_bus == 'b0 && dmem_rdata_bus == 'b0))
+
 
 endmodule

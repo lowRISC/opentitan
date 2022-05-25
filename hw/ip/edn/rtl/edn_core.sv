@@ -486,7 +486,8 @@ module edn_core import edn_pkg::*;
     .rready_i (sfifo_rescmd_pop),
     .rdata_o  (sfifo_rescmd_rdata),
     .full_o   (sfifo_rescmd_full),
-    .depth_o  (sfifo_rescmd_depth)
+    .depth_o  (sfifo_rescmd_depth),
+    .err_o    ()
   );
 
   // feedback cmd back into rescmd fifo
@@ -529,7 +530,8 @@ module edn_core import edn_pkg::*;
     .rready_i (sfifo_gencmd_pop),
     .rdata_o  (sfifo_gencmd_rdata),
     .full_o   (sfifo_gencmd_full),
-    .depth_o  (sfifo_gencmd_depth)
+    .depth_o  (sfifo_gencmd_depth),
+    .err_o    ()
   );
 
   // feedback cmd back into gencmd fifo

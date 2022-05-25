@@ -13,22 +13,23 @@ module rv_core_ibex
   import rv_core_ibex_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn     = {NumAlerts{1'b1}},
-  parameter bit                   PMPEnable        = 1'b0,
+  parameter bit                   PMPEnable        = 1'b1,
   parameter int unsigned          PMPGranularity   = 0,
   parameter int unsigned          PMPNumRegions    = 16,
   parameter int unsigned          MHPMCounterNum   = 10,
   parameter int unsigned          MHPMCounterWidth = 32,
   parameter bit                   RV32E            = 0,
   parameter ibex_pkg::rv32m_e     RV32M            = ibex_pkg::RV32MSingleCycle,
-  parameter ibex_pkg::rv32b_e     RV32B            = ibex_pkg::RV32BNone,
+  parameter ibex_pkg::rv32b_e     RV32B            = ibex_pkg::RV32BOTEarlGrey,
   parameter ibex_pkg::regfile_e   RegFile          = ibex_pkg::RegFileFF,
   parameter bit                   BranchTargetALU  = 1'b1,
   parameter bit                   WritebackStage   = 1'b1,
   parameter bit                   ICache           = 1'b1,
   parameter bit                   ICacheECC        = 1'b1,
   parameter bit                   ICacheScramble   = 1'b1,
-  parameter bit                   BranchPredictor  = 1'b1,
+  parameter bit                   BranchPredictor  = 1'b0,
   parameter bit                   DbgTriggerEn     = 1'b1,
+  parameter int unsigned          DbgHwBreakNum    = 4,
   parameter bit                   SecureIbex       = 1'b1,
   parameter ibex_pkg::lfsr_seed_t RndCnstLfsrSeed  = ibex_pkg::RndCnstLfsrSeedDefault,
   parameter ibex_pkg::lfsr_perm_t RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
@@ -157,11 +158,6 @@ module rv_core_ibex
   tl_h2d_t tl_d_ibex2fifo;
   tl_d2h_t tl_d_fifo2ibex;
 
-  // Intermediate TL signals to connect an sram used in simulations.
-  tlul_pkg::tl_h2d_t tl_d_o_int;
-  tlul_pkg::tl_d2h_t tl_d_i_int;
-
-
 `ifdef RVFI
   logic        rvfi_valid;
   logic [63:0] rvfi_order;
@@ -187,6 +183,10 @@ module rv_core_ibex
   logic [31:0] rvfi_mem_rdata;
   logic [31:0] rvfi_mem_wdata;
 `endif
+
+  // core sleeping
+  logic core_sleep;
+
 
   // errors and core alert events
   logic ibus_intg_err, dbus_intg_err;
@@ -351,10 +351,20 @@ module rv_core_ibex
     .BranchTargetALU          ( BranchTargetALU          ),
     .WritebackStage           ( WritebackStage           ),
     .ICache                   ( ICache                   ),
+    // Our automatic SEC_CM label check doesn't look at vendored code so the SEC_CM labels need
+    // to be mentioned here. The real locations can be found by grepping the vendored code.
+    // TODO(#10071): this should be fixed.
+    // SEC_CM: ICACHE.MEM.INTEGRITY
     .ICacheECC                ( ICacheECC                ),
+    // SEC_CM: ICACHE.MEM.SCRAMBLE, SCRAMBLE.KEY.SIDELOAD
     .ICacheScramble           ( ICacheScramble           ),
     .BranchPredictor          ( BranchPredictor          ),
     .DbgTriggerEn             ( DbgTriggerEn             ),
+    .DbgHwBreakNum            ( DbgHwBreakNum            ),
+    // SEC_CM: LOGIC.SHADOW
+    // SEC_CM: PC.CTRL_FLOW.CONSISTENCY, CTRL_FLOW.UNPREDICTABLE, CORE.DATA_REG_SW.SCA
+    // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC, EXCEPTION.CTRL_FLOW.LOCAL_ESC
+    // SEC_CM: DATA_REG_SW.INTEGRITY, DATA_REG_SW.GLITCH_DETECT
     .SecureIbex               ( SecureIbex               ),
     .RndCnstLfsrSeed          ( RndCnstLfsrSeed          ),
     .RndCnstLfsrPerm          ( RndCnstLfsrPerm          ),
@@ -443,8 +453,17 @@ module rv_core_ibex
     .alert_minor_o          (alert_minor),
     .alert_major_internal_o (alert_major_internal),
     .alert_major_bus_o      (alert_major_bus),
-    .core_sleep_o           (pwrmgr_o.core_sleeping)
+    .core_sleep_o           (core_sleep)
   );
+
+  prim_buf #(
+    .Width(1)
+  ) u_core_sleeping_buf (
+    .in_i(core_sleep),
+    .out_o(pwrmgr_o.core_sleeping)
+  );
+
+
 
   ibex_pkg::crash_dump_t crash_dump_previous;
   logic previous_valid;
@@ -571,27 +590,12 @@ module rv_core_ibex
     .rst_ni,
     .tl_h_i      (tl_d_ibex2fifo),
     .tl_h_o      (tl_d_fifo2ibex),
-    .tl_d_o      (tl_d_o_int),
-    .tl_d_i      (tl_d_i_int),
+    .tl_d_o      (cored_tl_h_o),
+    .tl_d_i      (cored_tl_h_i),
     .spare_req_i (1'b0),
     .spare_req_o (),
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
-
-  //
-  // Interception point for connecting simulation SRAM by disconnecting the tl_d output. The
-  // disconnection is done only if `SYNTHESIS is NOT defined AND `RV_CORE_IBEX_SIM_SRAM is
-  // defined.
-  //
-`ifdef RV_CORE_IBEX_SIM_SRAM
-`ifdef SYNTHESIS
-  // Induce a compilation error by instantiating a non-existent module.
-  illegal_preprocessor_branch_taken u_illegal_preprocessor_branch_taken();
-`endif
-`else
-  assign cored_tl_h_o = tl_d_o_int;
-  assign tl_d_i_int = cored_tl_h_i;
-`endif
 
 `ifdef RVFI
   ibex_tracer ibex_tracer_i (
@@ -631,6 +635,8 @@ module rv_core_ibex
   //////////////////////////////////
 
   logic intg_err;
+  tlul_pkg::tl_h2d_t tl_win_h2d;
+  tlul_pkg::tl_d2h_t tl_win_d2h;
   rv_core_ibex_cfg_reg_top u_reg_cfg (
     .clk_i,
     .rst_ni,
@@ -639,6 +645,8 @@ module rv_core_ibex
     .reg2hw,
     .hw2reg,
     .intg_err_o (intg_err),
+    .tl_win_o(tl_win_h2d),
+    .tl_win_i(tl_win_d2h),
     .devmode_i  (1'b1) // connect to real devmode signal in the future
   );
 
@@ -794,4 +802,50 @@ module rv_core_ibex
   // fpga build info hook-up
   assign hw2reg.fpga_info.d = fpga_info_i;
 
+  /////////////////////////////////////
+  // The carved out space is for DV emulation purposes only
+  /////////////////////////////////////
+
+  import tlul_pkg::tl_h2d_t;
+  import tlul_pkg::tl_d2h_t;
+  localparam int TlH2DWidth = $bits(tl_h2d_t);
+  localparam int TlD2HWidth = $bits(tl_d2h_t);
+
+  logic [TlH2DWidth-1:0] tl_win_h2d_int;
+  logic [TlD2HWidth-1:0] tl_win_d2h_int;
+  tl_d2h_t tl_win_d2h_err_rsp;
+
+  prim_buf #(
+    .Width(TlH2DWidth)
+  ) u_tlul_req_buf (
+    .in_i(tl_win_h2d),
+    .out_o(tl_win_h2d_int)
+  );
+
+  prim_buf #(
+    .Width(TlD2HWidth)
+  ) u_tlul_rsp_buf (
+    .in_i(tl_win_d2h_err_rsp),
+    .out_o(tl_win_d2h_int)
+  );
+
+  // Interception point for connecting simulation SRAM by disconnecting the tl_d output. The
+  // disconnection is done only if `SYNTHESIS is NOT defined AND `RV_CORE_IBEX_SIM_SRAM is
+  // defined.
+  // This define is used only for verilator as verilator does not support forces.
+`ifdef RV_CORE_IBEX_SIM_SRAM
+`ifdef SYNTHESIS
+  // Induce a compilation error by instantiating a non-existent module.
+  illegal_preprocessor_branch_taken u_illegal_preprocessor_branch_taken();
+`endif
+`else
+  assign tl_win_d2h = tl_d2h_t'(tl_win_d2h_int);
+`endif
+
+  tlul_err_resp u_sim_win_rsp (
+    .clk_i,
+    .rst_ni,
+    .tl_h_i(tl_h2d_t'(tl_win_h2d_int)),
+    .tl_h_o(tl_win_d2h_err_rsp)
+  );
 endmodule

@@ -149,6 +149,19 @@
    `COVER(__name, __prop, __clk, __rst)                                                     \
 `endif
 
+// FPV assertion that proves that the FSM control flow is linear (no loops)
+// The sequence triggers whenever the state changes and stores the current state as "initial_state".
+// Then thereafter we must never see that state again until reset.
+`define ASSERT_FPV_LINEAR_FSM(__name, __state, __type, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+  `ifdef INC_ASSERT                                                                                              \
+      property __name``_p;                                                                                       \
+        __type initial_state;                                                                                    \
+        (!$stable(__state), initial_state = $past(__state)) |->                                                  \
+            always (__state != initial_state);                                                                   \
+      endproperty                                                                                                \
+    `ASSERT(__name, __name``_p, __clk, __rst)                                                                    \
+  `endif
+
 `include "prim_assert_sec_cm.svh"
 `include "prim_flop_macros.sv"
 

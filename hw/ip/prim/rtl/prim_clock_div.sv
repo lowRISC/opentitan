@@ -5,7 +5,7 @@
 `include "prim_assert.sv"
 
 module prim_clock_div #(
-  parameter int Divisor = 2,
+  parameter int unsigned Divisor = 2,
   parameter logic ResetValue = 0
 ) (
   input clk_i,
@@ -72,8 +72,8 @@ module prim_clock_div #(
 
   end else begin : gen_div
 
-    localparam int ToggleCnt = Divisor / 2;
-    localparam int CntWidth = $clog2(ToggleCnt);
+    localparam int unsigned ToggleCnt = Divisor / 2;
+    localparam int unsigned CntWidth = $clog2(ToggleCnt);
     logic [CntWidth-1:0] cnt;
     logic [CntWidth-1:0] limit;
 

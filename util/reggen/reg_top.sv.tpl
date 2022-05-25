@@ -223,18 +223,33 @@ module ${mod_name} (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  ## Note that the write-enables are per register.
+  ## Hence, we reduce the byte address to a word address here.
+  logic [${len(regs_flat)-1}:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(${len(regs_flat)})
+  ) u_prim_reg_we_check (
+    .clk_i(${reg_clk_expr}),
+    .rst_ni(${reg_rst_expr}),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge ${reg_clk_expr} or negedge ${reg_rst_expr}) begin
     if (!${reg_rst_expr}) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 % else:
   // Since there are no registers in this block, commands are routed through to windows which
   // can report their own integrity errors.
@@ -534,6 +549,35 @@ ${reg_hdr}
   );
         % endif
       % endif
+<%
+  # We usually use the REG_we signal, but use REG_re for RC fields
+  # (which get updated on a read, not a write)
+  clk_base_name = f"{sr.async_clk.clock_base_name}_" if sr.async_clk else ""
+  we_suffix = 're' if field.swaccess.swrd() == SwRdAccess.RC else 'we'
+  we_signal = f'{clk_base_name}{sr.name.lower()}_{we_suffix}'
+
+  if sr.async_clk and sr.regwen:
+    we_expr = f'{we_signal} & {clk_base_name}{sr.name.lower()}_regwen'
+  elif sr.regwen:
+    we_expr = f'{we_signal} & {sr.regwen.lower()}_qs'
+  else:
+    we_expr = we_signal
+
+  we_expr_regwen_gated = f'{clk_base_name}{sr.name.lower()}_gated_{we_suffix}'
+%>\
+  ## Only create this helper signal if there actually is a REGWEN gate.
+  ## Otherwise the WE signal is connected directly to the register.
+  % if sr.regwen and sr.needs_we():
+  // Create REGWEN-gated WE signal
+  logic ${we_expr_regwen_gated};
+<%
+    # Wrap the assignment if the statement is too long
+    assignment = f'assign {we_expr_regwen_gated} = {we_expr};'
+    if len(assignment) > 100-2:
+      assignment = f'assign {we_expr_regwen_gated} =\n    {we_expr};'
+%>\
+  ${assignment}
+  % endif
       % for fidx, field in enumerate(sr.fields):
 <%
           fld_name = field.name.lower()
@@ -579,6 +623,8 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
   assign wr_error = 1'b0;
   % endif\
 
+
+  // Generate write-enables
   % for i, r in enumerate(regs_flat):
 ${reg_enable_gen(r, i)}\
     % if len(r.fields) == 1:
@@ -589,6 +635,33 @@ ${field_wd_gen(f, r.name.lower() + "_" + f.name.lower(), r.hwext, r.shadowed, r.
       % endfor
     % endif
   % endfor
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    % for i, r in enumerate(regs_flat):
+<%
+    # The WE checking logic does NOT protect RC fields.
+    if r.needs_we():
+      # In case this is an asynchronous register, the WE signal is taken from
+      # the CDC primitive input. This could be enhanced in the future to provide
+      # more protection for asynchronous registers.
+      if r.async_clk or not r.regwen:
+        we_expr = f'{r.name.lower()}_we'
+      else:
+        we_expr = f'{r.name.lower()}_gated_we'
+    else:
+      we_expr = "1'b0"
+
+    assignment = f'reg_we_check[{i}] = {we_expr};'
+
+    # Wrap the assignment if the statement is too long
+    if len(assignment) > 100-4:
+      assignment = f'reg_we_check[{i}] =\n        {we_expr};'
+%>\
+    ${assignment}
+    % endfor
+  end
 
   // Read data return
   always_comb begin
@@ -782,14 +855,9 @@ ${bits.msb}\
       # We usually use the REG_we signal, but use REG_re for RC fields
       # (which get updated on a read, not a write)
       we_suffix = 're' if field.swaccess.swrd() == SwRdAccess.RC else 'we'
-      we_signal = f'{clk_base_name}{reg_name}_{we_suffix}'
-
-      if reg.async_clk and reg.regwen:
-        we_expr = f'{we_signal} & {clk_base_name}{reg_name}_regwen'
-      elif reg.regwen:
-        we_expr = f'{we_signal} & {reg.regwen.lower()}_qs'
-      else:
-        we_expr = we_signal
+      # If this is a REGWEN gated field, need to use the gated WE signal.
+      gated_suffix = '_gated' if reg.regwen else ''
+      we_expr = f'{clk_base_name}{reg_name}{gated_suffix}_{we_suffix}'
 
       # when async, pick from the cdc handled data
       wd_expr = f'{finst_name}_wd'
@@ -966,14 +1034,6 @@ ${space}\
 % else:
         ${rd_name}[${str_bits_sv(field.bits)}] = '0;
 % endif
-</%def>\
-<%def name="reg_enable_gen(reg, idx)">\
-  % if reg.needs_re():
-  assign ${reg.name.lower()}_re = addr_hit[${idx}] & reg_re & !reg_error;
-  % endif
-  % if reg.needs_we():
-  assign ${reg.name.lower()}_we = addr_hit[${idx}] & reg_we & !reg_error;
-  % endif
 </%def>\
 <%def name="reg_cdc_gen(field, sig_name, hwext, shadowed, idx)">\
 <%

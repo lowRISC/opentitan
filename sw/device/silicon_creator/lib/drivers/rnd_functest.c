@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/test_main.h"

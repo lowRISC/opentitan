@@ -37,6 +37,9 @@
   // Add additional tops for simulation.
   sim_tops: ["edn_bind", "edn_cov_bind"]
 
+  // TODO: Redo for V2S
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/edn/dv/cov/edn_UNR.vRefine"]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 

@@ -25,9 +25,13 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   virtual pins_if#(3) sw_straps_vif;
   virtual pins_if#(1) rst_n_mon_vif;
   virtual clk_rst_if  cpu_clk_rst_vif;
+  virtual pins_if#(1) pinmux_wkup_vif;
+  virtual pins_if#(1) por_rstn_vif;
+  virtual pins_if#(1) pwrb_in_vif;
 
   // pwrmgr probe interface
   virtual pwrmgr_low_power_if   pwrmgr_low_power_vif;
+
   // Memory backdoor util instances for all memory instances in the chip.
   mem_bkdr_util mem_bkdr_util_h[chip_mem_e];
 
@@ -99,13 +103,13 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   `uvm_object_utils_end
 
   constraint clk_freq_mhz_c {
-    clk_freq_mhz == 100;
+    clk_freq_mhz inside {48, 96};
   }
 
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-    int extclk_freq_mhz;
+    ext_clk_type_e ext_clk_type = UseInternalClk;
     has_devmode = 0;
     list_of_alerts = chip_env_pkg::LIST_OF_ALERTS;
 
@@ -141,12 +145,13 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
 
     // Set external clock frequency.
-    if ($value$plusargs("extclk_freq_mhz=%d", extclk_freq_mhz)) begin
-      `DV_CHECK(extclk_freq_mhz inside {48, 100},
-                $sformatf("Unexpected extclk frequency %0d: valid numbers are 100 and 48",
-                          extclk_freq_mhz))
-        clk_freq_mhz = extclk_freq_mhz;
-    end
+    `DV_GET_ENUM_PLUSARG(ext_clk_type_e, ext_clk_type, ext_clk_type)
+    case (ext_clk_type)
+      UseInternalClk: ; // clk_freq_mhz can be a random value
+      ExtClkLowSpeed:  clk_freq_mhz = 48;
+      ExtClkHighSpeed: clk_freq_mhz = 96;
+      default: `uvm_fatal(`gfn, $sformatf("Unexpected ext_clk_type: %s", ext_clk_type.name))
+    endcase
   endfunction
 
   // Apply RAL fixes before it is locked.
@@ -207,10 +212,15 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
       end else if ("signed" inside {sw_image_flags[i]}) begin
         // TODO: support multiple signing keys. See "signing_keys" in
         // `sw/device/meson.build` for options.
-        sw_images[i] = $sformatf("%0s/%0s_%0s.test_key_0.signed",
+        sw_images[i] = $sformatf("%0s/%0s_prog_%0s.test_key_0.signed",
           sw_build_bin_dir, sw_images[i], sw_build_device);
       end else begin
-        sw_images[i] = $sformatf("%0s/%0s_%0s", sw_build_bin_dir, sw_images[i], sw_build_device);
+        if (i == SwTypeTest) begin
+          sw_images[i] = $sformatf("%0s/%0s_prog_%0s", sw_build_bin_dir, sw_images[i],
+            sw_build_device);
+        end else begin
+          sw_images[i] = $sformatf("%0s/%0s_%0s", sw_build_bin_dir, sw_images[i], sw_build_device);
+        end
       end
     end
   endfunction

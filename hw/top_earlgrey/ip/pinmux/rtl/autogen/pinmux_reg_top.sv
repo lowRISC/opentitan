@@ -55,18 +55,31 @@ module pinmux_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [567:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(568)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -5550,6 +5563,9 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg mio_periph_insel
   // R[mio_periph_insel_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_0_gated_we;
+  assign mio_periph_insel_0_gated_we = mio_periph_insel_0_we & mio_periph_insel_regwen_0_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5559,7 +5575,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_0_we & mio_periph_insel_regwen_0_qs),
+    .we     (mio_periph_insel_0_gated_we),
     .wd     (mio_periph_insel_0_wd),
 
     // from internal hardware
@@ -5577,6 +5593,9 @@ module pinmux_reg_top (
 
   // Subregister 1 of Multireg mio_periph_insel
   // R[mio_periph_insel_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_1_gated_we;
+  assign mio_periph_insel_1_gated_we = mio_periph_insel_1_we & mio_periph_insel_regwen_1_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5586,7 +5605,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_1_we & mio_periph_insel_regwen_1_qs),
+    .we     (mio_periph_insel_1_gated_we),
     .wd     (mio_periph_insel_1_wd),
 
     // from internal hardware
@@ -5604,6 +5623,9 @@ module pinmux_reg_top (
 
   // Subregister 2 of Multireg mio_periph_insel
   // R[mio_periph_insel_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_2_gated_we;
+  assign mio_periph_insel_2_gated_we = mio_periph_insel_2_we & mio_periph_insel_regwen_2_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5613,7 +5635,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_2_we & mio_periph_insel_regwen_2_qs),
+    .we     (mio_periph_insel_2_gated_we),
     .wd     (mio_periph_insel_2_wd),
 
     // from internal hardware
@@ -5631,6 +5653,9 @@ module pinmux_reg_top (
 
   // Subregister 3 of Multireg mio_periph_insel
   // R[mio_periph_insel_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_3_gated_we;
+  assign mio_periph_insel_3_gated_we = mio_periph_insel_3_we & mio_periph_insel_regwen_3_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5640,7 +5665,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_3_we & mio_periph_insel_regwen_3_qs),
+    .we     (mio_periph_insel_3_gated_we),
     .wd     (mio_periph_insel_3_wd),
 
     // from internal hardware
@@ -5658,6 +5683,9 @@ module pinmux_reg_top (
 
   // Subregister 4 of Multireg mio_periph_insel
   // R[mio_periph_insel_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_4_gated_we;
+  assign mio_periph_insel_4_gated_we = mio_periph_insel_4_we & mio_periph_insel_regwen_4_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5667,7 +5695,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_4_we & mio_periph_insel_regwen_4_qs),
+    .we     (mio_periph_insel_4_gated_we),
     .wd     (mio_periph_insel_4_wd),
 
     // from internal hardware
@@ -5685,6 +5713,9 @@ module pinmux_reg_top (
 
   // Subregister 5 of Multireg mio_periph_insel
   // R[mio_periph_insel_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_5_gated_we;
+  assign mio_periph_insel_5_gated_we = mio_periph_insel_5_we & mio_periph_insel_regwen_5_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5694,7 +5725,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_5_we & mio_periph_insel_regwen_5_qs),
+    .we     (mio_periph_insel_5_gated_we),
     .wd     (mio_periph_insel_5_wd),
 
     // from internal hardware
@@ -5712,6 +5743,9 @@ module pinmux_reg_top (
 
   // Subregister 6 of Multireg mio_periph_insel
   // R[mio_periph_insel_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_6_gated_we;
+  assign mio_periph_insel_6_gated_we = mio_periph_insel_6_we & mio_periph_insel_regwen_6_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5721,7 +5755,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_6_we & mio_periph_insel_regwen_6_qs),
+    .we     (mio_periph_insel_6_gated_we),
     .wd     (mio_periph_insel_6_wd),
 
     // from internal hardware
@@ -5739,6 +5773,9 @@ module pinmux_reg_top (
 
   // Subregister 7 of Multireg mio_periph_insel
   // R[mio_periph_insel_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_7_gated_we;
+  assign mio_periph_insel_7_gated_we = mio_periph_insel_7_we & mio_periph_insel_regwen_7_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5748,7 +5785,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_7_we & mio_periph_insel_regwen_7_qs),
+    .we     (mio_periph_insel_7_gated_we),
     .wd     (mio_periph_insel_7_wd),
 
     // from internal hardware
@@ -5766,6 +5803,9 @@ module pinmux_reg_top (
 
   // Subregister 8 of Multireg mio_periph_insel
   // R[mio_periph_insel_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_8_gated_we;
+  assign mio_periph_insel_8_gated_we = mio_periph_insel_8_we & mio_periph_insel_regwen_8_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5775,7 +5815,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_8_we & mio_periph_insel_regwen_8_qs),
+    .we     (mio_periph_insel_8_gated_we),
     .wd     (mio_periph_insel_8_wd),
 
     // from internal hardware
@@ -5793,6 +5833,9 @@ module pinmux_reg_top (
 
   // Subregister 9 of Multireg mio_periph_insel
   // R[mio_periph_insel_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_9_gated_we;
+  assign mio_periph_insel_9_gated_we = mio_periph_insel_9_we & mio_periph_insel_regwen_9_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5802,7 +5845,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_9_we & mio_periph_insel_regwen_9_qs),
+    .we     (mio_periph_insel_9_gated_we),
     .wd     (mio_periph_insel_9_wd),
 
     // from internal hardware
@@ -5820,6 +5863,9 @@ module pinmux_reg_top (
 
   // Subregister 10 of Multireg mio_periph_insel
   // R[mio_periph_insel_10]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_10_gated_we;
+  assign mio_periph_insel_10_gated_we = mio_periph_insel_10_we & mio_periph_insel_regwen_10_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5829,7 +5875,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_10_we & mio_periph_insel_regwen_10_qs),
+    .we     (mio_periph_insel_10_gated_we),
     .wd     (mio_periph_insel_10_wd),
 
     // from internal hardware
@@ -5847,6 +5893,9 @@ module pinmux_reg_top (
 
   // Subregister 11 of Multireg mio_periph_insel
   // R[mio_periph_insel_11]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_11_gated_we;
+  assign mio_periph_insel_11_gated_we = mio_periph_insel_11_we & mio_periph_insel_regwen_11_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5856,7 +5905,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_11_we & mio_periph_insel_regwen_11_qs),
+    .we     (mio_periph_insel_11_gated_we),
     .wd     (mio_periph_insel_11_wd),
 
     // from internal hardware
@@ -5874,6 +5923,9 @@ module pinmux_reg_top (
 
   // Subregister 12 of Multireg mio_periph_insel
   // R[mio_periph_insel_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_12_gated_we;
+  assign mio_periph_insel_12_gated_we = mio_periph_insel_12_we & mio_periph_insel_regwen_12_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5883,7 +5935,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_12_we & mio_periph_insel_regwen_12_qs),
+    .we     (mio_periph_insel_12_gated_we),
     .wd     (mio_periph_insel_12_wd),
 
     // from internal hardware
@@ -5901,6 +5953,9 @@ module pinmux_reg_top (
 
   // Subregister 13 of Multireg mio_periph_insel
   // R[mio_periph_insel_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_13_gated_we;
+  assign mio_periph_insel_13_gated_we = mio_periph_insel_13_we & mio_periph_insel_regwen_13_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5910,7 +5965,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_13_we & mio_periph_insel_regwen_13_qs),
+    .we     (mio_periph_insel_13_gated_we),
     .wd     (mio_periph_insel_13_wd),
 
     // from internal hardware
@@ -5928,6 +5983,9 @@ module pinmux_reg_top (
 
   // Subregister 14 of Multireg mio_periph_insel
   // R[mio_periph_insel_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_14_gated_we;
+  assign mio_periph_insel_14_gated_we = mio_periph_insel_14_we & mio_periph_insel_regwen_14_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5937,7 +5995,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_14_we & mio_periph_insel_regwen_14_qs),
+    .we     (mio_periph_insel_14_gated_we),
     .wd     (mio_periph_insel_14_wd),
 
     // from internal hardware
@@ -5955,6 +6013,9 @@ module pinmux_reg_top (
 
   // Subregister 15 of Multireg mio_periph_insel
   // R[mio_periph_insel_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_15_gated_we;
+  assign mio_periph_insel_15_gated_we = mio_periph_insel_15_we & mio_periph_insel_regwen_15_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5964,7 +6025,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_15_we & mio_periph_insel_regwen_15_qs),
+    .we     (mio_periph_insel_15_gated_we),
     .wd     (mio_periph_insel_15_wd),
 
     // from internal hardware
@@ -5982,6 +6043,9 @@ module pinmux_reg_top (
 
   // Subregister 16 of Multireg mio_periph_insel
   // R[mio_periph_insel_16]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_16_gated_we;
+  assign mio_periph_insel_16_gated_we = mio_periph_insel_16_we & mio_periph_insel_regwen_16_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -5991,7 +6055,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_16_we & mio_periph_insel_regwen_16_qs),
+    .we     (mio_periph_insel_16_gated_we),
     .wd     (mio_periph_insel_16_wd),
 
     // from internal hardware
@@ -6009,6 +6073,9 @@ module pinmux_reg_top (
 
   // Subregister 17 of Multireg mio_periph_insel
   // R[mio_periph_insel_17]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_17_gated_we;
+  assign mio_periph_insel_17_gated_we = mio_periph_insel_17_we & mio_periph_insel_regwen_17_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6018,7 +6085,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_17_we & mio_periph_insel_regwen_17_qs),
+    .we     (mio_periph_insel_17_gated_we),
     .wd     (mio_periph_insel_17_wd),
 
     // from internal hardware
@@ -6036,6 +6103,9 @@ module pinmux_reg_top (
 
   // Subregister 18 of Multireg mio_periph_insel
   // R[mio_periph_insel_18]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_18_gated_we;
+  assign mio_periph_insel_18_gated_we = mio_periph_insel_18_we & mio_periph_insel_regwen_18_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6045,7 +6115,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_18_we & mio_periph_insel_regwen_18_qs),
+    .we     (mio_periph_insel_18_gated_we),
     .wd     (mio_periph_insel_18_wd),
 
     // from internal hardware
@@ -6063,6 +6133,9 @@ module pinmux_reg_top (
 
   // Subregister 19 of Multireg mio_periph_insel
   // R[mio_periph_insel_19]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_19_gated_we;
+  assign mio_periph_insel_19_gated_we = mio_periph_insel_19_we & mio_periph_insel_regwen_19_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6072,7 +6145,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_19_we & mio_periph_insel_regwen_19_qs),
+    .we     (mio_periph_insel_19_gated_we),
     .wd     (mio_periph_insel_19_wd),
 
     // from internal hardware
@@ -6090,6 +6163,9 @@ module pinmux_reg_top (
 
   // Subregister 20 of Multireg mio_periph_insel
   // R[mio_periph_insel_20]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_20_gated_we;
+  assign mio_periph_insel_20_gated_we = mio_periph_insel_20_we & mio_periph_insel_regwen_20_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6099,7 +6175,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_20_we & mio_periph_insel_regwen_20_qs),
+    .we     (mio_periph_insel_20_gated_we),
     .wd     (mio_periph_insel_20_wd),
 
     // from internal hardware
@@ -6117,6 +6193,9 @@ module pinmux_reg_top (
 
   // Subregister 21 of Multireg mio_periph_insel
   // R[mio_periph_insel_21]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_21_gated_we;
+  assign mio_periph_insel_21_gated_we = mio_periph_insel_21_we & mio_periph_insel_regwen_21_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6126,7 +6205,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_21_we & mio_periph_insel_regwen_21_qs),
+    .we     (mio_periph_insel_21_gated_we),
     .wd     (mio_periph_insel_21_wd),
 
     // from internal hardware
@@ -6144,6 +6223,9 @@ module pinmux_reg_top (
 
   // Subregister 22 of Multireg mio_periph_insel
   // R[mio_periph_insel_22]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_22_gated_we;
+  assign mio_periph_insel_22_gated_we = mio_periph_insel_22_we & mio_periph_insel_regwen_22_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6153,7 +6235,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_22_we & mio_periph_insel_regwen_22_qs),
+    .we     (mio_periph_insel_22_gated_we),
     .wd     (mio_periph_insel_22_wd),
 
     // from internal hardware
@@ -6171,6 +6253,9 @@ module pinmux_reg_top (
 
   // Subregister 23 of Multireg mio_periph_insel
   // R[mio_periph_insel_23]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_23_gated_we;
+  assign mio_periph_insel_23_gated_we = mio_periph_insel_23_we & mio_periph_insel_regwen_23_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6180,7 +6265,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_23_we & mio_periph_insel_regwen_23_qs),
+    .we     (mio_periph_insel_23_gated_we),
     .wd     (mio_periph_insel_23_wd),
 
     // from internal hardware
@@ -6198,6 +6283,9 @@ module pinmux_reg_top (
 
   // Subregister 24 of Multireg mio_periph_insel
   // R[mio_periph_insel_24]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_24_gated_we;
+  assign mio_periph_insel_24_gated_we = mio_periph_insel_24_we & mio_periph_insel_regwen_24_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6207,7 +6295,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_24_we & mio_periph_insel_regwen_24_qs),
+    .we     (mio_periph_insel_24_gated_we),
     .wd     (mio_periph_insel_24_wd),
 
     // from internal hardware
@@ -6225,6 +6313,9 @@ module pinmux_reg_top (
 
   // Subregister 25 of Multireg mio_periph_insel
   // R[mio_periph_insel_25]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_25_gated_we;
+  assign mio_periph_insel_25_gated_we = mio_periph_insel_25_we & mio_periph_insel_regwen_25_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6234,7 +6325,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_25_we & mio_periph_insel_regwen_25_qs),
+    .we     (mio_periph_insel_25_gated_we),
     .wd     (mio_periph_insel_25_wd),
 
     // from internal hardware
@@ -6252,6 +6343,9 @@ module pinmux_reg_top (
 
   // Subregister 26 of Multireg mio_periph_insel
   // R[mio_periph_insel_26]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_26_gated_we;
+  assign mio_periph_insel_26_gated_we = mio_periph_insel_26_we & mio_periph_insel_regwen_26_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6261,7 +6355,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_26_we & mio_periph_insel_regwen_26_qs),
+    .we     (mio_periph_insel_26_gated_we),
     .wd     (mio_periph_insel_26_wd),
 
     // from internal hardware
@@ -6279,6 +6373,9 @@ module pinmux_reg_top (
 
   // Subregister 27 of Multireg mio_periph_insel
   // R[mio_periph_insel_27]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_27_gated_we;
+  assign mio_periph_insel_27_gated_we = mio_periph_insel_27_we & mio_periph_insel_regwen_27_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6288,7 +6385,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_27_we & mio_periph_insel_regwen_27_qs),
+    .we     (mio_periph_insel_27_gated_we),
     .wd     (mio_periph_insel_27_wd),
 
     // from internal hardware
@@ -6306,6 +6403,9 @@ module pinmux_reg_top (
 
   // Subregister 28 of Multireg mio_periph_insel
   // R[mio_periph_insel_28]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_28_gated_we;
+  assign mio_periph_insel_28_gated_we = mio_periph_insel_28_we & mio_periph_insel_regwen_28_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6315,7 +6415,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_28_we & mio_periph_insel_regwen_28_qs),
+    .we     (mio_periph_insel_28_gated_we),
     .wd     (mio_periph_insel_28_wd),
 
     // from internal hardware
@@ -6333,6 +6433,9 @@ module pinmux_reg_top (
 
   // Subregister 29 of Multireg mio_periph_insel
   // R[mio_periph_insel_29]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_29_gated_we;
+  assign mio_periph_insel_29_gated_we = mio_periph_insel_29_we & mio_periph_insel_regwen_29_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6342,7 +6445,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_29_we & mio_periph_insel_regwen_29_qs),
+    .we     (mio_periph_insel_29_gated_we),
     .wd     (mio_periph_insel_29_wd),
 
     // from internal hardware
@@ -6360,6 +6463,9 @@ module pinmux_reg_top (
 
   // Subregister 30 of Multireg mio_periph_insel
   // R[mio_periph_insel_30]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_30_gated_we;
+  assign mio_periph_insel_30_gated_we = mio_periph_insel_30_we & mio_periph_insel_regwen_30_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6369,7 +6475,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_30_we & mio_periph_insel_regwen_30_qs),
+    .we     (mio_periph_insel_30_gated_we),
     .wd     (mio_periph_insel_30_wd),
 
     // from internal hardware
@@ -6387,6 +6493,9 @@ module pinmux_reg_top (
 
   // Subregister 31 of Multireg mio_periph_insel
   // R[mio_periph_insel_31]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_31_gated_we;
+  assign mio_periph_insel_31_gated_we = mio_periph_insel_31_we & mio_periph_insel_regwen_31_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6396,7 +6505,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_31_we & mio_periph_insel_regwen_31_qs),
+    .we     (mio_periph_insel_31_gated_we),
     .wd     (mio_periph_insel_31_wd),
 
     // from internal hardware
@@ -6414,6 +6523,9 @@ module pinmux_reg_top (
 
   // Subregister 32 of Multireg mio_periph_insel
   // R[mio_periph_insel_32]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_32_gated_we;
+  assign mio_periph_insel_32_gated_we = mio_periph_insel_32_we & mio_periph_insel_regwen_32_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6423,7 +6535,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_32_we & mio_periph_insel_regwen_32_qs),
+    .we     (mio_periph_insel_32_gated_we),
     .wd     (mio_periph_insel_32_wd),
 
     // from internal hardware
@@ -6441,6 +6553,9 @@ module pinmux_reg_top (
 
   // Subregister 33 of Multireg mio_periph_insel
   // R[mio_periph_insel_33]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_33_gated_we;
+  assign mio_periph_insel_33_gated_we = mio_periph_insel_33_we & mio_periph_insel_regwen_33_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6450,7 +6565,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_33_we & mio_periph_insel_regwen_33_qs),
+    .we     (mio_periph_insel_33_gated_we),
     .wd     (mio_periph_insel_33_wd),
 
     // from internal hardware
@@ -6468,6 +6583,9 @@ module pinmux_reg_top (
 
   // Subregister 34 of Multireg mio_periph_insel
   // R[mio_periph_insel_34]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_34_gated_we;
+  assign mio_periph_insel_34_gated_we = mio_periph_insel_34_we & mio_periph_insel_regwen_34_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6477,7 +6595,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_34_we & mio_periph_insel_regwen_34_qs),
+    .we     (mio_periph_insel_34_gated_we),
     .wd     (mio_periph_insel_34_wd),
 
     // from internal hardware
@@ -6495,6 +6613,9 @@ module pinmux_reg_top (
 
   // Subregister 35 of Multireg mio_periph_insel
   // R[mio_periph_insel_35]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_35_gated_we;
+  assign mio_periph_insel_35_gated_we = mio_periph_insel_35_we & mio_periph_insel_regwen_35_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6504,7 +6625,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_35_we & mio_periph_insel_regwen_35_qs),
+    .we     (mio_periph_insel_35_gated_we),
     .wd     (mio_periph_insel_35_wd),
 
     // from internal hardware
@@ -6522,6 +6643,9 @@ module pinmux_reg_top (
 
   // Subregister 36 of Multireg mio_periph_insel
   // R[mio_periph_insel_36]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_36_gated_we;
+  assign mio_periph_insel_36_gated_we = mio_periph_insel_36_we & mio_periph_insel_regwen_36_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6531,7 +6655,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_36_we & mio_periph_insel_regwen_36_qs),
+    .we     (mio_periph_insel_36_gated_we),
     .wd     (mio_periph_insel_36_wd),
 
     // from internal hardware
@@ -6549,6 +6673,9 @@ module pinmux_reg_top (
 
   // Subregister 37 of Multireg mio_periph_insel
   // R[mio_periph_insel_37]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_37_gated_we;
+  assign mio_periph_insel_37_gated_we = mio_periph_insel_37_we & mio_periph_insel_regwen_37_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6558,7 +6685,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_37_we & mio_periph_insel_regwen_37_qs),
+    .we     (mio_periph_insel_37_gated_we),
     .wd     (mio_periph_insel_37_wd),
 
     // from internal hardware
@@ -6576,6 +6703,9 @@ module pinmux_reg_top (
 
   // Subregister 38 of Multireg mio_periph_insel
   // R[mio_periph_insel_38]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_38_gated_we;
+  assign mio_periph_insel_38_gated_we = mio_periph_insel_38_we & mio_periph_insel_regwen_38_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6585,7 +6715,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_38_we & mio_periph_insel_regwen_38_qs),
+    .we     (mio_periph_insel_38_gated_we),
     .wd     (mio_periph_insel_38_wd),
 
     // from internal hardware
@@ -6603,6 +6733,9 @@ module pinmux_reg_top (
 
   // Subregister 39 of Multireg mio_periph_insel
   // R[mio_periph_insel_39]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_39_gated_we;
+  assign mio_periph_insel_39_gated_we = mio_periph_insel_39_we & mio_periph_insel_regwen_39_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6612,7 +6745,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_39_we & mio_periph_insel_regwen_39_qs),
+    .we     (mio_periph_insel_39_gated_we),
     .wd     (mio_periph_insel_39_wd),
 
     // from internal hardware
@@ -6630,6 +6763,9 @@ module pinmux_reg_top (
 
   // Subregister 40 of Multireg mio_periph_insel
   // R[mio_periph_insel_40]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_40_gated_we;
+  assign mio_periph_insel_40_gated_we = mio_periph_insel_40_we & mio_periph_insel_regwen_40_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6639,7 +6775,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_40_we & mio_periph_insel_regwen_40_qs),
+    .we     (mio_periph_insel_40_gated_we),
     .wd     (mio_periph_insel_40_wd),
 
     // from internal hardware
@@ -6657,6 +6793,9 @@ module pinmux_reg_top (
 
   // Subregister 41 of Multireg mio_periph_insel
   // R[mio_periph_insel_41]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_41_gated_we;
+  assign mio_periph_insel_41_gated_we = mio_periph_insel_41_we & mio_periph_insel_regwen_41_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6666,7 +6805,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_41_we & mio_periph_insel_regwen_41_qs),
+    .we     (mio_periph_insel_41_gated_we),
     .wd     (mio_periph_insel_41_wd),
 
     // from internal hardware
@@ -6684,6 +6823,9 @@ module pinmux_reg_top (
 
   // Subregister 42 of Multireg mio_periph_insel
   // R[mio_periph_insel_42]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_42_gated_we;
+  assign mio_periph_insel_42_gated_we = mio_periph_insel_42_we & mio_periph_insel_regwen_42_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6693,7 +6835,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_42_we & mio_periph_insel_regwen_42_qs),
+    .we     (mio_periph_insel_42_gated_we),
     .wd     (mio_periph_insel_42_wd),
 
     // from internal hardware
@@ -6711,6 +6853,9 @@ module pinmux_reg_top (
 
   // Subregister 43 of Multireg mio_periph_insel
   // R[mio_periph_insel_43]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_43_gated_we;
+  assign mio_periph_insel_43_gated_we = mio_periph_insel_43_we & mio_periph_insel_regwen_43_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6720,7 +6865,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_43_we & mio_periph_insel_regwen_43_qs),
+    .we     (mio_periph_insel_43_gated_we),
     .wd     (mio_periph_insel_43_wd),
 
     // from internal hardware
@@ -6738,6 +6883,9 @@ module pinmux_reg_top (
 
   // Subregister 44 of Multireg mio_periph_insel
   // R[mio_periph_insel_44]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_44_gated_we;
+  assign mio_periph_insel_44_gated_we = mio_periph_insel_44_we & mio_periph_insel_regwen_44_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6747,7 +6895,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_44_we & mio_periph_insel_regwen_44_qs),
+    .we     (mio_periph_insel_44_gated_we),
     .wd     (mio_periph_insel_44_wd),
 
     // from internal hardware
@@ -6765,6 +6913,9 @@ module pinmux_reg_top (
 
   // Subregister 45 of Multireg mio_periph_insel
   // R[mio_periph_insel_45]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_45_gated_we;
+  assign mio_periph_insel_45_gated_we = mio_periph_insel_45_we & mio_periph_insel_regwen_45_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6774,7 +6925,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_45_we & mio_periph_insel_regwen_45_qs),
+    .we     (mio_periph_insel_45_gated_we),
     .wd     (mio_periph_insel_45_wd),
 
     // from internal hardware
@@ -6792,6 +6943,9 @@ module pinmux_reg_top (
 
   // Subregister 46 of Multireg mio_periph_insel
   // R[mio_periph_insel_46]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_46_gated_we;
+  assign mio_periph_insel_46_gated_we = mio_periph_insel_46_we & mio_periph_insel_regwen_46_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6801,7 +6955,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_46_we & mio_periph_insel_regwen_46_qs),
+    .we     (mio_periph_insel_46_gated_we),
     .wd     (mio_periph_insel_46_wd),
 
     // from internal hardware
@@ -6819,6 +6973,9 @@ module pinmux_reg_top (
 
   // Subregister 47 of Multireg mio_periph_insel
   // R[mio_periph_insel_47]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_47_gated_we;
+  assign mio_periph_insel_47_gated_we = mio_periph_insel_47_we & mio_periph_insel_regwen_47_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6828,7 +6985,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_47_we & mio_periph_insel_regwen_47_qs),
+    .we     (mio_periph_insel_47_gated_we),
     .wd     (mio_periph_insel_47_wd),
 
     // from internal hardware
@@ -6846,6 +7003,9 @@ module pinmux_reg_top (
 
   // Subregister 48 of Multireg mio_periph_insel
   // R[mio_periph_insel_48]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_48_gated_we;
+  assign mio_periph_insel_48_gated_we = mio_periph_insel_48_we & mio_periph_insel_regwen_48_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6855,7 +7015,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_48_we & mio_periph_insel_regwen_48_qs),
+    .we     (mio_periph_insel_48_gated_we),
     .wd     (mio_periph_insel_48_wd),
 
     // from internal hardware
@@ -6873,6 +7033,9 @@ module pinmux_reg_top (
 
   // Subregister 49 of Multireg mio_periph_insel
   // R[mio_periph_insel_49]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_49_gated_we;
+  assign mio_periph_insel_49_gated_we = mio_periph_insel_49_we & mio_periph_insel_regwen_49_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6882,7 +7045,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_49_we & mio_periph_insel_regwen_49_qs),
+    .we     (mio_periph_insel_49_gated_we),
     .wd     (mio_periph_insel_49_wd),
 
     // from internal hardware
@@ -6900,6 +7063,9 @@ module pinmux_reg_top (
 
   // Subregister 50 of Multireg mio_periph_insel
   // R[mio_periph_insel_50]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_50_gated_we;
+  assign mio_periph_insel_50_gated_we = mio_periph_insel_50_we & mio_periph_insel_regwen_50_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6909,7 +7075,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_50_we & mio_periph_insel_regwen_50_qs),
+    .we     (mio_periph_insel_50_gated_we),
     .wd     (mio_periph_insel_50_wd),
 
     // from internal hardware
@@ -6927,6 +7093,9 @@ module pinmux_reg_top (
 
   // Subregister 51 of Multireg mio_periph_insel
   // R[mio_periph_insel_51]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_51_gated_we;
+  assign mio_periph_insel_51_gated_we = mio_periph_insel_51_we & mio_periph_insel_regwen_51_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6936,7 +7105,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_51_we & mio_periph_insel_regwen_51_qs),
+    .we     (mio_periph_insel_51_gated_we),
     .wd     (mio_periph_insel_51_wd),
 
     // from internal hardware
@@ -6954,6 +7123,9 @@ module pinmux_reg_top (
 
   // Subregister 52 of Multireg mio_periph_insel
   // R[mio_periph_insel_52]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_52_gated_we;
+  assign mio_periph_insel_52_gated_we = mio_periph_insel_52_we & mio_periph_insel_regwen_52_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6963,7 +7135,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_52_we & mio_periph_insel_regwen_52_qs),
+    .we     (mio_periph_insel_52_gated_we),
     .wd     (mio_periph_insel_52_wd),
 
     // from internal hardware
@@ -6981,6 +7153,9 @@ module pinmux_reg_top (
 
   // Subregister 53 of Multireg mio_periph_insel
   // R[mio_periph_insel_53]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_53_gated_we;
+  assign mio_periph_insel_53_gated_we = mio_periph_insel_53_we & mio_periph_insel_regwen_53_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -6990,7 +7165,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_53_we & mio_periph_insel_regwen_53_qs),
+    .we     (mio_periph_insel_53_gated_we),
     .wd     (mio_periph_insel_53_wd),
 
     // from internal hardware
@@ -7008,6 +7183,9 @@ module pinmux_reg_top (
 
   // Subregister 54 of Multireg mio_periph_insel
   // R[mio_periph_insel_54]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_54_gated_we;
+  assign mio_periph_insel_54_gated_we = mio_periph_insel_54_we & mio_periph_insel_regwen_54_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7017,7 +7195,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_54_we & mio_periph_insel_regwen_54_qs),
+    .we     (mio_periph_insel_54_gated_we),
     .wd     (mio_periph_insel_54_wd),
 
     // from internal hardware
@@ -7035,6 +7213,9 @@ module pinmux_reg_top (
 
   // Subregister 55 of Multireg mio_periph_insel
   // R[mio_periph_insel_55]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_55_gated_we;
+  assign mio_periph_insel_55_gated_we = mio_periph_insel_55_we & mio_periph_insel_regwen_55_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7044,7 +7225,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_55_we & mio_periph_insel_regwen_55_qs),
+    .we     (mio_periph_insel_55_gated_we),
     .wd     (mio_periph_insel_55_wd),
 
     // from internal hardware
@@ -7062,6 +7243,9 @@ module pinmux_reg_top (
 
   // Subregister 56 of Multireg mio_periph_insel
   // R[mio_periph_insel_56]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_periph_insel_56_gated_we;
+  assign mio_periph_insel_56_gated_we = mio_periph_insel_56_we & mio_periph_insel_regwen_56_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -7071,7 +7255,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_periph_insel_56_we & mio_periph_insel_regwen_56_qs),
+    .we     (mio_periph_insel_56_gated_we),
     .wd     (mio_periph_insel_56_wd),
 
     // from internal hardware
@@ -8358,6 +8542,9 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg mio_outsel
   // R[mio_outsel_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_0_gated_we;
+  assign mio_outsel_0_gated_we = mio_outsel_0_we & mio_outsel_regwen_0_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8367,7 +8554,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_0_we & mio_outsel_regwen_0_qs),
+    .we     (mio_outsel_0_gated_we),
     .wd     (mio_outsel_0_wd),
 
     // from internal hardware
@@ -8385,6 +8572,9 @@ module pinmux_reg_top (
 
   // Subregister 1 of Multireg mio_outsel
   // R[mio_outsel_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_1_gated_we;
+  assign mio_outsel_1_gated_we = mio_outsel_1_we & mio_outsel_regwen_1_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8394,7 +8584,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_1_we & mio_outsel_regwen_1_qs),
+    .we     (mio_outsel_1_gated_we),
     .wd     (mio_outsel_1_wd),
 
     // from internal hardware
@@ -8412,6 +8602,9 @@ module pinmux_reg_top (
 
   // Subregister 2 of Multireg mio_outsel
   // R[mio_outsel_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_2_gated_we;
+  assign mio_outsel_2_gated_we = mio_outsel_2_we & mio_outsel_regwen_2_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8421,7 +8614,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_2_we & mio_outsel_regwen_2_qs),
+    .we     (mio_outsel_2_gated_we),
     .wd     (mio_outsel_2_wd),
 
     // from internal hardware
@@ -8439,6 +8632,9 @@ module pinmux_reg_top (
 
   // Subregister 3 of Multireg mio_outsel
   // R[mio_outsel_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_3_gated_we;
+  assign mio_outsel_3_gated_we = mio_outsel_3_we & mio_outsel_regwen_3_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8448,7 +8644,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_3_we & mio_outsel_regwen_3_qs),
+    .we     (mio_outsel_3_gated_we),
     .wd     (mio_outsel_3_wd),
 
     // from internal hardware
@@ -8466,6 +8662,9 @@ module pinmux_reg_top (
 
   // Subregister 4 of Multireg mio_outsel
   // R[mio_outsel_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_4_gated_we;
+  assign mio_outsel_4_gated_we = mio_outsel_4_we & mio_outsel_regwen_4_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8475,7 +8674,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_4_we & mio_outsel_regwen_4_qs),
+    .we     (mio_outsel_4_gated_we),
     .wd     (mio_outsel_4_wd),
 
     // from internal hardware
@@ -8493,6 +8692,9 @@ module pinmux_reg_top (
 
   // Subregister 5 of Multireg mio_outsel
   // R[mio_outsel_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_5_gated_we;
+  assign mio_outsel_5_gated_we = mio_outsel_5_we & mio_outsel_regwen_5_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8502,7 +8704,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_5_we & mio_outsel_regwen_5_qs),
+    .we     (mio_outsel_5_gated_we),
     .wd     (mio_outsel_5_wd),
 
     // from internal hardware
@@ -8520,6 +8722,9 @@ module pinmux_reg_top (
 
   // Subregister 6 of Multireg mio_outsel
   // R[mio_outsel_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_6_gated_we;
+  assign mio_outsel_6_gated_we = mio_outsel_6_we & mio_outsel_regwen_6_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8529,7 +8734,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_6_we & mio_outsel_regwen_6_qs),
+    .we     (mio_outsel_6_gated_we),
     .wd     (mio_outsel_6_wd),
 
     // from internal hardware
@@ -8547,6 +8752,9 @@ module pinmux_reg_top (
 
   // Subregister 7 of Multireg mio_outsel
   // R[mio_outsel_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_7_gated_we;
+  assign mio_outsel_7_gated_we = mio_outsel_7_we & mio_outsel_regwen_7_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8556,7 +8764,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_7_we & mio_outsel_regwen_7_qs),
+    .we     (mio_outsel_7_gated_we),
     .wd     (mio_outsel_7_wd),
 
     // from internal hardware
@@ -8574,6 +8782,9 @@ module pinmux_reg_top (
 
   // Subregister 8 of Multireg mio_outsel
   // R[mio_outsel_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_8_gated_we;
+  assign mio_outsel_8_gated_we = mio_outsel_8_we & mio_outsel_regwen_8_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8583,7 +8794,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_8_we & mio_outsel_regwen_8_qs),
+    .we     (mio_outsel_8_gated_we),
     .wd     (mio_outsel_8_wd),
 
     // from internal hardware
@@ -8601,6 +8812,9 @@ module pinmux_reg_top (
 
   // Subregister 9 of Multireg mio_outsel
   // R[mio_outsel_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_9_gated_we;
+  assign mio_outsel_9_gated_we = mio_outsel_9_we & mio_outsel_regwen_9_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8610,7 +8824,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_9_we & mio_outsel_regwen_9_qs),
+    .we     (mio_outsel_9_gated_we),
     .wd     (mio_outsel_9_wd),
 
     // from internal hardware
@@ -8628,6 +8842,9 @@ module pinmux_reg_top (
 
   // Subregister 10 of Multireg mio_outsel
   // R[mio_outsel_10]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_10_gated_we;
+  assign mio_outsel_10_gated_we = mio_outsel_10_we & mio_outsel_regwen_10_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8637,7 +8854,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_10_we & mio_outsel_regwen_10_qs),
+    .we     (mio_outsel_10_gated_we),
     .wd     (mio_outsel_10_wd),
 
     // from internal hardware
@@ -8655,6 +8872,9 @@ module pinmux_reg_top (
 
   // Subregister 11 of Multireg mio_outsel
   // R[mio_outsel_11]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_11_gated_we;
+  assign mio_outsel_11_gated_we = mio_outsel_11_we & mio_outsel_regwen_11_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8664,7 +8884,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_11_we & mio_outsel_regwen_11_qs),
+    .we     (mio_outsel_11_gated_we),
     .wd     (mio_outsel_11_wd),
 
     // from internal hardware
@@ -8682,6 +8902,9 @@ module pinmux_reg_top (
 
   // Subregister 12 of Multireg mio_outsel
   // R[mio_outsel_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_12_gated_we;
+  assign mio_outsel_12_gated_we = mio_outsel_12_we & mio_outsel_regwen_12_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8691,7 +8914,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_12_we & mio_outsel_regwen_12_qs),
+    .we     (mio_outsel_12_gated_we),
     .wd     (mio_outsel_12_wd),
 
     // from internal hardware
@@ -8709,6 +8932,9 @@ module pinmux_reg_top (
 
   // Subregister 13 of Multireg mio_outsel
   // R[mio_outsel_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_13_gated_we;
+  assign mio_outsel_13_gated_we = mio_outsel_13_we & mio_outsel_regwen_13_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8718,7 +8944,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_13_we & mio_outsel_regwen_13_qs),
+    .we     (mio_outsel_13_gated_we),
     .wd     (mio_outsel_13_wd),
 
     // from internal hardware
@@ -8736,6 +8962,9 @@ module pinmux_reg_top (
 
   // Subregister 14 of Multireg mio_outsel
   // R[mio_outsel_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_14_gated_we;
+  assign mio_outsel_14_gated_we = mio_outsel_14_we & mio_outsel_regwen_14_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8745,7 +8974,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_14_we & mio_outsel_regwen_14_qs),
+    .we     (mio_outsel_14_gated_we),
     .wd     (mio_outsel_14_wd),
 
     // from internal hardware
@@ -8763,6 +8992,9 @@ module pinmux_reg_top (
 
   // Subregister 15 of Multireg mio_outsel
   // R[mio_outsel_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_15_gated_we;
+  assign mio_outsel_15_gated_we = mio_outsel_15_we & mio_outsel_regwen_15_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8772,7 +9004,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_15_we & mio_outsel_regwen_15_qs),
+    .we     (mio_outsel_15_gated_we),
     .wd     (mio_outsel_15_wd),
 
     // from internal hardware
@@ -8790,6 +9022,9 @@ module pinmux_reg_top (
 
   // Subregister 16 of Multireg mio_outsel
   // R[mio_outsel_16]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_16_gated_we;
+  assign mio_outsel_16_gated_we = mio_outsel_16_we & mio_outsel_regwen_16_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8799,7 +9034,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_16_we & mio_outsel_regwen_16_qs),
+    .we     (mio_outsel_16_gated_we),
     .wd     (mio_outsel_16_wd),
 
     // from internal hardware
@@ -8817,6 +9052,9 @@ module pinmux_reg_top (
 
   // Subregister 17 of Multireg mio_outsel
   // R[mio_outsel_17]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_17_gated_we;
+  assign mio_outsel_17_gated_we = mio_outsel_17_we & mio_outsel_regwen_17_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8826,7 +9064,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_17_we & mio_outsel_regwen_17_qs),
+    .we     (mio_outsel_17_gated_we),
     .wd     (mio_outsel_17_wd),
 
     // from internal hardware
@@ -8844,6 +9082,9 @@ module pinmux_reg_top (
 
   // Subregister 18 of Multireg mio_outsel
   // R[mio_outsel_18]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_18_gated_we;
+  assign mio_outsel_18_gated_we = mio_outsel_18_we & mio_outsel_regwen_18_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8853,7 +9094,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_18_we & mio_outsel_regwen_18_qs),
+    .we     (mio_outsel_18_gated_we),
     .wd     (mio_outsel_18_wd),
 
     // from internal hardware
@@ -8871,6 +9112,9 @@ module pinmux_reg_top (
 
   // Subregister 19 of Multireg mio_outsel
   // R[mio_outsel_19]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_19_gated_we;
+  assign mio_outsel_19_gated_we = mio_outsel_19_we & mio_outsel_regwen_19_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8880,7 +9124,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_19_we & mio_outsel_regwen_19_qs),
+    .we     (mio_outsel_19_gated_we),
     .wd     (mio_outsel_19_wd),
 
     // from internal hardware
@@ -8898,6 +9142,9 @@ module pinmux_reg_top (
 
   // Subregister 20 of Multireg mio_outsel
   // R[mio_outsel_20]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_20_gated_we;
+  assign mio_outsel_20_gated_we = mio_outsel_20_we & mio_outsel_regwen_20_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8907,7 +9154,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_20_we & mio_outsel_regwen_20_qs),
+    .we     (mio_outsel_20_gated_we),
     .wd     (mio_outsel_20_wd),
 
     // from internal hardware
@@ -8925,6 +9172,9 @@ module pinmux_reg_top (
 
   // Subregister 21 of Multireg mio_outsel
   // R[mio_outsel_21]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_21_gated_we;
+  assign mio_outsel_21_gated_we = mio_outsel_21_we & mio_outsel_regwen_21_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8934,7 +9184,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_21_we & mio_outsel_regwen_21_qs),
+    .we     (mio_outsel_21_gated_we),
     .wd     (mio_outsel_21_wd),
 
     // from internal hardware
@@ -8952,6 +9202,9 @@ module pinmux_reg_top (
 
   // Subregister 22 of Multireg mio_outsel
   // R[mio_outsel_22]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_22_gated_we;
+  assign mio_outsel_22_gated_we = mio_outsel_22_we & mio_outsel_regwen_22_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8961,7 +9214,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_22_we & mio_outsel_regwen_22_qs),
+    .we     (mio_outsel_22_gated_we),
     .wd     (mio_outsel_22_wd),
 
     // from internal hardware
@@ -8979,6 +9232,9 @@ module pinmux_reg_top (
 
   // Subregister 23 of Multireg mio_outsel
   // R[mio_outsel_23]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_23_gated_we;
+  assign mio_outsel_23_gated_we = mio_outsel_23_we & mio_outsel_regwen_23_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -8988,7 +9244,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_23_we & mio_outsel_regwen_23_qs),
+    .we     (mio_outsel_23_gated_we),
     .wd     (mio_outsel_23_wd),
 
     // from internal hardware
@@ -9006,6 +9262,9 @@ module pinmux_reg_top (
 
   // Subregister 24 of Multireg mio_outsel
   // R[mio_outsel_24]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_24_gated_we;
+  assign mio_outsel_24_gated_we = mio_outsel_24_we & mio_outsel_regwen_24_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9015,7 +9274,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_24_we & mio_outsel_regwen_24_qs),
+    .we     (mio_outsel_24_gated_we),
     .wd     (mio_outsel_24_wd),
 
     // from internal hardware
@@ -9033,6 +9292,9 @@ module pinmux_reg_top (
 
   // Subregister 25 of Multireg mio_outsel
   // R[mio_outsel_25]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_25_gated_we;
+  assign mio_outsel_25_gated_we = mio_outsel_25_we & mio_outsel_regwen_25_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9042,7 +9304,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_25_we & mio_outsel_regwen_25_qs),
+    .we     (mio_outsel_25_gated_we),
     .wd     (mio_outsel_25_wd),
 
     // from internal hardware
@@ -9060,6 +9322,9 @@ module pinmux_reg_top (
 
   // Subregister 26 of Multireg mio_outsel
   // R[mio_outsel_26]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_26_gated_we;
+  assign mio_outsel_26_gated_we = mio_outsel_26_we & mio_outsel_regwen_26_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9069,7 +9334,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_26_we & mio_outsel_regwen_26_qs),
+    .we     (mio_outsel_26_gated_we),
     .wd     (mio_outsel_26_wd),
 
     // from internal hardware
@@ -9087,6 +9352,9 @@ module pinmux_reg_top (
 
   // Subregister 27 of Multireg mio_outsel
   // R[mio_outsel_27]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_27_gated_we;
+  assign mio_outsel_27_gated_we = mio_outsel_27_we & mio_outsel_regwen_27_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9096,7 +9364,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_27_we & mio_outsel_regwen_27_qs),
+    .we     (mio_outsel_27_gated_we),
     .wd     (mio_outsel_27_wd),
 
     // from internal hardware
@@ -9114,6 +9382,9 @@ module pinmux_reg_top (
 
   // Subregister 28 of Multireg mio_outsel
   // R[mio_outsel_28]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_28_gated_we;
+  assign mio_outsel_28_gated_we = mio_outsel_28_we & mio_outsel_regwen_28_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9123,7 +9394,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_28_we & mio_outsel_regwen_28_qs),
+    .we     (mio_outsel_28_gated_we),
     .wd     (mio_outsel_28_wd),
 
     // from internal hardware
@@ -9141,6 +9412,9 @@ module pinmux_reg_top (
 
   // Subregister 29 of Multireg mio_outsel
   // R[mio_outsel_29]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_29_gated_we;
+  assign mio_outsel_29_gated_we = mio_outsel_29_we & mio_outsel_regwen_29_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9150,7 +9424,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_29_we & mio_outsel_regwen_29_qs),
+    .we     (mio_outsel_29_gated_we),
     .wd     (mio_outsel_29_wd),
 
     // from internal hardware
@@ -9168,6 +9442,9 @@ module pinmux_reg_top (
 
   // Subregister 30 of Multireg mio_outsel
   // R[mio_outsel_30]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_30_gated_we;
+  assign mio_outsel_30_gated_we = mio_outsel_30_we & mio_outsel_regwen_30_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9177,7 +9454,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_30_we & mio_outsel_regwen_30_qs),
+    .we     (mio_outsel_30_gated_we),
     .wd     (mio_outsel_30_wd),
 
     // from internal hardware
@@ -9195,6 +9472,9 @@ module pinmux_reg_top (
 
   // Subregister 31 of Multireg mio_outsel
   // R[mio_outsel_31]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_31_gated_we;
+  assign mio_outsel_31_gated_we = mio_outsel_31_we & mio_outsel_regwen_31_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9204,7 +9484,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_31_we & mio_outsel_regwen_31_qs),
+    .we     (mio_outsel_31_gated_we),
     .wd     (mio_outsel_31_wd),
 
     // from internal hardware
@@ -9222,6 +9502,9 @@ module pinmux_reg_top (
 
   // Subregister 32 of Multireg mio_outsel
   // R[mio_outsel_32]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_32_gated_we;
+  assign mio_outsel_32_gated_we = mio_outsel_32_we & mio_outsel_regwen_32_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9231,7 +9514,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_32_we & mio_outsel_regwen_32_qs),
+    .we     (mio_outsel_32_gated_we),
     .wd     (mio_outsel_32_wd),
 
     // from internal hardware
@@ -9249,6 +9532,9 @@ module pinmux_reg_top (
 
   // Subregister 33 of Multireg mio_outsel
   // R[mio_outsel_33]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_33_gated_we;
+  assign mio_outsel_33_gated_we = mio_outsel_33_we & mio_outsel_regwen_33_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9258,7 +9544,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_33_we & mio_outsel_regwen_33_qs),
+    .we     (mio_outsel_33_gated_we),
     .wd     (mio_outsel_33_wd),
 
     // from internal hardware
@@ -9276,6 +9562,9 @@ module pinmux_reg_top (
 
   // Subregister 34 of Multireg mio_outsel
   // R[mio_outsel_34]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_34_gated_we;
+  assign mio_outsel_34_gated_we = mio_outsel_34_we & mio_outsel_regwen_34_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9285,7 +9574,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_34_we & mio_outsel_regwen_34_qs),
+    .we     (mio_outsel_34_gated_we),
     .wd     (mio_outsel_34_wd),
 
     // from internal hardware
@@ -9303,6 +9592,9 @@ module pinmux_reg_top (
 
   // Subregister 35 of Multireg mio_outsel
   // R[mio_outsel_35]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_35_gated_we;
+  assign mio_outsel_35_gated_we = mio_outsel_35_we & mio_outsel_regwen_35_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9312,7 +9604,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_35_we & mio_outsel_regwen_35_qs),
+    .we     (mio_outsel_35_gated_we),
     .wd     (mio_outsel_35_wd),
 
     // from internal hardware
@@ -9330,6 +9622,9 @@ module pinmux_reg_top (
 
   // Subregister 36 of Multireg mio_outsel
   // R[mio_outsel_36]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_36_gated_we;
+  assign mio_outsel_36_gated_we = mio_outsel_36_we & mio_outsel_regwen_36_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9339,7 +9634,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_36_we & mio_outsel_regwen_36_qs),
+    .we     (mio_outsel_36_gated_we),
     .wd     (mio_outsel_36_wd),
 
     // from internal hardware
@@ -9357,6 +9652,9 @@ module pinmux_reg_top (
 
   // Subregister 37 of Multireg mio_outsel
   // R[mio_outsel_37]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_37_gated_we;
+  assign mio_outsel_37_gated_we = mio_outsel_37_we & mio_outsel_regwen_37_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9366,7 +9664,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_37_we & mio_outsel_regwen_37_qs),
+    .we     (mio_outsel_37_gated_we),
     .wd     (mio_outsel_37_wd),
 
     // from internal hardware
@@ -9384,6 +9682,9 @@ module pinmux_reg_top (
 
   // Subregister 38 of Multireg mio_outsel
   // R[mio_outsel_38]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_38_gated_we;
+  assign mio_outsel_38_gated_we = mio_outsel_38_we & mio_outsel_regwen_38_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9393,7 +9694,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_38_we & mio_outsel_regwen_38_qs),
+    .we     (mio_outsel_38_gated_we),
     .wd     (mio_outsel_38_wd),
 
     // from internal hardware
@@ -9411,6 +9712,9 @@ module pinmux_reg_top (
 
   // Subregister 39 of Multireg mio_outsel
   // R[mio_outsel_39]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_39_gated_we;
+  assign mio_outsel_39_gated_we = mio_outsel_39_we & mio_outsel_regwen_39_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9420,7 +9724,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_39_we & mio_outsel_regwen_39_qs),
+    .we     (mio_outsel_39_gated_we),
     .wd     (mio_outsel_39_wd),
 
     // from internal hardware
@@ -9438,6 +9742,9 @@ module pinmux_reg_top (
 
   // Subregister 40 of Multireg mio_outsel
   // R[mio_outsel_40]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_40_gated_we;
+  assign mio_outsel_40_gated_we = mio_outsel_40_we & mio_outsel_regwen_40_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9447,7 +9754,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_40_we & mio_outsel_regwen_40_qs),
+    .we     (mio_outsel_40_gated_we),
     .wd     (mio_outsel_40_wd),
 
     // from internal hardware
@@ -9465,6 +9772,9 @@ module pinmux_reg_top (
 
   // Subregister 41 of Multireg mio_outsel
   // R[mio_outsel_41]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_41_gated_we;
+  assign mio_outsel_41_gated_we = mio_outsel_41_we & mio_outsel_regwen_41_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9474,7 +9784,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_41_we & mio_outsel_regwen_41_qs),
+    .we     (mio_outsel_41_gated_we),
     .wd     (mio_outsel_41_wd),
 
     // from internal hardware
@@ -9492,6 +9802,9 @@ module pinmux_reg_top (
 
   // Subregister 42 of Multireg mio_outsel
   // R[mio_outsel_42]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_42_gated_we;
+  assign mio_outsel_42_gated_we = mio_outsel_42_we & mio_outsel_regwen_42_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9501,7 +9814,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_42_we & mio_outsel_regwen_42_qs),
+    .we     (mio_outsel_42_gated_we),
     .wd     (mio_outsel_42_wd),
 
     // from internal hardware
@@ -9519,6 +9832,9 @@ module pinmux_reg_top (
 
   // Subregister 43 of Multireg mio_outsel
   // R[mio_outsel_43]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_43_gated_we;
+  assign mio_outsel_43_gated_we = mio_outsel_43_we & mio_outsel_regwen_43_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9528,7 +9844,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_43_we & mio_outsel_regwen_43_qs),
+    .we     (mio_outsel_43_gated_we),
     .wd     (mio_outsel_43_wd),
 
     // from internal hardware
@@ -9546,6 +9862,9 @@ module pinmux_reg_top (
 
   // Subregister 44 of Multireg mio_outsel
   // R[mio_outsel_44]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_44_gated_we;
+  assign mio_outsel_44_gated_we = mio_outsel_44_we & mio_outsel_regwen_44_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9555,7 +9874,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_44_we & mio_outsel_regwen_44_qs),
+    .we     (mio_outsel_44_gated_we),
     .wd     (mio_outsel_44_wd),
 
     // from internal hardware
@@ -9573,6 +9892,9 @@ module pinmux_reg_top (
 
   // Subregister 45 of Multireg mio_outsel
   // R[mio_outsel_45]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_45_gated_we;
+  assign mio_outsel_45_gated_we = mio_outsel_45_we & mio_outsel_regwen_45_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9582,7 +9904,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_45_we & mio_outsel_regwen_45_qs),
+    .we     (mio_outsel_45_gated_we),
     .wd     (mio_outsel_45_wd),
 
     // from internal hardware
@@ -9600,6 +9922,9 @@ module pinmux_reg_top (
 
   // Subregister 46 of Multireg mio_outsel
   // R[mio_outsel_46]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_outsel_46_gated_we;
+  assign mio_outsel_46_gated_we = mio_outsel_46_we & mio_outsel_regwen_46_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -9609,7 +9934,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_outsel_46_we & mio_outsel_regwen_46_qs),
+    .we     (mio_outsel_46_gated_we),
     .wd     (mio_outsel_46_wd),
 
     // from internal hardware
@@ -10899,12 +11224,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_0_qe;
   logic [8:0] mio_pad_attr_0_flds_we;
   assign mio_pad_attr_0_qe = &mio_pad_attr_0_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_0_gated_we;
+  assign mio_pad_attr_0_gated_we = mio_pad_attr_0_we & mio_pad_attr_regwen_0_qs;
   //   F[invert_0]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_0_invert_0 (
     .re     (mio_pad_attr_0_re),
-    .we     (mio_pad_attr_0_we & mio_pad_attr_regwen_0_qs),
+    .we     (mio_pad_attr_0_gated_we),
     .wd     (mio_pad_attr_0_invert_0_wd),
     .d      (hw2reg.mio_pad_attr[0].invert.d),
     .qre    (),
@@ -10919,7 +11247,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_0_virtual_od_en_0 (
     .re     (mio_pad_attr_0_re),
-    .we     (mio_pad_attr_0_we & mio_pad_attr_regwen_0_qs),
+    .we     (mio_pad_attr_0_gated_we),
     .wd     (mio_pad_attr_0_virtual_od_en_0_wd),
     .d      (hw2reg.mio_pad_attr[0].virtual_od_en.d),
     .qre    (),
@@ -10934,7 +11262,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_0_pull_en_0 (
     .re     (mio_pad_attr_0_re),
-    .we     (mio_pad_attr_0_we & mio_pad_attr_regwen_0_qs),
+    .we     (mio_pad_attr_0_gated_we),
     .wd     (mio_pad_attr_0_pull_en_0_wd),
     .d      (hw2reg.mio_pad_attr[0].pull_en.d),
     .qre    (),
@@ -10949,7 +11277,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_0_pull_select_0 (
     .re     (mio_pad_attr_0_re),
-    .we     (mio_pad_attr_0_we & mio_pad_attr_regwen_0_qs),
+    .we     (mio_pad_attr_0_gated_we),
     .wd     (mio_pad_attr_0_pull_select_0_wd),
     .d      (hw2reg.mio_pad_attr[0].pull_select.d),
     .qre    (),
@@ -10964,7 +11292,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_0_keeper_en_0 (
     .re     (mio_pad_attr_0_re),
-    .we     (mio_pad_attr_0_we & mio_pad_attr_regwen_0_qs),
+    .we     (mio_pad_attr_0_gated_we),
     .wd     (mio_pad_attr_0_keeper_en_0_wd),
     .d      (hw2reg.mio_pad_attr[0].keeper_en.d),
     .qre    (),
@@ -10979,7 +11307,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_0_schmitt_en_0 (
     .re     (mio_pad_attr_0_re),
-    .we     (mio_pad_attr_0_we & mio_pad_attr_regwen_0_qs),
+    .we     (mio_pad_attr_0_gated_we),
     .wd     (mio_pad_attr_0_schmitt_en_0_wd),
     .d      (hw2reg.mio_pad_attr[0].schmitt_en.d),
     .qre    (),
@@ -10994,7 +11322,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_0_od_en_0 (
     .re     (mio_pad_attr_0_re),
-    .we     (mio_pad_attr_0_we & mio_pad_attr_regwen_0_qs),
+    .we     (mio_pad_attr_0_gated_we),
     .wd     (mio_pad_attr_0_od_en_0_wd),
     .d      (hw2reg.mio_pad_attr[0].od_en.d),
     .qre    (),
@@ -11009,7 +11337,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_0_slew_rate_0 (
     .re     (mio_pad_attr_0_re),
-    .we     (mio_pad_attr_0_we & mio_pad_attr_regwen_0_qs),
+    .we     (mio_pad_attr_0_gated_we),
     .wd     (mio_pad_attr_0_slew_rate_0_wd),
     .d      (hw2reg.mio_pad_attr[0].slew_rate.d),
     .qre    (),
@@ -11024,7 +11352,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_0_drive_strength_0 (
     .re     (mio_pad_attr_0_re),
-    .we     (mio_pad_attr_0_we & mio_pad_attr_regwen_0_qs),
+    .we     (mio_pad_attr_0_gated_we),
     .wd     (mio_pad_attr_0_drive_strength_0_wd),
     .d      (hw2reg.mio_pad_attr[0].drive_strength.d),
     .qre    (),
@@ -11040,12 +11368,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_1_qe;
   logic [8:0] mio_pad_attr_1_flds_we;
   assign mio_pad_attr_1_qe = &mio_pad_attr_1_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_1_gated_we;
+  assign mio_pad_attr_1_gated_we = mio_pad_attr_1_we & mio_pad_attr_regwen_1_qs;
   //   F[invert_1]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_1_invert_1 (
     .re     (mio_pad_attr_1_re),
-    .we     (mio_pad_attr_1_we & mio_pad_attr_regwen_1_qs),
+    .we     (mio_pad_attr_1_gated_we),
     .wd     (mio_pad_attr_1_invert_1_wd),
     .d      (hw2reg.mio_pad_attr[1].invert.d),
     .qre    (),
@@ -11060,7 +11391,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_1_virtual_od_en_1 (
     .re     (mio_pad_attr_1_re),
-    .we     (mio_pad_attr_1_we & mio_pad_attr_regwen_1_qs),
+    .we     (mio_pad_attr_1_gated_we),
     .wd     (mio_pad_attr_1_virtual_od_en_1_wd),
     .d      (hw2reg.mio_pad_attr[1].virtual_od_en.d),
     .qre    (),
@@ -11075,7 +11406,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_1_pull_en_1 (
     .re     (mio_pad_attr_1_re),
-    .we     (mio_pad_attr_1_we & mio_pad_attr_regwen_1_qs),
+    .we     (mio_pad_attr_1_gated_we),
     .wd     (mio_pad_attr_1_pull_en_1_wd),
     .d      (hw2reg.mio_pad_attr[1].pull_en.d),
     .qre    (),
@@ -11090,7 +11421,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_1_pull_select_1 (
     .re     (mio_pad_attr_1_re),
-    .we     (mio_pad_attr_1_we & mio_pad_attr_regwen_1_qs),
+    .we     (mio_pad_attr_1_gated_we),
     .wd     (mio_pad_attr_1_pull_select_1_wd),
     .d      (hw2reg.mio_pad_attr[1].pull_select.d),
     .qre    (),
@@ -11105,7 +11436,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_1_keeper_en_1 (
     .re     (mio_pad_attr_1_re),
-    .we     (mio_pad_attr_1_we & mio_pad_attr_regwen_1_qs),
+    .we     (mio_pad_attr_1_gated_we),
     .wd     (mio_pad_attr_1_keeper_en_1_wd),
     .d      (hw2reg.mio_pad_attr[1].keeper_en.d),
     .qre    (),
@@ -11120,7 +11451,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_1_schmitt_en_1 (
     .re     (mio_pad_attr_1_re),
-    .we     (mio_pad_attr_1_we & mio_pad_attr_regwen_1_qs),
+    .we     (mio_pad_attr_1_gated_we),
     .wd     (mio_pad_attr_1_schmitt_en_1_wd),
     .d      (hw2reg.mio_pad_attr[1].schmitt_en.d),
     .qre    (),
@@ -11135,7 +11466,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_1_od_en_1 (
     .re     (mio_pad_attr_1_re),
-    .we     (mio_pad_attr_1_we & mio_pad_attr_regwen_1_qs),
+    .we     (mio_pad_attr_1_gated_we),
     .wd     (mio_pad_attr_1_od_en_1_wd),
     .d      (hw2reg.mio_pad_attr[1].od_en.d),
     .qre    (),
@@ -11150,7 +11481,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_1_slew_rate_1 (
     .re     (mio_pad_attr_1_re),
-    .we     (mio_pad_attr_1_we & mio_pad_attr_regwen_1_qs),
+    .we     (mio_pad_attr_1_gated_we),
     .wd     (mio_pad_attr_1_slew_rate_1_wd),
     .d      (hw2reg.mio_pad_attr[1].slew_rate.d),
     .qre    (),
@@ -11165,7 +11496,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_1_drive_strength_1 (
     .re     (mio_pad_attr_1_re),
-    .we     (mio_pad_attr_1_we & mio_pad_attr_regwen_1_qs),
+    .we     (mio_pad_attr_1_gated_we),
     .wd     (mio_pad_attr_1_drive_strength_1_wd),
     .d      (hw2reg.mio_pad_attr[1].drive_strength.d),
     .qre    (),
@@ -11181,12 +11512,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_2_qe;
   logic [8:0] mio_pad_attr_2_flds_we;
   assign mio_pad_attr_2_qe = &mio_pad_attr_2_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_2_gated_we;
+  assign mio_pad_attr_2_gated_we = mio_pad_attr_2_we & mio_pad_attr_regwen_2_qs;
   //   F[invert_2]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_2_invert_2 (
     .re     (mio_pad_attr_2_re),
-    .we     (mio_pad_attr_2_we & mio_pad_attr_regwen_2_qs),
+    .we     (mio_pad_attr_2_gated_we),
     .wd     (mio_pad_attr_2_invert_2_wd),
     .d      (hw2reg.mio_pad_attr[2].invert.d),
     .qre    (),
@@ -11201,7 +11535,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_2_virtual_od_en_2 (
     .re     (mio_pad_attr_2_re),
-    .we     (mio_pad_attr_2_we & mio_pad_attr_regwen_2_qs),
+    .we     (mio_pad_attr_2_gated_we),
     .wd     (mio_pad_attr_2_virtual_od_en_2_wd),
     .d      (hw2reg.mio_pad_attr[2].virtual_od_en.d),
     .qre    (),
@@ -11216,7 +11550,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_2_pull_en_2 (
     .re     (mio_pad_attr_2_re),
-    .we     (mio_pad_attr_2_we & mio_pad_attr_regwen_2_qs),
+    .we     (mio_pad_attr_2_gated_we),
     .wd     (mio_pad_attr_2_pull_en_2_wd),
     .d      (hw2reg.mio_pad_attr[2].pull_en.d),
     .qre    (),
@@ -11231,7 +11565,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_2_pull_select_2 (
     .re     (mio_pad_attr_2_re),
-    .we     (mio_pad_attr_2_we & mio_pad_attr_regwen_2_qs),
+    .we     (mio_pad_attr_2_gated_we),
     .wd     (mio_pad_attr_2_pull_select_2_wd),
     .d      (hw2reg.mio_pad_attr[2].pull_select.d),
     .qre    (),
@@ -11246,7 +11580,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_2_keeper_en_2 (
     .re     (mio_pad_attr_2_re),
-    .we     (mio_pad_attr_2_we & mio_pad_attr_regwen_2_qs),
+    .we     (mio_pad_attr_2_gated_we),
     .wd     (mio_pad_attr_2_keeper_en_2_wd),
     .d      (hw2reg.mio_pad_attr[2].keeper_en.d),
     .qre    (),
@@ -11261,7 +11595,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_2_schmitt_en_2 (
     .re     (mio_pad_attr_2_re),
-    .we     (mio_pad_attr_2_we & mio_pad_attr_regwen_2_qs),
+    .we     (mio_pad_attr_2_gated_we),
     .wd     (mio_pad_attr_2_schmitt_en_2_wd),
     .d      (hw2reg.mio_pad_attr[2].schmitt_en.d),
     .qre    (),
@@ -11276,7 +11610,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_2_od_en_2 (
     .re     (mio_pad_attr_2_re),
-    .we     (mio_pad_attr_2_we & mio_pad_attr_regwen_2_qs),
+    .we     (mio_pad_attr_2_gated_we),
     .wd     (mio_pad_attr_2_od_en_2_wd),
     .d      (hw2reg.mio_pad_attr[2].od_en.d),
     .qre    (),
@@ -11291,7 +11625,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_2_slew_rate_2 (
     .re     (mio_pad_attr_2_re),
-    .we     (mio_pad_attr_2_we & mio_pad_attr_regwen_2_qs),
+    .we     (mio_pad_attr_2_gated_we),
     .wd     (mio_pad_attr_2_slew_rate_2_wd),
     .d      (hw2reg.mio_pad_attr[2].slew_rate.d),
     .qre    (),
@@ -11306,7 +11640,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_2_drive_strength_2 (
     .re     (mio_pad_attr_2_re),
-    .we     (mio_pad_attr_2_we & mio_pad_attr_regwen_2_qs),
+    .we     (mio_pad_attr_2_gated_we),
     .wd     (mio_pad_attr_2_drive_strength_2_wd),
     .d      (hw2reg.mio_pad_attr[2].drive_strength.d),
     .qre    (),
@@ -11322,12 +11656,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_3_qe;
   logic [8:0] mio_pad_attr_3_flds_we;
   assign mio_pad_attr_3_qe = &mio_pad_attr_3_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_3_gated_we;
+  assign mio_pad_attr_3_gated_we = mio_pad_attr_3_we & mio_pad_attr_regwen_3_qs;
   //   F[invert_3]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_3_invert_3 (
     .re     (mio_pad_attr_3_re),
-    .we     (mio_pad_attr_3_we & mio_pad_attr_regwen_3_qs),
+    .we     (mio_pad_attr_3_gated_we),
     .wd     (mio_pad_attr_3_invert_3_wd),
     .d      (hw2reg.mio_pad_attr[3].invert.d),
     .qre    (),
@@ -11342,7 +11679,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_3_virtual_od_en_3 (
     .re     (mio_pad_attr_3_re),
-    .we     (mio_pad_attr_3_we & mio_pad_attr_regwen_3_qs),
+    .we     (mio_pad_attr_3_gated_we),
     .wd     (mio_pad_attr_3_virtual_od_en_3_wd),
     .d      (hw2reg.mio_pad_attr[3].virtual_od_en.d),
     .qre    (),
@@ -11357,7 +11694,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_3_pull_en_3 (
     .re     (mio_pad_attr_3_re),
-    .we     (mio_pad_attr_3_we & mio_pad_attr_regwen_3_qs),
+    .we     (mio_pad_attr_3_gated_we),
     .wd     (mio_pad_attr_3_pull_en_3_wd),
     .d      (hw2reg.mio_pad_attr[3].pull_en.d),
     .qre    (),
@@ -11372,7 +11709,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_3_pull_select_3 (
     .re     (mio_pad_attr_3_re),
-    .we     (mio_pad_attr_3_we & mio_pad_attr_regwen_3_qs),
+    .we     (mio_pad_attr_3_gated_we),
     .wd     (mio_pad_attr_3_pull_select_3_wd),
     .d      (hw2reg.mio_pad_attr[3].pull_select.d),
     .qre    (),
@@ -11387,7 +11724,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_3_keeper_en_3 (
     .re     (mio_pad_attr_3_re),
-    .we     (mio_pad_attr_3_we & mio_pad_attr_regwen_3_qs),
+    .we     (mio_pad_attr_3_gated_we),
     .wd     (mio_pad_attr_3_keeper_en_3_wd),
     .d      (hw2reg.mio_pad_attr[3].keeper_en.d),
     .qre    (),
@@ -11402,7 +11739,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_3_schmitt_en_3 (
     .re     (mio_pad_attr_3_re),
-    .we     (mio_pad_attr_3_we & mio_pad_attr_regwen_3_qs),
+    .we     (mio_pad_attr_3_gated_we),
     .wd     (mio_pad_attr_3_schmitt_en_3_wd),
     .d      (hw2reg.mio_pad_attr[3].schmitt_en.d),
     .qre    (),
@@ -11417,7 +11754,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_3_od_en_3 (
     .re     (mio_pad_attr_3_re),
-    .we     (mio_pad_attr_3_we & mio_pad_attr_regwen_3_qs),
+    .we     (mio_pad_attr_3_gated_we),
     .wd     (mio_pad_attr_3_od_en_3_wd),
     .d      (hw2reg.mio_pad_attr[3].od_en.d),
     .qre    (),
@@ -11432,7 +11769,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_3_slew_rate_3 (
     .re     (mio_pad_attr_3_re),
-    .we     (mio_pad_attr_3_we & mio_pad_attr_regwen_3_qs),
+    .we     (mio_pad_attr_3_gated_we),
     .wd     (mio_pad_attr_3_slew_rate_3_wd),
     .d      (hw2reg.mio_pad_attr[3].slew_rate.d),
     .qre    (),
@@ -11447,7 +11784,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_3_drive_strength_3 (
     .re     (mio_pad_attr_3_re),
-    .we     (mio_pad_attr_3_we & mio_pad_attr_regwen_3_qs),
+    .we     (mio_pad_attr_3_gated_we),
     .wd     (mio_pad_attr_3_drive_strength_3_wd),
     .d      (hw2reg.mio_pad_attr[3].drive_strength.d),
     .qre    (),
@@ -11463,12 +11800,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_4_qe;
   logic [8:0] mio_pad_attr_4_flds_we;
   assign mio_pad_attr_4_qe = &mio_pad_attr_4_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_4_gated_we;
+  assign mio_pad_attr_4_gated_we = mio_pad_attr_4_we & mio_pad_attr_regwen_4_qs;
   //   F[invert_4]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_4_invert_4 (
     .re     (mio_pad_attr_4_re),
-    .we     (mio_pad_attr_4_we & mio_pad_attr_regwen_4_qs),
+    .we     (mio_pad_attr_4_gated_we),
     .wd     (mio_pad_attr_4_invert_4_wd),
     .d      (hw2reg.mio_pad_attr[4].invert.d),
     .qre    (),
@@ -11483,7 +11823,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_4_virtual_od_en_4 (
     .re     (mio_pad_attr_4_re),
-    .we     (mio_pad_attr_4_we & mio_pad_attr_regwen_4_qs),
+    .we     (mio_pad_attr_4_gated_we),
     .wd     (mio_pad_attr_4_virtual_od_en_4_wd),
     .d      (hw2reg.mio_pad_attr[4].virtual_od_en.d),
     .qre    (),
@@ -11498,7 +11838,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_4_pull_en_4 (
     .re     (mio_pad_attr_4_re),
-    .we     (mio_pad_attr_4_we & mio_pad_attr_regwen_4_qs),
+    .we     (mio_pad_attr_4_gated_we),
     .wd     (mio_pad_attr_4_pull_en_4_wd),
     .d      (hw2reg.mio_pad_attr[4].pull_en.d),
     .qre    (),
@@ -11513,7 +11853,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_4_pull_select_4 (
     .re     (mio_pad_attr_4_re),
-    .we     (mio_pad_attr_4_we & mio_pad_attr_regwen_4_qs),
+    .we     (mio_pad_attr_4_gated_we),
     .wd     (mio_pad_attr_4_pull_select_4_wd),
     .d      (hw2reg.mio_pad_attr[4].pull_select.d),
     .qre    (),
@@ -11528,7 +11868,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_4_keeper_en_4 (
     .re     (mio_pad_attr_4_re),
-    .we     (mio_pad_attr_4_we & mio_pad_attr_regwen_4_qs),
+    .we     (mio_pad_attr_4_gated_we),
     .wd     (mio_pad_attr_4_keeper_en_4_wd),
     .d      (hw2reg.mio_pad_attr[4].keeper_en.d),
     .qre    (),
@@ -11543,7 +11883,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_4_schmitt_en_4 (
     .re     (mio_pad_attr_4_re),
-    .we     (mio_pad_attr_4_we & mio_pad_attr_regwen_4_qs),
+    .we     (mio_pad_attr_4_gated_we),
     .wd     (mio_pad_attr_4_schmitt_en_4_wd),
     .d      (hw2reg.mio_pad_attr[4].schmitt_en.d),
     .qre    (),
@@ -11558,7 +11898,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_4_od_en_4 (
     .re     (mio_pad_attr_4_re),
-    .we     (mio_pad_attr_4_we & mio_pad_attr_regwen_4_qs),
+    .we     (mio_pad_attr_4_gated_we),
     .wd     (mio_pad_attr_4_od_en_4_wd),
     .d      (hw2reg.mio_pad_attr[4].od_en.d),
     .qre    (),
@@ -11573,7 +11913,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_4_slew_rate_4 (
     .re     (mio_pad_attr_4_re),
-    .we     (mio_pad_attr_4_we & mio_pad_attr_regwen_4_qs),
+    .we     (mio_pad_attr_4_gated_we),
     .wd     (mio_pad_attr_4_slew_rate_4_wd),
     .d      (hw2reg.mio_pad_attr[4].slew_rate.d),
     .qre    (),
@@ -11588,7 +11928,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_4_drive_strength_4 (
     .re     (mio_pad_attr_4_re),
-    .we     (mio_pad_attr_4_we & mio_pad_attr_regwen_4_qs),
+    .we     (mio_pad_attr_4_gated_we),
     .wd     (mio_pad_attr_4_drive_strength_4_wd),
     .d      (hw2reg.mio_pad_attr[4].drive_strength.d),
     .qre    (),
@@ -11604,12 +11944,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_5_qe;
   logic [8:0] mio_pad_attr_5_flds_we;
   assign mio_pad_attr_5_qe = &mio_pad_attr_5_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_5_gated_we;
+  assign mio_pad_attr_5_gated_we = mio_pad_attr_5_we & mio_pad_attr_regwen_5_qs;
   //   F[invert_5]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_5_invert_5 (
     .re     (mio_pad_attr_5_re),
-    .we     (mio_pad_attr_5_we & mio_pad_attr_regwen_5_qs),
+    .we     (mio_pad_attr_5_gated_we),
     .wd     (mio_pad_attr_5_invert_5_wd),
     .d      (hw2reg.mio_pad_attr[5].invert.d),
     .qre    (),
@@ -11624,7 +11967,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_5_virtual_od_en_5 (
     .re     (mio_pad_attr_5_re),
-    .we     (mio_pad_attr_5_we & mio_pad_attr_regwen_5_qs),
+    .we     (mio_pad_attr_5_gated_we),
     .wd     (mio_pad_attr_5_virtual_od_en_5_wd),
     .d      (hw2reg.mio_pad_attr[5].virtual_od_en.d),
     .qre    (),
@@ -11639,7 +11982,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_5_pull_en_5 (
     .re     (mio_pad_attr_5_re),
-    .we     (mio_pad_attr_5_we & mio_pad_attr_regwen_5_qs),
+    .we     (mio_pad_attr_5_gated_we),
     .wd     (mio_pad_attr_5_pull_en_5_wd),
     .d      (hw2reg.mio_pad_attr[5].pull_en.d),
     .qre    (),
@@ -11654,7 +11997,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_5_pull_select_5 (
     .re     (mio_pad_attr_5_re),
-    .we     (mio_pad_attr_5_we & mio_pad_attr_regwen_5_qs),
+    .we     (mio_pad_attr_5_gated_we),
     .wd     (mio_pad_attr_5_pull_select_5_wd),
     .d      (hw2reg.mio_pad_attr[5].pull_select.d),
     .qre    (),
@@ -11669,7 +12012,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_5_keeper_en_5 (
     .re     (mio_pad_attr_5_re),
-    .we     (mio_pad_attr_5_we & mio_pad_attr_regwen_5_qs),
+    .we     (mio_pad_attr_5_gated_we),
     .wd     (mio_pad_attr_5_keeper_en_5_wd),
     .d      (hw2reg.mio_pad_attr[5].keeper_en.d),
     .qre    (),
@@ -11684,7 +12027,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_5_schmitt_en_5 (
     .re     (mio_pad_attr_5_re),
-    .we     (mio_pad_attr_5_we & mio_pad_attr_regwen_5_qs),
+    .we     (mio_pad_attr_5_gated_we),
     .wd     (mio_pad_attr_5_schmitt_en_5_wd),
     .d      (hw2reg.mio_pad_attr[5].schmitt_en.d),
     .qre    (),
@@ -11699,7 +12042,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_5_od_en_5 (
     .re     (mio_pad_attr_5_re),
-    .we     (mio_pad_attr_5_we & mio_pad_attr_regwen_5_qs),
+    .we     (mio_pad_attr_5_gated_we),
     .wd     (mio_pad_attr_5_od_en_5_wd),
     .d      (hw2reg.mio_pad_attr[5].od_en.d),
     .qre    (),
@@ -11714,7 +12057,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_5_slew_rate_5 (
     .re     (mio_pad_attr_5_re),
-    .we     (mio_pad_attr_5_we & mio_pad_attr_regwen_5_qs),
+    .we     (mio_pad_attr_5_gated_we),
     .wd     (mio_pad_attr_5_slew_rate_5_wd),
     .d      (hw2reg.mio_pad_attr[5].slew_rate.d),
     .qre    (),
@@ -11729,7 +12072,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_5_drive_strength_5 (
     .re     (mio_pad_attr_5_re),
-    .we     (mio_pad_attr_5_we & mio_pad_attr_regwen_5_qs),
+    .we     (mio_pad_attr_5_gated_we),
     .wd     (mio_pad_attr_5_drive_strength_5_wd),
     .d      (hw2reg.mio_pad_attr[5].drive_strength.d),
     .qre    (),
@@ -11745,12 +12088,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_6_qe;
   logic [8:0] mio_pad_attr_6_flds_we;
   assign mio_pad_attr_6_qe = &mio_pad_attr_6_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_6_gated_we;
+  assign mio_pad_attr_6_gated_we = mio_pad_attr_6_we & mio_pad_attr_regwen_6_qs;
   //   F[invert_6]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_6_invert_6 (
     .re     (mio_pad_attr_6_re),
-    .we     (mio_pad_attr_6_we & mio_pad_attr_regwen_6_qs),
+    .we     (mio_pad_attr_6_gated_we),
     .wd     (mio_pad_attr_6_invert_6_wd),
     .d      (hw2reg.mio_pad_attr[6].invert.d),
     .qre    (),
@@ -11765,7 +12111,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_6_virtual_od_en_6 (
     .re     (mio_pad_attr_6_re),
-    .we     (mio_pad_attr_6_we & mio_pad_attr_regwen_6_qs),
+    .we     (mio_pad_attr_6_gated_we),
     .wd     (mio_pad_attr_6_virtual_od_en_6_wd),
     .d      (hw2reg.mio_pad_attr[6].virtual_od_en.d),
     .qre    (),
@@ -11780,7 +12126,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_6_pull_en_6 (
     .re     (mio_pad_attr_6_re),
-    .we     (mio_pad_attr_6_we & mio_pad_attr_regwen_6_qs),
+    .we     (mio_pad_attr_6_gated_we),
     .wd     (mio_pad_attr_6_pull_en_6_wd),
     .d      (hw2reg.mio_pad_attr[6].pull_en.d),
     .qre    (),
@@ -11795,7 +12141,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_6_pull_select_6 (
     .re     (mio_pad_attr_6_re),
-    .we     (mio_pad_attr_6_we & mio_pad_attr_regwen_6_qs),
+    .we     (mio_pad_attr_6_gated_we),
     .wd     (mio_pad_attr_6_pull_select_6_wd),
     .d      (hw2reg.mio_pad_attr[6].pull_select.d),
     .qre    (),
@@ -11810,7 +12156,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_6_keeper_en_6 (
     .re     (mio_pad_attr_6_re),
-    .we     (mio_pad_attr_6_we & mio_pad_attr_regwen_6_qs),
+    .we     (mio_pad_attr_6_gated_we),
     .wd     (mio_pad_attr_6_keeper_en_6_wd),
     .d      (hw2reg.mio_pad_attr[6].keeper_en.d),
     .qre    (),
@@ -11825,7 +12171,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_6_schmitt_en_6 (
     .re     (mio_pad_attr_6_re),
-    .we     (mio_pad_attr_6_we & mio_pad_attr_regwen_6_qs),
+    .we     (mio_pad_attr_6_gated_we),
     .wd     (mio_pad_attr_6_schmitt_en_6_wd),
     .d      (hw2reg.mio_pad_attr[6].schmitt_en.d),
     .qre    (),
@@ -11840,7 +12186,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_6_od_en_6 (
     .re     (mio_pad_attr_6_re),
-    .we     (mio_pad_attr_6_we & mio_pad_attr_regwen_6_qs),
+    .we     (mio_pad_attr_6_gated_we),
     .wd     (mio_pad_attr_6_od_en_6_wd),
     .d      (hw2reg.mio_pad_attr[6].od_en.d),
     .qre    (),
@@ -11855,7 +12201,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_6_slew_rate_6 (
     .re     (mio_pad_attr_6_re),
-    .we     (mio_pad_attr_6_we & mio_pad_attr_regwen_6_qs),
+    .we     (mio_pad_attr_6_gated_we),
     .wd     (mio_pad_attr_6_slew_rate_6_wd),
     .d      (hw2reg.mio_pad_attr[6].slew_rate.d),
     .qre    (),
@@ -11870,7 +12216,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_6_drive_strength_6 (
     .re     (mio_pad_attr_6_re),
-    .we     (mio_pad_attr_6_we & mio_pad_attr_regwen_6_qs),
+    .we     (mio_pad_attr_6_gated_we),
     .wd     (mio_pad_attr_6_drive_strength_6_wd),
     .d      (hw2reg.mio_pad_attr[6].drive_strength.d),
     .qre    (),
@@ -11886,12 +12232,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_7_qe;
   logic [8:0] mio_pad_attr_7_flds_we;
   assign mio_pad_attr_7_qe = &mio_pad_attr_7_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_7_gated_we;
+  assign mio_pad_attr_7_gated_we = mio_pad_attr_7_we & mio_pad_attr_regwen_7_qs;
   //   F[invert_7]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_7_invert_7 (
     .re     (mio_pad_attr_7_re),
-    .we     (mio_pad_attr_7_we & mio_pad_attr_regwen_7_qs),
+    .we     (mio_pad_attr_7_gated_we),
     .wd     (mio_pad_attr_7_invert_7_wd),
     .d      (hw2reg.mio_pad_attr[7].invert.d),
     .qre    (),
@@ -11906,7 +12255,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_7_virtual_od_en_7 (
     .re     (mio_pad_attr_7_re),
-    .we     (mio_pad_attr_7_we & mio_pad_attr_regwen_7_qs),
+    .we     (mio_pad_attr_7_gated_we),
     .wd     (mio_pad_attr_7_virtual_od_en_7_wd),
     .d      (hw2reg.mio_pad_attr[7].virtual_od_en.d),
     .qre    (),
@@ -11921,7 +12270,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_7_pull_en_7 (
     .re     (mio_pad_attr_7_re),
-    .we     (mio_pad_attr_7_we & mio_pad_attr_regwen_7_qs),
+    .we     (mio_pad_attr_7_gated_we),
     .wd     (mio_pad_attr_7_pull_en_7_wd),
     .d      (hw2reg.mio_pad_attr[7].pull_en.d),
     .qre    (),
@@ -11936,7 +12285,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_7_pull_select_7 (
     .re     (mio_pad_attr_7_re),
-    .we     (mio_pad_attr_7_we & mio_pad_attr_regwen_7_qs),
+    .we     (mio_pad_attr_7_gated_we),
     .wd     (mio_pad_attr_7_pull_select_7_wd),
     .d      (hw2reg.mio_pad_attr[7].pull_select.d),
     .qre    (),
@@ -11951,7 +12300,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_7_keeper_en_7 (
     .re     (mio_pad_attr_7_re),
-    .we     (mio_pad_attr_7_we & mio_pad_attr_regwen_7_qs),
+    .we     (mio_pad_attr_7_gated_we),
     .wd     (mio_pad_attr_7_keeper_en_7_wd),
     .d      (hw2reg.mio_pad_attr[7].keeper_en.d),
     .qre    (),
@@ -11966,7 +12315,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_7_schmitt_en_7 (
     .re     (mio_pad_attr_7_re),
-    .we     (mio_pad_attr_7_we & mio_pad_attr_regwen_7_qs),
+    .we     (mio_pad_attr_7_gated_we),
     .wd     (mio_pad_attr_7_schmitt_en_7_wd),
     .d      (hw2reg.mio_pad_attr[7].schmitt_en.d),
     .qre    (),
@@ -11981,7 +12330,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_7_od_en_7 (
     .re     (mio_pad_attr_7_re),
-    .we     (mio_pad_attr_7_we & mio_pad_attr_regwen_7_qs),
+    .we     (mio_pad_attr_7_gated_we),
     .wd     (mio_pad_attr_7_od_en_7_wd),
     .d      (hw2reg.mio_pad_attr[7].od_en.d),
     .qre    (),
@@ -11996,7 +12345,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_7_slew_rate_7 (
     .re     (mio_pad_attr_7_re),
-    .we     (mio_pad_attr_7_we & mio_pad_attr_regwen_7_qs),
+    .we     (mio_pad_attr_7_gated_we),
     .wd     (mio_pad_attr_7_slew_rate_7_wd),
     .d      (hw2reg.mio_pad_attr[7].slew_rate.d),
     .qre    (),
@@ -12011,7 +12360,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_7_drive_strength_7 (
     .re     (mio_pad_attr_7_re),
-    .we     (mio_pad_attr_7_we & mio_pad_attr_regwen_7_qs),
+    .we     (mio_pad_attr_7_gated_we),
     .wd     (mio_pad_attr_7_drive_strength_7_wd),
     .d      (hw2reg.mio_pad_attr[7].drive_strength.d),
     .qre    (),
@@ -12027,12 +12376,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_8_qe;
   logic [8:0] mio_pad_attr_8_flds_we;
   assign mio_pad_attr_8_qe = &mio_pad_attr_8_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_8_gated_we;
+  assign mio_pad_attr_8_gated_we = mio_pad_attr_8_we & mio_pad_attr_regwen_8_qs;
   //   F[invert_8]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_8_invert_8 (
     .re     (mio_pad_attr_8_re),
-    .we     (mio_pad_attr_8_we & mio_pad_attr_regwen_8_qs),
+    .we     (mio_pad_attr_8_gated_we),
     .wd     (mio_pad_attr_8_invert_8_wd),
     .d      (hw2reg.mio_pad_attr[8].invert.d),
     .qre    (),
@@ -12047,7 +12399,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_8_virtual_od_en_8 (
     .re     (mio_pad_attr_8_re),
-    .we     (mio_pad_attr_8_we & mio_pad_attr_regwen_8_qs),
+    .we     (mio_pad_attr_8_gated_we),
     .wd     (mio_pad_attr_8_virtual_od_en_8_wd),
     .d      (hw2reg.mio_pad_attr[8].virtual_od_en.d),
     .qre    (),
@@ -12062,7 +12414,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_8_pull_en_8 (
     .re     (mio_pad_attr_8_re),
-    .we     (mio_pad_attr_8_we & mio_pad_attr_regwen_8_qs),
+    .we     (mio_pad_attr_8_gated_we),
     .wd     (mio_pad_attr_8_pull_en_8_wd),
     .d      (hw2reg.mio_pad_attr[8].pull_en.d),
     .qre    (),
@@ -12077,7 +12429,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_8_pull_select_8 (
     .re     (mio_pad_attr_8_re),
-    .we     (mio_pad_attr_8_we & mio_pad_attr_regwen_8_qs),
+    .we     (mio_pad_attr_8_gated_we),
     .wd     (mio_pad_attr_8_pull_select_8_wd),
     .d      (hw2reg.mio_pad_attr[8].pull_select.d),
     .qre    (),
@@ -12092,7 +12444,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_8_keeper_en_8 (
     .re     (mio_pad_attr_8_re),
-    .we     (mio_pad_attr_8_we & mio_pad_attr_regwen_8_qs),
+    .we     (mio_pad_attr_8_gated_we),
     .wd     (mio_pad_attr_8_keeper_en_8_wd),
     .d      (hw2reg.mio_pad_attr[8].keeper_en.d),
     .qre    (),
@@ -12107,7 +12459,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_8_schmitt_en_8 (
     .re     (mio_pad_attr_8_re),
-    .we     (mio_pad_attr_8_we & mio_pad_attr_regwen_8_qs),
+    .we     (mio_pad_attr_8_gated_we),
     .wd     (mio_pad_attr_8_schmitt_en_8_wd),
     .d      (hw2reg.mio_pad_attr[8].schmitt_en.d),
     .qre    (),
@@ -12122,7 +12474,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_8_od_en_8 (
     .re     (mio_pad_attr_8_re),
-    .we     (mio_pad_attr_8_we & mio_pad_attr_regwen_8_qs),
+    .we     (mio_pad_attr_8_gated_we),
     .wd     (mio_pad_attr_8_od_en_8_wd),
     .d      (hw2reg.mio_pad_attr[8].od_en.d),
     .qre    (),
@@ -12137,7 +12489,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_8_slew_rate_8 (
     .re     (mio_pad_attr_8_re),
-    .we     (mio_pad_attr_8_we & mio_pad_attr_regwen_8_qs),
+    .we     (mio_pad_attr_8_gated_we),
     .wd     (mio_pad_attr_8_slew_rate_8_wd),
     .d      (hw2reg.mio_pad_attr[8].slew_rate.d),
     .qre    (),
@@ -12152,7 +12504,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_8_drive_strength_8 (
     .re     (mio_pad_attr_8_re),
-    .we     (mio_pad_attr_8_we & mio_pad_attr_regwen_8_qs),
+    .we     (mio_pad_attr_8_gated_we),
     .wd     (mio_pad_attr_8_drive_strength_8_wd),
     .d      (hw2reg.mio_pad_attr[8].drive_strength.d),
     .qre    (),
@@ -12168,12 +12520,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_9_qe;
   logic [8:0] mio_pad_attr_9_flds_we;
   assign mio_pad_attr_9_qe = &mio_pad_attr_9_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_9_gated_we;
+  assign mio_pad_attr_9_gated_we = mio_pad_attr_9_we & mio_pad_attr_regwen_9_qs;
   //   F[invert_9]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_9_invert_9 (
     .re     (mio_pad_attr_9_re),
-    .we     (mio_pad_attr_9_we & mio_pad_attr_regwen_9_qs),
+    .we     (mio_pad_attr_9_gated_we),
     .wd     (mio_pad_attr_9_invert_9_wd),
     .d      (hw2reg.mio_pad_attr[9].invert.d),
     .qre    (),
@@ -12188,7 +12543,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_9_virtual_od_en_9 (
     .re     (mio_pad_attr_9_re),
-    .we     (mio_pad_attr_9_we & mio_pad_attr_regwen_9_qs),
+    .we     (mio_pad_attr_9_gated_we),
     .wd     (mio_pad_attr_9_virtual_od_en_9_wd),
     .d      (hw2reg.mio_pad_attr[9].virtual_od_en.d),
     .qre    (),
@@ -12203,7 +12558,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_9_pull_en_9 (
     .re     (mio_pad_attr_9_re),
-    .we     (mio_pad_attr_9_we & mio_pad_attr_regwen_9_qs),
+    .we     (mio_pad_attr_9_gated_we),
     .wd     (mio_pad_attr_9_pull_en_9_wd),
     .d      (hw2reg.mio_pad_attr[9].pull_en.d),
     .qre    (),
@@ -12218,7 +12573,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_9_pull_select_9 (
     .re     (mio_pad_attr_9_re),
-    .we     (mio_pad_attr_9_we & mio_pad_attr_regwen_9_qs),
+    .we     (mio_pad_attr_9_gated_we),
     .wd     (mio_pad_attr_9_pull_select_9_wd),
     .d      (hw2reg.mio_pad_attr[9].pull_select.d),
     .qre    (),
@@ -12233,7 +12588,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_9_keeper_en_9 (
     .re     (mio_pad_attr_9_re),
-    .we     (mio_pad_attr_9_we & mio_pad_attr_regwen_9_qs),
+    .we     (mio_pad_attr_9_gated_we),
     .wd     (mio_pad_attr_9_keeper_en_9_wd),
     .d      (hw2reg.mio_pad_attr[9].keeper_en.d),
     .qre    (),
@@ -12248,7 +12603,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_9_schmitt_en_9 (
     .re     (mio_pad_attr_9_re),
-    .we     (mio_pad_attr_9_we & mio_pad_attr_regwen_9_qs),
+    .we     (mio_pad_attr_9_gated_we),
     .wd     (mio_pad_attr_9_schmitt_en_9_wd),
     .d      (hw2reg.mio_pad_attr[9].schmitt_en.d),
     .qre    (),
@@ -12263,7 +12618,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_9_od_en_9 (
     .re     (mio_pad_attr_9_re),
-    .we     (mio_pad_attr_9_we & mio_pad_attr_regwen_9_qs),
+    .we     (mio_pad_attr_9_gated_we),
     .wd     (mio_pad_attr_9_od_en_9_wd),
     .d      (hw2reg.mio_pad_attr[9].od_en.d),
     .qre    (),
@@ -12278,7 +12633,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_9_slew_rate_9 (
     .re     (mio_pad_attr_9_re),
-    .we     (mio_pad_attr_9_we & mio_pad_attr_regwen_9_qs),
+    .we     (mio_pad_attr_9_gated_we),
     .wd     (mio_pad_attr_9_slew_rate_9_wd),
     .d      (hw2reg.mio_pad_attr[9].slew_rate.d),
     .qre    (),
@@ -12293,7 +12648,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_9_drive_strength_9 (
     .re     (mio_pad_attr_9_re),
-    .we     (mio_pad_attr_9_we & mio_pad_attr_regwen_9_qs),
+    .we     (mio_pad_attr_9_gated_we),
     .wd     (mio_pad_attr_9_drive_strength_9_wd),
     .d      (hw2reg.mio_pad_attr[9].drive_strength.d),
     .qre    (),
@@ -12309,12 +12664,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_10_qe;
   logic [8:0] mio_pad_attr_10_flds_we;
   assign mio_pad_attr_10_qe = &mio_pad_attr_10_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_10_gated_we;
+  assign mio_pad_attr_10_gated_we = mio_pad_attr_10_we & mio_pad_attr_regwen_10_qs;
   //   F[invert_10]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_10_invert_10 (
     .re     (mio_pad_attr_10_re),
-    .we     (mio_pad_attr_10_we & mio_pad_attr_regwen_10_qs),
+    .we     (mio_pad_attr_10_gated_we),
     .wd     (mio_pad_attr_10_invert_10_wd),
     .d      (hw2reg.mio_pad_attr[10].invert.d),
     .qre    (),
@@ -12329,7 +12687,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_10_virtual_od_en_10 (
     .re     (mio_pad_attr_10_re),
-    .we     (mio_pad_attr_10_we & mio_pad_attr_regwen_10_qs),
+    .we     (mio_pad_attr_10_gated_we),
     .wd     (mio_pad_attr_10_virtual_od_en_10_wd),
     .d      (hw2reg.mio_pad_attr[10].virtual_od_en.d),
     .qre    (),
@@ -12344,7 +12702,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_10_pull_en_10 (
     .re     (mio_pad_attr_10_re),
-    .we     (mio_pad_attr_10_we & mio_pad_attr_regwen_10_qs),
+    .we     (mio_pad_attr_10_gated_we),
     .wd     (mio_pad_attr_10_pull_en_10_wd),
     .d      (hw2reg.mio_pad_attr[10].pull_en.d),
     .qre    (),
@@ -12359,7 +12717,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_10_pull_select_10 (
     .re     (mio_pad_attr_10_re),
-    .we     (mio_pad_attr_10_we & mio_pad_attr_regwen_10_qs),
+    .we     (mio_pad_attr_10_gated_we),
     .wd     (mio_pad_attr_10_pull_select_10_wd),
     .d      (hw2reg.mio_pad_attr[10].pull_select.d),
     .qre    (),
@@ -12374,7 +12732,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_10_keeper_en_10 (
     .re     (mio_pad_attr_10_re),
-    .we     (mio_pad_attr_10_we & mio_pad_attr_regwen_10_qs),
+    .we     (mio_pad_attr_10_gated_we),
     .wd     (mio_pad_attr_10_keeper_en_10_wd),
     .d      (hw2reg.mio_pad_attr[10].keeper_en.d),
     .qre    (),
@@ -12389,7 +12747,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_10_schmitt_en_10 (
     .re     (mio_pad_attr_10_re),
-    .we     (mio_pad_attr_10_we & mio_pad_attr_regwen_10_qs),
+    .we     (mio_pad_attr_10_gated_we),
     .wd     (mio_pad_attr_10_schmitt_en_10_wd),
     .d      (hw2reg.mio_pad_attr[10].schmitt_en.d),
     .qre    (),
@@ -12404,7 +12762,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_10_od_en_10 (
     .re     (mio_pad_attr_10_re),
-    .we     (mio_pad_attr_10_we & mio_pad_attr_regwen_10_qs),
+    .we     (mio_pad_attr_10_gated_we),
     .wd     (mio_pad_attr_10_od_en_10_wd),
     .d      (hw2reg.mio_pad_attr[10].od_en.d),
     .qre    (),
@@ -12419,7 +12777,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_10_slew_rate_10 (
     .re     (mio_pad_attr_10_re),
-    .we     (mio_pad_attr_10_we & mio_pad_attr_regwen_10_qs),
+    .we     (mio_pad_attr_10_gated_we),
     .wd     (mio_pad_attr_10_slew_rate_10_wd),
     .d      (hw2reg.mio_pad_attr[10].slew_rate.d),
     .qre    (),
@@ -12434,7 +12792,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_10_drive_strength_10 (
     .re     (mio_pad_attr_10_re),
-    .we     (mio_pad_attr_10_we & mio_pad_attr_regwen_10_qs),
+    .we     (mio_pad_attr_10_gated_we),
     .wd     (mio_pad_attr_10_drive_strength_10_wd),
     .d      (hw2reg.mio_pad_attr[10].drive_strength.d),
     .qre    (),
@@ -12450,12 +12808,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_11_qe;
   logic [8:0] mio_pad_attr_11_flds_we;
   assign mio_pad_attr_11_qe = &mio_pad_attr_11_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_11_gated_we;
+  assign mio_pad_attr_11_gated_we = mio_pad_attr_11_we & mio_pad_attr_regwen_11_qs;
   //   F[invert_11]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_11_invert_11 (
     .re     (mio_pad_attr_11_re),
-    .we     (mio_pad_attr_11_we & mio_pad_attr_regwen_11_qs),
+    .we     (mio_pad_attr_11_gated_we),
     .wd     (mio_pad_attr_11_invert_11_wd),
     .d      (hw2reg.mio_pad_attr[11].invert.d),
     .qre    (),
@@ -12470,7 +12831,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_11_virtual_od_en_11 (
     .re     (mio_pad_attr_11_re),
-    .we     (mio_pad_attr_11_we & mio_pad_attr_regwen_11_qs),
+    .we     (mio_pad_attr_11_gated_we),
     .wd     (mio_pad_attr_11_virtual_od_en_11_wd),
     .d      (hw2reg.mio_pad_attr[11].virtual_od_en.d),
     .qre    (),
@@ -12485,7 +12846,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_11_pull_en_11 (
     .re     (mio_pad_attr_11_re),
-    .we     (mio_pad_attr_11_we & mio_pad_attr_regwen_11_qs),
+    .we     (mio_pad_attr_11_gated_we),
     .wd     (mio_pad_attr_11_pull_en_11_wd),
     .d      (hw2reg.mio_pad_attr[11].pull_en.d),
     .qre    (),
@@ -12500,7 +12861,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_11_pull_select_11 (
     .re     (mio_pad_attr_11_re),
-    .we     (mio_pad_attr_11_we & mio_pad_attr_regwen_11_qs),
+    .we     (mio_pad_attr_11_gated_we),
     .wd     (mio_pad_attr_11_pull_select_11_wd),
     .d      (hw2reg.mio_pad_attr[11].pull_select.d),
     .qre    (),
@@ -12515,7 +12876,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_11_keeper_en_11 (
     .re     (mio_pad_attr_11_re),
-    .we     (mio_pad_attr_11_we & mio_pad_attr_regwen_11_qs),
+    .we     (mio_pad_attr_11_gated_we),
     .wd     (mio_pad_attr_11_keeper_en_11_wd),
     .d      (hw2reg.mio_pad_attr[11].keeper_en.d),
     .qre    (),
@@ -12530,7 +12891,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_11_schmitt_en_11 (
     .re     (mio_pad_attr_11_re),
-    .we     (mio_pad_attr_11_we & mio_pad_attr_regwen_11_qs),
+    .we     (mio_pad_attr_11_gated_we),
     .wd     (mio_pad_attr_11_schmitt_en_11_wd),
     .d      (hw2reg.mio_pad_attr[11].schmitt_en.d),
     .qre    (),
@@ -12545,7 +12906,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_11_od_en_11 (
     .re     (mio_pad_attr_11_re),
-    .we     (mio_pad_attr_11_we & mio_pad_attr_regwen_11_qs),
+    .we     (mio_pad_attr_11_gated_we),
     .wd     (mio_pad_attr_11_od_en_11_wd),
     .d      (hw2reg.mio_pad_attr[11].od_en.d),
     .qre    (),
@@ -12560,7 +12921,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_11_slew_rate_11 (
     .re     (mio_pad_attr_11_re),
-    .we     (mio_pad_attr_11_we & mio_pad_attr_regwen_11_qs),
+    .we     (mio_pad_attr_11_gated_we),
     .wd     (mio_pad_attr_11_slew_rate_11_wd),
     .d      (hw2reg.mio_pad_attr[11].slew_rate.d),
     .qre    (),
@@ -12575,7 +12936,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_11_drive_strength_11 (
     .re     (mio_pad_attr_11_re),
-    .we     (mio_pad_attr_11_we & mio_pad_attr_regwen_11_qs),
+    .we     (mio_pad_attr_11_gated_we),
     .wd     (mio_pad_attr_11_drive_strength_11_wd),
     .d      (hw2reg.mio_pad_attr[11].drive_strength.d),
     .qre    (),
@@ -12591,12 +12952,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_12_qe;
   logic [8:0] mio_pad_attr_12_flds_we;
   assign mio_pad_attr_12_qe = &mio_pad_attr_12_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_12_gated_we;
+  assign mio_pad_attr_12_gated_we = mio_pad_attr_12_we & mio_pad_attr_regwen_12_qs;
   //   F[invert_12]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_12_invert_12 (
     .re     (mio_pad_attr_12_re),
-    .we     (mio_pad_attr_12_we & mio_pad_attr_regwen_12_qs),
+    .we     (mio_pad_attr_12_gated_we),
     .wd     (mio_pad_attr_12_invert_12_wd),
     .d      (hw2reg.mio_pad_attr[12].invert.d),
     .qre    (),
@@ -12611,7 +12975,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_12_virtual_od_en_12 (
     .re     (mio_pad_attr_12_re),
-    .we     (mio_pad_attr_12_we & mio_pad_attr_regwen_12_qs),
+    .we     (mio_pad_attr_12_gated_we),
     .wd     (mio_pad_attr_12_virtual_od_en_12_wd),
     .d      (hw2reg.mio_pad_attr[12].virtual_od_en.d),
     .qre    (),
@@ -12626,7 +12990,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_12_pull_en_12 (
     .re     (mio_pad_attr_12_re),
-    .we     (mio_pad_attr_12_we & mio_pad_attr_regwen_12_qs),
+    .we     (mio_pad_attr_12_gated_we),
     .wd     (mio_pad_attr_12_pull_en_12_wd),
     .d      (hw2reg.mio_pad_attr[12].pull_en.d),
     .qre    (),
@@ -12641,7 +13005,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_12_pull_select_12 (
     .re     (mio_pad_attr_12_re),
-    .we     (mio_pad_attr_12_we & mio_pad_attr_regwen_12_qs),
+    .we     (mio_pad_attr_12_gated_we),
     .wd     (mio_pad_attr_12_pull_select_12_wd),
     .d      (hw2reg.mio_pad_attr[12].pull_select.d),
     .qre    (),
@@ -12656,7 +13020,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_12_keeper_en_12 (
     .re     (mio_pad_attr_12_re),
-    .we     (mio_pad_attr_12_we & mio_pad_attr_regwen_12_qs),
+    .we     (mio_pad_attr_12_gated_we),
     .wd     (mio_pad_attr_12_keeper_en_12_wd),
     .d      (hw2reg.mio_pad_attr[12].keeper_en.d),
     .qre    (),
@@ -12671,7 +13035,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_12_schmitt_en_12 (
     .re     (mio_pad_attr_12_re),
-    .we     (mio_pad_attr_12_we & mio_pad_attr_regwen_12_qs),
+    .we     (mio_pad_attr_12_gated_we),
     .wd     (mio_pad_attr_12_schmitt_en_12_wd),
     .d      (hw2reg.mio_pad_attr[12].schmitt_en.d),
     .qre    (),
@@ -12686,7 +13050,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_12_od_en_12 (
     .re     (mio_pad_attr_12_re),
-    .we     (mio_pad_attr_12_we & mio_pad_attr_regwen_12_qs),
+    .we     (mio_pad_attr_12_gated_we),
     .wd     (mio_pad_attr_12_od_en_12_wd),
     .d      (hw2reg.mio_pad_attr[12].od_en.d),
     .qre    (),
@@ -12701,7 +13065,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_12_slew_rate_12 (
     .re     (mio_pad_attr_12_re),
-    .we     (mio_pad_attr_12_we & mio_pad_attr_regwen_12_qs),
+    .we     (mio_pad_attr_12_gated_we),
     .wd     (mio_pad_attr_12_slew_rate_12_wd),
     .d      (hw2reg.mio_pad_attr[12].slew_rate.d),
     .qre    (),
@@ -12716,7 +13080,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_12_drive_strength_12 (
     .re     (mio_pad_attr_12_re),
-    .we     (mio_pad_attr_12_we & mio_pad_attr_regwen_12_qs),
+    .we     (mio_pad_attr_12_gated_we),
     .wd     (mio_pad_attr_12_drive_strength_12_wd),
     .d      (hw2reg.mio_pad_attr[12].drive_strength.d),
     .qre    (),
@@ -12732,12 +13096,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_13_qe;
   logic [8:0] mio_pad_attr_13_flds_we;
   assign mio_pad_attr_13_qe = &mio_pad_attr_13_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_13_gated_we;
+  assign mio_pad_attr_13_gated_we = mio_pad_attr_13_we & mio_pad_attr_regwen_13_qs;
   //   F[invert_13]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_13_invert_13 (
     .re     (mio_pad_attr_13_re),
-    .we     (mio_pad_attr_13_we & mio_pad_attr_regwen_13_qs),
+    .we     (mio_pad_attr_13_gated_we),
     .wd     (mio_pad_attr_13_invert_13_wd),
     .d      (hw2reg.mio_pad_attr[13].invert.d),
     .qre    (),
@@ -12752,7 +13119,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_13_virtual_od_en_13 (
     .re     (mio_pad_attr_13_re),
-    .we     (mio_pad_attr_13_we & mio_pad_attr_regwen_13_qs),
+    .we     (mio_pad_attr_13_gated_we),
     .wd     (mio_pad_attr_13_virtual_od_en_13_wd),
     .d      (hw2reg.mio_pad_attr[13].virtual_od_en.d),
     .qre    (),
@@ -12767,7 +13134,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_13_pull_en_13 (
     .re     (mio_pad_attr_13_re),
-    .we     (mio_pad_attr_13_we & mio_pad_attr_regwen_13_qs),
+    .we     (mio_pad_attr_13_gated_we),
     .wd     (mio_pad_attr_13_pull_en_13_wd),
     .d      (hw2reg.mio_pad_attr[13].pull_en.d),
     .qre    (),
@@ -12782,7 +13149,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_13_pull_select_13 (
     .re     (mio_pad_attr_13_re),
-    .we     (mio_pad_attr_13_we & mio_pad_attr_regwen_13_qs),
+    .we     (mio_pad_attr_13_gated_we),
     .wd     (mio_pad_attr_13_pull_select_13_wd),
     .d      (hw2reg.mio_pad_attr[13].pull_select.d),
     .qre    (),
@@ -12797,7 +13164,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_13_keeper_en_13 (
     .re     (mio_pad_attr_13_re),
-    .we     (mio_pad_attr_13_we & mio_pad_attr_regwen_13_qs),
+    .we     (mio_pad_attr_13_gated_we),
     .wd     (mio_pad_attr_13_keeper_en_13_wd),
     .d      (hw2reg.mio_pad_attr[13].keeper_en.d),
     .qre    (),
@@ -12812,7 +13179,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_13_schmitt_en_13 (
     .re     (mio_pad_attr_13_re),
-    .we     (mio_pad_attr_13_we & mio_pad_attr_regwen_13_qs),
+    .we     (mio_pad_attr_13_gated_we),
     .wd     (mio_pad_attr_13_schmitt_en_13_wd),
     .d      (hw2reg.mio_pad_attr[13].schmitt_en.d),
     .qre    (),
@@ -12827,7 +13194,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_13_od_en_13 (
     .re     (mio_pad_attr_13_re),
-    .we     (mio_pad_attr_13_we & mio_pad_attr_regwen_13_qs),
+    .we     (mio_pad_attr_13_gated_we),
     .wd     (mio_pad_attr_13_od_en_13_wd),
     .d      (hw2reg.mio_pad_attr[13].od_en.d),
     .qre    (),
@@ -12842,7 +13209,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_13_slew_rate_13 (
     .re     (mio_pad_attr_13_re),
-    .we     (mio_pad_attr_13_we & mio_pad_attr_regwen_13_qs),
+    .we     (mio_pad_attr_13_gated_we),
     .wd     (mio_pad_attr_13_slew_rate_13_wd),
     .d      (hw2reg.mio_pad_attr[13].slew_rate.d),
     .qre    (),
@@ -12857,7 +13224,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_13_drive_strength_13 (
     .re     (mio_pad_attr_13_re),
-    .we     (mio_pad_attr_13_we & mio_pad_attr_regwen_13_qs),
+    .we     (mio_pad_attr_13_gated_we),
     .wd     (mio_pad_attr_13_drive_strength_13_wd),
     .d      (hw2reg.mio_pad_attr[13].drive_strength.d),
     .qre    (),
@@ -12873,12 +13240,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_14_qe;
   logic [8:0] mio_pad_attr_14_flds_we;
   assign mio_pad_attr_14_qe = &mio_pad_attr_14_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_14_gated_we;
+  assign mio_pad_attr_14_gated_we = mio_pad_attr_14_we & mio_pad_attr_regwen_14_qs;
   //   F[invert_14]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_14_invert_14 (
     .re     (mio_pad_attr_14_re),
-    .we     (mio_pad_attr_14_we & mio_pad_attr_regwen_14_qs),
+    .we     (mio_pad_attr_14_gated_we),
     .wd     (mio_pad_attr_14_invert_14_wd),
     .d      (hw2reg.mio_pad_attr[14].invert.d),
     .qre    (),
@@ -12893,7 +13263,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_14_virtual_od_en_14 (
     .re     (mio_pad_attr_14_re),
-    .we     (mio_pad_attr_14_we & mio_pad_attr_regwen_14_qs),
+    .we     (mio_pad_attr_14_gated_we),
     .wd     (mio_pad_attr_14_virtual_od_en_14_wd),
     .d      (hw2reg.mio_pad_attr[14].virtual_od_en.d),
     .qre    (),
@@ -12908,7 +13278,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_14_pull_en_14 (
     .re     (mio_pad_attr_14_re),
-    .we     (mio_pad_attr_14_we & mio_pad_attr_regwen_14_qs),
+    .we     (mio_pad_attr_14_gated_we),
     .wd     (mio_pad_attr_14_pull_en_14_wd),
     .d      (hw2reg.mio_pad_attr[14].pull_en.d),
     .qre    (),
@@ -12923,7 +13293,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_14_pull_select_14 (
     .re     (mio_pad_attr_14_re),
-    .we     (mio_pad_attr_14_we & mio_pad_attr_regwen_14_qs),
+    .we     (mio_pad_attr_14_gated_we),
     .wd     (mio_pad_attr_14_pull_select_14_wd),
     .d      (hw2reg.mio_pad_attr[14].pull_select.d),
     .qre    (),
@@ -12938,7 +13308,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_14_keeper_en_14 (
     .re     (mio_pad_attr_14_re),
-    .we     (mio_pad_attr_14_we & mio_pad_attr_regwen_14_qs),
+    .we     (mio_pad_attr_14_gated_we),
     .wd     (mio_pad_attr_14_keeper_en_14_wd),
     .d      (hw2reg.mio_pad_attr[14].keeper_en.d),
     .qre    (),
@@ -12953,7 +13323,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_14_schmitt_en_14 (
     .re     (mio_pad_attr_14_re),
-    .we     (mio_pad_attr_14_we & mio_pad_attr_regwen_14_qs),
+    .we     (mio_pad_attr_14_gated_we),
     .wd     (mio_pad_attr_14_schmitt_en_14_wd),
     .d      (hw2reg.mio_pad_attr[14].schmitt_en.d),
     .qre    (),
@@ -12968,7 +13338,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_14_od_en_14 (
     .re     (mio_pad_attr_14_re),
-    .we     (mio_pad_attr_14_we & mio_pad_attr_regwen_14_qs),
+    .we     (mio_pad_attr_14_gated_we),
     .wd     (mio_pad_attr_14_od_en_14_wd),
     .d      (hw2reg.mio_pad_attr[14].od_en.d),
     .qre    (),
@@ -12983,7 +13353,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_14_slew_rate_14 (
     .re     (mio_pad_attr_14_re),
-    .we     (mio_pad_attr_14_we & mio_pad_attr_regwen_14_qs),
+    .we     (mio_pad_attr_14_gated_we),
     .wd     (mio_pad_attr_14_slew_rate_14_wd),
     .d      (hw2reg.mio_pad_attr[14].slew_rate.d),
     .qre    (),
@@ -12998,7 +13368,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_14_drive_strength_14 (
     .re     (mio_pad_attr_14_re),
-    .we     (mio_pad_attr_14_we & mio_pad_attr_regwen_14_qs),
+    .we     (mio_pad_attr_14_gated_we),
     .wd     (mio_pad_attr_14_drive_strength_14_wd),
     .d      (hw2reg.mio_pad_attr[14].drive_strength.d),
     .qre    (),
@@ -13014,12 +13384,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_15_qe;
   logic [8:0] mio_pad_attr_15_flds_we;
   assign mio_pad_attr_15_qe = &mio_pad_attr_15_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_15_gated_we;
+  assign mio_pad_attr_15_gated_we = mio_pad_attr_15_we & mio_pad_attr_regwen_15_qs;
   //   F[invert_15]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_15_invert_15 (
     .re     (mio_pad_attr_15_re),
-    .we     (mio_pad_attr_15_we & mio_pad_attr_regwen_15_qs),
+    .we     (mio_pad_attr_15_gated_we),
     .wd     (mio_pad_attr_15_invert_15_wd),
     .d      (hw2reg.mio_pad_attr[15].invert.d),
     .qre    (),
@@ -13034,7 +13407,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_15_virtual_od_en_15 (
     .re     (mio_pad_attr_15_re),
-    .we     (mio_pad_attr_15_we & mio_pad_attr_regwen_15_qs),
+    .we     (mio_pad_attr_15_gated_we),
     .wd     (mio_pad_attr_15_virtual_od_en_15_wd),
     .d      (hw2reg.mio_pad_attr[15].virtual_od_en.d),
     .qre    (),
@@ -13049,7 +13422,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_15_pull_en_15 (
     .re     (mio_pad_attr_15_re),
-    .we     (mio_pad_attr_15_we & mio_pad_attr_regwen_15_qs),
+    .we     (mio_pad_attr_15_gated_we),
     .wd     (mio_pad_attr_15_pull_en_15_wd),
     .d      (hw2reg.mio_pad_attr[15].pull_en.d),
     .qre    (),
@@ -13064,7 +13437,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_15_pull_select_15 (
     .re     (mio_pad_attr_15_re),
-    .we     (mio_pad_attr_15_we & mio_pad_attr_regwen_15_qs),
+    .we     (mio_pad_attr_15_gated_we),
     .wd     (mio_pad_attr_15_pull_select_15_wd),
     .d      (hw2reg.mio_pad_attr[15].pull_select.d),
     .qre    (),
@@ -13079,7 +13452,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_15_keeper_en_15 (
     .re     (mio_pad_attr_15_re),
-    .we     (mio_pad_attr_15_we & mio_pad_attr_regwen_15_qs),
+    .we     (mio_pad_attr_15_gated_we),
     .wd     (mio_pad_attr_15_keeper_en_15_wd),
     .d      (hw2reg.mio_pad_attr[15].keeper_en.d),
     .qre    (),
@@ -13094,7 +13467,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_15_schmitt_en_15 (
     .re     (mio_pad_attr_15_re),
-    .we     (mio_pad_attr_15_we & mio_pad_attr_regwen_15_qs),
+    .we     (mio_pad_attr_15_gated_we),
     .wd     (mio_pad_attr_15_schmitt_en_15_wd),
     .d      (hw2reg.mio_pad_attr[15].schmitt_en.d),
     .qre    (),
@@ -13109,7 +13482,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_15_od_en_15 (
     .re     (mio_pad_attr_15_re),
-    .we     (mio_pad_attr_15_we & mio_pad_attr_regwen_15_qs),
+    .we     (mio_pad_attr_15_gated_we),
     .wd     (mio_pad_attr_15_od_en_15_wd),
     .d      (hw2reg.mio_pad_attr[15].od_en.d),
     .qre    (),
@@ -13124,7 +13497,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_15_slew_rate_15 (
     .re     (mio_pad_attr_15_re),
-    .we     (mio_pad_attr_15_we & mio_pad_attr_regwen_15_qs),
+    .we     (mio_pad_attr_15_gated_we),
     .wd     (mio_pad_attr_15_slew_rate_15_wd),
     .d      (hw2reg.mio_pad_attr[15].slew_rate.d),
     .qre    (),
@@ -13139,7 +13512,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_15_drive_strength_15 (
     .re     (mio_pad_attr_15_re),
-    .we     (mio_pad_attr_15_we & mio_pad_attr_regwen_15_qs),
+    .we     (mio_pad_attr_15_gated_we),
     .wd     (mio_pad_attr_15_drive_strength_15_wd),
     .d      (hw2reg.mio_pad_attr[15].drive_strength.d),
     .qre    (),
@@ -13155,12 +13528,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_16_qe;
   logic [8:0] mio_pad_attr_16_flds_we;
   assign mio_pad_attr_16_qe = &mio_pad_attr_16_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_16_gated_we;
+  assign mio_pad_attr_16_gated_we = mio_pad_attr_16_we & mio_pad_attr_regwen_16_qs;
   //   F[invert_16]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_16_invert_16 (
     .re     (mio_pad_attr_16_re),
-    .we     (mio_pad_attr_16_we & mio_pad_attr_regwen_16_qs),
+    .we     (mio_pad_attr_16_gated_we),
     .wd     (mio_pad_attr_16_invert_16_wd),
     .d      (hw2reg.mio_pad_attr[16].invert.d),
     .qre    (),
@@ -13175,7 +13551,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_16_virtual_od_en_16 (
     .re     (mio_pad_attr_16_re),
-    .we     (mio_pad_attr_16_we & mio_pad_attr_regwen_16_qs),
+    .we     (mio_pad_attr_16_gated_we),
     .wd     (mio_pad_attr_16_virtual_od_en_16_wd),
     .d      (hw2reg.mio_pad_attr[16].virtual_od_en.d),
     .qre    (),
@@ -13190,7 +13566,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_16_pull_en_16 (
     .re     (mio_pad_attr_16_re),
-    .we     (mio_pad_attr_16_we & mio_pad_attr_regwen_16_qs),
+    .we     (mio_pad_attr_16_gated_we),
     .wd     (mio_pad_attr_16_pull_en_16_wd),
     .d      (hw2reg.mio_pad_attr[16].pull_en.d),
     .qre    (),
@@ -13205,7 +13581,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_16_pull_select_16 (
     .re     (mio_pad_attr_16_re),
-    .we     (mio_pad_attr_16_we & mio_pad_attr_regwen_16_qs),
+    .we     (mio_pad_attr_16_gated_we),
     .wd     (mio_pad_attr_16_pull_select_16_wd),
     .d      (hw2reg.mio_pad_attr[16].pull_select.d),
     .qre    (),
@@ -13220,7 +13596,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_16_keeper_en_16 (
     .re     (mio_pad_attr_16_re),
-    .we     (mio_pad_attr_16_we & mio_pad_attr_regwen_16_qs),
+    .we     (mio_pad_attr_16_gated_we),
     .wd     (mio_pad_attr_16_keeper_en_16_wd),
     .d      (hw2reg.mio_pad_attr[16].keeper_en.d),
     .qre    (),
@@ -13235,7 +13611,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_16_schmitt_en_16 (
     .re     (mio_pad_attr_16_re),
-    .we     (mio_pad_attr_16_we & mio_pad_attr_regwen_16_qs),
+    .we     (mio_pad_attr_16_gated_we),
     .wd     (mio_pad_attr_16_schmitt_en_16_wd),
     .d      (hw2reg.mio_pad_attr[16].schmitt_en.d),
     .qre    (),
@@ -13250,7 +13626,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_16_od_en_16 (
     .re     (mio_pad_attr_16_re),
-    .we     (mio_pad_attr_16_we & mio_pad_attr_regwen_16_qs),
+    .we     (mio_pad_attr_16_gated_we),
     .wd     (mio_pad_attr_16_od_en_16_wd),
     .d      (hw2reg.mio_pad_attr[16].od_en.d),
     .qre    (),
@@ -13265,7 +13641,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_16_slew_rate_16 (
     .re     (mio_pad_attr_16_re),
-    .we     (mio_pad_attr_16_we & mio_pad_attr_regwen_16_qs),
+    .we     (mio_pad_attr_16_gated_we),
     .wd     (mio_pad_attr_16_slew_rate_16_wd),
     .d      (hw2reg.mio_pad_attr[16].slew_rate.d),
     .qre    (),
@@ -13280,7 +13656,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_16_drive_strength_16 (
     .re     (mio_pad_attr_16_re),
-    .we     (mio_pad_attr_16_we & mio_pad_attr_regwen_16_qs),
+    .we     (mio_pad_attr_16_gated_we),
     .wd     (mio_pad_attr_16_drive_strength_16_wd),
     .d      (hw2reg.mio_pad_attr[16].drive_strength.d),
     .qre    (),
@@ -13296,12 +13672,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_17_qe;
   logic [8:0] mio_pad_attr_17_flds_we;
   assign mio_pad_attr_17_qe = &mio_pad_attr_17_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_17_gated_we;
+  assign mio_pad_attr_17_gated_we = mio_pad_attr_17_we & mio_pad_attr_regwen_17_qs;
   //   F[invert_17]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_17_invert_17 (
     .re     (mio_pad_attr_17_re),
-    .we     (mio_pad_attr_17_we & mio_pad_attr_regwen_17_qs),
+    .we     (mio_pad_attr_17_gated_we),
     .wd     (mio_pad_attr_17_invert_17_wd),
     .d      (hw2reg.mio_pad_attr[17].invert.d),
     .qre    (),
@@ -13316,7 +13695,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_17_virtual_od_en_17 (
     .re     (mio_pad_attr_17_re),
-    .we     (mio_pad_attr_17_we & mio_pad_attr_regwen_17_qs),
+    .we     (mio_pad_attr_17_gated_we),
     .wd     (mio_pad_attr_17_virtual_od_en_17_wd),
     .d      (hw2reg.mio_pad_attr[17].virtual_od_en.d),
     .qre    (),
@@ -13331,7 +13710,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_17_pull_en_17 (
     .re     (mio_pad_attr_17_re),
-    .we     (mio_pad_attr_17_we & mio_pad_attr_regwen_17_qs),
+    .we     (mio_pad_attr_17_gated_we),
     .wd     (mio_pad_attr_17_pull_en_17_wd),
     .d      (hw2reg.mio_pad_attr[17].pull_en.d),
     .qre    (),
@@ -13346,7 +13725,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_17_pull_select_17 (
     .re     (mio_pad_attr_17_re),
-    .we     (mio_pad_attr_17_we & mio_pad_attr_regwen_17_qs),
+    .we     (mio_pad_attr_17_gated_we),
     .wd     (mio_pad_attr_17_pull_select_17_wd),
     .d      (hw2reg.mio_pad_attr[17].pull_select.d),
     .qre    (),
@@ -13361,7 +13740,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_17_keeper_en_17 (
     .re     (mio_pad_attr_17_re),
-    .we     (mio_pad_attr_17_we & mio_pad_attr_regwen_17_qs),
+    .we     (mio_pad_attr_17_gated_we),
     .wd     (mio_pad_attr_17_keeper_en_17_wd),
     .d      (hw2reg.mio_pad_attr[17].keeper_en.d),
     .qre    (),
@@ -13376,7 +13755,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_17_schmitt_en_17 (
     .re     (mio_pad_attr_17_re),
-    .we     (mio_pad_attr_17_we & mio_pad_attr_regwen_17_qs),
+    .we     (mio_pad_attr_17_gated_we),
     .wd     (mio_pad_attr_17_schmitt_en_17_wd),
     .d      (hw2reg.mio_pad_attr[17].schmitt_en.d),
     .qre    (),
@@ -13391,7 +13770,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_17_od_en_17 (
     .re     (mio_pad_attr_17_re),
-    .we     (mio_pad_attr_17_we & mio_pad_attr_regwen_17_qs),
+    .we     (mio_pad_attr_17_gated_we),
     .wd     (mio_pad_attr_17_od_en_17_wd),
     .d      (hw2reg.mio_pad_attr[17].od_en.d),
     .qre    (),
@@ -13406,7 +13785,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_17_slew_rate_17 (
     .re     (mio_pad_attr_17_re),
-    .we     (mio_pad_attr_17_we & mio_pad_attr_regwen_17_qs),
+    .we     (mio_pad_attr_17_gated_we),
     .wd     (mio_pad_attr_17_slew_rate_17_wd),
     .d      (hw2reg.mio_pad_attr[17].slew_rate.d),
     .qre    (),
@@ -13421,7 +13800,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_17_drive_strength_17 (
     .re     (mio_pad_attr_17_re),
-    .we     (mio_pad_attr_17_we & mio_pad_attr_regwen_17_qs),
+    .we     (mio_pad_attr_17_gated_we),
     .wd     (mio_pad_attr_17_drive_strength_17_wd),
     .d      (hw2reg.mio_pad_attr[17].drive_strength.d),
     .qre    (),
@@ -13437,12 +13816,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_18_qe;
   logic [8:0] mio_pad_attr_18_flds_we;
   assign mio_pad_attr_18_qe = &mio_pad_attr_18_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_18_gated_we;
+  assign mio_pad_attr_18_gated_we = mio_pad_attr_18_we & mio_pad_attr_regwen_18_qs;
   //   F[invert_18]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_18_invert_18 (
     .re     (mio_pad_attr_18_re),
-    .we     (mio_pad_attr_18_we & mio_pad_attr_regwen_18_qs),
+    .we     (mio_pad_attr_18_gated_we),
     .wd     (mio_pad_attr_18_invert_18_wd),
     .d      (hw2reg.mio_pad_attr[18].invert.d),
     .qre    (),
@@ -13457,7 +13839,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_18_virtual_od_en_18 (
     .re     (mio_pad_attr_18_re),
-    .we     (mio_pad_attr_18_we & mio_pad_attr_regwen_18_qs),
+    .we     (mio_pad_attr_18_gated_we),
     .wd     (mio_pad_attr_18_virtual_od_en_18_wd),
     .d      (hw2reg.mio_pad_attr[18].virtual_od_en.d),
     .qre    (),
@@ -13472,7 +13854,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_18_pull_en_18 (
     .re     (mio_pad_attr_18_re),
-    .we     (mio_pad_attr_18_we & mio_pad_attr_regwen_18_qs),
+    .we     (mio_pad_attr_18_gated_we),
     .wd     (mio_pad_attr_18_pull_en_18_wd),
     .d      (hw2reg.mio_pad_attr[18].pull_en.d),
     .qre    (),
@@ -13487,7 +13869,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_18_pull_select_18 (
     .re     (mio_pad_attr_18_re),
-    .we     (mio_pad_attr_18_we & mio_pad_attr_regwen_18_qs),
+    .we     (mio_pad_attr_18_gated_we),
     .wd     (mio_pad_attr_18_pull_select_18_wd),
     .d      (hw2reg.mio_pad_attr[18].pull_select.d),
     .qre    (),
@@ -13502,7 +13884,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_18_keeper_en_18 (
     .re     (mio_pad_attr_18_re),
-    .we     (mio_pad_attr_18_we & mio_pad_attr_regwen_18_qs),
+    .we     (mio_pad_attr_18_gated_we),
     .wd     (mio_pad_attr_18_keeper_en_18_wd),
     .d      (hw2reg.mio_pad_attr[18].keeper_en.d),
     .qre    (),
@@ -13517,7 +13899,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_18_schmitt_en_18 (
     .re     (mio_pad_attr_18_re),
-    .we     (mio_pad_attr_18_we & mio_pad_attr_regwen_18_qs),
+    .we     (mio_pad_attr_18_gated_we),
     .wd     (mio_pad_attr_18_schmitt_en_18_wd),
     .d      (hw2reg.mio_pad_attr[18].schmitt_en.d),
     .qre    (),
@@ -13532,7 +13914,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_18_od_en_18 (
     .re     (mio_pad_attr_18_re),
-    .we     (mio_pad_attr_18_we & mio_pad_attr_regwen_18_qs),
+    .we     (mio_pad_attr_18_gated_we),
     .wd     (mio_pad_attr_18_od_en_18_wd),
     .d      (hw2reg.mio_pad_attr[18].od_en.d),
     .qre    (),
@@ -13547,7 +13929,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_18_slew_rate_18 (
     .re     (mio_pad_attr_18_re),
-    .we     (mio_pad_attr_18_we & mio_pad_attr_regwen_18_qs),
+    .we     (mio_pad_attr_18_gated_we),
     .wd     (mio_pad_attr_18_slew_rate_18_wd),
     .d      (hw2reg.mio_pad_attr[18].slew_rate.d),
     .qre    (),
@@ -13562,7 +13944,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_18_drive_strength_18 (
     .re     (mio_pad_attr_18_re),
-    .we     (mio_pad_attr_18_we & mio_pad_attr_regwen_18_qs),
+    .we     (mio_pad_attr_18_gated_we),
     .wd     (mio_pad_attr_18_drive_strength_18_wd),
     .d      (hw2reg.mio_pad_attr[18].drive_strength.d),
     .qre    (),
@@ -13578,12 +13960,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_19_qe;
   logic [8:0] mio_pad_attr_19_flds_we;
   assign mio_pad_attr_19_qe = &mio_pad_attr_19_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_19_gated_we;
+  assign mio_pad_attr_19_gated_we = mio_pad_attr_19_we & mio_pad_attr_regwen_19_qs;
   //   F[invert_19]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_19_invert_19 (
     .re     (mio_pad_attr_19_re),
-    .we     (mio_pad_attr_19_we & mio_pad_attr_regwen_19_qs),
+    .we     (mio_pad_attr_19_gated_we),
     .wd     (mio_pad_attr_19_invert_19_wd),
     .d      (hw2reg.mio_pad_attr[19].invert.d),
     .qre    (),
@@ -13598,7 +13983,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_19_virtual_od_en_19 (
     .re     (mio_pad_attr_19_re),
-    .we     (mio_pad_attr_19_we & mio_pad_attr_regwen_19_qs),
+    .we     (mio_pad_attr_19_gated_we),
     .wd     (mio_pad_attr_19_virtual_od_en_19_wd),
     .d      (hw2reg.mio_pad_attr[19].virtual_od_en.d),
     .qre    (),
@@ -13613,7 +13998,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_19_pull_en_19 (
     .re     (mio_pad_attr_19_re),
-    .we     (mio_pad_attr_19_we & mio_pad_attr_regwen_19_qs),
+    .we     (mio_pad_attr_19_gated_we),
     .wd     (mio_pad_attr_19_pull_en_19_wd),
     .d      (hw2reg.mio_pad_attr[19].pull_en.d),
     .qre    (),
@@ -13628,7 +14013,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_19_pull_select_19 (
     .re     (mio_pad_attr_19_re),
-    .we     (mio_pad_attr_19_we & mio_pad_attr_regwen_19_qs),
+    .we     (mio_pad_attr_19_gated_we),
     .wd     (mio_pad_attr_19_pull_select_19_wd),
     .d      (hw2reg.mio_pad_attr[19].pull_select.d),
     .qre    (),
@@ -13643,7 +14028,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_19_keeper_en_19 (
     .re     (mio_pad_attr_19_re),
-    .we     (mio_pad_attr_19_we & mio_pad_attr_regwen_19_qs),
+    .we     (mio_pad_attr_19_gated_we),
     .wd     (mio_pad_attr_19_keeper_en_19_wd),
     .d      (hw2reg.mio_pad_attr[19].keeper_en.d),
     .qre    (),
@@ -13658,7 +14043,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_19_schmitt_en_19 (
     .re     (mio_pad_attr_19_re),
-    .we     (mio_pad_attr_19_we & mio_pad_attr_regwen_19_qs),
+    .we     (mio_pad_attr_19_gated_we),
     .wd     (mio_pad_attr_19_schmitt_en_19_wd),
     .d      (hw2reg.mio_pad_attr[19].schmitt_en.d),
     .qre    (),
@@ -13673,7 +14058,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_19_od_en_19 (
     .re     (mio_pad_attr_19_re),
-    .we     (mio_pad_attr_19_we & mio_pad_attr_regwen_19_qs),
+    .we     (mio_pad_attr_19_gated_we),
     .wd     (mio_pad_attr_19_od_en_19_wd),
     .d      (hw2reg.mio_pad_attr[19].od_en.d),
     .qre    (),
@@ -13688,7 +14073,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_19_slew_rate_19 (
     .re     (mio_pad_attr_19_re),
-    .we     (mio_pad_attr_19_we & mio_pad_attr_regwen_19_qs),
+    .we     (mio_pad_attr_19_gated_we),
     .wd     (mio_pad_attr_19_slew_rate_19_wd),
     .d      (hw2reg.mio_pad_attr[19].slew_rate.d),
     .qre    (),
@@ -13703,7 +14088,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_19_drive_strength_19 (
     .re     (mio_pad_attr_19_re),
-    .we     (mio_pad_attr_19_we & mio_pad_attr_regwen_19_qs),
+    .we     (mio_pad_attr_19_gated_we),
     .wd     (mio_pad_attr_19_drive_strength_19_wd),
     .d      (hw2reg.mio_pad_attr[19].drive_strength.d),
     .qre    (),
@@ -13719,12 +14104,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_20_qe;
   logic [8:0] mio_pad_attr_20_flds_we;
   assign mio_pad_attr_20_qe = &mio_pad_attr_20_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_20_gated_we;
+  assign mio_pad_attr_20_gated_we = mio_pad_attr_20_we & mio_pad_attr_regwen_20_qs;
   //   F[invert_20]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_20_invert_20 (
     .re     (mio_pad_attr_20_re),
-    .we     (mio_pad_attr_20_we & mio_pad_attr_regwen_20_qs),
+    .we     (mio_pad_attr_20_gated_we),
     .wd     (mio_pad_attr_20_invert_20_wd),
     .d      (hw2reg.mio_pad_attr[20].invert.d),
     .qre    (),
@@ -13739,7 +14127,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_20_virtual_od_en_20 (
     .re     (mio_pad_attr_20_re),
-    .we     (mio_pad_attr_20_we & mio_pad_attr_regwen_20_qs),
+    .we     (mio_pad_attr_20_gated_we),
     .wd     (mio_pad_attr_20_virtual_od_en_20_wd),
     .d      (hw2reg.mio_pad_attr[20].virtual_od_en.d),
     .qre    (),
@@ -13754,7 +14142,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_20_pull_en_20 (
     .re     (mio_pad_attr_20_re),
-    .we     (mio_pad_attr_20_we & mio_pad_attr_regwen_20_qs),
+    .we     (mio_pad_attr_20_gated_we),
     .wd     (mio_pad_attr_20_pull_en_20_wd),
     .d      (hw2reg.mio_pad_attr[20].pull_en.d),
     .qre    (),
@@ -13769,7 +14157,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_20_pull_select_20 (
     .re     (mio_pad_attr_20_re),
-    .we     (mio_pad_attr_20_we & mio_pad_attr_regwen_20_qs),
+    .we     (mio_pad_attr_20_gated_we),
     .wd     (mio_pad_attr_20_pull_select_20_wd),
     .d      (hw2reg.mio_pad_attr[20].pull_select.d),
     .qre    (),
@@ -13784,7 +14172,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_20_keeper_en_20 (
     .re     (mio_pad_attr_20_re),
-    .we     (mio_pad_attr_20_we & mio_pad_attr_regwen_20_qs),
+    .we     (mio_pad_attr_20_gated_we),
     .wd     (mio_pad_attr_20_keeper_en_20_wd),
     .d      (hw2reg.mio_pad_attr[20].keeper_en.d),
     .qre    (),
@@ -13799,7 +14187,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_20_schmitt_en_20 (
     .re     (mio_pad_attr_20_re),
-    .we     (mio_pad_attr_20_we & mio_pad_attr_regwen_20_qs),
+    .we     (mio_pad_attr_20_gated_we),
     .wd     (mio_pad_attr_20_schmitt_en_20_wd),
     .d      (hw2reg.mio_pad_attr[20].schmitt_en.d),
     .qre    (),
@@ -13814,7 +14202,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_20_od_en_20 (
     .re     (mio_pad_attr_20_re),
-    .we     (mio_pad_attr_20_we & mio_pad_attr_regwen_20_qs),
+    .we     (mio_pad_attr_20_gated_we),
     .wd     (mio_pad_attr_20_od_en_20_wd),
     .d      (hw2reg.mio_pad_attr[20].od_en.d),
     .qre    (),
@@ -13829,7 +14217,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_20_slew_rate_20 (
     .re     (mio_pad_attr_20_re),
-    .we     (mio_pad_attr_20_we & mio_pad_attr_regwen_20_qs),
+    .we     (mio_pad_attr_20_gated_we),
     .wd     (mio_pad_attr_20_slew_rate_20_wd),
     .d      (hw2reg.mio_pad_attr[20].slew_rate.d),
     .qre    (),
@@ -13844,7 +14232,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_20_drive_strength_20 (
     .re     (mio_pad_attr_20_re),
-    .we     (mio_pad_attr_20_we & mio_pad_attr_regwen_20_qs),
+    .we     (mio_pad_attr_20_gated_we),
     .wd     (mio_pad_attr_20_drive_strength_20_wd),
     .d      (hw2reg.mio_pad_attr[20].drive_strength.d),
     .qre    (),
@@ -13860,12 +14248,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_21_qe;
   logic [8:0] mio_pad_attr_21_flds_we;
   assign mio_pad_attr_21_qe = &mio_pad_attr_21_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_21_gated_we;
+  assign mio_pad_attr_21_gated_we = mio_pad_attr_21_we & mio_pad_attr_regwen_21_qs;
   //   F[invert_21]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_21_invert_21 (
     .re     (mio_pad_attr_21_re),
-    .we     (mio_pad_attr_21_we & mio_pad_attr_regwen_21_qs),
+    .we     (mio_pad_attr_21_gated_we),
     .wd     (mio_pad_attr_21_invert_21_wd),
     .d      (hw2reg.mio_pad_attr[21].invert.d),
     .qre    (),
@@ -13880,7 +14271,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_21_virtual_od_en_21 (
     .re     (mio_pad_attr_21_re),
-    .we     (mio_pad_attr_21_we & mio_pad_attr_regwen_21_qs),
+    .we     (mio_pad_attr_21_gated_we),
     .wd     (mio_pad_attr_21_virtual_od_en_21_wd),
     .d      (hw2reg.mio_pad_attr[21].virtual_od_en.d),
     .qre    (),
@@ -13895,7 +14286,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_21_pull_en_21 (
     .re     (mio_pad_attr_21_re),
-    .we     (mio_pad_attr_21_we & mio_pad_attr_regwen_21_qs),
+    .we     (mio_pad_attr_21_gated_we),
     .wd     (mio_pad_attr_21_pull_en_21_wd),
     .d      (hw2reg.mio_pad_attr[21].pull_en.d),
     .qre    (),
@@ -13910,7 +14301,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_21_pull_select_21 (
     .re     (mio_pad_attr_21_re),
-    .we     (mio_pad_attr_21_we & mio_pad_attr_regwen_21_qs),
+    .we     (mio_pad_attr_21_gated_we),
     .wd     (mio_pad_attr_21_pull_select_21_wd),
     .d      (hw2reg.mio_pad_attr[21].pull_select.d),
     .qre    (),
@@ -13925,7 +14316,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_21_keeper_en_21 (
     .re     (mio_pad_attr_21_re),
-    .we     (mio_pad_attr_21_we & mio_pad_attr_regwen_21_qs),
+    .we     (mio_pad_attr_21_gated_we),
     .wd     (mio_pad_attr_21_keeper_en_21_wd),
     .d      (hw2reg.mio_pad_attr[21].keeper_en.d),
     .qre    (),
@@ -13940,7 +14331,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_21_schmitt_en_21 (
     .re     (mio_pad_attr_21_re),
-    .we     (mio_pad_attr_21_we & mio_pad_attr_regwen_21_qs),
+    .we     (mio_pad_attr_21_gated_we),
     .wd     (mio_pad_attr_21_schmitt_en_21_wd),
     .d      (hw2reg.mio_pad_attr[21].schmitt_en.d),
     .qre    (),
@@ -13955,7 +14346,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_21_od_en_21 (
     .re     (mio_pad_attr_21_re),
-    .we     (mio_pad_attr_21_we & mio_pad_attr_regwen_21_qs),
+    .we     (mio_pad_attr_21_gated_we),
     .wd     (mio_pad_attr_21_od_en_21_wd),
     .d      (hw2reg.mio_pad_attr[21].od_en.d),
     .qre    (),
@@ -13970,7 +14361,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_21_slew_rate_21 (
     .re     (mio_pad_attr_21_re),
-    .we     (mio_pad_attr_21_we & mio_pad_attr_regwen_21_qs),
+    .we     (mio_pad_attr_21_gated_we),
     .wd     (mio_pad_attr_21_slew_rate_21_wd),
     .d      (hw2reg.mio_pad_attr[21].slew_rate.d),
     .qre    (),
@@ -13985,7 +14376,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_21_drive_strength_21 (
     .re     (mio_pad_attr_21_re),
-    .we     (mio_pad_attr_21_we & mio_pad_attr_regwen_21_qs),
+    .we     (mio_pad_attr_21_gated_we),
     .wd     (mio_pad_attr_21_drive_strength_21_wd),
     .d      (hw2reg.mio_pad_attr[21].drive_strength.d),
     .qre    (),
@@ -14001,12 +14392,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_22_qe;
   logic [8:0] mio_pad_attr_22_flds_we;
   assign mio_pad_attr_22_qe = &mio_pad_attr_22_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_22_gated_we;
+  assign mio_pad_attr_22_gated_we = mio_pad_attr_22_we & mio_pad_attr_regwen_22_qs;
   //   F[invert_22]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_22_invert_22 (
     .re     (mio_pad_attr_22_re),
-    .we     (mio_pad_attr_22_we & mio_pad_attr_regwen_22_qs),
+    .we     (mio_pad_attr_22_gated_we),
     .wd     (mio_pad_attr_22_invert_22_wd),
     .d      (hw2reg.mio_pad_attr[22].invert.d),
     .qre    (),
@@ -14021,7 +14415,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_22_virtual_od_en_22 (
     .re     (mio_pad_attr_22_re),
-    .we     (mio_pad_attr_22_we & mio_pad_attr_regwen_22_qs),
+    .we     (mio_pad_attr_22_gated_we),
     .wd     (mio_pad_attr_22_virtual_od_en_22_wd),
     .d      (hw2reg.mio_pad_attr[22].virtual_od_en.d),
     .qre    (),
@@ -14036,7 +14430,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_22_pull_en_22 (
     .re     (mio_pad_attr_22_re),
-    .we     (mio_pad_attr_22_we & mio_pad_attr_regwen_22_qs),
+    .we     (mio_pad_attr_22_gated_we),
     .wd     (mio_pad_attr_22_pull_en_22_wd),
     .d      (hw2reg.mio_pad_attr[22].pull_en.d),
     .qre    (),
@@ -14051,7 +14445,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_22_pull_select_22 (
     .re     (mio_pad_attr_22_re),
-    .we     (mio_pad_attr_22_we & mio_pad_attr_regwen_22_qs),
+    .we     (mio_pad_attr_22_gated_we),
     .wd     (mio_pad_attr_22_pull_select_22_wd),
     .d      (hw2reg.mio_pad_attr[22].pull_select.d),
     .qre    (),
@@ -14066,7 +14460,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_22_keeper_en_22 (
     .re     (mio_pad_attr_22_re),
-    .we     (mio_pad_attr_22_we & mio_pad_attr_regwen_22_qs),
+    .we     (mio_pad_attr_22_gated_we),
     .wd     (mio_pad_attr_22_keeper_en_22_wd),
     .d      (hw2reg.mio_pad_attr[22].keeper_en.d),
     .qre    (),
@@ -14081,7 +14475,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_22_schmitt_en_22 (
     .re     (mio_pad_attr_22_re),
-    .we     (mio_pad_attr_22_we & mio_pad_attr_regwen_22_qs),
+    .we     (mio_pad_attr_22_gated_we),
     .wd     (mio_pad_attr_22_schmitt_en_22_wd),
     .d      (hw2reg.mio_pad_attr[22].schmitt_en.d),
     .qre    (),
@@ -14096,7 +14490,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_22_od_en_22 (
     .re     (mio_pad_attr_22_re),
-    .we     (mio_pad_attr_22_we & mio_pad_attr_regwen_22_qs),
+    .we     (mio_pad_attr_22_gated_we),
     .wd     (mio_pad_attr_22_od_en_22_wd),
     .d      (hw2reg.mio_pad_attr[22].od_en.d),
     .qre    (),
@@ -14111,7 +14505,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_22_slew_rate_22 (
     .re     (mio_pad_attr_22_re),
-    .we     (mio_pad_attr_22_we & mio_pad_attr_regwen_22_qs),
+    .we     (mio_pad_attr_22_gated_we),
     .wd     (mio_pad_attr_22_slew_rate_22_wd),
     .d      (hw2reg.mio_pad_attr[22].slew_rate.d),
     .qre    (),
@@ -14126,7 +14520,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_22_drive_strength_22 (
     .re     (mio_pad_attr_22_re),
-    .we     (mio_pad_attr_22_we & mio_pad_attr_regwen_22_qs),
+    .we     (mio_pad_attr_22_gated_we),
     .wd     (mio_pad_attr_22_drive_strength_22_wd),
     .d      (hw2reg.mio_pad_attr[22].drive_strength.d),
     .qre    (),
@@ -14142,12 +14536,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_23_qe;
   logic [8:0] mio_pad_attr_23_flds_we;
   assign mio_pad_attr_23_qe = &mio_pad_attr_23_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_23_gated_we;
+  assign mio_pad_attr_23_gated_we = mio_pad_attr_23_we & mio_pad_attr_regwen_23_qs;
   //   F[invert_23]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_23_invert_23 (
     .re     (mio_pad_attr_23_re),
-    .we     (mio_pad_attr_23_we & mio_pad_attr_regwen_23_qs),
+    .we     (mio_pad_attr_23_gated_we),
     .wd     (mio_pad_attr_23_invert_23_wd),
     .d      (hw2reg.mio_pad_attr[23].invert.d),
     .qre    (),
@@ -14162,7 +14559,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_23_virtual_od_en_23 (
     .re     (mio_pad_attr_23_re),
-    .we     (mio_pad_attr_23_we & mio_pad_attr_regwen_23_qs),
+    .we     (mio_pad_attr_23_gated_we),
     .wd     (mio_pad_attr_23_virtual_od_en_23_wd),
     .d      (hw2reg.mio_pad_attr[23].virtual_od_en.d),
     .qre    (),
@@ -14177,7 +14574,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_23_pull_en_23 (
     .re     (mio_pad_attr_23_re),
-    .we     (mio_pad_attr_23_we & mio_pad_attr_regwen_23_qs),
+    .we     (mio_pad_attr_23_gated_we),
     .wd     (mio_pad_attr_23_pull_en_23_wd),
     .d      (hw2reg.mio_pad_attr[23].pull_en.d),
     .qre    (),
@@ -14192,7 +14589,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_23_pull_select_23 (
     .re     (mio_pad_attr_23_re),
-    .we     (mio_pad_attr_23_we & mio_pad_attr_regwen_23_qs),
+    .we     (mio_pad_attr_23_gated_we),
     .wd     (mio_pad_attr_23_pull_select_23_wd),
     .d      (hw2reg.mio_pad_attr[23].pull_select.d),
     .qre    (),
@@ -14207,7 +14604,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_23_keeper_en_23 (
     .re     (mio_pad_attr_23_re),
-    .we     (mio_pad_attr_23_we & mio_pad_attr_regwen_23_qs),
+    .we     (mio_pad_attr_23_gated_we),
     .wd     (mio_pad_attr_23_keeper_en_23_wd),
     .d      (hw2reg.mio_pad_attr[23].keeper_en.d),
     .qre    (),
@@ -14222,7 +14619,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_23_schmitt_en_23 (
     .re     (mio_pad_attr_23_re),
-    .we     (mio_pad_attr_23_we & mio_pad_attr_regwen_23_qs),
+    .we     (mio_pad_attr_23_gated_we),
     .wd     (mio_pad_attr_23_schmitt_en_23_wd),
     .d      (hw2reg.mio_pad_attr[23].schmitt_en.d),
     .qre    (),
@@ -14237,7 +14634,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_23_od_en_23 (
     .re     (mio_pad_attr_23_re),
-    .we     (mio_pad_attr_23_we & mio_pad_attr_regwen_23_qs),
+    .we     (mio_pad_attr_23_gated_we),
     .wd     (mio_pad_attr_23_od_en_23_wd),
     .d      (hw2reg.mio_pad_attr[23].od_en.d),
     .qre    (),
@@ -14252,7 +14649,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_23_slew_rate_23 (
     .re     (mio_pad_attr_23_re),
-    .we     (mio_pad_attr_23_we & mio_pad_attr_regwen_23_qs),
+    .we     (mio_pad_attr_23_gated_we),
     .wd     (mio_pad_attr_23_slew_rate_23_wd),
     .d      (hw2reg.mio_pad_attr[23].slew_rate.d),
     .qre    (),
@@ -14267,7 +14664,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_23_drive_strength_23 (
     .re     (mio_pad_attr_23_re),
-    .we     (mio_pad_attr_23_we & mio_pad_attr_regwen_23_qs),
+    .we     (mio_pad_attr_23_gated_we),
     .wd     (mio_pad_attr_23_drive_strength_23_wd),
     .d      (hw2reg.mio_pad_attr[23].drive_strength.d),
     .qre    (),
@@ -14283,12 +14680,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_24_qe;
   logic [8:0] mio_pad_attr_24_flds_we;
   assign mio_pad_attr_24_qe = &mio_pad_attr_24_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_24_gated_we;
+  assign mio_pad_attr_24_gated_we = mio_pad_attr_24_we & mio_pad_attr_regwen_24_qs;
   //   F[invert_24]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_24_invert_24 (
     .re     (mio_pad_attr_24_re),
-    .we     (mio_pad_attr_24_we & mio_pad_attr_regwen_24_qs),
+    .we     (mio_pad_attr_24_gated_we),
     .wd     (mio_pad_attr_24_invert_24_wd),
     .d      (hw2reg.mio_pad_attr[24].invert.d),
     .qre    (),
@@ -14303,7 +14703,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_24_virtual_od_en_24 (
     .re     (mio_pad_attr_24_re),
-    .we     (mio_pad_attr_24_we & mio_pad_attr_regwen_24_qs),
+    .we     (mio_pad_attr_24_gated_we),
     .wd     (mio_pad_attr_24_virtual_od_en_24_wd),
     .d      (hw2reg.mio_pad_attr[24].virtual_od_en.d),
     .qre    (),
@@ -14318,7 +14718,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_24_pull_en_24 (
     .re     (mio_pad_attr_24_re),
-    .we     (mio_pad_attr_24_we & mio_pad_attr_regwen_24_qs),
+    .we     (mio_pad_attr_24_gated_we),
     .wd     (mio_pad_attr_24_pull_en_24_wd),
     .d      (hw2reg.mio_pad_attr[24].pull_en.d),
     .qre    (),
@@ -14333,7 +14733,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_24_pull_select_24 (
     .re     (mio_pad_attr_24_re),
-    .we     (mio_pad_attr_24_we & mio_pad_attr_regwen_24_qs),
+    .we     (mio_pad_attr_24_gated_we),
     .wd     (mio_pad_attr_24_pull_select_24_wd),
     .d      (hw2reg.mio_pad_attr[24].pull_select.d),
     .qre    (),
@@ -14348,7 +14748,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_24_keeper_en_24 (
     .re     (mio_pad_attr_24_re),
-    .we     (mio_pad_attr_24_we & mio_pad_attr_regwen_24_qs),
+    .we     (mio_pad_attr_24_gated_we),
     .wd     (mio_pad_attr_24_keeper_en_24_wd),
     .d      (hw2reg.mio_pad_attr[24].keeper_en.d),
     .qre    (),
@@ -14363,7 +14763,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_24_schmitt_en_24 (
     .re     (mio_pad_attr_24_re),
-    .we     (mio_pad_attr_24_we & mio_pad_attr_regwen_24_qs),
+    .we     (mio_pad_attr_24_gated_we),
     .wd     (mio_pad_attr_24_schmitt_en_24_wd),
     .d      (hw2reg.mio_pad_attr[24].schmitt_en.d),
     .qre    (),
@@ -14378,7 +14778,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_24_od_en_24 (
     .re     (mio_pad_attr_24_re),
-    .we     (mio_pad_attr_24_we & mio_pad_attr_regwen_24_qs),
+    .we     (mio_pad_attr_24_gated_we),
     .wd     (mio_pad_attr_24_od_en_24_wd),
     .d      (hw2reg.mio_pad_attr[24].od_en.d),
     .qre    (),
@@ -14393,7 +14793,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_24_slew_rate_24 (
     .re     (mio_pad_attr_24_re),
-    .we     (mio_pad_attr_24_we & mio_pad_attr_regwen_24_qs),
+    .we     (mio_pad_attr_24_gated_we),
     .wd     (mio_pad_attr_24_slew_rate_24_wd),
     .d      (hw2reg.mio_pad_attr[24].slew_rate.d),
     .qre    (),
@@ -14408,7 +14808,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_24_drive_strength_24 (
     .re     (mio_pad_attr_24_re),
-    .we     (mio_pad_attr_24_we & mio_pad_attr_regwen_24_qs),
+    .we     (mio_pad_attr_24_gated_we),
     .wd     (mio_pad_attr_24_drive_strength_24_wd),
     .d      (hw2reg.mio_pad_attr[24].drive_strength.d),
     .qre    (),
@@ -14424,12 +14824,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_25_qe;
   logic [8:0] mio_pad_attr_25_flds_we;
   assign mio_pad_attr_25_qe = &mio_pad_attr_25_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_25_gated_we;
+  assign mio_pad_attr_25_gated_we = mio_pad_attr_25_we & mio_pad_attr_regwen_25_qs;
   //   F[invert_25]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_25_invert_25 (
     .re     (mio_pad_attr_25_re),
-    .we     (mio_pad_attr_25_we & mio_pad_attr_regwen_25_qs),
+    .we     (mio_pad_attr_25_gated_we),
     .wd     (mio_pad_attr_25_invert_25_wd),
     .d      (hw2reg.mio_pad_attr[25].invert.d),
     .qre    (),
@@ -14444,7 +14847,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_25_virtual_od_en_25 (
     .re     (mio_pad_attr_25_re),
-    .we     (mio_pad_attr_25_we & mio_pad_attr_regwen_25_qs),
+    .we     (mio_pad_attr_25_gated_we),
     .wd     (mio_pad_attr_25_virtual_od_en_25_wd),
     .d      (hw2reg.mio_pad_attr[25].virtual_od_en.d),
     .qre    (),
@@ -14459,7 +14862,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_25_pull_en_25 (
     .re     (mio_pad_attr_25_re),
-    .we     (mio_pad_attr_25_we & mio_pad_attr_regwen_25_qs),
+    .we     (mio_pad_attr_25_gated_we),
     .wd     (mio_pad_attr_25_pull_en_25_wd),
     .d      (hw2reg.mio_pad_attr[25].pull_en.d),
     .qre    (),
@@ -14474,7 +14877,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_25_pull_select_25 (
     .re     (mio_pad_attr_25_re),
-    .we     (mio_pad_attr_25_we & mio_pad_attr_regwen_25_qs),
+    .we     (mio_pad_attr_25_gated_we),
     .wd     (mio_pad_attr_25_pull_select_25_wd),
     .d      (hw2reg.mio_pad_attr[25].pull_select.d),
     .qre    (),
@@ -14489,7 +14892,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_25_keeper_en_25 (
     .re     (mio_pad_attr_25_re),
-    .we     (mio_pad_attr_25_we & mio_pad_attr_regwen_25_qs),
+    .we     (mio_pad_attr_25_gated_we),
     .wd     (mio_pad_attr_25_keeper_en_25_wd),
     .d      (hw2reg.mio_pad_attr[25].keeper_en.d),
     .qre    (),
@@ -14504,7 +14907,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_25_schmitt_en_25 (
     .re     (mio_pad_attr_25_re),
-    .we     (mio_pad_attr_25_we & mio_pad_attr_regwen_25_qs),
+    .we     (mio_pad_attr_25_gated_we),
     .wd     (mio_pad_attr_25_schmitt_en_25_wd),
     .d      (hw2reg.mio_pad_attr[25].schmitt_en.d),
     .qre    (),
@@ -14519,7 +14922,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_25_od_en_25 (
     .re     (mio_pad_attr_25_re),
-    .we     (mio_pad_attr_25_we & mio_pad_attr_regwen_25_qs),
+    .we     (mio_pad_attr_25_gated_we),
     .wd     (mio_pad_attr_25_od_en_25_wd),
     .d      (hw2reg.mio_pad_attr[25].od_en.d),
     .qre    (),
@@ -14534,7 +14937,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_25_slew_rate_25 (
     .re     (mio_pad_attr_25_re),
-    .we     (mio_pad_attr_25_we & mio_pad_attr_regwen_25_qs),
+    .we     (mio_pad_attr_25_gated_we),
     .wd     (mio_pad_attr_25_slew_rate_25_wd),
     .d      (hw2reg.mio_pad_attr[25].slew_rate.d),
     .qre    (),
@@ -14549,7 +14952,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_25_drive_strength_25 (
     .re     (mio_pad_attr_25_re),
-    .we     (mio_pad_attr_25_we & mio_pad_attr_regwen_25_qs),
+    .we     (mio_pad_attr_25_gated_we),
     .wd     (mio_pad_attr_25_drive_strength_25_wd),
     .d      (hw2reg.mio_pad_attr[25].drive_strength.d),
     .qre    (),
@@ -14565,12 +14968,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_26_qe;
   logic [8:0] mio_pad_attr_26_flds_we;
   assign mio_pad_attr_26_qe = &mio_pad_attr_26_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_26_gated_we;
+  assign mio_pad_attr_26_gated_we = mio_pad_attr_26_we & mio_pad_attr_regwen_26_qs;
   //   F[invert_26]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_26_invert_26 (
     .re     (mio_pad_attr_26_re),
-    .we     (mio_pad_attr_26_we & mio_pad_attr_regwen_26_qs),
+    .we     (mio_pad_attr_26_gated_we),
     .wd     (mio_pad_attr_26_invert_26_wd),
     .d      (hw2reg.mio_pad_attr[26].invert.d),
     .qre    (),
@@ -14585,7 +14991,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_26_virtual_od_en_26 (
     .re     (mio_pad_attr_26_re),
-    .we     (mio_pad_attr_26_we & mio_pad_attr_regwen_26_qs),
+    .we     (mio_pad_attr_26_gated_we),
     .wd     (mio_pad_attr_26_virtual_od_en_26_wd),
     .d      (hw2reg.mio_pad_attr[26].virtual_od_en.d),
     .qre    (),
@@ -14600,7 +15006,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_26_pull_en_26 (
     .re     (mio_pad_attr_26_re),
-    .we     (mio_pad_attr_26_we & mio_pad_attr_regwen_26_qs),
+    .we     (mio_pad_attr_26_gated_we),
     .wd     (mio_pad_attr_26_pull_en_26_wd),
     .d      (hw2reg.mio_pad_attr[26].pull_en.d),
     .qre    (),
@@ -14615,7 +15021,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_26_pull_select_26 (
     .re     (mio_pad_attr_26_re),
-    .we     (mio_pad_attr_26_we & mio_pad_attr_regwen_26_qs),
+    .we     (mio_pad_attr_26_gated_we),
     .wd     (mio_pad_attr_26_pull_select_26_wd),
     .d      (hw2reg.mio_pad_attr[26].pull_select.d),
     .qre    (),
@@ -14630,7 +15036,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_26_keeper_en_26 (
     .re     (mio_pad_attr_26_re),
-    .we     (mio_pad_attr_26_we & mio_pad_attr_regwen_26_qs),
+    .we     (mio_pad_attr_26_gated_we),
     .wd     (mio_pad_attr_26_keeper_en_26_wd),
     .d      (hw2reg.mio_pad_attr[26].keeper_en.d),
     .qre    (),
@@ -14645,7 +15051,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_26_schmitt_en_26 (
     .re     (mio_pad_attr_26_re),
-    .we     (mio_pad_attr_26_we & mio_pad_attr_regwen_26_qs),
+    .we     (mio_pad_attr_26_gated_we),
     .wd     (mio_pad_attr_26_schmitt_en_26_wd),
     .d      (hw2reg.mio_pad_attr[26].schmitt_en.d),
     .qre    (),
@@ -14660,7 +15066,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_26_od_en_26 (
     .re     (mio_pad_attr_26_re),
-    .we     (mio_pad_attr_26_we & mio_pad_attr_regwen_26_qs),
+    .we     (mio_pad_attr_26_gated_we),
     .wd     (mio_pad_attr_26_od_en_26_wd),
     .d      (hw2reg.mio_pad_attr[26].od_en.d),
     .qre    (),
@@ -14675,7 +15081,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_26_slew_rate_26 (
     .re     (mio_pad_attr_26_re),
-    .we     (mio_pad_attr_26_we & mio_pad_attr_regwen_26_qs),
+    .we     (mio_pad_attr_26_gated_we),
     .wd     (mio_pad_attr_26_slew_rate_26_wd),
     .d      (hw2reg.mio_pad_attr[26].slew_rate.d),
     .qre    (),
@@ -14690,7 +15096,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_26_drive_strength_26 (
     .re     (mio_pad_attr_26_re),
-    .we     (mio_pad_attr_26_we & mio_pad_attr_regwen_26_qs),
+    .we     (mio_pad_attr_26_gated_we),
     .wd     (mio_pad_attr_26_drive_strength_26_wd),
     .d      (hw2reg.mio_pad_attr[26].drive_strength.d),
     .qre    (),
@@ -14706,12 +15112,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_27_qe;
   logic [8:0] mio_pad_attr_27_flds_we;
   assign mio_pad_attr_27_qe = &mio_pad_attr_27_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_27_gated_we;
+  assign mio_pad_attr_27_gated_we = mio_pad_attr_27_we & mio_pad_attr_regwen_27_qs;
   //   F[invert_27]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_27_invert_27 (
     .re     (mio_pad_attr_27_re),
-    .we     (mio_pad_attr_27_we & mio_pad_attr_regwen_27_qs),
+    .we     (mio_pad_attr_27_gated_we),
     .wd     (mio_pad_attr_27_invert_27_wd),
     .d      (hw2reg.mio_pad_attr[27].invert.d),
     .qre    (),
@@ -14726,7 +15135,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_27_virtual_od_en_27 (
     .re     (mio_pad_attr_27_re),
-    .we     (mio_pad_attr_27_we & mio_pad_attr_regwen_27_qs),
+    .we     (mio_pad_attr_27_gated_we),
     .wd     (mio_pad_attr_27_virtual_od_en_27_wd),
     .d      (hw2reg.mio_pad_attr[27].virtual_od_en.d),
     .qre    (),
@@ -14741,7 +15150,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_27_pull_en_27 (
     .re     (mio_pad_attr_27_re),
-    .we     (mio_pad_attr_27_we & mio_pad_attr_regwen_27_qs),
+    .we     (mio_pad_attr_27_gated_we),
     .wd     (mio_pad_attr_27_pull_en_27_wd),
     .d      (hw2reg.mio_pad_attr[27].pull_en.d),
     .qre    (),
@@ -14756,7 +15165,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_27_pull_select_27 (
     .re     (mio_pad_attr_27_re),
-    .we     (mio_pad_attr_27_we & mio_pad_attr_regwen_27_qs),
+    .we     (mio_pad_attr_27_gated_we),
     .wd     (mio_pad_attr_27_pull_select_27_wd),
     .d      (hw2reg.mio_pad_attr[27].pull_select.d),
     .qre    (),
@@ -14771,7 +15180,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_27_keeper_en_27 (
     .re     (mio_pad_attr_27_re),
-    .we     (mio_pad_attr_27_we & mio_pad_attr_regwen_27_qs),
+    .we     (mio_pad_attr_27_gated_we),
     .wd     (mio_pad_attr_27_keeper_en_27_wd),
     .d      (hw2reg.mio_pad_attr[27].keeper_en.d),
     .qre    (),
@@ -14786,7 +15195,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_27_schmitt_en_27 (
     .re     (mio_pad_attr_27_re),
-    .we     (mio_pad_attr_27_we & mio_pad_attr_regwen_27_qs),
+    .we     (mio_pad_attr_27_gated_we),
     .wd     (mio_pad_attr_27_schmitt_en_27_wd),
     .d      (hw2reg.mio_pad_attr[27].schmitt_en.d),
     .qre    (),
@@ -14801,7 +15210,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_27_od_en_27 (
     .re     (mio_pad_attr_27_re),
-    .we     (mio_pad_attr_27_we & mio_pad_attr_regwen_27_qs),
+    .we     (mio_pad_attr_27_gated_we),
     .wd     (mio_pad_attr_27_od_en_27_wd),
     .d      (hw2reg.mio_pad_attr[27].od_en.d),
     .qre    (),
@@ -14816,7 +15225,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_27_slew_rate_27 (
     .re     (mio_pad_attr_27_re),
-    .we     (mio_pad_attr_27_we & mio_pad_attr_regwen_27_qs),
+    .we     (mio_pad_attr_27_gated_we),
     .wd     (mio_pad_attr_27_slew_rate_27_wd),
     .d      (hw2reg.mio_pad_attr[27].slew_rate.d),
     .qre    (),
@@ -14831,7 +15240,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_27_drive_strength_27 (
     .re     (mio_pad_attr_27_re),
-    .we     (mio_pad_attr_27_we & mio_pad_attr_regwen_27_qs),
+    .we     (mio_pad_attr_27_gated_we),
     .wd     (mio_pad_attr_27_drive_strength_27_wd),
     .d      (hw2reg.mio_pad_attr[27].drive_strength.d),
     .qre    (),
@@ -14847,12 +15256,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_28_qe;
   logic [8:0] mio_pad_attr_28_flds_we;
   assign mio_pad_attr_28_qe = &mio_pad_attr_28_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_28_gated_we;
+  assign mio_pad_attr_28_gated_we = mio_pad_attr_28_we & mio_pad_attr_regwen_28_qs;
   //   F[invert_28]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_28_invert_28 (
     .re     (mio_pad_attr_28_re),
-    .we     (mio_pad_attr_28_we & mio_pad_attr_regwen_28_qs),
+    .we     (mio_pad_attr_28_gated_we),
     .wd     (mio_pad_attr_28_invert_28_wd),
     .d      (hw2reg.mio_pad_attr[28].invert.d),
     .qre    (),
@@ -14867,7 +15279,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_28_virtual_od_en_28 (
     .re     (mio_pad_attr_28_re),
-    .we     (mio_pad_attr_28_we & mio_pad_attr_regwen_28_qs),
+    .we     (mio_pad_attr_28_gated_we),
     .wd     (mio_pad_attr_28_virtual_od_en_28_wd),
     .d      (hw2reg.mio_pad_attr[28].virtual_od_en.d),
     .qre    (),
@@ -14882,7 +15294,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_28_pull_en_28 (
     .re     (mio_pad_attr_28_re),
-    .we     (mio_pad_attr_28_we & mio_pad_attr_regwen_28_qs),
+    .we     (mio_pad_attr_28_gated_we),
     .wd     (mio_pad_attr_28_pull_en_28_wd),
     .d      (hw2reg.mio_pad_attr[28].pull_en.d),
     .qre    (),
@@ -14897,7 +15309,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_28_pull_select_28 (
     .re     (mio_pad_attr_28_re),
-    .we     (mio_pad_attr_28_we & mio_pad_attr_regwen_28_qs),
+    .we     (mio_pad_attr_28_gated_we),
     .wd     (mio_pad_attr_28_pull_select_28_wd),
     .d      (hw2reg.mio_pad_attr[28].pull_select.d),
     .qre    (),
@@ -14912,7 +15324,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_28_keeper_en_28 (
     .re     (mio_pad_attr_28_re),
-    .we     (mio_pad_attr_28_we & mio_pad_attr_regwen_28_qs),
+    .we     (mio_pad_attr_28_gated_we),
     .wd     (mio_pad_attr_28_keeper_en_28_wd),
     .d      (hw2reg.mio_pad_attr[28].keeper_en.d),
     .qre    (),
@@ -14927,7 +15339,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_28_schmitt_en_28 (
     .re     (mio_pad_attr_28_re),
-    .we     (mio_pad_attr_28_we & mio_pad_attr_regwen_28_qs),
+    .we     (mio_pad_attr_28_gated_we),
     .wd     (mio_pad_attr_28_schmitt_en_28_wd),
     .d      (hw2reg.mio_pad_attr[28].schmitt_en.d),
     .qre    (),
@@ -14942,7 +15354,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_28_od_en_28 (
     .re     (mio_pad_attr_28_re),
-    .we     (mio_pad_attr_28_we & mio_pad_attr_regwen_28_qs),
+    .we     (mio_pad_attr_28_gated_we),
     .wd     (mio_pad_attr_28_od_en_28_wd),
     .d      (hw2reg.mio_pad_attr[28].od_en.d),
     .qre    (),
@@ -14957,7 +15369,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_28_slew_rate_28 (
     .re     (mio_pad_attr_28_re),
-    .we     (mio_pad_attr_28_we & mio_pad_attr_regwen_28_qs),
+    .we     (mio_pad_attr_28_gated_we),
     .wd     (mio_pad_attr_28_slew_rate_28_wd),
     .d      (hw2reg.mio_pad_attr[28].slew_rate.d),
     .qre    (),
@@ -14972,7 +15384,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_28_drive_strength_28 (
     .re     (mio_pad_attr_28_re),
-    .we     (mio_pad_attr_28_we & mio_pad_attr_regwen_28_qs),
+    .we     (mio_pad_attr_28_gated_we),
     .wd     (mio_pad_attr_28_drive_strength_28_wd),
     .d      (hw2reg.mio_pad_attr[28].drive_strength.d),
     .qre    (),
@@ -14988,12 +15400,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_29_qe;
   logic [8:0] mio_pad_attr_29_flds_we;
   assign mio_pad_attr_29_qe = &mio_pad_attr_29_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_29_gated_we;
+  assign mio_pad_attr_29_gated_we = mio_pad_attr_29_we & mio_pad_attr_regwen_29_qs;
   //   F[invert_29]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_29_invert_29 (
     .re     (mio_pad_attr_29_re),
-    .we     (mio_pad_attr_29_we & mio_pad_attr_regwen_29_qs),
+    .we     (mio_pad_attr_29_gated_we),
     .wd     (mio_pad_attr_29_invert_29_wd),
     .d      (hw2reg.mio_pad_attr[29].invert.d),
     .qre    (),
@@ -15008,7 +15423,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_29_virtual_od_en_29 (
     .re     (mio_pad_attr_29_re),
-    .we     (mio_pad_attr_29_we & mio_pad_attr_regwen_29_qs),
+    .we     (mio_pad_attr_29_gated_we),
     .wd     (mio_pad_attr_29_virtual_od_en_29_wd),
     .d      (hw2reg.mio_pad_attr[29].virtual_od_en.d),
     .qre    (),
@@ -15023,7 +15438,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_29_pull_en_29 (
     .re     (mio_pad_attr_29_re),
-    .we     (mio_pad_attr_29_we & mio_pad_attr_regwen_29_qs),
+    .we     (mio_pad_attr_29_gated_we),
     .wd     (mio_pad_attr_29_pull_en_29_wd),
     .d      (hw2reg.mio_pad_attr[29].pull_en.d),
     .qre    (),
@@ -15038,7 +15453,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_29_pull_select_29 (
     .re     (mio_pad_attr_29_re),
-    .we     (mio_pad_attr_29_we & mio_pad_attr_regwen_29_qs),
+    .we     (mio_pad_attr_29_gated_we),
     .wd     (mio_pad_attr_29_pull_select_29_wd),
     .d      (hw2reg.mio_pad_attr[29].pull_select.d),
     .qre    (),
@@ -15053,7 +15468,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_29_keeper_en_29 (
     .re     (mio_pad_attr_29_re),
-    .we     (mio_pad_attr_29_we & mio_pad_attr_regwen_29_qs),
+    .we     (mio_pad_attr_29_gated_we),
     .wd     (mio_pad_attr_29_keeper_en_29_wd),
     .d      (hw2reg.mio_pad_attr[29].keeper_en.d),
     .qre    (),
@@ -15068,7 +15483,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_29_schmitt_en_29 (
     .re     (mio_pad_attr_29_re),
-    .we     (mio_pad_attr_29_we & mio_pad_attr_regwen_29_qs),
+    .we     (mio_pad_attr_29_gated_we),
     .wd     (mio_pad_attr_29_schmitt_en_29_wd),
     .d      (hw2reg.mio_pad_attr[29].schmitt_en.d),
     .qre    (),
@@ -15083,7 +15498,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_29_od_en_29 (
     .re     (mio_pad_attr_29_re),
-    .we     (mio_pad_attr_29_we & mio_pad_attr_regwen_29_qs),
+    .we     (mio_pad_attr_29_gated_we),
     .wd     (mio_pad_attr_29_od_en_29_wd),
     .d      (hw2reg.mio_pad_attr[29].od_en.d),
     .qre    (),
@@ -15098,7 +15513,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_29_slew_rate_29 (
     .re     (mio_pad_attr_29_re),
-    .we     (mio_pad_attr_29_we & mio_pad_attr_regwen_29_qs),
+    .we     (mio_pad_attr_29_gated_we),
     .wd     (mio_pad_attr_29_slew_rate_29_wd),
     .d      (hw2reg.mio_pad_attr[29].slew_rate.d),
     .qre    (),
@@ -15113,7 +15528,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_29_drive_strength_29 (
     .re     (mio_pad_attr_29_re),
-    .we     (mio_pad_attr_29_we & mio_pad_attr_regwen_29_qs),
+    .we     (mio_pad_attr_29_gated_we),
     .wd     (mio_pad_attr_29_drive_strength_29_wd),
     .d      (hw2reg.mio_pad_attr[29].drive_strength.d),
     .qre    (),
@@ -15129,12 +15544,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_30_qe;
   logic [8:0] mio_pad_attr_30_flds_we;
   assign mio_pad_attr_30_qe = &mio_pad_attr_30_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_30_gated_we;
+  assign mio_pad_attr_30_gated_we = mio_pad_attr_30_we & mio_pad_attr_regwen_30_qs;
   //   F[invert_30]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_30_invert_30 (
     .re     (mio_pad_attr_30_re),
-    .we     (mio_pad_attr_30_we & mio_pad_attr_regwen_30_qs),
+    .we     (mio_pad_attr_30_gated_we),
     .wd     (mio_pad_attr_30_invert_30_wd),
     .d      (hw2reg.mio_pad_attr[30].invert.d),
     .qre    (),
@@ -15149,7 +15567,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_30_virtual_od_en_30 (
     .re     (mio_pad_attr_30_re),
-    .we     (mio_pad_attr_30_we & mio_pad_attr_regwen_30_qs),
+    .we     (mio_pad_attr_30_gated_we),
     .wd     (mio_pad_attr_30_virtual_od_en_30_wd),
     .d      (hw2reg.mio_pad_attr[30].virtual_od_en.d),
     .qre    (),
@@ -15164,7 +15582,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_30_pull_en_30 (
     .re     (mio_pad_attr_30_re),
-    .we     (mio_pad_attr_30_we & mio_pad_attr_regwen_30_qs),
+    .we     (mio_pad_attr_30_gated_we),
     .wd     (mio_pad_attr_30_pull_en_30_wd),
     .d      (hw2reg.mio_pad_attr[30].pull_en.d),
     .qre    (),
@@ -15179,7 +15597,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_30_pull_select_30 (
     .re     (mio_pad_attr_30_re),
-    .we     (mio_pad_attr_30_we & mio_pad_attr_regwen_30_qs),
+    .we     (mio_pad_attr_30_gated_we),
     .wd     (mio_pad_attr_30_pull_select_30_wd),
     .d      (hw2reg.mio_pad_attr[30].pull_select.d),
     .qre    (),
@@ -15194,7 +15612,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_30_keeper_en_30 (
     .re     (mio_pad_attr_30_re),
-    .we     (mio_pad_attr_30_we & mio_pad_attr_regwen_30_qs),
+    .we     (mio_pad_attr_30_gated_we),
     .wd     (mio_pad_attr_30_keeper_en_30_wd),
     .d      (hw2reg.mio_pad_attr[30].keeper_en.d),
     .qre    (),
@@ -15209,7 +15627,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_30_schmitt_en_30 (
     .re     (mio_pad_attr_30_re),
-    .we     (mio_pad_attr_30_we & mio_pad_attr_regwen_30_qs),
+    .we     (mio_pad_attr_30_gated_we),
     .wd     (mio_pad_attr_30_schmitt_en_30_wd),
     .d      (hw2reg.mio_pad_attr[30].schmitt_en.d),
     .qre    (),
@@ -15224,7 +15642,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_30_od_en_30 (
     .re     (mio_pad_attr_30_re),
-    .we     (mio_pad_attr_30_we & mio_pad_attr_regwen_30_qs),
+    .we     (mio_pad_attr_30_gated_we),
     .wd     (mio_pad_attr_30_od_en_30_wd),
     .d      (hw2reg.mio_pad_attr[30].od_en.d),
     .qre    (),
@@ -15239,7 +15657,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_30_slew_rate_30 (
     .re     (mio_pad_attr_30_re),
-    .we     (mio_pad_attr_30_we & mio_pad_attr_regwen_30_qs),
+    .we     (mio_pad_attr_30_gated_we),
     .wd     (mio_pad_attr_30_slew_rate_30_wd),
     .d      (hw2reg.mio_pad_attr[30].slew_rate.d),
     .qre    (),
@@ -15254,7 +15672,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_30_drive_strength_30 (
     .re     (mio_pad_attr_30_re),
-    .we     (mio_pad_attr_30_we & mio_pad_attr_regwen_30_qs),
+    .we     (mio_pad_attr_30_gated_we),
     .wd     (mio_pad_attr_30_drive_strength_30_wd),
     .d      (hw2reg.mio_pad_attr[30].drive_strength.d),
     .qre    (),
@@ -15270,12 +15688,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_31_qe;
   logic [8:0] mio_pad_attr_31_flds_we;
   assign mio_pad_attr_31_qe = &mio_pad_attr_31_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_31_gated_we;
+  assign mio_pad_attr_31_gated_we = mio_pad_attr_31_we & mio_pad_attr_regwen_31_qs;
   //   F[invert_31]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_31_invert_31 (
     .re     (mio_pad_attr_31_re),
-    .we     (mio_pad_attr_31_we & mio_pad_attr_regwen_31_qs),
+    .we     (mio_pad_attr_31_gated_we),
     .wd     (mio_pad_attr_31_invert_31_wd),
     .d      (hw2reg.mio_pad_attr[31].invert.d),
     .qre    (),
@@ -15290,7 +15711,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_31_virtual_od_en_31 (
     .re     (mio_pad_attr_31_re),
-    .we     (mio_pad_attr_31_we & mio_pad_attr_regwen_31_qs),
+    .we     (mio_pad_attr_31_gated_we),
     .wd     (mio_pad_attr_31_virtual_od_en_31_wd),
     .d      (hw2reg.mio_pad_attr[31].virtual_od_en.d),
     .qre    (),
@@ -15305,7 +15726,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_31_pull_en_31 (
     .re     (mio_pad_attr_31_re),
-    .we     (mio_pad_attr_31_we & mio_pad_attr_regwen_31_qs),
+    .we     (mio_pad_attr_31_gated_we),
     .wd     (mio_pad_attr_31_pull_en_31_wd),
     .d      (hw2reg.mio_pad_attr[31].pull_en.d),
     .qre    (),
@@ -15320,7 +15741,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_31_pull_select_31 (
     .re     (mio_pad_attr_31_re),
-    .we     (mio_pad_attr_31_we & mio_pad_attr_regwen_31_qs),
+    .we     (mio_pad_attr_31_gated_we),
     .wd     (mio_pad_attr_31_pull_select_31_wd),
     .d      (hw2reg.mio_pad_attr[31].pull_select.d),
     .qre    (),
@@ -15335,7 +15756,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_31_keeper_en_31 (
     .re     (mio_pad_attr_31_re),
-    .we     (mio_pad_attr_31_we & mio_pad_attr_regwen_31_qs),
+    .we     (mio_pad_attr_31_gated_we),
     .wd     (mio_pad_attr_31_keeper_en_31_wd),
     .d      (hw2reg.mio_pad_attr[31].keeper_en.d),
     .qre    (),
@@ -15350,7 +15771,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_31_schmitt_en_31 (
     .re     (mio_pad_attr_31_re),
-    .we     (mio_pad_attr_31_we & mio_pad_attr_regwen_31_qs),
+    .we     (mio_pad_attr_31_gated_we),
     .wd     (mio_pad_attr_31_schmitt_en_31_wd),
     .d      (hw2reg.mio_pad_attr[31].schmitt_en.d),
     .qre    (),
@@ -15365,7 +15786,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_31_od_en_31 (
     .re     (mio_pad_attr_31_re),
-    .we     (mio_pad_attr_31_we & mio_pad_attr_regwen_31_qs),
+    .we     (mio_pad_attr_31_gated_we),
     .wd     (mio_pad_attr_31_od_en_31_wd),
     .d      (hw2reg.mio_pad_attr[31].od_en.d),
     .qre    (),
@@ -15380,7 +15801,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_31_slew_rate_31 (
     .re     (mio_pad_attr_31_re),
-    .we     (mio_pad_attr_31_we & mio_pad_attr_regwen_31_qs),
+    .we     (mio_pad_attr_31_gated_we),
     .wd     (mio_pad_attr_31_slew_rate_31_wd),
     .d      (hw2reg.mio_pad_attr[31].slew_rate.d),
     .qre    (),
@@ -15395,7 +15816,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_31_drive_strength_31 (
     .re     (mio_pad_attr_31_re),
-    .we     (mio_pad_attr_31_we & mio_pad_attr_regwen_31_qs),
+    .we     (mio_pad_attr_31_gated_we),
     .wd     (mio_pad_attr_31_drive_strength_31_wd),
     .d      (hw2reg.mio_pad_attr[31].drive_strength.d),
     .qre    (),
@@ -15411,12 +15832,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_32_qe;
   logic [8:0] mio_pad_attr_32_flds_we;
   assign mio_pad_attr_32_qe = &mio_pad_attr_32_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_32_gated_we;
+  assign mio_pad_attr_32_gated_we = mio_pad_attr_32_we & mio_pad_attr_regwen_32_qs;
   //   F[invert_32]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_32_invert_32 (
     .re     (mio_pad_attr_32_re),
-    .we     (mio_pad_attr_32_we & mio_pad_attr_regwen_32_qs),
+    .we     (mio_pad_attr_32_gated_we),
     .wd     (mio_pad_attr_32_invert_32_wd),
     .d      (hw2reg.mio_pad_attr[32].invert.d),
     .qre    (),
@@ -15431,7 +15855,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_32_virtual_od_en_32 (
     .re     (mio_pad_attr_32_re),
-    .we     (mio_pad_attr_32_we & mio_pad_attr_regwen_32_qs),
+    .we     (mio_pad_attr_32_gated_we),
     .wd     (mio_pad_attr_32_virtual_od_en_32_wd),
     .d      (hw2reg.mio_pad_attr[32].virtual_od_en.d),
     .qre    (),
@@ -15446,7 +15870,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_32_pull_en_32 (
     .re     (mio_pad_attr_32_re),
-    .we     (mio_pad_attr_32_we & mio_pad_attr_regwen_32_qs),
+    .we     (mio_pad_attr_32_gated_we),
     .wd     (mio_pad_attr_32_pull_en_32_wd),
     .d      (hw2reg.mio_pad_attr[32].pull_en.d),
     .qre    (),
@@ -15461,7 +15885,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_32_pull_select_32 (
     .re     (mio_pad_attr_32_re),
-    .we     (mio_pad_attr_32_we & mio_pad_attr_regwen_32_qs),
+    .we     (mio_pad_attr_32_gated_we),
     .wd     (mio_pad_attr_32_pull_select_32_wd),
     .d      (hw2reg.mio_pad_attr[32].pull_select.d),
     .qre    (),
@@ -15476,7 +15900,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_32_keeper_en_32 (
     .re     (mio_pad_attr_32_re),
-    .we     (mio_pad_attr_32_we & mio_pad_attr_regwen_32_qs),
+    .we     (mio_pad_attr_32_gated_we),
     .wd     (mio_pad_attr_32_keeper_en_32_wd),
     .d      (hw2reg.mio_pad_attr[32].keeper_en.d),
     .qre    (),
@@ -15491,7 +15915,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_32_schmitt_en_32 (
     .re     (mio_pad_attr_32_re),
-    .we     (mio_pad_attr_32_we & mio_pad_attr_regwen_32_qs),
+    .we     (mio_pad_attr_32_gated_we),
     .wd     (mio_pad_attr_32_schmitt_en_32_wd),
     .d      (hw2reg.mio_pad_attr[32].schmitt_en.d),
     .qre    (),
@@ -15506,7 +15930,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_32_od_en_32 (
     .re     (mio_pad_attr_32_re),
-    .we     (mio_pad_attr_32_we & mio_pad_attr_regwen_32_qs),
+    .we     (mio_pad_attr_32_gated_we),
     .wd     (mio_pad_attr_32_od_en_32_wd),
     .d      (hw2reg.mio_pad_attr[32].od_en.d),
     .qre    (),
@@ -15521,7 +15945,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_32_slew_rate_32 (
     .re     (mio_pad_attr_32_re),
-    .we     (mio_pad_attr_32_we & mio_pad_attr_regwen_32_qs),
+    .we     (mio_pad_attr_32_gated_we),
     .wd     (mio_pad_attr_32_slew_rate_32_wd),
     .d      (hw2reg.mio_pad_attr[32].slew_rate.d),
     .qre    (),
@@ -15536,7 +15960,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_32_drive_strength_32 (
     .re     (mio_pad_attr_32_re),
-    .we     (mio_pad_attr_32_we & mio_pad_attr_regwen_32_qs),
+    .we     (mio_pad_attr_32_gated_we),
     .wd     (mio_pad_attr_32_drive_strength_32_wd),
     .d      (hw2reg.mio_pad_attr[32].drive_strength.d),
     .qre    (),
@@ -15552,12 +15976,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_33_qe;
   logic [8:0] mio_pad_attr_33_flds_we;
   assign mio_pad_attr_33_qe = &mio_pad_attr_33_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_33_gated_we;
+  assign mio_pad_attr_33_gated_we = mio_pad_attr_33_we & mio_pad_attr_regwen_33_qs;
   //   F[invert_33]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_33_invert_33 (
     .re     (mio_pad_attr_33_re),
-    .we     (mio_pad_attr_33_we & mio_pad_attr_regwen_33_qs),
+    .we     (mio_pad_attr_33_gated_we),
     .wd     (mio_pad_attr_33_invert_33_wd),
     .d      (hw2reg.mio_pad_attr[33].invert.d),
     .qre    (),
@@ -15572,7 +15999,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_33_virtual_od_en_33 (
     .re     (mio_pad_attr_33_re),
-    .we     (mio_pad_attr_33_we & mio_pad_attr_regwen_33_qs),
+    .we     (mio_pad_attr_33_gated_we),
     .wd     (mio_pad_attr_33_virtual_od_en_33_wd),
     .d      (hw2reg.mio_pad_attr[33].virtual_od_en.d),
     .qre    (),
@@ -15587,7 +16014,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_33_pull_en_33 (
     .re     (mio_pad_attr_33_re),
-    .we     (mio_pad_attr_33_we & mio_pad_attr_regwen_33_qs),
+    .we     (mio_pad_attr_33_gated_we),
     .wd     (mio_pad_attr_33_pull_en_33_wd),
     .d      (hw2reg.mio_pad_attr[33].pull_en.d),
     .qre    (),
@@ -15602,7 +16029,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_33_pull_select_33 (
     .re     (mio_pad_attr_33_re),
-    .we     (mio_pad_attr_33_we & mio_pad_attr_regwen_33_qs),
+    .we     (mio_pad_attr_33_gated_we),
     .wd     (mio_pad_attr_33_pull_select_33_wd),
     .d      (hw2reg.mio_pad_attr[33].pull_select.d),
     .qre    (),
@@ -15617,7 +16044,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_33_keeper_en_33 (
     .re     (mio_pad_attr_33_re),
-    .we     (mio_pad_attr_33_we & mio_pad_attr_regwen_33_qs),
+    .we     (mio_pad_attr_33_gated_we),
     .wd     (mio_pad_attr_33_keeper_en_33_wd),
     .d      (hw2reg.mio_pad_attr[33].keeper_en.d),
     .qre    (),
@@ -15632,7 +16059,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_33_schmitt_en_33 (
     .re     (mio_pad_attr_33_re),
-    .we     (mio_pad_attr_33_we & mio_pad_attr_regwen_33_qs),
+    .we     (mio_pad_attr_33_gated_we),
     .wd     (mio_pad_attr_33_schmitt_en_33_wd),
     .d      (hw2reg.mio_pad_attr[33].schmitt_en.d),
     .qre    (),
@@ -15647,7 +16074,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_33_od_en_33 (
     .re     (mio_pad_attr_33_re),
-    .we     (mio_pad_attr_33_we & mio_pad_attr_regwen_33_qs),
+    .we     (mio_pad_attr_33_gated_we),
     .wd     (mio_pad_attr_33_od_en_33_wd),
     .d      (hw2reg.mio_pad_attr[33].od_en.d),
     .qre    (),
@@ -15662,7 +16089,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_33_slew_rate_33 (
     .re     (mio_pad_attr_33_re),
-    .we     (mio_pad_attr_33_we & mio_pad_attr_regwen_33_qs),
+    .we     (mio_pad_attr_33_gated_we),
     .wd     (mio_pad_attr_33_slew_rate_33_wd),
     .d      (hw2reg.mio_pad_attr[33].slew_rate.d),
     .qre    (),
@@ -15677,7 +16104,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_33_drive_strength_33 (
     .re     (mio_pad_attr_33_re),
-    .we     (mio_pad_attr_33_we & mio_pad_attr_regwen_33_qs),
+    .we     (mio_pad_attr_33_gated_we),
     .wd     (mio_pad_attr_33_drive_strength_33_wd),
     .d      (hw2reg.mio_pad_attr[33].drive_strength.d),
     .qre    (),
@@ -15693,12 +16120,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_34_qe;
   logic [8:0] mio_pad_attr_34_flds_we;
   assign mio_pad_attr_34_qe = &mio_pad_attr_34_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_34_gated_we;
+  assign mio_pad_attr_34_gated_we = mio_pad_attr_34_we & mio_pad_attr_regwen_34_qs;
   //   F[invert_34]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_34_invert_34 (
     .re     (mio_pad_attr_34_re),
-    .we     (mio_pad_attr_34_we & mio_pad_attr_regwen_34_qs),
+    .we     (mio_pad_attr_34_gated_we),
     .wd     (mio_pad_attr_34_invert_34_wd),
     .d      (hw2reg.mio_pad_attr[34].invert.d),
     .qre    (),
@@ -15713,7 +16143,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_34_virtual_od_en_34 (
     .re     (mio_pad_attr_34_re),
-    .we     (mio_pad_attr_34_we & mio_pad_attr_regwen_34_qs),
+    .we     (mio_pad_attr_34_gated_we),
     .wd     (mio_pad_attr_34_virtual_od_en_34_wd),
     .d      (hw2reg.mio_pad_attr[34].virtual_od_en.d),
     .qre    (),
@@ -15728,7 +16158,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_34_pull_en_34 (
     .re     (mio_pad_attr_34_re),
-    .we     (mio_pad_attr_34_we & mio_pad_attr_regwen_34_qs),
+    .we     (mio_pad_attr_34_gated_we),
     .wd     (mio_pad_attr_34_pull_en_34_wd),
     .d      (hw2reg.mio_pad_attr[34].pull_en.d),
     .qre    (),
@@ -15743,7 +16173,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_34_pull_select_34 (
     .re     (mio_pad_attr_34_re),
-    .we     (mio_pad_attr_34_we & mio_pad_attr_regwen_34_qs),
+    .we     (mio_pad_attr_34_gated_we),
     .wd     (mio_pad_attr_34_pull_select_34_wd),
     .d      (hw2reg.mio_pad_attr[34].pull_select.d),
     .qre    (),
@@ -15758,7 +16188,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_34_keeper_en_34 (
     .re     (mio_pad_attr_34_re),
-    .we     (mio_pad_attr_34_we & mio_pad_attr_regwen_34_qs),
+    .we     (mio_pad_attr_34_gated_we),
     .wd     (mio_pad_attr_34_keeper_en_34_wd),
     .d      (hw2reg.mio_pad_attr[34].keeper_en.d),
     .qre    (),
@@ -15773,7 +16203,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_34_schmitt_en_34 (
     .re     (mio_pad_attr_34_re),
-    .we     (mio_pad_attr_34_we & mio_pad_attr_regwen_34_qs),
+    .we     (mio_pad_attr_34_gated_we),
     .wd     (mio_pad_attr_34_schmitt_en_34_wd),
     .d      (hw2reg.mio_pad_attr[34].schmitt_en.d),
     .qre    (),
@@ -15788,7 +16218,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_34_od_en_34 (
     .re     (mio_pad_attr_34_re),
-    .we     (mio_pad_attr_34_we & mio_pad_attr_regwen_34_qs),
+    .we     (mio_pad_attr_34_gated_we),
     .wd     (mio_pad_attr_34_od_en_34_wd),
     .d      (hw2reg.mio_pad_attr[34].od_en.d),
     .qre    (),
@@ -15803,7 +16233,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_34_slew_rate_34 (
     .re     (mio_pad_attr_34_re),
-    .we     (mio_pad_attr_34_we & mio_pad_attr_regwen_34_qs),
+    .we     (mio_pad_attr_34_gated_we),
     .wd     (mio_pad_attr_34_slew_rate_34_wd),
     .d      (hw2reg.mio_pad_attr[34].slew_rate.d),
     .qre    (),
@@ -15818,7 +16248,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_34_drive_strength_34 (
     .re     (mio_pad_attr_34_re),
-    .we     (mio_pad_attr_34_we & mio_pad_attr_regwen_34_qs),
+    .we     (mio_pad_attr_34_gated_we),
     .wd     (mio_pad_attr_34_drive_strength_34_wd),
     .d      (hw2reg.mio_pad_attr[34].drive_strength.d),
     .qre    (),
@@ -15834,12 +16264,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_35_qe;
   logic [8:0] mio_pad_attr_35_flds_we;
   assign mio_pad_attr_35_qe = &mio_pad_attr_35_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_35_gated_we;
+  assign mio_pad_attr_35_gated_we = mio_pad_attr_35_we & mio_pad_attr_regwen_35_qs;
   //   F[invert_35]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_35_invert_35 (
     .re     (mio_pad_attr_35_re),
-    .we     (mio_pad_attr_35_we & mio_pad_attr_regwen_35_qs),
+    .we     (mio_pad_attr_35_gated_we),
     .wd     (mio_pad_attr_35_invert_35_wd),
     .d      (hw2reg.mio_pad_attr[35].invert.d),
     .qre    (),
@@ -15854,7 +16287,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_35_virtual_od_en_35 (
     .re     (mio_pad_attr_35_re),
-    .we     (mio_pad_attr_35_we & mio_pad_attr_regwen_35_qs),
+    .we     (mio_pad_attr_35_gated_we),
     .wd     (mio_pad_attr_35_virtual_od_en_35_wd),
     .d      (hw2reg.mio_pad_attr[35].virtual_od_en.d),
     .qre    (),
@@ -15869,7 +16302,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_35_pull_en_35 (
     .re     (mio_pad_attr_35_re),
-    .we     (mio_pad_attr_35_we & mio_pad_attr_regwen_35_qs),
+    .we     (mio_pad_attr_35_gated_we),
     .wd     (mio_pad_attr_35_pull_en_35_wd),
     .d      (hw2reg.mio_pad_attr[35].pull_en.d),
     .qre    (),
@@ -15884,7 +16317,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_35_pull_select_35 (
     .re     (mio_pad_attr_35_re),
-    .we     (mio_pad_attr_35_we & mio_pad_attr_regwen_35_qs),
+    .we     (mio_pad_attr_35_gated_we),
     .wd     (mio_pad_attr_35_pull_select_35_wd),
     .d      (hw2reg.mio_pad_attr[35].pull_select.d),
     .qre    (),
@@ -15899,7 +16332,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_35_keeper_en_35 (
     .re     (mio_pad_attr_35_re),
-    .we     (mio_pad_attr_35_we & mio_pad_attr_regwen_35_qs),
+    .we     (mio_pad_attr_35_gated_we),
     .wd     (mio_pad_attr_35_keeper_en_35_wd),
     .d      (hw2reg.mio_pad_attr[35].keeper_en.d),
     .qre    (),
@@ -15914,7 +16347,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_35_schmitt_en_35 (
     .re     (mio_pad_attr_35_re),
-    .we     (mio_pad_attr_35_we & mio_pad_attr_regwen_35_qs),
+    .we     (mio_pad_attr_35_gated_we),
     .wd     (mio_pad_attr_35_schmitt_en_35_wd),
     .d      (hw2reg.mio_pad_attr[35].schmitt_en.d),
     .qre    (),
@@ -15929,7 +16362,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_35_od_en_35 (
     .re     (mio_pad_attr_35_re),
-    .we     (mio_pad_attr_35_we & mio_pad_attr_regwen_35_qs),
+    .we     (mio_pad_attr_35_gated_we),
     .wd     (mio_pad_attr_35_od_en_35_wd),
     .d      (hw2reg.mio_pad_attr[35].od_en.d),
     .qre    (),
@@ -15944,7 +16377,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_35_slew_rate_35 (
     .re     (mio_pad_attr_35_re),
-    .we     (mio_pad_attr_35_we & mio_pad_attr_regwen_35_qs),
+    .we     (mio_pad_attr_35_gated_we),
     .wd     (mio_pad_attr_35_slew_rate_35_wd),
     .d      (hw2reg.mio_pad_attr[35].slew_rate.d),
     .qre    (),
@@ -15959,7 +16392,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_35_drive_strength_35 (
     .re     (mio_pad_attr_35_re),
-    .we     (mio_pad_attr_35_we & mio_pad_attr_regwen_35_qs),
+    .we     (mio_pad_attr_35_gated_we),
     .wd     (mio_pad_attr_35_drive_strength_35_wd),
     .d      (hw2reg.mio_pad_attr[35].drive_strength.d),
     .qre    (),
@@ -15975,12 +16408,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_36_qe;
   logic [8:0] mio_pad_attr_36_flds_we;
   assign mio_pad_attr_36_qe = &mio_pad_attr_36_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_36_gated_we;
+  assign mio_pad_attr_36_gated_we = mio_pad_attr_36_we & mio_pad_attr_regwen_36_qs;
   //   F[invert_36]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_36_invert_36 (
     .re     (mio_pad_attr_36_re),
-    .we     (mio_pad_attr_36_we & mio_pad_attr_regwen_36_qs),
+    .we     (mio_pad_attr_36_gated_we),
     .wd     (mio_pad_attr_36_invert_36_wd),
     .d      (hw2reg.mio_pad_attr[36].invert.d),
     .qre    (),
@@ -15995,7 +16431,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_36_virtual_od_en_36 (
     .re     (mio_pad_attr_36_re),
-    .we     (mio_pad_attr_36_we & mio_pad_attr_regwen_36_qs),
+    .we     (mio_pad_attr_36_gated_we),
     .wd     (mio_pad_attr_36_virtual_od_en_36_wd),
     .d      (hw2reg.mio_pad_attr[36].virtual_od_en.d),
     .qre    (),
@@ -16010,7 +16446,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_36_pull_en_36 (
     .re     (mio_pad_attr_36_re),
-    .we     (mio_pad_attr_36_we & mio_pad_attr_regwen_36_qs),
+    .we     (mio_pad_attr_36_gated_we),
     .wd     (mio_pad_attr_36_pull_en_36_wd),
     .d      (hw2reg.mio_pad_attr[36].pull_en.d),
     .qre    (),
@@ -16025,7 +16461,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_36_pull_select_36 (
     .re     (mio_pad_attr_36_re),
-    .we     (mio_pad_attr_36_we & mio_pad_attr_regwen_36_qs),
+    .we     (mio_pad_attr_36_gated_we),
     .wd     (mio_pad_attr_36_pull_select_36_wd),
     .d      (hw2reg.mio_pad_attr[36].pull_select.d),
     .qre    (),
@@ -16040,7 +16476,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_36_keeper_en_36 (
     .re     (mio_pad_attr_36_re),
-    .we     (mio_pad_attr_36_we & mio_pad_attr_regwen_36_qs),
+    .we     (mio_pad_attr_36_gated_we),
     .wd     (mio_pad_attr_36_keeper_en_36_wd),
     .d      (hw2reg.mio_pad_attr[36].keeper_en.d),
     .qre    (),
@@ -16055,7 +16491,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_36_schmitt_en_36 (
     .re     (mio_pad_attr_36_re),
-    .we     (mio_pad_attr_36_we & mio_pad_attr_regwen_36_qs),
+    .we     (mio_pad_attr_36_gated_we),
     .wd     (mio_pad_attr_36_schmitt_en_36_wd),
     .d      (hw2reg.mio_pad_attr[36].schmitt_en.d),
     .qre    (),
@@ -16070,7 +16506,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_36_od_en_36 (
     .re     (mio_pad_attr_36_re),
-    .we     (mio_pad_attr_36_we & mio_pad_attr_regwen_36_qs),
+    .we     (mio_pad_attr_36_gated_we),
     .wd     (mio_pad_attr_36_od_en_36_wd),
     .d      (hw2reg.mio_pad_attr[36].od_en.d),
     .qre    (),
@@ -16085,7 +16521,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_36_slew_rate_36 (
     .re     (mio_pad_attr_36_re),
-    .we     (mio_pad_attr_36_we & mio_pad_attr_regwen_36_qs),
+    .we     (mio_pad_attr_36_gated_we),
     .wd     (mio_pad_attr_36_slew_rate_36_wd),
     .d      (hw2reg.mio_pad_attr[36].slew_rate.d),
     .qre    (),
@@ -16100,7 +16536,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_36_drive_strength_36 (
     .re     (mio_pad_attr_36_re),
-    .we     (mio_pad_attr_36_we & mio_pad_attr_regwen_36_qs),
+    .we     (mio_pad_attr_36_gated_we),
     .wd     (mio_pad_attr_36_drive_strength_36_wd),
     .d      (hw2reg.mio_pad_attr[36].drive_strength.d),
     .qre    (),
@@ -16116,12 +16552,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_37_qe;
   logic [8:0] mio_pad_attr_37_flds_we;
   assign mio_pad_attr_37_qe = &mio_pad_attr_37_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_37_gated_we;
+  assign mio_pad_attr_37_gated_we = mio_pad_attr_37_we & mio_pad_attr_regwen_37_qs;
   //   F[invert_37]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_37_invert_37 (
     .re     (mio_pad_attr_37_re),
-    .we     (mio_pad_attr_37_we & mio_pad_attr_regwen_37_qs),
+    .we     (mio_pad_attr_37_gated_we),
     .wd     (mio_pad_attr_37_invert_37_wd),
     .d      (hw2reg.mio_pad_attr[37].invert.d),
     .qre    (),
@@ -16136,7 +16575,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_37_virtual_od_en_37 (
     .re     (mio_pad_attr_37_re),
-    .we     (mio_pad_attr_37_we & mio_pad_attr_regwen_37_qs),
+    .we     (mio_pad_attr_37_gated_we),
     .wd     (mio_pad_attr_37_virtual_od_en_37_wd),
     .d      (hw2reg.mio_pad_attr[37].virtual_od_en.d),
     .qre    (),
@@ -16151,7 +16590,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_37_pull_en_37 (
     .re     (mio_pad_attr_37_re),
-    .we     (mio_pad_attr_37_we & mio_pad_attr_regwen_37_qs),
+    .we     (mio_pad_attr_37_gated_we),
     .wd     (mio_pad_attr_37_pull_en_37_wd),
     .d      (hw2reg.mio_pad_attr[37].pull_en.d),
     .qre    (),
@@ -16166,7 +16605,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_37_pull_select_37 (
     .re     (mio_pad_attr_37_re),
-    .we     (mio_pad_attr_37_we & mio_pad_attr_regwen_37_qs),
+    .we     (mio_pad_attr_37_gated_we),
     .wd     (mio_pad_attr_37_pull_select_37_wd),
     .d      (hw2reg.mio_pad_attr[37].pull_select.d),
     .qre    (),
@@ -16181,7 +16620,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_37_keeper_en_37 (
     .re     (mio_pad_attr_37_re),
-    .we     (mio_pad_attr_37_we & mio_pad_attr_regwen_37_qs),
+    .we     (mio_pad_attr_37_gated_we),
     .wd     (mio_pad_attr_37_keeper_en_37_wd),
     .d      (hw2reg.mio_pad_attr[37].keeper_en.d),
     .qre    (),
@@ -16196,7 +16635,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_37_schmitt_en_37 (
     .re     (mio_pad_attr_37_re),
-    .we     (mio_pad_attr_37_we & mio_pad_attr_regwen_37_qs),
+    .we     (mio_pad_attr_37_gated_we),
     .wd     (mio_pad_attr_37_schmitt_en_37_wd),
     .d      (hw2reg.mio_pad_attr[37].schmitt_en.d),
     .qre    (),
@@ -16211,7 +16650,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_37_od_en_37 (
     .re     (mio_pad_attr_37_re),
-    .we     (mio_pad_attr_37_we & mio_pad_attr_regwen_37_qs),
+    .we     (mio_pad_attr_37_gated_we),
     .wd     (mio_pad_attr_37_od_en_37_wd),
     .d      (hw2reg.mio_pad_attr[37].od_en.d),
     .qre    (),
@@ -16226,7 +16665,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_37_slew_rate_37 (
     .re     (mio_pad_attr_37_re),
-    .we     (mio_pad_attr_37_we & mio_pad_attr_regwen_37_qs),
+    .we     (mio_pad_attr_37_gated_we),
     .wd     (mio_pad_attr_37_slew_rate_37_wd),
     .d      (hw2reg.mio_pad_attr[37].slew_rate.d),
     .qre    (),
@@ -16241,7 +16680,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_37_drive_strength_37 (
     .re     (mio_pad_attr_37_re),
-    .we     (mio_pad_attr_37_we & mio_pad_attr_regwen_37_qs),
+    .we     (mio_pad_attr_37_gated_we),
     .wd     (mio_pad_attr_37_drive_strength_37_wd),
     .d      (hw2reg.mio_pad_attr[37].drive_strength.d),
     .qre    (),
@@ -16257,12 +16696,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_38_qe;
   logic [8:0] mio_pad_attr_38_flds_we;
   assign mio_pad_attr_38_qe = &mio_pad_attr_38_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_38_gated_we;
+  assign mio_pad_attr_38_gated_we = mio_pad_attr_38_we & mio_pad_attr_regwen_38_qs;
   //   F[invert_38]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_38_invert_38 (
     .re     (mio_pad_attr_38_re),
-    .we     (mio_pad_attr_38_we & mio_pad_attr_regwen_38_qs),
+    .we     (mio_pad_attr_38_gated_we),
     .wd     (mio_pad_attr_38_invert_38_wd),
     .d      (hw2reg.mio_pad_attr[38].invert.d),
     .qre    (),
@@ -16277,7 +16719,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_38_virtual_od_en_38 (
     .re     (mio_pad_attr_38_re),
-    .we     (mio_pad_attr_38_we & mio_pad_attr_regwen_38_qs),
+    .we     (mio_pad_attr_38_gated_we),
     .wd     (mio_pad_attr_38_virtual_od_en_38_wd),
     .d      (hw2reg.mio_pad_attr[38].virtual_od_en.d),
     .qre    (),
@@ -16292,7 +16734,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_38_pull_en_38 (
     .re     (mio_pad_attr_38_re),
-    .we     (mio_pad_attr_38_we & mio_pad_attr_regwen_38_qs),
+    .we     (mio_pad_attr_38_gated_we),
     .wd     (mio_pad_attr_38_pull_en_38_wd),
     .d      (hw2reg.mio_pad_attr[38].pull_en.d),
     .qre    (),
@@ -16307,7 +16749,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_38_pull_select_38 (
     .re     (mio_pad_attr_38_re),
-    .we     (mio_pad_attr_38_we & mio_pad_attr_regwen_38_qs),
+    .we     (mio_pad_attr_38_gated_we),
     .wd     (mio_pad_attr_38_pull_select_38_wd),
     .d      (hw2reg.mio_pad_attr[38].pull_select.d),
     .qre    (),
@@ -16322,7 +16764,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_38_keeper_en_38 (
     .re     (mio_pad_attr_38_re),
-    .we     (mio_pad_attr_38_we & mio_pad_attr_regwen_38_qs),
+    .we     (mio_pad_attr_38_gated_we),
     .wd     (mio_pad_attr_38_keeper_en_38_wd),
     .d      (hw2reg.mio_pad_attr[38].keeper_en.d),
     .qre    (),
@@ -16337,7 +16779,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_38_schmitt_en_38 (
     .re     (mio_pad_attr_38_re),
-    .we     (mio_pad_attr_38_we & mio_pad_attr_regwen_38_qs),
+    .we     (mio_pad_attr_38_gated_we),
     .wd     (mio_pad_attr_38_schmitt_en_38_wd),
     .d      (hw2reg.mio_pad_attr[38].schmitt_en.d),
     .qre    (),
@@ -16352,7 +16794,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_38_od_en_38 (
     .re     (mio_pad_attr_38_re),
-    .we     (mio_pad_attr_38_we & mio_pad_attr_regwen_38_qs),
+    .we     (mio_pad_attr_38_gated_we),
     .wd     (mio_pad_attr_38_od_en_38_wd),
     .d      (hw2reg.mio_pad_attr[38].od_en.d),
     .qre    (),
@@ -16367,7 +16809,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_38_slew_rate_38 (
     .re     (mio_pad_attr_38_re),
-    .we     (mio_pad_attr_38_we & mio_pad_attr_regwen_38_qs),
+    .we     (mio_pad_attr_38_gated_we),
     .wd     (mio_pad_attr_38_slew_rate_38_wd),
     .d      (hw2reg.mio_pad_attr[38].slew_rate.d),
     .qre    (),
@@ -16382,7 +16824,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_38_drive_strength_38 (
     .re     (mio_pad_attr_38_re),
-    .we     (mio_pad_attr_38_we & mio_pad_attr_regwen_38_qs),
+    .we     (mio_pad_attr_38_gated_we),
     .wd     (mio_pad_attr_38_drive_strength_38_wd),
     .d      (hw2reg.mio_pad_attr[38].drive_strength.d),
     .qre    (),
@@ -16398,12 +16840,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_39_qe;
   logic [8:0] mio_pad_attr_39_flds_we;
   assign mio_pad_attr_39_qe = &mio_pad_attr_39_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_39_gated_we;
+  assign mio_pad_attr_39_gated_we = mio_pad_attr_39_we & mio_pad_attr_regwen_39_qs;
   //   F[invert_39]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_39_invert_39 (
     .re     (mio_pad_attr_39_re),
-    .we     (mio_pad_attr_39_we & mio_pad_attr_regwen_39_qs),
+    .we     (mio_pad_attr_39_gated_we),
     .wd     (mio_pad_attr_39_invert_39_wd),
     .d      (hw2reg.mio_pad_attr[39].invert.d),
     .qre    (),
@@ -16418,7 +16863,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_39_virtual_od_en_39 (
     .re     (mio_pad_attr_39_re),
-    .we     (mio_pad_attr_39_we & mio_pad_attr_regwen_39_qs),
+    .we     (mio_pad_attr_39_gated_we),
     .wd     (mio_pad_attr_39_virtual_od_en_39_wd),
     .d      (hw2reg.mio_pad_attr[39].virtual_od_en.d),
     .qre    (),
@@ -16433,7 +16878,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_39_pull_en_39 (
     .re     (mio_pad_attr_39_re),
-    .we     (mio_pad_attr_39_we & mio_pad_attr_regwen_39_qs),
+    .we     (mio_pad_attr_39_gated_we),
     .wd     (mio_pad_attr_39_pull_en_39_wd),
     .d      (hw2reg.mio_pad_attr[39].pull_en.d),
     .qre    (),
@@ -16448,7 +16893,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_39_pull_select_39 (
     .re     (mio_pad_attr_39_re),
-    .we     (mio_pad_attr_39_we & mio_pad_attr_regwen_39_qs),
+    .we     (mio_pad_attr_39_gated_we),
     .wd     (mio_pad_attr_39_pull_select_39_wd),
     .d      (hw2reg.mio_pad_attr[39].pull_select.d),
     .qre    (),
@@ -16463,7 +16908,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_39_keeper_en_39 (
     .re     (mio_pad_attr_39_re),
-    .we     (mio_pad_attr_39_we & mio_pad_attr_regwen_39_qs),
+    .we     (mio_pad_attr_39_gated_we),
     .wd     (mio_pad_attr_39_keeper_en_39_wd),
     .d      (hw2reg.mio_pad_attr[39].keeper_en.d),
     .qre    (),
@@ -16478,7 +16923,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_39_schmitt_en_39 (
     .re     (mio_pad_attr_39_re),
-    .we     (mio_pad_attr_39_we & mio_pad_attr_regwen_39_qs),
+    .we     (mio_pad_attr_39_gated_we),
     .wd     (mio_pad_attr_39_schmitt_en_39_wd),
     .d      (hw2reg.mio_pad_attr[39].schmitt_en.d),
     .qre    (),
@@ -16493,7 +16938,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_39_od_en_39 (
     .re     (mio_pad_attr_39_re),
-    .we     (mio_pad_attr_39_we & mio_pad_attr_regwen_39_qs),
+    .we     (mio_pad_attr_39_gated_we),
     .wd     (mio_pad_attr_39_od_en_39_wd),
     .d      (hw2reg.mio_pad_attr[39].od_en.d),
     .qre    (),
@@ -16508,7 +16953,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_39_slew_rate_39 (
     .re     (mio_pad_attr_39_re),
-    .we     (mio_pad_attr_39_we & mio_pad_attr_regwen_39_qs),
+    .we     (mio_pad_attr_39_gated_we),
     .wd     (mio_pad_attr_39_slew_rate_39_wd),
     .d      (hw2reg.mio_pad_attr[39].slew_rate.d),
     .qre    (),
@@ -16523,7 +16968,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_39_drive_strength_39 (
     .re     (mio_pad_attr_39_re),
-    .we     (mio_pad_attr_39_we & mio_pad_attr_regwen_39_qs),
+    .we     (mio_pad_attr_39_gated_we),
     .wd     (mio_pad_attr_39_drive_strength_39_wd),
     .d      (hw2reg.mio_pad_attr[39].drive_strength.d),
     .qre    (),
@@ -16539,12 +16984,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_40_qe;
   logic [8:0] mio_pad_attr_40_flds_we;
   assign mio_pad_attr_40_qe = &mio_pad_attr_40_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_40_gated_we;
+  assign mio_pad_attr_40_gated_we = mio_pad_attr_40_we & mio_pad_attr_regwen_40_qs;
   //   F[invert_40]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_40_invert_40 (
     .re     (mio_pad_attr_40_re),
-    .we     (mio_pad_attr_40_we & mio_pad_attr_regwen_40_qs),
+    .we     (mio_pad_attr_40_gated_we),
     .wd     (mio_pad_attr_40_invert_40_wd),
     .d      (hw2reg.mio_pad_attr[40].invert.d),
     .qre    (),
@@ -16559,7 +17007,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_40_virtual_od_en_40 (
     .re     (mio_pad_attr_40_re),
-    .we     (mio_pad_attr_40_we & mio_pad_attr_regwen_40_qs),
+    .we     (mio_pad_attr_40_gated_we),
     .wd     (mio_pad_attr_40_virtual_od_en_40_wd),
     .d      (hw2reg.mio_pad_attr[40].virtual_od_en.d),
     .qre    (),
@@ -16574,7 +17022,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_40_pull_en_40 (
     .re     (mio_pad_attr_40_re),
-    .we     (mio_pad_attr_40_we & mio_pad_attr_regwen_40_qs),
+    .we     (mio_pad_attr_40_gated_we),
     .wd     (mio_pad_attr_40_pull_en_40_wd),
     .d      (hw2reg.mio_pad_attr[40].pull_en.d),
     .qre    (),
@@ -16589,7 +17037,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_40_pull_select_40 (
     .re     (mio_pad_attr_40_re),
-    .we     (mio_pad_attr_40_we & mio_pad_attr_regwen_40_qs),
+    .we     (mio_pad_attr_40_gated_we),
     .wd     (mio_pad_attr_40_pull_select_40_wd),
     .d      (hw2reg.mio_pad_attr[40].pull_select.d),
     .qre    (),
@@ -16604,7 +17052,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_40_keeper_en_40 (
     .re     (mio_pad_attr_40_re),
-    .we     (mio_pad_attr_40_we & mio_pad_attr_regwen_40_qs),
+    .we     (mio_pad_attr_40_gated_we),
     .wd     (mio_pad_attr_40_keeper_en_40_wd),
     .d      (hw2reg.mio_pad_attr[40].keeper_en.d),
     .qre    (),
@@ -16619,7 +17067,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_40_schmitt_en_40 (
     .re     (mio_pad_attr_40_re),
-    .we     (mio_pad_attr_40_we & mio_pad_attr_regwen_40_qs),
+    .we     (mio_pad_attr_40_gated_we),
     .wd     (mio_pad_attr_40_schmitt_en_40_wd),
     .d      (hw2reg.mio_pad_attr[40].schmitt_en.d),
     .qre    (),
@@ -16634,7 +17082,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_40_od_en_40 (
     .re     (mio_pad_attr_40_re),
-    .we     (mio_pad_attr_40_we & mio_pad_attr_regwen_40_qs),
+    .we     (mio_pad_attr_40_gated_we),
     .wd     (mio_pad_attr_40_od_en_40_wd),
     .d      (hw2reg.mio_pad_attr[40].od_en.d),
     .qre    (),
@@ -16649,7 +17097,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_40_slew_rate_40 (
     .re     (mio_pad_attr_40_re),
-    .we     (mio_pad_attr_40_we & mio_pad_attr_regwen_40_qs),
+    .we     (mio_pad_attr_40_gated_we),
     .wd     (mio_pad_attr_40_slew_rate_40_wd),
     .d      (hw2reg.mio_pad_attr[40].slew_rate.d),
     .qre    (),
@@ -16664,7 +17112,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_40_drive_strength_40 (
     .re     (mio_pad_attr_40_re),
-    .we     (mio_pad_attr_40_we & mio_pad_attr_regwen_40_qs),
+    .we     (mio_pad_attr_40_gated_we),
     .wd     (mio_pad_attr_40_drive_strength_40_wd),
     .d      (hw2reg.mio_pad_attr[40].drive_strength.d),
     .qre    (),
@@ -16680,12 +17128,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_41_qe;
   logic [8:0] mio_pad_attr_41_flds_we;
   assign mio_pad_attr_41_qe = &mio_pad_attr_41_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_41_gated_we;
+  assign mio_pad_attr_41_gated_we = mio_pad_attr_41_we & mio_pad_attr_regwen_41_qs;
   //   F[invert_41]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_41_invert_41 (
     .re     (mio_pad_attr_41_re),
-    .we     (mio_pad_attr_41_we & mio_pad_attr_regwen_41_qs),
+    .we     (mio_pad_attr_41_gated_we),
     .wd     (mio_pad_attr_41_invert_41_wd),
     .d      (hw2reg.mio_pad_attr[41].invert.d),
     .qre    (),
@@ -16700,7 +17151,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_41_virtual_od_en_41 (
     .re     (mio_pad_attr_41_re),
-    .we     (mio_pad_attr_41_we & mio_pad_attr_regwen_41_qs),
+    .we     (mio_pad_attr_41_gated_we),
     .wd     (mio_pad_attr_41_virtual_od_en_41_wd),
     .d      (hw2reg.mio_pad_attr[41].virtual_od_en.d),
     .qre    (),
@@ -16715,7 +17166,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_41_pull_en_41 (
     .re     (mio_pad_attr_41_re),
-    .we     (mio_pad_attr_41_we & mio_pad_attr_regwen_41_qs),
+    .we     (mio_pad_attr_41_gated_we),
     .wd     (mio_pad_attr_41_pull_en_41_wd),
     .d      (hw2reg.mio_pad_attr[41].pull_en.d),
     .qre    (),
@@ -16730,7 +17181,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_41_pull_select_41 (
     .re     (mio_pad_attr_41_re),
-    .we     (mio_pad_attr_41_we & mio_pad_attr_regwen_41_qs),
+    .we     (mio_pad_attr_41_gated_we),
     .wd     (mio_pad_attr_41_pull_select_41_wd),
     .d      (hw2reg.mio_pad_attr[41].pull_select.d),
     .qre    (),
@@ -16745,7 +17196,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_41_keeper_en_41 (
     .re     (mio_pad_attr_41_re),
-    .we     (mio_pad_attr_41_we & mio_pad_attr_regwen_41_qs),
+    .we     (mio_pad_attr_41_gated_we),
     .wd     (mio_pad_attr_41_keeper_en_41_wd),
     .d      (hw2reg.mio_pad_attr[41].keeper_en.d),
     .qre    (),
@@ -16760,7 +17211,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_41_schmitt_en_41 (
     .re     (mio_pad_attr_41_re),
-    .we     (mio_pad_attr_41_we & mio_pad_attr_regwen_41_qs),
+    .we     (mio_pad_attr_41_gated_we),
     .wd     (mio_pad_attr_41_schmitt_en_41_wd),
     .d      (hw2reg.mio_pad_attr[41].schmitt_en.d),
     .qre    (),
@@ -16775,7 +17226,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_41_od_en_41 (
     .re     (mio_pad_attr_41_re),
-    .we     (mio_pad_attr_41_we & mio_pad_attr_regwen_41_qs),
+    .we     (mio_pad_attr_41_gated_we),
     .wd     (mio_pad_attr_41_od_en_41_wd),
     .d      (hw2reg.mio_pad_attr[41].od_en.d),
     .qre    (),
@@ -16790,7 +17241,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_41_slew_rate_41 (
     .re     (mio_pad_attr_41_re),
-    .we     (mio_pad_attr_41_we & mio_pad_attr_regwen_41_qs),
+    .we     (mio_pad_attr_41_gated_we),
     .wd     (mio_pad_attr_41_slew_rate_41_wd),
     .d      (hw2reg.mio_pad_attr[41].slew_rate.d),
     .qre    (),
@@ -16805,7 +17256,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_41_drive_strength_41 (
     .re     (mio_pad_attr_41_re),
-    .we     (mio_pad_attr_41_we & mio_pad_attr_regwen_41_qs),
+    .we     (mio_pad_attr_41_gated_we),
     .wd     (mio_pad_attr_41_drive_strength_41_wd),
     .d      (hw2reg.mio_pad_attr[41].drive_strength.d),
     .qre    (),
@@ -16821,12 +17272,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_42_qe;
   logic [8:0] mio_pad_attr_42_flds_we;
   assign mio_pad_attr_42_qe = &mio_pad_attr_42_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_42_gated_we;
+  assign mio_pad_attr_42_gated_we = mio_pad_attr_42_we & mio_pad_attr_regwen_42_qs;
   //   F[invert_42]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_42_invert_42 (
     .re     (mio_pad_attr_42_re),
-    .we     (mio_pad_attr_42_we & mio_pad_attr_regwen_42_qs),
+    .we     (mio_pad_attr_42_gated_we),
     .wd     (mio_pad_attr_42_invert_42_wd),
     .d      (hw2reg.mio_pad_attr[42].invert.d),
     .qre    (),
@@ -16841,7 +17295,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_42_virtual_od_en_42 (
     .re     (mio_pad_attr_42_re),
-    .we     (mio_pad_attr_42_we & mio_pad_attr_regwen_42_qs),
+    .we     (mio_pad_attr_42_gated_we),
     .wd     (mio_pad_attr_42_virtual_od_en_42_wd),
     .d      (hw2reg.mio_pad_attr[42].virtual_od_en.d),
     .qre    (),
@@ -16856,7 +17310,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_42_pull_en_42 (
     .re     (mio_pad_attr_42_re),
-    .we     (mio_pad_attr_42_we & mio_pad_attr_regwen_42_qs),
+    .we     (mio_pad_attr_42_gated_we),
     .wd     (mio_pad_attr_42_pull_en_42_wd),
     .d      (hw2reg.mio_pad_attr[42].pull_en.d),
     .qre    (),
@@ -16871,7 +17325,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_42_pull_select_42 (
     .re     (mio_pad_attr_42_re),
-    .we     (mio_pad_attr_42_we & mio_pad_attr_regwen_42_qs),
+    .we     (mio_pad_attr_42_gated_we),
     .wd     (mio_pad_attr_42_pull_select_42_wd),
     .d      (hw2reg.mio_pad_attr[42].pull_select.d),
     .qre    (),
@@ -16886,7 +17340,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_42_keeper_en_42 (
     .re     (mio_pad_attr_42_re),
-    .we     (mio_pad_attr_42_we & mio_pad_attr_regwen_42_qs),
+    .we     (mio_pad_attr_42_gated_we),
     .wd     (mio_pad_attr_42_keeper_en_42_wd),
     .d      (hw2reg.mio_pad_attr[42].keeper_en.d),
     .qre    (),
@@ -16901,7 +17355,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_42_schmitt_en_42 (
     .re     (mio_pad_attr_42_re),
-    .we     (mio_pad_attr_42_we & mio_pad_attr_regwen_42_qs),
+    .we     (mio_pad_attr_42_gated_we),
     .wd     (mio_pad_attr_42_schmitt_en_42_wd),
     .d      (hw2reg.mio_pad_attr[42].schmitt_en.d),
     .qre    (),
@@ -16916,7 +17370,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_42_od_en_42 (
     .re     (mio_pad_attr_42_re),
-    .we     (mio_pad_attr_42_we & mio_pad_attr_regwen_42_qs),
+    .we     (mio_pad_attr_42_gated_we),
     .wd     (mio_pad_attr_42_od_en_42_wd),
     .d      (hw2reg.mio_pad_attr[42].od_en.d),
     .qre    (),
@@ -16931,7 +17385,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_42_slew_rate_42 (
     .re     (mio_pad_attr_42_re),
-    .we     (mio_pad_attr_42_we & mio_pad_attr_regwen_42_qs),
+    .we     (mio_pad_attr_42_gated_we),
     .wd     (mio_pad_attr_42_slew_rate_42_wd),
     .d      (hw2reg.mio_pad_attr[42].slew_rate.d),
     .qre    (),
@@ -16946,7 +17400,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_42_drive_strength_42 (
     .re     (mio_pad_attr_42_re),
-    .we     (mio_pad_attr_42_we & mio_pad_attr_regwen_42_qs),
+    .we     (mio_pad_attr_42_gated_we),
     .wd     (mio_pad_attr_42_drive_strength_42_wd),
     .d      (hw2reg.mio_pad_attr[42].drive_strength.d),
     .qre    (),
@@ -16962,12 +17416,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_43_qe;
   logic [8:0] mio_pad_attr_43_flds_we;
   assign mio_pad_attr_43_qe = &mio_pad_attr_43_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_43_gated_we;
+  assign mio_pad_attr_43_gated_we = mio_pad_attr_43_we & mio_pad_attr_regwen_43_qs;
   //   F[invert_43]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_43_invert_43 (
     .re     (mio_pad_attr_43_re),
-    .we     (mio_pad_attr_43_we & mio_pad_attr_regwen_43_qs),
+    .we     (mio_pad_attr_43_gated_we),
     .wd     (mio_pad_attr_43_invert_43_wd),
     .d      (hw2reg.mio_pad_attr[43].invert.d),
     .qre    (),
@@ -16982,7 +17439,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_43_virtual_od_en_43 (
     .re     (mio_pad_attr_43_re),
-    .we     (mio_pad_attr_43_we & mio_pad_attr_regwen_43_qs),
+    .we     (mio_pad_attr_43_gated_we),
     .wd     (mio_pad_attr_43_virtual_od_en_43_wd),
     .d      (hw2reg.mio_pad_attr[43].virtual_od_en.d),
     .qre    (),
@@ -16997,7 +17454,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_43_pull_en_43 (
     .re     (mio_pad_attr_43_re),
-    .we     (mio_pad_attr_43_we & mio_pad_attr_regwen_43_qs),
+    .we     (mio_pad_attr_43_gated_we),
     .wd     (mio_pad_attr_43_pull_en_43_wd),
     .d      (hw2reg.mio_pad_attr[43].pull_en.d),
     .qre    (),
@@ -17012,7 +17469,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_43_pull_select_43 (
     .re     (mio_pad_attr_43_re),
-    .we     (mio_pad_attr_43_we & mio_pad_attr_regwen_43_qs),
+    .we     (mio_pad_attr_43_gated_we),
     .wd     (mio_pad_attr_43_pull_select_43_wd),
     .d      (hw2reg.mio_pad_attr[43].pull_select.d),
     .qre    (),
@@ -17027,7 +17484,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_43_keeper_en_43 (
     .re     (mio_pad_attr_43_re),
-    .we     (mio_pad_attr_43_we & mio_pad_attr_regwen_43_qs),
+    .we     (mio_pad_attr_43_gated_we),
     .wd     (mio_pad_attr_43_keeper_en_43_wd),
     .d      (hw2reg.mio_pad_attr[43].keeper_en.d),
     .qre    (),
@@ -17042,7 +17499,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_43_schmitt_en_43 (
     .re     (mio_pad_attr_43_re),
-    .we     (mio_pad_attr_43_we & mio_pad_attr_regwen_43_qs),
+    .we     (mio_pad_attr_43_gated_we),
     .wd     (mio_pad_attr_43_schmitt_en_43_wd),
     .d      (hw2reg.mio_pad_attr[43].schmitt_en.d),
     .qre    (),
@@ -17057,7 +17514,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_43_od_en_43 (
     .re     (mio_pad_attr_43_re),
-    .we     (mio_pad_attr_43_we & mio_pad_attr_regwen_43_qs),
+    .we     (mio_pad_attr_43_gated_we),
     .wd     (mio_pad_attr_43_od_en_43_wd),
     .d      (hw2reg.mio_pad_attr[43].od_en.d),
     .qre    (),
@@ -17072,7 +17529,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_43_slew_rate_43 (
     .re     (mio_pad_attr_43_re),
-    .we     (mio_pad_attr_43_we & mio_pad_attr_regwen_43_qs),
+    .we     (mio_pad_attr_43_gated_we),
     .wd     (mio_pad_attr_43_slew_rate_43_wd),
     .d      (hw2reg.mio_pad_attr[43].slew_rate.d),
     .qre    (),
@@ -17087,7 +17544,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_43_drive_strength_43 (
     .re     (mio_pad_attr_43_re),
-    .we     (mio_pad_attr_43_we & mio_pad_attr_regwen_43_qs),
+    .we     (mio_pad_attr_43_gated_we),
     .wd     (mio_pad_attr_43_drive_strength_43_wd),
     .d      (hw2reg.mio_pad_attr[43].drive_strength.d),
     .qre    (),
@@ -17103,12 +17560,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_44_qe;
   logic [8:0] mio_pad_attr_44_flds_we;
   assign mio_pad_attr_44_qe = &mio_pad_attr_44_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_44_gated_we;
+  assign mio_pad_attr_44_gated_we = mio_pad_attr_44_we & mio_pad_attr_regwen_44_qs;
   //   F[invert_44]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_44_invert_44 (
     .re     (mio_pad_attr_44_re),
-    .we     (mio_pad_attr_44_we & mio_pad_attr_regwen_44_qs),
+    .we     (mio_pad_attr_44_gated_we),
     .wd     (mio_pad_attr_44_invert_44_wd),
     .d      (hw2reg.mio_pad_attr[44].invert.d),
     .qre    (),
@@ -17123,7 +17583,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_44_virtual_od_en_44 (
     .re     (mio_pad_attr_44_re),
-    .we     (mio_pad_attr_44_we & mio_pad_attr_regwen_44_qs),
+    .we     (mio_pad_attr_44_gated_we),
     .wd     (mio_pad_attr_44_virtual_od_en_44_wd),
     .d      (hw2reg.mio_pad_attr[44].virtual_od_en.d),
     .qre    (),
@@ -17138,7 +17598,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_44_pull_en_44 (
     .re     (mio_pad_attr_44_re),
-    .we     (mio_pad_attr_44_we & mio_pad_attr_regwen_44_qs),
+    .we     (mio_pad_attr_44_gated_we),
     .wd     (mio_pad_attr_44_pull_en_44_wd),
     .d      (hw2reg.mio_pad_attr[44].pull_en.d),
     .qre    (),
@@ -17153,7 +17613,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_44_pull_select_44 (
     .re     (mio_pad_attr_44_re),
-    .we     (mio_pad_attr_44_we & mio_pad_attr_regwen_44_qs),
+    .we     (mio_pad_attr_44_gated_we),
     .wd     (mio_pad_attr_44_pull_select_44_wd),
     .d      (hw2reg.mio_pad_attr[44].pull_select.d),
     .qre    (),
@@ -17168,7 +17628,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_44_keeper_en_44 (
     .re     (mio_pad_attr_44_re),
-    .we     (mio_pad_attr_44_we & mio_pad_attr_regwen_44_qs),
+    .we     (mio_pad_attr_44_gated_we),
     .wd     (mio_pad_attr_44_keeper_en_44_wd),
     .d      (hw2reg.mio_pad_attr[44].keeper_en.d),
     .qre    (),
@@ -17183,7 +17643,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_44_schmitt_en_44 (
     .re     (mio_pad_attr_44_re),
-    .we     (mio_pad_attr_44_we & mio_pad_attr_regwen_44_qs),
+    .we     (mio_pad_attr_44_gated_we),
     .wd     (mio_pad_attr_44_schmitt_en_44_wd),
     .d      (hw2reg.mio_pad_attr[44].schmitt_en.d),
     .qre    (),
@@ -17198,7 +17658,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_44_od_en_44 (
     .re     (mio_pad_attr_44_re),
-    .we     (mio_pad_attr_44_we & mio_pad_attr_regwen_44_qs),
+    .we     (mio_pad_attr_44_gated_we),
     .wd     (mio_pad_attr_44_od_en_44_wd),
     .d      (hw2reg.mio_pad_attr[44].od_en.d),
     .qre    (),
@@ -17213,7 +17673,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_44_slew_rate_44 (
     .re     (mio_pad_attr_44_re),
-    .we     (mio_pad_attr_44_we & mio_pad_attr_regwen_44_qs),
+    .we     (mio_pad_attr_44_gated_we),
     .wd     (mio_pad_attr_44_slew_rate_44_wd),
     .d      (hw2reg.mio_pad_attr[44].slew_rate.d),
     .qre    (),
@@ -17228,7 +17688,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_44_drive_strength_44 (
     .re     (mio_pad_attr_44_re),
-    .we     (mio_pad_attr_44_we & mio_pad_attr_regwen_44_qs),
+    .we     (mio_pad_attr_44_gated_we),
     .wd     (mio_pad_attr_44_drive_strength_44_wd),
     .d      (hw2reg.mio_pad_attr[44].drive_strength.d),
     .qre    (),
@@ -17244,12 +17704,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_45_qe;
   logic [8:0] mio_pad_attr_45_flds_we;
   assign mio_pad_attr_45_qe = &mio_pad_attr_45_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_45_gated_we;
+  assign mio_pad_attr_45_gated_we = mio_pad_attr_45_we & mio_pad_attr_regwen_45_qs;
   //   F[invert_45]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_45_invert_45 (
     .re     (mio_pad_attr_45_re),
-    .we     (mio_pad_attr_45_we & mio_pad_attr_regwen_45_qs),
+    .we     (mio_pad_attr_45_gated_we),
     .wd     (mio_pad_attr_45_invert_45_wd),
     .d      (hw2reg.mio_pad_attr[45].invert.d),
     .qre    (),
@@ -17264,7 +17727,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_45_virtual_od_en_45 (
     .re     (mio_pad_attr_45_re),
-    .we     (mio_pad_attr_45_we & mio_pad_attr_regwen_45_qs),
+    .we     (mio_pad_attr_45_gated_we),
     .wd     (mio_pad_attr_45_virtual_od_en_45_wd),
     .d      (hw2reg.mio_pad_attr[45].virtual_od_en.d),
     .qre    (),
@@ -17279,7 +17742,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_45_pull_en_45 (
     .re     (mio_pad_attr_45_re),
-    .we     (mio_pad_attr_45_we & mio_pad_attr_regwen_45_qs),
+    .we     (mio_pad_attr_45_gated_we),
     .wd     (mio_pad_attr_45_pull_en_45_wd),
     .d      (hw2reg.mio_pad_attr[45].pull_en.d),
     .qre    (),
@@ -17294,7 +17757,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_45_pull_select_45 (
     .re     (mio_pad_attr_45_re),
-    .we     (mio_pad_attr_45_we & mio_pad_attr_regwen_45_qs),
+    .we     (mio_pad_attr_45_gated_we),
     .wd     (mio_pad_attr_45_pull_select_45_wd),
     .d      (hw2reg.mio_pad_attr[45].pull_select.d),
     .qre    (),
@@ -17309,7 +17772,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_45_keeper_en_45 (
     .re     (mio_pad_attr_45_re),
-    .we     (mio_pad_attr_45_we & mio_pad_attr_regwen_45_qs),
+    .we     (mio_pad_attr_45_gated_we),
     .wd     (mio_pad_attr_45_keeper_en_45_wd),
     .d      (hw2reg.mio_pad_attr[45].keeper_en.d),
     .qre    (),
@@ -17324,7 +17787,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_45_schmitt_en_45 (
     .re     (mio_pad_attr_45_re),
-    .we     (mio_pad_attr_45_we & mio_pad_attr_regwen_45_qs),
+    .we     (mio_pad_attr_45_gated_we),
     .wd     (mio_pad_attr_45_schmitt_en_45_wd),
     .d      (hw2reg.mio_pad_attr[45].schmitt_en.d),
     .qre    (),
@@ -17339,7 +17802,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_45_od_en_45 (
     .re     (mio_pad_attr_45_re),
-    .we     (mio_pad_attr_45_we & mio_pad_attr_regwen_45_qs),
+    .we     (mio_pad_attr_45_gated_we),
     .wd     (mio_pad_attr_45_od_en_45_wd),
     .d      (hw2reg.mio_pad_attr[45].od_en.d),
     .qre    (),
@@ -17354,7 +17817,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_45_slew_rate_45 (
     .re     (mio_pad_attr_45_re),
-    .we     (mio_pad_attr_45_we & mio_pad_attr_regwen_45_qs),
+    .we     (mio_pad_attr_45_gated_we),
     .wd     (mio_pad_attr_45_slew_rate_45_wd),
     .d      (hw2reg.mio_pad_attr[45].slew_rate.d),
     .qre    (),
@@ -17369,7 +17832,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_45_drive_strength_45 (
     .re     (mio_pad_attr_45_re),
-    .we     (mio_pad_attr_45_we & mio_pad_attr_regwen_45_qs),
+    .we     (mio_pad_attr_45_gated_we),
     .wd     (mio_pad_attr_45_drive_strength_45_wd),
     .d      (hw2reg.mio_pad_attr[45].drive_strength.d),
     .qre    (),
@@ -17385,12 +17848,15 @@ module pinmux_reg_top (
   logic mio_pad_attr_46_qe;
   logic [8:0] mio_pad_attr_46_flds_we;
   assign mio_pad_attr_46_qe = &mio_pad_attr_46_flds_we;
+  // Create REGWEN-gated WE signal
+  logic mio_pad_attr_46_gated_we;
+  assign mio_pad_attr_46_gated_we = mio_pad_attr_46_we & mio_pad_attr_regwen_46_qs;
   //   F[invert_46]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_mio_pad_attr_46_invert_46 (
     .re     (mio_pad_attr_46_re),
-    .we     (mio_pad_attr_46_we & mio_pad_attr_regwen_46_qs),
+    .we     (mio_pad_attr_46_gated_we),
     .wd     (mio_pad_attr_46_invert_46_wd),
     .d      (hw2reg.mio_pad_attr[46].invert.d),
     .qre    (),
@@ -17405,7 +17871,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_46_virtual_od_en_46 (
     .re     (mio_pad_attr_46_re),
-    .we     (mio_pad_attr_46_we & mio_pad_attr_regwen_46_qs),
+    .we     (mio_pad_attr_46_gated_we),
     .wd     (mio_pad_attr_46_virtual_od_en_46_wd),
     .d      (hw2reg.mio_pad_attr[46].virtual_od_en.d),
     .qre    (),
@@ -17420,7 +17886,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_46_pull_en_46 (
     .re     (mio_pad_attr_46_re),
-    .we     (mio_pad_attr_46_we & mio_pad_attr_regwen_46_qs),
+    .we     (mio_pad_attr_46_gated_we),
     .wd     (mio_pad_attr_46_pull_en_46_wd),
     .d      (hw2reg.mio_pad_attr[46].pull_en.d),
     .qre    (),
@@ -17435,7 +17901,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_46_pull_select_46 (
     .re     (mio_pad_attr_46_re),
-    .we     (mio_pad_attr_46_we & mio_pad_attr_regwen_46_qs),
+    .we     (mio_pad_attr_46_gated_we),
     .wd     (mio_pad_attr_46_pull_select_46_wd),
     .d      (hw2reg.mio_pad_attr[46].pull_select.d),
     .qre    (),
@@ -17450,7 +17916,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_46_keeper_en_46 (
     .re     (mio_pad_attr_46_re),
-    .we     (mio_pad_attr_46_we & mio_pad_attr_regwen_46_qs),
+    .we     (mio_pad_attr_46_gated_we),
     .wd     (mio_pad_attr_46_keeper_en_46_wd),
     .d      (hw2reg.mio_pad_attr[46].keeper_en.d),
     .qre    (),
@@ -17465,7 +17931,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_46_schmitt_en_46 (
     .re     (mio_pad_attr_46_re),
-    .we     (mio_pad_attr_46_we & mio_pad_attr_regwen_46_qs),
+    .we     (mio_pad_attr_46_gated_we),
     .wd     (mio_pad_attr_46_schmitt_en_46_wd),
     .d      (hw2reg.mio_pad_attr[46].schmitt_en.d),
     .qre    (),
@@ -17480,7 +17946,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_mio_pad_attr_46_od_en_46 (
     .re     (mio_pad_attr_46_re),
-    .we     (mio_pad_attr_46_we & mio_pad_attr_regwen_46_qs),
+    .we     (mio_pad_attr_46_gated_we),
     .wd     (mio_pad_attr_46_od_en_46_wd),
     .d      (hw2reg.mio_pad_attr[46].od_en.d),
     .qre    (),
@@ -17495,7 +17961,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_mio_pad_attr_46_slew_rate_46 (
     .re     (mio_pad_attr_46_re),
-    .we     (mio_pad_attr_46_we & mio_pad_attr_regwen_46_qs),
+    .we     (mio_pad_attr_46_gated_we),
     .wd     (mio_pad_attr_46_slew_rate_46_wd),
     .d      (hw2reg.mio_pad_attr[46].slew_rate.d),
     .qre    (),
@@ -17510,7 +17976,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_mio_pad_attr_46_drive_strength_46 (
     .re     (mio_pad_attr_46_re),
-    .we     (mio_pad_attr_46_we & mio_pad_attr_regwen_46_qs),
+    .we     (mio_pad_attr_46_gated_we),
     .wd     (mio_pad_attr_46_drive_strength_46_wd),
     .d      (hw2reg.mio_pad_attr[46].drive_strength.d),
     .qre    (),
@@ -17958,12 +18424,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_0_qe;
   logic [8:0] dio_pad_attr_0_flds_we;
   assign dio_pad_attr_0_qe = &dio_pad_attr_0_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_0_gated_we;
+  assign dio_pad_attr_0_gated_we = dio_pad_attr_0_we & dio_pad_attr_regwen_0_qs;
   //   F[invert_0]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_0_invert_0 (
     .re     (dio_pad_attr_0_re),
-    .we     (dio_pad_attr_0_we & dio_pad_attr_regwen_0_qs),
+    .we     (dio_pad_attr_0_gated_we),
     .wd     (dio_pad_attr_0_invert_0_wd),
     .d      (hw2reg.dio_pad_attr[0].invert.d),
     .qre    (),
@@ -17978,7 +18447,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_0_virtual_od_en_0 (
     .re     (dio_pad_attr_0_re),
-    .we     (dio_pad_attr_0_we & dio_pad_attr_regwen_0_qs),
+    .we     (dio_pad_attr_0_gated_we),
     .wd     (dio_pad_attr_0_virtual_od_en_0_wd),
     .d      (hw2reg.dio_pad_attr[0].virtual_od_en.d),
     .qre    (),
@@ -17993,7 +18462,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_0_pull_en_0 (
     .re     (dio_pad_attr_0_re),
-    .we     (dio_pad_attr_0_we & dio_pad_attr_regwen_0_qs),
+    .we     (dio_pad_attr_0_gated_we),
     .wd     (dio_pad_attr_0_pull_en_0_wd),
     .d      (hw2reg.dio_pad_attr[0].pull_en.d),
     .qre    (),
@@ -18008,7 +18477,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_0_pull_select_0 (
     .re     (dio_pad_attr_0_re),
-    .we     (dio_pad_attr_0_we & dio_pad_attr_regwen_0_qs),
+    .we     (dio_pad_attr_0_gated_we),
     .wd     (dio_pad_attr_0_pull_select_0_wd),
     .d      (hw2reg.dio_pad_attr[0].pull_select.d),
     .qre    (),
@@ -18023,7 +18492,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_0_keeper_en_0 (
     .re     (dio_pad_attr_0_re),
-    .we     (dio_pad_attr_0_we & dio_pad_attr_regwen_0_qs),
+    .we     (dio_pad_attr_0_gated_we),
     .wd     (dio_pad_attr_0_keeper_en_0_wd),
     .d      (hw2reg.dio_pad_attr[0].keeper_en.d),
     .qre    (),
@@ -18038,7 +18507,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_0_schmitt_en_0 (
     .re     (dio_pad_attr_0_re),
-    .we     (dio_pad_attr_0_we & dio_pad_attr_regwen_0_qs),
+    .we     (dio_pad_attr_0_gated_we),
     .wd     (dio_pad_attr_0_schmitt_en_0_wd),
     .d      (hw2reg.dio_pad_attr[0].schmitt_en.d),
     .qre    (),
@@ -18053,7 +18522,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_0_od_en_0 (
     .re     (dio_pad_attr_0_re),
-    .we     (dio_pad_attr_0_we & dio_pad_attr_regwen_0_qs),
+    .we     (dio_pad_attr_0_gated_we),
     .wd     (dio_pad_attr_0_od_en_0_wd),
     .d      (hw2reg.dio_pad_attr[0].od_en.d),
     .qre    (),
@@ -18068,7 +18537,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_0_slew_rate_0 (
     .re     (dio_pad_attr_0_re),
-    .we     (dio_pad_attr_0_we & dio_pad_attr_regwen_0_qs),
+    .we     (dio_pad_attr_0_gated_we),
     .wd     (dio_pad_attr_0_slew_rate_0_wd),
     .d      (hw2reg.dio_pad_attr[0].slew_rate.d),
     .qre    (),
@@ -18083,7 +18552,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_0_drive_strength_0 (
     .re     (dio_pad_attr_0_re),
-    .we     (dio_pad_attr_0_we & dio_pad_attr_regwen_0_qs),
+    .we     (dio_pad_attr_0_gated_we),
     .wd     (dio_pad_attr_0_drive_strength_0_wd),
     .d      (hw2reg.dio_pad_attr[0].drive_strength.d),
     .qre    (),
@@ -18099,12 +18568,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_1_qe;
   logic [8:0] dio_pad_attr_1_flds_we;
   assign dio_pad_attr_1_qe = &dio_pad_attr_1_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_1_gated_we;
+  assign dio_pad_attr_1_gated_we = dio_pad_attr_1_we & dio_pad_attr_regwen_1_qs;
   //   F[invert_1]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_1_invert_1 (
     .re     (dio_pad_attr_1_re),
-    .we     (dio_pad_attr_1_we & dio_pad_attr_regwen_1_qs),
+    .we     (dio_pad_attr_1_gated_we),
     .wd     (dio_pad_attr_1_invert_1_wd),
     .d      (hw2reg.dio_pad_attr[1].invert.d),
     .qre    (),
@@ -18119,7 +18591,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_1_virtual_od_en_1 (
     .re     (dio_pad_attr_1_re),
-    .we     (dio_pad_attr_1_we & dio_pad_attr_regwen_1_qs),
+    .we     (dio_pad_attr_1_gated_we),
     .wd     (dio_pad_attr_1_virtual_od_en_1_wd),
     .d      (hw2reg.dio_pad_attr[1].virtual_od_en.d),
     .qre    (),
@@ -18134,7 +18606,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_1_pull_en_1 (
     .re     (dio_pad_attr_1_re),
-    .we     (dio_pad_attr_1_we & dio_pad_attr_regwen_1_qs),
+    .we     (dio_pad_attr_1_gated_we),
     .wd     (dio_pad_attr_1_pull_en_1_wd),
     .d      (hw2reg.dio_pad_attr[1].pull_en.d),
     .qre    (),
@@ -18149,7 +18621,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_1_pull_select_1 (
     .re     (dio_pad_attr_1_re),
-    .we     (dio_pad_attr_1_we & dio_pad_attr_regwen_1_qs),
+    .we     (dio_pad_attr_1_gated_we),
     .wd     (dio_pad_attr_1_pull_select_1_wd),
     .d      (hw2reg.dio_pad_attr[1].pull_select.d),
     .qre    (),
@@ -18164,7 +18636,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_1_keeper_en_1 (
     .re     (dio_pad_attr_1_re),
-    .we     (dio_pad_attr_1_we & dio_pad_attr_regwen_1_qs),
+    .we     (dio_pad_attr_1_gated_we),
     .wd     (dio_pad_attr_1_keeper_en_1_wd),
     .d      (hw2reg.dio_pad_attr[1].keeper_en.d),
     .qre    (),
@@ -18179,7 +18651,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_1_schmitt_en_1 (
     .re     (dio_pad_attr_1_re),
-    .we     (dio_pad_attr_1_we & dio_pad_attr_regwen_1_qs),
+    .we     (dio_pad_attr_1_gated_we),
     .wd     (dio_pad_attr_1_schmitt_en_1_wd),
     .d      (hw2reg.dio_pad_attr[1].schmitt_en.d),
     .qre    (),
@@ -18194,7 +18666,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_1_od_en_1 (
     .re     (dio_pad_attr_1_re),
-    .we     (dio_pad_attr_1_we & dio_pad_attr_regwen_1_qs),
+    .we     (dio_pad_attr_1_gated_we),
     .wd     (dio_pad_attr_1_od_en_1_wd),
     .d      (hw2reg.dio_pad_attr[1].od_en.d),
     .qre    (),
@@ -18209,7 +18681,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_1_slew_rate_1 (
     .re     (dio_pad_attr_1_re),
-    .we     (dio_pad_attr_1_we & dio_pad_attr_regwen_1_qs),
+    .we     (dio_pad_attr_1_gated_we),
     .wd     (dio_pad_attr_1_slew_rate_1_wd),
     .d      (hw2reg.dio_pad_attr[1].slew_rate.d),
     .qre    (),
@@ -18224,7 +18696,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_1_drive_strength_1 (
     .re     (dio_pad_attr_1_re),
-    .we     (dio_pad_attr_1_we & dio_pad_attr_regwen_1_qs),
+    .we     (dio_pad_attr_1_gated_we),
     .wd     (dio_pad_attr_1_drive_strength_1_wd),
     .d      (hw2reg.dio_pad_attr[1].drive_strength.d),
     .qre    (),
@@ -18240,12 +18712,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_2_qe;
   logic [8:0] dio_pad_attr_2_flds_we;
   assign dio_pad_attr_2_qe = &dio_pad_attr_2_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_2_gated_we;
+  assign dio_pad_attr_2_gated_we = dio_pad_attr_2_we & dio_pad_attr_regwen_2_qs;
   //   F[invert_2]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_2_invert_2 (
     .re     (dio_pad_attr_2_re),
-    .we     (dio_pad_attr_2_we & dio_pad_attr_regwen_2_qs),
+    .we     (dio_pad_attr_2_gated_we),
     .wd     (dio_pad_attr_2_invert_2_wd),
     .d      (hw2reg.dio_pad_attr[2].invert.d),
     .qre    (),
@@ -18260,7 +18735,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_2_virtual_od_en_2 (
     .re     (dio_pad_attr_2_re),
-    .we     (dio_pad_attr_2_we & dio_pad_attr_regwen_2_qs),
+    .we     (dio_pad_attr_2_gated_we),
     .wd     (dio_pad_attr_2_virtual_od_en_2_wd),
     .d      (hw2reg.dio_pad_attr[2].virtual_od_en.d),
     .qre    (),
@@ -18275,7 +18750,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_2_pull_en_2 (
     .re     (dio_pad_attr_2_re),
-    .we     (dio_pad_attr_2_we & dio_pad_attr_regwen_2_qs),
+    .we     (dio_pad_attr_2_gated_we),
     .wd     (dio_pad_attr_2_pull_en_2_wd),
     .d      (hw2reg.dio_pad_attr[2].pull_en.d),
     .qre    (),
@@ -18290,7 +18765,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_2_pull_select_2 (
     .re     (dio_pad_attr_2_re),
-    .we     (dio_pad_attr_2_we & dio_pad_attr_regwen_2_qs),
+    .we     (dio_pad_attr_2_gated_we),
     .wd     (dio_pad_attr_2_pull_select_2_wd),
     .d      (hw2reg.dio_pad_attr[2].pull_select.d),
     .qre    (),
@@ -18305,7 +18780,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_2_keeper_en_2 (
     .re     (dio_pad_attr_2_re),
-    .we     (dio_pad_attr_2_we & dio_pad_attr_regwen_2_qs),
+    .we     (dio_pad_attr_2_gated_we),
     .wd     (dio_pad_attr_2_keeper_en_2_wd),
     .d      (hw2reg.dio_pad_attr[2].keeper_en.d),
     .qre    (),
@@ -18320,7 +18795,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_2_schmitt_en_2 (
     .re     (dio_pad_attr_2_re),
-    .we     (dio_pad_attr_2_we & dio_pad_attr_regwen_2_qs),
+    .we     (dio_pad_attr_2_gated_we),
     .wd     (dio_pad_attr_2_schmitt_en_2_wd),
     .d      (hw2reg.dio_pad_attr[2].schmitt_en.d),
     .qre    (),
@@ -18335,7 +18810,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_2_od_en_2 (
     .re     (dio_pad_attr_2_re),
-    .we     (dio_pad_attr_2_we & dio_pad_attr_regwen_2_qs),
+    .we     (dio_pad_attr_2_gated_we),
     .wd     (dio_pad_attr_2_od_en_2_wd),
     .d      (hw2reg.dio_pad_attr[2].od_en.d),
     .qre    (),
@@ -18350,7 +18825,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_2_slew_rate_2 (
     .re     (dio_pad_attr_2_re),
-    .we     (dio_pad_attr_2_we & dio_pad_attr_regwen_2_qs),
+    .we     (dio_pad_attr_2_gated_we),
     .wd     (dio_pad_attr_2_slew_rate_2_wd),
     .d      (hw2reg.dio_pad_attr[2].slew_rate.d),
     .qre    (),
@@ -18365,7 +18840,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_2_drive_strength_2 (
     .re     (dio_pad_attr_2_re),
-    .we     (dio_pad_attr_2_we & dio_pad_attr_regwen_2_qs),
+    .we     (dio_pad_attr_2_gated_we),
     .wd     (dio_pad_attr_2_drive_strength_2_wd),
     .d      (hw2reg.dio_pad_attr[2].drive_strength.d),
     .qre    (),
@@ -18381,12 +18856,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_3_qe;
   logic [8:0] dio_pad_attr_3_flds_we;
   assign dio_pad_attr_3_qe = &dio_pad_attr_3_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_3_gated_we;
+  assign dio_pad_attr_3_gated_we = dio_pad_attr_3_we & dio_pad_attr_regwen_3_qs;
   //   F[invert_3]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_3_invert_3 (
     .re     (dio_pad_attr_3_re),
-    .we     (dio_pad_attr_3_we & dio_pad_attr_regwen_3_qs),
+    .we     (dio_pad_attr_3_gated_we),
     .wd     (dio_pad_attr_3_invert_3_wd),
     .d      (hw2reg.dio_pad_attr[3].invert.d),
     .qre    (),
@@ -18401,7 +18879,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_3_virtual_od_en_3 (
     .re     (dio_pad_attr_3_re),
-    .we     (dio_pad_attr_3_we & dio_pad_attr_regwen_3_qs),
+    .we     (dio_pad_attr_3_gated_we),
     .wd     (dio_pad_attr_3_virtual_od_en_3_wd),
     .d      (hw2reg.dio_pad_attr[3].virtual_od_en.d),
     .qre    (),
@@ -18416,7 +18894,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_3_pull_en_3 (
     .re     (dio_pad_attr_3_re),
-    .we     (dio_pad_attr_3_we & dio_pad_attr_regwen_3_qs),
+    .we     (dio_pad_attr_3_gated_we),
     .wd     (dio_pad_attr_3_pull_en_3_wd),
     .d      (hw2reg.dio_pad_attr[3].pull_en.d),
     .qre    (),
@@ -18431,7 +18909,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_3_pull_select_3 (
     .re     (dio_pad_attr_3_re),
-    .we     (dio_pad_attr_3_we & dio_pad_attr_regwen_3_qs),
+    .we     (dio_pad_attr_3_gated_we),
     .wd     (dio_pad_attr_3_pull_select_3_wd),
     .d      (hw2reg.dio_pad_attr[3].pull_select.d),
     .qre    (),
@@ -18446,7 +18924,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_3_keeper_en_3 (
     .re     (dio_pad_attr_3_re),
-    .we     (dio_pad_attr_3_we & dio_pad_attr_regwen_3_qs),
+    .we     (dio_pad_attr_3_gated_we),
     .wd     (dio_pad_attr_3_keeper_en_3_wd),
     .d      (hw2reg.dio_pad_attr[3].keeper_en.d),
     .qre    (),
@@ -18461,7 +18939,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_3_schmitt_en_3 (
     .re     (dio_pad_attr_3_re),
-    .we     (dio_pad_attr_3_we & dio_pad_attr_regwen_3_qs),
+    .we     (dio_pad_attr_3_gated_we),
     .wd     (dio_pad_attr_3_schmitt_en_3_wd),
     .d      (hw2reg.dio_pad_attr[3].schmitt_en.d),
     .qre    (),
@@ -18476,7 +18954,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_3_od_en_3 (
     .re     (dio_pad_attr_3_re),
-    .we     (dio_pad_attr_3_we & dio_pad_attr_regwen_3_qs),
+    .we     (dio_pad_attr_3_gated_we),
     .wd     (dio_pad_attr_3_od_en_3_wd),
     .d      (hw2reg.dio_pad_attr[3].od_en.d),
     .qre    (),
@@ -18491,7 +18969,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_3_slew_rate_3 (
     .re     (dio_pad_attr_3_re),
-    .we     (dio_pad_attr_3_we & dio_pad_attr_regwen_3_qs),
+    .we     (dio_pad_attr_3_gated_we),
     .wd     (dio_pad_attr_3_slew_rate_3_wd),
     .d      (hw2reg.dio_pad_attr[3].slew_rate.d),
     .qre    (),
@@ -18506,7 +18984,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_3_drive_strength_3 (
     .re     (dio_pad_attr_3_re),
-    .we     (dio_pad_attr_3_we & dio_pad_attr_regwen_3_qs),
+    .we     (dio_pad_attr_3_gated_we),
     .wd     (dio_pad_attr_3_drive_strength_3_wd),
     .d      (hw2reg.dio_pad_attr[3].drive_strength.d),
     .qre    (),
@@ -18522,12 +19000,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_4_qe;
   logic [8:0] dio_pad_attr_4_flds_we;
   assign dio_pad_attr_4_qe = &dio_pad_attr_4_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_4_gated_we;
+  assign dio_pad_attr_4_gated_we = dio_pad_attr_4_we & dio_pad_attr_regwen_4_qs;
   //   F[invert_4]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_4_invert_4 (
     .re     (dio_pad_attr_4_re),
-    .we     (dio_pad_attr_4_we & dio_pad_attr_regwen_4_qs),
+    .we     (dio_pad_attr_4_gated_we),
     .wd     (dio_pad_attr_4_invert_4_wd),
     .d      (hw2reg.dio_pad_attr[4].invert.d),
     .qre    (),
@@ -18542,7 +19023,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_4_virtual_od_en_4 (
     .re     (dio_pad_attr_4_re),
-    .we     (dio_pad_attr_4_we & dio_pad_attr_regwen_4_qs),
+    .we     (dio_pad_attr_4_gated_we),
     .wd     (dio_pad_attr_4_virtual_od_en_4_wd),
     .d      (hw2reg.dio_pad_attr[4].virtual_od_en.d),
     .qre    (),
@@ -18557,7 +19038,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_4_pull_en_4 (
     .re     (dio_pad_attr_4_re),
-    .we     (dio_pad_attr_4_we & dio_pad_attr_regwen_4_qs),
+    .we     (dio_pad_attr_4_gated_we),
     .wd     (dio_pad_attr_4_pull_en_4_wd),
     .d      (hw2reg.dio_pad_attr[4].pull_en.d),
     .qre    (),
@@ -18572,7 +19053,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_4_pull_select_4 (
     .re     (dio_pad_attr_4_re),
-    .we     (dio_pad_attr_4_we & dio_pad_attr_regwen_4_qs),
+    .we     (dio_pad_attr_4_gated_we),
     .wd     (dio_pad_attr_4_pull_select_4_wd),
     .d      (hw2reg.dio_pad_attr[4].pull_select.d),
     .qre    (),
@@ -18587,7 +19068,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_4_keeper_en_4 (
     .re     (dio_pad_attr_4_re),
-    .we     (dio_pad_attr_4_we & dio_pad_attr_regwen_4_qs),
+    .we     (dio_pad_attr_4_gated_we),
     .wd     (dio_pad_attr_4_keeper_en_4_wd),
     .d      (hw2reg.dio_pad_attr[4].keeper_en.d),
     .qre    (),
@@ -18602,7 +19083,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_4_schmitt_en_4 (
     .re     (dio_pad_attr_4_re),
-    .we     (dio_pad_attr_4_we & dio_pad_attr_regwen_4_qs),
+    .we     (dio_pad_attr_4_gated_we),
     .wd     (dio_pad_attr_4_schmitt_en_4_wd),
     .d      (hw2reg.dio_pad_attr[4].schmitt_en.d),
     .qre    (),
@@ -18617,7 +19098,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_4_od_en_4 (
     .re     (dio_pad_attr_4_re),
-    .we     (dio_pad_attr_4_we & dio_pad_attr_regwen_4_qs),
+    .we     (dio_pad_attr_4_gated_we),
     .wd     (dio_pad_attr_4_od_en_4_wd),
     .d      (hw2reg.dio_pad_attr[4].od_en.d),
     .qre    (),
@@ -18632,7 +19113,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_4_slew_rate_4 (
     .re     (dio_pad_attr_4_re),
-    .we     (dio_pad_attr_4_we & dio_pad_attr_regwen_4_qs),
+    .we     (dio_pad_attr_4_gated_we),
     .wd     (dio_pad_attr_4_slew_rate_4_wd),
     .d      (hw2reg.dio_pad_attr[4].slew_rate.d),
     .qre    (),
@@ -18647,7 +19128,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_4_drive_strength_4 (
     .re     (dio_pad_attr_4_re),
-    .we     (dio_pad_attr_4_we & dio_pad_attr_regwen_4_qs),
+    .we     (dio_pad_attr_4_gated_we),
     .wd     (dio_pad_attr_4_drive_strength_4_wd),
     .d      (hw2reg.dio_pad_attr[4].drive_strength.d),
     .qre    (),
@@ -18663,12 +19144,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_5_qe;
   logic [8:0] dio_pad_attr_5_flds_we;
   assign dio_pad_attr_5_qe = &dio_pad_attr_5_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_5_gated_we;
+  assign dio_pad_attr_5_gated_we = dio_pad_attr_5_we & dio_pad_attr_regwen_5_qs;
   //   F[invert_5]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_5_invert_5 (
     .re     (dio_pad_attr_5_re),
-    .we     (dio_pad_attr_5_we & dio_pad_attr_regwen_5_qs),
+    .we     (dio_pad_attr_5_gated_we),
     .wd     (dio_pad_attr_5_invert_5_wd),
     .d      (hw2reg.dio_pad_attr[5].invert.d),
     .qre    (),
@@ -18683,7 +19167,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_5_virtual_od_en_5 (
     .re     (dio_pad_attr_5_re),
-    .we     (dio_pad_attr_5_we & dio_pad_attr_regwen_5_qs),
+    .we     (dio_pad_attr_5_gated_we),
     .wd     (dio_pad_attr_5_virtual_od_en_5_wd),
     .d      (hw2reg.dio_pad_attr[5].virtual_od_en.d),
     .qre    (),
@@ -18698,7 +19182,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_5_pull_en_5 (
     .re     (dio_pad_attr_5_re),
-    .we     (dio_pad_attr_5_we & dio_pad_attr_regwen_5_qs),
+    .we     (dio_pad_attr_5_gated_we),
     .wd     (dio_pad_attr_5_pull_en_5_wd),
     .d      (hw2reg.dio_pad_attr[5].pull_en.d),
     .qre    (),
@@ -18713,7 +19197,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_5_pull_select_5 (
     .re     (dio_pad_attr_5_re),
-    .we     (dio_pad_attr_5_we & dio_pad_attr_regwen_5_qs),
+    .we     (dio_pad_attr_5_gated_we),
     .wd     (dio_pad_attr_5_pull_select_5_wd),
     .d      (hw2reg.dio_pad_attr[5].pull_select.d),
     .qre    (),
@@ -18728,7 +19212,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_5_keeper_en_5 (
     .re     (dio_pad_attr_5_re),
-    .we     (dio_pad_attr_5_we & dio_pad_attr_regwen_5_qs),
+    .we     (dio_pad_attr_5_gated_we),
     .wd     (dio_pad_attr_5_keeper_en_5_wd),
     .d      (hw2reg.dio_pad_attr[5].keeper_en.d),
     .qre    (),
@@ -18743,7 +19227,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_5_schmitt_en_5 (
     .re     (dio_pad_attr_5_re),
-    .we     (dio_pad_attr_5_we & dio_pad_attr_regwen_5_qs),
+    .we     (dio_pad_attr_5_gated_we),
     .wd     (dio_pad_attr_5_schmitt_en_5_wd),
     .d      (hw2reg.dio_pad_attr[5].schmitt_en.d),
     .qre    (),
@@ -18758,7 +19242,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_5_od_en_5 (
     .re     (dio_pad_attr_5_re),
-    .we     (dio_pad_attr_5_we & dio_pad_attr_regwen_5_qs),
+    .we     (dio_pad_attr_5_gated_we),
     .wd     (dio_pad_attr_5_od_en_5_wd),
     .d      (hw2reg.dio_pad_attr[5].od_en.d),
     .qre    (),
@@ -18773,7 +19257,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_5_slew_rate_5 (
     .re     (dio_pad_attr_5_re),
-    .we     (dio_pad_attr_5_we & dio_pad_attr_regwen_5_qs),
+    .we     (dio_pad_attr_5_gated_we),
     .wd     (dio_pad_attr_5_slew_rate_5_wd),
     .d      (hw2reg.dio_pad_attr[5].slew_rate.d),
     .qre    (),
@@ -18788,7 +19272,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_5_drive_strength_5 (
     .re     (dio_pad_attr_5_re),
-    .we     (dio_pad_attr_5_we & dio_pad_attr_regwen_5_qs),
+    .we     (dio_pad_attr_5_gated_we),
     .wd     (dio_pad_attr_5_drive_strength_5_wd),
     .d      (hw2reg.dio_pad_attr[5].drive_strength.d),
     .qre    (),
@@ -18804,12 +19288,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_6_qe;
   logic [8:0] dio_pad_attr_6_flds_we;
   assign dio_pad_attr_6_qe = &dio_pad_attr_6_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_6_gated_we;
+  assign dio_pad_attr_6_gated_we = dio_pad_attr_6_we & dio_pad_attr_regwen_6_qs;
   //   F[invert_6]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_6_invert_6 (
     .re     (dio_pad_attr_6_re),
-    .we     (dio_pad_attr_6_we & dio_pad_attr_regwen_6_qs),
+    .we     (dio_pad_attr_6_gated_we),
     .wd     (dio_pad_attr_6_invert_6_wd),
     .d      (hw2reg.dio_pad_attr[6].invert.d),
     .qre    (),
@@ -18824,7 +19311,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_6_virtual_od_en_6 (
     .re     (dio_pad_attr_6_re),
-    .we     (dio_pad_attr_6_we & dio_pad_attr_regwen_6_qs),
+    .we     (dio_pad_attr_6_gated_we),
     .wd     (dio_pad_attr_6_virtual_od_en_6_wd),
     .d      (hw2reg.dio_pad_attr[6].virtual_od_en.d),
     .qre    (),
@@ -18839,7 +19326,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_6_pull_en_6 (
     .re     (dio_pad_attr_6_re),
-    .we     (dio_pad_attr_6_we & dio_pad_attr_regwen_6_qs),
+    .we     (dio_pad_attr_6_gated_we),
     .wd     (dio_pad_attr_6_pull_en_6_wd),
     .d      (hw2reg.dio_pad_attr[6].pull_en.d),
     .qre    (),
@@ -18854,7 +19341,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_6_pull_select_6 (
     .re     (dio_pad_attr_6_re),
-    .we     (dio_pad_attr_6_we & dio_pad_attr_regwen_6_qs),
+    .we     (dio_pad_attr_6_gated_we),
     .wd     (dio_pad_attr_6_pull_select_6_wd),
     .d      (hw2reg.dio_pad_attr[6].pull_select.d),
     .qre    (),
@@ -18869,7 +19356,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_6_keeper_en_6 (
     .re     (dio_pad_attr_6_re),
-    .we     (dio_pad_attr_6_we & dio_pad_attr_regwen_6_qs),
+    .we     (dio_pad_attr_6_gated_we),
     .wd     (dio_pad_attr_6_keeper_en_6_wd),
     .d      (hw2reg.dio_pad_attr[6].keeper_en.d),
     .qre    (),
@@ -18884,7 +19371,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_6_schmitt_en_6 (
     .re     (dio_pad_attr_6_re),
-    .we     (dio_pad_attr_6_we & dio_pad_attr_regwen_6_qs),
+    .we     (dio_pad_attr_6_gated_we),
     .wd     (dio_pad_attr_6_schmitt_en_6_wd),
     .d      (hw2reg.dio_pad_attr[6].schmitt_en.d),
     .qre    (),
@@ -18899,7 +19386,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_6_od_en_6 (
     .re     (dio_pad_attr_6_re),
-    .we     (dio_pad_attr_6_we & dio_pad_attr_regwen_6_qs),
+    .we     (dio_pad_attr_6_gated_we),
     .wd     (dio_pad_attr_6_od_en_6_wd),
     .d      (hw2reg.dio_pad_attr[6].od_en.d),
     .qre    (),
@@ -18914,7 +19401,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_6_slew_rate_6 (
     .re     (dio_pad_attr_6_re),
-    .we     (dio_pad_attr_6_we & dio_pad_attr_regwen_6_qs),
+    .we     (dio_pad_attr_6_gated_we),
     .wd     (dio_pad_attr_6_slew_rate_6_wd),
     .d      (hw2reg.dio_pad_attr[6].slew_rate.d),
     .qre    (),
@@ -18929,7 +19416,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_6_drive_strength_6 (
     .re     (dio_pad_attr_6_re),
-    .we     (dio_pad_attr_6_we & dio_pad_attr_regwen_6_qs),
+    .we     (dio_pad_attr_6_gated_we),
     .wd     (dio_pad_attr_6_drive_strength_6_wd),
     .d      (hw2reg.dio_pad_attr[6].drive_strength.d),
     .qre    (),
@@ -18945,12 +19432,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_7_qe;
   logic [8:0] dio_pad_attr_7_flds_we;
   assign dio_pad_attr_7_qe = &dio_pad_attr_7_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_7_gated_we;
+  assign dio_pad_attr_7_gated_we = dio_pad_attr_7_we & dio_pad_attr_regwen_7_qs;
   //   F[invert_7]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_7_invert_7 (
     .re     (dio_pad_attr_7_re),
-    .we     (dio_pad_attr_7_we & dio_pad_attr_regwen_7_qs),
+    .we     (dio_pad_attr_7_gated_we),
     .wd     (dio_pad_attr_7_invert_7_wd),
     .d      (hw2reg.dio_pad_attr[7].invert.d),
     .qre    (),
@@ -18965,7 +19455,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_7_virtual_od_en_7 (
     .re     (dio_pad_attr_7_re),
-    .we     (dio_pad_attr_7_we & dio_pad_attr_regwen_7_qs),
+    .we     (dio_pad_attr_7_gated_we),
     .wd     (dio_pad_attr_7_virtual_od_en_7_wd),
     .d      (hw2reg.dio_pad_attr[7].virtual_od_en.d),
     .qre    (),
@@ -18980,7 +19470,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_7_pull_en_7 (
     .re     (dio_pad_attr_7_re),
-    .we     (dio_pad_attr_7_we & dio_pad_attr_regwen_7_qs),
+    .we     (dio_pad_attr_7_gated_we),
     .wd     (dio_pad_attr_7_pull_en_7_wd),
     .d      (hw2reg.dio_pad_attr[7].pull_en.d),
     .qre    (),
@@ -18995,7 +19485,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_7_pull_select_7 (
     .re     (dio_pad_attr_7_re),
-    .we     (dio_pad_attr_7_we & dio_pad_attr_regwen_7_qs),
+    .we     (dio_pad_attr_7_gated_we),
     .wd     (dio_pad_attr_7_pull_select_7_wd),
     .d      (hw2reg.dio_pad_attr[7].pull_select.d),
     .qre    (),
@@ -19010,7 +19500,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_7_keeper_en_7 (
     .re     (dio_pad_attr_7_re),
-    .we     (dio_pad_attr_7_we & dio_pad_attr_regwen_7_qs),
+    .we     (dio_pad_attr_7_gated_we),
     .wd     (dio_pad_attr_7_keeper_en_7_wd),
     .d      (hw2reg.dio_pad_attr[7].keeper_en.d),
     .qre    (),
@@ -19025,7 +19515,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_7_schmitt_en_7 (
     .re     (dio_pad_attr_7_re),
-    .we     (dio_pad_attr_7_we & dio_pad_attr_regwen_7_qs),
+    .we     (dio_pad_attr_7_gated_we),
     .wd     (dio_pad_attr_7_schmitt_en_7_wd),
     .d      (hw2reg.dio_pad_attr[7].schmitt_en.d),
     .qre    (),
@@ -19040,7 +19530,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_7_od_en_7 (
     .re     (dio_pad_attr_7_re),
-    .we     (dio_pad_attr_7_we & dio_pad_attr_regwen_7_qs),
+    .we     (dio_pad_attr_7_gated_we),
     .wd     (dio_pad_attr_7_od_en_7_wd),
     .d      (hw2reg.dio_pad_attr[7].od_en.d),
     .qre    (),
@@ -19055,7 +19545,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_7_slew_rate_7 (
     .re     (dio_pad_attr_7_re),
-    .we     (dio_pad_attr_7_we & dio_pad_attr_regwen_7_qs),
+    .we     (dio_pad_attr_7_gated_we),
     .wd     (dio_pad_attr_7_slew_rate_7_wd),
     .d      (hw2reg.dio_pad_attr[7].slew_rate.d),
     .qre    (),
@@ -19070,7 +19560,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_7_drive_strength_7 (
     .re     (dio_pad_attr_7_re),
-    .we     (dio_pad_attr_7_we & dio_pad_attr_regwen_7_qs),
+    .we     (dio_pad_attr_7_gated_we),
     .wd     (dio_pad_attr_7_drive_strength_7_wd),
     .d      (hw2reg.dio_pad_attr[7].drive_strength.d),
     .qre    (),
@@ -19086,12 +19576,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_8_qe;
   logic [8:0] dio_pad_attr_8_flds_we;
   assign dio_pad_attr_8_qe = &dio_pad_attr_8_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_8_gated_we;
+  assign dio_pad_attr_8_gated_we = dio_pad_attr_8_we & dio_pad_attr_regwen_8_qs;
   //   F[invert_8]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_8_invert_8 (
     .re     (dio_pad_attr_8_re),
-    .we     (dio_pad_attr_8_we & dio_pad_attr_regwen_8_qs),
+    .we     (dio_pad_attr_8_gated_we),
     .wd     (dio_pad_attr_8_invert_8_wd),
     .d      (hw2reg.dio_pad_attr[8].invert.d),
     .qre    (),
@@ -19106,7 +19599,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_8_virtual_od_en_8 (
     .re     (dio_pad_attr_8_re),
-    .we     (dio_pad_attr_8_we & dio_pad_attr_regwen_8_qs),
+    .we     (dio_pad_attr_8_gated_we),
     .wd     (dio_pad_attr_8_virtual_od_en_8_wd),
     .d      (hw2reg.dio_pad_attr[8].virtual_od_en.d),
     .qre    (),
@@ -19121,7 +19614,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_8_pull_en_8 (
     .re     (dio_pad_attr_8_re),
-    .we     (dio_pad_attr_8_we & dio_pad_attr_regwen_8_qs),
+    .we     (dio_pad_attr_8_gated_we),
     .wd     (dio_pad_attr_8_pull_en_8_wd),
     .d      (hw2reg.dio_pad_attr[8].pull_en.d),
     .qre    (),
@@ -19136,7 +19629,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_8_pull_select_8 (
     .re     (dio_pad_attr_8_re),
-    .we     (dio_pad_attr_8_we & dio_pad_attr_regwen_8_qs),
+    .we     (dio_pad_attr_8_gated_we),
     .wd     (dio_pad_attr_8_pull_select_8_wd),
     .d      (hw2reg.dio_pad_attr[8].pull_select.d),
     .qre    (),
@@ -19151,7 +19644,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_8_keeper_en_8 (
     .re     (dio_pad_attr_8_re),
-    .we     (dio_pad_attr_8_we & dio_pad_attr_regwen_8_qs),
+    .we     (dio_pad_attr_8_gated_we),
     .wd     (dio_pad_attr_8_keeper_en_8_wd),
     .d      (hw2reg.dio_pad_attr[8].keeper_en.d),
     .qre    (),
@@ -19166,7 +19659,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_8_schmitt_en_8 (
     .re     (dio_pad_attr_8_re),
-    .we     (dio_pad_attr_8_we & dio_pad_attr_regwen_8_qs),
+    .we     (dio_pad_attr_8_gated_we),
     .wd     (dio_pad_attr_8_schmitt_en_8_wd),
     .d      (hw2reg.dio_pad_attr[8].schmitt_en.d),
     .qre    (),
@@ -19181,7 +19674,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_8_od_en_8 (
     .re     (dio_pad_attr_8_re),
-    .we     (dio_pad_attr_8_we & dio_pad_attr_regwen_8_qs),
+    .we     (dio_pad_attr_8_gated_we),
     .wd     (dio_pad_attr_8_od_en_8_wd),
     .d      (hw2reg.dio_pad_attr[8].od_en.d),
     .qre    (),
@@ -19196,7 +19689,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_8_slew_rate_8 (
     .re     (dio_pad_attr_8_re),
-    .we     (dio_pad_attr_8_we & dio_pad_attr_regwen_8_qs),
+    .we     (dio_pad_attr_8_gated_we),
     .wd     (dio_pad_attr_8_slew_rate_8_wd),
     .d      (hw2reg.dio_pad_attr[8].slew_rate.d),
     .qre    (),
@@ -19211,7 +19704,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_8_drive_strength_8 (
     .re     (dio_pad_attr_8_re),
-    .we     (dio_pad_attr_8_we & dio_pad_attr_regwen_8_qs),
+    .we     (dio_pad_attr_8_gated_we),
     .wd     (dio_pad_attr_8_drive_strength_8_wd),
     .d      (hw2reg.dio_pad_attr[8].drive_strength.d),
     .qre    (),
@@ -19227,12 +19720,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_9_qe;
   logic [8:0] dio_pad_attr_9_flds_we;
   assign dio_pad_attr_9_qe = &dio_pad_attr_9_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_9_gated_we;
+  assign dio_pad_attr_9_gated_we = dio_pad_attr_9_we & dio_pad_attr_regwen_9_qs;
   //   F[invert_9]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_9_invert_9 (
     .re     (dio_pad_attr_9_re),
-    .we     (dio_pad_attr_9_we & dio_pad_attr_regwen_9_qs),
+    .we     (dio_pad_attr_9_gated_we),
     .wd     (dio_pad_attr_9_invert_9_wd),
     .d      (hw2reg.dio_pad_attr[9].invert.d),
     .qre    (),
@@ -19247,7 +19743,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_9_virtual_od_en_9 (
     .re     (dio_pad_attr_9_re),
-    .we     (dio_pad_attr_9_we & dio_pad_attr_regwen_9_qs),
+    .we     (dio_pad_attr_9_gated_we),
     .wd     (dio_pad_attr_9_virtual_od_en_9_wd),
     .d      (hw2reg.dio_pad_attr[9].virtual_od_en.d),
     .qre    (),
@@ -19262,7 +19758,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_9_pull_en_9 (
     .re     (dio_pad_attr_9_re),
-    .we     (dio_pad_attr_9_we & dio_pad_attr_regwen_9_qs),
+    .we     (dio_pad_attr_9_gated_we),
     .wd     (dio_pad_attr_9_pull_en_9_wd),
     .d      (hw2reg.dio_pad_attr[9].pull_en.d),
     .qre    (),
@@ -19277,7 +19773,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_9_pull_select_9 (
     .re     (dio_pad_attr_9_re),
-    .we     (dio_pad_attr_9_we & dio_pad_attr_regwen_9_qs),
+    .we     (dio_pad_attr_9_gated_we),
     .wd     (dio_pad_attr_9_pull_select_9_wd),
     .d      (hw2reg.dio_pad_attr[9].pull_select.d),
     .qre    (),
@@ -19292,7 +19788,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_9_keeper_en_9 (
     .re     (dio_pad_attr_9_re),
-    .we     (dio_pad_attr_9_we & dio_pad_attr_regwen_9_qs),
+    .we     (dio_pad_attr_9_gated_we),
     .wd     (dio_pad_attr_9_keeper_en_9_wd),
     .d      (hw2reg.dio_pad_attr[9].keeper_en.d),
     .qre    (),
@@ -19307,7 +19803,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_9_schmitt_en_9 (
     .re     (dio_pad_attr_9_re),
-    .we     (dio_pad_attr_9_we & dio_pad_attr_regwen_9_qs),
+    .we     (dio_pad_attr_9_gated_we),
     .wd     (dio_pad_attr_9_schmitt_en_9_wd),
     .d      (hw2reg.dio_pad_attr[9].schmitt_en.d),
     .qre    (),
@@ -19322,7 +19818,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_9_od_en_9 (
     .re     (dio_pad_attr_9_re),
-    .we     (dio_pad_attr_9_we & dio_pad_attr_regwen_9_qs),
+    .we     (dio_pad_attr_9_gated_we),
     .wd     (dio_pad_attr_9_od_en_9_wd),
     .d      (hw2reg.dio_pad_attr[9].od_en.d),
     .qre    (),
@@ -19337,7 +19833,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_9_slew_rate_9 (
     .re     (dio_pad_attr_9_re),
-    .we     (dio_pad_attr_9_we & dio_pad_attr_regwen_9_qs),
+    .we     (dio_pad_attr_9_gated_we),
     .wd     (dio_pad_attr_9_slew_rate_9_wd),
     .d      (hw2reg.dio_pad_attr[9].slew_rate.d),
     .qre    (),
@@ -19352,7 +19848,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_9_drive_strength_9 (
     .re     (dio_pad_attr_9_re),
-    .we     (dio_pad_attr_9_we & dio_pad_attr_regwen_9_qs),
+    .we     (dio_pad_attr_9_gated_we),
     .wd     (dio_pad_attr_9_drive_strength_9_wd),
     .d      (hw2reg.dio_pad_attr[9].drive_strength.d),
     .qre    (),
@@ -19368,12 +19864,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_10_qe;
   logic [8:0] dio_pad_attr_10_flds_we;
   assign dio_pad_attr_10_qe = &dio_pad_attr_10_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_10_gated_we;
+  assign dio_pad_attr_10_gated_we = dio_pad_attr_10_we & dio_pad_attr_regwen_10_qs;
   //   F[invert_10]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_10_invert_10 (
     .re     (dio_pad_attr_10_re),
-    .we     (dio_pad_attr_10_we & dio_pad_attr_regwen_10_qs),
+    .we     (dio_pad_attr_10_gated_we),
     .wd     (dio_pad_attr_10_invert_10_wd),
     .d      (hw2reg.dio_pad_attr[10].invert.d),
     .qre    (),
@@ -19388,7 +19887,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_10_virtual_od_en_10 (
     .re     (dio_pad_attr_10_re),
-    .we     (dio_pad_attr_10_we & dio_pad_attr_regwen_10_qs),
+    .we     (dio_pad_attr_10_gated_we),
     .wd     (dio_pad_attr_10_virtual_od_en_10_wd),
     .d      (hw2reg.dio_pad_attr[10].virtual_od_en.d),
     .qre    (),
@@ -19403,7 +19902,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_10_pull_en_10 (
     .re     (dio_pad_attr_10_re),
-    .we     (dio_pad_attr_10_we & dio_pad_attr_regwen_10_qs),
+    .we     (dio_pad_attr_10_gated_we),
     .wd     (dio_pad_attr_10_pull_en_10_wd),
     .d      (hw2reg.dio_pad_attr[10].pull_en.d),
     .qre    (),
@@ -19418,7 +19917,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_10_pull_select_10 (
     .re     (dio_pad_attr_10_re),
-    .we     (dio_pad_attr_10_we & dio_pad_attr_regwen_10_qs),
+    .we     (dio_pad_attr_10_gated_we),
     .wd     (dio_pad_attr_10_pull_select_10_wd),
     .d      (hw2reg.dio_pad_attr[10].pull_select.d),
     .qre    (),
@@ -19433,7 +19932,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_10_keeper_en_10 (
     .re     (dio_pad_attr_10_re),
-    .we     (dio_pad_attr_10_we & dio_pad_attr_regwen_10_qs),
+    .we     (dio_pad_attr_10_gated_we),
     .wd     (dio_pad_attr_10_keeper_en_10_wd),
     .d      (hw2reg.dio_pad_attr[10].keeper_en.d),
     .qre    (),
@@ -19448,7 +19947,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_10_schmitt_en_10 (
     .re     (dio_pad_attr_10_re),
-    .we     (dio_pad_attr_10_we & dio_pad_attr_regwen_10_qs),
+    .we     (dio_pad_attr_10_gated_we),
     .wd     (dio_pad_attr_10_schmitt_en_10_wd),
     .d      (hw2reg.dio_pad_attr[10].schmitt_en.d),
     .qre    (),
@@ -19463,7 +19962,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_10_od_en_10 (
     .re     (dio_pad_attr_10_re),
-    .we     (dio_pad_attr_10_we & dio_pad_attr_regwen_10_qs),
+    .we     (dio_pad_attr_10_gated_we),
     .wd     (dio_pad_attr_10_od_en_10_wd),
     .d      (hw2reg.dio_pad_attr[10].od_en.d),
     .qre    (),
@@ -19478,7 +19977,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_10_slew_rate_10 (
     .re     (dio_pad_attr_10_re),
-    .we     (dio_pad_attr_10_we & dio_pad_attr_regwen_10_qs),
+    .we     (dio_pad_attr_10_gated_we),
     .wd     (dio_pad_attr_10_slew_rate_10_wd),
     .d      (hw2reg.dio_pad_attr[10].slew_rate.d),
     .qre    (),
@@ -19493,7 +19992,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_10_drive_strength_10 (
     .re     (dio_pad_attr_10_re),
-    .we     (dio_pad_attr_10_we & dio_pad_attr_regwen_10_qs),
+    .we     (dio_pad_attr_10_gated_we),
     .wd     (dio_pad_attr_10_drive_strength_10_wd),
     .d      (hw2reg.dio_pad_attr[10].drive_strength.d),
     .qre    (),
@@ -19509,12 +20008,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_11_qe;
   logic [8:0] dio_pad_attr_11_flds_we;
   assign dio_pad_attr_11_qe = &dio_pad_attr_11_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_11_gated_we;
+  assign dio_pad_attr_11_gated_we = dio_pad_attr_11_we & dio_pad_attr_regwen_11_qs;
   //   F[invert_11]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_11_invert_11 (
     .re     (dio_pad_attr_11_re),
-    .we     (dio_pad_attr_11_we & dio_pad_attr_regwen_11_qs),
+    .we     (dio_pad_attr_11_gated_we),
     .wd     (dio_pad_attr_11_invert_11_wd),
     .d      (hw2reg.dio_pad_attr[11].invert.d),
     .qre    (),
@@ -19529,7 +20031,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_11_virtual_od_en_11 (
     .re     (dio_pad_attr_11_re),
-    .we     (dio_pad_attr_11_we & dio_pad_attr_regwen_11_qs),
+    .we     (dio_pad_attr_11_gated_we),
     .wd     (dio_pad_attr_11_virtual_od_en_11_wd),
     .d      (hw2reg.dio_pad_attr[11].virtual_od_en.d),
     .qre    (),
@@ -19544,7 +20046,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_11_pull_en_11 (
     .re     (dio_pad_attr_11_re),
-    .we     (dio_pad_attr_11_we & dio_pad_attr_regwen_11_qs),
+    .we     (dio_pad_attr_11_gated_we),
     .wd     (dio_pad_attr_11_pull_en_11_wd),
     .d      (hw2reg.dio_pad_attr[11].pull_en.d),
     .qre    (),
@@ -19559,7 +20061,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_11_pull_select_11 (
     .re     (dio_pad_attr_11_re),
-    .we     (dio_pad_attr_11_we & dio_pad_attr_regwen_11_qs),
+    .we     (dio_pad_attr_11_gated_we),
     .wd     (dio_pad_attr_11_pull_select_11_wd),
     .d      (hw2reg.dio_pad_attr[11].pull_select.d),
     .qre    (),
@@ -19574,7 +20076,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_11_keeper_en_11 (
     .re     (dio_pad_attr_11_re),
-    .we     (dio_pad_attr_11_we & dio_pad_attr_regwen_11_qs),
+    .we     (dio_pad_attr_11_gated_we),
     .wd     (dio_pad_attr_11_keeper_en_11_wd),
     .d      (hw2reg.dio_pad_attr[11].keeper_en.d),
     .qre    (),
@@ -19589,7 +20091,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_11_schmitt_en_11 (
     .re     (dio_pad_attr_11_re),
-    .we     (dio_pad_attr_11_we & dio_pad_attr_regwen_11_qs),
+    .we     (dio_pad_attr_11_gated_we),
     .wd     (dio_pad_attr_11_schmitt_en_11_wd),
     .d      (hw2reg.dio_pad_attr[11].schmitt_en.d),
     .qre    (),
@@ -19604,7 +20106,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_11_od_en_11 (
     .re     (dio_pad_attr_11_re),
-    .we     (dio_pad_attr_11_we & dio_pad_attr_regwen_11_qs),
+    .we     (dio_pad_attr_11_gated_we),
     .wd     (dio_pad_attr_11_od_en_11_wd),
     .d      (hw2reg.dio_pad_attr[11].od_en.d),
     .qre    (),
@@ -19619,7 +20121,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_11_slew_rate_11 (
     .re     (dio_pad_attr_11_re),
-    .we     (dio_pad_attr_11_we & dio_pad_attr_regwen_11_qs),
+    .we     (dio_pad_attr_11_gated_we),
     .wd     (dio_pad_attr_11_slew_rate_11_wd),
     .d      (hw2reg.dio_pad_attr[11].slew_rate.d),
     .qre    (),
@@ -19634,7 +20136,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_11_drive_strength_11 (
     .re     (dio_pad_attr_11_re),
-    .we     (dio_pad_attr_11_we & dio_pad_attr_regwen_11_qs),
+    .we     (dio_pad_attr_11_gated_we),
     .wd     (dio_pad_attr_11_drive_strength_11_wd),
     .d      (hw2reg.dio_pad_attr[11].drive_strength.d),
     .qre    (),
@@ -19650,12 +20152,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_12_qe;
   logic [8:0] dio_pad_attr_12_flds_we;
   assign dio_pad_attr_12_qe = &dio_pad_attr_12_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_12_gated_we;
+  assign dio_pad_attr_12_gated_we = dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs;
   //   F[invert_12]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_12_invert_12 (
     .re     (dio_pad_attr_12_re),
-    .we     (dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs),
+    .we     (dio_pad_attr_12_gated_we),
     .wd     (dio_pad_attr_12_invert_12_wd),
     .d      (hw2reg.dio_pad_attr[12].invert.d),
     .qre    (),
@@ -19670,7 +20175,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_12_virtual_od_en_12 (
     .re     (dio_pad_attr_12_re),
-    .we     (dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs),
+    .we     (dio_pad_attr_12_gated_we),
     .wd     (dio_pad_attr_12_virtual_od_en_12_wd),
     .d      (hw2reg.dio_pad_attr[12].virtual_od_en.d),
     .qre    (),
@@ -19685,7 +20190,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_12_pull_en_12 (
     .re     (dio_pad_attr_12_re),
-    .we     (dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs),
+    .we     (dio_pad_attr_12_gated_we),
     .wd     (dio_pad_attr_12_pull_en_12_wd),
     .d      (hw2reg.dio_pad_attr[12].pull_en.d),
     .qre    (),
@@ -19700,7 +20205,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_12_pull_select_12 (
     .re     (dio_pad_attr_12_re),
-    .we     (dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs),
+    .we     (dio_pad_attr_12_gated_we),
     .wd     (dio_pad_attr_12_pull_select_12_wd),
     .d      (hw2reg.dio_pad_attr[12].pull_select.d),
     .qre    (),
@@ -19715,7 +20220,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_12_keeper_en_12 (
     .re     (dio_pad_attr_12_re),
-    .we     (dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs),
+    .we     (dio_pad_attr_12_gated_we),
     .wd     (dio_pad_attr_12_keeper_en_12_wd),
     .d      (hw2reg.dio_pad_attr[12].keeper_en.d),
     .qre    (),
@@ -19730,7 +20235,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_12_schmitt_en_12 (
     .re     (dio_pad_attr_12_re),
-    .we     (dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs),
+    .we     (dio_pad_attr_12_gated_we),
     .wd     (dio_pad_attr_12_schmitt_en_12_wd),
     .d      (hw2reg.dio_pad_attr[12].schmitt_en.d),
     .qre    (),
@@ -19745,7 +20250,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_12_od_en_12 (
     .re     (dio_pad_attr_12_re),
-    .we     (dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs),
+    .we     (dio_pad_attr_12_gated_we),
     .wd     (dio_pad_attr_12_od_en_12_wd),
     .d      (hw2reg.dio_pad_attr[12].od_en.d),
     .qre    (),
@@ -19760,7 +20265,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_12_slew_rate_12 (
     .re     (dio_pad_attr_12_re),
-    .we     (dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs),
+    .we     (dio_pad_attr_12_gated_we),
     .wd     (dio_pad_attr_12_slew_rate_12_wd),
     .d      (hw2reg.dio_pad_attr[12].slew_rate.d),
     .qre    (),
@@ -19775,7 +20280,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_12_drive_strength_12 (
     .re     (dio_pad_attr_12_re),
-    .we     (dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs),
+    .we     (dio_pad_attr_12_gated_we),
     .wd     (dio_pad_attr_12_drive_strength_12_wd),
     .d      (hw2reg.dio_pad_attr[12].drive_strength.d),
     .qre    (),
@@ -19791,12 +20296,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_13_qe;
   logic [8:0] dio_pad_attr_13_flds_we;
   assign dio_pad_attr_13_qe = &dio_pad_attr_13_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_13_gated_we;
+  assign dio_pad_attr_13_gated_we = dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs;
   //   F[invert_13]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_13_invert_13 (
     .re     (dio_pad_attr_13_re),
-    .we     (dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs),
+    .we     (dio_pad_attr_13_gated_we),
     .wd     (dio_pad_attr_13_invert_13_wd),
     .d      (hw2reg.dio_pad_attr[13].invert.d),
     .qre    (),
@@ -19811,7 +20319,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_13_virtual_od_en_13 (
     .re     (dio_pad_attr_13_re),
-    .we     (dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs),
+    .we     (dio_pad_attr_13_gated_we),
     .wd     (dio_pad_attr_13_virtual_od_en_13_wd),
     .d      (hw2reg.dio_pad_attr[13].virtual_od_en.d),
     .qre    (),
@@ -19826,7 +20334,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_13_pull_en_13 (
     .re     (dio_pad_attr_13_re),
-    .we     (dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs),
+    .we     (dio_pad_attr_13_gated_we),
     .wd     (dio_pad_attr_13_pull_en_13_wd),
     .d      (hw2reg.dio_pad_attr[13].pull_en.d),
     .qre    (),
@@ -19841,7 +20349,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_13_pull_select_13 (
     .re     (dio_pad_attr_13_re),
-    .we     (dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs),
+    .we     (dio_pad_attr_13_gated_we),
     .wd     (dio_pad_attr_13_pull_select_13_wd),
     .d      (hw2reg.dio_pad_attr[13].pull_select.d),
     .qre    (),
@@ -19856,7 +20364,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_13_keeper_en_13 (
     .re     (dio_pad_attr_13_re),
-    .we     (dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs),
+    .we     (dio_pad_attr_13_gated_we),
     .wd     (dio_pad_attr_13_keeper_en_13_wd),
     .d      (hw2reg.dio_pad_attr[13].keeper_en.d),
     .qre    (),
@@ -19871,7 +20379,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_13_schmitt_en_13 (
     .re     (dio_pad_attr_13_re),
-    .we     (dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs),
+    .we     (dio_pad_attr_13_gated_we),
     .wd     (dio_pad_attr_13_schmitt_en_13_wd),
     .d      (hw2reg.dio_pad_attr[13].schmitt_en.d),
     .qre    (),
@@ -19886,7 +20394,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_13_od_en_13 (
     .re     (dio_pad_attr_13_re),
-    .we     (dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs),
+    .we     (dio_pad_attr_13_gated_we),
     .wd     (dio_pad_attr_13_od_en_13_wd),
     .d      (hw2reg.dio_pad_attr[13].od_en.d),
     .qre    (),
@@ -19901,7 +20409,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_13_slew_rate_13 (
     .re     (dio_pad_attr_13_re),
-    .we     (dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs),
+    .we     (dio_pad_attr_13_gated_we),
     .wd     (dio_pad_attr_13_slew_rate_13_wd),
     .d      (hw2reg.dio_pad_attr[13].slew_rate.d),
     .qre    (),
@@ -19916,7 +20424,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_13_drive_strength_13 (
     .re     (dio_pad_attr_13_re),
-    .we     (dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs),
+    .we     (dio_pad_attr_13_gated_we),
     .wd     (dio_pad_attr_13_drive_strength_13_wd),
     .d      (hw2reg.dio_pad_attr[13].drive_strength.d),
     .qre    (),
@@ -19932,12 +20440,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_14_qe;
   logic [8:0] dio_pad_attr_14_flds_we;
   assign dio_pad_attr_14_qe = &dio_pad_attr_14_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_14_gated_we;
+  assign dio_pad_attr_14_gated_we = dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs;
   //   F[invert_14]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_14_invert_14 (
     .re     (dio_pad_attr_14_re),
-    .we     (dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs),
+    .we     (dio_pad_attr_14_gated_we),
     .wd     (dio_pad_attr_14_invert_14_wd),
     .d      (hw2reg.dio_pad_attr[14].invert.d),
     .qre    (),
@@ -19952,7 +20463,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_14_virtual_od_en_14 (
     .re     (dio_pad_attr_14_re),
-    .we     (dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs),
+    .we     (dio_pad_attr_14_gated_we),
     .wd     (dio_pad_attr_14_virtual_od_en_14_wd),
     .d      (hw2reg.dio_pad_attr[14].virtual_od_en.d),
     .qre    (),
@@ -19967,7 +20478,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_14_pull_en_14 (
     .re     (dio_pad_attr_14_re),
-    .we     (dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs),
+    .we     (dio_pad_attr_14_gated_we),
     .wd     (dio_pad_attr_14_pull_en_14_wd),
     .d      (hw2reg.dio_pad_attr[14].pull_en.d),
     .qre    (),
@@ -19982,7 +20493,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_14_pull_select_14 (
     .re     (dio_pad_attr_14_re),
-    .we     (dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs),
+    .we     (dio_pad_attr_14_gated_we),
     .wd     (dio_pad_attr_14_pull_select_14_wd),
     .d      (hw2reg.dio_pad_attr[14].pull_select.d),
     .qre    (),
@@ -19997,7 +20508,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_14_keeper_en_14 (
     .re     (dio_pad_attr_14_re),
-    .we     (dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs),
+    .we     (dio_pad_attr_14_gated_we),
     .wd     (dio_pad_attr_14_keeper_en_14_wd),
     .d      (hw2reg.dio_pad_attr[14].keeper_en.d),
     .qre    (),
@@ -20012,7 +20523,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_14_schmitt_en_14 (
     .re     (dio_pad_attr_14_re),
-    .we     (dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs),
+    .we     (dio_pad_attr_14_gated_we),
     .wd     (dio_pad_attr_14_schmitt_en_14_wd),
     .d      (hw2reg.dio_pad_attr[14].schmitt_en.d),
     .qre    (),
@@ -20027,7 +20538,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_14_od_en_14 (
     .re     (dio_pad_attr_14_re),
-    .we     (dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs),
+    .we     (dio_pad_attr_14_gated_we),
     .wd     (dio_pad_attr_14_od_en_14_wd),
     .d      (hw2reg.dio_pad_attr[14].od_en.d),
     .qre    (),
@@ -20042,7 +20553,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_14_slew_rate_14 (
     .re     (dio_pad_attr_14_re),
-    .we     (dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs),
+    .we     (dio_pad_attr_14_gated_we),
     .wd     (dio_pad_attr_14_slew_rate_14_wd),
     .d      (hw2reg.dio_pad_attr[14].slew_rate.d),
     .qre    (),
@@ -20057,7 +20568,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_14_drive_strength_14 (
     .re     (dio_pad_attr_14_re),
-    .we     (dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs),
+    .we     (dio_pad_attr_14_gated_we),
     .wd     (dio_pad_attr_14_drive_strength_14_wd),
     .d      (hw2reg.dio_pad_attr[14].drive_strength.d),
     .qre    (),
@@ -20073,12 +20584,15 @@ module pinmux_reg_top (
   logic dio_pad_attr_15_qe;
   logic [8:0] dio_pad_attr_15_flds_we;
   assign dio_pad_attr_15_qe = &dio_pad_attr_15_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_15_gated_we;
+  assign dio_pad_attr_15_gated_we = dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs;
   //   F[invert_15]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_dio_pad_attr_15_invert_15 (
     .re     (dio_pad_attr_15_re),
-    .we     (dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs),
+    .we     (dio_pad_attr_15_gated_we),
     .wd     (dio_pad_attr_15_invert_15_wd),
     .d      (hw2reg.dio_pad_attr[15].invert.d),
     .qre    (),
@@ -20093,7 +20607,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_15_virtual_od_en_15 (
     .re     (dio_pad_attr_15_re),
-    .we     (dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs),
+    .we     (dio_pad_attr_15_gated_we),
     .wd     (dio_pad_attr_15_virtual_od_en_15_wd),
     .d      (hw2reg.dio_pad_attr[15].virtual_od_en.d),
     .qre    (),
@@ -20108,7 +20622,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_15_pull_en_15 (
     .re     (dio_pad_attr_15_re),
-    .we     (dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs),
+    .we     (dio_pad_attr_15_gated_we),
     .wd     (dio_pad_attr_15_pull_en_15_wd),
     .d      (hw2reg.dio_pad_attr[15].pull_en.d),
     .qre    (),
@@ -20123,7 +20637,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_15_pull_select_15 (
     .re     (dio_pad_attr_15_re),
-    .we     (dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs),
+    .we     (dio_pad_attr_15_gated_we),
     .wd     (dio_pad_attr_15_pull_select_15_wd),
     .d      (hw2reg.dio_pad_attr[15].pull_select.d),
     .qre    (),
@@ -20138,7 +20652,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_15_keeper_en_15 (
     .re     (dio_pad_attr_15_re),
-    .we     (dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs),
+    .we     (dio_pad_attr_15_gated_we),
     .wd     (dio_pad_attr_15_keeper_en_15_wd),
     .d      (hw2reg.dio_pad_attr[15].keeper_en.d),
     .qre    (),
@@ -20153,7 +20667,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_15_schmitt_en_15 (
     .re     (dio_pad_attr_15_re),
-    .we     (dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs),
+    .we     (dio_pad_attr_15_gated_we),
     .wd     (dio_pad_attr_15_schmitt_en_15_wd),
     .d      (hw2reg.dio_pad_attr[15].schmitt_en.d),
     .qre    (),
@@ -20168,7 +20682,7 @@ module pinmux_reg_top (
     .DW    (1)
   ) u_dio_pad_attr_15_od_en_15 (
     .re     (dio_pad_attr_15_re),
-    .we     (dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs),
+    .we     (dio_pad_attr_15_gated_we),
     .wd     (dio_pad_attr_15_od_en_15_wd),
     .d      (hw2reg.dio_pad_attr[15].od_en.d),
     .qre    (),
@@ -20183,7 +20697,7 @@ module pinmux_reg_top (
     .DW    (2)
   ) u_dio_pad_attr_15_slew_rate_15 (
     .re     (dio_pad_attr_15_re),
-    .we     (dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs),
+    .we     (dio_pad_attr_15_gated_we),
     .wd     (dio_pad_attr_15_slew_rate_15_wd),
     .d      (hw2reg.dio_pad_attr[15].slew_rate.d),
     .qre    (),
@@ -20198,7 +20712,7 @@ module pinmux_reg_top (
     .DW    (4)
   ) u_dio_pad_attr_15_drive_strength_15 (
     .re     (dio_pad_attr_15_re),
-    .we     (dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs),
+    .we     (dio_pad_attr_15_gated_we),
     .wd     (dio_pad_attr_15_drive_strength_15_wd),
     .d      (hw2reg.dio_pad_attr[15].drive_strength.d),
     .qre    (),
@@ -22661,6 +23175,9 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_0_gated_we;
+  assign mio_pad_sleep_en_0_gated_we = mio_pad_sleep_en_0_we & mio_pad_sleep_regwen_0_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22670,7 +23187,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_0_we & mio_pad_sleep_regwen_0_qs),
+    .we     (mio_pad_sleep_en_0_gated_we),
     .wd     (mio_pad_sleep_en_0_wd),
 
     // from internal hardware
@@ -22688,6 +23205,9 @@ module pinmux_reg_top (
 
   // Subregister 1 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_1_gated_we;
+  assign mio_pad_sleep_en_1_gated_we = mio_pad_sleep_en_1_we & mio_pad_sleep_regwen_1_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22697,7 +23217,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_1_we & mio_pad_sleep_regwen_1_qs),
+    .we     (mio_pad_sleep_en_1_gated_we),
     .wd     (mio_pad_sleep_en_1_wd),
 
     // from internal hardware
@@ -22715,6 +23235,9 @@ module pinmux_reg_top (
 
   // Subregister 2 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_2_gated_we;
+  assign mio_pad_sleep_en_2_gated_we = mio_pad_sleep_en_2_we & mio_pad_sleep_regwen_2_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22724,7 +23247,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_2_we & mio_pad_sleep_regwen_2_qs),
+    .we     (mio_pad_sleep_en_2_gated_we),
     .wd     (mio_pad_sleep_en_2_wd),
 
     // from internal hardware
@@ -22742,6 +23265,9 @@ module pinmux_reg_top (
 
   // Subregister 3 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_3_gated_we;
+  assign mio_pad_sleep_en_3_gated_we = mio_pad_sleep_en_3_we & mio_pad_sleep_regwen_3_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22751,7 +23277,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_3_we & mio_pad_sleep_regwen_3_qs),
+    .we     (mio_pad_sleep_en_3_gated_we),
     .wd     (mio_pad_sleep_en_3_wd),
 
     // from internal hardware
@@ -22769,6 +23295,9 @@ module pinmux_reg_top (
 
   // Subregister 4 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_4_gated_we;
+  assign mio_pad_sleep_en_4_gated_we = mio_pad_sleep_en_4_we & mio_pad_sleep_regwen_4_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22778,7 +23307,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_4_we & mio_pad_sleep_regwen_4_qs),
+    .we     (mio_pad_sleep_en_4_gated_we),
     .wd     (mio_pad_sleep_en_4_wd),
 
     // from internal hardware
@@ -22796,6 +23325,9 @@ module pinmux_reg_top (
 
   // Subregister 5 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_5_gated_we;
+  assign mio_pad_sleep_en_5_gated_we = mio_pad_sleep_en_5_we & mio_pad_sleep_regwen_5_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22805,7 +23337,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_5_we & mio_pad_sleep_regwen_5_qs),
+    .we     (mio_pad_sleep_en_5_gated_we),
     .wd     (mio_pad_sleep_en_5_wd),
 
     // from internal hardware
@@ -22823,6 +23355,9 @@ module pinmux_reg_top (
 
   // Subregister 6 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_6_gated_we;
+  assign mio_pad_sleep_en_6_gated_we = mio_pad_sleep_en_6_we & mio_pad_sleep_regwen_6_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22832,7 +23367,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_6_we & mio_pad_sleep_regwen_6_qs),
+    .we     (mio_pad_sleep_en_6_gated_we),
     .wd     (mio_pad_sleep_en_6_wd),
 
     // from internal hardware
@@ -22850,6 +23385,9 @@ module pinmux_reg_top (
 
   // Subregister 7 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_7_gated_we;
+  assign mio_pad_sleep_en_7_gated_we = mio_pad_sleep_en_7_we & mio_pad_sleep_regwen_7_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22859,7 +23397,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_7_we & mio_pad_sleep_regwen_7_qs),
+    .we     (mio_pad_sleep_en_7_gated_we),
     .wd     (mio_pad_sleep_en_7_wd),
 
     // from internal hardware
@@ -22877,6 +23415,9 @@ module pinmux_reg_top (
 
   // Subregister 8 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_8_gated_we;
+  assign mio_pad_sleep_en_8_gated_we = mio_pad_sleep_en_8_we & mio_pad_sleep_regwen_8_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22886,7 +23427,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_8_we & mio_pad_sleep_regwen_8_qs),
+    .we     (mio_pad_sleep_en_8_gated_we),
     .wd     (mio_pad_sleep_en_8_wd),
 
     // from internal hardware
@@ -22904,6 +23445,9 @@ module pinmux_reg_top (
 
   // Subregister 9 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_9_gated_we;
+  assign mio_pad_sleep_en_9_gated_we = mio_pad_sleep_en_9_we & mio_pad_sleep_regwen_9_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22913,7 +23457,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_9_we & mio_pad_sleep_regwen_9_qs),
+    .we     (mio_pad_sleep_en_9_gated_we),
     .wd     (mio_pad_sleep_en_9_wd),
 
     // from internal hardware
@@ -22931,6 +23475,9 @@ module pinmux_reg_top (
 
   // Subregister 10 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_10]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_10_gated_we;
+  assign mio_pad_sleep_en_10_gated_we = mio_pad_sleep_en_10_we & mio_pad_sleep_regwen_10_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22940,7 +23487,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_10_we & mio_pad_sleep_regwen_10_qs),
+    .we     (mio_pad_sleep_en_10_gated_we),
     .wd     (mio_pad_sleep_en_10_wd),
 
     // from internal hardware
@@ -22958,6 +23505,9 @@ module pinmux_reg_top (
 
   // Subregister 11 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_11]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_11_gated_we;
+  assign mio_pad_sleep_en_11_gated_we = mio_pad_sleep_en_11_we & mio_pad_sleep_regwen_11_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22967,7 +23517,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_11_we & mio_pad_sleep_regwen_11_qs),
+    .we     (mio_pad_sleep_en_11_gated_we),
     .wd     (mio_pad_sleep_en_11_wd),
 
     // from internal hardware
@@ -22985,6 +23535,9 @@ module pinmux_reg_top (
 
   // Subregister 12 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_12_gated_we;
+  assign mio_pad_sleep_en_12_gated_we = mio_pad_sleep_en_12_we & mio_pad_sleep_regwen_12_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -22994,7 +23547,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_12_we & mio_pad_sleep_regwen_12_qs),
+    .we     (mio_pad_sleep_en_12_gated_we),
     .wd     (mio_pad_sleep_en_12_wd),
 
     // from internal hardware
@@ -23012,6 +23565,9 @@ module pinmux_reg_top (
 
   // Subregister 13 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_13_gated_we;
+  assign mio_pad_sleep_en_13_gated_we = mio_pad_sleep_en_13_we & mio_pad_sleep_regwen_13_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23021,7 +23577,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_13_we & mio_pad_sleep_regwen_13_qs),
+    .we     (mio_pad_sleep_en_13_gated_we),
     .wd     (mio_pad_sleep_en_13_wd),
 
     // from internal hardware
@@ -23039,6 +23595,9 @@ module pinmux_reg_top (
 
   // Subregister 14 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_14_gated_we;
+  assign mio_pad_sleep_en_14_gated_we = mio_pad_sleep_en_14_we & mio_pad_sleep_regwen_14_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23048,7 +23607,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_14_we & mio_pad_sleep_regwen_14_qs),
+    .we     (mio_pad_sleep_en_14_gated_we),
     .wd     (mio_pad_sleep_en_14_wd),
 
     // from internal hardware
@@ -23066,6 +23625,9 @@ module pinmux_reg_top (
 
   // Subregister 15 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_15_gated_we;
+  assign mio_pad_sleep_en_15_gated_we = mio_pad_sleep_en_15_we & mio_pad_sleep_regwen_15_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23075,7 +23637,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_15_we & mio_pad_sleep_regwen_15_qs),
+    .we     (mio_pad_sleep_en_15_gated_we),
     .wd     (mio_pad_sleep_en_15_wd),
 
     // from internal hardware
@@ -23093,6 +23655,9 @@ module pinmux_reg_top (
 
   // Subregister 16 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_16]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_16_gated_we;
+  assign mio_pad_sleep_en_16_gated_we = mio_pad_sleep_en_16_we & mio_pad_sleep_regwen_16_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23102,7 +23667,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_16_we & mio_pad_sleep_regwen_16_qs),
+    .we     (mio_pad_sleep_en_16_gated_we),
     .wd     (mio_pad_sleep_en_16_wd),
 
     // from internal hardware
@@ -23120,6 +23685,9 @@ module pinmux_reg_top (
 
   // Subregister 17 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_17]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_17_gated_we;
+  assign mio_pad_sleep_en_17_gated_we = mio_pad_sleep_en_17_we & mio_pad_sleep_regwen_17_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23129,7 +23697,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_17_we & mio_pad_sleep_regwen_17_qs),
+    .we     (mio_pad_sleep_en_17_gated_we),
     .wd     (mio_pad_sleep_en_17_wd),
 
     // from internal hardware
@@ -23147,6 +23715,9 @@ module pinmux_reg_top (
 
   // Subregister 18 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_18]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_18_gated_we;
+  assign mio_pad_sleep_en_18_gated_we = mio_pad_sleep_en_18_we & mio_pad_sleep_regwen_18_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23156,7 +23727,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_18_we & mio_pad_sleep_regwen_18_qs),
+    .we     (mio_pad_sleep_en_18_gated_we),
     .wd     (mio_pad_sleep_en_18_wd),
 
     // from internal hardware
@@ -23174,6 +23745,9 @@ module pinmux_reg_top (
 
   // Subregister 19 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_19]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_19_gated_we;
+  assign mio_pad_sleep_en_19_gated_we = mio_pad_sleep_en_19_we & mio_pad_sleep_regwen_19_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23183,7 +23757,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_19_we & mio_pad_sleep_regwen_19_qs),
+    .we     (mio_pad_sleep_en_19_gated_we),
     .wd     (mio_pad_sleep_en_19_wd),
 
     // from internal hardware
@@ -23201,6 +23775,9 @@ module pinmux_reg_top (
 
   // Subregister 20 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_20]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_20_gated_we;
+  assign mio_pad_sleep_en_20_gated_we = mio_pad_sleep_en_20_we & mio_pad_sleep_regwen_20_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23210,7 +23787,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_20_we & mio_pad_sleep_regwen_20_qs),
+    .we     (mio_pad_sleep_en_20_gated_we),
     .wd     (mio_pad_sleep_en_20_wd),
 
     // from internal hardware
@@ -23228,6 +23805,9 @@ module pinmux_reg_top (
 
   // Subregister 21 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_21]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_21_gated_we;
+  assign mio_pad_sleep_en_21_gated_we = mio_pad_sleep_en_21_we & mio_pad_sleep_regwen_21_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23237,7 +23817,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_21_we & mio_pad_sleep_regwen_21_qs),
+    .we     (mio_pad_sleep_en_21_gated_we),
     .wd     (mio_pad_sleep_en_21_wd),
 
     // from internal hardware
@@ -23255,6 +23835,9 @@ module pinmux_reg_top (
 
   // Subregister 22 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_22]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_22_gated_we;
+  assign mio_pad_sleep_en_22_gated_we = mio_pad_sleep_en_22_we & mio_pad_sleep_regwen_22_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23264,7 +23847,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_22_we & mio_pad_sleep_regwen_22_qs),
+    .we     (mio_pad_sleep_en_22_gated_we),
     .wd     (mio_pad_sleep_en_22_wd),
 
     // from internal hardware
@@ -23282,6 +23865,9 @@ module pinmux_reg_top (
 
   // Subregister 23 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_23]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_23_gated_we;
+  assign mio_pad_sleep_en_23_gated_we = mio_pad_sleep_en_23_we & mio_pad_sleep_regwen_23_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23291,7 +23877,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_23_we & mio_pad_sleep_regwen_23_qs),
+    .we     (mio_pad_sleep_en_23_gated_we),
     .wd     (mio_pad_sleep_en_23_wd),
 
     // from internal hardware
@@ -23309,6 +23895,9 @@ module pinmux_reg_top (
 
   // Subregister 24 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_24]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_24_gated_we;
+  assign mio_pad_sleep_en_24_gated_we = mio_pad_sleep_en_24_we & mio_pad_sleep_regwen_24_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23318,7 +23907,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_24_we & mio_pad_sleep_regwen_24_qs),
+    .we     (mio_pad_sleep_en_24_gated_we),
     .wd     (mio_pad_sleep_en_24_wd),
 
     // from internal hardware
@@ -23336,6 +23925,9 @@ module pinmux_reg_top (
 
   // Subregister 25 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_25]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_25_gated_we;
+  assign mio_pad_sleep_en_25_gated_we = mio_pad_sleep_en_25_we & mio_pad_sleep_regwen_25_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23345,7 +23937,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_25_we & mio_pad_sleep_regwen_25_qs),
+    .we     (mio_pad_sleep_en_25_gated_we),
     .wd     (mio_pad_sleep_en_25_wd),
 
     // from internal hardware
@@ -23363,6 +23955,9 @@ module pinmux_reg_top (
 
   // Subregister 26 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_26]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_26_gated_we;
+  assign mio_pad_sleep_en_26_gated_we = mio_pad_sleep_en_26_we & mio_pad_sleep_regwen_26_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23372,7 +23967,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_26_we & mio_pad_sleep_regwen_26_qs),
+    .we     (mio_pad_sleep_en_26_gated_we),
     .wd     (mio_pad_sleep_en_26_wd),
 
     // from internal hardware
@@ -23390,6 +23985,9 @@ module pinmux_reg_top (
 
   // Subregister 27 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_27]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_27_gated_we;
+  assign mio_pad_sleep_en_27_gated_we = mio_pad_sleep_en_27_we & mio_pad_sleep_regwen_27_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23399,7 +23997,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_27_we & mio_pad_sleep_regwen_27_qs),
+    .we     (mio_pad_sleep_en_27_gated_we),
     .wd     (mio_pad_sleep_en_27_wd),
 
     // from internal hardware
@@ -23417,6 +24015,9 @@ module pinmux_reg_top (
 
   // Subregister 28 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_28]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_28_gated_we;
+  assign mio_pad_sleep_en_28_gated_we = mio_pad_sleep_en_28_we & mio_pad_sleep_regwen_28_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23426,7 +24027,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_28_we & mio_pad_sleep_regwen_28_qs),
+    .we     (mio_pad_sleep_en_28_gated_we),
     .wd     (mio_pad_sleep_en_28_wd),
 
     // from internal hardware
@@ -23444,6 +24045,9 @@ module pinmux_reg_top (
 
   // Subregister 29 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_29]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_29_gated_we;
+  assign mio_pad_sleep_en_29_gated_we = mio_pad_sleep_en_29_we & mio_pad_sleep_regwen_29_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23453,7 +24057,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_29_we & mio_pad_sleep_regwen_29_qs),
+    .we     (mio_pad_sleep_en_29_gated_we),
     .wd     (mio_pad_sleep_en_29_wd),
 
     // from internal hardware
@@ -23471,6 +24075,9 @@ module pinmux_reg_top (
 
   // Subregister 30 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_30]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_30_gated_we;
+  assign mio_pad_sleep_en_30_gated_we = mio_pad_sleep_en_30_we & mio_pad_sleep_regwen_30_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23480,7 +24087,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_30_we & mio_pad_sleep_regwen_30_qs),
+    .we     (mio_pad_sleep_en_30_gated_we),
     .wd     (mio_pad_sleep_en_30_wd),
 
     // from internal hardware
@@ -23498,6 +24105,9 @@ module pinmux_reg_top (
 
   // Subregister 31 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_31]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_31_gated_we;
+  assign mio_pad_sleep_en_31_gated_we = mio_pad_sleep_en_31_we & mio_pad_sleep_regwen_31_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23507,7 +24117,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_31_we & mio_pad_sleep_regwen_31_qs),
+    .we     (mio_pad_sleep_en_31_gated_we),
     .wd     (mio_pad_sleep_en_31_wd),
 
     // from internal hardware
@@ -23525,6 +24135,9 @@ module pinmux_reg_top (
 
   // Subregister 32 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_32]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_32_gated_we;
+  assign mio_pad_sleep_en_32_gated_we = mio_pad_sleep_en_32_we & mio_pad_sleep_regwen_32_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23534,7 +24147,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_32_we & mio_pad_sleep_regwen_32_qs),
+    .we     (mio_pad_sleep_en_32_gated_we),
     .wd     (mio_pad_sleep_en_32_wd),
 
     // from internal hardware
@@ -23552,6 +24165,9 @@ module pinmux_reg_top (
 
   // Subregister 33 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_33]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_33_gated_we;
+  assign mio_pad_sleep_en_33_gated_we = mio_pad_sleep_en_33_we & mio_pad_sleep_regwen_33_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23561,7 +24177,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_33_we & mio_pad_sleep_regwen_33_qs),
+    .we     (mio_pad_sleep_en_33_gated_we),
     .wd     (mio_pad_sleep_en_33_wd),
 
     // from internal hardware
@@ -23579,6 +24195,9 @@ module pinmux_reg_top (
 
   // Subregister 34 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_34]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_34_gated_we;
+  assign mio_pad_sleep_en_34_gated_we = mio_pad_sleep_en_34_we & mio_pad_sleep_regwen_34_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23588,7 +24207,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_34_we & mio_pad_sleep_regwen_34_qs),
+    .we     (mio_pad_sleep_en_34_gated_we),
     .wd     (mio_pad_sleep_en_34_wd),
 
     // from internal hardware
@@ -23606,6 +24225,9 @@ module pinmux_reg_top (
 
   // Subregister 35 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_35]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_35_gated_we;
+  assign mio_pad_sleep_en_35_gated_we = mio_pad_sleep_en_35_we & mio_pad_sleep_regwen_35_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23615,7 +24237,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_35_we & mio_pad_sleep_regwen_35_qs),
+    .we     (mio_pad_sleep_en_35_gated_we),
     .wd     (mio_pad_sleep_en_35_wd),
 
     // from internal hardware
@@ -23633,6 +24255,9 @@ module pinmux_reg_top (
 
   // Subregister 36 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_36]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_36_gated_we;
+  assign mio_pad_sleep_en_36_gated_we = mio_pad_sleep_en_36_we & mio_pad_sleep_regwen_36_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23642,7 +24267,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_36_we & mio_pad_sleep_regwen_36_qs),
+    .we     (mio_pad_sleep_en_36_gated_we),
     .wd     (mio_pad_sleep_en_36_wd),
 
     // from internal hardware
@@ -23660,6 +24285,9 @@ module pinmux_reg_top (
 
   // Subregister 37 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_37]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_37_gated_we;
+  assign mio_pad_sleep_en_37_gated_we = mio_pad_sleep_en_37_we & mio_pad_sleep_regwen_37_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23669,7 +24297,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_37_we & mio_pad_sleep_regwen_37_qs),
+    .we     (mio_pad_sleep_en_37_gated_we),
     .wd     (mio_pad_sleep_en_37_wd),
 
     // from internal hardware
@@ -23687,6 +24315,9 @@ module pinmux_reg_top (
 
   // Subregister 38 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_38]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_38_gated_we;
+  assign mio_pad_sleep_en_38_gated_we = mio_pad_sleep_en_38_we & mio_pad_sleep_regwen_38_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23696,7 +24327,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_38_we & mio_pad_sleep_regwen_38_qs),
+    .we     (mio_pad_sleep_en_38_gated_we),
     .wd     (mio_pad_sleep_en_38_wd),
 
     // from internal hardware
@@ -23714,6 +24345,9 @@ module pinmux_reg_top (
 
   // Subregister 39 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_39]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_39_gated_we;
+  assign mio_pad_sleep_en_39_gated_we = mio_pad_sleep_en_39_we & mio_pad_sleep_regwen_39_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23723,7 +24357,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_39_we & mio_pad_sleep_regwen_39_qs),
+    .we     (mio_pad_sleep_en_39_gated_we),
     .wd     (mio_pad_sleep_en_39_wd),
 
     // from internal hardware
@@ -23741,6 +24375,9 @@ module pinmux_reg_top (
 
   // Subregister 40 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_40]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_40_gated_we;
+  assign mio_pad_sleep_en_40_gated_we = mio_pad_sleep_en_40_we & mio_pad_sleep_regwen_40_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23750,7 +24387,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_40_we & mio_pad_sleep_regwen_40_qs),
+    .we     (mio_pad_sleep_en_40_gated_we),
     .wd     (mio_pad_sleep_en_40_wd),
 
     // from internal hardware
@@ -23768,6 +24405,9 @@ module pinmux_reg_top (
 
   // Subregister 41 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_41]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_41_gated_we;
+  assign mio_pad_sleep_en_41_gated_we = mio_pad_sleep_en_41_we & mio_pad_sleep_regwen_41_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23777,7 +24417,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_41_we & mio_pad_sleep_regwen_41_qs),
+    .we     (mio_pad_sleep_en_41_gated_we),
     .wd     (mio_pad_sleep_en_41_wd),
 
     // from internal hardware
@@ -23795,6 +24435,9 @@ module pinmux_reg_top (
 
   // Subregister 42 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_42]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_42_gated_we;
+  assign mio_pad_sleep_en_42_gated_we = mio_pad_sleep_en_42_we & mio_pad_sleep_regwen_42_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23804,7 +24447,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_42_we & mio_pad_sleep_regwen_42_qs),
+    .we     (mio_pad_sleep_en_42_gated_we),
     .wd     (mio_pad_sleep_en_42_wd),
 
     // from internal hardware
@@ -23822,6 +24465,9 @@ module pinmux_reg_top (
 
   // Subregister 43 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_43]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_43_gated_we;
+  assign mio_pad_sleep_en_43_gated_we = mio_pad_sleep_en_43_we & mio_pad_sleep_regwen_43_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23831,7 +24477,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_43_we & mio_pad_sleep_regwen_43_qs),
+    .we     (mio_pad_sleep_en_43_gated_we),
     .wd     (mio_pad_sleep_en_43_wd),
 
     // from internal hardware
@@ -23849,6 +24495,9 @@ module pinmux_reg_top (
 
   // Subregister 44 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_44]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_44_gated_we;
+  assign mio_pad_sleep_en_44_gated_we = mio_pad_sleep_en_44_we & mio_pad_sleep_regwen_44_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23858,7 +24507,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_44_we & mio_pad_sleep_regwen_44_qs),
+    .we     (mio_pad_sleep_en_44_gated_we),
     .wd     (mio_pad_sleep_en_44_wd),
 
     // from internal hardware
@@ -23876,6 +24525,9 @@ module pinmux_reg_top (
 
   // Subregister 45 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_45]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_45_gated_we;
+  assign mio_pad_sleep_en_45_gated_we = mio_pad_sleep_en_45_we & mio_pad_sleep_regwen_45_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23885,7 +24537,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_45_we & mio_pad_sleep_regwen_45_qs),
+    .we     (mio_pad_sleep_en_45_gated_we),
     .wd     (mio_pad_sleep_en_45_wd),
 
     // from internal hardware
@@ -23903,6 +24555,9 @@ module pinmux_reg_top (
 
   // Subregister 46 of Multireg mio_pad_sleep_en
   // R[mio_pad_sleep_en_46]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_en_46_gated_we;
+  assign mio_pad_sleep_en_46_gated_we = mio_pad_sleep_en_46_we & mio_pad_sleep_regwen_46_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23912,7 +24567,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_en_46_we & mio_pad_sleep_regwen_46_qs),
+    .we     (mio_pad_sleep_en_46_gated_we),
     .wd     (mio_pad_sleep_en_46_wd),
 
     // from internal hardware
@@ -23930,6 +24585,9 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_0_gated_we;
+  assign mio_pad_sleep_mode_0_gated_we = mio_pad_sleep_mode_0_we & mio_pad_sleep_regwen_0_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23939,7 +24597,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_0_we & mio_pad_sleep_regwen_0_qs),
+    .we     (mio_pad_sleep_mode_0_gated_we),
     .wd     (mio_pad_sleep_mode_0_wd),
 
     // from internal hardware
@@ -23957,6 +24615,9 @@ module pinmux_reg_top (
 
   // Subregister 1 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_1_gated_we;
+  assign mio_pad_sleep_mode_1_gated_we = mio_pad_sleep_mode_1_we & mio_pad_sleep_regwen_1_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23966,7 +24627,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_1_we & mio_pad_sleep_regwen_1_qs),
+    .we     (mio_pad_sleep_mode_1_gated_we),
     .wd     (mio_pad_sleep_mode_1_wd),
 
     // from internal hardware
@@ -23984,6 +24645,9 @@ module pinmux_reg_top (
 
   // Subregister 2 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_2_gated_we;
+  assign mio_pad_sleep_mode_2_gated_we = mio_pad_sleep_mode_2_we & mio_pad_sleep_regwen_2_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -23993,7 +24657,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_2_we & mio_pad_sleep_regwen_2_qs),
+    .we     (mio_pad_sleep_mode_2_gated_we),
     .wd     (mio_pad_sleep_mode_2_wd),
 
     // from internal hardware
@@ -24011,6 +24675,9 @@ module pinmux_reg_top (
 
   // Subregister 3 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_3_gated_we;
+  assign mio_pad_sleep_mode_3_gated_we = mio_pad_sleep_mode_3_we & mio_pad_sleep_regwen_3_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24020,7 +24687,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_3_we & mio_pad_sleep_regwen_3_qs),
+    .we     (mio_pad_sleep_mode_3_gated_we),
     .wd     (mio_pad_sleep_mode_3_wd),
 
     // from internal hardware
@@ -24038,6 +24705,9 @@ module pinmux_reg_top (
 
   // Subregister 4 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_4_gated_we;
+  assign mio_pad_sleep_mode_4_gated_we = mio_pad_sleep_mode_4_we & mio_pad_sleep_regwen_4_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24047,7 +24717,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_4_we & mio_pad_sleep_regwen_4_qs),
+    .we     (mio_pad_sleep_mode_4_gated_we),
     .wd     (mio_pad_sleep_mode_4_wd),
 
     // from internal hardware
@@ -24065,6 +24735,9 @@ module pinmux_reg_top (
 
   // Subregister 5 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_5_gated_we;
+  assign mio_pad_sleep_mode_5_gated_we = mio_pad_sleep_mode_5_we & mio_pad_sleep_regwen_5_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24074,7 +24747,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_5_we & mio_pad_sleep_regwen_5_qs),
+    .we     (mio_pad_sleep_mode_5_gated_we),
     .wd     (mio_pad_sleep_mode_5_wd),
 
     // from internal hardware
@@ -24092,6 +24765,9 @@ module pinmux_reg_top (
 
   // Subregister 6 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_6_gated_we;
+  assign mio_pad_sleep_mode_6_gated_we = mio_pad_sleep_mode_6_we & mio_pad_sleep_regwen_6_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24101,7 +24777,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_6_we & mio_pad_sleep_regwen_6_qs),
+    .we     (mio_pad_sleep_mode_6_gated_we),
     .wd     (mio_pad_sleep_mode_6_wd),
 
     // from internal hardware
@@ -24119,6 +24795,9 @@ module pinmux_reg_top (
 
   // Subregister 7 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_7_gated_we;
+  assign mio_pad_sleep_mode_7_gated_we = mio_pad_sleep_mode_7_we & mio_pad_sleep_regwen_7_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24128,7 +24807,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_7_we & mio_pad_sleep_regwen_7_qs),
+    .we     (mio_pad_sleep_mode_7_gated_we),
     .wd     (mio_pad_sleep_mode_7_wd),
 
     // from internal hardware
@@ -24146,6 +24825,9 @@ module pinmux_reg_top (
 
   // Subregister 8 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_8_gated_we;
+  assign mio_pad_sleep_mode_8_gated_we = mio_pad_sleep_mode_8_we & mio_pad_sleep_regwen_8_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24155,7 +24837,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_8_we & mio_pad_sleep_regwen_8_qs),
+    .we     (mio_pad_sleep_mode_8_gated_we),
     .wd     (mio_pad_sleep_mode_8_wd),
 
     // from internal hardware
@@ -24173,6 +24855,9 @@ module pinmux_reg_top (
 
   // Subregister 9 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_9_gated_we;
+  assign mio_pad_sleep_mode_9_gated_we = mio_pad_sleep_mode_9_we & mio_pad_sleep_regwen_9_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24182,7 +24867,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_9_we & mio_pad_sleep_regwen_9_qs),
+    .we     (mio_pad_sleep_mode_9_gated_we),
     .wd     (mio_pad_sleep_mode_9_wd),
 
     // from internal hardware
@@ -24200,6 +24885,9 @@ module pinmux_reg_top (
 
   // Subregister 10 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_10]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_10_gated_we;
+  assign mio_pad_sleep_mode_10_gated_we = mio_pad_sleep_mode_10_we & mio_pad_sleep_regwen_10_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24209,7 +24897,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_10_we & mio_pad_sleep_regwen_10_qs),
+    .we     (mio_pad_sleep_mode_10_gated_we),
     .wd     (mio_pad_sleep_mode_10_wd),
 
     // from internal hardware
@@ -24227,6 +24915,9 @@ module pinmux_reg_top (
 
   // Subregister 11 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_11]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_11_gated_we;
+  assign mio_pad_sleep_mode_11_gated_we = mio_pad_sleep_mode_11_we & mio_pad_sleep_regwen_11_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24236,7 +24927,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_11_we & mio_pad_sleep_regwen_11_qs),
+    .we     (mio_pad_sleep_mode_11_gated_we),
     .wd     (mio_pad_sleep_mode_11_wd),
 
     // from internal hardware
@@ -24254,6 +24945,9 @@ module pinmux_reg_top (
 
   // Subregister 12 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_12_gated_we;
+  assign mio_pad_sleep_mode_12_gated_we = mio_pad_sleep_mode_12_we & mio_pad_sleep_regwen_12_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24263,7 +24957,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_12_we & mio_pad_sleep_regwen_12_qs),
+    .we     (mio_pad_sleep_mode_12_gated_we),
     .wd     (mio_pad_sleep_mode_12_wd),
 
     // from internal hardware
@@ -24281,6 +24975,9 @@ module pinmux_reg_top (
 
   // Subregister 13 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_13_gated_we;
+  assign mio_pad_sleep_mode_13_gated_we = mio_pad_sleep_mode_13_we & mio_pad_sleep_regwen_13_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24290,7 +24987,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_13_we & mio_pad_sleep_regwen_13_qs),
+    .we     (mio_pad_sleep_mode_13_gated_we),
     .wd     (mio_pad_sleep_mode_13_wd),
 
     // from internal hardware
@@ -24308,6 +25005,9 @@ module pinmux_reg_top (
 
   // Subregister 14 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_14_gated_we;
+  assign mio_pad_sleep_mode_14_gated_we = mio_pad_sleep_mode_14_we & mio_pad_sleep_regwen_14_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24317,7 +25017,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_14_we & mio_pad_sleep_regwen_14_qs),
+    .we     (mio_pad_sleep_mode_14_gated_we),
     .wd     (mio_pad_sleep_mode_14_wd),
 
     // from internal hardware
@@ -24335,6 +25035,9 @@ module pinmux_reg_top (
 
   // Subregister 15 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_15_gated_we;
+  assign mio_pad_sleep_mode_15_gated_we = mio_pad_sleep_mode_15_we & mio_pad_sleep_regwen_15_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24344,7 +25047,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_15_we & mio_pad_sleep_regwen_15_qs),
+    .we     (mio_pad_sleep_mode_15_gated_we),
     .wd     (mio_pad_sleep_mode_15_wd),
 
     // from internal hardware
@@ -24362,6 +25065,9 @@ module pinmux_reg_top (
 
   // Subregister 16 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_16]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_16_gated_we;
+  assign mio_pad_sleep_mode_16_gated_we = mio_pad_sleep_mode_16_we & mio_pad_sleep_regwen_16_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24371,7 +25077,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_16_we & mio_pad_sleep_regwen_16_qs),
+    .we     (mio_pad_sleep_mode_16_gated_we),
     .wd     (mio_pad_sleep_mode_16_wd),
 
     // from internal hardware
@@ -24389,6 +25095,9 @@ module pinmux_reg_top (
 
   // Subregister 17 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_17]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_17_gated_we;
+  assign mio_pad_sleep_mode_17_gated_we = mio_pad_sleep_mode_17_we & mio_pad_sleep_regwen_17_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24398,7 +25107,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_17_we & mio_pad_sleep_regwen_17_qs),
+    .we     (mio_pad_sleep_mode_17_gated_we),
     .wd     (mio_pad_sleep_mode_17_wd),
 
     // from internal hardware
@@ -24416,6 +25125,9 @@ module pinmux_reg_top (
 
   // Subregister 18 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_18]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_18_gated_we;
+  assign mio_pad_sleep_mode_18_gated_we = mio_pad_sleep_mode_18_we & mio_pad_sleep_regwen_18_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24425,7 +25137,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_18_we & mio_pad_sleep_regwen_18_qs),
+    .we     (mio_pad_sleep_mode_18_gated_we),
     .wd     (mio_pad_sleep_mode_18_wd),
 
     // from internal hardware
@@ -24443,6 +25155,9 @@ module pinmux_reg_top (
 
   // Subregister 19 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_19]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_19_gated_we;
+  assign mio_pad_sleep_mode_19_gated_we = mio_pad_sleep_mode_19_we & mio_pad_sleep_regwen_19_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24452,7 +25167,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_19_we & mio_pad_sleep_regwen_19_qs),
+    .we     (mio_pad_sleep_mode_19_gated_we),
     .wd     (mio_pad_sleep_mode_19_wd),
 
     // from internal hardware
@@ -24470,6 +25185,9 @@ module pinmux_reg_top (
 
   // Subregister 20 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_20]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_20_gated_we;
+  assign mio_pad_sleep_mode_20_gated_we = mio_pad_sleep_mode_20_we & mio_pad_sleep_regwen_20_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24479,7 +25197,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_20_we & mio_pad_sleep_regwen_20_qs),
+    .we     (mio_pad_sleep_mode_20_gated_we),
     .wd     (mio_pad_sleep_mode_20_wd),
 
     // from internal hardware
@@ -24497,6 +25215,9 @@ module pinmux_reg_top (
 
   // Subregister 21 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_21]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_21_gated_we;
+  assign mio_pad_sleep_mode_21_gated_we = mio_pad_sleep_mode_21_we & mio_pad_sleep_regwen_21_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24506,7 +25227,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_21_we & mio_pad_sleep_regwen_21_qs),
+    .we     (mio_pad_sleep_mode_21_gated_we),
     .wd     (mio_pad_sleep_mode_21_wd),
 
     // from internal hardware
@@ -24524,6 +25245,9 @@ module pinmux_reg_top (
 
   // Subregister 22 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_22]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_22_gated_we;
+  assign mio_pad_sleep_mode_22_gated_we = mio_pad_sleep_mode_22_we & mio_pad_sleep_regwen_22_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24533,7 +25257,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_22_we & mio_pad_sleep_regwen_22_qs),
+    .we     (mio_pad_sleep_mode_22_gated_we),
     .wd     (mio_pad_sleep_mode_22_wd),
 
     // from internal hardware
@@ -24551,6 +25275,9 @@ module pinmux_reg_top (
 
   // Subregister 23 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_23]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_23_gated_we;
+  assign mio_pad_sleep_mode_23_gated_we = mio_pad_sleep_mode_23_we & mio_pad_sleep_regwen_23_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24560,7 +25287,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_23_we & mio_pad_sleep_regwen_23_qs),
+    .we     (mio_pad_sleep_mode_23_gated_we),
     .wd     (mio_pad_sleep_mode_23_wd),
 
     // from internal hardware
@@ -24578,6 +25305,9 @@ module pinmux_reg_top (
 
   // Subregister 24 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_24]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_24_gated_we;
+  assign mio_pad_sleep_mode_24_gated_we = mio_pad_sleep_mode_24_we & mio_pad_sleep_regwen_24_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24587,7 +25317,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_24_we & mio_pad_sleep_regwen_24_qs),
+    .we     (mio_pad_sleep_mode_24_gated_we),
     .wd     (mio_pad_sleep_mode_24_wd),
 
     // from internal hardware
@@ -24605,6 +25335,9 @@ module pinmux_reg_top (
 
   // Subregister 25 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_25]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_25_gated_we;
+  assign mio_pad_sleep_mode_25_gated_we = mio_pad_sleep_mode_25_we & mio_pad_sleep_regwen_25_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24614,7 +25347,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_25_we & mio_pad_sleep_regwen_25_qs),
+    .we     (mio_pad_sleep_mode_25_gated_we),
     .wd     (mio_pad_sleep_mode_25_wd),
 
     // from internal hardware
@@ -24632,6 +25365,9 @@ module pinmux_reg_top (
 
   // Subregister 26 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_26]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_26_gated_we;
+  assign mio_pad_sleep_mode_26_gated_we = mio_pad_sleep_mode_26_we & mio_pad_sleep_regwen_26_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24641,7 +25377,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_26_we & mio_pad_sleep_regwen_26_qs),
+    .we     (mio_pad_sleep_mode_26_gated_we),
     .wd     (mio_pad_sleep_mode_26_wd),
 
     // from internal hardware
@@ -24659,6 +25395,9 @@ module pinmux_reg_top (
 
   // Subregister 27 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_27]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_27_gated_we;
+  assign mio_pad_sleep_mode_27_gated_we = mio_pad_sleep_mode_27_we & mio_pad_sleep_regwen_27_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24668,7 +25407,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_27_we & mio_pad_sleep_regwen_27_qs),
+    .we     (mio_pad_sleep_mode_27_gated_we),
     .wd     (mio_pad_sleep_mode_27_wd),
 
     // from internal hardware
@@ -24686,6 +25425,9 @@ module pinmux_reg_top (
 
   // Subregister 28 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_28]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_28_gated_we;
+  assign mio_pad_sleep_mode_28_gated_we = mio_pad_sleep_mode_28_we & mio_pad_sleep_regwen_28_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24695,7 +25437,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_28_we & mio_pad_sleep_regwen_28_qs),
+    .we     (mio_pad_sleep_mode_28_gated_we),
     .wd     (mio_pad_sleep_mode_28_wd),
 
     // from internal hardware
@@ -24713,6 +25455,9 @@ module pinmux_reg_top (
 
   // Subregister 29 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_29]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_29_gated_we;
+  assign mio_pad_sleep_mode_29_gated_we = mio_pad_sleep_mode_29_we & mio_pad_sleep_regwen_29_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24722,7 +25467,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_29_we & mio_pad_sleep_regwen_29_qs),
+    .we     (mio_pad_sleep_mode_29_gated_we),
     .wd     (mio_pad_sleep_mode_29_wd),
 
     // from internal hardware
@@ -24740,6 +25485,9 @@ module pinmux_reg_top (
 
   // Subregister 30 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_30]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_30_gated_we;
+  assign mio_pad_sleep_mode_30_gated_we = mio_pad_sleep_mode_30_we & mio_pad_sleep_regwen_30_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24749,7 +25497,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_30_we & mio_pad_sleep_regwen_30_qs),
+    .we     (mio_pad_sleep_mode_30_gated_we),
     .wd     (mio_pad_sleep_mode_30_wd),
 
     // from internal hardware
@@ -24767,6 +25515,9 @@ module pinmux_reg_top (
 
   // Subregister 31 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_31]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_31_gated_we;
+  assign mio_pad_sleep_mode_31_gated_we = mio_pad_sleep_mode_31_we & mio_pad_sleep_regwen_31_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24776,7 +25527,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_31_we & mio_pad_sleep_regwen_31_qs),
+    .we     (mio_pad_sleep_mode_31_gated_we),
     .wd     (mio_pad_sleep_mode_31_wd),
 
     // from internal hardware
@@ -24794,6 +25545,9 @@ module pinmux_reg_top (
 
   // Subregister 32 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_32]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_32_gated_we;
+  assign mio_pad_sleep_mode_32_gated_we = mio_pad_sleep_mode_32_we & mio_pad_sleep_regwen_32_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24803,7 +25557,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_32_we & mio_pad_sleep_regwen_32_qs),
+    .we     (mio_pad_sleep_mode_32_gated_we),
     .wd     (mio_pad_sleep_mode_32_wd),
 
     // from internal hardware
@@ -24821,6 +25575,9 @@ module pinmux_reg_top (
 
   // Subregister 33 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_33]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_33_gated_we;
+  assign mio_pad_sleep_mode_33_gated_we = mio_pad_sleep_mode_33_we & mio_pad_sleep_regwen_33_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24830,7 +25587,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_33_we & mio_pad_sleep_regwen_33_qs),
+    .we     (mio_pad_sleep_mode_33_gated_we),
     .wd     (mio_pad_sleep_mode_33_wd),
 
     // from internal hardware
@@ -24848,6 +25605,9 @@ module pinmux_reg_top (
 
   // Subregister 34 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_34]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_34_gated_we;
+  assign mio_pad_sleep_mode_34_gated_we = mio_pad_sleep_mode_34_we & mio_pad_sleep_regwen_34_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24857,7 +25617,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_34_we & mio_pad_sleep_regwen_34_qs),
+    .we     (mio_pad_sleep_mode_34_gated_we),
     .wd     (mio_pad_sleep_mode_34_wd),
 
     // from internal hardware
@@ -24875,6 +25635,9 @@ module pinmux_reg_top (
 
   // Subregister 35 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_35]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_35_gated_we;
+  assign mio_pad_sleep_mode_35_gated_we = mio_pad_sleep_mode_35_we & mio_pad_sleep_regwen_35_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24884,7 +25647,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_35_we & mio_pad_sleep_regwen_35_qs),
+    .we     (mio_pad_sleep_mode_35_gated_we),
     .wd     (mio_pad_sleep_mode_35_wd),
 
     // from internal hardware
@@ -24902,6 +25665,9 @@ module pinmux_reg_top (
 
   // Subregister 36 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_36]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_36_gated_we;
+  assign mio_pad_sleep_mode_36_gated_we = mio_pad_sleep_mode_36_we & mio_pad_sleep_regwen_36_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24911,7 +25677,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_36_we & mio_pad_sleep_regwen_36_qs),
+    .we     (mio_pad_sleep_mode_36_gated_we),
     .wd     (mio_pad_sleep_mode_36_wd),
 
     // from internal hardware
@@ -24929,6 +25695,9 @@ module pinmux_reg_top (
 
   // Subregister 37 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_37]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_37_gated_we;
+  assign mio_pad_sleep_mode_37_gated_we = mio_pad_sleep_mode_37_we & mio_pad_sleep_regwen_37_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24938,7 +25707,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_37_we & mio_pad_sleep_regwen_37_qs),
+    .we     (mio_pad_sleep_mode_37_gated_we),
     .wd     (mio_pad_sleep_mode_37_wd),
 
     // from internal hardware
@@ -24956,6 +25725,9 @@ module pinmux_reg_top (
 
   // Subregister 38 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_38]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_38_gated_we;
+  assign mio_pad_sleep_mode_38_gated_we = mio_pad_sleep_mode_38_we & mio_pad_sleep_regwen_38_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24965,7 +25737,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_38_we & mio_pad_sleep_regwen_38_qs),
+    .we     (mio_pad_sleep_mode_38_gated_we),
     .wd     (mio_pad_sleep_mode_38_wd),
 
     // from internal hardware
@@ -24983,6 +25755,9 @@ module pinmux_reg_top (
 
   // Subregister 39 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_39]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_39_gated_we;
+  assign mio_pad_sleep_mode_39_gated_we = mio_pad_sleep_mode_39_we & mio_pad_sleep_regwen_39_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -24992,7 +25767,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_39_we & mio_pad_sleep_regwen_39_qs),
+    .we     (mio_pad_sleep_mode_39_gated_we),
     .wd     (mio_pad_sleep_mode_39_wd),
 
     // from internal hardware
@@ -25010,6 +25785,9 @@ module pinmux_reg_top (
 
   // Subregister 40 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_40]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_40_gated_we;
+  assign mio_pad_sleep_mode_40_gated_we = mio_pad_sleep_mode_40_we & mio_pad_sleep_regwen_40_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -25019,7 +25797,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_40_we & mio_pad_sleep_regwen_40_qs),
+    .we     (mio_pad_sleep_mode_40_gated_we),
     .wd     (mio_pad_sleep_mode_40_wd),
 
     // from internal hardware
@@ -25037,6 +25815,9 @@ module pinmux_reg_top (
 
   // Subregister 41 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_41]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_41_gated_we;
+  assign mio_pad_sleep_mode_41_gated_we = mio_pad_sleep_mode_41_we & mio_pad_sleep_regwen_41_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -25046,7 +25827,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_41_we & mio_pad_sleep_regwen_41_qs),
+    .we     (mio_pad_sleep_mode_41_gated_we),
     .wd     (mio_pad_sleep_mode_41_wd),
 
     // from internal hardware
@@ -25064,6 +25845,9 @@ module pinmux_reg_top (
 
   // Subregister 42 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_42]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_42_gated_we;
+  assign mio_pad_sleep_mode_42_gated_we = mio_pad_sleep_mode_42_we & mio_pad_sleep_regwen_42_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -25073,7 +25857,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_42_we & mio_pad_sleep_regwen_42_qs),
+    .we     (mio_pad_sleep_mode_42_gated_we),
     .wd     (mio_pad_sleep_mode_42_wd),
 
     // from internal hardware
@@ -25091,6 +25875,9 @@ module pinmux_reg_top (
 
   // Subregister 43 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_43]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_43_gated_we;
+  assign mio_pad_sleep_mode_43_gated_we = mio_pad_sleep_mode_43_we & mio_pad_sleep_regwen_43_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -25100,7 +25887,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_43_we & mio_pad_sleep_regwen_43_qs),
+    .we     (mio_pad_sleep_mode_43_gated_we),
     .wd     (mio_pad_sleep_mode_43_wd),
 
     // from internal hardware
@@ -25118,6 +25905,9 @@ module pinmux_reg_top (
 
   // Subregister 44 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_44]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_44_gated_we;
+  assign mio_pad_sleep_mode_44_gated_we = mio_pad_sleep_mode_44_we & mio_pad_sleep_regwen_44_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -25127,7 +25917,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_44_we & mio_pad_sleep_regwen_44_qs),
+    .we     (mio_pad_sleep_mode_44_gated_we),
     .wd     (mio_pad_sleep_mode_44_wd),
 
     // from internal hardware
@@ -25145,6 +25935,9 @@ module pinmux_reg_top (
 
   // Subregister 45 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_45]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_45_gated_we;
+  assign mio_pad_sleep_mode_45_gated_we = mio_pad_sleep_mode_45_we & mio_pad_sleep_regwen_45_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -25154,7 +25947,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_45_we & mio_pad_sleep_regwen_45_qs),
+    .we     (mio_pad_sleep_mode_45_gated_we),
     .wd     (mio_pad_sleep_mode_45_wd),
 
     // from internal hardware
@@ -25172,6 +25965,9 @@ module pinmux_reg_top (
 
   // Subregister 46 of Multireg mio_pad_sleep_mode
   // R[mio_pad_sleep_mode_46]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mio_pad_sleep_mode_46_gated_we;
+  assign mio_pad_sleep_mode_46_gated_we = mio_pad_sleep_mode_46_we & mio_pad_sleep_regwen_46_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -25181,7 +25977,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mio_pad_sleep_mode_46_we & mio_pad_sleep_regwen_46_qs),
+    .we     (mio_pad_sleep_mode_46_gated_we),
     .wd     (mio_pad_sleep_mode_46_wd),
 
     // from internal hardware
@@ -26034,6 +26830,9 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_0_gated_we;
+  assign dio_pad_sleep_en_0_gated_we = dio_pad_sleep_en_0_we & dio_pad_sleep_regwen_0_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26043,7 +26842,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_0_we & dio_pad_sleep_regwen_0_qs),
+    .we     (dio_pad_sleep_en_0_gated_we),
     .wd     (dio_pad_sleep_en_0_wd),
 
     // from internal hardware
@@ -26061,6 +26860,9 @@ module pinmux_reg_top (
 
   // Subregister 1 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_1_gated_we;
+  assign dio_pad_sleep_en_1_gated_we = dio_pad_sleep_en_1_we & dio_pad_sleep_regwen_1_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26070,7 +26872,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_1_we & dio_pad_sleep_regwen_1_qs),
+    .we     (dio_pad_sleep_en_1_gated_we),
     .wd     (dio_pad_sleep_en_1_wd),
 
     // from internal hardware
@@ -26088,6 +26890,9 @@ module pinmux_reg_top (
 
   // Subregister 2 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_2_gated_we;
+  assign dio_pad_sleep_en_2_gated_we = dio_pad_sleep_en_2_we & dio_pad_sleep_regwen_2_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26097,7 +26902,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_2_we & dio_pad_sleep_regwen_2_qs),
+    .we     (dio_pad_sleep_en_2_gated_we),
     .wd     (dio_pad_sleep_en_2_wd),
 
     // from internal hardware
@@ -26115,6 +26920,9 @@ module pinmux_reg_top (
 
   // Subregister 3 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_3_gated_we;
+  assign dio_pad_sleep_en_3_gated_we = dio_pad_sleep_en_3_we & dio_pad_sleep_regwen_3_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26124,7 +26932,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_3_we & dio_pad_sleep_regwen_3_qs),
+    .we     (dio_pad_sleep_en_3_gated_we),
     .wd     (dio_pad_sleep_en_3_wd),
 
     // from internal hardware
@@ -26142,6 +26950,9 @@ module pinmux_reg_top (
 
   // Subregister 4 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_4_gated_we;
+  assign dio_pad_sleep_en_4_gated_we = dio_pad_sleep_en_4_we & dio_pad_sleep_regwen_4_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26151,7 +26962,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_4_we & dio_pad_sleep_regwen_4_qs),
+    .we     (dio_pad_sleep_en_4_gated_we),
     .wd     (dio_pad_sleep_en_4_wd),
 
     // from internal hardware
@@ -26169,6 +26980,9 @@ module pinmux_reg_top (
 
   // Subregister 5 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_5_gated_we;
+  assign dio_pad_sleep_en_5_gated_we = dio_pad_sleep_en_5_we & dio_pad_sleep_regwen_5_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26178,7 +26992,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_5_we & dio_pad_sleep_regwen_5_qs),
+    .we     (dio_pad_sleep_en_5_gated_we),
     .wd     (dio_pad_sleep_en_5_wd),
 
     // from internal hardware
@@ -26196,6 +27010,9 @@ module pinmux_reg_top (
 
   // Subregister 6 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_6_gated_we;
+  assign dio_pad_sleep_en_6_gated_we = dio_pad_sleep_en_6_we & dio_pad_sleep_regwen_6_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26205,7 +27022,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_6_we & dio_pad_sleep_regwen_6_qs),
+    .we     (dio_pad_sleep_en_6_gated_we),
     .wd     (dio_pad_sleep_en_6_wd),
 
     // from internal hardware
@@ -26223,6 +27040,9 @@ module pinmux_reg_top (
 
   // Subregister 7 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_7_gated_we;
+  assign dio_pad_sleep_en_7_gated_we = dio_pad_sleep_en_7_we & dio_pad_sleep_regwen_7_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26232,7 +27052,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_7_we & dio_pad_sleep_regwen_7_qs),
+    .we     (dio_pad_sleep_en_7_gated_we),
     .wd     (dio_pad_sleep_en_7_wd),
 
     // from internal hardware
@@ -26250,6 +27070,9 @@ module pinmux_reg_top (
 
   // Subregister 8 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_8_gated_we;
+  assign dio_pad_sleep_en_8_gated_we = dio_pad_sleep_en_8_we & dio_pad_sleep_regwen_8_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26259,7 +27082,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_8_we & dio_pad_sleep_regwen_8_qs),
+    .we     (dio_pad_sleep_en_8_gated_we),
     .wd     (dio_pad_sleep_en_8_wd),
 
     // from internal hardware
@@ -26277,6 +27100,9 @@ module pinmux_reg_top (
 
   // Subregister 9 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_9_gated_we;
+  assign dio_pad_sleep_en_9_gated_we = dio_pad_sleep_en_9_we & dio_pad_sleep_regwen_9_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26286,7 +27112,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_9_we & dio_pad_sleep_regwen_9_qs),
+    .we     (dio_pad_sleep_en_9_gated_we),
     .wd     (dio_pad_sleep_en_9_wd),
 
     // from internal hardware
@@ -26304,6 +27130,9 @@ module pinmux_reg_top (
 
   // Subregister 10 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_10]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_10_gated_we;
+  assign dio_pad_sleep_en_10_gated_we = dio_pad_sleep_en_10_we & dio_pad_sleep_regwen_10_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26313,7 +27142,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_10_we & dio_pad_sleep_regwen_10_qs),
+    .we     (dio_pad_sleep_en_10_gated_we),
     .wd     (dio_pad_sleep_en_10_wd),
 
     // from internal hardware
@@ -26331,6 +27160,9 @@ module pinmux_reg_top (
 
   // Subregister 11 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_11]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_11_gated_we;
+  assign dio_pad_sleep_en_11_gated_we = dio_pad_sleep_en_11_we & dio_pad_sleep_regwen_11_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26340,7 +27172,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_11_we & dio_pad_sleep_regwen_11_qs),
+    .we     (dio_pad_sleep_en_11_gated_we),
     .wd     (dio_pad_sleep_en_11_wd),
 
     // from internal hardware
@@ -26358,6 +27190,9 @@ module pinmux_reg_top (
 
   // Subregister 12 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_12_gated_we;
+  assign dio_pad_sleep_en_12_gated_we = dio_pad_sleep_en_12_we & dio_pad_sleep_regwen_12_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26367,7 +27202,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_12_we & dio_pad_sleep_regwen_12_qs),
+    .we     (dio_pad_sleep_en_12_gated_we),
     .wd     (dio_pad_sleep_en_12_wd),
 
     // from internal hardware
@@ -26385,6 +27220,9 @@ module pinmux_reg_top (
 
   // Subregister 13 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_13_gated_we;
+  assign dio_pad_sleep_en_13_gated_we = dio_pad_sleep_en_13_we & dio_pad_sleep_regwen_13_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26394,7 +27232,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_13_we & dio_pad_sleep_regwen_13_qs),
+    .we     (dio_pad_sleep_en_13_gated_we),
     .wd     (dio_pad_sleep_en_13_wd),
 
     // from internal hardware
@@ -26412,6 +27250,9 @@ module pinmux_reg_top (
 
   // Subregister 14 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_14_gated_we;
+  assign dio_pad_sleep_en_14_gated_we = dio_pad_sleep_en_14_we & dio_pad_sleep_regwen_14_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26421,7 +27262,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_14_we & dio_pad_sleep_regwen_14_qs),
+    .we     (dio_pad_sleep_en_14_gated_we),
     .wd     (dio_pad_sleep_en_14_wd),
 
     // from internal hardware
@@ -26439,6 +27280,9 @@ module pinmux_reg_top (
 
   // Subregister 15 of Multireg dio_pad_sleep_en
   // R[dio_pad_sleep_en_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_15_gated_we;
+  assign dio_pad_sleep_en_15_gated_we = dio_pad_sleep_en_15_we & dio_pad_sleep_regwen_15_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26448,7 +27292,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_en_15_we & dio_pad_sleep_regwen_15_qs),
+    .we     (dio_pad_sleep_en_15_gated_we),
     .wd     (dio_pad_sleep_en_15_wd),
 
     // from internal hardware
@@ -26466,6 +27310,9 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_0_gated_we;
+  assign dio_pad_sleep_mode_0_gated_we = dio_pad_sleep_mode_0_we & dio_pad_sleep_regwen_0_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26475,7 +27322,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_0_we & dio_pad_sleep_regwen_0_qs),
+    .we     (dio_pad_sleep_mode_0_gated_we),
     .wd     (dio_pad_sleep_mode_0_wd),
 
     // from internal hardware
@@ -26493,6 +27340,9 @@ module pinmux_reg_top (
 
   // Subregister 1 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_1_gated_we;
+  assign dio_pad_sleep_mode_1_gated_we = dio_pad_sleep_mode_1_we & dio_pad_sleep_regwen_1_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26502,7 +27352,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_1_we & dio_pad_sleep_regwen_1_qs),
+    .we     (dio_pad_sleep_mode_1_gated_we),
     .wd     (dio_pad_sleep_mode_1_wd),
 
     // from internal hardware
@@ -26520,6 +27370,9 @@ module pinmux_reg_top (
 
   // Subregister 2 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_2_gated_we;
+  assign dio_pad_sleep_mode_2_gated_we = dio_pad_sleep_mode_2_we & dio_pad_sleep_regwen_2_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26529,7 +27382,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_2_we & dio_pad_sleep_regwen_2_qs),
+    .we     (dio_pad_sleep_mode_2_gated_we),
     .wd     (dio_pad_sleep_mode_2_wd),
 
     // from internal hardware
@@ -26547,6 +27400,9 @@ module pinmux_reg_top (
 
   // Subregister 3 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_3_gated_we;
+  assign dio_pad_sleep_mode_3_gated_we = dio_pad_sleep_mode_3_we & dio_pad_sleep_regwen_3_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26556,7 +27412,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_3_we & dio_pad_sleep_regwen_3_qs),
+    .we     (dio_pad_sleep_mode_3_gated_we),
     .wd     (dio_pad_sleep_mode_3_wd),
 
     // from internal hardware
@@ -26574,6 +27430,9 @@ module pinmux_reg_top (
 
   // Subregister 4 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_4_gated_we;
+  assign dio_pad_sleep_mode_4_gated_we = dio_pad_sleep_mode_4_we & dio_pad_sleep_regwen_4_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26583,7 +27442,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_4_we & dio_pad_sleep_regwen_4_qs),
+    .we     (dio_pad_sleep_mode_4_gated_we),
     .wd     (dio_pad_sleep_mode_4_wd),
 
     // from internal hardware
@@ -26601,6 +27460,9 @@ module pinmux_reg_top (
 
   // Subregister 5 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_5_gated_we;
+  assign dio_pad_sleep_mode_5_gated_we = dio_pad_sleep_mode_5_we & dio_pad_sleep_regwen_5_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26610,7 +27472,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_5_we & dio_pad_sleep_regwen_5_qs),
+    .we     (dio_pad_sleep_mode_5_gated_we),
     .wd     (dio_pad_sleep_mode_5_wd),
 
     // from internal hardware
@@ -26628,6 +27490,9 @@ module pinmux_reg_top (
 
   // Subregister 6 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_6_gated_we;
+  assign dio_pad_sleep_mode_6_gated_we = dio_pad_sleep_mode_6_we & dio_pad_sleep_regwen_6_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26637,7 +27502,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_6_we & dio_pad_sleep_regwen_6_qs),
+    .we     (dio_pad_sleep_mode_6_gated_we),
     .wd     (dio_pad_sleep_mode_6_wd),
 
     // from internal hardware
@@ -26655,6 +27520,9 @@ module pinmux_reg_top (
 
   // Subregister 7 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_7_gated_we;
+  assign dio_pad_sleep_mode_7_gated_we = dio_pad_sleep_mode_7_we & dio_pad_sleep_regwen_7_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26664,7 +27532,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_7_we & dio_pad_sleep_regwen_7_qs),
+    .we     (dio_pad_sleep_mode_7_gated_we),
     .wd     (dio_pad_sleep_mode_7_wd),
 
     // from internal hardware
@@ -26682,6 +27550,9 @@ module pinmux_reg_top (
 
   // Subregister 8 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_8_gated_we;
+  assign dio_pad_sleep_mode_8_gated_we = dio_pad_sleep_mode_8_we & dio_pad_sleep_regwen_8_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26691,7 +27562,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_8_we & dio_pad_sleep_regwen_8_qs),
+    .we     (dio_pad_sleep_mode_8_gated_we),
     .wd     (dio_pad_sleep_mode_8_wd),
 
     // from internal hardware
@@ -26709,6 +27580,9 @@ module pinmux_reg_top (
 
   // Subregister 9 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_9_gated_we;
+  assign dio_pad_sleep_mode_9_gated_we = dio_pad_sleep_mode_9_we & dio_pad_sleep_regwen_9_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26718,7 +27592,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_9_we & dio_pad_sleep_regwen_9_qs),
+    .we     (dio_pad_sleep_mode_9_gated_we),
     .wd     (dio_pad_sleep_mode_9_wd),
 
     // from internal hardware
@@ -26736,6 +27610,9 @@ module pinmux_reg_top (
 
   // Subregister 10 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_10]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_10_gated_we;
+  assign dio_pad_sleep_mode_10_gated_we = dio_pad_sleep_mode_10_we & dio_pad_sleep_regwen_10_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26745,7 +27622,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_10_we & dio_pad_sleep_regwen_10_qs),
+    .we     (dio_pad_sleep_mode_10_gated_we),
     .wd     (dio_pad_sleep_mode_10_wd),
 
     // from internal hardware
@@ -26763,6 +27640,9 @@ module pinmux_reg_top (
 
   // Subregister 11 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_11]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_11_gated_we;
+  assign dio_pad_sleep_mode_11_gated_we = dio_pad_sleep_mode_11_we & dio_pad_sleep_regwen_11_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26772,7 +27652,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_11_we & dio_pad_sleep_regwen_11_qs),
+    .we     (dio_pad_sleep_mode_11_gated_we),
     .wd     (dio_pad_sleep_mode_11_wd),
 
     // from internal hardware
@@ -26790,6 +27670,9 @@ module pinmux_reg_top (
 
   // Subregister 12 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_12_gated_we;
+  assign dio_pad_sleep_mode_12_gated_we = dio_pad_sleep_mode_12_we & dio_pad_sleep_regwen_12_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26799,7 +27682,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_12_we & dio_pad_sleep_regwen_12_qs),
+    .we     (dio_pad_sleep_mode_12_gated_we),
     .wd     (dio_pad_sleep_mode_12_wd),
 
     // from internal hardware
@@ -26817,6 +27700,9 @@ module pinmux_reg_top (
 
   // Subregister 13 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_13_gated_we;
+  assign dio_pad_sleep_mode_13_gated_we = dio_pad_sleep_mode_13_we & dio_pad_sleep_regwen_13_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26826,7 +27712,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_13_we & dio_pad_sleep_regwen_13_qs),
+    .we     (dio_pad_sleep_mode_13_gated_we),
     .wd     (dio_pad_sleep_mode_13_wd),
 
     // from internal hardware
@@ -26844,6 +27730,9 @@ module pinmux_reg_top (
 
   // Subregister 14 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_14_gated_we;
+  assign dio_pad_sleep_mode_14_gated_we = dio_pad_sleep_mode_14_we & dio_pad_sleep_regwen_14_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26853,7 +27742,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_14_we & dio_pad_sleep_regwen_14_qs),
+    .we     (dio_pad_sleep_mode_14_gated_we),
     .wd     (dio_pad_sleep_mode_14_wd),
 
     // from internal hardware
@@ -26871,6 +27760,9 @@ module pinmux_reg_top (
 
   // Subregister 15 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_15_gated_we;
+  assign dio_pad_sleep_mode_15_gated_we = dio_pad_sleep_mode_15_we & dio_pad_sleep_regwen_15_qs;
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -26880,7 +27772,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_mode_15_we & dio_pad_sleep_regwen_15_qs),
+    .we     (dio_pad_sleep_mode_15_gated_we),
     .wd     (dio_pad_sleep_mode_15_wd),
 
     // from internal hardware
@@ -27114,6 +28006,10 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg wkup_detector_en
   // R[wkup_detector_en_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_en_0_gated_we;
+  assign aon_wkup_detector_en_0_gated_we =
+    aon_wkup_detector_en_0_we & aon_wkup_detector_en_0_regwen;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -27123,7 +28019,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_en_0_we & aon_wkup_detector_en_0_regwen),
+    .we     (aon_wkup_detector_en_0_gated_we),
     .wd     (aon_wkup_detector_en_0_wdata[0]),
 
     // from internal hardware
@@ -27141,6 +28037,10 @@ module pinmux_reg_top (
 
   // Subregister 1 of Multireg wkup_detector_en
   // R[wkup_detector_en_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_en_1_gated_we;
+  assign aon_wkup_detector_en_1_gated_we =
+    aon_wkup_detector_en_1_we & aon_wkup_detector_en_1_regwen;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -27150,7 +28050,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_en_1_we & aon_wkup_detector_en_1_regwen),
+    .we     (aon_wkup_detector_en_1_gated_we),
     .wd     (aon_wkup_detector_en_1_wdata[0]),
 
     // from internal hardware
@@ -27168,6 +28068,10 @@ module pinmux_reg_top (
 
   // Subregister 2 of Multireg wkup_detector_en
   // R[wkup_detector_en_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_en_2_gated_we;
+  assign aon_wkup_detector_en_2_gated_we =
+    aon_wkup_detector_en_2_we & aon_wkup_detector_en_2_regwen;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -27177,7 +28081,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_en_2_we & aon_wkup_detector_en_2_regwen),
+    .we     (aon_wkup_detector_en_2_gated_we),
     .wd     (aon_wkup_detector_en_2_wdata[0]),
 
     // from internal hardware
@@ -27195,6 +28099,10 @@ module pinmux_reg_top (
 
   // Subregister 3 of Multireg wkup_detector_en
   // R[wkup_detector_en_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_en_3_gated_we;
+  assign aon_wkup_detector_en_3_gated_we =
+    aon_wkup_detector_en_3_we & aon_wkup_detector_en_3_regwen;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -27204,7 +28112,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_en_3_we & aon_wkup_detector_en_3_regwen),
+    .we     (aon_wkup_detector_en_3_gated_we),
     .wd     (aon_wkup_detector_en_3_wdata[0]),
 
     // from internal hardware
@@ -27222,6 +28130,10 @@ module pinmux_reg_top (
 
   // Subregister 4 of Multireg wkup_detector_en
   // R[wkup_detector_en_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_en_4_gated_we;
+  assign aon_wkup_detector_en_4_gated_we =
+    aon_wkup_detector_en_4_we & aon_wkup_detector_en_4_regwen;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -27231,7 +28143,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_en_4_we & aon_wkup_detector_en_4_regwen),
+    .we     (aon_wkup_detector_en_4_gated_we),
     .wd     (aon_wkup_detector_en_4_wdata[0]),
 
     // from internal hardware
@@ -27249,6 +28161,10 @@ module pinmux_reg_top (
 
   // Subregister 5 of Multireg wkup_detector_en
   // R[wkup_detector_en_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_en_5_gated_we;
+  assign aon_wkup_detector_en_5_gated_we =
+    aon_wkup_detector_en_5_we & aon_wkup_detector_en_5_regwen;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -27258,7 +28174,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_en_5_we & aon_wkup_detector_en_5_regwen),
+    .we     (aon_wkup_detector_en_5_gated_we),
     .wd     (aon_wkup_detector_en_5_wdata[0]),
 
     // from internal hardware
@@ -27276,6 +28192,10 @@ module pinmux_reg_top (
 
   // Subregister 6 of Multireg wkup_detector_en
   // R[wkup_detector_en_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_en_6_gated_we;
+  assign aon_wkup_detector_en_6_gated_we =
+    aon_wkup_detector_en_6_we & aon_wkup_detector_en_6_regwen;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -27285,7 +28205,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_en_6_we & aon_wkup_detector_en_6_regwen),
+    .we     (aon_wkup_detector_en_6_gated_we),
     .wd     (aon_wkup_detector_en_6_wdata[0]),
 
     // from internal hardware
@@ -27303,6 +28223,10 @@ module pinmux_reg_top (
 
   // Subregister 7 of Multireg wkup_detector_en
   // R[wkup_detector_en_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_en_7_gated_we;
+  assign aon_wkup_detector_en_7_gated_we =
+    aon_wkup_detector_en_7_we & aon_wkup_detector_en_7_regwen;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -27312,7 +28236,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_en_7_we & aon_wkup_detector_en_7_regwen),
+    .we     (aon_wkup_detector_en_7_gated_we),
     .wd     (aon_wkup_detector_en_7_wdata[0]),
 
     // from internal hardware
@@ -27330,6 +28254,9 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg wkup_detector
   // R[wkup_detector_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_0_gated_we;
+  assign aon_wkup_detector_0_gated_we = aon_wkup_detector_0_we & aon_wkup_detector_0_regwen;
   //   F[mode_0]: 2:0
   prim_subreg #(
     .DW      (3),
@@ -27340,7 +28267,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_0_we & aon_wkup_detector_0_regwen),
+    .we     (aon_wkup_detector_0_gated_we),
     .wd     (aon_wkup_detector_0_wdata[2:0]),
 
     // from internal hardware
@@ -27365,7 +28292,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_0_we & aon_wkup_detector_0_regwen),
+    .we     (aon_wkup_detector_0_gated_we),
     .wd     (aon_wkup_detector_0_wdata[3]),
 
     // from internal hardware
@@ -27390,7 +28317,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_0_we & aon_wkup_detector_0_regwen),
+    .we     (aon_wkup_detector_0_gated_we),
     .wd     (aon_wkup_detector_0_wdata[4]),
 
     // from internal hardware
@@ -27408,6 +28335,9 @@ module pinmux_reg_top (
 
   // Subregister 1 of Multireg wkup_detector
   // R[wkup_detector_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_1_gated_we;
+  assign aon_wkup_detector_1_gated_we = aon_wkup_detector_1_we & aon_wkup_detector_1_regwen;
   //   F[mode_1]: 2:0
   prim_subreg #(
     .DW      (3),
@@ -27418,7 +28348,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_1_we & aon_wkup_detector_1_regwen),
+    .we     (aon_wkup_detector_1_gated_we),
     .wd     (aon_wkup_detector_1_wdata[2:0]),
 
     // from internal hardware
@@ -27443,7 +28373,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_1_we & aon_wkup_detector_1_regwen),
+    .we     (aon_wkup_detector_1_gated_we),
     .wd     (aon_wkup_detector_1_wdata[3]),
 
     // from internal hardware
@@ -27468,7 +28398,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_1_we & aon_wkup_detector_1_regwen),
+    .we     (aon_wkup_detector_1_gated_we),
     .wd     (aon_wkup_detector_1_wdata[4]),
 
     // from internal hardware
@@ -27486,6 +28416,9 @@ module pinmux_reg_top (
 
   // Subregister 2 of Multireg wkup_detector
   // R[wkup_detector_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_2_gated_we;
+  assign aon_wkup_detector_2_gated_we = aon_wkup_detector_2_we & aon_wkup_detector_2_regwen;
   //   F[mode_2]: 2:0
   prim_subreg #(
     .DW      (3),
@@ -27496,7 +28429,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_2_we & aon_wkup_detector_2_regwen),
+    .we     (aon_wkup_detector_2_gated_we),
     .wd     (aon_wkup_detector_2_wdata[2:0]),
 
     // from internal hardware
@@ -27521,7 +28454,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_2_we & aon_wkup_detector_2_regwen),
+    .we     (aon_wkup_detector_2_gated_we),
     .wd     (aon_wkup_detector_2_wdata[3]),
 
     // from internal hardware
@@ -27546,7 +28479,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_2_we & aon_wkup_detector_2_regwen),
+    .we     (aon_wkup_detector_2_gated_we),
     .wd     (aon_wkup_detector_2_wdata[4]),
 
     // from internal hardware
@@ -27564,6 +28497,9 @@ module pinmux_reg_top (
 
   // Subregister 3 of Multireg wkup_detector
   // R[wkup_detector_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_3_gated_we;
+  assign aon_wkup_detector_3_gated_we = aon_wkup_detector_3_we & aon_wkup_detector_3_regwen;
   //   F[mode_3]: 2:0
   prim_subreg #(
     .DW      (3),
@@ -27574,7 +28510,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_3_we & aon_wkup_detector_3_regwen),
+    .we     (aon_wkup_detector_3_gated_we),
     .wd     (aon_wkup_detector_3_wdata[2:0]),
 
     // from internal hardware
@@ -27599,7 +28535,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_3_we & aon_wkup_detector_3_regwen),
+    .we     (aon_wkup_detector_3_gated_we),
     .wd     (aon_wkup_detector_3_wdata[3]),
 
     // from internal hardware
@@ -27624,7 +28560,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_3_we & aon_wkup_detector_3_regwen),
+    .we     (aon_wkup_detector_3_gated_we),
     .wd     (aon_wkup_detector_3_wdata[4]),
 
     // from internal hardware
@@ -27642,6 +28578,9 @@ module pinmux_reg_top (
 
   // Subregister 4 of Multireg wkup_detector
   // R[wkup_detector_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_4_gated_we;
+  assign aon_wkup_detector_4_gated_we = aon_wkup_detector_4_we & aon_wkup_detector_4_regwen;
   //   F[mode_4]: 2:0
   prim_subreg #(
     .DW      (3),
@@ -27652,7 +28591,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_4_we & aon_wkup_detector_4_regwen),
+    .we     (aon_wkup_detector_4_gated_we),
     .wd     (aon_wkup_detector_4_wdata[2:0]),
 
     // from internal hardware
@@ -27677,7 +28616,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_4_we & aon_wkup_detector_4_regwen),
+    .we     (aon_wkup_detector_4_gated_we),
     .wd     (aon_wkup_detector_4_wdata[3]),
 
     // from internal hardware
@@ -27702,7 +28641,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_4_we & aon_wkup_detector_4_regwen),
+    .we     (aon_wkup_detector_4_gated_we),
     .wd     (aon_wkup_detector_4_wdata[4]),
 
     // from internal hardware
@@ -27720,6 +28659,9 @@ module pinmux_reg_top (
 
   // Subregister 5 of Multireg wkup_detector
   // R[wkup_detector_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_5_gated_we;
+  assign aon_wkup_detector_5_gated_we = aon_wkup_detector_5_we & aon_wkup_detector_5_regwen;
   //   F[mode_5]: 2:0
   prim_subreg #(
     .DW      (3),
@@ -27730,7 +28672,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_5_we & aon_wkup_detector_5_regwen),
+    .we     (aon_wkup_detector_5_gated_we),
     .wd     (aon_wkup_detector_5_wdata[2:0]),
 
     // from internal hardware
@@ -27755,7 +28697,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_5_we & aon_wkup_detector_5_regwen),
+    .we     (aon_wkup_detector_5_gated_we),
     .wd     (aon_wkup_detector_5_wdata[3]),
 
     // from internal hardware
@@ -27780,7 +28722,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_5_we & aon_wkup_detector_5_regwen),
+    .we     (aon_wkup_detector_5_gated_we),
     .wd     (aon_wkup_detector_5_wdata[4]),
 
     // from internal hardware
@@ -27798,6 +28740,9 @@ module pinmux_reg_top (
 
   // Subregister 6 of Multireg wkup_detector
   // R[wkup_detector_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_6_gated_we;
+  assign aon_wkup_detector_6_gated_we = aon_wkup_detector_6_we & aon_wkup_detector_6_regwen;
   //   F[mode_6]: 2:0
   prim_subreg #(
     .DW      (3),
@@ -27808,7 +28753,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_6_we & aon_wkup_detector_6_regwen),
+    .we     (aon_wkup_detector_6_gated_we),
     .wd     (aon_wkup_detector_6_wdata[2:0]),
 
     // from internal hardware
@@ -27833,7 +28778,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_6_we & aon_wkup_detector_6_regwen),
+    .we     (aon_wkup_detector_6_gated_we),
     .wd     (aon_wkup_detector_6_wdata[3]),
 
     // from internal hardware
@@ -27858,7 +28803,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_6_we & aon_wkup_detector_6_regwen),
+    .we     (aon_wkup_detector_6_gated_we),
     .wd     (aon_wkup_detector_6_wdata[4]),
 
     // from internal hardware
@@ -27876,6 +28821,9 @@ module pinmux_reg_top (
 
   // Subregister 7 of Multireg wkup_detector
   // R[wkup_detector_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_7_gated_we;
+  assign aon_wkup_detector_7_gated_we = aon_wkup_detector_7_we & aon_wkup_detector_7_regwen;
   //   F[mode_7]: 2:0
   prim_subreg #(
     .DW      (3),
@@ -27886,7 +28834,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_7_we & aon_wkup_detector_7_regwen),
+    .we     (aon_wkup_detector_7_gated_we),
     .wd     (aon_wkup_detector_7_wdata[2:0]),
 
     // from internal hardware
@@ -27911,7 +28859,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_7_we & aon_wkup_detector_7_regwen),
+    .we     (aon_wkup_detector_7_gated_we),
     .wd     (aon_wkup_detector_7_wdata[3]),
 
     // from internal hardware
@@ -27936,7 +28884,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_7_we & aon_wkup_detector_7_regwen),
+    .we     (aon_wkup_detector_7_gated_we),
     .wd     (aon_wkup_detector_7_wdata[4]),
 
     // from internal hardware
@@ -27954,6 +28902,10 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_cnt_th_0_gated_we;
+  assign aon_wkup_detector_cnt_th_0_gated_we =
+    aon_wkup_detector_cnt_th_0_we & aon_wkup_detector_cnt_th_0_regwen;
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -27963,7 +28915,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_cnt_th_0_we & aon_wkup_detector_cnt_th_0_regwen),
+    .we     (aon_wkup_detector_cnt_th_0_gated_we),
     .wd     (aon_wkup_detector_cnt_th_0_wdata[7:0]),
 
     // from internal hardware
@@ -27981,6 +28933,10 @@ module pinmux_reg_top (
 
   // Subregister 1 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_cnt_th_1_gated_we;
+  assign aon_wkup_detector_cnt_th_1_gated_we =
+    aon_wkup_detector_cnt_th_1_we & aon_wkup_detector_cnt_th_1_regwen;
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -27990,7 +28946,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_cnt_th_1_we & aon_wkup_detector_cnt_th_1_regwen),
+    .we     (aon_wkup_detector_cnt_th_1_gated_we),
     .wd     (aon_wkup_detector_cnt_th_1_wdata[7:0]),
 
     // from internal hardware
@@ -28008,6 +28964,10 @@ module pinmux_reg_top (
 
   // Subregister 2 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_cnt_th_2_gated_we;
+  assign aon_wkup_detector_cnt_th_2_gated_we =
+    aon_wkup_detector_cnt_th_2_we & aon_wkup_detector_cnt_th_2_regwen;
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28017,7 +28977,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_cnt_th_2_we & aon_wkup_detector_cnt_th_2_regwen),
+    .we     (aon_wkup_detector_cnt_th_2_gated_we),
     .wd     (aon_wkup_detector_cnt_th_2_wdata[7:0]),
 
     // from internal hardware
@@ -28035,6 +28995,10 @@ module pinmux_reg_top (
 
   // Subregister 3 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_cnt_th_3_gated_we;
+  assign aon_wkup_detector_cnt_th_3_gated_we =
+    aon_wkup_detector_cnt_th_3_we & aon_wkup_detector_cnt_th_3_regwen;
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28044,7 +29008,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_cnt_th_3_we & aon_wkup_detector_cnt_th_3_regwen),
+    .we     (aon_wkup_detector_cnt_th_3_gated_we),
     .wd     (aon_wkup_detector_cnt_th_3_wdata[7:0]),
 
     // from internal hardware
@@ -28062,6 +29026,10 @@ module pinmux_reg_top (
 
   // Subregister 4 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_cnt_th_4_gated_we;
+  assign aon_wkup_detector_cnt_th_4_gated_we =
+    aon_wkup_detector_cnt_th_4_we & aon_wkup_detector_cnt_th_4_regwen;
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28071,7 +29039,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_cnt_th_4_we & aon_wkup_detector_cnt_th_4_regwen),
+    .we     (aon_wkup_detector_cnt_th_4_gated_we),
     .wd     (aon_wkup_detector_cnt_th_4_wdata[7:0]),
 
     // from internal hardware
@@ -28089,6 +29057,10 @@ module pinmux_reg_top (
 
   // Subregister 5 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_cnt_th_5_gated_we;
+  assign aon_wkup_detector_cnt_th_5_gated_we =
+    aon_wkup_detector_cnt_th_5_we & aon_wkup_detector_cnt_th_5_regwen;
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28098,7 +29070,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_cnt_th_5_we & aon_wkup_detector_cnt_th_5_regwen),
+    .we     (aon_wkup_detector_cnt_th_5_gated_we),
     .wd     (aon_wkup_detector_cnt_th_5_wdata[7:0]),
 
     // from internal hardware
@@ -28116,6 +29088,10 @@ module pinmux_reg_top (
 
   // Subregister 6 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_cnt_th_6_gated_we;
+  assign aon_wkup_detector_cnt_th_6_gated_we =
+    aon_wkup_detector_cnt_th_6_we & aon_wkup_detector_cnt_th_6_regwen;
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28125,7 +29101,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_cnt_th_6_we & aon_wkup_detector_cnt_th_6_regwen),
+    .we     (aon_wkup_detector_cnt_th_6_gated_we),
     .wd     (aon_wkup_detector_cnt_th_6_wdata[7:0]),
 
     // from internal hardware
@@ -28143,6 +29119,10 @@ module pinmux_reg_top (
 
   // Subregister 7 of Multireg wkup_detector_cnt_th
   // R[wkup_detector_cnt_th_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_wkup_detector_cnt_th_7_gated_we;
+  assign aon_wkup_detector_cnt_th_7_gated_we =
+    aon_wkup_detector_cnt_th_7_we & aon_wkup_detector_cnt_th_7_regwen;
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28152,7 +29132,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_wkup_detector_cnt_th_7_we & aon_wkup_detector_cnt_th_7_regwen),
+    .we     (aon_wkup_detector_cnt_th_7_gated_we),
     .wd     (aon_wkup_detector_cnt_th_7_wdata[7:0]),
 
     // from internal hardware
@@ -28170,6 +29150,9 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic wkup_detector_padsel_0_gated_we;
+  assign wkup_detector_padsel_0_gated_we = wkup_detector_padsel_0_we & wkup_detector_regwen_0_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28179,7 +29162,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wkup_detector_padsel_0_we & wkup_detector_regwen_0_qs),
+    .we     (wkup_detector_padsel_0_gated_we),
     .wd     (wkup_detector_padsel_0_wd),
 
     // from internal hardware
@@ -28197,6 +29180,9 @@ module pinmux_reg_top (
 
   // Subregister 1 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic wkup_detector_padsel_1_gated_we;
+  assign wkup_detector_padsel_1_gated_we = wkup_detector_padsel_1_we & wkup_detector_regwen_1_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28206,7 +29192,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wkup_detector_padsel_1_we & wkup_detector_regwen_1_qs),
+    .we     (wkup_detector_padsel_1_gated_we),
     .wd     (wkup_detector_padsel_1_wd),
 
     // from internal hardware
@@ -28224,6 +29210,9 @@ module pinmux_reg_top (
 
   // Subregister 2 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic wkup_detector_padsel_2_gated_we;
+  assign wkup_detector_padsel_2_gated_we = wkup_detector_padsel_2_we & wkup_detector_regwen_2_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28233,7 +29222,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wkup_detector_padsel_2_we & wkup_detector_regwen_2_qs),
+    .we     (wkup_detector_padsel_2_gated_we),
     .wd     (wkup_detector_padsel_2_wd),
 
     // from internal hardware
@@ -28251,6 +29240,9 @@ module pinmux_reg_top (
 
   // Subregister 3 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic wkup_detector_padsel_3_gated_we;
+  assign wkup_detector_padsel_3_gated_we = wkup_detector_padsel_3_we & wkup_detector_regwen_3_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28260,7 +29252,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wkup_detector_padsel_3_we & wkup_detector_regwen_3_qs),
+    .we     (wkup_detector_padsel_3_gated_we),
     .wd     (wkup_detector_padsel_3_wd),
 
     // from internal hardware
@@ -28278,6 +29270,9 @@ module pinmux_reg_top (
 
   // Subregister 4 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic wkup_detector_padsel_4_gated_we;
+  assign wkup_detector_padsel_4_gated_we = wkup_detector_padsel_4_we & wkup_detector_regwen_4_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28287,7 +29282,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wkup_detector_padsel_4_we & wkup_detector_regwen_4_qs),
+    .we     (wkup_detector_padsel_4_gated_we),
     .wd     (wkup_detector_padsel_4_wd),
 
     // from internal hardware
@@ -28305,6 +29300,9 @@ module pinmux_reg_top (
 
   // Subregister 5 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic wkup_detector_padsel_5_gated_we;
+  assign wkup_detector_padsel_5_gated_we = wkup_detector_padsel_5_we & wkup_detector_regwen_5_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28314,7 +29312,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wkup_detector_padsel_5_we & wkup_detector_regwen_5_qs),
+    .we     (wkup_detector_padsel_5_gated_we),
     .wd     (wkup_detector_padsel_5_wd),
 
     // from internal hardware
@@ -28332,6 +29330,9 @@ module pinmux_reg_top (
 
   // Subregister 6 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic wkup_detector_padsel_6_gated_we;
+  assign wkup_detector_padsel_6_gated_we = wkup_detector_padsel_6_we & wkup_detector_regwen_6_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28341,7 +29342,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wkup_detector_padsel_6_we & wkup_detector_regwen_6_qs),
+    .we     (wkup_detector_padsel_6_gated_we),
     .wd     (wkup_detector_padsel_6_wd),
 
     // from internal hardware
@@ -28359,6 +29360,9 @@ module pinmux_reg_top (
 
   // Subregister 7 of Multireg wkup_detector_padsel
   // R[wkup_detector_padsel_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic wkup_detector_padsel_7_gated_we;
+  assign wkup_detector_padsel_7_gated_we = wkup_detector_padsel_7_we & wkup_detector_regwen_7_qs;
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -28368,7 +29372,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wkup_detector_padsel_7_we & wkup_detector_regwen_7_qs),
+    .we     (wkup_detector_padsel_7_gated_we),
     .wd     (wkup_detector_padsel_7_wd),
 
     // from internal hardware
@@ -29735,6 +30739,8 @@ module pinmux_reg_top (
                (addr_hit[566] & (|(PINMUX_PERMIT[566] & ~reg_be))) |
                (addr_hit[567] & (|(PINMUX_PERMIT[567] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
@@ -32628,6 +33634,579 @@ module pinmux_reg_top (
 
 
 
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = alert_test_we;
+    reg_we_check[1] = mio_periph_insel_regwen_0_we;
+    reg_we_check[2] = mio_periph_insel_regwen_1_we;
+    reg_we_check[3] = mio_periph_insel_regwen_2_we;
+    reg_we_check[4] = mio_periph_insel_regwen_3_we;
+    reg_we_check[5] = mio_periph_insel_regwen_4_we;
+    reg_we_check[6] = mio_periph_insel_regwen_5_we;
+    reg_we_check[7] = mio_periph_insel_regwen_6_we;
+    reg_we_check[8] = mio_periph_insel_regwen_7_we;
+    reg_we_check[9] = mio_periph_insel_regwen_8_we;
+    reg_we_check[10] = mio_periph_insel_regwen_9_we;
+    reg_we_check[11] = mio_periph_insel_regwen_10_we;
+    reg_we_check[12] = mio_periph_insel_regwen_11_we;
+    reg_we_check[13] = mio_periph_insel_regwen_12_we;
+    reg_we_check[14] = mio_periph_insel_regwen_13_we;
+    reg_we_check[15] = mio_periph_insel_regwen_14_we;
+    reg_we_check[16] = mio_periph_insel_regwen_15_we;
+    reg_we_check[17] = mio_periph_insel_regwen_16_we;
+    reg_we_check[18] = mio_periph_insel_regwen_17_we;
+    reg_we_check[19] = mio_periph_insel_regwen_18_we;
+    reg_we_check[20] = mio_periph_insel_regwen_19_we;
+    reg_we_check[21] = mio_periph_insel_regwen_20_we;
+    reg_we_check[22] = mio_periph_insel_regwen_21_we;
+    reg_we_check[23] = mio_periph_insel_regwen_22_we;
+    reg_we_check[24] = mio_periph_insel_regwen_23_we;
+    reg_we_check[25] = mio_periph_insel_regwen_24_we;
+    reg_we_check[26] = mio_periph_insel_regwen_25_we;
+    reg_we_check[27] = mio_periph_insel_regwen_26_we;
+    reg_we_check[28] = mio_periph_insel_regwen_27_we;
+    reg_we_check[29] = mio_periph_insel_regwen_28_we;
+    reg_we_check[30] = mio_periph_insel_regwen_29_we;
+    reg_we_check[31] = mio_periph_insel_regwen_30_we;
+    reg_we_check[32] = mio_periph_insel_regwen_31_we;
+    reg_we_check[33] = mio_periph_insel_regwen_32_we;
+    reg_we_check[34] = mio_periph_insel_regwen_33_we;
+    reg_we_check[35] = mio_periph_insel_regwen_34_we;
+    reg_we_check[36] = mio_periph_insel_regwen_35_we;
+    reg_we_check[37] = mio_periph_insel_regwen_36_we;
+    reg_we_check[38] = mio_periph_insel_regwen_37_we;
+    reg_we_check[39] = mio_periph_insel_regwen_38_we;
+    reg_we_check[40] = mio_periph_insel_regwen_39_we;
+    reg_we_check[41] = mio_periph_insel_regwen_40_we;
+    reg_we_check[42] = mio_periph_insel_regwen_41_we;
+    reg_we_check[43] = mio_periph_insel_regwen_42_we;
+    reg_we_check[44] = mio_periph_insel_regwen_43_we;
+    reg_we_check[45] = mio_periph_insel_regwen_44_we;
+    reg_we_check[46] = mio_periph_insel_regwen_45_we;
+    reg_we_check[47] = mio_periph_insel_regwen_46_we;
+    reg_we_check[48] = mio_periph_insel_regwen_47_we;
+    reg_we_check[49] = mio_periph_insel_regwen_48_we;
+    reg_we_check[50] = mio_periph_insel_regwen_49_we;
+    reg_we_check[51] = mio_periph_insel_regwen_50_we;
+    reg_we_check[52] = mio_periph_insel_regwen_51_we;
+    reg_we_check[53] = mio_periph_insel_regwen_52_we;
+    reg_we_check[54] = mio_periph_insel_regwen_53_we;
+    reg_we_check[55] = mio_periph_insel_regwen_54_we;
+    reg_we_check[56] = mio_periph_insel_regwen_55_we;
+    reg_we_check[57] = mio_periph_insel_regwen_56_we;
+    reg_we_check[58] = mio_periph_insel_0_gated_we;
+    reg_we_check[59] = mio_periph_insel_1_gated_we;
+    reg_we_check[60] = mio_periph_insel_2_gated_we;
+    reg_we_check[61] = mio_periph_insel_3_gated_we;
+    reg_we_check[62] = mio_periph_insel_4_gated_we;
+    reg_we_check[63] = mio_periph_insel_5_gated_we;
+    reg_we_check[64] = mio_periph_insel_6_gated_we;
+    reg_we_check[65] = mio_periph_insel_7_gated_we;
+    reg_we_check[66] = mio_periph_insel_8_gated_we;
+    reg_we_check[67] = mio_periph_insel_9_gated_we;
+    reg_we_check[68] = mio_periph_insel_10_gated_we;
+    reg_we_check[69] = mio_periph_insel_11_gated_we;
+    reg_we_check[70] = mio_periph_insel_12_gated_we;
+    reg_we_check[71] = mio_periph_insel_13_gated_we;
+    reg_we_check[72] = mio_periph_insel_14_gated_we;
+    reg_we_check[73] = mio_periph_insel_15_gated_we;
+    reg_we_check[74] = mio_periph_insel_16_gated_we;
+    reg_we_check[75] = mio_periph_insel_17_gated_we;
+    reg_we_check[76] = mio_periph_insel_18_gated_we;
+    reg_we_check[77] = mio_periph_insel_19_gated_we;
+    reg_we_check[78] = mio_periph_insel_20_gated_we;
+    reg_we_check[79] = mio_periph_insel_21_gated_we;
+    reg_we_check[80] = mio_periph_insel_22_gated_we;
+    reg_we_check[81] = mio_periph_insel_23_gated_we;
+    reg_we_check[82] = mio_periph_insel_24_gated_we;
+    reg_we_check[83] = mio_periph_insel_25_gated_we;
+    reg_we_check[84] = mio_periph_insel_26_gated_we;
+    reg_we_check[85] = mio_periph_insel_27_gated_we;
+    reg_we_check[86] = mio_periph_insel_28_gated_we;
+    reg_we_check[87] = mio_periph_insel_29_gated_we;
+    reg_we_check[88] = mio_periph_insel_30_gated_we;
+    reg_we_check[89] = mio_periph_insel_31_gated_we;
+    reg_we_check[90] = mio_periph_insel_32_gated_we;
+    reg_we_check[91] = mio_periph_insel_33_gated_we;
+    reg_we_check[92] = mio_periph_insel_34_gated_we;
+    reg_we_check[93] = mio_periph_insel_35_gated_we;
+    reg_we_check[94] = mio_periph_insel_36_gated_we;
+    reg_we_check[95] = mio_periph_insel_37_gated_we;
+    reg_we_check[96] = mio_periph_insel_38_gated_we;
+    reg_we_check[97] = mio_periph_insel_39_gated_we;
+    reg_we_check[98] = mio_periph_insel_40_gated_we;
+    reg_we_check[99] = mio_periph_insel_41_gated_we;
+    reg_we_check[100] = mio_periph_insel_42_gated_we;
+    reg_we_check[101] = mio_periph_insel_43_gated_we;
+    reg_we_check[102] = mio_periph_insel_44_gated_we;
+    reg_we_check[103] = mio_periph_insel_45_gated_we;
+    reg_we_check[104] = mio_periph_insel_46_gated_we;
+    reg_we_check[105] = mio_periph_insel_47_gated_we;
+    reg_we_check[106] = mio_periph_insel_48_gated_we;
+    reg_we_check[107] = mio_periph_insel_49_gated_we;
+    reg_we_check[108] = mio_periph_insel_50_gated_we;
+    reg_we_check[109] = mio_periph_insel_51_gated_we;
+    reg_we_check[110] = mio_periph_insel_52_gated_we;
+    reg_we_check[111] = mio_periph_insel_53_gated_we;
+    reg_we_check[112] = mio_periph_insel_54_gated_we;
+    reg_we_check[113] = mio_periph_insel_55_gated_we;
+    reg_we_check[114] = mio_periph_insel_56_gated_we;
+    reg_we_check[115] = mio_outsel_regwen_0_we;
+    reg_we_check[116] = mio_outsel_regwen_1_we;
+    reg_we_check[117] = mio_outsel_regwen_2_we;
+    reg_we_check[118] = mio_outsel_regwen_3_we;
+    reg_we_check[119] = mio_outsel_regwen_4_we;
+    reg_we_check[120] = mio_outsel_regwen_5_we;
+    reg_we_check[121] = mio_outsel_regwen_6_we;
+    reg_we_check[122] = mio_outsel_regwen_7_we;
+    reg_we_check[123] = mio_outsel_regwen_8_we;
+    reg_we_check[124] = mio_outsel_regwen_9_we;
+    reg_we_check[125] = mio_outsel_regwen_10_we;
+    reg_we_check[126] = mio_outsel_regwen_11_we;
+    reg_we_check[127] = mio_outsel_regwen_12_we;
+    reg_we_check[128] = mio_outsel_regwen_13_we;
+    reg_we_check[129] = mio_outsel_regwen_14_we;
+    reg_we_check[130] = mio_outsel_regwen_15_we;
+    reg_we_check[131] = mio_outsel_regwen_16_we;
+    reg_we_check[132] = mio_outsel_regwen_17_we;
+    reg_we_check[133] = mio_outsel_regwen_18_we;
+    reg_we_check[134] = mio_outsel_regwen_19_we;
+    reg_we_check[135] = mio_outsel_regwen_20_we;
+    reg_we_check[136] = mio_outsel_regwen_21_we;
+    reg_we_check[137] = mio_outsel_regwen_22_we;
+    reg_we_check[138] = mio_outsel_regwen_23_we;
+    reg_we_check[139] = mio_outsel_regwen_24_we;
+    reg_we_check[140] = mio_outsel_regwen_25_we;
+    reg_we_check[141] = mio_outsel_regwen_26_we;
+    reg_we_check[142] = mio_outsel_regwen_27_we;
+    reg_we_check[143] = mio_outsel_regwen_28_we;
+    reg_we_check[144] = mio_outsel_regwen_29_we;
+    reg_we_check[145] = mio_outsel_regwen_30_we;
+    reg_we_check[146] = mio_outsel_regwen_31_we;
+    reg_we_check[147] = mio_outsel_regwen_32_we;
+    reg_we_check[148] = mio_outsel_regwen_33_we;
+    reg_we_check[149] = mio_outsel_regwen_34_we;
+    reg_we_check[150] = mio_outsel_regwen_35_we;
+    reg_we_check[151] = mio_outsel_regwen_36_we;
+    reg_we_check[152] = mio_outsel_regwen_37_we;
+    reg_we_check[153] = mio_outsel_regwen_38_we;
+    reg_we_check[154] = mio_outsel_regwen_39_we;
+    reg_we_check[155] = mio_outsel_regwen_40_we;
+    reg_we_check[156] = mio_outsel_regwen_41_we;
+    reg_we_check[157] = mio_outsel_regwen_42_we;
+    reg_we_check[158] = mio_outsel_regwen_43_we;
+    reg_we_check[159] = mio_outsel_regwen_44_we;
+    reg_we_check[160] = mio_outsel_regwen_45_we;
+    reg_we_check[161] = mio_outsel_regwen_46_we;
+    reg_we_check[162] = mio_outsel_0_gated_we;
+    reg_we_check[163] = mio_outsel_1_gated_we;
+    reg_we_check[164] = mio_outsel_2_gated_we;
+    reg_we_check[165] = mio_outsel_3_gated_we;
+    reg_we_check[166] = mio_outsel_4_gated_we;
+    reg_we_check[167] = mio_outsel_5_gated_we;
+    reg_we_check[168] = mio_outsel_6_gated_we;
+    reg_we_check[169] = mio_outsel_7_gated_we;
+    reg_we_check[170] = mio_outsel_8_gated_we;
+    reg_we_check[171] = mio_outsel_9_gated_we;
+    reg_we_check[172] = mio_outsel_10_gated_we;
+    reg_we_check[173] = mio_outsel_11_gated_we;
+    reg_we_check[174] = mio_outsel_12_gated_we;
+    reg_we_check[175] = mio_outsel_13_gated_we;
+    reg_we_check[176] = mio_outsel_14_gated_we;
+    reg_we_check[177] = mio_outsel_15_gated_we;
+    reg_we_check[178] = mio_outsel_16_gated_we;
+    reg_we_check[179] = mio_outsel_17_gated_we;
+    reg_we_check[180] = mio_outsel_18_gated_we;
+    reg_we_check[181] = mio_outsel_19_gated_we;
+    reg_we_check[182] = mio_outsel_20_gated_we;
+    reg_we_check[183] = mio_outsel_21_gated_we;
+    reg_we_check[184] = mio_outsel_22_gated_we;
+    reg_we_check[185] = mio_outsel_23_gated_we;
+    reg_we_check[186] = mio_outsel_24_gated_we;
+    reg_we_check[187] = mio_outsel_25_gated_we;
+    reg_we_check[188] = mio_outsel_26_gated_we;
+    reg_we_check[189] = mio_outsel_27_gated_we;
+    reg_we_check[190] = mio_outsel_28_gated_we;
+    reg_we_check[191] = mio_outsel_29_gated_we;
+    reg_we_check[192] = mio_outsel_30_gated_we;
+    reg_we_check[193] = mio_outsel_31_gated_we;
+    reg_we_check[194] = mio_outsel_32_gated_we;
+    reg_we_check[195] = mio_outsel_33_gated_we;
+    reg_we_check[196] = mio_outsel_34_gated_we;
+    reg_we_check[197] = mio_outsel_35_gated_we;
+    reg_we_check[198] = mio_outsel_36_gated_we;
+    reg_we_check[199] = mio_outsel_37_gated_we;
+    reg_we_check[200] = mio_outsel_38_gated_we;
+    reg_we_check[201] = mio_outsel_39_gated_we;
+    reg_we_check[202] = mio_outsel_40_gated_we;
+    reg_we_check[203] = mio_outsel_41_gated_we;
+    reg_we_check[204] = mio_outsel_42_gated_we;
+    reg_we_check[205] = mio_outsel_43_gated_we;
+    reg_we_check[206] = mio_outsel_44_gated_we;
+    reg_we_check[207] = mio_outsel_45_gated_we;
+    reg_we_check[208] = mio_outsel_46_gated_we;
+    reg_we_check[209] = mio_pad_attr_regwen_0_we;
+    reg_we_check[210] = mio_pad_attr_regwen_1_we;
+    reg_we_check[211] = mio_pad_attr_regwen_2_we;
+    reg_we_check[212] = mio_pad_attr_regwen_3_we;
+    reg_we_check[213] = mio_pad_attr_regwen_4_we;
+    reg_we_check[214] = mio_pad_attr_regwen_5_we;
+    reg_we_check[215] = mio_pad_attr_regwen_6_we;
+    reg_we_check[216] = mio_pad_attr_regwen_7_we;
+    reg_we_check[217] = mio_pad_attr_regwen_8_we;
+    reg_we_check[218] = mio_pad_attr_regwen_9_we;
+    reg_we_check[219] = mio_pad_attr_regwen_10_we;
+    reg_we_check[220] = mio_pad_attr_regwen_11_we;
+    reg_we_check[221] = mio_pad_attr_regwen_12_we;
+    reg_we_check[222] = mio_pad_attr_regwen_13_we;
+    reg_we_check[223] = mio_pad_attr_regwen_14_we;
+    reg_we_check[224] = mio_pad_attr_regwen_15_we;
+    reg_we_check[225] = mio_pad_attr_regwen_16_we;
+    reg_we_check[226] = mio_pad_attr_regwen_17_we;
+    reg_we_check[227] = mio_pad_attr_regwen_18_we;
+    reg_we_check[228] = mio_pad_attr_regwen_19_we;
+    reg_we_check[229] = mio_pad_attr_regwen_20_we;
+    reg_we_check[230] = mio_pad_attr_regwen_21_we;
+    reg_we_check[231] = mio_pad_attr_regwen_22_we;
+    reg_we_check[232] = mio_pad_attr_regwen_23_we;
+    reg_we_check[233] = mio_pad_attr_regwen_24_we;
+    reg_we_check[234] = mio_pad_attr_regwen_25_we;
+    reg_we_check[235] = mio_pad_attr_regwen_26_we;
+    reg_we_check[236] = mio_pad_attr_regwen_27_we;
+    reg_we_check[237] = mio_pad_attr_regwen_28_we;
+    reg_we_check[238] = mio_pad_attr_regwen_29_we;
+    reg_we_check[239] = mio_pad_attr_regwen_30_we;
+    reg_we_check[240] = mio_pad_attr_regwen_31_we;
+    reg_we_check[241] = mio_pad_attr_regwen_32_we;
+    reg_we_check[242] = mio_pad_attr_regwen_33_we;
+    reg_we_check[243] = mio_pad_attr_regwen_34_we;
+    reg_we_check[244] = mio_pad_attr_regwen_35_we;
+    reg_we_check[245] = mio_pad_attr_regwen_36_we;
+    reg_we_check[246] = mio_pad_attr_regwen_37_we;
+    reg_we_check[247] = mio_pad_attr_regwen_38_we;
+    reg_we_check[248] = mio_pad_attr_regwen_39_we;
+    reg_we_check[249] = mio_pad_attr_regwen_40_we;
+    reg_we_check[250] = mio_pad_attr_regwen_41_we;
+    reg_we_check[251] = mio_pad_attr_regwen_42_we;
+    reg_we_check[252] = mio_pad_attr_regwen_43_we;
+    reg_we_check[253] = mio_pad_attr_regwen_44_we;
+    reg_we_check[254] = mio_pad_attr_regwen_45_we;
+    reg_we_check[255] = mio_pad_attr_regwen_46_we;
+    reg_we_check[256] = mio_pad_attr_0_gated_we;
+    reg_we_check[257] = mio_pad_attr_1_gated_we;
+    reg_we_check[258] = mio_pad_attr_2_gated_we;
+    reg_we_check[259] = mio_pad_attr_3_gated_we;
+    reg_we_check[260] = mio_pad_attr_4_gated_we;
+    reg_we_check[261] = mio_pad_attr_5_gated_we;
+    reg_we_check[262] = mio_pad_attr_6_gated_we;
+    reg_we_check[263] = mio_pad_attr_7_gated_we;
+    reg_we_check[264] = mio_pad_attr_8_gated_we;
+    reg_we_check[265] = mio_pad_attr_9_gated_we;
+    reg_we_check[266] = mio_pad_attr_10_gated_we;
+    reg_we_check[267] = mio_pad_attr_11_gated_we;
+    reg_we_check[268] = mio_pad_attr_12_gated_we;
+    reg_we_check[269] = mio_pad_attr_13_gated_we;
+    reg_we_check[270] = mio_pad_attr_14_gated_we;
+    reg_we_check[271] = mio_pad_attr_15_gated_we;
+    reg_we_check[272] = mio_pad_attr_16_gated_we;
+    reg_we_check[273] = mio_pad_attr_17_gated_we;
+    reg_we_check[274] = mio_pad_attr_18_gated_we;
+    reg_we_check[275] = mio_pad_attr_19_gated_we;
+    reg_we_check[276] = mio_pad_attr_20_gated_we;
+    reg_we_check[277] = mio_pad_attr_21_gated_we;
+    reg_we_check[278] = mio_pad_attr_22_gated_we;
+    reg_we_check[279] = mio_pad_attr_23_gated_we;
+    reg_we_check[280] = mio_pad_attr_24_gated_we;
+    reg_we_check[281] = mio_pad_attr_25_gated_we;
+    reg_we_check[282] = mio_pad_attr_26_gated_we;
+    reg_we_check[283] = mio_pad_attr_27_gated_we;
+    reg_we_check[284] = mio_pad_attr_28_gated_we;
+    reg_we_check[285] = mio_pad_attr_29_gated_we;
+    reg_we_check[286] = mio_pad_attr_30_gated_we;
+    reg_we_check[287] = mio_pad_attr_31_gated_we;
+    reg_we_check[288] = mio_pad_attr_32_gated_we;
+    reg_we_check[289] = mio_pad_attr_33_gated_we;
+    reg_we_check[290] = mio_pad_attr_34_gated_we;
+    reg_we_check[291] = mio_pad_attr_35_gated_we;
+    reg_we_check[292] = mio_pad_attr_36_gated_we;
+    reg_we_check[293] = mio_pad_attr_37_gated_we;
+    reg_we_check[294] = mio_pad_attr_38_gated_we;
+    reg_we_check[295] = mio_pad_attr_39_gated_we;
+    reg_we_check[296] = mio_pad_attr_40_gated_we;
+    reg_we_check[297] = mio_pad_attr_41_gated_we;
+    reg_we_check[298] = mio_pad_attr_42_gated_we;
+    reg_we_check[299] = mio_pad_attr_43_gated_we;
+    reg_we_check[300] = mio_pad_attr_44_gated_we;
+    reg_we_check[301] = mio_pad_attr_45_gated_we;
+    reg_we_check[302] = mio_pad_attr_46_gated_we;
+    reg_we_check[303] = dio_pad_attr_regwen_0_we;
+    reg_we_check[304] = dio_pad_attr_regwen_1_we;
+    reg_we_check[305] = dio_pad_attr_regwen_2_we;
+    reg_we_check[306] = dio_pad_attr_regwen_3_we;
+    reg_we_check[307] = dio_pad_attr_regwen_4_we;
+    reg_we_check[308] = dio_pad_attr_regwen_5_we;
+    reg_we_check[309] = dio_pad_attr_regwen_6_we;
+    reg_we_check[310] = dio_pad_attr_regwen_7_we;
+    reg_we_check[311] = dio_pad_attr_regwen_8_we;
+    reg_we_check[312] = dio_pad_attr_regwen_9_we;
+    reg_we_check[313] = dio_pad_attr_regwen_10_we;
+    reg_we_check[314] = dio_pad_attr_regwen_11_we;
+    reg_we_check[315] = dio_pad_attr_regwen_12_we;
+    reg_we_check[316] = dio_pad_attr_regwen_13_we;
+    reg_we_check[317] = dio_pad_attr_regwen_14_we;
+    reg_we_check[318] = dio_pad_attr_regwen_15_we;
+    reg_we_check[319] = dio_pad_attr_0_gated_we;
+    reg_we_check[320] = dio_pad_attr_1_gated_we;
+    reg_we_check[321] = dio_pad_attr_2_gated_we;
+    reg_we_check[322] = dio_pad_attr_3_gated_we;
+    reg_we_check[323] = dio_pad_attr_4_gated_we;
+    reg_we_check[324] = dio_pad_attr_5_gated_we;
+    reg_we_check[325] = dio_pad_attr_6_gated_we;
+    reg_we_check[326] = dio_pad_attr_7_gated_we;
+    reg_we_check[327] = dio_pad_attr_8_gated_we;
+    reg_we_check[328] = dio_pad_attr_9_gated_we;
+    reg_we_check[329] = dio_pad_attr_10_gated_we;
+    reg_we_check[330] = dio_pad_attr_11_gated_we;
+    reg_we_check[331] = dio_pad_attr_12_gated_we;
+    reg_we_check[332] = dio_pad_attr_13_gated_we;
+    reg_we_check[333] = dio_pad_attr_14_gated_we;
+    reg_we_check[334] = dio_pad_attr_15_gated_we;
+    reg_we_check[335] = mio_pad_sleep_status_0_we;
+    reg_we_check[336] = mio_pad_sleep_status_1_we;
+    reg_we_check[337] = mio_pad_sleep_regwen_0_we;
+    reg_we_check[338] = mio_pad_sleep_regwen_1_we;
+    reg_we_check[339] = mio_pad_sleep_regwen_2_we;
+    reg_we_check[340] = mio_pad_sleep_regwen_3_we;
+    reg_we_check[341] = mio_pad_sleep_regwen_4_we;
+    reg_we_check[342] = mio_pad_sleep_regwen_5_we;
+    reg_we_check[343] = mio_pad_sleep_regwen_6_we;
+    reg_we_check[344] = mio_pad_sleep_regwen_7_we;
+    reg_we_check[345] = mio_pad_sleep_regwen_8_we;
+    reg_we_check[346] = mio_pad_sleep_regwen_9_we;
+    reg_we_check[347] = mio_pad_sleep_regwen_10_we;
+    reg_we_check[348] = mio_pad_sleep_regwen_11_we;
+    reg_we_check[349] = mio_pad_sleep_regwen_12_we;
+    reg_we_check[350] = mio_pad_sleep_regwen_13_we;
+    reg_we_check[351] = mio_pad_sleep_regwen_14_we;
+    reg_we_check[352] = mio_pad_sleep_regwen_15_we;
+    reg_we_check[353] = mio_pad_sleep_regwen_16_we;
+    reg_we_check[354] = mio_pad_sleep_regwen_17_we;
+    reg_we_check[355] = mio_pad_sleep_regwen_18_we;
+    reg_we_check[356] = mio_pad_sleep_regwen_19_we;
+    reg_we_check[357] = mio_pad_sleep_regwen_20_we;
+    reg_we_check[358] = mio_pad_sleep_regwen_21_we;
+    reg_we_check[359] = mio_pad_sleep_regwen_22_we;
+    reg_we_check[360] = mio_pad_sleep_regwen_23_we;
+    reg_we_check[361] = mio_pad_sleep_regwen_24_we;
+    reg_we_check[362] = mio_pad_sleep_regwen_25_we;
+    reg_we_check[363] = mio_pad_sleep_regwen_26_we;
+    reg_we_check[364] = mio_pad_sleep_regwen_27_we;
+    reg_we_check[365] = mio_pad_sleep_regwen_28_we;
+    reg_we_check[366] = mio_pad_sleep_regwen_29_we;
+    reg_we_check[367] = mio_pad_sleep_regwen_30_we;
+    reg_we_check[368] = mio_pad_sleep_regwen_31_we;
+    reg_we_check[369] = mio_pad_sleep_regwen_32_we;
+    reg_we_check[370] = mio_pad_sleep_regwen_33_we;
+    reg_we_check[371] = mio_pad_sleep_regwen_34_we;
+    reg_we_check[372] = mio_pad_sleep_regwen_35_we;
+    reg_we_check[373] = mio_pad_sleep_regwen_36_we;
+    reg_we_check[374] = mio_pad_sleep_regwen_37_we;
+    reg_we_check[375] = mio_pad_sleep_regwen_38_we;
+    reg_we_check[376] = mio_pad_sleep_regwen_39_we;
+    reg_we_check[377] = mio_pad_sleep_regwen_40_we;
+    reg_we_check[378] = mio_pad_sleep_regwen_41_we;
+    reg_we_check[379] = mio_pad_sleep_regwen_42_we;
+    reg_we_check[380] = mio_pad_sleep_regwen_43_we;
+    reg_we_check[381] = mio_pad_sleep_regwen_44_we;
+    reg_we_check[382] = mio_pad_sleep_regwen_45_we;
+    reg_we_check[383] = mio_pad_sleep_regwen_46_we;
+    reg_we_check[384] = mio_pad_sleep_en_0_gated_we;
+    reg_we_check[385] = mio_pad_sleep_en_1_gated_we;
+    reg_we_check[386] = mio_pad_sleep_en_2_gated_we;
+    reg_we_check[387] = mio_pad_sleep_en_3_gated_we;
+    reg_we_check[388] = mio_pad_sleep_en_4_gated_we;
+    reg_we_check[389] = mio_pad_sleep_en_5_gated_we;
+    reg_we_check[390] = mio_pad_sleep_en_6_gated_we;
+    reg_we_check[391] = mio_pad_sleep_en_7_gated_we;
+    reg_we_check[392] = mio_pad_sleep_en_8_gated_we;
+    reg_we_check[393] = mio_pad_sleep_en_9_gated_we;
+    reg_we_check[394] = mio_pad_sleep_en_10_gated_we;
+    reg_we_check[395] = mio_pad_sleep_en_11_gated_we;
+    reg_we_check[396] = mio_pad_sleep_en_12_gated_we;
+    reg_we_check[397] = mio_pad_sleep_en_13_gated_we;
+    reg_we_check[398] = mio_pad_sleep_en_14_gated_we;
+    reg_we_check[399] = mio_pad_sleep_en_15_gated_we;
+    reg_we_check[400] = mio_pad_sleep_en_16_gated_we;
+    reg_we_check[401] = mio_pad_sleep_en_17_gated_we;
+    reg_we_check[402] = mio_pad_sleep_en_18_gated_we;
+    reg_we_check[403] = mio_pad_sleep_en_19_gated_we;
+    reg_we_check[404] = mio_pad_sleep_en_20_gated_we;
+    reg_we_check[405] = mio_pad_sleep_en_21_gated_we;
+    reg_we_check[406] = mio_pad_sleep_en_22_gated_we;
+    reg_we_check[407] = mio_pad_sleep_en_23_gated_we;
+    reg_we_check[408] = mio_pad_sleep_en_24_gated_we;
+    reg_we_check[409] = mio_pad_sleep_en_25_gated_we;
+    reg_we_check[410] = mio_pad_sleep_en_26_gated_we;
+    reg_we_check[411] = mio_pad_sleep_en_27_gated_we;
+    reg_we_check[412] = mio_pad_sleep_en_28_gated_we;
+    reg_we_check[413] = mio_pad_sleep_en_29_gated_we;
+    reg_we_check[414] = mio_pad_sleep_en_30_gated_we;
+    reg_we_check[415] = mio_pad_sleep_en_31_gated_we;
+    reg_we_check[416] = mio_pad_sleep_en_32_gated_we;
+    reg_we_check[417] = mio_pad_sleep_en_33_gated_we;
+    reg_we_check[418] = mio_pad_sleep_en_34_gated_we;
+    reg_we_check[419] = mio_pad_sleep_en_35_gated_we;
+    reg_we_check[420] = mio_pad_sleep_en_36_gated_we;
+    reg_we_check[421] = mio_pad_sleep_en_37_gated_we;
+    reg_we_check[422] = mio_pad_sleep_en_38_gated_we;
+    reg_we_check[423] = mio_pad_sleep_en_39_gated_we;
+    reg_we_check[424] = mio_pad_sleep_en_40_gated_we;
+    reg_we_check[425] = mio_pad_sleep_en_41_gated_we;
+    reg_we_check[426] = mio_pad_sleep_en_42_gated_we;
+    reg_we_check[427] = mio_pad_sleep_en_43_gated_we;
+    reg_we_check[428] = mio_pad_sleep_en_44_gated_we;
+    reg_we_check[429] = mio_pad_sleep_en_45_gated_we;
+    reg_we_check[430] = mio_pad_sleep_en_46_gated_we;
+    reg_we_check[431] = mio_pad_sleep_mode_0_gated_we;
+    reg_we_check[432] = mio_pad_sleep_mode_1_gated_we;
+    reg_we_check[433] = mio_pad_sleep_mode_2_gated_we;
+    reg_we_check[434] = mio_pad_sleep_mode_3_gated_we;
+    reg_we_check[435] = mio_pad_sleep_mode_4_gated_we;
+    reg_we_check[436] = mio_pad_sleep_mode_5_gated_we;
+    reg_we_check[437] = mio_pad_sleep_mode_6_gated_we;
+    reg_we_check[438] = mio_pad_sleep_mode_7_gated_we;
+    reg_we_check[439] = mio_pad_sleep_mode_8_gated_we;
+    reg_we_check[440] = mio_pad_sleep_mode_9_gated_we;
+    reg_we_check[441] = mio_pad_sleep_mode_10_gated_we;
+    reg_we_check[442] = mio_pad_sleep_mode_11_gated_we;
+    reg_we_check[443] = mio_pad_sleep_mode_12_gated_we;
+    reg_we_check[444] = mio_pad_sleep_mode_13_gated_we;
+    reg_we_check[445] = mio_pad_sleep_mode_14_gated_we;
+    reg_we_check[446] = mio_pad_sleep_mode_15_gated_we;
+    reg_we_check[447] = mio_pad_sleep_mode_16_gated_we;
+    reg_we_check[448] = mio_pad_sleep_mode_17_gated_we;
+    reg_we_check[449] = mio_pad_sleep_mode_18_gated_we;
+    reg_we_check[450] = mio_pad_sleep_mode_19_gated_we;
+    reg_we_check[451] = mio_pad_sleep_mode_20_gated_we;
+    reg_we_check[452] = mio_pad_sleep_mode_21_gated_we;
+    reg_we_check[453] = mio_pad_sleep_mode_22_gated_we;
+    reg_we_check[454] = mio_pad_sleep_mode_23_gated_we;
+    reg_we_check[455] = mio_pad_sleep_mode_24_gated_we;
+    reg_we_check[456] = mio_pad_sleep_mode_25_gated_we;
+    reg_we_check[457] = mio_pad_sleep_mode_26_gated_we;
+    reg_we_check[458] = mio_pad_sleep_mode_27_gated_we;
+    reg_we_check[459] = mio_pad_sleep_mode_28_gated_we;
+    reg_we_check[460] = mio_pad_sleep_mode_29_gated_we;
+    reg_we_check[461] = mio_pad_sleep_mode_30_gated_we;
+    reg_we_check[462] = mio_pad_sleep_mode_31_gated_we;
+    reg_we_check[463] = mio_pad_sleep_mode_32_gated_we;
+    reg_we_check[464] = mio_pad_sleep_mode_33_gated_we;
+    reg_we_check[465] = mio_pad_sleep_mode_34_gated_we;
+    reg_we_check[466] = mio_pad_sleep_mode_35_gated_we;
+    reg_we_check[467] = mio_pad_sleep_mode_36_gated_we;
+    reg_we_check[468] = mio_pad_sleep_mode_37_gated_we;
+    reg_we_check[469] = mio_pad_sleep_mode_38_gated_we;
+    reg_we_check[470] = mio_pad_sleep_mode_39_gated_we;
+    reg_we_check[471] = mio_pad_sleep_mode_40_gated_we;
+    reg_we_check[472] = mio_pad_sleep_mode_41_gated_we;
+    reg_we_check[473] = mio_pad_sleep_mode_42_gated_we;
+    reg_we_check[474] = mio_pad_sleep_mode_43_gated_we;
+    reg_we_check[475] = mio_pad_sleep_mode_44_gated_we;
+    reg_we_check[476] = mio_pad_sleep_mode_45_gated_we;
+    reg_we_check[477] = mio_pad_sleep_mode_46_gated_we;
+    reg_we_check[478] = dio_pad_sleep_status_we;
+    reg_we_check[479] = dio_pad_sleep_regwen_0_we;
+    reg_we_check[480] = dio_pad_sleep_regwen_1_we;
+    reg_we_check[481] = dio_pad_sleep_regwen_2_we;
+    reg_we_check[482] = dio_pad_sleep_regwen_3_we;
+    reg_we_check[483] = dio_pad_sleep_regwen_4_we;
+    reg_we_check[484] = dio_pad_sleep_regwen_5_we;
+    reg_we_check[485] = dio_pad_sleep_regwen_6_we;
+    reg_we_check[486] = dio_pad_sleep_regwen_7_we;
+    reg_we_check[487] = dio_pad_sleep_regwen_8_we;
+    reg_we_check[488] = dio_pad_sleep_regwen_9_we;
+    reg_we_check[489] = dio_pad_sleep_regwen_10_we;
+    reg_we_check[490] = dio_pad_sleep_regwen_11_we;
+    reg_we_check[491] = dio_pad_sleep_regwen_12_we;
+    reg_we_check[492] = dio_pad_sleep_regwen_13_we;
+    reg_we_check[493] = dio_pad_sleep_regwen_14_we;
+    reg_we_check[494] = dio_pad_sleep_regwen_15_we;
+    reg_we_check[495] = dio_pad_sleep_en_0_gated_we;
+    reg_we_check[496] = dio_pad_sleep_en_1_gated_we;
+    reg_we_check[497] = dio_pad_sleep_en_2_gated_we;
+    reg_we_check[498] = dio_pad_sleep_en_3_gated_we;
+    reg_we_check[499] = dio_pad_sleep_en_4_gated_we;
+    reg_we_check[500] = dio_pad_sleep_en_5_gated_we;
+    reg_we_check[501] = dio_pad_sleep_en_6_gated_we;
+    reg_we_check[502] = dio_pad_sleep_en_7_gated_we;
+    reg_we_check[503] = dio_pad_sleep_en_8_gated_we;
+    reg_we_check[504] = dio_pad_sleep_en_9_gated_we;
+    reg_we_check[505] = dio_pad_sleep_en_10_gated_we;
+    reg_we_check[506] = dio_pad_sleep_en_11_gated_we;
+    reg_we_check[507] = dio_pad_sleep_en_12_gated_we;
+    reg_we_check[508] = dio_pad_sleep_en_13_gated_we;
+    reg_we_check[509] = dio_pad_sleep_en_14_gated_we;
+    reg_we_check[510] = dio_pad_sleep_en_15_gated_we;
+    reg_we_check[511] = dio_pad_sleep_mode_0_gated_we;
+    reg_we_check[512] = dio_pad_sleep_mode_1_gated_we;
+    reg_we_check[513] = dio_pad_sleep_mode_2_gated_we;
+    reg_we_check[514] = dio_pad_sleep_mode_3_gated_we;
+    reg_we_check[515] = dio_pad_sleep_mode_4_gated_we;
+    reg_we_check[516] = dio_pad_sleep_mode_5_gated_we;
+    reg_we_check[517] = dio_pad_sleep_mode_6_gated_we;
+    reg_we_check[518] = dio_pad_sleep_mode_7_gated_we;
+    reg_we_check[519] = dio_pad_sleep_mode_8_gated_we;
+    reg_we_check[520] = dio_pad_sleep_mode_9_gated_we;
+    reg_we_check[521] = dio_pad_sleep_mode_10_gated_we;
+    reg_we_check[522] = dio_pad_sleep_mode_11_gated_we;
+    reg_we_check[523] = dio_pad_sleep_mode_12_gated_we;
+    reg_we_check[524] = dio_pad_sleep_mode_13_gated_we;
+    reg_we_check[525] = dio_pad_sleep_mode_14_gated_we;
+    reg_we_check[526] = dio_pad_sleep_mode_15_gated_we;
+    reg_we_check[527] = wkup_detector_regwen_0_we;
+    reg_we_check[528] = wkup_detector_regwen_1_we;
+    reg_we_check[529] = wkup_detector_regwen_2_we;
+    reg_we_check[530] = wkup_detector_regwen_3_we;
+    reg_we_check[531] = wkup_detector_regwen_4_we;
+    reg_we_check[532] = wkup_detector_regwen_5_we;
+    reg_we_check[533] = wkup_detector_regwen_6_we;
+    reg_we_check[534] = wkup_detector_regwen_7_we;
+    reg_we_check[535] = wkup_detector_en_0_we;
+    reg_we_check[536] = wkup_detector_en_1_we;
+    reg_we_check[537] = wkup_detector_en_2_we;
+    reg_we_check[538] = wkup_detector_en_3_we;
+    reg_we_check[539] = wkup_detector_en_4_we;
+    reg_we_check[540] = wkup_detector_en_5_we;
+    reg_we_check[541] = wkup_detector_en_6_we;
+    reg_we_check[542] = wkup_detector_en_7_we;
+    reg_we_check[543] = wkup_detector_0_we;
+    reg_we_check[544] = wkup_detector_1_we;
+    reg_we_check[545] = wkup_detector_2_we;
+    reg_we_check[546] = wkup_detector_3_we;
+    reg_we_check[547] = wkup_detector_4_we;
+    reg_we_check[548] = wkup_detector_5_we;
+    reg_we_check[549] = wkup_detector_6_we;
+    reg_we_check[550] = wkup_detector_7_we;
+    reg_we_check[551] = wkup_detector_cnt_th_0_we;
+    reg_we_check[552] = wkup_detector_cnt_th_1_we;
+    reg_we_check[553] = wkup_detector_cnt_th_2_we;
+    reg_we_check[554] = wkup_detector_cnt_th_3_we;
+    reg_we_check[555] = wkup_detector_cnt_th_4_we;
+    reg_we_check[556] = wkup_detector_cnt_th_5_we;
+    reg_we_check[557] = wkup_detector_cnt_th_6_we;
+    reg_we_check[558] = wkup_detector_cnt_th_7_we;
+    reg_we_check[559] = wkup_detector_padsel_0_gated_we;
+    reg_we_check[560] = wkup_detector_padsel_1_gated_we;
+    reg_we_check[561] = wkup_detector_padsel_2_gated_we;
+    reg_we_check[562] = wkup_detector_padsel_3_gated_we;
+    reg_we_check[563] = wkup_detector_padsel_4_gated_we;
+    reg_we_check[564] = wkup_detector_padsel_5_gated_we;
+    reg_we_check[565] = wkup_detector_padsel_6_gated_we;
+    reg_we_check[566] = wkup_detector_padsel_7_gated_we;
+    reg_we_check[567] = wkup_cause_we;
+  end
 
   // Read data return
   always_comb begin

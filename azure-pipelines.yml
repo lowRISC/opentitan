@@ -13,7 +13,7 @@ variables:
   VERILATOR_VERSION: 4.210
   OPENOCD_VERSION: 0.11.0
   TOOLCHAIN_PATH: /opt/buildcache/riscv
-  VERIBLE_VERSION: v0.0-1213-g9e5c085
+  VERIBLE_VERSION: v0.0-2135-gb534c1fe
   RUST_VERSION: 1.58.0
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   TOOLCHAIN_VERSION: 20220210-1
@@ -76,18 +76,15 @@ jobs:
   - bash: ci/scripts/clang-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Use clang-format to check C/C++ coding style
+  - bash: ci/scripts/rust-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Use rustfmt to check Rust coding style
   - bash: ci/scripts/include-guard.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check formatting on header guards
-  - bash: ci/scripts/verible-lint.sh rtl
+  - bash: ci/scripts/whitespace.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint RTL Verilog source files with Verible
-  - bash: ci/scripts/verible-lint.sh dv
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint DV Verilog source files with Verible
-  - bash: ci/scripts/verible-lint.sh fpv
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint FPV Verilog source files with Verible
+    displayName: Check trailing whitespace
   - bash: ci/scripts/build-docs.sh
     displayName: Render documentation
   - bash: ci/scripts/build-site.sh
@@ -103,15 +100,25 @@ jobs:
     vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
+  - bash: ci/bazelisk.sh run buildifier_check
+    displayName: Use buildifier to check Bazel coding style
   - bash: ci/scripts/check-vendoring.sh
     displayName: Check vendored directories are up-to-date
+  - bash: ci/scripts/verible-lint.sh rtl
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Style-Lint RTL Verilog source files with Verible
+  - bash: ci/scripts/verible-lint.sh dv
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Style-Lint DV Verilog source files with Verible
+  - bash: ci/scripts/verible-lint.sh fpv
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Style-Lint FPV Verilog source files with Verible
 
 - job: sw_build
   displayName: Build Software for Earl Grey toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool:
-    vmImage: ubuntu-18.04
+  pool: ci-public
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
@@ -130,12 +137,6 @@ jobs:
       . util/build_consts.sh
       ninja -C "$OBJ_DIR" test
     displayName: Run unit tests
-  - bash: |
-      . util/build_consts.sh
-      # Remove all Nexys Video-related build artifacts, which will be produced
-      # by the sw_build_nexysvideo job below (see comment there).
-      find "$BIN_DIR/sw/device" -name '*fpga_nexysvideo*' -type f -delete
-    displayName: Delete all Nexys Video build artifacts
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
@@ -167,47 +168,6 @@ jobs:
     parameters:
       includePatterns:
         - "/sw/***"
-
-# Software targeting the Nexys Video board is produced by patching the source
-# tree before building. This produces a full sw build tree, however only the
-# artifacts with "nexysvideo" in the name are actually the ones we're looking
-# for. Everything else will be discarded.
-# TODO: This is a rather ugly hack, which will go away once we properly support
-# building more than one top-level design with different parametrizations.
-# Work towards this goal is tracked in issue #4669.
-- job: sw_build_nexysvideo
-  displayName: Build Software for Earl Grey toplevel design targeting the Nexys Video board
-  dependsOn: lint
-  # Make the following condition always false for now, see #7814.
-  condition: and(succeeded(), False, eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool:
-    vmImage: ubuntu-18.04
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      set -x
-      sudo util/get-toolchain.py \
-        --install-dir="$TOOLCHAIN_PATH" \
-        --release-version="$TOOLCHAIN_VERSION" \
-        --update
-    displayName: Install toolchain
-  - bash: |
-      . util/build_consts.sh
-      ./hw/top_earlgrey/util/top_earlgrey_reduce.py
-      ./meson_init.sh -A
-      ninja -C "$OBJ_DIR" all
-
-      # Delete all build artifacts which are *not* for the Nexys Video board.
-      find "$BIN_DIR/sw/device" -not -name '*fpga_nexysvideo*' -type f -delete
-    displayName: Build embedded targets
-  - bash: |
-      . util/build_consts.sh
-      ninja -C "$OBJ_DIR" test
-    displayName: Run unit tests
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/sw/device/**/*nexysvideo*"
 
 # Software targeting the English Breakfast top level is produced by patching
 # the source tree before building. This builds a selected subset of software
@@ -248,55 +208,6 @@ jobs:
       includePatterns:
         - "/sw/device/***"
 
-# We continue building with GCC, despite defaulting to Clang. This is a copy of
-# `sw_build` with `meson_init.sh` configured with the GCC toolchain, instead of
-# the default toolchain.
-- job: sw_build_gcc
-  displayName: Build Software for Earl Grey toplevel design (with GCC)
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool:
-    vmImage: ubuntu-18.04
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      set -x
-      sudo util/get-toolchain.py \
-        --install-dir="$TOOLCHAIN_PATH" \
-        --release-version="$TOOLCHAIN_VERSION" \
-        --update
-    displayName: Install toolchain
-  - bash: |
-      . util/build_consts.sh
-      ./meson_init.sh -A \
-        -t "$TOOLCHAIN_PATH/meson-riscv32-unknown-elf-gcc.txt"
-      ninja -C "$OBJ_DIR" all
-    displayName: Build embedded targets
-  - bash: |
-      . util/build_consts.sh
-      ninja -C "$OBJ_DIR" test
-    displayName: Run unit tests
-
-- job: chip_earlgrey_verilator
-  displayName: Build Verilator simulation of the Earl Grey toplevel design
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool: ci-public
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      python3 --version
-      fusesoc --version
-      verilator --version
-      verible-verilog-lint --version
-    displayName: Display environment
-  - bash: ci/scripts/build-chip-verilator.sh earlgrey
-    displayName: Build simulation with Verilator
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
-
 - job: chip_englishbreakfast_verilator
   displayName: Build Verilator simulation of the English Breakfast toplevel design
   dependsOn: lint
@@ -319,31 +230,36 @@ jobs:
         - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
 
 - job: execute_verilated_tests
-  displayName: Execute tests on the Verilated system (excl. slow tests)
+  displayName: Build and run fast tests on sim_verilator
   pool: ci-public
-  timeoutInMinutes: 120
-  dependsOn:
-    - chip_earlgrey_verilator
-    - sw_build
+  timeoutInMinutes: 200
+  dependsOn: lint
   steps:
   - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_verilator
-        - sw_build
+  - task: DownloadSecureFile@1
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    name: bazelCacheGcpKey
+    inputs:
+      secureFile: "bazel_cache_gcp_key.json"
+  - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    displayName: Set the remote cache GCP key path
   - bash: |
-      # Install an additional pytest dependency for result upload.
-      pip3 install pytest-azurepipelines
-
+      export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
+      ci/scripts/run-verilator-tests.sh
+    displayName: Build and execute tests
+    continueOnError: true # Temporary workaround for #12603
+  # TODO: build and cache the verilator model to avoid building twice (#12574)
+  - bash: |
       . util/build_consts.sh
-      pytest --version
-      pytest test/systemtest/earlgrey/test_sim_verilator.py \
-        -m "not slow" \
-        --log-cli-level=DEBUG \
-        --test-run-title="Run system tests with Verilator simulation (excl. slow tests)" \
-        --napoleon-docstrings
-    displayName: Execute tests
+      mkdir -p "$BIN_DIR/hw/top_earlgrey/"
+      cp $(find bazel-out/* -name Vchip_sim_tb) \
+        "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
+    displayName: Copy //hw:verilator to $BIN_DIR
+  - template: ci/upload-artifacts-template.yml
+    parameters:
+      includePatterns:
+        - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
 
 - job: execute_verilated_tests_englishbreakfast
   displayName: Execute tests on the Verilated English Breakfast toplevel design
@@ -370,18 +286,6 @@ jobs:
         --test-run-title="Run English Breakfast system tests with Verilator simulation" \
         --napoleon-docstrings
     displayName: Execute tests
-
-- template: ci/run-riscv-compliance.yml
-  parameters:
-    rvc_test_suites:
-      - rv32i
-
-- template: ci/run-riscv-compliance.yml
-  parameters:
-    rvc_test_suites:
-      - rv32im
-      - rv32imc
-      - rv32Zicsr
 
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test
@@ -422,7 +326,7 @@ jobs:
     - cw310_sw_build
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   pool: ci-public
-  timeoutInMinutes: 120 # 2 hours
+  timeoutInMinutes: 180
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
@@ -431,28 +335,8 @@ jobs:
         - cw310_sw_build
   - bash: |
       set -e
-      . util/build_consts.sh
-
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-
-      mkdir -p "$OBJ_DIR/hw"
-      mkdir -p "$BIN_DIR/hw/top_earlgrey"
-
-      BOOTROM_VMEM="$BIN_DIR/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.scr.39.vmem"
-      test -f "$BOOTROM_VMEM"
-      OTP_VMEM="$BIN_DIR/sw/device/otp_img/otp_img_fpga_cw310.vmem"
-      test -f "$OTP_VMEM"
-
-      fusesoc --verbose --cores-root=. \
-        run --flag=fileset_top --target=synth --setup --build \
-        --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:chip_earlgrey_cw310 \
-        --BootRomInitFile="$BOOTROM_VMEM" \
-        --OtpCtrlMemInitFile="$OTP_VMEM"
-
-      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit" \
-        "$BIN_DIR/hw/top_earlgrey"
-      cp "$OBJ_DIR/hw/synth-vivado/rom.mmi" "$BIN_DIR/hw/top_earlgrey"
+      ci/scripts/build-bitstream-vivado.sh top_earlgrey cw310
     displayName: Build bitstream with Vivado
   - bash: |
       . util/build_consts.sh
@@ -514,66 +398,6 @@ jobs:
     displayName: Upload all Vivado artifacts for CW310
     condition: failed()
 
-- job: chip_earlgrey_nexysvideo
-  displayName: Build NexysVideo variant of the Earl Grey toplevel design using Vivado
-  dependsOn:
-    - lint
-    # The bootrom is built into the FPGA image at synthesis time.
-    - sw_build_nexysvideo
-    # Make the following condition always false for now, see #7814.
-  condition: and(succeeded(), False, eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
-  pool: ci-public
-  timeoutInMinutes: 120 # 2 hours
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - sw_build_nexysvideo
-  - bash: |
-      set -e
-      . util/build_consts.sh
-
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-
-      mkdir -p "$OBJ_DIR/hw"
-      mkdir -p "$BIN_DIR/hw/top_earlgrey"
-
-      ./hw/top_earlgrey/util/top_earlgrey_reduce.py
-
-      BOOTROM_VMEM="$BIN_DIR/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.scr.39.vmem"
-      test -f "$BOOTROM_VMEM"
-      OTP_VMEM="$BIN_DIR/sw/device/otp_img/otp_img_fpga_nexysvideo.vmem"
-      test -f "$OTP_VMEM"
-
-      fusesoc --verbose --cores-root=. \
-        run --flag=fileset_top --target=synth --setup --build \
-        --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:chip_earlgrey_nexysvideo \
-        --BootRomInitFile="$BOOTROM_VMEM" \
-        --OtpCtrlMemInitFile="$OTP_VMEM"
-
-      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit" \
-        "$BIN_DIR/hw/top_earlgrey"
-    displayName: Build bitstream with Vivado
-  - bash: |
-      . util/build_consts.sh
-      echo Synthesis log
-      cat $OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.runs/synth_1/runme.log || true
-
-      echo Implementation log
-      cat $OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.runs/impl_1/runme.log || true
-    condition: always()
-    displayName: Display synthesis and implementation logs
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit"
-  - publish: "$(Build.ArtifactStagingDirectory)"
-    artifact: chip_earlgrey_nexysvideo-build-out
-    displayName: Upload all Vivado artifacts for Nexys Video
-    condition: failed()
-
 - job: chip_englishbreakfast_cw305
   displayName: Build CW305 variant of the English Breakfast toplevel design using Vivado
   dependsOn:
@@ -590,25 +414,8 @@ jobs:
         - sw_build_englishbreakfast
   - bash: |
       set -e
-      . util/build_consts.sh
-
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-
-      mkdir -p "$OBJ_DIR/hw"
-      mkdir -p "$BIN_DIR/hw/top_englishbreakfast"
-
-      BOOTROM_VMEM="$BIN_DIR/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.32.vmem"
-      test -f "$BOOTROM_VMEM"
-
-      util/topgen-fusesoc.py --files-root=. --topname=top_englishbreakfast
-      fusesoc --verbose --cores-root=. \
-        run --flag=fileset_topgen --target=synth --setup --build \
-        --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:chip_englishbreakfast_cw305 \
-        --BootRomInitFile="$BOOTROM_VMEM"
-
-      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit" \
-        "$BIN_DIR/hw/top_englishbreakfast"
+      ci/scripts/build-bitstream-vivado.sh top_englishbreakfast cw305
     displayName: Build bitstream with Vivado
   - template: ci/upload-artifacts-template.yml
     parameters:
@@ -618,7 +425,7 @@ jobs:
 - job: execute_fpga_tests_cw310
   displayName: Execute tests on ChipWhisperer CW310 FPGA board
   pool: FPGA
-  timeoutInMinutes: 30
+  timeoutInMinutes: 24
   dependsOn:
     - chip_earlgrey_cw310
     - sw_build
@@ -631,48 +438,25 @@ jobs:
         - sw_build
   - bash: |
       set -e
-
-      # Install an additional pytest dependency for result upload.
-      pip3 install pytest-azurepipelines
-
+      set -x
       . util/build_consts.sh
-      pytest --version
-      pytest test/systemtest/earlgrey/test_fpga_cw310.py \
-        --log-cli-level=DEBUG \
-        --test-run-title="Run system tests on ChipWhisperer CW310 FPGA board" \
-        --napoleon-docstrings
-    displayName: Execute tests
-
-- job: execute_fpga_tests_nexysvideo
-  displayName: Execute tests on Nexys Video FPGA board
-  pool: FPGA
-  timeoutInMinutes: 30
-  dependsOn:
-    - chip_earlgrey_nexysvideo
-    - sw_build_nexysvideo
-    - sw_build
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_nexysvideo
-        - sw_build_nexysvideo
-        - sw_build
-  - bash: |
-      set -e
-
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-
-      # Install an additional pytest dependency for result upload.
-      pip3 install pytest-azurepipelines
-
-      . util/build_consts.sh
-      pytest --version
-      pytest test/systemtest/earlgrey/test_fpga_nexysvideo.py \
-        --log-cli-level=DEBUG \
-        --test-run-title="Run system tests on Nexys Video FPGA board" \
-        --napoleon-docstrings
+      SHA=$(git rev-parse HEAD)
+      BITCACHE_DIR=~/.cache/opentitan-bitstreams/cache/${SHA}
+      mkdir -p $BITCACHE_DIR
+      BITCACHE_FILE=$BITCACHE_DIR/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig
+      cp $BIN_DIR/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit ${BITCACHE_FILE}
+      echo "" >> ${BITCACHE_DIR}/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice
+      echo -n ${SHA} > ${BITCACHE_DIR}/../../latest.txt
+      export BITSTREAM="--offline --list ${SHA}"
+      ci/bazelisk.sh test \
+          --define DISABLE_VERILATOR_BUILD=true \
+          --test_tag_filters=cw310,-broken \
+          --test_output=all \
+          --build_tests_only \
+          --flaky_test_attempts=4 \
+          --define cw310=lowrisc \
+          $(./bazelisk.sh query 'rdeps(//sw/...,@bitstreams//:bitstream_test_rom)') \
+          # All the tests that depend on the test rom
     displayName: Execute tests
 
 - job: deploy_release_artifacts
@@ -682,8 +466,7 @@ jobs:
   dependsOn:
     - lint
     - sw_build
-    - chip_earlgrey_verilator
-    - chip_earlgrey_nexysvideo
+    - execute_verilated_tests
     - chip_earlgrey_cw310
   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   steps:
@@ -692,9 +475,7 @@ jobs:
     parameters:
       downloadPartialBuildBinFrom:
         - sw_build
-        #- sw_build_nexysvideo
-        - chip_earlgrey_verilator
-        #- chip_earlgrey_nexysvideo
+        - execute_verilated_tests
         - chip_earlgrey_cw310
         - chip_englishbreakfast_verilator
   - bash: |
@@ -748,26 +529,33 @@ jobs:
       Dockerfile: ./site/redirector/Dockerfile
       buildContext: ./site/redirector
 
-
-- job: bazel_build_and_test
-  displayName: Bazel Build and Test
+- job: bazel_test
+  displayName: Bazel Software Build and Test
+  timeoutInMinutes: 120
   dependsOn: lint
   pool:
     vmImage: ubuntu-18.04
+  variables:
+  - name: bazelCacheGcpKeyPath
+    value: ''
   steps:
     - template: ci/install-package-dependencies.yml
-      # The default timeout is too short to build verilator so let's skip it for the first pass
-    - bash: ci/scripts/quick-bazel.sh
-      displayName: quick-bazel
-      continueOnError: true
-
-- job: mask_rom_test
-  displayName: Mask ROM Build and Test
-  dependsOn: lint
-  pool:
-    vmImage: ubuntu-18.04
-  steps:
-    - template: ci/install-package-dependencies.yml
-      # The default timeout is too short to build verilator so let's skip it for the first pass
-    - bash: ci/scripts/mask-rom-tests.sh
-      displayName: mask-rom-test
+    - task: DownloadSecureFile@1
+      condition: eq(variables['Build.SourceBranchName'], 'master')
+      name: bazelCacheGcpKey
+      inputs:
+        secureFile: "bazel_cache_gcp_key.json"
+    - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
+      condition: eq(variables['Build.SourceBranchName'], 'master')
+      displayName: Set the remote cache GCP key path
+    - bash: |
+        # This command builds all software and runs all unit tests that run on
+        # the host.
+        export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
+        ci/bazelisk.sh test \
+            --build_tests_only=false \
+            --define DISABLE_VERILATOR_BUILD=true \
+            --test_tag_filters=-broken,-cw310,-verilator,-dv \
+            --build_tag_filters=-verilator,-cw310,-dv \
+            //sw/...
+      displayName: "Build and Unit Test Software with Bazel"

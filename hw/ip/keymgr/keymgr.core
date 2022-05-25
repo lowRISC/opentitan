@@ -90,3 +90,8 @@ targets:
     default_tool: icarus
     parameters:
       - SYNTHESIS=true
+
+  formal:
+    filesets:
+      - files_rtl
+    toplevel: keymgr_ctrl

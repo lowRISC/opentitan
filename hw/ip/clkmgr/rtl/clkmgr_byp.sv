@@ -19,6 +19,7 @@ module clkmgr_byp
   output lc_tx_t          lc_clk_byp_ack_o,
   // interaction with software
   input  mubi4_t          byp_req_i,
+  output mubi4_t          byp_ack_o,
   input  mubi4_t          hi_speed_sel_i,
   // interaction with ast
   output mubi4_t          all_clk_byp_req_o,
@@ -107,7 +108,7 @@ module clkmgr_byp
 
   // software switch request handling
   mubi4_t dft_en;
-  assign dft_en = (en == lc_ctrl_pkg::On) ? MuBi4True : MuBi4False;
+  assign dft_en = lc_ctrl_pkg::lc_to_mubi4(en);
 
   mubi4_t all_clk_byp_req_d;
   assign all_clk_byp_req_d = mubi4_and_hi(byp_req_i, dft_en);
@@ -122,9 +123,6 @@ module clkmgr_byp
     .mubi_i(all_clk_byp_req_d),
     .mubi_o(all_clk_byp_req_o)
   );
-
-  // divider step down handling
-  mubi4_t unused_all_clk_byp_ack;
 
   prim_mubi4_sync #(
     .AsyncOn(1),
@@ -147,7 +145,7 @@ module clkmgr_byp
     .clk_i,
     .rst_ni,
     .mubi_i(all_clk_byp_ack_i),
-    .mubi_o({unused_all_clk_byp_ack})
+    .mubi_o(byp_ack_o)
   );
 
   // the software high speed select is valid only when software requests clock

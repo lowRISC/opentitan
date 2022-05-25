@@ -30,12 +30,18 @@ typedef struct retention_sram {
   uint32_t boot_info;
 
   /**
+   * Reset reasons reported by the reset manager before they were reset in mask
+   * ROM.
+   */
+  uint32_t reset_reasons;
+
+  /**
    * Space reserved for future allocation by the silicon creator.
    *
    * TODO(lowRISC/opentitan#5760): the size / offset of this allocation should
    * be reviewed.
    */
-  uint32_t reserved_creator[447];
+  uint32_t reserved_creator[446];
 
   /**
    * Panic record.
@@ -77,6 +83,16 @@ volatile retention_sram_t *retention_sram_get(void);
  * Clear the retention SRAM by setting every word to 0.
  */
 void retention_sram_clear(void);
+
+/**
+ * Initialize the retention SRAM with pseudo-random data from the LFSR.
+ *
+ * This function does not request a new scrambling key. See
+ * `retention_sram_scramble()`.
+ *
+ * @return Result of the operation.
+ */
+rom_error_t retention_sram_init(void);
 
 /**
  * Start scrambling the retention SRAM.

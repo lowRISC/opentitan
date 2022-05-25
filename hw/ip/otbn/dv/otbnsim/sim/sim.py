@@ -147,7 +147,6 @@ class OTBNSim:
 
         '''
         fsm_state = self.state.get_fsm_state()
-
         # Pairs: (stepper, handles_injected_err). If handles_injected_err is
         # False then the generic code here will deal with any pending errors in
         # self.state.injected_err_bits. If True, then we expect the stepper
@@ -156,7 +155,6 @@ class OTBNSim:
             FsmState.MEM_SEC_WIPE: (self._step_ext_wipe, False),
             FsmState.IDLE: (self._step_idle, False),
             FsmState.PRE_EXEC: (self._step_pre_exec, False),
-            FsmState.FETCH_WAIT: (self._step_fetch_wait, False),
             FsmState.EXEC: (self._step_exec, True),
             FsmState.WIPING_GOOD: (self._step_wiping, False),
             FsmState.WIPING_BAD: (self._step_wiping, False),
@@ -175,6 +173,9 @@ class OTBNSim:
             # We've reached the end of the run because of some error. Register
             # it on the next cycle.
             self.state.stop()
+        if ((self.state._fsm_state == FsmState.LOCKED and
+             self.state.cycles_in_this_state == 0)):
+            self.state.ext_regs.write('INSN_CNT', 0, True)
 
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
@@ -201,10 +202,10 @@ class OTBNSim:
         '''Step the simulation in the PRE_EXEC state
 
         In this state, we're waiting for a URND seed. Once that appears, we
-        switch to FETCH_WAIT.
+        switch to EXEC.
         '''
         if self.state.wsrs.URND.running:
-            self.state.set_fsm_state(FsmState.FETCH_WAIT)
+            self.state.set_fsm_state(FsmState.EXEC)
 
         changes = self._on_stall(verbose, fetch_next=False)
 
@@ -212,17 +213,6 @@ class OTBNSim:
         if self.state.ext_regs.read('INSN_CNT', True) != 0:
             self.state.ext_regs.write('INSN_CNT', 0, True)
 
-        return (None, changes)
-
-    def _step_fetch_wait(self, verbose: bool) -> StepRes:
-        '''Step the simulation in the FETCH_WAIT state
-
-        This state lasts a single cycle while we fetch our first instruction
-        and then jump to EXEC.
-        '''
-        self.state.wsrs.URND.step()
-        self.state.set_fsm_state(FsmState.EXEC)
-        changes = self._on_stall(verbose, fetch_next=False)
         return (None, changes)
 
     def _step_exec(self, verbose: bool) -> StepRes:
@@ -267,6 +257,12 @@ class OTBNSim:
         # that instruction before it gets shot down.
         self.state.take_injected_err_bits()
 
+        # If something bad happened asynchronously (because of an escalation),
+        # we might have an unfinished instruction. But we want to turn it into
+        # a "finished, but aborted" one.
+        if self.state.pending_halt:
+            self._execute_generator = None
+
         sim_stalled = (self._execute_generator is not None)
         if not sim_stalled:
             return (insn, self._on_retire(verbose, insn))
@@ -280,13 +276,16 @@ class OTBNSim:
 
         is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
 
-        # Clear the WIPE_START register if it was set. In this situation, we
-        # know we're on the first cycle of the wipe, which is also where we
-        # zero INSN_CNT if we're in state WIPING_BAD.
+        # Clear the WIPE_START register if it was set.
         if self.state.ext_regs.read('WIPE_START', True):
             self.state.ext_regs.write('WIPE_START', 0, True)
-            if not is_good:
-                self.state.ext_regs.write('INSN_CNT', 0, True)
+
+        # Zero INSN_CNT if we're in state WIPING_BAD. This is a bit silly
+        # because we'll send that update on every cycle, but it correctly
+        # handles the situation where we switch from WIPING_GOOD to WIPING_BAD
+        # half way through a secure wipe because of an incoming escalation.
+        if not is_good:
+            self.state.ext_regs.write('INSN_CNT', 0, True)
 
         # Wipe all registers and set STATUS on the penultimate cycle.
         if self.state.wipe_cycles == 1:

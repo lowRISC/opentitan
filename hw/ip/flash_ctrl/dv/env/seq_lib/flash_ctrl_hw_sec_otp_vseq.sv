@@ -2,16 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-//  name: secret_partition
-//  desc: '''
-//        Verify the secret information partitions. Accessibility is controlled by the Life Cycle Controller
-//        Seeds are read upon flash controller initialization and sent to the Key Manager, additionally verify
-//        that scramble Keys are Read from the OTP and sent into the Flash Ctlr.  Also erify that programmed
-//        Secret Partitions retain their values through a Reset Cycle.
-//        '''
-//  milestone: V2
-//  tests: ["flash_ctrl_hw_sec_otp"]
-
 //  Pseudo Code:
 //  Randomize Flash Content (Backdoor)
 //  Power Up Initialisation (With Secret Seeds and Keys Enabled)
@@ -30,18 +20,21 @@
 //  Repeat
 //  }
 
-// flash_ctrl_secret_partition Test
+// flash_ctrl_hw_sec_otp Test
 
 class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
   `uvm_object_utils(flash_ctrl_hw_sec_otp_vseq)
 
   `uvm_object_new
 
+  // Overloaded Constraint from Base Class
+  constraint num_trans_c {num_trans inside {[32 : cfg.seq_cfg.max_num_trans]};}
+
   // Configure sequence knobs to tailor it to this seq
   virtual function void configure_vseq();
 
     // Max Num Iterations
-    cfg.seq_cfg.max_num_trans = 64;
+    cfg.seq_cfg.max_num_trans = 256;
 
     // Enable NO memory protection regions
     cfg.seq_cfg.num_en_mp_regions = 0;
@@ -65,7 +58,7 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
     bit      creator_prog_flag;
     bit      owner_prog_flag;  // Indicates When Secret Partition Has Been Written
 
-    `uvm_info(`gfn, "FLASH CTRL SECRET PARTITION & OTP KEY TESTS", UVM_LOW)
+    `uvm_info(`gfn, "TEST : FLASH CTRL SECRET PARTITION & OTP KEY TESTS", UVM_LOW)
 
     // Initialise Partion Flags to Indicate Unwritten (from Frontdoor)
     creator_prog_flag = 1'b0;
@@ -189,7 +182,7 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
 
       // RESET DUT
 
-      `uvm_info(`gfn, "RESET DUT", UVM_LOW)
+      `uvm_info(`gfn, ">>> RESET DUT <<<", UVM_LOW)
 
       lc_ctrl_if_rst();  // Restore lc_ctrl_if to Reset Values
       cfg.seq_cfg.disable_flash_init = 1;  // Disable Flash Random Initialisation
@@ -207,15 +200,15 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
     // DATA PARTITION
 
     flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
-    bit default_region_read_en;
-    bit default_region_program_en;
-    bit default_region_erase_en;
+    mubi4_t default_region_read_en;
+    mubi4_t default_region_program_en;
+    mubi4_t default_region_erase_en;
 
     // MEMORY PROTECTION REGIONS
 
     // No Protection Regions
     foreach (mp_regions[i]) begin
-      mp_regions[i].en = 0;
+      mp_regions[i].en = MuBi4False;
     end
 
     // Configure the flash based on the given settings
@@ -225,9 +218,9 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
 
     // DEFAULT REGIONS
 
-    default_region_read_en    = 1'b1;
-    default_region_program_en = 1'b1;
-    default_region_erase_en   = 1'b1;
+    default_region_read_en    = MuBi4True;
+    default_region_program_en = MuBi4True;
+    default_region_erase_en   = MuBi4True;
 
     // Memory Default Regions
     flash_ctrl_default_region_cfg(.read_en(default_region_read_en),
@@ -243,10 +236,10 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
     flash_bank_mp_info_page_cfg_t info_regions[flash_ctrl_reg_pkg::NumInfos0];
 
     foreach (info_regions[i]) begin
-      info_regions[i].en         = 1;
-      info_regions[i].read_en    = 1;
-      info_regions[i].program_en = 1;
-      info_regions[i].erase_en   = 1;
+      info_regions[i].en         = MuBi4True;
+      info_regions[i].read_en    = MuBi4True;
+      info_regions[i].program_en = MuBi4True;
+      info_regions[i].erase_en   = MuBi4True;
     end
 
     foreach (info_regions[i]) begin
@@ -264,7 +257,9 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
     logic [KeyWidth-1:0] prb_otp_data_rand_key[flash_ctrl_pkg::NumBanks];
 
     // OTP SCRAMBLE KEY TESTS - CONNECTIVITY TEST ONLY
-    // OTP Acknowledge and Random Scramble Seeds are Provided by the TestBench (tb.sv)
+
+    // OTP Acknowledge and Random Scramble Seeds are Provided by a model in the Base Seq
+    // (flash_ctrl_base_vseq), called otp_model()
 
     `uvm_info(`gfn, "FLASH OTP KEY - Scramble Connectivity Check", UVM_LOW)
 
@@ -280,7 +275,7 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
           $sformatf("tb.dut.u_eflash.gen_flash_cores[%0d].u_core.u_scramble.rand_data_key_i", i));
     end
 
-    // Compare OTP Keys - Probed vs Expected (For This Test Scenario)                                                                                                                        
+    // Compare OTP Keys - Probed vs Expected (For This Test Scenario)
     for (int i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin
       compare_key_probe(i, "otp_addr_key", prb_otp_addr_key[i], otp_addr_key);
       compare_key_probe(i, "otp_addr_rand_key", prb_otp_addr_rand_key[i], otp_addr_rand_key);
@@ -302,15 +297,11 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
                                  input logic [KeyWidth-1:0] expected_key);
 
     `uvm_info(`gfn, $sformatf("Compare OTP Key, Read : 0x%0x, Expected : 0x%0x", key, expected_key),
-              UVM_LOW)
+              UVM_MEDIUM)
 
     `DV_CHECK_EQ(key, expected_key, $sformatf(
                  "Flash OTP Scramble Key Mismatch, Key : %s[%0d], Read : 0x%0x, Expected : 0x%0x, FAIL",
-                 dut_prb,
-                 i,
-                 key,
-                 expected_key
-                 ))
+                   dut_prb, i, key, expected_key))
 
   endtask : compare_key_probe
 

@@ -51,6 +51,7 @@ test('sw_silicon_creator_rom_ext_boot_policy_unittest', executable(
 
 rom_ext_linkfile_slot_a = files(['rom_ext_slot_a.ld'])
 rom_ext_linkfile_slot_b = files(['rom_ext_slot_b.ld'])
+rom_ext_linkfile_virtual_addr = files(['rom_ext_virtual_addr.ld'])
 
 rom_ext_link_info = {
   'rom_ext_slot_a' :
@@ -77,6 +78,18 @@ rom_ext_link_info = {
       rom_ext_linkfile_slot_b,
     ],
   ],
+  'rom_ext_virtual_addr' :
+  [
+    # Link arguments for pic.
+    [
+      '-Wl,-L,@0@'.format(meson.project_source_root()),
+      '-Wl,-T,@0@/@1@'.format(meson.project_source_root(), rom_ext_linkfile_virtual_addr[0]),
+    ] + embedded_target_extra_link_args,
+    # Link dependency file for pic.
+    [
+      rom_ext_linkfile_virtual_addr,
+    ],
+  ],
 }
 
 rom_ext_slot_libs = {}
@@ -99,7 +112,7 @@ foreach slot, slot_link_args : rom_ext_link_info
         sw_silicon_creator_lib_fake_deps,
         sw_silicon_creator_lib_log,
         sw_silicon_creator_lib_shutdown,
-        sw_silicon_creator_lib_manifest_section,
+        sw_silicon_creator_lib_manifest_def,
         sw_silicon_creator_mask_rom_sigverify,
         sw_silicon_creator_rom_ext_epmp,
         sw_silicon_creator_rom_ext_boot_policy,

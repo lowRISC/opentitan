@@ -30,11 +30,11 @@ class FsmState(IntEnum):
 
         MEM_SEC_WIPE <--\
              |          |
-             \-------> IDLE -> PRE_EXEC -> FETCH_WAIT -> EXEC
-                         ^                       | |
-                         \------- WIPING_GOOD <--/ |
-                                                   |
-                      LOCKED <--  WIPING_BAD  <----/
+             \-------> IDLE -> PRE_EXEC -> EXEC
+                         ^                  | |
+                         \-- WIPING_GOOD <--/ |
+                                              |
+                 LOCKED <--  WIPING_BAD  <----/
 
     IDLE represents the state when nothing is going on but there have been no
     fatal errors. It matches Status.IDLE. LOCKED represents the state when
@@ -46,11 +46,10 @@ class FsmState(IntEnum):
     Status.BUSY_EXECUTE. However, if we are getting a fatal error Status would
     be LOCKED.
 
-    PRE_EXEC, FETCH_WAIT, EXEC, WIPING_GOOD and WIPING_BAD correspond to
+    PRE_EXEC, EXEC, WIPING_GOOD and WIPING_BAD correspond to
     Status.BUSY_EXECUTE. PRE_EXEC is the period after starting OTBN where we're
-    still waiting for an EDN value to seed URND. FETCH_WAIT is the single cycle
-    delay after seeding URND to fill the prefetch stage. EXEC is the period
-    where we start fetching and executing instructions.
+    still waiting for an EDN value to seed URND. EXEC is the period where we
+    start fetching and executing instructions.
 
     WIPING_GOOD and WIPING_BAD represent the time where we're performing a
     secure wipe of internal state (ending in updating the STATUS register to
@@ -64,7 +63,6 @@ class FsmState(IntEnum):
     '''
     IDLE = 0
     PRE_EXEC = 10
-    FETCH_WAIT = 11
     EXEC = 12
     WIPING_GOOD = 13
     WIPING_BAD = 14
@@ -102,7 +100,6 @@ class OTBNState:
 
         self.rnd_set_flag = False
 
-        self.rnd_req = 0
         self.rnd_cdc_pending = False
         self.urnd_cdc_pending = False
 
@@ -142,6 +139,14 @@ class OTBNState:
         # we wouldn't see the final instruction get executed and then
         # cancelled).
         self.injected_err_bits = 0
+
+        # If this is set, all software errors should result in the model status
+        # being locked.
+        self.software_errs_fatal = False
+
+        # This is a counter that keeps track of how many cycles have elapsed in
+        # current fsm_state.
+        self.cycles_in_this_state = 0
 
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
@@ -328,10 +333,16 @@ class OTBNState:
         old_state = self._fsm_state
 
         self._fsm_state = self._next_fsm_state
+
+        if self._fsm_state == old_state:
+            self.cycles_in_this_state += 1
+        else:
+            self.cycles_in_this_state = 0
+
         self.ext_regs.commit()
 
         # Pull URND out separately because we also want to commit this in some
-        # "idle-ish" states (FETCH_WAIT)
+        # "idle-ish" states
         self.wsrs.URND.commit()
 
         # In some states, we can get away with just committing external
@@ -395,41 +406,51 @@ class OTBNState:
         the increment of INSN_CNT that we want to keep.
 
         Either way, set the appropriate bits in the external ERR_CODE register,
-        clear the busy flag and write STOP_PC.
+        write STOP_PC and start a secure wipe.
 
+        It's possible that we are already doing a secure wipe. For example, we
+        might have had an error escalation signal after starting the wipe. In
+        this case, there's nothing to do except possibly to update ERR_BITS.
         '''
 
-        if self._err_bits:
-            # Abort all pending changes, including changes to external
-            # registers.
+        # If we were running an instruction and something went wrong then it
+        # might have updated state (either registers, memory or
+        # externally-visible registers). We want to roll back any of those
+        # changes.
+        if self._err_bits and self._fsm_state == FsmState.EXEC:
             self._abort()
 
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
         # set) is the 'done' flag.
         self.ext_regs.set_bits('INTR_STATE', 1 << 0)
 
-        should_lock = (self._err_bits >> 16) != 0
-
+        should_lock = (((self._err_bits >> 16) != 0) or
+                       ((self._err_bits >> 10) & 1) or
+                       (self._err_bits and self.software_errs_fatal))
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
-
-        # Make the final PC visible. This isn't currently in the RTL, but is
-        # useful in simulations that want to track whether we stopped where we
-        # expected to stop.
-        self.ext_regs.write('STOP_PC', self.pc, True)
 
         # Set the WIPE_START flag if we were running. This is used to tell the
         # C++ model code that this is a good time to inspect DMEM and check
         # that the RTL and model match. The flag will be cleared again on the
         # next cycle.
-        if self._fsm_state in [FsmState.FETCH_WAIT, FsmState.EXEC]:
+        if self._fsm_state == FsmState.EXEC:
+            # Make the final PC visible. This isn't currently in the RTL, but
+            # is useful in simulations that want to track whether we stopped
+            # where we expected to stop.
+            self.ext_regs.write('STOP_PC', self.pc, True)
+
             self.ext_regs.write('WIPE_START', 1, True)
             self.ext_regs.regs['WIPE_START'].commit()
 
             # Switch to a 'wiping' state
             self._next_fsm_state = (FsmState.WIPING_BAD if should_lock
                                     else FsmState.WIPING_GOOD)
-            self.wipe_cycles = (_WIPE_CYCLES if self.secure_wipe_enabled else 2)
+            self.wipe_cycles = (_WIPE_CYCLES
+                                if self.secure_wipe_enabled else 2)
+        elif self._fsm_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
+            assert should_lock
+            self._next_fsm_state = FsmState.WIPING_BAD
         else:
             assert should_lock
             self._next_fsm_state = FsmState.LOCKED

@@ -10,6 +10,8 @@
 // This package defines common multibit signal types, active high and active low values and
 // the corresponding functions to test whether the values are set or not.
 
+`include "prim_assert.sv"
+
 package prim_mubi_pkg;
 
   //////////////////////////////////////////////
@@ -18,9 +20,12 @@ package prim_mubi_pkg;
 
   parameter int MuBi4Width = 4;
   typedef enum logic [MuBi4Width-1:0] {
-    MuBi4True = 4'hA, // enabled
-    MuBi4False = 4'h5  // disabled
+    MuBi4True = 4'h6, // enabled
+    MuBi4False = 4'h9  // disabled
   } mubi4_t;
+
+  // This is a prerequisite for the multibit functions below to work.
+  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi4ValsComplementary_A, MuBi4True == ~MuBi4False)
 
   // Test whether the value is supplied is one of the valid enumerations
   function automatic logic mubi4_test_invalid(mubi4_t val);
@@ -147,9 +152,12 @@ package prim_mubi_pkg;
 
   parameter int MuBi8Width = 8;
   typedef enum logic [MuBi8Width-1:0] {
-    MuBi8True = 8'h5A, // enabled
-    MuBi8False = 8'hA5  // disabled
+    MuBi8True = 8'h96, // enabled
+    MuBi8False = 8'h69  // disabled
   } mubi8_t;
+
+  // This is a prerequisite for the multibit functions below to work.
+  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi8ValsComplementary_A, MuBi8True == ~MuBi8False)
 
   // Test whether the value is supplied is one of the valid enumerations
   function automatic logic mubi8_test_invalid(mubi8_t val);
@@ -276,9 +284,12 @@ package prim_mubi_pkg;
 
   parameter int MuBi12Width = 12;
   typedef enum logic [MuBi12Width-1:0] {
-    MuBi12True = 12'hA5A, // enabled
-    MuBi12False = 12'h5A5  // disabled
+    MuBi12True = 12'h696, // enabled
+    MuBi12False = 12'h969  // disabled
   } mubi12_t;
+
+  // This is a prerequisite for the multibit functions below to work.
+  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi12ValsComplementary_A, MuBi12True == ~MuBi12False)
 
   // Test whether the value is supplied is one of the valid enumerations
   function automatic logic mubi12_test_invalid(mubi12_t val);
@@ -405,9 +416,12 @@ package prim_mubi_pkg;
 
   parameter int MuBi16Width = 16;
   typedef enum logic [MuBi16Width-1:0] {
-    MuBi16True = 16'h5A5A, // enabled
-    MuBi16False = 16'hA5A5  // disabled
+    MuBi16True = 16'h9696, // enabled
+    MuBi16False = 16'h6969  // disabled
   } mubi16_t;
+
+  // This is a prerequisite for the multibit functions below to work.
+  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi16ValsComplementary_A, MuBi16True == ~MuBi16False)
 
   // Test whether the value is supplied is one of the valid enumerations
   function automatic logic mubi16_test_invalid(mubi16_t val);

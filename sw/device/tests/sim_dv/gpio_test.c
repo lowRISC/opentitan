@@ -5,18 +5,19 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/irq.h"
-#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
-#include "sw/device/lib/testing/test_framework/test_status.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_gpio_t gpio;
+static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
 
 // These constants reflect the GPIOs exposed by the GPIO IP.
@@ -24,10 +25,10 @@ static const uint32_t kNumGpios = 32;
 static const uint32_t kGpiosMask = 0xffffffff;
 
 // These constants reflect the GPIOs exposed by the OpenTitan SoC.
-static const uint32_t kNumChipGpios = 16;
-// TODO #2484: GPIO pins 16-19 are special inputs - do not touch them.
-static const uint32_t kGpiosAllowedMask = 0xfff0ffff;
-static const uint32_t kChipGpiosMask = 0xffff & kGpiosAllowedMask;
+static const uint32_t kNumChipGpios = 12;
+// TODO: update GPIO test once the chip-level testbench uses the correct pinout.
+static const uint32_t kGpiosAllowedMask = 0xffffffff;
+static const uint32_t kChipGpiosMask = 0xfff & kGpiosAllowedMask;
 
 // These indicate the GPIO pin irq expected to fire, declared volatile since
 // they are used by the ISR.
@@ -243,7 +244,9 @@ const test_config_t kTestConfig;
 
 bool test_main(void) {
   // Initialize the pinmux - this assigns MIO0-31 to GPIOs.
-  pinmux_init();
+  CHECK_DIF_OK(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  pinmux_testutils_init(&pinmux);
 
   // Initialize the GPIO.
   CHECK_DIF_OK(

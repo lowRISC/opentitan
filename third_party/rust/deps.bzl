@@ -3,7 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:repositories.bzl", "rust_repositories")
-load("//third_party/cargo:crates.bzl", "raze_fetch_remote_crates")
+load("//third_party/rust/crates:crates.bzl", "raze_fetch_remote_crates")
+load(
+    "@safe_ftdi//third_party/rust:deps.bzl",
+    ftdi_fetch_remote_crates = "fetch_remote_crates",
+)
 
 def rust_deps():
     rust_repositories(
@@ -11,3 +15,4 @@ def rust_deps():
         version = "1.58.0",
     )
     raze_fetch_remote_crates()
+    ftdi_fetch_remote_crates()

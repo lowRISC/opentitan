@@ -132,21 +132,21 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
     solve en_mp_regions before mp_regions;
 
     foreach (mp_regions[i]) {
-      mp_regions[i].en == en_mp_regions[i];
+      mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
 
-      mp_regions[i].read_en == 1;
+      mp_regions[i].read_en == MuBi4True;
 
-      mp_regions[i].program_en == 1;
+      mp_regions[i].program_en == MuBi4True;
 
-      mp_regions[i].erase_en == 1;
+      mp_regions[i].erase_en == MuBi4True;
 
-      mp_regions[i].scramble_en == 0;
+      mp_regions[i].scramble_en == MuBi4False;
 
-      mp_regions[i].ecc_en == 0;
+      mp_regions[i].ecc_en == MuBi4False;
 
       mp_regions[i].he_en dist {
-        0 :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
-        1 :/ cfg.seq_cfg.mp_region_he_en_pc
+        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
+        MuBi4True  :/ cfg.seq_cfg.mp_region_he_en_pc
       };
 
       mp_regions[i].start_page inside {[0 : FlashNumPages - 1]};
@@ -180,21 +180,21 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
 
       foreach (mp_info_pages[i][j][k]) {
 
-        mp_info_pages[i][j][k].en == 1;
+        mp_info_pages[i][j][k].en == MuBi4True;
 
-        mp_info_pages[i][j][k].read_en == 1;
+        mp_info_pages[i][j][k].read_en == MuBi4True;
 
-        mp_info_pages[i][j][k].program_en == 1;
+        mp_info_pages[i][j][k].program_en == MuBi4True;
 
-        mp_info_pages[i][j][k].erase_en == 1;
+        mp_info_pages[i][j][k].erase_en == MuBi4True;
 
-        mp_info_pages[i][j][k].scramble_en == 0;
+        mp_info_pages[i][j][k].scramble_en == MuBi4False;
 
-        mp_info_pages[i][j][k].ecc_en == 0;
+        mp_info_pages[i][j][k].ecc_en == MuBi4False;
 
         mp_info_pages[i][j][k].he_en dist {
-          0 :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
-          1 :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
+          MuBi4False :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
+          MuBi4True :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
         };
 
       }
@@ -202,18 +202,18 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
   }
 
   // Default flash ctrl region settings.
-  rand bit default_region_read_en;
-  rand bit default_region_program_en;
-  rand bit default_region_erase_en;
-  bit default_region_scramble_en;
-  rand bit default_region_he_en;
-  rand bit default_region_ecc_en;
+  rand mubi4_t default_region_read_en;
+  rand mubi4_t default_region_program_en;
+  rand mubi4_t default_region_erase_en;
+  mubi4_t default_region_scramble_en;
+  rand mubi4_t default_region_he_en;
+  rand mubi4_t default_region_ecc_en;
 
-  constraint default_region_read_en_c {default_region_read_en == 1;}
+  constraint default_region_read_en_c {default_region_read_en == MuBi4True;}
 
-  constraint default_region_program_en_c {default_region_program_en == 1;}
+  constraint default_region_program_en_c {default_region_program_en == MuBi4True;}
 
-  constraint default_region_erase_en_c {default_region_erase_en == 1;}
+  constraint default_region_erase_en_c {default_region_erase_en == MuBi4True;}
 
   // Bank erasability.
   rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
@@ -226,25 +226,27 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
 
   constraint default_region_he_en_c {
     default_region_he_en dist {
-      1 :/ cfg.seq_cfg.default_region_he_en_pc,
-      0 :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
+      MuBi4True :/ cfg.seq_cfg.default_region_he_en_pc,
+      MuBi4False :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
     };
   }
 
-  constraint default_region_ecc_en_c {default_region_ecc_en == 0;}
+  constraint default_region_ecc_en_c {default_region_ecc_en == MuBi4False;}
 
-  bit [TL_AW-1:0] read_addr;
+  addr_t read_addr;
 
   // Single direct read data
-  bit [TL_DW-1:0] flash_rd_one_data;
+  data_t flash_rd_one_data;
 
-  localparam bit [TL_DW-1:0] ALL_ONES = {TL_DW{1'b1}};
+  localparam data_t ALL_ONES = {TL_DW{1'b1}};
 
   virtual task body();
 
     // enable sw rw access
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
 
     //disable polling of fifo status for frontdoor write and read
     poll_fifo_status = 0;
@@ -253,7 +255,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
     cfg.block_host_rd = 1;
 
     // Scramble disable
-    default_region_scramble_en = 0;
+    default_region_scramble_en = MuBi4False;
 
     //Enable Bank erase
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
@@ -276,7 +278,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
       cfg.flash_mem_bkdr_init(flash_op_host_rd.partition, FlashMemInitInvalidate);
       if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
-      end else begin
+      end else if (flash_op.op == flash_ctrl_pkg::FlashOpRead) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
       end
       cfg.flash_mem_bkdr_write(.flash_op(flash_op_host_rd), .scheme(FlashMemInitRandomize));
@@ -301,7 +303,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
       cfg.flash_mem_bkdr_init(flash_op_host_rd.partition, FlashMemInitInvalidate);
       if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
-      end else begin
+      end else if (flash_op.op == flash_ctrl_pkg::FlashOpRead) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
       end
       cfg.flash_mem_bkdr_write(.flash_op(flash_op_host_rd), .scheme(FlashMemInitRandomize));
@@ -350,34 +352,34 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
     fork
       begin
         // host read data and init of selected chunk of memory
-        host_read_op_data(flash_op_host_rd);
+        host_read_data(flash_op_host_rd);
       end
       begin
         // controller read, program or erase
         if (flash_op.op == flash_ctrl_pkg::FlashOpRead) begin
-          controller_read_op_data(flash_op);
+          controller_read_data(flash_op);
         end else if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
           controller_program_data(flash_op, flash_op_data);
         end else begin  //flash_op.op == flash_ctrl_pkg::FlashOpErase
-          controller_program_erase(flash_op);
+          controller_erase_data(flash_op);
         end
       end
     join;
   endtask : do_operations
 
   // host read data.
-  virtual task host_read_op_data(flash_op_t flash_op);
-    logic [TL_DW-1:0] rdata;
+  virtual task host_read_data(flash_op_t flash_op);
+    data_4s_t rdata;
     for (int j = 0; j < flash_op.num_words; j++) begin
       read_addr = flash_op.addr + 4 * j;
       do_direct_read(.addr(read_addr), .mask('1), .blocking(cfg.block_host_rd), .check_rdata(0),
                      .rdata(rdata));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
     end
-  endtask : host_read_op_data
+  endtask : host_read_data
 
   // Controller read data.
-  virtual task controller_read_op_data(flash_op_t flash_op);
+  virtual task controller_read_data(flash_op_t flash_op);
     flash_rd_data.delete();
     flash_ctrl_start_op(flash_op);
     flash_ctrl_read(flash_op.num_words, flash_rd_data, poll_fifo_status);
@@ -385,7 +387,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
     `uvm_info(`gfn, $sformatf("FLASH OP READ DATA: %0p", flash_rd_data), UVM_HIGH)
     cfg.flash_mem_bkdr_read_check(flash_op, flash_rd_data);
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
-  endtask : controller_read_op_data
+  endtask : controller_read_data
 
   // Controller program data.
   virtual task controller_program_data(flash_op_t flash_op, data_q_t flash_op_data);
@@ -400,17 +402,17 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
   endtask : controller_program_data
 
   // Controller erase data.
-  virtual task controller_program_erase(flash_op_t flash_op);
+  virtual task controller_erase_data(flash_op_t flash_op);
     data_q_t exp_data;
     exp_data = cfg.calculate_expected_data(flash_op, flash_op_data);
     flash_ctrl_start_op(flash_op);
     wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
     `uvm_info(`gfn, $sformatf("FLASH OP ERASE DATA DONE"), UVM_HIGH)
     cfg.flash_mem_bkdr_erase_check(flash_op, exp_data);
-  endtask : controller_program_erase
+  endtask : controller_erase_data
 
   virtual task do_arb();
-    logic [TL_DW-1:0] rdata;
+    data_4s_t rdata;
     data_q_t exp_data;
 
     // setting non blocking host reads

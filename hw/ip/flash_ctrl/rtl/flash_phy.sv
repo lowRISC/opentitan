@@ -29,19 +29,21 @@ module flash_phy
   output flash_rsp_t flash_ctrl_o,
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
-  input prim_mubi_pkg::mubi4_t scanmode_i,
+  input mubi4_t scanmode_i,
   input scan_en_i,
   input scan_rst_ni,
   input flash_power_ready_h_i,
   input flash_power_down_h_i,
   inout [1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
-  input prim_mubi_pkg::mubi4_t flash_bist_enable_i,
+  input mubi4_t flash_bist_enable_i,
   input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
   input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
   output logic [7:0] fla_obs_o,
   output ast_pkg::ast_dif_t flash_alert_o
 );
+
+  import prim_mubi_pkg::MuBi4False;
 
   // Flash macro outstanding refers to how many reads we allow a macro to move ahead of an
   // in order blocking read. Since the data cannot be returned out of order, this simply
@@ -89,6 +91,7 @@ module flash_phy
   // common interface
   logic [BusFullWidth-1:0] rd_data [NumBanks];
   logic [NumBanks-1:0] rd_err;
+  logic [NumBanks-1:0] spurious_acks;
 
   // fsm error per bank
   logic [NumBanks-1:0] fsm_err;
@@ -97,6 +100,14 @@ module flash_phy
   logic [NumBanks-1:0] prog_intg_err;
   logic [NumBanks-1:0] relbl_ecc_err;
   logic [NumBanks-1:0] intg_ecc_err;
+
+  // consistency error per bank
+  logic [NumBanks-1:0] arb_err;
+  logic [NumBanks-1:0] host_gnt_err;
+
+  // fifo error per bank
+  logic [NumBanks-1:0]     rsp_fifo_err;
+  logic [NumBanks-1:0]     core_fifo_err;
 
   // select which bank each is operating on
   assign host_bank_sel = host_req_i ? host_addr_i[BusAddrW-1 -: BankW] : '0;
@@ -122,6 +133,10 @@ module flash_phy
   assign flash_ctrl_o.storage_relbl_err = |relbl_ecc_err;
   assign flash_ctrl_o.storage_intg_err = |intg_ecc_err;
   assign flash_ctrl_o.fsm_err = |fsm_err;
+  assign flash_ctrl_o.spurious_ack = |spurious_acks;
+  assign flash_ctrl_o.arb_err = |arb_err;
+  assign flash_ctrl_o.host_gnt_err = |host_gnt_err;
+  assign flash_ctrl_o.fifo_err = |{rsp_fifo_err, core_fifo_err};
 
   // This fifo holds the expected return order
   prim_fifo_sync #(
@@ -139,7 +154,8 @@ module flash_phy
     .full_o (),
     .rvalid_o(seq_fifo_pending),
     .rready_i(host_req_done_o),
-    .rdata_o (rsp_bank_sel)
+    .rdata_o (rsp_bank_sel),
+    .err_o   ()
   );
 
   // Generate host scramble_en indication, broadcasted to all banks
@@ -168,8 +184,12 @@ module flash_phy
   assign unused_cfg = region_cfg;
 
   // only scramble/ecc attributes are looked at
-  assign host_scramble_en = region_cfg.scramble_en.q;
-  assign host_ecc_en = region_cfg.ecc_en.q;
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_and_hi;
+
+  assign host_scramble_en = mubi4_test_true_strict(
+                              mubi4_and_hi(region_cfg.scramble_en, region_cfg.en));
+  assign host_ecc_en = mubi4_test_true_strict(mubi4_and_hi(region_cfg.ecc_en, region_cfg.en));
 
   // Prim flash to flash_phy_core connections
   flash_phy_pkg::flash_phy_prim_flash_req_t [NumBanks-1:0] prim_flash_req;
@@ -180,7 +200,7 @@ module flash_phy
   assign flash_ctrl_o.ecc_single_err = ecc_single_err;
   assign flash_ctrl_o.ecc_addr = ecc_addr;
 
-  prim_mubi_pkg::mubi4_t [NumBanks-1:0] flash_disable;
+  mubi4_t [NumBanks-1:0] flash_disable;
   prim_mubi4_sync #(
     .NumCopies(NumBanks),
     .AsyncOn(0)
@@ -200,7 +220,8 @@ module flash_phy
     prim_fifo_sync #(
       .Width   (BusFullWidth + 1),
       .Pass    (1'b1),
-      .Depth   (FlashMacroOustanding)
+      .Depth   (FlashMacroOustanding),
+      .Secure  (1'b1)
     ) u_host_rsp_fifo (
       .clk_i,
       .rst_ni,
@@ -212,7 +233,8 @@ module flash_phy
       .full_o (),
       .rvalid_o(host_rsp_vld[bank]),
       .rready_i(host_rsp_ack[bank]),
-      .rdata_o ({host_rsp_err[bank], host_rsp_data[bank]})
+      .rdata_o ({host_rsp_err[bank], host_rsp_data[bank]}),
+      .err_o   (rsp_fifo_err[bank])
     );
 
     logic host_req;
@@ -268,7 +290,11 @@ module flash_phy
       .fsm_err_o(fsm_err[bank]),
       .prog_intg_err_o(prog_intg_err[bank]),
       .relbl_ecc_err_o(relbl_ecc_err[bank]),
-      .intg_ecc_err_o(intg_ecc_err[bank])
+      .intg_ecc_err_o(intg_ecc_err[bank]),
+      .spurious_ack_o(spurious_acks[bank]),
+      .arb_err_o(arb_err[bank]),
+      .host_gnt_err_o(host_gnt_err[bank]),
+      .fifo_err_o(core_fifo_err[bank])
     );
   end // block: gen_flash_banks
 
@@ -290,10 +316,10 @@ module flash_phy
   import lc_ctrl_pkg::lc_tx_test_true_strict;
   // if nvm debug is enabled, flash_bist_enable controls entry to flash test mode.
   // if nvm debug is disabled, flash_bist_enable is always turned off.
-  prim_mubi_pkg::mubi4_t bist_enable_qual;
+  mubi4_t bist_enable_qual;
   assign bist_enable_qual = (lc_tx_test_true_strict(lc_nvm_debug_en[FlashBistSel])) ?
                             flash_bist_enable_i :
-                            prim_mubi_pkg::MuBi4False;
+                            MuBi4False;
 
   prim_flash #(
     .NumBanks(NumBanks),

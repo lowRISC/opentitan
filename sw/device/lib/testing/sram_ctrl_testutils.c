@@ -8,7 +8,7 @@
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 void sram_ctrl_testutils_write(uintptr_t address,
                                const sram_ctrl_testutils_data_t *data) {

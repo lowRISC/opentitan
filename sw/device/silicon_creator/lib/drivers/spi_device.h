@@ -38,7 +38,25 @@ enum {
    * LSB of the 2-byte device ID.
    */
   kSpiDeviceJedecDensity = 0x0a,
-  // TODO(#11740): Auto-generated macros for SFDP offset and size.
+  /**
+   * Size of the JEDEC Basic Flash Parameter Table (BFPT) in words.
+   */
+  kSpiDeviceBfptNumWords = 23,
+  /**
+   * Size of the SFDP table in words.
+   */
+  kSpiDeviceSfdpTableNumWords = 27,
+  /**
+   * Address value used when a command does not have an address.
+   *
+   * Since the spi_device is configured to support only the 3-byte addressing
+   * mode this value is not a valid address.
+   */
+  kSpiDeviceNoAddress = UINT32_MAX,
+};
+
+// TODO(#11740): Auto-generated macros for HW constants.
+enum {
   /**
    * Size of the SFDP area in spi_device buffer in bytes.
    *
@@ -62,22 +80,9 @@ enum {
    */
   kSpiDevicePayloadAreaNumWords = 64,
   /**
-   * Size of the JEDEC Basic Flash Parameter Table (BFPT) in words.
-   *
-   * Note: JESD261F 6.4.1 states that this
+   * Index of the WEL bit in flash status register.
    */
-  kSpiDeviceBfptNumWords = 23,
-  /**
-   * Size of the SFDP table in words.
-   */
-  kSpiDeviceSfdpTableNumWords = 27,
-  /**
-   * Address value used when a command does not have an address.
-   *
-   * Since the spi_device is configured to support only the 3-byte addressing
-   * mode this value is not a valid address.
-   */
-  kSpiDeviceNoAddress = UINT32_MAX,
+  kSpiDeviceWelBit = 1,
 };
 
 /**
@@ -144,9 +149,24 @@ typedef enum spi_device_opcode {
    * RESET command.
    *
    * This command should be handled in software. Upon receiving this command,
-   * the chip should be reset.
+   * the chip should be reset. Note that OpenTitan does not enforce the
+   * RESET_ENABLE (0x66) and RESET (0x99) sequence.
    */
-  kSpiDeviceOpcodeReset = 0xf0,
+  kSpiDeviceOpcodeReset = 0x99,
+  /**
+   * WRITE_ENABLE command.
+   *
+   * This command is handled by the spi_device. Upon receiving this command,
+   * spi_device sets the WEL (write enable latch) bit of the status register.
+   */
+  kSpiDeviceOpcodeWriteEnable = 0x06,
+  /**
+   * WRITE_DISABLE command.
+   *
+   * This command is handled by the spi_device. Upon receiving this command,
+   * spi_device clears the WEL (write enable latch) bit of the status register.
+   */
+  kSpiDeviceOpcodeWriteDisable = 0x04,
 
 } spi_device_opcode_t;
 
@@ -317,7 +337,7 @@ typedef struct spi_device_cmd {
  *
  * @param[out] cmd SPI flash command.
  */
-void spi_device_cmd_get(spi_device_cmd_t *cmd);
+rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd);
 
 /**
  * Clears the SPI flash status register.
@@ -326,6 +346,11 @@ void spi_device_cmd_get(spi_device_cmd_t *cmd);
  * to clear the WIP (busy) and WEL (write enable latch) bits.
  */
 void spi_device_flash_status_clear(void);
+
+/**
+ * Gets the SPI flash status register.
+ */
+uint32_t spi_device_flash_status_get(void);
 
 #ifdef __cplusplus
 }
