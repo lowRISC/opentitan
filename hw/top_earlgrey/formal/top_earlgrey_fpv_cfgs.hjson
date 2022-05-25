@@ -432,6 +432,15 @@
                cov: false
              } */
              {
+               name: clkmgr_sec_cm
+               dut: clkmgr
+               fusesoc_core: lowrisc:dv:clkmgr_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/clkmgr/{sub_flow}/{tool}"
+               cov: false
+               task: "FpvSecCm"
+             }
+             {
                name: csrng_sec_cm
                dut: csrng
                fusesoc_core: lowrisc:dv:csrng_sva
