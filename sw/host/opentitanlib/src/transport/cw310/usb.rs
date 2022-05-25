@@ -4,7 +4,10 @@
 
 use anyhow::{ensure, Context, Result};
 use lazy_static::lazy_static;
+use std::cmp;
 use std::collections::HashMap;
+use std::convert::TryFrom;
+use std::convert::TryInto;
 use std::time::Duration;
 
 use crate::collection;
@@ -19,6 +22,15 @@ pub struct Backend {
     usb: UsbBackend,
 }
 
+/// Multiply and divide settings for the PLLs in the CDCE906 chip.
+#[derive(Default, Debug, Clone)]
+struct PllMulDiv {
+    numerator: u16,
+    denominator: u16,
+    outdiv: u8,
+    fvco: u32,
+}
+
 impl Backend {
     /// Commands for the CW310 board.
     pub const CMD_FW_VERSION: u8 = 0x17;
@@ -31,6 +43,12 @@ impl Backend {
     pub const CMD_WRITEMEM_CTRL_SAM3U: u8 = 0x15;
     pub const CMD_SMC_READ_SPEED: u8 = 0x27;
     pub const CMD_FW_BUILD_DATE: u8 = 0x40;
+
+    pub const CMD_PLL: u8 = 0x30;
+    pub const REQ_PLL_WRITE: u8 = 0x01;
+    pub const REQ_PLL_READ: u8 = 0x00;
+    pub const RESP_PLL_OK: u8 = 0x02;
+    pub const ADDR_PLL_ENABLE: u8 = 0x0c;
 
     /// `CMD_FPGAIO_UTIL` is used to configure gpio pins on the SAM3U chip
     /// which are connected to the FPGA.
@@ -356,6 +374,185 @@ impl Backend {
         } else {
             Err(GpioError::InvalidPinName(pinname).into())
         }
+    }
+
+    /// Write a byte to the CDCE906 PLL chip.
+    fn pll_write(&self, addr: u8, data: u8) -> Result<()> {
+        self.send_ctrl(Backend::CMD_PLL, 0, &[Backend::REQ_PLL_WRITE, addr, data])?;
+        let mut resp = [0u8; 2];
+        self.read_ctrl(Backend::CMD_PLL, 0, &mut resp)?;
+        if resp[0] != Backend::RESP_PLL_OK {
+            Err(
+                TransportError::PllProgramFailed(format!("CDCE906 write error: {}", resp[0]))
+                    .into(),
+            )
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Read a byte from the CDCE906 PLL chip.
+    fn pll_read(&self, addr: u8) -> Result<u8> {
+        self.send_ctrl(Backend::CMD_PLL, 0, &[Backend::REQ_PLL_READ, addr, 0])?;
+        let mut resp = [0u8; 2];
+        self.read_ctrl(Backend::CMD_PLL, 0, &mut resp)?;
+        if resp[0] != Backend::RESP_PLL_OK {
+            Err(TransportError::PllProgramFailed(format!("CDCE906 read error: {}", resp[0])).into())
+        } else {
+            Ok(resp[1])
+        }
+    }
+
+    /// Enable or disable the CDCE906 PLL chip.
+    pub fn pll_enable(&self, enable: bool) -> Result<()> {
+        // TODO(#12872): Define constants.
+        let mut reg = self.pll_read(12)?;
+        if enable {
+            reg &= !(1 << 6);
+        } else {
+            reg |= 1 << 6;
+        }
+        self.pll_write(12, reg)
+    }
+
+    /// Calculate the multiply and divide values for the given frequency.
+    fn pll_calc_mul_div(&self, target_freq: u32) -> Result<PllMulDiv> {
+        const TARGET_FREQ_MIN: u32 = 630_000;
+        const TARGET_FREQ_MAX: u32 = 167_000_000;
+        if !(TARGET_FREQ_MIN..=TARGET_FREQ_MAX).contains(&target_freq) {
+            return Err(TransportError::PllProgramFailed(format!(
+                "Target frequency out of range: {}",
+                target_freq
+            ))
+            .into());
+        }
+
+        const REF_FREQ: u32 = 12_000_000;
+        const FVCO_MIN: u32 = 80_000_000;
+        const FVCO_MAX: u32 = 300_000_000;
+        let mut res = PllMulDiv::default();
+        // `outdiv` range to put `fvco` in [80 MHz, 300 MHz].
+        let outdiv_min: u8 = cmp::max(FVCO_MIN / target_freq, 1u32).try_into()?;
+        let outdiv_max: u8 = cmp::min(FVCO_MAX / target_freq, 127u32).try_into()?;
+        let mut best_err: u64 = u64::MAX;
+
+        'outer: for outdiv in outdiv_min..=outdiv_max {
+            let fvco_exp = target_freq as u64 * outdiv as u64;
+            for numerator in 1u16..4096 {
+                for denominator in 1u16..512 {
+                    let fvco_act = (REF_FREQ as u64 * numerator as u64) / denominator as u64;
+                    let err = fvco_exp.abs_diff(fvco_act);
+                    if err < best_err {
+                        best_err = err;
+                        res = PllMulDiv {
+                            numerator,
+                            denominator,
+                            outdiv,
+                            fvco: fvco_act.try_into()?,
+                        };
+                    }
+                    if best_err == 0 {
+                        break 'outer;
+                    }
+                }
+            }
+        }
+
+        if !(FVCO_MIN..=FVCO_MAX).contains(&res.fvco) {
+            Err(
+                TransportError::PllProgramFailed(format!("fvco value out of range: {}", res.fvco))
+                    .into(),
+            )
+        } else {
+            Ok(res)
+        }
+    }
+
+    /// Set the frequency of the given PLL in the CDCE906 PLL chip.
+    pub fn pll_out_freq_set(&self, pll_num: u8, target_freq: u32) -> Result<()> {
+        if pll_num > 2 {
+            return Err(
+                TransportError::PllProgramFailed(format!("Unknown PLL: {}", pll_num)).into(),
+            );
+        }
+
+        // Configure multiply and divide values.
+        let vals = self.pll_calc_mul_div(target_freq)?;
+        log::debug!(
+            "target_freq: {}, vals: {:?}, error: {}",
+            target_freq,
+            vals,
+            vals.fvco / u32::from(vals.outdiv) - target_freq
+        );
+        // TODO(#12872): Define constants.
+        let offset = 3 * pll_num;
+        self.pll_write(1 + offset, (vals.denominator & 0xff).try_into()?)?;
+        self.pll_write(2 + offset, (vals.numerator & 0xff).try_into()?)?;
+        let mut base = self.pll_read(3 + offset)?;
+        base &= 0xe0;
+        base |= u8::try_from((vals.denominator & 0x100) >> 8)?;
+        base |= u8::try_from((vals.numerator & 0xf00) >> 7)?;
+        self.pll_write(3 + offset, base)?;
+        self.pll_write(13 + pll_num, (vals.outdiv & 0x7f).try_into()?)?;
+
+        // Enable high-speed mode if fvco is above 180 MHz.
+        const FVCO_HIGH_SPEED: u32 = 180_000_000;
+        let mut data = self.pll_read(6)?;
+        let pll_bit = match pll_num {
+            0 => 7,
+            1 => 6,
+            2 => 5,
+            _ => {
+                return Err(
+                    TransportError::PllProgramFailed(format!("Unknown PLL: {}", pll_num)).into(),
+                )
+            }
+        };
+        data &= !(1 << pll_bit);
+        if vals.fvco > FVCO_HIGH_SPEED {
+            data |= 1 << pll_bit;
+        }
+        self.pll_write(6, data)
+    }
+
+    /// Enable or disable the given PLL in CDCE906 PLL chip.
+    pub fn pll_out_enable(&self, pll_num: u8, enable: bool) -> Result<()> {
+        // Note: The value that we use here corresponds to '+0nS'.
+        const SLEW_RATE: u8 = 3;
+        let (offset, div_src) = match pll_num {
+            0 => (0, 0),
+            1 => (1, 1),
+            2 => (4, 2),
+            _ => {
+                return Err(
+                    TransportError::PllProgramFailed(format!("Unknown PLL: {}", pll_num)).into(),
+                )
+            }
+        };
+
+        // TODO(#12872): Define constants.
+        let mut data = 0;
+        if enable {
+            data |= 1 << 3;
+        }
+        data |= div_src;
+        data |= SLEW_RATE << 4;
+        self.pll_write(19 + offset, data)?;
+
+        Ok(())
+    }
+
+    /// Save PLL settings to EEPROM, making them power-on defaults.
+    pub fn pll_write_defaults(&self) -> Result<()> {
+        // TODO(#12872): Define constants.
+        let data = self.pll_read(26)?;
+        self.pll_write(26, data | (1 << 7))?;
+
+        while self.pll_read(24)? & (1 << 7) != 0 {
+            std::thread::sleep(Duration::from_millis(50));
+        }
+
+        self.pll_write(26, data & !(1 << 7))
     }
 }
 
