@@ -145,7 +145,7 @@ class RandWSR(WSR):
             return True
         if not self._pending_request:
             self._next_pending_request = True
-            self._ext_regs.write('RND_REQ', 1, True)
+            self._ext_regs.rnd_request()
         return False
 
     def set_unsigned(self, value: int) -> None:
@@ -161,7 +161,6 @@ class RandWSR(WSR):
         assert 0 <= value < (1 << 256)
         self._next_random_value = value
         self._next_pending_request = False
-        self._ext_regs.write('RND_REQ', 0, True)
 
 
 class URNDWSR(WSR):
