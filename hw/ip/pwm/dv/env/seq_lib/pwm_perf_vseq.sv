@@ -27,7 +27,7 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   }
 
   constraint duration_cycles_c {
-    duration_cycles == {NUM_CYCLES}};
+    duration_cycles == {NUM_CYCLES};
   }
 
   constraint low_power_c {
