@@ -44,13 +44,13 @@ anytree
 
 # To be removed with Meson.
 # Minimum matches version in meson.build
-meson >= 0.56.2, <= 0.57.2 
+meson >= 0.56.2, <= 0.57.2
 
 # Development version with OT-specific changes
-git+https://github.com/lowRISC/fusesoc.git@ot-0.2
+git+https://github.com/lowRISC/fusesoc.git@ot-0.1
 
 # Development version with OT-specific changes
-git+https://github.com/lowRISC/edalize.git@ot-0.2
+git+https://github.com/lowRISC/edalize.git@ot-0.1
 
 # Development version of ChipWhisperer toolchain
 # Use a development version until support for the CW310 board works in a
