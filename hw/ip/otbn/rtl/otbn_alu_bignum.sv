@@ -770,7 +770,7 @@ module otbn_alu_bignum
 
       AluOpBignumRshi: begin
         operation_result_o = shifter_res[WLEN-1:0];
-          adder_y_res_used = 1'b0;
+        adder_y_res_used = 1'b0;
       end
 
       AluOpBignumXor,

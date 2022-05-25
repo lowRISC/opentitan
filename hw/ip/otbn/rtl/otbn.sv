@@ -1080,7 +1080,7 @@ module otbn
     .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
   );
 
-  always @(posedge clk_i or negedge rst_n) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
     if (!rst_n) begin
       locking_q <= 1'b0;
     end else begin
