@@ -18,9 +18,9 @@
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "sw/device/lib/testing/test_rom/bootstrap.h"
 #include "sw/device/lib/testing/test_rom/chip_info.h"  // Generated.
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/mask_rom/bootstrap.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
@@ -98,11 +98,14 @@ bool rom_test_main(void) {
     LOG_INFO("Jitter is enabled");
   }
 
-  int bootstrap_err = bootstrap(&flash_ctrl);
-  if (bootstrap_err != 0) {
-    LOG_ERROR("Bootstrap failed with status code: %d", bootstrap_err);
-    // Currently the only way to recover is by a hard reset.
-    test_status_set(kTestStatusFailed);
+  if (bootstrap_requested() == kHardenedBoolTrue) {
+    rom_error_t bootstrap_err = bootstrap();
+    if (bootstrap_err != kErrorOk) {
+      LOG_ERROR("Bootstrap failed with status code: %08x",
+                (uint32_t)bootstrap_err);
+      // Currently the only way to recover is by a hard reset.
+      test_status_set(kTestStatusFailed);
+    }
   }
   CHECK_DIF_OK(
       dif_flash_ctrl_set_exec_enablement(&flash_ctrl, kDifToggleEnabled));

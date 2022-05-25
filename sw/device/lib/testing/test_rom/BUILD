@@ -38,7 +38,6 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":bootstrap",
         ":chip_info",
         "//hw/ip/clkmgr/data:clkmgr_regs",
         "//hw/ip/csrng/data:csrng_regs",
@@ -67,6 +66,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/mask_rom:bootstrap",
     ],
 )
 
