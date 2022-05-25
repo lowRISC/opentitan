@@ -170,7 +170,10 @@ class adc_ctrl_fsm_reset_vseq extends adc_ctrl_base_vseq;
                 end
                 AdcCtrlResetModeHw: begin
                   // Hardware reset
-                  cfg.clk_aon_rst_vif.apply_reset();
+                  fork
+                    cfg.clk_aon_rst_vif.apply_reset();
+                    cfg.clk_rst_vif.apply_reset();
+                  join
                 end
                 default: `uvm_fatal(`gfn, "Undefined test mode")
               endcase
