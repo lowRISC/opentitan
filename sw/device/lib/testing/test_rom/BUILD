@@ -70,31 +70,6 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "bootstrap",
-    srcs = [
-        "bootstrap.c",
-    ],
-    hdrs = [
-        "bootstrap.h",
-        "spiflash_frame.h",
-    ],
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:hmac",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-    ],
-)
-
 opentitan_functest(
     name = "test_rom_test",
     srcs = ["test_rom_test.c"],
