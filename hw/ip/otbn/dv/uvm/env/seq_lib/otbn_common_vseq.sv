@@ -41,7 +41,7 @@ class otbn_common_vseq extends otbn_base_vseq;
 
     // If we see a write which causes an integrity error AND we've disabled the scoreboard (which
     // has its own predictor), we update the predicted value of the STATUS register to be LOCKED.
-    if (completed && saw_err && !cfg.en_scb) begin
+    if (completed && saw_err && !cfg.en_scb && tl_intg_err_type != TlIntgErrNone) begin
       `DV_CHECK_FATAL(ral.status.status.predict(otbn_pkg::StatusLocked, .kind(UVM_PREDICT_READ)),
                       "Failed to update STATUS register")
     end
