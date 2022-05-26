@@ -124,7 +124,6 @@ def on_start(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('start', 0, args)
 
     print('START')
-    sim.state.ext_regs.commit()
     sim.start(collect_stats=False)
 
     return None
