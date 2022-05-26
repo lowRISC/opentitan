@@ -19,6 +19,13 @@ hw/ip/*/sw
 # JasperGold FPV Result
 jgproject/
 
+# CDC result
+._dbname
+._idebug_exit_script
+idebugcfg.db
+idebugcfg.db-journal
+ivision.ws
+
 # FPGA splice intermediate files
 *.jou
 
