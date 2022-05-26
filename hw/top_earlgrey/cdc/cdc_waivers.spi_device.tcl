@@ -11,24 +11,60 @@
 
 ## Waive SPI_DEV clocks <-> SPI_DEV_PASSTHRU clocks
 
-set_rule_status -rule {W_CNTL W_DATA W_MASYNC} -status {Waived} -expression \
+set_rule_status -rule {W_CNTL} -status {Waived} -expression \
     {(MultiClockDomains == "SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK::SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK")} \
     -comment {Irrelevant clock relationship. Exclusive}
-set_rule_status -rule {W_CNTL W_DATA W_MASYNC} -status {Waived} -expression \
+set_rule_status -rule {W_DATA} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK::SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_MASYNC} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK::SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_CNTL} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK::SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_DATAW_MASYNC} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK::SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_MASYNC} -status {Waived} -expression \
     {(MultiClockDomains == "SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK::SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK")} \
     -comment {Irrelevant clock relationship. Exclusive}
 
-set_rule_status -rule {W_CNTL W_DATA W_MASYNC} -status {Waived} -expression \
+set_rule_status -rule {W_CNTL} -status {Waived} -expression \
     {(MultiClockDomains == "SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK::SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK")} \
     -comment {Irrelevant clock relationship. Exclusive}
-set_rule_status -rule {W_CNTL W_DATA W_MASYNC} -status {Waived} -expression \
+set_rule_status -rule {W_DATA} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK::SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_MASYNC} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK::SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_CNTL} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK::SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_DATA} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK::SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_MASYNC} -status {Waived} -expression \
     {(MultiClockDomains == "SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK::SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK")} \
     -comment {Irrelevant clock relationship. Exclusive}
 
-set_rule_status -rule {W_CNTL W_DATA W_MASYNC} -status {Waived} -expression \
+set_rule_status -rule {W_CNTL} -status {Waived} -expression \
     {(MultiClockDomains == "SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK::SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK")} \
     -comment {Irrelevant clock relationship. Exclusive}
-set_rule_status -rule {W_CNTL W_DATA W_MASYNC} -status {Waived} -expression \
+set_rule_status -rule {W_DATA} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK::SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_MASYNC} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK::SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_CNTL} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK::SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_DATA} -status {Waived} -expression \
+    {(MultiClockDomains == "SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK::SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK")} \
+    -comment {Irrelevant clock relationship. Exclusive}
+set_rule_status -rule {W_MASYNC} -status {Waived} -expression \
     {(MultiClockDomains == "SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK::SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK")} \
     -comment {Irrelevant clock relationship. Exclusive}
 
@@ -107,7 +143,34 @@ set_rule_status -rule {W_INTERFACE} -status {Waived}            \
   -expression {(Signal =~ "*.u_spi_device.*u_control_mode*") && \
   (MultiClockDomains =~ "IO_DIV4_CLK::*SPI_DEV*CLK*")}          \
   -comment {IO mode control is changed in SPI Idle state}
+set_rule_status -rule {W_DATA} -status {Waived}            \
+  -expression {(Signal =~ "*.u_spi_device.*u_control_mode*") && \
+  (MultiClockDomains =~ "IO_DIV4_CLK::*SPI_DEV*CLK*")}          \
+  -comment {IO mode control is changed in SPI Idle state}
 set_rule_status -rule {W_INTERFACE} -status {Waived}             \
   -expression {(Signal =~ "*.u_spi_device.u_reg*u_cmd_info*") && \
   (MultiClockDomains =~ "IO_DIV4_CLK::*SPI_DEV*CLK*")}           \
   -comment {CMD_INFO is pre-configured, static}
+set_rule_status -rule {W_DATA} -status {Waived}             \
+  -expression {(Signal =~ "*.u_spi_device.u_reg*u_cmd_info*") && \
+  (MultiClockDomains =~ "IO_DIV4_CLK::*SPI_DEV*CLK*")}           \
+  -comment {CMD_INFO is pre-configured, static}
+
+# UNUSED IO_DIV4 clock in Flash/Passthrough mode
+set_rule_status -rule {W_DATA} -status {Waived} \
+  -expression {(Signal =~ "*u_spi_device*io_mode_outclk*") && \
+  (ReceivingFlop =~ "*u_spi_device.u_memory_2p*")} \
+  -comment {Other than IO_DIV4_CLK, other clocks are in-phase}
+
+# SPIDEV to pinmux Retention, waived
+set_rule_status -rule {W_DATA} -status {Waived} \
+  -expression {(Signal =~ "*u_spi_device*") && \
+  (ReceivingFlop =~ "*u_pinmux_aon.*retreg_q*")} \
+  -comment {retention reg sits in IO_DIV4_CLK, but can be ignored}
+
+# SPI line to registers. Can't add CDC path due to timing
+
+set_rule_status -rule {W_DATA} -status {Waived} \
+  -expression {(Signal =~ "SPI_DEV_D*") && \
+   (ReceivingFlop =~ "*u_spi_device.u_memory_2p*b_rdata*)} \
+  -comment {SPI line cannot have CDC}
