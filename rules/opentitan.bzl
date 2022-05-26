@@ -297,50 +297,6 @@ scramble_flash_vmem = rv_rule(
     },
 )
 
-def _bin_to_spiflash_frames_impl(ctx):
-    outputs = []
-    frames_bin = ctx.actions.declare_file("{}.frames.bin".format(
-        # Remove ".bin" from file basename.
-        ctx.file.bin.basename.replace("." + ctx.file.bin.extension, ""),
-    ))
-    outputs.append(frames_bin)
-    ctx.actions.run(
-        outputs = [frames_bin],
-        inputs = [
-            ctx.file.bin,
-            ctx.file._tool,
-        ],
-        arguments = [
-            "--input",
-            ctx.file.bin.path,
-            "--dump-frames",
-            frames_bin.path,
-        ],
-        executable = ctx.file._tool.path,
-    )
-    return [DefaultInfo(
-        files = depset(outputs),
-        data_runfiles = ctx.runfiles(files = outputs),
-    )]
-
-bin_to_spiflash_frames = rule(
-    implementation = _bin_to_spiflash_frames_impl,
-    cfg = opentitan_transition,
-    attrs = {
-        "bin": attr.label(allow_single_file = True),
-        # TODO(lowRISC/opentitan:#11199): explore other options to side-step the
-        # need for this transition, in order to build the spiflash tool.
-        "platform": attr.string(default = "@local_config_platform//:host"),
-        "_tool": attr.label(
-            default = "//sw/host/spiflash",
-            allow_single_file = True,
-        ),
-        "_allowlist_function_transition": attr.label(
-            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
-        ),
-    },
-)
-
 def _gen_sim_dv_logs_db_impl(ctx):
     outputs = []
     for src in ctx.files.srcs:
@@ -656,23 +612,6 @@ def opentitan_flash_binary(
         ))
         elf_name = "{}_{}".format(devname, "elf")
         bin_name = "{}_{}".format(devname, "bin")
-
-        # Generate SPI flash frames binary for bootstrap in DV sim.
-        if device == "sim_dv":
-            frames_bin_name = "{}_frames_bin".format(devname)
-            targets.append(":" + frames_bin_name)
-            bin_to_spiflash_frames(
-                name = frames_bin_name,
-                bin = bin_name,
-            )
-            frames_vmem_name = "{}_frames_vmem".format(devname)
-            targets.append(":" + frames_vmem_name)
-            bin_to_vmem(
-                name = frames_vmem_name,
-                bin = frames_bin_name,
-                platform = platform,
-                word_size = 32,  # Bootstrap VMEM image uses 32-bit words
-            )
 
         # Sign BIN (if required) and generate scrambled VMEM images.
         if output_signed:
