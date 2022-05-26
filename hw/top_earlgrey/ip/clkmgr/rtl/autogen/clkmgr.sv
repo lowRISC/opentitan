@@ -26,6 +26,7 @@
   input clk_i,
   input rst_ni,
   input rst_shadowed_ni,
+  input rst_pwrmgr_ni,
 
   // System clocks and resets
   // These are the source clocks for the system
@@ -133,8 +134,8 @@
     .NumCopies(1),
     .AsyncOn(0)
   ) u_io_div2_div_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(io_div2_div_scanmode)
   );
@@ -156,8 +157,8 @@
     .NumCopies(1),
     .AsyncOn(0)
   ) u_io_div4_div_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(io_div4_div_scanmode)
   );
@@ -410,7 +411,7 @@
     .NumClocks(1)
   ) u_main_status (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_pwrmgr_ni),
     .ens_i(main_ens),
     .status_o(pwr_o.main_status)
   );
@@ -459,7 +460,7 @@
     .NumClocks(3)
   ) u_io_status (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_pwrmgr_ni),
     .ens_i(io_ens),
     .status_o(pwr_o.io_status)
   );
@@ -484,7 +485,7 @@
     .NumClocks(1)
   ) u_usb_status (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_pwrmgr_ni),
     .ens_i(usb_ens),
     .status_o(pwr_o.usb_status)
   );
@@ -767,8 +768,8 @@
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_div4_peri_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(clk_io_div4_peri_scanmode)
   );
@@ -809,8 +810,8 @@
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_div2_peri_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(clk_io_div2_peri_scanmode)
   );
@@ -851,8 +852,8 @@
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_usb_peri_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(clk_usb_peri_scanmode)
   );
@@ -893,8 +894,8 @@
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_peri_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(clk_io_peri_scanmode)
   );

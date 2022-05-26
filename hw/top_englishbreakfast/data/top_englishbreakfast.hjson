@@ -282,6 +282,7 @@
       },
       clock_group: "powerup",
       reset_connections: {rst_ni: "por_io_div4",
+                          rst_pwrmgr_ni: "por_io_div4",
                           rst_main_ni: "por",
                           rst_io_ni: "por_io",
                           rst_usb_ni: "por_usb",

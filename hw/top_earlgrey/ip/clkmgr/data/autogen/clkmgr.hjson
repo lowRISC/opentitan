@@ -15,6 +15,7 @@
   scan: "true",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
+    {reset: "rst_pwrmgr_ni"},
     {clock: "clk_main_i", reset: "rst_main_ni"},
     {clock: "clk_io_i", reset: "rst_io_ni"},
     {clock: "clk_usb_i", reset: "rst_usb_ni"},

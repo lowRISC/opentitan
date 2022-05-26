@@ -23,6 +23,7 @@ from topgen.lib import Name
   input clk_i,
   input rst_ni,
   input rst_shadowed_ni,
+  input rst_pwrmgr_ni,
 
   // System clocks and resets
   // These are the source clocks for the system
@@ -134,8 +135,8 @@ from topgen.lib import Name
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${src.name}_div_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(${src.name}_div_scanmode)
   );
@@ -313,7 +314,7 @@ from topgen.lib import Name
     .NumClocks(${len(clk_family)})
   ) u_${root}_status (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_pwrmgr_ni),
     .ens_i(${root}_ens),
     .status_o(pwr_o.${root}_status)
   );
@@ -420,8 +421,8 @@ from topgen.lib import Name
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${k}_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(${k}_scanmode)
   );
