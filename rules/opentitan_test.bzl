@@ -155,7 +155,7 @@ def cw310_params(
         # CW310-specific Parameters
         bitstream = "@//hw/bitstream:test_rom",
         rom_kind = None,
-        bootstrap_protocol = "primitive",
+        bootstrap_protocol = "eeprom",
         # None
         **kwargs):
     """A macro to create CW310 parameters for OpenTitan functional tests.
@@ -329,11 +329,6 @@ def opentitan_functest(
             else:
                 fail("Unknown bitstream type. Expected the bitstream label to contain the string 'test_rom' or 'mask_rom'.")
 
-        # Determine the bootstrap protocol to use.
-        bootstrap_protocol = "primitive"
-        if rom_kind and rom_kind == "maskrom":
-            bootstrap_protocol = "eeprom"
-
         # Set OTP image.
         otp = params.pop("otp")
 
@@ -359,7 +354,7 @@ def opentitan_functest(
             rom = rom,
             rom_kind = rom_kind,
             bitstream = bitstream,
-            bootstrap_protocol = bootstrap_protocol,
+            bootstrap_protocol = "eeprom",
         )
         if target == "fpga_cw310":
             # We attach the uarts configuration to the front of the command
