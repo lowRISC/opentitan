@@ -63,3 +63,13 @@ set_rule_status -rule {W_CNTL} -status {Waived}                              \
 set_rule_status -rule {W_MASYNC} -status {Waived}        \
   -expression {(Driver=~"*u_pinmux_aon.dio_pad_attr_*")} \
   -comment {PAD Attributes are static signals.}
+
+## Waive prim_reg_cdc (core_tgl -> reg src_update)
+set_rule_status -rule {W_RECON_GROUPS} -status {Waived} \
+  -expression {(ControlSignal =~ "*.u_reg.u_core_tgl.req_sync*") && \
+  (ReconSignal =~ "*.u_reg.u_*_cdc.src_q*")} \
+  -comment {core_tgl generates pulse at every edge, then reconvergence issue is not concern here}
+set_rule_status -rule {W_RECON_GROUPS} -status {Waived} \
+  -expression {(ControlSignal =~ "*.u_reg.u_*_cdc.u_prim_sync.ack_sync.*") && \
+  (ReconSignal =~ "*.u_reg.u_*_cdc.src_q*")} \
+  -comment {core_tgl generates pulse at every edge, then reconvergence issue is not concern here}
