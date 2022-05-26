@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Callable, Dict, List, Sequence
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 from reggen.field import Field
 from reggen.register import Register
@@ -196,13 +196,16 @@ class RndReq(RGReg):
 
         Returns True if RND_REQ changed.
         '''
-        # If RND_REQ is already high, there's nothing to do
-        if self.read(True) != 0:
-            return False
-
-        self.write(1, True)
         self._client.request()
-        return True
+
+        if self.read(True) == 0:
+            self.write(1, True)
+            return True
+
+        return False
+
+    def poison(self) -> None:
+        self._client.poison()
 
     def take_word(self, word: int) -> None:
         self._client.take_word(word)
@@ -210,11 +213,15 @@ class RndReq(RGReg):
     def edn_reset(self) -> None:
         self._client.edn_reset()
 
-    def cdc_complete(self) -> int:
-        '''Clear the flag and return the data that we've read from EDN'''
+    def cdc_complete(self) -> Tuple[Optional[int], bool]:
+        '''Clear the flag and return the data that we've read from EDN.
+
+        Returns the same value as EdnClient.cdc_complete().'''
         assert self.read(True) == 1
-        self.write(0, True)
-        return self._client.cdc_complete()
+        (data, retry) = self._client.cdc_complete()
+        if not retry:
+            self.write(0, True)
+        return (data, retry)
 
     def step(self) -> None:
         '''Called on each main clock cycle. Step the client'''
@@ -338,6 +345,11 @@ class OTBNExtRegs:
         self._rnd_req.edn_reset()
         self._dirty = 2
 
-    def rnd_cdc_complete(self) -> int:
-        self._dirty = 2
-        return self._rnd_req.cdc_complete()
+    def rnd_cdc_complete(self) -> Optional[int]:
+        (data, retry) = self._rnd_req.cdc_complete()
+        if not retry:
+            self._dirty = 2
+        return data
+
+    def rnd_poison(self) -> None:
+        self._rnd_req.poison()

@@ -155,13 +155,17 @@ class OTBNState:
 
     def rnd_completed(self) -> None:
         '''Called when CDC completes for the EDN RND interface'''
-        # Set the RND WSR with the value. This will be committed at the end of
-        # the next step on the main clock.
+        # Set the RND WSR with the value, assuming the cache hadn't been
+        # poisoned. This will be committed at the end of the next step on the
+        # main clock.
         rnd_val = self.ext_regs.rnd_cdc_complete()
-        self.wsrs.RND.set_unsigned(rnd_val)
+        if rnd_val is not None:
+            self.wsrs.RND.set_unsigned(rnd_val)
 
     def urnd_completed(self) -> None:
-        w256 = self._urnd_client.cdc_complete()
+        w256, retry = self._urnd_client.cdc_complete()
+        # The URND client should never be poisoned
+        assert w256 is not None and retry is False
 
         # cdc_complete() returned a 256-bit value but we actually need to split
         # it back into four 64-bit words.
@@ -283,6 +287,10 @@ class OTBNState:
         self.wsrs.on_start()
         self.loop_stack = LoopStack()
         self.gprs.empty_call_stack()
+
+        # Poison the requester so that we'll discard the rest of any in-flight
+        # request.
+        self.ext_regs.rnd_poison()
 
         self._urnd_client.request()
 
