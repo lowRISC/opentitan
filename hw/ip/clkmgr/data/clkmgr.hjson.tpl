@@ -9,6 +9,7 @@
   scan: "true",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
+    {reset: "rst_pwrmgr_ni"},
 % for src in clocks.srcs.values():
     {clock: "clk_${src.name}_i", reset: "rst_${src.name}_ni"},
 % endfor
