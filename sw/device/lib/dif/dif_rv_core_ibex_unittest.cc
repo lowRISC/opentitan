@@ -38,6 +38,24 @@ std::ostream &operator<<(
             << "}";
 }
 
+// We define global namespace == and << to make `dif_rv_core_ibex_nmi_state_t`
+// work nicely with EXPECT_EQ.
+bool operator==(const dif_rv_core_ibex_nmi_state_t a,
+                const dif_rv_core_ibex_nmi_state_t b) {
+  return memcmp(&a, &b, sizeof(dif_rv_core_ibex_nmi_state_t)) == 0;
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const dif_rv_core_ibex_nmi_state_t &state) {
+  return os << "{\n"
+            << "state = {\n"
+            << "  .alert_enabled = " << state.alert_enabled << ",\n"
+            << "  .alert_raised = " << state.alert_raised << ",\n"
+            << "  .wdog_enabled = " << state.wdog_enabled << ",\n"
+            << "  .wdog_barked = " << state.wdog_barked << ",\n"
+            << "}";
+}
+
 namespace dif_rv_core_ibex_test {
 using mock_mmio::MmioTest;
 using mock_mmio::MockDevice;
@@ -309,6 +327,105 @@ TEST_F(ErrorStatusTest, ClearBadArg) {
       nullptr, kDifRvCoreIbexErrorStatusRegisterTransmissionIntegrity));
   EXPECT_DIF_BADARG(dif_rv_core_ibex_clear_error_status(
       &ibex_, static_cast<dif_rv_core_ibex_error_status_t>(-1)));
+}
+
+class NMITest
+    : public RvCoreIbexTestInitialized,
+      public testing::WithParamInterface<dif_rv_core_ibex_nmi_state_t> {};
+
+TEST_F(NMITest, EnableAlertSuccess) {
+  EXPECT_WRITE32(RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET,
+                 {{RV_CORE_IBEX_NMI_ENABLE_ALERT_EN_BIT, 1}});
+  EXPECT_DIF_OK(
+      dif_rv_core_ibex_enable_nmi(&ibex_, kDifRvCoreIbexNmiSourceAlert));
+}
+
+TEST_F(NMITest, EnableWdogSuccess) {
+  EXPECT_WRITE32(RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET,
+                 {{RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT, 1}});
+  EXPECT_DIF_OK(
+      dif_rv_core_ibex_enable_nmi(&ibex_, kDifRvCoreIbexNmiSourceWdog));
+}
+
+TEST_F(NMITest, EnableAllSuccess) {
+  EXPECT_WRITE32(RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET,
+                 {{RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT, 1},
+                  {RV_CORE_IBEX_NMI_ENABLE_ALERT_EN_BIT, 1}});
+  EXPECT_DIF_OK(
+      dif_rv_core_ibex_enable_nmi(&ibex_, kDifRvCoreIbexNmiSourceAll));
+}
+
+TEST_F(NMITest, EnableBadArg) {
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_enable_nmi(nullptr, kDifRvCoreIbexNmiSourceWdog));
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_enable_nmi(
+      &ibex_, static_cast<dif_rv_core_ibex_nmi_source_t>(-1)));
+}
+
+TEST_P(NMITest, GetStateSuccess) {
+  dif_rv_core_ibex_nmi_state_t expected_state = GetParam();
+
+  EXPECT_READ32(
+      RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET,
+      {
+          {RV_CORE_IBEX_NMI_ENABLE_ALERT_EN_BIT, expected_state.alert_enabled},
+          {RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT, expected_state.wdog_enabled},
+      });
+
+  EXPECT_READ32(
+      RV_CORE_IBEX_NMI_STATE_REG_OFFSET,
+      {
+          {RV_CORE_IBEX_NMI_STATE_ALERT_BIT, expected_state.alert_raised},
+          {RV_CORE_IBEX_NMI_STATE_WDOG_BIT, expected_state.wdog_barked},
+      });
+
+  dif_rv_core_ibex_nmi_state_t state;
+  EXPECT_DIF_OK(dif_rv_core_ibex_get_nmi_state(&ibex_, &state));
+  EXPECT_EQ(expected_state, state);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    NMITest, NMITest,
+    testing::ValuesIn(std::vector<dif_rv_core_ibex_nmi_state_t>{{
+        {true, false, false, false},
+        {false, true, false, false},
+        {false, false, true, false},
+        {false, false, false, true},
+    }}));
+
+TEST_F(NMITest, GetStateBadArg) {
+  dif_rv_core_ibex_nmi_state_t nmi_state;
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_get_nmi_state(nullptr, &nmi_state));
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_get_nmi_state(&ibex_, nullptr));
+}
+
+TEST_F(NMITest, ClearAlertSuccess) {
+  EXPECT_WRITE32(RV_CORE_IBEX_NMI_STATE_REG_OFFSET,
+                 {{RV_CORE_IBEX_NMI_STATE_ALERT_BIT, 1}});
+  EXPECT_DIF_OK(
+      dif_rv_core_ibex_clear_nmi_state(&ibex_, kDifRvCoreIbexNmiSourceAlert));
+}
+
+TEST_F(NMITest, ClearWdogSuccess) {
+  EXPECT_WRITE32(RV_CORE_IBEX_NMI_STATE_REG_OFFSET,
+                 {{RV_CORE_IBEX_NMI_STATE_WDOG_BIT, 1}});
+  EXPECT_DIF_OK(
+      dif_rv_core_ibex_clear_nmi_state(&ibex_, kDifRvCoreIbexNmiSourceWdog));
+}
+
+TEST_F(NMITest, ClearAllSuccess) {
+  EXPECT_WRITE32(RV_CORE_IBEX_NMI_STATE_REG_OFFSET,
+                 {{RV_CORE_IBEX_NMI_STATE_WDOG_BIT, 1},
+                  {RV_CORE_IBEX_NMI_ENABLE_ALERT_EN_BIT, 1}});
+  EXPECT_DIF_OK(
+      dif_rv_core_ibex_clear_nmi_state(&ibex_, kDifRvCoreIbexNmiSourceAll));
+}
+
+TEST_F(NMITest, ClearBadArg) {
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_clear_nmi_state(nullptr, kDifRvCoreIbexNmiSourceWdog));
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_clear_nmi_state(
+      &ibex_, static_cast<dif_rv_core_ibex_nmi_source_t>(-1)));
 }
 
 }  // namespace dif_rv_core_ibex_test

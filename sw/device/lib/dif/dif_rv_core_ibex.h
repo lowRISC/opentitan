@@ -107,6 +107,43 @@ typedef enum dif_rv_core_ibex_error_status {
 } dif_rv_core_ibex_error_status_t;
 
 /**
+ * NMI enabled status and current state.
+ */
+typedef struct dif_rv_core_ibex_nmi_state {
+  /**
+   * NMI alert is currently enabled.
+   */
+  bool alert_enabled;
+  /**
+   * Alert has been raised.
+   */
+  bool alert_raised;
+  /**
+   * NMI watchdog is currently enabled.
+   */
+  bool wdog_enabled;
+  /**
+   * Watchdog has barked.
+   */
+  bool wdog_barked;
+} dif_rv_core_ibex_nmi_state_t;
+
+typedef enum dif_rv_core_ibex_nmi_source {
+  /**
+   * NMI alert handler.
+   */
+  kDifRvCoreIbexNmiSourceAlert = 1 << 0,
+  /**
+   * NMI watchdog bark.
+   */
+  kDifRvCoreIbexNmiSourceWdog = 1 << 1,
+  /**
+   * All ibex NMIs.
+   */
+  kDifRvCoreIbexNmiSourceAll = 0x3,
+} dif_rv_core_ibex_nmi_source_t;
+
+/**
  * Configure the instruction and data bus in the address translation `slot`.
  *
  * @param rv_core_ibex Handle.
@@ -169,6 +206,40 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_core_ibex_clear_error_status(
     const dif_rv_core_ibex_t *rv_core_ibex,
     dif_rv_core_ibex_error_status_t error_status);
+
+/**
+ * Enables NMI support for security alert events and watchdog bark.
+ *
+ * @param rv_core_ibex Handle.
+ * @param nmi A bitmask with nmi sources to be enabled.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_enable_nmi(const dif_rv_core_ibex_t *rv_core_ibex,
+                                         dif_rv_core_ibex_nmi_source_t nmi);
+
+/**
+ * Read the NMI enable status and current event state.
+ *
+ * @param rv_core_ibex Handle.
+ * @param[out] nmi_state The nmi state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_get_nmi_state(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_nmi_state_t *nmi_state);
+
+/**
+ * Clear the NMI current event state.
+ *
+ * @param rv_core_ibex Handle
+ * @param nmi A bitmask with nmi sources to be cleared.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_clear_nmi_state(
+    const dif_rv_core_ibex_t *rv_core_ibex, dif_rv_core_ibex_nmi_source_t nmi);
 
 #ifdef __cplusplus
 }  // extern "C"

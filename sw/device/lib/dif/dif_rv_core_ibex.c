@@ -205,3 +205,69 @@ dif_result_t dif_rv_core_ibex_clear_error_status(
 
   return kDifOk;
 }
+
+dif_result_t dif_rv_core_ibex_enable_nmi(const dif_rv_core_ibex_t *rv_core_ibex,
+                                         dif_rv_core_ibex_nmi_source_t nmi) {
+  if (rv_core_ibex == NULL || (nmi & ~kDifRvCoreIbexNmiSourceAll) != 0) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = 0;
+  reg = bitfield_bit32_write(
+      reg, RV_CORE_IBEX_NMI_ENABLE_ALERT_EN_BIT,
+      (nmi & kDifRvCoreIbexNmiSourceAlert) == kDifRvCoreIbexNmiSourceAlert);
+  reg = bitfield_bit32_write(
+      reg, RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT,
+      (nmi & kDifRvCoreIbexNmiSourceWdog) == kDifRvCoreIbexNmiSourceWdog);
+
+  mmio_region_write32(rv_core_ibex->base_addr,
+                      RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_rv_core_ibex_get_nmi_state(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_nmi_state_t *nmi_state) {
+  if (rv_core_ibex == NULL || nmi_state == NULL) {
+    return kDifBadArg;
+  }
+
+  *nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
+
+  uint32_t reg = mmio_region_read32(rv_core_ibex->base_addr,
+                                    RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET);
+  nmi_state->alert_enabled =
+      bitfield_bit32_read(reg, RV_CORE_IBEX_NMI_ENABLE_ALERT_EN_BIT);
+  nmi_state->wdog_enabled =
+      bitfield_bit32_read(reg, RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT);
+
+  reg = mmio_region_read32(rv_core_ibex->base_addr,
+                           RV_CORE_IBEX_NMI_STATE_REG_OFFSET);
+  nmi_state->alert_raised =
+      bitfield_bit32_read(reg, RV_CORE_IBEX_NMI_STATE_ALERT_BIT);
+  nmi_state->wdog_barked =
+      bitfield_bit32_read(reg, RV_CORE_IBEX_NMI_STATE_WDOG_BIT);
+
+  return kDifOk;
+}
+
+dif_result_t dif_rv_core_ibex_clear_nmi_state(
+    const dif_rv_core_ibex_t *rv_core_ibex, dif_rv_core_ibex_nmi_source_t nmi) {
+  if (rv_core_ibex == NULL || (nmi & ~kDifRvCoreIbexNmiSourceAll) != 0) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = 0;
+  reg = bitfield_bit32_write(
+      reg, RV_CORE_IBEX_NMI_STATE_ALERT_BIT,
+      (nmi & kDifRvCoreIbexNmiSourceAlert) == kDifRvCoreIbexNmiSourceAlert);
+  reg = bitfield_bit32_write(
+      reg, RV_CORE_IBEX_NMI_STATE_WDOG_BIT,
+      (nmi & kDifRvCoreIbexNmiSourceWdog) == kDifRvCoreIbexNmiSourceWdog);
+
+  mmio_region_write32(rv_core_ibex->base_addr,
+                      RV_CORE_IBEX_NMI_STATE_REG_OFFSET, reg);
+
+  return kDifOk;
+}
