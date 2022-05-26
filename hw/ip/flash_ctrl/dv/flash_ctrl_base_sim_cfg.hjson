@@ -38,6 +38,10 @@
       name: design_level
       value: "top"
     }
+    {
+      name: "timescale"
+      value: "1ns/100ps"
+    }
   ]
 
   // Add additional tops for simulation.
