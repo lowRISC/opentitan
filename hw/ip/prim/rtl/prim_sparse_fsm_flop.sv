@@ -62,4 +62,20 @@ module prim_sparse_fsm_flop #(
   `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
   `endif
 
+  `ifdef FPV_SEC_CM_ON
+    // For FPV security countermeasure environment, once `state_o` is driven to non-declared enum
+    // value, we need to reconnect the logic where state_o is assigned from state_i. Otherwise
+    // the state machine might stuck at default case statement and never goes to FsmError state.
+    //
+    // Example FSM code that causes this to happen:
+    // unique case (state_q):
+    //   FsmError: begin
+    //     fsm_err_o = 1'b1;
+    //   end
+    //   default: begin
+    //     state_d = FsmError;
+    //   end
+    `ASSUME_FPV(sec_cm_A, unused_err_o |=> state_o == $past(state_i))
+  `endif
+
 endmodule
