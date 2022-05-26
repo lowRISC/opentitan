@@ -33,6 +33,12 @@ set_rule_status -rule {W_DATA W_MASYNC} -status {Waived} \
   -expression {(ReceivingFlop =~ "IO*")}                 \
   -comment {Direct output without flop}
 
+# PADs attribute to multiple IPs
+# Assume the attributes are not used when IPs are active
+set_rule_status -rule {W_FANOUT} -status {Waived}           \
+  -expression {(Driver =~ "*u_pinmux_aon.dio_pad_attr_q*")} \
+  -comment {ATTR static signal propagates into USB_CLK, AON_CLK. But no Reconvergence issue}
+
 # SPI Device PADS output
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
   {(MultiClockDomains =~ "*::SPI_DEV_CLK,SPI_DEV_PASSTHRU_CLK") &&      \
