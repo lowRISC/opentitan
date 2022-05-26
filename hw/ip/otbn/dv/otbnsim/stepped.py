@@ -127,9 +127,9 @@ def on_start_operation(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
         print('START')
         sim.start(collect_stats=False)
     elif command == 'DmemWipe':
-        sim.on_dmem_wipe()
+        sim.start_mem_wipe(False)
     elif command == 'ImemWipe':
-        sim.on_imem_wipe()
+        sim.start_mem_wipe(True)
     else:
         raise ValueError(f'Invalid command for start_operation: {command}.')
 
