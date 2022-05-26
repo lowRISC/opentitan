@@ -108,16 +108,16 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only con
 Documentation | [NEW_FEATURES_D3][]     | N/A         |
 RTL           | [TODO_COMPLETE][]       | Done        |
 Code Quality  | [LINT_COMPLETE][]       | Done        |
-Code Quality  | [CDC_COMPLETE][]        | N/A         |
-Code Quality  | [RDC_COMPLETE][]        | Not Started |
-Review        | [REVIEW_RTL][]          | Done        | by @msfschaffner
-Review        | [REVIEW_DELETED_FF][]   | N/A         | Not reported by FPGA (@eunchan double-check)
-Review        | [REVIEW_SW_CHANGE][]    | N/A         |
+Code Quality  | [CDC_COMPLETE][]        | Waived      | No block-level flow available - waived to top-level signoff
+Code Quality  | [RDC_COMPLETE][]        | Waived      | No block-level flow available - waived to top-level signoff
+Review        | [REVIEW_RTL][]          | Done        |
+Review        | [REVIEW_DELETED_FF][]   | Waived      | No block-level flow available - waived to top-level signoff
+Review        | [REVIEW_SW_CHANGE][]    | Done        | by awill@
 Review        | [REVIEW_SW_ERRATA][]    | Done        |
-Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
-Security      | [SEC_SHADOW_REGS][]     | Not Started |
-Review        | Reviewer(s)             | Done        | @weicaiyang @sjgitty @msfschaffner
-Review        | Signoff date            | Done        | 2019-10-31
+Security      | [SEC_NON_RESET_FLOPS][] | N/A         |
+Security      | [SEC_SHADOW_REGS][]     | N/A         |
+Review        | Reviewer(s)             | Done        | eunchan@ jeoong@ weicai@ awill@
+Review        | Signoff date            | Done        | 2022-06-16
 
 [NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new_features_d3" >}}
 [TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo_complete" >}}
