@@ -14,8 +14,9 @@ prefixed with "0x" if they are hexadecimal.
 
     start                   Set the PC to zero and start OTBN
 
-    configure               Enable or disable the secure wipe machinery (this is a
-                            temporary feature until everything works together)
+    configure               Enable or disable the secure wipe machinery (this
+                            is a temporary feature until everything works
+                            together)
 
     step                    Run one instruction. Print trace information to
                             stdout.
@@ -23,11 +24,11 @@ prefixed with "0x" if they are hexadecimal.
     load_elf <path>         Load the ELF file at <path>, replacing current
                             contents of DMEM and IMEM.
 
-    add_loop_warp <addr>    <from> <to>
+    add_loop_warp <addr> <from> <to>
 
-                            Add a loop warp to the simulation. This will trigger
-                            at address <addr> and will jump from iteration <from>
-                            to iteration <to>.
+                            Add a loop warp to the simulation. This will
+                            trigger at address <addr> and will jump from
+                            iteration <from> to iteration <to>.
 
     clear_loop_warps        Clear any loop warp rules
 
@@ -40,7 +41,7 @@ prefixed with "0x" if they are hexadecimal.
     dump_d <path>           Write the current contents of DMEM to <path> (same
                             format as for load).
 
-    print_regs              Write the contents of all registers to stdout (in hex)
+    print_regs              Write the hex contents of all registers to stdout
 
     edn_rnd_step            Send 32b RND Data to the model.
 
@@ -50,15 +51,15 @@ prefixed with "0x" if they are hexadecimal.
     edn_urnd_step           Send 32b URND seed data to the model.
 
     edn_urnd_cdc_done       Finish the URND resseding process by signalling RTL
-                            is also finished processing 32b packages from EDN and
-                            set the seed.
+                            is also finished processing 32b packages from EDN
+                            and set the seed.
 
-    edn_flush               Flush EDN data from model because of reset signal in
-                            EDN clock domain
+    edn_flush               Flush EDN data from model because of reset signal
+                            in EDN clock domain
 
-    otp_key_cdc_done        Lowers the request flag for any external secure wipe
-                            operation. Gets called when we acknowledge incoming
-                            scrambling key in RTL.
+    otp_key_cdc_done        Lowers the request flag for any external secure
+                            wipe operation. Gets called when we acknowledge
+                            incoming scrambling key in RTL.
 
     invalidate_imem         Mark all of IMEM as having invalid ECC checksums
 
@@ -67,13 +68,12 @@ prefixed with "0x" if they are hexadecimal.
     set_keymgr_value        Send keymgr data to the model.
 
     step_crc                Step CRC function with 48 bits of data. No actual
-                            change of state (this is pure, but handled in Python
-                            to simplify verification).
+                            change of state (this is pure, but handled in
+                            Python to simplify verification).
 
     send_err_escalation     React to an injected error.
 
     set_software_errs_fatal Set software_errs_fatal bit.
-
 '''
 
 import binascii
@@ -309,62 +309,39 @@ def on_print_call_stack(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 
 def on_reset(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if args:
-        raise ValueError('reset expects zero arguments. Got {}.'
-                         .format(args))
-
+    check_arg_count('reset', 0, args)
     return OTBNSim()
 
 
 def on_edn_rnd_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if len(args) != 1:
-        raise ValueError('edn_rnd_step expects exactly 1 argument. Got {}.'
-                         .format(args))
-
+    check_arg_count('edn_rnd_step', 1, args)
     edn_rnd_data = read_word('edn_rnd_step', args[0], 32)
-
     sim.state.edn_rnd_step(edn_rnd_data)
-
     return None
 
 
 def on_edn_urnd_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if len(args) != 1:
-        raise ValueError('edn_urnd_step expects exactly 1 argument. Got {}.'
-                         .format(args))
-
+    check_arg_count('edn_urnd_step', 1, args)
     edn_urnd_data = read_word('edn_urnd_step', args[0], 32)
-
     sim.state.edn_urnd_step(edn_urnd_data)
-
     return None
 
 
 def on_edn_flush(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if len(args) != 0:
-        raise ValueError('edn_flush expects zero arguments. Got {}.'
-                         .format(args))
-
+    check_arg_count('edn_flush', 0, args)
     sim.state.edn_flush()
-
     return None
 
 
 def on_edn_urnd_cdc_done(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if len(args) != 0:
-        raise ValueError('edn_urnd_cdc_done expects zero arguments. Got {}.'
-                         .format(args))
-
+    check_arg_count('urnd_cdc_done', 0, args)
     sim.state.urnd_completed()
-
     return None
 
 
 def on_edn_rnd_cdc_done(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('edn_rnd_cdc_done', 0, args)
-
     sim.state.rnd_completed()
-
     return None
 
 
@@ -382,10 +359,9 @@ def on_invalidate_dmem(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
-def on_set_software_errs_fatal(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if len(args) != 1:
-        raise ValueError('software_errs_fatal expects exactly 1 argument. Got {}.'
-                         .format(args))
+def on_set_software_errs_fatal(sim: OTBNSim,
+                               args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('set_software_errs_fatal', 1, args)
     new_val = read_word('error', args[0], 1)
     assert new_val in [0, 1]
     sim.state.software_errs_fatal = new_val != 0
@@ -394,9 +370,7 @@ def on_set_software_errs_fatal(sim: OTBNSim, args: List[str]) -> Optional[OTBNSi
 
 
 def on_set_keymgr_value(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if len(args) != 3:
-        raise ValueError('set_keymgr_value expects exactly 3 arguments. Got {}.'
-                         .format(args))
+    check_arg_count('set_keymgr_value', 3, args)
     key0 = read_word('key0', args[0], 384)
     key1 = read_word('key1', args[1], 384)
     valid = read_word('valid', args[2], 1) == 1
