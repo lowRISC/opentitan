@@ -136,8 +136,6 @@ module otbn_alu_bignum
   flags_t                              mac_update_flags;
   logic                                mac_update_flags_en;
   logic                                ispr_update_flags_en;
-  logic   [ExtWLEN-1:0]                ispr_rdata_intg_mux_in [NIspr];
-  logic   [WLEN-1:0]                   ispr_rdata_no_intg_mux_in [NIspr];
 
   logic [NIspr-1:0] expected_ispr_rd_en_onehot;
   logic [NIspr-1:0] expected_ispr_wr_en_onehot;
@@ -286,14 +284,6 @@ module otbn_alu_bignum
   assign ispr_acc_wr_en_o   =
     ((ispr_addr_i == IsprAcc) & ispr_bignum_wr_en_i & ispr_wr_commit_i) | ispr_init_i;
 
-  logic [WLEN-1:0]    ispr_rdata_no_intg;
-  logic [ExtWLEN-1:0] ispr_rdata_intg_calc;
-  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_rdata_enc
-    prim_secded_inv_39_32_enc i_secded_enc (
-      .data_i(ispr_rdata_no_intg[i_word * 32 +: 32]),
-      .data_o(ispr_rdata_intg_calc[i_word * 39 +: 39])
-    );
-  end
 
   logic [ExtWLEN-1:0] ispr_acc_bignum_wdata_intg_blanked;
 
@@ -310,14 +300,28 @@ module otbn_alu_bignum
   assign ispr_acc_wr_data_intg_o = ispr_init_i ? EccWideZeroWord
                                                : ispr_acc_bignum_wdata_intg_blanked;
 
-  // Pre-encoded values directly go through the mux that selects among ECC-coded signals.
-  assign ispr_rdata_intg_mux_in[IsprMod] = mod_intg_q;
-  assign ispr_rdata_intg_mux_in[IsprAcc] = ispr_acc_intg_i;
-  assign ispr_rdata_no_intg_mux_in[IsprMod] = 'x; // This value must not be used!
-  assign ispr_rdata_no_intg_mux_in[IsprAcc] = 'x; // This value must not be used!
+  // ISPR read data is muxed out in two stages:
+  // 1. Select amongst the ISPRs that have no integrity bits. The output has integrity calculated
+  //    for it.
+  // 2. Select between the ISPRs that have integrity bits and the result of the first stage.
 
-  // Non-encoded values have to be encoded before going to the mux that selects among ECC-coded
-  // signals.
+  // Number of ISPRs that have integrity protection
+  localparam int NIntgIspr = 2;
+  // IDs fpr ISPRs with integrity
+  localparam int IsprModIntg = 0;
+  localparam int IsprAccIntg = 1;
+  // ID representing all ISPRs with no integrity
+  localparam int IsprNoIntg = 2;
+
+  logic [NIntgIspr:0] ispr_rdata_intg_mux_sel;
+  logic [ExtWLEN-1:0] ispr_rdata_intg_mux_in    [NIntgIspr+1];
+  logic [WLEN-1:0]    ispr_rdata_no_intg_mux_in [NIspr];
+
+  // First stage
+  // MOD and ACC supply their own integrity so these values are unused
+  assign ispr_rdata_no_intg_mux_in[IsprMod] = 0;
+  assign ispr_rdata_no_intg_mux_in[IsprAcc] = 0;
+
   assign ispr_rdata_no_intg_mux_in[IsprRnd]    = rnd_data_i;
   assign ispr_rdata_no_intg_mux_in[IsprUrnd]   = urnd_data_i;
   assign ispr_rdata_no_intg_mux_in[IsprFlags]  = {{(WLEN - (NFlagGroups * FlagsWidth)){1'b0}},
@@ -328,18 +332,14 @@ module otbn_alu_bignum
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1L] = sideload_key_shares_i[1][255:0];
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1H] = {{(WLEN - (SideloadKeyWidth - 256)){1'b0}},
                                                   sideload_key_shares_i[1][SideloadKeyWidth-1:256]};
-  assign ispr_rdata_intg_mux_in[IsprRnd]    = ispr_rdata_intg_calc;
-  assign ispr_rdata_intg_mux_in[IsprUrnd]   = ispr_rdata_intg_calc;
-  assign ispr_rdata_intg_mux_in[IsprFlags]  = ispr_rdata_intg_calc;
-  assign ispr_rdata_intg_mux_in[IsprKeyS0L] = ispr_rdata_intg_calc;
-  assign ispr_rdata_intg_mux_in[IsprKeyS0H] = ispr_rdata_intg_calc;
-  assign ispr_rdata_intg_mux_in[IsprKeyS1L] = ispr_rdata_intg_calc;
-  assign ispr_rdata_intg_mux_in[IsprKeyS1H] = ispr_rdata_intg_calc;
+
+  logic [WLEN-1:0]    ispr_rdata_no_intg;
+  logic [ExtWLEN-1:0] ispr_rdata_intg_calc;
 
   prim_onehot_mux #(
     .Width  (WLEN),
     .Inputs (NIspr)
-  ) u_ispr_rd_no_intg_mux (
+  ) u_ispr_rdata_no_intg_mux (
     .clk_i,
     .rst_ni,
     .in_i  (ispr_rdata_no_intg_mux_in),
@@ -347,14 +347,48 @@ module otbn_alu_bignum
     .out_o (ispr_rdata_no_intg)
   );
 
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_rdata_enc
+    prim_secded_inv_39_32_enc i_secded_enc (
+      .data_i(ispr_rdata_no_intg[i_word * 32 +: 32]),
+      .data_o(ispr_rdata_intg_calc[i_word * 39 +: 39])
+    );
+  end
+
+  // Second stage
+  assign ispr_rdata_intg_mux_in[IsprModIntg] = mod_intg_q;
+  assign ispr_rdata_intg_mux_in[IsprAccIntg] = ispr_acc_intg_i;
+  assign ispr_rdata_intg_mux_in[IsprNoIntg]  = ispr_rdata_intg_calc;
+
+  assign ispr_rdata_intg_mux_sel[IsprModIntg] = ispr_predec_bignum_i.ispr_rd_en[IsprMod];
+  assign ispr_rdata_intg_mux_sel[IsprAccIntg] = ispr_predec_bignum_i.ispr_rd_en[IsprAcc];
+
+  assign ispr_rdata_intg_mux_sel[IsprNoIntg]  =
+    |{ispr_predec_bignum_i.ispr_rd_en[IsprKeyS1H:IsprKeyS0L],
+      ispr_predec_bignum_i.ispr_rd_en[IsprUrnd],
+      ispr_predec_bignum_i.ispr_rd_en[IsprFlags],
+      ispr_predec_bignum_i.ispr_rd_en[IsprRnd]};
+
+  // If we're reading from an ISPR we must be using the ispr_rdata_intg_mux
+  `ASSERT(IsprRDataIntgMuxSelIfIsprRd_A,
+    |ispr_predec_bignum_i.ispr_rd_en |-> |ispr_rdata_intg_mux_sel);
+
+  // If we're reading from MOD or ACC we must not take the read data from the calculated integrity
+  // path
+  `ASSERT(IsprModMustTakeIntg_A,
+    ispr_predec_bignum_i.ispr_rd_en[IsprMod] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg]);
+
+  `ASSERT(IsprAccMustTakeIntg_A,
+    ispr_predec_bignum_i.ispr_rd_en[IsprAcc] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg]);
+
+
   prim_onehot_mux #(
     .Width  (ExtWLEN),
-    .Inputs (NIspr)
-  ) u_ispr_rd_mux (
+    .Inputs (NIntgIspr+1)
+  ) u_ispr_rdata_intg_mux (
     .clk_i,
     .rst_ni,
     .in_i  (ispr_rdata_intg_mux_in),
-    .sel_i (ispr_predec_bignum_i.ispr_rd_en),
+    .sel_i (ispr_rdata_intg_mux_sel),
     .out_o (ispr_rdata_intg_o)
   );
 
