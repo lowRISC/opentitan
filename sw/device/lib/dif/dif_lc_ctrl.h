@@ -260,37 +260,11 @@ typedef enum dif_lc_ctrl_id_state {
 } dif_lc_ctrl_id_state_t;
 
 /**
- * Programming clock settings, indicating whether to use the internal or
- * external clock to perform the life cycle transition.
- */
-typedef enum dif_lc_ctrl_clock_settings {
-  /**
-   * Use internal clock for transition.
-   */
-  kDifLcCtrlInternalClockEn,
-  /**
-   * Use external clock for transition.
-   */
-  kDifLcCtrlExternalClockEn
-} dif_lc_ctrl_clock_settings_t;
-
-/**
  * A 128-bit unlock token used for certain kinds of lifecycle transitions.
  */
 typedef struct dif_lc_ctrl_token {
   uint8_t data[128 / 8];
 } dif_lc_ctrl_token_t;
-
-/**
- * Settings for lifecycle transitions.
- */
-typedef struct dif_lc_ctrl_settings {
-  /**
-   * Indicates whether an external clock source shall be used to perform the
-   * life cycle transition.
-   */
-  dif_lc_ctrl_clock_settings_t clock_select;
-} dif_lc_ctrl_settings_t;
 
 /**
  * A 32-bit hardware revision number.
@@ -402,21 +376,31 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc);
 
 /**
- * Performs a lifecycle transition.
+ * Configures the lifecycle controller to perform a transition.
  *
  * Note that not all transitions require an unlock token; in that case, NULL
  * should be passed as the token.
  *
  * @param lc A lifecycle handle.
  * @param state The state to transition to.
+ * @param use_ext_clock Whether to use the external clock for the transition.
  * @param token A token for unlocking the transition; may be null.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_lc_ctrl_transition(const dif_lc_ctrl_t *lc,
-                                    dif_lc_ctrl_state_t state,
-                                    const dif_lc_ctrl_token_t *token,
-                                    const dif_lc_ctrl_settings_t *settings);
+dif_result_t dif_lc_ctrl_configure(const dif_lc_ctrl_t *lc,
+                                   dif_lc_ctrl_state_t target_state,
+                                   bool use_ext_clock,
+                                   const dif_lc_ctrl_token_t *token);
+
+/**
+ * Performs a lifecycle transition.
+ *
+ * @param lc A lifecycle handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_lc_ctrl_transition(const dif_lc_ctrl_t *lc);
 
 /**
  * Writes settings to the vendor-specific OTP test control register.

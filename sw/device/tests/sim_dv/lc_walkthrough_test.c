@@ -198,17 +198,21 @@ bool test_main(void) {
           token.data[i] = 0;
         }
       }
+
       CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc));
-      dif_lc_ctrl_settings_t settings;
+
       // TODO(lowRISC/opentitan#12775): randomize using external or internal
       // clock.
-      settings.clock_select = kDifLcCtrlInternalClockEn;
-      CHECK_DIF_OK(dif_lc_ctrl_transition(&lc, kDestState, &token, &settings),
-                   "LC_transition failed!");
+      bool use_ext_clock = false;
+      CHECK_DIF_OK(
+          dif_lc_ctrl_configure(&lc, kDestState, use_ext_clock, &token),
+          "LC transition configuration failed!");
+      CHECK_DIF_OK(dif_lc_ctrl_transition(&lc), "LC transition failed!");
 
-      LOG_INFO("Waiting for LC transtition done and reboot.");
+      LOG_INFO("Waiting for LC transition done and reboot.");
       wait_for_interrupt();
-      // Unreachable
+
+      // Unreachable.
       return false;
     }
   } else if (curr_state == kDestState) {
@@ -246,17 +250,20 @@ bool test_main(void) {
         for (int i = 0; i < LC_TOKEN_SIZE; i++) {
           token.data[i] = kLcRmaToken[i];
         }
+
         CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc));
-        dif_lc_ctrl_settings_t settings;
+
         // TODO: randomize using external or internal clock.
-        settings.clock_select = kDifLcCtrlExternalClockEn;
-        CHECK_DIF_OK(
-            dif_lc_ctrl_transition(&lc, kDifLcCtrlStateRma, &token, &settings),
-            "LC_transition failed!");
+        bool use_ext_clock = true;
+        CHECK_DIF_OK(dif_lc_ctrl_configure(&lc, kDifLcCtrlStateRma,
+                                           use_ext_clock, &token),
+                     "LC transition configuration failed!");
+        CHECK_DIF_OK(dif_lc_ctrl_transition(&lc), "LC transition failed!");
 
         LOG_INFO("Waiting for LC RMA transtition done and reboot.");
         wait_for_interrupt();
-        // unreachable
+
+        // Unreachable.
         return false;
       }
     }
