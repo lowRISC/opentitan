@@ -12,7 +12,7 @@ The valid commands are as follows. All arguments are shown here as <argname>.
 The integer arguments are read with Python's int() function, so should be
 prefixed with "0x" if they are hexadecimal.
 
-    start                   Set the PC to zero and start OTBN
+    start_operation         Start an execution or DMEM/IMEM secure wipe
 
     configure               Enable or disable the secure wipe machinery (this
                             is a temporary feature until everything works
@@ -119,29 +119,20 @@ def check_arg_count(cmd: str, cnt: int, args: List[str]) -> None:
         raise ValueError(f'{cmd} expects {txt_cnt} arguments. Got {args}.')
 
 
-def on_start(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    '''Jump to an address given as the (only) argument and start running'''
-    check_arg_count('start', 0, args)
+def on_start_operation(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('start_operation', 1, args)
+    command = args[0]
 
-    print('START')
-    sim.start(collect_stats=False)
+    if command == 'Execute':
+        print('START')
+        sim.start(collect_stats=False)
+    elif command == 'DmemWipe':
+        sim.on_dmem_wipe()
+    elif command == 'ImemWipe':
+        sim.on_imem_wipe()
+    else:
+        raise ValueError(f'Invalid command for start_operation: {command}.')
 
-    return None
-
-
-def on_dmem_wipe(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    '''Sets Status register as SecWipeDmem '''
-    check_arg_count('dmem_wipe', 0, args)
-
-    sim.on_dmem_wipe()
-    return None
-
-
-def on_imem_wipe(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    '''Sets Status register as SecWipeImem'''
-    check_arg_count('imem_wipe', 0, args)
-
-    sim.on_imem_wipe()
     return None
 
 
@@ -406,9 +397,7 @@ def on_otp_cdc_done(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 
 _HANDLERS = {
-    'start': on_start,
-    'dmem_wipe': on_dmem_wipe,
-    'imem_wipe': on_imem_wipe,
+    'start_operation': on_start_operation,
     'otp_key_cdc_done': on_otp_cdc_done,
     'configure': on_configure,
     'step': on_step,
