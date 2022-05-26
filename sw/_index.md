@@ -44,11 +44,6 @@ You can find all the device software in the `sw/host` directory of the repositor
 
 Host software must be written in C++ or Rust.
 
-## Testing-only Utilities
-
-There are some host-side utilities, which are only used for testing.
-*   `sw/host/spiflash` is a tool that can flash a testing image over SPI onto a chip that uses `sw/device/lib/testing/test_rom/test_rom` as its first boot stage.
-
 # Other Documentation
 
 ## OpenTitan Software API Documentation {#sw-api-docs}
