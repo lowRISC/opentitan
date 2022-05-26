@@ -114,9 +114,16 @@ class RandWSR(WSR):
 
         self._random_value = None  # type: Optional[int]
         self._next_random_value = None  # type: Optional[int]
+        self._ext_regs = ext_regs
+
+        # The pending_request flag says that we've started an instruction that
+        # reads from RND. Using it means that we can avoid repeated requests
+        # from the EdnClient which is important because it avoids a request on
+        # the single cycle where the EdnClient has passed data back to us but
+        # that data hasn't yet been committed. If we sent another request on
+        # that cycle, the EdnClient would start another transaction.
         self._pending_request = False
         self._next_pending_request = False
-        self._ext_regs = ext_regs
 
     def read_unsigned(self) -> int:
         assert self._random_value is not None
@@ -134,6 +141,10 @@ class RandWSR(WSR):
         instruction, see `set_unsigned` docstring for more details
         '''
         return
+
+    def on_start(self) -> None:
+        self._next_random_value = None
+        self._next_pending_request = False
 
     def commit(self) -> None:
         self._random_value = self._next_random_value

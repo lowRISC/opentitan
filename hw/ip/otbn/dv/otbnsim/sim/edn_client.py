@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 # The number of words to accumulate
 ACC_LEN = 8
@@ -25,11 +25,28 @@ class EdnClient:
         # self._acc contains a list of ACC_LEN values.
         self._cdc_counter = None  # type: Optional[int]
 
+        # If true, the next transaction that completes will be discarded.
+        self._poisoned = False
+
+        # If true, self._poisoned should also be true. In this case, after we
+        # discard the next transaction that completes, we should re-try it.
+        self._retry = False
+
     def request(self) -> None:
         '''Start a request if there isn't one pending'''
         if self._acc is None:
             assert self._cdc_counter is None
             self._acc = []
+        elif self._poisoned:
+            # This is a request when there was a RND fetch pending (from the
+            # previous OTBN run), but we now actually want the results.
+            self._retry = True
+
+    def poison(self) -> None:
+        '''Mark any current request as "poisoned" and clear the retry flag'''
+        if self._acc is not None:
+            self._poisoned = True
+            self._retry = False
 
     def take_word(self, word: int) -> None:
         '''Take a 32-bit data word that we've been waiting for'''
@@ -47,24 +64,47 @@ class EdnClient:
         '''Called on a reset signal on the EDN clock domain'''
         self._acc = None
         self._cdc_counter = None
+        self._poisoned = False
+        self._retry = False
 
-    def cdc_complete(self) -> int:
-        '''Called when CDC completes for a transfer'''
+    def cdc_complete(self) -> Tuple[Optional[int], bool]:
+        '''Called when CDC completes for a transfer
+
+        This returns a pair (data, retry). In normal operation (where the
+        client hasn't been poisoned), data is the 256b word we received and
+        retry is False.
+
+        If the client was poisoned then data is None (meaning that we should
+        discard the result). In this case, retry might be True, which means
+        that we are going to retry the operation.
+        '''
         assert self._acc is not None
         assert len(self._acc) == ACC_LEN
         assert self._cdc_counter is not None
         assert self._cdc_counter <= MAX_CDC_WAIT
 
-        # Assemble the ACC_LEN words into a single integer in a "little-endian"
-        # fashion (so the first word that came in is the bottom 32 bits).
-        acc = 0
-        for word in reversed(self._acc):
-            acc = (acc << 32) | word
+        poisoned = self._poisoned
+        retry = self._retry
+
+        if poisoned:
+            data = None
+        else:
+            # Assemble the ACC_LEN words into a single integer "little-endian"
+            # (so the first word that came in is the bottom 32 bits).
+            data = 0
+            for word in reversed(self._acc):
+                data = (data << 32) | word
 
         self._acc = None
         self._cdc_counter = None
+        self._poisoned = False
+        self._retry = False
 
-        return acc
+        if retry:
+            assert poisoned
+            self.request()
+
+        return (data, retry)
 
     def step(self) -> None:
         '''Called on each main clock cycle. Increment and check CDC counter'''
