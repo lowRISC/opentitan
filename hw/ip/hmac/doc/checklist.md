@@ -100,21 +100,17 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only con
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES_D3][]     | Done        | [#1014][]
-RTL           | [TODO_COMPLETE][]       | Done        | Resolved: [#761][] [#762][]
+Documentation | [NEW_FEATURES_D3][]     | Done        |
+RTL           | [TODO_COMPLETE][]       | Done        |
 Code Quality  | [LINT_COMPLETE][]       | Done        |
 Code Quality  | [CDC_COMPLETE][]        | N/A         |
-Code Quality  | [RDC_COMPLETE][]        | Not Started |
-Review        | [REVIEW_RTL][]          | Done        | @tjaychen
+Code Quality  | [RDC_COMPLETE][]        | N/A         |
+Review        | [REVIEW_RTL][]          | Done        |
 Review        | [REVIEW_DELETED_FF][]   | N/A         |
 Review        | [REVIEW_SW_CHANGE][]    | N/A         |
 Review        | [REVIEW_SW_ERRATA][]    | N/A         |
-Review        | Reviewer(s)             | Done        | @sjgitty @cindychip
-Review        | Signoff date            | Done        | 2019-11-22
-
-[#1014]: https://github.com/loWRISC/opentitan/pull/1014
-[#761]: https://github.com/loWRISC/opentitan/issues/761
-[#762]: https://github.com/loWRISC/opentitan/issues/762
+Review        | Reviewer(s)             | Done        | @rswarbrick @cindychip @jadephilipoom
+Review        | Signoff date            | Done        | 2022-07-27
 
 [NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new_features_d3" >}}
 [TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo_complete" >}}
