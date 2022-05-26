@@ -2,8 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-subdir('vendor')
-
 rom_ext_signer = custom_target(
   'rom_ext_signer_bazel',
   command: [
