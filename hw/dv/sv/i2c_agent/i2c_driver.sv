@@ -8,8 +8,8 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   `uvm_component_new
 
   rand bit [7:0] rd_data[256]; // max length of read transaction
-  bit [7:0] wr_data;
-  bit [7:0] address;
+  byte wr_data;
+  byte address;
   // get an array with unique read data
   constraint rd_data_c { unique { rd_data }; }
 
@@ -53,7 +53,28 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   // TODO: drive_host_item is WiP
   virtual task drive_host_item(i2c_item req);
-    // TODO
+     unique case (req.drv_type)
+      HostStart: begin
+        cfg.vif.host_start(cfg.timing_cfg);
+      end
+      HostRStart: begin
+        cfg.vif.host_rstart(cfg.timing_cfg);
+      end
+      HostData: begin
+        for (int i = $bits(wr_data) -1; i >= 0; i--) begin
+          cfg.vif.host_data(cfg.timing_cfg, wr_data[i]);
+        end
+      end
+      HostNAck: begin
+        cfg.vif.host_nack(cfg.timing_cfg);
+      end
+      HostStop: begin
+        cfg.vif.host_stop(cfg.timing_cfg);
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("\n  host_driver, received invalid request"))
+      end
+    endcase
   endtask : drive_host_item
 
   virtual task drive_device_item(i2c_item req);
@@ -107,7 +128,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     release_bus();
     `uvm_info(`gfn, "\n  driver is reset", UVM_DEBUG)
   endtask : process_reset
-  
+
   virtual task release_bus();
     cfg.vif.scl_o = 1'b1;
     cfg.vif.sda_o = 1'b1;
