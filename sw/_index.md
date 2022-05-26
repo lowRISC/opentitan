@@ -59,5 +59,4 @@ All DIFs are also documented on their respective [Hardware IP Specification]({{<
 * [RISC-V Compliance](https://github.com/riscv/riscv-compliance)
 * [GoogleTest](https://github.com/google/googletest)
 * [Cryptoc](https://chromium.googlesource.com/chromiumos/third_party/cryptoc/)
-* [MPSSE from Chromium](https://chromium.googlesource.com/chromiumos/platform2/+/master/trunks/ftdi)
 * [LLVM's Compiler-RT Coverage Profiling Library](https://github.com/llvm/llvm-project/tree/master/compiler-rt)

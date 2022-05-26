@@ -1,3 +1,0 @@
-# This disables clang-format on all files in any vendored projects.
-DisableFormat: true
-SortIncludes: false
