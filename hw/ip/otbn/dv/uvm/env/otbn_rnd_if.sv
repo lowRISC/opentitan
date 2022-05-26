@@ -14,6 +14,7 @@ interface otbn_rnd_if (
   input logic rnd_req_i,
   input logic rnd_prefetch_req_i,
   input logic edn_rnd_ack_i,
+  input logic edn_rnd_data_ignore_q,
 
   input logic rnd_valid_q,
   input logic edn_rnd_req_q
@@ -22,8 +23,9 @@ interface otbn_rnd_if (
   // To cover the interaction between RND and RND_PREFETCH, we have to do some state modelling to
   // figure out what's going on. We model the following DFA:
   //
-  //
-  //    IDLE ---> PREFETCHING -\
+  //       /-------------------\
+  //       v                   |
+  //    IDLE ---> PREFETCHING -+
   //     ^ |                   |
   //     | \----> READING <----/
   //     |           |
@@ -34,22 +36,27 @@ interface otbn_rnd_if (
   //
   //  digraph fsm {
   //    idle -> reading        [label="RD RND"]
-  //    reading -> full        [label="EDN DATA"]
+  //    reading -> full        [label="EDN DATA TAKEN"]
+  //    reading -> reading     [label="EDN DATA IGNORED"]
   //    idle -> prefetching    [label="WR RND_PREFETCH"]
   //    prefetching -> reading [label="RD RND"]
-  //    prefetching -> full    [label="EDN DATA"]
+  //    prefetching -> full    [label="EDN DATA TAKEN"]
+  //    prefetching -> idle    [label="EDN DATA IGNORED"]
   //    full -> idle           [label="RD RND"]
   //  }
   //
-  // The three events that can happen are:
+  // The four events that can happen are:
   //
-  //  [RD RND]:          Start an instruction that reads from RND (the WSR or CSR)
-  //  [EDN DATA]:        Random data arrives from the EDN
-  //  [WR RND_PREFETCH]: Write to the prefetch register
+  //  [RD RND]:           Start an instruction that reads from RND (the WSR or CSR)
+  //  [WR RND_PREFETCH]:  Write to the prefetch register
+  //  [EDN DATA TAKEN]:   Random data arrives from the EDN that we take
+  //  [EDN DATA IGNORED]: Random data arrives from the EDN that we ignore
   //
   // The easiest way to spot these events is to look at the ports of the otbn_rnd module. [RD RND]
-  // happens when we see the rnd_req_i signal of the otbn_rnd module go high. [EDN DATA] happens
-  // when edn_rnd_ack_i goes high. [WR RND_PREFETCH] happens if rnd_prefetch_req_i goes high.
+  // happens when we see the rnd_req_i signal of the otbn_rnd module go high. [WR RND_PREFETCH]
+  // happens if rnd_prefetch_req_i goes high. [EDN DATA TAKEN] happens when edn_rnd_ack_i goes high
+  // and edn_rnd_data_ignore_q is false. [EDN DATA IGNORED] happens if edn_rnd_ack_i goes high and
+  // edn_rnd_data_ignore_q is true.
   //
   // Rather than tracking the state based on these events, and possibly having it come adrift, we
   // can also snoop on some internal signals to see where we are.
@@ -94,6 +101,13 @@ interface otbn_rnd_if (
     endcase
   end
 
+  // Signals for the transitions in the diagram above
+  logic rd_rnd, wr_rnd_prefetch, edn_data_taken, edn_data_ignored;
+  assign rd_rnd           = rnd_req_i;
+  assign wr_rnd_prefetch  = rnd_prefetch_req_i;
+  assign edn_data_taken   = edn_rnd_ack_i & ~edn_rnd_data_ignore_q;
+  assign edn_data_ignored = edn_rnd_ack_i & edn_rnd_data_ignore_q;
+
 `define ASSERT_IN_STATE(NAME, STATE, PROP) \
   `ASSERT(NAME, (fsm_state == ST_``STATE) |-> (PROP))
 
@@ -106,17 +120,17 @@ interface otbn_rnd_if (
 `define COVER_IN_STATE(NAME, STATE, PROP) \
   `COVER(NAME, (fsm_state == ST_``STATE) && (PROP))
 
-  // We never expect to see rnd_req_i and rnd_prefetch_req_i asserted on the same cycle (since that
-  // would mean a write to the RND_PREFETCH register at the same time as a read of the RND register,
-  // or while that read was stalled).
-  `ASSERT(NandReqPrefetch_A, !(rnd_req_i && rnd_prefetch_req_i))
+  // We never expect to see rd_rnd and wr_rnd_prefetch on the same cycle (since that would mean a
+  // write to the RND_PREFETCH register at the same time as a read of the RND register, or while
+  // that read was stalled).
+  `ASSERT(NandReqPrefetch_A, !(rd_rnd && wr_rnd_prefetch))
 
   // Consistency checks for the IDLE state
   //
   // There's no edge from IDLE to FULL
   `ASSERT_NO_EDGE(IDLE, FULL)
   // We don't get EDN data when in the IDLE state (since we haven't asked for it)
-  `ASSERT_IN_STATE(NoDataWhenIdle_A, IDLE, !edn_rnd_ack_i)
+  `ASSERT_IN_STATE(NoDataWhenIdle_A, IDLE, !(edn_data_taken || edn_data_ignored))
   // There is no outstanding EDN request when we're idle
   `ASSERT_IN_STATE(IdleMeansNoEdnReq_A, IDLE, !edn_rnd_req_q)
 
@@ -126,14 +140,21 @@ interface otbn_rnd_if (
   `ASSERT_NO_EDGE(READING, IDLE)
   `ASSERT_NO_EDGE(READING, PREFETCHING)
   // We don't see a prefetch request when in READING
-  `ASSERT_IN_STATE(NoPrefetchWhenReading_A, READING, !rnd_prefetch_req_i)
-  // There is an outstanding EDN request when we're reading
-  `ASSERT_IN_STATE(ReadingMeansNoEdnReq_A, READING, edn_rnd_req_q)
+  `ASSERT_IN_STATE(NoPrefetchWhenReading_A, READING, !wr_rnd_prefetch)
+  // There should generally be an outstanding EDN request when we're reading. The only exception is
+  // if edn_rnd_data_ignore_q is true. In this case, there will be a 1-cycle bubble between the
+  // ignored request and the new one while the ignore flag gets cleared.
+  `ASSERT_IN_STATE(ReallyReadingMeansEdnReq_A, READING,
+                   !$past(edn_rnd_data_ignore_q) |-> edn_rnd_req_q)
+  `ASSERT_IN_STATE(IgnoredReadingMeansEdnReq_A, READING,
+                   edn_data_ignored |=>
+                   !edn_rnd_req_q && !edn_rnd_data_ignore_q |=>
+                   edn_rnd_req_q)
 
   // Consistency checks for the PREFETCHING state
   //
-  // No edge from PREFETCHING to IDLE
-  `ASSERT_NO_EDGE(PREFETCHING, IDLE)
+  // There should be an outstanding EDN request when we're prefetching
+  `ASSERT_IN_STATE(PrefetchingMeansEdnReq_A, PREFETCHING, edn_rnd_req_q)
 
   // Consistency checks for the FULL state
   //
@@ -142,14 +163,18 @@ interface otbn_rnd_if (
   `ASSERT_NO_EDGE(FULL, PREFETCHING)
   // There is no outstanding EDN request when we've got data
   `ASSERT_IN_STATE(FullMeansNoEdnReq_A, FULL, !edn_rnd_req_q)
+  // We don't get EDN data when in the FULL state (since we haven't asked for it)
+  `ASSERT_IN_STATE(NoDataWhenFull_A, FULL, !(edn_data_taken || edn_data_ignored))
 
   // Checks that we transition between the states in the way that we expect
-  `ASSERT_EDGE(IDLE,        READING,     rnd_req_i)
-  `ASSERT_EDGE(IDLE,        PREFETCHING, rnd_prefetch_req_i)
-  `ASSERT_EDGE(READING,     FULL,        edn_rnd_ack_i)
-  `ASSERT_EDGE(PREFETCHING, READING,     rnd_req_i && !edn_rnd_ack_i)
-  `ASSERT_EDGE(PREFETCHING, FULL,        edn_rnd_ack_i)
-  `ASSERT_EDGE(FULL,        IDLE,        rnd_req_i)
+  `ASSERT_EDGE(IDLE,        READING,     rd_rnd)
+  `ASSERT_EDGE(IDLE,        PREFETCHING, wr_rnd_prefetch)
+  `ASSERT_EDGE(READING,     FULL,        edn_data_taken)
+  `ASSERT_EDGE(READING,     READING,     edn_data_ignored)
+  `ASSERT_EDGE(PREFETCHING, READING,     rd_rnd && !edn_data_taken)
+  `ASSERT_EDGE(PREFETCHING, FULL,        !rd_rnd && edn_data_taken)
+  `ASSERT_EDGE(PREFETCHING, IDLE,        !rd_rnd && edn_data_ignored)
+  `ASSERT_EDGE(FULL,        IDLE,        rd_rnd)
 
 
   // Cover properties
