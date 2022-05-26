@@ -16,6 +16,8 @@ struct ISSWrapper;
 
 class OtbnModel {
  public:
+  enum command_t { Execute, DmemWipe, ImemWipe };
+
   OtbnModel(const std::string &mem_scope, const std::string &design_scope,
             bool enable_secure_wipe);
   ~OtbnModel();
@@ -29,15 +31,9 @@ class OtbnModel {
   // implementation too (which needs checking).
   bool has_rtl() const { return !design_scope_.empty(); }
 
-  // Start a new run with the model, writing IMEM/DMEM and jumping to address
-  // zero. Returns 0 on success; -1 on failure.
-  int start();
-
-  // Starts an IMEM Secure wipe operation
-  int imem_wipe();
-
-  // Starts an DMEM Secure wipe operation
-  int dmem_wipe();
+  // Start an execution or an IMEM or DMEM secure wipe operation. Returns 0 on
+  // success; -1 on failure.
+  int start_operation(command_t command);
 
   // Flush EDN data from model because of edn_rst_n. Returns 0 on success or -1
   // on error.

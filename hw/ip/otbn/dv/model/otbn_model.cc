@@ -220,58 +220,47 @@ int OtbnModel::take_loop_warps(const OtbnMemUtil &memutil) {
   return 0;
 }
 
-int OtbnModel::start() {
+int OtbnModel::start_operation(command_t command) {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
     return -1;
 
-  std::string dfname(iss->make_tmp_path("dmem"));
-  std::string ifname(iss->make_tmp_path("imem"));
-
+  const char *cmd_desc = "unknown";
+  ISSWrapper::command_t iss_command;
   try {
-    write_words_to_file(dfname, get_sim_memory(false));
-    write_words_to_file(ifname, get_sim_memory(true));
-  } catch (const std::exception &err) {
-    std::cerr << "Error when dumping memory contents: " << err.what() << "\n";
-    return -1;
-  }
+    switch (command) {
+      case Execute: {
+        cmd_desc = "execute";
+        iss_command = ISSWrapper::Execute;
 
-  try {
-    iss->load_d(dfname);
-    iss->load_i(ifname);
-    iss->start();
+        std::string dfname(iss->make_tmp_path("dmem"));
+        std::string ifname(iss->make_tmp_path("imem"));
+
+        write_words_to_file(dfname, get_sim_memory(false));
+        write_words_to_file(ifname, get_sim_memory(true));
+
+        iss->load_d(dfname);
+        iss->load_i(ifname);
+      } break;
+
+      case DmemWipe:
+        cmd_desc = "DMEM wipe";
+        iss_command = ISSWrapper::DmemWipe;
+        break;
+
+      case ImemWipe:
+        cmd_desc = "IMEM wipe";
+        iss_command = ISSWrapper::ImemWipe;
+        break;
+
+      default:
+        assert(0);
+    }
+
+    iss->start_operation(iss_command);
   } catch (const std::runtime_error &err) {
-    std::cerr << "Error when starting ISS: " << err.what() << "\n";
-    return -1;
-  }
-
-  return 0;
-}
-
-int OtbnModel::imem_wipe() {
-  ISSWrapper *iss = ensure_wrapper();
-  if (!iss)
-    return -1;
-
-  try {
-    iss->imem_wipe();
-  } catch (const std::runtime_error &err) {
-    std::cerr << "Error when stepping IMEM wipe: " << err.what() << "\n";
-    return -1;
-  }
-
-  return 0;
-}
-
-int OtbnModel::dmem_wipe() {
-  ISSWrapper *iss = ensure_wrapper();
-  if (!iss)
-    return -1;
-
-  try {
-    iss->dmem_wipe();
-  } catch (const std::runtime_error &err) {
-    std::cerr << "Error when stepping DMEM wipe: " << err.what() << "\n";
+    std::cerr << "Error when starting " << cmd_desc
+              << " operation: " << err.what() << "\n";
     return -1;
   }
 
@@ -883,15 +872,15 @@ unsigned otbn_model_step(OtbnModel *model, unsigned model_state,
 
   switch (*cmd) {
     case CMD_EXECUTE:
-      result = model->start();
+      result = model->start_operation(OtbnModel::Execute);
       new_state_bits = RUNNING_BIT;
       break;
     case CMD_SECWIPE_DMEM:
-      result = model->dmem_wipe();
+      result = model->start_operation(OtbnModel::DmemWipe);
       new_state_bits = RUNNING_BIT;
       break;
     case CMD_SECWIPE_IMEM:
-      result = model->imem_wipe();
+      result = model->start_operation(OtbnModel::ImemWipe);
       new_state_bits = RUNNING_BIT;
       break;
     default:
