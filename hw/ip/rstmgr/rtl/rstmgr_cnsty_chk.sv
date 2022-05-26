@@ -253,6 +253,7 @@ module rstmgr_cnsty_chk
 
       default: begin
         state_d = FsmError;
+        fsm_err_o = 1'b1;
       end
     endcase // unique case (state_q)
   end // always_comb
