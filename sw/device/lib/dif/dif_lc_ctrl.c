@@ -264,10 +264,10 @@ dif_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc) {
   return kDifOk;
 }
 
-dif_result_t dif_lc_ctrl_transition(const dif_lc_ctrl_t *lc,
-                                    dif_lc_ctrl_state_t state,
-                                    const dif_lc_ctrl_token_t *token,
-                                    const dif_lc_ctrl_settings_t *settings) {
+dif_result_t dif_lc_ctrl_configure(const dif_lc_ctrl_t *lc,
+                                   dif_lc_ctrl_state_t state,
+                                   bool use_ext_clock,
+                                   const dif_lc_ctrl_token_t *token) {
   if (lc == NULL) {
     return kDifBadArg;
   }
@@ -342,31 +342,9 @@ dif_result_t dif_lc_ctrl_transition(const dif_lc_ctrl_t *lc,
       return kDifBadArg;
   }
 
-  uint32_t ctrl_reg = 0;
-  if (settings != NULL) {
-    switch (settings->clock_select) {
-      case kDifLcCtrlInternalClockEn:
-        ctrl_reg = bitfield_bit32_write(
-            ctrl_reg, LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT, false);
-        break;
-      case kDifLcCtrlExternalClockEn:
-        ctrl_reg = bitfield_bit32_write(
-            ctrl_reg, LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT, true);
-        break;
-
-      default:
-        return kDifBadArg;
-    }
-  } else {
-    // Default to internal clock
-    ctrl_reg = bitfield_bit32_write(
-        ctrl_reg, LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT, false);
-  }
-
-  // Check that the mutex has been acquired.
-  uint32_t busy =
-      mmio_region_read32(lc->base_addr, LC_CTRL_TRANSITION_REGWEN_REG_OFFSET);
-  if (busy == 0) {
+  // Check if the mutex has been acquired.
+  if (!mmio_region_read32(lc->base_addr,
+                          LC_CTRL_TRANSITION_REGWEN_REG_OFFSET)) {
     return kDifUnavailable;
   }
 
@@ -375,6 +353,15 @@ dif_result_t dif_lc_ctrl_transition(const dif_lc_ctrl_t *lc,
                       target);
 
   // Program the clock selection.
+  uint32_t ctrl_reg = 0;
+  if (use_ext_clock) {
+    ctrl_reg = bitfield_bit32_write(
+        ctrl_reg, LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT, true);
+  } else {
+    // Default to internal clock.
+    ctrl_reg = bitfield_bit32_write(
+        ctrl_reg, LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT, false);
+  }
   mmio_region_write32(lc->base_addr, LC_CTRL_TRANSITION_CTRL_REG_OFFSET,
                       ctrl_reg);
 
@@ -388,8 +375,22 @@ dif_result_t dif_lc_ctrl_transition(const dif_lc_ctrl_t *lc,
     }
   }
 
-  // With both parameters set up, schedule the transition.
+  return kDifOk;
+}
+
+dif_result_t dif_lc_ctrl_transition(const dif_lc_ctrl_t *lc) {
+  if (lc == NULL) {
+    return kDifBadArg;
+  }
+
+  // Check if the mutex has been acquired.
+  if (!mmio_region_read32(lc->base_addr,
+                          LC_CTRL_TRANSITION_REGWEN_REG_OFFSET)) {
+    return kDifUnavailable;
+  }
+
   mmio_region_write32(lc->base_addr, LC_CTRL_TRANSITION_CMD_REG_OFFSET, 1);
+
   return kDifOk;
 }
 

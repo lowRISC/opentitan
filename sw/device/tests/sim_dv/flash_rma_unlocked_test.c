@@ -200,10 +200,9 @@ static void enter_rma_test_phase(void) {
     token.data[i] = kLcRmaUnlockToken[i];
   }
   CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc));
-
-  dif_lc_ctrl_settings_t settings = {.clock_select = kDifLcCtrlInternalClockEn};
-  CHECK_DIF_OK(
-      dif_lc_ctrl_transition(&lc, kDifLcCtrlStateRma, &token, &settings));
+  CHECK_DIF_OK(dif_lc_ctrl_configure(&lc, kDifLcCtrlStateRma,
+                                     /*use_ext_clock=*/false, &token));
+  CHECK_DIF_OK(dif_lc_ctrl_transition(&lc));
 
   // Enter WFI for detection in the testbench.
   test_status_set(kTestStatusInWfi);
