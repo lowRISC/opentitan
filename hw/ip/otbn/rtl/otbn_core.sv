@@ -526,6 +526,11 @@ module otbn_core
                                   controller_err_bits.bad_internal_state,
                                   controller_err_bits.reg_intg_violation};
 
+  logic non_controller_reg_intg_violation;
+  assign non_controller_reg_intg_violation =
+      |{alu_bignum_reg_intg_violation_err, mac_bignum_reg_intg_violation_err, rf_base_rf_err};
+
+
   // Generate an err_bits output by combining errors from all the blocks in otbn_core
   assign err_bits_d = '{
     fatal_software:      controller_err_bits.fatal_software,
@@ -535,9 +540,7 @@ module otbn_core
                            predec_error,
                            insn_addr_err},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
-                           alu_bignum_reg_intg_violation_err,
-                           mac_bignum_reg_intg_violation_err,
-                           rf_base_rf_err},
+                           non_controller_reg_intg_violation},
     dmem_intg_violation: lsu_rdata_err,
     imem_intg_violation: insn_fetch_err,
     rnd_fips_chk_fail:   controller_err_bits.rnd_fips_chk_fail,
@@ -570,7 +573,7 @@ module otbn_core
       mubi4_or_hi(escalate_en_i,
                   mubi4_bool_to_mubi(|{start_stop_internal_error, urnd_all_zero, predec_error,
                                        rf_base_rf_err, lsu_rdata_err, insn_fetch_err,
-                                       err_bits_d.reg_intg_violation}));
+                                       non_controller_reg_intg_violation}));
 
   // Similarly for the start/stop controller
   assign start_stop_escalate_en =
