@@ -790,7 +790,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div4_peri_cg (
-    .clk_i(clk_io_div4_root),
+    .clk_i(clk_io_div4_i),
     .en_i(clk_io_div4_peri_combined_en),
     .test_en_i(mubi4_test_true_strict(clk_io_div4_peri_scanmode[0])),
     .clk_o(clocks_o.clk_io_div4_peri)
@@ -832,7 +832,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div2_peri_cg (
-    .clk_i(clk_io_div2_root),
+    .clk_i(clk_io_div2_i),
     .en_i(clk_io_div2_peri_combined_en),
     .test_en_i(mubi4_test_true_strict(clk_io_div2_peri_scanmode[0])),
     .clk_o(clocks_o.clk_io_div2_peri)
@@ -874,7 +874,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_peri_cg (
-    .clk_i(clk_io_root),
+    .clk_i(clk_io_i),
     .en_i(clk_io_peri_combined_en),
     .test_en_i(mubi4_test_true_strict(clk_io_peri_scanmode[0])),
     .clk_o(clocks_o.clk_io_peri)
@@ -916,7 +916,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_usb_peri_cg (
-    .clk_i(clk_usb_root),
+    .clk_i(clk_usb_i),
     .en_i(clk_usb_peri_combined_en),
     .test_en_i(mubi4_test_true_strict(clk_usb_peri_scanmode[0])),
     .clk_o(clocks_o.clk_usb_peri)
@@ -945,16 +945,18 @@
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_aes_trans (
     .clk_i(clk_main_i),
+    .clk_gated_i(clk_main_root),
     .rst_ni(rst_main_ni),
-    .clk_root_i(clk_main_root),
-    .clk_root_en_i(clk_main_en),
+    .en_i(clk_main_en),
     .idle_i(idle_i[HintMainAes]),
     .sw_hint_i(reg2hw.clk_hints.clk_main_aes_hint.q),
     .scanmode_i,
     .alert_cg_en_o(cg_en_o.main_aes),
     .clk_o(clocks_o.clk_main_aes),
-    .clk_en_o(hw2reg.clk_hints_status.clk_main_aes_val.d),
-    .cnt_err_o(idle_cnt_err[HintMainAes])
+    .clk_reg_i(clk_i),
+    .rst_reg_ni(rst_ni),
+    .reg_en_o(hw2reg.clk_hints_status.clk_main_aes_val.d),
+    .reg_cnt_err_o(idle_cnt_err[HintMainAes])
   );
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainAesCountCheck_A,
@@ -965,16 +967,18 @@
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_hmac_trans (
     .clk_i(clk_main_i),
+    .clk_gated_i(clk_main_root),
     .rst_ni(rst_main_ni),
-    .clk_root_i(clk_main_root),
-    .clk_root_en_i(clk_main_en),
+    .en_i(clk_main_en),
     .idle_i(idle_i[HintMainHmac]),
     .sw_hint_i(reg2hw.clk_hints.clk_main_hmac_hint.q),
     .scanmode_i,
     .alert_cg_en_o(cg_en_o.main_hmac),
     .clk_o(clocks_o.clk_main_hmac),
-    .clk_en_o(hw2reg.clk_hints_status.clk_main_hmac_val.d),
-    .cnt_err_o(idle_cnt_err[HintMainHmac])
+    .clk_reg_i(clk_i),
+    .rst_reg_ni(rst_ni),
+    .reg_en_o(hw2reg.clk_hints_status.clk_main_hmac_val.d),
+    .reg_cnt_err_o(idle_cnt_err[HintMainHmac])
   );
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainHmacCountCheck_A,
@@ -985,16 +989,18 @@
     .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
   ) u_clk_main_kmac_trans (
     .clk_i(clk_main_i),
+    .clk_gated_i(clk_main_root),
     .rst_ni(rst_main_ni),
-    .clk_root_i(clk_main_root),
-    .clk_root_en_i(clk_main_en),
+    .en_i(clk_main_en),
     .idle_i(idle_i[HintMainKmac]),
     .sw_hint_i(reg2hw.clk_hints.clk_main_kmac_hint.q),
     .scanmode_i,
     .alert_cg_en_o(cg_en_o.main_kmac),
     .clk_o(clocks_o.clk_main_kmac),
-    .clk_en_o(hw2reg.clk_hints_status.clk_main_kmac_val.d),
-    .cnt_err_o(idle_cnt_err[HintMainKmac])
+    .clk_reg_i(clk_i),
+    .rst_reg_ni(rst_ni),
+    .reg_en_o(hw2reg.clk_hints_status.clk_main_kmac_val.d),
+    .reg_cnt_err_o(idle_cnt_err[HintMainKmac])
   );
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainKmacCountCheck_A,
@@ -1005,16 +1011,18 @@
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_otbn_trans (
     .clk_i(clk_main_i),
+    .clk_gated_i(clk_main_root),
     .rst_ni(rst_main_ni),
-    .clk_root_i(clk_main_root),
-    .clk_root_en_i(clk_main_en),
+    .en_i(clk_main_en),
     .idle_i(idle_i[HintMainOtbn]),
     .sw_hint_i(reg2hw.clk_hints.clk_main_otbn_hint.q),
     .scanmode_i,
     .alert_cg_en_o(cg_en_o.main_otbn),
     .clk_o(clocks_o.clk_main_otbn),
-    .clk_en_o(hw2reg.clk_hints_status.clk_main_otbn_val.d),
-    .cnt_err_o(idle_cnt_err[HintMainOtbn])
+    .clk_reg_i(clk_i),
+    .rst_reg_ni(rst_ni),
+    .reg_en_o(hw2reg.clk_hints_status.clk_main_otbn_val.d),
+    .reg_cnt_err_o(idle_cnt_err[HintMainOtbn])
   );
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainOtbnCountCheck_A,
