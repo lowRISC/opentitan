@@ -6,7 +6,7 @@ from typing import List, Optional, Sequence, Tuple
 
 from .trace import Trace
 
-from .ext_regs import TraceExtRegChange, ExtRegChange
+from .ext_regs import OTBNExtRegs
 
 
 class TraceWSR(Trace):
@@ -109,19 +109,18 @@ class RandWSR(WSR):
     returns True if the value is available.
 
     '''
-    def __init__(self, name: str):
+    def __init__(self, name: str, ext_regs: OTBNExtRegs):
         super().__init__(name)
 
         self._random_value = None  # type: Optional[int]
-        self._random_value_read = False
-        self.pending_request = False
-        self.req_high = False
+        self._next_random_value = None  # type: Optional[int]
+        self._pending_request = False
+        self._next_pending_request = False
+        self._ext_regs = ext_regs
 
     def read_unsigned(self) -> int:
         assert self._random_value is not None
-
-        self._random_value_read = True
-
+        self._next_random_value = None
         return self._random_value
 
     def read_u32(self) -> int:
@@ -137,30 +136,17 @@ class RandWSR(WSR):
         return
 
     def commit(self) -> None:
-        if self._random_value_read:
-            self._random_value = None
-
-        self._random_value_read = False
+        self._random_value = self._next_random_value
+        self._pending_request = self._next_pending_request
 
     def request_value(self) -> bool:
         '''Signals intent to read RND, returns True if a value is available'''
         if self._random_value is not None:
             return True
-
-        self.pending_request = True
+        if not self._pending_request:
+            self._next_pending_request = True
+            self._ext_regs.write('RND_REQ', 1, True)
         return False
-
-    def changes(self) -> List[Trace]:
-        # We are not tracing the value of RND. Instead we are tracing modelled
-        # EDN request for RND.
-        ret = []  # type: List[Trace]
-        if self.req_high and self._random_value is not None:
-            ret = [TraceExtRegChange('RND_REQ', ExtRegChange('=', 0, True, 0))]
-            self.req_high = False
-        elif self.pending_request and not self.req_high:
-            self.req_high = True
-            ret = [TraceExtRegChange('RND_REQ', ExtRegChange('=', 1, True, 1))]
-        return ret
 
     def set_unsigned(self, value: int) -> None:
         '''Sets a random value that can be read by a future `read_unsigned`
@@ -173,9 +159,9 @@ class RandWSR(WSR):
         one is seen on the EDN bus).
         '''
         assert 0 <= value < (1 << 256)
-        self._random_value = value
-        if self.pending_request:
-            self.pending_request = False
+        self._next_random_value = value
+        self._next_pending_request = False
+        self._ext_regs.write('RND_REQ', 0, True)
 
 
 class URNDWSR(WSR):
@@ -325,12 +311,12 @@ class KeyWSR(WSR):
 
 class WSRFile:
     '''A model of the WSR file'''
-    def __init__(self) -> None:
+    def __init__(self, ext_regs: OTBNExtRegs) -> None:
         self.KeyS0 = SideloadKey('KeyS0')
         self.KeyS1 = SideloadKey('KeyS1')
 
         self.MOD = DumbWSR('MOD')
-        self.RND = RandWSR('RND')
+        self.RND = RandWSR('RND', ext_regs)
         self.URND = URNDWSR('URND')
         self.ACC = DumbWSR('ACC')
         self.KeyS0L = KeyWSR('KeyS0L', 0, self.KeyS0)
