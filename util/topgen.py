@@ -111,7 +111,7 @@ def generate_xbars(top, out_path):
         # Generate output of crossbar with complete fields
         xbar_hjson_path = xbar_path / "xbar_{}.gen.hjson".format(xbar.name)
         xbar_hjson_path.write_text(genhdr + gencmd +
-                                   hjson.dumps(obj, for_json=True))
+                                   hjson.dumps(obj, for_json=True) + '\n')
 
         if not tlgen.elaborate(xbar):
             log.error("Elaboration failed." + repr(xbar))
