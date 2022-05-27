@@ -432,7 +432,7 @@ from topgen.lib import Name
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_${k}_cg (
-    .clk_i(clk_${v.src.name}_root),
+    .clk_i(clk_${v.src.name}_i),
     .en_i(${k}_combined_en),
     .test_en_i(mubi4_test_true_strict(${k}_scanmode[0])),
     .clk_o(clocks_o.${k})
@@ -468,16 +468,18 @@ from topgen.lib import Name
 % endif
   ) u_${clk}_trans (
     .clk_i(clk_${sig.src.name}_i),
+    .clk_gated_i(clk_${sig.src.name}_root),
     .rst_ni(rst_${sig.src.name}_ni),
-    .clk_root_i(clk_${sig.src.name}_root),
-    .clk_root_en_i(clk_${sig.src.name}_en),
+    .en_i(clk_${sig.src.name}_en),
     .idle_i(idle_i[${hint_names[clk]}]),
     .sw_hint_i(reg2hw.clk_hints.${clk}_hint.q),
     .scanmode_i,
     .alert_cg_en_o(cg_en_o.${clk.split('clk_')[-1]}),
     .clk_o(clocks_o.${clk}),
-    .clk_en_o(hw2reg.clk_hints_status.${clk}_val.d),
-    .cnt_err_o(idle_cnt_err[${hint_names[clk]}])
+    .clk_reg_i(clk_i),
+    .rst_reg_ni(rst_ni),
+    .reg_en_o(hw2reg.clk_hints_status.${clk}_val.d),
+    .reg_cnt_err_o(idle_cnt_err[${hint_names[clk]}])
   );
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ${assert_name.as_camel_case()}CountCheck_A,
