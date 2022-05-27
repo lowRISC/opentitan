@@ -30,6 +30,10 @@ class aes_common_vseq extends aes_base_vseq;
           ctrl_reg_map_invalid_value(wdata);
           void'(csr.predict(.value(wdata), .kind(UVM_PREDICT_WRITE)));
         end
+        // Only writing to `ctrl_shadowed` register can clear the update error status.
+        if (csr.get_shadow_update_err() == 0 && csr.get_shadow_storage_err() == 0) begin
+          clear_update_err_status();
+        end
       end
     end else begin
       super.csr_wr_for_shadow_reg_predict(csr, wdata, predict);
@@ -64,14 +68,14 @@ class aes_common_vseq extends aes_base_vseq;
     val[ral.ctrl_shadowed.force_zero_masks.get_lsb_pos()] = 0;
   endfunction
 
-  // Discussed in Issue #8460, fatal storage error will clear storage error status bit.
+  // Discussed in Issue #10617, fatal storage error will lock the shadow regs write access.
   virtual function void predict_shadow_reg_status(bit predict_update_err  = 0,
                                                   bit predict_storage_err = 0);
     super.predict_shadow_reg_status(predict_update_err, predict_storage_err);
+
     if (predict_storage_err) begin
-      foreach (cfg.shadow_update_err_status_fields[status_field]) begin
-        void'(status_field.predict(~cfg.shadow_update_err_status_fields[status_field]));
-      end
+      ral.ctrl_shadowed.lock_shadow_reg();
+      ral.ctrl_aux_shadowed.lock_shadow_reg();
     end
   endfunction
 
