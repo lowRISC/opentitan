@@ -22,7 +22,7 @@ interface prim_sparse_fsm_flop_if #(
   string msg_id = $sformatf("%m");
 
   string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
-  string signal_forced = $sformatf("%s.u_state_flop.gen_generic.u_impl_generic.q_o", path);
+  string signal_forced = $sformatf("%s.u_state_flop.q_o", path);
 
   // This signal only has to be forced if the associated parameter
   // CustomForceName in prim_sparse_fsm_flop is set to a non-empty string.
