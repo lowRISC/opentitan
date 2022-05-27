@@ -12,6 +12,9 @@ module prim_generic_flash_bank #(
   parameter int PagesPerBank   = 256, // data pages per bank
   parameter int WordsPerPage   = 256, // words per page
   parameter int DataWidth      = 32,  // bits per word
+  parameter int ModelOnlyReadLatency   = 1,   // generic model read latency
+  parameter int ModelOnlyProgLatency   = 50,  // generic model program latency
+  parameter int ModelOnlyEraseLatency  = 200, // generic model program latency
 
   // Derived parameters
   localparam int PageW = $clog2(PagesPerBank),
@@ -43,9 +46,6 @@ module prim_generic_flash_bank #(
 );
 
   // Emulated flash macro values
-  localparam int ReadCycles = 1;
-  localparam int ProgCycles = 50;
-  localparam int PgEraseCycles = 200;
   localparam int BkEraseCycles = 2000;
   localparam int InitCycles = 100;
 
@@ -204,7 +204,7 @@ module prim_generic_flash_bank #(
   end
 
   // if read cycle is only 1, we can expose the unlatched data directly
-  if (ReadCycles == 1) begin : gen_fast_rd_data
+  if (ModelOnlyReadLatency == 1) begin : gen_fast_rd_data
     assign rd_data_o = rd_data_d;
   end else begin : gen_rd_data
     assign rd_data_o = rd_data_q;
@@ -281,7 +281,7 @@ module prim_generic_flash_bank #(
         end else if (pg_erase_req) begin
           st_d = StErase;
           index_limit_d = WordsPerPage;
-          time_limit_d = PgEraseCycles;
+          time_limit_d = ModelOnlyEraseLatency;
         end else if (bk_erase_req) begin
           st_d = StErase;
           index_limit_d = WordsPerBank;
@@ -290,7 +290,7 @@ module prim_generic_flash_bank #(
       end
 
       StRead: begin
-        if (time_cnt < ReadCycles) begin
+        if (time_cnt < ModelOnlyReadLatency) begin
           time_cnt_inc = 1'b1;
 
         end else if (!prog_pend_q) begin
@@ -318,7 +318,7 @@ module prim_generic_flash_bank #(
       StProg: begin
         // if data is already 0, cannot program to 1 without erase
         mem_wdata = cmd_q.prog_data & rd_data_q;
-        if (time_cnt < ProgCycles) begin
+        if (time_cnt < ModelOnlyProgLatency) begin
           mem_req = 1'b1;
           mem_wr = 1'b1;
           time_cnt_inc = 1'b1;
