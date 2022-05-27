@@ -107,8 +107,6 @@ package otbn_pkg;
     logic fatal_software;
     logic bad_internal_state;
     logic reg_intg_violation;
-    logic rnd_fips_chk_fail;
-    logic rnd_rep_chk_fail;
     logic key_invalid;
     logic loop;
     logic illegal_insn;
