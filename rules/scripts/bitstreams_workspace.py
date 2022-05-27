@@ -235,7 +235,8 @@ class BitstreamCache(object):
         param['key'] = key
 
         if 'orig' not in param or 'splice' not in param:
-            logging.error("""Could not find the bitstreams to generate a BUILD file:{}
+            logging.error(
+                """Could not find the bitstreams to generate a BUILD file:{}
 in params:{}
 using key:{}""".format(build, param, key))
             sys.exit(1)
@@ -271,7 +272,7 @@ def main(argv):
     if env:
         argv.extend(env.split(' '))
     args = parser.parse_args(args=argv[1:])
-    bitstream = args.bitstream
+    desired_bitstream = args.bitstream
 
     # We need to know the location of the main git repo, since this script
     # will have its CWD in a bazel-managed 'external' directory.
@@ -290,7 +291,7 @@ def main(argv):
     cache.InitRepository()
 
     # Do we need a refresh?
-    need_refresh = (args.refresh or bitstream != 'latest' or
+    need_refresh = (args.refresh or desired_bitstream != 'latest' or
                     cache.NeedRefresh(args.refresh_time))
     cache.GetBitstreamsAvailable(need_refresh and not args.offline)
 
@@ -301,27 +302,30 @@ def main(argv):
 
     # If we aren't getting the latest bitstream, resolve the hash to the closest
     # bitstream we can find.
-    if bitstream != 'latest':
-        closest = cache.GetClosest(repo, bitstream)
-        if closest is None:
-            logging.error(
-                'Cannot find a bitstream close to {}'.format(bitstream))
+    if desired_bitstream != 'latest':
+        closest_bitstream = cache.GetClosest(repo, desired_bitstream)
+        if closest_bitstream is None:
+            logging.error('Cannot find a bitstream close to {}'.format(
+                desired_bitstream))
             return 1
-        if closest != bitstream:
-            logging.error('Closest bitstream to {} is {}.'.format(
-                bitstream, closest))
-            bitstream = closest
+        if closest_bitstream != desired_bitstream:
+            logging.warning('Closest bitstream to {} is {}.'.format(
+                desired_bitstream, closest_bitstream))
+            desired_bitstream = closest_bitstream
 
     # Write a build file which allows tests to reference the bitstreams with
     # the labels:
     #   @bitstreams//:bitstream_test_rom
     #   @bitstreams//:bitstream_mask_rom
-    configured = cache.WriteBuildFile(args.build_file, bitstream)
-    if args.bitstream != configured:
-        logging.error('Configured bitstream "{}" as {}.'.format(
-            args.bitstream, configured))
-    else:
-        logging.info('Configured bitstream {}.'.format(configured))
+    configured_bitream = cache.WriteBuildFile(args.build_file,
+                                              desired_bitstream)
+    if desired_bitstream != 'latest' and configured_bitream != desired_bitstream:
+        logging.error(
+            'Configured bitstream {} does not match desired bitstream {}.'.
+            format(configured_bitream, desired_bitstream))
+        return 1
+    logging.info(
+        'Configured latest bitstream as {}.'.format(configured_bitream))
 
     return 0
 
