@@ -32,9 +32,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // reset is issued
   bit en_auto_alerts_response = 1'b1;
 
-  // knobs to lock shadow register write access if fatal storage error occurred
-  bit do_lock_shadow_reg = 1'b1;
-
   // knob to enable/disable running csr_vseq with passthru_mem_tl_intg_err
   bit en_csr_vseq_w_passthru_mem_intg = 1;
 
