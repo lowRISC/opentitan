@@ -336,7 +336,6 @@ class Field:
         rd = {
             'bits': self.bits.as_str(),
             'name': self.name,
-            'alias_target': self.alias_target,
             'swaccess': self.swaccess.key,
             'hwaccess': self.hwaccess.key,
             'resval': 'x' if self.resval is None else str(self.resval),
@@ -347,6 +346,8 @@ class Field:
             rd['desc'] = self.desc
         if self.enum is not None:
             rd['enum'] = self.enum
+        if self.alias_target is not None:
+            rd['alias_target'] = self.alias_target
         return rd
 
     def sw_readable(self) -> bool:
@@ -381,3 +382,17 @@ class Field:
         # This gives us a way to check whether a register has been overridden
         # or not, and what the name of the original register was.
         self.alias_target = alias_field.alias_target
+
+    def scrub_alias(self, where: str) -> None:
+        '''Replaces sensitive fields in field with generic names
+
+        This function can be used to create the generic field descriptions
+        from full alias hjson definitions.
+        '''
+        # These attributes are scrubbed. Note that the name is scrubbed in
+        # register.py already.
+        self.desc = ''
+        self.enum = []
+        self.resval = 0
+        self.tags = []
+        self.alias_target = None

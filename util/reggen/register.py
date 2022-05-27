@@ -584,7 +584,6 @@ class Register(RegBase):
     def _asdict(self) -> Dict[str, object]:
         rd = {
             'name': self.name,
-            'alias_target': self.alias_target,
             'desc': self.desc,
             'fields': self.fields,
             'hwext': str(self.hwext),
@@ -599,6 +598,8 @@ class Register(RegBase):
             rd['update_err_alert'] = self.update_err_alert
         if self.storage_err_alert is not None:
             rd['storage_err_alert'] = self.storage_err_alert
+        if self.alias_target is not None:
+            rd['alias_target'] = self.alias_target
 
         return rd
 
@@ -652,3 +653,52 @@ class Register(RegBase):
 
             # Validate and override attributes.
             field.apply_alias(alias_field, where)
+
+    def scrub_alias(self, where: str) -> None:
+        '''Replaces sensitive fields in register with generic names
+
+        This function can be used to create the generic register descriptions
+        from full alias hjson definitions. It will only work on registers
+        where the alias_target keys are defined, and otherwise throw an error.
+        '''
+        # These attributes are scrubbed
+        assert self.alias_target is not None
+        self.name = self.alias_target
+        self.desc = ''
+        self.resval = 0
+        self.tags = []
+        self.alias_target = None
+
+        # First check that custom alias_target names are unique and that
+        # the numbering is correct if the name is of the form field[0-9]+.
+        known_field_names = {}
+        for k, field in enumerate(self.fields):
+            if field.alias_target is not None:
+                m = re.match(r'field[0-9]+', field.alias_target)
+                if m and field.alias_target != f'field{k}':
+                    raise ValueError('Alias field alias_target {} is '
+                                     'incorrectly numbered '
+                                     'in alias register {} in {}.'
+                                     .format(field.alias_target,
+                                             self.name,
+                                             where))
+                elif field.alias_target in known_field_names:
+                    raise ValueError('Alias field alias_target {} is not '
+                                     'unique in alias register {} in {}.'
+                                     .format(field.alias_target,
+                                             self.name,
+                                             where))
+                else:
+                    known_field_names.update({field.alias_target: 1})
+
+        # Then, assign the field names
+        for k, field in enumerate(self.fields):
+            if field.alias_target is not None:
+                field.name = field.alias_target
+                field.alias_target = None
+            # Infer the aliased field name if it has not been defined.
+            else:
+                field.name = f'field{k}'
+
+            # Scrub field contents.
+            field.scrub_alias(where)

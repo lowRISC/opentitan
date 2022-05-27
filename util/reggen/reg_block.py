@@ -645,3 +645,35 @@ class RegBlock:
         for alias_name, alias_reg in alias_block.name_to_flat_reg.items():
             assert (alias_reg.alias_target)
             self._rename_flat_reg(alias_reg.alias_target, alias_name)
+
+    def scrub_alias(self, where: str) -> None:
+        '''Replaces sensitive fields in reg block with generic names
+
+        This function can be used to create the generic register descriptions
+        from full alias hjson definitions. It will only work on reg blocks
+        where the alias_target keys are defined, and otherwise throw an error.
+        '''
+        # Loop over registers, and scrub information.
+        for reg in self.registers:
+            if reg.alias_target is None:
+                raise ValueError('No alias target register defined for '
+                                 'alias name {} in {}'
+                                 .format(reg.name, where))
+            reg.scrub_alias(where)
+
+        # Loop over multiregisters, and scrub information.
+        for alias_mr in self.multiregs:
+            # First, check existence of the register to be aliased
+            if alias_mr.alias_target is None:
+                raise ValueError('No alias target multiregister defined for '
+                                 'alias name {} in {}'
+                                 .format(alias_mr.name, where))
+            alias_mr.scrub_alias(where)
+
+        # Make a shallow copy of this dict, since we are about to modify the
+        # name mapping below.
+        name_to_flat_reg_copy = self.name_to_flat_reg.copy()
+        # Replace all alias with generic names.
+        # Note that the scrubbing above assigns .alias_target to .name.
+        for alias_name, reg in name_to_flat_reg_copy.items():
+            self._rename_flat_reg(alias_name, reg.name)

@@ -186,6 +186,9 @@ class MultiRegister(RegBase):
         rd['regwen_multi'] = str(self.regwen_multi)
         rd['compact'] = str(self.compact)
 
+        if self.alias_target is not None:
+            rd['alias_target'] = self.alias_target
+
         return {'multireg': rd}
 
     def apply_alias(self, alias_reg: 'MultiRegister', where: str) -> None:
@@ -220,3 +223,23 @@ class MultiRegister(RegBase):
         # Finally, iterate over expanded regs and update them as well.
         for creg, alias_creg in zip(self.regs, alias_reg.regs):
             creg.apply_alias(alias_creg, where)
+
+    def scrub_alias(self, where: str) -> None:
+        '''Replaces sensitive fields in multiregister with generic names
+
+        This function can be used to create the generic register descriptions
+        from full alias hjson definitions. It will only work on registers
+        where the alias_target keys are defined, and otherwise throw an error.
+        '''
+        # These attributes are scrubbed in the multireg.
+        assert self.alias_target is not None
+        self.name = self.alias_target
+        self.cname = 'creg'
+        self.alias_target = None
+
+        # Then, update the template register.
+        self.reg.scrub_alias(where)
+
+        # Finally, iterate over expanded regs and scrub them as well.
+        for creg in self.regs:
+            creg.scrub_alias(where)
