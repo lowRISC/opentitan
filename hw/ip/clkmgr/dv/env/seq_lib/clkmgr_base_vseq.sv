@@ -95,11 +95,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     super.pre_start();
     if (common_seq_type inside {"shadow_reg_errors", "shadow_reg_errors_with_csr_rw"}) begin
       expect_fatal_alerts = 1;
-      $assertoff(0, "tb.dut.u_io_err_sync.SrcPulseCheck_M");
-      $assertoff(0, "tb.dut.u_main_err_sync.SrcPulseCheck_M");
-      $assertoff(0, "tb.dut.u_usb_err_sync.SrcPulseCheck_M");
-      $assertoff(0, "tb.dut.u_io_div2_err_sync.SrcPulseCheck_M");
-      $assertoff(0, "tb.dut.u_io_div4_err_sync.SrcPulseCheck_M");
     end
 
   endtask

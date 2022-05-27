@@ -42,6 +42,9 @@ virtual task run_shadow_reg_errors(int num_times, bit en_csr_rw_seq = 0);
     shadowed_csrs.shuffle();
 
     foreach (shadowed_csrs[i]) begin
+      `uvm_info(`gfn, $sformatf("mycsr: %s    en_csr_rw_seq:%d",
+                shadowed_csrs[i].get_name(), en_csr_rw_seq), UVM_HIGH);
+
       repeat(5) begin
         bit ready_to_trigger_csr_rw = 0;
         bit has_fatal_alert = 0;
@@ -135,6 +138,17 @@ virtual task check_csr_read_clear_staged_val(dv_base_reg shadowed_csr);
   csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
 endtask
 
+
+// This non-blocking task checks if the alert is continuously firing until reset is issued.
+virtual task shadow_reg_errors_check_fatal_alert_nonblocking(dv_base_reg shadowed_csr,
+                                                             string alert_name);
+  if (cfg.m_alert_agent_cfg.exists(alert_name)) begin
+    // add clock cycle delay in case of alert coming out 1 cycle later.
+    cfg.clk_rst_vif.wait_clks(2);
+    check_fatal_alert_nonblocking(alert_name);
+  end
+endtask
+
 // Verifies that mismatch of two copies of the internal stored values will trigger fatal alert.
 //
 // Backdoor write to the `committed` or `shadowed` flops to trigger a storage error.
@@ -155,13 +169,7 @@ virtual task poke_and_check_storage_error(dv_base_reg shadowed_csr);
   `uvm_info(`gfn, $sformatf("backdoor write %s through %s with value 0x%0h",
             shadowed_csr.`gfn, kind.name, err_val), UVM_HIGH);
 
-  // This non-blocking task checks if the alert is continuously firing until reset is issued.
-  if (cfg.m_alert_agent_cfg.exists(alert_name)) begin
-    // add clock cycle delay in case of alert coming out 1 cycle later.
-    cfg.clk_rst_vif.wait_clks(2);
-    check_fatal_alert_nonblocking(alert_name);
-  end
-
+   shadow_reg_errors_check_fatal_alert_nonblocking(shadowed_csr, alert_name);
   // Wait random clock cycles and ensure the fatal alert is continuously firing.
   cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
