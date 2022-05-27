@@ -49,6 +49,11 @@ def main():
                         type=Path,
                         default=None,
                         help='Alias register file in Hjson type')
+    parser.add_argument('-S',
+                        '--scrub',
+                        default=False,
+                        action='store_true',
+                        help='Scrub alias register definition')
     parser.add_argument('--cdefines',
                         '-D',
                         action='store_true',
@@ -230,10 +235,14 @@ def main():
     # identical).
     if args.alias is not None:
         try:
-            obj.alias_from_path(args.alias)
+            obj.alias_from_path(args.scrub, args.alias)
         except ValueError as err:
             log.error(str(err))
             exit(1)
+    else:
+        if args.scrub:
+            raise ValueError('The --scrub argument is only meaningful in '
+                             'combination with the --alias argument')
 
     # If this block has countermeasures, we grep for RTL annotations in all
     # .sv implementation files and check whether they match up with what is

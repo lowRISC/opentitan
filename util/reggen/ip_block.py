@@ -318,6 +318,7 @@ class IpBlock:
                                      'file at {!r}'.format(path))
 
     def alias_from_raw(self,
+                       scrub: bool,
                        raw: object,
                        where: str) -> None:
         '''Parses and validates an alias reg block and adds it to this IpBlock.
@@ -339,6 +340,11 @@ class IpBlock:
 
         Note that the alias register definition also overrides the hier_path
         variable associated with the corresponding bus interfaces.
+
+        Setting the scrub argument to True will scrub sensitive fields in the
+        alias definition and replace the entire register block of the target
+        interface with the scrubbed alias reg block. This is helpful to create
+        the generic CSR structure matching the alias definition automatically.
         '''
         rd = check_keys(raw, 'block at ' + where,
                         list(REQUIRED_ALIAS_FIELDS.keys()),
@@ -416,23 +422,32 @@ class IpBlock:
                                      '{} in {}'
                                      .format(block_key, where))
 
-            # Override hier path of aliased interface
-            hier_path = alias_bus_interfaces.device_hier_paths[block_key]
-            self.bus_interfaces.device_hier_paths[block_key] = hier_path
+            if scrub:
+                # scrub alias definitions and replace the entire block.
+                alias_block.scrub_alias(where)
+                self.reg_blocks[block_key] = alias_block
+            else:
+                # Override hier path of aliased interface
+                hier_path = alias_bus_interfaces.device_hier_paths[block_key]
+                self.bus_interfaces.device_hier_paths[block_key] = hier_path
 
-            self.reg_blocks[block_key].apply_alias(alias_block, where)
+                # Validate and apply alias definitions
+                self.reg_blocks[block_key].apply_alias(alias_block, where)
 
     def alias_from_text(self,
+                        scrub: bool,
                         txt: str,
                         where: str) -> None:
         '''Load alias regblocks from an hjson description in txt'''
-        self.alias_from_raw(hjson.loads(txt, use_decimal=True), where)
+        self.alias_from_raw(scrub, hjson.loads(txt, use_decimal=True), where)
 
     def alias_from_path(self,
+                        scrub: bool,
                         path: str) -> None:
         '''Load alias regblocks from an hjson description in a file at path'''
         with open(path, 'r', encoding='utf-8') as handle:
-            self.alias_from_text(handle.read(),
+            self.alias_from_text(scrub,
+                                 handle.read(),
                                  'alias file at {!r}'.format(path))
 
     def _asdict(self) -> Dict[str, object]:
