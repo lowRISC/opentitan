@@ -49,4 +49,3 @@ begin tgl
   +tree tb.dut 1
   -node tb.dut.scanmode_i
 end
-
