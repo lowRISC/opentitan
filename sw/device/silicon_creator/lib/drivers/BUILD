@@ -217,24 +217,17 @@ cc_test(
 opentitan_functest(
     name = "keymgr_functest",
     srcs = ["keymgr_functest.c"],
-    # FIXME: currently, the FPGA doesn't wake up from low-power mode.
-    # For now, run the test only in verilator.
-    targets = ["verilator"],
-    # The verilator test currently fails under Bazel as well (#12486)
-    verilator = verilator_params(
-        timeout = "long",
-        tags = ["failing_verilator"],
-    ),
     deps = [
         ":keymgr",
         ":lifecycle",
+        "//hw/ip/kmac/data:kmac_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
