@@ -48,4 +48,31 @@ class clkmgr_common_vseq extends clkmgr_base_vseq;
     cfg.clkmgr_vif.idle_i = {NUM_TRANS{MuBi4False}};
   endtask : initialize_on_start
 
+  // This task is used for non-main clock registers.
+  // to compensate clock difference, wait longer until
+  // see get_alert()
+  task skid_check_fatal_alert_nonblocking(string alert_name);
+    fork
+      `DV_SPINWAIT_EXIT(
+           forever begin
+              // 1 extra cycle to make sure no race condition
+              repeat (alert_esc_agent_pkg::ALERT_B2B_DELAY + 20) begin
+                cfg.clk_rst_vif.wait_n_clks(1);
+                  if (cfg.m_alert_agent_cfg[alert_name].vif.get_alert() == 1) break;
+              end
+              `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 1,
+                           $sformatf("fatal error %0s does not trigger!", alert_name))
+              cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();
+           end,
+           wait(cfg.under_reset);)
+    join_none
+  endtask
+
+  // Override shadow_reg_errors task
+  // to cover shadow regs under clock div2, div4
+  task shadow_reg_errors_check_fatal_alert_nonblocking(dv_base_reg shadowed_csr,
+                                                       string alert_name);
+    skid_check_fatal_alert_nonblocking(alert_name);
+  endtask
+
 endclass
