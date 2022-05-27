@@ -434,5 +434,27 @@
       milestone: V2
       tests: []
     }
+    {
+      name: mask_rom_rv_dm_perform_debug
+      desc: '''Verify that Ibex enters debug mode when triggered through JTAG
+
+            This test must be run with mask ROM.  Mask ROM is responsible for enabling debug ROM
+            access and must be used to ensure the epmp configurations are done correctly.
+
+            - X-ref'ed with chip_sw_sram_execution and populate a single "return" instruction into
+              main SRAM at a fixed location (bottom of SRAM).
+            - Execute a "wait_for_interrupt" in a wrapping function in the test, this causes Ibex
+              to populate the return address and halt execution.
+            - Trigger a debug request by programming `dmcontrol.haltreq` via JTAG.
+            - Program the program buffer via JTAG with code to jump Ibex to the SRAM return
+              instruction.
+            - Verify that Ibex can fetch and execute the instructions from the SRAM correctly, Ibex
+              should return to the code that originally invoked the wait_for_interrupt routine.
+            - Release Ibex from halt via JTAG and allow the test to complete.
+            - The test should also ensure that no other interrupts occur in the system.
+            '''
+      milestone: V2
+      tests: []
+    }
 ]
 }

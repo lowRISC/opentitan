@@ -527,15 +527,8 @@
     }
     {
       name: chip_rv_dm_perform_debug
-      desc: '''Verify that Ibex enters debug mode when triggered through JTAG
-
-            - While Ibex is executing, trigger a debug request by programming `dmcontrol.haltreq`
-              via JTAG.
-            - Ibex steps into interactive debug to execute instructions in SRAM.
-            - Load instruction data into the SRAM via SW. X-ref'ed with chip_sw_sram_execution.
-            - Program the program buffer via JTAG with code to let Ibex jump to the SRAM to
-              execute the instructions.
-            - Verfy that Ibex can fetch and execute the instructions from the SRAM correctly.
+      desc: '''
+            - X-ref'ed with mask_rom_rv_dm_perform_debug from mask rom testplan
             '''
       milestone: V2
       tests: []
@@ -2151,9 +2144,9 @@
 
             - For both, main and the retention SRAM in each of these 8 scenarios:
               - Load instruction data into the SRAMs.
-              - If the instruction execution is enabled, verfy that the CPU can fetch and execute
+              - If the instruction execution is enabled, verify that the CPU can fetch and execute
                 the instruction from the SRAM correctly.
-              - If the instruction execution is not enabled, verfy that the SRAM throws an error
+              - If the instruction execution is not enabled, verify that the SRAM throws an error
                 response via an exception handler.
 
             The following table indicates in which of these scenarios should the instruction
