@@ -35,6 +35,16 @@ class otbn_base_vseq extends cip_base_vseq #(
   // sideload sequencer will get upset if we kill a process that's waiting for a grant from it).
   protected int unsigned stop_tokens = 0;
 
+  // Saved TL agent configuration
+  typedef struct packed {
+    bit          valid;
+    int unsigned a_valid_delay_min;
+    int unsigned a_valid_delay_max;
+    int unsigned d_ready_delay_min;
+    int unsigned d_ready_delay_max;
+  } saved_tl_cfg_t;
+  protected saved_tl_cfg_t saved_tl_cfg;
+
   // Overridden from dv_base_vseq
   task dut_init(string reset_kind = "HARD");
     // Always drive the lifecycle escalation signal to off at the start of the sequence.
@@ -104,10 +114,37 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
   endfunction
 
+  protected function void save_tl_config();
+    `DV_CHECK_FATAL(!saved_tl_cfg.valid)
+    saved_tl_cfg.a_valid_delay_min = cfg.m_tl_agent_cfg.a_valid_delay_min;
+    saved_tl_cfg.a_valid_delay_max = cfg.m_tl_agent_cfg.a_valid_delay_max;
+    saved_tl_cfg.d_ready_delay_min = cfg.m_tl_agent_cfg.d_ready_delay_min;
+    saved_tl_cfg.d_ready_delay_max = cfg.m_tl_agent_cfg.d_ready_delay_max;
+    saved_tl_cfg.valid = 1'b1;
+  endfunction
+
+  protected function void restore_tl_config();
+    `DV_CHECK_FATAL(saved_tl_cfg.valid)
+    cfg.m_tl_agent_cfg.a_valid_delay_min = saved_tl_cfg.a_valid_delay_min;
+    cfg.m_tl_agent_cfg.a_valid_delay_max = saved_tl_cfg.a_valid_delay_max;
+    cfg.m_tl_agent_cfg.d_ready_delay_min = saved_tl_cfg.d_ready_delay_min;
+    cfg.m_tl_agent_cfg.d_ready_delay_max = saved_tl_cfg.d_ready_delay_max;
+    saved_tl_cfg.valid = 1'b0;
+  endfunction
+
+  protected function void speed_up_tl_config();
+    cfg.m_tl_agent_cfg.a_valid_delay_min = 0;
+    cfg.m_tl_agent_cfg.a_valid_delay_max = 0;
+    cfg.m_tl_agent_cfg.d_ready_delay_min = 0;
+    cfg.m_tl_agent_cfg.d_ready_delay_max = 0;
+  endfunction
+
   // Load the contents of an ELF file into the DUT's memories by TL transactions
   protected task load_elf_over_bus(string path);
     otbn_loaded_word to_load[$];
     bit [33:0]       opns[$];
+    bit              run_fast;
+    semaphore        tx_sem = new(0);
 
     // First, tell OtbnMemUtil to stage the ELF. This reads the file and stashes away the segments
     // we need. If something goes wrong, it will print a message to stderr, so we can just fail.
@@ -120,6 +157,15 @@ class otbn_base_vseq extends cip_base_vseq #(
     // queue in the "operations" list below.
     get_queue_entries(1'b0, to_load);
     get_queue_entries(1'b1, to_load);
+
+    // Temporarily configure the TL agent to run much quicker 90% of the time. There's no real
+    // benefit to testing randomised delays here: we're just writing to a bunch of memory addresses!
+    save_tl_config();
+    run_fast = $urandom_range(0,99) < 90;
+    if (run_fast) begin
+      `uvm_info(`gfn, "Using high-speed TL config for front-door ELF load", UVM_HIGH)
+      speed_up_tl_config();
+    end
 
     // The operations that we might perform are:
     //
@@ -134,38 +180,73 @@ class otbn_base_vseq extends cip_base_vseq #(
     // We just write to LOAD_CHECKSUM a couple of times (since writing it too often might actually
     // hide a bug). We read from LOAD_CHECKSUM roughly once every 10 writes.
     //
+    // In "fast mode", we don't do the parallel LOAD_CHECKSUM reads and writes. Running non-blocking
+    // means that UVM sees pending accesses from the register overlapping with calls to predict()
+    // that update it for memory writes. I'm not sure what is the proper way to handle this, but I
+    // don't think it's possible to do with the current OT base classes.
     foreach (to_load[i]) opns.push_back({2'b00, 32'(i)});
-    for (int i = 0; i < 2; ++i) begin
-      bit [31:0] value;
-      `DV_CHECK_STD_RANDOMIZE_FATAL(value)
-      opns.push_back({2'b01, value});
+    if (!run_fast) begin
+      for (int i = 0; i < 2; ++i) begin
+        bit [31:0] value;
+        `DV_CHECK_STD_RANDOMIZE_FATAL(value)
+        opns.push_back({2'b01, value});
+      end
+      for (int i = 0; i < to_load.size() / 10; ++i) opns.push_back({2'b10, 32'd0});
     end
-    for (int i = 0; i < to_load.size() / 10; ++i) opns.push_back({2'b10, 32'd0});
 
     // Shuffle opns so that we perform them in an arbitrary order
     opns.shuffle();
 
-    // Send the writes, one by one
+    // Send the writes, one by one. We want to run in non-blocking mode to avoid each write waiting
+    // for its predecessor. But we also need to be certain that all of the writes have actually
+    // happened. To make this work, we run the CSR operations in blocking mode and do the "fork /
+    // join_none" here instead. That way, we can decrement a counter to see when stuff is done.
     foreach (opns[i]) begin
-      bit [1:0] op;
-      bit [31:0] value;
-
+      automatic bit [1:0] op;
+      automatic bit [31:0] value;
       {op, value} = opns[i];
-      case (op)
-        2'b00:
-          csr_utils_pkg::mem_wr(to_load[value].for_imem ? ral.imem : ral.dmem,
-                                to_load[value].offset,
-                                to_load[value].data);
-        2'b01:
-          csr_utils_pkg::csr_wr(ral.load_checksum, value);
-        2'b10: begin
-          uvm_reg_data_t reg_val;
-          csr_utils_pkg::csr_rd(ral.load_checksum, reg_val);
+
+      if (run_fast) begin
+        // Non-blocking mode
+        fork begin
+          send_mem_operation(to_load, op, value);
+          tx_sem.put();
         end
-        default:
-          `uvm_fatal(`gfn, "Invalid operation")
-      endcase
+        join_none
+      end else begin
+        // Blocking mode
+        send_mem_operation(to_load, op, value);
+        tx_sem.put();
+      end
     end
+
+    // Block until each of the operations above has done a 'put'
+    tx_sem.get(opns.size());
+
+    // Do a final read of LOAD_CHECKSUM. If we are in 'fast mode', this is the only one we'll do.
+    begin
+      uvm_reg_data_t reg_val;
+      csr_utils_pkg::csr_rd(ral.load_checksum, reg_val);
+    end
+
+    restore_tl_config();
+  endtask
+
+  protected task send_mem_operation(otbn_loaded_word to_load[$], bit [1:0] op, bit [31:0] value);
+    case (op)
+      2'b00:
+        csr_utils_pkg::mem_wr(to_load[value].for_imem ? ral.imem : ral.dmem,
+                              to_load[value].offset,
+                              to_load[value].data);
+      2'b01:
+        csr_utils_pkg::csr_wr(ral.load_checksum, value);
+      2'b10: begin
+        uvm_reg_data_t reg_val;
+        csr_utils_pkg::csr_rd(ral.load_checksum, reg_val);
+      end
+      default:
+        `uvm_fatal(`gfn, "Invalid operation")
+    endcase
   endtask
 
   protected function automatic void
