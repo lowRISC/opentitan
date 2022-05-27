@@ -18,7 +18,10 @@ module flash_ctrl
   parameter lfsr_perm_t           RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter int                   ProgFifoDepth   = MaxFifoDepth,
   parameter int                   RdFifoDepth     = MaxFifoDepth,
-  parameter bit                   SecScrambleEn   = 1'b1
+  parameter bit                   SecScrambleEn   = 1'b1,
+  parameter int                   ModelOnlyReadLatency   = 1,  // generic model read latency
+  parameter int                   ModelOnlyProgLatency   = 50, // generic model program latency
+  parameter int                   ModelOnlyEraseLatency  = 200 // generic model program latency
 ) (
   input        clk_i,
   input        rst_ni,
@@ -1274,7 +1277,10 @@ module flash_ctrl
   );
 
   flash_phy #(
-    .SecScrambleEn(SecScrambleEn)
+    .SecScrambleEn(SecScrambleEn),
+    .ModelOnlyReadLatency(ModelOnlyReadLatency),
+    .ModelOnlyProgLatency(ModelOnlyProgLatency),
+    .ModelOnlyEraseLatency(ModelOnlyEraseLatency)
   ) u_eflash (
     .clk_i,
     .rst_ni,
