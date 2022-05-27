@@ -155,6 +155,10 @@ set_rule_status -rule {W_DATA} -status {Waived}             \
   -expression {(Signal =~ "*.u_spi_device.u_reg*u_cmd_info*") && \
   (MultiClockDomains =~ "IO_DIV4_CLK::*SPI_DEV*CLK*")}           \
   -comment {CMD_INFO is pre-configured, static}
+set_rule_status -rule {W_DATA} -status {Waived}                      \
+  -expression {(Signal =~ "*.u_spi_device.u_reg.u_cfg_*x_order*") && \
+  (MultiClockDomains =~ "IO_DIV4_CLK::*SPI_DEV*CLK*")}               \
+  -comment {IO mode control is changed in SPI Idle state}
 
 # UNUSED IO_DIV4 clock in Flash/Passthrough mode
 set_rule_status -rule {W_DATA} -status {Waived} \
