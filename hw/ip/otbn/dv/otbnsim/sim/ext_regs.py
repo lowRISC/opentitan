@@ -225,7 +225,7 @@ class OTBNExtRegs:
 
         # Add a fake "RND_REQ" register to allow us to tell otbn_core_model to
         # generate an EDN request.
-        self.regs['RND_REQ'] = make_flag_reg('RND_REQ', True)
+        self.regs['RND_REQ'] = make_flag_reg('RND_REQ', False)
 
         # Add a fake "WIPE_START" register. We set this for a single cycle when
         # starting secure wipe and the C++ model can use this to trigger a dump

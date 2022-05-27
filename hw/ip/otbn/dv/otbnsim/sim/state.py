@@ -75,7 +75,8 @@ class OTBNState:
         self.gprs = GPRs()
         self.wdrs = RegFile('w', 256, 32)
 
-        self.wsrs = WSRFile()
+        self.ext_regs = OTBNExtRegs()
+        self.wsrs = WSRFile(self.ext_regs)
         self.csrs = CSRFile()
 
         self.pc = 0
@@ -90,15 +91,12 @@ class OTBNState:
         self._next_fsm_state = FsmState.IDLE
 
         self.loop_stack = LoopStack()
-        self.ext_regs = OTBNExtRegs()
 
         self._err_bits = 0
         self.pending_halt = False
 
         self.rnd_256b_counter = 0
         self.urnd_256b_counter = 0
-
-        self.rnd_set_flag = False
 
         self.rnd_cdc_pending = False
         self.urnd_cdc_pending = False
@@ -226,18 +224,6 @@ class OTBNState:
         self.urnd_cdc_pending = False
         self.urnd_cdc_counter = 0
 
-    def rnd_reg_set(self) -> None:
-        # This sets RND register inside WSR immediately. Calling this with
-        # using DPI causes timing problems so it is best to it when we want
-        # to actually set RND register (at commit method and at the start if
-        # RND processing is completed after OTBN stopped running)
-        if self.rnd_set_flag:
-            self.wsrs.RND.set_unsigned(self.rnd_256b)
-            self.rnd_256b = 0
-            self.rnd_cdc_pending = False
-            self.rnd_set_flag = False
-            self.rnd_cdc_counter = 0
-
     def rnd_completed(self) -> None:
         # This will be called when all the packages are received and processed
         # by RTL. Model will set RND register, pending flag and internal
@@ -248,8 +234,11 @@ class OTBNState:
         # 5 cycles ideally.
         assert self.rnd_cdc_counter < 6
 
-        # TODO: Assert rnd_cdc_pending when request is correctly modelled.
-        self.rnd_set_flag = True
+        self.wsrs.RND.set_unsigned(self.rnd_256b)
+        self.rnd_256b = 0
+        self.rnd_cdc_pending = False
+        self.rnd_set_flag = False
+        self.rnd_cdc_counter = 0
 
     def urnd_completed(self) -> None:
         # URND completed gets called after RTL signals that the processing
@@ -309,11 +298,6 @@ class OTBNState:
             if self._time_to_imem_invalidation == 0:
                 self.invalidated_imem = True
                 self._time_to_imem_invalidation = None
-
-        # Check if we processed the RND data, if so set the register. This is
-        # done seperately from the rnd_completed method because in other case
-        # we are exiting stall caused by RND waiting by one cycle too early.
-        self.rnd_reg_set()
 
         # If model is waiting for the RND register to cross CDC, increment a
         # counter to say how long we've waited. This lets us spot if the CDC
