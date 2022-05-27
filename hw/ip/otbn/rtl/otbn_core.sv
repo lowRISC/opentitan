@@ -245,6 +245,7 @@ module otbn_core
   mubi4_t               controller_fatal_escalate_en, controller_recov_escalate_en;
   mubi4_t               start_stop_escalate_en;
   controller_err_bits_t controller_err_bits;
+  logic                 prefetch_ignore_errs;
 
   core_err_bits_t err_bits_q, err_bits_d;
 
@@ -339,6 +340,7 @@ module otbn_core
     .prefetch_loop_iterations_i(prefetch_loop_iterations),
     .prefetch_loop_end_addr_i  (prefetch_loop_end_addr),
     .prefetch_loop_jump_addr_i (prefetch_loop_jump_addr),
+    .prefetch_ignore_errs_i    (prefetch_ignore_errs),
 
     .sec_wipe_wdr_en_i  (sec_wipe_wdr_d),
     .sec_wipe_wdr_addr_i(sec_wipe_addr)
@@ -513,6 +515,7 @@ module otbn_core
     .prefetch_loop_iterations_o(prefetch_loop_iterations),
     .prefetch_loop_end_addr_o  (prefetch_loop_end_addr),
     .prefetch_loop_jump_addr_o (prefetch_loop_jump_addr),
+    .prefetch_ignore_errs_o    (prefetch_ignore_errs),
 
     .predec_error_o(controller_predec_error)
   );
