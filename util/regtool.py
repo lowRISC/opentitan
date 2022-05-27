@@ -138,9 +138,9 @@ def main():
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 
-    # Entries are triples of the form (arg, (format, dirspec)).
+    # Entries are triples of the form (arg, (fmt, dirspec)).
     #
-    # arg is the name of the argument that selects the format. format is the
+    # arg is the name of the argument that selects the format. fmt is the
     # name of the format. dirspec is None if the output is a single file; if
     # the output needs a directory, it is a default path relative to the source
     # file (used when --outdir is not given).
@@ -150,17 +150,17 @@ def main():
                      ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None)),
                      ('sec_cm_testplan', ('sec_cm_testplan', 'data')),
                      ('rust', ('rs', None)), ('tock', ('trs', None))]
-    format = None
+    fmt = None
     dirspec = None
     for arg_name, spec in arg_to_format:
         if getattr(args, arg_name):
-            if format is not None:
+            if fmt is not None:
                 log.error('Multiple output formats specified on '
-                          'command line ({} and {}).'.format(format, spec[0]))
+                          'command line ({} and {}).'.format(fmt, spec[0]))
                 sys.exit(1)
-            format, dirspec = spec
-    if format is None:
-        format = 'hjson'
+            fmt, dirspec = spec
+    if fmt is None:
+        fmt = 'hjson'
 
     infile = args.input
 
@@ -182,14 +182,14 @@ def main():
     if dirspec is None:
         if args.outdir is not None:
             log.error('The {} format expects an output file, '
-                      'not an output directory.'.format(format))
+                      'not an output directory.'.format(fmt))
             sys.exit(1)
 
         outfile = args.outfile
     else:
         if args.outfile is not sys.stdout:
             log.error('The {} format expects an output directory, '
-                      'not an output file.'.format(format))
+                      'not an output file.'.format(fmt))
             sys.exit(1)
 
         if args.outdir is not None:
@@ -202,7 +202,7 @@ def main():
                 'The {} format writes to an output directory, which '
                 'cannot be inferred automatically if the input comes '
                 'from stdin. Use --outdir to specify it manually.'.format(
-                    format))
+                    fmt))
             sys.exit(1)
 
     version_stamp = {}
@@ -212,7 +212,7 @@ def main():
                 k, v = line.strip().split(' ', 1)
                 version_stamp[k] = v
 
-    if format == 'doc':
+    if fmt == 'doc':
         with outfile:
             gen_selfdoc.document(outfile)
         exit(0)
@@ -239,7 +239,7 @@ def main():
     # .sv implementation files and check whether they match up with what is
     # defined inside the Hjson.
     # Skip this check when generating DV code - its not needed.
-    if format != 'dv':
+    if fmt != 'dv':
         sv_files = Path(
             infile.name).parent.joinpath('..').joinpath('rtl').glob('*.sv')
         rtl_names = CounterMeasure.search_rtl_files(sv_files)
@@ -247,16 +247,16 @@ def main():
 
     if args.novalidate:
         with outfile:
-            gen_json.gen_json(obj, outfile, format)
+            gen_json.gen_json(obj, outfile, fmt)
             outfile.write('\n')
     else:
-        if format == 'rtl':
+        if fmt == 'rtl':
             return gen_rtl.gen_rtl(obj, outdir)
-        if format == 'sec_cm_testplan':
+        if fmt == 'sec_cm_testplan':
             return gen_sec_cm_testplan.gen_sec_cm_testplan(obj, outdir)
-        if format == 'dv':
+        if fmt == 'dv':
             return gen_dv.gen_dv(obj, args.dv_base_names, outdir)
-        if format == 'fpv':
+        if fmt == 'fpv':
             return gen_fpv.gen_fpv(obj, outdir)
         src_lic = None
         src_copy = ''
@@ -281,18 +281,18 @@ def main():
             src_lic += '\n' + found_spdx
 
         with outfile:
-            if format == 'html':
+            if fmt == 'html':
                 return gen_html.gen_html(obj, outfile)
-            elif format == 'cdh':
+            elif fmt == 'cdh':
                 return gen_cheader.gen_cdefines(obj, outfile, src_lic,
                                                 src_copy)
-            elif format == 'rs':
+            elif fmt == 'rs':
                 return gen_rust.gen_rust(obj, outfile, src_lic, src_copy)
-            elif format == 'trs':
+            elif fmt == 'trs':
                 return gen_tock.gen_tock(obj, outfile, infile.name, src_lic,
                                          src_copy, version_stamp)
             else:
-                return gen_json.gen_json(obj, outfile, format)
+                return gen_json.gen_json(obj, outfile, fmt)
 
             outfile.write('\n')
 
