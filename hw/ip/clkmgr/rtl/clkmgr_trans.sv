@@ -11,16 +11,20 @@ module clkmgr_trans
   parameter bit FpgaBufGlobal = 1
 ) (
   input clk_i,
+  input clk_gated_i,
   input rst_ni,
-  input clk_root_i,
-  input clk_root_en_i,
+  input en_i,
   input mubi4_t idle_i,
   input sw_hint_i,
   input mubi4_t scanmode_i,
   output mubi4_t alert_cg_en_o,
   output logic clk_o,
-  output logic clk_en_o,
-  output logic cnt_err_o
+
+  // interface to regfile
+  input clk_reg_i,
+  input rst_reg_ni,
+  output logic reg_en_o,
+  output logic reg_cnt_err_o
 );
 
   import prim_mubi_pkg::MuBi4False;
@@ -37,8 +41,9 @@ module clkmgr_trans
   logic [IdleCntWidth-1:0] idle_cnt;
   logic idle_valid;
   logic sw_hint_synced;
+  logic local_en;
   assign idle_valid = (idle_cnt == TransIdleCnt);
-  assign clk_en_o = sw_hint_synced | ~idle_valid;
+  assign local_en = sw_hint_synced | ~idle_valid;
 
   prim_flop_2sync #(
     .Width(1)
@@ -50,6 +55,7 @@ module clkmgr_trans
   );
 
   // SEC_CM: IDLE.CTR.REDUN
+  logic cnt_err;
   prim_count #(
     .Width(IdleCntWidth),
     .OutSelDnCnt('0),
@@ -64,7 +70,7 @@ module clkmgr_trans
     .en_i(mubi4_test_true_strict(idle_i) & ~idle_valid),
     .step_i(IdleCntWidth'(1'b1)),
     .cnt_o(idle_cnt),
-    .err_o(cnt_err_o)
+    .err_o(cnt_err)
   );
 
   // Declared as size 1 packed array to avoid FPV warning.
@@ -81,17 +87,19 @@ module clkmgr_trans
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
   // are derived from the same physical signal.
-  logic clk_combined_en;
+  logic combined_en_d, combined_en_q;
   prim_buf u_prim_buf_en (
-    .in_i(clk_en_o & clk_root_en_i),
-    .out_o(clk_combined_en)
+    .in_i(local_en & en_i),
+    .out_o(combined_en_d)
   );
 
+  // clk_gated_i is already controlled by en_i, so there is no need
+  // to use it in the below gating function
   prim_clock_gating #(
     .FpgaBufGlobal(FpgaBufGlobal)
   ) u_cg (
-    .clk_i(clk_root_i),
-    .en_i(clk_combined_en),
+    .clk_i(clk_gated_i),
+    .en_i(local_en),
     .test_en_i(mubi4_test_true_strict(scanmode[0])),
     .clk_o(clk_o)
   );
@@ -102,8 +110,51 @@ module clkmgr_trans
   ) u_prim_mubi4_sender (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .mubi_i(clk_combined_en ? MuBi4False : MuBi4True),
+    .mubi_i(combined_en_d ? MuBi4False : MuBi4True),
     .mubi_o(alert_cg_en_o)
   );
+
+  // we hold the error because there is no guarantee on
+  // what the timing of cnt_err looks like, it may be a
+  // pulse or it may be level.  If it's for former,
+  // prim_sync_reqack may miss it, if it's the latter,
+  // prim_pulse_sync may miss it.  As a result, just
+  // latch forever and sync it over.
+  logic hold_err;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      hold_err <= '0;
+    end else if (cnt_err) begin
+      hold_err <= 1'b1;
+    end
+  end
+
+  // register facing domain
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_err_sync (
+    .clk_i(clk_reg_i),
+    .rst_ni(rst_reg_ni),
+    .d_i(hold_err),
+    .q_o(reg_cnt_err_o)
+  );
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      combined_en_q <= '0;
+    end else begin
+      combined_en_q <= combined_en_d;
+    end
+  end
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_en_sync (
+    .clk_i(clk_reg_i),
+    .rst_ni(rst_reg_ni),
+    .d_i(combined_en_q),
+    .q_o(reg_en_o)
+  );
+
 
 endmodule
