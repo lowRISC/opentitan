@@ -56,7 +56,6 @@ package rstmgr_env_pkg;
                                       "u_d0_spi_host0",
                                       "u_d0_spi_host1",
                                       "u_d0_usb",
-                                      "u_d0_usbif",
                                       "u_d0_i2c0",
                                       "u_d0_i2c1",
                                       "u_d0_i2c2"};

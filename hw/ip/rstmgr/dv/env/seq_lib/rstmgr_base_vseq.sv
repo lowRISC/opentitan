@@ -457,14 +457,9 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     csr_excl_item csr_excl = ral.get_excl_item();
     `uvm_info(`gfn, "Dealing with exclusions", UVM_MEDIUM)
     csr_excl.enable_excl(.obj("rstmgr_reg_block.reset_req"), .enable(1'b0));
-    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_0"), .enable(1'b0));
-    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_1"), .enable(1'b0));
-    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_2"), .enable(1'b0));
-    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_3"), .enable(1'b0));
-    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_4"), .enable(1'b0));
-    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_5"), .enable(1'b0));
-    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_6"), .enable(1'b0));
-    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_7"), .enable(1'b0));
+    for (int i = 0; i < rstmgr_reg_pkg::NumSwResets; i++) begin
+      csr_excl.enable_excl(.obj($sformatf("rstmgr_reg_block.sw_rst_ctrl_n_%0d", i)), .enable(1'b0));
+    end
     csr_excl.print_exclusions(UVM_MEDIUM);
   endfunction
 

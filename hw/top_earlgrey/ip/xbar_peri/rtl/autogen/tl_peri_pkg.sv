@@ -18,7 +18,6 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_GPIO                    = 32'h 40040000;
   localparam logic [31:0] ADDR_SPACE_SPI_DEVICE              = 32'h 40050000;
   localparam logic [31:0] ADDR_SPACE_RV_TIMER                = 32'h 40100000;
-  localparam logic [31:0] ADDR_SPACE_USBDEV                  = 32'h 40110000;
   localparam logic [31:0] ADDR_SPACE_PWRMGR_AON              = 32'h 40400000;
   localparam logic [31:0] ADDR_SPACE_RSTMGR_AON              = 32'h 40410000;
   localparam logic [31:0] ADDR_SPACE_CLKMGR_AON              = 32'h 40420000;
@@ -47,7 +46,6 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_GPIO                    = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_SPI_DEVICE              = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_RV_TIMER                = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_USBDEV                  = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_PWRMGR_AON              = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RSTMGR_AON              = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_CLKMGR_AON              = 32'h 00000fff;
@@ -65,7 +63,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_AST                     = 32'h 00000fff;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 28;
+  localparam int N_DEVICE = 27;
 
   typedef enum int {
     TlUart0 = 0,
@@ -80,22 +78,21 @@ package tl_peri_pkg;
     TlGpio = 9,
     TlSpiDevice = 10,
     TlRvTimer = 11,
-    TlUsbdev = 12,
-    TlPwrmgrAon = 13,
-    TlRstmgrAon = 14,
-    TlClkmgrAon = 15,
-    TlPinmuxAon = 16,
-    TlOtpCtrlCore = 17,
-    TlOtpCtrlPrim = 18,
-    TlLcCtrl = 19,
-    TlSensorCtrl = 20,
-    TlAlertHandler = 21,
-    TlSramCtrlRetAonRegs = 22,
-    TlSramCtrlRetAonRam = 23,
-    TlAonTimerAon = 24,
-    TlSysrstCtrlAon = 25,
-    TlAdcCtrlAon = 26,
-    TlAst = 27
+    TlPwrmgrAon = 12,
+    TlRstmgrAon = 13,
+    TlClkmgrAon = 14,
+    TlPinmuxAon = 15,
+    TlOtpCtrlCore = 16,
+    TlOtpCtrlPrim = 17,
+    TlLcCtrl = 18,
+    TlSensorCtrl = 19,
+    TlAlertHandler = 20,
+    TlSramCtrlRetAonRegs = 21,
+    TlSramCtrlRetAonRam = 22,
+    TlAonTimerAon = 23,
+    TlSysrstCtrlAon = 24,
+    TlAdcCtrlAon = 25,
+    TlAst = 26
   } tl_device_e;
 
   typedef enum int {

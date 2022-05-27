@@ -43,9 +43,6 @@ tl_device_t xbar_devices[$] = '{
     '{"rv_timer", '{
         '{32'h40100000, 32'h40100fff}
     }},
-    '{"usbdev", '{
-        '{32'h40110000, 32'h40110fff}
-    }},
     '{"pwrmgr_aon", '{
         '{32'h40400000, 32'h40400fff}
     }},
@@ -106,7 +103,6 @@ tl_host_t xbar_hosts[$] = '{
         "gpio",
         "spi_device",
         "rv_timer",
-        "usbdev",
         "pwrmgr_aon",
         "rstmgr_aon",
         "clkmgr_aon",

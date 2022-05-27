@@ -379,20 +379,20 @@
         }
         {
           bits: "2",
-          name: "CLK_USB_PERI_EN",
-          resval: 1,
-          desc: '''
-            0 CLK_USB_PERI is disabled.
-            1 CLK_USB_PERI is enabled.
-          '''
-        }
-        {
-          bits: "3",
           name: "CLK_IO_PERI_EN",
           resval: 1,
           desc: '''
             0 CLK_IO_PERI is disabled.
             1 CLK_IO_PERI is enabled.
+          '''
+        }
+        {
+          bits: "3",
+          name: "CLK_USB_PERI_EN",
+          resval: 1,
+          desc: '''
+            0 CLK_USB_PERI is disabled.
+            1 CLK_USB_PERI is enabled.
           '''
         }
       ]

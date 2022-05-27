@@ -25,6 +25,9 @@ tl_device_t xbar_devices[$] = '{
     '{"spi_host1", '{
         '{32'h40310000, 32'h40310fff}
     }},
+    '{"usbdev", '{
+        '{32'h40320000, 32'h40320fff}
+    }},
     '{"flash_ctrl__core", '{
         '{32'h41000000, 32'h41000fff}
     }},
@@ -109,9 +112,6 @@ tl_device_t xbar_devices[$] = '{
     '{"rv_timer", '{
         '{32'h40100000, 32'h40100fff}
     }},
-    '{"usbdev", '{
-        '{32'h40110000, 32'h40110fff}
-    }},
     '{"pwrmgr_aon", '{
         '{32'h40400000, 32'h40400fff}
     }},
@@ -183,7 +183,6 @@ tl_host_t xbar_hosts[$] = '{
         "gpio",
         "spi_device",
         "rv_timer",
-        "usbdev",
         "pwrmgr_aon",
         "rstmgr_aon",
         "clkmgr_aon",
@@ -202,6 +201,7 @@ tl_host_t xbar_hosts[$] = '{
         "pwm_aon",
         "spi_host0",
         "spi_host1",
+        "usbdev",
         "flash_ctrl__core",
         "flash_ctrl__prim",
         "flash_ctrl__mem",
@@ -233,7 +233,6 @@ tl_host_t xbar_hosts[$] = '{
         "gpio",
         "spi_device",
         "rv_timer",
-        "usbdev",
         "pwrmgr_aon",
         "rstmgr_aon",
         "clkmgr_aon",
@@ -252,6 +251,7 @@ tl_host_t xbar_hosts[$] = '{
         "pwm_aon",
         "spi_host0",
         "spi_host1",
+        "usbdev",
         "flash_ctrl__core",
         "flash_ctrl__prim",
         "flash_ctrl__mem",

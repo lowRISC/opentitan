@@ -75,6 +75,12 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_usbdev"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_flash_ctrl__core"
       act:    "req"
       package: "tlul_pkg"

@@ -121,16 +121,6 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_RV_TIMER_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for usbdev in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_USBDEV_BASE_ADDR = 32'h40110000;
-
-  /**
-   * Peripheral size in bytes for usbdev in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_USBDEV_SIZE_BYTES = 32'h1000;
-
-  /**
    * Peripheral base address for core device on otp_ctrl in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR = 32'h40130000;
@@ -189,6 +179,16 @@ package top_earlgrey_pkg;
    * Peripheral size in bytes for spi_host1 in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_SPI_HOST1_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for usbdev in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_USBDEV_BASE_ADDR = 32'h40320000;
+
+  /**
+   * Peripheral size in bytes for usbdev in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_USBDEV_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for pwrmgr_aon in top earlgrey.

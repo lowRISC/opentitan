@@ -37,6 +37,7 @@ package clkmgr_pkg;
     logic clk_main_otbn;
     logic clk_io_div4_infra;
     logic clk_main_infra;
+    logic clk_usb_infra;
     logic clk_io_infra;
     logic clk_io_div2_infra;
     logic clk_io_div4_secure;
@@ -45,8 +46,8 @@ package clkmgr_pkg;
     logic clk_io_div4_timers;
     logic clk_io_div4_peri;
     logic clk_io_div2_peri;
-    logic clk_usb_peri;
     logic clk_io_peri;
+    logic clk_usb_peri;
   } clkmgr_out_t;
 
   // clock gating indication for alert handler
@@ -67,6 +68,7 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t main_otbn;
     prim_mubi_pkg::mubi4_t io_div4_infra;
     prim_mubi_pkg::mubi4_t main_infra;
+    prim_mubi_pkg::mubi4_t usb_infra;
     prim_mubi_pkg::mubi4_t io_infra;
     prim_mubi_pkg::mubi4_t io_div2_infra;
     prim_mubi_pkg::mubi4_t io_div4_secure;
@@ -75,11 +77,11 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t io_div4_timers;
     prim_mubi_pkg::mubi4_t io_div4_peri;
     prim_mubi_pkg::mubi4_t io_div2_peri;
-    prim_mubi_pkg::mubi4_t usb_peri;
     prim_mubi_pkg::mubi4_t io_peri;
+    prim_mubi_pkg::mubi4_t usb_peri;
   } clkmgr_cg_en_t;
 
-  parameter int NumOutputClk = 26;
+  parameter int NumOutputClk = 27;
 
 
   typedef struct packed {
