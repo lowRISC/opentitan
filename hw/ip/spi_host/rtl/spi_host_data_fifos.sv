@@ -118,7 +118,7 @@ module spi_host_data_fifos #(
   assign rx_empty_o = (rx_qd_o == 0);
   assign tx_full_o  = (tx_qd_o >= 8'(TxDepth));
   assign rx_full_o  = (rx_qd_o >= 8'(RxDepth));
-  assign tx_wm_o    = (tx_qd_o >= tx_watermark_i);
+  assign tx_wm_o    = (tx_qd_o <  tx_watermark_i);
   assign rx_wm_o    = (rx_qd_o >= rx_watermark_i);
 
 endmodule : spi_host_data_fifos

@@ -67,6 +67,7 @@ filesets:
       - seq_lib/chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_repeat_reset_wkup_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rstmgr_alert_info_vseq.sv: {is_include_file: true}
       - seq_lib/chip_callback_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
       - ast_supply_if.sv

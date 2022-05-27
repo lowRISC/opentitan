@@ -64,6 +64,16 @@ class OTBNSim:
         self._next_insn = None
         self.state.start()
 
+    def start_mem_wipe(self, is_imem: bool) -> None:
+        if self.state.get_fsm_state() != FsmState.IDLE:
+            return
+
+        new_status = (Status.BUSY_SEC_WIPE_IMEM
+                      if is_imem else Status.BUSY_SEC_WIPE_DMEM)
+
+        self.state.set_fsm_state(FsmState.MEM_SEC_WIPE)
+        self.state.ext_regs.write('STATUS', new_status, True)
+
     def configure(self, enable_secure_wipe: bool) -> None:
         self.state.secure_wipe_enabled = enable_secure_wipe
 
@@ -183,19 +193,8 @@ class OTBNSim:
 
     def _step_ext_wipe(self, verbose: bool) -> StepRes:
         '''Step the simulation DMEM/IMEM wipe operation'''
-
-        if self.state.dmem_req_pending:
-            self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_DMEM, True)
-            self.state.commit(sim_stalled=True)
-        elif self.state.imem_req_pending:
-            self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_IMEM, True)
-            self.state.commit(sim_stalled=True)
-        else:
-            self.state.commit(sim_stalled=True)
-            self.state.ext_regs.write('STATUS', Status.IDLE, True)
-            self.state.set_fsm_state(FsmState.IDLE)
-
         changes = self.state.changes()
+        self.state.commit(sim_stalled=True)
         return (None, changes)
 
     def _step_pre_exec(self, verbose: bool) -> StepRes:
@@ -313,22 +312,11 @@ class OTBNSim:
 
     def on_otp_cdc_done(self) -> None:
         '''Signifies when the scrambling key request gets processed'''
-        self.state.imem_req_pending = False
-        self.state.dmem_req_pending = False
-
-    def on_imem_wipe(self) -> None:
-        '''Sets Status register and changes FsmState'''
-        old_state = self.state.get_fsm_state()
-        if old_state in [FsmState.IDLE]:
-            self.state.set_fsm_state(FsmState.MEM_SEC_WIPE)
-            self.state.imem_req_pending = True
-
-    def on_dmem_wipe(self) -> None:
-        '''Sets Status register and changes FsmState'''
-        old_state = self.state.get_fsm_state()
-        if old_state in [FsmState.IDLE]:
-            self.state.set_fsm_state(FsmState.MEM_SEC_WIPE)
-            self.state.dmem_req_pending = True
+        # This is only supposed to happen when we were doing a memory secure
+        # wipe
+        assert self.state.get_fsm_state() == FsmState.MEM_SEC_WIPE
+        self.state.ext_regs.write('STATUS', Status.IDLE, True)
+        self.state.set_fsm_state(FsmState.IDLE)
 
     def send_err_escalation(self, err_val: int) -> None:
         '''React to an error escalation'''

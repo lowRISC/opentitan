@@ -40,7 +40,7 @@
             value during the test.
 
             **Check**:
-            If dut accepts any of invalid values, test will fail by turing dut to scanmode.
+            If dut accepts any of invalid values, test will fail by turning dut to scanmode.
             '''
       milestone: V2S
       tests: ["rstmgr_sec_cm_scan_intersig_mubi"]
@@ -52,8 +52,10 @@
             ** Stimulus**:
             Execute a series of reset event - lowpower, hwreq, ndm, and
             sw reset -. And at the beginning of these events, create
-            reset consistency error to one of 27 leaf modules.
-            Do the same test for all 27 modules.
+            reset consistency error to one of 25 leaf modules.
+            (exclude u_daon_por_io_div4 and u_daon_por_io_div4_shadowed,
+            see #11858, #12729 for details)
+            Do the same test for all 25 modules.
 
             **Check**:
             Upon asserting each reset consistency error,

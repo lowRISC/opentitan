@@ -60,44 +60,6 @@ foreach mask_rom_test_name, mask_rom_test_info : mask_rom_tests
       build_by_default: true,
     )
 
-    mask_rom_test_sim_dv_frames = []
-    if device_name == 'sim_dv' and \
-        mask_rom_test_info.has_key('dv_frames') and mask_rom_test_info['dv_frames']
-      mask_rom_test_sim_dv_frames_bin = custom_target(
-        mask_rom_test_name + '_sim_dv_frames_bin',
-        command: [
-          spiflash_bin,
-          '--input=@INPUT@',
-          '--dump-frames=@OUTPUT@',
-        ],
-        input: mask_rom_test_bin,
-        output: '@BASENAME@.frames.bin',
-      )
-
-      mask_rom_test_sim_dv_frames_vmem = custom_target(
-        mask_rom_test_name + '_sim_dv_frames_vmem',
-        command: [
-          prog_srec_cat,
-          '@INPUT@',
-          '--binary',
-          '--offset', '0x0',
-          '--byte-swap', '4',
-          '--fill', '0xff',
-          '-within', '@INPUT@',
-          '-binary',
-          '-range-pad', '4',
-          '--output', '@OUTPUT@',
-          '--vmem',
-        ],
-        input: mask_rom_test_sim_dv_frames_bin,
-        output: '@BASENAME@.vmem',
-      )
-      mask_rom_test_sim_dv_frames = [
-        mask_rom_test_sim_dv_frames_bin,
-        mask_rom_test_sim_dv_frames_vmem,
-      ]
-    endif
-
     mask_rom_test_sim_dv_logs = []
     if device_name == 'sim_dv'
       mask_rom_test_sim_dv_logs = custom_target(
@@ -120,7 +82,6 @@ foreach mask_rom_test_name, mask_rom_test_info : mask_rom_tests
         mask_rom_test_vmem32,
         mask_rom_test_vmem64,
         mask_rom_test_scr_vmem64,
-        mask_rom_test_sim_dv_frames,
         mask_rom_test_sim_dv_logs,
       ],
       output: target_name.format('export'),

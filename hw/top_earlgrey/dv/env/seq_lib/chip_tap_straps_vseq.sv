@@ -63,7 +63,12 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     // If it's not LC tap, effectively, no tap is selected.
     if (cur_lc_state == LcStProd) begin
       cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
-      if (select_jtag != SelectLCJtagTap) select_jtag = DeselectJtagTap;
+      // In Dev state, only pin0 of select_jtag is sampled. When it's set, select LC tap
+      if (select_jtag[0] == 0) select_jtag = DeselectJtagTap;
+      else                     select_jtag = SelectLCJtagTap;
+    end else if (cur_lc_state == LcStDev) begin
+      // In Dev state, can't select DFT tap. If it's selected, effectively, no tap is enabled
+      if (select_jtag == SelectDftJtagTap) select_jtag = DeselectJtagTap;
     end
   endtask
 
@@ -105,7 +110,6 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  // TODO, add DFT tap
   virtual task enable_jtag_tap(chip_tap_type_e tap);
     if (select_jtag != tap) begin
       select_jtag = tap;

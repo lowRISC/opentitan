@@ -44,6 +44,11 @@ def main():
     parser.add_argument('-d',
                         action='store_true',
                         help='Output register documentation (html)')
+    parser.add_argument('-a',
+                        '--alias',
+                        type=Path,
+                        default=None,
+                        help='Alias register file in Hjson type')
     parser.add_argument('--cdefines',
                         '-D',
                         action='store_true',
@@ -217,6 +222,16 @@ def main():
     except ValueError as err:
         log.error(str(err))
         exit(1)
+
+    # Parse and validate alias register definitions (this ensures that the
+    # structure of the original register node and the alias register file is
+    # identical).
+    if args.alias is not None:
+        try:
+            obj.alias_from_path(args.alias)
+        except ValueError as err:
+            log.error(str(err))
+            exit(1)
 
     # If this block has countermeasures, we grep for RTL annotations in all
     # .sv implementation files and check whether they match up with what is

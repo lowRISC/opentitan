@@ -84,16 +84,14 @@ bool execute_lc_ctrl_transition_test(bool use_ext_clk) {
 
     // Request lc_state transfer to Dev state.
     dif_lc_ctrl_token_t token;
-    dif_lc_ctrl_settings_t settings;
-    settings.clock_select =
-        use_ext_clk ? kDifLcCtrlExternalClockEn : kDifLcCtrlInternalClockEn;
     for (int i = 0; i < LC_TOKEN_SIZE; i++) {
       token.data[i] = kLcExitToken[i];
     }
-    CHECK(dif_lc_ctrl_mutex_try_acquire(&lc) == kDifOk);
-    CHECK(dif_lc_ctrl_transition(&lc, kDifLcCtrlStateDev, &token, &settings) ==
-              kDifOk,
-          "LC_transition failed!");
+    CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc));
+    CHECK_DIF_OK(
+        dif_lc_ctrl_configure(&lc, kDifLcCtrlStateDev, use_ext_clk, &token),
+        "LC transition configuration failed!");
+    CHECK_DIF_OK(dif_lc_ctrl_transition(&lc), "LC transition failed!");
 
     LOG_INFO("Waiting for LC transtition done and reboot.");
     wait_for_interrupt();

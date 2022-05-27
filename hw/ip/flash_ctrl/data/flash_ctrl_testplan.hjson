@@ -249,6 +249,15 @@
       tests: []
     }
     {
+      name: invalid_op
+      desc: '''
+            Send invalid command in order to check that it does not affect memory content.
+            Check that recovery alert is triggered.
+            '''
+      milestone: V2
+      tests: ["flash_ctrl_invalid_op"]
+    }
+    {
       name: ecc
       desc: '''
             Randomly enable ECC for a randomly selected set of pages. Randomly corrupt a single bit

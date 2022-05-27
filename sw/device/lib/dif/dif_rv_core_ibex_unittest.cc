@@ -262,4 +262,53 @@ TEST_F(AddressTranslationTest, NotPowerOfTwo) {
       &ibex_, kDifRvCoreIbexAddrTranslationSlot_0, region));
 }
 
+class ErrorStatusTest
+    : public RvCoreIbexTestInitialized,
+      public testing::WithParamInterface<
+          std::tuple<uint32_t, dif_rv_core_ibex_error_status_t>> {};
+
+TEST_P(ErrorStatusTest, ReadSuccess) {
+  auto reg = std::get<0>(GetParam());
+  auto status = std::get<1>(GetParam());
+
+  EXPECT_READ32(RV_CORE_IBEX_ERR_STATUS_REG_OFFSET, {{reg, 1}});
+  dif_rv_core_ibex_error_status_t error_status;
+  EXPECT_DIF_OK(dif_rv_core_ibex_get_error_status(&ibex_, &error_status));
+  EXPECT_EQ(status, error_status);
+}
+
+TEST_P(ErrorStatusTest, ClearSuccess) {
+  auto reg = std::get<0>(GetParam());
+  auto status = std::get<1>(GetParam());
+  EXPECT_WRITE32(RV_CORE_IBEX_ERR_STATUS_REG_OFFSET, {{reg, 1}});
+  EXPECT_DIF_OK(dif_rv_core_ibex_clear_error_status(&ibex_, status));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ErrorStatusTest, ErrorStatusTest,
+    testing::ValuesIn(
+        std::vector<std::tuple<uint32_t, dif_rv_core_ibex_error_status_t>>{{
+            {RV_CORE_IBEX_ERR_STATUS_REG_INTG_ERR_BIT,
+             kDifRvCoreIbexErrorStatusRegisterTransmissionIntegrity},
+            {RV_CORE_IBEX_ERR_STATUS_FATAL_INTG_ERR_BIT,
+             kDifRvCoreIbexErrorStatusFatalResponseIntegrity},
+            {RV_CORE_IBEX_ERR_STATUS_FATAL_CORE_ERR_BIT,
+             kDifRvCoreIbexErrorStatusFatalInternalError},
+            {RV_CORE_IBEX_ERR_STATUS_RECOV_CORE_ERR_BIT,
+             kDifRvCoreIbexErrorStatusRecoverableInternal},
+        }}));
+
+TEST_F(ErrorStatusTest, ReadBadArg) {
+  dif_rv_core_ibex_error_status_t error_status;
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_get_error_status(nullptr, &error_status));
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_get_error_status(&ibex_, nullptr));
+}
+
+TEST_F(ErrorStatusTest, ClearBadArg) {
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_clear_error_status(
+      nullptr, kDifRvCoreIbexErrorStatusRegisterTransmissionIntegrity));
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_clear_error_status(
+      &ibex_, static_cast<dif_rv_core_ibex_error_status_t>(-1)));
+}
+
 }  // namespace dif_rv_core_ibex_test

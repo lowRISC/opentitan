@@ -11,6 +11,8 @@
   from reggen.multi_register import MultiRegister
   from reggen.bits import Bits
 
+  alias_impl = "_" + block.alias_impl if block.alias_impl else ""
+
   num_wins = len(rb.windows)
   num_reg_dsp = 1 if rb.all_regs else 0
   num_dsp  = num_wins + num_reg_dsp
@@ -134,10 +136,10 @@ module ${mod_name} (
 % endif
   // To HW
 % if rb.get_n_bits(["q","qe","re"]):
-  output ${lblock}_reg_pkg::${reg2hw_t} reg2hw, // Write
+  output ${lblock}${alias_impl}_reg_pkg::${reg2hw_t} reg2hw, // Write
 % endif
 % if rb.get_n_bits(["d","de"]):
-  input  ${lblock}_reg_pkg::${hw2reg_t} hw2reg, // Read
+  input  ${lblock}${alias_impl}_reg_pkg::${hw2reg_t} hw2reg, // Read
 % endif
 
 % if rb.has_internal_shadowed_reg():
@@ -152,7 +154,7 @@ module ${mod_name} (
   input devmode_i // If 1, explicit error return for unmapped register access
 );
 
-  import ${lblock}_reg_pkg::* ;
+  import ${lblock}${alias_impl}_reg_pkg::* ;
 
 % if needs_aw:
   localparam int AW = ${addr_width};

@@ -110,9 +110,6 @@ class OTBNState:
         self.urnd_256b = 4 * [0]
         self.urnd_64b = 0
 
-        self.imem_req_pending = 0
-        self.dmem_req_pending = 0
-
         # To simulate injecting integrity errors, we set a flag to say that
         # IMEM is no longer readable without getting an error. This can't take
         # effect instantly because the RTL's prefetch stage (which we don't

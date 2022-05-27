@@ -373,17 +373,37 @@ void ISSWrapper::dump_d(const std::string &path) const {
   run_command(oss.str(), nullptr);
 }
 
-void ISSWrapper::start() {
-  std::ostringstream oss;
-  oss << "configure " << (int)enable_secure_wipe << "\n";
+void ISSWrapper::start_operation(command_t command) {
+  std::ostringstream cmd_stream;
+  std::string extra_command;
 
-  run_command("start\n", nullptr);
-  run_command(oss.str(), nullptr);
+  cmd_stream << "start_operation ";
+
+  switch (command) {
+    case Execute: {
+      std::ostringstream oss;
+      oss << "configure " << (int)enable_secure_wipe << "\n";
+      extra_command = oss.str();
+      cmd_stream << "Execute\n";
+    } break;
+
+    case DmemWipe:
+      cmd_stream << "DmemWipe\n";
+      break;
+
+    case ImemWipe:
+      cmd_stream << "ImemWipe\n";
+      break;
+
+    default:
+      assert(0);
+  }
+
+  run_command(cmd_stream.str(), nullptr);
+  if (!extra_command.empty()) {
+    run_command(extra_command, nullptr);
+  }
 }
-
-void ISSWrapper::dmem_wipe() { run_command("dmem_wipe\n", nullptr); }
-
-void ISSWrapper::imem_wipe() { run_command("imem_wipe\n", nullptr); }
 
 void ISSWrapper::otp_key_cdc_done() {
   run_command("otp_key_cdc_done\n", nullptr);

@@ -26,31 +26,41 @@ module clkgen_xil7series # (
   logic clk_aon_buf;
   logic clk_aon_unbuf;
 
-  PLLE2_ADV #(
+  MMCME2_ADV #(
     .BANDWIDTH            ("OPTIMIZED"),
     .COMPENSATION         ("ZHOLD"),
     .STARTUP_WAIT         ("FALSE"),
     .DIVCLK_DIVIDE        (1),
-    .CLKFBOUT_MULT        (12),
+    .CLKFBOUT_MULT_F      (12.000),
     .CLKFBOUT_PHASE       (0.000),
-    .CLKOUT0_DIVIDE       (120),
+    .CLKOUT0_DIVIDE_F     (120.0),
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT1_DIVIDE       (25),
     .CLKOUT1_PHASE        (0.000),
     .CLKOUT1_DUTY_CYCLE   (0.500),
-    .CLKOUT2_DIVIDE       (128),
-    .CLKOUT2_PHASE        (0.000),
-    .CLKOUT2_DUTY_CYCLE   (0.500),
+    // With CLKOUT4_CASCADE, CLKOUT6's divider is an input to CLKOUT4's
+    // divider. The effective ratio is a multiplication of the two.
+    .CLKOUT4_DIVIDE       (40),
+    .CLKOUT4_PHASE        (0.000),
+    .CLKOUT4_DUTY_CYCLE   (0.500),
+    .CLKOUT4_CASCADE      ("TRUE"),
+    .CLKOUT6_DIVIDE       (120),
     .CLKIN1_PERIOD        (10.000)
   ) pll (
     .CLKFBOUT            (clk_fb_unbuf),
+    .CLKFBOUTB           (),
     .CLKOUT0             (clk_10_unbuf),
+    .CLKOUT0B            (),
     .CLKOUT1             (clk_48_unbuf),
-    .CLKOUT2             (clk_aon_unbuf),
+    .CLKOUT1B            (),
+    .CLKOUT2             (),
+    .CLKOUT2B            (),
     .CLKOUT3             (),
-    .CLKOUT4             (),
+    .CLKOUT3B            (),
+    .CLKOUT4             (clk_aon_unbuf),
     .CLKOUT5             (),
+    .CLKOUT6             (),
      // Input clock control
     .CLKFBIN             (clk_fb_buf),
     .CLKIN1              (clk_i),
@@ -65,10 +75,17 @@ module clkgen_xil7series # (
     .DO                  (),
     .DRDY                (),
     .DWE                 (1'b0),
+    // Phase shift signals
+    .PSCLK               (1'b0),
+    .PSEN                (1'b0),
+    .PSINCDEC            (1'b0),
+    .PSDONE              (),
     // Other control and status signals
+    .CLKFBSTOPPED        (),
+    .CLKINSTOPPED        (),
     .LOCKED              (locked_pll),
     .PWRDWN              (1'b0),
-    // Do not reset PLL on external reset, otherwise ILA disconnects at a reset
+    // Do not reset MMCM on external reset, otherwise ILA disconnects at a reset
     .RST                 (1'b0));
 
   // output buffering

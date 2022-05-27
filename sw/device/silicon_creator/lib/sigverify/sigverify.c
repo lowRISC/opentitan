@@ -217,12 +217,11 @@ void sigverify_usage_constraints_get(
     uint32_t selector_bits, manifest_usage_constraints_t *usage_constraints) {
   usage_constraints->selector_bits = selector_bits;
   lifecycle_device_id_get(&usage_constraints->device_id);
-  // TODO(#7948): Define OTP entries for manufacturing states. Left unselected
-  // for now.
+
   usage_constraints->manuf_state_creator =
-      MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL;
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET);
   usage_constraints->manuf_state_owner =
-      MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL;
+      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_MANUF_STATE_OFFSET);
   usage_constraints->life_cycle_state = lifecycle_state_get();
 
   static_assert(

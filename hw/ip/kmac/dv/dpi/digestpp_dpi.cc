@@ -26,14 +26,8 @@ extern "C" {
  */
 static void load_arr_from_simulator(const svOpenArrayHandle arr,
                                     uint8_t *array_out, uint64_t array_len) {
-  svBitVecVal val;
-
-  if (array_len == 0) {
-    return;
-  }
-
-  uint8_t *arr_ptr = (uint8_t *)svGetArrayPtr(arr);
-  for (int i = 0; i < array_len; i++) {
+  for (uint64_t i = 0; i < array_len; i++) {
+    svBitVecVal val;
     svGetBitArrElem1VecVal(&val, arr, i);
     array_out[i] = (uint8_t)val;
   }

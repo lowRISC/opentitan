@@ -11,8 +11,9 @@ interface otbn_controller_if
   input         rst_ni,
 
   // Signal names from the otbn_controller module (where we are bound)
-  input logic [ExtWLEN-1:0]           ispr_rdata_intg_i,
-  input logic [BaseWordsPerWLEN-1:0]  ispr_rdata_used
+  input logic [ExtWLEN-1:0]          ispr_rdata_intg_i,
+  input logic [BaseWordsPerWLEN-1:0] ispr_read_mask,
+  input logic                        non_prefetch_insn_running
 );
 
   // Force the `ispr_rdata_intg_i` signal to `should_val`.  This function needs to be static because
@@ -26,14 +27,14 @@ interface otbn_controller_if
     release u_otbn_controller.ispr_rdata_intg_i;
   endfunction
 
-  // Wait for the `ispr_rdata_used` signal to be high (outside a reset) or until `max_cycles` clock
-  // cycles have passed.  When this task returns, the `success` output is set to `1'b1` if the
-  // `ispr_rdata_used` signal was high and to `1'b0` otherwise.
+  // Wait until some ISPR data is being used (outside a reset) or until `max_cycles` clock cycles
+  // have passed. When this task returns, the `success` output is set to `1'b1` if the data is being
+  // used and to `1'b0` otherwise.
   task automatic wait_for_ispr_rdata_used(input int unsigned max_cycles, output bit success);
     int unsigned cycle_cnt = 0;
     while (1) begin
       @(negedge clk_i);
-      if (rst_ni && |(ispr_rdata_used)) begin
+      if (rst_ni && |ispr_read_mask && non_prefetch_insn_running) begin
         success = 1'b1;
         break;
       end

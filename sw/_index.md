@@ -44,11 +44,6 @@ You can find all the device software in the `sw/host` directory of the repositor
 
 Host software must be written in C++ or Rust.
 
-## Testing-only Utilities
-
-There are some host-side utilities, which are only used for testing.
-*   `sw/host/spiflash` is a tool that can flash a testing image over SPI onto a chip that uses `sw/device/lib/testing/test_rom/test_rom` as its first boot stage.
-
 # Other Documentation
 
 ## OpenTitan Software API Documentation {#sw-api-docs}
@@ -64,5 +59,4 @@ All DIFs are also documented on their respective [Hardware IP Specification]({{<
 * [RISC-V Compliance](https://github.com/riscv/riscv-compliance)
 * [GoogleTest](https://github.com/google/googletest)
 * [Cryptoc](https://chromium.googlesource.com/chromiumos/third_party/cryptoc/)
-* [MPSSE from Chromium](https://chromium.googlesource.com/chromiumos/platform2/+/master/trunks/ftdi)
 * [LLVM's Compiler-RT Coverage Profiling Library](https://github.com/llvm/llvm-project/tree/master/compiler-rt)

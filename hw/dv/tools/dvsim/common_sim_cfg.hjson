@@ -58,6 +58,8 @@
   // the 'overrides' directive.
   dut_instance: "{tb}.dut"
 
+  timescale: "1ns/1ps"
+
   // Top level simulation entities.
   sim_tops: ["{tb}"]
 

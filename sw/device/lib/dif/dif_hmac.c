@@ -127,27 +127,18 @@ dif_result_t dif_hmac_mode_sha256_start(const dif_hmac_t *hmac,
     return kDifBadArg;
   }
 
-  // TODO: Clear HMAC Key? Write Zeroed HMAC Key?
-
   // Read current CFG register value.
-  uint32_t device_config =
-      mmio_region_read32(hmac->base_addr, HMAC_CFG_REG_OFFSET);
+  uint32_t reg = mmio_region_read32(hmac->base_addr, HMAC_CFG_REG_OFFSET);
 
   // Set the byte-order of the input message and the digest.
-  dif_result_t update_result =
-      dif_hmac_calculate_device_config_value(&device_config, config);
-  if (update_result != kDifOk) {
-    return update_result;
-  }
+  DIF_RETURN_IF_ERROR(dif_hmac_calculate_device_config_value(&reg, config));
 
   // Set HMAC to process in SHA256-only mode (without HMAC mode).
-  device_config =
-      bitfield_bit32_write(device_config, HMAC_CFG_SHA_EN_BIT, true);
-  device_config =
-      bitfield_bit32_write(device_config, HMAC_CFG_HMAC_EN_BIT, false);
+  reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
+  reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, false);
 
   // Write new CFG register value.
-  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, device_config);
+  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, reg);
 
   // Begin SHA256-only operation.
   mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_CMD_REG_OFFSET,

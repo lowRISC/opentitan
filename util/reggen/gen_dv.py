@@ -7,7 +7,7 @@ import logging as log
 import os
 import sys
 from collections import defaultdict
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 
 import yaml
 
@@ -51,6 +51,15 @@ def bcname(esc_if_name: str) -> str:
 def rcname(esc_if_name: str, r: Union[Register, MultiRegister]) -> str:
     '''Get the name of the dv_base_reg subclass for this register'''
     return '{}_reg_{}'.format(esc_if_name, r.name.lower())
+
+
+def alias_rcname(esc_if_name: str,
+                 r: Union[Register, MultiRegister]) -> Optional[str]:
+    '''Get the name of the dv_base_reg subclass for this alias register'''
+    if r.alias_target is not None:
+        return '{}_reg_{}'.format(esc_if_name, r.alias_target.lower())
+    else:
+        return None
 
 
 def mcname(esc_if_name: str, m: Window) -> str:

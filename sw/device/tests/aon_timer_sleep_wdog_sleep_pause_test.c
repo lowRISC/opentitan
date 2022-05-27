@@ -18,8 +18,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-#define WDOG_BARK_TIME_US 1300
-#define WDOG_BITE_TIME_US 1600
+#define IDLE_TIME_US 10
 #define WKUP_TIME_US 2000
 const test_config_t kTestConfig;
 
@@ -50,21 +49,28 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &rst_info));
   CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
 
+  uint32_t wkup_cnt;
+  uint32_t wdog_cnt;
   if (rst_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Booting for the first time, setting wdog");
 
     // Configure watchdog sooner then wakeup, but with pause enabled.
-    CHECK(WKUP_TIME_US > WDOG_BITE_TIME_US);
-    CHECK(WDOG_BARK_TIME_US < WDOG_BITE_TIME_US);
     uint32_t wkup_cycles =
         aon_timer_testutils_get_aon_cycles_from_us(WKUP_TIME_US);
-    uint32_t bark_cycles =
-        aon_timer_testutils_get_aon_cycles_from_us(WDOG_BARK_TIME_US);
-    uint32_t bite_cycles =
-        aon_timer_testutils_get_aon_cycles_from_us(WDOG_BITE_TIME_US);
-    aon_timer_testutils_wakeup_config(&aon_timer, wkup_cycles);
-    aon_timer_testutils_watchdog_config(&aon_timer, bark_cycles, bite_cycles,
+
+    // The actual expiration of the watchdog is unimportant, as the test
+    // mainly checks the count.
+    aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX, UINT32_MAX,
                                         true);
+    aon_timer_testutils_wakeup_config(&aon_timer, wkup_cycles);
+
+    busy_spin_micros(IDLE_TIME_US);
+
+    // Since watchdog was started first, its count should be larger.
+    CHECK_DIF_OK(dif_aon_timer_watchdog_get_count(&aon_timer, &wdog_cnt));
+    CHECK_DIF_OK(dif_aon_timer_wakeup_get_count(&aon_timer, &wkup_cnt));
+    CHECK(wdog_cnt >= wkup_cnt);
+
     // Deep sleep.
     pwrmgr_testutils_enable_low_power(&pwrmgr,
                                       kDifPwrmgrWakeupRequestSourceFive,
@@ -74,24 +80,13 @@ bool test_main(void) {
     LOG_INFO("Issue WFI to enter sleep");
     wait_for_interrupt();
   } else if (rst_info == kDifRstmgrResetInfoLowPowerExit) {
-    bool is_pending;
     LOG_INFO("Booting for the second time due to wakeup");
-    // Executing the wdog bite reset during sleep test.
+    // Since watchdog count was paused during low power, wakeup
+    // count should now be larger.
+    CHECK_DIF_OK(dif_aon_timer_wakeup_get_count(&aon_timer, &wkup_cnt));
+    CHECK_DIF_OK(dif_aon_timer_watchdog_get_count(&aon_timer, &wdog_cnt));
+    CHECK(wdog_cnt < wkup_cnt);
 
-    // Wait for the remaining time to the wdog bark.
-    busy_spin_micros(WDOG_BARK_TIME_US);
-    CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
-        &aon_timer, kDifAonTimerIrqWkupTimerExpired, &is_pending));
-    CHECK(is_pending);
-
-    CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
-
-    CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(
-        &aon_timer, kDifAonTimerIrqWkupTimerExpired));
-    busy_spin_micros(WDOG_BITE_TIME_US - WDOG_BARK_TIME_US + 10);
-    LOG_ERROR("Should have got a watchdog reset");
-  } else if (rst_info == kDifRstmgrResetInfoWatchdog) {
-    LOG_INFO("Booting for the third time due to wdog bite reset");
   } else {
     LOG_ERROR("Got unexpected reset_info=0x%x", rst_info);
   }

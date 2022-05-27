@@ -12,7 +12,7 @@
                // TODO: duplicate primitives between OT and Ibex #1231
                "-ALLOWREDEFINITION",
                "-messages -errormax 50",
-               "-timescale 1ns/1ps",
+               "-timescale {timescale}",
                "-f {sv_flist}",
                "-uvmhome CDNS-1.2",
                "-xmlibdirname {build_db_dir}",

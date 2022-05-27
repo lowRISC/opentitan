@@ -187,17 +187,20 @@ bool test_main(void) {
       // requires to write all zero default tokens.
       token.data[i] = 0;
     }
+
     CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc));
-    dif_lc_ctrl_settings_t settings;
+
     // TODO(lowRISC/opentitan#12775): randomize using external or internal
     // clock.
-    settings.clock_select = kDifLcCtrlInternalClockEn;
-    CHECK_DIF_OK(dif_lc_ctrl_transition(&lc, kDestState, &token, &settings),
-                 "LC_transition failed!");
+    bool use_ext_clock = false;
+    CHECK_DIF_OK(dif_lc_ctrl_configure(&lc, kDestState, use_ext_clock, &token),
+                 "LC transition configuration failed!");
+    CHECK_DIF_OK(dif_lc_ctrl_transition(&lc), "LC transition failed!");
 
     LOG_INFO("Waiting for LC transtition %0d done and reboot.", kDestState);
     wait_for_interrupt();
-    // Unreachable
+
+    // Unreachable.
     return false;
   } else {
     // Reached TestUnlock7 state, exit SW test.

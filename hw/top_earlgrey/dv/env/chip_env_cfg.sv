@@ -212,15 +212,10 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
       end else if ("signed" inside {sw_image_flags[i]}) begin
         // TODO: support multiple signing keys. See "signing_keys" in
         // `sw/device/meson.build` for options.
-        sw_images[i] = $sformatf("%0s/%0s_prog_%0s.test_key_0.signed",
+        sw_images[i] = $sformatf("%0s/%0s_%0s.test_key_0.signed",
           sw_build_bin_dir, sw_images[i], sw_build_device);
       end else begin
-        if (i == SwTypeTest) begin
-          sw_images[i] = $sformatf("%0s/%0s_prog_%0s", sw_build_bin_dir, sw_images[i],
-            sw_build_device);
-        end else begin
-          sw_images[i] = $sformatf("%0s/%0s_%0s", sw_build_bin_dir, sw_images[i], sw_build_device);
-        end
+        sw_images[i] = $sformatf("%0s/%0s_%0s", sw_build_bin_dir, sw_images[i], sw_build_device);
       end
     end
   endfunction

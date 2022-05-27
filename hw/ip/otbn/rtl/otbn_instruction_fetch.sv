@@ -27,6 +27,7 @@ module otbn_instruction_fetch
 
   // Next instruction selection (to instruction fetch)
   input logic                     insn_fetch_req_valid_i,
+  input logic                     insn_fetch_req_valid_raw_i,
   input logic [ImemAddrWidth-1:0] insn_fetch_req_addr_i,
 
   // Decoded instruction
@@ -47,6 +48,7 @@ module otbn_instruction_fetch
   input logic            rf_bignum_indirect_en_i,
 
   output logic insn_fetch_err_o,  // ECC error seen in instruction fetch
+  output logic insn_addr_err_o,
 
   input logic                     prefetch_en_i,
   input logic                     prefetch_loop_active_i,
@@ -84,6 +86,7 @@ module otbn_instruction_fetch
   mac_predec_bignum_t  mac_predec_bignum_q, mac_predec_bignum_d;
   logic                lsu_addr_en_predec_q, lsu_addr_en_predec_d;
   logic                lsu_addr_en_predec_insn;
+  logic                insn_addr_err_unbuf;
 
   logic [NWdr-1:0] rf_bignum_wr_sec_wipe_onehot;
 
@@ -237,6 +240,7 @@ module otbn_instruction_fetch
     .err_o     (insn_fetch_resp_intg_error_vec)
   );
 
+
   assign imem_req_o = insn_prefetch;
 
   assign insn_fetch_resp_valid_o = insn_fetch_resp_valid_q;
@@ -246,15 +250,25 @@ module otbn_instruction_fetch
 
   assign insn_fetch_err_o = |insn_fetch_resp_intg_error_vec & insn_fetch_resp_valid_q;
 
+  // Signal an `insn_addr_err` if the instruction the execute stage requests is not the one that was
+  // prefetched. By design the prefetcher is either correct or doesn't prefetch, so a mismatch
+  // here indicates a fault.  `insn_fetch_req_valid_raw_i` is used as it doesn't factor in errors,
+  // which is required here otherwise we get a combinational loop.
+  assign insn_addr_err_unbuf =
+    imem_rvalid_i && insn_fetch_req_valid_raw_i ? insn_fetch_req_addr_i != insn_prefetch_addr :
+                                                  1'b0;
+
+  prim_buf #(.Width(1)) u_insn_addr_buf (
+    .in_i(insn_addr_err_unbuf),
+    .out_o(insn_addr_err_o)
+  );
+
   assign rf_predec_bignum_o   = rf_predec_bignum_q;
   assign alu_predec_bignum_o  = alu_predec_bignum_q;
   assign ispr_predec_bignum_o = ispr_predec_bignum_q;
   assign mac_predec_bignum_o  = mac_predec_bignum_q;
   assign lsu_addr_en_predec_o = lsu_addr_en_predec_q;
 
-  // We should always get prefetches correct, the check exists as an integrity check only
-  `ASSERT(NoAddressMismatch,
-          imem_rvalid_i && insn_fetch_req_valid_i |-> insn_fetch_req_addr_i == insn_prefetch_addr)
   `ASSERT(FetchEnOnlyIfValidIMem, insn_fetch_en |-> imem_rvalid_i)
   `ASSERT(NoFetchEnAndIndirectEn, !(insn_fetch_en && rf_bignum_indirect_en_i))
 endmodule

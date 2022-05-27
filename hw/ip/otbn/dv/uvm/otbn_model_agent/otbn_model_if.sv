@@ -92,7 +92,9 @@ interface otbn_model_if
     force u_model.wakeup_iss = 1;
     `DV_CHECK_FATAL(u_model.otbn_model_send_err_escalation(handle, err_val) == 0,
                     "Failed to escalate errors", "otbn_model_if")
+
     @(posedge clk_i or negedge rst_ni);
+    force u_model.wakeup_iss = 0;
     release u_model.wakeup_iss;
   endtask: send_err_escalation
 

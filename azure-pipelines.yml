@@ -14,7 +14,7 @@ variables:
   OPENOCD_VERSION: 0.11.0
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   VERIBLE_VERSION: v0.0-2135-gb534c1fe
-  RUST_VERSION: 1.58.0
+  RUST_VERSION: 1.60.0
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   TOOLCHAIN_VERSION: 20220210-1
   # This controls where builds happen, and gets picked up by build_consts.sh.
@@ -286,6 +286,25 @@ jobs:
         --test-run-title="Run English Breakfast system tests with Verilator simulation" \
         --napoleon-docstrings
     displayName: Execute tests
+
+# TODO: change this name and replace sw_build_englishbreakfast and execute_verilated_tests_englishbreakfast
+# once testing shows it's stable
+- job: bazel_build_and_execute_verilated_tests_englishbreakfast
+  displayName: Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
+  pool:
+    vmImage: ubuntu-18.04
+  dependsOn: chip_englishbreakfast_verilator
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_englishbreakfast_verilator
+  - bash: |
+      . util/build_consts.sh
+      ci/scripts/run-english-breakfast-verilator-tests.sh
+    displayName: Execute tests
+    continueOnError: true #TODO: remove this line once this job is proven to be stable
 
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test

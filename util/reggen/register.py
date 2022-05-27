@@ -21,6 +21,10 @@ REQUIRED_FIELDS = {
 }
 
 OPTIONAL_FIELDS = {
+    'alias_target': [
+        's',
+        "name of the register to apply the alias definition to."
+    ],
     'async': [
         's',
         "indicates the register must cross to a different "
@@ -82,12 +86,41 @@ OPTIONAL_FIELDS = {
     ]
 }
 
+# These attributes are crosschecked for equivalence by the aliasing mechanism.
+NON_ALIAS_REG_ATTRS = [
+    'async',
+    'swaccess',
+    'hwaccess',
+    'hwext',
+    'hwqe',
+    'hwre',
+    # TODO: we may want to allow the REGWEN name to be overridden. This needs
+    # some additional crosschecking mechanisms.
+    'regwen',
+    'shadowed',
+    'update_err_alert',
+    'storage_err_alert'
+]
+
+# These attributes can be overridden by the aliasing mechanism.
+ALIAS_REG_ATTRS = [
+    'name',
+    'desc',
+    'resval',
+    'tags',
+    # We also keep track of the alias_target when overriding attributes.
+    # This gives us a way to check whether a register has been overridden
+    # or not, and what the name of the original register was.
+    'alias_target'
+]
+
 
 class Register(RegBase):
     '''Code representing a register for reggen'''
     def __init__(self,
                  offset: int,
                  name: str,
+                 alias_target: Optional[str],
                  desc: str,
                  async_name: str,
                  async_clk: object,
@@ -102,6 +135,7 @@ class Register(RegBase):
                  update_err_alert: Optional[str],
                  storage_err_alert: Optional[str]):
         super().__init__(offset)
+        self.alias_target = alias_target
         self.name = name
         self.desc = desc
         self.async_name = async_name
@@ -225,12 +259,27 @@ class Register(RegBase):
                  offset: int,
                  params: ReggenParams,
                  raw: object,
-                 clocks: Clocking) -> 'Register':
+                 clocks: Clocking,
+                 is_alias: bool) -> 'Register':
         rd = check_keys(raw, 'register',
                         list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
 
         name = check_name(rd['name'], 'name of register')
+
+        alias_target = None
+        if rd.get('alias_target') is not None:
+            if is_alias:
+                alias_target = check_name(rd['alias_target'],
+                                          'name of alias target register')
+            else:
+                raise ValueError('Field {} may not have an alias_target key'
+                                 .format(name))
+        elif is_alias:
+            raise ValueError('alias register {} does not define the '
+                             'alias_target key.'
+                             .format(name))
+
         desc = check_str(rd['desc'], 'desc for {} register'.format(name))
 
         async_name = check_str(rd.get('async', ''), 'async clock for {} register'.format(name))
@@ -306,6 +355,7 @@ class Register(RegBase):
                                     hwext,
                                     hwqe,
                                     shadowed,
+                                    is_alias,
                                     rf))
 
             overlap_bits = used_bits & field.bits.bitmask()
@@ -333,8 +383,8 @@ class Register(RegBase):
                                            'storage_err_alert for {} register'
                                            .format(name))
 
-        return Register(offset, name, desc, async_name, async_clk,
-                        hwext, hwqe, hwre, regwen,
+        return Register(offset, name, alias_target, desc, async_name,
+                        async_clk, hwext, hwqe, hwre, regwen,
                         tags, resval, shadowed, fields,
                         update_err_alert, storage_err_alert)
 
@@ -435,6 +485,12 @@ class Register(RegBase):
                     if creg_count > 1
                     else self.name)
 
+        new_alias_target = None
+        if self.alias_target is not None:
+            new_alias_target = ('{}_{}'.format(self.alias_target, creg_idx)
+                                if creg_count > 1
+                                else self.alias_target)
+
         if self.regwen is None or not regwen_multi or creg_count == 1:
             new_regwen = self.regwen
         else:
@@ -466,7 +522,8 @@ class Register(RegBase):
         # we've replicated fields).
         new_resval = None
 
-        return Register(offset, new_name, self.desc, self.async_name, self.async_clk,
+        return Register(offset, new_name, new_alias_target, self.desc,
+                        self.async_name, self.async_clk,
                         self.hwext, self.hwqe, self.hwre, new_regwen,
                         self.tags, new_resval, self.shadowed, new_fields,
                         self.update_err_alert, self.storage_err_alert)
@@ -527,6 +584,7 @@ class Register(RegBase):
     def _asdict(self) -> Dict[str, object]:
         rd = {
             'name': self.name,
+            'alias_target': self.alias_target,
             'desc': self.desc,
             'fields': self.fields,
             'hwext': str(self.hwext),
@@ -543,3 +601,54 @@ class Register(RegBase):
             rd['storage_err_alert'] = self.storage_err_alert
 
         return rd
+
+    def apply_alias(self, alias_reg: 'Register', where: str) -> None:
+        '''Compare all attributes and replace overridable values.
+
+        This updates the overridable register and field attributes with the
+        alias values and ensures that all non-overridable attributes have
+        identical values.
+        '''
+        # Attributes to be crosschecked
+        # TODO: we may want to allow the REGWEN name to be overridden.
+        # This needs some additional crosschecking mechanisms.
+        attrs = ['async_name', 'async_clk', 'hwext', 'hwqe', 'hwre', 'regwen',
+                 'update_err_alert', 'storage_err_alert', 'shadowed']
+        for attr in attrs:
+            if getattr(self, attr) != getattr(alias_reg, attr):
+                raise ValueError('Value mismatch for attribute {} between '
+                                 'alias register {} and register {} in {}.'
+                                 .format(attr, self.name,
+                                         alias_reg.name, where))
+
+        # These attributes can be overridden by the aliasing mechanism.
+        self.name = alias_reg.name
+        self.desc = alias_reg.desc
+        self.resval = alias_reg.resval
+        self.tags = alias_reg.tags
+        # We also keep track of the alias_target when overriding attributes.
+        # This gives us a way to check whether a register has been overridden
+        # or not, and what the name of the original register was.
+        self.alias_target = alias_reg.alias_target
+
+        # Update the fields.
+        if len(alias_reg.fields) != len(self.fields):
+            raise ValueError('The number of fields does not match for '
+                             'alias register {} and register {} in {}.'
+                             .format(alias_reg.name, self.name, where))
+
+        fields = zip(alias_reg.fields, self.fields)
+        for k, (alias_field, field) in enumerate(fields):
+            # Infer the aliased field name if it has not been defined.
+            if alias_field.alias_target is None:
+                alias_field.alias_target = field.name
+            # Otherwise the names need to match
+            elif alias_field.alias_target != field.name:
+                raise ValueError('Inconsistent aliased field name {} '
+                                 'in alias register {} in {}.'
+                                 .format(alias_field.alias_target,
+                                         alias_reg.alias_target,
+                                         where))
+
+            # Validate and override attributes.
+            field.apply_alias(alias_field, where)

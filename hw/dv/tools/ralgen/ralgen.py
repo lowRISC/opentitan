@@ -37,6 +37,7 @@ def main():
     # Retrieve the parameters from the yml.
     root_dir = Path(gapi['files_root'])
     name = gapi['parameters'].get('name')
+    alias_hjson = gapi['parameters'].get('alias_hjson')
     ip_hjson = gapi['parameters'].get('ip_hjson')
     top_hjson = gapi['parameters'].get('top_hjson')
     dv_base_names = gapi['parameters'].get('dv_base_names')
@@ -51,7 +52,11 @@ def main():
     if ip_hjson:
         ral_spec = root_dir / ip_hjson
         cmd = util_path / "regtool.py"
-        args = [cmd, "-s", "-t", os.getcwd(), ral_spec]
+        if alias_hjson:
+            ral_alias = root_dir / alias_hjson
+            args = [cmd, "-s", "-a", ral_alias, "-t", os.getcwd(), ral_spec]
+        else:
+            args = [cmd, "-s", "-t", os.getcwd(), ral_spec]
     else:
         ral_spec = root_dir / top_hjson
         cmd = util_path / "topgen.py"

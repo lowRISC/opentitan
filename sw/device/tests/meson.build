@@ -1663,45 +1663,6 @@ foreach sw_test_name, sw_test_info : sw_tests
           ]
         endforeach
       endif
-
-      # DV sim bootstrap image (for loading flash images via bootstrap).
-      if device_name == 'sim_dv' and \
-          sw_test_info.has_key('dv_frames') and sw_test_info['dv_frames']
-        sw_test_sim_dv_frames_bin = custom_target(
-          sw_test_name + '_sim_dv_frames_bin',
-          command: [
-            spiflash_bin,
-            '--input=@INPUT@',
-            '--dump-frames=@OUTPUT@',
-          ],
-          input: sw_test_bin,
-          output: '@BASENAME@.frames.bin',
-        )
-
-        sw_test_sim_dv_frames_vmem = custom_target(
-          sw_test_name + '_sim_dv_frames_vmem',
-          command: [
-            prog_srec_cat,
-            '@INPUT@',
-            '--binary',
-            '--offset', '0x0',
-            '--byte-swap', '4',
-            '--fill', '0xff',
-            '-within', '@INPUT@',
-            '-binary',
-            '-range-pad', '4',
-            '--output', '@OUTPUT@',
-            '--vmem',
-          ],
-          input: sw_test_sim_dv_frames_bin,
-          output: '@BASENAME@.vmem',
-        )
-
-        targets_to_export += [
-          sw_test_sim_dv_frames_bin,
-          sw_test_sim_dv_frames_vmem,
-        ]
-      endif
     endif
 
     if device_name == 'sim_dv'

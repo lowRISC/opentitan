@@ -99,7 +99,13 @@ class pwm_scoreboard extends cip_base_scoreboard #(
                 exp_item_q[ii].push_front(exp_clone);
               end
             end
-            txt = {txt, $sformatf("\n Channel[%d] : %0b",ii, channel_en[ii])};
+
+            txt = { txt, $sformatf("\n Channel[%d] : %0b",ii, channel_en[ii]) };
+            if (cfg.en_cov) begin
+              cov.lowpower_cg.sample(cfg.clk_rst_vif.clk_gate,
+                                     $sformatf("cfg.m_pwm_monitor_[%0d]_vif", ii));
+            end
+
           end
           `uvm_info(`gfn, $sformatf("Setting channel enables %s ", txt), UVM_HIGH)
           txt = "";
@@ -157,6 +163,25 @@ class pwm_scoreboard extends cip_base_scoreboard #(
           `uvm_fatal(`gfn, $sformatf("\n  scb: invalid csr: %0s", csr.get_full_name()))
         end
       endcase
+    end
+
+    // Sample for coverage
+    if (cfg.en_cov) begin
+      cov.clock_cg.sample(cfg.get_clk_core_freq(), cfg.clk_rst_vif.clk_freq_mhz);
+      cov.cfg_cg.sample(channel_cfg.ClkDiv, channel_cfg.DcResn, channel_cfg.CntrEn);
+      foreach (channel_en[ii]) begin
+       cov.pwm_chan_en_inv_cg.sample(channel_en[ii], invert[ii]);
+       cov.pwm_per_channel_cg.sample(
+         channel_en[ii],
+         invert[ii],
+         channel_param[ii].PhaseDelay,
+         channel_param[ii].BlinkEn,
+         channel_param[ii].HtbtEn,
+         duty_cycle[ii].A,
+         duty_cycle[ii].B,
+         blink[ii].A,
+         blink[ii].B);
+      end
     end
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data

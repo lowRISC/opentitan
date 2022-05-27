@@ -62,9 +62,9 @@ package rstmgr_env_pkg;
                                       "u_d0_i2c2"};
 
   // leaf reset which has shadow pair
-  parameter string LIST_OF_SHADOW_LEAFS[] = {"u_d0_lc",
-                                             "u_d0_lc_io_div4",
+  parameter string LIST_OF_SHADOW_LEAFS[] = {"u_d0_lc_io_div4",
                                              "u_daon_lc_io_div4",
+                                             "u_daon_por_io_div4",
                                              "u_d0_sys"};
 
   // types

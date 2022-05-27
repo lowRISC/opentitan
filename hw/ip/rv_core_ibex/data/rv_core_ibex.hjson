@@ -780,7 +780,7 @@
             resval: "0x0"
             desc: '''
               rv_core_ibex detected a fatal internal error
-              (``alert_major_internal_o``` from Ibex seen)
+              (``alert_major_internal_o`` from Ibex seen)
             '''
           },
           { bits: "10",

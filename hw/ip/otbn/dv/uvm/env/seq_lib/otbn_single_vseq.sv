@@ -12,6 +12,10 @@ class otbn_single_vseq extends otbn_base_vseq;
   // bus transactions to load it into the memory properly?
   rand bit do_backdoor_load;
 
+  // This bit dictates if end address check should happen or not. Set it to 0 if the check needs to
+  // be disabled.
+  bit do_end_addr_check = 1;
+
   constraint do_backdoor_load_c {
     do_backdoor_load dist { 1'b1 := cfg.backdoor_load_pct,
                             1'b0 := 100 - cfg.backdoor_load_pct };
@@ -30,9 +34,10 @@ class otbn_single_vseq extends otbn_base_vseq;
     if (cfg.under_reset) begin
         `uvm_info(`gfn, "under reset", UVM_LOW)
         cfg.clk_rst_vif.wait_for_reset(.wait_negedge(1'b0), .wait_posedge(1'b1));
+        return;
     end
     // We've loaded the binary. Run the processor to see what happens!
-    run_otbn();
+    run_otbn(do_end_addr_check);
   endtask : body
 
 endclass : otbn_single_vseq

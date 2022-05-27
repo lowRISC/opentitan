@@ -114,4 +114,57 @@ TEST_F(HmacMacTest, StartError) {
             kDifError);
 }
 
+class HmacSha256Test : public HmacTest {
+ protected:
+  HmacSha256Test() { config_reg_.sha_enable = true; }
+};
+
+TEST_F(HmacSha256Test, StartSuccess) {
+  EXPECT_READ32(HMAC_CFG_REG_OFFSET, 0);
+  ExpectConfig();
+  EXPECT_READ32(HMAC_CMD_REG_OFFSET, 0);
+  EXPECT_WRITE32(HMAC_CMD_REG_OFFSET, {{HMAC_CMD_HASH_START_BIT, true}});
+
+  EXPECT_DIF_OK(dif_hmac_mode_sha256_start(&hmac_, transaction_));
+}
+
+TEST_F(HmacSha256Test, StartMsgBigEndianSuccess) {
+  config_reg_.msg_little_endian = false;
+  transaction_.message_endianness = kDifHmacEndiannessBig;
+
+  EXPECT_READ32(HMAC_CFG_REG_OFFSET, 0);
+  ExpectConfig();
+  EXPECT_READ32(HMAC_CMD_REG_OFFSET, 0);
+  EXPECT_WRITE32(HMAC_CMD_REG_OFFSET, {{HMAC_CMD_HASH_START_BIT, true}});
+
+  EXPECT_DIF_OK(dif_hmac_mode_sha256_start(&hmac_, transaction_));
+}
+
+TEST_F(HmacSha256Test, StartDigestLittleEndianSuccess) {
+  config_reg_.digest_big_endian = false;
+  transaction_.digest_endianness = kDifHmacEndiannessLittle;
+
+  EXPECT_READ32(HMAC_CFG_REG_OFFSET, 0);
+  ExpectConfig();
+  EXPECT_READ32(HMAC_CMD_REG_OFFSET, 0);
+  EXPECT_WRITE32(HMAC_CMD_REG_OFFSET, {{HMAC_CMD_HASH_START_BIT, true}});
+
+  EXPECT_DIF_OK(dif_hmac_mode_sha256_start(&hmac_, transaction_));
+}
+
+TEST_F(HmacSha256Test, StartBadArg) {
+  EXPECT_DIF_BADARG(dif_hmac_mode_sha256_start(nullptr, transaction_));
+}
+
+TEST_F(HmacSha256Test, StartError) {
+  transaction_.message_endianness = static_cast<dif_hmac_endianness_t>(2);
+
+  EXPECT_READ32(HMAC_CFG_REG_OFFSET, 0);
+  EXPECT_EQ(dif_hmac_mode_sha256_start(&hmac_, transaction_), kDifError);
+
+  EXPECT_READ32(HMAC_CFG_REG_OFFSET, 0);
+  transaction_.digest_endianness = static_cast<dif_hmac_endianness_t>(2);
+  EXPECT_EQ(dif_hmac_mode_sha256_start(&hmac_, transaction_), kDifError);
+}
+
 }  // namespace dif_hmac_unittest

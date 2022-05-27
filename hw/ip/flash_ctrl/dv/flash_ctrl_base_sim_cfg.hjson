@@ -38,10 +38,17 @@
       name: design_level
       value: "top"
     }
+    {
+      name: "timescale"
+      value: "1ns/100ps"
+    }
   ]
 
   // Add additional tops for simulation.
   sim_tops: ["flash_ctrl_bind","flash_ctrl_cov_bind"]
+
+  // Flash Ctrl coverage exclusion.
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/flash_ctrl/dv/cov/flash_ctrl_cov.vRefine"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
@@ -90,6 +97,7 @@
     {
       name: flash_ctrl_hw_sec_otp
       uvm_test_seq: flash_ctrl_hw_sec_otp_vseq
+      run_opts: ["+test_timeout_ns=300000000000"]
       reseed: 5
     }
     {
@@ -101,13 +109,13 @@
     {
       name: flash_ctrl_hw_rma
       uvm_test_seq: flash_ctrl_hw_rma_vseq
-      run_opts: ["+test_timeout_ns=15000000000"]
+      run_opts: ["+test_timeout_ns=300000000000"]
       reseed: 3
     }
     {
       name: flash_ctrl_host_ctrl_arb
       uvm_test_seq: flash_ctrl_host_ctrl_arb_vseq
-      run_opts: ["+zero_delays=1", "+test_timeout_ns=15000000000"]
+      run_opts: ["+zero_delays=1", "+test_timeout_ns=300000000000"]
       reseed: 5
     }
     {
@@ -140,7 +148,13 @@
     {
       name: flash_ctrl_error_mp
       uvm_test_seq: flash_ctrl_error_mp_vseq
+      run_opts: ["+test_timeout_ns=300000000000"]
       reseed: 10
+    }
+    {
+      name: flash_ctrl_invalid_op
+      uvm_test_seq: flash_ctrl_invalid_op_vseq
+      reseed: 5
     }
   ]
 

@@ -22,7 +22,7 @@ interface prim_sparse_fsm_flop_if #(
   string msg_id = $sformatf("%m");
 
   string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
-  string signal_forced = $sformatf("%s.state_o", path);
+  string signal_forced = $sformatf("%s.u_state_flop.gen_generic.u_impl_generic.q_o", path);
 
   // This signal only has to be forced if the associated parameter
   // CustomForceName in prim_sparse_fsm_flop is set to a non-empty string.
@@ -44,15 +44,16 @@ interface prim_sparse_fsm_flop_if #(
 
       `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
                                   signal_forced, orig_value, force_value), UVM_LOW)
-      `DV_CHECK(uvm_hdl_force(signal_forced, force_value))
+      `DV_CHECK(uvm_hdl_deposit(signal_forced, force_value))
       if (CustomForceName != "") begin
         `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
                                     custom_signal_forced, orig_value, force_value), UVM_LOW)
-        `DV_CHECK(uvm_hdl_force(custom_signal_forced, force_value))
+        `DV_CHECK(uvm_hdl_deposit(custom_signal_forced, force_value))
       end
-      @(negedge clk_i);
-      `DV_CHECK(uvm_hdl_release(signal_forced))
-      if (CustomForceName != "") `DV_CHECK(uvm_hdl_release(custom_signal_forced))
+      // keep the deposit value for at 2 cycles before we call `restore_fault` to restore the
+      // original value.
+      // One cycle for design to jump to an error state, another cycle to set the error flag.
+      repeat (2) @(negedge clk_i);
     endtask
 
     virtual task automatic restore_fault();
