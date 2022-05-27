@@ -5,8 +5,7 @@
 export SHELL  := /bin/bash
 .DEFAULT_GOAL := all
 
-LOCK_ROOT_DIR     ?= flock --timeout 3600 ${proj_root} --command
-LOCK_SW_BUILD_DIR ?= flock --timeout 3600 ${sw_build_dir} --command
+LOCK_ROOT_DIR ?= flock --timeout 3600 ${proj_root} --command
 
 all: build run
 
@@ -57,9 +56,7 @@ endif
 sw_build: pre_run
 	@echo "[make]: sw_build"
 ifneq (${sw_images},)
-	# Initialize meson build system.
-	#
-	# Loop through the list of sw_images and invoke meson on each item.
+	# Loop through the list of sw_images and invoke Bazel on each.
 	# `sw_images` is a space-separated list of tests to be built into an image.
 	# Optionally, each item in the list can have additional metadata / flags using
 	# the delimiter ':'. The format is as follows:
@@ -70,12 +67,13 @@ ifneq (${sw_images},)
 	# test> followed by <index>. The <flag> is considered optional.
 	set -e; \
 	mkdir -p ${sw_build_dir}; \
-	${LOCK_SW_BUILD_DIR} "cd ${proj_root} && \
-		env BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh"; \
 	for sw_image in ${sw_images}; do \
-		image=`echo $$sw_image | cut -d: -f 1`;  \
+		image=`echo $$sw_image | cut -d: -f 1`; \
 		index=`echo $$sw_image | cut -d: -f 2`; \
 		flags=(`echo $$sw_image | cut -d: -f 3- --output-delimiter " "`); \
+		target_dir=`dirname ${sw_build_dir}/build-bin/$$image`; \
+		mkdir -p $$target_dir; \
+		cd ${proj_root}; \
 		if [[ -z $$image ]]; then \
 			echo "ERROR: SW image \"$$sw_image\" is malformed."; \
 			echo "Expected format: path-to-sw-test:index:optional-flags."; \
@@ -83,13 +81,26 @@ ifneq (${sw_images},)
 		fi; \
 		if [[ $${flags[@]} =~ "prebuilt" ]]; then \
 			echo "SW image \"$$image\" is prebuilt - copying sources."; \
-			target_dir=`dirname ${sw_build_dir}/build-bin/$$image`; \
-			mkdir -p $$target_dir; \
 			cp ${proj_root}/$$image* $$target_dir/.; \
 		else \
 			echo "Building SW image \"$$image\"."; \
-			target="$$image""_export_${sw_build_device}"; \
-			${LOCK_SW_BUILD_DIR} "ninja -C ${sw_build_dir}/build-out $$target"; \
+			bazel_label="//`dirname $${image}`:`basename $${image}`"; \
+			if [[ $$index == "1" ]]; then \
+				bazel_label+="_sim_dv"; \
+			fi; \
+			bazel_opts="--define DISABLE_VERILATOR_BUILD=true"; \
+			if [[ -z $${BAZEL_PYTHON_WHEELS_REPO} ]]; then \
+				echo "Building \"$${bazel_label}\" on network connected machine."; \
+				bazel_cmd="./bazelisk.sh"; \
+			else \
+				echo "Building \"$${bazel_label}\" on air-gapped machine."; \
+				bazel_opts+=" --distdir=$${BAZEL_DISTDIR} --repository_cache=$${BAZEL_CACHE}"; \
+				bazel_cmd="bazel"; \
+			fi; \
+			$${bazel_cmd} build $${bazel_opts} $${bazel_label}; \
+			find -L $$($${bazel_cmd} info output_path)/ \
+				-type f -name "$$(basename $${image})*" | \
+				xargs -I % cp % $${target_dir}; \
 		fi; \
 	done;
 endif
