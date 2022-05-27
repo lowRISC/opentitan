@@ -153,8 +153,7 @@
       { name: "spi_device",     gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true }
       { name: "spi_host0",      gen: true,  type: "top", parent: "sys_src", clk: "io",      sw: true }
       { name: "spi_host1",      gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true }
-      { name: "usb",            gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true }
-      { name: "usbif",          gen: true,  type: "top", parent: "sys_src", clk: "usb",     sw: true }
+      { name: "usb",            gen: true,  type: "top", parent: "sys_src", clk: "usb",     sw: true }
       { name: "i2c0",           gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true },
       { name: "i2c1",           gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true },
       { name: "i2c2",           gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true },
@@ -288,16 +287,6 @@
       reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40100000",
     },
-    { name: "usbdev",
-      type: "usbdev",
-      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
-      clock_group: "peri",
-      reset_connections: {rst_ni: "usb", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usbif"},
-      base_addr: "0x40110000",
-      param_decl: {
-        RcvrWakeTimeUs: "100"
-      },
-    },
     { name: "otp_ctrl",
       type: "otp_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
@@ -338,6 +327,16 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_host1"},
       base_addr: "0x40310000",
+    },
+    { name: "usbdev",
+      type: "usbdev",
+      clock_srcs: {clk_i: "usb", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "usb", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usb"},
+      base_addr: "0x40320000",
+      param_decl: {
+        RcvrWakeTimeUs: "100"
+      },
     },
     { name: "pwrmgr_aon",
       type: "pwrmgr",
@@ -492,7 +491,7 @@
           domain: "0",
         },
         rst_ast_usb_ni: {
-          name: "usbif",
+          name: "usb",
           domain: "0"
         }
       },
@@ -1077,12 +1076,14 @@
     { name: "main",
       clock_srcs: {clk_main_i: "main",
                    clk_fixed_i: "io_div4",
+                   clk_usb_i: "usb",
                    clk_spi_host0_i: "io",
                    clk_spi_host1_i: "io_div2"},
       clock_group: "infra",
       reset: "sys",
       reset_connections: {rst_main_ni: "sys",
                           rst_fixed_ni: "sys_io_div4",
+                          rst_usb_ni: "usb",
                           rst_spi_host0_ni: "spi_host0",
                           rst_spi_host1_ni: "spi_host1"}
     },

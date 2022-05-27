@@ -52,10 +52,10 @@ package clkmgr_reg_pkg;
     } clk_io_div2_peri_en;
     struct packed {
       logic        q;
-    } clk_usb_peri_en;
+    } clk_io_peri_en;
     struct packed {
       logic        q;
-    } clk_io_peri_en;
+    } clk_usb_peri_en;
   } clkmgr_reg2hw_clk_enables_reg_t;
 
   typedef struct packed {

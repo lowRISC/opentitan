@@ -852,7 +852,7 @@ module chip_earlgrey_cw310 #(
     .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_es_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_rng_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
-    .rst_ast_usb_ni (rstmgr_aon_resets.rst_usbif_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_usb_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::Domain0Sel]),
     .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA

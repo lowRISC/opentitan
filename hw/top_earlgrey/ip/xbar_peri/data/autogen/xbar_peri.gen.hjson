@@ -45,7 +45,6 @@
       gpio
       spi_device
       rv_timer
-      usbdev
       pwrmgr_aon
       rstmgr_aon
       clkmgr_aon
@@ -287,24 +286,6 @@
       [
         {
           base_addr: 0x40100000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: usbdev
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: false
-      inst_type: usbdev
-      addr_range:
-      [
-        {
-          base_addr: 0x40110000
           size_byte: 0x1000
         }
       ]

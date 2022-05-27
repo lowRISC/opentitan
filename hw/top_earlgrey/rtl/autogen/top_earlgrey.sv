@@ -25,8 +25,6 @@ module top_earlgrey #(
   // parameters for i2c2
   // parameters for pattgen
   // parameters for rv_timer
-  // parameters for usbdev
-  parameter int UsbdevRcvrWakeTimeUs = 100,
   // parameters for otp_ctrl
   parameter OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
@@ -36,6 +34,8 @@ module top_earlgrey #(
   // parameters for alert_handler
   // parameters for spi_host0
   // parameters for spi_host1
+  // parameters for usbdev
+  parameter int UsbdevRcvrWakeTimeUs = 100,
   // parameters for pwrmgr_aon
   // parameters for rstmgr_aon
   parameter bit SecRstmgrAonCheck = 1'b1,
@@ -268,14 +268,6 @@ module top_earlgrey #(
   logic        cio_pattgen_pcl1_tx_d2p;
   logic        cio_pattgen_pcl1_tx_en_d2p;
   // rv_timer
-  // usbdev
-  logic        cio_usbdev_sense_p2d;
-  logic        cio_usbdev_usb_dp_p2d;
-  logic        cio_usbdev_usb_dn_p2d;
-  logic        cio_usbdev_usb_dp_d2p;
-  logic        cio_usbdev_usb_dp_en_d2p;
-  logic        cio_usbdev_usb_dn_d2p;
-  logic        cio_usbdev_usb_dn_en_d2p;
   // otp_ctrl
   logic [7:0]  cio_otp_ctrl_test_d2p;
   logic [7:0]  cio_otp_ctrl_test_en_d2p;
@@ -297,6 +289,14 @@ module top_earlgrey #(
   logic        cio_spi_host1_csb_en_d2p;
   logic [3:0]  cio_spi_host1_sd_d2p;
   logic [3:0]  cio_spi_host1_sd_en_d2p;
+  // usbdev
+  logic        cio_usbdev_sense_p2d;
+  logic        cio_usbdev_usb_dp_p2d;
+  logic        cio_usbdev_usb_dn_p2d;
+  logic        cio_usbdev_usb_dp_d2p;
+  logic        cio_usbdev_usb_dp_en_d2p;
+  logic        cio_usbdev_usb_dn_d2p;
+  logic        cio_usbdev_usb_dn_en_d2p;
   // pwrmgr_aon
   // rstmgr_aon
   // clkmgr_aon
@@ -455,6 +455,16 @@ module top_earlgrey #(
   logic intr_pattgen_done_ch0;
   logic intr_pattgen_done_ch1;
   logic intr_rv_timer_timer_expired_hart0_timer0;
+  logic intr_otp_ctrl_otp_operation_done;
+  logic intr_otp_ctrl_otp_error;
+  logic intr_alert_handler_classa;
+  logic intr_alert_handler_classb;
+  logic intr_alert_handler_classc;
+  logic intr_alert_handler_classd;
+  logic intr_spi_host0_error;
+  logic intr_spi_host0_spi_event;
+  logic intr_spi_host1_error;
+  logic intr_spi_host1_spi_event;
   logic intr_usbdev_pkt_received;
   logic intr_usbdev_pkt_sent;
   logic intr_usbdev_disconnected;
@@ -472,16 +482,6 @@ module top_earlgrey #(
   logic intr_usbdev_frame;
   logic intr_usbdev_powered;
   logic intr_usbdev_link_out_err;
-  logic intr_otp_ctrl_otp_operation_done;
-  logic intr_otp_ctrl_otp_error;
-  logic intr_alert_handler_classa;
-  logic intr_alert_handler_classb;
-  logic intr_alert_handler_classc;
-  logic intr_alert_handler_classd;
-  logic intr_spi_host0_error;
-  logic intr_spi_host0_spi_event;
-  logic intr_spi_host1_error;
-  logic intr_spi_host1_spi_event;
   logic intr_pwrmgr_aon_wakeup;
   logic intr_sysrst_ctrl_aon_sysrst_ctrl;
   logic intr_adc_ctrl_aon_debug_cable;
@@ -634,6 +634,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       spi_host0_tl_rsp;
   tlul_pkg::tl_h2d_t       spi_host1_tl_req;
   tlul_pkg::tl_d2h_t       spi_host1_tl_rsp;
+  tlul_pkg::tl_h2d_t       usbdev_tl_req;
+  tlul_pkg::tl_d2h_t       usbdev_tl_rsp;
   tlul_pkg::tl_h2d_t       flash_ctrl_core_tl_req;
   tlul_pkg::tl_d2h_t       flash_ctrl_core_tl_rsp;
   tlul_pkg::tl_h2d_t       flash_ctrl_prim_tl_req;
@@ -690,8 +692,6 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       spi_device_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_timer_tl_req;
   tlul_pkg::tl_d2h_t       rv_timer_tl_rsp;
-  tlul_pkg::tl_h2d_t       usbdev_tl_req;
-  tlul_pkg::tl_d2h_t       usbdev_tl_rsp;
   tlul_pkg::tl_h2d_t       pwrmgr_aon_tl_req;
   tlul_pkg::tl_d2h_t       pwrmgr_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       rstmgr_aon_tl_req;
@@ -840,18 +840,18 @@ module top_earlgrey #(
   // timers_sys_io_div4_0
   assign lpg_cg_en[5] = clkmgr_aon_cg_en.io_div4_timers;
   assign lpg_rst_en[5] = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::Domain0Sel];
-  // peri_usb_0
-  assign lpg_cg_en[6] = clkmgr_aon_cg_en.io_div4_peri;
-  assign lpg_rst_en[6] = rstmgr_aon_rst_en.usb[rstmgr_pkg::Domain0Sel];
   // secure_lc_io_div4_0
-  assign lpg_cg_en[7] = clkmgr_aon_cg_en.io_div4_secure;
-  assign lpg_rst_en[7] = rstmgr_aon_rst_en.lc_io_div4[rstmgr_pkg::Domain0Sel];
+  assign lpg_cg_en[6] = clkmgr_aon_cg_en.io_div4_secure;
+  assign lpg_rst_en[6] = rstmgr_aon_rst_en.lc_io_div4[rstmgr_pkg::Domain0Sel];
   // peri_spi_host0_0
-  assign lpg_cg_en[8] = clkmgr_aon_cg_en.io_peri;
-  assign lpg_rst_en[8] = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::Domain0Sel];
+  assign lpg_cg_en[7] = clkmgr_aon_cg_en.io_peri;
+  assign lpg_rst_en[7] = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::Domain0Sel];
   // peri_spi_host1_0
-  assign lpg_cg_en[9] = clkmgr_aon_cg_en.io_div2_peri;
-  assign lpg_rst_en[9] = rstmgr_aon_rst_en.spi_host1[rstmgr_pkg::Domain0Sel];
+  assign lpg_cg_en[8] = clkmgr_aon_cg_en.io_div2_peri;
+  assign lpg_rst_en[8] = rstmgr_aon_rst_en.spi_host1[rstmgr_pkg::Domain0Sel];
+  // peri_usb_0
+  assign lpg_cg_en[9] = clkmgr_aon_cg_en.usb_peri;
+  assign lpg_rst_en[9] = rstmgr_aon_rst_en.usb[rstmgr_pkg::Domain0Sel];
   // powerup_por_io_div4_Aon
   assign lpg_cg_en[10] = clkmgr_aon_cg_en.io_div4_powerup;
   assign lpg_rst_en[10] = rstmgr_aon_rst_en.por_io_div4[rstmgr_pkg::DomainAonSel];
@@ -912,13 +912,13 @@ module top_earlgrey #(
     prim_mubi_pkg::mubi4_t unused_cg_en_11;
     assign unused_cg_en_11 = clkmgr_aon_cg_en.main_otbn;
     prim_mubi_pkg::mubi4_t unused_cg_en_12;
-    assign unused_cg_en_12 = clkmgr_aon_cg_en.io_infra;
+    assign unused_cg_en_12 = clkmgr_aon_cg_en.usb_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_13;
-    assign unused_cg_en_13 = clkmgr_aon_cg_en.io_div2_infra;
+    assign unused_cg_en_13 = clkmgr_aon_cg_en.io_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_14;
-    assign unused_cg_en_14 = clkmgr_aon_cg_en.usb_secure;
+    assign unused_cg_en_14 = clkmgr_aon_cg_en.io_div2_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_15;
-    assign unused_cg_en_15 = clkmgr_aon_cg_en.usb_peri;
+    assign unused_cg_en_15 = clkmgr_aon_cg_en.usb_secure;
     prim_mubi_pkg::mubi4_t unused_rst_en_0;
     assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_1;
@@ -974,15 +974,11 @@ module top_earlgrey #(
     prim_mubi_pkg::mubi4_t unused_rst_en_26;
     assign unused_rst_en_26 = rstmgr_aon_rst_en.usb[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_27;
-    assign unused_rst_en_27 = rstmgr_aon_rst_en.usbif[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_27 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_28;
-    assign unused_rst_en_28 = rstmgr_aon_rst_en.usbif[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_28 = rstmgr_aon_rst_en.i2c1[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_29;
-    assign unused_rst_en_29 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_30;
-    assign unused_rst_en_30 = rstmgr_aon_rst_en.i2c1[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_31;
-    assign unused_rst_en_31 = rstmgr_aon_rst_en.i2c2[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_29 = rstmgr_aon_rst_en.i2c2[rstmgr_pkg::DomainAonSel];
 
   // Peripheral Instantiation
 
@@ -1364,73 +1360,8 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
-  usbdev #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[11:11]),
-    .RcvrWakeTimeUs(UsbdevRcvrWakeTimeUs)
-  ) u_usbdev (
-
-      // Input
-      .cio_sense_i     (cio_usbdev_sense_p2d),
-      .cio_usb_dp_i    (cio_usbdev_usb_dp_p2d),
-      .cio_usb_dn_i    (cio_usbdev_usb_dn_p2d),
-
-      // Output
-      .cio_usb_dp_o    (cio_usbdev_usb_dp_d2p),
-      .cio_usb_dp_en_o (cio_usbdev_usb_dp_en_d2p),
-      .cio_usb_dn_o    (cio_usbdev_usb_dn_d2p),
-      .cio_usb_dn_en_o (cio_usbdev_usb_dn_en_d2p),
-
-      // Interrupt
-      .intr_pkt_received_o    (intr_usbdev_pkt_received),
-      .intr_pkt_sent_o        (intr_usbdev_pkt_sent),
-      .intr_disconnected_o    (intr_usbdev_disconnected),
-      .intr_host_lost_o       (intr_usbdev_host_lost),
-      .intr_link_reset_o      (intr_usbdev_link_reset),
-      .intr_link_suspend_o    (intr_usbdev_link_suspend),
-      .intr_link_resume_o     (intr_usbdev_link_resume),
-      .intr_av_empty_o        (intr_usbdev_av_empty),
-      .intr_rx_full_o         (intr_usbdev_rx_full),
-      .intr_av_overflow_o     (intr_usbdev_av_overflow),
-      .intr_link_in_err_o     (intr_usbdev_link_in_err),
-      .intr_rx_crc_err_o      (intr_usbdev_rx_crc_err),
-      .intr_rx_pid_err_o      (intr_usbdev_rx_pid_err),
-      .intr_rx_bitstuff_err_o (intr_usbdev_rx_bitstuff_err),
-      .intr_frame_o           (intr_usbdev_frame),
-      .intr_powered_o         (intr_usbdev_powered),
-      .intr_link_out_err_o    (intr_usbdev_link_out_err),
-      // [11]: fatal_fault
-      .alert_tx_o  ( alert_tx[11:11] ),
-      .alert_rx_i  ( alert_rx[11:11] ),
-
-      // Inter-module signals
-      .usb_rx_d_i(usbdev_usb_rx_d_i),
-      .usb_tx_d_o(usbdev_usb_tx_d_o),
-      .usb_tx_se0_o(usbdev_usb_tx_se0_o),
-      .usb_tx_use_d_se0_o(usbdev_usb_tx_use_d_se0_o),
-      .usb_dp_pullup_o(usbdev_usb_dp_pullup),
-      .usb_dn_pullup_o(usbdev_usb_dn_pullup),
-      .usb_rx_enable_o(usbdev_usb_rx_enable_o),
-      .usb_ref_val_o(usbdev_usb_ref_val_o),
-      .usb_ref_pulse_o(usbdev_usb_ref_pulse_o),
-      .usb_aon_suspend_req_o(usbdev_usb_aon_suspend_req),
-      .usb_aon_wake_ack_o(usbdev_usb_aon_wake_ack),
-      .usb_aon_bus_reset_i(usbdev_usb_aon_bus_reset),
-      .usb_aon_sense_lost_i(usbdev_usb_aon_sense_lost),
-      .usb_aon_wake_detect_active_i(pinmux_aon_usbdev_wake_detect_active),
-      .ram_cfg_i(ast_ram_2p_cfg),
-      .tl_i(usbdev_tl_req),
-      .tl_o(usbdev_tl_rsp),
-
-      // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
-      .clk_aon_i (clkmgr_aon_clocks.clk_aon_peri),
-      .clk_usb_48mhz_i (clkmgr_aon_clocks.clk_usb_peri),
-      .rst_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::Domain0Sel]),
-      .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::Domain0Sel]),
-      .rst_usb_48mhz_ni (rstmgr_aon_resets.rst_usbif_n[rstmgr_pkg::Domain0Sel])
-  );
   otp_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[14:12]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[13:11]),
     .MemInitFile(OtpCtrlMemInitFile),
     .RndCnstLfsrSeed(RndCnstOtpCtrlLfsrSeed),
     .RndCnstLfsrPerm(RndCnstOtpCtrlLfsrPerm),
@@ -1444,11 +1375,11 @@ module top_earlgrey #(
       // Interrupt
       .intr_otp_operation_done_o (intr_otp_ctrl_otp_operation_done),
       .intr_otp_error_o          (intr_otp_ctrl_otp_error),
-      // [12]: fatal_macro_error
-      // [13]: fatal_check_error
-      // [14]: fatal_bus_integ_error
-      .alert_tx_o  ( alert_tx[14:12] ),
-      .alert_rx_i  ( alert_rx[14:12] ),
+      // [11]: fatal_macro_error
+      // [12]: fatal_check_error
+      // [13]: fatal_bus_integ_error
+      .alert_tx_o  ( alert_tx[13:11] ),
+      .alert_rx_i  ( alert_rx[13:11] ),
 
       // Inter-module signals
       .otp_ext_voltage_h_io(otp_ext_voltage_h_io),
@@ -1494,7 +1425,7 @@ module top_earlgrey #(
       .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
   lc_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[17:15]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[16:14]),
     .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcCtrlLcKeymgrDivTestDevRma),
     .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
@@ -1503,11 +1434,11 @@ module top_earlgrey #(
     .ChipRev(LcCtrlChipRev),
     .IdcodeValue(LcCtrlIdcodeValue)
   ) u_lc_ctrl (
-      // [15]: fatal_prog_error
-      // [16]: fatal_state_error
-      // [17]: fatal_bus_integ_error
-      .alert_tx_o  ( alert_tx[17:15] ),
-      .alert_rx_i  ( alert_rx[17:15] ),
+      // [14]: fatal_prog_error
+      // [15]: fatal_state_error
+      // [16]: fatal_bus_integ_error
+      .alert_tx_o  ( alert_tx[16:14] ),
+      .alert_rx_i  ( alert_rx[16:14] ),
 
       // Inter-module signals
       .jtag_i(pinmux_aon_lc_jtag_req),
@@ -1592,7 +1523,7 @@ module top_earlgrey #(
       .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
   spi_host #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[18:18])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[17:17])
   ) u_spi_host0 (
 
       // Input
@@ -1609,9 +1540,9 @@ module top_earlgrey #(
       // Interrupt
       .intr_error_o     (intr_spi_host0_error),
       .intr_spi_event_o (intr_spi_host0_spi_event),
-      // [18]: fatal_fault
-      .alert_tx_o  ( alert_tx[18:18] ),
-      .alert_rx_i  ( alert_rx[18:18] ),
+      // [17]: fatal_fault
+      .alert_tx_o  ( alert_tx[17:17] ),
+      .alert_rx_i  ( alert_rx[17:17] ),
 
       // Inter-module signals
       .passthrough_i(spi_device_passthrough_req),
@@ -1624,7 +1555,7 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel])
   );
   spi_host #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[19:19])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[18:18])
   ) u_spi_host1 (
 
       // Input
@@ -1641,9 +1572,9 @@ module top_earlgrey #(
       // Interrupt
       .intr_error_o     (intr_spi_host1_error),
       .intr_spi_event_o (intr_spi_host1_spi_event),
-      // [19]: fatal_fault
-      .alert_tx_o  ( alert_tx[19:19] ),
-      .alert_rx_i  ( alert_rx[19:19] ),
+      // [18]: fatal_fault
+      .alert_tx_o  ( alert_tx[18:18] ),
+      .alert_rx_i  ( alert_rx[18:18] ),
 
       // Inter-module signals
       .passthrough_i(spi_device_pkg::PASSTHROUGH_REQ_DEFAULT),
@@ -1654,6 +1585,71 @@ module top_earlgrey #(
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
       .rst_ni (rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel])
+  );
+  usbdev #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[19:19]),
+    .RcvrWakeTimeUs(UsbdevRcvrWakeTimeUs)
+  ) u_usbdev (
+
+      // Input
+      .cio_sense_i     (cio_usbdev_sense_p2d),
+      .cio_usb_dp_i    (cio_usbdev_usb_dp_p2d),
+      .cio_usb_dn_i    (cio_usbdev_usb_dn_p2d),
+
+      // Output
+      .cio_usb_dp_o    (cio_usbdev_usb_dp_d2p),
+      .cio_usb_dp_en_o (cio_usbdev_usb_dp_en_d2p),
+      .cio_usb_dn_o    (cio_usbdev_usb_dn_d2p),
+      .cio_usb_dn_en_o (cio_usbdev_usb_dn_en_d2p),
+
+      // Interrupt
+      .intr_pkt_received_o    (intr_usbdev_pkt_received),
+      .intr_pkt_sent_o        (intr_usbdev_pkt_sent),
+      .intr_disconnected_o    (intr_usbdev_disconnected),
+      .intr_host_lost_o       (intr_usbdev_host_lost),
+      .intr_link_reset_o      (intr_usbdev_link_reset),
+      .intr_link_suspend_o    (intr_usbdev_link_suspend),
+      .intr_link_resume_o     (intr_usbdev_link_resume),
+      .intr_av_empty_o        (intr_usbdev_av_empty),
+      .intr_rx_full_o         (intr_usbdev_rx_full),
+      .intr_av_overflow_o     (intr_usbdev_av_overflow),
+      .intr_link_in_err_o     (intr_usbdev_link_in_err),
+      .intr_rx_crc_err_o      (intr_usbdev_rx_crc_err),
+      .intr_rx_pid_err_o      (intr_usbdev_rx_pid_err),
+      .intr_rx_bitstuff_err_o (intr_usbdev_rx_bitstuff_err),
+      .intr_frame_o           (intr_usbdev_frame),
+      .intr_powered_o         (intr_usbdev_powered),
+      .intr_link_out_err_o    (intr_usbdev_link_out_err),
+      // [19]: fatal_fault
+      .alert_tx_o  ( alert_tx[19:19] ),
+      .alert_rx_i  ( alert_rx[19:19] ),
+
+      // Inter-module signals
+      .usb_rx_d_i(usbdev_usb_rx_d_i),
+      .usb_tx_d_o(usbdev_usb_tx_d_o),
+      .usb_tx_se0_o(usbdev_usb_tx_se0_o),
+      .usb_tx_use_d_se0_o(usbdev_usb_tx_use_d_se0_o),
+      .usb_dp_pullup_o(usbdev_usb_dp_pullup),
+      .usb_dn_pullup_o(usbdev_usb_dn_pullup),
+      .usb_rx_enable_o(usbdev_usb_rx_enable_o),
+      .usb_ref_val_o(usbdev_usb_ref_val_o),
+      .usb_ref_pulse_o(usbdev_usb_ref_pulse_o),
+      .usb_aon_suspend_req_o(usbdev_usb_aon_suspend_req),
+      .usb_aon_wake_ack_o(usbdev_usb_aon_wake_ack),
+      .usb_aon_bus_reset_i(usbdev_usb_aon_bus_reset),
+      .usb_aon_sense_lost_i(usbdev_usb_aon_sense_lost),
+      .usb_aon_wake_detect_active_i(pinmux_aon_usbdev_wake_detect_active),
+      .ram_cfg_i(ast_ram_2p_cfg),
+      .tl_i(usbdev_tl_req),
+      .tl_o(usbdev_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_usb_peri),
+      .clk_aon_i (clkmgr_aon_clocks.clk_aon_peri),
+      .clk_usb_48mhz_i (clkmgr_aon_clocks.clk_usb_peri),
+      .rst_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::Domain0Sel]),
+      .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::Domain0Sel]),
+      .rst_usb_48mhz_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::Domain0Sel])
   );
   pwrmgr #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[20:20])
@@ -2612,33 +2608,33 @@ module top_earlgrey #(
       intr_adc_ctrl_aon_debug_cable, // IDs [157 +: 1]
       intr_sysrst_ctrl_aon_sysrst_ctrl, // IDs [156 +: 1]
       intr_pwrmgr_aon_wakeup, // IDs [155 +: 1]
-      intr_spi_host1_spi_event, // IDs [154 +: 1]
-      intr_spi_host1_error, // IDs [153 +: 1]
-      intr_spi_host0_spi_event, // IDs [152 +: 1]
-      intr_spi_host0_error, // IDs [151 +: 1]
-      intr_alert_handler_classd, // IDs [150 +: 1]
-      intr_alert_handler_classc, // IDs [149 +: 1]
-      intr_alert_handler_classb, // IDs [148 +: 1]
-      intr_alert_handler_classa, // IDs [147 +: 1]
-      intr_otp_ctrl_otp_error, // IDs [146 +: 1]
-      intr_otp_ctrl_otp_operation_done, // IDs [145 +: 1]
-      intr_usbdev_link_out_err, // IDs [144 +: 1]
-      intr_usbdev_powered, // IDs [143 +: 1]
-      intr_usbdev_frame, // IDs [142 +: 1]
-      intr_usbdev_rx_bitstuff_err, // IDs [141 +: 1]
-      intr_usbdev_rx_pid_err, // IDs [140 +: 1]
-      intr_usbdev_rx_crc_err, // IDs [139 +: 1]
-      intr_usbdev_link_in_err, // IDs [138 +: 1]
-      intr_usbdev_av_overflow, // IDs [137 +: 1]
-      intr_usbdev_rx_full, // IDs [136 +: 1]
-      intr_usbdev_av_empty, // IDs [135 +: 1]
-      intr_usbdev_link_resume, // IDs [134 +: 1]
-      intr_usbdev_link_suspend, // IDs [133 +: 1]
-      intr_usbdev_link_reset, // IDs [132 +: 1]
-      intr_usbdev_host_lost, // IDs [131 +: 1]
-      intr_usbdev_disconnected, // IDs [130 +: 1]
-      intr_usbdev_pkt_sent, // IDs [129 +: 1]
-      intr_usbdev_pkt_received, // IDs [128 +: 1]
+      intr_usbdev_link_out_err, // IDs [154 +: 1]
+      intr_usbdev_powered, // IDs [153 +: 1]
+      intr_usbdev_frame, // IDs [152 +: 1]
+      intr_usbdev_rx_bitstuff_err, // IDs [151 +: 1]
+      intr_usbdev_rx_pid_err, // IDs [150 +: 1]
+      intr_usbdev_rx_crc_err, // IDs [149 +: 1]
+      intr_usbdev_link_in_err, // IDs [148 +: 1]
+      intr_usbdev_av_overflow, // IDs [147 +: 1]
+      intr_usbdev_rx_full, // IDs [146 +: 1]
+      intr_usbdev_av_empty, // IDs [145 +: 1]
+      intr_usbdev_link_resume, // IDs [144 +: 1]
+      intr_usbdev_link_suspend, // IDs [143 +: 1]
+      intr_usbdev_link_reset, // IDs [142 +: 1]
+      intr_usbdev_host_lost, // IDs [141 +: 1]
+      intr_usbdev_disconnected, // IDs [140 +: 1]
+      intr_usbdev_pkt_sent, // IDs [139 +: 1]
+      intr_usbdev_pkt_received, // IDs [138 +: 1]
+      intr_spi_host1_spi_event, // IDs [137 +: 1]
+      intr_spi_host1_error, // IDs [136 +: 1]
+      intr_spi_host0_spi_event, // IDs [135 +: 1]
+      intr_spi_host0_error, // IDs [134 +: 1]
+      intr_alert_handler_classd, // IDs [133 +: 1]
+      intr_alert_handler_classc, // IDs [132 +: 1]
+      intr_alert_handler_classb, // IDs [131 +: 1]
+      intr_alert_handler_classa, // IDs [130 +: 1]
+      intr_otp_ctrl_otp_error, // IDs [129 +: 1]
+      intr_otp_ctrl_otp_operation_done, // IDs [128 +: 1]
       intr_rv_timer_timer_expired_hart0_timer0, // IDs [127 +: 1]
       intr_pattgen_done_ch1, // IDs [126 +: 1]
       intr_pattgen_done_ch0, // IDs [125 +: 1]
@@ -2742,10 +2738,12 @@ module top_earlgrey #(
   xbar_main u_xbar_main (
     .clk_main_i (clkmgr_aon_clocks.clk_main_infra),
     .clk_fixed_i (clkmgr_aon_clocks.clk_io_div4_infra),
+    .clk_usb_i (clkmgr_aon_clocks.clk_usb_infra),
     .clk_spi_host0_i (clkmgr_aon_clocks.clk_io_infra),
     .clk_spi_host1_i (clkmgr_aon_clocks.clk_io_div2_infra),
     .rst_main_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
     .rst_fixed_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_usb_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::Domain0Sel]),
     .rst_spi_host0_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel]),
     .rst_spi_host1_ni (rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel]),
 
@@ -2788,6 +2786,10 @@ module top_earlgrey #(
     // port: tl_spi_host1
     .tl_spi_host1_o(spi_host1_tl_req),
     .tl_spi_host1_i(spi_host1_tl_rsp),
+
+    // port: tl_usbdev
+    .tl_usbdev_o(usbdev_tl_req),
+    .tl_usbdev_i(usbdev_tl_rsp),
 
     // port: tl_flash_ctrl__core
     .tl_flash_ctrl__core_o(flash_ctrl_core_tl_req),
@@ -2911,10 +2913,6 @@ module top_earlgrey #(
     // port: tl_rv_timer
     .tl_rv_timer_o(rv_timer_tl_req),
     .tl_rv_timer_i(rv_timer_tl_rsp),
-
-    // port: tl_usbdev
-    .tl_usbdev_o(usbdev_tl_req),
-    .tl_usbdev_i(usbdev_tl_rsp),
 
     // port: tl_pwrmgr_aon
     .tl_pwrmgr_aon_o(pwrmgr_aon_tl_req),

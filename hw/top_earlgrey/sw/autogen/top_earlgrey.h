@@ -224,24 +224,6 @@ extern "C" {
 #define TOP_EARLGREY_RV_TIMER_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for usbdev in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_USBDEV_BASE_ADDR 0x40110000u
-
-/**
- * Peripheral size for usbdev in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_USBDEV_BASE_ADDR and
- * `TOP_EARLGREY_USBDEV_BASE_ADDR + TOP_EARLGREY_USBDEV_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_USBDEV_SIZE_BYTES 0x1000u
-
-/**
  * Peripheral base address for core device on otp_ctrl in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -348,6 +330,24 @@ extern "C" {
  * `TOP_EARLGREY_SPI_HOST1_BASE_ADDR + TOP_EARLGREY_SPI_HOST1_SIZE_BYTES`.
  */
 #define TOP_EARLGREY_SPI_HOST1_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for usbdev in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_USBDEV_BASE_ADDR 0x40320000u
+
+/**
+ * Peripheral size for usbdev in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_USBDEV_BASE_ADDR and
+ * `TOP_EARLGREY_USBDEV_BASE_ADDR + TOP_EARLGREY_USBDEV_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_USBDEV_SIZE_BYTES 0x1000u
 
 /**
  * Peripheral base address for pwrmgr_aon in top earlgrey.
@@ -986,11 +986,11 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralI2c2 = 9, /**< i2c2 */
   kTopEarlgreyPlicPeripheralPattgen = 10, /**< pattgen */
   kTopEarlgreyPlicPeripheralRvTimer = 11, /**< rv_timer */
-  kTopEarlgreyPlicPeripheralUsbdev = 12, /**< usbdev */
-  kTopEarlgreyPlicPeripheralOtpCtrl = 13, /**< otp_ctrl */
-  kTopEarlgreyPlicPeripheralAlertHandler = 14, /**< alert_handler */
-  kTopEarlgreyPlicPeripheralSpiHost0 = 15, /**< spi_host0 */
-  kTopEarlgreyPlicPeripheralSpiHost1 = 16, /**< spi_host1 */
+  kTopEarlgreyPlicPeripheralOtpCtrl = 12, /**< otp_ctrl */
+  kTopEarlgreyPlicPeripheralAlertHandler = 13, /**< alert_handler */
+  kTopEarlgreyPlicPeripheralSpiHost0 = 14, /**< spi_host0 */
+  kTopEarlgreyPlicPeripheralSpiHost1 = 15, /**< spi_host1 */
+  kTopEarlgreyPlicPeripheralUsbdev = 16, /**< usbdev */
   kTopEarlgreyPlicPeripheralPwrmgrAon = 17, /**< pwrmgr_aon */
   kTopEarlgreyPlicPeripheralSysrstCtrlAon = 18, /**< sysrst_ctrl_aon */
   kTopEarlgreyPlicPeripheralAdcCtrlAon = 19, /**< adc_ctrl_aon */
@@ -1143,33 +1143,33 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdPattgenDoneCh0 = 125, /**< pattgen_done_ch0 */
   kTopEarlgreyPlicIrqIdPattgenDoneCh1 = 126, /**< pattgen_done_ch1 */
   kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0 = 127, /**< rv_timer_timer_expired_hart0_timer0 */
-  kTopEarlgreyPlicIrqIdUsbdevPktReceived = 128, /**< usbdev_pkt_received */
-  kTopEarlgreyPlicIrqIdUsbdevPktSent = 129, /**< usbdev_pkt_sent */
-  kTopEarlgreyPlicIrqIdUsbdevDisconnected = 130, /**< usbdev_disconnected */
-  kTopEarlgreyPlicIrqIdUsbdevHostLost = 131, /**< usbdev_host_lost */
-  kTopEarlgreyPlicIrqIdUsbdevLinkReset = 132, /**< usbdev_link_reset */
-  kTopEarlgreyPlicIrqIdUsbdevLinkSuspend = 133, /**< usbdev_link_suspend */
-  kTopEarlgreyPlicIrqIdUsbdevLinkResume = 134, /**< usbdev_link_resume */
-  kTopEarlgreyPlicIrqIdUsbdevAvEmpty = 135, /**< usbdev_av_empty */
-  kTopEarlgreyPlicIrqIdUsbdevRxFull = 136, /**< usbdev_rx_full */
-  kTopEarlgreyPlicIrqIdUsbdevAvOverflow = 137, /**< usbdev_av_overflow */
-  kTopEarlgreyPlicIrqIdUsbdevLinkInErr = 138, /**< usbdev_link_in_err */
-  kTopEarlgreyPlicIrqIdUsbdevRxCrcErr = 139, /**< usbdev_rx_crc_err */
-  kTopEarlgreyPlicIrqIdUsbdevRxPidErr = 140, /**< usbdev_rx_pid_err */
-  kTopEarlgreyPlicIrqIdUsbdevRxBitstuffErr = 141, /**< usbdev_rx_bitstuff_err */
-  kTopEarlgreyPlicIrqIdUsbdevFrame = 142, /**< usbdev_frame */
-  kTopEarlgreyPlicIrqIdUsbdevPowered = 143, /**< usbdev_powered */
-  kTopEarlgreyPlicIrqIdUsbdevLinkOutErr = 144, /**< usbdev_link_out_err */
-  kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone = 145, /**< otp_ctrl_otp_operation_done */
-  kTopEarlgreyPlicIrqIdOtpCtrlOtpError = 146, /**< otp_ctrl_otp_error */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassa = 147, /**< alert_handler_classa */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassb = 148, /**< alert_handler_classb */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassc = 149, /**< alert_handler_classc */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassd = 150, /**< alert_handler_classd */
-  kTopEarlgreyPlicIrqIdSpiHost0Error = 151, /**< spi_host0_error */
-  kTopEarlgreyPlicIrqIdSpiHost0SpiEvent = 152, /**< spi_host0_spi_event */
-  kTopEarlgreyPlicIrqIdSpiHost1Error = 153, /**< spi_host1_error */
-  kTopEarlgreyPlicIrqIdSpiHost1SpiEvent = 154, /**< spi_host1_spi_event */
+  kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone = 128, /**< otp_ctrl_otp_operation_done */
+  kTopEarlgreyPlicIrqIdOtpCtrlOtpError = 129, /**< otp_ctrl_otp_error */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassa = 130, /**< alert_handler_classa */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassb = 131, /**< alert_handler_classb */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassc = 132, /**< alert_handler_classc */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassd = 133, /**< alert_handler_classd */
+  kTopEarlgreyPlicIrqIdSpiHost0Error = 134, /**< spi_host0_error */
+  kTopEarlgreyPlicIrqIdSpiHost0SpiEvent = 135, /**< spi_host0_spi_event */
+  kTopEarlgreyPlicIrqIdSpiHost1Error = 136, /**< spi_host1_error */
+  kTopEarlgreyPlicIrqIdSpiHost1SpiEvent = 137, /**< spi_host1_spi_event */
+  kTopEarlgreyPlicIrqIdUsbdevPktReceived = 138, /**< usbdev_pkt_received */
+  kTopEarlgreyPlicIrqIdUsbdevPktSent = 139, /**< usbdev_pkt_sent */
+  kTopEarlgreyPlicIrqIdUsbdevDisconnected = 140, /**< usbdev_disconnected */
+  kTopEarlgreyPlicIrqIdUsbdevHostLost = 141, /**< usbdev_host_lost */
+  kTopEarlgreyPlicIrqIdUsbdevLinkReset = 142, /**< usbdev_link_reset */
+  kTopEarlgreyPlicIrqIdUsbdevLinkSuspend = 143, /**< usbdev_link_suspend */
+  kTopEarlgreyPlicIrqIdUsbdevLinkResume = 144, /**< usbdev_link_resume */
+  kTopEarlgreyPlicIrqIdUsbdevAvEmpty = 145, /**< usbdev_av_empty */
+  kTopEarlgreyPlicIrqIdUsbdevRxFull = 146, /**< usbdev_rx_full */
+  kTopEarlgreyPlicIrqIdUsbdevAvOverflow = 147, /**< usbdev_av_overflow */
+  kTopEarlgreyPlicIrqIdUsbdevLinkInErr = 148, /**< usbdev_link_in_err */
+  kTopEarlgreyPlicIrqIdUsbdevRxCrcErr = 149, /**< usbdev_rx_crc_err */
+  kTopEarlgreyPlicIrqIdUsbdevRxPidErr = 150, /**< usbdev_rx_pid_err */
+  kTopEarlgreyPlicIrqIdUsbdevRxBitstuffErr = 151, /**< usbdev_rx_bitstuff_err */
+  kTopEarlgreyPlicIrqIdUsbdevFrame = 152, /**< usbdev_frame */
+  kTopEarlgreyPlicIrqIdUsbdevPowered = 153, /**< usbdev_powered */
+  kTopEarlgreyPlicIrqIdUsbdevLinkOutErr = 154, /**< usbdev_link_out_err */
   kTopEarlgreyPlicIrqIdPwrmgrAonWakeup = 155, /**< pwrmgr_aon_wakeup */
   kTopEarlgreyPlicIrqIdSysrstCtrlAonSysrstCtrl = 156, /**< sysrst_ctrl_aon_sysrst_ctrl */
   kTopEarlgreyPlicIrqIdAdcCtrlAonDebugCable = 157, /**< adc_ctrl_aon_debug_cable */
@@ -1244,11 +1244,11 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralI2c2 = 8, /**< i2c2 */
   kTopEarlgreyAlertPeripheralPattgen = 9, /**< pattgen */
   kTopEarlgreyAlertPeripheralRvTimer = 10, /**< rv_timer */
-  kTopEarlgreyAlertPeripheralUsbdev = 11, /**< usbdev */
-  kTopEarlgreyAlertPeripheralOtpCtrl = 12, /**< otp_ctrl */
-  kTopEarlgreyAlertPeripheralLcCtrl = 13, /**< lc_ctrl */
-  kTopEarlgreyAlertPeripheralSpiHost0 = 14, /**< spi_host0 */
-  kTopEarlgreyAlertPeripheralSpiHost1 = 15, /**< spi_host1 */
+  kTopEarlgreyAlertPeripheralOtpCtrl = 11, /**< otp_ctrl */
+  kTopEarlgreyAlertPeripheralLcCtrl = 12, /**< lc_ctrl */
+  kTopEarlgreyAlertPeripheralSpiHost0 = 13, /**< spi_host0 */
+  kTopEarlgreyAlertPeripheralSpiHost1 = 14, /**< spi_host1 */
+  kTopEarlgreyAlertPeripheralUsbdev = 15, /**< usbdev */
   kTopEarlgreyAlertPeripheralPwrmgrAon = 16, /**< pwrmgr_aon */
   kTopEarlgreyAlertPeripheralRstmgrAon = 17, /**< rstmgr_aon */
   kTopEarlgreyAlertPeripheralClkmgrAon = 18, /**< clkmgr_aon */
@@ -1295,15 +1295,15 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdI2c2FatalFault = 8, /**< i2c2_fatal_fault */
   kTopEarlgreyAlertIdPattgenFatalFault = 9, /**< pattgen_fatal_fault */
   kTopEarlgreyAlertIdRvTimerFatalFault = 10, /**< rv_timer_fatal_fault */
-  kTopEarlgreyAlertIdUsbdevFatalFault = 11, /**< usbdev_fatal_fault */
-  kTopEarlgreyAlertIdOtpCtrlFatalMacroError = 12, /**< otp_ctrl_fatal_macro_error */
-  kTopEarlgreyAlertIdOtpCtrlFatalCheckError = 13, /**< otp_ctrl_fatal_check_error */
-  kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError = 14, /**< otp_ctrl_fatal_bus_integ_error */
-  kTopEarlgreyAlertIdLcCtrlFatalProgError = 15, /**< lc_ctrl_fatal_prog_error */
-  kTopEarlgreyAlertIdLcCtrlFatalStateError = 16, /**< lc_ctrl_fatal_state_error */
-  kTopEarlgreyAlertIdLcCtrlFatalBusIntegError = 17, /**< lc_ctrl_fatal_bus_integ_error */
-  kTopEarlgreyAlertIdSpiHost0FatalFault = 18, /**< spi_host0_fatal_fault */
-  kTopEarlgreyAlertIdSpiHost1FatalFault = 19, /**< spi_host1_fatal_fault */
+  kTopEarlgreyAlertIdOtpCtrlFatalMacroError = 11, /**< otp_ctrl_fatal_macro_error */
+  kTopEarlgreyAlertIdOtpCtrlFatalCheckError = 12, /**< otp_ctrl_fatal_check_error */
+  kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError = 13, /**< otp_ctrl_fatal_bus_integ_error */
+  kTopEarlgreyAlertIdLcCtrlFatalProgError = 14, /**< lc_ctrl_fatal_prog_error */
+  kTopEarlgreyAlertIdLcCtrlFatalStateError = 15, /**< lc_ctrl_fatal_state_error */
+  kTopEarlgreyAlertIdLcCtrlFatalBusIntegError = 16, /**< lc_ctrl_fatal_bus_integ_error */
+  kTopEarlgreyAlertIdSpiHost0FatalFault = 17, /**< spi_host0_fatal_fault */
+  kTopEarlgreyAlertIdSpiHost1FatalFault = 18, /**< spi_host1_fatal_fault */
+  kTopEarlgreyAlertIdUsbdevFatalFault = 19, /**< usbdev_fatal_fault */
   kTopEarlgreyAlertIdPwrmgrAonFatalFault = 20, /**< pwrmgr_aon_fatal_fault */
   kTopEarlgreyAlertIdRstmgrAonFatalFault = 21, /**< rstmgr_aon_fatal_fault */
   kTopEarlgreyAlertIdRstmgrAonFatalCnstyFault = 22, /**< rstmgr_aon_fatal_cnsty_fault */
@@ -1646,11 +1646,10 @@ typedef enum top_earlgrey_reset_manager_sw_resets {
   kTopEarlgreyResetManagerSwResetsSpiHost0 = 1, /**<  */
   kTopEarlgreyResetManagerSwResetsSpiHost1 = 2, /**<  */
   kTopEarlgreyResetManagerSwResetsUsb = 3, /**<  */
-  kTopEarlgreyResetManagerSwResetsUsbif = 4, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c0 = 5, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c1 = 6, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c2 = 7, /**<  */
-  kTopEarlgreyResetManagerSwResetsLast = 7, /**< \internal Last valid rstmgr software reset request */
+  kTopEarlgreyResetManagerSwResetsI2c0 = 4, /**<  */
+  kTopEarlgreyResetManagerSwResetsI2c1 = 5, /**<  */
+  kTopEarlgreyResetManagerSwResetsI2c2 = 6, /**<  */
+  kTopEarlgreyResetManagerSwResetsLast = 6, /**< \internal Last valid rstmgr software reset request */
 } top_earlgrey_reset_manager_sw_resets_t;
 
 /**
@@ -1670,8 +1669,8 @@ typedef enum top_earlgrey_power_manager_reset_requests {
 typedef enum top_earlgrey_gateable_clocks {
   kTopEarlgreyGateableClocksIoDiv4Peri = 0, /**< Clock clk_io_div4_peri in group peri */
   kTopEarlgreyGateableClocksIoDiv2Peri = 1, /**< Clock clk_io_div2_peri in group peri */
-  kTopEarlgreyGateableClocksUsbPeri = 2, /**< Clock clk_usb_peri in group peri */
-  kTopEarlgreyGateableClocksIoPeri = 3, /**< Clock clk_io_peri in group peri */
+  kTopEarlgreyGateableClocksIoPeri = 2, /**< Clock clk_io_peri in group peri */
+  kTopEarlgreyGateableClocksUsbPeri = 3, /**< Clock clk_usb_peri in group peri */
   kTopEarlgreyGateableClocksLast = 3, /**< \internal Last Valid Gateable Clock */
 } top_earlgrey_gateable_clocks_t;
 

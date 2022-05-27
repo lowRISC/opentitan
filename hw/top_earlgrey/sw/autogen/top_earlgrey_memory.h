@@ -251,23 +251,6 @@
  */
 #define TOP_EARLGREY_RV_TIMER_SIZE_BYTES 0x1000
 /**
- * Peripheral base address for usbdev in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_USBDEV_BASE_ADDR 0x40110000
-
-/**
- * Peripheral size for usbdev in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_USBDEV_BASE_ADDR and
- * `TOP_EARLGREY_USBDEV_BASE_ADDR + TOP_EARLGREY_USBDEV_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_USBDEV_SIZE_BYTES 0x1000
-/**
  * Peripheral base address for core device on otp_ctrl in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -369,6 +352,23 @@
  * `TOP_EARLGREY_SPI_HOST1_BASE_ADDR + TOP_EARLGREY_SPI_HOST1_SIZE_BYTES`.
  */
 #define TOP_EARLGREY_SPI_HOST1_SIZE_BYTES 0x1000
+/**
+ * Peripheral base address for usbdev in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_USBDEV_BASE_ADDR 0x40320000
+
+/**
+ * Peripheral size for usbdev in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_USBDEV_BASE_ADDR and
+ * `TOP_EARLGREY_USBDEV_BASE_ADDR + TOP_EARLGREY_USBDEV_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_USBDEV_SIZE_BYTES 0x1000
 /**
  * Peripheral base address for pwrmgr_aon in top earlgrey.
  *

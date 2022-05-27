@@ -68,7 +68,6 @@ module rstmgr_bind;
       clk_io_div4_i,
       clk_io_div4_i,
       clk_usb_i,
-      clk_io_div4_i,
       clk_io_div2_i,
       clk_io_i,
       clk_io_div4_i
@@ -80,7 +79,6 @@ module rstmgr_bind;
       rst_en_o.i2c2[1] == prim_mubi_pkg::MuBi4True,
       rst_en_o.i2c1[1] == prim_mubi_pkg::MuBi4True,
       rst_en_o.i2c0[1] == prim_mubi_pkg::MuBi4True,
-      rst_en_o.usbif[1] == prim_mubi_pkg::MuBi4True,
       rst_en_o.usb[1] == prim_mubi_pkg::MuBi4True,
       rst_en_o.spi_host1[1] == prim_mubi_pkg::MuBi4True,
       rst_en_o.spi_host0[1] == prim_mubi_pkg::MuBi4True,
@@ -90,7 +88,6 @@ module rstmgr_bind;
       resets_o.rst_i2c2_n[1],
       resets_o.rst_i2c1_n[1],
       resets_o.rst_i2c0_n[1],
-      resets_o.rst_usbif_n[1],
       resets_o.rst_usb_n[1],
       resets_o.rst_spi_host1_n[1],
       resets_o.rst_spi_host0_n[1],

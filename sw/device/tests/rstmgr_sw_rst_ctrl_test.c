@@ -25,7 +25,7 @@
  *  RSTMGR SW_RST_CTRL Test
  *
  *  This test checks RSTMGR.SW_RST_CTRL_N[index] with peripheral devices.
- *  There are 8 RSTMGR.SW_RST_CTRL_N registers and each register
+ *  There are 7 RSTMGR.SW_RST_CTRL_N registers and each register
  *  controls peripheral reset as follows:
  *
  * // index | device     |  test register |  reset value |  prgm value |
@@ -34,10 +34,9 @@
  * // 1     | SPI_HOST0  |  CONFIGOPTS    |  0x0         |  0x3210000
  * // 2     | SPI_HOST1  |  CONFIGOPTS    |  0x0         |  0x6540000
  * // 3     | USB        |  EP_OUT_ENABLE |  0x0         |  0xc3
- * // 4     | USBIF      |  RXENABLE_OUT  |  0x0         |  0x695
- * // 5     | I2C0       |  TIMING0       |  0x0         |  0x8b00cfe
- * // 6     | I2C1       |  TIMING1       |  0x0         |  0x114010d8
- * // 7     | I2C2       |  TIMING2       |  0x0         |  0x19ec1595
+ * // 4     | I2C0       |  TIMING0       |  0x0         |  0x8b00cfe
+ * // 5     | I2C1       |  TIMING1       |  0x0         |  0x114010d8
+ * // 6     | I2C2       |  TIMING2       |  0x0         |  0x19ec1595
  *
  * 'test register' is a rw type register under each peripheral device.
  * During the test, these registers are programmed with arbitrary values. ('prgm
@@ -224,13 +223,6 @@ static const test_t kPeripherals[] = {
         .init = usbdev_init,
         .program_val = 0xc3,
         .reset_index = kTopEarlgreyResetManagerSwResetsUsb,
-    },
-    {
-        .name = "USBIF",
-        .base = TOP_EARLGREY_USBDEV_BASE_ADDR,
-        .offset = USBDEV_RXENABLE_OUT_REG_OFFSET,
-        .program_val = 0x695,
-        .reset_index = kTopEarlgreyResetManagerSwResetsUsbif,
     },
     {
         .name = "I2C0",
