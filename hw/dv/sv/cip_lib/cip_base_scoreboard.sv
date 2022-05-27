@@ -37,6 +37,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   tl_errors_cg_wrap   tl_errors_cgs_wrap[string];
   tl_intg_err_cg_wrap tl_intg_err_cgs_wrap[string];
   tl_intg_err_mem_subword_cg_wrap tl_intg_err_mem_subword_cgs_wrap[string];
+
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
@@ -310,10 +311,15 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual task process_mem_read(tl_seq_item item, string ral_name);
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
+
     if (!cfg.under_reset && get_mem_access_by_addr(cfg.ral_models[ral_name], addr) == "RW") begin
-      exp_mem[ral_name].compare(addr, item.d_data, item.a_mask);
+      mem_compare(ral_name, addr, item);
     end
   endtask
+
+  virtual function void mem_compare(string ral_name, uvm_reg_addr_t addr, tl_seq_item item);
+    exp_mem[ral_name].compare(addr, item.d_data, item.a_mask);
+  endfunction
 
   // check if it's mem addr
   virtual function bit is_mem_addr(tl_seq_item item, string ral_name);
