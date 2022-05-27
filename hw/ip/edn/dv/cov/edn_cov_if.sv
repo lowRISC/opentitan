@@ -28,9 +28,9 @@ interface edn_cov_if (
                         ep_req[2], ep_req[1], ep_req[0]};
 
   covergroup edn_cfg_cg with function sample(bit [2:0] num_endpoints,
-                                             uint num_boot_reqs,
-                                             bit  boot_req_mode,
-                                             bit  auto_req_mode);
+                                             uint      num_boot_reqs,
+                                             mubi4_t   boot_req_mode,
+                                             mubi4_t   auto_req_mode);
     option.name         = "edn_cfg_cg";
     option.per_instance = 1;
 

@@ -48,12 +48,6 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   constraint enable_c {enable dist {
     MuBi4True  :/ enable_pct,
     MuBi4False :/ (100 - enable_pct) };}
-  constraint boot_req_mode_c {boot_req_mode dist {
-    MuBi4True  :/ boot_req_mode_pct,
-    MuBi4False :/ (100 - boot_req_mode_pct) };}
-  constraint auto_req_mode_c {auto_req_mode dist {
-    MuBi4True  :/ auto_req_mode_pct,
-    MuBi4False :/ (100 - auto_req_mode_pct) };}
   constraint cmd_fifo_rst_c {cmd_fifo_rst dist {
     MuBi4True  :/ cmd_fifo_rst_pct,
     MuBi4False :/ (100 - cmd_fifo_rst_pct) };}
@@ -61,7 +55,6 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     MIN_NUM_ENDPOINTS :/ 40,
     MAX_NUM_ENDPOINTS :/ 40,
     [MIN_NUM_ENDPOINTS + 1:MAX_NUM_ENDPOINTS - 1] :/ 20 };}
-
   constraint req_mode_c {{boot_req_mode, auto_req_mode} dist {
     {MuBi4True, MuBi4False}  :/ boot_req_mode_pct,
     {MuBi4False, MuBi4True}  :/ auto_req_mode_pct,
