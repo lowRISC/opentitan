@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="481 186 741 502" width="741" height="502">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xl="http://www.w3.org/1999/xlink" viewBox="496.5145 203.5 709.1695 469.228" width="709.1695" height="469.228">
   <defs>
-    <font-face font-family="Helvetica Neue" font-size="16" panose-1="2 0 5 3 0 0 0 2 0 4" units-per-em="1000" underline-position="-100" underline-thickness="50" slope="0" x-height="517" cap-height="714" ascent="951.9958" descent="-212.99744" font-weight="400">
-      <font-face-src>
-        <font-face-name name="HelveticaNeue"/>
-      </font-face-src>
-    </font-face>
     <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="FilledArrow_Marker" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-1 -4 10 8" markerWidth="10" markerHeight="8" color="black">
       <g>
         <path d="M 8 0 L 0 -3 L 0 3 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
@@ -17,27 +12,12 @@
         <path d="M -8 0 L 0 3 L 0 -3 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
       </g>
     </marker>
-    <font-face font-family="Helvetica Neue" font-size="20" panose-1="2 0 5 3 0 0 0 2 0 4" units-per-em="1000" underline-position="-100" underline-thickness="50" slope="0" x-height="517" cap-height="714" ascent="951.9958" descent="-212.99744" font-weight="400">
-      <font-face-src>
-        <font-face-name name="HelveticaNeue"/>
-      </font-face-src>
-    </font-face>
-    <font-face font-family="Helvetica Neue" font-size="14" panose-1="2 0 5 3 0 0 0 2 0 4" units-per-em="1000" underline-position="-100" underline-thickness="50" slope="0" x-height="517" cap-height="714" ascent="951.9958" descent="-212.99744" font-weight="400">
-      <font-face-src>
-        <font-face-name name="HelveticaNeue"/>
-      </font-face-src>
-    </font-face>
   </defs>
-  <metadata> Produced by OmniGraffle 7.18.5\n2021-08-30 23:10:50 +0000</metadata>
-  <g id="Canvas_1" stroke-dasharray="none" fill="none" stroke-opacity="1" fill-opacity="1" stroke="none">
+  <g id="Canvas_1" stroke-opacity="1" fill="none" fill-opacity="1" stroke="none" stroke-dasharray="none">
     <title>Canvas 1</title>
-    <rect fill="white" x="481" y="186" width="741" height="502"/>
+    <rect fill="white" x="496.5145" y="203.5" width="709.1695" height="469.228"/>
     <g id="Canvas_1_Layer_1">
       <title>Layer 1</title>
-      <g id="Graphic_116">
-        <rect x="481.5" y="186.5" width="740" height="501" fill="white"/>
-        <rect x="481.5" y="186.5" width="740" height="501" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-      </g>
       <g id="Graphic_75">
         <rect x="497.0145" y="204" width="192.256" height="441" fill="white"/>
         <rect x="497.0145" y="204" width="192.256" height="441" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
@@ -58,7 +38,7 @@
         <rect x="1079.059" y="494.7641" width="115.941" height="44.64088" fill="white"/>
         <rect x="1079.059" y="494.7641" width="115.941" height="44.64088" stroke="#bc7fd1" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
         <text transform="translate(1084.059 507.86056)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="11.770501" y="15">test_main.c</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="11.770501" y="15">test_main.c</tspan>
         </text>
       </g>
       <g id="Graphic_15">
@@ -71,53 +51,54 @@
       <g id="Graphic_19">
         <rect x="508.3925" y="388.75" width="169.5" height="244.293" fill="white"/>
         <rect x="508.3925" y="388.75" width="169.5" height="244.293" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-        <text transform="translate(513.3925 501.6725)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="12.326" y="15">pytest (systemtest)</tspan>
+        <text transform="translate(513.3925 492.4485)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="53.038" y="15">Bazel + </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="32.63" y="33.448">opentitantool</tspan>
         </text>
       </g>
       <g id="Graphic_20">
         <rect x="508.3925" y="242.5" width="169.5" height="135.5" fill="white"/>
         <rect x="508.3925" y="242.5" width="169.5" height="135.5" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
         <text transform="translate(513.3925 301.026)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="47.438" y="15">dvsim.py</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="47.438" y="15">dvsim.py</tspan>
         </text>
       </g>
       <g id="Graphic_22">
         <rect x="765.5" y="312.777" width="254.5" height="51.223" stroke="#bc7fce" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
         <text transform="translate(770.5 329.1645)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="65.362" y="15">Test Framework</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="86.098" y="15">Test Code</tspan>
         </text>
       </g>
       <g id="Graphic_23">
         <text transform="translate(754.75 247.5)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="30.208" y="15">DV Simulation (Synopsys VCS)</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="30.208" y="15">DV Simulation (Synopsys VCS)</tspan>
         </text>
       </g>
       <g id="Graphic_24">
         <text transform="translate(825.854 389.638)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="6252776e-19" y="15">Verilator Simulation</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="6252776e-19" y="15">Verilator Simulation</tspan>
         </text>
       </g>
       <g id="Graphic_25">
         <text transform="translate(871.718 542.543)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="0" y="15">FPGA</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="0" y="15">FPGA</tspan>
         </text>
       </g>
       <g id="Graphic_32">
         <rect x="765.5" y="460.82" width="254.5" height="51.223" stroke="#bc7fce" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
         <text transform="translate(770.5 477.2075)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="65.362" y="15">Test Framework</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="86.098" y="15">Test Code</tspan>
         </text>
       </g>
       <g id="Graphic_33">
         <rect x="763.5" y="568.78176" width="254.5" height="51.223" stroke="#bc7fce" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
         <text transform="translate(768.5 585.16926)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="65.362" y="15">Test Framework</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="86.098" y="15">Test Code</tspan>
         </text>
       </g>
       <g id="Graphic_36">
         <text transform="translate(1080.454 430.4111)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="8171241e-19" y="15">Test Framework</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="8171241e-19" y="15">Test Framework</tspan>
         </text>
       </g>
       <g id="Line_44">
@@ -128,17 +109,17 @@
       </g>
       <g id="Graphic_57">
         <text transform="translate(804.498 275.948)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="6252776e-19" y="15">UVM Top-level Testbench</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="6252776e-19" y="15">UVM Top-level Testbench</tspan>
         </text>
       </g>
       <g id="Graphic_58">
         <text transform="translate(793.098 425.948)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="2557954e-19" y="15">Verilator Top-level Testbench</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="2557954e-19" y="15">Verilator Top-level Testbench</tspan>
         </text>
       </g>
       <g id="Graphic_64">
         <text transform="translate(856.102 209)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="20" font-weight="400" fill="black" x="7958079e-19" y="19">Device</tspan>
+          <tspan font-family="Helvetica Neue" font-size="20" fill="black" x="7958079e-19" y="19">Device</tspan>
         </text>
       </g>
       <g id="Line_68">
@@ -154,12 +135,12 @@
         <rect x="1079.059" y="453.8591" width="115.941" height="36.672678" fill="white"/>
         <rect x="1079.059" y="453.8591" width="115.941" height="36.672678" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
         <text transform="translate(1084.059 462.97146)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x=".22650095" y="15">Chip-level Test</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x=".22650095" y="15">Chip-level Test</tspan>
         </text>
       </g>
       <g id="Graphic_66">
         <text transform="translate(572.0325 209)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="20" font-weight="400" fill="black" x="58264504e-20" y="19">Host</tspan>
+          <tspan font-family="Helvetica Neue" font-size="20" fill="black" x="58264504e-20" y="19">Host</tspan>
         </text>
       </g>
       <g id="Graphic_111">
@@ -168,7 +149,7 @@
       </g>
       <g id="Graphic_110">
         <text transform="translate(811.279 651.336)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="14" font-weight="400" fill="black" x="9947598e-20" y="13">= On-Device Test Framework</tspan>
+          <tspan font-family="Helvetica Neue" font-size="14" fill="black" x="9947598e-20" y="13">= On-Device Test Framework</tspan>
         </text>
       </g>
     </g>

@@ -230,7 +230,7 @@ jobs:
 # TODO: This is a rather ugly hack, which will go away once we properly support
 # building more than one top-level design with different parametrizations.
 # Work towards this goal is tracked in issue #4669.
-- job: bazel_build_and_execute_verilated_tests_englishbreakfast
+- job: build_and_execute_verilated_tests_englishbreakfast
   displayName: Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
   pool:
     vmImage: ubuntu-18.04
@@ -367,10 +367,9 @@ jobs:
     displayName: Upload all Vivado artifacts for CW310
     condition: failed()
 
-# TODO: change all instances of bazel_build_and_execute_verilated_tests_englishbreakfast to the new EB software build job after meson is removed.
 - job: chip_englishbreakfast_cw305
   displayName: Build CW305 variant of the English Breakfast toplevel design using Vivado
-  dependsOn: bazel_build_and_execute_verilated_tests_englishbreakfast
+  dependsOn: build_and_execute_verilated_tests_englishbreakfast
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
@@ -379,7 +378,7 @@ jobs:
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - bazel_build_and_execute_verilated_tests_englishbreakfast
+        - build_and_execute_verilated_tests_englishbreakfast
   - bash: |
       set -e
       module load "xilinx/vivado/$(VIVADO_VERSION)"
