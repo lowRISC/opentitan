@@ -68,3 +68,10 @@ set_rule_status -rule {W_MASYNC} -status {Waived}        \
 set_rule_status -rule {W_ASYNC_RST_FLOPS} -status {Waived} \
   -expression {(DrivingSignal=~"*.u_pinmux_strap_sampling.tap_strap_q*")} \
   -comment {Tester should ensure no jtag transactions when tap_strap is sampled}
+
+set_rule_status -rule {W_CNTL} -status {Waived} \
+  -expression {(Signal=~"*u_pinmux_aon.dio_pad_attr_*")} \
+  -comment {PAD Attributes are static signals.}
+set_rule_status -rule {W_DATA} -status {Waived} \
+  -expression {(Signal=~"*u_pinmux_aon.dio_pad_attr_*")} \
+  -comment {PAD Attributes are static signals.}
