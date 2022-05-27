@@ -55,6 +55,7 @@ module otbn_instruction_fetch
   input logic [31:0]              prefetch_loop_iterations_i,
   input logic [ImemAddrWidth:0]   prefetch_loop_end_addr_i,
   input logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_i,
+  input logic                     prefetch_ignore_errs_i,
 
   input logic                     sec_wipe_wdr_en_i,
   input logic [4:0]               sec_wipe_wdr_addr_i
@@ -255,8 +256,8 @@ module otbn_instruction_fetch
   // here indicates a fault.  `insn_fetch_req_valid_raw_i` is used as it doesn't factor in errors,
   // which is required here otherwise we get a combinational loop.
   assign insn_addr_err_unbuf =
-    imem_rvalid_i && insn_fetch_req_valid_raw_i ? insn_fetch_req_addr_i != insn_prefetch_addr :
-                                                  1'b0;
+    imem_rvalid_i & insn_fetch_req_valid_raw_i & ~prefetch_ignore_errs_i &
+    (insn_fetch_req_addr_i != insn_prefetch_addr);
 
   prim_buf #(.Width(1)) u_insn_addr_buf (
     .in_i(insn_addr_err_unbuf),
