@@ -23,7 +23,7 @@ set_rule_status -rule {W_MASYNC} -status {Waived} -expression \
 set_rule_status -rule {W_CNTL} -status {Waived} -expression \
     {(MultiClockDomains == "SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK::SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK")} \
     -comment {Irrelevant clock relationship. Exclusive}
-set_rule_status -rule {W_DATAW_MASYNC} -status {Waived} -expression \
+set_rule_status -rule {W_DATA} -status {Waived} -expression \
     {(MultiClockDomains == "SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK::SPI_DEV_OUT_CLK,SPI_DEV_PASSTHRU_OUT_CLK")} \
     -comment {Irrelevant clock relationship. Exclusive}
 set_rule_status -rule {W_MASYNC} -status {Waived} -expression \
@@ -178,3 +178,12 @@ set_rule_status -rule {W_DATA} -status {Waived} \
   -expression {(Signal =~ "SPI_DEV_D*") && \
    (ReceivingFlop =~ "*u_spi_device.u_memory_2p*b_rdata*")} \
   -comment {SPI line cannot have CDC}
+
+# Waive FwMode IO_DIV4 domain
+set_rule_status -rule {W_DATA} -status {Waived} \
+  -expression {( \
+      (ReceivingFlop=~"*u_spi_device.u_fwmode.u_*xf_ctrl.*") || \
+      (ReceivingFlop=~"*u_spi_device.u_fwmode.u_tx_fifo.fifo_wptr*") ||   \
+      (ReceivingFlop=~"*u_spi_device.u_fwmode.u_rx_fifo.fifo_rptr*") ) && \
+    (MultiClockDomains=~"IO_DIV4_CLK::*SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK")} \
+  -comment {?xf_ctrl sits in DIV4, due to clock mux while Generic is not active, tool confused}
