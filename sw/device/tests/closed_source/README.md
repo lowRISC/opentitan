@@ -28,7 +28,7 @@ replace the defaults) you may do so by:
 
 1. copying the `sw/device/tests/closed_source/` directory to another location on your system,
 1. changing the implementation of the test hooks functions in `test_hooks.c`, and
-
-1. invoking bazel with the `MANUFACTURER_HOOKS_DIR` environment variable set, e.g., `MANUFACTURER_HOOKS_DIR=</path/to/test_hooks/> bazel test //sw/device/tests:<target>`
+1. invoking bazel with the `MANUFACTURER_HOOKS_DIR` environment variable set, e.g.,
+   `MANUFACTURER_HOOKS_DIR=</path/to/test_hooks/> bazel test //sw/device/tests:<target>`
 
 Note, you may do the above for multiple sets of test hooks if you so desire.
