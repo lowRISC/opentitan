@@ -88,6 +88,12 @@ package otbn_env_pkg;
 
   } otbn_loaded_word;
 
+  // The mapping from EDN agent indices to RND / URND connections
+  typedef enum {
+    RndEdnIdx,
+    UrndEdnIdx
+  } edn_idx_e;
+
   typedef enum {
     StackEmpty,
     StackPartial,
