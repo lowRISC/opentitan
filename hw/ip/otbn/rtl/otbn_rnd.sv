@@ -71,7 +71,6 @@ module otbn_rnd import otbn_pkg::*;
 
   logic edn_rnd_req_q, edn_rnd_req_d;
 
-  logic rnd_prefetch_pending_d, rnd_prefetch_pending_q;
   logic rnd_req_queued_d, rnd_req_queued_q;
   logic edn_rnd_data_ignore_d, edn_rnd_data_ignore_q;
 
@@ -102,15 +101,12 @@ module otbn_rnd import otbn_pkg::*;
   // to keep requesting RND data from EDN if another request got queued in the meantime.
   assign edn_rnd_req_start = (rnd_prefetch_req_i | rnd_req_i | rnd_req_queued_q) & ~rnd_valid_q;
 
-  // Is there a prefetch pending?
-  assign rnd_prefetch_pending_d = rnd_prefetch_req_i       ? 1'b1 :
-                                  rnd_req_i || rnd_valid_q ? 1'b0 : rnd_prefetch_pending_q;
-
-  // When seeing a wipe with an outstanding prefetch, we are going to ignore the RND data obtained
-  // for the first prefetch. Any RND data returned clears the ignore status.
+  // When seeing a wipe with an outstanding request (which must have been a prefetch), we are going
+  // to ignore the RND data that comes back from that request. Any RND data returned clears the
+  // ignore status.
   assign edn_rnd_data_ignore_d =
-      rnd_wipe_i && rnd_prefetch_pending_q ? 1'b1 :
-      edn_rnd_req_complete                 ? 1'b0 : edn_rnd_data_ignore_q;
+      rnd_wipe_i && edn_rnd_req_q ? 1'b1 :
+      edn_rnd_req_complete        ? 1'b0 : edn_rnd_data_ignore_q;
 
   // Don't combine new RND requests with outstanding prefetches for which we are going to ingore
   // the returned data. Cleared upon starting the request without having the ignore bit set.
@@ -135,13 +131,11 @@ module otbn_rnd import otbn_pkg::*;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rnd_valid_q            <= 1'b0;
-      rnd_prefetch_pending_q <= 1'b0;
       rnd_req_queued_q       <= 1'b0;
       edn_rnd_req_q          <= 1'b0;
       edn_rnd_data_ignore_q  <= 1'b0;
     end else begin
       rnd_valid_q            <= rnd_valid_d;
-      rnd_prefetch_pending_q <= rnd_prefetch_pending_d;
       rnd_req_queued_q       <= rnd_req_queued_d;
       edn_rnd_req_q          <= edn_rnd_req_d;
       edn_rnd_data_ignore_q  <= edn_rnd_data_ignore_d;
