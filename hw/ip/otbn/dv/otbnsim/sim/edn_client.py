@@ -48,6 +48,19 @@ class EdnClient:
             self._poisoned = True
             self._retry = False
 
+    def forget(self) -> None:
+        '''Clear the retry flag, if set.
+
+        This is used at the end of an operation to model the situation where a
+        previous run had started a prefetch that we're still waiting for. In
+        the meantime, we started an operation that also requested a prefetch.
+        Normally, we'd want to make sure to send out *that* request as soon as
+        the first (ignored) result came in. But maybe we've actually finished
+        this run as well! In that case, we don't care about the prefetch that
+        was pending and should just discard it.
+        '''
+        self._retry = False
+
     def take_word(self, word: int) -> None:
         '''Take a 32-bit data word that we've been waiting for'''
         assert 0 <= word < (1 << 32)

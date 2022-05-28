@@ -362,6 +362,9 @@ class OTBNState:
             next_status = Status.LOCKED
             self.ext_regs.write('STATUS', next_status, True)
 
+        # Clear any pending request in the RND EDN client
+        self.ext_regs.rnd_forget()
+
         # Clear the "we should stop soon" flag
         self.pending_halt = False
 
