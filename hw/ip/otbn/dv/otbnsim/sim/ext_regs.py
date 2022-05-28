@@ -207,6 +207,9 @@ class RndReq(RGReg):
     def poison(self) -> None:
         self._client.poison()
 
+    def forget(self) -> None:
+        self._client.forget()
+
     def take_word(self, word: int) -> None:
         self._client.take_word(word)
 
@@ -353,3 +356,6 @@ class OTBNExtRegs:
 
     def rnd_poison(self) -> None:
         self._rnd_req.poison()
+
+    def rnd_forget(self) -> None:
+        self._rnd_req.forget()
