@@ -299,11 +299,16 @@ class OTBNSim:
 
     def on_otp_cdc_done(self) -> None:
         '''Signifies when the scrambling key request gets processed'''
-        # This is only supposed to happen when we were doing a memory secure
-        # wipe
-        assert self.state.get_fsm_state() == FsmState.MEM_SEC_WIPE
-        self.state.ext_regs.write('STATUS', Status.IDLE, True)
-        self.state.set_fsm_state(FsmState.IDLE)
+        # This happens when we're doing a memory secure wipe, in which case we
+        # want to switch to IDLE. However, it also happens if we're at the end
+        # of a run that either will lock or already has done. In that case, we
+        # don't want to do an FSM state change.
+        cur_state = self.state.get_fsm_state()
+        assert cur_state in [FsmState.MEM_SEC_WIPE,
+                             FsmState.WIPING_BAD, FsmState.LOCKED]
+        if cur_state == FsmState.MEM_SEC_WIPE:
+            self.state.ext_regs.write('STATUS', Status.IDLE, True)
+            self.state.set_fsm_state(FsmState.IDLE)
 
     def send_err_escalation(self, err_val: int) -> None:
         '''React to an error escalation'''
