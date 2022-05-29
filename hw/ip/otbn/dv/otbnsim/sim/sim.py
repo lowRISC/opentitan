@@ -98,11 +98,7 @@ class OTBNSim:
                   verbose: bool,
                   fetch_next: bool) -> List[Trace]:
         '''This is run on a stall cycle'''
-        if self.state.pending_halt:
-            # We've reached the end of the run because of some error. Register
-            # it on the next cycle.
-            self.state.stop()
-
+        self.state.stop_if_pending_halt()
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
         if fetch_next:
@@ -124,13 +120,7 @@ class OTBNSim:
         if self.stats is not None:
             self.stats.record_insn(insn, self.state)
 
-        halting = self.state.pending_halt
-
-        if halting:
-            # We've reached the end of the run (either because of an ECALL
-            # instruction or an error).
-            self.state.stop()
-
+        halting = self.state.stop_if_pending_halt()
         changes = self.state.changes()
 
         # Program counter before commit
@@ -178,10 +168,7 @@ class OTBNSim:
 
     def _step_idle(self, verbose: bool) -> StepRes:
         '''Step the simulation when OTBN is IDLE or LOCKED'''
-        if self.state.pending_halt:
-            # We've reached the end of the run because of some error. Register
-            # it on the next cycle.
-            self.state.stop()
+        self.state.stop_if_pending_halt()
         if ((self.state._fsm_state == FsmState.LOCKED and
              self.state.cycles_in_this_state == 0)):
             self.state.ext_regs.write('INSN_CNT', 0, True)
@@ -192,6 +179,7 @@ class OTBNSim:
 
     def _step_ext_wipe(self, verbose: bool) -> StepRes:
         '''Step the simulation DMEM/IMEM wipe operation'''
+        self.state.stop_if_pending_halt()
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
         return (None, changes)
