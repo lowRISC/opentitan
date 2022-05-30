@@ -25,14 +25,13 @@ generator to check the integrity of an incoming message and a signature signed
 with the same secret key. It generates a different authentication code with the
 same message if the secret key is different.
 
-This HMAC module is not a side channel or fault injection resistant implementation.
-This module is meant purely for hashing acceleration.
-If hardened MAC operations are required, users should either employ [KMAC]({{< relref "hw/ip/kmac/doc" >}}) or a software implementation.
+This HMAC implementation is not hardened against side channel or fault injection attacks.
+It is meant purely for hashing acceleration.
+If hardened MAC operations are required, users should use either [KMAC]({{< relref "hw/ip/kmac/doc" >}}) or a software implementation.
 
-The 256-bit secret key written in {{< regref "KEY_0" >}} to {{< regref "KEY_7" >}}. The message to authenticate
-is written to {{< regref "MSG_FIFO" >}} and the HMAC generates a 256-bit digest value which can
-be read from {{< regref "DIGEST_0" >}} to {{< regref "DIGEST_7" >}}. The `hash_done` interrupt is raised to
-report to software that the final digest is available.
+The 256-bit secret key is written in {{< regref "KEY_0" >}} to {{< regref "KEY_7" >}}.
+The message to authenticate is written to {{< regref "MSG_FIFO" >}} and the HMAC generates a 256-bit digest value which can be read from {{< regref "DIGEST_0" >}} to {{< regref "DIGEST_7" >}}.
+The `hash_done` interrupt is raised to report to software that the final digest is available.
 
 The HMAC IP can run in SHA-256-only mode, whose purpose is to check the
 correctness of the received message. The same digest registers above are used to
@@ -67,8 +66,8 @@ hash engine when appropriate. The module also feeds the result of the first
 round message (which uses the inner padded key) from the SHA-256 hash engine
 into the 16x32b FIFO for the second round (which uses the outer padded key).
 The message length is automatically updated to reflect the size of the outer
-padded key and first round digest result for the second round.  See the details
-at [Design Details](#design-details).
+padded key and first round digest result for the second round. See [Design
+Details](#design-details) for more information.
 
 ![SHA-256 Block Diagram](sha2_block_diagram.svg)
 
@@ -98,17 +97,19 @@ memory-mapped window {{< regref "MSG_FIFO" >}} updates the message FIFO. If the 
 the HMAC block will block any writes leading to back-pressure on the
 interconnect (as opposed to dropping those writes or overwriting existing FIFO
 contents). It is recommended this back-pressure is avoided by not writing to the
-memory-mapped message FIFO when it is full (As indicated by {{< regref "STATUS.fifo_full" >}}).
+memory-mapped message FIFO when it is full. To avoid doing so, software can
+read the {{< regref "STATUS.fifo_full" >}} register.
+
 The logic assumes the received message is big-endian. If it is little-endian,
 the software must set {{< regref "CFG.endian_swap" >}} to **1**.  The byte order of the digest
 registers, from {{< regref "DIGEST_0" >}} to {{< regref "DIGEST_7" >}} can be configured with {{< regref "CFG.digest_swap" >}}.
 
-The message length is calculated by the [packer logic]({{< relref "hw/ip/prim/doc/prim_packer" >}}).
-The packer converts non-word writes into full word writes and feeds into the message FIFO.
-While packing the writes, it adds up the recevied message size and calculates the message length.
-The message length value is used in HMAC and SHA-256 to complete the hash computation.
+Small writes to {{< regref "MSG_FIFO" >}} are coalesced with into 32-bit words by the [packer logic]({{< relref "hw/ip/prim/doc/prim_packer" >}}).
+These words are fed into the internal message FIFO.
+While passing writes to the packer logic, the block also counts the number of bytes that are being passed.
+This gives the received message length, which is used in HMAC and SHA-256 as part of the hash computation.
 
-The SHA-256 module computes intermediate hashes in every 512-bit block size.
+The SHA-256 module computes an intermediate hash for every 512-bit block.
 The message must be padded to fill 512-bit blocks. This is done with an initial
 **1** bit after the message bits with a 64-bit message length at the end and
 enough **0** bits in the middle to result in a full block.The [SHA-256
@@ -127,94 +128,97 @@ location.  Such as `0xXX800000` for the message length % 4B == 1 case.
 
 ### SHA-256 computation
 
-SHA-256 engine receives 16 X 32 bits of message from the message FIFO or the
-HMAC core then begins 64 rounds of the hash computation which is also called
-*compression*. In each round, the compression function fetches 4 byte from the
-buffer and computes the internal variables. As the module fetches 16 X 4 byte
-message only, other 48 X 4 byte data comes from the shuffling result of the
-given 512-bit block. Details are well described in [Wikipedia][sha2-wikipedia]
-and the [SHA-256 specification][sha256-spec].
+The SHA-256 engine receives 16 32-bit words from the message FIFO or the HMAC
+core then begins 64 rounds of the hash computation which is also called
+*compression*. In each round, the compression function fetches 32 bits from the
+buffer and computes the internal variables. The first 16 rounds are fed by the
+words from the message FIFO or the HMAC core. Input for later rounds comes from
+shuffling the given 512-bit block. Details are well described in
+[Wikipedia][sha2-wikipedia] and the [SHA-256 specification][sha256-spec].
 
 [sha2-wikipedia]: https://en.wikipedia.org/wiki/SHA-2
 
 With the given hash values, 4 byte message, and round constants, the compression
-function computes the next round hash values. The 64 X 32-bit round constants
+function computes the next round hash values. The 64 32-bit round constants
 are hard-wired in the design. After the compression at the last round is
-finished, the result hash values are added into the digest. The digest, again,
+finished, the resulting hash values are added into the digest. The digest, again,
 is used as initial hash values for the next 512-bit block compression. During
-the compression rounds, it doesn't fetch data from the message FIFO . The
+the compression rounds, it doesn't fetch data from the message FIFO. The
 software can push up to 16 entries to the FIFO for the next hash computation.
+
+### HMAC computation
 
 ![Two steps of HMAC](hmac_dataflow.svg)
 
-HMAC can be used with any hash algorithms but this version of HMAC IP only uses
-SHA-256 as the hash algorithm. The first phase of HMAC calculates the SHA-256
-hash of the inner secret key and the actual message to be authenticated.
-The inner secret key is created with 256-bit (hashed) secret key and `0x36` pad.
+HMAC can be used with any hash algorithm but this version of HMAC IP only uses
+SHA-256. The first phase of HMAC calculates the SHA-256 hash of the inner
+secret key concatenated with the actual message to be authenticated. This inner
+secret key is created with a 256-bit (hashed) secret key and `0x36` pad.
 
 ```verilog
     inner_pad_key = {key[255:0], 256'h0} ^ {64{8'h36}} // big-endian
 ```
 
 The message length used in the SHA-256 module is calculated by the HMAC core by
-adding 512 to the original message length (to account for the length of the
-inner_pad_key which is concatenated to the front of the message).
+adding 512 to the original message length (to account for the length of
+`inner_pad_key`, which has been prepended to the message).
 
-The first round digest is fed into the second round in HMAC.
-The second round computes the hash of the outer secret key and the first round digest.
-As the result of SHA-256 is 256-bits, it must be padded to fit into 512-bit block size.
+The first round digest is fed into the second round in HMAC. The second round
+computes the hash of the outer secret key concatenated with the first round
+digest. As the result of SHA-256 is 256-bits, it must be padded to fit into
+512-bit block size.
 
 ```verilog
     outer_pad_key = {key[255:0], 256'h0} ^ {64{8'h5c}} // big-endian
 ```
 
-In the second round, the message length is fixed to 768.
+In the second round, the message length is a fixed 768 bits.
 
 HMAC assumes the secret key is 256-bit. The onus is on software to shrink the
-key to 256-bit using a hash function when setting up the HMAC (e.g. common key
-sizes may be 2048-bit or 4096-bit, software will hash these and write the hashed
-results to the HMAC).
+key to 256-bit using a hash function when setting up the HMAC. For example,
+common key sizes may be 2048-bit or 4096-bit. Software must hash these and
+write the hashed results to the HMAC.
 
 ### Performance in SHA-256 mode and HMAC mode
 
-The SHA-256 hash algorithm computes 512-bit data at a time. The first 16 rounds
-needs the actual 16 x 32-bit message and the following 48 rounds need the
-computational result of the message.
+The SHA-256 hash algorithm computes 512 bits of data at a time. The first 16
+rounds need the actual 16 x 32-bit message and the following 48 rounds need
+some value derived from the message.
 
-In these 48 round, the software can feed next 16 x 32-bit message block. But
-after the FIFO is full, the software cannot push more data until the current
-block is processed. In this version of IP, it fetches next 16 x 32-bit message
-after completing the current block. It means it takes 80 cycles to complete a
-block. The effective throughput considering this is `64 byte / 80 clk` or `16
-clk / 80 clk`, 20% of the maximum throughput. For instance, if the clock
-frequency is 100MHz, the SHA-256 can hash out 80MB/s at most.
+In these 48 rounds, the software can feed the next 16 x 32-bit message block.
+But, once the FIFO is full, the software cannot push more data until the
+current block is processed. This version of the IP fetches the next 16 x 32-bit
+message after completing the current block. As such, it takes 80 cycles to
+complete a block. The effective throughput considering this is `64 byte / 80
+clk` or `16 clk / 80 clk`, 20% of the maximum throughput. For instance, if the
+clock frequency is 100MHz, the SHA-256 can hash out 80MB/s at most.
 
-It can be enhanced if the message is fed into the internal buffer when the round
-hits 48, which eliminates extra 16 cycles to feed the message after completing a
-block. This version doesn't have the feature.
+This throughput could be enhanced in a future version by feeding the message
+into the internal buffer when the round hits 48, eliminating the extra 16
+cycles to feed the message after completing a block.
 
 If HMAC mode is turned on, it introduces extra latency due to the second round
 of computing the final hash of the outer key and the result of the first round
-using the inner key.  This gives an extra 240 cycles(80 for the inner key, 80
+using the inner key. This adds an extra 240 cycles (80 for the inner key, 80
 for the outer key, and 80 for the result of the first round) to complete a
-message. For instance, if an empty message is given, it takes 360 cycles(80 for
-msg itself and 240 for the extra) to get the HMAC authentication token.
+message. For instance, if an empty message is given then it takes 360 cycles
+(80 for msg itself and 240 for the extra) to get the HMAC authentication token.
 
 ### MSG_FIFO
 
 The MSG_FIFO in the HMAC IP has a wide address range not just one 4 byte address.
 Any writes to the address range go into the single entry point of the `prim_packer`.
 Then `prim_packer` compacts the data into the word-size if not a word-write then writes to the MSG_FIFO.
-This is different from the conventional memory-mapped FIFO.
+This is different from a conventional memory-mapped FIFO.
 
-By having wide address range pointing to a single entry point, the FIFO can free from the fixed address restriction.
+By having wide address range pointing to a single entry point, the FIFO can free software from the fixed address restriction.
 For instance, the core can use "store multiple" commands to feed the message fifo efficiently.
-If the FIFO has fixed word-size address, the core shall maintain the strict-order of the write sequence which may cause the stall of the pipeline in high pipelined processor.
-It affects the performance significantly.
+If the FIFO has fixed word-size address, the core must maintain the strict order of the write sequence which may cause a stall in the pipeline in high pipelined processor.
+This can affect the performance significantly.
 
-Also, the DMA engine which might not have the ability to be configured to the fixed write and incremental read may benefit from this behavior.
+Also, a DMA engine which might not have the ability to be configured to the fixed write and incremental read may benefit from this behavior.
 
-# Programmers Guide
+# Programmer's Guide
 
 This chapter shows how to use the HMAC-SHA256 IP by showing some snippets such
 as initialization, initiating SHA-256 or HMAC process and processing the
@@ -226,9 +230,8 @@ software under `sw/`.
 
 This section of the code describes initializing the HMAC-SHA256, setting up the
 interrupts, endianess, and HMAC, SHA-256 mode. {{< regref "CFG.endian_swap" >}} reverses
-byte-oder of input message when the software writes message into the FIFO.
-{{< regref "CFG.digest_swap" >}} is to reverse the result of the HMAC or SHA hash. It doesn't
-reverse the byte-order of the internal logic but to the registers only.
+the byte-order of input words when software writes into the message FIFO.
+{{< regref "CFG.digest_swap" >}} reverses the byte-order in the final HMAC or SHA hash.
 
 ```c
 void hmac_init(unsigned int endianess, unsigned int digest_endian) {
@@ -251,10 +254,10 @@ void hmac_init(unsigned int endianess, unsigned int digest_endian) {
 }
 ```
 
-## Trigger HMAC/SHA-256 engine
+## Triggering HMAC/SHA-256 engine
 
-The following code shows how to send a message to the HMAC, the proceedure is
-the same whether a full HMAC or SHA-256 calculation only is wanted (choose
+The following code shows how to send a message to the HMAC, the procedure is
+the same whether a full HMAC or just a SHA-256 calculation is required (choose
 between them using {{< regref "CFG.hmac_en" >}}). In both cases the SHA-256 engine must be
 enabled using {{< regref "CFG.sha_en" >}} (once all other configuration has been properly set).
 If the message is bigger than 512-bit, the software must wait until the FIFO
@@ -289,17 +292,17 @@ void run_hmac(uint32_t *msg, uint32_t msg_len, uint32_t *hash) {
 
 ## Updating the configurations
 
-The HMAC IP prevents {{< regref "CFG" >}} and {{< regref "KEY" >}} registers from updating during the engine is processing the messages.
-The attempts are discarded.
-The {{< regref "KEY" >}} discards the attempt of the secret key access in the middle of the process.
-In case of when the software tries to update the KEY, the IP reports an error through the Error FIFO. The error code is `SwUpdateSecretKeyInProcess`, `0x0003`.
+The HMAC IP prevents {{< regref "CFG" >}} and {{< regref "KEY" >}} registers from updating while the engine is processing messages.
+Such attempts are discarded.
+The {{< regref "KEY" >}} register ignores any attempt to access the secret key in the middle of the process.
+If the software tries to update the KEY, the IP reports an error through the Error FIFO. The error code is `SwUpdateSecretKeyInProcess`, `0x0003`.
 
 ## Interrupt Handling
 
-### FIFO_FULL
+### FIFO_EMPTY
 
 If the FIFO_FULL interrupt occurs, it is recommended the software does not write
-more data into {{< regref "MSG_FIFO" >}} untill the interrupt is cleared and the status
+more data into {{< regref "MSG_FIFO" >}} until the interrupt is cleared and the status
 {{< regref "STATUS.fifo_full" >}} is lowered. Whilst the FIFO is full the HMAC will block
 writes until the FIFO has space which will cause back-pressure on the
 interconnect.
