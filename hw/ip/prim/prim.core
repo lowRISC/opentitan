@@ -26,6 +26,7 @@ filesets:
       - lowrisc:prim:subreg
       - lowrisc:prim:cipher
       - lowrisc:prim:xor2
+      - lowrisc:prim:xnor2
       - lowrisc:prim:and2
       - lowrisc:prim:reg_we_check
     files:
