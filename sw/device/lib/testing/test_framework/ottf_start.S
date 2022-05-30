@@ -103,7 +103,7 @@ _ottf_interrupt_vector:
   .endr
 
   // On Ibex, interrupt ID 31 is for non-maskable interrupts
-  unimp
+  j handler_irq_internal
 
   // Set size so vector can be disassembled.
   .size _ottf_interrupt_vector, .-_ottf_interrupt_vector

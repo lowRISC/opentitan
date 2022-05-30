@@ -150,3 +150,31 @@ void ottf_external_isr(void) {
   generic_fault_print("External IRQ", ibex_mcause_read());
   abort();
 }
+
+static void generic_internal_irq_handler(void) {
+  generic_fault_print("Internal IRQ", ibex_mcause_read());
+  abort();
+}
+
+OT_WEAK
+OT_ALIAS("generic_internal_irq_handler")
+void ottf_external_nmi_handler(void);
+
+OT_WEAK
+OT_ALIAS("generic_internal_irq_handler")
+void ottf_load_integrity_error_handler(void);
+
+OT_WEAK
+void ottf_internal_isr(void) {
+  uint32_t mcause = ibex_mcause_read();
+  switch ((ottf_internal_irq_id_t)(mcause)) {
+    case kInternalIrqLoadInteg:
+      ottf_load_integrity_error_handler();
+      break;
+    case kInternalIrqNmi:
+      ottf_external_nmi_handler();
+      break;
+    default:
+      generic_internal_irq_handler();
+  }
+}
