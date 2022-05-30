@@ -116,6 +116,10 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
     uint16_t [3:0] get_duration;
     uvm_reg_data_t [3:0] get_action;
     bit[4:0] get_trigger_combo[4];
+    int past_cycles, cyc;
+    bit ec_rst_l_0, ec_rst_l_1, ec_rst_l_2, ec_rst_l_3, ec_rst;
+    int act_cycles, wait_cycles;
+    int aon_period_ns = cfg.clk_aon_rst_vif.clk_period_ps / 1000;
 
     `uvm_info(`gfn, "Starting the body from combo detect", UVM_LOW)
 
@@ -131,6 +135,8 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       bit bat_act_triggered, ec_act_triggered, rst_act_triggered;
       bit [3:0] intr_actions;
       int ec_act_occur_cyc = cycles;
+      int exit_cyc;
+
       repeat ($urandom_range(1, 2)) begin
         // Trigger the input pins
         cfg.clk_aon_rst_vif.wait_clks(1);
@@ -139,6 +145,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
       // Wait for debounce + detect timer
       cfg.clk_aon_rst_vif.wait_clks(cycles);
+      `uvm_info(`gfn, "cycles wait over", UVM_NONE)
 
       // Latch the trigger value before resetting the input pins
       foreach (triggered[i]) triggered[i] = get_combo_trigger(i);
@@ -173,6 +180,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
           intr_actions[i] = get_field_val(ral.com_out_ctl[i].interrupt, get_action[i]);
           bat_act_triggered |= get_field_val(ral.com_out_ctl[i].bat_disable, get_action[i]);
           ec_act_triggered |= get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i]);
+          `uvm_info(`gfn, $sformatf("ec_act_triggered:%0d, i:%0d", ec_act_triggered, i), UVM_NONE)
           rst_act_triggered |= get_field_val(ral.com_out_ctl[i].rst_req, get_action[i]);
 
           cov.combo_detect_action[i].sysrst_ctrl_combo_detect_action_cg.sample(bat_act_triggered,
@@ -184,24 +192,59 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
                           get_field_val(ral.com_sel_ctl[i].key2_in_sel, get_trigger_combo[i]),
                           get_field_val(ral.com_sel_ctl[i].pwrb_in_sel, get_trigger_combo[i]),
                           get_field_val(ral.com_sel_ctl[i].ac_present_sel, get_trigger_combo[i]));
-
-          if (get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i])) begin
-            ec_act_triggered = 1;
-            // record which cycle the ec_rst occurs
-            ec_act_occur_cyc = min2(ec_act_occur_cyc, get_duration[i] + set_key_timer);
-          end
         end
       end
-      if (ec_act_triggered) begin
-        // we don't check ec_rst_pulse right after it occurs. past_cycles indicates how many
-        // cycles the pulse has been active
-        // -2 is because cross clock domaim make take ~2 cycles
-        int past_cycles = cycles - ec_act_occur_cyc - 2;
-        monitor_ec_rst_low(set_pulse_width - past_cycles);
-      end else begin
-        check_ec_rst_inactive(set_pulse_width);
-        `DV_CHECK_EQ(cfg.vif.ec_rst_l_out, 1);
-      end
+       
+      fork
+        begin
+          if (get_field_val(ral.com_out_ctl[0].ec_rst, get_action[0])) begin
+           // we don't check ec_rst_pulse right after it occurs. past_cycles indicates how many
+           // cycles the pulse has been active
+           // -2 is because cross clock domaim make take ~2 cycles
+           int past_cycles = cycles - (get_duration[0] + set_key_timer);
+           `uvm_info(`gfn, $sformatf("Value of past_cycles:%0d, exp_cycles:%0d", past_cycles, set_pulse_width - past_cycles), UVM_NONE)
+           cfg.clk_aon_rst_vif.wait_clks(set_pulse_width - past_cycles);
+           ec_rst_l_0 = 1;
+          end
+        end
+        begin
+          if (get_field_val(ral.com_out_ctl[1].ec_rst, get_action[1])) begin
+           // we don't check ec_rst_pulse right after it occurs. past_cycles indicates how many
+           // cycles the pulse has been active
+           // -2 is because cross clock domaim make take ~2 cycles
+           int past_cycles = cycles - (get_duration[1] + set_key_timer);
+           `uvm_info(`gfn, $sformatf("Value of past_cycles:%0d, exp_cycles:%0d", past_cycles, set_pulse_width - past_cycles), UVM_NONE)
+           cfg.clk_aon_rst_vif.wait_clks(set_pulse_width - past_cycles);
+           ec_rst_l_1 = 1;
+          end
+        end
+        begin
+          if (get_field_val(ral.com_out_ctl[2].ec_rst, get_action[2])) begin
+           // we don't check ec_rst_pulse right after it occurs. past_cycles indicates how many
+           // cycles the pulse has been active
+           // -2 is because cross clock domaim make take ~2 cycles
+           int past_cycles = cycles - (get_duration[2] + set_key_timer);
+           `uvm_info(`gfn, $sformatf("Value of past_cycles:%0d, exp_cycles:%0d", past_cycles, set_pulse_width - past_cycles), UVM_NONE)
+           cfg.clk_aon_rst_vif.wait_clks(set_pulse_width - past_cycles);
+           ec_rst_l_2 = 1;
+          end
+        end
+        begin
+          if (get_field_val(ral.com_out_ctl[3].ec_rst, get_action[3])) begin
+           // we don't check ec_rst_pulse right after it occurs. past_cycles indicates how many
+           // cycles the pulse has been active
+           // -2 is because cross clock domaim make take ~2 cycles
+           int past_cycles = cycles - (get_duration[3] + set_key_timer);
+           `uvm_info(`gfn, $sformatf("Value of past_cycles:%0d, exp_cycles:%0d", past_cycles, set_pulse_width - past_cycles), UVM_NONE)
+           cfg.clk_aon_rst_vif.wait_clks(set_pulse_width - past_cycles);
+           ec_rst_l_3 = 1;
+          end
+        end
+      join
+      `DV_SPINWAIT(while (cfg.vif.ec_rst_l_out != 1) begin
+                   cfg.clk_aon_rst_vif.wait_clks(1);
+                   act_cycles++;
+                 end,"time out waiting for ec_rst == 1",aon_period_ns * (7))
 
       cfg.clk_aon_rst_vif.wait_clks(1);
       csr_rd(ral.combo_intr_status, rdata);
