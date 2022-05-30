@@ -27,6 +27,7 @@ mod spi;
 mod uart;
 
 use crate::transport::ti50emulator::emu::{EmulatorProcess, Ti50SubProcess};
+use crate::transport::ti50emulator::uart::Ti50Uart;
 
 pub struct Ti50Emulator {
     inner: Rc<RefCell<Inner>>,
@@ -137,9 +138,11 @@ impl Transport for Ti50Emulator {
     // Returns one of existing UART instance.
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         Ok(Rc::clone(
-            self.inner.borrow().uart_map.get(instance).ok_or_else(|| {
-                TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
-            })?,
+            self.inner
+                .borrow_mut()
+                .uart_map
+                .entry(instance.to_string())
+                .or_insert(Rc::new(Ti50Uart::open(self, instance)?)),
         ))
     }
 
