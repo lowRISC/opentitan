@@ -36,6 +36,8 @@
     <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.a_ready&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
     <rule ccType="inst" ccfFlagsMask="4205506-42" domain="icc" entityName="flash_ctrl/u_flash_ctrl_erase/1" entityType="top-expr" excTime="1653576309" file="1" im-checksum="95618010" line="42" name="exclude" reviewer="unknown" text="op_start_i &amp; op_addr_oob_i" ung="0" user="0" vscope="default"></rule>
     <rule ccType="inst" ccfFlagsMask="4205506-42" domain="icc" entityName="flash_ctrl/u_flash_ctrl_erase/7" entityType="top-expr" excTime="1653576316" file="1" im-checksum="95618010" line="56" name="exclude" reviewer="unknown" text="op_start_i &amp; (~ op_addr_oob_i)" ung="0" user="0" vscope="default"></rule>
+    <rule ccType="inst" ccfFlagsMask="4205506-42" domain="icc" entityName="flash_ctrl/u_flash_ctrl_erase/2" entityType="top-expr" excTime="1653908436" file="1" im-checksum="95618010" line="45" name="exclude" reviewer="unknown" text="flash_req_o &amp; (flash_done_i | oob_err)" ung="0" user="2" vscope="default"></rule>
+    <rule ccType="inst" ccfFlagsMask="4205506-42" domain="icc" entityName="flash_ctrl/u_flash_ctrl_erase/4" entityType="top-expr" excTime="1653908436" file="1" im-checksum="95618010" line="49" name="exclude" reviewer="unknown" text="op_done_o &amp; oob_err" ung="0" user="2" vscope="default"></rule>
   </rules>
   <cache-map>
     <cache-entry key="0" value="None"></cache-entry>
