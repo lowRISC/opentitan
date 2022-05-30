@@ -11,16 +11,18 @@
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-
+#include "sw/device/lib/usbdev.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "pwrmgr_regs.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 /*
-  PWRMGR DEEP SLEEP ALL WAKE UPS test
+  PWRMGR DEEP SLEEP ALL WAKE UPS TEST
 
   This test runs power manager wake up from deep sleep mode by
   wake up inputs.
@@ -33,21 +35,18 @@
   4: aon_timer
   5: sensor_ctrl
 
-  #3 and 4 are covered by separate test (see
-  https://github.com/lowRISC/opentitan/blob/master/
-  hw/top_earlgrey/data/chip_testplan.hjson)
-
-  #5 is excluded because sensor_ctrl is not in the aon domain
-
+  #5 is excluded because sensor_ctrl is not in the aon domain.
  */
 
-#define kPinmuxWkupDetector5 5
+#define PINMUX_WKUP_DETECTOR5 5
 
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_plic_t rv_plic;
 static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_adc_ctrl_t adc_ctrl;
 static dif_pinmux_t pinmux;
+static dif_usbdev_t usbdev;
+static dif_aon_timer_t aon_timer;
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &rv_plic,
                                   .hart_id = kTopEarlgreyPlicTargetIbex0};
 
@@ -67,7 +66,7 @@ typedef struct test_wakeup_sources {
    */
   void *dif_handle;
   /**
-   * Wakeup Sources
+   * Wakeup Sources.
    */
   dif_pwrmgr_request_sources_t wakeup_src;
   /**
@@ -77,21 +76,10 @@ typedef struct test_wakeup_sources {
   void (*config)(void *dif);
 } test_wakeup_sources_t;
 
-enum {
-  // test wake up input 0 : sysrst_ctrl
-  kTestSysrstCtrlWakeupSource = 0,
-
-  // test wake up input 1 : adc_ctrl
-  kTestAdcCtrlWakeupSource = 1,
-
-  // test wake up input 2 : pinmux wakeup detector
-  kTestPinmuxWakeupSource = 2,
-};
-
 /**
- * sysrst_ctrl config for test #1
- * . set sysrst_ctrl.KEY_INTR_CTL.pwrb_in_H2L to 1
- * . use IOR13 as pwrb_in
+ * Program sysrst_ctrl config for test #1.
+ * . Set sysrst_ctrl.KEY_INTR_CTL.pwrb_in_H2L to 1.
+ * . Use IOR13 as pwrb_in.
  */
 static void prgm_sysrst_ctrl_wakeup(void *dif) {
   dif_sysrst_ctrl_input_change_config_t config = {
@@ -105,8 +93,8 @@ static void prgm_sysrst_ctrl_wakeup(void *dif) {
 }
 
 /**
- * adc_ctrl config for test #2
- * . enable filter 5 and set voltage range (0,200)
+ * Program adc_ctrl config for test #2.
+ * . Enable filter 5 and set voltage range between (0,200).
  */
 static void prgm_adc_ctrl_wakeup(void *dif) {
   dif_adc_ctrl_config_t cfg = {
@@ -137,9 +125,9 @@ static void prgm_adc_ctrl_wakeup(void *dif) {
 }
 
 /**
- * pinmux config for test #3
- * . use IOB7 as an input
- * . set posedge detection
+ * Program pinmux config for test #3.
+ * . Use IOB7 as an input.
+ * . Set posedge detection.
  */
 static void prgm_pinmux_wakeup(void *dif) {
   dif_pinmux_wakeup_config_t detector_cfg = {
@@ -149,8 +137,32 @@ static void prgm_pinmux_wakeup(void *dif) {
       .mode = kDifPinmuxWakeupModePositiveEdge,
       .counter_threshold = 0 /* Don't need for posedge detection */,
   };
-  CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(dif, kPinmuxWkupDetector5,
+  CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(dif, PINMUX_WKUP_DETECTOR5,
                                                  detector_cfg));
+}
+
+/**
+ * Program usb config for test #4.
+ * . Fake low power entry through usb.
+ * . Force usb to output suspend indication.
+ *   (*dif) handle is not used but leave as is
+ *   to be called from execute_test.
+ */
+static void prgm_usb_wakeup(void *dif) {
+  usbdev_set_wake_module_active(true);
+  usbdev_force_dx_pullup(kDpSel, true);
+  usbdev_force_dx_pullup(kDnSel, false);
+
+  // Give the hardware a chance to recognize the wakeup values are the same.
+  busy_spin_micros(20);
+}
+
+/**
+ * Program aon timer config for test #5.
+ * . Set wakeup signal in 50us.
+ */
+static void prgm_aontimer_wakeup(void *dif) {
+  aon_timer_testutils_wakeup_config(dif, 10);
 }
 
 static const test_wakeup_sources_t kTestWakeupSources[] = {
@@ -172,6 +184,18 @@ static const test_wakeup_sources_t kTestWakeupSources[] = {
         .wakeup_src = kDifPwrmgrWakeupRequestSourceThree,
         .config = prgm_pinmux_wakeup,
     },
+    {
+        .name = "USB",
+        .dif_handle = &usbdev,
+        .wakeup_src = kDifPwrmgrWakeupRequestSourceFour,
+        .config = prgm_usb_wakeup,
+    },
+    {
+        .name = "AONTIMER",
+        .dif_handle = &aon_timer,
+        .wakeup_src = kDifPwrmgrWakeupRequestSourceFive,
+        .config = prgm_aontimer_wakeup,
+    },
 };
 
 /**
@@ -183,17 +207,17 @@ void ottf_external_isr(void) {
 
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
 
-  // Check that both the peripheral and the irq id is correct
+  // Check that both the peripheral and the irq id is correct.
   CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
         "IRQ peripheral: %d is incorrect", peripheral);
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
 }
 
 static void execute_test(int wakeup_source) {
-  // configure wakeup device
+  // Configure wakeup device per wakeup source.
   kTestWakeupSources[wakeup_source].config(
       kTestWakeupSources[wakeup_source].dif_handle);
-  // Deep sleep
+  // Issuing deep sleep.
   pwrmgr_testutils_enable_low_power(
       &pwrmgr, kTestWakeupSources[wakeup_source].wakeup_src, 0);
   LOG_INFO("Issue WFI to enter sleep %d", wakeup_source);
@@ -201,7 +225,7 @@ static void execute_test(int wakeup_source) {
 }
 
 /**
- * Clean up pwrmgr wakeup reason register for the next round
+ * Clean up pwrmgr wakeup reason register for the next round.
  */
 static void delay_n_clear(uint32_t delay_in_us) {
   busy_spin_micros(delay_in_us);
@@ -213,7 +237,7 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  // device init
+  // Device init.
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rv_plic_init(
@@ -225,39 +249,65 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_usbdev_init(
+      mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
+  CHECK_DIF_OK(dif_aon_timer_init(
+      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
                                      kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
                                      kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
 
-  // Enable pwrmgr interrupt
+  // Enable pwrmgr interrupt.
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
     LOG_INFO("POR reset");
-    execute_test(kTestSysrstCtrlWakeupSource);
+    execute_test(PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX);
   } else if (pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr,
-                 kTestWakeupSources[kTestSysrstCtrlWakeupSource].wakeup_src)) {
-    LOG_INFO("Wake from sleep %d", kTestSysrstCtrlWakeupSource);
+                 kTestWakeupSources[PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX]
+                     .wakeup_src)) {
+    LOG_INFO("Woke up by source %d", PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX);
     CHECK_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_clear_status(
-        kTestWakeupSources[kTestSysrstCtrlWakeupSource].dif_handle));
+        kTestWakeupSources[PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX]
+            .dif_handle));
     delay_n_clear(30);
-    execute_test(kTestAdcCtrlWakeupSource);
+    execute_test(PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX);
   } else if (pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr,
-                 kTestWakeupSources[kTestAdcCtrlWakeupSource].wakeup_src)) {
-    LOG_INFO("Wake from sleep %d", kTestAdcCtrlWakeupSource);
+                 kTestWakeupSources[PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX]
+                     .wakeup_src)) {
+    LOG_INFO("Woke up by source %d", PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX);
     CHECK_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
-        kTestWakeupSources[kTestAdcCtrlWakeupSource].dif_handle,
+        kTestWakeupSources[PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX].dif_handle,
         kDifAdcCtrlFilter5, kDifToggleDisabled));
     delay_n_clear(100);
-    execute_test(kTestPinmuxWakeupSource);
+    execute_test(PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX);
   } else if (pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr,
-                 kTestWakeupSources[kTestPinmuxWakeupSource].wakeup_src)) {
-    LOG_INFO("Wake from sleep %d", kTestPinmuxWakeupSource);
+                 kTestWakeupSources[PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX]
+                     .wakeup_src)) {
+    LOG_INFO("Woke up by source %d", PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX);
+    CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
+    delay_n_clear(30);
+    execute_test(PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX);
+  } else if (pwrmgr_testutils_is_wakeup_reason(
+                 &pwrmgr,
+                 kTestWakeupSources[PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX]
+                     .wakeup_src)) {
+    LOG_INFO("Woke up by source %d", PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX);
+    usbdev_set_wake_module_active(false);
+    CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
+    delay_n_clear(30);
+    execute_test(PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX);
+  } else if (pwrmgr_testutils_is_wakeup_reason(
+                 &pwrmgr,
+                 kTestWakeupSources[PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX]
+                     .wakeup_src)) {
+    LOG_INFO("Woke up by source %d", PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX);
+
     return true;
   } else {
     dif_pwrmgr_wakeup_reason_t wakeup_reason;

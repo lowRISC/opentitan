@@ -19,15 +19,15 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
     // Loop with sformatf %d doesn't work
       wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 0");
       wakeup_action(0);
-      wait(cfg.sw_logger_vif.printed_log == "Wake from sleep 0");
+      wait(cfg.sw_logger_vif.printed_log == "Woke up by source 0");
       release_action(0);
       wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 1");
       wakeup_action(1);
-      wait(cfg.sw_logger_vif.printed_log == "Wake from sleep 1");
+      wait(cfg.sw_logger_vif.printed_log == "Woke up by source 1");
       release_action(1);
       wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 2");
       wakeup_action(2);
-      wait(cfg.sw_logger_vif.printed_log == "Wake from sleep 2");
+      wait(cfg.sw_logger_vif.printed_log == "Woke up by source 2");
       release_action(2);
   endtask // body
 

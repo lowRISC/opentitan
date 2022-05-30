@@ -874,7 +874,7 @@
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
     }
     {
-      name: chip_sw_pwrmgr_sleep_all_wake_ups
+      name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
       desc: '''Verify that the chip can go into normal sleep state and be woken up by ALL wake up
             sources.
 
@@ -911,9 +911,7 @@
             chip_pwrmgr_sleep_all_wake_ups, except `control.main_pd_n` is set to 0.
             '''
       milestone: V2
-      tests: ["chip_sw_pwrmgr_smoketest",
-              "chip_sw_pwrmgr_deep_sleep_all_wake_ups",
-              "chip_sw_pwrmgr_usbdev_wakeup"]
+      tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
