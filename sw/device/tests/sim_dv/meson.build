@@ -293,8 +293,10 @@ pwrmgr_deep_sleep_all_wake_ups_lib = declare_dependency(
   link_with: static_library(
     'pwrmgr_deep_sleep_all_wake_ups_lib',
     sources: [
+      hw_ip_pwrmgr_reg_h,
       'pwrmgr_deep_sleep_all_wake_ups.c'],
     dependencies: [
+      sw_lib_usb,
       sw_lib_mmio,
       sw_lib_dif_pwrmgr,
       sw_lib_dif_rv_plic,
@@ -306,6 +308,7 @@ pwrmgr_deep_sleep_all_wake_ups_lib = declare_dependency(
       sw_lib_runtime_log,
       sw_lib_testing_isr_testutils,
       sw_lib_testing_pwrmgr_testutils,
+      sw_lib_testing_aon_timer_testutils,
       sw_lib_testing_rv_plic_testutils,
       top_earlgrey,
     ],

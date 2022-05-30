@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
 
 opentitan_functest(
     name = "uart_tx_rx_test",
@@ -413,10 +413,20 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_deep_sleep_all_wake_ups",
     srcs = ["pwrmgr_deep_sleep_all_wake_ups.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     targets = ["dv"],
+    verilator = verilator_params(
+        timeout = "long",
+        tags = ["failing_verilator"],
+    ),
     deps = [
+        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
+        "//sw/device/lib:usb",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:adc_ctrl",
         "//sw/device/lib/dif:pinmux",
@@ -424,6 +434,7 @@ opentitan_functest(
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
