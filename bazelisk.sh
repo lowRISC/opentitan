@@ -6,7 +6,7 @@
 # This is a wrapper script for `bazelisk` that downloads and executes bazelisk.
 # Bazelisk is a wrapper for `bazel` that can download and execute the project's
 # required bazel version.
-# 
+#
 # CI jobs should use ci/bazelisk.sh instead, which performs CI-friendly additional
 # setup.
 
@@ -52,10 +52,25 @@ function prepare() {
     chmod +x "$file"
 }
 
+function up_to_date() {
+    local file="$1"
+    # We need an update if the file doesn't exist or it has the wrong hash
+    test -f "$file" || return 1
+    check_hash "$file" || return 1
+    return 0
+}
+
 function main() {
-    local file="${REPO_TOP}/${BINDIR}/bazelisk"
-    if [[ ! -f "$file" ]] || ! check_hash "$file"; then
-        prepare
+    local bindir="${REPO_TOP}/${BINDIR}"
+    local file="${bindir}/bazelisk"
+    local lockfile="${bindir}/bazelisk.lock"
+
+    if ! up_to_date "$file"; then
+        # Grab the lock, blocking until success. Upon success, check again
+        # whether we're up to date (because some other process might have
+        # downloaded bazelisk in the meantime). If not, download it ourselves.
+        mkdir -p "$bindir"
+        (flock -x 9; up_to_date "$file" || prepare) 9>>"$lockfile"
     fi
     if ! check_hash "$file"; then
         echo "sha256sum doesn't match expected value"
