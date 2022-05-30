@@ -7,7 +7,9 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "edn_regs.h"  // Generated
+#include "csrng_regs.h"        // Generated
+#include "edn_regs.h"          // Generated
+#include "entropy_src_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static void setup_entropy_src(void) {
@@ -53,7 +55,66 @@ static void setup_edn(void) {
 }
 
 void entropy_testutils_boot_mode_init(void) {
-  setup_entropy_src();
+  uint32_t reg = 0;
+
+  //disable entropy src.
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(
+      reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD, kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
+                               kMultiBitBool4False);
+
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
+                      ENTROPY_SRC_CONF_REG_OFFSET, reg);
+
+  mmio_region_write32(
+      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
+      ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
+      kMultiBitBool4False << ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET);
+
+// disable csrng.
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_ENABLE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_SW_APP_ENABLE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
+                               kMultiBitBool4False);
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
+                      CSRNG_CTRL_REG_OFFSET, reg);
+
+// disable edn.
+  reg =
+      bitfield_field32_write(0, EDN_CTRL_EDN_ENABLE_FIELD, kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, EDN_CTRL_BOOT_REQ_MODE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, EDN_CTRL_AUTO_REQ_MODE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
+                               kMultiBitBool4False);
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
+                      EDN_CTRL_REG_OFFSET, reg);
+
+  // enable entropy src in the same way as the rom_test.
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
+                               kMultiBitBool4True);
+  reg = bitfield_field32_write(
+      reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD, kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
+                               kMultiBitBool4False);
+
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
+                      ENTROPY_SRC_CONF_REG_OFFSET, reg);
+  mmio_region_write32(
+      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
+      ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
+      kMultiBitBool4True << ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET);
+
+  // setup_entropy_src();
   setup_csrng();
   setup_edn();
 }
