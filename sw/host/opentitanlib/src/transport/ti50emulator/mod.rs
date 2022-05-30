@@ -56,7 +56,7 @@ impl Ti50Emulator {
         log::info!("Initializing Ti50Emulator instance: {}", instance_name);
         fs::create_dir(&instance_directory).context("Falied to create instance directory")?;
 
-        Ok(Self {
+        let ti50 = Ti50Emulator {
             inner: Rc::new(RefCell::new(Inner {
                 instance_directory: instance_directory.clone(),
                 process: EmulatorProcess::init(
@@ -70,7 +70,8 @@ impl Ti50Emulator {
                 i2c_map: HashMap::new(),
                 uart_map: HashMap::new(),
             })),
-        })
+        };
+        Ok(ti50)
     }
 }
 
