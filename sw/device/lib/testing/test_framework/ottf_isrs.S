@@ -304,6 +304,66 @@ handler_irq_external:
 // -----------------------------------------------------------------------------
 
   /**
+   * Internal IRQ handler.
+   */
+  .balign 4
+  .global handler_irq_internal
+  .type handler_irq_internal, @function
+handler_irq_internal:
+  // Save all registers to the stack.
+  addi sp, sp, -OTTF_CONTEXT_SIZE
+  sw   ra,  1 * OTTF_WORD_SIZE(sp)
+  sw   t0,  2 * OTTF_WORD_SIZE(sp)
+  sw   t1,  3 * OTTF_WORD_SIZE(sp)
+  sw   t2,  4 * OTTF_WORD_SIZE(sp)
+  sw   s0,  5 * OTTF_WORD_SIZE(sp)
+  sw   s1,  6 * OTTF_WORD_SIZE(sp)
+  sw   a0,  7 * OTTF_WORD_SIZE(sp)
+  sw   a1,  8 * OTTF_WORD_SIZE(sp)
+  sw   a2,  9 * OTTF_WORD_SIZE(sp)
+  sw   a3, 10 * OTTF_WORD_SIZE(sp)
+  sw   a4, 11 * OTTF_WORD_SIZE(sp)
+  sw   a5, 12 * OTTF_WORD_SIZE(sp)
+  sw   a6, 13 * OTTF_WORD_SIZE(sp)
+  sw   a7, 14 * OTTF_WORD_SIZE(sp)
+  sw   s2, 15 * OTTF_WORD_SIZE(sp)
+  sw   s3, 16 * OTTF_WORD_SIZE(sp)
+  sw   s4, 17 * OTTF_WORD_SIZE(sp)
+  sw   s5, 18 * OTTF_WORD_SIZE(sp)
+  sw   s6, 19 * OTTF_WORD_SIZE(sp)
+  sw   s7, 20 * OTTF_WORD_SIZE(sp)
+  sw   s8, 21 * OTTF_WORD_SIZE(sp)
+  sw   s9, 22 * OTTF_WORD_SIZE(sp)
+  sw  s10, 23 * OTTF_WORD_SIZE(sp)
+  sw  s11, 24 * OTTF_WORD_SIZE(sp)
+  sw   t3, 25 * OTTF_WORD_SIZE(sp)
+  sw   t4, 26 * OTTF_WORD_SIZE(sp)
+  sw   t5, 27 * OTTF_WORD_SIZE(sp)
+  sw   t6, 28 * OTTF_WORD_SIZE(sp)
+
+  // Save MSTATUS for the MPIE bit.
+  csrr t0, mstatus
+  sw t0, 29 * OTTF_WORD_SIZE(sp)
+
+  // Save MEPC to the stack.
+  // NOTE: this IRQ is asynchronous, therefore, we do not need to modify MEPC.
+  csrr t0, mepc
+  sw t0, 0(sp)
+
+  // Store stack pointer to current TCB (only if concurrency is enabled, i.e.,
+  // the test that triggers this is running as a FreeRTOS task).
+  jal save_current_sp_to_tcb
+
+  // Jump to the internal ISR.
+  jal ottf_internal_isr
+
+  // Return from ISR.
+  j ottf_isr_exit
+  .size handler_irq_internal, .-handler_irq_internal
+
+// -----------------------------------------------------------------------------
+
+  /**
    * ISR exit sub-routine restores registers from the stack.
    */
   .balign 4

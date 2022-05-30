@@ -31,6 +31,8 @@ const test_config_t kTestConfig;
 static dif_sram_ctrl_t sram_ctrl;
 static dif_rstmgr_t rstmgr;
 
+static volatile uint32_t integrity_exception_count;
+
 /**
  * Retention SRAM start address (inclusive).
  */
@@ -93,20 +95,31 @@ static void test_ram_write_read_pattern(void) {
  * This test first writes a pattern to the start and the end of RAM. It then
  * requests a new scrambling key via dif_sram_ctrl (which scrambles RAM
  * addresses as well as the data). Finally, it reads back the RAM addresses
- * and checks them against the original pattern. The test is successful if
- * these patterns don't match.
+ * and checks them against the original pattern. The scrambled data will cause
+ * an ECC error when read back from SRAM and trigger an internal IRQ.
+ * The ISR for this IRQ will count the number of exceptions. The test is
+ * successful if this count is as expected and the read data mismatches.
  */
-bool test_ram_scrambling(const dif_sram_ctrl_t *sram_ctrl) {
+static void test_ram_scrambling(const dif_sram_ctrl_t *sram_ctrl) {
   // Write the pattern at the start of RAM.
   sram_ctrl_testutils_write(kRetSramStartAddr, &kRamTestPattern1);
 
   sram_ctrl_testutils_scramble(sram_ctrl);
 
-  // Read the first pattern at the start of RAM. It should NOT match the
-  // originally written pattern.
-  return sram_ctrl_testutils_read_check_neq(kRetSramStartAddr,
-                                            &kRamTestPattern1);
+  mmio_region_t region = mmio_region_from_addr(kRetSramStartAddr);
+  for (int i = 0; i < SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS; ++i) {
+    uint32_t read_data = mmio_region_read32(region, sizeof(uint32_t) * i);
+    CHECK(read_data != kRamTestPattern1.words[i]);
+  }
+  CHECK(integrity_exception_count == SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS,
+        "Scramble read exception count differs from expected.");
 }
+
+/**
+ * Override internal IRQ interrupt service routine to count
+ * the number of integrity exceptions.
+ */
+void ottf_internal_isr(void) { ++integrity_exception_count; }
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init(
@@ -118,14 +131,8 @@ bool test_main(void) {
   sram_ctrl_testutils_wipe(&sram_ctrl);
   test_ram_write_read_pattern();
 
-  // There is a non-zero chance that the value at the tested address by pure
-  // chance will be the same. So just to be prudent, in case of the failure,
-  // scrambling is tested again.
-  if (!test_ram_scrambling(&sram_ctrl)) {
-    LOG_WARNING("Initial retention RAM scramble test(s) failed, running again");
-    CHECK(test_ram_scrambling(&sram_ctrl),
-          "Retention RAM Scrambling test has failed (double-checked)");
-  }
+  integrity_exception_count = 0;
+  test_ram_scrambling(&sram_ctrl);
 
   sram_ctrl_testutils_check_backdoor_write(kRetSramStartAddr,
                                            SRAM_CTRL_BACKDOOR_TEST_WORDS,

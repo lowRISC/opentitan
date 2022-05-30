@@ -39,6 +39,11 @@
  */
 #define RET_RAM_COPY_OFFSET SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS
 
+/* The offset in the retention SRAM to store the integrity exception count.
+ */
+#define INTEGRITY_EXCEPTION_COUNT_OFFSET \
+  ((RET_RAM_COPY_OFFSET * sizeof(uint32_t)) + BACKDOOR_TEST_BYTES)
+
 const test_config_t kTestConfig;
 
 static dif_sram_ctrl_t sram_ctrl;
@@ -209,6 +214,19 @@ static void prepare_for_scrambling(void) {
 }
 
 /**
+ * Override internal IRQ interrupt service routine to count
+ * the number of integrity exceptions.
+ */
+void ottf_internal_isr(void) {
+  mmio_region_t mem_region =
+      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR);
+  uint32_t exception_count =
+      mmio_region_read32(mem_region, INTEGRITY_EXCEPTION_COUNT_OFFSET);
+  mmio_region_write32(mem_region, INTEGRITY_EXCEPTION_COUNT_OFFSET,
+                      ++exception_count);
+}
+
+/**
  * Executes the MAIN SRAM scrambling test.
  *
  * This test is re-entrant. On the first pass the test triggers MAIN SRAM
@@ -227,10 +245,19 @@ bool test_main(void) {
     CHECK(sram_ctrl_testutils_read_check_neq(
         TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, &kRamTestPattern2));
 
+    CHECK(mmio_region_read32(mmio_region_from_addr(
+                                 TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR),
+                             INTEGRITY_EXCEPTION_COUNT_OFFSET) ==
+          SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS);
+
     sram_ctrl_testutils_check_backdoor_write(
         TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, BACKDOOR_TEST_WORDS,
         RET_RAM_COPY_OFFSET, kBackdoorExpectedBytes);
   } else {
+    mmio_region_write32(
+        mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR),
+        INTEGRITY_EXCEPTION_COUNT_OFFSET, 0);
+
     prepare_for_scrambling();
     main_sram_scramble();
   }
