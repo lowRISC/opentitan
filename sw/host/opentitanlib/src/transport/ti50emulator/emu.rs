@@ -25,6 +25,7 @@ use crate::transport::ti50emulator::Ti50Emulator;
 const TIMEOUT: Duration = Duration::from_millis(1000);
 const MAX_RETRY: usize = 5;
 const PATTERN: &[u8; 5] = b"READY";
+pub const EMULATOR_INVALID_ID: u64 = 0;
 
 pub struct EmulatorProcess {
     /// Current working directory for Emulator sub-process.
@@ -39,6 +40,8 @@ pub struct EmulatorProcess {
     state: EmuState,
     /// Handle to Emulator sub-proccess.
     proc: Option<Child>,
+    /// Counter of 'power' cycle
+    power_cycle_count: u32,
 }
 
 impl EmulatorProcess {
@@ -60,11 +63,27 @@ impl EmulatorProcess {
             )]),
             state: EmuState::Off,
             proc: None,
+            power_cycle_count: 1,
         })
     }
 
+    pub fn get_state(&self) -> EmuState {
+        self.state
+    }
+
+    pub fn get_runtime_dir(&self) -> &Path {
+        &self.runtime_directory
+    }
+
+    pub fn get_id(&self) -> u64 {
+        if let Some(proc) = &self.proc {
+            return ((self.power_cycle_count as u64) << 32) + (proc.id() as u64);
+        }
+        return EMULATOR_INVALID_ID;
+    }
+
     /// Updates `state` based on sub-process exit status and current value of `state`.
-    fn update_status(&mut self) -> Result<()> {
+    pub fn update_status(&mut self) -> Result<()> {
         if let Some(proc) = &mut self.proc {
             match proc.try_wait() {
                 Ok(Some(status)) => {
@@ -77,6 +96,7 @@ impl EmulatorProcess {
                             self.state = EmuState::Error;
                         }
                     }
+                    self.power_cycle_count += 1;
                     self.proc = None;
                 }
                 Ok(None) => {
@@ -197,6 +217,7 @@ impl EmulatorProcess {
     /// described in `TIMEOUT` * `MAX_RETRY`, use SIGKILL to force sub-process termination.
     /// If all method fail, it returns an EmuError.
     fn stop_process(&mut self) -> Result<()> {
+        self.power_cycle_count += 1;
         if let Some(handle) = &self.proc {
             let pid = handle.id() as i32;
             signal::kill(Pid::from_raw(pid), Signal::SIGTERM)
