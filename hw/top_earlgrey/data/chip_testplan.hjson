@@ -923,7 +923,7 @@
             wakeup.
             '''
       milestone: V2
-      tests: ["chip_sw_pwrmgr_smoketest"]
+      tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
     }
     {
       name: chip_sw_pwrmgr_sleep_all_reset_reqs
