@@ -29,29 +29,29 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
       wakeup_action(2);
       wait(cfg.sw_logger_vif.printed_log == "Woke up by source 2");
       release_action(2);
-  endtask // body
+ endtask // body
 
-  // trigger wakeup signal for each test round
-  // round 0 : input for sysrst ctrl
-  // round 1 : input for adc ctrl (force)
-  // round 2 : input for pinmux wakeup detector
+  // Trigger wakeup signal for each test round
+  // Round 0 : input for sysrst ctrl
+  // Round 1 : input for adc ctrl (force)
+  // Round 2 : input for pinmux wakeup detector
   task wakeup_action(int round);
     string path1 ,path2;
      repeat(20) @(posedge cfg.ast_supply_vif.clk);
     case(round)
-      0:begin
+      0: begin
         `uvm_info(`gfn, "Push power button ", UVM_MEDIUM)
         cfg.pwrb_in_vif.drive(1'b0); // on
       end
-      1:begin
+      1: begin
         `uvm_info(`gfn, "Force adc out ", UVM_MEDIUM)
-        // force to random positive value
+        // Force to random positive value
         path1 = "tb.dut.u_ast.u_adc.u_adc_ana.adc_d_ch0_o";
         path2 = "tb.dut.u_ast.u_adc.u_adc_ana.adc_d_ch1_o";
         `DV_CHECK(uvm_hdl_force(path1, 5))
         `DV_CHECK(uvm_hdl_force(path2, 115))
       end
-      2:begin
+      2: begin
         `uvm_info(`gfn, "Send pattern to pinmux wakeup detector ", UVM_MEDIUM)
         cfg.pinmux_wkup_vif.drive(1'b1);
       end
@@ -59,7 +59,7 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
     endcase
   endtask // wakeup_action
 
-  // release wakeup signals
+  // Release wakeup signals
   task release_action(int round);
     string path1 ,path2;
     case(round)

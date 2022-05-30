@@ -424,6 +424,31 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "pwrmgr_normal_sleep_all_wake_ups",
+    srcs = ["pwrmgr_normal_sleep_all_wake_ups.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib:irq",
+        "//sw/device/lib:usb",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:adc_ctrl",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:sensor_ctrl",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "pwrmgr_deep_sleep_all_wake_ups",
     srcs = ["pwrmgr_deep_sleep_all_wake_ups.c"],
     cw310 = cw310_params(
