@@ -111,7 +111,6 @@ static void transaction_start(transaction_params_t params) {
   reg =
       bitfield_field32_write(reg, FLASH_CTRL_CONTROL_INFO_SEL_FIELD, info_type);
   reg = bitfield_bit32_write(reg, FLASH_CTRL_CONTROL_ERASE_SEL_BIT, bank_erase);
-  // TODO(#3353): Remove -1 when flash_ctrl is updated.
   reg = bitfield_field32_write(reg, FLASH_CTRL_CONTROL_NUM_FIELD,
                                params.word_count - 1);
   abs_mmio_write32(kBase + FLASH_CTRL_CONTROL_REG_OFFSET, reg);
