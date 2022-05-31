@@ -479,6 +479,24 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "entropy_src_ast_rng_req_test",
+    srcs = ["entropy_src_ast_rng_req_test.c"],
+    verilator = verilator_params(
+        tags = [
+            "cpu:4",
+        ],
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "example_test_from_flash",
     srcs = ["example_test_from_flash.c"],
     deps = [
