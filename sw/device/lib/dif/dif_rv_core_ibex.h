@@ -106,6 +106,22 @@ typedef enum dif_rv_core_ibex_error_status {
   kDifRvCoreIbexErrorStatusAll = (1 << 0 | 1 << 8 | 1 << 9 | 1 << 10),
 } dif_rv_core_ibex_error_status_t;
 
+typedef enum dif_rv_core_ibex_rnd_status_code {
+  /**
+   * The current rnd word is valid.
+   */
+  kDifRvCoreIbexRndStatusValid = 1 << 0,
+  /**
+   * The current rnd word is fips compliant.
+   */
+  kDifRvCoreIbexRndStatusFipsCompliant = 1 << 1,
+} dif_rv_core_ibex_rnd_status_code_t;
+
+/**
+ * Bitmask with the `dif_rv_core_ibex_rnd_status_code_t` values.
+ */
+typedef uint32_t dif_rv_core_ibex_rnd_status_t;
+
 /**
  * NMI enabled status and current state.
  */
@@ -240,6 +256,29 @@ dif_result_t dif_rv_core_ibex_get_nmi_state(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_core_ibex_clear_nmi_state(
     const dif_rv_core_ibex_t *rv_core_ibex, dif_rv_core_ibex_nmi_source_t nmi);
+
+/**
+ * Reads a random word from the RISC-V Ibex core wrapper.
+ *
+ * @param rv_core_ibex Handle.
+ * @param[out] data Pointer to be filled with the random word.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_read_rnd_data(
+    const dif_rv_core_ibex_t *rv_core_ibex, uint32_t *data);
+
+/**
+ * Gets whether the rnd data is either valid or is FIPS compliant.
+ *
+ * @param rv_core_ibex Handle.
+ * @param[out] status Pointer to be filled with the current rnd status.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_get_rnd_status(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_rnd_status_t *status);
 
 #ifdef __cplusplus
 }  // extern "C"

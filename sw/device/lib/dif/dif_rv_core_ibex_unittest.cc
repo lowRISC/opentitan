@@ -428,4 +428,52 @@ TEST_F(NMITest, ClearBadArg) {
       &ibex_, static_cast<dif_rv_core_ibex_nmi_source_t>(-1)));
 }
 
+class RndTest : public RvCoreIbexTestInitialized {};
+
+TEST_F(RndTest, ReadSuccess) {
+  EXPECT_READ32(RV_CORE_IBEX_RND_STATUS_REG_OFFSET,
+                {{RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT, true}});
+  EXPECT_READ32(RV_CORE_IBEX_RND_DATA_REG_OFFSET, 0xf55ef65e);
+
+  uint32_t data;
+  EXPECT_DIF_OK(dif_rv_core_ibex_read_rnd_data(&ibex_, &data));
+  EXPECT_EQ(data, 0xf55ef65e);
+}
+
+TEST_F(RndTest, ReadBadArg) {
+  uint32_t data;
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_read_rnd_data(nullptr, &data));
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_read_rnd_data(&ibex_, nullptr));
+}
+
+TEST_F(RndTest, ReadNotValid) {
+  EXPECT_READ32(RV_CORE_IBEX_RND_STATUS_REG_OFFSET,
+                {{RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT, false}});
+  uint32_t data;
+  EXPECT_EQ(dif_rv_core_ibex_read_rnd_data(&ibex_, &data), kDifError);
+}
+
+TEST_F(RndTest, StatusValid) {
+  EXPECT_READ32(RV_CORE_IBEX_RND_STATUS_REG_OFFSET,
+                {{RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT, true}});
+
+  dif_rv_core_ibex_rnd_status_t status;
+  EXPECT_DIF_OK(dif_rv_core_ibex_get_rnd_status(&ibex_, &status));
+  EXPECT_EQ(status, kDifRvCoreIbexRndStatusValid);
+}
+
+TEST_F(RndTest, StatusFipsCompliant) {
+  EXPECT_READ32(RV_CORE_IBEX_RND_STATUS_REG_OFFSET,
+                {{RV_CORE_IBEX_RND_STATUS_RND_DATA_FIPS_BIT, true}});
+
+  dif_rv_core_ibex_rnd_status_t status;
+  EXPECT_DIF_OK(dif_rv_core_ibex_get_rnd_status(&ibex_, &status));
+  EXPECT_EQ(status, kDifRvCoreIbexRndStatusFipsCompliant);
+}
+
+TEST_F(RndTest, StatusBadArg) {
+  dif_rv_core_ibex_rnd_status_t status;
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_get_rnd_status(nullptr, &status));
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_get_rnd_status(&ibex_, nullptr));
+}
 }  // namespace dif_rv_core_ibex_test

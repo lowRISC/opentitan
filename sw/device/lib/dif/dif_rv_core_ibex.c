@@ -208,7 +208,7 @@ dif_result_t dif_rv_core_ibex_clear_error_status(
 
 dif_result_t dif_rv_core_ibex_enable_nmi(const dif_rv_core_ibex_t *rv_core_ibex,
                                          dif_rv_core_ibex_nmi_source_t nmi) {
-  if (rv_core_ibex == NULL || (nmi & ~kDifRvCoreIbexNmiSourceAll) != 0) {
+  if (rv_core_ibex == NULL || nmi & ~kDifRvCoreIbexNmiSourceAll) {
     return kDifBadArg;
   }
 
@@ -254,7 +254,7 @@ dif_result_t dif_rv_core_ibex_get_nmi_state(
 
 dif_result_t dif_rv_core_ibex_clear_nmi_state(
     const dif_rv_core_ibex_t *rv_core_ibex, dif_rv_core_ibex_nmi_source_t nmi) {
-  if (rv_core_ibex == NULL || (nmi & ~kDifRvCoreIbexNmiSourceAll) != 0) {
+  if (rv_core_ibex == NULL || nmi & ~kDifRvCoreIbexNmiSourceAll) {
     return kDifBadArg;
   }
 
@@ -268,6 +268,33 @@ dif_result_t dif_rv_core_ibex_clear_nmi_state(
 
   mmio_region_write32(rv_core_ibex->base_addr,
                       RV_CORE_IBEX_NMI_STATE_REG_OFFSET, reg);
+  return kDifOk;
+}
 
+dif_result_t dif_rv_core_ibex_get_rnd_status(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_rnd_status_t *status) {
+  if (rv_core_ibex == NULL || status == NULL) {
+    return kDifBadArg;
+  }
+
+  *status = mmio_region_read32(rv_core_ibex->base_addr,
+                               RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
+  return kDifOk;
+}
+
+dif_result_t dif_rv_core_ibex_read_rnd_data(
+    const dif_rv_core_ibex_t *rv_core_ibex, uint32_t *data) {
+  if (rv_core_ibex == NULL || data == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg = mmio_region_read32(rv_core_ibex->base_addr,
+                                    RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
+  if (!bitfield_bit32_read(reg, RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT)) {
+    return kDifError;
+  }
+
+  *data = mmio_region_read32(rv_core_ibex->base_addr,
+                             RV_CORE_IBEX_RND_DATA_REG_OFFSET);
   return kDifOk;
 }
