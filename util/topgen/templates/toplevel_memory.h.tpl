@@ -55,7 +55,10 @@
 <%
     if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
     hex_base_addr = "0x{:X}".format(region.base_addr)
+    hex_size_bytes = "0x{:X}".format(region.size_bytes)
+
     base_addr_name = region.base_addr_name().as_c_define()
+    size_bytes_name = region.size_bytes_name().as_c_define()
 %>\
 /**
  * Peripheral base address for ${if_desc} in top ${top["name"]}.
@@ -64,6 +67,16 @@
  * registers associated with the peripheral (usually via a DIF).
  */
 #define ${base_addr_name} ${hex_base_addr}
+
+/**
+ * Peripheral size for ${if_desc} in top ${top["name"]}.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #${base_addr_name} and
+ * `${base_addr_name} + ${size_bytes_name}`.
+ */
+#define ${size_bytes_name} ${hex_size_bytes}
 % endfor
 #endif  // __ASSEMBLER__
 
