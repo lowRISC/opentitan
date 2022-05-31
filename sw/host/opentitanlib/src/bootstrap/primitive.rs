@@ -92,7 +92,9 @@ pub struct Primitive {
 }
 
 impl Primitive {
-    const INTER_FRAME_DELAY: Duration = Duration::from_millis(20);
+    // Imperically, a 50ms IFD improves console itegrity and fixes bootstrap for a slower, Bazel
+    // built Test ROM.
+    const INTER_FRAME_DELAY: Duration = Duration::from_millis(50);
     const FLASH_ERASE_DELAY: Duration = Duration::from_millis(200);
 
     /// Creates a new `Primitive` protocol updater from `options`.
