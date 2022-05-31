@@ -617,17 +617,6 @@ void spi_device_init(void) {
 
   // Reset status register
   abs_mmio_write32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
-
-  // Switch to flash mode. Both clocks (SRAM and SPI) must be disabled prior to
-  // mode change for proper SRAM operation.
-  reg = abs_mmio_read32(kBase + SPI_DEVICE_CONTROL_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, false);
-  abs_mmio_write32(kBase + SPI_DEVICE_CONTROL_REG_OFFSET, reg);
-  reg = bitfield_field32_write(0, SPI_DEVICE_CONTROL_MODE_FIELD,
-                               SPI_DEVICE_CONTROL_MODE_VALUE_FLASHMODE);
-  abs_mmio_write32(kBase + SPI_DEVICE_CONTROL_REG_OFFSET, reg);
-  reg = bitfield_bit32_write(reg, SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, true);
-  abs_mmio_write32(kBase + SPI_DEVICE_CONTROL_REG_OFFSET, reg);
 }
 
 rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {

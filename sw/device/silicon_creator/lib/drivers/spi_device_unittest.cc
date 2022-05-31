@@ -162,23 +162,6 @@ TEST_F(InitTest, Init) {
 
   EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
 
-  uint32_t control_reg = std::numeric_limits<uint32_t>::max();
-  EXPECT_ABS_READ32(base_ + SPI_DEVICE_CONTROL_REG_OFFSET, control_reg);
-  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_CONTROL_REG_OFFSET,
-                     control_reg ^ 1 << SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT);
-  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_CONTROL_REG_OFFSET,
-                     {
-                         {SPI_DEVICE_CONTROL_MODE_OFFSET,
-                          SPI_DEVICE_CONTROL_MODE_VALUE_FLASHMODE},
-                         {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 0},
-                     });
-  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_CONTROL_REG_OFFSET,
-                     {
-                         {SPI_DEVICE_CONTROL_MODE_OFFSET,
-                          SPI_DEVICE_CONTROL_MODE_VALUE_FLASHMODE},
-                         {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
-                     });
-
   spi_device_init();
 }
 
