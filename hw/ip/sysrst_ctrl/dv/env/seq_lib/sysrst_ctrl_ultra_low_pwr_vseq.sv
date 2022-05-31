@@ -46,7 +46,7 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
      [1 : set_ac_timer - 2]  :/20,
      [set_ac_timer + 1 : set_ac_timer * 2] :/80 };}
 
-   constraint num_trans_c {num_trans == 3;}
+   constraint num_trans_c {num_trans inside {[1 : 3]};}
 
    task drive_ac();
     cfg.vif.ac_present = 1;
