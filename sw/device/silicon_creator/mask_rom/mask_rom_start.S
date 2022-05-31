@@ -49,9 +49,6 @@
    *
    * More information about Ibex's interrupts can be found here:
    *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
-   *
-   * TODO(lowRISC/ibex#1419): if direct mode support is added to Ibex it probably
-   * makes sense to use it instead of vectored mode in the mask ROM.
    */
   .section .vectors, "ax"
   .balign 256
@@ -149,7 +146,7 @@ _mask_rom_start_boot:
   // Since interrupts are disabled the watchdog bark will have no effect
   // therefore the bark threshold is just set to the highest possible value.
   li t0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
-  li t1, 0xffffffff // TODO(lowRISC/opentitan##10215): reduce bite timer value.
+  li t1, 0xffffffff // TODO(lowRISC/opentitan#10215): reduce bite timer value.
   sw t1, AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET(t0)
   li t1, 0xffffffff
   sw t1, AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET(t0)
