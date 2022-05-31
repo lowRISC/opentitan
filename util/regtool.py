@@ -118,10 +118,12 @@ def main():
     parser.add_argument('--novalidate',
                         action='store_true',
                         help='Skip validate, just output json')
-    parser.add_argument('--version-stamp',
-                        type=str,
-                        default=None,
-                        help='If version stamping, the location of workspace version stamp file.')
+    parser.add_argument(
+        '--version-stamp',
+        type=str,
+        default=None,
+        help=
+        'If version stamping, the location of workspace version stamp file.')
 
     args = parser.parse_args()
 
@@ -287,7 +289,8 @@ def main():
             elif format == 'rs':
                 return gen_rust.gen_rust(obj, outfile, src_lic, src_copy)
             elif format == 'trs':
-                return gen_tock.gen_tock(obj, outfile, src_lic, src_copy, version_stamp)
+                return gen_tock.gen_tock(obj, outfile, infile.name, src_lic,
+                                         src_copy, version_stamp)
             else:
                 return gen_json.gen_json(obj, outfile, format)
 

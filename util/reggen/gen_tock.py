@@ -291,8 +291,9 @@ def gen_const_interrupts(fieldout: TextIO, block: IpBlock, component: str,
     gen_field_definitions(fieldout, block, "INTR", block.regwidth)
 
 
-def gen_tock(block: IpBlock, outfile: TextIO, src_lic: Optional[str],
-             src_copy: str, version_stamp: Dict[str, str]) -> int:
+def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
+             src_lic: Optional[str], src_copy: str,
+             version_stamp: Dict[str, str]) -> int:
     rnames = block.get_rnames()
 
     paramout = io.StringIO()
@@ -349,7 +350,21 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_lic: Optional[str],
     fieldstr = fieldout.getvalue()
     fieldout.close()
 
-    genout(outfile, '// Generated register constants for {}\n\n', block.name)
+    genout(outfile, '// Generated register constants for {}.\n', block.name)
+    # Opensource council has approved dual-licensing the generated files under
+    # both Apache and MIT licenses.
+    genout(outfile, '// This file is licensed under either of:\n')
+    genout(
+        outfile,
+        '//   Apache License, Version 2.0 '
+        '(LICENSE-APACHE <http://www.apache.org/licenses/LICENSE-2.0>)\n'
+    )
+    genout(
+        outfile,
+        '//   MIT License (LICENSE-MIT <http://opensource.org/licenses/MIT>)\n'
+    )
+    genout(outfile, '\n')
+
     genout(outfile, '// Built for {}\n',
            version_stamp.get('BUILD_GIT_VERSION', '<unknown>'))
     genout(outfile, '// https://github.com/lowRISC/opentitan/tree/{}\n',
@@ -360,18 +375,24 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_lic: Optional[str],
     dt = datetime.utcfromtimestamp(tm) if tm else datetime.utcnow()
     genout(outfile, '// Build date: {}\n\n', dt.isoformat())
 
+    if src_file:
+        genout(outfile, '// Original reference file: {}\n', src_file)
     if src_copy:
-        genout(outfile, '// Copyright information found in source file:\n')
-        genout(outfile, '// {}\n\n', src_copy)
+        genout(
+            outfile,
+            '// Copyright information found in the reference file:\n')
+        genout(outfile, '//   {}\n', src_copy)
     if src_lic is not None:
-        genout(outfile, '// Licensing information found in source file:\n')
+        genout(
+            outfile,
+            '// Licensing information found in the reference file:\n')
         for line in src_lic.splitlines():
-            genout(outfile, '// {}\n', line)
+            genout(outfile, '//   {}\n', line)
         genout(outfile, '\n')
-    genout(outfile, "use kernel::utilities::registers::{{\n")
-    genout(outfile, "    register_bitfields, register_structs, {}\n",
-           ', '.join(sorted(access_type)))
-    genout(outfile, "}};\n")
+
+    for access in sorted(access_type):
+        genout(outfile, "use kernel::utilities::registers::{};\n", access)
+    genout(outfile, "use kernel::utilities::registers::{{register_bitfields, register_structs}};\n")
 
     outfile.write(indent(paramstr))
     outfile.write(indent(regstr))
