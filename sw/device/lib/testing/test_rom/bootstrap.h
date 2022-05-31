@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_ROM_BOOTSTRAP_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_ROM_BOOTSTRAP_H_
 
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
+
 /**
  * A bootstrap error representing a flash erase failure.
  */
@@ -28,8 +30,9 @@
  * The last frame must be ord with FRAME_EOF_MARKER to signal the end of
  * payload transmission.
  *
+ * @param flash_ctrl A handle to a flash_ctrl.
  * @return Bootstrap status code.
  */
-int bootstrap(void);
+int bootstrap(dif_flash_ctrl_state_t *flash_ctrl);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_ROM_BOOTSTRAP_H_

@@ -17,6 +17,8 @@ module spi_fwm_txf_ctrl #(
   input clk_i,
   input rst_ni,
 
+  input spi_device_pkg::spi_mode_e spi_mode_i,
+
   // Configuration
   input [SramAw-1:0] base_index_i,
   input [SramAw-1:0] limit_index_i,
@@ -39,6 +41,8 @@ module spi_fwm_txf_ctrl #(
   input        [SramDw-1:0] sram_rdata,
   input               [1:0] sram_error
 );
+
+  logic active;
 
   logic [SDW-1:0] pos;    // Current write position
   logic [SramAw-1:0] sramf_limit;
@@ -77,6 +81,8 @@ module spi_fwm_txf_ctrl #(
     else         st <= st_next;
   end
 
+  assign active = (spi_mode_i == spi_device_pkg::FwMode);
+
   assign sramf_empty = (rptr == wptr_q);
 
   assign sramf_limit = limit_index_i - base_index_i;
@@ -95,7 +101,7 @@ module spi_fwm_txf_ctrl #(
     unique case (st)
       StIdle: begin
         latch_wptr = 1'b1;
-        if (!sramf_empty && fifo_ready) begin
+        if (active && !sramf_empty && fifo_ready) begin
           st_next = StRead;
           sram_req_d = 1'b1;
         end else begin

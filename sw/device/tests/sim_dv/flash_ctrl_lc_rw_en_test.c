@@ -10,9 +10,9 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -84,11 +84,11 @@ static bool access_partitions(bool do_write, bool do_read, int page_id,
   if (do_read == true) {
     // Read page.
     uint32_t readback_data[size];
-    retval |= flash_ctrl_testutils_read_page(
-        &flash, address, kPartitionId, readback_data,
-        kDifFlashCtrlPartitionTypeInfo, size, 0);
+    retval |=
+        flash_ctrl_testutils_read(&flash, address, kPartitionId, readback_data,
+                                  kDifFlashCtrlPartitionTypeInfo, size, 0);
     if (retval == false) {
-      CHECK_BUFFER(data, readback_data, size);
+      CHECK_ARRAYS_EQ(data, readback_data, size);
     }
   }
   return (!retval);
@@ -157,7 +157,8 @@ bool test_main(void) {
                                            kDifKeymgrStateCreatorRootKey);
 
   if (curr_state == kDifLcCtrlStateDev) {
-    CHECK_BUFFER(access_checks, kDevExpectedAccess, ARRAYSIZE(access_checks));
+    CHECK_ARRAYS_EQ(access_checks, kDevExpectedAccess,
+                    ARRAYSIZE(access_checks));
 
     CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2, 0));
     dif_otp_ctrl_status_t otp_status;
@@ -166,7 +167,8 @@ bool test_main(void) {
     } while (
         !(bitfield_bit32_read(otp_status.codes, kDifOtpCtrlStatusCodeDaiIdle)));
   } else if (curr_state == kDifLcCtrlStateProd) {
-    CHECK_BUFFER(access_checks, kProdExpectedAccess, ARRAYSIZE(access_checks));
+    CHECK_ARRAYS_EQ(access_checks, kProdExpectedAccess,
+                    ARRAYSIZE(access_checks));
   }
 
   test_status_set(kTestStatusInWfi);

@@ -16,6 +16,8 @@ struct ISSWrapper;
 
 class OtbnModel {
  public:
+  enum command_t { Execute, DmemWipe, ImemWipe };
+
   OtbnModel(const std::string &mem_scope, const std::string &design_scope,
             bool enable_secure_wipe);
   ~OtbnModel();
@@ -29,39 +31,37 @@ class OtbnModel {
   // implementation too (which needs checking).
   bool has_rtl() const { return !design_scope_.empty(); }
 
-  // Start a new run with the model, writing IMEM/DMEM and jumping to address
-  // zero. Returns 0 on success; -1 on failure.
-  int start();
+  // Start an execution or an IMEM or DMEM secure wipe operation. Returns 0 on
+  // success; -1 on failure.
+  int start_operation(command_t command);
 
-  // Starts an IMEM Secure wipe operation
-  int imem_wipe();
+  // Flush EDN data from model because of edn_rst_n. Returns 0 on success or -1
+  // on error.
+  int edn_flush();
 
-  // Starts an DMEM Secure wipe operation
-  int dmem_wipe();
+  // Send ISS some RND data from EDN. Returns 0 on success or -1 on error.
+  int edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */);
 
-  // Flush EDN data from model because of edn_rst_n
-  void edn_flush();
+  // Send ISS some URND data from EDN. Returns 0 on success or -1 on error.
+  int edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */);
 
-  // EDN Step sends ISS the RND data when ACK signal is high.
-  void edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+  // Signal that RTL is finished processing RND data from EDN. Returns 0 on
+  // success or -1 on error.
+  int edn_rnd_cdc_done();
+
+  // Signal that RTL is finished processing data from EDN for URND. Returns 0
+  // on success or -1 on error.
+  int edn_urnd_cdc_done();
+
+  // Signal that RTL is finished processing OTP key. Returns 0 on success or -1
+  // on error.
+  int otp_key_cdc_done();
 
   // Set or unset the two keys from keymgr. Returns 0 on success or -1
   // on error.
   int set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
                        svLogicVecVal *key1 /* logic [383:0] */,
                        unsigned char valid);
-
-  // EDN Step sends ISS the URND related EDN data when ACK signal is high.
-  void edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */);
-
-  // Signals that RTL is finished processing OTP key
-  void otp_key_cdc_done();
-
-  // Signals that RTL is finished processing RND data from EDN
-  void edn_rnd_cdc_done();
-
-  // Signals that RTL is finished processing data from EDN for URND
-  void edn_urnd_cdc_done();
 
   // Step once in the model. Returns 1 if the model has finished, 0 if not and
   // -1 on failure. If gen_trace is true, pass trace entries to the trace
@@ -90,6 +90,13 @@ class OtbnModel {
   // error. Returns 0 on success; -1 on failure.
   int invalidate_dmem();
 
+  // Set software_errs_fatal bit in ISS model.
+  int set_software_errs_fatal(unsigned char new_val);
+
+  // Tell the model to not execute checks to see if secure wiping has written
+  // random data to all registers before wiping them with zeroes.
+  int set_no_sec_wipe_chk();
+
   // Step CRC by consuming 48 bits of data.
   //
   // This doesn't actually update any internal state: we're just using the
@@ -98,8 +105,8 @@ class OtbnModel {
   int step_crc(const svBitVecVal *item /* bit [47:0] */,
                svBitVecVal *state /* bit [31:0] */);
 
-  // Flush any information in the model
-  void reset();
+  // Flush any information in the model. Returns 0 on success or -1 on error.
+  int reset();
 
   // Escalate errors. Returns 0 on success; -1 on failure.
   int send_err_escalation(svBitVecVal *err_val /* bit [31:0] */);

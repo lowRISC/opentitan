@@ -123,7 +123,7 @@ module ast #(
   input [8-1:0] fla_obs_i,                    // FLASH Observe Bus
   input [8-1:0] otp_obs_i,                    // OTP Observe Bus
   input [8-1:0] otm_obs_i,                    // OT Modules Observe Bus
-  input usb_obs_i,                            // USB DIFF RX Observe
+  input usb_obs_i,                            // USB DIFF RX Observe  //JL TODO
   output ast_pkg::ast_obs_ctrl_t obs_ctrl_o,  // Observe Control
 
   // pad mux/pad related
@@ -162,7 +162,6 @@ module ast #(
 import ast_pkg::* ;
 import ast_reg_pkg::* ;
 import ast_bhv_pkg::* ;
-
 
 logic scan_mode, shift_en, scan_reset_n;
 logic vcc_pok, vcc_pok_h, vcc_pok_str;
@@ -218,12 +217,13 @@ assign vcc_pok_h = vcc_pok;     // "Level Shifter"
 ////////////////////////////////////////
 // VCAON POK (Always ON)
 ///////////////////////////////////////
-logic rst_poks_n, rst_poks_por_n;
-
-assign rst_poks_n = scan_mode ? scan_reset_n : vcc_pok_str && vcaon_pok;
-assign rst_poks_por_n = scan_mode ? scan_reset_n : vcc_pok_str && vcaon_pok && por_ni;
-
+logic rst_poks_n, rst_poks_por_n, por_sync_n;
 logic vcaon_pok_por_src, vcaon_pok_por_lat, poks_por_ack, rglssm_vcmon, rglssm_brout;
+
+// assign rst_poks_n = scan_mode ? scan_reset_n : vcc_pok_str && vcaon_pok;
+// assign rst_poks_por_n = scan_mode ? scan_reset_n : vcc_pok_str && vcaon_pok && por_ni;
+assign rst_poks_n = vcc_pok_str && vcaon_pok;
+assign rst_poks_por_n = vcc_pok_str && vcaon_pok && por_ni;
 
 assign poks_por_ack = vcaon_pok_por_src || rglssm_vcmon;
 
@@ -231,41 +231,48 @@ assign poks_por_ack = vcaon_pok_por_src || rglssm_vcmon;
 prim_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
-) u_poks_por_dasrt (
+) u_no_scan_poks_por_dasrt (
   .clk_i ( clk_aon ),
   .rst_ni ( rst_poks_por_n ),
   .d_i ( poks_por_ack ),
   .q_o ( vcaon_pok_por_src )
 );
 
+logic clk_aon_n;
+
+prim_clock_inv #(
+  .HasScanMode ( 1 )
+) u_clk_aon_inv (
+  .clk_i ( clk_aon ),
+  .scanmode_i ( scan_mode ),
+  .clk_no ( clk_aon_n )
+);
+
+prim_flop #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_no_scan_por_sync_n (
+  .clk_i ( clk_aon_n ),
+  .rst_ni ( rst_poks_n ),
+  .d_i ( vcaon_pok_por_src ),
+  .q_o ( por_sync_n )
+);
+
 // Replace Latch for the OS code
 assign vcaon_pok_por_lat = rglssm_brout || vcaon_pok_por_src;
-
+assign ast_pwst_o.aon_pok = vcaon_pok_por_lat;
 assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_lat;
-assign ast_pwst_o.aon_pok = vcaon_pok_por;
-
-logic clk_aon_n;
-assign clk_aon_n = !clk_aon;
-
-logic por_sync_n;
-
-always_ff @( posedge clk_aon_n, negedge rst_poks_n ) begin
-  if ( !rst_poks_n ) begin
-    por_sync_n <= 1'b0;
-  end else begin
-    por_sync_n <= vcaon_pok_por_src;
-  end
-end
 
 
 ///////////////////////////////////////
 // VCMAIN POK (Always ON)
 ///////////////////////////////////////
 
-logic rglssm_vmppr;
+logic rglssm_vmppr, vcmain_pok_por_src;
 
-assign vcmain_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por && vcmain_pok && !rglssm_vmppr;
-assign ast_pwst_o.main_pok = vcmain_pok_por;
+assign vcmain_pok_por_src = vcaon_pok_por_lat && vcmain_pok && !rglssm_vmppr;
+assign ast_pwst_o.main_pok = vcmain_pok_por_src;
+assign vcmain_pok_por = scan_mode ? scan_reset_n : vcmain_pok_por_src;
 
 
 ///////////////////////////////////////
@@ -299,8 +306,9 @@ assign ast_pwst_o.io_pok[1] = vcaon_pok && viob_pok;
 ///////////////////////////////////////
 // Regulators & PDM Logic (VCC)
 ///////////////////////////////////////
-
 logic deep_sleep;
+
+// For UPF level shifter generation
 logic [1:0] otp_power_seq;
 
 prim_buf u_otp_power_seq[1:0] (
@@ -310,15 +318,16 @@ prim_buf u_otp_power_seq[1:0] (
 
 rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .vcc_pok_h_i ( vcc_pok_h ),
-  .vcaon_pok_por_h_i ( vcaon_pok_por ),
-  .vcmain_pok_por_h_i ( vcmain_pok_por ),
+  .vcaon_pok_por_h_i ( vcaon_pok_por_src ),
+  .vcmain_pok_por_h_i ( vcmain_pok_por_src ),
   .vio_pok_h_i ( ast_pwst_o.io_pok[1:0] ),
   .clk_src_aon_h_i ( clk_aon ),
   .main_pd_h_ni ( main_pd_ni ),
   .por_sync_h_ni ( por_sync_n ),
   .otp_power_seq_h_i ( otp_power_seq[1:0] ),
   .scan_mode_h_i ( scan_mode ),
-  .scan_reset_h_ni ( scan_reset_n ),
+  .vcaon_supp_i ( vcaon_supp_i ),
+  .vcmain_supp_i ( vcmain_supp_i ),
   .rglssm_vmppr_h_o ( rglssm_vmppr ),
   .rglssm_vcmon_h_o ( rglssm_vcmon ),
   .rglssm_brout_h_o ( rglssm_brout ),
@@ -366,7 +375,7 @@ assign clk_sys_ext = clk_osc_byp_i.sys;
 `endif
 
 sys_clk u_sys_clk (
-  .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_strict(clk_src_sys_jen) ),
+  .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_loose(clk_src_sys_jen) ),
   .clk_src_sys_en_i ( clk_sys_en ),
   .clk_sys_pd_ni ( clk_sys_pd_n ),
   .rst_sys_clk_ni ( rst_sys_clk_n ),
@@ -633,7 +642,7 @@ ast_entropy #(
   .clk_src_sys_i ( clk_sys ),
   .rst_src_sys_ni ( rst_src_sys_n ),
   .clk_src_sys_val_i ( clk_src_sys_val_o ),
-  .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_strict(clk_src_sys_jen) ),
+  .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_loose(clk_src_sys_jen) ),
   .entropy_req_o ( entropy_req_o )
 );  // of u_entropy
 
@@ -672,15 +681,16 @@ ast_pkg::ast_dif_t ot3_alert_src;
 ast_pkg::ast_dif_t ot4_alert_src;
 ast_pkg::ast_dif_t ot5_alert_src;
 
+
 // Active Shield (AS)
 ///////////////////////////////////////
 ast_alert u_alert_as (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( as_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[AsSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[AsSel] ),
-  .alert_req_o ( alert_req_o.alerts[AsSel] )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::AsSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::AsSel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::AsSel] )
 );  // u_alert_as
 
 // Clock Glitch (CG)
@@ -689,9 +699,9 @@ ast_alert u_alert_cg (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( cg_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[CgSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[CgSel] ),
-  .alert_req_o ( alert_req_o.alerts[CgSel] )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::CgSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::CgSel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::CgSel] )
 );  // of u_alert_cg
 
 // Glitch Detector (GD)
@@ -700,11 +710,10 @@ ast_alert u_alert_gd (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( gd_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[GdSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[GdSel] ),
-  .alert_req_o ( alert_req_o.alerts[GdSel] )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::GdSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::GdSel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::GdSel] )
 );  // of u_alert_gd
-
 
 // Temprature Sensor High (TS Hi)
 ///////////////////////////////////////
@@ -712,9 +721,9 @@ ast_alert u_alert_ts_hi (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ts_alert_hi_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[TsHiSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[TsHiSel] ),
-  .alert_req_o ( alert_req_o.alerts[TsHiSel] )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::TsHiSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::TsHiSel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::TsHiSel] )
 );  // of u_alert_ts_hi
 
 // Temprature Sensor Low (TS Lo)
@@ -723,9 +732,9 @@ ast_alert u_alert_ts_lo (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ts_alert_lo_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[TsLoSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[TsLoSel] ),
-  .alert_req_o ( alert_req_o.alerts[TsLoSel] )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::TsLoSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::TsLoSel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::TsLoSel] )
 );  // of u_alert_ts_lo
 
 // Flash Alert (FLA)
@@ -734,9 +743,9 @@ ast_alert u_alert_fla (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( fla_alert_src_i ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[FlaSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[FlaSel] ),
-  .alert_req_o ( alert_req_o.alerts[FlaSel] )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::FlaSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::FlaSel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::FlaSel] )
 );  // of u_alert_fla
 
 // OTP Alert (OTP)
@@ -745,9 +754,9 @@ ast_alert u_alert_otp (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( otp_alert_src_i ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[OtpSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[OtpSel] ),
-  .alert_req_o ( alert_req_o.alerts[OtpSel] )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::OtpSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::OtpSel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::OtpSel] )
 );  // of u_alert_otp
 
 // Other-0 Alert (OT0)
@@ -756,9 +765,9 @@ ast_alert u_alert_ot0 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot0_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot0Sel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot0Sel] ),
-  .alert_req_o ( alert_req_o.alerts[Ot0Sel] )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot0Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot0Sel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::Ot0Sel] )
 ); // of u_alert_ot0
 
 // Other-1 Alert (OT1)
@@ -767,9 +776,9 @@ ast_alert u_alert_ot1 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot1_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot1Sel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot1Sel] ),
-  .alert_req_o ( alert_req_o.alerts[Ot1Sel] )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot1Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot1Sel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::Ot1Sel] )
 ); // of u_alert_ot1
 
 // Other-2 Alert (OT2)
@@ -800,9 +809,9 @@ ast_alert u_alert_ot4 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot4_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot4Sel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot4Sel] ),
-  .alert_req_o ( alert_req_o.alerts[Ot4Sel] )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot4Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot4Sel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::Ot4Sel] )
 ); // of u_alert_ot4
 
 // Other-5 Alert (OT5)
@@ -811,11 +820,10 @@ ast_alert u_alert_ot5 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot5_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot5Sel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot5Sel] ),
-  .alert_req_o ( alert_req_o.alerts[Ot5Sel] )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot5Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot5Sel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::Ot5Sel] )
 ); // of u_alert_ot5
-
 assign as_alert_src    = '{p: 1'b0, n: 1'b1};
 assign cg_alert_src    = '{p: 1'b0, n: 1'b1};
 assign gd_alert_src    = '{p: 1'b0, n: 1'b1};
@@ -863,7 +871,7 @@ assign hw2reg.regal.d = regal;
 // REGAL & AST init done indication
 always_ff @( posedge clk_ast_tlul_i, negedge regal_rst_n ) begin
   if ( !regal_rst_n ) begin
-    regal           <= AST_REGAL_RESVAL;
+    regal           <= ast_reg_pkg::AST_REGAL_RESVAL;
     ast_init_done_o <= 1'b0;
   end else if ( regal_we ) begin
     regal           <= regal_di;
@@ -1001,8 +1009,6 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         sns_spi_ext_clk_i,
                         sns_clks_i,
                         sns_rsts_i,
-                        vcaon_supp_i,
-                        vcmain_supp_i,
                         intg_err,
                         shift_en,
                         main_env_iso_en_i,
@@ -1046,6 +1052,13 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         reg2hw.rega28,
                         reg2hw.rega29,
                         reg2hw.rega30,
+                        reg2hw.rega31,
+                        reg2hw.rega32,
+                        reg2hw.rega33,
+                        reg2hw.rega34,
+                        reg2hw.rega35,
+                        reg2hw.rega36,
+                        reg2hw.rega37,
                         reg2hw.regb   // [0:3]
                       };
 

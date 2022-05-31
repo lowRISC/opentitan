@@ -57,6 +57,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
 
   uint num_interrupts;
   uint num_edn;
+
   // if module has alerts, this list_of_alerts needs to override in cfg before super.initialize()
   // function is called
   string list_of_alerts[] = {};

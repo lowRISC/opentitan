@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use log;
+use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::io::spi::{SpiError, Target, Transfer, TransferMode};
 use crate::transport::cw310::usb::Backend;
 use crate::transport::cw310::CW310;
-use crate::transport::Result;
 
 pub struct CW310Spi {
     device: Rc<RefCell<Backend>>,
@@ -30,7 +29,7 @@ impl CW310Spi {
             usb.spi1_enable(true)?;
 
             // Set the JTAG pin to false to use SPI mode.
-            usb.pin_set_state(CW310::PIN_JTAG, false)?;
+            usb.pin_set_state(CW310::PIN_TAP_STRAP1, false)?;
         }
 
         Ok(CW310Spi { device })

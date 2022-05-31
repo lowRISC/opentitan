@@ -25,9 +25,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   rand int unsigned state_err_inj_period;
   rand int unsigned count_err_inj_delay;
   rand int unsigned count_err_inj_period;
-
-  rand int unsigned security_escalation_err_inj_delay;
   rand bit [1:0] security_escalation_err_inj_channels;
+  // Escalate injection trigger state
+  rand lc_ctrl_pkg::fsm_state_e security_escalation_err_inj_state;
+  // Additional delay from trigger state
+  rand uint security_escalation_err_inj_delay;
 
 
   bit fatal_prog_alert_received;
@@ -77,8 +79,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   constraint security_escalation_c {
     err_inj.security_escalation_err == 0;
-    security_escalation_err_inj_delay == 0;
     security_escalation_err_inj_channels == 0;
+    security_escalation_err_inj_state == IdleSt;
+    security_escalation_err_inj_delay == 0;
   }
 
   constraint invalid_states_bin_c {
@@ -116,6 +119,18 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     count_err_inj_period inside {[2 : 4]};
   }
 
+  constraint mubi_err_inj_c {
+    err_inj.clk_byp_rsp_mubi_err == 0;
+    err_inj.flash_rma_rsp_mubi_err == 0;
+    err_inj.otp_secrets_valid_mubi_err == 0;
+    err_inj.otp_test_tokens_valid_mubi_err == 0;
+    err_inj.otp_rma_token_valid_mubi_err == 0;
+  }
+
+  constraint tokem_mux_err_inj_c {err_inj.token_mux_ctrl_redun_err == 0;}
+
+  constraint token_digest_err_inj_c {err_inj.token_mux_digest_err == 0;}
+
   virtual task post_start();
     `uvm_info(`gfn, "post_start: Task called for lc_ctrl_errors_vseq", UVM_MEDIUM)
 
@@ -140,12 +155,22 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 1)
     `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 1)
     `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 1)
+    `DV_ASSERT_CTRL_REQ("StateRegs_A", 1)
+    `DV_ASSERT_CTRL_REQ("FsmStateRegs_A", 1)
+    `DV_ASSERT_CTRL_REQ("CountRegs_A", 1)
+
 
     // Kill sub processes
     disable handle_alerts;
     disable handle_escalate;
-    disable run_clk_byp_rsp_nonblocking;
-    disable run_flash_rma_rsp_nonblocking;
+    disable security_escalation_inject;
+    disable run_clk_byp_rsp;
+    disable run_flash_rma_rsp;
+
+    // Clear escalates
+    cfg.escalate_injected = 0;
+    clear_escalate(0);
+    clear_escalate(1);
 
     // Make sure OTP response queue is cleared
     cfg.m_otp_prog_pull_agent_cfg.clear_d_user_data();
@@ -155,6 +180,17 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   virtual task pre_start();
     // Align cfg.err_inj with the sequence before body starts
     update_err_inj_cfg();
+    mubi_assertion_controls();
+    // Random escalation
+    if (err_inj.security_escalation_err) begin
+      fork
+        security_escalation_inject();
+      join_none
+    end else begin
+      clear_escalate(0);
+      clear_escalate(1);
+      cfg.escalate_injected = 0;
+    end
     super.pre_start();
   endtask
 
@@ -169,9 +205,6 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       handle_escalate();
     join_none
 
-    run_clk_byp_rsp_nonblocking(err_inj.clk_byp_error_rsp);
-    run_flash_rma_rsp_nonblocking(err_inj.flash_rma_error_rsp);
-
     //
     // Check OTP read only regs
     //
@@ -181,12 +214,36 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     for (int i = 1; i <= num_trans; i++) begin
       cfg.set_test_phase(LcCtrlIterStart);
 
+      // Kill processes
+      disable run_clk_byp_rsp;
+      disable run_flash_rma_rsp;
+
       if (i != 1) begin
         `DV_CHECK_RANDOMIZE_FATAL(this)
         update_err_inj_cfg();
+        mubi_assertion_controls();
+
+        // Random escalation
+        disable security_escalation_inject;
+        if (err_inj.security_escalation_err) begin
+          fork
+            security_escalation_inject();
+          join_none
+        end else begin
+          clear_escalate(0);
+          clear_escalate(1);
+          cfg.escalate_injected = 0;
+        end
+
         dut_init();
       end
       cfg.set_test_phase(LcCtrlDutInitComplete);
+
+      // Respawn processes
+      fork
+        run_clk_byp_rsp(err_inj.clk_byp_error_rsp);
+        run_flash_rma_rsp(err_inj.flash_rma_error_rsp);
+      join_none
 
       `uvm_info(`gfn, $sformatf(
                 "starting seq %0d/%0d, init LC_state is %0s, LC_cnt is %0s err_inj=%p",
@@ -213,11 +270,12 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
       // Randomly check for ready - but not when a non transition state
       // or an illegal state will be driven via the OTP
-      if ($urandom_range(0, 1)) begin
+      // or if we are randomly injecting escalate
+      if ($urandom_range(0, 1) && !err_inj.security_escalation_err) begin
         if (valid_state_for_trans(
                 lc_state
             ) && !err_inj.state_err && !err_inj.count_err && !err_inj.state_illegal_err &&
-                !err_inj.count_illegal_err) begin
+                !err_inj.count_illegal_err && !err_inj.otp_secrets_valid_mubi_err) begin
           csr_rd_check(.ptr(ral.status.ready), .compare_value(1),
                        .err_msg(called_from(`__FILE__, `__LINE__)));
         end else begin
@@ -291,6 +349,13 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       end
       // verilog_format: on
 
+      if (cfg.err_inj.token_mux_ctrl_redun_err || cfg.err_inj.token_mux_digest_err) begin
+        // Allow the FSM to get to a terminal state
+        wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {PostTransSt, InvalidSt, EscalateSt});
+        disable token_mux_ctrl_err_inject;
+        disable token_mux_digest_err_inject;
+      end
+
       // Allow volatile registers to settle
       cfg.clk_rst_vif.wait_clks($urandom_range(15, 10));
 
@@ -298,9 +363,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       // Check count and state before escalate is generated
       // Skip this if we are injecting clock bypass error responses as the KMAC
       // may or may not respond leaving the FSM stuck in TokenHashSt
-      if (!err_inj.clk_byp_error_rsp) rd_lc_state_and_cnt_csrs();
-      else begin
-        `uvm_info(`gfn, "Skipped read of lc state & lc_count because err_inj.clk_byp_error_rsp = 1",
+      // Also Token Mux select error injection leads to unpredicable results
+      if (!err_inj.clk_byp_error_rsp && !err_inj.token_mux_ctrl_redun_err) begin
+        rd_lc_state_and_cnt_csrs();
+      end else begin
+        `uvm_info(`gfn, "Skipped read of lc state & lc_count because of error injection",
                   UVM_MEDIUM)
         cfg.clk_rst_vif.wait_clks($urandom_range(15, 10));
       end
@@ -312,9 +379,15 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       cfg.clk_rst_vif.wait_clks($urandom_range(150, 100));
       cfg.set_test_phase(LcCtrlReadState2);
       // Check count and state after escalate is generated
-      rd_lc_state_and_cnt_csrs();
+      // Skip if token mux select line error injection
+      if (!err_inj.token_mux_ctrl_redun_err) rd_lc_state_and_cnt_csrs();
 
       cfg.set_test_phase(LcCtrlPostTransition);
+
+      // Delay a few extra cycles if we are doing escalate injection
+      if (err_inj.security_escalation_err) begin
+        cfg.clk_rst_vif.wait_clks(security_escalation_err_inj_delay + 10);
+      end
 
       // Attempt a second transition post transition if enabled
       // verilog_format: off - avoid bad formatting
@@ -352,27 +425,41 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     // Make sure escalates and alert flags are cleared
-    clear_escalate(0);
-    clear_escalate(1);
+    if (!err_inj.security_escalation_err) begin
+      clear_escalate(0);
+      clear_escalate(1);
+    end
     fatal_prog_alert_received = 0;
     fatal_state_alert_received = 0;
     fatal_bus_integ_alert_received = 0;
 
     // Disable assertions depending on error injection
-    if (err_inj.clk_byp_error_rsp || err_inj.security_escalation_err) begin
+    if (err_inj.clk_byp_error_rsp || err_inj.clk_byp_rsp_mubi_err ||
+        err_inj.security_escalation_err) begin
       `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A", 0)
       `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 0)
       `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 0)
       `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 0)
-      assertions_disabled = 1;
-    end else if (assertions_disabled) begin
-      // Reenable assertions if they had been disabled
+    end else begin
       `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A", 1)
       `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 1)
       `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 1)
       `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 1)
-      assertions_disabled = 0;
     end
+
+    if (err_inj.state_err || err_inj.state_illegal_err || err_inj.state_backdoor_err) begin
+      `DV_ASSERT_CTRL_REQ("StateRegs_A", 0)
+    end else `DV_ASSERT_CTRL_REQ("StateRegs_A", 1)
+
+    if (err_inj.count_err || err_inj.count_illegal_err || err_inj.count_backdoor_err) begin
+      `DV_ASSERT_CTRL_REQ("CountRegs_A", 0)
+    end else `DV_ASSERT_CTRL_REQ("CountRegs_A", 1)
+
+    if (err_inj.lc_fsm_backdoor_err) `DV_ASSERT_CTRL_REQ("FsmStateRegs_A", 0)
+    else `DV_ASSERT_CTRL_REQ("FsmStateRegs_A", 1)
+
+    if (err_inj.kmac_fsm_backdoor_err) `DV_ASSERT_CTRL_REQ("KmacFsmStateRegs_A", 0)
+    else `DV_ASSERT_CTRL_REQ("KmacFsmStateRegs_A", 1)
 
   endtask
 
@@ -392,6 +479,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
           // Invalid transition
           !(next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]});
         })
+    `uvm_info(`gfn,$sformatf("randomize_next_lc_state: next_lc_state=%s",
+        next_lc_state.name()), UVM_MEDIUM)
   endfunction
   // verilog_format: on - avoid bad formatting
 
@@ -451,6 +540,21 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   // Drive OTP input `lc_state` and `lc_cnt`.
   virtual task drive_otp_i(bit rand_otp_i = 1);
+    // Get random values for the MUBI inputs
+    lc_ctrl_pkg::lc_tx_t otp_secrets_valid = err_inj.otp_secrets_valid_mubi_err ?
+        cip_base_pkg::get_rand_lc_tx_val(
+        .t_weight(0), .f_weight(0), .other_weight(1)
+    ) : lc_ctrl_pkg::Off;
+    lc_ctrl_pkg::lc_tx_t otp_test_tokens_valid = err_inj.otp_test_tokens_valid_mubi_err ?
+        cip_base_pkg::get_rand_lc_tx_val(
+        .t_weight(0), .f_weight(0), .other_weight(1)
+    ) : lc_ctrl_pkg::On;
+    lc_ctrl_pkg::lc_tx_t otp_rma_token_valid = err_inj.otp_rma_token_valid_mubi_err ?
+        cip_base_pkg::get_rand_lc_tx_val(
+        .t_weight(0), .f_weight(0), .other_weight(1)
+    ) : lc_ctrl_pkg::On;
+
+    cfg.otp_secrets_valid = otp_secrets_valid;
     `uvm_info(`gfn, $sformatf("drive_otp_i: started rand_otp_i=%0b err_inj=%p", rand_otp_i, err_inj
               ), UVM_MEDIUM)
     if (rand_otp_i) begin
@@ -487,11 +591,19 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       lc_cnt   = LcCnt0;
     end
 
-    cfg.lc_ctrl_vif.init(.lc_state(lc_state), .lc_cnt(lc_cnt),
-                         .otp_lc_data_i_valid(!err_inj.otp_lc_data_i_valid_err),
-                         .otp_partition_err(err_inj.otp_partition_err),
-                         .otp_device_id(cfg.otp_device_id), .otp_manuf_state(cfg.otp_manuf_state),
-                         .otp_vendor_test_status(cfg.otp_vendor_test_status));
+    if (err_inj.security_escalation_err && (security_escalation_err_inj_state == ScrapSt)) begin
+      // Force scrap state
+      lc_state = LcStScrap;
+      lc_cnt   = LcCnt24;
+    end
+
+    cfg.lc_ctrl_vif.init(
+        .lc_state(lc_state), .lc_cnt(lc_cnt),
+        .otp_lc_data_i_valid(!err_inj.otp_lc_data_i_valid_err),
+        .otp_partition_err(err_inj.otp_partition_err), .otp_device_id(cfg.otp_device_id),
+        .otp_manuf_state(cfg.otp_manuf_state), .otp_vendor_test_status(cfg.otp_vendor_test_status),
+        .otp_secrets_valid(otp_secrets_valid), .otp_test_tokens_valid(otp_test_tokens_valid),
+        .otp_rma_token_valid(otp_rma_token_valid));
   endtask
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*4-1:0] token_val);
@@ -499,6 +611,20 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     bit terminate_wait_status = 0;
     bit [TL_DW-1:0] status_val = 0;
     uvm_reg_data_t val;
+
+    // Token mux redun countermeasure
+    if (err_inj.token_mux_ctrl_redun_err) begin
+      fork
+        token_mux_ctrl_err_inject();
+      join_none
+    end
+
+    // Token mux digest countermeasure
+    if (err_inj.token_mux_digest_err) begin
+      fork
+        token_mux_digest_err_inject();
+      join_none
+    end
 
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
     while (status_val != CLAIM_TRANS_VAL) begin
@@ -521,25 +647,13 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       csr_rd(ral.otp_vendor_test_status, val);
     end
 
-    fork
-      begin : transition_process
-        csr_wr(ral.transition_cmd, 'h01);
-        // Wait for status done or terminal errors
-        `DV_SPINWAIT(wait_status(trigger_alert, terminate_wait_status);)
-        // always on alert, set time delay to make sure alert triggered
-        // for at least for one  handshake cycle
-        if (trigger_alert) cfg.clk_rst_vif.wait_clks($urandom_range(50, 20));
-      end
-      begin : inject_escalate_process
-        if (err_inj.security_escalation_err) begin
-          security_escalation_inject();
-          cfg.clk_rst_vif.wait_clks($urandom_range(50, 100));
-          // Do not bother waiting for completion status
-          terminate_wait_status = 1;
-        end
-      end
-    join
-
+    ->cfg.transition_cmd_wr_ev;
+    csr_wr(ral.transition_cmd, 'h01);
+    // Wait for status done or terminal errors
+    `DV_SPINWAIT(wait_status(trigger_alert, cfg.escalate_injected);)
+    // always on alert, set time delay to make sure alert triggered
+    // for at least for one  handshake cycle
+    if (trigger_alert) cfg.clk_rst_vif.wait_clks($urandom_range(50, 20));
 
   endtask
 
@@ -551,6 +665,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     bit token_error_exp, token_error_act;
     bit flash_rma_error_exp, flash_rma_error_act;
     bit otp_error_exp, otp_error_act;
+    bit transition_error_exp, transition_error_act;
     bit transition_count_error_exp, transition_count_error_act;
     bit otp_partition_error_exp, otp_partition_error_act;
 
@@ -566,7 +681,6 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       if (get_field_val(ral.status.flash_rma_error, status_val)) break;
       if (get_field_val(ral.status.transition_error, status_val)) break;
       if (get_field_val(ral.status.transition_count_error, status_val)) break;
-      // if (get_field_val(ral.status.otp_partition_error, status_val)) break;
       if (get_field_val(ral.status.otp_error, status_val) ||
           get_field_val(ral.status.state_error, status_val) ||
           get_field_val(ral.status.bus_integ_error, status_val)) begin
@@ -585,13 +699,20 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     state_error_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
         cfg.err_inj.state_illegal_err || cfg.err_inj.count_illegal_err ||
         cfg.err_inj.lc_fsm_backdoor_err || cfg.err_inj.kmac_fsm_backdoor_err ||
-        cfg.err_inj.count_backdoor_err || cfg.err_inj.state_backdoor_err;
+        cfg.err_inj.count_backdoor_err || cfg.err_inj.state_backdoor_err ||
+        err_inj.otp_secrets_valid_mubi_err;
     token_error_exp = cfg.err_inj.token_mismatch_err || cfg.err_inj.token_response_err ||
-        cfg.err_inj.token_invalid_err;
-    flash_rma_error_exp = cfg.err_inj.flash_rma_error_rsp;
-    otp_error_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp;
+        cfg.err_inj.token_invalid_err ||
+        (cfg.err_inj.otp_test_tokens_valid_mubi_err &&
+            has_test_token(dec_lc_state(lc_state), next_lc_state)) ||
+        (cfg.err_inj.otp_rma_token_valid_mubi_err &&
+         has_rma_token(dec_lc_state(lc_state), next_lc_state)) || cfg.err_inj.token_mux_digest_err;
+    flash_rma_error_exp = cfg.err_inj.flash_rma_error_rsp || cfg.err_inj.flash_rma_rsp_mubi_err;
+    otp_error_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp ||
+        cfg.err_inj.clk_byp_rsp_mubi_err;
     transition_count_error_exp = cfg.err_inj.transition_count_err;
     otp_partition_error_exp = cfg.err_inj.otp_partition_err;
+    transition_error_exp = cfg.err_inj.transition_err || cfg.err_inj.token_mux_ctrl_redun_err;
 
     // Actual bits
     state_error_act = get_field_val(ral.status.state_error, status_val);
@@ -600,15 +721,21 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     otp_error_act = get_field_val(ral.status.otp_error, status_val);
     transition_count_error_act = get_field_val(ral.status.transition_count_error, status_val);
     otp_partition_error_act = get_field_val(ral.status.otp_partition_error, status_val);
+    transition_error_act = get_field_val(ral.status.transition_error, status_val);
 
     if (!terminate) begin
       // Check status against expected from err_inj
       `DV_CHECK_EQ(state_error_act, state_error_exp)
-      `DV_CHECK_EQ(token_error_act, token_error_exp)
+      // Don't check for token_error when we have injected token mux select errors
+      // as the results are difficult to predict
+      if (!cfg.err_inj.token_mux_ctrl_redun_err) begin
+        `DV_CHECK_EQ(token_error_act, token_error_exp)
+      end
       `DV_CHECK_EQ(flash_rma_error_act, flash_rma_error_exp)
       `DV_CHECK_EQ(otp_error_act, otp_error_exp)
       `DV_CHECK_EQ(transition_count_error_exp, transition_count_error_act)
       `DV_CHECK_EQ(otp_partition_error_exp, otp_partition_error_act)
+      `DV_CHECK_EQ(transition_error_exp, transition_error_act)
     end
 
   endtask
@@ -642,34 +769,37 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // Flip bits in LC FSM registers
   protected virtual task lc_fsm_backdoor_err_inj();
     logic [FsmStateWidth-1:0] state;
-    state = cfg.lc_ctrl_vif.lc_fsm_state_backdoor_read();
-    state ^= lc_fsm_state_invert_bits;
-    cfg.lc_ctrl_vif.lc_fsm_state_backdoor_write(state, 0, lc_fsm_state_err_inj_period);
+    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy(
+        "tb.dut.u_lc_ctrl_fsm.u_fsm_state_regs"
+    );
+
+    if_proxy.inject_fault();
   endtask
 
   // Flip bits in KMAC FSM registers
   protected virtual task kmac_fsm_backdoor_err_inj();
     logic [KMAC_FSM_WIDTH-1:0] state;
-    state = cfg.lc_ctrl_vif.kmac_fsm_state_backdoor_read();
-    state ^= kmac_fsm_state_invert_bits;
-    cfg.lc_ctrl_vif.kmac_fsm_state_backdoor_write(state, 0, lc_fsm_state_err_inj_period);
-  endtask
+    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy(
+        "tb.dut.u_lc_ctrl_kmac_if.u_state_regs"
+    );
 
+    if_proxy.inject_fault();
+  endtask
 
   // Flip bits in OTP State input
   protected virtual task state_backdoor_err_inj();
     logic [LcStateWidth-1:0] state;
-    state = cfg.lc_ctrl_vif.count_backdoor_read();
-    state ^= state_invert_bits;
-    cfg.lc_ctrl_vif.count_backdoor_write(state, 0, state_err_inj_period);
+    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy("tb.dut.u_lc_ctrl_fsm.u_state_regs");
+
+    if_proxy.inject_fault();
   endtask
 
   // Flip bits OTP Count input
   protected virtual task count_backdoor_err_inj();
     logic [LcCountWidth-1:0] count;
-    count = cfg.lc_ctrl_vif.count_backdoor_read();
-    count ^= count_invert_bits;
-    cfg.lc_ctrl_vif.count_backdoor_write(count, 0, count_err_inj_period);
+    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy("tb.dut.u_lc_ctrl_fsm.u_cnt_regs");
+
+    if_proxy.inject_fault();
   endtask
 
   // Send an escalate alert
@@ -677,6 +807,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // Otherwise leave asserted
   protected virtual task send_escalate(int index, int assert_clocks = 0);
     // TODO - replace with calls to escalate agent when driver implemented
+    `uvm_info(`gfn, $sformatf("send_escalate: index=%0d assert_clocks=%0d", index, assert_clocks),
+              UVM_LOW)
+    cfg.escalate_injected = 1;
     unique case (index)
       0: begin
         cfg.m_esc_scrap_state0_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b10;
@@ -753,80 +886,247 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   endtask
 
   // verilog_format: off
-  virtual task run_clk_byp_rsp_nonblocking(bit has_err = 0);
-    fork
-      forever begin
-        lc_ctrl_pkg::lc_tx_t rsp = lc_ctrl_pkg::Off;
-        wait (cfg.lc_ctrl_vif.clk_byp_req_o == lc_ctrl_pkg::On || err_inj.clk_byp_error_rsp);
-        if (err_inj.clk_byp_error_rsp) begin
-          // Error stream just on -> off -> on... every clock cycle
-          rsp = (rsp == lc_ctrl_pkg::On) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On;
-          cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
-          cfg.clk_rst_vif.wait_clks(1);
-        end else begin
-          // Normal behaviour
-          rsp = lc_ctrl_pkg::On;
-          cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-          cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
-        end
-        wait (cfg.lc_ctrl_vif.clk_byp_req_o != lc_ctrl_pkg::On || err_inj.clk_byp_error_rsp);
-        if (err_inj.clk_byp_error_rsp) begin
-          // Error stream just on -> off -> on... every clock cycle
-          rsp = (rsp == lc_ctrl_pkg::On) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On;
-          cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
-          cfg.clk_rst_vif.wait_clks(1);
-        end else begin
-          // Normal behaviour
-          rsp = lc_ctrl_pkg::Off;
-          cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-          cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
-        end
+  virtual task run_clk_byp_rsp(bit has_err = 0);
+    // Values to be driven for On and Off
+    lc_ctrl_pkg::lc_tx_t on_val = err_inj.clk_byp_rsp_mubi_err ?
+        // Get a random value for on
+        cip_base_pkg::get_rand_lc_tx_val(.t_weight(0), .f_weight(0), .other_weight(1)) :
+        // Standard On value
+        lc_ctrl_pkg::On;
+    // Get a random value for off which is anything but On
+    lc_ctrl_pkg::lc_tx_t off_val = err_inj.clk_byp_rsp_mubi_err ?
+        cip_base_pkg::get_rand_lc_tx_val(.t_weight(0), .f_weight(0), .other_weight(1)) :
+        // Standard On value
+        lc_ctrl_pkg::Off;
+    cfg.lc_ctrl_vif.set_clk_byp_ack(off_val);
+    forever begin
+      lc_ctrl_pkg::lc_tx_t rsp = off_val;
+      wait (cfg.lc_ctrl_vif.clk_byp_req_o == lc_ctrl_pkg::On || err_inj.clk_byp_error_rsp);
+      if (err_inj.clk_byp_error_rsp) begin
+        // Error stream just on -> off -> on... every clock cycle
+        rsp = (rsp == lc_ctrl_pkg::On) ? off_val : on_val;
+        cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
+        cfg.clk_rst_vif.wait_clks(1);
+      end else begin
+        // Normal behaviour
+        rsp = on_val;
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+        cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
       end
-    join_none
+      wait (cfg.lc_ctrl_vif.clk_byp_req_o != lc_ctrl_pkg::On || err_inj.clk_byp_error_rsp);
+      if (err_inj.clk_byp_error_rsp) begin
+        // Error stream just on -> off -> on... every clock cycle
+        rsp = (rsp == lc_ctrl_pkg::On) ? off_val : on_val;
+        cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
+        cfg.clk_rst_vif.wait_clks(1);
+      end else begin
+        // Normal behaviour
+        rsp = off_val;
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+        cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
+      end
+    end
   endtask
 
 
-  virtual task run_flash_rma_rsp_nonblocking(bit has_err = 0);
-    fork
-      forever begin
-        lc_ctrl_pkg::lc_tx_t rsp = lc_ctrl_pkg::Off;
-        wait (cfg.lc_ctrl_vif.flash_rma_req_o == lc_ctrl_pkg::On || err_inj.flash_rma_error_rsp);
-        if (err_inj.flash_rma_error_rsp) begin
-          // Error stream just on -> off -> on... every clock cycle
-          rsp = (rsp == lc_ctrl_pkg::On) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On;
-          cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
-          cfg.clk_rst_vif.wait_clks(1);
-        end else begin
-          // Normal behaviour
-          rsp = lc_ctrl_pkg::On;
-          cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-          cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
-        end
-        wait (cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On || err_inj.flash_rma_error_rsp);
-        if (err_inj.flash_rma_error_rsp) begin
-          // Error stream just on -> off -> on... every clock cycle
-          rsp = (rsp == lc_ctrl_pkg::On) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On;
-          cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
-          cfg.clk_rst_vif.wait_clks(1);
-        end else begin
-          // Normal behaviour
-          rsp = lc_ctrl_pkg::Off;
-          cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+  virtual task run_flash_rma_rsp(bit has_err = 0);
+    // Number of lc_flash_rma_ack_i synchronisation FFs
+    const int FLASH_RMA_ACK_SYNC_FFS = 2;
+    // Values to be driven for On and Off
+    lc_ctrl_pkg::lc_tx_t on_val = err_inj.flash_rma_rsp_mubi_err ?
+        // Get a random value for on
+        cip_base_pkg::get_rand_lc_tx_val(.t_weight(0), .f_weight(0), .other_weight(1)) :
+        // Standard On value
+        lc_ctrl_pkg::On;
+    lc_ctrl_pkg::lc_tx_t off_val = err_inj.flash_rma_rsp_mubi_err ?
+        // Get a random value for off
+        cip_base_pkg::get_rand_lc_tx_val(.t_weight(0), .f_weight(0), .other_weight(1)) :
+        // Standard On value
+        lc_ctrl_pkg::Off;
+    `uvm_info(`gfn, $sformatf("run_flash_rma_rsp started off_val=%0x, on_val=%0x",
+        off_val,on_val), UVM_MEDIUM)
+
+    cfg.lc_ctrl_vif.set_flash_rma_ack(off_val);
+    forever begin
+      lc_ctrl_pkg::lc_tx_t rsp = off_val;
+      while (cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On &&
+          !err_inj.flash_rma_error_rsp) begin
+        @(cfg.lc_ctrl_vif.flash_rma_req_o or err_inj);
+        if(err_inj.flash_rma_rsp_mubi_err &&
+          cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On) begin
           cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
         end
       end
-    join_none
+      if (err_inj.flash_rma_error_rsp) begin
+        // Error stream just on -> off -> on... every clock cycle
+        rsp = (rsp == lc_ctrl_pkg::On) ? Off : On;
+        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+        cfg.clk_rst_vif.wait_clks(1);
+      end else begin
+        // Normal behaviour
+        rsp = On;
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+        // We can only inject error values after state FlashRmaSt starts
+        if(err_inj.flash_rma_rsp_mubi_err) begin
+          wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {FlashRmaSt});
+          // Allow time to get through the synchronisation FFs
+          cfg.clk_rst_vif.wait_clks(FLASH_RMA_ACK_SYNC_FFS);
+          // Now inject the bad value
+          rsp = on_val;
+          cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+        end
+      end
+      wait (cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On || err_inj.flash_rma_error_rsp);
+      if (err_inj.flash_rma_error_rsp) begin
+        // Error stream just on -> off -> on... every clock cycle
+        rsp = (rsp == lc_ctrl_pkg::On) ? Off : On;
+        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+        cfg.clk_rst_vif.wait_clks(1);
+      end else begin
+        // Normal behaviour
+        rsp = off_val;
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+      end
+    end
   endtask
   // verilog_format: on
 
   // Security escalation injection task
   virtual task security_escalation_inject();
+    // Clear escalates
+    cfg.escalate_injected = 0;
+    clear_escalate(0);
+    clear_escalate(1);
+    // Wait for FSM to reach state we want to inject the error
+    `uvm_info(`gfn, $sformatf(
+              "security_escalation_inject: waiting for FSM state %s",
+              security_escalation_err_inj_state.name()
+              ), UVM_LOW)
+    wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state == security_escalation_err_inj_state);
+    // If IdleSt also wait for write to transition_cmd register
+    if (security_escalation_err_inj_state == IdleSt) @(cfg.transition_cmd_wr_ev);
+    // If TokenHashSt randomly wait for token_hash_ack_i
+    if (security_escalation_err_inj_state == TokenHashSt && $urandom_range(0, 1)) begin
+      wait(cfg.lc_ctrl_vif.token_hash_ack_i == 1);
+    end
+
+    `uvm_info(`gfn, $sformatf(
+              "security_escalation_inject: FSM state %s escalate after %0d cycles",
+              security_escalation_err_inj_state.name(),
+              security_escalation_err_inj_delay
+              ), UVM_LOW)
     cfg.clk_rst_vif.wait_clks(security_escalation_err_inj_delay);
     cfg.set_test_phase(LcCtrlRandomEscalate);
+    cfg.security_escalation_err_inj_state = security_escalation_err_inj_state;
     fork
       if (security_escalation_err_inj_channels[0]) send_escalate(0);
       if (security_escalation_err_inj_channels[1]) send_escalate(1);
     join
   endtask
+
+  // Set assertion controls for MUBI error injection
+  virtual function mubi_assertion_controls();
+    // Values other than On/Off trigger assertions in the primitives
+    if (err_inj.clk_byp_rsp_mubi_err) `DV_ASSERT_CTRL_REQ("FsmClkBypAckSync", 0)
+    else `DV_ASSERT_CTRL_REQ("FsmClkBypAckSync", 1)
+    if (err_inj.flash_rma_rsp_mubi_err) `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckSync", 0)
+    else `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckSync", 1)
+    if (err_inj.otp_test_tokens_valid_mubi_err) `DV_ASSERT_CTRL_REQ("FsmOtpTestTokensValidSync", 0)
+    else `DV_ASSERT_CTRL_REQ("FsmOtpTestTokensValidSync", 1);
+    if (err_inj.otp_rma_token_valid_mubi_err) `DV_ASSERT_CTRL_REQ("FsmOtpRmaTokenValidSync", 0)
+    else `DV_ASSERT_CTRL_REQ("FsmOtpRmaTokenValidSync", 1);
+  endfunction
+
+  // Force bad values on the token mux control lines
+  virtual task token_mux_ctrl_err_inject();
+    bit [TokenIdxWidth-1:0] good_idx, bad_idx;
+    bit idx_to_change = $urandom_range(0, 1);
+    lc_ctrl_pkg::fsm_state_e inj_state = ClkMuxSt;
+
+    // Select FSM state to wait for
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(inj_state,
+                                       inj_state inside {
+        ClkMuxSt, CntIncrSt, CntProgSt, TransCheckSt,
+        FlashRmaSt, TokenHashSt, TokenCheck0St, TokenCheck1St}; )
+
+    // Save in config object for scoreboard
+    cfg.token_mux_ctrl_redun_err_inj_state = inj_state;
+
+    // Wait for FSM to reach state we want to inject the error
+    wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state == inj_state);
+
+    // Read the correct token index value
+    good_idx = idx_to_change ? cfg.lc_ctrl_vif.token_idx0 : cfg.lc_ctrl_vif.token_idx1;
+    // Randomize a bad token index
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_idx, bad_idx != good_idx;)
+    // Force RTL
+    cfg.lc_ctrl_vif.force_token_idx(idx_to_change, bad_idx);
+    `uvm_info(`gfn, $sformatf(
+              "token_mux_ctrl_err_inject: detected FSM state %s, forcing %h to token_idx%0d",
+              cfg.lc_ctrl_vif.lc_ctrl_fsm_state.name,
+              bad_idx,
+              idx_to_change
+              ), UVM_MEDIUM)
+    // Wait for FSM to reach a terminal state
+    wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {PostTransSt, InvalidSt, EscalateSt});
+
+    // Release RTL
+    cfg.lc_ctrl_vif.release_token_idx(idx_to_change);
+    `uvm_info(`gfn, $sformatf(
+              "token_mux_ctrl_err_inject: detected FSM state %s, releasing token_idx%0d",
+              cfg.lc_ctrl_vif.lc_ctrl_fsm_state.name,
+              idx_to_change
+              ), UVM_MEDIUM)
+  endtask
+
+  // Force bad values on the token mux data busses
+  virtual task token_mux_digest_err_inject();
+    lc_token_t good_token, bad_token;
+    lc_token_t token_bit_flip;
+    bit token_to_change = $urandom_range(0, 1);
+    lc_ctrl_pkg::fsm_state_e inj_state = ClkMuxSt;
+
+    // Select FSM state to wait for
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(
+        inj_state, inj_state inside {TokenHashSt, TokenCheck0St, TokenCheck1St};)
+
+    // Save in config object for scoreboard
+    cfg.token_mux_ctrl_redun_err_inj_state = inj_state;
+
+    // Wait for FSM to reach state we want to inject the error
+    wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state == inj_state);
+    // TokenHashSt is further gated by token_hash_ack_i as that indicates
+    // valid data on the input busses
+    if (inj_state == TokenHashSt) wait(cfg.lc_ctrl_vif.token_hash_ack_i == 1);
+
+    // Read the correct token index value
+    good_token = token_to_change ? cfg.lc_ctrl_vif.hashed_token_i :
+        cfg.lc_ctrl_vif.hashed_token_mux;
+    // Randomize bit flip vector
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(token_bit_flip, $onehot(token_bit_flip);)
+    // Flip bit in bad_token
+    bad_token = good_token ^ token_bit_flip;
+    // Force RTL
+    cfg.lc_ctrl_vif.force_hashed_token(token_to_change, bad_token);
+    `uvm_info(`gfn, $sformatf(
+              "token_mux_ctrl_err_inject: detected FSM state %s, forcing %h on %s",
+              cfg.lc_ctrl_vif.lc_ctrl_fsm_state.name,
+              bad_token,
+              token_to_change ? "hashed_token_mux" : "hashed_token_i"
+              ), UVM_MEDIUM)
+    // Wait for FSM to reach a terminal state
+    wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {PostTransSt, InvalidSt, EscalateSt});
+
+    // Release RTL
+    cfg.lc_ctrl_vif.release_hashed_token(token_to_change);
+    `uvm_info(`gfn, $sformatf(
+              "token_mux_ctrl_err_inject: detected FSM state %s, releasing %s",
+              cfg.lc_ctrl_vif.lc_ctrl_fsm_state.name,
+              token_to_change ? "hashed_token_mux" : "hashed_token_i"
+              ), UVM_MEDIUM)
+  endtask
+
 
 endclass

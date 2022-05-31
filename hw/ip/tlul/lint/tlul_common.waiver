@@ -12,10 +12,6 @@ waive -rules {ASSIGN_SIGN} -location {tlul_err.sv} -regexp {Unsigned target 'mas
 waive -rules {HIER_NET_NOT_READ} -regexp {Connected net 'tl_i.a_(address|param|user).*in module 'tlul_err'} \
       -comment "unused signal is back-propagated to the instance"
 
-# TODO: move this into the top-level waiver file
-## xbar
-#waive -rules HIER_NET_NOT_READ -location {tlul_xbar.sv} -regexp {a_source.* is not read from} \
-#      -comment "upper bits of a_source are shifted off when going through M:1 sockets"
-#
-#waive -rules LINE_LENGTH -location {xbar_main.sv} -regexp {Line length of .* exceeds 100 character limit} \
-#      -comment "This is a generated file and it is hence permissible to have line lengths that exceed this limit"
+# TL-UL fifo
+waive -rules {HIER_BRANCH_NOT_READ} -location {tlul_fifo_sync.sv} -regexp {Connected net '(clk_i|rst_ni)' at prim_fifo_sync.sv:.* is not read from in module 'prim_fifo_sync'} \
+      -comment "In passthrough mode, clk and reset are not read form within this module"

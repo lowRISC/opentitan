@@ -59,8 +59,8 @@ sw_lib_dif_clkmgr = declare_dependency(
       'dif_clkmgr.c',
     ],
     dependencies: [
-      sw_lib_mmio,
       sw_lib_dif_autogen_clkmgr,
+      sw_lib_mmio,
     ],
   )
 )
@@ -93,32 +93,13 @@ sw_lib_dif_csrng = declare_dependency(
     sources: [
       hw_ip_csrng_reg_h,
       'dif_csrng.c',
+      'dif_csrng_shared.c',
     ],
     dependencies: [
       sw_lib_mmio,
       sw_lib_dif_autogen_csrng,
     ],
   )
-)
-
-test('dif_csrng_unittest', executable(
-    'dif_csrng_unittest',
-    sources: [
-      'dif_csrng_unittest.cc',
-      'autogen/dif_csrng_autogen_unittest.cc',
-      meson.project_source_root() / 'sw/device/lib/dif/dif_csrng.c',
-      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_csrng_autogen.c',
-      hw_ip_csrng_reg_h,
-    ],
-    dependencies: [
-      sw_vendor_gtest,
-      sw_lib_base_testing_mock_mmio,
-    ],
-    native: true,
-    c_args: ['-DMOCK_MMIO'],
-    cpp_args: ['-DMOCK_MMIO'],
-  ),
-  suite: 'dif',
 )
 
 # EDN DIF Library (dif_csrng)
@@ -134,25 +115,6 @@ sw_lib_dif_edn = declare_dependency(
       sw_lib_dif_autogen_edn,
     ],
   )
-)
-
-test('dif_edn_unittest', executable(
-    'dif_edn_unittest',
-    sources: [
-      'autogen/dif_edn_autogen_unittest.cc',
-      meson.project_source_root() / 'sw/device/lib/dif/dif_edn.c',
-      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_edn_autogen.c',
-      hw_ip_edn_reg_h,
-    ],
-    dependencies: [
-      sw_vendor_gtest,
-      sw_lib_base_testing_mock_mmio,
-    ],
-    native: true,
-    c_args: ['-DMOCK_MMIO'],
-    cpp_args: ['-DMOCK_MMIO'],
-  ),
-  suite: 'dif',
 )
 
 # UART DIF library (dif_uart)
@@ -281,6 +243,7 @@ test('dif_spi_device_unittest', executable(
     sources: [
       'dif_spi_device_unittest.cc',
       'autogen/dif_spi_device_autogen_unittest.cc',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
       meson.project_source_root() / 'sw/device/lib/dif/dif_spi_device.c',
       meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_spi_device_autogen.c',
       hw_ip_spi_device_reg_h,
@@ -951,10 +914,12 @@ sw_lib_dif_sysrst_ctrl = declare_dependency(
     'sw_lib_dif_sysrst_ctrl',
     sources: [
       hw_ip_sysrst_ctrl_reg_h,
+      'dif_sysrst_ctrl.c',
     ],
     dependencies: [
       sw_lib_mmio,
       sw_lib_dif_autogen_sysrst_ctrl,
+      sw_lib_dif_base,
     ],
   )
 )
@@ -962,7 +927,10 @@ sw_lib_dif_sysrst_ctrl = declare_dependency(
 test('dif_sysrst_ctrl_unittest', executable(
     'dif_sysrst_ctrl_unittest',
     sources: [
+      'dif_sysrst_ctrl_unittest.cc',
       'autogen/dif_sysrst_ctrl_autogen_unittest.cc',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_sysrst_ctrl.c',
       meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_sysrst_ctrl_autogen.c',
       hw_ip_sysrst_ctrl_reg_h,
     ],
@@ -1109,6 +1077,43 @@ test('dif_pwm_unittest', executable(
       meson.project_source_root() / 'sw/device/lib/dif/dif_pwm.c',
       meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_pwm_autogen.c',
       hw_ip_pwm_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
+# Sensor Controller DIF library
+sw_lib_dif_sensor_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_sensor_ctrl',
+    sources: [
+      hw_ip_sensor_ctrl_reg_h,
+      'dif_sensor_ctrl.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+      sw_lib_dif_autogen_sensor_ctrl,
+    ],
+  )
+)
+
+test('dif_sensor_ctrl_unittest', executable(
+    'dif_sensor_ctrl_unittest',
+    sources: [
+      'dif_sensor_ctrl_unittest.cc',
+      'autogen/dif_sensor_ctrl_autogen_unittest.cc',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_sensor_ctrl.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_sensor_ctrl_autogen.c',
+      hw_ip_sensor_ctrl_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

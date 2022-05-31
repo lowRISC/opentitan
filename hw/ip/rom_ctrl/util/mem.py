@@ -3,28 +3,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import os
 import random
 import re
 import subprocess
-import sys
 import tempfile
 from typing import BinaryIO, IO, List, Optional, TextIO, Tuple
 
 from elftools.elf.elffile import ELFFile  # type: ignore
-
-
-_REPO_ROOT = os.path.join(os.path.dirname(__file__), '../../../..')
-_UTIL_DESIGN = os.path.normpath(os.path.join(_REPO_ROOT, 'util/design'))
-old_sys_path = sys.path
-try:
-    sys.path = sys.path + [_UTIL_DESIGN]
-    # This strange formulation explicitly re-exports ecc_encode_some from this
-    # module, allowing users of mem.py to call it directly without needing to
-    # do the sys.path dance.
-    from secded_gen import ecc_encode_some as ecc_encode_some  # type: ignore
-finally:
-    sys.path = old_sys_path
+from util.design.secded_gen import ecc_encode_some  # type: ignore
 
 
 class MemChunk:

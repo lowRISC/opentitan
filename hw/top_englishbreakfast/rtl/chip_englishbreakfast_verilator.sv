@@ -21,7 +21,6 @@ module chip_englishbreakfast_verilator (
   logic cio_usbdev_se0_d2p;
   logic cio_usbdev_dp_pullup_d2p;
   logic cio_usbdev_dn_pullup_d2p;
-  logic cio_usbdev_suspend_d2p;
   logic cio_usbdev_rx_enable_d2p;
   logic cio_usbdev_tx_use_d_se0_d2p;
   logic cio_usbdev_d_p2d, cio_usbdev_d_d2p, cio_usbdev_d_en_d2p;
@@ -50,14 +49,12 @@ module chip_englishbreakfast_verilator (
   logic usb_tx_d;
   logic usb_tx_se0;
   logic usb_tx_use_d_se0;
-  logic usb_suspend;
   logic usb_rx_enable;
 
   assign usb_rx_d = cio_usbdev_d_p2d;
   assign cio_usbdev_dn_d2p = dio_out[DioUsbdevUsbDn];
   assign cio_usbdev_dp_d2p = dio_out[DioUsbdevUsbDp];
   assign cio_usbdev_d_d2p  = usb_tx_d;
-  assign cio_usbdev_suspend_d2p = usb_suspend;
   assign cio_usbdev_rx_enable_d2p = usb_rx_enable;
   assign cio_usbdev_tx_use_d_se0_d2p = usb_tx_use_d_se0;
   assign cio_usbdev_dn_pullup_d2p = usb_dn_pullup;
@@ -198,7 +195,6 @@ module chip_englishbreakfast_verilator (
     .usbdev_usb_tx_d_o            (usb_tx_d),
     .usbdev_usb_tx_se0_o          (usb_tx_se0),
     .usbdev_usb_tx_use_d_se0_o      (usb_tx_use_d_se0),
-    .usbdev_usb_suspend_o         (usb_suspend),
     .usbdev_usb_rx_enable_o       (usb_rx_enable),
 
     // Multiplexed I/O
@@ -324,15 +320,14 @@ module chip_englishbreakfast_verilator (
   sim_sram u_sim_sram (
     .clk_i    (`RV_CORE_IBEX.clk_i),
     .rst_ni   (`RV_CORE_IBEX.rst_ni),
-    .tl_in_i  (`RV_CORE_IBEX.tl_d_o_int),
+    .tl_in_i  (tlul_pkg::tl_h2d_t'(`RV_CORE_IBEX.u_tlul_req_buf.out_o)),
     .tl_in_o  (),
     .tl_out_o (),
-    .tl_out_i (`RV_CORE_IBEX.cored_tl_h_i)
+    .tl_out_i ()
   );
 
   // Connect the sim SRAM directly inside rv_core_ibex.
-  assign `RV_CORE_IBEX.tl_d_i_int   = u_sim_sram.tl_in_o;
-  assign `RV_CORE_IBEX.cored_tl_h_o = u_sim_sram.tl_out_o;
+  assign `RV_CORE_IBEX.tl_win_d2h = u_sim_sram.tl_in_o;
 
   // Instantiate the SW test status interface & connect signals from sim_sram_if instance
   // instantiated inside sim_sram. Bind would have worked nicely here, but Verilator segfaults

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{bail, ensure, Result};
 use std::rc::Rc;
 
 use super::ProxyError;
@@ -9,9 +10,8 @@ use crate::io::spi::{SpiError, Target, Transfer, TransferMode};
 use crate::proxy::protocol::{
     Request, Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse,
 };
-use crate::transport::proxy::{Inner, Proxy, Result};
+use crate::transport::proxy::{Inner, Proxy};
 use crate::util::voltage::Voltage;
-use crate::{bail, ensure};
 
 pub struct ProxySpi {
     inner: Rc<Inner>,

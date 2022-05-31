@@ -106,15 +106,15 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
     solve en_mp_regions before mp_regions;
 
     foreach (mp_regions[i]) {
-      mp_regions[i].en == en_mp_regions[i];
-      mp_regions[i].read_en == 1;
-      mp_regions[i].program_en == 1;
-      mp_regions[i].erase_en == 1;
-      mp_regions[i].scramble_en == 0;
-      mp_regions[i].ecc_en == 0;
+      mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
+      mp_regions[i].read_en == MuBi4True;
+      mp_regions[i].program_en == MuBi4True;
+      mp_regions[i].erase_en == MuBi4True;
+      mp_regions[i].scramble_en == MuBi4False;
+      mp_regions[i].ecc_en == MuBi4False;
       mp_regions[i].he_en dist {
-        0 :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
-        1 :/ cfg.seq_cfg.mp_region_he_en_pc
+        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
+        MuBi4True :/ cfg.seq_cfg.mp_region_he_en_pc
       };
 
       mp_regions[i].start_page inside {[0 : FlashNumPages - 1]};
@@ -145,26 +145,26 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
     foreach (mp_info_pages[i, j]) {
       mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
       foreach (mp_info_pages[i][j][k]) {
-        mp_info_pages[i][j][k].en == 1;
-        mp_info_pages[i][j][k].read_en == 1;
-        mp_info_pages[i][j][k].program_en == 1;
-        mp_info_pages[i][j][k].erase_en == 1;
-        mp_info_pages[i][j][k].scramble_en == 0;
-        mp_info_pages[i][j][k].ecc_en == 0;
+        mp_info_pages[i][j][k].en == MuBi4True;
+        mp_info_pages[i][j][k].read_en == MuBi4True;
+        mp_info_pages[i][j][k].program_en == MuBi4True;
+        mp_info_pages[i][j][k].erase_en == MuBi4True;
+        mp_info_pages[i][j][k].scramble_en == MuBi4False;
+        mp_info_pages[i][j][k].ecc_en == MuBi4False;
         mp_info_pages[i][j][k].he_en dist {
-          0 :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
-          1 :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
+          MuBi4False :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
+          MuBi4True :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
         };
       }
     }
   }
 
-  bit default_region_read_en;
-  bit default_region_program_en;
-  bit default_region_erase_en;
-  bit default_region_scramble_en;
-  rand bit default_region_he_en;
-  rand bit default_region_ecc_en;
+  mubi4_t default_region_read_en;
+  mubi4_t default_region_program_en;
+  mubi4_t default_region_erase_en;
+  mubi4_t default_region_scramble_en;
+  rand mubi4_t default_region_he_en;
+  rand mubi4_t default_region_ecc_en;
 
   // Bank Erasability.
   rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
@@ -178,12 +178,12 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
   // High Endurance
   constraint default_region_he_en_c {
     default_region_he_en dist {
-      1 :/ cfg.seq_cfg.default_region_he_en_pc,
-      0 :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
+      MuBi4True :/ cfg.seq_cfg.default_region_he_en_pc,
+      MuBi4False :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
     };
   }
 
-  constraint default_region_ecc_en_c {default_region_ecc_en == 0;}
+  constraint default_region_ecc_en_c {default_region_ecc_en == MuBi4False;}
 
   // Configure sequence knobs to tailor it to smoke seq.
   virtual function void configure_vseq();
@@ -267,10 +267,10 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
   virtual task init_flash_regions();
 
     // Default Region Settings
-    default_region_read_en     = 1;
-    default_region_program_en  = 1;
-    default_region_erase_en    = 1;
-    default_region_scramble_en = 0;
+    default_region_read_en     = MuBi4True;
+    default_region_program_en  = MuBi4True;
+    default_region_erase_en    = MuBi4True;
+    default_region_scramble_en = MuBi4False;
 
     // Enable Bank Erase
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
@@ -299,9 +299,9 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
   virtual task check_code_access(input bit opt);
 
     // Local Variables
-    bit [TL_AW-1:0] read_addr;
-    bit [TL_DW-1:0] rdata;
-    bit [TL_DW-1:0] rdata_unused;
+    addr_t read_addr;
+    data_t rdata;
+    data_t rdata_unused;
 
     // Note : opt 'CODE_FETCH_ALLOWED' - Access Allowed, 'CODE_FETCH_DENIED' - Access Denied
 

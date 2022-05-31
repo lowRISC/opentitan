@@ -29,22 +29,24 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // rand data for program
   rand data_q_t flash_program_data;
 
+  constraint flash_program_data_c {flash_program_data.size == 16;}
+
   // default region cfg
   flash_mp_region_cfg_t default_region_cfg = '{
-      default: 1,
-      scramble_en: 0,
-      ecc_en: 0,
-      he_en: 0,
+      default: MuBi4True,
+      scramble_en: MuBi4False,
+      ecc_en: MuBi4False,
+      he_en: MuBi4False,
       num_pages: 1,
       start_page: 0
   };
 
   // default info cfg
   flash_bank_mp_info_page_cfg_t default_info_page_cfg = '{
-      default: 1,
-      scramble_en: 0,
-      ecc_en: 0,
-      he_en: 0
+      default: MuBi4True,
+      scramble_en: MuBi4False,
+      ecc_en: MuBi4False,
+      he_en: MuBi4False
   };
 
   // By default, in 30% of the times initialize flash as in initial state (all 1s),
@@ -61,7 +63,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task pre_start();
     `uvm_create_on(callback_vseq, p_sequencer);
-    //otp_model();  // Start OTP Model
+    otp_model();  // Start OTP Model
     super.pre_start();
   endtask : pre_start
 
@@ -112,42 +114,50 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                         flash_mp_region_cfg_t region_cfg = default_region_cfg);
     uvm_reg_data_t data;
     uvm_reg csr;
-    data = get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].en, data,
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].en, data,
                                           region_cfg.en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].rd_en, data,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].rd_en, data,
                                                  region_cfg.read_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].prog_en, data,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].prog_en, data,
                                                  region_cfg.program_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].erase_en, data,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].erase_en, data,
                                                  region_cfg.erase_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].scramble_en,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].scramble_en,
                                                  data, region_cfg.scramble_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].ecc_en, data,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].ecc_en, data,
                                                  region_cfg.ecc_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].he_en, data,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].he_en, data,
                                                  region_cfg.he_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].base, data,
-                                                 region_cfg.start_page);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].size, data,
+    csr_wr(.ptr(ral.mp_region_cfg[index]), .value(data));
+
+    // reset for base/size register
+    data = 0;
+    data = get_csr_val_with_updated_field(ral.mp_region[index].base, data,
+                                          region_cfg.start_page);
+    data = data | get_csr_val_with_updated_field(ral.mp_region[index].size, data,
                                                  region_cfg.num_pages);
-    csr_wr(.ptr(ral.mp_region_cfg_shadowed[index]), .value(data));
+    csr_wr(.ptr(ral.mp_region[index]), .value(data));
   endtask : flash_ctrl_mp_region_cfg
 
-  // Configure the protection for the "default" region (all pages that do not fall into one
-  // of the memory protection regions).
-  virtual task flash_ctrl_default_region_cfg(bit read_en = 1, bit program_en = 1, bit erase_en = 1,
-                                             bit scramble_en = 0, bit ecc_en = 0, bit he_en = 0);
+  // Configure the protection for the "default" region (all pages that do not fall
+  // into one of the memory protection regions).
+  virtual task flash_ctrl_default_region_cfg(mubi4_t read_en     = MuBi4True,
+                                             mubi4_t program_en  = MuBi4True,
+                                             mubi4_t erase_en    = MuBi4True,
+                                             mubi4_t scramble_en = MuBi4False,
+                                             mubi4_t ecc_en      = MuBi4False,
+                                             mubi4_t he_en       = MuBi4False);
     uvm_reg_data_t data;
-    data = get_csr_val_with_updated_field(ral.default_region_shadowed.rd_en, data, read_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.prog_en, data,
-                                                 program_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.erase_en, data,
-                                                 erase_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.scramble_en, data,
-                                                 scramble_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.ecc_en, data, ecc_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.he_en, data, he_en);
-    csr_wr(.ptr(ral.default_region_shadowed), .value(data));
+    data = get_csr_val_with_updated_field(ral.default_region.rd_en, data, read_en);
+    data = data |
+        get_csr_val_with_updated_field(ral.default_region.prog_en, data, program_en);
+    data = data |
+        get_csr_val_with_updated_field(ral.default_region.erase_en, data, erase_en);
+    data = data |
+        get_csr_val_with_updated_field(ral.default_region.scramble_en, data, scramble_en);
+    data = data | get_csr_val_with_updated_field(ral.default_region.ecc_en, data, ecc_en);
+    data = data | get_csr_val_with_updated_field(ral.default_region.he_en, data, he_en);
+    csr_wr(.ptr(ral.default_region), .value(data));
   endtask : flash_ctrl_default_region_cfg
 
   // Configure the memory protection of some selected page in one of the information partitions in
@@ -159,7 +169,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t data;
     uvm_reg csr;
 
-    string csr_name = $sformatf("bank%0d_info%0d_page_cfg_shadowed", bank, info_part);
+    string csr_name = $sformatf("bank%0d_info%0d_page_cfg", bank, info_part);
     // If the selected information partition has only 1 page, no suffix needed to the register
     //  name, if there is more than one page, the page index should be added to the register name.
     if (flash_ctrl_pkg::InfoTypeSize[info_part] > 1) begin
@@ -167,18 +177,18 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
     csr = ral.get_reg_by_name(csr_name);
     data = get_csr_val_with_updated_field(csr.get_field_by_name("en"), data, page_cfg.en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"), data,
-                                                 page_cfg.read_en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"), data,
-                                                 page_cfg.program_en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data,
-                                                 page_cfg.erase_en);
+    data = data |
+        get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"), data, page_cfg.read_en);
+    data = data |
+        get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"), data, page_cfg.program_en);
+    data = data |
+        get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data, page_cfg.erase_en);
     data = data | get_csr_val_with_updated_field(csr.get_field_by_name("scramble_en"), data,
                                                  page_cfg.scramble_en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"), data,
-                                                 page_cfg.ecc_en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data,
-                                                 page_cfg.he_en);
+    data = data |
+        get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"), data, page_cfg.ecc_en);
+    data = data |
+        get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data, page_cfg.he_en);
     csr_wr(.ptr(csr), .value(data));
   endtask : flash_ctrl_mp_info_page_cfg
 
@@ -269,6 +279,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     info_sel = flash_op.partition >> 1;
     data = get_csr_val_with_updated_field(ral.control.start, data, 1'b1);
     data = data | get_csr_val_with_updated_field(ral.control.op, data, flash_op.op);
+    data = data | get_csr_val_with_updated_field(ral.control.prog_sel, data, flash_op.prog_sel);
     data = data | get_csr_val_with_updated_field(ral.control.erase_sel, data, flash_op.erase_type);
     data = data | get_csr_val_with_updated_field(ral.control.partition_sel, data, partition_sel);
     data = data | get_csr_val_with_updated_field(ral.control.info_sel, data, info_sel);
@@ -306,10 +317,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Task to perform a direct Flash read at the specified location
   virtual task do_direct_read(
-      input bit [TL_AW-1:0] addr, input bit [TL_DBW-1:0] mask = get_rand_contiguous_mask(),
+      input addr_t addr, input bit [TL_DBW-1:0] mask = get_rand_contiguous_mask(),
       input bit blocking = $urandom_range(0, 1), input bit check_rdata = 0,
-      input bit [TL_DW-1:0] exp_rdata = '0, input mubi4_t instr_type = MuBi4False,
-      output logic [TL_DW-1:0] rdata, input bit exp_err_rsp = 1'b0);
+      input data_t exp_rdata = '0, input mubi4_t instr_type = MuBi4False,
+      output data_4s_t rdata, input bit exp_err_rsp = 1'b0);
     tl_access(.addr(addr), .write(1'b0), .data(rdata), .mask(mask), .blocking(blocking),
               .check_exp_data(check_rdata), .exp_data(exp_rdata), .compare_mask(mask),
               .instr_type(instr_type), .exp_err_rsp(exp_err_rsp),
@@ -326,15 +337,15 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     // Local Signals
     bit               poll_fifo_status;
-    logic [TL_DW-1:0] exp_data[$];
+    data_q_t          exp_data;
     flash_op_t        flash_op;
 
     // Flash Operation Assignments
-    flash_op.op         = op;
-    flash_op.partition  = FlashPartInfo;
-    flash_op.erase_type = FlashErasePage;
-    flash_op.num_words  = FlashSecretPartWords;
-    poll_fifo_status    = 1;
+    flash_op.op                         = op;
+    flash_op.partition                  = FlashPartInfo;
+    flash_op.erase_type                 = FlashErasePage;
+    flash_op.num_words                  = FlashSecretPartWords;
+    poll_fifo_status                    = 1;
 
     // Disable HW Access to Secret Partition from Life Cycle Controller Interface (Write/Read/Erase)
     cfg.flash_ctrl_vif.lc_seed_hw_rd_en = lc_ctrl_pkg::Off;  // Disable Secret Partition HW Access
@@ -447,36 +458,57 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Simple Model For The OTP Key Seeds
   virtual task otp_model();
 
-    `uvm_info(`gfn, "Starting OTP Model", UVM_LOW)
+    `uvm_info(`gfn, "Starting OTP Model ...", UVM_LOW)
+
+    // Initial Values
+    cfg.flash_ctrl_vif.otp_rsp.addr_ack   = 1'b0;
+    cfg.flash_ctrl_vif.otp_rsp.data_ack   = 1'b0;
+    cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b0;
+    cfg.flash_ctrl_vif.otp_rsp.key        = '0;
+    cfg.flash_ctrl_vif.otp_rsp.rand_key   = '0;
+
+    // Note 'some values' appear in both branches of this fork, this is OK because the
+    // branches never run together by design.
+    // The order is always 'addr' followed by 'data'.
 
     fork
-      forever begin
+      forever begin  // addr
         @(posedge cfg.clk_rst_vif.rst_n);
         @(posedge cfg.flash_ctrl_vif.otp_req.addr_req);
-        otp_addr_key                          = {$urandom, $urandom, $urandom, $urandom};
-        otp_addr_rand_key                     = {$urandom, $urandom, $urandom, $urandom};
-        cfg.flash_ctrl_vif.otp_rsp.key        = otp_addr_key;
-        cfg.flash_ctrl_vif.otp_rsp.rand_key   = otp_addr_rand_key;
+        otp_addr_key = {$urandom, $urandom, $urandom, $urandom};
+        otp_addr_rand_key = {$urandom, $urandom, $urandom, $urandom};
+        `uvm_info(`gfn, $sformatf("OTP Addr Key Applied to DUT : otp_addr_key : %0x",
+          otp_addr_key), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("OTP Addr Rand Key Applied to DUT : otp_addr_rand_key : %0x",
+          otp_addr_rand_key), UVM_MEDIUM)
+        cfg.flash_ctrl_vif.otp_rsp.key = otp_addr_key;
+        cfg.flash_ctrl_vif.otp_rsp.rand_key = otp_addr_rand_key;
         cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b1;
-        #1ns;
+        #1ns;  // Positive Hold
         cfg.flash_ctrl_vif.otp_rsp.addr_ack = 1'b1;
         @(negedge cfg.flash_ctrl_vif.otp_req.addr_req);
-        #1ns;
+        #1ns;  // Positive Hold
         cfg.flash_ctrl_vif.otp_rsp.addr_ack = 1'b0;
+        cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b0;
       end
-      forever begin
+      forever begin  // data
         @(posedge cfg.clk_rst_vif.rst_n);
         @(posedge cfg.flash_ctrl_vif.otp_req.data_req);
-        otp_data_key                          = {$urandom, $urandom, $urandom, $urandom};
-        otp_data_rand_key                     = {$urandom, $urandom, $urandom, $urandom};
-        cfg.flash_ctrl_vif.otp_rsp.key        = otp_data_key;
-        cfg.flash_ctrl_vif.otp_rsp.rand_key   = otp_data_rand_key;
+        otp_data_key = {$urandom, $urandom, $urandom, $urandom};
+        otp_data_rand_key = {$urandom, $urandom, $urandom, $urandom};
+        cfg.flash_ctrl_vif.otp_rsp.key = otp_data_key;
+        cfg.flash_ctrl_vif.otp_rsp.rand_key = otp_data_rand_key;
+        `uvm_info(`gfn, $sformatf("OTP Data Key Applied to DUT : otp_data_key : %0x",
+          otp_data_key), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("OTP Data Rand Key Applied to DUT : otp_data_rand_key : %0x",
+          otp_data_rand_key), UVM_MEDIUM)
         cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b1;
-        #1ns;
+        #1ns;  // Positive Hold
         cfg.flash_ctrl_vif.otp_rsp.data_ack = 1'b1;
         @(negedge cfg.flash_ctrl_vif.otp_req.data_req);
-        #1ns;
+        #1ns;  // Positive Hold
         cfg.flash_ctrl_vif.otp_rsp.data_ack = 1'b0;
+        cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b0;
       end
     join_none
 
@@ -549,7 +581,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     // Local Variables
     bit               poll_fifo_status;
-    logic [TL_DW-1:0] exp_data[$];
+    data_q_t          exp_data;
     flash_op_t        flash_op;
     data_q_t          flash_op_rdata;
     int               match_cnt;
@@ -689,16 +721,16 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     int                      num;
     int                      num_full;
     int                      num_part;
-    logic [TL_DW-1:0]        fifo_data;
-    logic [TL_AW-1:0]        flash_addr;
-    logic [TL_DW-1:0]        exp_data[$];
+    data_4s_t                fifo_data;
+    addr_t                   flash_addr;
+    data_q_t                 exp_data;
     flash_op_t               flash_op_copy;
     data_q_t                 data_copy;
 
     // Calculate Number of Complete Cycles and Partial Cycle Words
-    num      = data.size();
-    num_full = num / FIFO_DEPTH;
-    num_part = num % FIFO_DEPTH;
+    num           = data.size();
+    num_full      = num / FIFO_DEPTH;
+    num_part      = num % FIFO_DEPTH;
 
     // Other
     partition_sel = |flash_op.partition;
@@ -805,7 +837,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     flash_addr    = flash_op.addr;
 
     // If num_full > 0
-    idx = 0;
+    idx           = 0;
     for (int cycle = 0; cycle < num_full; cycle++) begin
 
       `uvm_info(`gfn, $sformatf("Read Cycle : %0d, flash_addr = 0x%0x", cycle, flash_addr),
@@ -918,7 +950,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Task to Enable/Disable the 'Info' Partitions, Creator, Owner and Isolated, via the Lifetime
   // Controller Interface
-  virtual task en_sw_rw_part_info (input flash_op_t flash_op, input lc_ctrl_pkg::lc_tx_t val);
+  virtual task en_sw_rw_part_info(input flash_op_t flash_op, input lc_ctrl_pkg::lc_tx_t val);
     if (flash_op.partition == FlashPartInfo) begin
       cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = val;
       cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = val;
@@ -938,7 +970,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       flash_ctrl_start_op(flash_op_r);
       flash_ctrl_read(flash_op_r.num_words, flash_read_data, poll_fifo_status);
       wait_flash_op_done();
-      flash_op_r.addr = flash_op_r.addr + 64; //64B was read, 16 words
+      flash_op_r.addr = flash_op_r.addr + 64;  //64B was read, 16 words
     end
   endtask : controller_read_page
 
@@ -951,38 +983,56 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     for (int i = 0; i < 32; i++) begin
       `uvm_info(`gfn, $sformatf("PROGRAM ADDRESS: 0x%0h", flash_op_p.addr), UVM_HIGH)
       // Randomize Write Data
-      `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(flash_program_data,
-                                            flash_program_data.size == flash_op_p.num_words;)
+      for (int j = 0; j < 16; j++) begin
+        flash_program_data[j] = $urandom();
+      end
       cfg.flash_mem_bkdr_write(.flash_op(flash_op_p), .scheme(FlashMemInitSet));
       flash_ctrl_start_op(flash_op_p);
       flash_ctrl_write(flash_program_data, poll_fifo_status);
       wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-      flash_op_p.addr = flash_op_p.addr + 64; //64B was written, 16 words
+      flash_op_p.addr = flash_op_p.addr + 64;  //64B was written, 16 words
     end
   endtask : controller_program_page
 
-  // Task for set scb memory
-  virtual task set_scb_mem(int bkd_num_words,flash_dv_part_e bkd_partition,
-                         bit [TL_AW-1:0] write_bkd_addr,bit [TL_DW-1:0] set_bkd_val);
-    bit [TL_AW-1:0] wr_bkd_addr;
-    `uvm_info(`gfn, $sformatf("SET SCB MEM TEST part: %0s addr:%0h data:0x%0h num: %0d",
-                             bkd_partition.name,write_bkd_addr,set_bkd_val,bkd_num_words),UVM_HIGH)
-    wr_bkd_addr = {write_bkd_addr[TL_AW-1:2], 2'b00};
-    `uvm_info(`gfn, $sformatf("SET SCB MEM ADDR:%0h", wr_bkd_addr), UVM_HIGH)
-    for (int i=0; i < bkd_num_words; i++) begin
-      `uvm_info(`gfn, $sformatf("SET SCB MEM part: %0s addr:%0h data:0x%0h num: %0d",
-                bkd_partition.name,wr_bkd_addr,set_bkd_val,bkd_num_words),UVM_HIGH)
-      cfg.write_data_all_part(bkd_partition, wr_bkd_addr, set_bkd_val);
-      wr_bkd_addr = wr_bkd_addr + 4;
-    end
-  endtask : set_scb_mem
+  // Check Expected Alert for prog_type_err and prog_win_err
+  virtual task check_exp_alert_status(input bit exp_alert, input string alert_name,
+                                      input flash_op_t flash_op, input data_q_t flash_op_data);
 
-  // Task for clean scb memory
-  virtual task scb_del_mem();
-        cfg.scb_flash_data.delete();
-        cfg.scb_flash_info.delete();
-        cfg.scb_flash_info1.delete();
-        cfg.scb_flash_info2.delete();
-  endtask : scb_del_mem
+    // Local Variables
+    uvm_reg_data_t reg_data;
+
+    // Read Status Bits
+    case (alert_name)
+      "prog_type_err" : csr_rd_check(.ptr(ral.err_code.prog_type_err), .compare_value(exp_alert));
+      "prog_win_err"  : csr_rd_check(.ptr(ral.err_code.prog_win_err),  .compare_value(exp_alert));
+      "mp_err"        : csr_rd_check(.ptr(ral.err_code.mp_err),        .compare_value(exp_alert));
+      "op_err"        : csr_rd_check(.ptr(ral.err_code.op_err),        .compare_value(exp_alert));
+      default : `uvm_fatal(`gfn, "Unrecognized alert_name, FAIL")
+    endcase
+    csr_rd_check(.ptr(ral.op_status.err), .compare_value(exp_alert));
+
+    // For 'prog_type_err' and 'prog_win_err' check via backdoor ff Pass,
+    // 'mp_err' is Backdoor checked directly within its own test.
+    if ((alert_name inside {"prog_type_err", "prog_win_err"}) && (exp_alert == 0)) begin
+      cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+    end
+
+    // Clear Status Bits
+    case (alert_name)
+      "prog_type_err" : reg_data = get_csr_val_with_updated_field(ral.err_code.prog_type_err,
+                                                                  reg_data, 1);
+      "prog_win_err"  : reg_data = get_csr_val_with_updated_field(ral.err_code.prog_win_err,
+                                                                  reg_data, 1);
+      "mp_err"        : reg_data = get_csr_val_with_updated_field(ral.err_code.mp_err,
+                                                                  reg_data, 1);
+      "op_err"        : reg_data = get_csr_val_with_updated_field(ral.err_code.op_err,
+                                                                  reg_data, 1);
+      default : `uvm_fatal(`gfn, "Unrecognized alert_name")
+    endcase
+    csr_wr(.ptr(ral.err_code), .value(reg_data));
+    reg_data = get_csr_val_with_updated_field(ral.op_status.err, reg_data, 0);
+    csr_wr(.ptr(ral.op_status), .value(reg_data));
+
+  endtask : check_exp_alert_status
 
 endclass : flash_ctrl_base_vseq

@@ -271,6 +271,20 @@ package ibex_pkg;
     RF_WD_CSR
   } rf_wd_sel_e;
 
+  // Controller FSM state encoding
+  typedef enum logic [3:0] {
+    RESET,
+    BOOT_SET,
+    WAIT_SLEEP,
+    SLEEP,
+    FIRST_FETCH,
+    DECODE,
+    FLUSH,
+    IRQ_TAKEN,
+    DBG_TAKEN_IF,
+    DBG_TAKEN_ID
+  } ctrl_fsm_e;
+
   //////////////
   // IF stage //
   //////////////
@@ -302,23 +316,42 @@ package ibex_pkg;
                           // one interrupt is reserved for NMI (not visible through mip/mie)
   } irqs_t;
 
-  // Exception cause
-  typedef enum logic [5:0] {
-    EXC_CAUSE_IRQ_SOFTWARE_M     = {1'b1, 5'd03},
-    EXC_CAUSE_IRQ_TIMER_M        = {1'b1, 5'd07},
-    EXC_CAUSE_IRQ_EXTERNAL_M     = {1'b1, 5'd11},
-    // EXC_CAUSE_IRQ_FAST_0      = {1'b1, 5'd16},
-    // EXC_CAUSE_IRQ_FAST_14     = {1'b1, 5'd30},
-    EXC_CAUSE_IRQ_NM             = {1'b1, 5'd31}, // == EXC_CAUSE_IRQ_FAST_15
-    EXC_CAUSE_INSN_ADDR_MISA     = {1'b0, 5'd00},
-    EXC_CAUSE_INSTR_ACCESS_FAULT = {1'b0, 5'd01},
-    EXC_CAUSE_ILLEGAL_INSN       = {1'b0, 5'd02},
-    EXC_CAUSE_BREAKPOINT         = {1'b0, 5'd03},
-    EXC_CAUSE_LOAD_ACCESS_FAULT  = {1'b0, 5'd05},
-    EXC_CAUSE_STORE_ACCESS_FAULT = {1'b0, 5'd07},
-    EXC_CAUSE_ECALL_UMODE        = {1'b0, 5'd08},
-    EXC_CAUSE_ECALL_MMODE        = {1'b0, 5'd11}
-  } exc_cause_e;
+  typedef struct packed {
+    logic       irq_int;
+    logic       irq_ext;
+    logic [4:0] lower_cause;
+  } exc_cause_t;
+
+  localparam exc_cause_t ExcCauseIrqSoftwareM =
+    '{irq_ext: 1'b1, irq_int: 1'b0, lower_cause: 5'd03};
+  localparam exc_cause_t ExcCauseIrqTimerM =
+    '{irq_ext: 1'b1, irq_int: 1'b0, lower_cause: 5'd07};
+  localparam exc_cause_t ExcCauseIrqExternalM =
+    '{irq_ext: 1'b1, irq_int: 1'b0, lower_cause: 5'd11};
+  localparam exc_cause_t ExcCauseIrqNm =
+    '{irq_ext: 1'b1, irq_int: 1'b0, lower_cause: 5'd31};
+
+  localparam exc_cause_t ExcCauseInsnAddrMisa =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd00};
+  localparam exc_cause_t ExcCauseInstrAccessFault =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd01};
+  localparam exc_cause_t ExcCauseIllegalInsn =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd02};
+  localparam exc_cause_t ExcCauseBreakpoint =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd03};
+  localparam exc_cause_t ExcCauseLoadAccessFault  =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd05};
+  localparam exc_cause_t ExcCauseStoreAccessFault =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd07};
+  localparam exc_cause_t ExcCauseEcallUMode =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd08};
+  localparam exc_cause_t ExcCauseEcallMMode =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd11};
+
+  // Internal NMI cause
+  typedef enum logic [4:0] {
+    NMI_INT_CAUSE_ECC = 5'b0
+  } nmi_int_cause_e;
 
   // Debug cause
   typedef enum logic [2:0] {
@@ -615,6 +648,6 @@ package ibex_pkg;
   // for Off. This allows the use of FetchEnableOn/FetchEnableOff to work for both secure and
   // non-secure Ibex. If this assumption is broken the RTL that uses the fetch_enable signal within
   // `ibex_core` may need adjusting.
-  parameter fetch_enable_t FetchEnableOn  = 4'b1001;
-  parameter fetch_enable_t FetchEnableOff = 4'b0110;
+  parameter fetch_enable_t FetchEnableOn  = 4'b0101;
+  parameter fetch_enable_t FetchEnableOff = 4'b1010;
 endpackage

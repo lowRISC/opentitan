@@ -11,8 +11,9 @@
 `include "dv_fcov_macros.svh"
 
 module ibex_controller #(
-  parameter bit WritebackStage  = 0,
-  parameter bit BranchPredictor = 0
+  parameter bit WritebackStage  = 1'b0,
+  parameter bit BranchPredictor = 1'b0,
+  parameter bit MemECC          = 1'b0
  ) (
   input  logic                  clk_i,
   input  logic                  rst_ni,
@@ -52,11 +53,12 @@ module ibex_controller #(
   output logic                  nt_branch_mispredict_o,  // Not-taken branch in ID/EX was
                                                          // mispredicted (predicted taken)
   output ibex_pkg::exc_pc_sel_e exc_pc_mux_o,            // IF stage selector for exception PC
-  output ibex_pkg::exc_cause_e  exc_cause_o,             // for IF stage, CSRs
+  output ibex_pkg::exc_cause_t  exc_cause_o,             // for IF stage, CSRs
 
   // LSU
   input  logic [31:0]           lsu_addr_last_i,         // for mtval
   input  logic                  load_err_i,
+  input  logic                  load_intg_err_i,
   input  logic                  store_err_i,
   output logic                  wb_exception_o,          // Instruction in WB taking an exception
   output logic                  id_exception_o,          // Instruction in ID taking an exception
@@ -72,7 +74,7 @@ module ibex_controller #(
   input  logic                  irq_pending_i,           // interrupt request pending
   input  ibex_pkg::irqs_t       irqs_i,                  // interrupt requests qualified with
                                                          // mie CSR
-  input  logic                  irq_nm_i,                // non-maskeable interrupt
+  input  logic                  irq_nm_ext_i,            // non-maskeable interrupt
   output logic                  nmi_mode_o,              // core executing NMI handler
 
   // debug signals
@@ -93,7 +95,6 @@ module ibex_controller #(
   output logic                  csr_save_cause_o,
   output logic [31:0]           csr_mtval_o,
   input  ibex_pkg::priv_lvl_e   priv_mode_i,
-  input  logic                  csr_mstatus_tw_i,
 
   // stall & flush signals
   input  logic                  stall_id_i,
@@ -108,12 +109,6 @@ module ibex_controller #(
                                                          // instruction
 );
   import ibex_pkg::*;
-
-  // FSM state encoding
-  typedef enum logic [3:0] {
-    RESET, BOOT_SET, WAIT_SLEEP, SLEEP, FIRST_FETCH, DECODE, FLUSH,
-    IRQ_TAKEN, DBG_TAKEN_IF, DBG_TAKEN_ID
-  } ctrl_fsm_e;
 
   ctrl_fsm_e ctrl_fsm_cs, ctrl_fsm_ns;
 
@@ -137,8 +132,6 @@ module ibex_controller #(
   logic halt_if;
   logic retain_id;
   logic flush_id;
-  logic illegal_dret;
-  logic illegal_umode;
   logic exc_req_lsu;
   logic special_req;
   logic special_req_pc_change;
@@ -151,6 +144,12 @@ module ibex_controller #(
   logic ebreak_into_debug;
   logic handle_irq;
   logic id_wb_pending;
+
+  logic                     irq_nm;
+  logic                     irq_nm_int;
+  logic [31:0]              irq_nm_int_mtval;
+  ibex_pkg::nmi_int_cause_e irq_nm_int_cause;
+
 
   logic [3:0] mfip_id;
   logic       unused_irq_timer;
@@ -193,21 +192,14 @@ module ibex_controller #(
   assign csr_pipe_flush  = csr_pipe_flush_i  & instr_valid_i;
   assign instr_fetch_err = instr_fetch_err_i & instr_valid_i;
 
-  // "Executing DRET outside of Debug Mode causes an illegal instruction exception."
-  // [Debug Spec v0.13.2, p.41]
-  assign illegal_dret = dret_insn & ~debug_mode_q;
-
-  // Some instructions can only be executed in M-Mode
-  assign illegal_umode = (priv_mode_i != PRIV_LVL_M) &
-                         // MRET must be in M-Mode. TW means trap WFI to M-Mode.
-                         (mret_insn | (csr_mstatus_tw_i & wfi_insn));
-
   // This is recorded in the illegal_insn_q flop to help timing.  Specifically
   // it is needed to break the path from ibex_cs_registers/illegal_csr_insn_o
   // to pc_set_o.  Clear when controller is in FLUSH so it won't remain set
   // once illegal instruction is handled.
-  // All terms in this expression are qualified by instr_valid_i
-  assign illegal_insn_d = (illegal_insn_i | illegal_dret | illegal_umode) & (ctrl_fsm_cs != FLUSH);
+  // illegal_insn_i only set when instr_valid_i is set.
+  assign illegal_insn_d = illegal_insn_i & (ctrl_fsm_cs != FLUSH);
+
+  `ASSERT(IllegalInsnOnlyIfInsnValid, illegal_insn_i |-> instr_valid_i)
 
   // exception requests
   // requests are flopped in exc_req_q.  This is cleared when controller is in
@@ -308,6 +300,68 @@ module ibex_controller #(
   // Interrupts //
   ////////////////
 
+  // Internal interrupt control
+  // All internal interrupts act as an NMI and go to the NMI vector. mcause is set based upon
+  // irq_nm_int_cause.
+
+  if (MemECC) begin : g_intg_irq_int
+    logic        load_intg_err_irq_pending_q, load_intg_err_irq_pending_d;
+    logic [31:0] load_intg_err_addr_q, load_intg_err_addr_d;
+    logic        load_intg_err_irq_set, load_intg_err_irq_clear;
+    logic        entering_nmi;
+
+    assign entering_nmi = nmi_mode_d & ~nmi_mode_q;
+
+    // Load integerity error internal interrupt
+    always_comb begin
+      load_intg_err_addr_d        = load_intg_err_addr_q;
+      load_intg_err_irq_set       = 1'b0;
+      load_intg_err_irq_clear     = 1'b0;
+
+      if (load_intg_err_irq_pending_q) begin
+        // Clear ECC error interrupt when it is handled. External NMI takes a higher priority so
+        // don't clear the ECC error interrupt if an external NMI is present.
+        if (entering_nmi & !irq_nm_ext_i) begin
+          load_intg_err_irq_clear = 1'b1;
+        end
+      end else if (load_intg_err_i) begin
+        // When an ECC error is seen set the ECC error interrupt and capture the address that saw
+        // the error. If there is already an ecc error IRQ pending ignore any ECC errors coming in.
+        load_intg_err_addr_d        = lsu_addr_last_i;
+        load_intg_err_irq_set       = 1'b1;
+      end
+    end
+
+    assign load_intg_err_irq_pending_d =
+      (load_intg_err_irq_pending_q & ~load_intg_err_irq_clear) | load_intg_err_irq_set;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        load_intg_err_irq_pending_q <= 1'b0;
+        load_intg_err_addr_q        <= '0;
+      end else begin
+        load_intg_err_irq_pending_q <= load_intg_err_irq_pending_d;
+        load_intg_err_addr_q        <= load_intg_err_addr_d;
+      end
+    end
+
+    // As integrity error is the only internal interrupt implement, set irq_nm_* signals directly
+    // within this generate block.
+    assign irq_nm_int = load_intg_err_irq_set | load_intg_err_irq_pending_q;
+    assign irq_nm_int_cause = NMI_INT_CAUSE_ECC;
+    assign irq_nm_int_mtval = load_intg_err_addr_q;
+  end else begin : g_no_intg_irq_int
+    logic unused_load_intg_err_i;
+
+    assign unused_load_intg_err_i = load_intg_err_i;
+
+    // No integrity checking on incoming load data so no internal interrupts
+    assign irq_nm_int       = 1'b0;
+    assign irq_nm_int_cause = nmi_int_cause_e'(0);
+    assign irq_nm_int_mtval = '0;
+  end
+
+
   // Enter debug mode due to an external debug_req_i or because the core is in
   // single step mode (dcsr.step == 1). Single step must be qualified with
   // instruction valid otherwise the core will immediately enter debug mode
@@ -339,12 +393,16 @@ module ibex_controller #(
                              priv_mode_i == PRIV_LVL_U ? debug_ebreaku_i :
                                                          1'b0;
 
+  // NMI can be produced from an external (irq_nm_i top level input) or an internal (within
+  // ibex_core) source. For internal sources the cause is specified via irq_nm_int_cause.
+  assign irq_nm = irq_nm_ext_i | irq_nm_int;
+
   // Interrupts including NMI are ignored,
   // - while in debug mode [Debug Spec v0.13.2, p.39],
   // - while in NMI mode (nested NMIs are not supported, NMI has highest priority and
   //   cannot be interrupted by regular interrupts).
   assign handle_irq = ~debug_mode_q & ~nmi_mode_q &
-      (irq_nm_i | (irq_pending_i & csr_mstatus_mie_i));
+      (irq_nm | (irq_pending_i & csr_mstatus_mie_i));
 
   // generate ID of fast interrupts, highest priority to lowest ID
   always_comb begin : gen_mfip_id
@@ -384,7 +442,7 @@ module ibex_controller #(
     nt_branch_mispredict_o = 1'b0;
 
     exc_pc_mux_o           = EXC_PC_IRQ;
-    exc_cause_o            = EXC_CAUSE_INSN_ADDR_MISA; // = 6'h00
+    exc_cause_o            = ExcCauseInsnAddrMisa; // = 6'h00
 
     ctrl_fsm_ns            = ctrl_fsm_cs;
 
@@ -438,7 +496,7 @@ module ibex_controller #(
 
         // normal execution flow
         // in debug mode or single step mode we leave immediately (wfi=nop)
-        if (irq_nm_i || irq_pending_i || debug_req_i || debug_mode_q || debug_single_step_i) begin
+        if (irq_nm || irq_pending_i || debug_req_i || debug_mode_q || debug_single_step_i) begin
           ctrl_fsm_ns = FIRST_FETCH;
         end else begin
           // Make sure clock remains disabled.
@@ -558,21 +616,28 @@ module ibex_controller #(
           csr_save_cause_o = 1'b1;
 
           // interrupt priorities according to Privileged Spec v1.11 p.31
-          if (irq_nm_i && !nmi_mode_q) begin
-            exc_cause_o = EXC_CAUSE_IRQ_NM;
+          if (irq_nm && !nmi_mode_q) begin
+            exc_cause_o =
+              irq_nm_ext_i ? ExcCauseIrqNm :
+                             '{irq_ext: 1'b0, irq_int: 1'b1, lower_cause: irq_nm_int_cause};
+
+            if (irq_nm_int & !irq_nm_ext_i) begin
+              csr_mtval_o = irq_nm_int_mtval;
+            end
+
             nmi_mode_d  = 1'b1; // enter NMI mode
           end else if (irqs_i.irq_fast != 15'b0) begin
             // generate exception cause ID from fast interrupt ID:
             // - first bit distinguishes interrupts from exceptions,
             // - second bit adds 16 to fast interrupt ID
-            // for example EXC_CAUSE_IRQ_FAST_0 = {1'b1, 5'd16}
-            exc_cause_o = exc_cause_e'({2'b11, mfip_id});
+            // for example ExcCauseIrqFast0 = {1'b1, 5'd16}
+            exc_cause_o = '{irq_ext: 1'b1, irq_int: 1'b0, lower_cause: {1'b1, mfip_id}};
           end else if (irqs_i.irq_external) begin
-            exc_cause_o = EXC_CAUSE_IRQ_EXTERNAL_M;
+            exc_cause_o = ExcCauseIrqExternalM;
           end else if (irqs_i.irq_software) begin
-            exc_cause_o = EXC_CAUSE_IRQ_SOFTWARE_M;
+            exc_cause_o = ExcCauseIrqSoftwareM;
           end else begin // irqs_i.irq_timer
-            exc_cause_o = EXC_CAUSE_IRQ_TIMER_M;
+            exc_cause_o = ExcCauseIrqTimerM;
           end
         end
 
@@ -668,16 +733,16 @@ module ibex_controller #(
           // Exception/fault prioritisation logic will have set exactly 1 X_prio signal
           unique case (1'b1)
             instr_fetch_err_prio: begin
-              exc_cause_o = EXC_CAUSE_INSTR_ACCESS_FAULT;
+              exc_cause_o = ExcCauseInstrAccessFault;
               csr_mtval_o = instr_fetch_err_plus2_i ? (pc_id_i + 32'd2) : pc_id_i;
             end
             illegal_insn_prio: begin
-              exc_cause_o = EXC_CAUSE_ILLEGAL_INSN;
+              exc_cause_o = ExcCauseIllegalInsn;
               csr_mtval_o = instr_is_compressed_i ? {16'b0, instr_compressed_i} : instr_i;
             end
             ecall_insn_prio: begin
-              exc_cause_o = (priv_mode_i == PRIV_LVL_M) ? EXC_CAUSE_ECALL_MMODE :
-                                                          EXC_CAUSE_ECALL_UMODE;
+              exc_cause_o = (priv_mode_i == PRIV_LVL_M) ? ExcCauseEcallMMode :
+                                                          ExcCauseEcallUMode;
             end
             ebrk_insn_prio: begin
               if (debug_mode_q | ebreak_into_debug) begin
@@ -709,15 +774,15 @@ module ibex_controller #(
                  * ECALL or EBREAK instruction itself, not the address of the
                  * following instruction." [Privileged Spec v1.11, p.40]
                  */
-                exc_cause_o      = EXC_CAUSE_BREAKPOINT;
+                exc_cause_o      = ExcCauseBreakpoint;
               end
             end
             store_err_prio: begin
-              exc_cause_o = EXC_CAUSE_STORE_ACCESS_FAULT;
+              exc_cause_o = ExcCauseStoreAccessFault;
               csr_mtval_o = lsu_addr_last_i;
             end
             load_err_prio: begin
-              exc_cause_o = EXC_CAUSE_LOAD_ACCESS_FAULT;
+              exc_cause_o = ExcCauseLoadAccessFault;
               csr_mtval_o = lsu_addr_last_i;
             end
             default: ;

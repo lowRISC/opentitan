@@ -354,7 +354,6 @@ module chip_${top["name"]}_${target["name"]} (
   logic usb_tx_d;
   logic usb_tx_se0;
   logic usb_tx_use_d_se0;
-  logic usb_suspend;
   logic usb_rx_enable;
 
   // Connect the DP pad
@@ -395,7 +394,6 @@ module chip_${top["name"]}_${target["name"]} (
   logic usb_rx_d;
   logic usb_tx_d;
   logic usb_tx_se0;
-  logic usb_suspend;
   logic usb_rx_enable;
 
   // DioUsbdevUsbDn
@@ -427,7 +425,7 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_oe_io_usb_speed = 1'b1;
 
   // TUSB1106 low-power mode
-  assign manual_out_io_usb_suspend = usb_suspend;
+  assign manual_out_io_usb_suspend = !usb_rx_enable;
   assign manual_oe_io_usb_suspend = 1'b1;
 
   logic unused_usb_sigs;
@@ -435,7 +433,6 @@ module chip_${top["name"]}_${target["name"]} (
     usb_dn_pullup_en,
     usb_tx_d,
     usb_tx_se0,
-    usb_rx_enable,
     manual_in_io_usb_connect,
     manual_in_io_usb_oe_n,
     manual_in_io_usb_speed,
@@ -449,120 +446,6 @@ module chip_${top["name"]}_${target["name"]} (
 
 % endif
 
-% if target["name"] == "nexysvideo":
-###################################################################
-## USB for Nexysvideo                                            ##
-###################################################################
-
-  /////////////////////
-  // USB Overlay Mux //
-  /////////////////////
-
-  // TODO: generalize this USB mux code and align with other tops.
-
-  // Software can enable the pinflip feature inside usbdev.
-  // The example hello_usbdev does this based on GPIO0 (a switch on the board)
-  //
-  // Here, we use the state of the DN pullup to effectively undo the
-  // swapping such that the PCB always sees the unflipped D+/D-. We
-  // could do the same inside the .xdc file but then two FPGA
-  // bitstreams would be needed for testing.
-  //
-  // dio_in/out/oe map is: PADS <- _padring <- JTAG mux -> _umux -> USB mux -> _core
-
-  // Split out for differential PHY testing
-
-  // Outputs always drive and just copy the value
-  // Let them go to the normal place too because it won't do any harm
-  // and it simplifies the changes needed
-  logic usb_dp_pullup_en;
-  logic usb_dn_pullup_en;
-  logic usb_rx_d;
-  logic usb_tx_d;
-  logic usb_tx_se0;
-  logic usb_tx_use_d_se0;
-  logic usb_suspend;
-  logic usb_rx_enable;
-
-  // The value for IO_USB_DNPULLUP0 is used to decide whether we need to undo the swapping.
-  logic undo_swap;
-  assign undo_swap = usb_dn_pullup_en;
-
-  // GPIO[2] = Switch 2 on board is used to select using the UPHY
-  // Keep GPIO[1] for selecting differential in sw
-  logic use_uphy;
-  assign use_uphy = mio_in[MioPadIoa2];
-
-  // DioUsbdevUsbDn
-  assign manual_attr_usb_n = '0;
-  assign manual_attr_io_uphy_dn_tx = '0;
-
-  assign manual_out_io_uphy_dn_tx = manual_out_usb_n;
-  assign manual_out_usb_n = undo_swap ? dio_out[DioUsbdevUsbDp] :
-                                        dio_out[DioUsbdevUsbDn];
-
-  assign manual_oe_io_uphy_dn_tx = manual_oe_usb_n;
-  assign manual_oe_usb_n = undo_swap ? dio_oe[DioUsbdevUsbDp] :
-                                       dio_oe[DioUsbdevUsbDn];
-
-  assign dio_in[DioUsbdevUsbDn] = use_uphy ?
-                                  (undo_swap ? manual_in_io_uphy_dp_rx :
-                                               manual_in_io_uphy_dn_rx) :
-                                  (undo_swap ? manual_in_usb_p :
-                                               manual_in_usb_n);
-  // DioUsbdevUsbDp
-  assign manual_attr_usb_p = '0;
-  assign manual_attr_io_uphy_dp_tx = '0;
-
-  assign manual_out_io_uphy_dp_tx = manual_out_usb_p;
-  assign manual_out_usb_p = undo_swap ? dio_out[DioUsbdevUsbDn] :
-                                        dio_out[DioUsbdevUsbDp];
-
-  assign manual_oe_io_uphy_dp_tx = manual_oe_usb_p;
-  assign manual_oe_usb_p = undo_swap ? dio_oe[DioUsbdevUsbDn] :
-                                       dio_oe[DioUsbdevUsbDp];
-  assign dio_in[DioUsbdevUsbDp] = use_uphy ?
-                                  (undo_swap ? manual_in_io_uphy_dn_rx :
-                                               manual_in_io_uphy_dp_rx) :
-                                  (undo_swap ? manual_in_usb_n :
-                                               manual_in_usb_p);
-  // UsbdevD
-  // This is not connected at the moment
-  logic unused_out_usb_d;
-  assign unused_out_usb_d = usb_tx_d;
-  assign usb_rx_d = use_uphy ?
-                              (undo_swap ? ~manual_in_io_uphy_d_rx :
-                                            manual_in_io_uphy_d_rx) :
-                              // This is not connected at the moment
-                              (undo_swap ? 1'b1 : 1'b0);
-  assign manual_out_io_uphy_d_rx = 1'b0;
-  assign manual_oe_io_uphy_d_rx = 1'b0;
-
-  // UsbdevDnPullup
-  assign manual_attr_io_usb_dnpullup0 = '0;
-  assign manual_out_io_usb_dnpullup0 = usb_dn_pullup_en;
-  assign manual_oe_io_usb_dnpullup0 = undo_swap ? usb_dp_pullup_en : usb_dn_pullup_en;
-
-  // DioUsbdevDpPullup
-  assign manual_attr_io_usb_dppullup0 = '0;
-  assign manual_out_io_usb_dppullup0 = usb_dp_pullup_en;
-  assign manual_oe_io_usb_dppullup0 = undo_swap ? usb_dn_pullup_en : usb_dp_pullup_en;
-
-  // Additional outputs for uphy
-  assign manual_oe_io_uphy_dppullup = 1'b1;
-  assign manual_out_io_uphy_dppullup = manual_out_io_usb_dppullup0 &
-                                       manual_oe_io_usb_dppullup0;
-
-  logic unused_in_io_uphy_dppullup;
-  assign unused_in_io_uphy_dppullup = manual_in_io_uphy_dppullup;
-
-  assign manual_oe_io_uphy_oe_n = 1'b1;
-  assign manual_out_io_uphy_oe_n = ~manual_oe_usb_p;
-
-  logic unused_in_io_uphy_oe_n;
-  assign unused_in_io_uphy_oe_n = manual_in_io_uphy_oe_n;
-
-% endif
 
 ###################################################################
 ## AST For all targets                                           ##
@@ -1047,7 +930,6 @@ module chip_${top["name"]}_${target["name"]} (
     .usbdev_usb_tx_d_o            (                            ),
     .usbdev_usb_tx_se0_o          (                            ),
     .usbdev_usb_tx_use_d_se0_o    (                            ),
-    .usbdev_usb_suspend_o         (                            ),
     .usbdev_usb_rx_enable_o       ( usb_rx_enable              ),
     .usbdev_usb_ref_val_o         ( usb_ref_val                ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse              ),
@@ -1077,6 +959,7 @@ module chip_${top["name"]}_${target["name"]} (
     .hi_speed_sel_o               ( hi_speed_sel               ),
     .div_step_down_req_i          ( div_step_down_req          ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
+    .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 
     // Flash test mode voltages
@@ -1122,7 +1005,7 @@ module chip_${top["name"]}_${target["name"]} (
 ###################################################################
 ## FPGA shared                                                   ##
 ###################################################################
-% if target["name"] in ["cw310", "cw305", "nexysvideo"]:
+% if target["name"] in ["cw310", "cw305"]:
   //////////////////
   // PLL for FPGA //
   //////////////////
@@ -1216,7 +1099,6 @@ module chip_${top["name"]}_${target["name"]} (
     .usbdev_usb_tx_d_o            ( usb_tx_d              ),
     .usbdev_usb_tx_se0_o          ( usb_tx_se0            ),
     .usbdev_usb_tx_use_d_se0_o    ( usb_tx_use_d_se0      ),
-    .usbdev_usb_suspend_o         ( usb_suspend           ),
     .usbdev_usb_rx_enable_o       ( usb_rx_enable         ),
     .usbdev_usb_ref_val_o         ( usb_ref_val           ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse         ),
@@ -1250,6 +1132,7 @@ module chip_${top["name"]}_${target["name"]} (
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
+    .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 % endif
 
@@ -1334,19 +1217,29 @@ module chip_${top["name"]}_${target["name"]} (
     endcase;
   end
   % endif
-  logic trigger, trigger_oe;
-  assign trigger = mio_out[MioOutGpioGpio8] & ~top_${top["name"]}.clkmgr_aon_idle[trigger_sel];
-  assign trigger_oe = mio_oe[MioOutGpioGpio8];
 
-  // Synchronize trigger to manual_in_io_clk.
+  prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
+  assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle[trigger_sel];
+
+  logic clk_io_div4_trigger_en, manual_in_io_clk_trigger_en;
+  logic clk_io_div4_trigger_oe, manual_in_io_clk_trigger_oe;
+  assign clk_io_div4_trigger_en = mio_out[MioOutGpioGpio8];
+  assign clk_io_div4_trigger_oe = mio_oe[MioOutGpioGpio8];
+
+  // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(
-    .Width ( 2 )
+    .Width ($bits(clk_trans_idle) + 2)
   ) u_sync_trigger (
-    .clk_i  ( manual_in_io_clk                              ),
-    .rst_ni ( manual_in_por_n                               ),
-    .d_i    ( {trigger,               trigger_oe}           ),
-    .q_o    ( {manual_out_io_trigger, manual_oe_io_trigger} )
+    .clk_i (manual_in_io_clk),
+    .rst_ni(manual_in_por_n),
+    .d_i   ({clk_trans_idle,        clk_io_div4_trigger_en,      clk_io_div4_trigger_oe}),
+    .q_o   ({manual_in_io_clk_idle, manual_in_io_clk_trigger_en, manual_in_io_clk_trigger_oe})
   );
+
+  // Generate the actual trigger signal.
+  assign manual_oe_io_trigger  = manual_in_io_clk_trigger_oe;
+  assign manual_out_io_trigger = manual_in_io_clk_trigger_en &
+      prim_mubi_pkg::mubi4_test_false_strict(manual_in_io_clk_idle);
 % endif
 ## This separate UART debugging output is needed for the CW305 only.
 % if target["name"] == "cw305":

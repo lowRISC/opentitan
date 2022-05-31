@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@nonhermetic//:env.bzl", "ENV")
+
 """Rules for running FuseSoC.
 
 FuseSoC is a package manager and set of build tools for HDL code.
@@ -17,11 +19,25 @@ having been installed.  In the future, we will try to rework our
 dependencies so the FuseSoC rules can be sandboxed.
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+
 def _fusesoc_build_impl(ctx):
-    out_dir = ctx.actions.declare_directory("build.{}".format(ctx.label.name))
+    dirname = "build.{}".format(ctx.label.name)
+    out_dir = ctx.actions.declare_directory(dirname)
+    flags = [ctx.expand_location(f, ctx.attr.srcs) for f in ctx.attr.flags]
+    outputs = [out_dir]
+    groups = {}
+    for group, files in ctx.attr.output_groups.items():
+        deps = [ctx.actions.declare_file("{}/{}".format(dirname, f)) for f in files]
+        outputs.extend(deps)
+        groups[group] = depset(deps)
+
+    verilator_options = ctx.attr.verilator_options[BuildSettingInfo].value
+    flags.append("--verilator_options={}".format(" ".join(verilator_options)))
+
     ctx.actions.run(
         mnemonic = "FuseSoC",
-        outputs = [out_dir],
+        outputs = outputs,
         inputs = ctx.files.srcs + ctx.files.cores,
         arguments = [
             "--cores-root={}".format(c.dirname)
@@ -33,17 +49,21 @@ def _fusesoc_build_impl(ctx):
             "--setup",
             "--build",
             "--build-root={}".format(out_dir.path),
-        ] + ctx.attr.systems,
+        ] + ctx.attr.systems + flags,
         executable = "fusesoc",
-        use_default_shell_env = True,
+        use_default_shell_env = False,
         execution_requirements = {
             "no-sandbox": "",
         },
+        env = ENV,
     )
-    return [DefaultInfo(
-        files = depset([out_dir]),
-        data_runfiles = ctx.runfiles(files = [out_dir] + ctx.files.data),
-    )]
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+            data_runfiles = ctx.runfiles(files = outputs + ctx.files.data),
+        ),
+        OutputGroupInfo(**groups),
+    ]
 
 fusesoc_build = rule(
     implementation = _fusesoc_build_impl,
@@ -53,5 +73,11 @@ fusesoc_build = rule(
         "data": attr.label_list(allow_files = True, doc = "Files needed at runtime"),
         "target": attr.string(mandatory = True, doc = "Target name (e.g. 'sim')"),
         "systems": attr.string_list(mandatory = True, doc = "Systems to build"),
+        "flags": attr.string_list(doc = "Flags controlling the FuseSOC system build"),
+        "output_groups": attr.string_list_dict(
+            allow_empty = True,
+            doc = "Mapping of group name to lists of files in that named group",
+        ),
+        "verilator_options": attr.label(),
     },
 )

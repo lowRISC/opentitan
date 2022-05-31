@@ -16,9 +16,9 @@
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/usbdev.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -65,8 +65,7 @@ bool test_main(void) {
   // Fake low power entry through usb
   // Force usb to output suspend indication
   if (!low_power_exit) {
-    usbdev_wake(true);
-    usbdev_force_suspend();
+    usbdev_set_wake_module_active(true);
     usbdev_force_dx_pullup(kDpSel, true);
     usbdev_force_dx_pullup(kDnSel, false);
 

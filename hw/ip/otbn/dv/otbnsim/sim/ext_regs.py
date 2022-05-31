@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Callable, Dict, List, Sequence
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 from reggen.field import Field
 from reggen.register import Register
@@ -10,6 +10,7 @@ from reggen.reg_block import RegBlock
 
 from shared.otbn_reggen import load_registers
 
+from .edn_client import EdnClient
 from .trace import Trace
 
 
@@ -185,6 +186,51 @@ class RGReg:
         return self._trace
 
 
+class RndReq(RGReg):
+    def __init__(self, name: str):
+        super().__init__([RGField(name, 32, 0, 0, 'ro')], False)
+        self._client = EdnClient()
+
+    def request(self) -> bool:
+        '''Set the flag high and start a request on the EDN client
+
+        Returns True if RND_REQ changed.
+        '''
+        self._client.request()
+
+        if self.read(True) == 0:
+            self.write(1, True)
+            return True
+
+        return False
+
+    def poison(self) -> None:
+        self._client.poison()
+
+    def forget(self) -> None:
+        self._client.forget()
+
+    def take_word(self, word: int) -> None:
+        self._client.take_word(word)
+
+    def edn_reset(self) -> None:
+        self._client.edn_reset()
+
+    def cdc_complete(self) -> Tuple[Optional[int], bool]:
+        '''Clear the flag and return the data that we've read from EDN.
+
+        Returns the same value as EdnClient.cdc_complete().'''
+        assert self.read(True) == 1
+        (data, retry) = self._client.cdc_complete()
+        if not retry:
+            self.write(0, True)
+        return (data, retry)
+
+    def step(self) -> None:
+        '''Called on each main clock cycle. Step the client'''
+        self._client.step()
+
+
 def make_flag_reg(name: str, double_flopped: bool) -> RGReg:
     return RGReg([RGField(name, 32, 0, 0, 'ro')], double_flopped)
 
@@ -224,8 +270,10 @@ class OTBNExtRegs:
         self.regs['STOP_PC'] = make_flag_reg('STOP_PC', True)
 
         # Add a fake "RND_REQ" register to allow us to tell otbn_core_model to
-        # generate an EDN request.
-        self.regs['RND_REQ'] = make_flag_reg('RND_REQ', True)
+        # generate an EDN request. Expose it as a field so that the state
+        # object can poke it directly.
+        self._rnd_req = RndReq('RND_REQ')
+        self.regs['RND_REQ'] = self._rnd_req
 
         # Add a fake "WIPE_START" register. We set this for a single cycle when
         # starting secure wipe and the C++ model can use this to trigger a dump
@@ -264,6 +312,9 @@ class OTBNExtRegs:
             raise ValueError('Unknown register name: {!r}.'.format(reg_name))
         return reg.read(from_hw)
 
+    def step(self) -> None:
+        self._rnd_req.step()
+
     def changes(self) -> Sequence[Trace]:
         if self._dirty == 0:
             return []
@@ -285,3 +336,26 @@ class OTBNExtRegs:
         for reg in self.regs.values():
             reg.abort()
         self._dirty = 0
+
+    def rnd_request(self) -> None:
+        if self._rnd_req.request():
+            self._dirty = 2
+
+    def rnd_take_word(self, word: int) -> None:
+        self._rnd_req.take_word(word)
+
+    def rnd_reset(self) -> None:
+        self._rnd_req.edn_reset()
+        self._dirty = 2
+
+    def rnd_cdc_complete(self) -> Optional[int]:
+        (data, retry) = self._rnd_req.cdc_complete()
+        if not retry:
+            self._dirty = 2
+        return data
+
+    def rnd_poison(self) -> None:
+        self._rnd_req.poison()
+
+    def rnd_forget(self) -> None:
+        self._rnd_req.forget()

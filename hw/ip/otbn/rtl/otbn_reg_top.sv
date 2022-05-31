@@ -58,18 +58,31 @@ module otbn_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [10:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(11)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -199,6 +212,10 @@ module otbn_reg_top (
   logic err_bits_loop_wd;
   logic err_bits_key_invalid_qs;
   logic err_bits_key_invalid_wd;
+  logic err_bits_rnd_rep_chk_fail_qs;
+  logic err_bits_rnd_rep_chk_fail_wd;
+  logic err_bits_rnd_fips_chk_fail_qs;
+  logic err_bits_rnd_fips_chk_fail_wd;
   logic err_bits_imem_intg_violation_qs;
   logic err_bits_imem_intg_violation_wd;
   logic err_bits_dmem_intg_violation_qs;
@@ -396,7 +413,7 @@ module otbn_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.status.q),
+    .q      (),
 
     // to register interface (read)
     .qs     (status_qs)
@@ -405,7 +422,7 @@ module otbn_reg_top (
 
   // R[err_bits]: V(True)
   logic err_bits_qe;
-  logic [13:0] err_bits_flds_we;
+  logic [15:0] err_bits_flds_we;
   assign err_bits_qe = &err_bits_flds_we;
   //   F[bad_data_addr]: 0:0
   prim_subreg_ext #(
@@ -497,6 +514,36 @@ module otbn_reg_top (
   );
   assign reg2hw.err_bits.key_invalid.qe = err_bits_qe;
 
+  //   F[rnd_rep_chk_fail]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_err_bits_rnd_rep_chk_fail (
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_rnd_rep_chk_fail_wd),
+    .d      (hw2reg.err_bits.rnd_rep_chk_fail.d),
+    .qre    (),
+    .qe     (err_bits_flds_we[6]),
+    .q      (reg2hw.err_bits.rnd_rep_chk_fail.q),
+    .qs     (err_bits_rnd_rep_chk_fail_qs)
+  );
+  assign reg2hw.err_bits.rnd_rep_chk_fail.qe = err_bits_qe;
+
+  //   F[rnd_fips_chk_fail]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_err_bits_rnd_fips_chk_fail (
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_rnd_fips_chk_fail_wd),
+    .d      (hw2reg.err_bits.rnd_fips_chk_fail.d),
+    .qre    (),
+    .qe     (err_bits_flds_we[7]),
+    .q      (reg2hw.err_bits.rnd_fips_chk_fail.q),
+    .qs     (err_bits_rnd_fips_chk_fail_qs)
+  );
+  assign reg2hw.err_bits.rnd_fips_chk_fail.qe = err_bits_qe;
+
   //   F[imem_intg_violation]: 16:16
   prim_subreg_ext #(
     .DW    (1)
@@ -506,7 +553,7 @@ module otbn_reg_top (
     .wd     (err_bits_imem_intg_violation_wd),
     .d      (hw2reg.err_bits.imem_intg_violation.d),
     .qre    (),
-    .qe     (err_bits_flds_we[6]),
+    .qe     (err_bits_flds_we[8]),
     .q      (reg2hw.err_bits.imem_intg_violation.q),
     .qs     (err_bits_imem_intg_violation_qs)
   );
@@ -521,7 +568,7 @@ module otbn_reg_top (
     .wd     (err_bits_dmem_intg_violation_wd),
     .d      (hw2reg.err_bits.dmem_intg_violation.d),
     .qre    (),
-    .qe     (err_bits_flds_we[7]),
+    .qe     (err_bits_flds_we[9]),
     .q      (reg2hw.err_bits.dmem_intg_violation.q),
     .qs     (err_bits_dmem_intg_violation_qs)
   );
@@ -536,7 +583,7 @@ module otbn_reg_top (
     .wd     (err_bits_reg_intg_violation_wd),
     .d      (hw2reg.err_bits.reg_intg_violation.d),
     .qre    (),
-    .qe     (err_bits_flds_we[8]),
+    .qe     (err_bits_flds_we[10]),
     .q      (reg2hw.err_bits.reg_intg_violation.q),
     .qs     (err_bits_reg_intg_violation_qs)
   );
@@ -551,7 +598,7 @@ module otbn_reg_top (
     .wd     (err_bits_bus_intg_violation_wd),
     .d      (hw2reg.err_bits.bus_intg_violation.d),
     .qre    (),
-    .qe     (err_bits_flds_we[9]),
+    .qe     (err_bits_flds_we[11]),
     .q      (reg2hw.err_bits.bus_intg_violation.q),
     .qs     (err_bits_bus_intg_violation_qs)
   );
@@ -566,7 +613,7 @@ module otbn_reg_top (
     .wd     (err_bits_bad_internal_state_wd),
     .d      (hw2reg.err_bits.bad_internal_state.d),
     .qre    (),
-    .qe     (err_bits_flds_we[10]),
+    .qe     (err_bits_flds_we[12]),
     .q      (reg2hw.err_bits.bad_internal_state.q),
     .qs     (err_bits_bad_internal_state_qs)
   );
@@ -581,7 +628,7 @@ module otbn_reg_top (
     .wd     (err_bits_illegal_bus_access_wd),
     .d      (hw2reg.err_bits.illegal_bus_access.d),
     .qre    (),
-    .qe     (err_bits_flds_we[11]),
+    .qe     (err_bits_flds_we[13]),
     .q      (reg2hw.err_bits.illegal_bus_access.q),
     .qs     (err_bits_illegal_bus_access_qs)
   );
@@ -596,7 +643,7 @@ module otbn_reg_top (
     .wd     (err_bits_lifecycle_escalation_wd),
     .d      (hw2reg.err_bits.lifecycle_escalation.d),
     .qre    (),
-    .qe     (err_bits_flds_we[12]),
+    .qe     (err_bits_flds_we[14]),
     .q      (reg2hw.err_bits.lifecycle_escalation.q),
     .qs     (err_bits_lifecycle_escalation_qs)
   );
@@ -611,7 +658,7 @@ module otbn_reg_top (
     .wd     (err_bits_fatal_software_wd),
     .d      (hw2reg.err_bits.fatal_software.d),
     .qre    (),
-    .qe     (err_bits_flds_we[13]),
+    .qe     (err_bits_flds_we[15]),
     .q      (reg2hw.err_bits.fatal_software.q),
     .qs     (err_bits_fatal_software_qs)
   );
@@ -892,6 +939,8 @@ module otbn_reg_top (
                (addr_hit[ 9] & (|(OTBN_PERMIT[ 9] & ~reg_be))) |
                (addr_hit[10] & (|(OTBN_PERMIT[10] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_wd = reg_wdata[0];
@@ -928,6 +977,10 @@ module otbn_reg_top (
 
   assign err_bits_key_invalid_wd = reg_wdata[5];
 
+  assign err_bits_rnd_rep_chk_fail_wd = reg_wdata[6];
+
+  assign err_bits_rnd_fips_chk_fail_wd = reg_wdata[7];
+
   assign err_bits_imem_intg_violation_wd = reg_wdata[16];
 
   assign err_bits_dmem_intg_violation_wd = reg_wdata[17];
@@ -951,6 +1004,22 @@ module otbn_reg_top (
   assign load_checksum_we = addr_hit[10] & reg_we & !reg_error;
 
   assign load_checksum_wd = reg_wdata[31:0];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = cmd_we;
+    reg_we_check[5] = ctrl_we;
+    reg_we_check[6] = 1'b0;
+    reg_we_check[7] = err_bits_we;
+    reg_we_check[8] = 1'b0;
+    reg_we_check[9] = insn_cnt_we;
+    reg_we_check[10] = load_checksum_we;
+  end
 
   // Read data return
   always_comb begin
@@ -992,6 +1061,8 @@ module otbn_reg_top (
         reg_rdata_next[3] = err_bits_illegal_insn_qs;
         reg_rdata_next[4] = err_bits_loop_qs;
         reg_rdata_next[5] = err_bits_key_invalid_qs;
+        reg_rdata_next[6] = err_bits_rnd_rep_chk_fail_qs;
+        reg_rdata_next[7] = err_bits_rnd_fips_chk_fail_qs;
         reg_rdata_next[16] = err_bits_imem_intg_violation_qs;
         reg_rdata_next[17] = err_bits_dmem_intg_violation_qs;
         reg_rdata_next[18] = err_bits_reg_intg_violation_qs;

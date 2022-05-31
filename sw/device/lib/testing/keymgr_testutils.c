@@ -7,7 +7,7 @@
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 void keymgr_testutils_advance_state(const dif_keymgr_t *keymgr,
                                     const dif_keymgr_state_params_t *params) {

@@ -12,9 +12,9 @@
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
-#include "sw/device/lib/testing/test_framework/test_status.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -522,9 +522,10 @@ void config_external_clock(void) {
   CHECK(curr_state == kDifLcCtrlStateRma,
         "LC State isn't in kDifLcCtrlStateRma!");
 
-  // Enable external clock
+  // Enable external clock and wait for clk switch to finish
   LOG_INFO("Configure clkmgr to enable external clock");
   CHECK_DIF_OK(dif_clkmgr_external_clock_set_enabled(&clkmgr, kUseLowSpeedSel));
+  CHECK_DIF_OK(dif_clkmgr_wait_for_ext_clk_switch(&clkmgr));
 }
 
 const test_config_t kTestConfig;
@@ -534,13 +535,13 @@ bool test_main(void) {
 
   LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_base_addr);
 
-  // TODO, remove thse once pinout configuration is provided
   pinmux_connect_uart_to_pads(
       kTopEarlgreyPinmuxInselIoc3, kTopEarlgreyPinmuxPeripheralInUart0Rx,
       kTopEarlgreyPinmuxMioOutIoc4, kTopEarlgreyPinmuxOutselUart0Tx);
   pinmux_connect_uart_to_pads(
-      kTopEarlgreyPinmuxInselIor5, kTopEarlgreyPinmuxPeripheralInUart1Rx,
-      kTopEarlgreyPinmuxMioOutIor6, kTopEarlgreyPinmuxOutselUart1Tx);
+      kTopEarlgreyPinmuxInselIob4, kTopEarlgreyPinmuxPeripheralInUart1Rx,
+      kTopEarlgreyPinmuxMioOutIob5, kTopEarlgreyPinmuxOutselUart1Tx);
+  // TODO: the UARTs below still need to be mapped to the correct location.
   pinmux_connect_uart_to_pads(
       kTopEarlgreyPinmuxInselIor7, kTopEarlgreyPinmuxPeripheralInUart2Rx,
       kTopEarlgreyPinmuxMioOutIor10, kTopEarlgreyPinmuxOutselUart2Tx);

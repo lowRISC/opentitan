@@ -21,6 +21,7 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
+      - lowrisc:ip_interfaces:alert_handler_reg
       - lowrisc:ip:rstmgr_pkg
       - lowrisc:systems:clkmgr_pkg
     files:
@@ -120,6 +121,5 @@ targets:
       - files_rtl
     tools:
       vcs:
-        vcs_options: [-timescale=1ns/1ps -l vcs.log]
+        vcs_options: [-sverilog -ntb_opts uvm-1.2 -CFLAGS --std=c99 -CFLAGS -fno-extended-identifiers -CFLAGS --std=c++11 -timescale=1ns/1ps -l vcs.log]
     toplevel: ast
-

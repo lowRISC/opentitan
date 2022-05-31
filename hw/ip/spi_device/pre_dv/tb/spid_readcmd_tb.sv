@@ -138,6 +138,10 @@ module tb;
   // Test Sequence //
   ///////////////////
   event init_done; // SW to host
+  event flashmode_done; // Host -> SW
+
+  localparam logic [31:0] MailboxHostAddr = 32'h FEEC_D000;
+  localparam int unsigned MailboxSpace    = 1024; // bytes
   initial begin
     sck_clk.set_period_ps(SckPeriod);
     sck_clk.set_active();
@@ -162,7 +166,7 @@ module tb;
 
     fork
       begin
-        #20us
+        #1ms
         $display("TEST TIMED OUT!!");
         $finish();
       end
@@ -175,9 +179,13 @@ module tb;
 
   static task host();
     spi_queue_t sfdp_data;
+    spi_queue_t read_data; // read_cmd data
     spi_queue_t expected_data;
     bit test_passed;
     bit match;
+
+    automatic logic [$clog2(MailboxSpace)-1:0] mbx_offset;
+    automatic int unsigned                     mbx_reqsize;
 
     test_passed = 1'b 1;
 
@@ -223,22 +231,336 @@ module tb;
 
     //=========================================================================
     // Issue Read Cmd: Normal Read Cmd
+    $display("Sending Read Cmd");
+    spiflash_read(
+      tb_sif,         // vif
+      8'h 03,         // opcode
+      32'h 0000_0080, // address
+      1'b 0,          // Addr mode (0: 3B, 1: 4B)
+      0,              // dummy beat
+      1,              // #bytes
+      IoSingle,       // io_mode {IoSingle, IoDual, IoQuad}
+      read_data       // return payload
+      );
+
+    expected_data = get_read_data(SramAw'('h80), 1);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
     //=========================================================================
     // Issue Read Cmd: Fast Read Cmd
+    $display("Sending Fast Read Command");
+    spiflash_read(
+      tb_sif,
+      8'h 0B,         // opcode
+      32'h 0000_03FF, // address (at the end of a buffer)
+      1'b 0,          // address mode
+      8,              // dummy beat (8 cycles)
+      3,              // Read 3 bytes, should cross the buffer 0 to 1
+      IoSingle,       // io_mode
+      read_data
+    );
+
+    expected_data = get_read_data(SramAw'('h3FF), 3);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
     //=========================================================================
     // Issue Read Cmd: Fast Read Dual Output
+    $display("Sending Fast Read Dual Command");
+    spiflash_read(
+      tb_sif,
+      8'h 3B,         // opcode
+      32'h 0000_0403, // address (at the end of a buffer)
+      1'b 0,          // address mode
+      4,              // dummy beat (4 cycles)
+      7,              // Read 3 bytes, should cross the buffer 0 to 1
+      IoDual,         // io_mode
+      read_data
+    );
+
+    expected_data = get_read_data(SramAw'('h403), 7);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+
     //=========================================================================
     // Issue Read Cmd: Fast Read Quad Output
-    //=========================================================================
-    // Issue Read Cmd: Fast Read Dual Mis-aligned
-    //=========================================================================
-    // Issue Read Cmd: Fast Read to Mailbox
-    //=========================================================================
-    // Issue Read Cmd: Fast Read Mailbox Boundary Crossing
+    $display("Sending Fast Read Quad Command");
+    spiflash_read(
+      tb_sif,
+      8'h 6B,         // opcode
+      32'h 0000_05F3, // address (at the end of a buffer)
+      1'b 0,          // address mode
+      3,              // dummy beat (3 cycles) : non power-of-2
+      32,             // Read 32 bytes
+      IoQuad,         // io_mode
+      read_data
+    );
+
+    expected_data = get_read_data(SramAw'('h5F3), 32);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+    // Make sure to trigger the flip event (for the buffer test)
+    spiflash_read(
+      tb_sif,
+      8'h 6B,         // opcode
+      32'h 0000_07FF, // address (at the end of a buffer)
+      1'b 0,          // address mode
+      3,              // dummy beat (3 cycles) : non power-of-2
+      4,              // Read 4 bytes
+      IoQuad,         // io_mode
+      read_data
+    );
+    read_data.delete();
+
     //=========================================================================
     // Issue Read Cmd: Fast Read Buffer Threshold
+    //
+    // Threshold is set to 524 Byte per buffer.
+    // Issue from 512 -> 544 to test the threshold event
+    //
+    // It is better to create scoreboard to check the threshold event as the
+    // signal is not a persistent signal. It needs overhaul of this pre_dv.
+    // I don't think it is worth to do that as the full SPIFlash/ Passthrough
+    // test environment is imminent. I've checked the event is triggered in
+    // the waveform.
+    $display("Sending a Read access reaching threshold");
+    spiflash_read(
+      tb_sif,
+      8'h 0B,
+      32'h 0000_0200, // from 512B
+      1'b 0,
+      8,
+      32,             // 32 Byte read
+      IoSingle,
+      read_data
+    );
+
+    expected_data = get_read_data('h 200, 32);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+
     //=========================================================================
     // Issue Read Cmd: Fast Read Buffer Flip
+    //
+    // Same to the Buffer Threshold test, checked in the waveform for the flip
+    // event.
+    // This won't trigger the flip event. The reason is, flip checks the upper
+    // read address with the expected read address. In above quad test, the
+    // page already reached to 'h 800 (page 2). So, the address triggers the
+    // flip event is in 'h C00:'hFFF.
+    $display("Sending a read access crossing a buffer, creating a flip event.");
+    spiflash_read(
+      tb_sif,
+      8'h 6B,
+      32'h 0000_03FF,
+      1'b 0,
+      3,
+      4,
+      IoQuad,
+      read_data
+    );
+
+    read_data.delete();
+    // assert (!event_flip)
+
+    // Issue the correct read address
+    $display("Sending a correct read access crossing the buffer");
+    spiflash_read(
+      tb_sif,
+      8'h 6B,
+      32'h 0000_0CFF,
+      1'b 0,
+      3,
+      4,
+      IoQuad,
+      read_data
+    );
+    read_data.delete();
+    // assert (event_flip)
+
+    //=========================================================================
+    // Issue Read Cmd ending at the last byte in front of the Mailbox
+
+    // TODO: Force the next page address to mailbox space
+    $display("Sending a read command ending at the mailbox");
+    mbx_offset = $urandom_range(1, 16);
+    mbx_reqsize = mbx_offset;
+    spiflash_read(
+      tb_sif,
+      8'h 0B,      // opcode
+      32'h 0000_1800 - mbx_offset,
+      1'b 0,       // address mode
+      8,           // dummy beat
+      mbx_reqsize, // Ending at the last byte of read buffer
+      IoSingle,
+      read_data
+    );
+
+    expected_data = get_read_data('h 800 - mbx_offset, mbx_reqsize);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+    //=========================================================================
+    // Issue Read Cmd starting at the last byte in front of the Mailbox then
+    // cross
+    $display("Sending a read command starting at the end of read buffer and crossing Mailbox");
+    mbx_reqsize = $urandom_range(2,36);
+    spiflash_read(
+      tb_sif,
+      8'h 3B,
+      32'h 0000_17FF, // end of read buffer
+      1'b 0,
+      4,
+      mbx_reqsize, // min value 2 that crosses the mailbox boundary
+      IoDual,
+      read_data
+    );
+
+    expected_data = get_read_data('h 7FF, 1);
+    if (read_data.pop_front() != expected_data.pop_front()) begin
+      test_passed = 1'b 0;
+    end
+    expected_data.delete();
+    expected_data = get_mbx_data(SramMailboxIdx, mbx_reqsize -1);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+    // Switch PassThrough mode
+    ->flashmode_done;
+
+    // Wait till configuration done from SW side
+    repeat(20) @(negedge tb_sif.clk);
+
+    //=========================================================================
+    // Issue Read Cmd: Fast Read to Mailbox
+    $display("Sending Fast Read Command to Mailbox");
+    mbx_offset = $urandom_range(0, MailboxSpace -1);
+    // Check mbx_offset and determine size
+    mbx_reqsize = $urandom_range(1, 255);
+    //mbx_reqsize = $urandom_range(1, MailboxSpace - mbx_offset);
+    spiflash_read(
+      tb_sif,
+      8'h 0B,         // opcode
+      MailboxHostAddr + mbx_offset,
+      1'b 1,          // address mode
+      8,              // dummy beat (8 cycles)
+      mbx_reqsize,    // Read random bytes
+      IoSingle,       // io_mode
+      read_data
+    );
+
+    expected_data = get_mbx_data(SramMailboxIdx + mbx_offset, mbx_reqsize);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+    //=========================================================================
+    // Issue Read Cmd to Read buffer space in PassThrough
+    //
+    //   Expected: return high-z or X or '0
+    $display("Sending Fast Read to Read Buffer while in PassThrough");
+    spiflash_read(
+      tb_sif,
+      8'h 0B,
+      $urandom_range(0, MailboxHostAddr-1),
+      1'b 1,
+      8,
+      1,
+      IoSingle,
+      read_data
+    );
+
+    if (! (read_data[0] inside {'hx, 'hz, 'h0}) ) begin
+      $display("Received data is not expected: %x", read_data[0]);
+      match = 1'b 0;
+    end else begin
+      $display("Expected data has been received [%x]", read_data[0]);
+    end
+
+    read_data.delete();
+
+    //=========================================================================
+    // Issue Read Cmd: Fast Read Mailbox Boundary Crossing
+
+    // 1. Read buffer -> Mailbox
+    $display("Sending Fast Read to Read Buffer that crosses Passthrough");
+    mbx_offset = $urandom_range(0, 32);
+    mbx_reqsize = $urandom_range(0, 32);
+    spiflash_read(
+      tb_sif,
+      8'h 0B,
+      MailboxHostAddr - mbx_offset,
+      1'b 1,
+      8,
+      mbx_offset + mbx_reqsize,
+      IoSingle,
+      read_data
+    );
+
+    // Drop first part in readbuffer, Compare MBX only
+    read_data = read_data[mbx_offset:read_data.size()];
+
+    expected_data = get_read_data({SramMailboxIdx, 2'b 00}, mbx_reqsize);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+    // 2. Mailbox -> Read buffer
+    $display("Sending Fast Read to Mailbox space crosses the boundary");
+    mbx_offset  = $urandom_range(0, 32);
+    mbx_reqsize = $urandom_range(0, 32);
+    spiflash_read(
+      tb_sif,
+      8'h 0B,
+      MailboxHostAddr + MailboxSpace - mbx_offset,
+      1'b 1,
+      8,
+      mbx_offset + mbx_reqsize,
+      IoSingle,
+      read_data
+    );
+
+    // Drop the end part, Compare MBX only
+    read_data = read_data[0:mbx_offset-1];
+
+    expected_data = get_read_data({SramMailboxIdx, 2'b 00}
+                                  + (MailboxSpace - mbx_offset), mbx_offset);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
+    // TODO: Check if flip/ threshold event happens.
 
     // Complete the simulation
     if (test_passed) begin
@@ -250,8 +572,8 @@ module tb;
   endtask : host
 
   function automatic spi_queue_t get_sfdp_data(
-    logic [SramAw-1:0] base, // base addr
-    int                size  // #bytes
+    logic [SramAw+OffsetW-1:0] base, // base addr
+    int                        size  // #bytes
   );
     automatic spi_queue_t data;
 
@@ -269,6 +591,55 @@ module tb;
     return data;
   endfunction : get_sfdp_data
 
+  // get_read_data reads content from DPSRAM.
+  // It does not handle the buffer management, but just purely read the
+  // content.
+  function automatic spi_queue_t get_read_data(
+    logic [SramAw+OffsetW-1:0] base, // base addr
+    int                        size  // #bytes
+  );
+    automatic spi_queue_t data;
+
+    for (int i = base ; i < base + size ; i++) begin
+      automatic logic [SramAw-1:0] addr;
+      automatic int                remainder;
+      automatic logic [SramDw-1+(SramDw/8):0] mem_data; // Parity
+      addr = SramReadBufferIdx + (i/4)%SramMsgDepth;
+      remainder = i%4;
+      mem_data = `DPSRAM_DATA(addr);
+      $display("DPSRAM [0x%3X]: 0x%2x", addr, mem_data);
+      // parity added per byte
+      data.push_back(mem_data[9*remainder+:8]);
+    end
+
+    return data;
+
+
+  endfunction : get_read_data
+
+  // get_mbx_data reads content from Mailbox Buffer in DPSRAM.
+  function automatic spi_queue_t get_mbx_data(
+    logic [SramAw+OffsetW-1:0] addr,
+    int unsigned               size
+  );
+    automatic spi_queue_t data;
+
+    for (int i = addr ; i < addr + size ; i++) begin
+      automatic logic [SramAw-1:0] idx;
+      automatic int                remainder;
+      automatic logic [SramDw-1+(SramDw/8):0] mem_data; // Parity
+      idx = SramMailboxIdx + (i/4)%SramMailboxDepth;
+      remainder = i%4;
+      mem_data = `DPSRAM_DATA(idx);
+      $display("MBX [0x%3X]: 0x%2x", i, mem_data[9*remainder+:8]);
+      // parity added per byte
+      data.push_back(mem_data[9*remainder+:8]);
+    end
+
+    return data;
+
+  endfunction : get_mbx_data
+
   function automatic bit check_data(
     const ref spi_queue_t rcv,
     const ref spi_queue_t exp
@@ -276,10 +647,18 @@ module tb;
     automatic int size = exp.size();
     automatic bit match = 1'b 1;
 
+    if (rcv.size() != exp.size()) begin
+      $display("Received(%d) and Expected(%d) lengths are not same.",
+        rcv.size(), exp.size());
+      match = 1'b 0;
+    end
+
+    // Run checker even if size mismatches, to give more information
     foreach (rcv[i]) begin
       if (rcv[i] != exp[i]) begin
         match = 1'b 0;
-        $display("Data mismatch @ 0x%4x: RCV[%x], EXP[%x]", i, rcv[i], exp[i]);
+        $display("Data mismatch @ 0x%4x: RCV[%x], EXP[%x]",
+          i, rcv[i], exp[i]);
       end
     end
 
@@ -301,7 +680,28 @@ module tb;
 
     // Configure
 
+    // Readbuffer config
+    //   threshold: SramDw granularity. 8bit (1024 Bytes)
+    cfg_readbuf_threshold = 8'h 83;
+
+    // Mailbox config for Flash mode
+    cfg_mailbox_en       = 1'b 1;
+    cfg_intercept_en_mbx = 1'b 0;
+    cfg_mailbox_addr     = 32'h 0000_1800; // 1kB starting from 0x1800
+    cfg_addr_4b_en       = 1'b 0;          // to issue FEEC_D000
+
     #100ns ->init_done;
+
+
+    wait(flashmode_done.triggered);
+    // FlashMode commands are completed.
+    // Switch Passthrough mode to test Mailbox.
+    spi_mode = PassThrough;
+
+    cfg_mailbox_en       = 1'b 1;
+    cfg_intercept_en_mbx = 1'b 1;
+    cfg_mailbox_addr     = 32'h FEEC_D000; // 1kB starting from FEEC_D000
+    cfg_addr_4b_en       = 1'b 1;          // to issue FEEC_D000
 
     forever begin
       @(posedge clk);

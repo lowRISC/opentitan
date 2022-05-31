@@ -64,8 +64,7 @@ def get_random_data_hex_literal(width):
     """ Fetch 'width' random bits and return them as hex literal"""
     width = int(width)
     literal_str = hex(random.getrandbits(width))
-    literal_str = str(width) + "'h" + literal_str[2:]
-    return literal_str
+    return blockify(literal_str, width, 64)
 
 
 def blockify(s, size, limit):
@@ -79,7 +78,12 @@ def blockify(s, size, limit):
     remain = size
     while remain > 0:
         s_incr = int(numbits / 4)
-        s_list.append("{}'h{}".format(numbits, s[str_idx:str_idx + s_incr]))
+        string = s[str_idx:str_idx + s_incr]
+        # Separate 32-bit words for readability.
+        for i in range(s_incr - 1, 0, -1):
+            if (s_incr - i) % 8 == 0:
+                string = string[:i] + "_" + string[i:]
+        s_list.append("{}'h{}".format(numbits, string))
         str_idx += s_incr
         remain -= numbits
         numbits = limit * 4

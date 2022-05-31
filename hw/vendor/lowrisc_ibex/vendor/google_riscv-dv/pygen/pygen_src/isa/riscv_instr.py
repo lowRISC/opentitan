@@ -90,6 +90,7 @@ class riscv_instr:
         self.has_rd = 1
         self.has_imm = 1
         self.shift_t = vsc.uint32_t(0xffffffff)
+        self.mask = 32
         self.XLEN = vsc.uint32_t(32)  # XLEN is used in constraint throughout the generator.
         # Hence, XLEN should be of PyVSC type in order to use it in a constraint block
         self.XLEN = rcs.XLEN
@@ -525,8 +526,8 @@ class riscv_instr:
         self.imm_str = str(self.uintToInt(self.imm))
 
     def uintToInt(self, x):
-        if x < (2 ** rcs.XLEN) / 2:
+        if x < (2 ** self.mask) / 2:
             signed_x = x
         else:
-            signed_x = x - 2 ** rcs.XLEN
+            signed_x = x - 2 ** self.mask
         return signed_x

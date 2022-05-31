@@ -9,7 +9,7 @@ For example, to build the OpenTitan executable located at `sw/device/examples/he
 ```console
 $ cd "$REPO_TOP"
 $ ./meson_init.sh
-$ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_nexysvideo
+$ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_cw310
 ```
 
 The resulting binaries will be located at `build-bin/sw/device/examples/hello_world`. For more information, check out [the Building Software guide]({{< relref "doc/getting_started/build_sw" >}}).

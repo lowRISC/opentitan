@@ -42,6 +42,20 @@ static bool clkmgr_measure_ctrl_regwen(const dif_clkmgr_t *clkmgr) {
                              CLKMGR_MEASURE_CTRL_REGWEN_EN_BIT);
 }
 
+dif_result_t dif_clkmgr_external_clock_is_settled(const dif_clkmgr_t *clkmgr,
+                                                  bool *status) {
+  if (clkmgr == NULL || status == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t extclk_status_val =
+      mmio_region_read32(clkmgr->base_addr, CLKMGR_EXTCLK_STATUS_REG_OFFSET);
+  *status = bitfield_field32_read(extclk_status_val,
+                                  CLKMGR_EXTCLK_STATUS_ACK_FIELD) ==
+            kMultiBitBool4True;
+
+  return kDifOk;
+}
+
 dif_result_t dif_clkmgr_jitter_get_enabled(const dif_clkmgr_t *clkmgr,
                                            dif_toggle_t *state) {
   if (clkmgr == NULL || state == NULL) {
@@ -203,14 +217,16 @@ dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
     return kDifLocked;
   }
 
+  uint32_t en_offset;
   uint32_t reg_offset;
-  bitfield_bit32_index_t en_index;
+  bitfield_field32_t en_field;
   bitfield_field32_t lo_field;
   bitfield_field32_t hi_field;
   switch (clock) {
 #define PICK_COUNT_CTRL_FIELDS(kind_)                          \
+  en_offset = CLKMGR_##kind_##_MEAS_CTRL_EN_REG_OFFSET;        \
   reg_offset = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_REG_OFFSET; \
-  en_index = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_EN_BIT;       \
+  en_field = CLKMGR_##kind_##_MEAS_CTRL_EN_EN_FIELD;           \
   lo_field = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_LO_FIELD;     \
   hi_field = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_HI_FIELD;     \
   break  // No semicolon to force semicolon below.
@@ -229,8 +245,12 @@ dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
 #undef PICK_COUNT_CTRL_FIELDS
   }
 
+  uint32_t measure_en_reg = 0;
+  measure_en_reg =
+      bitfield_field32_write(measure_en_reg, en_field, kMultiBitBool4True);
+  mmio_region_write32(clkmgr->base_addr, en_offset, measure_en_reg);
+
   uint32_t measure_ctrl_reg = 0;
-  measure_ctrl_reg = bitfield_bit32_write(measure_ctrl_reg, en_index, 1);
   measure_ctrl_reg =
       bitfield_field32_write(measure_ctrl_reg, lo_field, lo_threshold);
   measure_ctrl_reg =
@@ -251,26 +271,33 @@ dif_result_t dif_clkmgr_disable_measure_counts(
     return kDifLocked;
   }
 
+  uint32_t en_offset;
   uint32_t reg_offset;
   switch (clock) {
     case kDifClkmgrMeasureClockIo:
+      en_offset = CLKMGR_IO_MEAS_CTRL_EN_REG_OFFSET;
       reg_offset = CLKMGR_IO_MEAS_CTRL_SHADOWED_REG_OFFSET;
       break;
     case kDifClkmgrMeasureClockIoDiv2:
+      en_offset = CLKMGR_IO_DIV2_MEAS_CTRL_EN_REG_OFFSET;
       reg_offset = CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_REG_OFFSET;
       break;
     case kDifClkmgrMeasureClockIoDiv4:
+      en_offset = CLKMGR_IO_DIV4_MEAS_CTRL_EN_REG_OFFSET;
       reg_offset = CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_REG_OFFSET;
       break;
     case kDifClkmgrMeasureClockMain:
+      en_offset = CLKMGR_MAIN_MEAS_CTRL_EN_REG_OFFSET;
       reg_offset = CLKMGR_MAIN_MEAS_CTRL_SHADOWED_REG_OFFSET;
       break;
     case kDifClkmgrMeasureClockUsb:
+      en_offset = CLKMGR_USB_MEAS_CTRL_EN_REG_OFFSET;
       reg_offset = CLKMGR_USB_MEAS_CTRL_SHADOWED_REG_OFFSET;
       break;
     default:
       return kDifBadArg;
   }
+  mmio_region_write32(clkmgr->base_addr, en_offset, kMultiBitBool4False);
   // Two writes, because these registers are shadowed.
   mmio_region_write32(clkmgr->base_addr, reg_offset, 0);
   mmio_region_write32(clkmgr->base_addr, reg_offset, 0);
@@ -294,5 +321,17 @@ dif_result_t dif_clkmgr_recov_err_code_clear_codes(
   }
   mmio_region_write32(clkmgr->base_addr, CLKMGR_RECOV_ERR_CODE_REG_OFFSET,
                       codes);
+  return kDifOk;
+}
+
+dif_result_t dif_clkmgr_wait_for_ext_clk_switch(const dif_clkmgr_t *clkmgr) {
+  if (clkmgr == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t ext_status;
+  do {
+    ext_status =
+        mmio_region_read32(clkmgr->base_addr, CLKMGR_EXTCLK_STATUS_REG_OFFSET);
+  } while (ext_status != kMultiBitBool4True);
   return kDifOk;
 }

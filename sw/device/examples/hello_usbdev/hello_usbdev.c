@@ -11,11 +11,11 @@
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/usb_controlep.h"
 #include "sw/device/lib/usb_simpleserial.h"
 #include "sw/device/lib/usbdev.h"
@@ -71,8 +71,7 @@ static size_t usb_chars_recved_total;
 
 static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;
-static dif_spi_device_t spi;
-static dif_spi_device_config_t spi_config;
+static dif_spi_device_handle_t spi;
 static dif_uart_t uart;
 
 /**
@@ -106,11 +105,11 @@ static void usb_send_str(const char *string, usb_ss_ctx_t *ss_ctx) {
 }
 
 // These GPIO bits control USB PHY configuration
-static const uint32_t kPinflipMask = 1;
-static const uint32_t kDiffXcvrMask = 2;
-static const uint32_t kUPhyMask = 4;
+static const uint32_t kPinflipMask = (1 << 8);
+static const uint32_t kDiffXcvrMask = (1 << 9);
+static const uint32_t kUPhyMask = (1 << 10);
 
-int main(int argc, char **argv) {
+void _ottf_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_uart_init(
@@ -124,23 +123,32 @@ int main(int argc, char **argv) {
                                 }));
   base_uart_stdout(&uart);
 
-  pinmux_init();
+  pinmux_testutils_init(&pinmux);
 
-  CHECK_DIF_OK(dif_spi_device_init(
+  CHECK_DIF_OK(dif_spi_device_init_handle(
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi));
-  spi_config.clock_polarity = kDifSpiDeviceEdgePositive;
-  spi_config.data_phase = kDifSpiDeviceEdgeNegative;
-  spi_config.tx_order = kDifSpiDeviceBitOrderMsbToLsb;
-  spi_config.rx_order = kDifSpiDeviceBitOrderMsbToLsb;
-  spi_config.rx_fifo_timeout = 63;
-  spi_config.rx_fifo_len = kDifSpiDeviceBufferLen / 2;
-  spi_config.tx_fifo_len = kDifSpiDeviceBufferLen / 2;
-  CHECK_DIF_OK(dif_spi_device_configure(&spi, &spi_config));
+  dif_spi_device_config_t spi_config = {
+      .clock_polarity = kDifSpiDeviceEdgePositive,
+      .data_phase = kDifSpiDeviceEdgeNegative,
+      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .device_mode = kDifSpiDeviceModeGeneric,
+      .mode_cfg =
+          {
+              .generic =
+                  {
+                      .rx_fifo_commit_wait = 63,
+                      .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                      .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                  },
+          },
+  };
+  CHECK_DIF_OK(dif_spi_device_configure(&spi, spi_config));
 
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
-  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0x0ff00));
+  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0x000ff));
 
   LOG_INFO("Hello, USB!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
@@ -165,10 +173,9 @@ int main(int argc, char **argv) {
   } else {
     CHECK_DIF_OK(dif_pinmux_input_select(
         &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-        kTopEarlgreyPinmuxInselIor1));
+        kTopEarlgreyPinmuxInselConstantOne));
   }
-  CHECK_DIF_OK(
-      dif_spi_device_send(&spi, &spi_config, "SPI!", 4, /*bytes_sent=*/NULL));
+  CHECK_DIF_OK(dif_spi_device_send(&spi, "SPI!", 4, /*bytes_sent=*/NULL));
 
   // The TI phy always uses a differential TX interface
   usbdev_init(&usbdev, pinflip, differential_xcvr, differential_xcvr && !uphy);
@@ -187,7 +194,7 @@ int main(int argc, char **argv) {
     usbdev_poll(&usbdev);
 
     gpio_state = demo_gpio_to_log_echo(&gpio, gpio_state);
-    demo_spi_to_log_echo(&spi, &spi_config);
+    demo_spi_to_log_echo(&spi);
 
     while (true) {
       size_t chars_available;

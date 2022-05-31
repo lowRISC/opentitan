@@ -5,8 +5,8 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rom_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -26,9 +26,9 @@ bool test_main(void) {
   // get computed and expected digests and check that they match
   CHECK_DIF_OK(dif_rom_ctrl_get_digest(&rom_ctrl, &computed_digest));
   CHECK_DIF_OK(dif_rom_ctrl_get_expected_digest(&rom_ctrl, &expected_digest));
-  CHECK_BUFFER(computed_digest.digest, expected_digest.digest,
-               ROM_CTRL_DIGEST_MULTIREG_COUNT,
-               "Mismatch between computed and expected digest.");
+  CHECK_ARRAYS_EQ(computed_digest.digest, expected_digest.digest,
+                  ROM_CTRL_DIGEST_MULTIREG_COUNT,
+                  "Mismatch between computed and expected digest.");
 
   return true;
 }

@@ -258,10 +258,12 @@ module pwrmgr
 
   assign hw2reg.ctrl_cfg_regwen.d = lowpwr_cfg_wen;
 
-  assign hw2reg.fault_status.reg_intg_err.de = reg_intg_err;
-  assign hw2reg.fault_status.reg_intg_err.d  = 1'b1;
-  assign hw2reg.fault_status.esc_timeout.de  = esc_timeout;
-  assign hw2reg.fault_status.esc_timeout.d   = 1'b1;
+  assign hw2reg.fault_status.reg_intg_err.de    = reg_intg_err;
+  assign hw2reg.fault_status.reg_intg_err.d     = 1'b1;
+  assign hw2reg.fault_status.esc_timeout.de     = esc_timeout;
+  assign hw2reg.fault_status.esc_timeout.d      = 1'b1;
+  assign hw2reg.fault_status.main_pd_glitch.de  = peri_reqs_masked.rstreqs[ResetMainPwrIdx];
+  assign hw2reg.fault_status.main_pd_glitch.d   = 1'b1;
 
 
   ////////////////////////////
@@ -278,7 +280,8 @@ module pwrmgr
   };
 
   assign alerts[0] = reg2hw.fault_status.reg_intg_err.q |
-                     reg2hw.fault_status.esc_timeout.q;
+                     reg2hw.fault_status.esc_timeout.q |
+                     reg2hw.fault_status.main_pd_glitch.q;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -603,7 +606,10 @@ module pwrmgr
 
   `endif
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(FsmCheck_A, u_fsm.u_state_regs, alert_tx_o[0])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SlowFsmCheck_A, u_slow_fsm.u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(FsmCheck_A, u_fsm.u_state_regs,
+      pwr_rst_o.rst_lc_req && pwr_rst_o.rst_sys_req)
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(SlowFsmCheck_A, u_slow_fsm.u_state_regs,
+      pwr_ast_o.pwr_clamp && !pwr_ast_o.main_pd_n, 0, 2,
+      clk_slow_i, !rst_slow_ni)
 
 endmodule // pwrmgr

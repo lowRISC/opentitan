@@ -12,18 +12,16 @@ It is available with a Xilinx Kintex 7 XC7K160T or XC7K410T FPGA.
 At the moment, the version with the smaller Xilinx Kintex 7 XC7K160T FPGA is not supported by OpenTitan.
 The ChipWhisperer CW310 board with the bigger Xilinx Kintex 7 XC7K410T FPGA is the main development FPGA board for OpenTitan.
 
-## Nexys Video
-
-The Nexys Video board features a Xilinx Artix 7 XC7A200T FPGA.
-The board is produced by Digilent.
-
 ### Ordering
 
-You can get the Nexys Video board from the [Digilent web store](https://store.digilentinc.com/nexys-video-artix-7-fpga-trainer-board-for-multimedia-applications/).
-Significant discounts are available for academic users (including students), see the [Digilent academic price list](https://reference.digilentinc.com/_media/sales-resources/academic_prices.pdf) for details.
+You can get the ChipWhisperer CW310 board from the [NewAE Technology web store](https://store.newae.com/cw310-bergen-board-large-fpga-k410t-for-full-emulation/).
 
-Most large electronics distributors like Farnell/element14, RS Components, Mouser or Digikey list the board as well.
+In the future, the board might also be listed on [Mouser](https://eu.mouser.com/manufacturer/newae-technology/).
 
 ### Notes
 
-* The board ships with a US and European power plug. Users in other countries need to use or order an adapter, e.g. [this one from the Digilent store](https://store.digilentinc.com/european-uk-wall-plug-adapter/) (but any travel adapter works).
+* By default the board ships with a US and European power plug.
+  Optionally, a UK power plug can be selected in the NewAE Technology web store.
+* The board is available in two options.
+  The normal option is suitable for e.g. regular hardware and software development.
+  If you also plan to do Side Channel Analysis (SCA), you should make sure to order the SCA option which misses some decoupling capacitors.

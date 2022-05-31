@@ -6,6 +6,7 @@ use anyhow::{bail, Result};
 
 use std::time::Duration;
 
+use super::errors::SerializedError;
 use super::protocol::{
     EmuRequest, EmuResponse, GpioRequest, GpioResponse, I2cRequest, I2cResponse,
     I2cTransferRequest, I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request,
@@ -17,7 +18,6 @@ use crate::app::TransportWrapper;
 use crate::bootstrap::Bootstrap;
 use crate::io::i2c;
 use crate::io::spi;
-use crate::transport::TransportError;
 
 /// Implementation of the handling of each protocol request, by means of an underlying
 /// `Transport` implementation.
@@ -34,7 +34,7 @@ impl<'a> TransportCommandHandler<'a> {
     /// by the given `Request`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be propagated to the remote client, without any server-side
     /// logging.
-    fn do_execute_cmd(&self, req: &Request) -> Result<Response, TransportError> {
+    fn do_execute_cmd(&self, req: &Request) -> Result<Response> {
         match req {
             Request::GetCapabilities => {
                 Ok(Response::GetCapabilities(self.transport.capabilities()?))
@@ -261,7 +261,9 @@ impl<'a> CommandHandler<Message> for TransportCommandHandler<'a> {
     fn execute_cmd(&self, msg: &Message) -> Result<Message> {
         if let Message::Req(req) = msg {
             // Package either `Ok()` or `Err()` into a `Message`, to be sent via network.
-            return Ok(Message::Res(self.do_execute_cmd(req)));
+            return Ok(Message::Res(
+                self.do_execute_cmd(req).map_err(SerializedError::from),
+            ));
         }
         bail!("Client sent non-Request to server!!!");
     }

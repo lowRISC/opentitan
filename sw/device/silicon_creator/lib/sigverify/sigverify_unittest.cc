@@ -286,8 +286,8 @@ constexpr std::array<UsageConstraintsTestCase, 4> kUsageConstraintsTestCases{{
     {
         .selector_bits = 0x7FF,
         .exp_device_id = kDeviceId,
-        .exp_manuf_state_creator = kUnusedWord,
-        .exp_manuf_state_owner = kUnusedWord,
+        .exp_manuf_state_creator = kManufStateCreator,
+        .exp_manuf_state_owner = kManufStateOwner,
         .exp_life_cycle_state = kLifeCycleState,
     },
     {
@@ -346,7 +346,13 @@ constexpr std::array<UsageConstraintsTestCase, 4> kUsageConstraintsTestCases{{
 TEST_P(SigverifyUsageConstraints, Read) {
   EXPECT_CALL(lifecycle_, DeviceId(NotNull()))
       .WillOnce(SetArgPointee<0>(kDeviceId));
-  // TODO(#7948): Define OTP entries for manufacturing states.
+
+  EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET))
+      .WillOnce(Return(GetParam().exp_manuf_state_creator));
+
+  EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_OWNER_SW_CFG_MANUF_STATE_OFFSET))
+      .WillOnce(Return(GetParam().exp_manuf_state_owner));
+
   EXPECT_CALL(lifecycle_, State())
       .WillOnce(Return(static_cast<lifecycle_state_t>(kLifeCycleState)));
 

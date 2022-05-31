@@ -15,7 +15,6 @@ class otbn_illegal_mem_acc_vseq extends otbn_single_vseq;
       end
       begin
         do_mem_acc();
-        repeat (3) wait_alert_trigger("fatal", .wait_complete(1), .max_wait_cycle(100));
       end
     join
   endtask: body
@@ -30,6 +29,7 @@ class otbn_illegal_mem_acc_vseq extends otbn_single_vseq;
     bit completed, saw_err;
     // Pick either dmem or imem to access randomly
     bit choose_mem;
+    bit [31:0] err_val = 32'd1 << 21;
 
     cfg.ral_models["otbn_reg_block"].get_memories(mems);
     `DV_CHECK_STD_RANDOMIZE_FATAL(choose_mem)
@@ -39,11 +39,25 @@ class otbn_illegal_mem_acc_vseq extends otbn_single_vseq;
     addr = mems[choose_mem].get_address(offset);
     ral_name = mems[choose_mem].get_parent().get_name();
     cfg.en_scb_tl_err_chk = 0;
-    tl_access_w_abort(.addr(addr), .write(0), .data(data), .completed(completed),
-                      .saw_err(saw_err), .check_rsp(1),
-                      .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
-    `DV_CHECK_EQ(completed, 1)
-    `DV_CHECK_EQ(saw_err, 0)
+    fork
+      begin
+        string valid_signal_path = "tb.dut.tl_i.a_valid";
+        bit temp_var;
+        do begin
+          cfg.clk_rst_vif.wait_clks(1);
+          `DV_CHECK_FATAL(uvm_hdl_read(valid_signal_path, temp_var) == 1)
+        end while (!temp_var);
+        cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+      end
+      begin
+        tl_access_w_abort(.addr(addr), .write(0), .data(data), .completed(completed),
+                          .saw_err(saw_err), .check_rsp(1),
+                          .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
+        `DV_CHECK_EQ(completed, 1)
+        `DV_CHECK_EQ(saw_err, 0)
+      end
+    join
+    reset_if_locked();
     cfg.en_scb_tl_err_chk = 1;
   endtask
 

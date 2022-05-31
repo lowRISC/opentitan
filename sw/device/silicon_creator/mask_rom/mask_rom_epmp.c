@@ -80,10 +80,11 @@ void mask_rom_epmp_state_init(epmp_state_t *state, lifecycle_state_t lc_state) {
   state->mseccfg = EPMP_MSECCFG_MMWP | EPMP_MSECCFG_RLB;
 }
 
-void mask_rom_epmp_unlock_rom_ext_rx(epmp_state_t *state, epmp_region_t image) {
+void mask_rom_epmp_unlock_rom_ext_rx(epmp_state_t *state,
+                                     epmp_region_t region) {
   // Update the in-memory copy of ePMP register state.
   const int kEntry = 4;
-  epmp_state_configure_tor(state, kEntry, image, kEpmpPermLockedReadExecute);
+  epmp_state_configure_tor(state, kEntry, region, kEpmpPermLockedReadExecute);
 
   // Update the hardware configuration (CSRs).
   //
@@ -96,10 +97,33 @@ void mask_rom_epmp_unlock_rom_ext_rx(epmp_state_t *state, epmp_region_t image) {
   //             +-----------+-----------+-----------+-----------+
   // `pmpcfg1` = | `pmp7cfg` | `pmp6cfg` | `pmp5cfg` | `pmp4cfg` |
   //             +-----------+-----------+-----------+-----------+
-  CSR_WRITE(CSR_REG_PMPADDR3, image.start >> 2);
-  CSR_WRITE(CSR_REG_PMPADDR4, image.end >> 2);
+  CSR_WRITE(CSR_REG_PMPADDR3, region.start >> 2);
+  CSR_WRITE(CSR_REG_PMPADDR4, region.end >> 2);
   CSR_CLEAR_BITS(CSR_REG_PMPCFG1, 0xff);
   CSR_SET_BITS(CSR_REG_PMPCFG1, kEpmpModeTor | kEpmpPermLockedReadExecute);
+}
+
+void mask_rom_epmp_unlock_rom_ext_r(epmp_state_t *state, epmp_region_t region) {
+  const int kEntry = 6;
+  epmp_state_configure_napot(state, kEntry, region, kEpmpPermLockedReadOnly);
+
+  // Update the hardware configuration (CSRs).
+  //
+  // Entry is hardcoded as 6. Make sure to modify hardcoded values if changing
+  // kEntry.
+  //
+  // The `pmp6cfg` configuration is the second field in `pmpcfg1`.
+  //
+  //            32          24          16           8           0
+  //             +-----------+-----------+-----------+-----------+
+  // `pmpcfg1` = | `pmp7cfg` | `pmp6cfg` | `pmp5cfg` | `pmp4cfg` |
+  //             +-----------+-----------+-----------+-----------+
+
+  CSR_WRITE(CSR_REG_PMPADDR6,
+            region.start >> 2 | (region.end - region.start - 1) >> 3);
+  CSR_CLEAR_BITS(CSR_REG_PMPCFG1, 0xff << 16);
+  CSR_SET_BITS(CSR_REG_PMPCFG1,
+               ((kEpmpModeNapot | kEpmpPermLockedReadOnly) << 16));
 }
 
 void mask_rom_epmp_config_debug_rom(lifecycle_state_t lc_state) {

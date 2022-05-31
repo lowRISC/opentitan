@@ -90,18 +90,14 @@ package kmac_env_pkg;
   // number of rounds performed by keccak logic
   parameter int KECCAK_NUM_ROUNDS = 12 + 2 * L;
 
-  parameter int ENTROPY_STORAGE_WIDTH = 320;
-  parameter int ENTROPY_LFSR_WIDTH    = 64;
+  // After seeding the LFSRs, the internal auxiliary storage is filled up in 1 clock cycle.
+  parameter int CYCLES_TO_FILL_ENTROPY = 1;
 
-  // After seeding lfsr, internal entropy_storage is filled up in 5 cycles,
-  // ENTROPY_LFSR_WIDTH bits per cycles
-  parameter int CYCLES_TO_FILL_ENTROPY = ENTROPY_STORAGE_WIDTH / ENTROPY_LFSR_WIDTH;
+  // 4 cycles total: 4 cycles (for core) - entropy generation can be fully overlapped with core.
+  parameter int ENTROPY_FULL_EXPANSION_CYCLES = 4;
 
-  // 7 cycles total:                                     5 cycles        + 2 cycles (latch/consume entropy)
-  parameter int ENTROPY_FULL_EXPANSION_CYCLES = CYCLES_TO_FILL_ENTROPY + 2;
-
-  // 3 cycles total:                         1 cycle, entropy is reused + 2 cycles (latch/consume)
-  parameter int ENTROPY_FAST_PROCESSING_CYCLES = 3;
+  // 4 cycles total:                             4 cycles (for core)
+  parameter int ENTROPY_FAST_PROCESSING_CYCLES = 4;
 
   // interrupt types
   typedef enum int {

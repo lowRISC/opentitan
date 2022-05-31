@@ -119,11 +119,14 @@ class Loop(SnippetGen):
             warp = None
             iters = actual_iters
         else:
-            # We will start '1 + lo' iterations before the warp (and finish
-            # 'lo' of them). We'll then finish 'max_iters - lo' iterations
-            # after the warp. Both '1 + lo' and 'max_iters - lo' must be
-            # positive.
-            lo = random.randint(0, max_iters - 1)
+            # We will start '1 + lo' iterations before the warp (and finish 'lo'
+            # of them). We'll then finish 'max_iters - lo' iterations after the
+            # warp. Both '1 + lo' and 'max_iters - lo' must be positive. `lo`
+            # must not be more than `max_iters - 2` as otherwise we can warp to
+            # 1 remaining iteration. If this happens right at the end of a loop
+            # the prefetch stage will have fetched the wrong instruction and a
+            # fatal error will be raised.
+            lo = random.randint(0, max_iters - 2)
             hi = actual_iters - (max_iters - lo)
             assert 0 <= lo <= hi < actual_iters
             warp = (lo, hi)

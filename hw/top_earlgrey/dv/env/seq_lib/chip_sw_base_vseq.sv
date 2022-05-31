@@ -67,6 +67,13 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
     cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
 
+    // Randomize retention memory.  This is done intentionally with wrong integrity
+    // as early portions of mask ROM will initialize it to the correct value.
+    // The randomization here is just to ensure we do not have x's in the memory.
+    for (int ram_idx = 0; ram_idx < cfg.num_ram_ret_tiles; ram_idx++) begin
+       cfg.mem_bkdr_util_h[RamRet0 + ram_idx].randomize_mem();
+    end
+
     `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
     // Backdoor load memories with sw images.
     cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".scr.39.vmem"});
@@ -83,7 +90,18 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
 
+    config_jitter();
+
     `uvm_info(`gfn, "CPU_init done", UVM_MEDIUM)
+  endtask
+
+  task config_jitter();
+    bit en_jitter;
+    void'($value$plusargs("en_jitter=%0d", en_jitter));
+    if (en_jitter) begin
+      bit [7:0] en_jitter_arr[] = {1};
+      sw_symbol_backdoor_overwrite("kJitterEnabled", en_jitter_arr, Rom, SwTypeRom);
+    end
   endtask
 
   virtual function void main_sram_bkdr_write32(
@@ -276,6 +294,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                "addr_mask = 0x%0h"},
                               symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
     for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
+
+    if (mem == Rom) begin
+      `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
+      cfg.mem_bkdr_util_h[mem].update_rom_digest(RndCnstRomCtrlScrKey, RndCnstRomCtrlScrNonce);
+    end
   endfunction
 
   // General-use function to backdoor write a byte of data to any selected memory type
@@ -284,9 +307,212 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual function void mem_bkdr_write8(input chip_mem_e mem,
                                         input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                         input byte data);
-    byte prev_data = cfg.mem_bkdr_util_h[mem].read8(addr);
-    cfg.mem_bkdr_util_h[mem].write8(addr, data);
+    byte prev_data;
+    if (mem == Rom) begin
+      bit [127:0] key = RndCnstRomCtrlScrKey;
+      bit [63:0] nonce = RndCnstRomCtrlScrNonce;
+      prev_data = cfg.mem_bkdr_util_h[mem].rom_encrypt_read8(addr, key, nonce);
+      cfg.mem_bkdr_util_h[mem].rom_encrypt_write8(addr, data, key, nonce);
+    end else begin // flash
+      prev_data = cfg.mem_bkdr_util_h[mem].read8(addr);
+      cfg.mem_bkdr_util_h[mem].write8(addr, data);
+    end
     `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h --> 0x%0h", addr, prev_data, data), UVM_HIGH)
   endfunction
+
+  // LC state transition tasks
+  // This function takes the token value from the four LC_CTRL token CSRs, then runs through
+  // cshake128 to get a 768-bit XORed token output.
+  // The first 128 bits of the decoded token should match the OTP paritition's descrambled tokens
+  // value.
+  virtual function bit [TokenWidthBit-1:0] dec_otp_token_from_lc_csrs(
+      bit [7:0] token_in[TokenWidthByte]);
+
+    bit [7:0] dpi_digest[kmac_pkg::AppDigestW/8];
+    bit [kmac_pkg::AppDigestW-1:0] digest_bits;
+
+    digestpp_dpi_pkg::c_dpi_cshake128(token_in, "", "LC_CTRL", TokenWidthByte,
+                                      kmac_pkg::AppDigestW/8, dpi_digest);
+
+    digest_bits = {<< byte {dpi_digest}};
+    return (digest_bits[TokenWidthBit-1:0]);
+  endfunction
+
+
+  // LC_CTRL JTAG tasks
+  virtual task wait_lc_status(lc_ctrl_status_e expect_status, int max_attemp = 5000);
+    int i;
+    for (i = 0; i < max_attemp; i++) begin
+      bit [TL_DW-1:0] status_val;
+      lc_ctrl_status_e dummy;
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
+      jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.status.get_offset(),
+                                          p_sequencer.jtag_sequencer_h,
+                                          status_val);
+
+      // Ensure that none of the other status bits are set.
+      `DV_CHECK_EQ(status_val >> dummy.num(), 0,
+                   $sformatf("Unexpected status error %0h", status_val))
+      if (status_val[expect_status]) begin
+        `uvm_info(`gfn, $sformatf("LC status %0s.", expect_status.name), UVM_LOW)
+        break;
+      end
+    end
+
+    if (i >= max_attemp) begin
+      `uvm_fatal(`gfn, $sformatf("max attempt reached to get lc status %0s!", expect_status.name))
+    end
+  endtask
+
+  virtual task wait_lc_ready(bit allow_err = 1);
+    cfg.m_jtag_riscv_agent_cfg.allow_errors = allow_err;
+    wait_lc_status(LcReady);
+    cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
+  endtask
+
+  // Use JTAG interface to transit LC_CTRL from one state to the valid next state.
+  // Currently support the following transitions:
+  // 1). RAW state -> test unlock state N
+  //     This transition will use default raw unlock token.
+  // 2). Test lock state N -> test unlock state N+1
+  //     This transition requires user to input the correct test unlock token.
+  virtual task jtag_lc_state_transition(dec_lc_state_e src_state,
+                                        dec_lc_state_e dest_state,
+                                        bit [TokenWidthBit-1:0] test_unlock_token = 0);
+    bit [TL_DW-1:0] actual_src_state;
+    bit valid_transition;
+    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
+                                        p_sequencer.jtag_sequencer_h,
+                                        actual_src_state);
+    `DV_CHECK_EQ({DecLcStateNumRep{src_state}}, actual_src_state)
+
+    // Check if the requested transition is valid.
+    case (src_state)
+      DecLcStRaw: begin
+        if (dest_state inside {DecLcStTestUnlocked0, DecLcStTestUnlocked1, DecLcStTestUnlocked2,
+                               DecLcStTestUnlocked3, DecLcStTestUnlocked4, DecLcStTestUnlocked5,
+                               DecLcStTestUnlocked6, DecLcStTestUnlocked7, DecLcStScrap}) begin
+          valid_transition = 1;
+          test_unlock_token = RndCnstRawUnlockToken;
+        end
+      end
+      DecLcStTestLocked0: begin
+        if (dest_state inside {DecLcStTestUnlocked1, DecLcStTestUnlocked2, DecLcStTestUnlocked3,
+                               DecLcStTestUnlocked4, DecLcStTestUnlocked5, DecLcStTestUnlocked6,
+                               DecLcStTestUnlocked7, DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+      DecLcStTestLocked1: begin
+        if (dest_state inside {DecLcStTestUnlocked2, DecLcStTestUnlocked3, DecLcStTestUnlocked4,
+                               DecLcStTestUnlocked5, DecLcStTestUnlocked6,DecLcStTestUnlocked7,
+                               DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+      DecLcStTestLocked2: begin
+        if (dest_state inside {DecLcStTestUnlocked3, DecLcStTestUnlocked4, DecLcStTestUnlocked5,
+                               DecLcStTestUnlocked6, DecLcStTestUnlocked7, DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+      DecLcStTestLocked3: begin
+        if (dest_state inside {DecLcStTestUnlocked4, DecLcStTestUnlocked5, DecLcStTestUnlocked6,
+                               DecLcStTestUnlocked7, DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+      DecLcStTestLocked4: begin
+        if (dest_state inside {DecLcStTestUnlocked5, DecLcStTestUnlocked6, DecLcStTestUnlocked7,
+                               DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+      DecLcStTestLocked5: begin
+        if (dest_state inside {DecLcStTestUnlocked6, DecLcStTestUnlocked7, DecLcStScrap}) begin
+          valid_transition = 1;
+        end
+      end
+       DecLcStTestLocked6: begin
+        if (dest_state inside {DecLcStTestUnlocked7, DecLcStScrap}) valid_transition = 1;
+      end
+     default: `uvm_fatal(`gfn, $sformatf("%0s src state not supported", src_state.name))
+    endcase
+
+    if (!valid_transition) begin
+      `uvm_fatal(`gfn, $sformatf("invalid state transition request from %0s state to %0s",
+                                 src_state.name, dest_state.name))
+    end
+
+    `uvm_info(`gfn, $sformatf("Start LC transition request from %0s state to %0s state",
+                              src_state.name, dest_state.name), UVM_LOW)
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
+                                         p_sequencer.jtag_sequencer_h,
+                                         prim_mubi_pkg::MuBi8True);
+
+    // Write LC state transition token.
+    begin
+      bit [TL_DW-1:0] token_csr_vals[4] = {<< 32 {{>> 8 {test_unlock_token}}}};
+      foreach (token_csr_vals[index]) begin
+        jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_token[index].get_offset(),
+                                             p_sequencer.jtag_sequencer_h,
+                                             token_csr_vals[index]);
+      end
+    end
+
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_target.get_offset(),
+                                         p_sequencer.jtag_sequencer_h,
+                                         {DecLcStateNumRep{dest_state}});
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_cmd.get_offset(),
+                                         p_sequencer.jtag_sequencer_h,
+                                         1);
+    `uvm_info(`gfn, "Sent LC transition request", UVM_LOW)
+
+    wait_lc_status(LcTransitionSuccessful);
+    `uvm_info(`gfn, "LC transition request succeed!", UVM_LOW)
+  endtask
+
+  // These assertions check if OTP image sets the correct mubi type. However, when loading the raw
+  // image, the default value is 0 - which not mubi true or false. We expect this unprogrammed
+  // all-zero values to be interpreted as false and relax the assertion below.
+  // Detailed discussion in #12428.
+  virtual function void otp_raw_img_mubi_assertion_ctrl(bit enable);
+    if (enable) begin
+      // verilog_lint: waive line-length-exceeds-max
+      $asserton(0, "tb.dut.top_earlgrey.u_csrng.u_csrng_core.u_prim_mubi8_sync_sw_app_read.PrimMubi8SyncCheckTransients_A");
+      // verilog_lint: waive line-length-exceeds-max
+      $asserton(0, "tb.dut.top_earlgrey.u_entropy_src.u_entropy_src_core.u_prim_mubi8_sync_es_fw_over.PrimMubi8SyncCheckTransients_A");
+      // verilog_lint: waive line-length-exceeds-max
+      $asserton(0, "tb.dut.top_earlgrey.u_entropy_src.u_entropy_src_core.u_prim_mubi8_sync_es_fw_read.PrimMubi8SyncCheckTransients_A");
+    end else begin
+      // verilog_lint: waive line-length-exceeds-max
+      $assertoff(0, "tb.dut.top_earlgrey.u_csrng.u_csrng_core.u_prim_mubi8_sync_sw_app_read.PrimMubi8SyncCheckTransients_A");
+      // verilog_lint: waive line-length-exceeds-max
+      $assertoff(0, "tb.dut.top_earlgrey.u_entropy_src.u_entropy_src_core.u_prim_mubi8_sync_es_fw_over.PrimMubi8SyncCheckTransients_A");
+      // verilog_lint: waive line-length-exceeds-max
+      $assertoff(0, "tb.dut.top_earlgrey.u_entropy_src.u_entropy_src_core.u_prim_mubi8_sync_es_fw_read.PrimMubi8SyncCheckTransients_A");
+    end
+  endfunction
+
+
+  // drive PAD PORN for 6 aon_clk cycles
+  task assert_por_reset(int delay = 0);
+    repeat (delay) @cfg.pwrmgr_low_power_vif.fast_cb;
+    cfg.por_rstn_vif.drive(0);
+    repeat (6) @cfg.pwrmgr_low_power_vif.cb;
+
+    cfg.clk_rst_vif.wait_clks(10);
+    cfg.por_rstn_vif.drive(1);
+  endtask // assert_por_reset
+
+  // push button 50us;
+  // this task requires proper sysrst_ctrl config
+  // see sw/device/tests/pwrmgr_b2b_sleep_reset_test.c
+  // 'static void prgm_push_button_wakeup()' for example
+  task push_button;
+    cfg.pwrb_in_vif.drive(0);
+    #50us;
+    cfg.pwrb_in_vif.drive(1);
+  endtask // push_button
 
 endclass : chip_sw_base_vseq

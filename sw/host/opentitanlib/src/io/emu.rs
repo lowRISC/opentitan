@@ -2,37 +2,82 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::transport::Result;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt;
+use std::path::PathBuf;
+
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-/// Error related to the `Emulator` trait. These error messages will be printed in the context of
-/// a TransportError::EmuError, that is "Emulator error: {}".  So including the words "error" or
-/// "Emulator" in texts below will probably be redundant.
+use crate::impl_serializable_error;
+
+/// Error related to the `Emulator` trait.
 #[derive(Error, Debug, Serialize, Deserialize)]
 pub enum EmuError {
-    #[error("Invalid argument name {0}")]
+    #[error("Invalid argument name: {0}")]
     InvalidArgumetName(String),
-    #[error("Argument {0} has invalid value {1}")]
+    #[error("Argument name: {0} has invalid value: {1}")]
     InvalidArgumentValue(String, String),
-    #[error("Start failed with cause {0}")]
+    #[error("Start failed with cause: {0}")]
     StartFailureCause(String),
-    #[error("Stop failed with cause {0}")]
+    #[error("Stop failed with cause: {0}")]
     StopFailureCause(String),
     #[error("Can't restore resource to initial state: {0}")]
     ResetError(String),
-    #[error("Runtime error {0}")]
+    #[error("Runtime error: {0}")]
     RuntimeError(String),
 }
+impl_serializable_error!(EmuError);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EmuValue {
     Empty,
     String(String),
-    FilePath(String),
+    FilePath(PathBuf),
     StringList(Vec<String>),
-    FilePathList(Vec<String>),
+    FilePathList(Vec<PathBuf>),
+}
+
+impl From<String> for EmuValue {
+    fn from(s: String) -> Self {
+        EmuValue::String(s)
+    }
+}
+
+impl From<Vec<String>> for EmuValue {
+    fn from(str_array: Vec<String>) -> Self {
+        EmuValue::StringList(str_array)
+    }
+}
+
+impl From<PathBuf> for EmuValue {
+    fn from(p: PathBuf) -> Self {
+        EmuValue::FilePath(p)
+    }
+}
+
+impl From<Vec<PathBuf>> for EmuValue {
+    fn from(path_array: Vec<PathBuf>) -> Self {
+        EmuValue::FilePathList(path_array)
+    }
+}
+
+impl fmt::Display for EmuValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            EmuValue::Empty => write!(f, " "),
+            EmuValue::String(value) => write!(f, "{}", value),
+            EmuValue::FilePath(value) => write!(f, "{}", value.display()),
+            EmuValue::StringList(value_list) => write!(f, "{}", value_list.join(",")),
+            EmuValue::FilePathList(value_list) => {
+                for item in value_list.iter() {
+                    write!(f, "{} ", item.display())?;
+                }
+                Ok(())
+            }
+        }
+    }
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
@@ -41,6 +86,17 @@ pub enum EmuState {
     On,
     Busy,
     Error,
+}
+
+impl fmt::Display for EmuState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            EmuState::Off => write!(f, "Off"),
+            EmuState::On => write!(f, "On"),
+            EmuState::Busy => write!(f, "Busy"),
+            EmuState::Error => write!(f, "Error"),
+        }
+    }
 }
 
 /// A trait which represents a `Emulator` instance

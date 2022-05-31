@@ -55,18 +55,31 @@ module sysrst_ctrl_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [34:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(35)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -1623,6 +1636,9 @@ module sysrst_ctrl_reg_top (
 
 
   // R[ec_rst_ctl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_ec_rst_ctl_gated_we;
+  assign aon_ec_rst_ctl_gated_we = aon_ec_rst_ctl_we & aon_ec_rst_ctl_regwen;
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1632,7 +1648,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_ec_rst_ctl_we & aon_ec_rst_ctl_regwen),
+    .we     (aon_ec_rst_ctl_gated_we),
     .wd     (aon_ec_rst_ctl_wdata[15:0]),
 
     // from internal hardware
@@ -1649,6 +1665,10 @@ module sysrst_ctrl_reg_top (
 
 
   // R[ulp_ac_debounce_ctl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_ulp_ac_debounce_ctl_gated_we;
+  assign aon_ulp_ac_debounce_ctl_gated_we =
+    aon_ulp_ac_debounce_ctl_we & aon_ulp_ac_debounce_ctl_regwen;
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1658,7 +1678,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_ulp_ac_debounce_ctl_we & aon_ulp_ac_debounce_ctl_regwen),
+    .we     (aon_ulp_ac_debounce_ctl_gated_we),
     .wd     (aon_ulp_ac_debounce_ctl_wdata[15:0]),
 
     // from internal hardware
@@ -1675,6 +1695,10 @@ module sysrst_ctrl_reg_top (
 
 
   // R[ulp_lid_debounce_ctl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_ulp_lid_debounce_ctl_gated_we;
+  assign aon_ulp_lid_debounce_ctl_gated_we =
+    aon_ulp_lid_debounce_ctl_we & aon_ulp_lid_debounce_ctl_regwen;
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1684,7 +1708,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_ulp_lid_debounce_ctl_we & aon_ulp_lid_debounce_ctl_regwen),
+    .we     (aon_ulp_lid_debounce_ctl_gated_we),
     .wd     (aon_ulp_lid_debounce_ctl_wdata[15:0]),
 
     // from internal hardware
@@ -1701,6 +1725,10 @@ module sysrst_ctrl_reg_top (
 
 
   // R[ulp_pwrb_debounce_ctl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_ulp_pwrb_debounce_ctl_gated_we;
+  assign aon_ulp_pwrb_debounce_ctl_gated_we =
+    aon_ulp_pwrb_debounce_ctl_we & aon_ulp_pwrb_debounce_ctl_regwen;
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1710,7 +1738,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_ulp_pwrb_debounce_ctl_we & aon_ulp_pwrb_debounce_ctl_regwen),
+    .we     (aon_ulp_pwrb_debounce_ctl_gated_we),
     .wd     (aon_ulp_pwrb_debounce_ctl_wdata[15:0]),
 
     // from internal hardware
@@ -1805,6 +1833,9 @@ module sysrst_ctrl_reg_top (
 
 
   // R[key_invert_ctl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_key_invert_ctl_gated_we;
+  assign aon_key_invert_ctl_gated_we = aon_key_invert_ctl_we & aon_key_invert_ctl_regwen;
   //   F[key0_in]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1815,7 +1846,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[0]),
 
     // from internal hardware
@@ -1840,7 +1871,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[1]),
 
     // from internal hardware
@@ -1865,7 +1896,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[2]),
 
     // from internal hardware
@@ -1890,7 +1921,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[3]),
 
     // from internal hardware
@@ -1915,7 +1946,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[4]),
 
     // from internal hardware
@@ -1940,7 +1971,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[5]),
 
     // from internal hardware
@@ -1965,7 +1996,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[6]),
 
     // from internal hardware
@@ -1990,7 +2021,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[7]),
 
     // from internal hardware
@@ -2015,7 +2046,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[8]),
 
     // from internal hardware
@@ -2040,7 +2071,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[9]),
 
     // from internal hardware
@@ -2065,7 +2096,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[10]),
 
     // from internal hardware
@@ -2090,7 +2121,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_invert_ctl_we & aon_key_invert_ctl_regwen),
+    .we     (aon_key_invert_ctl_gated_we),
     .wd     (aon_key_invert_ctl_wdata[11]),
 
     // from internal hardware
@@ -2107,6 +2138,9 @@ module sysrst_ctrl_reg_top (
 
 
   // R[pin_allowed_ctl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_pin_allowed_ctl_gated_we;
+  assign aon_pin_allowed_ctl_gated_we = aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen;
   //   F[bat_disable_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -2117,7 +2151,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[0]),
 
     // from internal hardware
@@ -2142,7 +2176,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[1]),
 
     // from internal hardware
@@ -2167,7 +2201,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[2]),
 
     // from internal hardware
@@ -2192,7 +2226,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[3]),
 
     // from internal hardware
@@ -2217,7 +2251,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[4]),
 
     // from internal hardware
@@ -2242,7 +2276,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[5]),
 
     // from internal hardware
@@ -2267,7 +2301,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[6]),
 
     // from internal hardware
@@ -2292,7 +2326,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[7]),
 
     // from internal hardware
@@ -2317,7 +2351,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[8]),
 
     // from internal hardware
@@ -2342,7 +2376,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[9]),
 
     // from internal hardware
@@ -2367,7 +2401,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[10]),
 
     // from internal hardware
@@ -2392,7 +2426,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[11]),
 
     // from internal hardware
@@ -2417,7 +2451,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[12]),
 
     // from internal hardware
@@ -2442,7 +2476,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[13]),
 
     // from internal hardware
@@ -2467,7 +2501,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[14]),
 
     // from internal hardware
@@ -2492,7 +2526,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_pin_allowed_ctl_we & aon_pin_allowed_ctl_regwen),
+    .we     (aon_pin_allowed_ctl_gated_we),
     .wd     (aon_pin_allowed_ctl_wdata[15]),
 
     // from internal hardware
@@ -3115,6 +3149,9 @@ module sysrst_ctrl_reg_top (
 
 
   // R[key_intr_ctl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_key_intr_ctl_gated_we;
+  assign aon_key_intr_ctl_gated_we = aon_key_intr_ctl_we & aon_key_intr_ctl_regwen;
   //   F[pwrb_in_h2l]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -3125,7 +3162,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[0]),
 
     // from internal hardware
@@ -3150,7 +3187,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[1]),
 
     // from internal hardware
@@ -3175,7 +3212,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[2]),
 
     // from internal hardware
@@ -3200,7 +3237,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[3]),
 
     // from internal hardware
@@ -3225,7 +3262,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[4]),
 
     // from internal hardware
@@ -3250,7 +3287,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[5]),
 
     // from internal hardware
@@ -3275,7 +3312,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[6]),
 
     // from internal hardware
@@ -3300,7 +3337,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[8]),
 
     // from internal hardware
@@ -3325,7 +3362,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[9]),
 
     // from internal hardware
@@ -3350,7 +3387,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[10]),
 
     // from internal hardware
@@ -3375,7 +3412,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[11]),
 
     // from internal hardware
@@ -3400,7 +3437,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[12]),
 
     // from internal hardware
@@ -3425,7 +3462,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[13]),
 
     // from internal hardware
@@ -3450,7 +3487,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_ctl_we & aon_key_intr_ctl_regwen),
+    .we     (aon_key_intr_ctl_gated_we),
     .wd     (aon_key_intr_ctl_wdata[14]),
 
     // from internal hardware
@@ -3467,6 +3504,10 @@ module sysrst_ctrl_reg_top (
 
 
   // R[key_intr_debounce_ctl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_key_intr_debounce_ctl_gated_we;
+  assign aon_key_intr_debounce_ctl_gated_we =
+    aon_key_intr_debounce_ctl_we & aon_key_intr_debounce_ctl_regwen;
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3476,7 +3517,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_key_intr_debounce_ctl_we & aon_key_intr_debounce_ctl_regwen),
+    .we     (aon_key_intr_debounce_ctl_gated_we),
     .wd     (aon_key_intr_debounce_ctl_wdata[15:0]),
 
     // from internal hardware
@@ -3493,6 +3534,10 @@ module sysrst_ctrl_reg_top (
 
 
   // R[auto_block_debounce_ctl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_auto_block_debounce_ctl_gated_we;
+  assign aon_auto_block_debounce_ctl_gated_we =
+    aon_auto_block_debounce_ctl_we & aon_auto_block_debounce_ctl_regwen;
   //   F[debounce_timer]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -3503,7 +3548,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_auto_block_debounce_ctl_we & aon_auto_block_debounce_ctl_regwen),
+    .we     (aon_auto_block_debounce_ctl_gated_we),
     .wd     (aon_auto_block_debounce_ctl_wdata[15:0]),
 
     // from internal hardware
@@ -3528,7 +3573,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_auto_block_debounce_ctl_we & aon_auto_block_debounce_ctl_regwen),
+    .we     (aon_auto_block_debounce_ctl_gated_we),
     .wd     (aon_auto_block_debounce_ctl_wdata[16]),
 
     // from internal hardware
@@ -3545,6 +3590,10 @@ module sysrst_ctrl_reg_top (
 
 
   // R[auto_block_out_ctl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_auto_block_out_ctl_gated_we;
+  assign aon_auto_block_out_ctl_gated_we =
+    aon_auto_block_out_ctl_we & aon_auto_block_out_ctl_regwen;
   //   F[key0_out_sel]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -3555,7 +3604,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_auto_block_out_ctl_we & aon_auto_block_out_ctl_regwen),
+    .we     (aon_auto_block_out_ctl_gated_we),
     .wd     (aon_auto_block_out_ctl_wdata[0]),
 
     // from internal hardware
@@ -3580,7 +3629,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_auto_block_out_ctl_we & aon_auto_block_out_ctl_regwen),
+    .we     (aon_auto_block_out_ctl_gated_we),
     .wd     (aon_auto_block_out_ctl_wdata[1]),
 
     // from internal hardware
@@ -3605,7 +3654,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_auto_block_out_ctl_we & aon_auto_block_out_ctl_regwen),
+    .we     (aon_auto_block_out_ctl_gated_we),
     .wd     (aon_auto_block_out_ctl_wdata[2]),
 
     // from internal hardware
@@ -3630,7 +3679,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_auto_block_out_ctl_we & aon_auto_block_out_ctl_regwen),
+    .we     (aon_auto_block_out_ctl_gated_we),
     .wd     (aon_auto_block_out_ctl_wdata[4]),
 
     // from internal hardware
@@ -3655,7 +3704,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_auto_block_out_ctl_we & aon_auto_block_out_ctl_regwen),
+    .we     (aon_auto_block_out_ctl_gated_we),
     .wd     (aon_auto_block_out_ctl_wdata[5]),
 
     // from internal hardware
@@ -3680,7 +3729,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_auto_block_out_ctl_we & aon_auto_block_out_ctl_regwen),
+    .we     (aon_auto_block_out_ctl_gated_we),
     .wd     (aon_auto_block_out_ctl_wdata[6]),
 
     // from internal hardware
@@ -3698,6 +3747,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 0 of Multireg com_sel_ctl
   // R[com_sel_ctl_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_sel_ctl_0_gated_we;
+  assign aon_com_sel_ctl_0_gated_we = aon_com_sel_ctl_0_we & aon_com_sel_ctl_0_regwen;
   //   F[key0_in_sel_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -3708,7 +3760,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_0_we & aon_com_sel_ctl_0_regwen),
+    .we     (aon_com_sel_ctl_0_gated_we),
     .wd     (aon_com_sel_ctl_0_wdata[0]),
 
     // from internal hardware
@@ -3733,7 +3785,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_0_we & aon_com_sel_ctl_0_regwen),
+    .we     (aon_com_sel_ctl_0_gated_we),
     .wd     (aon_com_sel_ctl_0_wdata[1]),
 
     // from internal hardware
@@ -3758,7 +3810,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_0_we & aon_com_sel_ctl_0_regwen),
+    .we     (aon_com_sel_ctl_0_gated_we),
     .wd     (aon_com_sel_ctl_0_wdata[2]),
 
     // from internal hardware
@@ -3783,7 +3835,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_0_we & aon_com_sel_ctl_0_regwen),
+    .we     (aon_com_sel_ctl_0_gated_we),
     .wd     (aon_com_sel_ctl_0_wdata[3]),
 
     // from internal hardware
@@ -3808,7 +3860,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_0_we & aon_com_sel_ctl_0_regwen),
+    .we     (aon_com_sel_ctl_0_gated_we),
     .wd     (aon_com_sel_ctl_0_wdata[4]),
 
     // from internal hardware
@@ -3826,6 +3878,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 1 of Multireg com_sel_ctl
   // R[com_sel_ctl_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_sel_ctl_1_gated_we;
+  assign aon_com_sel_ctl_1_gated_we = aon_com_sel_ctl_1_we & aon_com_sel_ctl_1_regwen;
   //   F[key0_in_sel_1]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -3836,7 +3891,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_1_we & aon_com_sel_ctl_1_regwen),
+    .we     (aon_com_sel_ctl_1_gated_we),
     .wd     (aon_com_sel_ctl_1_wdata[0]),
 
     // from internal hardware
@@ -3861,7 +3916,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_1_we & aon_com_sel_ctl_1_regwen),
+    .we     (aon_com_sel_ctl_1_gated_we),
     .wd     (aon_com_sel_ctl_1_wdata[1]),
 
     // from internal hardware
@@ -3886,7 +3941,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_1_we & aon_com_sel_ctl_1_regwen),
+    .we     (aon_com_sel_ctl_1_gated_we),
     .wd     (aon_com_sel_ctl_1_wdata[2]),
 
     // from internal hardware
@@ -3911,7 +3966,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_1_we & aon_com_sel_ctl_1_regwen),
+    .we     (aon_com_sel_ctl_1_gated_we),
     .wd     (aon_com_sel_ctl_1_wdata[3]),
 
     // from internal hardware
@@ -3936,7 +3991,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_1_we & aon_com_sel_ctl_1_regwen),
+    .we     (aon_com_sel_ctl_1_gated_we),
     .wd     (aon_com_sel_ctl_1_wdata[4]),
 
     // from internal hardware
@@ -3954,6 +4009,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 2 of Multireg com_sel_ctl
   // R[com_sel_ctl_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_sel_ctl_2_gated_we;
+  assign aon_com_sel_ctl_2_gated_we = aon_com_sel_ctl_2_we & aon_com_sel_ctl_2_regwen;
   //   F[key0_in_sel_2]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -3964,7 +4022,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_2_we & aon_com_sel_ctl_2_regwen),
+    .we     (aon_com_sel_ctl_2_gated_we),
     .wd     (aon_com_sel_ctl_2_wdata[0]),
 
     // from internal hardware
@@ -3989,7 +4047,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_2_we & aon_com_sel_ctl_2_regwen),
+    .we     (aon_com_sel_ctl_2_gated_we),
     .wd     (aon_com_sel_ctl_2_wdata[1]),
 
     // from internal hardware
@@ -4014,7 +4072,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_2_we & aon_com_sel_ctl_2_regwen),
+    .we     (aon_com_sel_ctl_2_gated_we),
     .wd     (aon_com_sel_ctl_2_wdata[2]),
 
     // from internal hardware
@@ -4039,7 +4097,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_2_we & aon_com_sel_ctl_2_regwen),
+    .we     (aon_com_sel_ctl_2_gated_we),
     .wd     (aon_com_sel_ctl_2_wdata[3]),
 
     // from internal hardware
@@ -4064,7 +4122,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_2_we & aon_com_sel_ctl_2_regwen),
+    .we     (aon_com_sel_ctl_2_gated_we),
     .wd     (aon_com_sel_ctl_2_wdata[4]),
 
     // from internal hardware
@@ -4082,6 +4140,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 3 of Multireg com_sel_ctl
   // R[com_sel_ctl_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_sel_ctl_3_gated_we;
+  assign aon_com_sel_ctl_3_gated_we = aon_com_sel_ctl_3_we & aon_com_sel_ctl_3_regwen;
   //   F[key0_in_sel_3]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -4092,7 +4153,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_3_we & aon_com_sel_ctl_3_regwen),
+    .we     (aon_com_sel_ctl_3_gated_we),
     .wd     (aon_com_sel_ctl_3_wdata[0]),
 
     // from internal hardware
@@ -4117,7 +4178,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_3_we & aon_com_sel_ctl_3_regwen),
+    .we     (aon_com_sel_ctl_3_gated_we),
     .wd     (aon_com_sel_ctl_3_wdata[1]),
 
     // from internal hardware
@@ -4142,7 +4203,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_3_we & aon_com_sel_ctl_3_regwen),
+    .we     (aon_com_sel_ctl_3_gated_we),
     .wd     (aon_com_sel_ctl_3_wdata[2]),
 
     // from internal hardware
@@ -4167,7 +4228,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_3_we & aon_com_sel_ctl_3_regwen),
+    .we     (aon_com_sel_ctl_3_gated_we),
     .wd     (aon_com_sel_ctl_3_wdata[3]),
 
     // from internal hardware
@@ -4192,7 +4253,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_sel_ctl_3_we & aon_com_sel_ctl_3_regwen),
+    .we     (aon_com_sel_ctl_3_gated_we),
     .wd     (aon_com_sel_ctl_3_wdata[4]),
 
     // from internal hardware
@@ -4210,6 +4271,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 0 of Multireg com_det_ctl
   // R[com_det_ctl_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_det_ctl_0_gated_we;
+  assign aon_com_det_ctl_0_gated_we = aon_com_det_ctl_0_we & aon_com_det_ctl_0_regwen;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4219,7 +4283,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_det_ctl_0_we & aon_com_det_ctl_0_regwen),
+    .we     (aon_com_det_ctl_0_gated_we),
     .wd     (aon_com_det_ctl_0_wdata[31:0]),
 
     // from internal hardware
@@ -4237,6 +4301,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 1 of Multireg com_det_ctl
   // R[com_det_ctl_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_det_ctl_1_gated_we;
+  assign aon_com_det_ctl_1_gated_we = aon_com_det_ctl_1_we & aon_com_det_ctl_1_regwen;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4246,7 +4313,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_det_ctl_1_we & aon_com_det_ctl_1_regwen),
+    .we     (aon_com_det_ctl_1_gated_we),
     .wd     (aon_com_det_ctl_1_wdata[31:0]),
 
     // from internal hardware
@@ -4264,6 +4331,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 2 of Multireg com_det_ctl
   // R[com_det_ctl_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_det_ctl_2_gated_we;
+  assign aon_com_det_ctl_2_gated_we = aon_com_det_ctl_2_we & aon_com_det_ctl_2_regwen;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4273,7 +4343,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_det_ctl_2_we & aon_com_det_ctl_2_regwen),
+    .we     (aon_com_det_ctl_2_gated_we),
     .wd     (aon_com_det_ctl_2_wdata[31:0]),
 
     // from internal hardware
@@ -4291,6 +4361,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 3 of Multireg com_det_ctl
   // R[com_det_ctl_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_det_ctl_3_gated_we;
+  assign aon_com_det_ctl_3_gated_we = aon_com_det_ctl_3_we & aon_com_det_ctl_3_regwen;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -4300,7 +4373,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_det_ctl_3_we & aon_com_det_ctl_3_regwen),
+    .we     (aon_com_det_ctl_3_gated_we),
     .wd     (aon_com_det_ctl_3_wdata[31:0]),
 
     // from internal hardware
@@ -4318,6 +4391,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 0 of Multireg com_out_ctl
   // R[com_out_ctl_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_out_ctl_0_gated_we;
+  assign aon_com_out_ctl_0_gated_we = aon_com_out_ctl_0_we & aon_com_out_ctl_0_regwen;
   //   F[bat_disable_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -4328,7 +4404,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_0_we & aon_com_out_ctl_0_regwen),
+    .we     (aon_com_out_ctl_0_gated_we),
     .wd     (aon_com_out_ctl_0_wdata[0]),
 
     // from internal hardware
@@ -4353,7 +4429,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_0_we & aon_com_out_ctl_0_regwen),
+    .we     (aon_com_out_ctl_0_gated_we),
     .wd     (aon_com_out_ctl_0_wdata[1]),
 
     // from internal hardware
@@ -4378,7 +4454,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_0_we & aon_com_out_ctl_0_regwen),
+    .we     (aon_com_out_ctl_0_gated_we),
     .wd     (aon_com_out_ctl_0_wdata[2]),
 
     // from internal hardware
@@ -4403,7 +4479,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_0_we & aon_com_out_ctl_0_regwen),
+    .we     (aon_com_out_ctl_0_gated_we),
     .wd     (aon_com_out_ctl_0_wdata[3]),
 
     // from internal hardware
@@ -4421,6 +4497,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 1 of Multireg com_out_ctl
   // R[com_out_ctl_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_out_ctl_1_gated_we;
+  assign aon_com_out_ctl_1_gated_we = aon_com_out_ctl_1_we & aon_com_out_ctl_1_regwen;
   //   F[bat_disable_1]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -4431,7 +4510,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_1_we & aon_com_out_ctl_1_regwen),
+    .we     (aon_com_out_ctl_1_gated_we),
     .wd     (aon_com_out_ctl_1_wdata[0]),
 
     // from internal hardware
@@ -4456,7 +4535,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_1_we & aon_com_out_ctl_1_regwen),
+    .we     (aon_com_out_ctl_1_gated_we),
     .wd     (aon_com_out_ctl_1_wdata[1]),
 
     // from internal hardware
@@ -4481,7 +4560,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_1_we & aon_com_out_ctl_1_regwen),
+    .we     (aon_com_out_ctl_1_gated_we),
     .wd     (aon_com_out_ctl_1_wdata[2]),
 
     // from internal hardware
@@ -4506,7 +4585,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_1_we & aon_com_out_ctl_1_regwen),
+    .we     (aon_com_out_ctl_1_gated_we),
     .wd     (aon_com_out_ctl_1_wdata[3]),
 
     // from internal hardware
@@ -4524,6 +4603,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 2 of Multireg com_out_ctl
   // R[com_out_ctl_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_out_ctl_2_gated_we;
+  assign aon_com_out_ctl_2_gated_we = aon_com_out_ctl_2_we & aon_com_out_ctl_2_regwen;
   //   F[bat_disable_2]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -4534,7 +4616,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_2_we & aon_com_out_ctl_2_regwen),
+    .we     (aon_com_out_ctl_2_gated_we),
     .wd     (aon_com_out_ctl_2_wdata[0]),
 
     // from internal hardware
@@ -4559,7 +4641,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_2_we & aon_com_out_ctl_2_regwen),
+    .we     (aon_com_out_ctl_2_gated_we),
     .wd     (aon_com_out_ctl_2_wdata[1]),
 
     // from internal hardware
@@ -4584,7 +4666,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_2_we & aon_com_out_ctl_2_regwen),
+    .we     (aon_com_out_ctl_2_gated_we),
     .wd     (aon_com_out_ctl_2_wdata[2]),
 
     // from internal hardware
@@ -4609,7 +4691,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_2_we & aon_com_out_ctl_2_regwen),
+    .we     (aon_com_out_ctl_2_gated_we),
     .wd     (aon_com_out_ctl_2_wdata[3]),
 
     // from internal hardware
@@ -4627,6 +4709,9 @@ module sysrst_ctrl_reg_top (
 
   // Subregister 3 of Multireg com_out_ctl
   // R[com_out_ctl_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_out_ctl_3_gated_we;
+  assign aon_com_out_ctl_3_gated_we = aon_com_out_ctl_3_we & aon_com_out_ctl_3_regwen;
   //   F[bat_disable_3]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -4637,7 +4722,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_3_we & aon_com_out_ctl_3_regwen),
+    .we     (aon_com_out_ctl_3_gated_we),
     .wd     (aon_com_out_ctl_3_wdata[0]),
 
     // from internal hardware
@@ -4662,7 +4747,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_3_we & aon_com_out_ctl_3_regwen),
+    .we     (aon_com_out_ctl_3_gated_we),
     .wd     (aon_com_out_ctl_3_wdata[1]),
 
     // from internal hardware
@@ -4687,7 +4772,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_3_we & aon_com_out_ctl_3_regwen),
+    .we     (aon_com_out_ctl_3_gated_we),
     .wd     (aon_com_out_ctl_3_wdata[2]),
 
     // from internal hardware
@@ -4712,7 +4797,7 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (aon_com_out_ctl_3_we & aon_com_out_ctl_3_regwen),
+    .we     (aon_com_out_ctl_3_gated_we),
     .wd     (aon_com_out_ctl_3_wdata[3]),
 
     // from internal hardware
@@ -5264,6 +5349,8 @@ module sysrst_ctrl_reg_top (
                (addr_hit[33] & (|(SYSRST_CTRL_PERMIT[33] & ~reg_be))) |
                (addr_hit[34] & (|(SYSRST_CTRL_PERMIT[34] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_wd = reg_wdata[0];
@@ -5440,6 +5527,46 @@ module sysrst_ctrl_reg_top (
 
 
 
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = regwen_we;
+    reg_we_check[5] = ec_rst_ctl_we;
+    reg_we_check[6] = ulp_ac_debounce_ctl_we;
+    reg_we_check[7] = ulp_lid_debounce_ctl_we;
+    reg_we_check[8] = ulp_pwrb_debounce_ctl_we;
+    reg_we_check[9] = ulp_ctl_we;
+    reg_we_check[10] = ulp_status_we;
+    reg_we_check[11] = wkup_status_we;
+    reg_we_check[12] = key_invert_ctl_we;
+    reg_we_check[13] = pin_allowed_ctl_we;
+    reg_we_check[14] = pin_out_ctl_we;
+    reg_we_check[15] = pin_out_value_we;
+    reg_we_check[16] = 1'b0;
+    reg_we_check[17] = key_intr_ctl_we;
+    reg_we_check[18] = key_intr_debounce_ctl_we;
+    reg_we_check[19] = auto_block_debounce_ctl_we;
+    reg_we_check[20] = auto_block_out_ctl_we;
+    reg_we_check[21] = com_sel_ctl_0_we;
+    reg_we_check[22] = com_sel_ctl_1_we;
+    reg_we_check[23] = com_sel_ctl_2_we;
+    reg_we_check[24] = com_sel_ctl_3_we;
+    reg_we_check[25] = com_det_ctl_0_we;
+    reg_we_check[26] = com_det_ctl_1_we;
+    reg_we_check[27] = com_det_ctl_2_we;
+    reg_we_check[28] = com_det_ctl_3_we;
+    reg_we_check[29] = com_out_ctl_0_we;
+    reg_we_check[30] = com_out_ctl_1_we;
+    reg_we_check[31] = com_out_ctl_2_we;
+    reg_we_check[32] = com_out_ctl_3_we;
+    reg_we_check[33] = combo_intr_status_we;
+    reg_we_check[34] = key_intr_status_we;
+  end
 
   // Read data return
   always_comb begin

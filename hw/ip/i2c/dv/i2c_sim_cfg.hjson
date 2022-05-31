@@ -46,44 +46,78 @@
   // List of test specifications.
   tests: [
     {
-      name: i2c_smoke
-      uvm_test_seq: i2c_smoke_vseq
+      name: i2c_host_smoke
+      uvm_test_seq: i2c_host_smoke_vseq
     }
 
     {
-      name: i2c_override
-      uvm_test_seq: i2c_override_vseq
+      name: i2c_host_override
+      uvm_test_seq: i2c_host_override_vseq
       run_opts: ["+en_scb=0"]
     }
 
     {
-      name: i2c_fifo_watermark
-      uvm_test_seq: i2c_fifo_watermark_vseq
+      name: i2c_host_rx_oversample
+      uvm_test_seq: i2c_host_rx_oversample_vseq
+      run_opts: ["+test_timeout_ns=10_000_000"]
     }
 
     {
-      name: i2c_fifo_overflow
-      uvm_test_seq: i2c_fifo_overflow_vseq
+      name: i2c_host_fifo_watermark
+      uvm_test_seq: i2c_host_fifo_watermark_vseq
     }
 
     {
-      name: i2c_fifo_full
-      uvm_test_seq: i2c_fifo_full_vseq
+      name: i2c_host_fifo_overflow
+      uvm_test_seq: i2c_host_fifo_overflow_vseq
     }
 
     {
-      name: i2c_perf
-      uvm_test_seq: i2c_perf_vseq
+      name: i2c_host_fifo_reset_fmt
+      uvm_test_seq: i2c_host_fifo_reset_fmt_vseq
+      run_opts: ["+test_timeout_ns=10_000_000"]
     }
 
     {
-      name: i2c_stretch_timeout
-      uvm_test_seq: i2c_stretch_timeout_vseq
+      name: i2c_host_fifo_fmt_empty
+      uvm_test_seq: i2c_host_fifo_fmt_empty_vseq
+      run_opts: ["+test_timeout_ns=10_000_000"]
     }
 
     {
-      name: i2c_error_intr
-      uvm_test_seq: i2c_error_intr_vseq
+      name: i2c_host_fifo_reset_rx
+      uvm_test_seq: i2c_host_fifo_reset_rx_vseq
+      run_opts: ["+test_timeout_ns=10_000_000"]
+    }
+
+    {
+      name: i2c_host_timeout
+      uvm_test_seq: i2c_host_timeout_vseq
+    }
+
+    {
+      name: i2c_host_fifo_full
+      uvm_test_seq: i2c_host_fifo_full_vseq
+    }
+
+    {
+      name: i2c_host_perf
+      uvm_test_seq: i2c_host_perf_vseq
+    }
+
+    {
+      name: i2c_host_stretch_timeout
+      uvm_test_seq: i2c_host_stretch_timeout_vseq
+    }
+
+    {
+      name: i2c_host_error_intr
+      uvm_test_seq: i2c_host_error_intr_vseq
+    }
+
+    {
+      name: i2c_host_stress_all
+      uvm_test_seq: i2c_host_stress_all_vseq
     }
   ]
 
@@ -91,7 +125,7 @@
   regressions: [
     {
        name: smoke
-       tests: ["i2c_smoke"]
+       tests: ["i2c_host_smoke"]
     }
   ]
 }

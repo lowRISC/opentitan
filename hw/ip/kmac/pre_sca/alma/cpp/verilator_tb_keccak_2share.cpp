@@ -17,21 +17,43 @@ int main(int argc, char **argv) {
 
   // Data signals - we don't really care about the data fed to the module.
   // The whole tracing is really just about control signals.
-  tb.m_core.rand_i = 0x123456;
-  tb.m_core.s_i = 0x789ABCDE;
+  tb.m_core.rand_i = 0x0123456789ABCDEF;
+  tb.m_core.s_i[0] = 0x01234567;
+  tb.m_core.s_i[1] = 0x89ABCDEF;
+  tb.m_core.s_i[2] = 0x01234567;
+  tb.m_core.s_i[3] = 0x89ABCDEF;
 
   // Control signals
   tb.m_core.rnd_i = 0;  // Round, just defines which round constant is added
                         // at the very end.
-  tb.m_core.rand_valid_i = 1;  // Randomness always valid. TODO experiment with
-                               // stalls to test muxing.
 
   // Phase 1 - Theta, Rho, Pi - Takes 1 cycle.
-  tb.m_core.sel_i = 0;
+  tb.m_core.phase_sel_i = 0x5;
+  tb.m_core.cycle_i = 0x0;
   tb.tick();
-  // Phase 2 - Chi, Iota - Takes 2 cycles.
-  tb.m_core.sel_i = 1;
+  // Phase 2 - Chi, Iota - Takes 3 cycles.
+  tb.m_core.phase_sel_i = 0xA;
+  tb.m_core.cycle_i = 0x1;
   tb.tick();
+  tb.m_core.phase_sel_i = 0xA;
+  tb.m_core.cycle_i = 0x2;
+  tb.tick();
+  tb.m_core.phase_sel_i = 0xA;
+  tb.m_core.cycle_i = 0x3;
+  tb.tick();
+  // Phase 1 again - Theta, Rho, Pi - Takes 1 cycle.
+  tb.m_core.phase_sel_i = 0x5;
+  tb.m_core.cycle_i = 0x0;
+  tb.tick();
+  // Phase 2 - Chi, Iota - Takes 3 cycles.
+  tb.m_core.phase_sel_i = 0xA;
+  tb.m_core.cycle_i = 0x1;
+  tb.tick();
+  tb.m_core.phase_sel_i = 0xA;
+  tb.m_core.cycle_i = 0x2;
+  tb.tick();
+  tb.m_core.phase_sel_i = 0xA;
+  tb.m_core.cycle_i = 0x3;
   tb.tick();
 
   tb.closetrace();

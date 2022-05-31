@@ -282,10 +282,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               refresh_entropy = 0;
               `uvm_info(`gfn, "dropped refresh_entropy", UVM_HIGH)
             end
-            // after EDN request returns fresh entropy, it only becomes valid after 6 cycles:
-            // - 5 to expand the entropy
-            // - 1 to latch the entropy
-            cfg.clk_rst_vif.wait_clks(CYCLES_TO_FILL_ENTROPY + 1);
+            // After EDN request returns fresh entropy, it only becomes valid after 1 cycle due
+            // filling the internal auxiliary storage.
+            cfg.clk_rst_vif.wait_clks(CYCLES_TO_FILL_ENTROPY);
           end
           ,
           wait(cfg.under_reset);
@@ -908,7 +907,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   //
   // Disabling fast entropy means that the internal 320-bit entropy state needs to be "refilled" for
   // each round, adding a 5 cycle latency as 64-bits are "filled" at a time from the internal LFSR.
-  // So, each round will take ENTROPY_FULL_EXPANSION_CYCLES (7) cycles.
+  // So, each round will take ENTROPY_FULL_EXPANSION_CYCLES (4) cycles.
   //
   // Enabling fast entropy means that entropy will only be fully expanded during processing
   // of the secret key block (only applicable for KMAC hashing), each of these rounds will be the
@@ -942,7 +941,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     // This bit is used to indicate that a full entropy expansion is necessary.
     // A full entropy expansion will occur on the very first time that keccak rounds run after the
-    // design comes out of a reset, requiring that every round take the full 7 cycles (unless fast
+    // design comes out of a reset, requiring that every round take the full 4 cycles (unless fast
     // processing is enabled).
     bit full_entropy_expansion = 0;
 
@@ -980,8 +979,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         end else if (full_entropy_expansion) begin
           cycles_per_round = ENTROPY_FULL_EXPANSION_CYCLES;
         end else begin
-          // in the normal case, first round will take 3 cycles as expansion is handled during
-          // sha3pad operation, and each following round takes 7 cycles for full entropy expansion
+          // in the normal case, first round will take 4 cycles as expansion is handled during
+          // sha3pad operation, and each following round takes 4 cycles for full entropy expansion
           cycles_first_round = ENTROPY_FAST_PROCESSING_CYCLES;
           cycles_per_round = ENTROPY_FULL_EXPANSION_CYCLES;
         end
@@ -1926,8 +1925,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         // following csrs are locked by CFG_REGWEN:
         // - cfg
         // - entropy_period
-        // - entropy_seed_lower
-        // - entropy_seed_upper
+        // - entropy_seed
         // - key_len
         // if writes to these csrs are seen, must check that they are not locked first.
         if (ral.cfg_regwen.locks_reg_or_fld(dv_base_csr) &&

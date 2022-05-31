@@ -24,7 +24,7 @@ Tests          | [DIF_TEST_SMOKE][]   | Not Started |
 Type           | Item                        | Resolution  | Note/Collaterals
 ---------------|-----------------------------|-------------|------------------
 Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Done        | [HW Dashboard]({{< relref "hw" >}})
-Implementation | [DIF_FEATURES][]            | In Progress |
+Implementation | [DIF_FEATURES][]            | Done        |
 Coordination   | [DIF_DV_TESTS][]            | Not Started |
 
 [DIF_HW_FEATURE_COMPLETE]: {{< relref "/doc/project/checklist.md#dif_hw_feature_complete" >}}
@@ -39,7 +39,7 @@ Coordination   | [DIF_HW_DESIGN_COMPLETE][]       | Not Started |
 Coordination   | [DIF_HW_VERIFICATION_COMPLETE][] | Not Started |
 Documentation  | [DIF_DOC_HW][]                   | Not Started |
 Code Quality   | [DIF_CODE_STYLE][]               | Not Started |
-Tests          | [DIF_TEST_UNIT][]                | In Progress |
+Tests          | [DIF_TEST_UNIT][]                | Done        |
 Review         | [DIF_TODO_COMPLETE][]            | Not Started |
 Review         | Reviewer(s)                      | Not Started |
 Review         | Signoff date                     | Not Started |

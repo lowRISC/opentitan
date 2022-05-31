@@ -73,7 +73,7 @@ Signal                     | Direction        | Type                            
 `lc_escalate_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`             | Multibit life cycle escalation enable signal coming from life cycle controller, asserted if an escalation has occurred.
 `sram_otp_key_o`           | `output`         | `otp_ctrl_pkg::sram_otp_key_req_t` | Key derivation request going to the key derivation interface of the OTP controller.
 `sram_otp_key_i`           | `input`          | `otp_ctrl_pkg::sram_otp_key_rsp_t` | Ephemeral scrambling key coming back from the key derivation interface of the OTP controller.
-`otp_en_sram_ifetch_i`     | `input`          | `otp_ctrl_pkg::otp_en_t`           | Multibit value coming from the OTP HW_CFG partition ([EN_SRAM_IFETCH]({{< relref "hw/ip/otp_ctrl/doc/#direct-access-memory-map" >}})), set to 0xA5 in order to enable the {{< regref "EXEC" >}} CSR.
+`otp_en_sram_ifetch_i`     | `input`          | `otp_ctrl_pkg::mubi8_t`            | Multibit value coming from the OTP HW_CFG partition ([EN_SRAM_IFETCH]({{< relref "hw/ip/otp_ctrl/doc/#direct-access-memory-map" >}})), set to kMuBi8True in order to enable the {{< regref "EXEC" >}} CSR.
 `cfg_i`                    | `input`          | `logic [CfgWidth-1:0]`             | Attributes for physical memory macro.
 
 #### Interfaces to OTP and the SRAM Scrambling Primitive

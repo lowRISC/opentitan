@@ -109,8 +109,7 @@ module rstmgr_cnsty_chk
   state_e state_q, state_d;
 
   // SEC_CM: LEAF.FSM.SPARSE
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Reset,
-      clk_i, rst_ni, 0)
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Reset, clk_i, rst_ni)
 
   logic timeout;
   logic cnt_inc;
@@ -254,6 +253,7 @@ module rstmgr_cnsty_chk
 
       default: begin
         state_d = FsmError;
+        fsm_err_o = 1'b1;
       end
     endcase // unique case (state_q)
   end // always_comb

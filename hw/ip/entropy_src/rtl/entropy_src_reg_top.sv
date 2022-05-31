@@ -53,18 +53,31 @@ module entropy_src_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [56:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(57)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -757,16 +770,19 @@ module entropy_src_reg_top (
 
 
   // R[module_enable]: V(False)
+  // Create REGWEN-gated WE signal
+  logic module_enable_gated_we;
+  assign module_enable_gated_we = module_enable_we & me_regwen_qs;
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_module_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (module_enable_we & me_regwen_qs),
+    .we     (module_enable_gated_we),
     .wd     (module_enable_wd),
 
     // from internal hardware
@@ -783,17 +799,20 @@ module entropy_src_reg_top (
 
 
   // R[conf]: V(False)
+  // Create REGWEN-gated WE signal
+  logic conf_gated_we;
+  assign conf_gated_we = conf_we & regwen_qs;
   //   F[fips_enable]: 3:0
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_conf_fips_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (conf_we & regwen_qs),
+    .we     (conf_gated_we),
     .wd     (conf_fips_enable_wd),
 
     // from internal hardware
@@ -812,13 +831,13 @@ module entropy_src_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_conf_entropy_data_reg_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (conf_we & regwen_qs),
+    .we     (conf_gated_we),
     .wd     (conf_entropy_data_reg_enable_wd),
 
     // from internal hardware
@@ -837,13 +856,13 @@ module entropy_src_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_conf_threshold_scope (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (conf_we & regwen_qs),
+    .we     (conf_gated_we),
     .wd     (conf_threshold_scope_wd),
 
     // from internal hardware
@@ -862,13 +881,13 @@ module entropy_src_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_conf_rng_bit_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (conf_we & regwen_qs),
+    .we     (conf_gated_we),
     .wd     (conf_rng_bit_enable_wd),
 
     // from internal hardware
@@ -893,7 +912,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (conf_we & regwen_qs),
+    .we     (conf_gated_we),
     .wd     (conf_rng_bit_sel_wd),
 
     // from internal hardware
@@ -910,17 +929,20 @@ module entropy_src_reg_top (
 
 
   // R[entropy_control]: V(False)
+  // Create REGWEN-gated WE signal
+  logic entropy_control_gated_we;
+  assign entropy_control_gated_we = entropy_control_we & regwen_qs;
   //   F[es_route]: 3:0
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_entropy_control_es_route (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (entropy_control_we & regwen_qs),
+    .we     (entropy_control_gated_we),
     .wd     (entropy_control_es_route_wd),
 
     // from internal hardware
@@ -939,13 +961,13 @@ module entropy_src_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_entropy_control_es_type (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (entropy_control_we & regwen_qs),
+    .we     (entropy_control_gated_we),
     .wd     (entropy_control_es_type_wd),
 
     // from internal hardware
@@ -977,6 +999,9 @@ module entropy_src_reg_top (
 
 
   // R[health_test_windows]: V(False)
+  // Create REGWEN-gated WE signal
+  logic health_test_windows_gated_we;
+  assign health_test_windows_gated_we = health_test_windows_we & regwen_qs;
   //   F[fips_window]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -987,7 +1012,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (health_test_windows_we & regwen_qs),
+    .we     (health_test_windows_gated_we),
     .wd     (health_test_windows_fips_window_wd),
 
     // from internal hardware
@@ -1012,7 +1037,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (health_test_windows_we & regwen_qs),
+    .we     (health_test_windows_gated_we),
     .wd     (health_test_windows_bypass_window_wd),
 
     // from internal hardware
@@ -1032,12 +1057,15 @@ module entropy_src_reg_top (
   logic repcnt_thresholds_qe;
   logic [1:0] repcnt_thresholds_flds_we;
   assign repcnt_thresholds_qe = &repcnt_thresholds_flds_we;
+  // Create REGWEN-gated WE signal
+  logic repcnt_thresholds_gated_we;
+  assign repcnt_thresholds_gated_we = repcnt_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
   ) u_repcnt_thresholds_fips_thresh (
     .re     (repcnt_thresholds_re),
-    .we     (repcnt_thresholds_we & regwen_qs),
+    .we     (repcnt_thresholds_gated_we),
     .wd     (repcnt_thresholds_fips_thresh_wd),
     .d      (hw2reg.repcnt_thresholds.fips_thresh.d),
     .qre    (),
@@ -1052,7 +1080,7 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_repcnt_thresholds_bypass_thresh (
     .re     (repcnt_thresholds_re),
-    .we     (repcnt_thresholds_we & regwen_qs),
+    .we     (repcnt_thresholds_gated_we),
     .wd     (repcnt_thresholds_bypass_thresh_wd),
     .d      (hw2reg.repcnt_thresholds.bypass_thresh.d),
     .qre    (),
@@ -1067,12 +1095,15 @@ module entropy_src_reg_top (
   logic repcnts_thresholds_qe;
   logic [1:0] repcnts_thresholds_flds_we;
   assign repcnts_thresholds_qe = &repcnts_thresholds_flds_we;
+  // Create REGWEN-gated WE signal
+  logic repcnts_thresholds_gated_we;
+  assign repcnts_thresholds_gated_we = repcnts_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
   ) u_repcnts_thresholds_fips_thresh (
     .re     (repcnts_thresholds_re),
-    .we     (repcnts_thresholds_we & regwen_qs),
+    .we     (repcnts_thresholds_gated_we),
     .wd     (repcnts_thresholds_fips_thresh_wd),
     .d      (hw2reg.repcnts_thresholds.fips_thresh.d),
     .qre    (),
@@ -1087,7 +1118,7 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_repcnts_thresholds_bypass_thresh (
     .re     (repcnts_thresholds_re),
-    .we     (repcnts_thresholds_we & regwen_qs),
+    .we     (repcnts_thresholds_gated_we),
     .wd     (repcnts_thresholds_bypass_thresh_wd),
     .d      (hw2reg.repcnts_thresholds.bypass_thresh.d),
     .qre    (),
@@ -1102,12 +1133,15 @@ module entropy_src_reg_top (
   logic adaptp_hi_thresholds_qe;
   logic [1:0] adaptp_hi_thresholds_flds_we;
   assign adaptp_hi_thresholds_qe = &adaptp_hi_thresholds_flds_we;
+  // Create REGWEN-gated WE signal
+  logic adaptp_hi_thresholds_gated_we;
+  assign adaptp_hi_thresholds_gated_we = adaptp_hi_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
   ) u_adaptp_hi_thresholds_fips_thresh (
     .re     (adaptp_hi_thresholds_re),
-    .we     (adaptp_hi_thresholds_we & regwen_qs),
+    .we     (adaptp_hi_thresholds_gated_we),
     .wd     (adaptp_hi_thresholds_fips_thresh_wd),
     .d      (hw2reg.adaptp_hi_thresholds.fips_thresh.d),
     .qre    (),
@@ -1122,7 +1156,7 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_adaptp_hi_thresholds_bypass_thresh (
     .re     (adaptp_hi_thresholds_re),
-    .we     (adaptp_hi_thresholds_we & regwen_qs),
+    .we     (adaptp_hi_thresholds_gated_we),
     .wd     (adaptp_hi_thresholds_bypass_thresh_wd),
     .d      (hw2reg.adaptp_hi_thresholds.bypass_thresh.d),
     .qre    (),
@@ -1137,12 +1171,15 @@ module entropy_src_reg_top (
   logic adaptp_lo_thresholds_qe;
   logic [1:0] adaptp_lo_thresholds_flds_we;
   assign adaptp_lo_thresholds_qe = &adaptp_lo_thresholds_flds_we;
+  // Create REGWEN-gated WE signal
+  logic adaptp_lo_thresholds_gated_we;
+  assign adaptp_lo_thresholds_gated_we = adaptp_lo_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
   ) u_adaptp_lo_thresholds_fips_thresh (
     .re     (adaptp_lo_thresholds_re),
-    .we     (adaptp_lo_thresholds_we & regwen_qs),
+    .we     (adaptp_lo_thresholds_gated_we),
     .wd     (adaptp_lo_thresholds_fips_thresh_wd),
     .d      (hw2reg.adaptp_lo_thresholds.fips_thresh.d),
     .qre    (),
@@ -1157,7 +1194,7 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_adaptp_lo_thresholds_bypass_thresh (
     .re     (adaptp_lo_thresholds_re),
-    .we     (adaptp_lo_thresholds_we & regwen_qs),
+    .we     (adaptp_lo_thresholds_gated_we),
     .wd     (adaptp_lo_thresholds_bypass_thresh_wd),
     .d      (hw2reg.adaptp_lo_thresholds.bypass_thresh.d),
     .qre    (),
@@ -1172,12 +1209,15 @@ module entropy_src_reg_top (
   logic bucket_thresholds_qe;
   logic [1:0] bucket_thresholds_flds_we;
   assign bucket_thresholds_qe = &bucket_thresholds_flds_we;
+  // Create REGWEN-gated WE signal
+  logic bucket_thresholds_gated_we;
+  assign bucket_thresholds_gated_we = bucket_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
   ) u_bucket_thresholds_fips_thresh (
     .re     (bucket_thresholds_re),
-    .we     (bucket_thresholds_we & regwen_qs),
+    .we     (bucket_thresholds_gated_we),
     .wd     (bucket_thresholds_fips_thresh_wd),
     .d      (hw2reg.bucket_thresholds.fips_thresh.d),
     .qre    (),
@@ -1192,7 +1232,7 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_bucket_thresholds_bypass_thresh (
     .re     (bucket_thresholds_re),
-    .we     (bucket_thresholds_we & regwen_qs),
+    .we     (bucket_thresholds_gated_we),
     .wd     (bucket_thresholds_bypass_thresh_wd),
     .d      (hw2reg.bucket_thresholds.bypass_thresh.d),
     .qre    (),
@@ -1207,12 +1247,15 @@ module entropy_src_reg_top (
   logic markov_hi_thresholds_qe;
   logic [1:0] markov_hi_thresholds_flds_we;
   assign markov_hi_thresholds_qe = &markov_hi_thresholds_flds_we;
+  // Create REGWEN-gated WE signal
+  logic markov_hi_thresholds_gated_we;
+  assign markov_hi_thresholds_gated_we = markov_hi_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
   ) u_markov_hi_thresholds_fips_thresh (
     .re     (markov_hi_thresholds_re),
-    .we     (markov_hi_thresholds_we & regwen_qs),
+    .we     (markov_hi_thresholds_gated_we),
     .wd     (markov_hi_thresholds_fips_thresh_wd),
     .d      (hw2reg.markov_hi_thresholds.fips_thresh.d),
     .qre    (),
@@ -1227,7 +1270,7 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_markov_hi_thresholds_bypass_thresh (
     .re     (markov_hi_thresholds_re),
-    .we     (markov_hi_thresholds_we & regwen_qs),
+    .we     (markov_hi_thresholds_gated_we),
     .wd     (markov_hi_thresholds_bypass_thresh_wd),
     .d      (hw2reg.markov_hi_thresholds.bypass_thresh.d),
     .qre    (),
@@ -1242,12 +1285,15 @@ module entropy_src_reg_top (
   logic markov_lo_thresholds_qe;
   logic [1:0] markov_lo_thresholds_flds_we;
   assign markov_lo_thresholds_qe = &markov_lo_thresholds_flds_we;
+  // Create REGWEN-gated WE signal
+  logic markov_lo_thresholds_gated_we;
+  assign markov_lo_thresholds_gated_we = markov_lo_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
   ) u_markov_lo_thresholds_fips_thresh (
     .re     (markov_lo_thresholds_re),
-    .we     (markov_lo_thresholds_we & regwen_qs),
+    .we     (markov_lo_thresholds_gated_we),
     .wd     (markov_lo_thresholds_fips_thresh_wd),
     .d      (hw2reg.markov_lo_thresholds.fips_thresh.d),
     .qre    (),
@@ -1262,7 +1308,7 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_markov_lo_thresholds_bypass_thresh (
     .re     (markov_lo_thresholds_re),
-    .we     (markov_lo_thresholds_we & regwen_qs),
+    .we     (markov_lo_thresholds_gated_we),
     .wd     (markov_lo_thresholds_bypass_thresh_wd),
     .d      (hw2reg.markov_lo_thresholds.bypass_thresh.d),
     .qre    (),
@@ -1277,12 +1323,15 @@ module entropy_src_reg_top (
   logic extht_hi_thresholds_qe;
   logic [1:0] extht_hi_thresholds_flds_we;
   assign extht_hi_thresholds_qe = &extht_hi_thresholds_flds_we;
+  // Create REGWEN-gated WE signal
+  logic extht_hi_thresholds_gated_we;
+  assign extht_hi_thresholds_gated_we = extht_hi_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
   ) u_extht_hi_thresholds_fips_thresh (
     .re     (extht_hi_thresholds_re),
-    .we     (extht_hi_thresholds_we & regwen_qs),
+    .we     (extht_hi_thresholds_gated_we),
     .wd     (extht_hi_thresholds_fips_thresh_wd),
     .d      (hw2reg.extht_hi_thresholds.fips_thresh.d),
     .qre    (),
@@ -1297,7 +1346,7 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_extht_hi_thresholds_bypass_thresh (
     .re     (extht_hi_thresholds_re),
-    .we     (extht_hi_thresholds_we & regwen_qs),
+    .we     (extht_hi_thresholds_gated_we),
     .wd     (extht_hi_thresholds_bypass_thresh_wd),
     .d      (hw2reg.extht_hi_thresholds.bypass_thresh.d),
     .qre    (),
@@ -1312,12 +1361,15 @@ module entropy_src_reg_top (
   logic extht_lo_thresholds_qe;
   logic [1:0] extht_lo_thresholds_flds_we;
   assign extht_lo_thresholds_qe = &extht_lo_thresholds_flds_we;
+  // Create REGWEN-gated WE signal
+  logic extht_lo_thresholds_gated_we;
+  assign extht_lo_thresholds_gated_we = extht_lo_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
   ) u_extht_lo_thresholds_fips_thresh (
     .re     (extht_lo_thresholds_re),
-    .we     (extht_lo_thresholds_we & regwen_qs),
+    .we     (extht_lo_thresholds_gated_we),
     .wd     (extht_lo_thresholds_fips_thresh_wd),
     .d      (hw2reg.extht_lo_thresholds.fips_thresh.d),
     .qre    (),
@@ -1332,7 +1384,7 @@ module entropy_src_reg_top (
     .DW    (16)
   ) u_extht_lo_thresholds_bypass_thresh (
     .re     (extht_lo_thresholds_re),
-    .we     (extht_lo_thresholds_we & regwen_qs),
+    .we     (extht_lo_thresholds_gated_we),
     .wd     (extht_lo_thresholds_bypass_thresh_wd),
     .d      (hw2reg.extht_lo_thresholds.bypass_thresh.d),
     .qre    (),
@@ -1749,6 +1801,9 @@ module entropy_src_reg_top (
 
 
   // R[alert_threshold]: V(False)
+  // Create REGWEN-gated WE signal
+  logic alert_threshold_gated_we;
+  assign alert_threshold_gated_we = alert_threshold_we & regwen_qs;
   //   F[alert_threshold]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1759,7 +1814,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_threshold_we & regwen_qs),
+    .we     (alert_threshold_gated_we),
     .wd     (alert_threshold_alert_threshold_wd),
 
     // from internal hardware
@@ -1784,7 +1839,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (alert_threshold_we & regwen_qs),
+    .we     (alert_threshold_gated_we),
     .wd     (alert_threshold_alert_threshold_inv_wd),
 
     // from internal hardware
@@ -1946,17 +2001,20 @@ module entropy_src_reg_top (
 
 
   // R[fw_ov_control]: V(False)
+  // Create REGWEN-gated WE signal
+  logic fw_ov_control_gated_we;
+  assign fw_ov_control_gated_we = fw_ov_control_we & regwen_qs;
   //   F[fw_ov_mode]: 3:0
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_fw_ov_control_fw_ov_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fw_ov_control_we & regwen_qs),
+    .we     (fw_ov_control_gated_we),
     .wd     (fw_ov_control_fw_ov_mode_wd),
 
     // from internal hardware
@@ -1975,13 +2033,13 @@ module entropy_src_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_fw_ov_control_fw_ov_entropy_insert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fw_ov_control_we & regwen_qs),
+    .we     (fw_ov_control_gated_we),
     .wd     (fw_ov_control_fw_ov_entropy_insert_wd),
 
     // from internal hardware
@@ -2001,7 +2059,7 @@ module entropy_src_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_fw_ov_sha3_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2099,6 +2157,9 @@ module entropy_src_reg_top (
 
 
   // R[observe_fifo_thresh]: V(False)
+  // Create REGWEN-gated WE signal
+  logic observe_fifo_thresh_gated_we;
+  assign observe_fifo_thresh_gated_we = observe_fifo_thresh_we & regwen_qs;
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2108,7 +2169,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (observe_fifo_thresh_we & regwen_qs),
+    .we     (observe_fifo_thresh_gated_we),
     .wd     (observe_fifo_thresh_wd),
 
     // from internal hardware
@@ -2819,6 +2880,9 @@ module entropy_src_reg_top (
     .d_i(&err_code_test_flds_we),
     .q_o(err_code_test_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic err_code_test_gated_we;
+  assign err_code_test_gated_we = err_code_test_we & regwen_qs;
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2828,7 +2892,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (err_code_test_we & regwen_qs),
+    .we     (err_code_test_gated_we),
     .wd     (err_code_test_wd),
 
     // from internal hardware
@@ -2997,6 +3061,8 @@ module entropy_src_reg_top (
                (addr_hit[55] & (|(ENTROPY_SRC_PERMIT[55] & ~reg_be))) |
                (addr_hit[56] & (|(ENTROPY_SRC_PERMIT[56] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_es_entropy_valid_wd = reg_wdata[0];
@@ -3191,6 +3257,68 @@ module entropy_src_reg_top (
   assign err_code_test_we = addr_hit[55] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = me_regwen_we;
+    reg_we_check[5] = sw_regupd_we;
+    reg_we_check[6] = 1'b0;
+    reg_we_check[7] = 1'b0;
+    reg_we_check[8] = module_enable_gated_we;
+    reg_we_check[9] = conf_gated_we;
+    reg_we_check[10] = entropy_control_gated_we;
+    reg_we_check[11] = 1'b0;
+    reg_we_check[12] = health_test_windows_gated_we;
+    reg_we_check[13] = repcnt_thresholds_gated_we;
+    reg_we_check[14] = repcnts_thresholds_gated_we;
+    reg_we_check[15] = adaptp_hi_thresholds_gated_we;
+    reg_we_check[16] = adaptp_lo_thresholds_gated_we;
+    reg_we_check[17] = bucket_thresholds_gated_we;
+    reg_we_check[18] = markov_hi_thresholds_gated_we;
+    reg_we_check[19] = markov_lo_thresholds_gated_we;
+    reg_we_check[20] = extht_hi_thresholds_gated_we;
+    reg_we_check[21] = extht_lo_thresholds_gated_we;
+    reg_we_check[22] = 1'b0;
+    reg_we_check[23] = 1'b0;
+    reg_we_check[24] = 1'b0;
+    reg_we_check[25] = 1'b0;
+    reg_we_check[26] = 1'b0;
+    reg_we_check[27] = 1'b0;
+    reg_we_check[28] = 1'b0;
+    reg_we_check[29] = 1'b0;
+    reg_we_check[30] = 1'b0;
+    reg_we_check[31] = 1'b0;
+    reg_we_check[32] = 1'b0;
+    reg_we_check[33] = 1'b0;
+    reg_we_check[34] = 1'b0;
+    reg_we_check[35] = 1'b0;
+    reg_we_check[36] = 1'b0;
+    reg_we_check[37] = 1'b0;
+    reg_we_check[38] = 1'b0;
+    reg_we_check[39] = 1'b0;
+    reg_we_check[40] = alert_threshold_gated_we;
+    reg_we_check[41] = 1'b0;
+    reg_we_check[42] = 1'b0;
+    reg_we_check[43] = 1'b0;
+    reg_we_check[44] = fw_ov_control_gated_we;
+    reg_we_check[45] = fw_ov_sha3_start_we;
+    reg_we_check[46] = 1'b0;
+    reg_we_check[47] = fw_ov_rd_fifo_overflow_we;
+    reg_we_check[48] = 1'b0;
+    reg_we_check[49] = fw_ov_wr_data_we;
+    reg_we_check[50] = observe_fifo_thresh_gated_we;
+    reg_we_check[51] = 1'b0;
+    reg_we_check[52] = 1'b0;
+    reg_we_check[53] = recov_alert_sts_we;
+    reg_we_check[54] = 1'b0;
+    reg_we_check[55] = err_code_test_gated_we;
+    reg_we_check[56] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

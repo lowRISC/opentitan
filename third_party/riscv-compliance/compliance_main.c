@@ -5,8 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 // These symbols are provided by the riscv-compliance libraries.
 extern uint32_t begin_signature[];
@@ -24,7 +24,7 @@ bool test_main(void) {
   run_rvc_test();
 
   ptrdiff_t words = end_signature - begin_signature;
-  CHECK_BUFFER(begin_signature, kExpectedSignature, (size_t)words);
+  CHECK_ARRAYS_EQ(begin_signature, kExpectedSignature, (size_t)words);
 
   return true;
 }

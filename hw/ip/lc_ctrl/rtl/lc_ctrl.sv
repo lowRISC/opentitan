@@ -121,11 +121,6 @@ module lc_ctrl
   `ASSERT_INIT(OtpTestCtrlWidth_A, otp_ctrl_pkg::OtpTestCtrlWidth == CsrOtpTestCtrlWidth)
   `ASSERT_INIT(HwRevFieldWidth_A, HwRevFieldWidth <= 16)
 
-  // Check for bit-width matching between lc_tx_t and mubi4_t
-  `ASSERT_INIT(LcMuBiWidthCheck_A, $bits(TxWidth) == $bits(prim_mubi_pkg::MuBi4Width))
-  `ASSERT_INIT(LcTxComplCheck_A, On == ~Off)
-  `ASSERT_INIT(MuBi4ComplCheck_A, prim_mubi_pkg::MuBi4True == ~prim_mubi_pkg::MuBi4False)
-
   /////////////
   // Regfile //
   /////////////
@@ -215,6 +210,7 @@ module lc_ctrl
     .clk_i,
     .rst_ni,
     .testmode_i       ( scanmode          ),
+    .test_rst_ni      ( scan_rst_ni       ),
     .dmi_rst_no       (                   ), // unused
     .dmi_req_o        ( dmi_req           ),
     .dmi_req_valid_o  ( dmi_req_valid     ),
@@ -727,10 +723,21 @@ module lc_ctrl
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcFsmCheck_A,
       u_lc_ctrl_fsm.u_fsm_state_regs, alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcStateCheck_A,
-      u_lc_ctrl_fsm.u_state_regs, alert_tx_o[1])
+      u_lc_ctrl_fsm.u_state_regs, alert_tx_o[1],
+      !$past(otp_lc_data_i.valid) ||
+      u_lc_ctrl_fsm.fsm_state_q inside {ResetSt, EscalateSt, PostTransSt, InvalidSt} ||
+      u_lc_ctrl_fsm.esc_scrap_state0_i ||
+      u_lc_ctrl_fsm.esc_scrap_state1_i)
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcCntCheck_A,
-      u_lc_ctrl_fsm.u_cnt_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKmacIfFsmCheck_A,
-      u_lc_ctrl_kmac_if.u_state_regs, alert_tx_o[1])
+      u_lc_ctrl_fsm.u_cnt_regs, alert_tx_o[1],
+       !$past(otp_lc_data_i.valid) ||
+      u_lc_ctrl_fsm.fsm_state_q inside {ResetSt, EscalateSt, PostTransSt, InvalidSt} ||
+      u_lc_ctrl_fsm.esc_scrap_state0_i ||
+      u_lc_ctrl_fsm.esc_scrap_state1_i)
+ `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKmacIfFsmCheck_A,
+      u_lc_ctrl_kmac_if.u_state_regs, alert_tx_o[1],
+      u_lc_ctrl_fsm.fsm_state_q inside {EscalateSt} ||
+      u_lc_ctrl_fsm.esc_scrap_state0_i ||
+      u_lc_ctrl_fsm.esc_scrap_state1_i)
 
 endmodule : lc_ctrl

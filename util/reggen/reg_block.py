@@ -68,7 +68,8 @@ class RegBlock:
     def build_blocks(block: 'RegBlock',
                      raw: object,
                      bus: BusInterfaces,
-                     clocks: Clocking) -> Dict[Optional[str], 'RegBlock']:
+                     clocks: Clocking,
+                     is_alias: bool) -> Dict[Optional[str], 'RegBlock']:
         '''Build a dictionary of blocks for a 'registers' field in the hjson
 
         There are two different syntaxes we might see here. The simple syntax
@@ -82,13 +83,18 @@ class RegBlock:
         key/value pairs start empty RegBlocks. The return value is a dictionary
         mapping the keys we saw to their respective RegBlocks.
 
+        The flag is_alias determines whether these blocks contain alias
+        register definitions. If that flag is set, the individual register
+        definitions must contain the alias_target key, which specifies the
+        name of the generic register to override.
         '''
         if isinstance(raw, list):
             # This is the simple syntax
             block.add_raw_registers(raw,
                                     'registers field at top-level',
                                     clocks,
-                                    bus.device_async.get(None))
+                                    bus.device_async.get(None),
+                                    is_alias)
             return {None: block}
 
         # This is the more complicated syntax
@@ -115,7 +121,8 @@ class RegBlock:
                                     'dictionary at top-level'
                                     .format(idx + 1),
                                     clocks,
-                                    bus.device_async.get(r_key))
+                                    bus.device_async.get(r_key),
+                                    is_alias)
             block.validate()
 
             assert rb_key not in ret
@@ -128,7 +135,8 @@ class RegBlock:
                           raw: object,
                           what: str,
                           clocks: Clocking,
-                          async_if: Optional[str]) -> None:
+                          async_if: Optional[str],
+                          is_alias: bool) -> None:
 
         # the interface is fully asynchronous
         if async_if:
@@ -139,12 +147,13 @@ class RegBlock:
         for entry_idx, entry_raw in enumerate(rl):
             where = ('entry {} of the top-level registers field'
                      .format(entry_idx + 1))
-            self.add_raw(where, entry_raw, clocks)
+            self.add_raw(where, entry_raw, clocks, is_alias)
 
     def add_raw(self,
                 where: str,
                 raw: object,
-                clocks: Clocking) -> None:
+                clocks: Clocking,
+                is_alias: bool) -> None:
         entry = check_str_dict(raw, where)
 
         handlers = {
@@ -179,7 +188,7 @@ class RegBlock:
         entry_where = ('At offset {:#x}, {}, type {!r}'
                        .format(self.offset, where, entry_type))
 
-        handlers[entry_type](entry_where, entry_body, clocks)
+        handlers[entry_type](entry_where, entry_body, clocks, is_alias)
 
     def _validate_async(self, name: Optional[str], clk: object) -> None:
         '''Check for async definition consistency
@@ -213,15 +222,29 @@ class RegBlock:
             assert isinstance(clk, ClockingItem)
             self.clocks[name] = clk
 
-    def _handle_register(self, where: str, body: object, clocks: Clocking) -> None:
+    def _handle_register(self,
+                         where: str,
+                         body: object,
+                         clocks: Clocking,
+                         is_alias: bool) -> None:
         reg = Register.from_raw(self._reg_width,
-                                self.offset, self._params, body, clocks)
+                                self.offset,
+                                self._params,
+                                body,
+                                clocks,
+                                is_alias)
 
         self._validate_async(reg.async_name, reg.async_clk)
 
         self.add_register(reg)
 
-    def _handle_reserved(self, where: str, body: object, clocks: Optional[Clocking]) -> None:
+    def _handle_reserved(self,
+                         where: str,
+                         body: object,
+                         clocks: Optional[Clocking],
+                         is_alias: bool) -> None:
+        if is_alias:
+            raise ValueError('Aliasing reserved regions is not supported yet')
         nreserved = check_int(body, 'body of ' + where)
         if nreserved <= 0:
             raise ValueError('Reserved count in {} is {}, '
@@ -230,7 +253,15 @@ class RegBlock:
 
         self.offset += self._addrsep * nreserved
 
-    def _handle_skipto(self, where: str, body: object, clocks: Optional[Clocking]) -> None:
+    def _handle_skipto(self,
+                       where: str,
+                       body: object,
+                       clocks: Optional[Clocking],
+                       is_alias: bool) -> None:
+        if is_alias:
+            raise ValueError('The skipto command is not supported in '
+                             'alias register definitions')
+
         skipto = check_int(body, 'body of ' + where)
         if skipto < self.offset:
             raise ValueError('Destination of skipto in {} is {:#x}, '
@@ -242,7 +273,14 @@ class RegBlock:
                              .format(where, skipto, self._addrsep))
         self.offset = skipto
 
-    def _handle_window(self, where: str, body: object, clocks: Optional[Clocking]) -> None:
+    def _handle_window(self,
+                       where: str,
+                       body: object,
+                       clocks: Optional[Clocking],
+                       is_alias: bool) -> None:
+        if is_alias:
+            raise ValueError('Aliasing window regions is not supported yet')
+
         window = Window.from_raw(self.offset,
                                  self._reg_width, self._params, body)
         if window.name is not None:
@@ -254,10 +292,18 @@ class RegBlock:
                                          self.name_to_offset[lname]))
         self.add_window(window)
 
-    def _handle_multireg(self, where: str, body: object, clocks: Clocking) -> None:
+    def _handle_multireg(self,
+                         where: str,
+                         body: object,
+                         clocks: Clocking,
+                         is_alias: bool) -> None:
         mr = MultiRegister(self.offset,
-                           self._addrsep, self._reg_width, self._params, body,
-                           clocks)
+                           self._addrsep,
+                           self._reg_width,
+                           self._params,
+                           body,
+                           clocks,
+                           is_alias)
 
         # validate async schemes
         self._validate_async(mr.async_name, mr.async_clk)
@@ -275,7 +321,6 @@ class RegBlock:
             self._add_flat_reg(reg)
             if mr.dv_compact is False:
                 self.type_regs.append(reg)
-            self.name_to_offset[lname] = reg.offset
 
         self.multiregs.append(mr)
         self.all_regs.append(mr)
@@ -294,7 +339,6 @@ class RegBlock:
                              .format(reg.name, reg.offset,
                                      self.name_to_offset[lname]))
         self._add_flat_reg(reg)
-        self.name_to_offset[lname] = reg.offset
 
         self.registers.append(reg)
         self.all_regs.append(reg)
@@ -306,14 +350,30 @@ class RegBlock:
             self.wennames.append(reg.regwen)
 
     def _add_flat_reg(self, reg: Register) -> None:
+        lname = reg.name.lower()
         # The first assertion is checked at the call site (where we can print
         # out a nicer message for multiregs). The second assertion should be
         # implied by the first.
-        assert reg.name not in self.name_to_offset
-        assert reg.name not in self.name_to_flat_reg
+        assert lname not in self.name_to_offset
+        assert lname not in self.name_to_flat_reg
 
         self.flat_regs.append(reg)
-        self.name_to_flat_reg[reg.name.lower()] = reg
+        self.name_to_flat_reg[lname] = reg
+        self.name_to_offset[lname] = reg.offset
+
+    def _rename_flat_reg(self, old_name: str, new_name: str) -> None:
+        '''Renames keys in name_to_offset and name_to_flat_reg dicts'''
+        old_lname = old_name.lower()
+        new_lname = new_name.lower()
+        # Only existing regs can be renamed, and new reg name must be unique.
+        assert old_lname in self.name_to_offset
+        assert old_lname in self.name_to_flat_reg
+        assert new_lname not in self.name_to_offset
+        assert new_lname not in self.name_to_flat_reg
+
+        # Remove old key and reinsert register with new key name.
+        self.name_to_flat_reg[new_lname] = self.name_to_flat_reg.pop(old_lname)
+        self.name_to_offset[new_lname] = self.name_to_offset.pop(old_lname)
 
     def add_window(self, window: Window) -> None:
         if window.name is not None:
@@ -401,6 +461,7 @@ class RegBlock:
                 field_desc = field_desc_fmt(width > 1, signal.name)
 
             fields.append(Field(signal.name,
+                                None,  # no alias target
                                 field_desc or signal.desc,
                                 tags=[],
                                 swaccess=swaccess_obj,
@@ -413,6 +474,7 @@ class RegBlock:
 
         reg = Register(self.offset,
                        reg_name,
+                       None,  # no alias target
                        reg_desc,
                        async_name="",
                        async_clk=None,
@@ -493,7 +555,7 @@ class RegBlock:
         return (self.offset - 1).bit_length()
 
     def has_shadowed_reg(self) -> bool:
-        '''Return boolean indication whether reg block contains shadowed reigsters'''
+        '''Returns true if reg block contains shadowed regs'''
         for r in self.flat_regs:
             if r.shadowed:
                 return True
@@ -501,11 +563,85 @@ class RegBlock:
         return False
 
     def has_internal_shadowed_reg(self) -> bool:
-        '''Return boolean indication whether reg block contains shadowed reigsters in
-           internal registers
-        '''
+        '''Returns true if reg block contains shadowed regs in internal regs'''
         for r in self.flat_regs:
             if r.shadowed and not r.hwext:
                 return True
 
         return False
+
+    def apply_alias(self, alias_block: 'RegBlock', where: str) -> None:
+        '''Validates alias description and overrides values in this block.
+
+        This updates the overridable register and field attributes with the
+        alias values and ensures that all non-overridable attributes have
+        identical values.
+        '''
+        # Before doing anything, check that the new alias names do not exist.
+        intersection = (alias_block.name_to_flat_reg.keys() &
+                        self.name_to_flat_reg.keys())
+        if intersection:
+            raise ValueError('Alias register names {} are not unique in alias '
+                             ' {}'.format(list(intersection), where))
+
+        # Loop over registers, validate the structure and update the generic
+        # register data structure. Since the internal register
+        # lists "registers", "flat_regs", "all_regs", "type_regs"
+        # and "entries" use references to the reg objects, everything stays in
+        # sync - except when multiregs are involved. To that end, another
+        # update loop over multiregs is required further below.
+        for alias_reg in alias_block.registers:
+            # First, check existence of the register to be aliased
+            if alias_reg.alias_target is None:
+                raise ValueError('No alias target register defined for '
+                                 'alias name {} in {}'
+                                 .format(alias_reg.name, where))
+
+            target = alias_reg.alias_target.lower()
+            if target not in self.name_to_flat_reg:
+                raise ValueError('Aliased target register {} with alias '
+                                 'name {} does not exist in reg '
+                                 'block {} ({}).'
+                                 .format(target,
+                                         alias_reg.name,
+                                         self.name,
+                                         where))
+
+            # This is the register we want to alias over. Check that the
+            # non-overridable attributes match, and override the attributes.
+            reg = self.name_to_flat_reg[target]
+            reg.apply_alias(alias_reg, where)
+
+        # Build a local index of all multiregs. We don't store this in the
+        # class since it is only used once here.
+        name_to_multiregs = {mr.name.lower(): mr for mr in self.multiregs}
+
+        # Loop over multiregisters, validate the structure and update the
+        # generic multiregister data structure.
+        for alias_mr in alias_block.multiregs:
+            # First, check existence of the register to be aliased
+            if alias_mr.alias_target is None:
+                raise ValueError('No alias target multiregister defined for '
+                                 'alias name {} in {}'
+                                 .format(alias_mr.name, where))
+
+            target = alias_mr.alias_target.lower()
+            if target not in name_to_multiregs:
+                raise ValueError('Aliased target multiregister {} with alias '
+                                 'name {} does not exist in reg '
+                                 'block {} ({}).'
+                                 .format(target,
+                                         alias_mr.name,
+                                         self.name,
+                                         where))
+
+            # This is the register we want to alias over. Check that the
+            # non-overridable attributes match, and override the attributes.
+            mr = name_to_multiregs[target]
+            mr.apply_alias(alias_mr, where)
+
+        # Finally, we loop over the flat registers (which includes expanded
+        # multiregs) and update the name_to_offset and name_to_flat_reg maps.
+        for alias_name, alias_reg in alias_block.name_to_flat_reg.items():
+            assert (alias_reg.alias_target)
+            self._rename_flat_reg(alias_reg.alias_target, alias_name)

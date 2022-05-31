@@ -11,6 +11,7 @@ module keccak_round_fpv #(
   input                    rst_ni,
   input                    valid_i,
   input                    rand_valid_i,
+  input                    rand_early_i,
   input        [Width-1:0] rand_i,
   output logic             done_o
 );
@@ -42,8 +43,7 @@ module keccak_round_fpv #(
 
   keccak_round #(
     .Width      (Width),
-    .EnMasking  (1),
-    .ReuseShare (0)
+    .EnMasking  (1)
   ) u_masked (
     .clk_i,
     .rst_ni,
@@ -55,6 +55,7 @@ module keccak_round_fpv #(
 
     .run_i   (run),
     .rand_valid_i (1'b1),
+    .rand_early_i (1'b1),
     .rand_data_i  ('0),
     .rand_consumed_o (),
 
@@ -77,6 +78,7 @@ module keccak_round_fpv #(
 
     .run_i   (run),
     .rand_valid_i (1'b1),
+    .rand_early_i (1'b1),
     .rand_data_i  ('0),
     .rand_consumed_o (),
 
@@ -209,4 +211,3 @@ module keccak_round_fpv #(
   `ASSERT(MaskedSameToUnmasked_A, masked_complete |-> compare_states == '0, clk_i, !rst_ni)
 
 endmodule
-

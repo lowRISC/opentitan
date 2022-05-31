@@ -23,6 +23,13 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  */
 _mask_rom_boot_address = ORIGIN(rom);
 
+/**
+ * Symbols to be used in the setup of the address translation for ROM_EXT.
+ */
+_rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
+_rom_ext_virtual_size = LENGTH(rom_ext_virtual);
+ASSERT((_rom_ext_virtual_size <= (LENGTH(eflash) / 2)), "Error: rom ext flash is bigger than slot");
+
 /* Reserving space at the top of the RAM for the stack. */
 _stack_size = 0x2000;
 _stack_end = ORIGIN(ram_main) + LENGTH(ram_main);

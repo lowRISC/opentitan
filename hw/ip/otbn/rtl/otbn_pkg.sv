@@ -40,6 +40,12 @@ package otbn_pkg;
 
   parameter int SideloadKeyWidth = 384;
 
+  parameter int unsigned LoopStackDepth = 8;
+
+  // Zero word in the implemented ECC scheme. If changing the ECC scheme, this has to be changed,
+  // and vice-versa.
+  localparam logic [BaseIntgWidth-1:0] EccZeroWord     = prim_secded_pkg::SecdedInv3932ZeroWord;
+  localparam logic [ExtWLEN-1:0]       EccWideZeroWord = {BaseWordsPerWLEN{EccZeroWord}};
 
   // Toplevel constants ============================================================================
 
@@ -84,6 +90,8 @@ package otbn_pkg;
     logic reg_intg_violation;
     logic dmem_intg_violation;
     logic imem_intg_violation;
+    logic rnd_fips_chk_fail;
+    logic rnd_rep_chk_fail;
     logic key_invalid;
     logic loop;
     logic illegal_insn;
@@ -99,6 +107,8 @@ package otbn_pkg;
     logic fatal_software;
     logic bad_internal_state;
     logic reg_intg_violation;
+    logic rnd_fips_chk_fail;
+    logic rnd_rep_chk_fail;
     logic key_invalid;
     logic loop;
     logic illegal_insn;
@@ -114,6 +124,8 @@ package otbn_pkg;
     logic reg_intg_violation;
     logic dmem_intg_violation;
     logic imem_intg_violation;
+    logic rnd_fips_chk_fail;
+    logic rnd_rep_chk_fail;
     logic key_invalid;
     logic loop;
     logic illegal_insn;
@@ -184,7 +196,9 @@ package otbn_pkg;
     AluOpBignumXor,
     AluOpBignumOr,
     AluOpBignumAnd,
-    AluOpBignumNot
+    AluOpBignumNot,
+
+    AluOpBignumNone
   } alu_op_bignum_e;
 
   typedef enum logic {
@@ -391,6 +405,32 @@ package otbn_pkg;
   } insn_dec_bignum_t;
 
   typedef struct packed {
+    logic [NWdr-1:0] rf_ren_a;
+    logic [NWdr-1:0] rf_ren_b;
+    logic [NWdr-1:0] rf_we;
+  } rf_predec_bignum_t;
+
+  typedef struct packed {
+    logic             adder_x_en;
+    logic             adder_y_op_a_en;
+    logic             adder_y_op_shifter_en;
+    logic             shifter_a_en;
+    logic             shifter_b_en;
+    logic             logic_a_en;
+    logic             logic_shifter_en;
+  } alu_predec_bignum_t;
+
+  typedef struct packed {
+    logic [NIspr-1:0] ispr_rd_en;
+    logic [NIspr-1:0] ispr_wr_en;
+  } ispr_predec_bignum_t;
+
+  typedef struct packed {
+    logic op_en;
+    logic acc_rd_en;
+  } mac_predec_bignum_t;
+
+  typedef struct packed {
     alu_op_base_e     op;
     logic [31:0] operand_a;
     logic [31:0] operand_b;
@@ -425,9 +465,8 @@ package otbn_pkg;
     logic            shift_acc;
   } mac_bignum_operation_t;
 
-  // States for controller state machine
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
   //      -s 5799399942 --language=sv
   //
   // Hamming distance histogram:
@@ -435,23 +474,21 @@ package otbn_pkg;
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (50.00%)
-  //  4: |||||||||||||||| (40.00%)
-  //  5: |||| (10.00%)
-  //  6: --
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: |||||||||| (33.33%)
+  //  5: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 5
+  // Maximum Hamming distance: 4
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 4
-  //
-  localparam int StateControllerWidth = 6;
+
+  localparam int StateControllerWidth = 5;
   typedef enum logic [StateControllerWidth-1:0] {
-    OtbnStateHalt        = 6'b001000,
-    OtbnStateUrndRefresh = 6'b010100,
-    OtbnStateRun         = 6'b100101,
-    OtbnStateStall       = 6'b110011,
-    OtbnStateLocked      = 6'b001111
+    OtbnStateHalt        = 5'b00100,
+    OtbnStateRun         = 5'b01010,
+    OtbnStateStall       = 5'b10011,
+    OtbnStateLocked      = 5'b11101
   } otbn_state_e;
 
   // States for start_stop_controller
@@ -484,7 +521,7 @@ package otbn_pkg;
     OtbnStartStopSecureWipeAccModBaseUrnd = 6'b100101,
     OtbnStartStopSecureWipeAllZero        = 6'b111110,
     OtbnStartStopSecureWipeComplete       = 6'b001011,
-    OtbnStartStopStateError               = 6'b000110
+    OtbnStartStopStateLocked              = 6'b000110
   } otbn_start_stop_state_e;
 
 // Encoding generated with:

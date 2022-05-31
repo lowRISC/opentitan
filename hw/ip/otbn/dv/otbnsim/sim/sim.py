@@ -64,6 +64,16 @@ class OTBNSim:
         self._next_insn = None
         self.state.start()
 
+    def start_mem_wipe(self, is_imem: bool) -> None:
+        if self.state.get_fsm_state() != FsmState.IDLE:
+            return
+
+        new_status = (Status.BUSY_SEC_WIPE_IMEM
+                      if is_imem else Status.BUSY_SEC_WIPE_DMEM)
+
+        self.state.set_fsm_state(FsmState.MEM_SEC_WIPE)
+        self.state.ext_regs.write('STATUS', new_status, True)
+
     def configure(self, enable_secure_wipe: bool) -> None:
         self.state.secure_wipe_enabled = enable_secure_wipe
 
@@ -88,11 +98,7 @@ class OTBNSim:
                   verbose: bool,
                   fetch_next: bool) -> List[Trace]:
         '''This is run on a stall cycle'''
-        if self.state.pending_halt:
-            # We've reached the end of the run because of some error. Register
-            # it on the next cycle.
-            self.state.stop()
-
+        self.state.stop_if_pending_halt()
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
         if fetch_next:
@@ -114,13 +120,7 @@ class OTBNSim:
         if self.stats is not None:
             self.stats.record_insn(insn, self.state)
 
-        halting = self.state.pending_halt
-
-        if halting:
-            # We've reached the end of the run (either because of an ECALL
-            # instruction or an error).
-            self.state.stop()
-
+        halting = self.state.stop_if_pending_halt()
         changes = self.state.changes()
 
         # Program counter before commit
@@ -147,7 +147,6 @@ class OTBNSim:
 
         '''
         fsm_state = self.state.get_fsm_state()
-
         # Pairs: (stepper, handles_injected_err). If handles_injected_err is
         # False then the generic code here will deal with any pending errors in
         # self.state.injected_err_bits. If True, then we expect the stepper
@@ -156,7 +155,6 @@ class OTBNSim:
             FsmState.MEM_SEC_WIPE: (self._step_ext_wipe, False),
             FsmState.IDLE: (self._step_idle, False),
             FsmState.PRE_EXEC: (self._step_pre_exec, False),
-            FsmState.FETCH_WAIT: (self._step_fetch_wait, False),
             FsmState.EXEC: (self._step_exec, True),
             FsmState.WIPING_GOOD: (self._step_wiping, False),
             FsmState.WIPING_BAD: (self._step_wiping, False),
@@ -164,17 +162,16 @@ class OTBNSim:
         }
 
         stepper, handles_injected_err = steppers[fsm_state]
-        if not handles_injected_err:
-            self.state.take_injected_err_bits()
+        self.state.step(not handles_injected_err)
 
         return stepper(verbose)
 
     def _step_idle(self, verbose: bool) -> StepRes:
         '''Step the simulation when OTBN is IDLE or LOCKED'''
-        if self.state.pending_halt:
-            # We've reached the end of the run because of some error. Register
-            # it on the next cycle.
-            self.state.stop()
+        self.state.stop_if_pending_halt()
+        if ((self.state._fsm_state == FsmState.LOCKED and
+             self.state.cycles_in_this_state == 0)):
+            self.state.ext_regs.write('INSN_CNT', 0, True)
 
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
@@ -182,29 +179,19 @@ class OTBNSim:
 
     def _step_ext_wipe(self, verbose: bool) -> StepRes:
         '''Step the simulation DMEM/IMEM wipe operation'''
-
-        if self.state.dmem_req_pending:
-            self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_DMEM, True)
-            self.state.commit(sim_stalled=True)
-        elif self.state.imem_req_pending:
-            self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_IMEM, True)
-            self.state.commit(sim_stalled=True)
-        else:
-            self.state.commit(sim_stalled=True)
-            self.state.ext_regs.write('STATUS', Status.IDLE, True)
-            self.state.set_fsm_state(FsmState.IDLE)
-
+        self.state.stop_if_pending_halt()
         changes = self.state.changes()
+        self.state.commit(sim_stalled=True)
         return (None, changes)
 
     def _step_pre_exec(self, verbose: bool) -> StepRes:
         '''Step the simulation in the PRE_EXEC state
 
         In this state, we're waiting for a URND seed. Once that appears, we
-        switch to FETCH_WAIT.
+        switch to EXEC.
         '''
         if self.state.wsrs.URND.running:
-            self.state.set_fsm_state(FsmState.FETCH_WAIT)
+            self.state.set_fsm_state(FsmState.EXEC)
 
         changes = self._on_stall(verbose, fetch_next=False)
 
@@ -212,17 +199,6 @@ class OTBNSim:
         if self.state.ext_regs.read('INSN_CNT', True) != 0:
             self.state.ext_regs.write('INSN_CNT', 0, True)
 
-        return (None, changes)
-
-    def _step_fetch_wait(self, verbose: bool) -> StepRes:
-        '''Step the simulation in the FETCH_WAIT state
-
-        This state lasts a single cycle while we fetch our first instruction
-        and then jump to EXEC.
-        '''
-        self.state.wsrs.URND.step()
-        self.state.set_fsm_state(FsmState.EXEC)
-        changes = self._on_stall(verbose, fetch_next=False)
         return (None, changes)
 
     def _step_exec(self, verbose: bool) -> StepRes:
@@ -267,6 +243,12 @@ class OTBNSim:
         # that instruction before it gets shot down.
         self.state.take_injected_err_bits()
 
+        # If something bad happened asynchronously (because of an escalation),
+        # we might have an unfinished instruction. But we want to turn it into
+        # a "finished, but aborted" one.
+        if self.state.pending_halt:
+            self._execute_generator = None
+
         sim_stalled = (self._execute_generator is not None)
         if not sim_stalled:
             return (insn, self._on_retire(verbose, insn))
@@ -280,13 +262,16 @@ class OTBNSim:
 
         is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
 
-        # Clear the WIPE_START register if it was set. In this situation, we
-        # know we're on the first cycle of the wipe, which is also where we
-        # zero INSN_CNT if we're in state WIPING_BAD.
+        # Clear the WIPE_START register if it was set.
         if self.state.ext_regs.read('WIPE_START', True):
             self.state.ext_regs.write('WIPE_START', 0, True)
-            if not is_good:
-                self.state.ext_regs.write('INSN_CNT', 0, True)
+
+        # Zero INSN_CNT if we're in state WIPING_BAD. This is a bit silly
+        # because we'll send that update on every cycle, but it correctly
+        # handles the situation where we switch from WIPING_GOOD to WIPING_BAD
+        # half way through a secure wipe because of an incoming escalation.
+        if not is_good:
+            self.state.ext_regs.write('INSN_CNT', 0, True)
 
         # Wipe all registers and set STATUS on the penultimate cycle.
         if self.state.wipe_cycles == 1:
@@ -314,22 +299,16 @@ class OTBNSim:
 
     def on_otp_cdc_done(self) -> None:
         '''Signifies when the scrambling key request gets processed'''
-        self.state.imem_req_pending = False
-        self.state.dmem_req_pending = False
-
-    def on_imem_wipe(self) -> None:
-        '''Sets Status register and changes FsmState'''
-        old_state = self.state.get_fsm_state()
-        if old_state in [FsmState.IDLE]:
-            self.state.set_fsm_state(FsmState.MEM_SEC_WIPE)
-            self.state.imem_req_pending = True
-
-    def on_dmem_wipe(self) -> None:
-        '''Sets Status register and changes FsmState'''
-        old_state = self.state.get_fsm_state()
-        if old_state in [FsmState.IDLE]:
-            self.state.set_fsm_state(FsmState.MEM_SEC_WIPE)
-            self.state.dmem_req_pending = True
+        # This happens when we're doing a memory secure wipe, in which case we
+        # want to switch to IDLE. However, it also happens if we're at the end
+        # of a run that either will lock or already has done. In that case, we
+        # don't want to do an FSM state change.
+        cur_state = self.state.get_fsm_state()
+        assert cur_state in [FsmState.MEM_SEC_WIPE,
+                             FsmState.WIPING_BAD, FsmState.LOCKED]
+        if cur_state == FsmState.MEM_SEC_WIPE:
+            self.state.ext_regs.write('STATUS', Status.IDLE, True)
+            self.state.set_fsm_state(FsmState.IDLE)
 
     def send_err_escalation(self, err_val: int) -> None:
         '''React to an error escalation'''

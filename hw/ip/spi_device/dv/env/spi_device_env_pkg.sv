@@ -29,6 +29,7 @@ package spi_device_env_pkg;
     TxFifoUnderflow,
     CmdFifoNotEmpty,
     PayloadNotEmpty,
+    PayloadOverflow,
     ReadbufWatermark,
     ReadbufFlip,
     TpmHeaderNotEmpty,
@@ -81,6 +82,17 @@ package spi_device_env_pkg;
   parameter bit[11:0] TPM_HW_STS_OFFSET          = 12'h018;
   parameter bit[11:0] TPM_HW_INT_CAP_OFFSET      = 12'h014;
   parameter bit[23:0] TPM_BASE_ADDR              = 24'hD40000;
+  parameter bit[7:0] READ_JEDEC                  = 8'h9F;
+  parameter bit[7:0] READ_SFDP                   = 8'h5A;
+  parameter bit[7:0] READ_STATUS_1               = 8'h05;
+  parameter bit[7:0] READ_STATUS_2               = 8'h35;
+  parameter bit[7:0] READ_STATUS_3               = 8'h15;
+  parameter bit[7:0] READ_NORMAL                 = 8'h03;
+  parameter bit[7:0] READ_FAST                   = 8'h0B;
+  parameter bit[7:0] READ_DUAL                   = 8'h3B;
+  parameter bit[7:0] READ_QUAD                   = 8'h6B;
+  parameter bit[7:0] READ_DUALIO                 = 8'hBB;
+  parameter bit[7:0] READ_QUADIO                 = 8'hEB;
 
   string msg_id = "spi_device_env_pkg";
 

@@ -44,6 +44,7 @@ enum module_ {
   kModuleLog =          MODULE_CODE('L', 'G'),
   kModuleBootData =     MODULE_CODE('B', 'D'),
   kModuleShutdown =     MODULE_CODE('S', 'D'),
+  kModuleSpiDevice =    MODULE_CODE('S', 'P'),
   // clang-format on
 };
 
@@ -93,7 +94,9 @@ enum module_ {
   X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnExecutionFailed,        ERROR_(3, kModuleOtbn, kInternal)), \
-  X(kErrorOtbnUnavailable,            ERROR_(4, kModuleOtbn, kInternal)), \
+  X(kErrorOtbnSecWipeImemFailed,      ERROR_(4, kModuleOtbn, kInternal)), \
+  X(kErrorOtbnSecWipeDmemFailed,      ERROR_(5, kModuleOtbn, kInternal)), \
+  X(kErrorOtbnUnavailable,            ERROR_(6, kModuleOtbn, kInternal)), \
   X(kErrorFlashCtrlDataRead,          ERROR_(1, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlInfoRead,          ERROR_(2, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlDataWrite,         ERROR_(3, kModuleFlashCtrl, kInternal)), \
@@ -119,10 +122,16 @@ enum module_ {
   X(kErrorBootstrapWrite,             ERROR_(5, kModuleBootstrap, kInternal)), \
   X(kErrorBootstrapGpio,              ERROR_(6, kModuleBootstrap, kInternal)), \
   X(kErrorBootstrapUnknown,           ERROR_(7, kModuleBootstrap, kInternal)), \
+  X(kErrorBootstrapEraseAddress,      ERROR_(8, kModuleBootstrap, kInvalidArgument)), \
+  X(kErrorBootstrapProgramAddress,    ERROR_(9, kModuleBootstrap, kInvalidArgument)), \
+  X(kErrorBootstrapInvalidOpcode,     ERROR_(10, kModuleBootstrap, kInvalidArgument)), \
+  X(kErrorBootstrapInvalidState,      ERROR_(11, kModuleBootstrap, kInvalidArgument)), \
+  X(kErrorBootstrapNotRequested,      ERROR_(12, kModuleBootstrap, kInternal)), \
   X(kErrorLogBadFormatSpecifier,      ERROR_(1, kModuleLog, kInternal)), \
   X(kErrorBootDataNotFound,           ERROR_(1, kModuleBootData, kInternal)), \
   X(kErrorBootDataWriteCheck,         ERROR_(2, kModuleBootData, kInternal)), \
   X(kErrorBootDataInvalid,            ERROR_(3, kModuleBootData, kInternal)), \
+  X(kErrorSpiDevicePayloadOverflow,   ERROR_(1, kModuleSpiDevice, kInternal)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 

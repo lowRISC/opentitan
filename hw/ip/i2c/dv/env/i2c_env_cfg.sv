@@ -12,6 +12,7 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
   // seq cfg
   i2c_seq_cfg seq_cfg;
+  bit [7:0]  lastbyte;
 
   `uvm_object_utils_begin(i2c_env_cfg)
     `uvm_field_object(m_i2c_agent_cfg, UVM_DEFAULT)

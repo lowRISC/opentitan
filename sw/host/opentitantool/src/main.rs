@@ -26,12 +26,15 @@ enum RootCommandHierarchy {
     Console(command::console::Console),
 
     Gpio(command::gpio::GpioCommand),
+    Emulator(command::emulator::EmuCommand),
 
     I2c(command::i2c::I2cCommand),
     Image(command::image::Image),
+    SetPll(command::set_pll::SetPll),
     LoadBitstream(command::load_bitstream::LoadBitstream),
     NoOp(command::NoOp),
     Spi(command::spi::SpiCommand),
+    Version(command::version::Version),
 
     // Flattened because `Greetings` is a subcommand hierarchy.
     #[cfg(feature = "demo_commands")]

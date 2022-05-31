@@ -15,4 +15,10 @@
  */
 void init_translation(uint32_t src_addr, uint32_t size, uint32_t dst_addr);
 
+/**
+ * On FPGA builds, returns the value stored in the USR_ACCESS register when
+ * the FPGA bitstream was built.  On non-FPGA builds, returns zero.
+ */
+uint32_t fpga_version(void);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_IBEX_PERI_H_

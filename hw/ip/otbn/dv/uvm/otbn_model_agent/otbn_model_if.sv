@@ -83,14 +83,33 @@ interface otbn_model_if
     u_model.otbn_take_loop_warps(handle, memutil);
   endfunction
 
+  function automatic bit has_loop_warps(chandle memutil);
+    return u_model.otbn_has_loop_warps(memutil) != 0;
+  endfunction
+
   task automatic send_err_escalation(bit [31:0] err_val);
     `uvm_info("otbn_model_if", "Escalating errors", UVM_HIGH)
     force u_model.wakeup_iss = 1;
     `DV_CHECK_FATAL(u_model.otbn_model_send_err_escalation(handle, err_val) == 0,
                     "Failed to escalate errors", "otbn_model_if")
+
     @(posedge clk_i or negedge rst_ni);
+    force u_model.wakeup_iss = 0;
     release u_model.wakeup_iss;
   endtask: send_err_escalation
+
+  function automatic void set_software_errs_fatal(bit new_val);
+    `uvm_info("otbn_model_if", "writing to software_errs_fatal", UVM_HIGH);
+    `DV_CHECK_FATAL(u_model.otbn_model_set_software_errs_fatal(handle, new_val) == 0,
+                    "Failed to set software_errs_fatal", "otbn_model_if")
+  endfunction
+
+   function automatic void otbn_set_no_sec_wipe_chk();
+    `uvm_info("otbn_model_if", "writing to no_sec_wipe_data_chk", UVM_HIGH);
+    `DV_CHECK_FATAL(u_model.otbn_set_no_sec_wipe_chk(handle) == 0,
+                    "Failed to set no_sec_wipe_data_chk", "otbn_model_if")
+  endfunction
+
 
   // The err signal is asserted by the model if it fails to find the DUT or if it finds a mismatch
   // in results. It should never go high.

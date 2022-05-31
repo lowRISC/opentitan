@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
-load("//third_party/cargo:crates.bzl", "all_crate_deps")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,10 +13,15 @@ rust_library(
         "src/lib.rs",
         "src/manifest.rs",
     ],
-    deps = all_crate_deps(),
+    deps = [
+        "//third_party/rust/crates:memoffset",
+        "//third_party/rust/crates:thiserror",
+        "//third_party/rust/crates:zerocopy",
+    ],
 )
 
 rust_test(
     name = "rom_ext_image_test",
     crate = ":rom_ext_image",
+    tags = ["broken"],
 )

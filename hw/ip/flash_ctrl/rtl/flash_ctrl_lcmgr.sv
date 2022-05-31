@@ -5,7 +5,10 @@
 // Flash Controller for life cycle / key management handling
 //
 
-module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
+module flash_ctrl_lcmgr
+  import flash_ctrl_pkg::*;
+  import lc_ctrl_pkg::lc_tx_t;
+#(
   parameter flash_key_t RndCnstAddrKey = RndCnstAddrKeyDefault,
   parameter flash_key_t RndCnstDataKey = RndCnstDataKeyDefault
 ) (
@@ -45,8 +48,8 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
   // external rma request
   // This should be simplified to just multi-bit request and multi-bit response
-  input lc_ctrl_pkg::lc_tx_t rma_req_i,
-  output lc_ctrl_pkg::lc_tx_t rma_ack_o,
+  input lc_tx_t rma_req_i,
+  output lc_tx_t rma_ack_o,
 
   // seeds to the outside world,
   output logic [NumSeeds-1:0][SeedWidth-1:0] seeds_o,
@@ -79,11 +82,13 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   input [BusWidth-1:0] rand_i,
 
   // disable access to flash
-  output lc_ctrl_pkg::lc_tx_t dis_access_o,
+  output lc_tx_t dis_access_o,
 
   // init ongoing
   output logic init_busy_o
 );
+
+  import lc_ctrl_pkg::lc_tx_test_true_strict;
 
   // total number of pages to be wiped during RMA entry
   localparam int unsigned WipeIdxWidth = prim_util_pkg::vbits(WipeEntries);
@@ -120,16 +125,17 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   //
   localparam int StateWidth = 11;
   typedef enum logic [StateWidth-1:0] {
-    StIdle          = 11'b01010101111,
-    StReqAddrKey    = 11'b01001110011,
-    StReqDataKey    = 11'b11010000100,
-    StReadSeeds     = 11'b10001010101,
-    StReadEval      = 11'b11110110010,
-    StWait          = 11'b00111101010,
-    StEntropyReseed = 11'b11101001000,
-    StRmaWipe       = 11'b00010011001,
-    StRmaRsp        = 11'b10100100001,
-    StInvalid       = 11'b10100011110
+    StIdle          = 11'b10001000001,
+    StReqAddrKey    = 11'b01110101100,
+    StReqDataKey    = 11'b01110010001,
+    StReadSeeds     = 11'b11011111110,
+    StReadEval      = 11'b01000100111,
+    StWait          = 11'b00100111011,
+    StEntropyReseed = 11'b00011000110,
+    StRmaWipe       = 11'b10010110101,
+    StRmaRsp        = 11'b10110001010,
+    StDisabled      = 11'b11111100011,
+    StInvalid       = 11'b11101011000
   } lcmgr_state_e;
 
   lcmgr_state_e state_q, state_d;
@@ -138,9 +144,9 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   //SEC_CM: CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, lcmgr_state_e, StIdle)
 
-  lc_ctrl_pkg::lc_tx_t err_sts_d, err_sts_q;
+  lc_tx_t err_sts_d, err_sts_q;
   logic err_sts_set;
-  lc_ctrl_pkg::lc_tx_t rma_ack_d, rma_ack_q;
+  lc_tx_t rma_ack_d, rma_ack_q;
   logic validate_q, validate_d;
   logic [SeedCntWidth-1:0] seed_cnt_q;
   logic [SeedRdsWidth-1:0] addr_cnt_q;
@@ -297,7 +303,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     RmaReqLast
   } rma_req_idx_e;
 
-  lc_ctrl_pkg::lc_tx_t [RmaReqLast-1:0] rma_req;
+  lc_tx_t [RmaReqLast-1:0] rma_req;
   prim_lc_sync #(
     .NumCopies(int'(RmaReqLast))
   ) u_sync_rma_req (
@@ -359,6 +365,10 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   ///////////////////////////////
   // Hardware Interface FSM
   ///////////////////////////////
+  logic rma_done;
+  assign rma_done = lc_tx_test_true_strict(
+      lc_ctrl_pkg::lc_tx_and_hi(rma_req_i,rma_ack_d));
+
   always_comb begin
 
     // phases of the hardware interface
@@ -409,7 +419,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       // Since init has not been called, there are no guarantees
       // to entropy behavior, thus do not reseed
       StIdle: begin
-        if (rma_req[RmaReqInit] == lc_ctrl_pkg::On) begin
+        if (lc_tx_test_true_strict(rma_req[RmaReqInit])) begin
           state_d = StRmaWipe;
         end else if (init_q) begin
           state_d = StReqAddrKey;
@@ -419,7 +429,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       StReqAddrKey: begin
         phase = PhaseSeed;
         addr_key_req_d = 1'b1;
-        if (rma_req[RmaReqKey] == lc_ctrl_pkg::On) begin
+        if (lc_tx_test_true_strict(rma_req[RmaReqKey])) begin
           state_d = StRmaWipe;
         end else if (addr_key_ack_q) begin
           state_d = StReqDataKey;
@@ -429,7 +439,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       StReqDataKey: begin
         phase = PhaseSeed;
         data_key_req_d = 1'b1;
-        if (rma_req[RmaReqKey] == lc_ctrl_pkg::On) begin
+        if (lc_tx_test_true_strict(rma_req[RmaReqKey])) begin
           state_d = StRmaWipe;
         end else if (data_key_ack_q) begin
           // provision_en is only a "good" value after otp/lc initialization
@@ -474,7 +484,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       // Waiting for an rma entry command
       StWait: begin
         rd_buf_en_o = 1'b1;
-        if (rma_req[RmaReqWait] == lc_ctrl_pkg::On) begin
+        if (lc_tx_test_true_strict(rma_req[RmaReqWait])) begin
           state_d = StEntropyReseed;
         end
       end
@@ -516,6 +526,14 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         end
       end
 
+      // Disabled state is functionally equivalent to invalid, just without the
+      // the explicit error-ing
+      StDisabled: begin
+        dis_access_o = lc_ctrl_pkg::On;
+        rma_ack_d = lc_ctrl_pkg::Off;
+        state_d = StDisabled;
+      end
+
       StInvalid: begin
         dis_access_o = lc_ctrl_pkg::On;
         state_err = 1'b1;
@@ -523,6 +541,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         // https://github.com/lowRISC/opentitan/issues/10204
         //phase = PhaseInvalid;
         rma_ack_d = lc_ctrl_pkg::Off;
+        state_d = StInvalid;
       end
 
       // Invalid catch-all state
@@ -533,13 +552,22 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
     endcase // unique case (state_q)
 
-    // this fsm does not directly interface with flash so can be
-    // be transitioned to invalid immediately
-    if (prim_mubi_pkg::mubi4_test_true_loose(disable_i)) begin
-      state_d = StInvalid;
+    // This fsm does not directly interface with flash so can be
+    // be transitioned to invalid immediately.
+    // If rma transition is successful however, do not transition
+    // and continue acking the life cycle controller, as disable is
+    // expected behavior under this situation.
+    if (prim_mubi_pkg::mubi4_test_true_loose(disable_i) &&
+        state_d != StInvalid &&
+        !rma_done) begin
+      state_d = StDisabled;
     end
 
   end // always_comb
+
+  // if disable is seen any state other than StRmaRsp, transition to invalid state
+  `ASSERT(DisableChk_A, prim_mubi_pkg::mubi4_test_true_loose(disable_i) & state_q != StRmaRsp
+          |=> state_q == StDisabled)
 
   ///////////////////////////////
   // RMA wiping Mechanism
@@ -668,7 +696,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   // On - no errors
   // Off - errors were observed
   logic [lc_ctrl_pkg::TxWidth-1:0] err_sts_raw_q;
-  assign err_sts_q = lc_ctrl_pkg::lc_tx_t'(err_sts_raw_q);
+  assign err_sts_q = lc_tx_t'(err_sts_raw_q);
   assign err_sts_d = err_sts_set && (err_sts_q != lc_ctrl_pkg::Off) ? lc_ctrl_pkg::Off : err_sts_q;
   // This primitive is used to place a size-only constraint on the flops in order to prevent
   // optimizations. Without this Vivado may infer combo loops. For details, see
@@ -738,7 +766,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       // and that is considered an extremely invasive attack.
       StRmaIdle: begin
         if (prim_mubi_pkg::mubi4_test_true_loose(disable_i)) begin
-          rma_state_d = StRmaInvalid;
+          rma_state_d = StRmaDisabled;
         end else if (rma_wipe_req_int) begin
           rma_state_d = StRmaPageSel;
           page_cnt_ld = 1'b1;
@@ -747,7 +775,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
       StRmaPageSel: begin
         if (prim_mubi_pkg::mubi4_test_true_loose(disable_i)) begin
-          rma_state_d = StRmaInvalid;
+          rma_state_d = StRmaDisabled;
         end else if (page_cnt < end_page) begin
           rma_state_d = StRmaErase;
         end else begin
@@ -773,7 +801,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
       StRmaWordSel: begin
         if (prim_mubi_pkg::mubi4_test_true_loose(disable_i)) begin
-          rma_state_d = StRmaInvalid;
+          rma_state_d = StRmaDisabled;
         end else if (word_cnt < BusWordsPerPage) begin
           rma_state_d = StRmaProgram;
         end else begin
@@ -820,7 +848,12 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         end
       end
 
+      StRmaDisabled: begin
+        rma_state_d = StRmaDisabled;
+      end
+
       StRmaInvalid: begin
+        rma_state_d = StRmaInvalid;
         err_sts_set = 1'b1;
         fsm_err = 1'b1;
       end

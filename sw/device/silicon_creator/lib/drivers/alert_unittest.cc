@@ -30,7 +30,14 @@ TEST_F(InitTest, AlertConfigureAlertBadIndex) {
 }
 
 TEST_F(InitTest, AlertConfigureAlertBadClass) {
-  EXPECT_EQ(alert_configure(0, (alert_class_t)-1, kAlertEnableNone),
+  EXPECT_EQ(
+      alert_configure(0, static_cast<alert_class_t>(-1), kAlertEnableNone),
+      kErrorAlertBadClass);
+}
+
+TEST_F(InitTest, LocalAlertConfigureAlertBadClass) {
+  EXPECT_EQ(alert_local_configure(0, static_cast<alert_class_t>(-1),
+                                  kAlertEnableNone),
             kErrorAlertBadClass);
 }
 
@@ -39,8 +46,16 @@ TEST_F(InitTest, AlertConfigureAlertBadEnable) {
   // experience an error when evaluating the enable parameter.
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET, 0);
-  EXPECT_EQ(alert_configure(0, kAlertClassA, (alert_enable_t)-1),
+  EXPECT_EQ(alert_configure(0, kAlertClassA, static_cast<alert_enable_t>(-1)),
             kErrorAlertBadEnable);
+}
+
+TEST_F(InitTest, LocalAlertConfigureAlertBadEnable) {
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET, 0);
+  EXPECT_EQ(
+      alert_local_configure(0, kAlertClassA, static_cast<alert_enable_t>(-1)),
+      kErrorAlertBadEnable);
 }
 
 TEST_F(InitTest, AlertConfigureAlertClassXNoOperation) {
@@ -124,6 +139,17 @@ TEST_F(InitTest, LocalAlertConfigure3AsClassDLocked) {
 TEST_F(InitTest, AlertConfigureClassXBadClass) {
   alert_class_config_t config{};
   EXPECT_EQ(alert_class_configure(kAlertClassX, &config), kErrorAlertBadClass);
+}
+
+TEST_F(InitTest, AlertConfigureClassAlertBadEnable) {
+  alert_class_config_t config{};
+  EXPECT_EQ(alert_class_configure(kAlertClassA, &config), kErrorAlertBadEnable);
+}
+
+TEST_F(InitTest, AlertConfigureClassAlertBadEscalation) {
+  alert_class_config_t config{.enabled = kAlertEnableLocked};
+  EXPECT_EQ(alert_class_configure(kAlertClassA, &config),
+            kErrorAlertBadEscalation);
 }
 
 TEST_F(InitTest, AlertConfigureClassA) {
@@ -273,6 +299,17 @@ TEST_F(InitTest, AlertConfigureClassD) {
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED_REG_OFFSET, 1000);
   EXPECT_EQ(alert_class_configure(kAlertClassD, &config), kErrorOk);
+}
+
+class AlertPingTest : public InitTest {};
+
+TEST_F(AlertPingTest, EnableSucess) {
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET, 1);
+
+  EXPECT_SEC_WRITE32(base_ + ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
+
+  EXPECT_EQ(alert_ping_enable(), kErrorOk);
 }
 
 }  // namespace

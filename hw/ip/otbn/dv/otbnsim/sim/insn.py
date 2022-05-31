@@ -1103,7 +1103,7 @@ class BNSID(OTBNInsn):
         self.grs1 = op_vals['grs1']
         self.grs1_inc = op_vals['grs1_inc']
 
-    def execute(self, state: OTBNState) -> None:
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if self.grs1_inc and self.grs2_inc:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
@@ -1132,11 +1132,6 @@ class BNSID(OTBNInsn):
         if saw_err:
             return
 
-        wrs = grs2_val & 0x1f
-        wrs_val = state.wdrs.get_reg(wrs).read_unsigned()
-
-        state.dmem.store_u256(addr, wrs_val)
-
         if self.grs1_inc:
             new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
             state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
@@ -1144,6 +1139,13 @@ class BNSID(OTBNInsn):
         if self.grs2_inc:
             new_grs2_val = grs2_val + 1
             state.gprs.get_reg(self.grs2).write_unsigned(new_grs2_val)
+
+        yield
+
+        wrs = grs2_val & 0x1f
+        wrs_val = state.wdrs.get_reg(wrs).read_unsigned()
+
+        state.dmem.store_u256(addr, wrs_val)
 
 
 class BNMOV(OTBNInsn):
@@ -1169,7 +1171,7 @@ class BNMOVR(OTBNInsn):
         self.grs = op_vals['grs']
         self.grs_inc = op_vals['grs_inc']
 
-    def execute(self, state: OTBNState) -> None:
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if self.grs_inc and self.grd_inc:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
@@ -1200,9 +1202,6 @@ class BNMOVR(OTBNInsn):
         wrd = grd_val & 0x1f
         wrs = grs_val & 0x1f
 
-        value = state.wdrs.get_reg(wrs).read_unsigned()
-        state.wdrs.get_reg(wrd).write_unsigned(value)
-
         if self.grd_inc:
             new_grd_val = grd_val + 1
             state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
@@ -1210,6 +1209,11 @@ class BNMOVR(OTBNInsn):
         if self.grs_inc:
             new_grs_val = grs_val + 1
             state.gprs.get_reg(self.grs).write_unsigned(new_grs_val)
+
+        yield
+
+        value = state.wdrs.get_reg(wrs).read_unsigned()
+        state.wdrs.get_reg(wrd).write_unsigned(value)
 
 
 class BNWSRR(OTBNInsn):

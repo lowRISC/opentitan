@@ -6,8 +6,8 @@
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/otbn.h"
-#include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -53,7 +53,7 @@ static void otbn_check_mem(otbn_t *ctx, const uint8_t *addr, size_t mem_size,
     CHECK_DIF_OK(otbn_read(&ctx->dif, offset, local_buf, remainder));
     if (match_expected) {
       CHECK(!has_exception_fired, "Unexpected exception");
-      CHECK_BUFFER(addr + offset, local_buf, remainder);
+      CHECK_ARRAYS_EQ(addr + offset, local_buf, remainder);
     } else {
       CHECK(has_exception_fired, "Expected exception haven't fired");
       break;

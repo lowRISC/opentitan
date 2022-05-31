@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use log;
+use anyhow::{Context, Result};
 use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -10,7 +10,6 @@ use std::rc::Rc;
 use crate::io::spi::{ClockPolarity, SpiError, Target, Transfer, TransferMode};
 use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
-use crate::transport::{Result, TransportError, WrapInTransportError};
 
 struct Inner {
     mode: TransferMode,
@@ -37,7 +36,7 @@ impl UltradebugSpi {
         mpsse
             .borrow_mut()
             .gpio_set(UltradebugSpi::PIN_SPI_ZB, false)
-            .wrap(TransportError::FtdiError)?;
+            .context("FTDI error")?;
 
         Ok(UltradebugSpi {
             device: mpsse,
@@ -74,7 +73,7 @@ impl Target for UltradebugSpi {
         let mut device = self.device.borrow_mut();
         device
             .set_clock_frequency(frequency)
-            .wrap(TransportError::FtdiError)?;
+            .context("FTDI error")?;
         Ok(())
     }
 
@@ -143,9 +142,7 @@ impl Target for UltradebugSpi {
             device.gpio_direction,
             device.gpio_value | chip_select,
         ));
-        device
-            .execute(&mut command)
-            .wrap(TransportError::FtdiError)?;
+        device.execute(&mut command).context("FTDI error")?;
         Ok(())
     }
 }

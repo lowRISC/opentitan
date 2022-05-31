@@ -40,8 +40,8 @@ def mubi_value_as_hexstr(sel: bool, width: int):
     false_val = ''
 
     for k in range(1, nibble + 1):
-        true_val = ('A' if (k % 2) else '5') + true_val
-        false_val = ('5' if (k % 2) else 'A') + false_val
+        true_val = ('6' if (k % 2) else '9') + true_val
+        false_val = ('9' if (k % 2) else '6') + false_val
 
     return true_val if sel else false_val
 

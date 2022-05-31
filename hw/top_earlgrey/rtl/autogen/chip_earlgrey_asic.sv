@@ -1093,7 +1093,6 @@ module chip_earlgrey_asic (
     .usbdev_usb_tx_d_o            (                            ),
     .usbdev_usb_tx_se0_o          (                            ),
     .usbdev_usb_tx_use_d_se0_o    (                            ),
-    .usbdev_usb_suspend_o         (                            ),
     .usbdev_usb_rx_enable_o       ( usb_rx_enable              ),
     .usbdev_usb_ref_val_o         ( usb_ref_val                ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse              ),
@@ -1123,6 +1122,7 @@ module chip_earlgrey_asic (
     .hi_speed_sel_o               ( hi_speed_sel               ),
     .div_step_down_req_i          ( div_step_down_req          ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
+    .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 
     // Flash test mode voltages

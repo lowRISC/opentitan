@@ -350,8 +350,8 @@ value = "{}'h {:x}".format(aw, r.offset)
 % endif
 </%def>\
 
-package ${lblock}_reg_pkg;
-% if localparams:
+package ${lblock}${"_" + block.alias_impl if block.alias_impl else ""}_reg_pkg;
+% if localparams and not block.alias_impl:
 
   // Param list
 % for param in localparams:
@@ -381,4 +381,3 @@ ${reg_data_for_iface(iface_name, iface_desc, for_iface, rb)}\
 % endfor
 
 endpackage
-

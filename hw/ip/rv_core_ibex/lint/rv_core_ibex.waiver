@@ -90,7 +90,7 @@ waive -rules IFDEF_CODE -location {ibex_core.sv} -regexp {Assignment to 'unused_
       -comment "Declaration of signal and assignment to it are in same `else block"
 waive -rules IFDEF_CODE -location {ibex_core.sv} -regexp {Assignment to 'unused_instr_done_wb' contained within `else block} \
       -comment "Declaration of signal and assignment to it are in same `else block"
-waive -rules IFDEF_CODE -location {rv_core_ibex.sv} -regexp {Assignment to 'cored_tl_h_o' contained within `else block} \
+waive -rules IFDEF_CODE -location {rv_core_ibex.sv} -regexp {Assignment to 'tl_win_d2h' contained within `else block} \
       -comment "DV environment will drive things when `else block isn't used so assignment only occurs in `else block"
 waive -rules CLOCK_USE -location {ibex_id_stage.sv} -regexp {'clk_i' is connected to 'ibex_decoder' port 'clk_i'} \
       -comment "clk_i is unused in ibex_decoder configurations without RV32B and isn't connected to logic"

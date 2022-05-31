@@ -10,12 +10,13 @@
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/irq.h"
-#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 
 #include "clkmgr_regs.h"  // Generated
@@ -55,6 +56,7 @@ enum {
 
 static dif_uart_t uart0;
 static dif_gpio_t gpio;
+static dif_pinmux_t pinmux;
 static dif_rv_timer_t timer;
 
 #if !OT_IS_ENGLISH_BREAKFAST
@@ -205,9 +207,23 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
     OT_DISCARD(dif_clkmgr_hintable_clock_set_hint(
         &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT, kDifToggleDisabled));
   }
+  if (disable & kScaPeripheralIoDiv4) {
+    OT_DISCARD(dif_clkmgr_gateable_clock_set_enabled(
+        &clkmgr, CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT,
+        kDifToggleDisabled));
+  }
+  if (disable & kScaPeripheralIoDiv2) {
+    OT_DISCARD(dif_clkmgr_gateable_clock_set_enabled(
+        &clkmgr, CLKMGR_CLK_ENABLES_CLK_IO_DIV2_PERI_EN_BIT,
+        kDifToggleDisabled));
+  }
   if (disable & kScaPeripheralUsb) {
     OT_DISCARD(dif_clkmgr_gateable_clock_set_enabled(
         &clkmgr, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT, kDifToggleDisabled));
+  }
+  if (disable & kScaPeripheralIo) {
+    OT_DISCARD(dif_clkmgr_gateable_clock_set_enabled(
+        &clkmgr, CLKMGR_CLK_ENABLES_CLK_IO_PERI_EN_BIT, kDifToggleDisabled));
   }
 
 #if !OT_IS_ENGLISH_BREAKFAST
@@ -223,7 +239,9 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
 }
 
 void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
-  pinmux_init();
+  OT_DISCARD(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  pinmux_testutils_init(&pinmux);
   sca_init_uart();
   sca_init_gpio(trigger);
   sca_init_timer();
@@ -249,6 +267,14 @@ void sca_set_trigger_low() {
 }
 
 void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles) {
+  // Disable the IO_DIV4_PERI clock to reduce noise during the actual capture.
+  // This also disables the UART(s) and GPIO modules required for
+  // communication with the scope. Therefore, it has to be re-enabled after
+  // the capture.
+  dif_clkmgr_t clkmgr;
+  OT_DISCARD(dif_clkmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+
   // Start timer to wake Ibex after the callee is done.
   uint64_t current_time;
   // Return values of below functions are ignored to improve capture
@@ -262,4 +288,8 @@ void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles) {
   callee();
 
   wait_for_interrupt();
+
+  // Re-enable IO_DIV4_PERI clock to resume communication with the scope.
+  OT_DISCARD(dif_clkmgr_gateable_clock_set_enabled(
+      &clkmgr, CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT, kDifToggleEnabled));
 }

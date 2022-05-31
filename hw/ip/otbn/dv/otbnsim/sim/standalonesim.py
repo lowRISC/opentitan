@@ -28,13 +28,12 @@ class StandaloneSim(OTBNSim):
         # valid when in free running mode as nothing else will.
         self.state.wsrs.URND.set_seed(_TEST_URND_DATA)
         while self.state.executing():
+            # If there's a RND request, respond immediately
+            if self.state.ext_regs.read('RND_REQ', True):
+                self.state.wsrs.RND.set_unsigned(_TEST_RND_DATA)
+
             self.step(verbose)
             insn_count += 1
-
-            # If an instruction requests RND data, make it available
-            # immediately.
-            if self.state.wsrs.RND.pending_request:
-                self.state.wsrs.RND.set_unsigned(_TEST_RND_DATA)
 
             # Dump registers on the first wipe cycle. This makes sure that we
             # dump them before zeroing.

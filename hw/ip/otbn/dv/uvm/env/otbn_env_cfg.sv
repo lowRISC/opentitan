@@ -21,9 +21,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   virtual otbn_trace_if      trace_vif;
   virtual otbn_loop_if       loop_vif;
   virtual otbn_alu_bignum_if alu_bignum_vif;
+  virtual otbn_controller_if controller_vif;
   virtual otbn_mac_bignum_if mac_bignum_vif;
   virtual otbn_rf_base_if    rf_base_vif;
-  virtual otbn_controller_if controller_vif;
   virtual otbn_escalate_if   escalate_vif;
 
   mem_bkdr_util imem_util;
@@ -105,6 +105,12 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     // values, in case of a TL fault.
     tl_intg_alert_fields[ral.fatal_alert_cause.bus_intg_violation] = 1;
     tl_intg_alert_fields[ral.status.status] = otbn_pkg::StatusLocked;
+
+    // Configure the URND EDN connection to be quick. Unlike RND, there's nothing much that can be
+    // going on while we're waiting for a URND seed, so there's no real benefit to modelling the
+    // possibility that it takes ages.
+    m_edn_pull_agent_cfg[UrndEdnIdx].device_delay_min = 0;
+    m_edn_pull_agent_cfg[UrndEdnIdx].device_delay_max = 2;
   endfunction
 
   function logic [127:0] get_imem_key();

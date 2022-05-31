@@ -154,7 +154,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
     .rready_i       (sfifo_cmdreq_pop),
     .rdata_o        (sfifo_cmdreq_rdata),
     .full_o         (sfifo_cmdreq_full),
-    .depth_o        ()
+    .depth_o        (),
+    .err_o          ()
   );
 
   assign fips_modified = ((ctr_drbg_cmd_ccmd_i == INS) ||
@@ -250,7 +251,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
     .rready_i       (sfifo_rcstage_pop),
     .rdata_o        (sfifo_rcstage_rdata),
     .full_o         (sfifo_rcstage_full),
-    .depth_o        ()
+    .depth_o        (),
+    .err_o          ()
   );
 
   assign sfifo_rcstage_push = sfifo_cmdreq_pop;
@@ -288,7 +290,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
     .rready_i       (sfifo_keyvrc_pop),
     .rdata_o        (sfifo_keyvrc_rdata),
     .full_o         (sfifo_keyvrc_full),
-    .depth_o        ()
+    .depth_o        (),
+    .err_o          ()
   );
 
   assign sfifo_keyvrc_push = sfifo_rcstage_pop;

@@ -20,6 +20,9 @@ _stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
 _stack_start = _stack_end - _stack_size;
 
 /* Slot B starts at the half-size mark of the eFlash. */
-_slot_start_address = ORIGIN(eflash) + (LENGTH(eflash) / 2);
+_rom_ext_size = LENGTH(eflash) / 2;
+_rom_ext_start_address = ORIGIN(eflash) + _rom_ext_size;
+
+REGION_ALIAS("rom_ext_flash", eflash);
 
 INCLUDE sw/device/silicon_creator/rom_ext/rom_ext_common.ld

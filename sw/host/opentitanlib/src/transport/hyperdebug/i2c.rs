@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{bail, ensure, Result};
 use std::cmp;
 use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
 use crate::io::i2c::{Bus, I2cError, Transfer};
 use crate::transport::hyperdebug::{BulkInterface, Inner};
-use crate::transport::{Result, TransportError};
-use crate::{bail, ensure};
+use crate::transport::TransportError;
 
 pub struct HyperdebugI2cBus {
     inner: Rc<Inner>,

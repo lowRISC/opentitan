@@ -752,7 +752,6 @@ module otp_ctrl
     .Depth            ( OtpDepth            ),
     .SizeWidth        ( OtpSizeWidth        ),
     .PwrSeqWidth      ( OtpPwrSeqWidth      ),
-    .TlDepth          ( NumDebugWindowWords ),
     .TestCtrlWidth    ( OtpTestCtrlWidth    ),
     .TestStatusWidth  ( OtpTestStatusWidth  ),
     .TestVectWidth    ( OtpTestVectWidth    ),
@@ -814,7 +813,8 @@ module otp_ctrl
     .rready_i ( otp_rvalid         ),
     .rdata_o  ( otp_part_idx       ),
     .depth_o  (                    ),
-    .full_o   (                    )
+    .full_o   (                    ),
+    .err_o    (                    )
   );
 
   // Steer response back to the partition where this request originated.

@@ -55,7 +55,9 @@ class otbn_trace_monitor extends dv_base_monitor #(
             item.has_sideload_key = cfg.keymgr_sideload_agent_cfg.vif.sideload_key.valid;
             item.current_loop_end = cfg.loop_vif.current_loop_end;
             item.at_current_loop_end_insn = cfg.loop_vif.at_current_loop_end_insn;
-            item.mod = cfg.alu_bignum_vif.mod_q;
+            for (int unsigned i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin
+              item.mod[i_word*32+:32] = cfg.alu_bignum_vif.mod_intg_q[i_word*39+:32];
+            end
             item.new_acc_extended = cfg.mac_bignum_vif.get_sum_value();
 
             item_valid = 1'b1;

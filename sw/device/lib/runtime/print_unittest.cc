@@ -148,6 +148,11 @@ TEST_F(PrintfTest, SignedInt) {
   EXPECT_EQ(buf_, "Hello, 42!\n");
 }
 
+TEST_F(PrintfTest, SignedIntZero) {
+  EXPECT_EQ(base_printf("Hello, %d!\n", 0), 10);
+  EXPECT_EQ(buf_, "Hello, 0!\n");
+}
+
 TEST_F(PrintfTest, SignedIntAlt) {
   EXPECT_EQ(base_printf("Hello, %d!\n", 42), 11);
   EXPECT_EQ(buf_, "Hello, 42!\n");

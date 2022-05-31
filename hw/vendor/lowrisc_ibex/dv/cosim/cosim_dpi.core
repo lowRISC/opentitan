@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:dv:cosim_dpi"
+description: "DPI wrapper for Co-simulator framework"
+filesets:
+  files_cpp:
+    depend:
+      - lowrisc:dv:cosim
+    files:
+      - cosim_dpi.cc: { file_type: cppSource }
+      - cosim_dpi.h: {  file_type: cppSource, is_include_file: true }
+      - cosim_dpi.svh: {file_type: systemVerilogSource }
+
+targets:
+  default:
+    filesets:
+      - files_cpp

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use humantime::parse_duration;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -11,11 +12,13 @@ use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::app::TransportWrapper;
+use crate::impl_serializable_error;
 use crate::io::gpio::GpioPin;
 use crate::io::spi::SpiParams;
 use crate::io::uart::UartParams;
-use crate::transport::{Capability, Result};
+use crate::transport::Capability;
 
+mod eeprom;
 mod legacy;
 mod primitive;
 mod rescue;
@@ -28,6 +31,7 @@ pub enum BootstrapError {
     #[error("Invalid hash length: {0}")]
     InvalidHashLength(usize),
 }
+impl_serializable_error!(BootstrapError);
 
 arg_enum! {
     /// `BootstrapProtocol` describes the supported types of bootstrap.
@@ -100,7 +104,6 @@ pub struct Bootstrap<'a> {
     pub uart_params: &'a UartParams,
     pub spi_params: &'a SpiParams,
     reset_pin: Rc<dyn GpioPin>,
-    bootstrap_pin: Rc<dyn GpioPin>,
     reset_delay: Duration,
 }
 
@@ -130,9 +133,7 @@ impl<'a> Bootstrap<'a> {
             BootstrapProtocol::Primitive => Box::new(primitive::Primitive::new(&options)),
             BootstrapProtocol::Legacy => Box::new(legacy::Legacy::new(&options)),
             BootstrapProtocol::Rescue => Box::new(rescue::Rescue::new(&options)),
-            BootstrapProtocol::Eeprom => {
-                unimplemented!();
-            }
+            BootstrapProtocol::Eeprom => Box::new(eeprom::Eeprom::new()),
             BootstrapProtocol::Emulator => {
                 // Not intended to be implemented by this struct.
                 unimplemented!();
@@ -143,7 +144,6 @@ impl<'a> Bootstrap<'a> {
             uart_params: &options.uart_params,
             spi_params: &options.spi_params,
             reset_pin: transport.gpio_pin("RESET")?,
-            bootstrap_pin: transport.gpio_pin("BOOTSTRAP")?,
             reset_delay: options.reset_delay.unwrap_or(Self::RESET_DELAY),
         }
         .do_update(updater, transport, payload)
@@ -160,12 +160,12 @@ impl<'a> Bootstrap<'a> {
 
         if perform_bootstrap_reset {
             log::info!("Asserting bootstrap pins...");
-            self.bootstrap_pin.write(true)?;
+            transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
 
             log::info!("Reseting the target...");
-            self.reset_pin.write(false)?; // Low active
+            transport.apply_pin_strapping("RESET")?;
             std::thread::sleep(self.reset_delay);
-            self.reset_pin.write(true)?; // Release reset
+            transport.remove_pin_strapping("RESET")?;
             std::thread::sleep(self.reset_delay);
 
             log::info!("Performing bootstrap...");
@@ -174,7 +174,7 @@ impl<'a> Bootstrap<'a> {
 
         if perform_bootstrap_reset {
             log::info!("Releasing bootstrap pins...");
-            self.bootstrap_pin.write(false)?;
+            transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
         }
         result
     }

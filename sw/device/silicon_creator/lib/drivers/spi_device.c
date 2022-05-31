@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"
@@ -232,43 +233,54 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
  * BFPT 10th Word
  * --------------
  * [31:11]: Erase 4,3,2 typical time (not supported, 0x0)
- * [10: 9]: Erase type 1 time unit (ms, 0x0)
- * [ 8: 4]: Erase type 1 time count, zero-based (0x1d)
+ * [10: 9]: Erase type 1 time unit (16 ms, 0x1)
+ * [ 8: 4]: Erase type 1 time count, zero-based (0x8)
+ *          formula: (count + 1) * unit
+ *          (8 + 1) * 16 ms = 144 ms
  * [ 3: 0]: Max erase time multiplier, zero-based (0x6)
  *          formula: 2 * (multiplier + 1) * erase_time
  */
 #define BFPT_WORD_10(X) \
   X(31, 11, kBfptNotSupported) & \
-  X(10,  9, 0x0) & \
-  X( 8,  4, 0x1d) & \
-  X( 3,  0, 0x6)
+  X(10,  9, 0x1) & \
+  X( 8,  4, 0x8) & \
+  X( 3,  0, 0x0)
 
 /**
  * BFPT 11th Word
  * --------------
  * [31:31]: Reserved
- * [30:29]: Chip erase time units (256 ms, 0x1)
- * [28:24]: Chip erase time count, zero-based (0x3)
- * [23:23]: Additional byte program time units (us, 0x0)
- * [22:19]: Additional byte program time count, zero-based (0x0)
+ * [30:29]: Chip erase time units (16 ms, 0x0)
+ * [28:24]: Chip erase time count, zero-based (0xb)
+ *          formula: (count + 1) * unit
+ *          (11 + 1) * 16 ms = 192 ms
+ * [23:23]: Additional byte program time units (8 us, 0x1)
+ * [22:19]: Additional byte program time count, zero-based (0x5)
+ *          formula: (count + 1) * unit
+ *          (5 + 1) * 8 us = 48 us
  * [18:18]: First byte program time unit (8 us, 0x1)
- * [17:14]: First byte program time count, zero-based (0x3)
- * [13:13]: Page program time unit (8 us, 0x0)
- * [12: 8]: Page program time count, zero-based (0x1f)
+ * [17:14]: First byte program time count, zero-based (0x5)
+ *          formula: (count + 1) * unit
+ *          (5 + 1) * 8 us = 48 us
+ * [13:13]: Page program time unit (64 us, 0x1)
+ * [12: 8]: Page program time count, zero-based (0xb)
+ *          formula: (count + 1) * unit
+ *          (11 + 1) * 64 us = 768 us
  * [ 7: 4]: Page size, 2^N (0x8)
- * [ 3: 0]: Max program time multiplier, zero-based (0x1)
+ * [ 3: 0]: Max program time multiplier, zero-based (0x0)
+ *          formula: 2 * (multiplier + 1) * program_time
  */
 #define BFPT_WORD_11(X) \
- X(30, 29, 0x1) & \
- X(28, 24, 0x3) & \
- X(23, 23, 0x0) & \
- X(22, 19, 0x0) & \
+ X(30, 29, 0x0) & \
+ X(28, 24, 0xb) & \
+ X(23, 23, 0x1) & \
+ X(22, 19, 0x5) & \
  X(18, 18, 0x1) & \
- X(17, 14, 0x3) & \
- X(13, 13, 0x0) & \
- X(12,  8, 0x1f) & \
+ X(17, 14, 0x5) & \
+ X(13, 13, 0x1) & \
+ X(12,  8, 0xb) & \
  X( 7,  4, 0x8) & \
- X( 3,  0, 0x1)
+ X( 3,  0, 0x0)
 
 /**
  * BFPT 12th Word
@@ -315,13 +327,13 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
  * BFPT 16th Word
  * --------------
  * [31:14]: 4-Byte addressing (not supported, 0x0)
- * [13: 8]: Soft-reset (instruction 0xf0, 0x80)
+ * [13: 8]: Soft-reset (0x66/0x99 sequence, 0x10)
  * [ 7: 7]: Reserved
  * [ 6: 0]: Status register (read-only, 0x0)
  */
 #define BFPT_WORD_16(X) \
   X(31, 14, kBfptNotSupported) & \
-  X(13,  8, 0x80) & \
+  X(13,  8, 0x10) & \
   X( 6,  0, 0x0)
 
 /**
@@ -355,7 +367,7 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
 /**
  * BFPT 20th Word
  * --------------
- * [31,  0]: Max (8S-8S-8S) (4D-4D-4D) (4S-4S-4S) speed 
+ * [31,  0]: Max (8S-8S-8S) (4D-4D-4D) (4S-4S-4S) speed
  *           (not supported, 0xffffffff)
  */
 #define BFPT_WORD_20(X) \
@@ -501,10 +513,16 @@ void spi_device_init(void) {
   reg = bitfield_field32_write(reg, SPI_DEVICE_JEDEC_CC_NUM_CC_FIELD,
                                kSpiDeviceJedecContCodeCount);
   abs_mmio_write32(kBase + SPI_DEVICE_JEDEC_CC_REG_OFFSET, reg);
-  // TODO(#11605): Use the HW revision register when available.
-  reg = bitfield_field32_write(0, SPI_DEVICE_DEV_ID_CHIP_REV_FIELD, 0);
+  // Note: The code below assumes that chip revision and generation numbers
+  // from the life cycle controller (16-bits each) will fit in the revision and
+  // generation fields of the device ID (3 and 4 bits, respectively).
+  lifecycle_hw_rev_t hw_rev;
+  lifecycle_hw_rev_get(&hw_rev);
+  reg = bitfield_field32_write(0, SPI_DEVICE_DEV_ID_CHIP_REV_FIELD,
+                               hw_rev.chip_rev);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_DEV_ID_ROM_BOOTSTRAP_BIT, true);
-  reg = bitfield_field32_write(reg, SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD, 0);
+  reg = bitfield_field32_write(reg, SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD,
+                               hw_rev.chip_gen);
   reg = bitfield_field32_write(reg, SPI_DEVICE_DEV_ID_DENSITY_FIELD,
                                kSpiDeviceJedecDensity);
   reg = bitfield_field32_write(reg, SPI_DEVICE_JEDEC_ID_MF_FIELD,
@@ -567,6 +585,14 @@ void spi_device_init(void) {
       .dummy_cycles = 0,
       .handled_in_sw = true,
   });
+  // Configure the WRITE_ENABLE and WRITE_DISABLE commands.
+  reg = bitfield_field32_write(0, SPI_DEVICE_CMD_INFO_WREN_OPCODE_FIELD,
+                               kSpiDeviceOpcodeWriteEnable);
+  reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_WREN_VALID_BIT, true);
+  abs_mmio_write32(kBase + SPI_DEVICE_CMD_INFO_WREN_REG_OFFSET, reg);
+  reg = bitfield_field32_write(reg, SPI_DEVICE_CMD_INFO_WRDI_OPCODE_FIELD,
+                               kSpiDeviceOpcodeWriteDisable);
+  abs_mmio_write32(kBase + SPI_DEVICE_CMD_INFO_WRDI_REG_OFFSET, reg);
 
   // Write SFDP table to the reserved region in spi_device buffer.
   uint32_t dest = kSfdpAreaStartAddr;
@@ -604,34 +630,48 @@ void spi_device_init(void) {
   abs_mmio_write32(kBase + SPI_DEVICE_CONTROL_REG_OFFSET, reg);
 }
 
-void spi_device_cmd_get(spi_device_cmd_t *cmd) {
+rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
   uint32_t reg = 0;
   bool cmd_pending = false;
-  // TODO(#11871): When should sw read cmd, addr, and payload?
   while (!cmd_pending) {
-    reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET);
-    cmd_pending =
-        bitfield_bit32_read(reg, SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_NOTEMPTY_BIT);
+    // Note: Using INTR_STATE.UPLOAD_CMDFIFO_NOT_EMPTY because
+    // UPLOAD_STATUS.CMDFIFO_NOTEMPTY is set before the SPI transaction ends.
+    reg = abs_mmio_read32(kBase + SPI_DEVICE_INTR_STATE_REG_OFFSET);
+    cmd_pending = bitfield_bit32_read(
+        reg, SPI_DEVICE_INTR_COMMON_UPLOAD_CMDFIFO_NOT_EMPTY_BIT);
   }
-  cmd->opcode = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET);
+  abs_mmio_write32(kBase + SPI_DEVICE_INTR_STATE_REG_OFFSET, UINT32_MAX);
+  if (bitfield_bit32_read(reg,
+                          SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_OVERFLOW_BIT)) {
+    return kErrorSpiDevicePayloadOverflow;
+  }
 
+  cmd->opcode = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET);
   cmd->address = kSpiDeviceNoAddress;
+  reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET);
   if (bitfield_bit32_read(reg,
                           SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT)) {
     cmd->address =
         abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET);
   }
 
+  reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET);
   cmd->payload_byte_count =
-      bitfield_field32_read(reg, SPI_DEVICE_UPLOAD_STATUS_PAYLOAD_DEPTH_FIELD);
+      bitfield_field32_read(reg, SPI_DEVICE_UPLOAD_STATUS2_PAYLOAD_DEPTH_FIELD);
   uint32_t src =
       kBase + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
   char *dest = (char *)&cmd->payload;
   for (size_t i = 0; i < cmd->payload_byte_count; i += sizeof(uint32_t)) {
     write_32(abs_mmio_read32(src + i), dest + i);
   }
+
+  return kErrorOk;
 }
 
 void spi_device_flash_status_clear(void) {
   abs_mmio_write32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
+}
+
+uint32_t spi_device_flash_status_get(void) {
+  return abs_mmio_read32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET);
 }

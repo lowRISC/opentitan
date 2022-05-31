@@ -69,8 +69,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //-----------------------
   // Do not enable masking
   localparam bit Sha3EnMasking = 0;
-  // Needs EnMasking active to take effect
-  localparam bit Sha3ReuseShare = 0;
   // derived parameter
   localparam int Sha3Share = (Sha3EnMasking) ? 2 : 1;
 
@@ -842,7 +840,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rdata_o    (sfifo_esrng_rdata),
     .rready_i   (sfifo_esrng_pop),
     .full_o     (sfifo_esrng_full),
-    .depth_o    ()
+    .depth_o    (),
+    .err_o      ()
   );
 
   // fifo controls
@@ -2154,7 +2153,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rdata_o    (sfifo_observe_rdata),
     .rready_i   (sfifo_observe_pop),
     .full_o     (sfifo_observe_full),
-    .depth_o    (sfifo_observe_depth)
+    .depth_o    (sfifo_observe_depth),
+    .err_o      ()
   );
 
   // The Observe fifo is intended to hold kilobits of contiguous data, yet still gracefully
@@ -2258,8 +2258,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // SHA3 hashing engine
   sha3 #(
-    .EnMasking (Sha3EnMasking),
-    .ReuseShare (Sha3ReuseShare)
+    .EnMasking (Sha3EnMasking)
   ) u_sha3 (
     .clk_i,
     .rst_ni,
@@ -2272,6 +2271,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
     // Entropy interface - not using
     .rand_valid_i    (1'b0),
+    .rand_early_i    (1'b0),
     .rand_data_i     ('0),
     .rand_consumed_o (),
 
@@ -2400,7 +2400,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rready_i       (sfifo_esfinal_pop),
     .rdata_o        (sfifo_esfinal_rdata),
     .full_o         (sfifo_esfinal_full),
-    .depth_o        (sfifo_esfinal_depth)
+    .depth_o        (sfifo_esfinal_depth),
+    .err_o          ()
   );
 
   assign fips_compliance = !es_bypass_mode && es_enable_q_fo[29] && !rng_bit_en;

@@ -87,7 +87,6 @@ config = {
         "hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson",
         "hw/ip/uart/data/uart.hjson",
         "hw/ip/usbdev/data/usbdev.hjson",
-        "hw/ip/usbuart/data/usbuart.hjson",
     ],
 
     # Pre-generate dashboard fragments from these directories.
@@ -437,6 +436,10 @@ def invoke_hugo(preview, bind_wan, hugo_opts, hugo_bin_path):
         str(SRCTREE_TOP),
         "--layoutDir",
         layout_dir,
+        # This option is needed because otherwise Hugo hangs trying to follow
+        # Bazel symlinks (even though they're in config.toml's ignoreFiles):
+        # see https://github.com/lowRISC/opentitan/issues/12322 for details.
+        "--watch=false",
     ]
     if preview:
         args += ["server"]

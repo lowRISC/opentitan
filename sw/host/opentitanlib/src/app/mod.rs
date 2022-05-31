@@ -11,7 +11,8 @@ use crate::io::gpio::{GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::transport::{ProxyOps, Result, Transport, TransportError};
+use crate::transport::{ProxyOps, Transport, TransportError};
+use anyhow::Result;
 
 use erased_serde::Serialize;
 use std::any::Any;
@@ -149,9 +150,7 @@ impl TransportWrapper {
         if let Some(strapping_conf_map) = self.strapping_conf_map.get(strapping_name) {
             self.apply_pin_configurations(&strapping_conf_map)
         } else {
-            Err(TransportError::InvalidStrappingName(
-                strapping_name.to_string(),
-            ))
+            Err(TransportError::InvalidStrappingName(strapping_name.to_string()).into())
         }
     }
 
@@ -167,9 +166,7 @@ impl TransportWrapper {
             }
             Ok(())
         } else {
-            Err(TransportError::InvalidStrappingName(
-                strapping_name.to_string(),
-            ))
+            Err(TransportError::InvalidStrappingName(strapping_name.to_string()).into())
         }
     }
 
@@ -204,7 +201,7 @@ impl TransportWrapper {
         }
     }
 
-    pub fn add_configuration_file(&mut self, file: conf::ConfigurationFile) -> anyhow::Result<()> {
+    pub fn add_configuration_file(&mut self, file: conf::ConfigurationFile) -> Result<()> {
         // Merge content of configuration file into pin_map and other
         // members.
         for pin_conf in file.pins {

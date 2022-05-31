@@ -141,9 +141,53 @@
             '''
     }
     {
-      name: seed_output_cg
+      name: seed_output_hw_cg
       desc: '''
-            Covers that data output is observed at the csrng, entropy_src, and fw_ov interfaces for
+            Covers that data output is observed at the CSRNG HW interface for
+            all possible modes of operation, including:
+            - CONF.FIPS_ENABLE (True and False)
+            - CONF.ENTROPY_DATA_REG_ENABLE (True and False)
+            - CONF.THRESHOLD_SCOPE (True and False)
+            - CONF.RNG_BIT_ENABLE (True and False)
+            - CONF.RNG_BIT_SEL (0 to 3)
+            - ENTROPY_CONTROL.ES_TYPE (True and False)
+            - FW_OV_MODE (True or False)
+            - FW_OV_ENTROPY_INSERT (True or False)
+            In addition to the above, the following settings are illegal when sampling on
+            this covergroup, and merit the creation of illegal_bins
+            - ENTROPY_CONTROL.ES_ROUTE = True
+
+            Since the scoreboard permits data to be dropped or rejected by the entropy source we
+            must explicitly confirm that the data is observed at the outputs for all possible
+            configurations.
+            '''
+    }
+    {
+      name: seed_output_entropy_data_cg
+      desc: '''
+            Covers that data output is observed at the entropy_data CSR interfaces for
+            all possible modes of operation, including:
+            - CONF.FIPS_ENABLE (True and False)
+            - CONF.THRESHOLD_SCOPE (True and False)
+            - CONF.RNG_BIT_ENABLE (True and False)
+            - CONF.RNG_BIT_SEL (0 to 3)
+            - ENTROPY_CONTROL.ES_TYPE (True and False)
+            - FW_OV_MODE (True or False)
+            - FW_OV_ENTROPY_INSERT (True or False)
+            In addition to the above, the following settings are illegal when sampling on the
+            this covergroup, and merit the creation of illegal_bins
+            - ENTROPY_CONTROL.ES_ROUTE = False
+            - CONF.ENTROPY_DATA_REG_ENABLE = False
+
+            Since the scoreboard permits data to be dropped or rejected by the entropy source we
+            must explicitly confirm that the data is observed at the outputs for all possible
+            configurations.
+            '''
+    }
+    {
+      name: fw_ov_output_cg
+      desc: '''
+            Covers that data output is observed at the fw_ov_rd_data CSE interface for
             all possible modes of operation, including:
             - CONF.FIPS_ENABLE (True and False)
             - CONF.ENTROPY_DATA_REG_ENABLE (True and False)
@@ -155,8 +199,8 @@
             - ENTROPY_CONTROL.ES_TYPE (True and False)
             - FW_OV_MODE (True or False)
             - FW_OV_ENTROPY_INSERT (True or False)
-            Since the scoreboard permits data to be dropped or rejected by the intropy source we
-            must explicitly confirm that the data is observed at the outputs for all possible
+            Since the scoreboard permits data to be dropped by the entropy source we
+            must explicitly confirm that the data is observed at this output for all possible
             configurations.
             '''
     }

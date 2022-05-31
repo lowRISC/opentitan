@@ -77,5 +77,53 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_data_reg_sw_sca
+      desc: "Verify the countermeasure(s) DATA_REG_SW.SCA."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_redun
+      desc: "Verify the countermeasure(s) CTRL.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_rnd_bus_consistency
+      desc: "Verify the countermeasure(s) RND.BUS.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_rnd_rng_digest
+      desc: "Verify the countermeasure(s) RND.RNG.DIGEST."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_rf_base_data_reg_sw_glitch_detect
+      desc: "Verify the countermeasure(s) RF_BASE.DATA_REG_SW.GLITCH_DETECT."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_stack_wr_ptr_ctr_redun
+      desc: "Verify the countermeasure(s) STACK_WR_PTR.CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_stack_wr_ptr_ctr_glitch_detect
+      desc: "Verify the countermeasure(s) STACK_WR_PTR.CTR.GLITCH_DETECT."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_rf_bignum_data_reg_sw_glitch_detect
+      desc: "Verify the countermeasure(s) RF_BIGNUM.DATA_REG_SW.GLITCH_DETECT."
+      milestone: V2S
+      tests: []
+    }
   ]
 }

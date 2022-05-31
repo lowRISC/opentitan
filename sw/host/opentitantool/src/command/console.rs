@@ -9,16 +9,15 @@ use raw_tty::TtyModeGuard;
 use regex::Regex;
 use std::any::Any;
 use std::fs::File;
-use std::io::{Read, Write};
 use std::os::unix::io::AsRawFd;
-use std::time::{Duration, Instant, SystemTime};
+use std::time::Duration;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::io::uart::{Uart, UartParams};
+use opentitanlib::io::uart::UartParams;
 use opentitanlib::transport::Capability;
-use opentitanlib::util::file;
+use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
 #[derive(Debug, StructOpt)]
 pub struct Console {
@@ -31,8 +30,12 @@ pub struct Console {
     #[structopt(short, long, help = "Log console output to a file")]
     logfile: Option<String>,
 
-    #[structopt(short, long, help = "Exit after a timeout in seconds.")]
-    timeout: Option<u64>,
+    #[structopt(
+        short,
+        long, parse(try_from_str=humantime::parse_duration),
+        help = "Duration of ROM detection timeout",
+    )]
+    timeout: Option<Duration>,
 
     #[structopt(long, help = "Print a timestamp on each line of console output.")]
     timestamp: bool,
@@ -56,9 +59,9 @@ impl CommandDispatch for Console {
         let mut stdin = std::io::stdin();
 
         // Set up resources specified by the command line parameters.
-        let mut console = InnerConsole {
+        let mut console = UartConsole {
             logfile: self.logfile.as_ref().map(File::create).transpose()?,
-            deadline: self.timeout.map(|t| Instant::now() + Duration::new(t, 0)),
+            timeout: self.timeout,
             exit_success: self
                 .exit_success
                 .as_ref()
@@ -78,7 +81,7 @@ impl CommandDispatch for Console {
             println!("Starting interactive console");
             println!("[CTRL+C] to exit.\n");
         }
-        {
+        let status = {
             // Put the terminal into raw mode.  The tty guard will restore the
             // console settings when it goes out of scope.
             let _stdin_guard = if isatty(stdin.as_raw_fd())? {
@@ -96,145 +99,39 @@ impl CommandDispatch for Console {
                 None
             };
             let uart = self.params.create(transport)?;
-            console.interact(&*uart, &mut stdin, &mut stdout)?;
-        }
+            console.interact(&*uart, Some(&mut stdin), Some(&mut stdout))?
+        };
         if !self.quiet {
             println!("\n\nExiting interactive console.");
         }
-        Ok(None)
-    }
-}
 
-#[derive(Default)]
-struct InnerConsole {
-    logfile: Option<File>,
-    deadline: Option<Instant>,
-    exit_success: Option<Regex>,
-    exit_failure: Option<Regex>,
-    buffer: String,
-    timestamp: bool,
-    newline: bool,
-}
-
-enum ExitStatus {
-    None,
-    ExitSuccess,
-    ExitFailure,
-}
-
-impl InnerConsole {
-    const CTRL_C: u8 = 3;
-    const BUFFER_LEN: usize = 1024;
-
-    // Runs an interactive console until CTRL_C is received.
-    fn interact(
-        &mut self,
-        uart: &dyn Uart,
-        stdin: &mut (impl Read + AsRawFd),
-        stdout: &mut impl Write,
-    ) -> Result<()> {
-        let mut buf = [0u8; 256];
-
-        loop {
-            if let Some(deadline) = self.deadline {
-                if Instant::now() > deadline {
-                    // If we have an exit success condition, then a timeout
-                    // should be an error.
-                    if self.exit_success.is_some() {
-                        return Err(anyhow!("Console timeout exceeded"));
-                    } else {
-                        break;
-                    }
+        match status {
+            ExitStatus::None | ExitStatus::CtrlC => Ok(None),
+            ExitStatus::Timeout => {
+                if console.exit_success.is_some() {
+                    // If there was a console exit success condition, then a timeout
+                    // represents an error.
+                    Err(anyhow!("Console timeout exceeded"))
+                } else {
+                    // If there was no console exit success condition, then a timeout
+                    // is not an error.
+                    Ok(None)
                 }
             }
-
-            // This loop _should_ really use unix `poll` in the conventional way
-            // to learn when the console or uart file descriptors become ready,
-            // but some UART backends will bury their implementation in libusb
-            // and make discovering the file descriptor difficult or impossible.
-            //
-            // As a pragmatic implementation detail, we wait for the UART
-            // for a short period of time and then service the console.
-            //
-            // TODO: as we write more backends, re-evaluate whether there is a
-            // better way to approach waiting on the UART and keyboard.
-
-            // Check for input on the uart.
-            match self.uart_read(uart, Duration::from_millis(10), stdout)? {
-                ExitStatus::None => {}
-                ExitStatus::ExitSuccess => {
-                    break;
-                }
-                ExitStatus::ExitFailure => {
-                    return Err(anyhow!("Matched exit_failure expression"));
-                }
-            };
-
-            // Wait for input from the user.
-            if file::wait_read_timeout(&*stdin, Duration::from_millis(0)).is_ok() {
-                let len = stdin.read(&mut buf)?;
-                if len == 1 && buf[0] == InnerConsole::CTRL_C {
-                    break;
-                }
-                uart.write(&buf[..len])?;
+            ExitStatus::ExitSuccess => {
+                log::info!(
+                    "ExitSuccess({:?})",
+                    console.captures(status).unwrap().get(0).unwrap().as_str()
+                );
+                Ok(None)
+            }
+            ExitStatus::ExitFailure => {
+                log::info!(
+                    "ExitFailure({:?})",
+                    console.captures(status).unwrap().get(0).unwrap().as_str()
+                );
+                Err(anyhow!("Matched exit_failure expression"))
             }
         }
-        Ok(())
-    }
-
-    // Maintain a buffer for the exit regexes to match against.
-    fn append_buffer(&mut self, data: &[u8]) {
-        self.buffer.push_str(&String::from_utf8_lossy(data));
-        while self.buffer.len() > InnerConsole::BUFFER_LEN {
-            self.buffer.remove(0);
-        }
-    }
-
-    // Read from the uart and process the data read.
-    fn uart_read(
-        &mut self,
-        uart: &dyn Uart,
-        timeout: Duration,
-        stdout: &mut impl Write,
-    ) -> Result<ExitStatus> {
-        let mut buf = [0u8; 256];
-        let len = uart.read_timeout(&mut buf, timeout)?;
-        if len > 0 {
-            for i in 0..len {
-                if self.timestamp && self.newline {
-                    let t = humantime::format_rfc3339_millis(SystemTime::now());
-                    stdout.write_fmt(format_args!("[{}]", t))?;
-                    self.newline = false;
-                }
-                stdout.write_all(&buf[i..i + 1])?;
-                self.newline = buf[i] == b'\n';
-            }
-            stdout.flush()?;
-
-            // If we're logging, save it to the logfile.
-            if let Some(logfile) = &mut self.logfile {
-                logfile.write_all(&buf[..len])?;
-            }
-
-            // If we have exit condition regexes check them.
-            self.append_buffer(&buf[..len]);
-            if self
-                .exit_success
-                .as_ref()
-                .map(|rx| rx.is_match(&self.buffer))
-                == Some(true)
-            {
-                return Ok(ExitStatus::ExitSuccess);
-            }
-            if self
-                .exit_failure
-                .as_ref()
-                .map(|rx| rx.is_match(&self.buffer))
-                == Some(true)
-            {
-                return Ok(ExitStatus::ExitFailure);
-            }
-        }
-        Ok(ExitStatus::None)
     }
 }

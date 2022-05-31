@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{ensure, Result};
 use rusb::{Direction, Recipient, RequestType};
 use std::mem::size_of;
 use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
-use crate::ensure;
 use crate::io::spi::{SpiError, Target, Transfer, TransferMode};
 use crate::transport::hyperdebug::{BulkInterface, Inner};
-use crate::transport::{Result, TransportError};
+use crate::transport::TransportError;
 
 pub struct HyperdebugSpiTarget {
     inner: Rc<Inner>,

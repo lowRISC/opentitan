@@ -78,7 +78,7 @@ void hmac_testutils_finish_polled(const dif_hmac_t *hmac,
  * Spins until HMAC has processed the final hash, and compares the digests.
  *
  * Convenience function that combines `hmac_testutils_finish_polled` and
- * and `CHECK_BUFFER`.
+ * and `CHECK_ARRAYS_EQ`.
  *
  * @param hmac An HMAC handle.
  * @param expected Expected HMAC final digest.

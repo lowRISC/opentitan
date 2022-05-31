@@ -7,16 +7,14 @@ package pwrmgr_clk_ctrl_agent_pkg;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
+  import pwrmgr_clk_ctrl_common_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint MAIN_CLK_DELAY_MIN = 15;  // cycle of aon clk
-  parameter uint MAIN_CLK_DELAY_MAX = 258; // cycle of aon clk
-  parameter uint ESC_CLK_DELAY_MIN = 1;    // cycle of aon clk
-  parameter uint ESC_CLK_DELAY_MAX = 10;   // cycle of aon clk
+
   // local types
   // forward declare classes to allow typedefs below
   typedef class pwrmgr_clk_ctrl_item;

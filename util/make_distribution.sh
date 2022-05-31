@@ -25,7 +25,6 @@ readonly DIST_ARTIFACTS=(
   'sw/device/*.bin'
   'sw/device/*.vmem'
   'sw/otbn/*.elf'
-  'sw/host/spiflash/spiflash'
   'hw/top_earlgrey/Vchip_earlgrey_verilator'
   'hw/top_earlgrey/lowrisc_systems_chip_earlgrey_*.bit'
 )

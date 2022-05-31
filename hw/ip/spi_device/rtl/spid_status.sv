@@ -18,7 +18,8 @@ module spid_status
     spi_device_pkg::CmdInfoReadStatus1,
     spi_device_pkg::CmdInfoReadStatus2,
     spi_device_pkg::CmdInfoReadStatus3
-  }
+  },
+  parameter int unsigned StatusW = 24
 ) (
   input clk_i,
   input rst_ni,
@@ -30,12 +31,14 @@ module spid_status
   input sys_clk_i, // Handling STATUS CSR (ext type)
   input sys_rst_ni,
 
+  input sys_csb_deasserted_pulse_i, // to latch committed status
+
   // status register from CSR: sys_clk domain
-  // bit [   0]: RW0C by SW / W1S by HW
-  // bit [23:1]: RW
-  input               sys_status_we_i,
-  input  logic [23:0] sys_status_i,
-  output logic [23:0] sys_status_o, // sys_clk domain
+  // bit [          0]: RW0C by SW / W1S by HW
+  // bit [StatusW-1:1]: RW
+  input                      sys_status_we_i,
+  input  logic [StatusW-1:0] sys_status_i,
+  output logic [StatusW-1:0] sys_status_o, // sys_clk domain
 
   // from cmdparse
   input sel_datapath_e          sel_dp_i,
@@ -50,6 +53,10 @@ module spid_status
 
   // receives the busy from other HW
   input inclk_busy_set_i, // SCK domain
+
+  // WREN set/ clear
+  input inclk_we_set_i,
+  input inclk_we_clr_i,
 
   // indicator of busy for other HW. Mainly to block passthrough
   output logic csb_busy_broadcast_o // SCK domain
@@ -73,20 +80,23 @@ module spid_status
   } st_e;
   st_e st_q, st_d;
 
+  typedef enum int unsigned {
+    BitBusy      = 0, // BUSY bit [0]
+    BitWe        = 1  // WEL  bit [1]
+  } status_bit_e;
+
   ////////////
   // Signal //
   ////////////
-  logic [23:0] sys_status;
-  logic [23:0] sys_status_q;
-  logic        sys_status_busy;
-
-  logic [23:0] sck_status;
-  logic [23:0] sck_status_sync;
-  logic        sck_status_busy;
+  logic [StatusW-1:0] sck_status_committed;
+  logic [StatusW-1:0] sck_status_staged;
+  logic [StatusW-1:0] sck_sw_status;
 
   logic      p2s_valid_inclk;
   spi_byte_t p2s_byte_inclk;
 
+  // FIFO rvalid , rready
+  logic sck_sw_we, sck_sw_ack;
   ////////////////////////////
   // Status CSR (incl. CDC) //
   ////////////////////////////
@@ -121,88 +131,89 @@ module spid_status
 
   // Design Doc
   //  https://docs.google.com/document/d/1wUIynMYVfVg9HmCL0q5-6r9BuN-XM0z--wGqU0bXRQ0
-  logic sys_busy_clr_request, sck_busy_clr_request;
-  assign sys_busy_clr_request =  sys_status_we_i
-                              && !sys_status_i[0]
-                              && sys_status[0];
 
-  // Pulse Synchronizer for BUSY clear
-  prim_pulse_sync u_busy_clr_sync (
-    .clk_src_i   (sys_clk_i),
-    .rst_src_ni  (sys_rst_ni),
-    .src_pulse_i (sys_busy_clr_request), // no need of registered
-
-    .clk_dst_i   (clk_i               ),
-    .rst_dst_ni  (sys_rst_ni          ),
-    .dst_pulse_o (sck_busy_clr_request)
-  );
-
-  //  BUSY
-  // busy_broadcast
-  // Latch by CSb clock
-  prim_flop #(
-    .Width      (1),
-    .ResetValue (0)
-  ) u_busy_flop (
-    .clk_i  (clk_csb_i),
-    .rst_ni (sys_rst_ni),
-    .d_i    (sck_status[0]),
-    .q_o    (csb_busy_broadcast_o)
-  );
-
-
-  //  always 2FF of busy_broadcasting
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue(1'b 0)
-  ) u_busy_sync (
-    .clk_i  (sys_clk_i),
-    .rst_ni (sys_rst_ni),
-    .d_i    (sck_status_busy),
-    .q_o    (sys_status_busy)
-  );
-
-  //  rest of STATUS
-  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) begin
-      sys_status_q[23:0] <= '0;
-    end else if (sys_status_we_i) begin
-      sys_status_q[23:0] <= sys_status_i[23:0];
-    end
-  end
-
-  assign sys_status   = {sys_status_q[23:1], sys_status_busy};
-  assign sys_status_o = sys_status;
+  // assumes BUSY bit as 0
+  `ASSERT_INIT(BusyBitZero_A, BitBusy == 0)
 
   // BUSY status in SCK
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
-      sck_status_busy <= 1'b 0;
-    end else if (sck_busy_clr_request) begin
-      sck_status_busy <= 1'b 0;
+      sck_status_staged[BitBusy] <= 1'b 0;
+    end else if (sck_sw_we && (sck_sw_status[BitBusy] == 1'b 0)) begin
+      sck_status_staged[BitBusy] <= 1'b 0;
     end else if (inclk_busy_set_i) begin
-      sck_status_busy <= 1'b 1;
+      sck_status_staged[BitBusy] <= 1'b 1;
     end
   end
 
+  // WEL handling
+  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sck_status_staged[BitWe] <= 1'b 0;
+    end else if (inclk_we_set_i) begin
+      sck_status_staged[BitWe] <= 1'b 1;
+    end else if (inclk_we_clr_i) begin
+      sck_status_staged[BitWe] <= 1'b 0;
+    end else if (sck_sw_we) begin
+      sck_status_staged[BitWe] <= sck_sw_status[BitWe];
+    end
+  end
+
+  // Rest of Status
+  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sck_status_staged[StatusW-1:BitWe+1] <= '0;
+    end else if (sck_sw_we) begin
+      sck_status_staged[StatusW-1:BitWe+1] <= sck_sw_status[StatusW-1:BitWe+1];
+    end
+  end
+
+  // Staged to Comitted at CSb de-assertion
+  prim_flop #(
+    .Width      ($bits(sck_status_staged)),
+    .ResetValue ('0)
+  ) u_stage_to_commit (
+    .clk_i  (clk_csb_i),
+    .rst_ni (sys_rst_ni),
+    .d_i    (sck_status_staged),
+    .q_o    (sck_status_committed)
+  );
+  // busy_broadcast
+  assign csb_busy_broadcast_o = sck_status_committed[BitBusy];
+
   // Status in SCK
-  // TODO: Put CDC Waiver
-  // No need of reconvergence. Just 2FF
-  prim_flop_2sync #(
-    .Width      (24    ),
-    .ResetValue (24'h 0)
-  ) u_status_23_to_1_sync (
-    .clk_i,
-    .rst_ni (sys_rst_ni      ),
-    .d_i    (sys_status[23:0]),
-    .q_o    (sck_status_sync[23:0])
+  assign sck_sw_ack = 1'b 1; // always accept when clock is valid.
+
+  prim_fifo_async #(
+    .Width             (StatusW),
+    .Depth             (2),
+    .OutputZeroIfEmpty (1'b 1)
+  ) u_sw_status_update_sync (
+    .clk_wr_i  (sys_clk_i      ),
+    .rst_wr_ni (sys_rst_ni     ),
+    .wvalid_i  (sys_status_we_i),
+    .wready_o  (               ), // ignore
+    .wdata_i   (sys_status_i   ),
+    .wdepth_o  (               ),
+
+    .clk_rd_i  (clk_i        ),
+    .rst_rd_ni (sys_rst_ni   ),
+    .rvalid_o  (sck_sw_we    ),
+    .rready_i  (sck_sw_ack   ),
+    .rdata_o   (sck_sw_status),
+    .rdepth_o  (             )
   );
 
-  assign sck_status = {sck_status_sync[23:1], sck_status_busy};
-
-  // Create [23:0] for the readability. 0 is unused
-  logic  unused_status;
-  assign unused_status = ^{ sys_status_q[0], sck_status_sync[0]};
+  // Committed to SYS clk
+  // Update with csb release event (pulse), which always will be delayed two
+  // SYS cycles. Then it is safe to use comitted register.
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sys_status_o <= '0;
+    end else if (sys_csb_deasserted_pulse_i) begin
+      sys_status_o <= sck_status_committed;
+    end
+  end
 
   /////////////////
   // Data Return //
@@ -253,8 +264,9 @@ module spid_status
     end
   end : byte_sel_input
 
-  assign p2s_byte_inclk = (st_q == StIdle) ? sck_status[8*byte_sel_d+:8]
-                                           : sck_status[8*byte_sel_q+:8];
+  assign p2s_byte_inclk = (st_q == StIdle)
+                        ? sck_status_committed[8*byte_sel_d+:8]
+                        : sck_status_committed[8*byte_sel_q+:8];
 
   // State Machine
 

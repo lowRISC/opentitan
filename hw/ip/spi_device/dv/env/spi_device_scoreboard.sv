@@ -104,9 +104,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                     mem_addr - tx_base, item.a_data), UVM_MEDIUM)
         end
       end else if (mem_addr inside {[rx_base : rx_base + rx_limit]}) begin // RX address
-        if (write && channel == AddrChannel) begin
-          `uvm_error(`gfn, "unexpected write on RX mem")
-        end else if (!write && channel == DataChannel) begin
+        if (!write && channel == DataChannel) begin //TODO UVM_ERROR unexpected write on RX mem
           uint            addr     = mem_addr - rx_base;
           bit [TL_DW-1:0] data_exp = rx_mem.read(addr);
           `DV_CHECK_EQ(item.d_data, data_exp, $sformatf("Compare SPI RX data, addr: 0x%0h", addr))

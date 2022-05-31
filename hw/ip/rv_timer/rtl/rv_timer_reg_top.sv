@@ -53,18 +53,31 @@ module rv_timer_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [9:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(10)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -472,6 +485,8 @@ module rv_timer_reg_top (
                (addr_hit[8] & (|(RV_TIMER_PERMIT[8] & ~reg_be))) |
                (addr_hit[9] & (|(RV_TIMER_PERMIT[9] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
@@ -504,6 +519,21 @@ module rv_timer_reg_top (
   assign intr_test0_we = addr_hit[9] & reg_we & !reg_error;
 
   assign intr_test0_wd = reg_wdata[0];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = alert_test_we;
+    reg_we_check[1] = ctrl_we;
+    reg_we_check[2] = cfg0_we;
+    reg_we_check[3] = timer_v_lower0_we;
+    reg_we_check[4] = timer_v_upper0_we;
+    reg_we_check[5] = compare_lower0_0_we;
+    reg_we_check[6] = compare_upper0_0_we;
+    reg_we_check[7] = intr_enable0_we;
+    reg_we_check[8] = intr_state0_we;
+    reg_we_check[9] = intr_test0_we;
+  end
 
   // Read data return
   always_comb begin

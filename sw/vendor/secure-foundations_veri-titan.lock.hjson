@@ -9,6 +9,6 @@
   upstream:
   {
     url: https://github.com/secure-foundations/veri-titan.git
-    rev: 6e0137bbbebf851518bd7121d01c986c43ab552d
+    rev: a5b18fa0bea5d943c9267d3561cbd2704764a868
   }
 }

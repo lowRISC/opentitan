@@ -55,6 +55,8 @@ struct ISSWrapper {
     uint32_t words[256 / 32];
   };
 
+  enum command_t { Execute, DmemWipe, ImemWipe };
+
   ISSWrapper(bool enable_secure_wipe);
   ~ISSWrapper();
 
@@ -71,14 +73,8 @@ struct ISSWrapper {
   // Dump the contents of DMEM to a file
   void dump_d(const std::string &path) const;
 
-  // Jump to address zero and start running
-  void start();
-
-  // Start DMEM Secure wipe operation, set status accordingly
-  void dmem_wipe();
-
-  // Start IMEM Secure wipe operation, set status accordingly
-  void imem_wipe();
+  // Start an operation (execute, dmem wipe or imem wipe)
+  void start_operation(command_t command);
 
   // Flush EDN related content in model because of edn_rst_n
   void edn_flush();
@@ -126,6 +122,9 @@ struct ISSWrapper {
 
   // Mark all of DMEM as invalid so that any load causes an integrity error.
   void invalidate_dmem();
+
+  // Set software_errs_fatal bit in ISS model.
+  void set_software_errs_fatal(bool new_val);
 
   // Step a CRC calculation with 48 bits of data
   uint32_t step_crc(const std::array<uint8_t, 6> &item, uint32_t state) const;

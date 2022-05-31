@@ -32,8 +32,11 @@ module tlul_err import tlul_pkg::*; (
   assign instr_wr_err = prim_mubi_pkg::mubi4_test_true_strict(tl_i.a_user.instr_type) &
                         (op_full | op_partial);
 
+  logic instr_type_err;
+  assign instr_type_err = prim_mubi_pkg::mubi4_test_invalid(tl_i.a_user.instr_type);
+
   // Anything that doesn't fall into the permitted category, it raises an error
-  assign err_o = ~(opcode_allowed & a_config_allowed) | instr_wr_err;
+  assign err_o = ~(opcode_allowed & a_config_allowed) | instr_wr_err | instr_type_err;
 
   // opcode check
   assign opcode_allowed = (tl_i.a_opcode == PutFullData)

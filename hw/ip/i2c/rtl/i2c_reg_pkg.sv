@@ -673,4 +673,3 @@ package i2c_reg_pkg;
   };
 
 endpackage
-

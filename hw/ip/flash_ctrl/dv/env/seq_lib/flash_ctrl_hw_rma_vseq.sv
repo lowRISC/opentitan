@@ -168,13 +168,13 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
 
     flash_mp_region_cfg_t mp_regions [flash_ctrl_pkg::MpRegions];
     bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
-    bit default_region_read_en;
-    bit default_region_program_en;
-    bit default_region_erase_en;
+    mubi4_t default_region_read_en;
+    mubi4_t default_region_program_en;
+    mubi4_t default_region_erase_en;
 
     // No Protection Regions
     foreach (mp_regions[i]) begin
-      mp_regions[i].en = 0;
+      mp_regions[i].en = MuBi4False;
     end
 
     // Configure MP Regions
@@ -182,9 +182,9 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
       flash_ctrl_mp_region_cfg(i, mp_regions[i]);
     end
 
-    default_region_read_en    = 1'b1;
-    default_region_program_en = 1'b1;
-    default_region_erase_en   = 1'b1;
+    default_region_read_en    = MuBi4True;
+    default_region_program_en = MuBi4True;
+    default_region_erase_en   = MuBi4True;
 
     // Write to Default MP Regions
     flash_ctrl_default_region_cfg(.read_en    (default_region_read_en),
@@ -208,10 +208,10 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
     // Enable All Info Regions for Read, Program and Erase
 
     foreach (info_regions[i]) begin
-      info_regions[i].en         = 1;
-      info_regions[i].read_en    = 1;
-      info_regions[i].program_en = 1;
-      info_regions[i].erase_en   = 1;
+      info_regions[i].en         = MuBi4True;
+      info_regions[i].read_en    = MuBi4True;
+      info_regions[i].program_en = MuBi4True;
+      info_regions[i].erase_en   = MuBi4True;
     end
 
     foreach (info_regions[i]) begin

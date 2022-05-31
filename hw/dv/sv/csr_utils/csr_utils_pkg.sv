@@ -585,7 +585,7 @@ package csr_utils_pkg;
           end
           begin : mem_rd_timeout
             wait_timeout(timeout_ns, msg_id,
-                         $sformatf("Timeout waiting to csr_rd %0s (addr=0x%0h)",
+                         $sformatf("Timeout waiting to mem_rd %0s (addr=0x%0h)",
                                    ptr.get_full_name(), offset));
           end
         join_any
@@ -636,7 +636,7 @@ package csr_utils_pkg;
           end
           begin
             wait_timeout(timeout_ns, msg_id,
-                         $sformatf("Timeout waiting to csr_wr %0s (addr=0x%0h)",
+                         $sformatf("Timeout waiting to mem_wr %0s (addr=0x%0h)",
                                    ptr.get_full_name(), offset));
           end
         join_any

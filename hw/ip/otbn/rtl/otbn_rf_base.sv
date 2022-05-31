@@ -56,8 +56,9 @@ module otbn_rf_base
 
   input  logic                     rd_commit_i,
 
-  output logic                     call_stack_err_o,
-  output logic                     rd_data_err_o
+  output logic                     call_stack_sw_err_o,
+  output logic                     call_stack_hw_err_o,
+  output logic                     rf_err_o
 );
   localparam int unsigned CallStackRegIndex = 1;
   localparam int unsigned CallStackDepth = 8;
@@ -109,7 +110,7 @@ module otbn_rf_base
   // push).
   assign push_stack_err  = push_stack_reqd & stack_full & ~pop_stack_reqd;
 
-  assign call_stack_err_o = pop_stack_a_err | pop_stack_b_err | push_stack_err;
+  assign call_stack_sw_err_o = pop_stack_a_err | pop_stack_b_err | push_stack_err;
 
   // Prevent any write to the stack register from going to the register file,
   // all other committed writes are passed straight through
@@ -137,6 +138,8 @@ module otbn_rf_base
 
     .full_o        (stack_full),
 
+    .cnt_err_o     (call_stack_hw_err_o),
+
     .clear_i       (state_reset),
 
     .push_i        (push_stack),
@@ -144,9 +147,18 @@ module otbn_rf_base
 
     .pop_i         (pop_stack),
     .top_data_o    (stack_data_intg),
-    .top_valid_o   (stack_data_valid)
+    .top_valid_o   (stack_data_valid),
+
+    .stack_wr_idx_o(),
+    .stack_write_o (),
+    .stack_rd_idx_o(),
+    .stack_read_o  (),
+
+    .next_top_data_o (),
+    .next_top_valid_o()
   );
 
+  logic spurious_we_err;
   if (RegFile == RegFileFF) begin : gen_rf_base_ff
     otbn_rf_base_ff #(
       .WordZeroVal(prim_secded_pkg::SecdedInv3932ZeroWord)
@@ -161,7 +173,9 @@ module otbn_rf_base
       .rd_addr_a_i,
       .rd_data_a_o(rd_data_a_raw_intg),
       .rd_addr_b_i,
-      .rd_data_b_o(rd_data_b_raw_intg)
+      .rd_data_b_o(rd_data_b_raw_intg),
+
+      .we_err_o(spurious_we_err)
     );
   end else if (RegFile == RegFileFPGA) begin : gen_rf_base_fpga
     otbn_rf_base_fpga #(
@@ -177,7 +191,9 @@ module otbn_rf_base
       .rd_addr_a_i,
       .rd_data_a_o(rd_data_a_raw_intg),
       .rd_addr_b_i,
-      .rd_data_b_o(rd_data_b_raw_intg)
+      .rd_data_b_o(rd_data_b_raw_intg),
+
+      .we_err_o(spurious_we_err)
     );
   end
 
@@ -198,6 +214,7 @@ module otbn_rf_base
 
   // Suppress integrity error where the relevant read port saw a call stack pop error (so both
   // integrity and data are invalid).
-  assign rd_data_err_o = (|rd_data_a_err & rd_en_a_i & ~pop_stack_a_err) |
-                         (|rd_data_b_err & rd_en_b_i & ~pop_stack_b_err);
+  assign rf_err_o = (|rd_data_a_err & rd_en_a_i & ~pop_stack_a_err) |
+                    (|rd_data_b_err & rd_en_b_i & ~pop_stack_b_err) |
+                    spurious_we_err;
 endmodule

@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[185] = {
+    top_earlgrey_plic_interrupt_for_peripheral[188] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdUart0TxWatermark] = kTopEarlgreyPlicPeripheralUart0,
   [kTopEarlgreyPlicIrqIdUart0RxWatermark] = kTopEarlgreyPlicPeripheralUart0,
@@ -85,6 +85,7 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdSpiDeviceGenericTxUnderflow] = kTopEarlgreyPlicPeripheralSpiDevice,
   [kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty] = kTopEarlgreyPlicPeripheralSpiDevice,
   [kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadNotEmpty] = kTopEarlgreyPlicPeripheralSpiDevice,
+  [kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadOverflow] = kTopEarlgreyPlicPeripheralSpiDevice,
   [kTopEarlgreyPlicIrqIdSpiDeviceReadbufWatermark] = kTopEarlgreyPlicPeripheralSpiDevice,
   [kTopEarlgreyPlicIrqIdSpiDeviceReadbufFlip] = kTopEarlgreyPlicPeripheralSpiDevice,
   [kTopEarlgreyPlicIrqIdSpiDeviceTpmHeaderNotEmpty] = kTopEarlgreyPlicPeripheralSpiDevice,
@@ -171,6 +172,8 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdAdcCtrlAonDebugCable] = kTopEarlgreyPlicPeripheralAdcCtrlAon,
   [kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired] = kTopEarlgreyPlicPeripheralAonTimerAon,
   [kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark] = kTopEarlgreyPlicPeripheralAonTimerAon,
+  [kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange] = kTopEarlgreyPlicPeripheralSensorCtrl,
+  [kTopEarlgreyPlicIrqIdSensorCtrlInitStatusChange] = kTopEarlgreyPlicPeripheralSensorCtrl,
   [kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty] = kTopEarlgreyPlicPeripheralFlashCtrl,
   [kTopEarlgreyPlicIrqIdFlashCtrlProgLvl] = kTopEarlgreyPlicPeripheralFlashCtrl,
   [kTopEarlgreyPlicIrqIdFlashCtrlRdFull] = kTopEarlgreyPlicPeripheralFlashCtrl,
@@ -270,4 +273,3 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdRvCoreIbexFatalHwErr] = kTopEarlgreyAlertPeripheralRvCoreIbex,
   [kTopEarlgreyAlertIdRvCoreIbexRecovHwErr] = kTopEarlgreyAlertPeripheralRvCoreIbex,
 };
-

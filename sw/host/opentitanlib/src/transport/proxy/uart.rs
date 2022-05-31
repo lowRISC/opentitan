@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{bail, Result};
 use std::rc::Rc;
 use std::time::Duration;
 
 use super::ProxyError;
-use crate::bail;
 use crate::io::uart::Uart;
 use crate::proxy::protocol::{Request, Response, UartRequest, UartResponse};
-use crate::transport::proxy::{Inner, Proxy, Result};
+use crate::transport::proxy::{Inner, Proxy};
 
 pub struct ProxyUart {
     inner: Rc<Inner>,

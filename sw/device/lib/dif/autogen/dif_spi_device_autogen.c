@@ -77,6 +77,9 @@ static bool spi_device_get_irq_bit_index(dif_spi_device_irq_t irq,
     case kDifSpiDeviceIrqUploadPayloadNotEmpty:
       *index_out = SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_NOT_EMPTY_BIT;
       break;
+    case kDifSpiDeviceIrqUploadPayloadOverflow:
+      *index_out = SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_OVERFLOW_BIT;
+      break;
     case kDifSpiDeviceIrqReadbufWatermark:
       *index_out = SPI_DEVICE_INTR_COMMON_READBUF_WATERMARK_BIT;
       break;

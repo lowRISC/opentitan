@@ -77,7 +77,7 @@ def github_qualify_references(log, repo_userorg, repo_name):
 
     r = re.compile(r"(^|[^\w])(?:#|[gG][hH]-)(\d+)\b")
     repl_str = r'\1%s/%s#\2' % (repo_userorg, repo_name)
-    return [r.sub(repl_str, l) for l in log]
+    return [r.sub(repl_str, line) for line in log]
 
 
 def test_github_qualify_references():
@@ -245,30 +245,44 @@ class Mapping1:
         self.patch_dir = patch_dir
 
     @staticmethod
+    def check_path(idx, name, val):
+        '''Check that a path is valid for use in a mapping.
+
+        This spots things like '../../../foo' or '/etc/passwd'.
+        '''
+        val = os.path.normpath(val)
+        if val.startswith('/') or val.startswith('..'):
+            raise JsonError(val,
+                            'Mapping entry {} has a bad path for {!r} '
+                            '(must be a relative path that doesn\'t '
+                            'escape the directory)'
+                            .format(idx + 1, name))
+        return Path(val)
+
+    @staticmethod
     def make(path, idx, data):
-        assert isinstance(data, dict)
+        if isinstance(data, str):
+            # A string S is interpreted as {from: S, to: S}.
+            from_path = Mapping1.check_path(idx, 'from', data)
+            to_path = from_path
+            patch_dir = None
+        else:
+            # Otherwise, we expect a dictionary with 'from', 'to' and
+            # (optionally) 'patch_dir'.
+            assert isinstance(data, dict)
 
-        def get_path(name, optional=False):
-            val = get_field(path, 'in mapping entry {}'.format(idx + 1),
-                            data, name, expected_type=str, optional=optional)
-            if val is None:
-                return None
+            def get_path(name, optional=False):
+                val = get_field(path, 'in mapping entry {}'.format(idx + 1),
+                                data, name,
+                                expected_type=str, optional=optional)
+                if val is None:
+                    return None
 
-            # Check that the paths aren't evil ('../../../foo' or '/etc/passwd'
-            # are *not* ok!)
-            val = os.path.normpath(val)
-            if val.startswith('/') or val.startswith('..'):
-                raise JsonError(path,
-                                'Mapping entry {} has a bad path for {!r} '
-                                '(must be a relative path that doesn\'t '
-                                'escape the directory)'
-                                .format(idx + 1, name))
+                return Mapping1.check_path(idx, name, val)
 
-            return Path(val)
-
-        from_path = get_path('from')
-        to_path = get_path('to')
-        patch_dir = get_path('patch_dir', optional=True)
+            from_path = get_path('from')
+            to_path = get_path('to')
+            patch_dir = get_path('patch_dir', optional=True)
 
         return Mapping1(from_path, to_path, patch_dir)
 
@@ -326,8 +340,9 @@ class Mapping:
         items = []
         assert isinstance(data, list)
         for idx, elt in enumerate(data):
-            if not isinstance(elt, dict):
-                raise JsonError(path, 'Mapping element {!r} is not a dict.'.format(elt))
+            if not (isinstance(elt, dict) or isinstance(elt, str)):
+                raise JsonError(path,
+                                f'Mapping element {elt!r} is not a dict.')
             items.append(Mapping1.make(path, idx, elt))
 
         return Mapping(items)

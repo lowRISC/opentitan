@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:ram_1p_adv
       - lowrisc:systems:ast_pkg
       - lowrisc:prim:otp_pkg
+      - lowrisc:ip:otp_ctrl_prim_reg_top
     files:
       - rtl/prim_generic_otp.sv
     file_type: systemVerilogSource

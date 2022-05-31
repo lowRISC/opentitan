@@ -92,6 +92,15 @@ ld_library(
     ],
 )
 
+ld_library(
+    name = "ld_virtual_addr",
+    script = "rom_ext_virtual_addr.ld",
+    deps = [
+        ":ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+    ],
+)
+
 cc_library(
     name = "rom_ext",
     srcs = ["rom_ext.c"],
@@ -105,6 +114,7 @@ cc_library(
         "//sw/device/lib/base:stdasm",
         "//sw/device/lib/runtime:hart",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -127,7 +137,7 @@ opentitan_flash_binary(
         ":ld_slot_a",
         ":rom_ext",
         "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_section",
+        "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )
 
@@ -138,6 +148,17 @@ opentitan_flash_binary(
         ":ld_slot_b",
         ":rom_ext",
         "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_section",
+        "//sw/device/silicon_creator/lib:manifest_def",
+    ],
+)
+
+opentitan_flash_binary(
+    name = "virtual_addr",
+    srcs = ["rom_ext_start.S"],
+    deps = [
+        ":ld_virtual_addr",
+        ":rom_ext",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )

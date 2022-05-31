@@ -50,6 +50,9 @@ package aes_env_pkg;
     bit          rsd_rate;
   } cfg_error_type_t;
 
+  // used in FI verification seq and if
+  localparam int StateWidth = 6;
+
 
   // package sources
  `include "aes_env_cfg.sv"

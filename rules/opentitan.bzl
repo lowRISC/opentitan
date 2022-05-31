@@ -2,9 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# TODO(drewmacrae) this should be in rules_cc
-# pending resolution of https://github.com/bazelbuild/rules_cc/issues/75
-load("//rules:bugfix.bzl", "find_cc_toolchain")
+load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
     "//rules:cc_side_outputs.bzl",
     "rv_asm",
@@ -39,12 +37,11 @@ _targets_compatible_with = {
 PER_DEVICE_DEPS = {
     "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
     "sim_dv": ["//sw/device/lib/arch:sim_dv"],
-    "fpga_nexysvideo": ["//sw/device/lib/arch:fpga_nexysvideo"],
     "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
 }
 
 def _obj_transform_impl(ctx):
-    cc_toolchain = find_cc_toolchain(ctx)
+    cc_toolchain = find_cc_toolchain(ctx).cc
     outputs = []
     for src in ctx.files.srcs:
         binary = ctx.actions.declare_file("{}.{}".format(src.basename, ctx.attr.suffix))
@@ -126,7 +123,7 @@ sign_bin = rv_rule(
 )
 
 def _elf_to_disassembly_impl(ctx):
-    cc_toolchain = find_cc_toolchain(ctx)
+    cc_toolchain = find_cc_toolchain(ctx).cc
     outputs = []
     for src in ctx.files.srcs:
         disassembly = ctx.actions.declare_file("{}.elf.s".format(src.basename))
@@ -141,7 +138,7 @@ def _elf_to_disassembly_impl(ctx):
                 ctx.file._cleanup_script.path,
                 disassembly.path,
             ],
-            command = "$1 --disassemble --headers --line-numbers --source $2 | $3 > $4",
+            command = "$1 --disassemble --headers --line-numbers --disassemble-zeroes --source $2 | $3 > $4",
         )
         return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
 
@@ -176,15 +173,15 @@ def _elf_to_scrambled_rom_impl(ctx):
             outputs = [scrambled],
             inputs = [
                 src,
-                ctx.files._tool[0],
-                ctx.files._config[0],
+                ctx.executable._scramble_tool,
+                ctx.file._config,
             ],
             arguments = [
-                ctx.files._config[0].path,
+                ctx.file._config.path,
                 src.path,
                 scrambled.path,
             ],
-            executable = ctx.files._tool[0].path,
+            executable = ctx.executable._scramble_tool,
         )
     return [DefaultInfo(
         files = depset(outputs),
@@ -195,18 +192,19 @@ elf_to_scrambled_rom_vmem = rv_rule(
     implementation = _elf_to_scrambled_rom_impl,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
-        "_tool": attr.label(
-            default = "//hw/ip/rom_ctrl/util:scramble_image.py",
-            allow_files = True,
+        "_scramble_tool": attr.label(
+            default = "//hw/ip/rom_ctrl/util:scramble_image",
+            executable = True,
+            cfg = "exec",
         ),
         "_config": attr.label(
             default = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
-            allow_files = True,
+            allow_single_file = True,
         ),
     },
 )
 
-def _bin_to_flash_vmem_impl(ctx):
+def _bin_to_vmem_impl(ctx):
     outputs = []
     vmem = ctx.actions.declare_file("{}.{}.vmem".format(
         # Remove ".bin" from file basename.
@@ -250,8 +248,8 @@ def _bin_to_flash_vmem_impl(ctx):
         data_runfiles = ctx.runfiles(files = outputs),
     )]
 
-bin_to_flash_vmem = rv_rule(
-    implementation = _bin_to_flash_vmem_impl,
+bin_to_vmem = rv_rule(
+    implementation = _bin_to_vmem_impl,
     attrs = {
         "bin": attr.label(allow_single_file = True),
         "word_size": attr.int(
@@ -274,13 +272,13 @@ def _scramble_flash_vmem_impl(ctx):
         outputs = [scrambled_vmem],
         inputs = [
             ctx.file.vmem,
-            ctx.file._tool,
+            ctx.executable._tool,
         ],
         arguments = [
             ctx.file.vmem.path,
             scrambled_vmem.path,
         ],
-        executable = ctx.file._tool.path,
+        executable = ctx.executable._tool,
     )
     return [DefaultInfo(
         files = depset(outputs),
@@ -292,52 +290,9 @@ scramble_flash_vmem = rv_rule(
     attrs = {
         "vmem": attr.label(allow_single_file = True),
         "_tool": attr.label(
-            default = "//util/design:gen-flash-img.py",
-            allow_single_file = True,
-        ),
-    },
-)
-
-def _bin_to_spiflash_frames_impl(ctx):
-    outputs = []
-    frames_bin = ctx.actions.declare_file("{}.frames.bin".format(
-        # Remove ".bin" from file basename.
-        ctx.file.bin.basename.replace("." + ctx.file.bin.extension, ""),
-    ))
-    outputs.append(frames_bin)
-    ctx.actions.run(
-        outputs = [frames_bin],
-        inputs = [
-            ctx.file.bin,
-            ctx.file._tool,
-        ],
-        arguments = [
-            "--input",
-            ctx.file.bin.path,
-            "--dump-frames",
-            frames_bin.path,
-        ],
-        executable = ctx.file._tool.path,
-    )
-    return [DefaultInfo(
-        files = depset(outputs),
-        data_runfiles = ctx.runfiles(files = outputs),
-    )]
-
-bin_to_spiflash_frames = rule(
-    implementation = _bin_to_spiflash_frames_impl,
-    cfg = opentitan_transition,
-    attrs = {
-        "bin": attr.label(allow_single_file = True),
-        # TODO(lowRISC/opentitan:#11199): explore other options to side-step the
-        # need for this transition, in order to build the spiflash tool.
-        "platform": attr.string(default = "@local_config_platform//:host"),
-        "_tool": attr.label(
-            default = "//sw/host/spiflash",
-            allow_single_file = True,
-        ),
-        "_allowlist_function_transition": attr.label(
-            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+            default = "//util/design:gen-flash-img",
+            executable = True,
+            cfg = "exec",
         ),
     },
 )
@@ -386,7 +341,7 @@ gen_sim_dv_logs_db = rule(
         "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_tool": attr.label(
             default = "//util/device_sw_utils:extract_sw_logs_db",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "_allowlist_function_transition": attr.label(
@@ -531,12 +486,13 @@ def opentitan_rom_binary(
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for ROM.
 
-    This macro is mostly a wrapper around a opentitan_binary macro, which itself
-    is a wrapper around cc_binary, but also creates artifacts for each of the
-    keys in `per_device_deps`. The actual artifacts created are an ELF file, a
-    BIN file, the disassembly, the sim_dv logs database, and the scrambled (ROM)
-    VMEM file. Each of these output targets performs a bazel transition to the
-    RV32I toolchain to build the target under the correct compiler.
+    This macro is mostly a wrapper around a opentitan_binary macro, which
+    itself is a wrapper around cc_binary, but also creates artifacts for each
+    of the keys in `per_device_deps`. The actual artifacts created are an ELF
+    file, a BIN file, the disassembly, the sim_dv logs database, the
+    unscrambled (ROM) VMEM file, and the scrambled (ROM) VMEM file. Each of
+    these output targets performs a bazel transition to the RV32I toolchain to
+    build the target under the correct compiler.
     Args:
       @param name: The name of this rule.
       @param platform: The target platform for the artifacts.
@@ -549,6 +505,7 @@ def opentitan_rom_binary(
         obj_transform             named: <name>_<device>_elf
         obj_transform             named: <name>_<device>_bin
         elf_to_dissassembly       named: <name>_<device>_dis
+        bin_to_rom_vmem           named: <name>_<device>_vmem
         elf_to_scrambled_rom_vmem named: <name>_<device>_scr_vmem
       For the sim_dv device:
         gen_sim_dv_logs_db        named: <name>_sim_dv_logs
@@ -565,10 +522,21 @@ def opentitan_rom_binary(
         targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
-            extract_sw_logs_db = extract_sw_logs_db and device == "sim_dv",
+            extract_sw_logs_db = extract_sw_logs_db and device.startswith("sim_"),
             **kwargs
         ))
         elf_name = "{}_{}".format(devname, "elf")
+        bin_name = "{}_{}".format(devname, "bin")
+
+        # Generate Un-scrambled ROM VMEM
+        vmem_name = "{}_vmem".format(devname)
+        targets.append(":" + vmem_name)
+        bin_to_vmem(
+            name = vmem_name,
+            bin = bin_name,
+            platform = platform,
+            word_size = 32,
+        )
 
         # Generate Scrambled ROM VMEM
         scr_vmem_name = "{}_scr_vmem".format(devname)
@@ -618,11 +586,11 @@ def opentitan_flash_binary(
         obj_transform          named: <name>_<device>_elf
         obj_transform          named: <name>_<device>_bin
         elf_to_dissassembly    named: <name>_<device>_dis
-        bin_to_flash_vmem      named: <name>_<device>_flash_vmem
+        bin_to_vmem            named: <name>_<device>_flash_vmem
         scrambled_flash_vmem   named: <name>_<device>_scr_flash_vmem
         optionally:
           sign_bin             named: <name>_<device>_bin_signed_<key_name>
-          bin_to_flash_vmem    named: <name>_<device>_flash_vmem_signed_<key_name>
+          bin_to_vmem          named: <name>_<device>_flash_vmem_signed_<key_name>
           scrambled_flash_vmem named: <name>_<device>_scr_flash_vmem_signed_<key_name>
       For the sim_dv device:
         gen_sim_dv_logs_db     named: <name>_sim_dv_logs
@@ -639,28 +607,11 @@ def opentitan_flash_binary(
         targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
-            extract_sw_logs_db = extract_sw_logs_db and device == "sim_dv",
+            extract_sw_logs_db = extract_sw_logs_db and device.startswith("sim_"),
             **kwargs
         ))
         elf_name = "{}_{}".format(devname, "elf")
         bin_name = "{}_{}".format(devname, "bin")
-
-        # Generate SPI flash frames binary for bootstrap in DV sim.
-        if device == "sim_dv":
-            frames_bin_name = "{}_frames_bin".format(devname)
-            targets.append(":" + frames_bin_name)
-            bin_to_spiflash_frames(
-                name = frames_bin_name,
-                bin = bin_name,
-            )
-            frames_vmem_name = "{}_frames_vmem".format(devname)
-            targets.append(":" + frames_vmem_name)
-            bin_to_flash_vmem(
-                name = frames_vmem_name,
-                bin = frames_bin_name,
-                platform = platform,
-                word_size = 32,  # Bootstrap VMEM image uses 32-bit words
-            )
 
         # Sign BIN (if required) and generate scrambled VMEM images.
         if output_signed:
@@ -682,7 +633,7 @@ def opentitan_flash_binary(
                     key_name,
                 )
                 targets.append(":" + signed_vmem_name)
-                bin_to_flash_vmem(
+                bin_to_vmem(
                     name = signed_vmem_name,
                     bin = signed_bin_name,
                     platform = platform,
@@ -704,7 +655,7 @@ def opentitan_flash_binary(
             # Generate a VMEM64 from the binary.
             vmem_name = "{}_vmem64".format(devname)
             targets.append(":" + vmem_name)
-            bin_to_flash_vmem(
+            bin_to_vmem(
                 name = vmem_name,
                 bin = bin_name,
                 platform = platform,

@@ -4,8 +4,9 @@
 //
 // This module is the single round keccak permutation module
 // It supports Keccak with up to 1600b of state
-// Only when EnMasking is enabled, rand_i and sel_i are used
+
 `include "prim_assert.sv"
+
 module keccak_2share
   import prim_mubi_pkg::*;
 #(
@@ -24,10 +25,10 @@ module keccak_2share
   input clk_i,
   input rst_ni,
 
-  input        [RndW-1:0]  rnd_i,   // Current Round
-  input                    rand_valid_i,
-  input        [Width-1:0] rand_i,  // Random values. Used when 2Share enabled
-  input mubi4_t            sel_i,   // Select input/output mux. Used when EnMasking := 1
+  input         [RndW-1:0] rnd_i, // Current round index
+  input mubi4_t            phase_sel_i, // Output mux contol. Used when EnMasking := 1
+  input              [1:0] cycle_i, // Current cycle index. Used when EnMasking := 1
+  input      [Width/2-1:0] rand_i, // Randomness for remasking. Used when EnMasking := 1
   input        [Width-1:0] s_i      [Share],
   output logic [Width-1:0] s_o      [Share]
 );
@@ -62,46 +63,37 @@ module keccak_2share
   /////////////////
   // Unused nets //
   /////////////////
-  // clk_i, rst_ni, rand_valid_i are not used when EnMasking is 0. Tying them.
+  // Tie off input signals that aren't used in the unmasked implementation.
   if (!EnMasking) begin : gen_tie_unused
-    logic unused_clk, unused_rst_n, unused_rand_valid;
-    logic [Width-1:0] unused_rand_data;
-    mubi4_t unused_sel;
+    logic unused_clk;
+    logic unused_rst_n;
+    mubi4_t unused_phase_sel;
+    logic [1:0] unused_cycle;
+    logic [Width/2-1:0] unused_rand;
     assign unused_clk = clk_i;
     assign unused_rst_n = rst_ni;
-    assign unused_rand_valid = rand_valid_i;
-    assign unused_rand_data = rand_i;
-    assign unused_sel = sel_i;
+    assign unused_phase_sel = phase_sel_i;
+    assign unused_cycle = cycle_i;
+    assign unused_rand = rand_i;
   end
 
-  ///////////////////////
-  // Input/ Output Mux //
-  ///////////////////////
-  // This module has two phases. First phase, it calculates Theta, Rho, Pi steps
-  // in SHA3. At the second phase, it computes Chi and Iota steps.
-  // If masking is not enabled, two phases are completed within a cycle.
-  //
-  // If masking is enabled, first phase completes in a cycle. Then, the output
-  // has to be latched. Then the output should be stored in the state and given
-  // to the input of this module again.
-  //
-  // The second phases in masked version needs two cycles to complete.
-  // For two cycles, the input value `s_i` shall stay same. The output value is
-  // correct only at the second cycle.
+  //////////////////////////////////////////////////
+  // Input/output type conversion and interfacing //
+  //////////////////////////////////////////////////
   for (genvar i = 0 ; i < Share ; i++) begin : g_state_inout
     assign state_in[i] = bitarray_to_box(s_i[i]);
     assign s_o[i]      = box_to_bitarray(state_out[i]);
   end : g_state_inout
 
   if (EnMasking) begin : g_2share_data
-    assign phase1_in = (mubi4_test_false_strict(sel_i)) ? state_in : '{default:'0};
-    assign phase2_in = (mubi4_test_true_strict(sel_i)) ? state_in : '{default:'0};
+    assign phase1_in = state_in;
+    assign phase2_in = state_in;
 
     always_comb begin
-      unique case (sel_i)
-        MuBi4False:  state_out = phase1_out;
+      unique case (phase_sel_i)
+        MuBi4False: state_out = phase1_out;
         MuBi4True:  state_out = phase2_out;
-        default: state_out = '{default: '0};
+        default:    state_out = phase1_out;
       endcase
     end
   end else begin : g_single_data
@@ -110,9 +102,21 @@ module keccak_2share
     assign state_out = phase2_out;
   end
 
-  assign phase1_out = pi_data;
-  assign phase2_out = iota_data;
-
+  //////////////
+  // Datapath //
+  //////////////
+  // This module has two phases. First phase, it calculates Theta, Rho, Pi steps
+  // in SHA3. At the second phase, it computes Chi and Iota steps. If masking is
+  // not enabled, the two phases are completed within a single clock cycle.
+  //
+  // If masking is enabled, the first phase (Phase1) completes in one cycle.
+  // Then, the output should be stored in the state and given to the input of
+  // this module again. The second phase in the masked version needs three
+  // clock cycles to complete. In the first clock cycle, the first stage of Chi
+  // is computed for the first lane halves. In the second clock cycle, the
+  // module then outputs the updated first lane halves. In the third clock
+  // cycle, the new second lane halves are output. For more details, refer to
+  // the comments in the "MUX control" section below.
 
   for (genvar i = 0 ; i < Share ; i++) begin : g_datapath
 
@@ -123,11 +127,12 @@ module keccak_2share
 
     assign pi_data[i]    = pi(rho_data[i]);
 
-    // Phase 2:
+    // Phase 2 (Cycles 1, 2 and 3):
     // Chi : See below
     // Iota: See below
-
   end : g_datapath
+
+  assign phase1_out = pi_data;
 
   // Iota adds Round Constants(RC), so only one share should be XORed
   if (EnMasking) begin : g_2share_iota
@@ -140,6 +145,77 @@ module keccak_2share
   if (EnMasking) begin : g_2share_chi
     // Domain-Oriented Masking
     // reference: https://eprint.iacr.org/2017/395.pdf
+
+    localparam int unsigned WSheetHalf = $bits(sheet_t)/2;
+    logic [4:0][WSheetHalf-1:0] in_prd, out_prd;
+
+    logic in_data_low, out_data_low;
+    logic in_rand_ext;
+    logic update_dom;
+
+    /////////////////
+    // MUX control //
+    /////////////////
+
+    // This implementation uses both randomness provided from an external PRNG
+    // as well as intermediate results for remasking the DOM multipliers below.
+    // Per clock cycle, 800b of pseudo-random data (PRD) are required. The
+    // following schedule is used to only ever update the input data when also
+    // providing fresh randomness and vice versa.
+    //
+    // Cycle 0: Compute Theta, Rho, Pi - The DOM multipliers are not evaluated
+    //          at all: the inputs are driven by the first lane halves (same
+    //          values as in Cycle 3). Also the intermediate results we already
+    //          had in Cycle 3 didn't change.
+    // Cycle 1: Compute first stage of Chi for first lane halves using the DOM
+    //          multipliers. We use the fresh randomness provided from the
+    //          PRNG for remasking.
+    // Cycle 2: Compute second stage of Chi and Iota for first lane halves.
+    //          Compute first stage of Chi for second lane halves. We use the
+    //          fresh randomness provided from the PRNG for remasking the
+    //          DOM multipliers.
+    // Cycle 3: Compute second stage of Chi and Iota for second lane halves.
+    //          Feed again first lane halves to DOM multiplier inputs (now
+    //          the updated values become visible) together with intermediate
+    //          results of Cycle 2. Don't update the register stage inside
+    //          the DOM multipliers.
+    always_comb begin
+      unique case (cycle_i)
+        2'h0: begin
+          in_data_low = 1'b1;
+          in_rand_ext = 1'b0;
+          update_dom  = 1'b0;
+        end
+        2'h1: begin
+          in_data_low = 1'b1;
+          in_rand_ext = 1'b1;
+          update_dom  = 1'b1;
+        end
+        2'h2: begin
+          in_data_low = 1'b0;
+          in_rand_ext = 1'b1;
+          update_dom  = 1'b1;
+        end
+        2'h3: begin
+          in_data_low = 1'b1;
+          in_rand_ext = 1'b0;
+          update_dom  = 1'b0;
+        end
+        default: begin
+          in_data_low = 1'b1;
+          in_rand_ext = 1'b0;
+          update_dom  = 1'b0;
+        end
+      endcase
+    end
+
+    // When taking the lower lane halves in, the upper lane halves are output
+    // and vice versa.
+    assign out_data_low = ~in_data_low;
+
+    /////////////////////
+    // DOM multipliers //
+    /////////////////////
 
     for (genvar x = 0 ; x < 5 ; x++) begin : g_chi_w
       localparam int X1 = (x + 1) % 5;
@@ -155,23 +231,72 @@ module keccak_2share
       assign sheet1[0] = phase2_in[0][X2];
       assign sheet1[1] = phase2_in[1][X2];
 
-      logic [$bits(sheet_t)-1:0] a0, a1, b0, b1, c, q0, q1;
+      // Convert sheet_t to 1D arrays, one for the upper and lower half lane.
+      logic [WSheetHalf-1:0] a0_l, a1_l, b0_l, b1_l;
+      logic [WSheetHalf-1:0] a0_h, a1_h, b0_h, b1_h;
+      logic [WSheetHalf-1:0] a0, a1, b0, b1, q0, q1;
 
-      // Convert sheet_t to 1D array
-      // TODO: Make this smarter :)
-      assign a0 = {sheet0[0][0],sheet0[0][1],sheet0[0][2],sheet0[0][3],sheet0[0][4]};
-      assign a1 = {sheet0[1][0],sheet0[1][1],sheet0[1][2],sheet0[1][3],sheet0[1][4]};
+      assign a0_l = {sheet0[0][0][W/2-1:0],
+                     sheet0[0][1][W/2-1:0],
+                     sheet0[0][2][W/2-1:0],
+                     sheet0[0][3][W/2-1:0],
+                     sheet0[0][4][W/2-1:0]};
+      assign a1_l = {sheet0[1][0][W/2-1:0],
+                     sheet0[1][1][W/2-1:0],
+                     sheet0[1][2][W/2-1:0],
+                     sheet0[1][3][W/2-1:0],
+                     sheet0[1][4][W/2-1:0]};
 
-      assign b0 = {sheet1[0][0],sheet1[0][1],sheet1[0][2],sheet1[0][3],sheet1[0][4]};
-      assign b1 = {sheet1[1][0],sheet1[1][1],sheet1[1][2],sheet1[1][3],sheet1[1][4]};
+      assign a0_h = {sheet0[0][0][W-1:W/2],
+                     sheet0[0][1][W-1:W/2],
+                     sheet0[0][2][W-1:W/2],
+                     sheet0[0][3][W-1:W/2],
+                     sheet0[0][4][W-1:W/2]};
+      assign a1_h = {sheet0[1][0][W-1:W/2],
+                     sheet0[1][1][W-1:W/2],
+                     sheet0[1][2][W-1:W/2],
+                     sheet0[1][3][W-1:W/2],
+                     sheet0[1][4][W-1:W/2]};
 
-      // This keccak_f implementation doesn't use the states as entropy sources.
-      // It rather receives the entropy from random number generator.
-      // The module needs 1600b of entropy per round (3 cycles).
-      assign c = rand_i[x*$bits(sheet_t)+:$bits(sheet_t)];
+      assign b0_l = {sheet1[0][0][W/2-1:0],
+                     sheet1[0][1][W/2-1:0],
+                     sheet1[0][2][W/2-1:0],
+                     sheet1[0][3][W/2-1:0],
+                     sheet1[0][4][W/2-1:0]};
+      assign b1_l = {sheet1[1][0][W/2-1:0],
+                     sheet1[1][1][W/2-1:0],
+                     sheet1[1][2][W/2-1:0],
+                     sheet1[1][3][W/2-1:0],
+                     sheet1[1][4][W/2-1:0]};
+
+      assign b0_h = {sheet1[0][0][W-1:W/2],
+                     sheet1[0][1][W-1:W/2],
+                     sheet1[0][2][W-1:W/2],
+                     sheet1[0][3][W-1:W/2],
+                     sheet1[0][4][W-1:W/2]};
+      assign b1_h = {sheet1[1][0][W-1:W/2],
+                     sheet1[1][1][W-1:W/2],
+                     sheet1[1][2][W-1:W/2],
+                     sheet1[1][3][W-1:W/2],
+                     sheet1[1][4][W-1:W/2]};
+
+      // Input muxing
+      assign a0 = in_data_low ? a0_l : a0_h;
+      assign a1 = in_data_low ? a1_l : a1_h;
+      assign b0 = in_data_low ? b0_l : b0_h;
+      assign b1 = in_data_low ? b1_l : b1_h;
+
+      // Randomness muxing
+      // Intermediate results are rotated across rows. The new Row x depends on
+      // data from Rows x + 1 and x + 2. Hence we don't want to use intermediate
+      // results from Rows x, x + 1, and x + 2 for remasking.
+      assign in_prd[x] = in_rand_ext ? rand_i[x * WSheetHalf +: WSheetHalf] :
+                                       out_prd[rot_int(x, 5)];
 
       prim_dom_and_2share #(
-        .DW ($bits(sheet_t)) // sheet
+        .DW (WSheetHalf), // a half sheet
+        .Pipeline(1) // Process the full sheet in 3 clock cycles. This reduces
+                     // SCA leakage.
       ) u_dom (
         .clk_i,
         .rst_ni,
@@ -180,32 +305,51 @@ module keccak_2share
         .a1_i      (a1),
         .b0_i      (b0),
         .b1_i      (b1),
-        .z_valid_i (rand_valid_i),
-        .z_i       (c),
+        .z_valid_i (update_dom),
+        .z_i       (in_prd[x]),
         .q0_o      (q0),
-        .q1_o      (q1)
+        .q1_o      (q1),
+        .prd_o     (out_prd[x])
       );
 
-      // Convert q0, q1 to sheet_t
-      // TODO: Make this smarter
-      assign sheet2[0][4] = q0[W*0+:W];
-      assign sheet2[0][3] = q0[W*1+:W];
-      assign sheet2[0][2] = q0[W*2+:W];
-      assign sheet2[0][1] = q0[W*3+:W];
-      assign sheet2[0][0] = q0[W*4+:W];
-      assign sheet2[1][4] = q1[W*0+:W];
-      assign sheet2[1][3] = q1[W*1+:W];
-      assign sheet2[1][2] = q1[W*2+:W];
-      assign sheet2[1][1] = q1[W*3+:W];
-      assign sheet2[1][0] = q1[W*4+:W];
+      // Output conversion from q0, q1 to sheet_t
+      // For simplicity, we forward the generated lane half to both the upper
+      // and lower lane halves at this point. The actual output muxing/selection
+      // happens after the Iota step when generating phase2_out from iota_data
+      // and state_in below.
+      assign sheet2[0][4] = {2{q0[W/2*0+:W/2]}};
+      assign sheet2[0][3] = {2{q0[W/2*1+:W/2]}};
+      assign sheet2[0][2] = {2{q0[W/2*2+:W/2]}};
+      assign sheet2[0][1] = {2{q0[W/2*3+:W/2]}};
+      assign sheet2[0][0] = {2{q0[W/2*4+:W/2]}};
+
+      assign sheet2[1][4] = {2{q1[W/2*0+:W/2]}};
+      assign sheet2[1][3] = {2{q1[W/2*1+:W/2]}};
+      assign sheet2[1][2] = {2{q1[W/2*2+:W/2]}};
+      assign sheet2[1][1] = {2{q1[W/2*3+:W/2]}};
+      assign sheet2[1][0] = {2{q1[W/2*4+:W/2]}};
 
       // Final XOR to generate the output
       assign chi_data[0][x] = sheet2[0] ^ phase2_in[0][x];
       assign chi_data[1][x] = sheet2[1] ^ phase2_in[1][x];
     end : g_chi_w
 
+    // Since Chi and thus Iota are separately applied to the lower and upper half
+    // lanes, we need to forward the input to the other half.
+    for (genvar x = 0 ; x < 5 ; x++) begin : g_2share_phase2_out_row
+      for (genvar y = 0 ; y < 5 ; y++) begin : g_2share_phase2_out_col
+        assign phase2_out[0][x][y] = out_data_low ?
+            { state_in[0][x][y][W-1:W/2], iota_data[0][x][y][W/2-1:0]} :
+            {iota_data[0][x][y][W-1:W/2],  state_in[0][x][y][W/2-1:0]};
+        assign phase2_out[1][x][y] = out_data_low ?
+            { state_in[1][x][y][W-1:W/2], iota_data[1][x][y][W/2-1:0]} :
+            {iota_data[1][x][y][W-1:W/2],  state_in[1][x][y][W/2-1:0]};
+      end
+    end
+
   end else begin : g_single_chi
     assign chi_data[0] = chi(phase2_in[0]);
+    assign phase2_out = iota_data;
   end
 
   // Rho ======================================================================
@@ -243,15 +387,18 @@ module keccak_2share
   // Assertions //
   ////////////////
 
-  `ASSERT_INIT(ValidWidth_A, Width inside {25, 50, 100, 200, 400, 800, 1600})
+  `ASSERT_INIT(ValidWidth_A,
+      EnMasking == 0 && Width inside {25, 50, 100, 200, 400, 800, 1600} ||
+      EnMasking == 1 && Width inside {50, 100, 200, 400, 800, 1600})
   `ASSERT_INIT(ValidW_A, W inside {1, 2, 4, 8, 16, 32, 64})
   `ASSERT_INIT(ValidL_A, L inside {0, 1, 2, 3, 4, 5, 6})
   `ASSERT_INIT(ValidRound_A, MaxRound <= 24) // Keccak-f only
 
-  // sel_i shall stay for two cycle after change to 1.
+  // phase_sel_i shall stay for two cycle after change to 1.
   if (EnMasking) begin : gen_selperiod_chk
-    `ASSUME(SelStayTwoCycleIfTrue_A, $past(sel_i)==MuBi4False && (sel_i==MuBi4True)
-       |=> sel_i == MuBi4True, clk_i, !rst_ni)
+    `ASSUME(SelStayTwoCycleIfTrue_A,
+        ($past(phase_sel_i) == MuBi4False) && (phase_sel_i == MuBi4True)
+        |=> phase_sel_i == MuBi4True, clk_i, !rst_ni)
   end
 
   ///////////////
@@ -287,6 +434,17 @@ module keccak_2share
     end
     return bitarray;
   endfunction : box_to_bitarray
+
+  // Rotate integer indices
+  function automatic integer rot_int(integer in, integer num);
+    integer out;
+    if (in == 0) begin
+      out = num - 1;
+    end else begin
+      out = in - 1;
+    end
+    return out;
+  endfunction
 
   // Step Mapping =============================================================
   // theta
@@ -455,4 +613,3 @@ module keccak_2share
   //endfunction : keccak_rnd
 
 endmodule
-

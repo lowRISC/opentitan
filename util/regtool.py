@@ -12,7 +12,8 @@ import sys
 from pathlib import Path
 
 from reggen import (gen_cheader, gen_dv, gen_fpv, gen_html, gen_json, gen_rtl,
-                    gen_rust, gen_sec_cm_testplan, gen_selfdoc, version)
+                    gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_tock,
+                    version)
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
 
@@ -43,6 +44,11 @@ def main():
     parser.add_argument('-d',
                         action='store_true',
                         help='Output register documentation (html)')
+    parser.add_argument('-a',
+                        '--alias',
+                        type=Path,
+                        default=None,
+                        help='Alias register file in Hjson type')
     parser.add_argument('--cdefines',
                         '-D',
                         action='store_true',
@@ -51,6 +57,9 @@ def main():
                         '-R',
                         action='store_true',
                         help='Output Rust constants')
+    parser.add_argument('--tock',
+                        action='store_true',
+                        help='Output Tock constants')
     parser.add_argument('--doc',
                         action='store_true',
                         help='Output source file documentation (gfm)')
@@ -74,10 +83,11 @@ def main():
                         '-t',
                         help='Target directory for generated RTL; '
                         'tool uses ../rtl if blank.')
-    parser.add_argument('--dv-base-names',
-                        nargs="+",
-                        help='Names or prefix for the DV register classes from which '
-                        'the register models are derived.')
+    parser.add_argument(
+        '--dv-base-names',
+        nargs="+",
+        help='Names or prefix for the DV register classes from which '
+        'the register models are derived.')
     parser.add_argument('--outfile',
                         '-o',
                         type=argparse.FileType('w'),
@@ -87,6 +97,10 @@ def main():
                         '-v',
                         action='store_true',
                         help='Verbose and run validate twice')
+    parser.add_argument('--quiet',
+                        '-q',
+                        action='store_true',
+                        help='Log only errors, not warnings')
     parser.add_argument('--param',
                         '-p',
                         type=str,
@@ -104,6 +118,10 @@ def main():
     parser.add_argument('--novalidate',
                         action='store_true',
                         help='Skip validate, just output json')
+    parser.add_argument('--version-stamp',
+                        type=str,
+                        default=None,
+                        help='If version stamping, the location of workspace version stamp file.')
 
     args = parser.parse_args()
 
@@ -111,8 +129,10 @@ def main():
         version.show_and_exit(__file__, ["Hjson", "Mako"])
 
     verbose = args.verbose
-    if (verbose):
+    if verbose:
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
+    elif args.quiet:
+        log.basicConfig(format="%(levelname)s: %(message)s", level=log.ERROR)
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 
@@ -127,7 +147,7 @@ def main():
                      ('r', ('rtl', 'rtl')), ('s', ('dv', 'dv')),
                      ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None)),
                      ('sec_cm_testplan', ('sec_cm_testplan', 'data')),
-                     ('rust', ('rs', None))]
+                     ('rust', ('rs', None)), ('tock', ('trs', None))]
     format = None
     dirspec = None
     for arg_name, spec in arg_to_format:
@@ -183,6 +203,13 @@ def main():
                     format))
             sys.exit(1)
 
+    version_stamp = {}
+    if args.version_stamp is not None:
+        with open(args.version_stamp, 'rt') as f:
+            for line in f:
+                k, v = line.strip().split(' ', 1)
+                version_stamp[k] = v
+
     if format == 'doc':
         with outfile:
             gen_selfdoc.document(outfile)
@@ -196,12 +223,23 @@ def main():
         log.error(str(err))
         exit(1)
 
+    # Parse and validate alias register definitions (this ensures that the
+    # structure of the original register node and the alias register file is
+    # identical).
+    if args.alias is not None:
+        try:
+            obj.alias_from_path(args.alias)
+        except ValueError as err:
+            log.error(str(err))
+            exit(1)
+
     # If this block has countermeasures, we grep for RTL annotations in all
     # .sv implementation files and check whether they match up with what is
     # defined inside the Hjson.
     # Skip this check when generating DV code - its not needed.
     if format != 'dv':
-        sv_files = Path(infile.name).parent.joinpath('..').joinpath('rtl').glob('*.sv')
+        sv_files = Path(
+            infile.name).parent.joinpath('..').joinpath('rtl').glob('*.sv')
         rtl_names = CounterMeasure.search_rtl_files(sv_files)
         obj.check_cm_annotations(rtl_names, infile.name)
 
@@ -248,6 +286,8 @@ def main():
                                                 src_copy)
             elif format == 'rs':
                 return gen_rust.gen_rust(obj, outfile, src_lic, src_copy)
+            elif format == 'trs':
+                return gen_tock.gen_tock(obj, outfile, src_lic, src_copy, version_stamp)
             else:
                 return gen_json.gen_json(obj, outfile, format)
 

@@ -1,0 +1,24 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+#
+# An Ibex-specific replacement for OpenTitan's top_pkg. This should
+# *only* be used by Ibex DV code: it defines a (SystemVerilog) package
+# with the same name as OpenTitan's top_pkg, so things will get very
+# confused if both are used at once.
+#
+
+name: "lowrisc:ibex:bus_params_pkg"
+description: "Top-level constants for Ibex, used by DV code"
+filesets:
+  files_rtl:
+    files:
+      - bus_params_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

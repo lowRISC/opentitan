@@ -7,8 +7,8 @@
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
-#include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -110,7 +110,7 @@ bool test_main(void) {
   // Finish the ECB encryption transaction.
   CHECK_DIF_OK(dif_aes_end(&aes));
 
-  CHECK_BUFFER(out_data_cipher.data, kCipherTextGold, TEXT_LENGTH_IN_WORDS);
+  CHECK_ARRAYS_EQ(out_data_cipher.data, kCipherTextGold, TEXT_LENGTH_IN_WORDS);
 
   // Setup ECB decryption transaction.
   transaction.operation = kDifAesOperationDecrypt;
@@ -128,7 +128,7 @@ bool test_main(void) {
   // Finish the ECB encryption transaction.
   CHECK_DIF_OK(dif_aes_end(&aes));
 
-  CHECK_BUFFER(out_data_plain.data, kPlainText, TEXT_LENGTH_IN_WORDS);
+  CHECK_ARRAYS_EQ(out_data_plain.data, kPlainText, TEXT_LENGTH_IN_WORDS);
 
   return true;
 }

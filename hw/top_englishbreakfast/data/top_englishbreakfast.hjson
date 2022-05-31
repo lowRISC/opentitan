@@ -401,8 +401,8 @@
       clock_group: "trans",
       reset_connections: {rst_ni: "sys", rst_edn_ni: "sys"},
       param_decl: {
-        Masking: "1",
-        SBoxImpl: "aes_pkg::SBoxImplDom"
+        SecMasking: "1",
+        SecSBoxImpl: "aes_pkg::SBoxImplDom"
       }
       base_addr: "0x41100000",
     },
@@ -563,15 +563,13 @@
       'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
 
       // usbdev connection to pinmux
-      'usbdev.usb_dp_pullup'      : ['pinmux_aon.usb_dppullup_en_upwr'],
-      'usbdev.usb_dn_pullup'      : ['pinmux_aon.usb_dnpullup_en_upwr'],
-      'usbdev.usb_out_of_rst'     : ['pinmux_aon.usb_out_of_rst'],
-      'usbdev.usb_aon_wake_en'    : ['pinmux_aon.usb_aon_wake_en'],
-      'usbdev.usb_aon_wake_ack'   : ['pinmux_aon.usb_aon_wake_ack'],
-      'usbdev.usb_suspend'        : ['pinmux_aon.usb_suspend'],
-      'usbdev.usb_aon_bus_reset'  : ['pinmux_aon.usb_bus_reset'],
-      'usbdev.usb_aon_sense_lost' : ['pinmux_aon.usb_sense_lost'],
-      'pinmux_aon.usb_state_debug' : ['usbdev.usb_state_debug'],
+      'usbdev.usb_dp_pullup'      : ['pinmux_aon.usbdev_dppullup_en'],
+      'usbdev.usb_dn_pullup'      : ['pinmux_aon.usbdev_dnpullup_en'],
+      'usbdev.usb_aon_suspend_req': ['pinmux_aon.usbdev_suspend_req'],
+      'usbdev.usb_aon_wake_ack'   : ['pinmux_aon.usbdev_wake_ack'],
+      'usbdev.usb_aon_bus_reset'  : ['pinmux_aon.usbdev_bus_reset'],
+      'usbdev.usb_aon_sense_lost' : ['pinmux_aon.usbdev_sense_lost'],
+      'pinmux_aon.usbdev_wake_detect_active' : ['usbdev.usb_aon_wake_detect_active'],
 
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
@@ -680,7 +678,6 @@
         'usbdev.usb_tx_d'                : '',
         'usbdev.usb_tx_se0'              : '',
         'usbdev.usb_tx_use_d_se0'        : '',
-        'usbdev.usb_suspend'             : '',
         'usbdev.usb_rx_enable'           : '',
         'usbdev.usb_ref_val'             : '',
         'usbdev.usb_ref_pulse'           : '',
@@ -913,9 +910,9 @@
           'SPI_HOST_D0', 'SPI_HOST_D1', 'SPI_HOST_D2', 'SPI_HOST_D3',
           'FLASH_TEST_VOLT',
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
-          'IOB10', 'IOB11', 'IOB12',
-          'IOC0', 'IOC1', 'IOC2', 'IOC5', 'IOC6', 'IOC7', 'IOC8', 'IOC9', 'IOC10', 'IOC11', 'IOC12',
-          'IOR0', 'IOR1', 'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
+          'IOB7', 'IOB8', 'IOB9', 'IOB10', 'IOB11', 'IOB12',
+          'IOC6', 'IOC7', 'IOC9', 'IOC10', 'IOC11', 'IOC12',
+          'IOR0', 'IOR1', 'IOR2', 'IOR3', 'IOR5', 'IOR6', 'IOR7', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
         ],
 
         add_pads: [
@@ -936,14 +933,14 @@
       pinmux: {
         special_signals: [
           // Straps
-          { name: 'tap0',   pad: 'IOC0' ,        desc: 'TAP strap signal, maps to a stubbed-off MIO.'  },
-          { name: 'tap1',   pad: 'IOB7',         desc: 'TAP strap signal, maps to MIO pad 16.'         },
-          { name: 'dft0',   pad: 'IOC1' ,        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
-          { name: 'dft1',   pad: 'IOC12',        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
+          { name: 'tap0',   pad: 'IOC8',         desc: 'TAP strap signal.'                       },
+          { name: 'tap1',   pad: 'IOC5',         desc: 'TAP strap signal.'                       },
+          { name: 'dft0',   pad: 'IOC3',         desc: 'DFT strap signal.'                       },
+          { name: 'dft1',   pad: 'IOC4',         desc: 'DFT strap signal.'                       },
           // JTAG
           { name: 'tck',    pad: 'SPI_DEV_CLK' , desc: 'JTAG tck signal, overlaid on SPI_DEV.'   },
           { name: 'tms',    pad: 'SPI_DEV_CS_L', desc: 'JTAG tms signal, overlaid on SPI_DEV.'   },
-          { name: 'trst_n', pad: 'IOB9'        , desc: 'JTAG trst_n signal, maps to MIO pad 18.' },
+          { name: 'trst_n', pad: 'IOR4',         desc: 'JTAG trst_n signal.'                     },
           { name: 'tdi',    pad: 'SPI_DEV_D0'  , desc: 'JTAG tdi signal, overlaid on SPI_DEV.'   },
           { name: 'tdo',    pad: 'SPI_DEV_D1'  , desc: 'JTAG tdo signal, overlaid on SPI_DEV.'   },
         ],

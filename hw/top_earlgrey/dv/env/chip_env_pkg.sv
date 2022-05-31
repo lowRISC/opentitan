@@ -18,6 +18,8 @@ package chip_env_pkg;
   import dv_lib_pkg::*;
   import dv_utils_pkg::*;
   import flash_ctrl_pkg::*;
+  import jtag_pkg::*;
+  import jtag_agent_pkg::*;
   import jtag_riscv_agent_pkg::*;
   import kmac_pkg::*;
   import lc_ctrl_state_pkg::*;
@@ -33,6 +35,8 @@ package chip_env_pkg;
   import top_earlgrey_rnd_cnst_pkg::*;
   import pwm_monitor_pkg::*;
   import pwm_reg_pkg::NOutputs;
+  import tl_main_pkg::ADDR_SPACE_RV_CORE_IBEX__CFG;
+  import rv_core_ibex_reg_pkg::RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -50,9 +54,16 @@ package chip_env_pkg;
   parameter uint SPI_FRAME_BYTE_SIZE = spi_device_reg_pkg::SPI_DEVICE_BUFFER_SIZE/2;
 
   // SW constants - use unmapped address space with at least 32 bytes.
-  parameter bit [TL_AW-1:0] SW_DV_START_ADDR        = 32'h3000_0000;
+
+  parameter bit [TL_AW-1:0] SW_DV_START_ADDR        = ADDR_SPACE_RV_CORE_IBEX__CFG +
+                                                      RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;
   parameter bit [TL_AW-1:0] SW_DV_TEST_STATUS_ADDR  = SW_DV_START_ADDR + 0;
   parameter bit [TL_AW-1:0] SW_DV_LOG_ADDR          = SW_DV_START_ADDR + 4;
+
+  // LC token paramters
+  // LC sends two 64-bit msg as input token.
+  localparam uint TokenWidthBit  = kmac_pkg::MsgWidth * 2;
+  localparam uint TokenWidthByte = TokenWidthBit / 8;
 
   typedef virtual pins_if #(NUM_GPIOS)  gpio_vif;
   typedef virtual sw_logger_if          sw_logger_vif;
@@ -61,6 +72,15 @@ package chip_env_pkg;
 
   // Types of memories in the chip.
   //
+  typedef enum {
+    // external clock is still on, but the source of all IP clocks is the internal clock
+    UseInternalClk,
+    // 48Mhz, same for Life cycle transition mode
+    ExtClkLowSpeed,
+    // 96Mhz
+    ExtClkHighSpeed
+  } ext_clk_type_e;
+
   // RAM instances have support for up to 16 tiles. Actual number of tiles in use in the design is a
   // runtime setting in chip_env_cfg.
   typedef enum {
@@ -85,7 +105,8 @@ package chip_env_pkg;
   typedef enum bit [1:0] {
     DeselectJtagTap = 2'b00,
     SelectLCJtagTap = 2'b01,
-    SelectRVJtagTap = 2'b10
+    SelectRVJtagTap = 2'b10,
+    SelectDftJtagTap = 2'b11
   } chip_tap_type_e;
 
   // Two status for LC JTAG to identify if LC state transition is successful.

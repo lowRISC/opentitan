@@ -5,9 +5,9 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -21,13 +21,6 @@ const test_config_t kTestConfig;
 // `reset_info` CSR.
 bool test_main(void) {
   dif_rstmgr_t rstmgr;
-  // This should be in some header file, but the number of hardware resets is
-  // a parameter. This field is after 4 well known bits, some number of bits
-  // that depend on the NumRstReqs parameter, and then there is MainPwr and
-  // Esc (alation), in increasing order.
-  //
-  // TODO(maturana) Move this to dif_pwrmgr.h somehow dealing with params.
-  const int kResetInfoMainPower = 6;
 
   // Initialize rstmgr since this will check some registers.
   CHECK_DIF_OK(dif_rstmgr_init(
@@ -48,7 +41,8 @@ bool test_main(void) {
 
   } else {
     LOG_INFO("Checking reset status.");
-    rstmgr_testutils_post_reset(&rstmgr, 1 << kResetInfoMainPower, 0, 0, 0, 0);
+    rstmgr_testutils_post_reset(&rstmgr, kDifRstmgrResetInfoPowerUnstable, 0, 0,
+                                0, 0);
     LOG_INFO("Reset status indicates a main power glitch reset");
   }
   return true;

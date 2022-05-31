@@ -1,0 +1,119 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: ibex_icache
+
+  // Top level dut name (sv module).
+  dut: ibex_icache
+
+  // Top level testbench name (sv module).
+  tb: tb
+
+  // Simulator used to sign off this block
+  tool: vcs
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:ibex_icache_sim:0.1
+
+  // Testplan hjson file.
+  testplan: "{proj_root}/dv/uvm/icache/data/ibex_icache_testplan.hjson"
+
+  // Import additional common sim cfg files.
+  import_cfgs: [
+      // Project wide common sim cfg file
+      "{proj_root}/vendor/lowrisc_ip/dv/tools/dvsim/common_sim_cfg.hjson",
+      "{proj_root}/vendor/lowrisc_ip/dv/verilator/memutil_dpi_scrambled_opts.hjson"
+  ]
+
+  build_modes: [
+    {
+      name: default
+      en_build_modes: ["{tool}_memutil_dpi_scrambled_build_opts"]
+    }
+  ]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 50
+
+  gen_ral_pkg_cmd: ""
+  gen_ral_pkg_dir: ""
+  gen_ral_pkg_opts: []
+
+  // Default UVM test and seq class name.
+  uvm_test: ibex_icache_base_test
+  uvm_test_seq: ibex_icache_base_vseq
+
+  run_opts: ["+test_timeout_ns=1000000000"]
+
+  // List of test specifications.
+  tests: [
+    {
+      name: ibex_icache_smoke
+      uvm_test_seq: ibex_icache_base_vseq
+    }
+
+    {
+      name: ibex_icache_passthru
+      uvm_test_seq: ibex_icache_passthru_vseq
+    }
+
+    {
+      name: ibex_icache_caching
+      uvm_test_seq: ibex_icache_caching_vseq
+    }
+
+    {
+      name: ibex_icache_invalidation
+      uvm_test_seq: ibex_icache_invalidation_vseq
+    }
+
+    {
+      name: ibex_icache_oldval
+      uvm_test_seq: ibex_icache_oldval_vseq
+      uvm_test: ibex_icache_oldval_test
+    }
+
+    {
+      name: ibex_icache_back_line
+      uvm_test_seq: ibex_icache_back_line_vseq
+    }
+
+    {
+      name: ibex_icache_many_errors
+      uvm_test_seq: ibex_icache_many_errors_vseq
+    }
+
+    {
+      name: ibex_icache_ecc
+      uvm_test_seq: ibex_icache_ecc_vseq
+    }
+
+    {
+      name: ibex_icache_stress_all
+      uvm_test_seq: ibex_icache_combo_vseq
+    }
+
+    {
+      name: ibex_icache_stress_all_with_reset
+      uvm_test_seq: ibex_icache_reset_vseq
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: ["ibex_icache_smoke",
+              "ibex_icache_passthru",
+              "ibex_icache_caching",
+              "ibex_icache_invalidation",
+              "ibex_icache_back_line",
+              "ibex_icache_many_errors",
+              "ibex_icache_ecc",
+              "ibex_icache_stress_all",
+              "ibex_icache_stress_all_with_reset"]
+    }
+  ]
+}

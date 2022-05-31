@@ -14,6 +14,7 @@ filesets:
       - lowrisc:ip:kmac_pkg
       - lowrisc:dv:cip_lib
       - lowrisc:dv:digestpp_dpi
+      - lowrisc:ip:jtag_pkg
       - lowrisc:dv:jtag_riscv_agent
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:ralgen
@@ -39,21 +40,34 @@ filesets:
       - seq_lib/chip_stub_cpu_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_common_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_csr_rw_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_jtag_mem_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_tap_straps_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_full_aon_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_main_power_glitch_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sysrst_ctrl_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_pwm_pulses_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_tx_rx_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_rand_baudrate_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sysrst_ctrl_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_flash_ctrl_lc_rw_en_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_flash_rma_unlocked_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_transition_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_walkthrough_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_walkthrough_testunlocks_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_spi_tx_rx_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rom_ctrl_integrity_check_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sram_ctrl_execution_main_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sram_ctrl_scrambled_access_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_keymgr_key_derivation_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_ast_clk_outputs_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sensor_ctrl_status_intr_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_repeat_reset_wkup_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rstmgr_alert_info_vseq.sv: {is_include_file: true}
       - seq_lib/chip_callback_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
       - ast_supply_if.sv

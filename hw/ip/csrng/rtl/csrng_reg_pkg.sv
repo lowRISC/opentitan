@@ -398,4 +398,3 @@ package csrng_reg_pkg;
   };
 
 endpackage
-

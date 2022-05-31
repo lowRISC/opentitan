@@ -56,7 +56,11 @@ module flash_phy_core
   output logic                       fsm_err_o,
   output logic                       prog_intg_err_o,
   output logic                       relbl_ecc_err_o,
-  output logic                       intg_ecc_err_o
+  output logic                       intg_ecc_err_o,
+  output logic                       spurious_ack_o,
+  output logic                       arb_err_o,
+  output logic                       host_gnt_err_o,
+  output logic                       fifo_err_o
 );
 
 
@@ -87,18 +91,18 @@ module flash_phy_core
   //
   localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
-    StIdle = 10'b1011011110,
+    StIdle     = 10'b1011011110,
     StCtrlRead = 10'b0010100110,
     StCtrlProg = 10'b1111101101,
-    StCtrl = 10'b1101000010,
-    StDisable = 10'b0000111011,
-    StInvalid = 10'b0101110100
+    StCtrl     = 10'b1101000010,
+    StDisable  = 10'b0000111011,
+    StInvalid  = 10'b0101110100
   } state_e;
 
   state_e state_q, state_d;
 
   // request signals to flash macro
-  logic [PhyOps-1:0] reqs;
+  logic [PhyLastOp-1:0] reqs;
 
   // host select for address
   logic host_sel;
@@ -182,20 +186,88 @@ module flash_phy_core
     .mubi_o(flash_disable)
   );
 
+  logic ctrl_fsm_idle;
   logic host_req;
-  assign host_req = host_req_i & (arb_cnt < ArbCnt[CntWidth-1:0]) & ~ctrl_gnt &
+  assign host_req = host_req_i & (arb_cnt < ArbCnt[CntWidth-1:0]) & ctrl_fsm_idle &
                     mubi4_test_false_strict(flash_disable[HostDisableIdx]);
   assign host_sel = host_req;
   assign host_gnt = host_req & host_req_rdy_o;
+  assign host_req_done_o = ctrl_fsm_idle & rd_stage_data_valid;
 
-  assign host_req_rdy_o = rd_stage_rdy & (arb_cnt < ArbCnt[CntWidth-1:0]) & ~ctrl_gnt;
-  assign host_req_done_o = ~ctrl_gnt & rd_stage_data_valid;
+  // oustanding width is slightly larger to ensure a faulty increment is able to reach
+  // the higher value. For example if RspOrderDepth were 3, a clog2 of 3 would still be 2
+  // and not allow the counter to increment to 4.
+  localparam int OutstandingRdWidth = $clog2(RspOrderDepth+2);
+  logic [OutstandingRdWidth-1:0] host_outstanding;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      host_outstanding <= '0;
+    end else if (host_gnt && !host_req_done_o && (host_outstanding <= RspOrderDepth)) begin
+      host_outstanding <= host_outstanding + 1'b1;
+    end else if (!host_gnt && host_req_done_o && |host_outstanding) begin
+      host_outstanding <= host_outstanding - 1'b1;
+    end
+  end
+  `ASSERT(RdTxnCheck_A, host_outstanding <= RspOrderDepth)
+
+  // a host transaction granted in the previous cycle
+  logic host_gnt_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      host_gnt_q <= '0;
+    end else begin
+      host_gnt_q <= host_gnt;
+    end
+  end
+
+  // SEC_CM: PHY_HOST_GRANT.CTRL.CONSISTENCY
+  // two error conditions
+  // 1. a host transaction was granted to the muxed partition, this is illegal
+  // 2. a host transaction was granted last cycle but somehow controller
+  //    operations have been kicked off, this is illegal
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      host_gnt_err_o <= '0;
+    end else if ((host_gnt && muxed_part != flash_ctrl_pkg::FlashPartData) ||
+                 (host_gnt_q && !ctrl_fsm_idle)) begin
+      host_gnt_err_o <= 1'b1;
+    end
+  end
 
   // controller request can only win after the entire read pipeline
   // clears
   logic ctrl_req;
-  assign ctrl_req = req_i & rd_stage_idle & ~host_req &
+  assign ctrl_req = req_i & rd_stage_idle &
                     mubi4_test_false_strict(flash_disable[CtrlDisableIdx]);
+
+  logic [1:0] data_tie_off [2];
+  assign data_tie_off = '{default: '0};
+
+  // SEC_CM: PHY_ARBITER.CTRL.REDUN
+  logic phy_req;
+  logic phy_rdy;
+
+  prim_arbiter_tree_dup #(
+    .N(2),
+    .DW(2),
+    .EnDataPort('0),
+    .FixedArb(1)
+  ) u_host_arb (
+    .clk_i,
+    .rst_ni,
+    .req_chk_i('0),
+    .req_i({ctrl_req, host_req}),
+    .data_i(data_tie_off),
+    .gnt_o({ctrl_gnt, host_req_rdy_o}),
+    .idx_o(),
+    .valid_o(phy_req),
+    .data_o(),
+    .ready_i(phy_rdy),
+    .err_o(arb_err_o)
+  );
+
+  assign phy_rdy = phy_req & host_req ? rd_stage_rdy : rd_stage_idle;
+
 
   // if request happens at the same time as a host grant, increment count
   assign inc_arb_cnt = req_i & host_gnt;
@@ -205,26 +277,25 @@ module flash_phy_core
     state_d = state_q;
     reqs = '0;
     ctrl_rsp_vld = '0;
-    ctrl_gnt = '0;
     fsm_err = '0;
+    ctrl_fsm_idle = '0;
 
     unique case (state_q)
       StIdle: begin
+        ctrl_fsm_idle = 1'b1;
         if (mubi4_test_true_loose(flash_disable[FsmDisableIdx])) begin
           state_d = StDisable;
-        end else if (ctrl_req && rd_i) begin
-          reqs[PhyRead] = 1'b1;
-          state_d = rd_stage_rdy ? StCtrlRead : state_q;
-        end else if (ctrl_req && prog_i) begin
+        end else if (ctrl_gnt && rd_i) begin
+          state_d = StCtrlRead;
+        end else if (ctrl_gnt && prog_i) begin
           state_d = StCtrlProg;
-        end else if (ctrl_req) begin
+        end else if (ctrl_gnt) begin
           state_d = StCtrl;
         end
       end
 
       // Controller reads are very slow.
       StCtrlRead: begin
-        ctrl_gnt = 1'b1;
         if (rd_stage_data_valid) begin
           ctrl_rsp_vld = 1'b1;
           state_d = StIdle;
@@ -234,7 +305,6 @@ module flash_phy_core
       // Controller program data may be packed based on
       // address alignment
       StCtrlProg: begin
-        ctrl_gnt = 1'b1;
         reqs[PhyProg] = 1'b1;
         if (prog_ack) begin
           ctrl_rsp_vld = 1'b1;
@@ -244,7 +314,6 @@ module flash_phy_core
 
       // other controller operations directly interface with flash
       StCtrl: begin
-        ctrl_gnt = 1'b1;
         reqs[PhyPgErase] = pg_erase_i;
         reqs[PhyBkErase] = bk_erase_i;
         if (erase_ack) begin
@@ -254,10 +323,12 @@ module flash_phy_core
       end
 
       StDisable: begin
+        ctrl_fsm_idle = 1'b1;
         state_d = StDisable;
       end
 
       StInvalid: begin
+        ctrl_fsm_idle = 1'b1;
         state_d = StInvalid;
         fsm_err = 1'b1;
       end
@@ -268,6 +339,11 @@ module flash_phy_core
 
     endcase // unique case (state_q)
   end // always_comb
+
+  // determine spurious acks
+  // SEC_CM: PHY_ACK.CTRL.CONSISTENCY
+  assign spurious_ack_o = (ctrl_fsm_idle & ctrl_rsp_vld) |
+                          ((host_outstanding == '0) & host_req_done_o);
 
   // transactions coming from flash controller are always data type
   assign muxed_addr = host_sel ? host_addr_i : addr_i;
@@ -294,7 +370,8 @@ module flash_phy_core
     .clk_i,
     .rst_ni,
     .buf_en_i(rd_buf_en_i),
-    .req_i(reqs[PhyRead] | host_req),
+    //.req_i(reqs[PhyRead] | host_req),
+    .req_i(phy_req & (rd_i | host_req)),
     .descramble_i(muxed_scramble_en),
     .ecc_i(muxed_ecc_en),
     .prog_i(reqs[PhyProg]),
@@ -325,7 +402,8 @@ module flash_phy_core
     .ecc_single_err_o,
     .ecc_addr_o,
     .relbl_ecc_err_o,
-    .intg_ecc_err_o
+    .intg_ecc_err_o,
+    .fifo_err_o
     );
 
   ////////////////////////

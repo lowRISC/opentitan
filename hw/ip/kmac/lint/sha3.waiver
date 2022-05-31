@@ -19,8 +19,5 @@ waive -rules {TWO_STATE_TYPE} -location {keccak_2share.sv} \
 waive -rules {ARITH_CONTEXT} -location {sha3pad.sv} -regexp {.*Bitlength of arithmetic operation.*is self-determined in this context.*} \
       -comment "Carry issue when determining the bit length."
 
-waive -rules {PARAM_NOT_USED} -location {keccak_round.sv} -regexp {.*Parameter 'ReuseShare' not used in module 'keccak_round'.*} \
-      -comment "Parameter not used in this instantiation."
-
 waive -rules {VAR_INDEX_RANGE} -location {keccak_2share.sv} -regexp {.*of length 32 excluding the sign bit is larger than the.*bits required to address.*} \
       -comment "Indexing range does not match."

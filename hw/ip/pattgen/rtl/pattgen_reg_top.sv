@@ -53,18 +53,31 @@ module pattgen_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [11:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(12)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -719,6 +732,8 @@ module pattgen_reg_top (
                (addr_hit[10] & (|(PATTGEN_PERMIT[10] & ~reg_be))) |
                (addr_hit[11] & (|(PATTGEN_PERMIT[11] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_done_ch0_wd = reg_wdata[0];
@@ -773,6 +788,23 @@ module pattgen_reg_top (
   assign size_len_ch1_wd = reg_wdata[21:16];
 
   assign size_reps_ch1_wd = reg_wdata[31:22];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = ctrl_we;
+    reg_we_check[5] = prediv_ch0_we;
+    reg_we_check[6] = prediv_ch1_we;
+    reg_we_check[7] = data_ch0_0_we;
+    reg_we_check[8] = data_ch0_1_we;
+    reg_we_check[9] = data_ch1_0_we;
+    reg_we_check[10] = data_ch1_1_we;
+    reg_we_check[11] = size_we;
+  end
 
   // Read data return
   always_comb begin

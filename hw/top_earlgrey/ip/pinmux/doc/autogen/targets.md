@@ -5,8 +5,7 @@ util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson -o hw/top_earlgrey/
 
 -->
 
-|  Target Name  |  #IO Banks  |  #Muxed Pads  |  #Direct Pads  |  #Manual Pads  |  #Total Pads  |                                  Pinout / Pinmux Tables                                  |
-|:-------------:|:-----------:|:-------------:|:--------------:|:--------------:|:-------------:|:----------------------------------------------------------------------------------------:|
-|     ASIC      |      4      |      47       |       14       |       10       |      71       |    [Pinout Table](../../../top_earlgrey/ip/pinmux/doc/autogen/pinout_asic/index.html)    |
-|     CW310     |      4      |      30       |       10       |       14       |      54       |   [Pinout Table](../../../top_earlgrey/ip/pinmux/doc/autogen/pinout_cw310/index.html)    |
-|  NEXYSVIDEO   |      4      |      31       |       4        |       14       |      49       | [Pinout Table](../../../top_earlgrey/ip/pinmux/doc/autogen/pinout_nexysvideo/index.html) |
+|  Target Name  |  #IO Banks  |  #Muxed Pads  |  #Direct Pads  |  #Manual Pads  |  #Total Pads  |                               Pinout / Pinmux Tables                                |
+|:-------------:|:-----------:|:-------------:|:--------------:|:--------------:|:-------------:|:-----------------------------------------------------------------------------------:|
+|     ASIC      |      4      |      47       |       14       |       10       |      71       | [Pinout Table](../../../top_earlgrey/ip/pinmux/doc/autogen/pinout_asic/index.html)  |
+|     CW310     |      4      |      28       |       10       |       14       |      52       | [Pinout Table](../../../top_earlgrey/ip/pinmux/doc/autogen/pinout_cw310/index.html) |

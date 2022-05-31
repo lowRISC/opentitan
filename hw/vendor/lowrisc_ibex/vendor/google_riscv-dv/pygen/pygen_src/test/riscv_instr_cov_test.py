@@ -16,11 +16,12 @@ limitations under the License.
 import sys
 import vsc
 import csv
-from tabulate import *
+from tabulate import *  # NOQA
 sys.path.append("pygen/")
-from pygen_src.riscv_instr_pkg import *
+from pygen_src.riscv_instr_pkg import *  # NOQA
 from pygen_src.isa.riscv_cov_instr import riscv_cov_instr
-from pygen_src.riscv_instr_cover_group import *
+from pygen_src.riscv_instr_cover_group import *  # NOQA
+from pygen_src.isa.riscv_floating_point_instr import riscv_floating_point_instr
 
 
 class riscv_instr_cov_test:
@@ -28,6 +29,7 @@ class riscv_instr_cov_test:
 
     def __init__(self):
         self.instr_cg = riscv_instr_cover_group()
+        self.fd_ins = riscv_floating_point_instr()
         self.trace = {}
         self.csv_trace = []
         self.entry_cnt, self.total_entry_cnt, self.skipped_cnt, \
@@ -43,6 +45,7 @@ class riscv_instr_cov_test:
             sys.exit("No CSV file found!")
         logging.info("{} CSV trace files to be "
                      "processed...\n".format(len(self.csv_trace)))
+
         expect_illegal_instr = False
         for csv_file in self.csv_trace:
             with open("{}".format(csv_file)) as trace_file:
@@ -105,12 +108,9 @@ class riscv_instr_cov_test:
 
     def get_coverage_report(self):
         model = vsc.get_coverage_report_model()
-        cov_dir = cfg.argv.log_file_name.split("/")[0]
-        file = open('{}/CoverageGroups.txt'.format(cov_dir), 'w')
-        file.write("CoverGroups, CoverPoints and Bins Summary\n")
         str_report = vsc.get_coverage_report(details=True)
-        file.write("{}\n".format(str_report))
-        file.close()
+        logging.info("Report:\n" + str_report)
+        cov_dir = cfg.argv.log_file_name.split("/")[0]
         file = open('{}/CoverageReport.txt'.format(cov_dir), 'w')
         file.write("Groups Coverage Summary\n")
         file.write("Total groups in report: {}\n".format(
@@ -139,11 +139,16 @@ class riscv_instr_cov_test:
             # TODO: This will get fixed later when we get an inst from template
             instruction.assign_attributes()
             if (instruction.group.name in ["RV32I", "RV32M", "RV32C", "RV64I",
-                                          "RV64M", "RV64C", "RV32F", "RV64F",
-                                          "RV32D", "RV64D", "RV32B", "RV64B"]) \
-                                       and (instruction.group in rcs.supported_isa):
+                                          "RV64M", "RV64C", "RV64F",
+                                          "RV64D", "RV32B", "RV64B"]) \
+                                      and (instruction.group in rcs.supported_isa):
                 self.assign_trace_info_to_instr(instruction)
                 instruction.pre_sample()
+                self.instr_cg.sample(instruction)
+            elif instruction.group.name in ["RV32D", "RV32F"] \
+                 and instruction.group in rcs.supported_isa:
+                self.assign_trace_info_to_instr(instruction)
+                self.fd_ins.pre_sample(instruction)
                 self.instr_cg.sample(instruction)
             return True
         logging.info("Cannot find opcode: {}".format(processed_instr_name))
@@ -159,7 +164,10 @@ class riscv_instr_cov_test:
                                       "URET"]:
             return
         operands = self.trace["operand"].split(",")
-        instruction.update_src_regs(operands)
+        if instruction.group.name in ["RV32D", "RV32F"]:
+            self.fd_ins.update_src_regs(instruction, operands)
+        else:
+            instruction.update_src_regs(operands)
 
         gpr_update = self.trace["gpr"].split(";")
         if len(gpr_update) == 1 and gpr_update[0] == "":
@@ -168,7 +176,10 @@ class riscv_instr_cov_test:
             pair = dest.split(":")
             if len(pair) != 2:
                 logging.error("Illegal gpr update format: {}".format(dest))
-            instruction.update_dst_regs(pair[0], pair[1])
+            if instruction.group.name in ["RV32D", "RV32F"]:
+                self.fd_ins.update_dst_regs(instruction, pair[0], pair[1])
+            else:
+                instruction.update_dst_regs(pair[0], pair[1])
 
     def process_instr_name(self, instruction):
         instruction = instruction.upper()
@@ -183,12 +194,12 @@ class riscv_instr_cov_test:
             "FMV_S_X": "FMV_W_X",
             "FMV_X_S": "FMV_X_W",
             # Convert pseudoinstructions
-            "FMV_S"  : "FSGNJ_S",
-            "FABS_S" : "FSGNJX_S",
-            "FNEG_S" : "FSGNJN_S",
-            "FMV_D"  : "FSGNJ_D",
-            "FABS_D" : "FSGNJX_D",
-            "FNEG_D" : "FSGNJN_D",
+            "FMV_S": "FSGNJ_S",
+            "FABS_S": "FSGNJX_S",
+            "FNEG_S": "FSGNJN_S",
+            "FMV_D": "FSGNJ_D",
+            "FABS_D": "FSGNJX_D",
+            "FNEG_D": "FSGNJN_D",
         }
         # if instruction is not present in the dictionary,second argument well
         # be assigned as default value of passed argument
@@ -196,7 +207,5 @@ class riscv_instr_cov_test:
         return instruction
 
 
-
 cov_test = riscv_instr_cov_test()
 cov_test.run_phase()
-

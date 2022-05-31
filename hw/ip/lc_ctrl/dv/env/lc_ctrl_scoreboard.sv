@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`define gmv32(csr) 32'(`gmv(csr))
+`define GMV32(csr) 32'(`gmv(csr))
 
 class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   .CFG_T(lc_ctrl_env_cfg),
@@ -77,20 +77,38 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
           exp_lc_o.lc_seed_hw_rd_en_o = lc_ctrl_pkg::Off;
         end
 
-        ->check_lc_output_ev;
-        check_lc_outputs(exp_lc_o, {$sformatf("Called from line: %0d, ", `__LINE__), err_msg});
+        // lc_seed_hw_rd_en copies otp_secrets_valid in certain states
+        if (cfg.err_inj.otp_secrets_valid_mubi_err && lc_state_e'(cfg.lc_ctrl_vif.otp_i.state)
+            inside {LcStProd, LcStProdEnd, LcStDev}) begin
+          exp_lc_o.lc_seed_hw_rd_en_o = cfg.otp_secrets_valid;
+          exp_lc_o.lc_creator_seed_sw_rw_en_o = ~cfg.otp_secrets_valid;
+        end
 
+        if (cfg.escalate_injected) begin
+          exp_lc_o = EXP_LC_OUTPUTS[int'(EscalateSt)];
+        end
+
+        fork
+          begin
+            // Delay a some of cycles to allow escalate to be recognised
+            if (cfg.escalate_injected) cfg.clk_rst_vif.wait_clks(5);
+            ->check_lc_output_ev;
+            check_lc_outputs(exp_lc_o, {$sformatf("Called from line: %0d, ", `__LINE__), err_msg});
+          end
+        join_none
 
         if (cfg.err_inj.state_err || cfg.err_inj.count_err ||
             cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err ||
             cfg.err_inj.count_illegal_err || cfg.err_inj.state_illegal_err ||
-            cfg.err_inj.lc_fsm_backdoor_err || cfg.err_inj.kmac_fsm_backdoor_err
+            cfg.err_inj.lc_fsm_backdoor_err || cfg.err_inj.kmac_fsm_backdoor_err ||
+            cfg.err_inj.clk_byp_rsp_mubi_err || cfg.err_inj.otp_secrets_valid_mubi_err
             ) begin // State/count error expected
           set_exp_alert(.alert_name("fatal_state_error"), .is_fatal(1),
                         .max_delay(cfg.alert_max_delay));
         end
 
-        if (cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp) begin
+        if (cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp ||
+            cfg.err_inj.clk_byp_rsp_mubi_err) begin
           // OTP program error expected
           set_exp_alert(.alert_name("fatal_prog_error"), .is_fatal(1),
                         .max_delay(cfg.alert_max_delay));
@@ -164,10 +182,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, $sformatf("process_kmac_app_req: token received %h", token_data), UVM_MEDIUM)
 
       if (cfg.en_scb) begin
-        `DV_CHECK_EQ(token_data, {`gmv32(ral.transition_token[3]),
-                                  `gmv32(ral.transition_token[2]),
-                                  `gmv32(ral.transition_token[1]),
-                                  `gmv32(ral.transition_token[0])})
+        `DV_CHECK_EQ(token_data, {`GMV32(ral.transition_token[3]),
+                                  `GMV32(ral.transition_token[2]),
+                                  `GMV32(ral.transition_token[1]),
+                                  `GMV32(ral.transition_token[0])})
       end
     end
   endtask
@@ -297,6 +315,15 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
                           .value(predict_otp_vendor_test_status()), .kind(UVM_PREDICT_READ)))
         end
 
+        "hw_rev": begin
+          `DV_CHECK_FATAL(
+              ral.hw_rev.chip_rev.predict(
+              .value(LcCtrlChipRev[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]), .kind(UVM_PREDICT_READ)))
+          `DV_CHECK_FATAL(
+              ral.hw_rev.chip_gen.predict(
+              .value(LcCtrlChipGen[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]), .kind(UVM_PREDICT_READ)))
+        end
+
         default: begin
           // `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
         end
@@ -310,7 +337,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
             "device_id_3",  "device_id_4", "device_id_5",
             "device_id_6",  "device_id_7", "manuf_state_0",  "manuf_state_1", "manuf_state_2",
             "manuf_state_3",  "manuf_state_4", "manuf_state_5",
-            "manuf_state_6",  "manuf_state_7", "otp_vendor_test_status"
+            "manuf_state_6",  "manuf_state_7", "otp_vendor_test_status", "hw_rev"
           })
         do_read_check = 1;
 
@@ -334,18 +361,21 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
 
-      if (cfg.test_phase inside {[LcCtrlRandomEscalate : LcCtrlPostStart]}) begin
-        if (cfg.err_inj.security_escalation_err) begin
-          // Expect escalate to be asserted
-          exp.lc_escalate_en_o = lc_ctrl_pkg::On;
-        end
+      if (cfg.err_inj.security_escalation_err) begin
+        // Expect escalate to be asserted
+        exp.lc_escalate_en_o = lc_ctrl_pkg::On;
       end
 
       // when lc successfully req a transition, all outputs are turned off.
       if (ral.status.transition_successful.get()) begin
-        check_lc_outputs(exp, $sformatf("Called from line: %0d", `__LINE__));
+        fork
+          begin
+            // Wait for escalate to be recognise
+            if (cfg.err_inj.security_escalation_err) cfg.clk_rst_vif.wait_clks(5);
+            check_lc_outputs(exp, $sformatf("Called from line: %0d", `__LINE__));
+          end
+        join_none
       end
-
     end
   endtask
 
@@ -359,10 +389,12 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     bit state_err_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
         cfg.err_inj.state_illegal_err || cfg.err_inj.count_illegal_err ||
         cfg.err_inj.count_backdoor_err ||  cfg.err_inj.state_backdoor_err ||
-        cfg.err_inj.lc_fsm_backdoor_err || cfg.err_inj.kmac_fsm_backdoor_err;
+        cfg.err_inj.lc_fsm_backdoor_err || cfg.err_inj.kmac_fsm_backdoor_err ||
+        cfg.err_inj.otp_secrets_valid_mubi_err;
 
     // OTP program error is expected
-    bit prog_err_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp;
+    bit prog_err_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp ||
+        cfg.err_inj.clk_byp_rsp_mubi_err;
 
 
     // Exceptions to default
@@ -404,6 +436,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       end
     endcase
 
+    if (cfg.escalate_injected) lc_state_single_exp = DecLcStEscalate;
+
     // repeat state to fill the word for hardness
     lc_state_exp = {DecLcStateNumRep{lc_state_single_exp}};
 
@@ -425,7 +459,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     // State error of some kind expected
     bit state_err_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
         cfg.err_inj.state_illegal_err || cfg.err_inj.count_illegal_err ||
-        cfg.err_inj.count_backdoor_err || cfg.err_inj.lc_fsm_backdoor_err;
+        cfg.err_inj.count_backdoor_err || cfg.err_inj.lc_fsm_backdoor_err ||
+        cfg.err_inj.clk_byp_rsp_mubi_err || cfg.err_inj.otp_secrets_valid_mubi_err;
 
     // Exceptions to default expected lc_transition_count
     unique case (cfg.test_phase)
@@ -502,7 +537,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     // Reflects otp_vendor_test_status_i in these states otherwise 0
     if ((LcStateIn inside {LC_CTRL_OTP_TEST_REG_ENABLED_STATES}) &&
         (LcCntIn inside {LC_CTRL_OTP_TEST_REG_ENABLED_COUNTS}) &&
-        (cfg.test_phase < LcCtrlPostTransition)) begin
+        (cfg.test_phase < LcCtrlPostTransition) &&
+        !cfg.err_inj.otp_secrets_valid_mubi_err &&
+        !cfg.escalate_injected
+        ) begin
       return cfg.otp_vendor_test_status;
     end else return 0;
   endfunction
@@ -558,6 +596,6 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     // post test checks - ensure that all local fifos and queues are empty
   endfunction
 
-`undef gmv32
+  `undef GMV32
 
 endclass

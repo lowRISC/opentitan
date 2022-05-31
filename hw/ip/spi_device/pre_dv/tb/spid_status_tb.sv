@@ -50,7 +50,7 @@ module spid_status_tb;
   sel_datapath_e dut_sel_dp;
   // Command info for Read Status
   // CmdReadStauts1, CmdReadStatus2, CmdReadStatus3
-  cmd_info_index_e cmd_info_idx;
+  logic [CmdInfoIdxW-1:0] cmd_info_idx;
   cmd_info_t cmd_info;
 
   logic sys_status_we;
@@ -60,8 +60,12 @@ module spid_status_tb;
 
   spi_mode_e spi_mode;
 
-  logic s2p_valid;
-  logic [7:0] s2p_data;
+  logic      s2p_valid;
+  spi_byte_t s2p_data;
+
+  // wel_test_complete: Host triggers when wren/wrdi sent
+  // wel_update_done: SW triggers when update Status after wel_test
+  event wel_test_complete, wel_update_done;
 
   initial begin
     sck_clk.set_period_ps(SckPeriod);
@@ -107,6 +111,52 @@ module spid_status_tb;
     spiflash_readstatus(tb_sif, 8'h 15, data);
 
     $display("SPI Flash Read Status Tested!!");
+
+    $display("WREN/ WRDI tests");
+    spiflash_wren(tb_sif, 8'h 06); // WREN
+
+    repeat(20) @(sck_clk.cbn);
+
+    // Read back and check
+    spiflash_readstatus(tb_sif, 8'h 05, data);
+
+    assert(data[1] == 1'b 1);
+
+    repeat(20) @(sck_clk.cbn);
+
+    spiflash_wrdi(tb_sif, 8'h 04); // WRDI
+
+    repeat(20) @(sck_clk.cbn);
+
+    // Read back and check
+    spiflash_readstatus(tb_sif, 8'h 05, data);
+
+    assert(data[1] == 1'b 0);
+
+    repeat(20) @(sck_clk.cbn);
+    ->wel_test_complete;
+
+    @(wel_update_done);
+
+    // Expect SW to set WEL again.
+    // The SW request is comitted after a SPI transaction is received.
+    // Sending read status command but expect WEL still 0.
+    // Then next Read Status will return the correct value (WEL == 1)
+
+    @(sck_clk.cbn);
+    // This should return 0 for WEL
+    spiflash_readstatus(tb_sif, 8'h 05, data);
+    assert(data[1] == 1'b 0);
+    repeat(20) @(sck_clk.cbn);
+
+    // This should return 1 for WEL
+    spiflash_readstatus(tb_sif, 8'h 05, data);
+
+    assert(data[1] == 1'b 1);
+    repeat(20) @(sck_clk.cbn);
+
+
+    $display("TEST PASSED CHECKS");
   endtask : host
 
   task sw();
@@ -123,6 +173,24 @@ module spid_status_tb;
     @(posedge clk);
     sys_status_we = 1'b 0;
 
+    @(wel_test_complete);
+
+    // Host has issued WREN then WRDI then read back the STATUS and checked if
+    // HW updates the value correctly.
+    // Now, SW reverts WEL bit (to 1), then informs host system to read back
+    // the STATUS
+
+    @(posedge clk);
+
+    sys_status_we = 1'b 1;
+    sys_status_in = 24'h 0A_BC_D2; // Set WEL
+    @(posedge clk);
+    sys_status_we = 1'b 0;
+
+    repeat (10) @(posedge clk);
+
+    ->wel_update_done;
+
     forever @(posedge clk); // Wait host transaction done
 
   endtask : sw
@@ -132,16 +200,20 @@ module spid_status_tb;
 
   io_mode_e dut_iomode, s2p_iomode;
 
+  logic sck_we_set, sck_we_clr;
+
   spid_status dut (
     .clk_i  (gated_sck),
     .rst_ni (rst_spi_n),
 
     .clk_out_i (gated_sck_inverted),
 
+    .clk_csb_i (sif.csb),
+
     .sys_clk_i  (clk),
     .sys_rst_ni (rst_n),
 
-    .csb_i (sif.csb),
+    .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse), // TODO
 
     .sys_status_we_i (sys_status_we ),
     .sys_status_i    (sys_status_in ),
@@ -159,7 +231,10 @@ module spid_status_tb;
 
     .inclk_busy_set_i  (busy_set), // SCK domain
 
-    .inclk_busy_broadcast_o () // SCK domain
+    .inclk_we_set_i (sck_we_set),
+    .inclk_we_clr_i (sck_we_clr),
+
+    .csb_busy_broadcast_o () // SCK domain
   );
 
   spi_cmdparse cmdparse (
@@ -179,9 +254,22 @@ module spid_status_tb;
     .cmd_info_o     (cmd_info),
     .cmd_info_idx_o (cmd_info_idx),
 
+    // CFG: Intercept
+    .cfg_intercept_en_status_i (1'b 1),
+    .cfg_intercept_en_jedec_i  (1'b 1),
+    .cfg_intercept_en_sfdp_i   (1'b 1),
+
+    // Intercept assumed
+    .intercept_status_o (),
+    .intercept_jedec_o  (),
+    .intercept_sfdp_o   (),
+
     .cmd_config_req_o (),
     .cmd_config_idx_o ()
   );
+
+  assign sck_we_set = (dut_sel_dp == DpWrEn);
+  assign sck_we_clr = (dut_sel_dp == DpWrDi);
 
   spi_s2p s2p (
     .clk_i  (gated_sck),

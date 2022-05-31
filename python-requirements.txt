@@ -3,54 +3,56 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Keep sorted.
-anytree # dependency of sw/host/vendor/google_verible_verilog_syntax_py
-enlighten
-flake8
-git-fame
-gitpython
 hjson
-ipyxact >= 0.2.4
-isort
 libcst
-livereload
 mako
-meson >= 0.56.2, <= 0.57.2 # minimum matches version in meson.build
-mistletoe>=0.7.2
-mypy
+pycryptodome >= 3.11.0
+pyelftools
+pytest
+pytest-timeout
+pyyaml
+tabulate
+
+# Dependencies: dv_sim
+enlighten
+mistletoe >= 0.7.2
 # Premailer 3.9.0 broke the API by introducing an allow_loading_external_files
 # argument that is now mandatory, but didn't exist in previous versions.
 # To relax the constraint we either need to do a runtime detection, or switch all
 # users to a newer version.
 premailer < 3.9.0
-pycryptodome >= 3.11.0
+
+# Dependencies: check_dif_statuses.py
 pydriller
-pyelftools
-pyftdi
-pyserial
-pygments
-pytest
-pytest-timeout
-pyyaml
-tabulate
 termcolor
+
+# Linters
+flake8
+isort
+mypy
 yapf
 
-# Type stubs for mypy checking. types-dataclasses is only needed for Python <= 3.6.
+# Type stubs for mypy checking.
+# types-dataclasses is only needed for Python <= 3.6.
 types-dataclasses
 types-pkg_resources
 types-pyyaml
 types-tabulate
 
-# Development version with OT-specific changes
-git+https://github.com/lowRISC/fusesoc.git@ot-0.2
+# Dependency of sw/host/vendor/google_verible_verilog_syntax_py
+anytree
+
+# To be removed with Meson.
+# Minimum matches version in meson.build
+meson >= 0.56.2, <= 0.57.2
 
 # Development version with OT-specific changes
-git+https://github.com/lowRISC/edalize.git@ot-0.2
+git+https://github.com/lowRISC/fusesoc.git@ot-0.1
 
-# Development version of ChipWhisperer toolchain
-# Use a development version until support for the CW310 board works in a
-# released version.
-# Prefer the archive download over a git clone to decrease installation time
-# (The chipwhisperer repository is rather large and uses additionally uses
-# submodules, which need to be fetched as well.)
-https://github.com/newaetech/chipwhisperer/archive/9b6825b495f14f85aae8b11007c63c59a1654584.tar.gz
+# Development version with OT-specific changes
+git+https://github.com/lowRISC/edalize.git@ot-0.1
+
+# Development version of minimal ChipWhisperer toolchain with latest features
+# and bug fixes. We fix the version for improved stability and manually update
+# if necessary.
+git+https://github.com/newaetech/chipwhisperer-minimal.git@ba568261645df7d70a91a8625bb1b38dc0939c09#egg=chipwhisperer

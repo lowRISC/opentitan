@@ -35,6 +35,16 @@ class otbn_base_vseq extends cip_base_vseq #(
   // sideload sequencer will get upset if we kill a process that's waiting for a grant from it).
   protected int unsigned stop_tokens = 0;
 
+  // Saved TL agent configuration
+  typedef struct packed {
+    bit          valid;
+    int unsigned a_valid_delay_min;
+    int unsigned a_valid_delay_max;
+    int unsigned d_ready_delay_min;
+    int unsigned d_ready_delay_max;
+  } saved_tl_cfg_t;
+  protected saved_tl_cfg_t saved_tl_cfg;
+
   // Overridden from dv_base_vseq
   task dut_init(string reset_kind = "HARD");
     // Always drive the lifecycle escalation signal to off at the start of the sequence.
@@ -48,8 +58,14 @@ class otbn_base_vseq extends cip_base_vseq #(
   protected task load_elf(string path, bit backdoor);
     otbn_pkg::cmd_e wipe_cmd;
     bit [1:0] num_wipes;
+    bit bogus_write;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bogus_write, bogus_write dist { 0 :/ 1, 1 :/ 9};)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_wipes, num_wipes inside { [0:2] };)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wipe_cmd, wipe_cmd != otbn_pkg::CmdExecute;)
+    if (bogus_write) begin
+      // Write a bogus value while we are in IDLE state for coverage.
+      _send_bogus_cmd();
+    end
     case (num_wipes)
       1 : _run_otbn_cmd(wipe_cmd); // Run a random wipe command
       2 : begin
@@ -67,7 +83,7 @@ class otbn_base_vseq extends cip_base_vseq #(
         else
           _run_otbn_cmd(otbn_pkg::CmdSecWipeDmem);
       end
-      default : ;// Do nothing.
+      default : ;// Do nothing
     endcase
     if (backdoor) begin
       load_elf_backdoor(path);
@@ -77,6 +93,14 @@ class otbn_base_vseq extends cip_base_vseq #(
 
     // Pass loop warp rules that we've just loaded into otbn_memutil into the model.
     cfg.model_agent_cfg.vif.take_loop_warps(cfg.mem_util);
+
+    if (cfg.model_agent_cfg.vif.has_loop_warps(cfg.mem_util)) begin
+      // Where loop warps are present an assertion within prim_count must be disabled.
+      cfg.loop_vif.control_loop_counters_out_set_assertion(1'b0);
+    end else begin
+      // Otherwise enable the assertions as they may have been disabled by a prior elf execution.
+      cfg.loop_vif.control_loop_counters_out_set_assertion(1'b1);
+    end
 
     // We're loading a new program, so the tracking that we've been doing for how long runs take is
     // no longer valid.
@@ -90,10 +114,37 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
   endfunction
 
+  protected function void save_tl_config();
+    `DV_CHECK_FATAL(!saved_tl_cfg.valid)
+    saved_tl_cfg.a_valid_delay_min = cfg.m_tl_agent_cfg.a_valid_delay_min;
+    saved_tl_cfg.a_valid_delay_max = cfg.m_tl_agent_cfg.a_valid_delay_max;
+    saved_tl_cfg.d_ready_delay_min = cfg.m_tl_agent_cfg.d_ready_delay_min;
+    saved_tl_cfg.d_ready_delay_max = cfg.m_tl_agent_cfg.d_ready_delay_max;
+    saved_tl_cfg.valid = 1'b1;
+  endfunction
+
+  protected function void restore_tl_config();
+    `DV_CHECK_FATAL(saved_tl_cfg.valid)
+    cfg.m_tl_agent_cfg.a_valid_delay_min = saved_tl_cfg.a_valid_delay_min;
+    cfg.m_tl_agent_cfg.a_valid_delay_max = saved_tl_cfg.a_valid_delay_max;
+    cfg.m_tl_agent_cfg.d_ready_delay_min = saved_tl_cfg.d_ready_delay_min;
+    cfg.m_tl_agent_cfg.d_ready_delay_max = saved_tl_cfg.d_ready_delay_max;
+    saved_tl_cfg.valid = 1'b0;
+  endfunction
+
+  protected function void speed_up_tl_config();
+    cfg.m_tl_agent_cfg.a_valid_delay_min = 0;
+    cfg.m_tl_agent_cfg.a_valid_delay_max = 0;
+    cfg.m_tl_agent_cfg.d_ready_delay_min = 0;
+    cfg.m_tl_agent_cfg.d_ready_delay_max = 0;
+  endfunction
+
   // Load the contents of an ELF file into the DUT's memories by TL transactions
   protected task load_elf_over_bus(string path);
     otbn_loaded_word to_load[$];
     bit [33:0]       opns[$];
+    bit              run_fast;
+    semaphore        tx_sem = new(0);
 
     // First, tell OtbnMemUtil to stage the ELF. This reads the file and stashes away the segments
     // we need. If something goes wrong, it will print a message to stderr, so we can just fail.
@@ -106,6 +157,15 @@ class otbn_base_vseq extends cip_base_vseq #(
     // queue in the "operations" list below.
     get_queue_entries(1'b0, to_load);
     get_queue_entries(1'b1, to_load);
+
+    // Temporarily configure the TL agent to run much quicker 90% of the time. There's no real
+    // benefit to testing randomised delays here: we're just writing to a bunch of memory addresses!
+    save_tl_config();
+    run_fast = $urandom_range(0,99) < 90;
+    if (run_fast) begin
+      `uvm_info(`gfn, "Using high-speed TL config for front-door ELF load", UVM_HIGH)
+      speed_up_tl_config();
+    end
 
     // The operations that we might perform are:
     //
@@ -120,38 +180,73 @@ class otbn_base_vseq extends cip_base_vseq #(
     // We just write to LOAD_CHECKSUM a couple of times (since writing it too often might actually
     // hide a bug). We read from LOAD_CHECKSUM roughly once every 10 writes.
     //
+    // In "fast mode", we don't do the parallel LOAD_CHECKSUM reads and writes. Running non-blocking
+    // means that UVM sees pending accesses from the register overlapping with calls to predict()
+    // that update it for memory writes. I'm not sure what is the proper way to handle this, but I
+    // don't think it's possible to do with the current OT base classes.
     foreach (to_load[i]) opns.push_back({2'b00, 32'(i)});
-    for (int i = 0; i < 2; ++i) begin
-      bit [31:0] value;
-      `DV_CHECK_STD_RANDOMIZE_FATAL(value)
-      opns.push_back({2'b01, value});
+    if (!run_fast) begin
+      for (int i = 0; i < 2; ++i) begin
+        bit [31:0] value;
+        `DV_CHECK_STD_RANDOMIZE_FATAL(value)
+        opns.push_back({2'b01, value});
+      end
+      for (int i = 0; i < to_load.size() / 10; ++i) opns.push_back({2'b10, 32'd0});
     end
-    for (int i = 0; i < to_load.size() / 10; ++i) opns.push_back({2'b10, 32'd0});
 
     // Shuffle opns so that we perform them in an arbitrary order
     opns.shuffle();
 
-    // Send the writes, one by one
+    // Send the writes, one by one. We want to run in non-blocking mode to avoid each write waiting
+    // for its predecessor. But we also need to be certain that all of the writes have actually
+    // happened. To make this work, we run the CSR operations in blocking mode and do the "fork /
+    // join_none" here instead. That way, we can decrement a counter to see when stuff is done.
     foreach (opns[i]) begin
-      bit [1:0] op;
-      bit [31:0] value;
-
+      automatic bit [1:0] op;
+      automatic bit [31:0] value;
       {op, value} = opns[i];
-      case (op)
-        2'b00:
-          csr_utils_pkg::mem_wr(to_load[value].for_imem ? ral.imem : ral.dmem,
-                                to_load[value].offset,
-                                to_load[value].data);
-        2'b01:
-          csr_utils_pkg::csr_wr(ral.load_checksum, value);
-        2'b10: begin
-          uvm_reg_data_t reg_val;
-          csr_utils_pkg::csr_rd(ral.load_checksum, reg_val);
+
+      if (run_fast) begin
+        // Non-blocking mode
+        fork begin
+          send_mem_operation(to_load, op, value);
+          tx_sem.put();
         end
-        default:
-          `uvm_fatal(`gfn, "Invalid operation")
-      endcase
+        join_none
+      end else begin
+        // Blocking mode
+        send_mem_operation(to_load, op, value);
+        tx_sem.put();
+      end
     end
+
+    // Block until each of the operations above has done a 'put'
+    tx_sem.get(opns.size());
+
+    // Do a final read of LOAD_CHECKSUM. If we are in 'fast mode', this is the only one we'll do.
+    begin
+      uvm_reg_data_t reg_val;
+      csr_utils_pkg::csr_rd(ral.load_checksum, reg_val);
+    end
+
+    restore_tl_config();
+  endtask
+
+  protected task send_mem_operation(otbn_loaded_word to_load[$], bit [1:0] op, bit [31:0] value);
+    case (op)
+      2'b00:
+        csr_utils_pkg::mem_wr(to_load[value].for_imem ? ral.imem : ral.dmem,
+                              to_load[value].offset,
+                              to_load[value].data);
+      2'b01:
+        csr_utils_pkg::csr_wr(ral.load_checksum, value);
+      2'b10: begin
+        uvm_reg_data_t reg_val;
+        csr_utils_pkg::csr_rd(ral.load_checksum, reg_val);
+      end
+      default:
+        `uvm_fatal(`gfn, "Invalid operation")
+    endcase
   endtask
 
   protected function automatic void
@@ -197,11 +292,47 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
   endfunction
 
+  // Write a random CMD value, which may or may not be a valid command.
+  //
+  // This is only used when OTBN is either known to be locked or running (so it will ignore the
+  // write) or is known to be ready to receive a command (For example, maybe we tried to send the
+  // command when it was running, but were a little bit late. That would still be fine because we
+  // know that we've got an ELF file loaded up)
+  //
+  // Note that the CMD register just contains an 8-bit field. We randomise the top bits here, but
+  // they should have no effect.
+  protected task _send_random_cmd();
+    logic [31:0] val;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, val[7:0] dist {otbn_pkg::CmdExecute :/2,
+                                                           otbn_pkg::CmdSecWipeDmem :/ 2,
+                                                           otbn_pkg::CmdSecWipeImem :/ 2,
+                                                           [0:$] :/ 1};)
+    `uvm_info(`gfn,
+              $sformatf("\n\t ----| Writing a random value (0x%08h) to CMD register", val),
+              UVM_MEDIUM)
+    csr_utils_pkg::csr_wr(ral.cmd, val);
+  endtask
+
+  // Write a bogus CMD value, which is definitely not a valid command
+  protected task _send_bogus_cmd();
+    logic [31:0] val;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val,
+                                       !(val[7:0] inside {otbn_pkg::CmdExecute,
+                                                          otbn_pkg::CmdSecWipeDmem,
+                                                          otbn_pkg::CmdSecWipeImem});)
+    `uvm_info(`gfn,
+              $sformatf("\n\t ----| Writing a bogus value (0x%08h) to CMD register", val),
+              UVM_MEDIUM)
+    csr_utils_pkg::csr_wr(ral.cmd, val);
+  endtask
+
   // Start OTBN and then wait until done
   //
   // If the block gets reset, this task will exit early.
   protected task run_otbn(input check_end_addr = 1);
     int exp_end_addr;
+    int rd_pc;
+    int wr_pc;
 
     // Check that we haven't been called re-entrantly. This could happen if there's a bug in the
     // reset sequence, which relies on run_otbn() to exit properly when it sees a device reset.
@@ -273,23 +404,32 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
     cfg.m_alert_agent_cfg["recov"].vif.wait_ack_complete();
 
-    running_ = 1'b0;
-
     if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked) begin
-      logic [7:0] wdata;
-      bit cmd_wr = $urandom_range(9,0) == 0;
+      bit cmd_wr;
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cmd_wr, cmd_wr dist { 0 :/ 9, 1 :/ 1};)
       if (cmd_wr) begin
         `uvm_info(`gfn, "entered locked status. Writing to cmd register", UVM_LOW)
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wdata, wdata dist {otbn_pkg::CmdExecute :/2,
-                                                              otbn_pkg::CmdSecWipeDmem :/ 2,
-                                                              otbn_pkg::CmdSecWipeImem :/ 2,
-                                                              'b0 :/ 1};);
-        if (wdata == 'b0) begin
-          `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-        end
-        csr_utils_pkg::csr_wr(ral.cmd, wdata);
+        _send_random_cmd();
       end
     end
+    csr_utils_pkg::csr_wr(ral.ctrl, 'b0);
+    cfg.model_agent_cfg.vif.set_software_errs_fatal(1'b0);
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rd_pc, rd_pc inside {[0:100]};)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wr_pc, wr_pc inside {[0:100]};)
+    if (rd_pc <= 50) begin
+      uvm_reg_data_t reg_val;
+      csr_utils_pkg::csr_rd(ral.err_bits, reg_val);
+    end
+    if (wr_pc <= 25) begin
+      bit [31:0] wdata;
+      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
+      csr_utils_pkg::csr_wr(ral.err_bits, wdata);
+    end
+
+    // Note: This must be the last thing in the function before we return. We use this flag to
+    // synchronise with a "disable fork" in start_running_otbn().
+    running_ = 1'b0;
   endtask
 
   // The guts of the run_otbn task. Writes to the CMD register to start OTBN and polls the status
@@ -373,6 +513,7 @@ class otbn_base_vseq extends cip_base_vseq #(
   protected task _run_loop_warps();
     logic [31:0] addr, old_iters, old_count;
     bit [31:0]   new_count, new_iters;
+    bit [31:0]   loop_stack_rd_idx;
 
     forever begin
       // Run on the negative edge of the clock: we want to force a "_d" value, so should make sure
@@ -396,27 +537,77 @@ class otbn_base_vseq extends cip_base_vseq #(
       if (!OtbnMemUtilGetLoopWarp(cfg.mem_util, addr, old_count, new_count))
         continue;
 
-      // Convert this back to the "RTL view"
+      // Loop warping assumes we're not manipulating the loop stack (i.e. no new loop starting or
+      // current loop finishing the same cycle we warp).
+      `DV_CHECK_FATAL(!(cfg.loop_vif.loop_stack_push || cfg.loop_vif.loop_stack_pop))
+
+      // Convert loop warp's remaining iteration count to "RTL view"
       new_iters = cfg.loop_vif.loop_count_to_iters(new_count);
 
-      // We want to use this value to override the _d signal, but there's one more wrinkle: if the
-      // current address matches the loop end, it will already have been decremented and we need to
-      // decrement it one more time to match.
-      if (cfg.loop_vif.current_loop_q_iterations != cfg.loop_vif.current_loop_d_iterations) begin
-        `DV_CHECK_EQ_FATAL(cfg.loop_vif.current_loop_q_iterations,
-                           cfg.loop_vif.current_loop_d_iterations + 1)
-        `DV_CHECK_FATAL(new_iters > 0)
-        new_iters--;
-      end
-
-      // Override the _d signal
-      if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
-                           "u_otbn_loop_controller.current_loop_d.loop_iterations"},
-                          new_iters) != 1) begin
-        `dv_fatal("Failed to override loop_iterations for loop warp.")
-      end
+      _set_loop_counter(cfg.loop_vif.loop_stack_rd_idx, new_iters);
     end
   endtask
+
+  // Set a counter in the loop stack to a specified value
+  protected function void _set_loop_counter(bit [31:0] loop_counter_idx, bit [31:0] new_count);
+    bit [31:0] new_up_cnt_q;
+    bit [31:0] new_up_cnt_d;
+    bit [31:0] new_past_cnt;
+    string counter_path;
+
+    counter_path = $sformatf("u_otbn_loop_controller.g_loop_counters[%d].u_loop_count",
+                             cfg.loop_vif.loop_stack_rd_idx);
+
+    // The counters have a down and up count. The down count gives us the remaining iterations;
+    // the up count is the inverse. So down and up must always sum to a constant which is given by
+    // loop_count_max_vals (each time you set the counter within the RTL the constant is changed).
+    // This calculates the appropriate up count values from the desired new down count.
+    // Both _d and _q need to be provided and be consistent to avoid glitches on the error signal.
+    new_up_cnt_q = cfg.loop_vif.loop_count_max_vals[loop_counter_idx] - new_count;
+    if (cfg.loop_vif.current_loop_q_iterations != cfg.loop_vif.current_loop_d_iterations) begin
+      // When iterations are being incremented the up count increases, so set _d appropriately
+      `DV_CHECK_EQ_FATAL(cfg.loop_vif.current_loop_q_iterations,
+                         cfg.loop_vif.current_loop_d_iterations + 1)
+
+      new_up_cnt_d = new_up_cnt_q + 1;
+    end else begin
+      // No iteration count change so _d == _q
+      new_up_cnt_d = new_up_cnt_q;
+    end
+
+    // prim_count contains some aux logic used by the assertions. This also needs updating with
+    // the warped value.
+    new_past_cnt = new_count + 1;
+
+    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
+                         counter_path,
+                         ".up_cnt_d[0]"},
+                         new_up_cnt_d) != 1) begin
+      `dv_fatal("Failed to override up_cnt_d for loop warp.")
+    end
+
+    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
+                         counter_path,
+                         ".up_cnt_q[0]"},
+                         new_up_cnt_q) != 1) begin
+      `dv_fatal("Failed to override up_cnt_q for loop warp.")
+    end
+
+    // down_cnt has no seperate _d and _q so just update the single `down_cnt` signal.
+    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
+                         counter_path,
+                         ".gen_cross_cnt_hardening.down_cnt"},
+                        new_count) != 1) begin
+      `dv_fatal("Failed to override down_cnt for loop warp.")
+    end
+
+    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
+                         counter_path,
+                         ".past_cnt_o"},
+                        new_past_cnt) != 1) begin
+      `dv_fatal("Failed to override past_cnt_o for loop warp.")
+    end
+  endfunction
 
   // Run the correct key sideload sequence
   protected task _run_sideload_sequence();
@@ -540,7 +731,8 @@ class otbn_base_vseq extends cip_base_vseq #(
       join
       if (timed_out) break;
     end
-
+    // Insert a random CMD write while we are running for coverage
+    _send_random_cmd();
     // If we get here and timed_out is false then something weird has happened: we've run the binary
     // 10 times and each run has taken less than 75% of the time of the previous run. This shouldn't
     // happen!
@@ -614,4 +806,27 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  // Task to check if otbn is in locked state. If otbn is indeed locked, then ensure fatal error is
+  // asserted and reset the dut.
+  virtual task reset_if_locked();
+    uvm_reg_data_t act_val;
+    wait (cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute);
+
+    // At this point, our status has changed. We're probably actually seeing the alert now, but make
+    // sure that it has gone out in at most 100 cycles.
+    if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked) begin
+      fork
+        begin
+          csr_utils_pkg::csr_rd(.ptr(ral.status), .value(act_val));
+          csr_utils_pkg::csr_rd(.ptr(ral.err_bits), .value(act_val));
+          csr_utils_pkg::csr_rd(.ptr(ral.fatal_alert_cause), .value(act_val));
+        end
+        begin
+          repeat (3) wait_alert_trigger("fatal", .wait_complete(1));
+        end
+      join
+      do_apply_reset = 1'b1;
+      dut_init("HARD");
+    end
+  endtask
 endclass : otbn_base_vseq

@@ -17,6 +17,7 @@ use crate::util::parse_int::ParseInt;
 mod cw310;
 mod hyperdebug;
 mod proxy;
+mod ti50emulator;
 mod ultradebug;
 mod verilator;
 
@@ -35,10 +36,16 @@ pub struct BackendOpts {
     usb_serial: Option<String>,
 
     #[structopt(flatten)]
+    cw310_opts: cw310::Cw310Opts,
+
+    #[structopt(flatten)]
     verilator_opts: verilator::VerilatorOpts,
 
     #[structopt(flatten)]
     proxy_opts: proxy::ProxyOpts,
+
+    #[structopt(flatten)]
+    ti50emulator_opts: ti50emulator::Ti50EmulatorOpts,
 
     #[structopt(long, help = "Configuration files")]
     conf: Option<PathBuf>,
@@ -61,6 +68,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         "" => create_empty_transport(),
         "proxy" => proxy::create(&args.proxy_opts),
         "verilator" => verilator::create(&args.verilator_opts),
+        "ti50emulator" => ti50emulator::create(&args.ti50emulator_opts),
         "ultradebug" => ultradebug::create(args),
         "hyperdebug" => hyperdebug::create::<StandardFlavor>(args),
         "c2d2" => hyperdebug::create::<C2d2Flavor>(args),

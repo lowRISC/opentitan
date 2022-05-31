@@ -16,7 +16,6 @@ package spi_device_pkg;
     // Passthrough includes SCK also. The sck_en is pad out enable not CG
     // enable. The CG is placed in SPI_DEVICE IP.
     logic       sck;
-    logic       sck_gate_en; // TBD: place for CG?
     logic       sck_en;
 
     // CSb should be pull-up pad. In passthrough mode, CSb is directly connected
@@ -38,7 +37,6 @@ package spi_device_pkg;
   parameter passthrough_req_t PASSTHROUGH_REQ_DEFAULT = '{
     passthrough_en: 1'b 0,
     sck:            1'b 0,
-    sck_gate_en:    1'b 0,
     sck_en:         1'b 0,
     csb:            1'b 1,
     csb_en:         1'b 0,
@@ -234,6 +232,8 @@ package spi_device_pkg;
     CmdInfoReserveEnd   = spi_device_reg_pkg::NumCmdInfo - 1,
     CmdInfoEn4B         = CmdInfoReserveEnd + 1,
     CmdInfoEx4B         = CmdInfoEn4B + 1,
+    CmdInfoWrEn         = CmdInfoEx4B + 1,
+    CmdInfoWrDi         = CmdInfoWrEn + 1,
     NumTotalCmdInfo
   } cmd_info_index_e;
 
@@ -311,24 +311,26 @@ package spi_device_pkg;
 
   localparam int MEM_AW = 12; // Memory Address width (Byte based)
 
-  typedef enum logic [7:0] {
-    DpNone       = 'b 00000000,
-    DpReadCmd    = 'b 00000001,
-    DpReadStatus = 'b 00000010,
-    DpReadSFDP   = 'b 00000100,
-    DpReadJEDEC  = 'b 00001000,
+  typedef enum logic [9:0] {
+    DpNone       = 'b 0000000000,
+    DpReadCmd    = 'b 0000000001,
+    DpReadStatus = 'b 0000000010,
+    DpReadSFDP   = 'b 0000000100,
+    DpReadJEDEC  = 'b 0000001000,
 
     // Command + Address only: e.g Block Erase
     // Command + Address + Paylod: Program
     // Command followed by direct payload
     // Write Status could be an example
     // Command only: Write Protect Enable / Chip Erase
-    DpUpload     = 'b 00010000,
+    DpUpload     = 'b 0000010000,
 
-    DpEn4B       = 'b 00100000,
-    DpEx4B       = 'b 01000000,
+    DpEn4B       = 'b 0000100000,
+    DpEx4B       = 'b 0001000000,
+    DpWrEn       = 'b 0010000000,
+    DpWrDi       = 'b 0100000000,
     // Unrecognizable commands: Just handle this as DpPayload
-    DpUnknown    = 'b 10000000
+    DpUnknown    = 'b 1000000000
   } sel_datapath_e;
 
   typedef enum spi_byte_t {
@@ -361,18 +363,29 @@ package spi_device_pkg;
     CmdWriteDisable = 8'h 04,
     CmdWriteEnable  = 8'h 06,
 
+    CmdEn4B = 8'h B7,
+    CmdEx4B = 8'h E9,
+
     CmdReadSfdp = 8'h 5A,
+
+    CmdChipErase = 8'h C7,
 
     CmdEnableReset = 8'h 66,
     CmdResetDevice = 8'h 99
   } spi_cmd_e;
 
   // Sram parameters
-  parameter int unsigned SramDw    = 32;
-  parameter int unsigned SramStrbW = SramDw/8;
+  parameter int unsigned SramDw      = 32;
+  parameter int unsigned SramStrbW   = SramDw/8;
+  parameter int unsigned SramOffsetW = $clog2(SramStrbW);
 
   // Msg region is used for read cmd in Flash and Passthrough region
   parameter int unsigned SramMsgDepth = 512; // 2kB
+  parameter int unsigned SramMsgBytes = SramMsgDepth * SramStrbW;
+
+  // Address Width of a Buffer in bytes
+  parameter int unsigned SramBufferBytes = SramMsgBytes / 2; // Double Buffer
+  parameter int unsigned SramBufferAw    = $clog2(SramBufferBytes);
 
   parameter int unsigned SramMailboxDepth = 256; // 1kB for mailbox
 

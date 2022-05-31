@@ -100,30 +100,23 @@ Documentation | [NEW_FEATURES_D3][]     | N/A         |
 RTL           | [TODO_COMPLETE][]       | Done        | Resolved: [#837][]
 Code Quality  | [LINT_COMPLETE][]       | Done        |
 Code Quality  | [CDC_COMPLETE][]        | N/A         |
+Code Quality  | [RDC_COMPLETE][]        | Not Started |
 Review        | [REVIEW_RTL][]          | Done        | 1st @tjaychen / 2nd @martin-lueker
 Review        | [REVIEW_DELETED_FF][]   | N/A         |
-Review        | [REVIEW_SW_CSR][]       | N/A         |
-Review        | [REVIEW_SW_FATAL_ERR][] | Done        |
 Review        | [REVIEW_SW_CHANGE][]    | N/A         |
 Review        | [REVIEW_SW_ERRATA][]    | Done        |
-Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
-Security      | [SEC_SHADOW_REGS][]     | Not Started |
 Review        | Reviewer(s)             | Done        | @weicaiyang @tjaychen
 Review        | Signoff date            | Done        | 2019-11-07
 
-[NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new-features-d3" >}}
-[TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo-complete" >}}
-[LINT_COMPLETE]:        {{<relref "/doc/project/checklist.md#lint-complete" >}}
-[CDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#cdc-complete" >}}
-[REVIEW_RTL]:           {{<relref "/doc/project/checklist.md#review-rtl" >}}
-[REVIEW_DBG]:           {{<relref "/doc/project/checklist.md#review-dbg" >}}
-[REVIEW_DELETED_FF]:    {{<relref "/doc/project/checklist.md#review-deleted-ff" >}}
-[REVIEW_SW_CSR]:        {{<relref "/doc/project/checklist.md#review-sw-csr" >}}
-[REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review-sw-fatal-err" >}}
-[REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review-sw-change" >}}
-[REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review-sw-errata" >}}
-[SEC_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
-[SEC_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
+[NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new_features_d3" >}}
+[TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo_complete" >}}
+[LINT_COMPLETE]:        {{<relref "/doc/project/checklist.md#lint_complete" >}}
+[CDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#cdc_complete" >}}
+[RDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#rdc_complete" >}}
+[REVIEW_RTL]:           {{<relref "/doc/project/checklist.md#review_rtl" >}}
+[REVIEW_DELETED_FF]:    {{<relref "/doc/project/checklist.md#review_deleted_ff" >}}
+[REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
+[REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
 
 ## Verification Checklist
 
@@ -195,7 +188,6 @@ Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        |
 Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
-Code Quality  | [TB_LINT_PASS][]                        | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Waived      | prim_arbiter to be verified later
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
@@ -219,7 +211,6 @@ Review        | Signoff date                            | Done        | 2019-11-
 [SIM_FUNCTIONAL_COVERAGE_V2]:         {{<relref "/doc/project/checklist.md#sim_functional_coverage_v2" >}}
 [FPV_CODE_COVERAGE_V2]:               {{<relref "/doc/project/checklist.md#fpv_code_coverage_v2" >}}
 [FPV_COI_COVERAGE_V2]:                {{<relref "/doc/project/checklist.md#fpv_coi_coverage_v2" >}}
-[TB_LINT_PASS]:                       {{<relref "/doc/project/checklist.md#tb_lint_pass" >}}
 [PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v2" >}}
 [NO_HIGH_PRIORITY_ISSUES_PENDING]:    {{<relref "/doc/project/checklist.md#no_high_priority_issues_pending" >}}
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all_low_priority_issues_root_caused" >}}

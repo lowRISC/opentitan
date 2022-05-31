@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:count
       - lowrisc:prim:edge_detector
       - lowrisc:prim:flash
+      - lowrisc:prim:flop_2sync
       - lowrisc:prim:gf_mult
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lfsr

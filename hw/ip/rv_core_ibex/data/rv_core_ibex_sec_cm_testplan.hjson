@@ -25,75 +25,81 @@
   testpoints: [
     {
       name: sec_cm_bus_integrity
-      desc: "Verify the countermeasure(s) BUS.INTEGRITY"
+      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       milestone: V2S
-      tests: {}
+      tests: []
     }
     {
       name: sec_cm_scramble_key_sideload
-      desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD"
+      desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
       milestone: V2S
-      tests: {}
+      tests: []
     }
     {
       name: sec_cm_core_data_reg_sw_sca
-      desc: "Verify the countermeasure(s) CORE.DATA_REG_SW.SCA"
+      desc: "Verify the countermeasure(s) CORE.DATA_REG_SW.SCA."
       milestone: V2S
-      tests: {}
+      tests: []
     }
     {
       name: sec_cm_pc_ctrl_flow_consistency
-      desc: "Verify the countermeasure(s) PC.CTRL_FLOW.CONSISTENCY"
+      desc: "Verify the countermeasure(s) PC.CTRL_FLOW.CONSISTENCY."
       milestone: V2S
-      tests: {}
+      tests: []
     }
     {
       name: sec_cm_ctrl_flow_unpredictable
-      desc: "Verify the countermeasure(s) CTRL_FLOW.UNPREDICTABLE"
+      desc: "Verify the countermeasure(s) CTRL_FLOW.UNPREDICTABLE."
       milestone: V2S
-      tests: {}
+      tests: []
     }
     {
       name: sec_cm_data_reg_sw_integrity
-      desc: "Verify the countermeasure(s) DATA_REG_SW.INTEGRITY"
+      desc: "Verify the countermeasure(s) DATA_REG_SW.INTEGRITY."
       milestone: V2S
-      tests: {}
+      tests: []
+    }
+    {
+      name: sec_cm_data_reg_sw_glitch_detect
+      desc: "Verify the countermeasure(s) DATA_REG_SW.GLITCH_DETECT."
+      milestone: V2S
+      tests: []
     }
     {
       name: sec_cm_logic_shadow
-      desc: "Verify the countermeasure(s) LOGIC.SHADOW"
+      desc: "Verify the countermeasure(s) LOGIC.SHADOW."
       milestone: V2S
-      tests: {}
+      tests: []
     }
     {
       name: sec_cm_fetch_ctrl_lc_gated
-      desc: "Verify the countermeasure(s) FETCH.CTRL.LC_GATED"
+      desc: "Verify the countermeasure(s) FETCH.CTRL.LC_GATED."
       milestone: V2S
-      tests: {}
+      tests: []
     }
     {
       name: sec_cm_exception_ctrl_flow_local_esc
-      desc: "Verify the countermeasure(s) EXCEPTION.CTRL_FLOW.LOCAL_ESC"
+      desc: "Verify the countermeasure(s) EXCEPTION.CTRL_FLOW.LOCAL_ESC."
       milestone: V2S
-      tests: {}
+      tests: []
     }
     {
       name: sec_cm_exception_ctrl_flow_global_esc
-      desc: "Verify the countermeasure(s) EXCEPTION.CTRL_FLOW.GLOBAL_ESC"
+      desc: "Verify the countermeasure(s) EXCEPTION.CTRL_FLOW.GLOBAL_ESC."
       milestone: V2S
-      tests: {}
+      tests: []
     }
     {
       name: sec_cm_icache_mem_scramble
-      desc: "Verify the countermeasure(s) ICACHE.MEM.SCRAMBLE"
+      desc: "Verify the countermeasure(s) ICACHE.MEM.SCRAMBLE."
       milestone: V2S
-      tests: {}
+      tests: []
     }
     {
       name: sec_cm_icache_mem_integrity
-      desc: "Verify the countermeasure(s) ICACHE.MEM.INTEGRITY"
+      desc: "Verify the countermeasure(s) ICACHE.MEM.INTEGRITY."
       milestone: V2S
-      tests: {}
+      tests: []
     }
   ]
 }

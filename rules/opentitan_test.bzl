@@ -20,20 +20,6 @@ _BASE_PARAMS = {
     "timeout": "moderate",  # 5 minutes
 }
 
-_OTTF_DEPS = [
-    "//sw/device/lib/arch:device",
-    "//sw/device/lib/base:macros",
-    "//sw/device/lib/base:csr",
-    "//sw/device/lib/base:mmio",
-    "//sw/device/lib/runtime:hart",
-    "//sw/device/lib/runtime:log",
-    "//sw/device/lib/runtime:print",
-    "//sw/device/lib/crt",
-    "//sw/device/lib/testing/test_framework:ottf_start",
-    "//sw/device/lib/testing/test_framework:ottf",
-    "//sw/device/lib/base:mmio",
-]
-
 def dv_params(
         # Base Parameters
         args = _BASE_PARAMS["args"] + [
@@ -45,6 +31,7 @@ def dv_params(
         rom = _BASE_PARAMS["rom"].format("sim_dv"),
         tags = _BASE_PARAMS["tags"],
         timeout = _BASE_PARAMS["timeout"],
+        test_runner = "//util:dvsim_test_runner.sh",
         # DV-specific Parameters
         bootstrap_sw = False,  # Default to backdoor loading.
         dvsim_config = "//hw/top_earlgrey/dv:chip_sim_cfg.hjson",
@@ -68,6 +55,7 @@ def dv_params(
     required_args = [
         "-i",
         "chip_sw_{name}",
+        "--",
     ]
     required_data = [
         dvsim_config,
@@ -76,13 +64,13 @@ def dv_params(
     ]
     required_tags = ["dv"]
     kwargs.update(
-        args = required_args + args,
+        args = args + required_args,
         data = required_data + data,
         local = local,
         otp = otp,
         rom = rom,
         tags = required_tags + tags,
-        test_runner = "//util:dvsim_test_runner.sh",
+        test_runner = test_runner,
         timeout = timeout,
         bootstrap_sw = bootstrap_sw,
         dvsim_config = dvsim_config,
@@ -95,7 +83,7 @@ def verilator_params(
             "console",
             "--exit-failure=" + shell.quote(_EXIT_FAILURE),
             "--exit-success=" + shell.quote(_EXIT_SUCCESS),
-            "--timeout=3600",
+            "--timeout=3600s",
         ],
         data = _BASE_PARAMS["data"],
         local = _BASE_PARAMS["local"],
@@ -103,6 +91,7 @@ def verilator_params(
         rom = _BASE_PARAMS["rom"].format("sim_verilator"),
         tags = _BASE_PARAMS["tags"] + ["cpu:4"],
         timeout = _BASE_PARAMS["timeout"],
+        test_runner = _BASE_PARAMS["test_runner"],
         # Verilator-specific Parameters
         # None
         **kwargs):
@@ -142,7 +131,7 @@ def verilator_params(
         otp = otp,
         rom = rom,
         tags = required_tags + tags,
-        test_runner = _BASE_PARAMS["test_runner"],
+        test_runner = test_runner,
         timeout = timeout,
     )
     return kwargs
@@ -150,20 +139,24 @@ def verilator_params(
 def cw310_params(
         # Base Parameters
         args = _BASE_PARAMS["args"] + [
-            "--exec=\"console -q -t0\"",
-            "--exec=\"bootstrap $(location {flash})\"",
+            "--exec=\"load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
+            "--exec=\"bootstrap --protocol {bootstrap_protocol} $(location {flash})\"",
             "console",
             "--exit-failure=" + shell.quote(_EXIT_FAILURE),
             "--exit-success=" + shell.quote(_EXIT_SUCCESS),
-            "--timeout=3600",
+            "--timeout=3600s",
         ],
-        data = _BASE_PARAMS["data"],
+        data = _BASE_PARAMS["data"] + ["{bitstream}"],
         local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
         rom = _BASE_PARAMS["rom"].format("fpga_cw310"),
         tags = _BASE_PARAMS["tags"] + ["cpu:4"],
         timeout = _BASE_PARAMS["timeout"],
+        test_runner = _BASE_PARAMS["test_runner"],
         # CW310-specific Parameters
+        bitstream = "//hw/bitstream:test_rom",
+        rom_kind = None,
+        bootstrap_protocol = "primitive",
         # None
         **kwargs):
     """A macro to create CW310 parameters for OpenTitan functional tests.
@@ -200,8 +193,10 @@ def cw310_params(
         otp = otp,
         rom = rom,
         tags = required_tags + tags,
-        test_runner = _BASE_PARAMS["test_runner"],
+        test_runner = test_runner,
         timeout = timeout,
+        bitstream = bitstream,
+        rom_kind = rom_kind,
     )
     return kwargs
 
@@ -225,7 +220,6 @@ def opentitan_functest(
         targets = ["dv", "verilator", "cw310"],
         args = [],
         data = [],
-        ottf = _OTTF_DEPS,
         test_in_rom = False,
         signed = False,
         key = "test_key_0",
@@ -268,7 +262,7 @@ def opentitan_functest(
     """
 
     # Generate flash artifacts for test.
-    deps = depset(direct = kwargs.pop("deps", []) + ottf).to_list()
+    deps = kwargs.pop("deps", [])
     if test_in_rom:
         opentitan_rom_binary(
             name = name + "_rom_prog",
@@ -295,15 +289,17 @@ def opentitan_functest(
             continue
 
         # Set test name.
-        test_name = "{}_{}".format(target, name)
+        test_name = "{}_{}".format(name, target)
         if "manual" not in params.get("tags"):
             all_tests.append(test_name)
 
         # Set flash image.
         if target in ["sim_dv", "sim_verilator"]:
             flash = "{}_prog_{}_scr_vmem64".format(name, target)
+            sw_logs_db = ["{}_prog_{}_logs_db".format(name, target)]
         else:
             flash = "{}_prog_{}_bin".format(name, target)
+            sw_logs_db = []
         if signed:
             flash += "_signed_{}".format(key)
 
@@ -323,6 +319,21 @@ def opentitan_functest(
         rom = params.pop("rom")
         if test_in_rom:
             rom = "{}_rom_prog_{}_scr_vmem".format(name, target)
+
+        bitstream = params.pop("bitstream", None)
+        rom_kind = params.pop("rom_kind", None)
+        if bitstream and not rom_kind:
+            if "test_rom" in bitstream:
+                rom_kind = "testrom"
+            elif "mask_rom" in bitstream:
+                rom_kind = "maskrom"
+            else:
+                fail("Unknown bitstream type. Expected the bitstream label to contain the string 'test_rom' or 'mask_rom'.")
+
+        # Determine the bootstrap protocol to use.
+        bootstrap_protocol = "primitive"
+        if rom_kind and rom_kind == "maskrom":
+            bootstrap_protocol = "eeprom"
 
         # Set OTP image.
         otp = params.pop("otp")
@@ -347,27 +358,52 @@ def opentitan_functest(
             name = name,
             otp = otp,
             rom = rom,
+            rom_kind = rom_kind,
+            bitstream = bitstream,
+            bootstrap_protocol = bootstrap_protocol,
         )
+        if target == "fpga_cw310":
+            # We attach the uarts configuration to the front of the command
+            # line so that they'll be parsed as global options rather than
+            # command-specific options.
+            concat_args = select({
+                "//ci:lowrisc_fpga_cw310": ["--cw310-uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
+                "//conditions:default": [],
+            }) + concat_args
         concat_data = _format_list(
             "data",
             data,
             params,
             flash = flash,
+            bitstream = bitstream,
         )
 
         native.sh_test(
             name = test_name,
             srcs = [test_runner],
             args = concat_args,
+            flaky = target == "sim_verilator",  # Temporary workaround for #12603
             data = [
                 flash,
                 rom,
                 otp,
-            ] + concat_data,
+            ] + concat_data + sw_logs_db,
             **params
         )
 
     native.test_suite(
         name = name,
         tests = all_tests,
+        # In test_suites, tags perform a filtering function and will select
+        # matching tags internally instead of allowing filters to select
+        # test_suites.
+        # There are exceptions: "small", "medium", "large", "enourmous", "manual"
+        tags = [
+            # The manual tag is a special case and is applied to the test suite
+            # it prevents it from being included in wildcards so that
+            # --build_tag_filters=-verilator works as expected and excludes
+            # building verilator tests so the verilator build wont be invoked.
+            "manual",
+            # For more see https://bazel.build/reference/be/general#test_suite.tags
+        ],
     )

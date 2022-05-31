@@ -27,3 +27,9 @@ void init_translation(uint32_t src_addr, uint32_t size, uint32_t dst_addr) {
   mmio_region_write32(ibex_base, RV_CORE_IBEX_IBUS_ADDR_EN_0_REG_OFFSET, 1);
   mmio_region_write32(ibex_base, RV_CORE_IBEX_DBUS_ADDR_EN_0_REG_OFFSET, 1);
 }
+
+uint32_t fpga_version(void) {
+  mmio_region_t ibex_base =
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+  return mmio_region_read32(ibex_base, RV_CORE_IBEX_FPGA_INFO_REG_OFFSET);
+}

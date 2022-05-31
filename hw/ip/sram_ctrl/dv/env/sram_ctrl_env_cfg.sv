@@ -40,9 +40,6 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     // Set up second RAL model for SRAM memory and associated collateral
     ral_model_names.push_back(sram_ral_name);
 
-    // both RAL models use same clock frequency
-    clk_freqs_mhz[sram_ral_name] = clk_freq_mhz;
-
     super.initialize(csr_base_addr);
     tl_intg_alert_fields[ral.status.bus_integ_error] = 1;
 
@@ -66,6 +63,12 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     // default TLUL supports 1 outstanding item, the sram TLUL supports 2 outstanding items.
     m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
     m_tl_agent_cfgs[sram_ral_name].max_outstanding_req = 2;
+  endfunction
+
+  function void post_randomize();
+    super.post_randomize();
+    // both RAL models use same clock frequency
+    clk_freqs_mhz[sram_ral_name] = clk_freq_mhz;
   endfunction
 
   // Override the default implementation in dv_base_env_cfg.

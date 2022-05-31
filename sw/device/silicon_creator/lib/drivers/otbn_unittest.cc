@@ -8,6 +8,8 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/testing/mock_abs_mmio.h"
+#include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -16,23 +18,61 @@
 namespace otbn_unittest {
 namespace {
 using ::testing::ElementsAre;
+using ::testing::Return;
 
 class OtbnTest : public mask_rom_test::MaskRomTest {
  protected:
+  /**
+   * Sets expectations for running an OTBN command.
+   *
+   * @param cmd Command.
+   * @param err_bits Error bits.
+   */
+  void ExpectCmdRun(otbn_cmd_t cmd, otbn_err_bits_t err_bits) {
+    EXPECT_ABS_WRITE32(base_ + OTBN_INTR_STATE_REG_OFFSET,
+                       {
+                           {OTBN_INTR_COMMON_DONE_BIT, 1},
+                       });
+    EXPECT_ABS_WRITE32(base_ + OTBN_CMD_REG_OFFSET, cmd);
+
+    EXPECT_ABS_READ32(base_ + OTBN_INTR_STATE_REG_OFFSET, 0);
+    EXPECT_ABS_READ32(base_ + OTBN_INTR_STATE_REG_OFFSET,
+                      {
+                          {OTBN_INTR_COMMON_DONE_BIT, 1},
+                      });
+    EXPECT_ABS_WRITE32(base_ + OTBN_INTR_STATE_REG_OFFSET,
+                       {
+                           {OTBN_INTR_COMMON_DONE_BIT, 1},
+                       });
+
+    EXPECT_ABS_READ32(base_ + OTBN_ERR_BITS_REG_OFFSET, err_bits);
+  }
+
   uint32_t base_ = TOP_EARLGREY_OTBN_BASE_ADDR;
-  mask_rom_test::MockAbsMmio mmio_;
+  mask_rom_test::MockAbsMmio abs_mmio_;
+  mask_rom_test::MockRnd rnd_;
+  mask_rom_test::MockSecMmio sec_mmio_;
 };
 
-class StartTest : public OtbnTest {};
+class ExecuteTest : public OtbnTest {};
 
-TEST_F(StartTest, Success) {
+TEST_F(ExecuteTest, Success) {
   // Test assumption.
   static_assert(OTBN_IMEM_SIZE_BYTES >= 8, "OTBN IMEM size too small.");
 
-  // Send EXECUTE command.
-  EXPECT_ABS_WRITE32(base_ + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
+  EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
 
-  otbn_execute();
+  ExpectCmdRun(kOtbnCmdExecute, kOtbnErrBitsNoError);
+
+  EXPECT_EQ(otbn_execute(), kErrorOk);
+}
+
+TEST_F(ExecuteTest, Failure) {
+  EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
+
+  ExpectCmdRun(kOtbnCmdExecute, kOtbnErrBitsFatalSoftware);
+
+  EXPECT_EQ(otbn_execute(), kErrorOtbnExecutionFailed);
 }
 
 class IsBusyTest : public OtbnTest {};
@@ -52,6 +92,20 @@ TEST_F(GetErrBitsTest, Success) {
   otbn_err_bits_t err_bits;
   otbn_get_err_bits(&err_bits);
   EXPECT_EQ(err_bits, kOtbnErrBitsIllegalInsn | kOtbnErrBitsRegIntgViolation);
+}
+
+class ImemSecWipeTest : public OtbnTest {};
+
+TEST_F(ImemSecWipeTest, Success) {
+  ExpectCmdRun(kOtbnCmdSecWipeImem, kOtbnErrBitsNoError);
+
+  EXPECT_EQ(otbn_imem_sec_wipe(), kErrorOk);
+}
+
+TEST_F(ImemSecWipeTest, Failure) {
+  ExpectCmdRun(kOtbnCmdSecWipeImem, kOtbnErrBitsFatalSoftware);
+
+  EXPECT_EQ(otbn_imem_sec_wipe(), kErrorOtbnSecWipeImemFailed);
 }
 
 class ImemWriteTest : public OtbnTest {};
@@ -76,6 +130,7 @@ TEST_F(ImemWriteTest, SuccessWithoutOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[1]);
 
@@ -88,10 +143,25 @@ TEST_F(ImemWriteTest, SuccessWithOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 8, test_data[1]);
 
   EXPECT_EQ(otbn_imem_write(4, test_data.data(), 2), kErrorOk);
+}
+
+class DmemSecWipeTest : public OtbnTest {};
+
+TEST_F(DmemSecWipeTest, Success) {
+  ExpectCmdRun(kOtbnCmdSecWipeDmem, kOtbnErrBitsNoError);
+
+  EXPECT_EQ(otbn_dmem_sec_wipe(), kErrorOk);
+}
+
+TEST_F(DmemSecWipeTest, Failure) {
+  ExpectCmdRun(kOtbnCmdSecWipeDmem, kOtbnErrBitsFatalSoftware);
+
+  EXPECT_EQ(otbn_dmem_sec_wipe(), kErrorOtbnSecWipeDmemFailed);
 }
 
 class DmemWriteTest : public OtbnTest {};
@@ -102,6 +172,7 @@ TEST_F(DmemWriteTest, SuccessWithoutOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[1]);
 
@@ -114,6 +185,7 @@ TEST_F(DmemWriteTest, SuccessWithOffset) {
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
 
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 8, test_data[1]);
 
@@ -152,17 +224,19 @@ TEST_F(DmemReadTest, SuccessWithOffset) {
 class ControlSoftwareErrorsFatalTest : public OtbnTest {};
 
 TEST_F(ControlSoftwareErrorsFatalTest, Success) {
-  EXPECT_ABS_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
-  EXPECT_ABS_READ32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
+  EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
 
-  EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(true), kErrorOk);
-}  // namespace
+  otbn_set_ctrl_software_errs_fatal(true);
+}
 
-TEST_F(ControlSoftwareErrorsFatalTest, Failure) {
-  EXPECT_ABS_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x0);
-  EXPECT_ABS_READ32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
+class ZeroDmemTest : public OtbnTest {};
 
-  EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(false), kErrorOtbnUnavailable);
+TEST_F(ZeroDmemTest, Success) {
+  for (int i = 0; i < OTBN_DMEM_SIZE_BYTES; i += sizeof(uint32_t)) {
+    EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + i, 0);
+  }
+
+  otbn_zero_dmem();
 }
 
 }  // namespace

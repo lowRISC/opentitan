@@ -25,6 +25,7 @@ module pwrmgr_bind;
     .io_clk_en_i(slow_io_clk_en),
     .usb_clk_en_lp_i(slow_usb_clk_en_lp),
     .usb_clk_en_active_i(slow_usb_clk_en_active),
+    .usb_ip_clk_status_i(usb_ip_clk_status),
     // The main power control.
     .main_pd_n(pwr_ast_o.main_pd_n),
     // The output enables.

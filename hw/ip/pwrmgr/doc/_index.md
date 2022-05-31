@@ -100,6 +100,9 @@ When this occurs, the slow FSM sends an `invalid` indication to the fast FSM and
 The clocks are kept on however to allow the fast FSM to operate if it is able to receive the `invalid` indication.
 The slow FSM does not recover from this state until the system is reset by POR.
 
+Unlike [escalation resets](#escalation-reset-request), the system does not self reset.
+Instead the system goes into a terminal non-responsive state where a user or host must directly intervene by toggling the power or asserting an external reset input.
+
 ## Fast Clock Domain FSM
 
 The fast clock domain FSM (referred to as fast FSM from here on) resets to `Low Power` state and waits for a power-up request from the slow FSM.
@@ -219,8 +222,11 @@ When this happens, the power manager creates a local escalation request that beh
 
 #### Main Power Unstable Reset Requests
 If the main power ever becomes unstable (the power okay indication is low even though it is powered on), the power manager requests an internal reset.
-
 This reset behaves similarly to the escalation reset and transitions directly into reset handling.
+
+Note that under normal low power conditions, the main power may be be turned off.
+As a result of this, the main power unstable checks are valid only during states that power should be on and stable.
+This includes any state where power manager has requested the power to be turned on.
 
 
 ### Reset Requests Received During Other States

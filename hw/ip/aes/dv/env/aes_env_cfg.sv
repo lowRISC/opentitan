@@ -10,6 +10,14 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   virtual pins_if #($bits(lc_ctrl_pkg::lc_tx_t) + 1) lc_escalate_vif;
   virtual pins_if #(1) idle_vif;
+  virtual aes_reseed_if aes_reseed_vif;
+  virtual aes_masking_reseed_if aes_masking_reseed_vif;
+  virtual force_if#(.Signal("aes_ctrl_cs"),
+                    .SignalWidth(aes_env_pkg::StateWidth)
+                   ) aes_fi_vif[Sp2VWidth];
+  virtual force_if#(.Signal("aes_cipher_ctrl_cs"),
+                    .SignalWidth(aes_env_pkg::StateWidth)
+                   ) aes_cipher_fi_vif[Sp2VWidth];
 
   rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
   // test environment constraints //
@@ -83,7 +91,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // min and max wait (clk) before an error injection
   // this is only for injection and random reset
   int                inj_min_delay              = 10;
-  int                inj_max_delay              = 500;
+  int                inj_max_delay              = 1000;
   rand int           inj_delay;
 
   rand flip_rst_lc_esc_e    flip_rst_lc_esc;
@@ -108,7 +116,6 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // sideload enable
   int                sideload_pct               = 0;
 
-
   ///////////////////////////////
   // dont touch updated by env //
   ///////////////////////////////
@@ -129,6 +136,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   rand bit           do_reseed;
 
+  rand bit [2:0]     reseed_rate;
 
   // constraints
   constraint do_reseed_c    { if (reseed_en == 0) { do_reseed == 0};}
@@ -147,6 +155,9 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
                                  }
                                }
 
+  constraint reseed_rate_c {reseed_rate dist { 3'b001 :/ 1,
+                                               3'b010 :/ 1,
+                                               3'b100 :/ 1 };}
 
   function void post_randomize();
     if (use_key_mask) key_mask = 1;
@@ -207,6 +218,33 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
     tl_intg_alert_fields[ral.status.alert_fatal_fault] = 1;
     shadow_update_err_status_fields[ral.status.alert_recov_ctrl_update_err] = 1;
     shadow_storage_err_status_fields[ral.status.alert_fatal_fault] = 1;
+    // get aes reseed check interface handle
+    if (!uvm_config_db#(virtual aes_reseed_if)::get(null, "*.env" , "aes_reseed_vif",
+                                                    aes_reseed_vif)) begin
+      `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO AES RESEED IF"))
+    end
+    if (`EN_MASKING) begin
+      if (!uvm_config_db#(virtual aes_masking_reseed_if)::get(null, "*.env" ,
+          "aes_masking_reseed_vif", aes_masking_reseed_vif)) begin
+        `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO AES MASKING RESEED IF"))
+      end
+    end
+    foreach (aes_fi_vif[nn]) begin
+      if (!uvm_config_db#(virtual force_if#(.Signal("aes_ctrl_cs"),
+                                            .SignalWidth(aes_env_pkg::StateWidth))
+                                           )::get(null, "*.env", $sformatf("aes_fi_vif_%0d", nn),
+                                                  aes_fi_vif[nn])) begin
+        `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO FALT INJECT INTERFACE %d",nn))
+      end
+    end
+    foreach (aes_cipher_fi_vif[nn]) begin
+      if (!uvm_config_db#(virtual force_if#(.Signal("aes_cipher_ctrl_cs"),
+                                            .SignalWidth(aes_env_pkg::StateWidth))
+                                           )::get(null, "*.env",
+                           $sformatf("aes_cipher_fi_vif_%0d",  nn), aes_cipher_fi_vif[nn])) begin
+        `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO CIPHER FALT INJECT INTERFACE %d",nn))
+      end
+    end
   endfunction
 
 endclass

@@ -45,7 +45,9 @@ def as_define(s: str) -> str:
 
 def first_line(s: str) -> str:
     """Returns the first line of a multi-line string"""
-    return s.splitlines()[0]
+
+    # Just return the 's' if it is empty or 'None'.
+    return s.splitlines()[0] if s else s
 
 
 def format_comment(s: str) -> str:

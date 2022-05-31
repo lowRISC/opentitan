@@ -4,12 +4,15 @@
 
 pub mod bootstrap;
 pub mod console;
+pub mod emulator;
 pub mod gpio;
 pub mod hello;
 pub mod i2c;
 pub mod image;
 pub mod load_bitstream;
+pub mod set_pll;
 pub mod spi;
+pub mod version;
 
 use anyhow::Result;
 use erased_serde::Serialize;

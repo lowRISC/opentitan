@@ -126,7 +126,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   logic                       rst_shadow_n, enable_cmp_q;
   /* verilator lint_on IMPERFECTSCH */
 
-  assign rst_shadow_cnt_incr = rst_shadow_cnt_q + LockstepOffsetW'(1);
+  assign rst_shadow_cnt_incr = rst_shadow_cnt_q + 1'b1;
 
   assign rst_shadow_set_d = (rst_shadow_cnt_q == LockstepOffsetW'(LockstepOffset - 1));
   assign rst_shadow_cnt_d = rst_shadow_set_d ? rst_shadow_cnt_q : rst_shadow_cnt_incr;

@@ -50,6 +50,7 @@ opentitan_functest(
         ":boot_data",
         ":test_main",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
     ],
 )
@@ -142,6 +143,7 @@ opentitan_functest(
         ":test_main",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
@@ -179,19 +181,6 @@ cc_library(
     hdrs = ["manifest_size.h"],
 )
 
-cc_library(
-    name = "manifest_section",
-    srcs = ["manifest_section.S"],
-    deps = [
-        ":manifest_size",
-    ],
-    # The sole purpose of this target is to add an empty section to binaries
-    # for signing purposes, which are not referenced by any of the .text
-    # portions. Therefore, it must be alwayslink so that manifest_section.S.o
-    # is a root linker input.
-    alwayslink = True,
-)
-
 dual_cc_library(
     name = "manifest",
     srcs = dual_inputs(
@@ -223,6 +212,20 @@ dual_cc_library(
     ),
 )
 
+dual_cc_library(
+    name = "manifest_def",
+    srcs = dual_inputs(device = ["manifest_def.c"]),
+    hdrs = ["manifest_def.h"],
+    target_compatible_with = dual_inputs(device = [OPENTITAN_CPU]),
+    deps = [
+        ":manifest",
+        "//sw/device/lib/base:macros",
+    ],
+    # The manifest section should be populated anytime this is added as a
+    # dependency, even if kManifest is not referenced by software.
+    alwayslink = True,
+)
+
 cc_test(
     name = "manifest_unittest",
     srcs = ["manifest_unittest.cc"],
@@ -241,6 +244,7 @@ cc_library(
     hdrs = ["otbn_util.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:otbn",
     ],
 )
@@ -305,6 +309,6 @@ cc_library(
     deps = [
         ":error",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

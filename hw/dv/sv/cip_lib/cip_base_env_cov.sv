@@ -88,7 +88,9 @@ class tl_errors_cg_wrap;
                            bit mem_byte_access_err,
                            bit mem_wo_err,
                            bit mem_ro_err,
-                           bit tl_protocol_err);
+                           bit tl_protocol_err,
+                           bit write_w_instr_type_err,
+                           bit instr_type_err);
     option.per_instance = 1;
     option.name = name;
 
@@ -105,6 +107,9 @@ class tl_errors_cg_wrap;
     cp_tl_protocol_err: coverpoint tl_protocol_err {
       bins covered = {1};
     }
+
+    cp_write_w_instr_type_err: coverpoint write_w_instr_type_err;
+    cp_instr_type_err: coverpoint instr_type_err;
   endgroup
 
   // Function: new
@@ -118,9 +123,11 @@ class tl_errors_cg_wrap;
                        bit mem_byte_access_err,
                        bit mem_wo_err,
                        bit mem_ro_err,
-                       bit tl_protocol_err);
-    tl_errors_cg.sample(unmapped_err, csr_size_err, mem_byte_access_err,
-                        mem_wo_err, mem_ro_err, tl_protocol_err);
+                       bit tl_protocol_err,
+                       bit write_w_instr_type_err,
+                       bit instr_type_err);
+    tl_errors_cg.sample(unmapped_err, csr_size_err, mem_byte_access_err, mem_wo_err,
+                        mem_ro_err, tl_protocol_err, write_w_instr_type_err, instr_type_err);
   endfunction : sample
 
 endclass

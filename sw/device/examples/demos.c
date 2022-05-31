@@ -12,13 +12,13 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 void demo_gpio_startup(dif_gpio_t *gpio) {
   LOG_INFO("Watch the LEDs!");
 
   // Give a LED pattern as startup indicator for 5 seconds.
-  CHECK_DIF_OK(dif_gpio_write_all(gpio, 0xff00));
+  CHECK_DIF_OK(dif_gpio_write_all(gpio, 0x00ff));
   for (int i = 0; i < 32; ++i) {
     busy_spin_micros(5 * 1000);  // 5 ms
     CHECK_DIF_OK(dif_gpio_write(gpio, 8 + (i % 8), (i / 8) % 2));
@@ -27,15 +27,15 @@ void demo_gpio_startup(dif_gpio_t *gpio) {
 }
 
 /**
- * Mask for "valid" GPIO bits. The first byte represents switch inputs,
- * while byte 16 represents the FTDI bit.
+ * Mask for "valid" GPIO bits. The nibble at [11:8] represents switch inputs,
+ * while the bit at [22] represents the FTDI bit (SW strap 0).
  */
-static const uint32_t kGpioMask = 0x100ff;
+static const uint32_t kGpioMask = 0x400f00;
 
 /**
- * Mask for the FTDI bit among the GPIO bits.
+ * Mask for the FTDI bit (SW strap 0) among the GPIO bits.
  */
-static const uint32_t kFtdiMask = 0x10000;
+static const uint32_t kFtdiMask = 0x400000;
 
 uint32_t demo_gpio_to_log_echo(dif_gpio_t *gpio, uint32_t prev_gpio_state) {
   uint32_t gpio_state;
@@ -62,16 +62,13 @@ uint32_t demo_gpio_to_log_echo(dif_gpio_t *gpio, uint32_t prev_gpio_state) {
   return gpio_state;
 }
 
-void demo_spi_to_log_echo(const dif_spi_device_t *spi,
-                          const dif_spi_device_config_t *spi_config) {
+void demo_spi_to_log_echo(dif_spi_device_handle_t *spi) {
   uint32_t spi_buf[8];
   size_t spi_len;
-  CHECK_DIF_OK(
-      dif_spi_device_recv(spi, spi_config, spi_buf, sizeof(spi_buf), &spi_len));
+  CHECK_DIF_OK(dif_spi_device_recv(spi, spi_buf, sizeof(spi_buf), &spi_len));
   if (spi_len > 0) {
     uint32_t echo_word = spi_buf[0] ^ 0x01010101;
-    CHECK_DIF_OK(dif_spi_device_send(spi, spi_config, &echo_word,
-                                     sizeof(uint32_t),
+    CHECK_DIF_OK(dif_spi_device_send(spi, &echo_word, sizeof(uint32_t),
                                      /*bytes_sent=*/NULL));
     LOG_INFO("SPI: %!s", spi_len, spi_buf);
   }

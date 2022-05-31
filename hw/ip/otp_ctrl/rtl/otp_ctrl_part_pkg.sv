@@ -251,10 +251,10 @@ package otp_ctrl_part_pkg;
   parameter otp_hw_cfg_data_t OTP_HW_CFG_DATA_DEFAULT = '{
     hw_cfg_digest: 64'h2CD09F705F291B7A,
     unallocated: 32'h0,
-    en_entropy_src_fw_over: prim_mubi_pkg::mubi8_t'(8'hA5),
-    en_entropy_src_fw_read: prim_mubi_pkg::mubi8_t'(8'hA5),
-    en_csrng_sw_app_read: prim_mubi_pkg::mubi8_t'(8'hA5),
-    en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'hA5),
+    en_entropy_src_fw_over: prim_mubi_pkg::mubi8_t'(8'h69),
+    en_entropy_src_fw_read: prim_mubi_pkg::mubi8_t'(8'h69),
+    en_csrng_sw_app_read: prim_mubi_pkg::mubi8_t'(8'h69),
+    en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'h69),
     manuf_state: 256'h41389646B3968A3B128F4AF0AFFC1AAC77ADEFF42376E09D523D5C06786AAC34,
     device_id: 256'hFA53B8058E157CB69F1F413E87242971B6B52A656A1CAB7FEBF21E5BF1F45EDD
   };
@@ -297,16 +297,17 @@ package otp_ctrl_part_pkg;
     640'({
       64'h2CD09F705F291B7A,
       32'h0, // unallocated space
-      8'hA5,
-      8'hA5,
-      8'hA5,
-      8'hA5,
+      8'h69,
+      8'h69,
+      8'h69,
+      8'h69,
       256'h41389646B3968A3B128F4AF0AFFC1AAC77ADEFF42376E09D523D5C06786AAC34,
       256'hFA53B8058E157CB69F1F413E87242971B6B52A656A1CAB7FEBF21E5BF1F45EDD
     }),
     6400'({
       64'h39EB436F1D5AF2D7,
-      2304'h0, // unallocated space
+      2272'h0, // unallocated space
+      32'h0,
       32'h0,
       512'h0,
       128'h0,
@@ -321,7 +322,10 @@ package otp_ctrl_part_pkg;
     }),
     6400'({
       64'h7D7EA64D850E128D,
-      5056'h0, // unallocated space
+      4736'h0, // unallocated space
+      32'h0,
+      32'h0,
+      32'h0,
       32'h0,
       32'h0,
       32'h0,
@@ -329,7 +333,7 @@ package otp_ctrl_part_pkg;
       32'h0,
       32'h0,
       32'h0,
-      1024'h0
+      1248'h0
     }),
     512'({
       64'h1D00E175E3739EC1,

@@ -10,6 +10,7 @@ from shared.mem_layout import get_memory_layout
 from .csr import CSRFile
 from .dmem import Dmem
 from .constants import ErrBits, Status
+from .edn_client import EdnClient
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
@@ -30,11 +31,11 @@ class FsmState(IntEnum):
 
         MEM_SEC_WIPE <--\
              |          |
-             \-------> IDLE -> PRE_EXEC -> FETCH_WAIT -> EXEC
-                         ^                       | |
-                         \------- WIPING_GOOD <--/ |
-                                                   |
-                      LOCKED <--  WIPING_BAD  <----/
+             \-------> IDLE -> PRE_EXEC -> EXEC
+                         ^                  | |
+                         \-- WIPING_GOOD <--/ |
+                                              |
+                 LOCKED <--  WIPING_BAD  <----/
 
     IDLE represents the state when nothing is going on but there have been no
     fatal errors. It matches Status.IDLE. LOCKED represents the state when
@@ -46,11 +47,10 @@ class FsmState(IntEnum):
     Status.BUSY_EXECUTE. However, if we are getting a fatal error Status would
     be LOCKED.
 
-    PRE_EXEC, FETCH_WAIT, EXEC, WIPING_GOOD and WIPING_BAD correspond to
+    PRE_EXEC, EXEC, WIPING_GOOD and WIPING_BAD correspond to
     Status.BUSY_EXECUTE. PRE_EXEC is the period after starting OTBN where we're
-    still waiting for an EDN value to seed URND. FETCH_WAIT is the single cycle
-    delay after seeding URND to fill the prefetch stage. EXEC is the period
-    where we start fetching and executing instructions.
+    still waiting for an EDN value to seed URND. EXEC is the period where we
+    start fetching and executing instructions.
 
     WIPING_GOOD and WIPING_BAD represent the time where we're performing a
     secure wipe of internal state (ending in updating the STATUS register to
@@ -64,7 +64,6 @@ class FsmState(IntEnum):
     '''
     IDLE = 0
     PRE_EXEC = 10
-    FETCH_WAIT = 11
     EXEC = 12
     WIPING_GOOD = 13
     WIPING_BAD = 14
@@ -77,7 +76,8 @@ class OTBNState:
         self.gprs = GPRs()
         self.wdrs = RegFile('w', 256, 32)
 
-        self.wsrs = WSRFile()
+        self.ext_regs = OTBNExtRegs()
+        self.wsrs = WSRFile(self.ext_regs)
         self.csrs = CSRFile()
 
         self.pc = 0
@@ -92,29 +92,11 @@ class OTBNState:
         self._next_fsm_state = FsmState.IDLE
 
         self.loop_stack = LoopStack()
-        self.ext_regs = OTBNExtRegs()
 
         self._err_bits = 0
         self.pending_halt = False
 
-        self.rnd_256b_counter = 0
-        self.urnd_256b_counter = 0
-
-        self.rnd_set_flag = False
-
-        self.rnd_req = 0
-        self.rnd_cdc_pending = False
-        self.urnd_cdc_pending = False
-
-        self.rnd_cdc_counter = 0
-        self.urnd_cdc_counter = 0
-
-        self.rnd_256b = 0
-        self.urnd_256b = 4 * [0]
-        self.urnd_64b = 0
-
-        self.imem_req_pending = 0
-        self.dmem_req_pending = 0
+        self._urnd_client = EdnClient()
 
         # To simulate injecting integrity errors, we set a flag to say that
         # IMEM is no longer readable without getting an error. This can't take
@@ -143,6 +125,14 @@ class OTBNState:
         # cancelled).
         self.injected_err_bits = 0
 
+        # If this is set, all software errors should result in the model status
+        # being locked.
+        self.software_errs_fatal = False
+
+        # This is a counter that keeps track of how many cycles have elapsed in
+        # current fsm_state.
+        self.cycles_in_this_state = 0
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -154,115 +144,34 @@ class OTBNState:
         self._pc_next_override = next_pc
 
     def edn_urnd_step(self, urnd_data: int) -> None:
-        # Take the new data
-        assert 0 <= urnd_data < (1 << 32)
-
-        # There should not be a pending URND result before an EDN step.
-        assert not self.urnd_cdc_pending
-
-        # Collect 32b packages in a 64b array of 4 elements
-        shift_num = 32 * (self.urnd_256b_counter % 2)
-        self.urnd_64b = self.urnd_64b | (urnd_data << shift_num)
-
-        if self.urnd_256b_counter % 2:
-            idx = self.urnd_256b_counter // 2
-            self.urnd_256b[idx] = self.urnd_64b
-            self.urnd_64b = 0
-
-        if self.urnd_256b_counter == 7:
-            # Reset the 32b package counter and wait until receiving done
-            # signal from RTL
-            self.urnd_256b_counter = 0
-            self.urnd_cdc_pending = True
-        else:
-            # Count until 8 valid packages are received
-            self.urnd_256b_counter += 1
-            return
-
-        # Reset the 32b package counter and wait until receiving done
-        # signal from RTL
-        self.urnd_256b_counter = 0
+        self._urnd_client.take_word(urnd_data)
 
     def edn_rnd_step(self, rnd_data: int) -> None:
-        # Take the new data
-        assert 0 <= rnd_data < (1 << 32)
-
-        # There should not be a pending RND result before an EDN step.
-        assert not self.rnd_cdc_pending
-
-        # Collect 32b packages in a 256b variable
-        new_word = rnd_data << (32 * self.rnd_256b_counter)
-        assert new_word < (1 << 256)
-        self.rnd_256b = self.rnd_256b | new_word
-
-        if self.rnd_256b_counter == 7:
-            # Reset the 32b package counter and wait until receiving done
-            # signal from RTL
-            self.rnd_256b_counter = 0
-            self.rnd_cdc_pending = True
-        else:
-            # Count until 8 valid packages are received
-            self.rnd_256b_counter += 1
-            return
-
-        # Reset the 32b package counter and wait until receiving done
-        # signal from RTL
-        self.rnd_256b_counter = 0
+        self.ext_regs.rnd_take_word(rnd_data)
 
     def edn_flush(self) -> None:
-        # EDN Flush gets called after a reset signal from EDN clock domain
-        # arrives. It clears out internals of the model regarding EDN data
-        # processing on both RND and URND side.
-        self.rnd_256b = 0
-        self.rnd_cdc_pending = False
-        self.rnd_cdc_counter = 0
-        self.rnd_256b_counter = 0
-
-        self.urnd_64b = 0
-        self.urnd_256b = 4 * [0]
-        self.urnd_256b_counter = 0
-        self.urnd_cdc_pending = False
-        self.urnd_cdc_counter = 0
-
-    def rnd_reg_set(self) -> None:
-        # This sets RND register inside WSR immediately. Calling this with
-        # using DPI causes timing problems so it is best to it when we want
-        # to actually set RND register (at commit method and at the start if
-        # RND processing is completed after OTBN stopped running)
-        if self.rnd_set_flag:
-            self.wsrs.RND.set_unsigned(self.rnd_256b)
-            self.rnd_256b = 0
-            self.rnd_cdc_pending = False
-            self.rnd_set_flag = False
-            self.rnd_cdc_counter = 0
+        self.ext_regs.rnd_reset()
+        self._urnd_client.edn_reset()
 
     def rnd_completed(self) -> None:
-        # This will be called when all the packages are received and processed
-        # by RTL. Model will set RND register, pending flag and internal
-        # variables will be cleared.
-
-        # These must be true since model calculates RND data faster than RTL.
-        # But the synchronisation of the data should not take more than
-        # 5 cycles ideally.
-        assert self.rnd_cdc_counter < 6
-
-        # TODO: Assert rnd_cdc_pending when request is correctly modelled.
-        self.rnd_set_flag = True
+        '''Called when CDC completes for the EDN RND interface'''
+        # Set the RND WSR with the value, assuming the cache hadn't been
+        # poisoned. This will be committed at the end of the next step on the
+        # main clock.
+        rnd_val = self.ext_regs.rnd_cdc_complete()
+        if rnd_val is not None:
+            self.wsrs.RND.set_unsigned(rnd_val)
 
     def urnd_completed(self) -> None:
-        # URND completed gets called after RTL signals that the processing
-        # of incoming EDN data is done. This also sets up EXEC state of the
-        # FSM of the model. This includes a dirty hack which disables
-        # fsm_state assertion because we are always calling this method
-        # while we are doing system level tests. This will be removed after
-        # request modelling of EDN is done.
-        assert self.urnd_cdc_counter < 6
+        w256, retry = self._urnd_client.cdc_complete()
+        # The URND client should never be poisoned
+        assert w256 is not None and retry is False
 
-        # TODO: Assert urnd_cdc_pending when request is correctly modelled.
-        self.wsrs.URND.set_seed(self.urnd_256b)
-        self.urnd_256b = 4 * [0]
-        self.urnd_cdc_pending = False
-        self.urnd_cdc_counter = 0
+        # cdc_complete() returned a 256-bit value but we actually need to split
+        # it back into four 64-bit words.
+        w64s = [(w256 >> (64 * i)) & ((1 << 64) - 1) for i in range(4)]
+
+        self.wsrs.URND.set_seed(w64s)
 
     def loop_start(self, iterations: int, bodysize: int) -> None:
         self.loop_stack.start_loop(self.pc + 4, iterations, bodysize)
@@ -301,6 +210,18 @@ class OTBNState:
     def wiping(self) -> bool:
         return self._fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]
 
+    def stop_if_pending_halt(self) -> bool:
+        if self.pending_halt:
+            self.stop()
+            return True
+        return False
+
+    def step(self, handle_injected_error: bool) -> None:
+        if handle_injected_error:
+            self.take_injected_err_bits()
+        self.ext_regs.step()
+        self._urnd_client.step()
+
     def commit(self, sim_stalled: bool) -> None:
         if self._time_to_imem_invalidation is not None:
             self._time_to_imem_invalidation -= 1
@@ -308,30 +229,19 @@ class OTBNState:
                 self.invalidated_imem = True
                 self._time_to_imem_invalidation = None
 
-        # Check if we processed the RND data, if so set the register. This is
-        # done seperately from the rnd_completed method because in other case
-        # we are exiting stall caused by RND waiting by one cycle too early.
-        self.rnd_reg_set()
-
-        # If model is waiting for the RND register to cross CDC, increment a
-        # counter to say how long we've waited. This lets us spot if the CDC
-        # gets stuck for some reason.
-        if self.rnd_cdc_pending:
-            self.rnd_cdc_counter += 1
-
-        # If model is waiting for the RND register to cross CDC, increment a
-        # counter to say how long we've waited. This lets us spot if the CDC
-        # gets stuck for some reason.
-        if self.urnd_cdc_pending:
-            self.urnd_cdc_counter += 1
-
         old_state = self._fsm_state
 
         self._fsm_state = self._next_fsm_state
+
+        if self._fsm_state == old_state:
+            self.cycles_in_this_state += 1
+        else:
+            self.cycles_in_this_state = 0
+
         self.ext_regs.commit()
 
         # Pull URND out separately because we also want to commit this in some
-        # "idle-ish" states (FETCH_WAIT)
+        # "idle-ish" states
         self.wsrs.URND.commit()
 
         # In some states, we can get away with just committing external
@@ -384,6 +294,12 @@ class OTBNState:
         self.loop_stack = LoopStack()
         self.gprs.empty_call_stack()
 
+        # Poison the requester so that we'll discard the rest of any in-flight
+        # request.
+        self.ext_regs.rnd_poison()
+
+        self._urnd_client.request()
+
     def stop(self) -> None:
         '''Set flags to stop the processor and maybe abort the instruction.
 
@@ -395,46 +311,59 @@ class OTBNState:
         the increment of INSN_CNT that we want to keep.
 
         Either way, set the appropriate bits in the external ERR_CODE register,
-        clear the busy flag and write STOP_PC.
+        write STOP_PC and start a secure wipe.
 
+        It's possible that we are already doing a secure wipe. For example, we
+        might have had an error escalation signal after starting the wipe. In
+        this case, there's nothing to do except possibly to update ERR_BITS.
         '''
 
-        if self._err_bits:
-            # Abort all pending changes, including changes to external
-            # registers.
+        # If we were running an instruction and something went wrong then it
+        # might have updated state (either registers, memory or
+        # externally-visible registers). We want to roll back any of those
+        # changes.
+        if self._err_bits and self._fsm_state == FsmState.EXEC:
             self._abort()
 
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
         # set) is the 'done' flag.
         self.ext_regs.set_bits('INTR_STATE', 1 << 0)
 
-        should_lock = (self._err_bits >> 16) != 0
-
+        should_lock = (((self._err_bits >> 16) != 0) or
+                       ((self._err_bits >> 10) & 1) or
+                       (self._err_bits and self.software_errs_fatal))
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
-
-        # Make the final PC visible. This isn't currently in the RTL, but is
-        # useful in simulations that want to track whether we stopped where we
-        # expected to stop.
-        self.ext_regs.write('STOP_PC', self.pc, True)
 
         # Set the WIPE_START flag if we were running. This is used to tell the
         # C++ model code that this is a good time to inspect DMEM and check
         # that the RTL and model match. The flag will be cleared again on the
         # next cycle.
-        if self._fsm_state in [FsmState.FETCH_WAIT, FsmState.EXEC]:
+        if self._fsm_state == FsmState.EXEC:
+            # Make the final PC visible. This isn't currently in the RTL, but
+            # is useful in simulations that want to track whether we stopped
+            # where we expected to stop.
+            self.ext_regs.write('STOP_PC', self.pc, True)
+
             self.ext_regs.write('WIPE_START', 1, True)
             self.ext_regs.regs['WIPE_START'].commit()
 
             # Switch to a 'wiping' state
             self._next_fsm_state = (FsmState.WIPING_BAD if should_lock
                                     else FsmState.WIPING_GOOD)
-            self.wipe_cycles = (_WIPE_CYCLES if self.secure_wipe_enabled else 2)
+            self.wipe_cycles = (_WIPE_CYCLES
+                                if self.secure_wipe_enabled else 2)
+        elif self._fsm_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
+            assert should_lock
+            self._next_fsm_state = FsmState.WIPING_BAD
         else:
             assert should_lock
             self._next_fsm_state = FsmState.LOCKED
             next_status = Status.LOCKED
             self.ext_regs.write('STATUS', next_status, True)
+
+        # Clear any pending request in the RND EDN client
+        self.ext_regs.rnd_forget()
 
         # Clear the "we should stop soon" flag
         self.pending_halt = False

@@ -12,7 +12,7 @@
  */
 
 #include "sw/device/lib/base/macros.h"
-
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/autogen/dif_flash_ctrl_autogen.h"
 
 #ifdef __cplusplus
@@ -576,17 +576,17 @@ dif_result_t dif_flash_ctrl_end(dif_flash_ctrl_state_t *handle,
  */
 typedef struct dif_flash_ctrl_region_properties {
   /** Read enable flag. */
-  bool rd_en : 1;
+  multi_bit_bool_t rd_en;
   /** Program enable flag. */
-  bool prog_en : 1;
+  multi_bit_bool_t prog_en;
   /** Erase enable flag. */
-  bool erase_en : 1;
+  multi_bit_bool_t erase_en;
   /** Scramble enable flag*/
-  bool scramble_en : 1;
+  multi_bit_bool_t scramble_en;
   /** ECC enable flag. */
-  bool ecc_en : 1;
+  multi_bit_bool_t ecc_en;
   /** High-endurance enable flag. */
-  bool high_endurance_en : 1;
+  multi_bit_bool_t high_endurance_en;
 } dif_flash_ctrl_region_properties_t;
 
 /**

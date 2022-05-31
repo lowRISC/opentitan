@@ -30,7 +30,7 @@ __TOOL_REQUIREMENTS__ = {
         'as_needed': True
     },
     'verible': {
-        'min_version': 'v0.0-1213-g9e5c085',
+        'min_version': 'v0.0-2135-gb534c1fe',
         'as_needed': True
     },
     'vcs': {
@@ -38,7 +38,7 @@ __TOOL_REQUIREMENTS__ = {
         'as_needed': True
     },
     'rust': {
-        'min_version': '1.58.0',
+        'min_version': '1.60.0',
         'as_needed': True
     },
     'vivado': {

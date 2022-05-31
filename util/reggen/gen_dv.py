@@ -7,7 +7,7 @@ import logging as log
 import os
 import sys
 from collections import defaultdict
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 
 import yaml
 
@@ -51,6 +51,15 @@ def bcname(esc_if_name: str) -> str:
 def rcname(esc_if_name: str, r: Union[Register, MultiRegister]) -> str:
     '''Get the name of the dv_base_reg subclass for this register'''
     return '{}_reg_{}'.format(esc_if_name, r.name.lower())
+
+
+def alias_rcname(esc_if_name: str,
+                 r: Union[Register, MultiRegister]) -> Optional[str]:
+    '''Get the name of the dv_base_reg subclass for this alias register'''
+    if r.alias_target is not None:
+        return '{}_reg_{}'.format(esc_if_name, r.alias_target.lower())
+    else:
+        return None
 
 
 def mcname(esc_if_name: str, m: Window) -> str:
@@ -155,9 +164,11 @@ def gen_dv(block: IpBlock, dv_base_names: List[str], outdir: str) -> int:
     lblock = block.name.lower()
     dv_base_names_map = get_dv_base_names_objects(dv_base_names)
     block_dv_base_names = get_block_base_name(dv_base_names_map, lblock)
+    device_hier_paths = block.bus_interfaces.device_hier_paths
 
     for if_name, rb in block.reg_blocks.items():
-        hier_path = 'u_reg' if block.hier_path is None else block.hier_path
+
+        hier_path = device_hier_paths[if_name]
         if_suffix = '' if if_name is None else '_' + if_name.lower()
         mod_base = lblock + if_suffix
         reg_block_path = hier_path + if_suffix

@@ -43,7 +43,7 @@ module adc_ctrl
 
   //pwrmgr interface
   output logic wkup_req_o
-  //Debug cable is detected; wake up the GSC(CPU) in normal sleep and deep sleep mode
+  //Debug cable is detected; wake up the chip in normal sleep and deep sleep mode
   //input  [2:0] pwr_sts,//3'b001: deep sleep, 3'b010: normal sleep, 3'b100: fully active
 );
 
