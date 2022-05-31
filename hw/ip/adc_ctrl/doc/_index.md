@@ -47,8 +47,8 @@ In addition to the interrupts and bus signals, the tables below lists additional
 
 Signal                  | Direction | Description
 ------------------------|-----------|---------------
-`adc_o`                 | `output`  | Output controls to the actual `Ast adc` module.  Contains signals such as power down control and adc channel select.
-`adc_i`                 | `input`   | Input data from `Ast adc` module. Contains adc data output as well as data valid indication.
+`adc_o`                 | `output`  | Output controls to the actual `AST ADC` module.  Contains signals such as power down control and ADC channel select.
+`adc_i`                 | `input`   | Input data from `AST ADC` module. Contains ADC data output as well as data valid indication.
 
 
 ## Design Details
@@ -77,11 +77,11 @@ Note that the time taken in this step depends on the properties of the ADC.
 
 7. *Power off ADC*: The controller issues the power down command to the ADC.
 
-8. *Wait sleep time*: The controller will wait for the next sample timer to timeout before restarting at step (1).
+8. *Wait sleep time*: The controller will wait for the next sample timer to time out before restarting at step (1).
 
 In active operation the controller is in continuous scanning mode:
 * The ADC is continually powered on.
-* The sampling cycle time is the time taken for the ADC to take two samples (450us) plus internal processing time (4 clock cycles) from the adc controller.
+* The sampling cycle time is the time taken for the ADC to take two samples (450us) plus internal processing time (4 clock cycles) from the ADC controller.
 * The debounce timer will trigger the {{< regref "filter_status" >}} and interrupt after a configurable number of matching ADC samples have been seen, as determined by {{< regref "adc_sample_ctl" >}}.
 
 For low power operation the periodic scanning mode can be used.
@@ -91,7 +91,7 @@ In low power mode:
 * The ADC is periodically powered up to take samples; this interval is determined by {{< regref "adc_pd_ctl.wakeup_time" >}}.
 * Similar to normal operation, the ADC power-up delay is controlled by {{< regref "adc_pd_ctl.pwrup_time" >}}.
 * Once the ADC is powered up, two samples are taken and compared to the filter thresholds.
-* If a configurable number of matches, as determined by {{< regref "adc_lp_sample_ctl" >}}, are seen, the adc controller transitions to normal operation for continuous sampling.
+* If a configurable number of matches, as determined by {{< regref "adc_lp_sample_ctl" >}}, are seen, the ADC controller transitions to normal operation for continuous sampling.
 
 Although it can be used at any time, the periodic operation mode and use of the slow clock allows the ADC controller to continue to scan when most of the chip is in sleep or power-down modes.
 The controller can be configured to issue a wakeup to the rest of the chip.
@@ -142,7 +142,7 @@ The list below describes how the counters interpret the filter results:
 
 
 Because scanning continues the {{< regref "adc_intr_status" >}} register will reflect any debounced events that are detected between the controller raising an interrupt and the status bits being cleared (by having 1 written to them).
-However, the {{< regref "adc_chn_val[0].adc_chn_value_intr" >}} and {{< regref "adc_chn_val[1].adc_chn_value_intr" >}}registers record the value at the time the interrupt was first raised and thus reflect the filter state from that point.
+However, the {{< regref "adc_chn_val[0].adc_chn_value_intr" >}} and {{< regref "adc_chn_val[1].adc_chn_value_intr" >}} registers record the value at the time the interrupt was first raised and thus reflect the filter state from that point.
 
 {{< wavejson >}}
 {
@@ -235,7 +235,7 @@ The controller should be initialized with the properties of the ADC and scan tim
 * The state machine will only start running when {{< regref "adc_en_ctl" >}} is set.
 
 Note that for the debug controller (DTS in USB-C specification) as a power source the filter that is hit will indicate the orientation of the connector.
-If the debug controller is acting as a power sink then the orientation cannot be known unless the debug controller supports the optional behaviour of converting one of its pulldowns to an Ra (rather than Rp) to indicate CC2 (the CC that is not used for communication).
+If the debug controller is acting as a power sink then the orientation cannot be known unless the debug controller supports the optional behavior of converting one of its pulldowns to an Ra (rather than Rp) to indicate CC2 (the CC that is not used for communication).
 This would not be detected by the filters since it happens later than connection detection and debounce in the USB-C protocol state machine, but could be detected by monitoring the current ADC value.
 
 ## Registers
