@@ -96,14 +96,14 @@
         { bits: "7:4",
           name: "pwrup_time",
           desc: '''
-            ADC power up time, measured in always on clock cycles".
-            After power up time is reached, the adc controller needs one additional cycle before an ADC channel is selected for access.
+            ADC power up time, measured in always on clock cycles.
+            After power up time is reached, the ADC controller needs one additional cycle before an ADC channel is selected for access.
           '''
           resval: "6",
         }
         { bits: "31:8",
           name: "wakeup_time",
-          desc: "How often FSM wakes up from ADC PD mode to take a sample, measured in always on clock cycles",
+          desc: "How often FSM wakes up from ADC PD mode to take a sample, measured in always on clock cycles.",
           resval: "1600",
         }
       ]
@@ -116,7 +116,11 @@
       fields: [
         { bits: "7:0",
           name: "lp_sample_cnt",
-          desc: "The number of samples in low-power mode when the low-power mode is enabled. After the programmed number is met, ADC won't be powered down any more.  This value must be 1 or larger.",
+          desc: '''
+            The number of samples in low-power mode when the low-power mode is enabled.
+            After the programmed number is met, ADC won't be powered down any more.
+            This value must be 1 or larger.
+            ''',
           resval: "4",
         }
       ],
@@ -130,7 +134,11 @@
       fields: [
         { bits: "15:0",
           name: "np_sample_cnt",
-          desc: "The number of samples in normal-power mode to meet the debounce spec. used after the low-power mode condition is met or in the normal power mode.  This value must be 1 or larger.",
+          desc: '''
+            The number of samples in normal-power mode to meet the debounce spec.
+            Used after the low-power mode condition is met or in the normal power mode.
+            This value must be 1 or larger.
+          ''',
         }
       ]
     }
@@ -151,11 +159,9 @@
         name: "adc_chn0_filter_ctl",
         desc: '''ADC channel0 filter range
 
-              There are 8 filters to define the potential range(min, max)
-              [11:0]: min value [1:0] RO 0
-              [12]: condition(in the box or out of the box)
-              [27:16]: max value [17:16] RO 0
-              each step is 2.148mV
+              Up to 8 filters can be configured per channel and each filter has an associated [min, max] range.
+              The condition bit then defines whether the sample values of that channel need to lie within the range or outside to create a match.
+              The filter range bounds can be configured with a granularity of 2.148mV.
               ''',
         count: "NumAdcFilter",
         cname: "ADC_CTRL",
@@ -164,10 +170,6 @@
         async: "clk_aon_i",
         resval: "0",
         fields: [
-//          { bits: "1:0",
-//          name: "min_ext",
-//          desc: "2-bit extension; RO 0",
-//        }
           { bits: "11:2",
             name: "min_v",
             desc: "10-bit for chn0 filter min value ",
@@ -176,10 +178,6 @@
             name: "cond",
             desc: "1-bit for the condition; 1'b0 means min<=ADC<=max, 1'b1 means ADC>max or ADC<min ",
           }
-//          { bits: "17:16",
-//          name: "max_ext",
-//          desc: "2-bit extension; RO 0",
-//        }
           { bits: "27:18",
             name: "max_v",
             desc: "10-bit for chn0 filter max value ",
@@ -196,11 +194,9 @@
         name: "adc_chn1_filter_ctl",
         desc: '''ADC channel1 filter range
 
-              There are 8 filters to define the potential range(min, max)
-              [11:0]: min value [1:0] RO 0
-              [12]: condition(in the box or out of the box)
-              [27:16]: max value [17:16] RO 0
-              each step is 2.148mV
+              Up to 8 filters can be configured per channel and each filter has an associated [min, max] range.
+              The condition bit then defines whether the sample values of that channel need to lie within the range or outside to create a match.
+              The filter range bounds can be configured with a granularity of 2.148mV.
               ''',
         count: "NumAdcFilter",
         cname: "ADC_CTRL",
@@ -209,10 +205,6 @@
         async: "clk_aon_i",
         resval: "0",
         fields: [
-//          { bits: "1:0",
-//          name: "min_ext",
-//          desc: "2-bit extension; RO 0",
-//        }
           { bits: "11:2",
             name: "min_v",
             desc: "10-bit for chn0 filter min value ",
@@ -221,10 +213,6 @@
             name: "cond",
             desc: "1-bit for the condition; 1'b0 means min<=ADC<=max, 1'b1 means ADC>max or ADC<min ",
           }
-//          { bits: "17:16",
-//          name: "max_ext",
-//          desc: "2-bit extension; RO 0",
-//        }
           { bits: "27:18",
             name: "max_v",
             desc: "10-bit for chn0 filter max value ",
@@ -261,7 +249,7 @@
           }
           { bits: "27:18",
             name: "adc_chn_value_intr",
-            desc: "ADC value sampled on channel when the interrupt is raised(debug cable is attached or disconnected)each step is 2.148mV",
+            desc: "ADC value sampled on channel when the interrupt is raised(debug cable is attached or disconnected), each step is 2.148mV",
           }
         ],
       }

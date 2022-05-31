@@ -172,13 +172,10 @@ module adc_ctrl_fsm
     end
   end
 
-  // if current match is non-zero
-  // match is previous was 0
-  // match if same as previous match
   logic np_match;
-  assign np_match = |adc_ctrl_match_i &
-                    ((adc_ctrl_match_i == adc_ctrl_match_q) |
-                    ~|adc_ctrl_match_q);
+  assign np_match = |adc_ctrl_match_i &                       // if current match is non-zero
+                    ((adc_ctrl_match_i == adc_ctrl_match_q) | // match if same as previous match
+                    ~|adc_ctrl_match_q);                      // or match if previous match was zero
 
   assign stay_match = np_match;
 

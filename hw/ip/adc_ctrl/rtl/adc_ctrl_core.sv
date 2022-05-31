@@ -76,7 +76,7 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   // completion of one shot mode
   // match detection from the filters
   logic chn_val_intr_we;
-  assign chn_val_intr_we = reg2hw_i.adc_en_ctl.oneshot_mode.q ? oneshot_done  :
+  assign chn_val_intr_we = reg2hw_i.adc_en_ctl.oneshot_mode.q ? oneshot_done :
                            reg2hw_i.adc_en_ctl.adc_enable.q   ? |match_pulse : '0;
 
   assign adc_chn_val_o[0].adc_chn_value_intr.de = chn_val_intr_we;
