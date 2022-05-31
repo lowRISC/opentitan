@@ -9,9 +9,10 @@ class sysrst_ctrl_stress_all_vseq extends sysrst_ctrl_base_vseq;
 
   `uvm_object_new
 
-  constraint num_trans_c {num_trans inside {[20 : 30]};}
+  constraint num_trans_c {num_trans inside {[2 : 5]};}
 
   task body();
+  uvm_reg_data_t rdata;
     string seq_names[] = {"sysrst_ctrl_smoke_vseq",
                           "sysrst_ctrl_in_out_inverted_vseq",
                           "sysrst_ctrl_combo_detect_ec_rst_vseq",
@@ -33,12 +34,16 @@ class sysrst_ctrl_stress_all_vseq extends sysrst_ctrl_base_vseq;
       uvm_sequence          seq;
       sysrst_ctrl_base_vseq sysrst_ctrl_vseq;
       uint                  seq_idx = $urandom_range(0, seq_names.size - 1);
+      // Test sequences which take a long time - restrict to one iteration
+      bit long_test = seq_names[seq_idx] inside {"sysrst_ctrl_ultra_low_pwr_vseq"};
+
+      `DV_CHECK_RANDOMIZE_FATAL(this)
 
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(sysrst_ctrl_vseq, seq)
 
       sysrst_ctrl_vseq.set_sequencer(p_sequencer);
-      `DV_CHECK_RANDOMIZE_FATAL(sysrst_ctrl_vseq)
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(sysrst_ctrl_vseq, if (long_test) num_trans == 1;)
       if (seq_names[seq_idx] == "sysrst_ctrl_common_vseq") begin
         sysrst_ctrl_common_vseq common_vseq;
         `downcast(common_vseq, sysrst_ctrl_vseq);
@@ -48,6 +53,7 @@ class sysrst_ctrl_stress_all_vseq extends sysrst_ctrl_base_vseq;
                 UVM_LOW)
 
       sysrst_ctrl_vseq.start(p_sequencer);
+
     end
   endtask : body
 
