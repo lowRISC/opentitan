@@ -252,4 +252,7 @@ module otbn_scramble_ctrl
   assign otbn_imem_scramble_nonce_o          = imem_nonce_q;
   assign otbn_imem_scramble_valid_o          = imem_key_valid_q;
   assign otbn_imem_scramble_key_seed_valid_o = imem_key_seed_valid_q;
+
+  `ASSERT(OtbnScrambleCtrlLocalEscCntrMeasure_A, state_error_o |=> state_q == ScrambleCtrlError)
+
 endmodule
