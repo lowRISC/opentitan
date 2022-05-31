@@ -33,37 +33,35 @@ using ::testing::Test;
 
 namespace {
 
-// TODO(lowRISC/opentitan#7148): Refactor mocks into their own headers.
 namespace internal {
-// Create a mock for shutdown functions.
-class MockShutdown : public ::global_mock::GlobalMock<MockShutdown> {
+// Create a mock for internal shutdown functions.
+class MockShutdownImpl : public ::global_mock::GlobalMock<MockShutdownImpl> {
  public:
   MOCK_METHOD(void, shutdown_report_error, (rom_error_t));
   MOCK_METHOD(void, shutdown_software_escalate, ());
   MOCK_METHOD(void, shutdown_keymgr_kill, ());
   MOCK_METHOD(void, shutdown_flash_kill, ());
   MOCK_METHOD(void, shutdown_hang, ());
-
- protected:
-  mask_rom_test::MockAbsMmio mmio_;
 };
 
 }  // namespace internal
-using MockShutdown = testing::StrictMock<internal::MockShutdown>;
+using MockShutdownImpl = testing::StrictMock<internal::MockShutdownImpl>;
 extern "C" {
 void shutdown_report_error(rom_error_t error) {
-  return MockShutdown::Instance().shutdown_report_error(error);
+  return MockShutdownImpl::Instance().shutdown_report_error(error);
 }
 void shutdown_software_escalate(void) {
-  return MockShutdown::Instance().shutdown_software_escalate();
+  return MockShutdownImpl::Instance().shutdown_software_escalate();
 }
 void shutdown_keymgr_kill(void) {
-  return MockShutdown::Instance().shutdown_keymgr_kill();
+  return MockShutdownImpl::Instance().shutdown_keymgr_kill();
 }
 void shutdown_flash_kill(void) {
-  return MockShutdown::Instance().shutdown_flash_kill();
+  return MockShutdownImpl::Instance().shutdown_flash_kill();
 }
-void shutdown_hang(void) { return MockShutdown::Instance().shutdown_hang(); }
+void shutdown_hang(void) {
+  return MockShutdownImpl::Instance().shutdown_hang();
+}
 
 // Real implementations of the above mocks.
 extern void unmocked_shutdown_flash_kill(void);
@@ -362,8 +360,9 @@ class ShutdownTest : public mask_rom_test::MaskRomTest {
   // Use NiceMock because we aren't interested in the specifics of OTP reads,
   // but we want to mock out calls to otp_read32.
   mask_rom_test::NiceMockOtp otp_;
-  MockShutdown shutdown_;
+  MockShutdownImpl shutdown_;
   mask_rom_test::MockAlert alert_;
+  mask_rom_test::MockAbsMmio mmio_;
 };
 
 TEST_F(ShutdownTest, InitializeProd) {
