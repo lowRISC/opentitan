@@ -14,8 +14,14 @@ class aes_fi_vseq extends aes_base_vseq;
   bit  wait_for_alert_clear = 0;
   bit  alert = 0;
 
+  typedef enum int { fsm = 0, cipher_fsm = 1 } fi_t;
+
+  localparam bit FORCE   = 0;
+  localparam bit RELEASE = 1;
+
   rand bit [StateWidth-1:0] force_state;
-  rand int if_num;
+  rand int                  if_num;
+  rand fi_t fi_target;
 
   task body();
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s",
@@ -36,13 +42,18 @@ class aes_fi_vseq extends aes_base_vseq;
             if (!randomize(if_num) with { if_num inside { [0:2] };}) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
+            if (!randomize(fi_target)) begin
+              `uvm_fatal(`gfn, $sformatf("Randomization failed"))
+            end
             cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
             `uvm_info(`gfn, $sformatf("FORCING %h on if[%d]", force_state, if_num), UVM_MEDIUM)
-            cfg.aes_fi_vif[if_num].force_state(force_state);
+            //            cfg.aes_fi_vif[if_num].force_state(force_state);
+            force_signal(fi_target, FORCE, if_num);
             wait_for_alert_clear = 1;
             cfg.m_alert_agent_cfg["fatal_fault"].vif.wait_ack_complete();
             wait(!cfg.clk_rst_vif.rst_n);
-            cfg.aes_fi_vif[if_num].release_state();
+            force_signal(fi_target, RELEASE, if_num);
+            //            cfg.aes_fi_vif[if_num].release_state();
             wait_for_alert_clear = 0;
           end
           basic: begin
@@ -61,4 +72,28 @@ class aes_fi_vseq extends aes_base_vseq;
       end // fork
     join
   endtask : body
+
+
+  // task that makes the main seq a little easier to read
+  // use this to force and release the signal inputs
+  // (target select, rel = 0 : force signal)
+  task force_signal(fi_t target, bit rel, int if_num);
+    `uvm_info("FORCE_DBG", $sformatf("forcing target %s, force %0b", target.name, rel ), UVM_LOW)
+    case (target)
+      fsm: begin
+        if (!rel) cfg.aes_fi_vif[if_num].force_state(force_state);
+        else cfg.aes_fi_vif[if_num].release_state();
+      end
+
+      cipher_fsm: begin
+        if (!rel) cfg.aes_cipher_fi_vif[if_num].force_state(force_state);
+        else cfg.aes_cipher_fi_vif[if_num].release_state();
+      end
+
+      default: begin
+        //do nothing
+      end
+    endcase
+  endtask
+
 endclass
