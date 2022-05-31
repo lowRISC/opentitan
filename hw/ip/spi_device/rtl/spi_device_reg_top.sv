@@ -2394,7 +2394,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0)
+    .RESVAL  (2'h1)
   ) u_control_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

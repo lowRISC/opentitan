@@ -160,6 +160,7 @@
         { bits: "5:4",
           name: "MODE",
           desc: "SPI Device operation mode. Currently only FwMode is supported.",
+          resval: "1"
           enum: [
             { value: "0",
               name: "fwmode",
