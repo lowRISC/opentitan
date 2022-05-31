@@ -18,6 +18,9 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   virtual force_if#(.Signal("aes_cipher_ctrl_cs"),
                     .SignalWidth(aes_env_pkg::StateWidth)
                    ) aes_cipher_fi_vif[Sp2VWidth];
+  virtual force_if#(.Signal("aes_ctr_cs"),
+                    .SignalWidth(aes_env_pkg::StateWidth)
+                   ) aes_ctr_fi_vif[Sp2VWidth];
 
   rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
   // test environment constraints //
@@ -245,6 +248,13 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
         `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO CIPHER FALT INJECT INTERFACE %d",nn))
       end
     end
+    foreach (aes_ctr_fi_vif[nn]) begin
+      if (!uvm_config_db#(virtual force_if#(.Signal("aes_ctr_cs"),
+                                            .SignalWidth(aes_env_pkg::StateWidth))
+                                           )::get(null, "*.env",
+                           $sformatf("aes_ctr_fi_vif_%0d",  nn), aes_ctr_fi_vif[nn])) begin
+        `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO ROUND COUNTER INJECT INTERFACE %d",nn))
+      end
+    end
   endfunction
-
 endclass
