@@ -6,6 +6,8 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs;
+use std::fs::File;
+use std::io::BufReader;
 use std::io::{ErrorKind, Read};
 use std::os::unix::net::UnixListener;
 use std::path::{Path, PathBuf};
@@ -19,6 +21,7 @@ use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;
 
 use crate::io::emu::{EmuError, EmuState, EmuValue, Emulator};
+use crate::transport::ti50emulator::gpio::GpioConfiguration;
 use crate::transport::ti50emulator::Inner;
 use crate::transport::ti50emulator::Ti50Emulator;
 
@@ -26,6 +29,10 @@ const TIMEOUT: Duration = Duration::from_millis(1000);
 const MAX_RETRY: usize = 5;
 const PATTERN: &[u8; 5] = b"READY";
 pub const EMULATOR_INVALID_ID: u64 = 0;
+
+pub struct EmulatorConfig {
+    pub gpio_config: HashMap<String, GpioConfiguration>,
+}
 
 pub struct EmulatorProcess {
     /// Current working directory for Emulator sub-process.
@@ -80,6 +87,45 @@ impl EmulatorProcess {
             return ((self.power_cycle_count as u64) << 32) + (proc.id() as u64);
         }
         return EMULATOR_INVALID_ID;
+    }
+
+    pub fn get_configurations(&self) -> Result<EmulatorConfig> {
+        let args_list = vec![
+            OsString::from("--path"),
+            self.runtime_directory.clone().into_os_string(),
+            OsString::from("--get_configs"),
+        ];
+
+        let exec: PathBuf = match self.current_args.get("exec") {
+            Some(EmuValue::String(exec_name)) => self.executable_directory.join(exec_name),
+            _ => {
+                bail!(EmuError::RuntimeError(
+                    "Can't get configurations invalid executable".to_string()
+                ))
+            }
+        };
+
+        log::info!("Ti50Emulator getting configuration ");
+        log::info!("Command: {} {:?}", exec.display(), args_list);
+        let status = Command::new(&exec)
+            .args(args_list)
+            .status()
+            .context("Could not spawn sub-process")?;
+        if status.success() {
+            log::info!("Ti50Emulator parsing configurations");
+            let file = File::open(self.runtime_directory.join("gpio_init_conf.json"))?;
+            let reader = BufReader::new(file);
+            let config = EmulatorConfig {
+                gpio_config: serde_json::from_reader(reader)
+                    .context("Configuration file parsing error")?,
+            };
+            return Ok(config);
+        } else {
+            bail!(EmuError::RuntimeError(format!(
+                "Ti50Emulator sub-process exit with error: {}",
+                status
+            )));
+        }
     }
 
     /// Updates `state` based on sub-process exit status and current value of `state`.

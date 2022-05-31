@@ -27,6 +27,7 @@ mod spi;
 mod uart;
 
 use crate::transport::ti50emulator::emu::{EmulatorProcess, Ti50SubProcess};
+use crate::transport::ti50emulator::gpio::Ti50GpioPin;
 use crate::transport::ti50emulator::i2c::Ti50I2cBus;
 use crate::transport::ti50emulator::uart::Ti50Uart;
 
@@ -71,7 +72,20 @@ impl Ti50Emulator {
                 uart_map: HashMap::new(),
             })),
         };
+        ti50.configure_devices()?;
         Ok(ti50)
+    }
+
+    fn configure_devices(&self) -> Result<()> {
+        let conf = self.inner.borrow().process.get_configurations()?;
+        for (name, state) in conf.gpio_config.iter() {
+            let gpio: Rc<dyn GpioPin> = Rc::new(Ti50GpioPin::open(self, name, state)?);
+            self.inner
+                .borrow_mut()
+                .gpio_map
+                .insert(name.clone(), Rc::clone(&gpio));
+        }
+        Ok(())
     }
 }
 

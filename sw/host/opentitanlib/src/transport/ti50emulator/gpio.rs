@@ -57,14 +57,12 @@ impl TryFrom<u8> for GpioStateUpdate {
             b'z' => Ok(GpioStateUpdate::PinMode(None)),
             b'i' => Ok(GpioStateUpdate::PinMode(Some(PinMode::Input))),
             b'o' => Ok(GpioStateUpdate::PinMode(Some(PinMode::OpenDrain))),
-            b'b' => Ok(GpioStateUpdate::PinMode(None)),
-            b'f' => Ok(GpioStateUpdate::PinMode(None)),
-            b'x' => Ok(GpioStateUpdate::PinMode(None)),
             b'-' => Ok(GpioStateUpdate::PullMode(PullMode::None)),
             b'u' => Ok(GpioStateUpdate::PullMode(PullMode::PullUp)),
             b'd' => Ok(GpioStateUpdate::PullMode(PullMode::PullDown)),
-            _ => Err(GpioError::Generic(String::from(
-                "Invalid byte during decoding GPIO stream",
+            _ => Err(GpioError::Generic(format!(
+                "Invalid byte value during decoding GPIO stream hex: {:#04x} char: '{}'",
+                value, value as char
             ))),
         }
     }
