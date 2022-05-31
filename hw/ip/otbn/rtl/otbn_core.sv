@@ -902,4 +902,20 @@ module otbn_core
           mubi4_test_true_loose(start_stop_escalate_en) && mubi4_test_false_strict(escalate_en_i)
           |=> err_bits_q)
 
+  `ASSERT(OtbnStartStopGlobalEscCntrMeasure_A, err_bits_q && mubi4_test_true_loose(escalate_en_i)
+          && mubi4_test_true_loose(start_stop_escalate_en)|=> ##[1:100]
+          u_otbn_start_stop_control.state_q == otbn_pkg::OtbnStartStopStateLocked)
+
+  `ASSERT(OtbnStartStopLocalEscCntrMeasure_A, err_bits_q && mubi4_test_false_strict(escalate_en_i)
+          && mubi4_test_true_loose(start_stop_escalate_en) |=>  ##[1:100]
+          u_otbn_start_stop_control.state_q == otbn_pkg::OtbnStartStopStateLocked)
+
+  `ASSERT(OtbnControllerGlobalEscCntrMeasure_A, err_bits_q && mubi4_test_true_loose(escalate_en_i)
+          && mubi4_test_true_loose(controller_fatal_escalate_en)|=> ##[1:100]
+          u_otbn_controller.state_q == otbn_pkg::OtbnStateLocked)
+
+  `ASSERT(OtbnControllerLocalEscCntrMeasure_A, err_bits_q && mubi4_test_false_strict(escalate_en_i)
+          && mubi4_test_true_loose(controller_fatal_escalate_en) |=>  ##[1:100]
+          u_otbn_controller.state_q == otbn_pkg::OtbnStateLocked)
+
 endmodule
