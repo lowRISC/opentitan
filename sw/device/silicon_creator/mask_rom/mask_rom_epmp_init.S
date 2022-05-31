@@ -80,8 +80,7 @@ mask_rom_epmp_init:
   csrw pmpaddr11, t0
 
   // Debug ROM
-  // TODO(#11092): use TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES instead of constant
-  li   t0, NAPOT(TOP_EARLGREY_RV_DM_ROM_BASE_ADDR, 0x1000)
+  li   t0, NAPOT(TOP_EARLGREY_RV_DM_ROM_BASE_ADDR, TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES)
   csrw pmpaddr13, t0
 
   // Stack guard
