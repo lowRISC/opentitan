@@ -14,7 +14,7 @@ class aes_fi_vseq extends aes_base_vseq;
   bit  wait_for_alert_clear = 0;
   bit  alert = 0;
 
-  typedef enum int { fsm = 0, cipher_fsm = 1 } fi_t;
+  typedef enum int { fsm = 0, cipher_fsm = 1, round_cntr = 2 } fi_t;
 
   localparam bit FORCE   = 0;
   localparam bit RELEASE = 1;
@@ -47,13 +47,11 @@ class aes_fi_vseq extends aes_base_vseq;
             end
             cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
             `uvm_info(`gfn, $sformatf("FORCING %h on if[%d]", force_state, if_num), UVM_MEDIUM)
-            //            cfg.aes_fi_vif[if_num].force_state(force_state);
             force_signal(fi_target, FORCE, if_num);
             wait_for_alert_clear = 1;
             cfg.m_alert_agent_cfg["fatal_fault"].vif.wait_ack_complete();
             wait(!cfg.clk_rst_vif.rst_n);
             force_signal(fi_target, RELEASE, if_num);
-            //            cfg.aes_fi_vif[if_num].release_state();
             wait_for_alert_clear = 0;
           end
           basic: begin
@@ -78,7 +76,6 @@ class aes_fi_vseq extends aes_base_vseq;
   // use this to force and release the signal inputs
   // (target select, rel = 0 : force signal)
   task force_signal(fi_t target, bit rel, int if_num);
-    `uvm_info("FORCE_DBG", $sformatf("forcing target %s, force %0b", target.name, rel ), UVM_LOW)
     case (target)
       fsm: begin
         if (!rel) cfg.aes_fi_vif[if_num].force_state(force_state);
@@ -90,8 +87,13 @@ class aes_fi_vseq extends aes_base_vseq;
         else cfg.aes_cipher_fi_vif[if_num].release_state();
       end
 
+      round_cntr: begin
+        if (!rel) cfg.aes_ctr_fi_vif[if_num].force_state(force_state);
+        else cfg.aes_ctr_fi_vif[if_num].release_state();
+      end
+
       default: begin
-        //do nothing
+        `uvm_fatal(`gfn, $sformatf("No Interface Specified"))
       end
     endcase
   endtask
