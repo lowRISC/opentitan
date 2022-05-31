@@ -1930,6 +1930,7 @@
     // ENTROPY_SRC (pre-verified IP) integration tests:
     {
       name: chip_sw_entropy_src_ast_rng_req
+      //TODO(#13460): A dv enginner should add an assertion to check the connectivity for this test.
       desc: '''Verify the RNG req to ast.
 
             - Program the entropy src in normal RNG mode.
@@ -1939,7 +1940,7 @@
             - Verify the correctness of the received data with assertion based connectivity checks.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_entropy_src_ast_rgn_req"]
     }
     {
       name: chip_sw_entropy_src_ast_fips
