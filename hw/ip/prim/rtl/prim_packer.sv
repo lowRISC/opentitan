@@ -6,6 +6,7 @@
 
 `include "prim_assert.sv"
 
+// ICEBOX(#12958): Revise to send out the empty status.
 module prim_packer #(
   parameter int InW  = 32,
   parameter int OutW = 32,
