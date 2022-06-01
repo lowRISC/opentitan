@@ -12,7 +12,7 @@ _BASE_PARAMS = {
     "args": [],
     "data": [],
     "local": True,
-    "otp": "//hw/ip/otp_ctrl/data:test_rma_image",
+    "otp": "//hw/ip/otp_ctrl/data:img_rma",
     "rom": "//sw/device/lib/testing/test_rom:test_rom_{}_scr_vmem",
     "tags": [],
     "test_runner": "//util:opentitantool_test_runner.sh",
