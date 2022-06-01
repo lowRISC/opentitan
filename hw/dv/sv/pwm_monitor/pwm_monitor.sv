@@ -7,9 +7,7 @@ class pwm_monitor extends dv_base_monitor #(
     .CFG_T  (pwm_monitor_cfg)
   );
   `uvm_component_utils(pwm_monitor)
-
-  // the base class provides the following handles for use:
-//  pwm_monitor_cfg cfg;
+  `uvm_component_new
 
   uvm_analysis_port #(pwm_item) item_port;
 
@@ -19,15 +17,9 @@ class pwm_monitor extends dv_base_monitor #(
   // interface handle
   virtual pwm_if vif;
 
-  bit [15:0] clk_cnt          = '0;
-  bit        prev_pwm_state   =  0;
-  bit [15:0] cnt              =  0;
-
-//  `uvm_component_new
-  function new(string name, uvm_component parent);
-    super.new(name, parent);
-  endfunction
-
+  bit  prev_pwm_state  = '0;
+  uint cnt             =  0;
+  uint phase_count     =  0;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -54,12 +46,7 @@ class pwm_monitor extends dv_base_monitor #(
     forever begin
 
       @(vif.cb);
-      // always count the clock to get phase right
-      clk_cnt += 1;
       if (cfg.active) begin
-        if (cnt == 0) begin
-        end
-
         // increment high/low cnt
         cnt     += 1;
         // detect event
@@ -71,22 +58,29 @@ class pwm_monitor extends dv_base_monitor #(
             dut_item.active_cnt  = cnt;
           end else begin
             dut_item.inactive_cnt  = cnt;
-            dut_item.phase         = 2**clk_cnt;
             dut_item.invert        = cfg.invert;
             dut_item.period        = cnt + dut_item.active_cnt;
             dut_item.monitor_id    = cfg.monitor_id;
+            dut_item.duty_cycle    = dut_item.get_duty_cycle();
+
+            // Each PWM pulse cycle is divided into 2^DC_RESN+1 beats, per beat the 16-bit
+            // phase counter increments by 2^(16-DC_RESN-1)(modulo 65536)
+            phase_count            = ((dut_item.period / (2**(cfg.resolution + 1))) *
+              (2**(16 - (cfg.resolution - 1))));
+            dut_item.phase         = (phase_count % 65536);
+
             // item done
             `downcast(item_clone, dut_item.clone());
             item_port.write(item_clone);
-            dut_item = new();
+            dut_item = new($sformatf("%s_item", this.get_name()));
           end
           cnt = 0;
         end
         prev_pwm_state = vif.cb.pwm;
       end else begin
         // clear what was previously collected
-        dut_item = new();
-        cnt      = 0;
+        dut_item = new($sformatf("%s_item", this.get_name()));
+        cnt = 0;
       end
     end
   endtask
