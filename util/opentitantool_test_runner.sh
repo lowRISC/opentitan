@@ -10,4 +10,5 @@ set -e
 
 readonly REPO_TOP="$TEST_SRCDIR/$TEST_WORKSPACE"
 readonly OPENTITANTOOL="sw/host/opentitantool/opentitantool"
+echo Invoking: ${OPENTITANTOOL} "$@"
 RUST_BACKTRACE=1 ${OPENTITANTOOL} "$@"
