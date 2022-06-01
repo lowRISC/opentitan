@@ -42,4 +42,7 @@ interface flash_ctrl_if ();
   // alert
   ast_dif_t                         flash_alert;
 
+  // power ready
+  logic                             power_ready_h = 1'b1;
+
 endinterface : flash_ctrl_if

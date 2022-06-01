@@ -267,6 +267,15 @@
       tests: ["flash_ctrl_invalid_op"]
     }
     {
+      name: mid_op_rst
+      desc: '''
+            Flash middle operation reset test. Send reset via power ready signal
+            in the middle of operation program, read, erase and erase suspend.
+            '''
+      milestone: V2
+      tests: ["flash_ctrl_mid_op_rst"]
+    }
+    {
       name: ecc
       desc: '''
             Randomly enable ECC for a randomly selected set of pages. Randomly corrupt a single bit
