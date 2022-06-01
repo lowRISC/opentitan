@@ -190,7 +190,6 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("LocDummy15",                     X, X, X, X),
 // clang-format on
 
-// TODO: adjust this to match the OTP layout in PR#6921.
 struct OtpConfiguration {
   uint32_t rom_error_reporting;
   uint32_t rom_bootstrap_en;
