@@ -18,7 +18,7 @@ ci/bazelisk.sh clean
 ./hw/top_englishbreakfast/util/prepare_sw.py --bazel -b
 
 # Build some other dependencies.
-ci/bazelisk.sh build //sw/host/opentitantool //hw/ip/otp_ctrl/data:rma_image_verilator
+ci/bazelisk.sh build //sw/host/opentitantool //hw/ip/otp_ctrl/data:img_rma
 
 # Run the one test.
 # This needs to be run outside the bazel sandbox, so we do not use `bazel run`

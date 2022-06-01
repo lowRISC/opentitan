@@ -153,12 +153,12 @@ jobs:
   - bash: |
       . util/build_consts.sh
       ci/bazelisk.sh build \
-        //hw/ip/otp_ctrl/data:test_rma_image \
+        //hw/ip/otp_ctrl/data:img_rma \
         //sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem \
         //sw/device/lib/testing/test_rom:test_rom_fpga_cw310_bin
       mkdir -p $BIN_DIR/sw/device/otp_img
       mkdir -p $BIN_DIR/sw/device/lib/testing/test_rom
-      cp $(ci/scripts/target-location.sh //hw/ip/otp_ctrl/data:test_rma_image) $BIN_DIR/sw/device/otp_img/otp_img_fpga_cw310.vmem
+      cp $(ci/scripts/target-location.sh //hw/ip/otp_ctrl/data:img_rma) $BIN_DIR/sw/device/otp_img/otp_img_fpga_cw310.vmem
       TEST_ROM=$(ci/scripts/target-location.sh //sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem)
       TEST_ROM_DIR=$(dirname $TEST_ROM)
       TEST_ROM_TARGET=$BIN_DIR/sw/device/lib/testing/test_rom
