@@ -8,4 +8,25 @@
 set -e
 REPO=$(dirname "$0")/../..
 
-$REPO/bazelisk.sh cquery $1 --output starlark --starlark:file=$REPO/rules/output.cquery 2>/dev/null
+verbose='false'
+print_usage() {
+  printf "Usage: $0 [-v] <bazel target label>"
+}
+
+while getopts 'v' flag; do
+  case "${flag}" in
+    v) verbose='true' ;;
+    *) print_usage
+       exit 1 ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+REDIR='/dev/stderr'
+if [ $verbose == 'false' ];
+then
+  REDIR='/dev/null'
+fi
+
+exec $REPO/bazelisk.sh cquery $@ --output starlark --starlark:file=$REPO/rules/output.cquery 2>$REDIR
