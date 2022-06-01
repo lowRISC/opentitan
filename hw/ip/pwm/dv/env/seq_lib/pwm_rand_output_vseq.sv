@@ -9,8 +9,8 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
 
   // variables
   rand param_reg_t rand_reg_param;
-  rand bit [TL_DW-1:0] rand_chan;
-  rand bit [TL_DW-1:0] rand_invert;
+  rand bit [PWM_NUM_CHANNELS-1:0] rand_chan;
+  rand bit [PWM_NUM_CHANNELS-1:0] rand_invert;
   rand uint duration_cycles;
   rand bit low_power;
 
@@ -22,7 +22,7 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
   }
 
   constraint duration_cycles_c {
-    duration_cycles inside {[MIN_NUM_CYCLES:MAX_NUM_CYCLES]};
+    duration_cycles == {NUM_CYCLES};
   }
 
   constraint low_power_c {
@@ -41,18 +41,21 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
     for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
       rand_pwm_duty_cycle(i);
       rand_pwm_blink(i);
+      // phase delay of the PWM rising edge, in units of 2^(-16) PWM cycles
+      cfg.pwm_param[i].PhaseDelay = (rand_reg_param.PhaseDelay * (2**(-16)));
       cfg.pwm_param[i].HtbtEn = rand_reg_param.HtbtEn;
       cfg.pwm_param[i].BlinkEn = rand_reg_param.BlinkEn;
       set_param(i, cfg.pwm_param[i]);
     end
 
-    set_ch_enables(rand_chan);
     set_ch_invert(rand_invert);
+    set_ch_enables(rand_chan);
 
     low_power_mode(low_power, duration_cycles);
 
     `uvm_info(`gfn, $sformatf("Runtime: %d", duration_cycles), UVM_HIGH)
     shutdown_dut();
+    set_reg_en(Disable);
 
   endtask : body
 

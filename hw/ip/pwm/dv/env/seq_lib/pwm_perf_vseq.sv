@@ -27,7 +27,7 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   }
 
   constraint duration_cycles_c {
-    duration_cycles dist {MIN_NUM_CYCLES:/1, MAX_NUM_CYCLES:/1};
+    duration_cycles == {NUM_CYCLES};
   }
 
   constraint low_power_c {
@@ -35,11 +35,11 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   }
 
   constraint rand_dc_c {
-    rand_dc dist {16'h7FFF:/1, 16'h1:/1, 16'h0:/1};
+    rand_dc dist {MAX_16:/1, 16'h1:/1, 16'h0:/1};
   }
 
   constraint rand_blink_c {
-    rand_blink dist {16'h7FFF:/1, 16'h1:/1, 16'h0:/1};
+    rand_blink dist {MAX_16:/1, 16'h1:/1, 16'h0:/1};
   }
 
   virtual task body();
@@ -61,8 +61,8 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
       set_param(i, cfg.pwm_param[i]);
     end
 
-    set_ch_enables(rand_chan);
     set_ch_invert(rand_invert);
+    set_ch_enables(rand_chan);
 
     low_power_mode(low_power, duration_cycles);
 
