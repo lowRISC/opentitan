@@ -70,7 +70,7 @@ module otbn_instruction_fetch
   endfunction
 
   logic [ImemAddrWidth-1:0] insn_prefetch_addr;
-  logic [38:0]              insn_fetch_resp_data_intg_q;
+  logic [38:0]              insn_fetch_resp_data_intg_q, insn_fetch_resp_data_intg_d;
   logic [ImemAddrWidth-1:0] insn_fetch_resp_addr_q;
   logic                     insn_fetch_resp_valid_q, insn_fetch_resp_valid_d;
   logic [1:0]               insn_fetch_resp_intg_error_vec;
@@ -81,17 +81,15 @@ module otbn_instruction_fetch
 
   rf_predec_bignum_t   rf_predec_bignum_indirect, rf_predec_bignum_sec_wipe;
   rf_predec_bignum_t   rf_predec_bignum_q, rf_predec_bignum_d, rf_predec_bignum_insn;
-  alu_predec_bignum_t  alu_predec_bignum_q, alu_predec_bignum_d;
+  alu_predec_bignum_t  alu_predec_bignum, alu_predec_bignum_q, alu_predec_bignum_d;
   ispr_predec_bignum_t ispr_predec_bignum_q, ispr_predec_bignum_d;
   ispr_predec_bignum_t ispr_predec_bignum;
-  mac_predec_bignum_t  mac_predec_bignum_q, mac_predec_bignum_d;
+  mac_predec_bignum_t  mac_predec_bignum, mac_predec_bignum_q, mac_predec_bignum_d;
   logic                lsu_addr_en_predec_q, lsu_addr_en_predec_d;
   logic                lsu_addr_en_predec_insn;
   logic                insn_addr_err_unbuf;
 
   logic [NWdr-1:0] rf_bignum_wr_sec_wipe_onehot;
-
-  logic rf_predec_bignum_en, other_predec_en;
 
   // The prefetch has failed if a fetch is requested and either no prefetch has done or was done to
   // the wrong address.
@@ -121,9 +119,9 @@ module otbn_instruction_fetch
     .imem_rvalid_i,
 
     .rf_predec_bignum_o   (rf_predec_bignum_insn),
-    .alu_predec_bignum_o  (alu_predec_bignum_d),
+    .alu_predec_bignum_o  (alu_predec_bignum),
     .ispr_predec_bignum_o (ispr_predec_bignum),
-    .mac_predec_bignum_o  (mac_predec_bignum_d),
+    .mac_predec_bignum_o  (mac_predec_bignum),
     .lsu_addr_en_predec_o (lsu_addr_en_predec_insn)
   );
 
@@ -145,60 +143,103 @@ module otbn_instruction_fetch
                                        rf_we    : rf_bignum_wr_indirect_onehot_i};
 
   assign rf_predec_bignum_sec_wipe = '{rf_ren_a : '0,
-                                            rf_ren_b : '0,
-                                            rf_we    : rf_bignum_wr_sec_wipe_onehot};
+                                       rf_ren_b : '0,
+                                       rf_we    : rf_bignum_wr_sec_wipe_onehot};
 
   // Register enables for bignum come from precode unless indirect register accesses are used
   assign rf_predec_bignum_d = sec_wipe_wdr_en_i       ? rf_predec_bignum_sec_wipe :
                               rf_bignum_indirect_en_i ? rf_predec_bignum_indirect :
                               insn_fetch_en           ? rf_predec_bignum_insn     :
-                                                        '0;
+                              insn_fetch_resp_clear_i ? '0                        :
+                                                        rf_predec_bignum_q;
 
-  assign rf_predec_bignum_en =
-    insn_fetch_en | rf_bignum_indirect_en_i | sec_wipe_wdr_en_i | insn_fetch_resp_clear_i;
+  assign ispr_predec_bignum_d = insn_fetch_en           ? ispr_predec_bignum :
+                                insn_fetch_resp_clear_i ? '0                 :
+                                                          ispr_predec_bignum_q;
 
-  assign ispr_predec_bignum_d = insn_fetch_en ? ispr_predec_bignum : '0;
-
-  assign lsu_addr_en_predec_d = lsu_addr_en_predec_insn & insn_fetch_en;
-
-  assign other_predec_en = insn_fetch_en | insn_fetch_resp_clear_i;
+  assign lsu_addr_en_predec_d = insn_fetch_en           ? lsu_addr_en_predec_insn :
+                                insn_fetch_resp_clear_i ? 1'b0:
+                                                          lsu_addr_en_predec_q;
 
   assign insn_fetch_en = imem_rvalid_i & insn_fetch_req_valid_i;
 
+  assign insn_fetch_resp_data_intg_d = insn_fetch_en ? imem_rdata_i :
+                                                       insn_fetch_resp_data_intg_q;
+
+  prim_flop #(
+    .Width(39),
+    .ResetValue('0)
+  ) u_insn_fetch_resp_data_intg_flop (
+    .clk_i,
+    .rst_ni,
+
+    .d_i(insn_fetch_resp_data_intg_d),
+    .q_o(insn_fetch_resp_data_intg_q)
+  );
+
   always_ff @(posedge clk_i) begin
     if (insn_fetch_en) begin
-      insn_fetch_resp_data_intg_q <= imem_rdata_i;
       insn_fetch_resp_addr_q      <= insn_prefetch_addr;
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      alu_predec_bignum_q <= '0;
-      mac_predec_bignum_q <= '0;
-    end else if (insn_fetch_en) begin
-      alu_predec_bignum_q <= alu_predec_bignum_d;
-      mac_predec_bignum_q <= mac_predec_bignum_d;
-    end
-  end
+  assign alu_predec_bignum_d = insn_fetch_en ? alu_predec_bignum : alu_predec_bignum_q;
+  assign mac_predec_bignum_d = insn_fetch_en ? mac_predec_bignum : mac_predec_bignum_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      rf_predec_bignum_q <= '0;
-    end else if (rf_predec_bignum_en) begin
-      rf_predec_bignum_q <= rf_predec_bignum_d;
-    end
-  end
+  prim_flop #(
+    .Width($bits(alu_predec_bignum_t)),
+    .ResetValue('0)
+  ) u_alu_predec_bignum_flop(
+    .clk_i,
+    .rst_ni,
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ispr_predec_bignum_q <= '0;
-      lsu_addr_en_predec_q <= 1'b0;
-    end else if (other_predec_en) begin
-      ispr_predec_bignum_q <= ispr_predec_bignum_d;
-      lsu_addr_en_predec_q <= lsu_addr_en_predec_d;
-    end
-  end
+    .d_i(alu_predec_bignum_d),
+    .q_o(alu_predec_bignum_q)
+  );
+
+  prim_flop #(
+    .Width($bits(mac_predec_bignum_t)),
+    .ResetValue('0)
+  ) u_mac_predec_bignum_flop (
+    .clk_i,
+    .rst_ni,
+
+    .d_i(mac_predec_bignum_d),
+    .q_o(mac_predec_bignum_q)
+  );
+
+  prim_flop #(
+    .Width($bits(rf_predec_bignum_t)),
+    .ResetValue('0)
+  ) u_rf_predec_bignum_flop (
+    .clk_i,
+    .rst_ni,
+
+    .d_i(rf_predec_bignum_d),
+    .q_o(rf_predec_bignum_q)
+  );
+
+  prim_flop #(
+    .Width($bits(ispr_predec_bignum_t)),
+    .ResetValue('0)
+  ) u_ispr_predec_bignum_flop (
+    .clk_i,
+    .rst_ni,
+
+    .d_i(ispr_predec_bignum_d),
+    .q_o(ispr_predec_bignum_q)
+  );
+
+  prim_flop #(
+    .Width(1),
+    .ResetValue(1'b0)
+  ) u_lsu_addr_en_predec_flop (
+    .clk_i,
+    .rst_ni,
+
+    .d_i(lsu_addr_en_predec_d),
+    .q_o(lsu_addr_en_predec_q)
+  );
 
   always_ff @(posedge clk_i) begin
     if (insn_prefetch) begin
@@ -241,7 +282,6 @@ module otbn_instruction_fetch
     .syndrome_o(),
     .err_o     (insn_fetch_resp_intg_error_vec)
   );
-
 
   assign imem_req_o = insn_prefetch;
 

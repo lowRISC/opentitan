@@ -235,6 +235,13 @@ module otbn_controller
 
   logic [ExtWLEN-1:0] selection_result;
 
+  logic [1:0] rf_bignum_wr_en_unbuf;
+  logic [4:0] rf_bignum_wr_addr_unbuf;
+  logic [4:0] rf_bignum_rd_addr_a_unbuf;
+  logic       rf_bignum_rd_en_a_unbuf;
+  logic [4:0] rf_bignum_rd_addr_b_unbuf;
+  logic       rf_bignum_rd_en_b_unbuf;
+
   logic rf_bignum_rd_a_indirect_en;
   logic rf_bignum_rd_b_indirect_en;
   logic rf_bignum_wr_indirect_en;
@@ -816,13 +823,47 @@ module otbn_controller
     assign rf_bignum_rd_data_b_no_intg[i*32+:32] = rf_bignum_rd_data_b_intg_i[i*39+:32];
   end
 
-  assign rf_bignum_rd_addr_a_o = insn_dec_bignum_i.rf_a_indirect ? insn_bignum_rd_addr_a_q :
-                                                                   insn_dec_bignum_i.a;
-  assign rf_bignum_rd_en_a_o = insn_dec_bignum_i.rf_ren_a & insn_valid_i & ~stall;
+  // Bignum RF control signals from the controller aren't actually used, instead the predecoded
+  // one-hot versions are. The predecoded versions get checked against the signals produced here.
+  // Buffer them to ensure they don't get optimised away (with a functionaly correct OTBN they will
+  // always be identical).
+  assign rf_bignum_rd_addr_a_unbuf = insn_dec_bignum_i.rf_a_indirect ? insn_bignum_rd_addr_a_q :
+                                                                       insn_dec_bignum_i.a;
 
-  assign rf_bignum_rd_addr_b_o = insn_dec_bignum_i.rf_b_indirect ? insn_bignum_rd_addr_b_q :
-                                                                   insn_dec_bignum_i.b;
-  assign rf_bignum_rd_en_b_o = insn_dec_bignum_i.rf_ren_b & insn_valid_i & ~stall;
+  prim_buf #(
+    .Width(WdrAw)
+  ) u_rf_bignum_rd_addr_a_buf (
+    .in_i (rf_bignum_rd_addr_a_unbuf),
+    .out_o(rf_bignum_rd_addr_a_o)
+  );
+
+  assign rf_bignum_rd_en_a_unbuf = insn_dec_bignum_i.rf_ren_a & insn_valid_i & ~stall;
+
+  prim_buf #(
+    .Width(1)
+  ) u_rf_bignum_rd_en_a_buf (
+    .in_i (rf_bignum_rd_en_a_unbuf),
+    .out_o(rf_bignum_rd_en_a_o)
+  );
+
+  assign rf_bignum_rd_addr_b_unbuf = insn_dec_bignum_i.rf_b_indirect ? insn_bignum_rd_addr_b_q :
+                                                                       insn_dec_bignum_i.b;
+
+  prim_buf #(
+    .Width(WdrAw)
+  ) u_rf_bignum_rd_addr_b_buf (
+    .in_i (rf_bignum_rd_addr_b_unbuf),
+    .out_o(rf_bignum_rd_addr_b_o)
+  );
+
+  assign rf_bignum_rd_en_b_unbuf = insn_dec_bignum_i.rf_ren_b & insn_valid_i & ~stall;
+
+  prim_buf #(
+    .Width(1)
+  ) u_rf_bignum_rd_en_b_buf (
+    .in_i (rf_bignum_rd_en_b_unbuf),
+    .out_o(rf_bignum_rd_en_b_o)
+  );
 
   assign alu_bignum_operation_o.operand_a = rf_bignum_rd_data_a_no_intg;
 
@@ -872,7 +913,7 @@ module otbn_controller
 
   always_comb begin
     // By default write nothing
-    rf_bignum_wr_en_o     = 2'b00;
+    rf_bignum_wr_en_unbuf = 2'b00;
 
     // Only write if valid instruction wants a bignum rf write and it isn't stalled. If instruction
     // doesn't execute (e.g. due to an error) the write won't commit.
@@ -880,13 +921,25 @@ module otbn_controller
       if (insn_dec_bignum_i.mac_en && insn_dec_bignum_i.mac_shift_out) begin
         // Special handling for BN.MULQACC.SO, only enable upper or lower half depending on
         // mac_wr_hw_sel_upper.
-        rf_bignum_wr_en_o = insn_dec_bignum_i.mac_wr_hw_sel_upper ? 2'b10 : 2'b01;
+        rf_bignum_wr_en_unbuf = insn_dec_bignum_i.mac_wr_hw_sel_upper ? 2'b10 : 2'b01;
       end else begin
         // For everything else write both halves immediately.
-        rf_bignum_wr_en_o = 2'b11;
+        rf_bignum_wr_en_unbuf = 2'b11;
       end
     end
   end
+
+  // Bignum RF control signals from the controller aren't actually used, instead the predecoded
+  // one-hot versions are. The predecoded versions get checked against the signals produced here.
+  // Buffer them to ensure they don't get optimised away (with a functionaly correct OTBN they will
+  // always be identical).
+  prim_buf #(
+    .Width(2)
+  ) u_bignum_wr_en_buf (
+    .in_i (rf_bignum_wr_en_unbuf),
+    .out_o(rf_bignum_wr_en_o)
+  );
+
 
   assign rf_bignum_wr_commit_o = |rf_bignum_wr_en_o & insn_executing & !stall;
 
@@ -935,8 +988,19 @@ module otbn_controller
     end
   end
 
-  assign rf_bignum_wr_addr_o = insn_dec_bignum_i.rf_d_indirect ? insn_bignum_wr_addr_q :
-                                                                 insn_dec_bignum_i.d;
+  // Bignum RF control signals from the controller aren't actually used, instead the predecoded
+  // one-hot versions are. The predecoded versions get checked against the signals produced here.
+  // Buffer them to ensure they don't get optimised away (with a functionaly correct OTBN they will
+  // always be identical).
+  assign rf_bignum_wr_addr_unbuf = insn_dec_bignum_i.rf_d_indirect ? insn_bignum_wr_addr_q :
+                                                                     insn_dec_bignum_i.d;
+
+  prim_buf #(
+    .Width(WdrAw)
+  ) u_rf_bignum_wr_addr_buf (
+    .in_i (rf_bignum_wr_addr_unbuf),
+    .out_o(rf_bignum_wr_addr_o)
+  );
 
   // For the shift-out variant of BN.MULQACC the bottom half of the MAC result is written to one
   // half of a desintation register specified by the instruction (mac_wr_hw_sel_upper). The bottom
