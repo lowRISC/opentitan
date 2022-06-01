@@ -201,6 +201,15 @@
       tests: ["flash_ctrl_error_prog_type"]
     }
     {
+      name: stress_all
+      desc: '''
+            - combine above sequences in one test to run sequentially, except csr sequence
+            - randomly add reset between each sequence
+            '''
+      milestone: V2
+      tests: ["flash_ctrl_stress_all"]
+    }
+    {
       name: error_flash_phy
       desc: '''
             Perform accesses in order to provoke native flash error. Test both, Software interface
