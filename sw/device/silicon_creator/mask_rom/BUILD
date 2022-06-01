@@ -185,6 +185,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",

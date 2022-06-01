@@ -86,6 +86,7 @@ mask_rom_epmp_test_lib = declare_dependency(
     sw_silicon_creator_lib_irq_asm,
     sw_silicon_creator_mask_rom_epmp,
     sw_lib_crt,
+    sw_lib_dif_sram_ctrl,
     sw_lib_runtime_print,
     sw_lib_testing_pinmux_testutils,
     sw_lib_testing_test_status,
