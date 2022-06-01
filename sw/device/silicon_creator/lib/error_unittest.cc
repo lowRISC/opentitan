@@ -15,8 +15,7 @@
 namespace error_unittest {
 namespace {
 
-// FIXME: what should this value be?
-constexpr int kMinimumHammingDistance = 4;
+constexpr int kMinimumHammingDistance = 6;
 
 const std::map<std::string, uint32_t> &GetErrorMap() {
 #define STRINGIFY(x) #x
