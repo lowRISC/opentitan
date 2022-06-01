@@ -260,7 +260,7 @@ bool test_main(void) {
                      "LC transition configuration failed!");
         CHECK_DIF_OK(dif_lc_ctrl_transition(&lc), "LC transition failed!");
 
-        LOG_INFO("Waiting for LC RMA transtition done and reboot.");
+        LOG_INFO("Waiting for LC RMA transition done and reboot.");
         wait_for_interrupt();
 
         // Unreachable.
