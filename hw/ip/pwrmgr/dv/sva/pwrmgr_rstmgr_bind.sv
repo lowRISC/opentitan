@@ -17,7 +17,7 @@ module pwrmgr_rstmgr_bind;
     .reset_en(reg2hw.reset_en),
     .sw_rst_req_i(prim_mubi_pkg::mubi4_test_true_strict(sw_rst_req_i)),
     .main_rst_req_i(!rst_main_ni),
-    .esc_rst_req_i(esc_rst_req),
+    .esc_rst_req_i(esc_rst_req_q),
     // The outputs from pwrmgr.
     .rst_lc_req(pwr_rst_o.rst_lc_req),
     .rst_sys_req(pwr_rst_o.rst_sys_req),

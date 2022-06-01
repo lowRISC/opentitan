@@ -104,18 +104,26 @@ module pwrmgr
     .clk_o(rst_esc_n)
   );
 
-  logic esc_rst_req;
-
+  logic esc_rst_req_d, esc_rst_req_q;
   prim_esc_receiver #(
     .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
     .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
   ) u_esc_rx (
     .clk_i(clk_esc),
     .rst_ni(rst_esc_n),
-    .esc_req_o(esc_rst_req),
+    .esc_req_o(esc_rst_req_d),
     .esc_rx_o(esc_rst_rx_o),
     .esc_tx_i(esc_rst_tx_i)
   );
+
+  always_ff @(posedge clk_esc or negedge rst_esc_n) begin
+    if (!rst_esc_n) begin
+      esc_rst_req_q <= '0;
+    end else if (esc_rst_req_d) begin
+      // once latched, do not clear until reset
+      esc_rst_req_q <= 1'b1;
+    end
+  end
 
   localparam int EscTimeOutCnt = 128;
   logic esc_timeout;
@@ -144,7 +152,7 @@ module pwrmgr
   assign peri_reqs_raw.rstreqs[NumRstReqs-1:0] = rstreqs_i;
   assign peri_reqs_raw.rstreqs[ResetMainPwrIdx] = slow_rst_req;
   // SEC_CM: ESC_RX.CLK.LOCAL_ESC, CTRL_FLOW.GLOBAL_ESC
-  assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req | esc_timeout;
+  assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req_q | esc_timeout;
 
   ////////////////////////////
   ///  Software reset request
