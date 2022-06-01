@@ -4,6 +4,7 @@
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains", "rust_repository_set")
 load("//third_party/rust/crates:crates.bzl", "raze_fetch_remote_crates")
+load("@rules_rust//tools/rust_analyzer/raze:crates.bzl", "rules_rust_tools_rust_analyzer_fetch_remote_crates")
 load(
     "@safe_ftdi//third_party/rust:deps.bzl",
     ftdi_fetch_remote_crates = "fetch_remote_crates",
@@ -12,6 +13,7 @@ load(
 def rust_deps():
     rules_rust_dependencies()
     rust_register_toolchains(
+        include_rustc_srcs = True,
         edition = "2018",
         version = "1.60.0",
     )
@@ -25,3 +27,4 @@ def rust_deps():
     )
     raze_fetch_remote_crates()
     ftdi_fetch_remote_crates()
+    rules_rust_tools_rust_analyzer_fetch_remote_crates()

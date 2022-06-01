@@ -5,8 +5,11 @@
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
 load("//rules:quality.bzl", "clang_format_check", "html_coverage_report")
 load("@lowrisc_lint//rules:rules.bzl", "licence_check")
+load("@rules_rust//rust:defs.bzl", "rust_analyzer")
 
 package(default_visibility = ["//visibility:public"])
+
+exports_files(["python-requirements.txt"])
 
 unbuildify = [
     "./WORKSPACE",  # Prevent Buildifier from inserting unnecessary newlines.
@@ -82,4 +85,19 @@ filegroup(
     ],
 )
 
-exports_files(["python-requirements.txt"])
+alias(
+    name = "gen_rust_project",
+    actual = "@rules_rust//tools/rust_analyzer:gen_rust_project",
+)
+
+# Do not use directly, run `:gen_rust_project` instead.
+rust_analyzer(
+    name = "rust_analyzer",
+    targets = [
+        "//sw/host/opentitanlib:opentitanlib",
+        "//sw/host/opentitansession:opentitansession",
+        "//sw/host/opentitantool:opentitantool",
+        "//sw/host/rom_ext_image_tools/signer:rom_ext_signer",
+        "//sw/host/rom_ext_image_tools/signer/image:rom_ext_image",
+    ],
+)
