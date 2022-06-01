@@ -261,6 +261,7 @@ module otbn
 
   logic otbn_scramble_state_error;
 
+  // SEC_CM: SCRAMBLE.KEY.SIDELOAD
   otbn_scramble_ctrl #(
     .RndCnstOtbnKey  (RndCnstOtbnKey),
     .RndCnstOtbnNonce(RndCnstOtbnNonce)
@@ -295,6 +296,7 @@ module otbn
     .state_error_o(otbn_scramble_state_error)
   );
 
+  // SEC_CM: MEM.SCRAMBLE
   prim_ram_1p_scr #(
     .Width          (39),
     .Depth          (ImemSizeWords),
@@ -389,6 +391,7 @@ module otbn
   assign imem_wmask = imem_access_core ? '1 : imem_wmask_bus;
   `ASSERT(ImemWmaskBusIsFullWord_A, imem_req_bus && imem_write_bus |-> imem_wmask_bus == '1)
 
+  // SEC_CM: DATA_REG_SW.SCA
   // Blank bus read data interface during core operation to avoid leaking the currently executed
   // instruction from IMEM through the bus unintentionally. Also blank when OTBN is returning
   // a dummy response (responding to an illegal bus access) and when OTBN is locked.
@@ -492,6 +495,7 @@ module otbn
   logic unused_dmem_addr_core_wordbits;
   assign unused_dmem_addr_core_wordbits = ^dmem_addr_core[DmemAddrWidth-DmemIndexWidth-1:0];
 
+  // SEC_CM: MEM.SCRAMBLE
   prim_ram_1p_scr #(
     .Width             (ExtWLEN),
     .Depth             (DmemSizeWords),
@@ -535,6 +539,7 @@ module otbn
     end
   end
 
+  // SEC_CM: DATA.MEM.INTEGRITY
   for (genvar i_word = 0; i_word < BaseWordsPerWLEN; ++i_word) begin : g_dmem_intg_check
     logic [1:0] dmem_rerror_raw;
 
@@ -611,10 +616,10 @@ module otbn
     end
   end
 
+  // SEC_CM: DATA_REG_SW.SCA
   // Blank bus read data interface during core operation to avoid leaking DMEM data through the bus
   // unintentionally. Also blank when OTBN is returning a dummy response (responding to an illegal
   // bus access) and when OTBN is locked.
-
   assign dmem_rdata_bus_en_d = ~(busy_execute_d | start_d) & ~imem_dummy_response_d & ~locking;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -724,6 +729,7 @@ module otbn
     .devmode_i (1'b1)
   );
 
+  // SEC_CM: BUS.INTEGRITY
   logic bus_intg_violation;
   assign bus_intg_violation = (imem_bus_intg_violation | dmem_bus_intg_violation |
                                reg_bus_intg_violation);
@@ -977,6 +983,7 @@ module otbn
 
   prim_edn_req #(
     .OutWidth(EdnDataWidth),
+    // SEC_CM: RND.BUS.CONSISTENCY
     .RepCheck(1'b1)
   ) u_prim_edn_rnd_req (
     .clk_i,

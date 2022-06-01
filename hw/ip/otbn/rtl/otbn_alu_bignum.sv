@@ -336,6 +336,7 @@ module otbn_alu_bignum
   logic [WLEN-1:0]    ispr_rdata_no_intg;
   logic [ExtWLEN-1:0] ispr_rdata_intg_calc;
 
+  // SEC_CM: DATA_REG_SW.SCA
   prim_onehot_mux #(
     .Width  (WLEN),
     .Inputs (NIspr)
@@ -410,7 +411,7 @@ module otbn_alu_bignum
     .out_o (expected_ispr_wr_en_onehot)
   );
 
-  // SEC_CM: DATA_REG_SW.SCA
+  // SEC_CM: CTRL.REDUN
   assign ispr_predec_error_o =
     |{expected_ispr_rd_en_onehot != ispr_predec_bignum_i.ispr_rd_en,
       expected_ispr_wr_en_onehot != ispr_predec_bignum_i.ispr_wr_en};
@@ -687,7 +688,7 @@ module otbn_alu_bignum
     endcase
   end
 
-  // SEC_CM: DATA_REG_SW.SCA
+  // SEC_CM: CTRL.REDUN
   assign alu_predec_error_o =
     |{expected_adder_x_en != alu_predec_bignum_i.adder_x_en,
       expected_adder_y_op_a_en != alu_predec_bignum_i.adder_y_op_a_en,

@@ -971,6 +971,7 @@ module otbn_controller
       end
       RfWdSelLsu: begin
         rf_bignum_wr_data_intg_sel_o = 1'b1;
+        //SEC_CM: BUS.INTEGRITY
         rf_bignum_wr_data_intg_o     = lsu_bignum_rdata_i;
       end
       default: begin

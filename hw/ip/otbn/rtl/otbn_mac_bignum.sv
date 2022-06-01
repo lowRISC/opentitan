@@ -231,7 +231,7 @@ module otbn_mac_bignum
   assign expected_op_en     = mac_en_i;
   assign expected_acc_rd_en = ~operation_i.zero_acc & mac_en_i;
 
-  // SEC_CM: DATA_REG_SW.SCA
+  // SEC_CM: CTRL.REDUN
   assign predec_error_o = |{expected_op_en     != mac_predec_bignum_i.op_en,
                             expected_acc_rd_en != mac_predec_bignum_i.acc_rd_en};
 

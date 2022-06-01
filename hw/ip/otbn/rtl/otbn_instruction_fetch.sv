@@ -233,6 +233,7 @@ module otbn_instruction_fetch
     end
   end
 
+  // SEC_CM: INSTRUCTION.MEM.INTEGRITY
   // Check integrity on prefetched instruction
   prim_secded_inv_39_32_dec u_insn_intg_check (
     .data_i    (insn_fetch_resp_data_intg_q),
@@ -251,6 +252,7 @@ module otbn_instruction_fetch
 
   assign insn_fetch_err_o = |insn_fetch_resp_intg_error_vec & insn_fetch_resp_valid_q;
 
+  // SEC_CM: PC.CTRL_FLOW.REDUN
   // Signal an `insn_addr_err` if the instruction the execute stage requests is not the one that was
   // prefetched. By design the prefetcher is either correct or doesn't prefetch, so a mismatch
   // here indicates a fault.  `insn_fetch_req_valid_raw_i` is used as it doesn't factor in errors,

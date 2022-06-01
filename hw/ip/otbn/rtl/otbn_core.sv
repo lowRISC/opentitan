@@ -364,7 +364,7 @@ module otbn_core
     .insn_dec_shared_o(insn_dec_shared)
   );
 
-  // SEC_CM: DATA_REG_SW.SCA
+  // SEC_CM: CTRL.REDUN
   // ALU and MAC predecode is only relevant when there is a valid instruction, as without one it is
   // guaranteed there are no register reads (hence no sensitive data bits being fed into the blanked
   // data paths). RF and ISPR predecode must always be checked to ensure read and write data paths

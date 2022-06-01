@@ -72,6 +72,7 @@ module otbn_start_stop_control
   // An escalation signal gets latched into should_lock. If we were running some instructions, we'll
   // go through the secure wipe process, but we'll see the should_lock_q signal when done and go
   // into the local locked state.
+  // SEC_CM: CONTROLLER.FSM.GLOBAL_ESC
   logic esc_request, should_lock_d, should_lock_q, stop;
   assign esc_request   = mubi4_test_true_loose(escalate_en_i);
   assign stop          = esc_request | start_secure_wipe_i;
@@ -179,6 +180,7 @@ module otbn_start_stop_control
         state_d = should_lock_d ? OtbnStartStopStateLocked : OtbnStartStopStateHalt;
       end
       OtbnStartStopStateLocked: begin
+        // SEC_CM: START_STOP_CTRL.FSM.GLOBAL_ESC
         // SEC_CM: START_STOP_CTRL.FSM.LOCAL_ESC
         //
         // Terminal state. This is either accessed by glitching state_q (and going through the

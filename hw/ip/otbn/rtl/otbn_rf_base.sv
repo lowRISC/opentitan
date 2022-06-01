@@ -116,6 +116,7 @@ module otbn_rf_base
   // all other committed writes are passed straight through
   assign wr_en_masked = wr_en_i & wr_commit_i & ~push_stack;
 
+  // SEC_CM: CALL_STACK.ADDR.INTEGRITY
   // Ignore read data from the register file if reading from the stack register,
   // otherwise pass data through from register file.
   assign rd_data_a_intg_o = pop_stack_a ? stack_data_intg : rd_data_a_raw_intg;
@@ -130,6 +131,7 @@ module otbn_rf_base
   assign wr_data_intg_mux_out = wr_data_intg_sel_i ? wr_data_intg_i : wr_data_intg_calc;
 
   otbn_stack #(
+    // SEC_CM: CALL_STACK.ADDR.INTEGRITY
     .StackWidth(39),
     .StackDepth(CallStackDepth)
   ) u_call_stack (
@@ -197,6 +199,7 @@ module otbn_rf_base
     );
   end
 
+  // SEC_CM: RF_BASE.DATA_REG_SW.INTEGRITY
   // Integrity decoders used to detect errors only, corrections (`syndrome_o`/`d_o`) are ignored
   prim_secded_inv_39_32_dec u_rd_data_a_intg_dec (
     .data_i    (rd_data_a_intg_o),
