@@ -502,7 +502,7 @@ jobs:
   - bash: |
       . util/build_consts.sh
 
-      util/make_distribution.sh
+      ci/scripts/make_distribution.sh
 
       tar --list -f $BIN_DIR/opentitan-*.tar.xz
       # Put the resulting tar file into a directory the |publish| step below can reference.
