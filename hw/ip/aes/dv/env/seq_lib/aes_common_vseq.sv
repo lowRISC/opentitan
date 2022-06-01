@@ -22,8 +22,10 @@ class aes_common_vseq extends aes_base_vseq;
                                              bit            predict = 1);
     bit [TL_DW-1:0] rdata;
     if (csr.get_name() == "ctrl_shadowed") begin
-      csr_rd(ral.status, rdata);
       // Only update `ctrl_shadowed` register if AES is idle.
+      // Use backdoor read because this sequence will run parallel with csr_rw.
+      wait_no_outstanding_access();
+      csr_rd(.ptr(ral.status), .value(rdata), .backdoor(1));
       if (get_field_val(ral.status.idle, rdata) == 1) begin
         csr_wr(.ptr(csr), .value(wdata), .en_shadow_wr(0), .predict(0));
         if (predict) begin
