@@ -13,6 +13,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
@@ -26,7 +27,6 @@
 
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sram_ctrl_regs.h"  // Generated.
 
 /**
  * Mask ROM ePMP test.
@@ -238,20 +238,6 @@ static bool is_in_address_space(const void *ptr, uintptr_t start,
 }
 
 /**
- * Enable execution of SRAM for the given controller.
- *
- * @param ctrl_addr Base address for SRAM controller.
- * @returns Whether execution was enabled successfully or not.
- */
-static bool sram_exec_enable(uint32_t ctrl_addr) {
-  // TODO: use the SRAM driver or DIF when available.
-  const uint32_t kEnableExecution = 5;
-  abs_mmio_write32(ctrl_addr + SRAM_CTRL_EXEC_REG_OFFSET, kEnableExecution);
-  return abs_mmio_read32(ctrl_addr + SRAM_CTRL_EXEC_REG_OFFSET) ==
-         kEnableExecution;
-}
-
-/**
  * Set to false if a test fails.
  */
 static bool passed = true;
@@ -280,9 +266,12 @@ static void test_noexec_rodata(void) {
  * Test that the .data section in RAM is not executable.
  */
 static void test_noexec_rwdata(void) {
-  if (!sram_exec_enable(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR)) {
-    base_printf("failed to enable main RAM execution\n");
-  }
+  dif_sram_ctrl_t sram_ctrl;
+  CHECK(dif_sram_ctrl_init(
+            mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
+            &sram_ctrl) == kDifOk);
+  CHECK(dif_sram_ctrl_exec_set_enabled(&sram_ctrl, kDifToggleEnabled) ==
+        kDifOk);
   CHECK(is_in_address_space(illegal_ins_rw, TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
                             TOP_EARLGREY_RAM_MAIN_SIZE_BYTES));
   CHECK(execute(illegal_ins_rw, kExceptionInstructionAccessFault));
@@ -319,9 +308,12 @@ static void test_noexec_eflash(void) {
 static void test_noexec_mmio(void) {
   // Note: execution of retention RAM always fails regardless of controller or
   // ePMP configurations however it doesn't hurt to check it anyway.
-  if (!sram_exec_enable(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR)) {
-    base_printf("failed to enable retention RAM execution\n");
-  }
+  dif_sram_ctrl_t ret_ram_ctrl;
+  CHECK(dif_sram_ctrl_init(mmio_region_from_addr(
+                               TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
+                           &ret_ram_ctrl) == kDifOk);
+  CHECK(dif_sram_ctrl_exec_set_enabled(&ret_ram_ctrl, kDifToggleEnabled) ==
+        kDifOk);
   uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
   size_t ret_ram_len = TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES / sizeof(ret_ram[0]);
   ret_ram[0] = kUnimpInstruction;
