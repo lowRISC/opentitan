@@ -308,6 +308,16 @@ jobs:
       ci/scripts/run-english-breakfast-verilator-tests.sh
     displayName: Execute tests
     continueOnError: true #TODO: remove this line once this job is proven to be stable
+  - bash: |
+      . util/build_consts.sh
+      mkdir -p "$BIN_DIR/sw/device/lib/testing/test_rom"
+      cp $(ci/scripts/target-location.sh //sw/device/lib/testing/test_rom:test_rom_fpga_nexysvideo_vmem) \
+        "$BIN_DIR/sw/device/lib/testing/test_rom"
+    displayName: Copy test_rom_fpga_nexysvideo_vmem to $BIN_DIR
+  - template: ci/upload-artifacts-template.yml
+    parameters:
+      includePatterns:
+        - "/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.32.vmem"
 
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test
@@ -420,11 +430,10 @@ jobs:
     displayName: Upload all Vivado artifacts for CW310
     condition: failed()
 
+# TODO: change all instances of bazel_build_and_execute_verilated_tests_englishbreakfast to the new EB software build job after meson is removed.
 - job: chip_englishbreakfast_cw305
   displayName: Build CW305 variant of the English Breakfast toplevel design using Vivado
-  dependsOn:
-    - lint
-    - sw_build_englishbreakfast
+  dependsOn: bazel_build_and_execute_verilated_tests_englishbreakfast
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
@@ -433,7 +442,7 @@ jobs:
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - sw_build_englishbreakfast
+        - bazel_build_and_execute_verilated_tests_englishbreakfast
   - bash: |
       set -e
       module load "xilinx/vivado/$(VIVADO_VERSION)"
