@@ -256,7 +256,7 @@ jobs:
   - bash: |
       . util/build_consts.sh
       mkdir -p "$BIN_DIR/hw/top_earlgrey/"
-      cp $(find bazel-out/* -name Vchip_sim_tb) \
+      cp $(ci/scripts/target-location.sh //hw:verilator)/sim-verilator/Vchip_sim_tb \
         "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
     displayName: Copy //hw:verilator to $BIN_DIR
   - template: ci/upload-artifacts-template.yml
