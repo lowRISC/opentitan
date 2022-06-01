@@ -147,7 +147,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Applies the initialization scheme to the given flash partition in all banks.
   // part is the type of flash partition.
   // scheme is the type of initialization to be done.
-  virtual task flash_mem_bkdr_init(flash_dv_part_e part = FlashPartData,
+  virtual function void flash_mem_bkdr_init(flash_dv_part_e part = FlashPartData,
                                             flash_mem_init_e scheme);
     case (scheme)
       FlashMemInitSet: begin
@@ -168,7 +168,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     endcase
     // Update the memory model with the initialization data
     if (scb_check) update_partition_mem_model(part);
-  endtask : flash_mem_bkdr_init
+  endfunction : flash_mem_bkdr_init
 
   // For a given partition returns its respective memory model.
   function data_model_t get_partition_mem_model(flash_ctrl_env_pkg::flash_dv_part_e part);
