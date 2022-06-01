@@ -798,28 +798,36 @@ module otbn_controller
   assign unused_rf_base_rd_a_intg_bits = |rf_base_rd_data_a_intg_i[38:32];
   assign unused_rf_base_rd_b_intg_bits = |rf_base_rd_data_b_intg_i[38:32];
 
-  // Register file write MUX
+  // Base register file write MUX. Depending on the data source, integrity bits do or don't have to
+  // be appended:
+  // - Data sources that require appending integrity bits go into `rf_base_wr_data_no_intg_o` and
+  //   `rf_base_wr_data_intg_sel_o` is low.
+  // - Data sources that already come with integrity bits go into `rf_base_wr_data_intg_o` and
+  //   `rf_base_wr_data_intg_sel_o` is high.
   always_comb begin
-    // Write data mux for anything that needs integrity computing during register write
-    unique case (insn_dec_base_i.rf_wdata_sel)
-      RfWdSelEx:     rf_base_wr_data_no_intg_o = alu_base_operation_result_i;
-      RfWdSelNextPc: rf_base_wr_data_no_intg_o = {{(32-(ImemAddrWidth+1)){1'b0}},
-                                                  next_insn_addr_wide};
-      RfWdSelIspr:   rf_base_wr_data_no_intg_o = csr_rdata;
-      RfWdSelIncr:   rf_base_wr_data_no_intg_o = increment_out;
-      default:       rf_base_wr_data_no_intg_o = alu_base_operation_result_i;
-    endcase
+    // Default values
+    rf_base_wr_data_no_intg_o  = alu_base_operation_result_i;
+    rf_base_wr_data_intg_o     = '0;
+    rf_base_wr_data_intg_sel_o = 1'b0;
 
-    // Write data mux for anything that provides its own integrity
     unique case (insn_dec_base_i.rf_wdata_sel)
+      RfWdSelEx: begin
+        rf_base_wr_data_no_intg_o  = alu_base_operation_result_i;
+      end
+      RfWdSelNextPc: begin
+        rf_base_wr_data_no_intg_o  = {{(32-(ImemAddrWidth+1)){1'b0}}, next_insn_addr_wide};
+      end
+      RfWdSelIspr: begin
+        rf_base_wr_data_no_intg_o  = csr_rdata;
+      end
+      RfWdSelIncr: begin
+        rf_base_wr_data_no_intg_o  = increment_out;
+      end
       RfWdSelLsu: begin
         rf_base_wr_data_intg_sel_o = 1'b1;
         rf_base_wr_data_intg_o     = lsu_base_rdata_i;
       end
-      default: begin
-        rf_base_wr_data_intg_sel_o = 1'b0;
-        rf_base_wr_data_intg_o     = '0;
-      end
+      default: ;
     endcase
   end
 
@@ -1020,16 +1028,21 @@ module otbn_controller
 
   assign mac_bignum_rf_wr_data[WLEN/2-1:0] = mac_bignum_operation_result_i[WLEN/2-1:0];
 
+  // Bignum register file write MUX. Depending on the data source, integrity bits do or don't have
+  // to be appended; see comments on the "Base register file write MUX" for details.
   always_comb begin
-    // Write data mux for anything that needs integrity computing during register write
-    unique case (insn_dec_bignum_i.rf_wdata_sel)
-      RfWdSelEx:   rf_bignum_wr_data_no_intg_o = alu_bignum_operation_result_i;
-      RfWdSelMac:  rf_bignum_wr_data_no_intg_o = mac_bignum_rf_wr_data;
-      default:     rf_bignum_wr_data_no_intg_o = alu_bignum_operation_result_i;
-    endcase
+    // Default values
+    rf_bignum_wr_data_intg_sel_o = 1'b0;
+    rf_bignum_wr_data_intg_o     = '0;
+    rf_bignum_wr_data_no_intg_o  = alu_bignum_operation_result_i;
 
-    // Write data mux for anything that provides its own integrity
     unique case (insn_dec_bignum_i.rf_wdata_sel)
+      RfWdSelEx: begin
+        rf_bignum_wr_data_no_intg_o  = alu_bignum_operation_result_i;
+      end
+      RfWdSelMac: begin
+        rf_bignum_wr_data_no_intg_o  = mac_bignum_rf_wr_data;
+      end
       RfWdSelIspr: begin
         rf_bignum_wr_data_intg_sel_o = 1'b1;
         rf_bignum_wr_data_intg_o     = ispr_rdata_intg_i;
@@ -1043,10 +1056,7 @@ module otbn_controller
         //SEC_CM: BUS.INTEGRITY
         rf_bignum_wr_data_intg_o     = lsu_bignum_rdata_i;
       end
-      default: begin
-        rf_bignum_wr_data_intg_sel_o = 1'b0;
-        rf_bignum_wr_data_intg_o     = '0;
-      end
+      default: ;
     endcase
   end
 
