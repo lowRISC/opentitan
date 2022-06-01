@@ -61,7 +61,7 @@ module rstmgr_leaf_rst
 
   logic sw_rst_req_q;
   logic clr_sw_rst_req;
-  if (SwRstReq) begin : gen_sw_rst_req
+  if (SwRstReq && SecCheck) begin : gen_sw_rst_req
     // once software requests a reset, hold on to the request until the consistency
     // checker passes the assertion check point
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -74,10 +74,9 @@ module rstmgr_leaf_rst
       end
     end
   end else begin : gen_no_sw_rst_req
+    logic unused_sig;
+    assign unused_sig = clr_sw_rst_req;
     assign sw_rst_req_q = '0;
-
-    logic unused_clr_sw_rst_req;
-    assign unused_clr_sw_rst_req = clr_sw_rst_req;
   end
 
   if (SecCheck) begin : gen_rst_chk
@@ -98,8 +97,8 @@ module rstmgr_leaf_rst
     );
   end else begin : gen_no_rst_chk
     logic unused_sig;
-    assign unused_sig = sw_rst_req_q | clr_sw_rst_req;
-
+    assign unused_sig = sw_rst_req_q;
+    assign clr_sw_rst_req = '0;
     assign err_o = '0;
     assign fsm_err_o = '0;
   end
