@@ -50,10 +50,7 @@ interface prim_sparse_fsm_flop_if #(
                                     custom_signal_forced, orig_value, force_value), UVM_LOW)
         `DV_CHECK(uvm_hdl_deposit(custom_signal_forced, force_value))
       end
-      // keep the deposit value for at 2 cycles before we call `restore_fault` to restore the
-      // original value.
-      // One cycle for design to jump to an error state, another cycle to set the error flag.
-      repeat (2) @(negedge clk_i);
+      @(negedge clk_i);
     endtask
 
     virtual task automatic restore_fault();
