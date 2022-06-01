@@ -84,6 +84,12 @@ set_rule_status -rule {W_DATA} -status {Waived}                             \
     (ReceivingFlop=~"*u_spi_device.u_reg.u_reg_if.rdata*")}                  \
   -comment {RD FIFO Read port/ TX FIFO Write port are in SYS_CLK in Generic Mode}
 
+# FWMode: read pointer of rxfifo (SYS -> SYS)
+set_rule_status -rule {W_DATA} -status {Waived}                    \
+  -expression {(Signal=~"*.u_spi_device.u_reg.u_rxf_ptr_rptr*") && \
+    (ReceivingFlop=~"*.u_spi_device.u_fwmode*")}                   \
+  -comment {rxf, FwMode sits in SYS_CLK. Synchronous}
+
 # Set from iDebug
 
 set_rule_status -rule {W_CNTL} -expression {(MultiClockDomains == "IO_DIV4_CLK::SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK") && (ReceivingFlop == "top_earlgrey.u_spi_device.u_spid_addr_4b.u_sys2spi_sync.u_sync_1.gen_generic.u_impl_generic.q_o[0]") && (Signal == "top_earlgrey.u_spi_device.u_reg.u_cfg_addr_4b_en.q[0]") && (Association == "Data") && (SyncDepth == "2") && (SyncFlop == "top_earlgrey.u_spi_device.u_spid_addr_4b.u_sys2spi_sync.u_sync_2.gen_generic.u_impl_generic.q_o[0]")} -status {Waived} -lastedit_user {root} -lastedit_time {Thursday, 24 March 2022 13:46:23 PDT} \
@@ -125,7 +131,11 @@ set_rule_status -rule {W_INTERFACE W_DATA} -status {Waived}     \
   -expression {(Signal =~ "*.u_spi_device.*u_control_mode*") && \
   (MultiClockDomains =~ "IO_DIV4_CLK::*SPI_DEV*CLK*")}          \
   -comment {IO mode control is changed in SPI Idle state}
-  -comment {IO mode control is changed in SPI Idle state}
+set_rule_status -rule {W_DATA} -status {Waived}                     \
+  -expression {(Signal=~"*.u_spi_device.u_reg.u_control_abort*") && \
+    (ReceivingFlop=~"*.u_spi_device.u_fwmode*")}                    \
+  -comment {abort -> FwMode sits in SYS_CLK}
+
 set_rule_status -rule {W_INTERFACE W_DATA} -status {Waived}      \
   -expression {(Signal =~ "*.u_spi_device.u_reg*u_cmd_info*") && \
   (MultiClockDomains =~ "IO_DIV4_CLK::*SPI_DEV*CLK*")}           \
