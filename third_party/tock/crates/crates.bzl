@@ -168,202 +168,427 @@ def _flatten_dependency_maps(all_dependency_maps):
 
     return dependencies
 
-def raze_fetch_remote_crates():
+def raze_fetch_remote_crates(
+        # Each of these may be used to temporarily override the location of
+        # the crate to a path on your local filesystem for local development
+        # of crates you may be using in your project.
+        capsules__0_1_0=None,
+
+        components__0_1_0=None,
+
+        earlgrey__0_1_0=None,
+
+        earlgrey_cw310__0_1_0=None,
+
+        enum_primitive__0_1_0=None,
+
+        kernel__0_1_0=None,
+
+        libtock2__0_1_0=None,
+
+        libtock_buttons__0_1_0=None,
+
+        libtock_console__0_1_0=None,
+
+        libtock_debug_panic__0_1_0=None,
+
+        libtock_leds__0_1_0=None,
+
+        libtock_low_level_debug__0_1_0=None,
+
+        libtock_platform__0_1_0=None,
+
+        libtock_runtime__0_1_0=None,
+
+        lowrisc__0_1_0=None,
+
+        riscv__0_1_0=None,
+
+        riscv_csr__0_1_0=None,
+
+        rv32i__0_1_0=None,
+
+        tickv__0_1_0=None,
+
+        tock_cells__0_1_0=None,
+
+        tock_registers__0_7_0=None,
+
+        tock_tbf__0_1_0=None,
+
+    ):
     """This function defines a collection of repos and should be called in a WORKSPACE file"""
-    maybe(
-        new_git_repository,
-        name = "raze__capsules__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.capsules-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if capsules__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__capsules__0_1_0",
+            path = capsules__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.capsules-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__capsules__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.capsules-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__components__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.components-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if components__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__components__0_1_0",
+            path = components__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.components-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__components__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.components-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__earlgrey__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.earlgrey-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if earlgrey__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__earlgrey__0_1_0",
+            path = earlgrey__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.earlgrey-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__earlgrey__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.earlgrey-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__earlgrey_cw310__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.earlgrey-cw310-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if earlgrey_cw310__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__earlgrey_cw310__0_1_0",
+            path = earlgrey_cw310__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.earlgrey-cw310-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__earlgrey_cw310__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.earlgrey-cw310-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__enum_primitive__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.enum_primitive-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if enum_primitive__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__enum_primitive__0_1_0",
+            path = enum_primitive__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.enum_primitive-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__enum_primitive__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.enum_primitive-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__kernel__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.kernel-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if kernel__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__kernel__0_1_0",
+            path = kernel__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.kernel-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__kernel__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.kernel-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__libtock2__0_1_0",
-        remote = "https://github.com/tock/libtock-rs",
-        commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.libtock2-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if libtock2__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__libtock2__0_1_0",
+            path = libtock2__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.libtock2-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__libtock2__0_1_0",
+            remote = "https://github.com/tock/libtock-rs",
+            commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.libtock2-0.1.0.bazel"),
+            init_submodules = False,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__libtock_buttons__0_1_0",
-        remote = "https://github.com/tock/libtock-rs",
-        commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_buttons-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if libtock_buttons__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__libtock_buttons__0_1_0",
+            path = libtock_buttons__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.libtock_buttons-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__libtock_buttons__0_1_0",
+            remote = "https://github.com/tock/libtock-rs",
+            commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_buttons-0.1.0.bazel"),
+            init_submodules = False,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__libtock_console__0_1_0",
-        remote = "https://github.com/tock/libtock-rs",
-        commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_console-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if libtock_console__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__libtock_console__0_1_0",
+            path = libtock_console__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.libtock_console-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__libtock_console__0_1_0",
+            remote = "https://github.com/tock/libtock-rs",
+            commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_console-0.1.0.bazel"),
+            init_submodules = False,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__libtock_debug_panic__0_1_0",
-        remote = "https://github.com/tock/libtock-rs",
-        commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_debug_panic-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if libtock_debug_panic__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__libtock_debug_panic__0_1_0",
+            path = libtock_debug_panic__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.libtock_debug_panic-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__libtock_debug_panic__0_1_0",
+            remote = "https://github.com/tock/libtock-rs",
+            commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_debug_panic-0.1.0.bazel"),
+            init_submodules = False,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__libtock_leds__0_1_0",
-        remote = "https://github.com/tock/libtock-rs",
-        commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_leds-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if libtock_leds__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__libtock_leds__0_1_0",
+            path = libtock_leds__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.libtock_leds-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__libtock_leds__0_1_0",
+            remote = "https://github.com/tock/libtock-rs",
+            commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_leds-0.1.0.bazel"),
+            init_submodules = False,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__libtock_low_level_debug__0_1_0",
-        remote = "https://github.com/tock/libtock-rs",
-        commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_low_level_debug-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if libtock_low_level_debug__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__libtock_low_level_debug__0_1_0",
+            path = libtock_low_level_debug__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.libtock_low_level_debug-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__libtock_low_level_debug__0_1_0",
+            remote = "https://github.com/tock/libtock-rs",
+            commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_low_level_debug-0.1.0.bazel"),
+            init_submodules = False,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__libtock_platform__0_1_0",
-        remote = "https://github.com/tock/libtock-rs",
-        commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_platform-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if libtock_platform__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__libtock_platform__0_1_0",
+            path = libtock_platform__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.libtock_platform-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__libtock_platform__0_1_0",
+            remote = "https://github.com/tock/libtock-rs",
+            commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_platform-0.1.0.bazel"),
+            init_submodules = False,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__libtock_runtime__0_1_0",
-        remote = "https://github.com/tock/libtock-rs",
-        commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_runtime-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if libtock_runtime__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__libtock_runtime__0_1_0",
+            path = libtock_runtime__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.libtock_runtime-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__libtock_runtime__0_1_0",
+            remote = "https://github.com/tock/libtock-rs",
+            commit = "1d20b3e19a9c340ea0799bd4fa0397a672fd8f52",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.libtock_runtime-0.1.0.bazel"),
+            init_submodules = False,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__lowrisc__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.lowrisc-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if lowrisc__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__lowrisc__0_1_0",
+            path = lowrisc__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.lowrisc-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__lowrisc__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.lowrisc-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__riscv__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.riscv-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if riscv__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__riscv__0_1_0",
+            path = riscv__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.riscv-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__riscv__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.riscv-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__riscv_csr__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.riscv-csr-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if riscv_csr__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__riscv_csr__0_1_0",
+            path = riscv_csr__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.riscv-csr-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__riscv_csr__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.riscv-csr-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__rv32i__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.rv32i-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if rv32i__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__rv32i__0_1_0",
+            path = rv32i__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.rv32i-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__rv32i__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.rv32i-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__tickv__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.tickv-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if tickv__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__tickv__0_1_0",
+            path = tickv__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.tickv-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__tickv__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.tickv-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__tock_cells__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.tock-cells-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if tock_cells__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__tock_cells__0_1_0",
+            path = tock_cells__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.tock-cells-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__tock_cells__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.tock-cells-0.1.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__tock_registers__0_7_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.tock-registers-0.7.0.bazel"),
-        init_submodules = True,
-    )
+    if tock_registers__0_7_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__tock_registers__0_7_0",
+            path = tock_registers__0_7_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.tock-registers-0.7.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__tock_registers__0_7_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.tock-registers-0.7.0.bazel"),
+            init_submodules = True,
+        )
 
-    maybe(
-        new_git_repository,
-        name = "raze__tock_tbf__0_1_0",
-        remote = "https://github.com/cfrantz/tock",
-        commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-        build_file = Label("//third_party/tock/crates/remote:BUILD.tock-tbf-0.1.0.bazel"),
-        init_submodules = True,
-    )
+    if tock_tbf__0_1_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__tock_tbf__0_1_0",
+            path = tock_tbf__0_1_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.tock-tbf-0.1.0.bazel",
+        )
+    else:
+        maybe(
+            new_git_repository,
+            name = "raze__tock_tbf__0_1_0",
+            remote = "https://github.com/cfrantz/tock",
+            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.tock-tbf-0.1.0.bazel"),
+            init_submodules = True,
+        )
+

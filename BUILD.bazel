@@ -41,5 +41,6 @@ cargo_raze(
     name = "cargo_raze",
     cargo = [
         "third_party/rust/crates/Cargo.toml",
+        "third_party/tock/crates/Cargo.toml",
     ],
 )

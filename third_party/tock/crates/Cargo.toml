@@ -28,7 +28,22 @@ targets = [
     "riscv32imc-unknown-none-elf",
 ]
 
+[package.metadata.raze.crates.libtock2.'*']
+skip_submodules = true
+[package.metadata.raze.crates.libtock_buttons.'*']
+skip_submodules = true
+[package.metadata.raze.crates.libtock_console.'*']
+skip_submodules = true
+[package.metadata.raze.crates.libtock_debug_panic.'*']
+skip_submodules = true
+[package.metadata.raze.crates.libtock_leds.'*']
+skip_submodules = true
+[package.metadata.raze.crates.libtock_low_level_debug.'*']
+skip_submodules = true
+[package.metadata.raze.crates.libtock_platform.'*']
+skip_submodules = true
 [package.metadata.raze.crates.libtock_runtime.'*']
+skip_submodules = true
 additional_flags = [
     "--cfg=feature=\\\"no_auto_layout\\\"",
 ]
@@ -36,3 +51,4 @@ compile_data_attr = """[
     "runtime/src/startup/asm_arm.s",
     "runtime/src/startup/asm_riscv32.s",
 ]"""
+

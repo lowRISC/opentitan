@@ -73,6 +73,7 @@ rules_foreign_cc_dependencies()
 load("//third_party/tock:repos.bzl", "tock_repos")
 tock_repos()
 load("//third_party/tock:deps.bzl", "tock_deps")
+#tock_deps(tock="../tock")
 tock_deps()
 
 # Protobuf Toolchain
