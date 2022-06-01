@@ -1034,6 +1034,10 @@
         hwaccess: "hro",
         hwext:    "false",
         hwqe:     "false",
+        // TODO: remove this tag once chip-level sims support alias registers.
+        tags: [
+          "excl:CsrAllTests:CsrExclAll"
+        ]
         fields: [
           { bits: "0",
             name: "field0",
@@ -1068,6 +1072,10 @@
         hwaccess: "hro",
         hwext:    "false",
         hwqe:     "false",
+        // TODO: remove this tag once chip-level sims support alias registers.
+        tags: [
+          "excl:CsrAllTests:CsrExclAll"
+        ]
         fields: [
           { bits: "6:0",
             name: "field0",
@@ -1102,6 +1110,10 @@
         hwaccess: "hro",
         hwext:    "false",
         hwqe:     "false",
+        // TODO: remove this tag once chip-level sims support alias registers.
+        tags: [
+          "excl:CsrAllTests:CsrExclAll"
+        ]
         fields: [
           { bits: "0",
             name: "field0",
@@ -1116,6 +1128,10 @@
         hwaccess: "hrw",
         hwext:    "false",
         hwqe:     "false",
+        // TODO: remove this tag once chip-level sims support alias registers.
+        tags: [
+          "excl:CsrAllTests:CsrExclAll"
+        ]
         fields: [
          { bits: "2:0",
             name: "field0",
@@ -1149,6 +1165,10 @@
         hwaccess: "hro",
         hwext:    "false",
         hwqe:     "false",
+        // TODO: remove this tag once chip-level sims support alias registers.
+        tags: [
+          "excl:CsrAllTests:CsrExclAll"
+        ]
         fields: [
           { bits: "9:0",
             name: "field0",
@@ -1178,6 +1198,10 @@
         hwaccess: "hrw",
         hwext:    "false",
         hwqe:     "false",
+        // TODO: remove this tag once chip-level sims support alias registers.
+        tags: [
+          "excl:CsrAllTests:CsrExclAll"
+        ]
         fields: [
          { bits: "5:0",
             name: "field0",
@@ -1229,6 +1253,10 @@
         hwaccess: "hro",
         hwext:    "false",
         hwqe:     "false",
+        // TODO: remove this tag once chip-level sims support alias registers.
+        tags: [
+          "excl:CsrAllTests:CsrExclAll"
+        ]
         fields: [
           { bits: "9:0",
             name: "field0",
@@ -1260,6 +1288,10 @@
         hwaccess: "hrw",
         hwext:    "false",
         hwqe:     "false",
+        // TODO: remove this tag once chip-level sims support alias registers.
+        tags: [
+          "excl:CsrAllTests:CsrExclAll"
+        ]
         fields: [
          { bits: "5:0",
            name: "field0",
