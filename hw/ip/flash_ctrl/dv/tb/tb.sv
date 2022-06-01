@@ -125,7 +125,7 @@ module tb;
     .keymgr_o(flash_ctrl_if.keymgr),
 
     // flash prim signals
-    .flash_power_ready_h_i  (1'b1),
+    .flash_power_ready_h_i  (flash_ctrl_if.power_ready_h),
     .flash_power_down_h_i   (flash_power_down_h),
     .flash_bist_enable_i    (prim_mubi_pkg::MuBi4False),
     .flash_test_mode_a_io   (flash_test_mode_a),
