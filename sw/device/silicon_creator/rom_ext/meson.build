@@ -109,7 +109,6 @@ foreach slot, slot_link_args : rom_ext_link_info
         sw_silicon_creator_lib_driver_otp,
         sw_silicon_creator_lib_driver_pinmux,
         sw_silicon_creator_lib_driver_uart,
-        sw_silicon_creator_lib_fake_deps,
         sw_silicon_creator_lib_log,
         sw_silicon_creator_lib_shutdown,
         sw_silicon_creator_lib_manifest_def,

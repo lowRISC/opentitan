@@ -49,7 +49,6 @@ foreach slot, slot_link_args : bare_metal_link_info
         freestanding_headers,
         sw_silicon_creator_lib_driver_pinmux,
         sw_silicon_creator_lib_driver_uart,
-        sw_silicon_creator_lib_fake_deps,
         sw_silicon_creator_lib_manifest_def,
         sw_lib_crt,
         sw_lib_runtime_print,

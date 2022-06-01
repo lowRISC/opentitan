@@ -30,19 +30,6 @@ sw_silicon_creator_lib_otbn_util = declare_dependency(
   ),
 )
 
-# Mask ROM fake dependencies.  These are temporary dependencies until we
-# refactor or copy the other libraries we need (e.g. `runtime`).
-sw_silicon_creator_lib_fake_deps = declare_dependency(
-  link_with: static_library(
-    'sw_silicon_creator_lib_fake_deps',
-    sources: [
-      'fake_deps.c',
-    ],
-    dependencies: [
-    ],
-  ),
-)
-
 # Boot data stored in the flash info partition.
 sw_silicon_creator_lib_boot_data = declare_dependency(
   link_with: static_library(
