@@ -8,6 +8,7 @@ class pwm_monitor_cfg  extends dv_base_agent_cfg;
   bit en_monitor = 1'b1; // enable monitor
   bit invert     = 1'b0; // 0: active high,  1: active low
   bit active     = 1'b0; // 1: collect items 0: ignore
+  int resolution = 0;
 
   `uvm_object_utils_begin(pwm_monitor_cfg)
   `uvm_object_utils_end

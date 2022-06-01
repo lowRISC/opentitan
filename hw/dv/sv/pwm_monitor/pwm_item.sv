@@ -17,7 +17,7 @@ class pwm_item extends uvm_sequence_item;
     `uvm_field_int(duty_cycle, UVM_DEFAULT)
     `uvm_field_int(active_cnt, UVM_DEFAULT)
     `uvm_field_int(inactive_cnt, UVM_DEFAULT)
-    `uvm_field_int(phase, UVM_NOCOMPARE)
+    `uvm_field_int(phase, UVM_DEFAULT)
     `uvm_field_int(invert, UVM_DEFAULT)
     `uvm_field_int(monitor_id, UVM_DEFAULT)
   `uvm_object_utils_end
@@ -30,24 +30,18 @@ class pwm_item extends uvm_sequence_item;
       txt = "\n------| PWM ITEM |------";
       txt = { txt, $sformatf("\n Item from monitor %d", monitor_id) };
       txt = { txt, $sformatf("\n Period %d clocks", period) };
-      txt = { txt, $sformatf("\n Duty cycle %0d pct ", get_duty_cycle()) };
+      txt = { txt, $sformatf("\n Duty cycle %0d pct ", duty_cycle) };
       txt = { txt, $sformatf("\n inverted %0b", invert) };
       txt = { txt, $sformatf("\n # of active cycles %d", active_cnt) };
       txt = { txt, $sformatf("\n # of inactive cycles %d", inactive_cnt) };
       txt = { txt, $sformatf("\n phase cnt %d", phase) };
       return txt;
-    endfunction // convert2string
+    endfunction : convert2string
 
   function int get_duty_cycle();
-    int dc;
-    dc = (active_cnt/period) * 100;
-
-    if (invert) begin
-      duty_cycle = (100-dc);
-      return (100-dc);
-    end else begin
-      duty_cycle = dc;
-      return dc;
-    end
-  endfunction // get_duty_cycle
+    real dc = 0;
+    dc = (invert) ? (real'(inactive_cnt) / real'(period) * 100)
+                  : (real'(active_cnt) / real'(period) * 100);
+    return dc;
+  endfunction : get_duty_cycle
 endclass
