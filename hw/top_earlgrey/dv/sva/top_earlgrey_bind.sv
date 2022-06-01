@@ -16,7 +16,7 @@ module top_earlgrey_bind;
     .reset_en(u_pwrmgr_aon.reg2hw.reset_en),
     .sw_rst_req_i(prim_mubi_pkg::mubi4_test_true_strict(u_pwrmgr_aon.sw_rst_req_i)),
     .main_rst_req_i(!u_pwrmgr_aon.rst_main_ni),
-    .esc_rst_req_i(u_pwrmgr_aon.esc_rst_req),
+    .esc_rst_req_i(u_pwrmgr_aon.esc_rst_req_q),
     // The outputs from pwrmgr.
     .rst_lc_req(u_pwrmgr_aon.pwr_rst_o.rst_lc_req),
     .rst_sys_req(u_pwrmgr_aon.pwr_rst_o.rst_sys_req),
