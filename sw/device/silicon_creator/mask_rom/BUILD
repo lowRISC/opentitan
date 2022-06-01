@@ -201,6 +201,14 @@ opentitan_functest(
     ],
 )
 
+filegroup(
+    name = "english_breakfast_test_rom_bootstrap_srcs",
+    srcs = [
+        "bootstrap.c",
+        "bootstrap.h",
+    ],
+)
+
 cc_library(
     name = "bootstrap",
     srcs = ["bootstrap.c"],

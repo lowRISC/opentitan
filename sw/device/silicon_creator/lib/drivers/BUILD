@@ -7,6 +7,19 @@ load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "english_breakfast_test_rom_driver_srcs",
+    srcs = [
+        "flash_ctrl.c",
+        "flash_ctrl.h",
+        "lifecycle.h",
+        "otp.h",
+        "rstmgr.h",
+        "spi_device.c",
+        "spi_device.h",
+    ],
+)
+
 dual_cc_library(
     name = "alert",
     srcs = dual_inputs(
