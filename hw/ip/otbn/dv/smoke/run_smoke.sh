@@ -41,7 +41,7 @@ trap "rm -rf $RUN_LOG" EXIT
 
 timeout 5s \
   $REPO_TOP/build/lowrisc_ip_otbn_top_sim_0.1/sim-verilator/Votbn_top_sim \
-  --load-elf=$SMOKE_BIN_DIR/smoke.elf | tee $RUN_LOG
+  --load-elf=$SMOKE_BIN_DIR/smoke.elf -t | tee $RUN_LOG
 
 if [ $? -eq 124 ]; then
   fail "Simulation timeout"

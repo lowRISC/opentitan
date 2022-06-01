@@ -127,7 +127,7 @@ module otbn_rf_bignum
     .out_o (expected_wr_en_onehot)
   );
 
-  // SEC_CM: DATA_REG_SW.SCA
+  // SEC_CM: CTRL.REDUN
   assign rd_en_a_mismatch = expected_rd_en_a_onehot != rf_predec_bignum_i.rf_ren_a;
   assign rd_en_b_mismatch = expected_rd_en_b_onehot != rf_predec_bignum_i.rf_ren_b;
   assign wr_en_mismatch   = expected_wr_en_onehot   != rf_predec_bignum_i.rf_we;
@@ -137,6 +137,7 @@ module otbn_rf_bignum
   // New data can have its integrity from an external source or the integrity can be calculated here
   assign wr_data_intg_mux_out = wr_data_intg_sel_i ? wr_data_intg_i : wr_data_intg_calc;
 
+  // SEC_CM: RF_BIGNUM.DATA_REG_SW.INTEGRITY
   // Separate integrity encode and decode per 32-bit integrity granule
   for (genvar i = 0; i < BaseWordsPerWLEN; ++i) begin : g_rf_intg_calc
     prim_secded_inv_39_32_enc u_wr_data_intg_enc (

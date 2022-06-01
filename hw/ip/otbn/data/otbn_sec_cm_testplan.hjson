@@ -24,6 +24,24 @@
 {
   testpoints: [
     {
+      name: sec_cm_mem_scramble
+      desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_data_mem_integrity
+      desc: "Verify the countermeasure(s) DATA.MEM.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_instruction_mem_integrity
+      desc: "Verify the countermeasure(s) INSTRUCTION.MEM.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       milestone: V2S
@@ -66,6 +84,12 @@
       tests: []
     }
     {
+      name: sec_cm_start_stop_ctrl_fsm_global_esc
+      desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.GLOBAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_start_stop_ctrl_fsm_local_esc
       desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.LOCAL_ESC."
       milestone: V2S
@@ -90,6 +114,12 @@
       tests: []
     }
     {
+      name: sec_cm_pc_ctrl_flow_redun
+      desc: "Verify the countermeasure(s) PC.CTRL_FLOW.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_rnd_bus_consistency
       desc: "Verify the countermeasure(s) RND.BUS.CONSISTENCY."
       milestone: V2S
@@ -98,6 +128,12 @@
     {
       name: sec_cm_rnd_rng_digest
       desc: "Verify the countermeasure(s) RND.RNG.DIGEST."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_rf_base_data_reg_sw_integrity
+      desc: "Verify the countermeasure(s) RF_BASE.DATA_REG_SW.INTEGRITY."
       milestone: V2S
       tests: []
     }
@@ -120,8 +156,32 @@
       tests: []
     }
     {
+      name: sec_cm_rf_bignum_data_reg_sw_integrity
+      desc: "Verify the countermeasure(s) RF_BIGNUM.DATA_REG_SW.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_rf_bignum_data_reg_sw_glitch_detect
       desc: "Verify the countermeasure(s) RF_BIGNUM.DATA_REG_SW.GLITCH_DETECT."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_loop_stack_ctr_redun
+      desc: "Verify the countermeasure(s) LOOP_STACK.CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_loop_stack_addr_integrity
+      desc: "Verify the countermeasure(s) LOOP_STACK.ADDR.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_call_stack_addr_integrity
+      desc: "Verify the countermeasure(s) CALL_STACK.ADDR.INTEGRITY."
       milestone: V2S
       tests: []
     }

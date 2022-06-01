@@ -124,6 +124,21 @@
     },
   ],
   countermeasures: [
+    { name: "MEM.SCRAMBLE",
+      desc: "Both the imem and dmem are scrambled by using prim_ram_1p_scr."
+    }
+    { name: "DATA.MEM.INTEGRITY",
+      desc: '''
+        Dmem is protected with ECC integrity.
+        This is carried through to OTBN's register file.
+      '''
+    }
+    { name: "INSTRUCTION.MEM.INTEGRITY",
+      desc: '''
+        Imem is protected with ECC integrity.
+        This is carried through into OTBN's execute stage.
+      '''
+    }
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
@@ -151,6 +166,9 @@
     { name: "SCRAMBLE_CTRL.FSM.SPARSE",
       desc: "The scramble control FSM uses a sparse state encoding."
     }
+    { name: "START_STOP_CTRL.FSM.GLOBAL_ESC",
+      desc: "The start-stop control FSM moves to a terminal error state upon global escalation."
+    }
     { name: "START_STOP_CTRL.FSM.LOCAL_ESC",
       desc: '''
         The start-stop control FSM moves to a terminal error state upon local escalation.
@@ -166,32 +184,49 @@
     { name: "CTRL.REDUN",
       desc: "Check pre-decoded control used for blanking matches seperately decoded control from main decoder."
     }
+    { name: "PC.CTRL_FLOW.REDUN",
+      desc: '''
+        Check prefetch stage PC and execute stage PC match.
+        The prefetch stage and execute stage store their PC's seperately and have seperate increment calculations.
+      '''
+    }
     { name: "RND.BUS.CONSISTENCY",
       desc: "Comparison on successive bus values received over the EDN RND interface."
     }
     { name: "RND.RNG.DIGEST",
       desc: "Checking that the random numbers received over the EDN RND interface have not been generated from entropy that failed the FIPS health checks in the entropy source."
     }
+    { name: "RF_BASE.DATA_REG_SW.INTEGRITY"
+      desc: "Register file is protected with ECC integrity."
+    }
     { name: "RF_BASE.DATA_REG_SW.GLITCH_DETECT"
       desc: '''
-        This countermeasure checks for spurious write-enable signals on the register
-        file by monitoring the one-hot0 property of the individual write-enable strobes.
+        This countermeasure checks for spurious write-enable signals on the register file by monitoring the one-hot0 property of the individual write-enable strobes.
       '''
     }
     { name: "STACK_WR_PTR.CTR.REDUN"
       desc: '''
-        The write pointer of the stack (used for calls and loops) is redundant.  If the two
-        instances of the counter mismatch, an error is emitted.
+        The write pointer of the stack (used for calls and loops) is redundant.
+        If the two instances of the counter mismatch, an error is emitted.
       '''
     }
     { name: "STACK_WR_PTR.CTR.GLITCH_DETECT"
       desc: "Glitches are detected on the stack counter increment / decrement control signal."
     }
+    { name: "RF_BIGNUM.DATA_REG_SW.INTEGRITY"
+      desc: "Register file is protected with ECC integrity."
+    }
     { name: "RF_BIGNUM.DATA_REG_SW.GLITCH_DETECT"
-      desc: '''
-        This countermeasure checks for spurious write-enable signals on the register
-        file by monitoring the one-hot0 property of the individual write-enable strobes.
-      '''
+      desc: "This countermeasure checks for spurious write-enable signals on the register file by monitoring the one-hot0 property of the individual write-enable strobes."
+    }
+    { name: "LOOP_STACK.CTR.REDUN"
+      desc: "The iteration counter of each entry in the loop step uses cross counts via prim_count."
+    }
+    { name: "LOOP_STACK.ADDR.INTEGRITY"
+      desc: "Loop start and end address on the loop stack are protected with ECC integrity."
+    }
+    { name: "CALL_STACK.ADDR.INTEGRITY"
+      desc: "Call stack entries are protected with ECC integrity."
     }
   ]
 

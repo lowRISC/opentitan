@@ -217,6 +217,7 @@ module otbn_loop_controller
     assign loop_count_set = loop_stack_write & (loop_stack_wr_idx == i_count);
     assign loop_count_dec = current_loop_counter_dec & (loop_stack_rd_idx == i_count);
 
+    //SEC_CM: LOOP_STACK.CTR.REDUN
     prim_count #(.Width(32), .CntStyle(prim_count_pkg::CrossCnt)) u_loop_count (
       .clk_i,
       .rst_ni,
@@ -242,6 +243,7 @@ module otbn_loop_controller
      current_loop.loop_addr_info.loop_start,
      current_loop.loop_addr_info.loop_end};
 
+  //SEC_CM: LOOP_STACK.ADDR.INTEGRITY
   prim_secded_inv_39_32_dec u_loop_addrs_intg_dec (
     .data_i     (current_loop_addrs_padded_intg),
     .data_o     (),
