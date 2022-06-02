@@ -130,7 +130,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
     repeat (num_trans) begin
       bit bat_act_triggered, ec_act_triggered, rst_act_triggered;
       bit [3:0] intr_actions;
-      int ec_act_occur_cyc = cycles;
+      int ec_act_occur_cyc = 0;
       repeat ($urandom_range(1, 2)) begin
         // Trigger the input pins
         cfg.clk_aon_rst_vif.wait_clks(1);
@@ -145,18 +145,20 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
       // Sample the combo_intr_status covergroup to capture the trigger combo inputs
       // before resetting the combo inputs.
-      cov.combo_intr_status.sysrst_ctrl_combo_intr_status_cg.sample(
-          get_field_val(ral.combo_intr_status.combo0_h2l, rdata),
-          get_field_val(ral.combo_intr_status.combo1_h2l, rdata),
-          get_field_val(ral.combo_intr_status.combo2_h2l, rdata),
-          get_field_val(ral.combo_intr_status.combo3_h2l, rdata),
-          cfg.vif.key0_in,
-          cfg.vif.key1_in,
-          cfg.vif.key2_in,
-          cfg.vif.pwrb_in,
-          cfg.vif.ac_present,
-          intr_actions
-      );
+      if (cfg.en_cov) begin
+        cov.combo_intr_status.sysrst_ctrl_combo_intr_status_cg.sample(
+            get_field_val(ral.combo_intr_status.combo0_h2l, rdata),
+            get_field_val(ral.combo_intr_status.combo1_h2l, rdata),
+            get_field_val(ral.combo_intr_status.combo2_h2l, rdata),
+            get_field_val(ral.combo_intr_status.combo3_h2l, rdata),
+            cfg.vif.key0_in,
+            cfg.vif.key1_in,
+            cfg.vif.key2_in,
+            cfg.vif.pwrb_in,
+            cfg.vif.ac_present,
+            intr_actions
+        );
+      end
 
       reset_combo_inputs();
 
@@ -175,20 +177,23 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
           ec_act_triggered |= get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i]);
           rst_act_triggered |= get_field_val(ral.com_out_ctl[i].rst_req, get_action[i]);
 
-          cov.combo_detect_action[i].sysrst_ctrl_combo_detect_action_cg.sample(bat_act_triggered,
-                          intr_actions[i],
-                          ec_act_triggered,
-                          rst_act_triggered,
-                          get_field_val(ral.com_sel_ctl[i].key0_in_sel, get_trigger_combo[i]),
-                          get_field_val(ral.com_sel_ctl[i].key1_in_sel, get_trigger_combo[i]),
-                          get_field_val(ral.com_sel_ctl[i].key2_in_sel, get_trigger_combo[i]),
-                          get_field_val(ral.com_sel_ctl[i].pwrb_in_sel, get_trigger_combo[i]),
-                          get_field_val(ral.com_sel_ctl[i].ac_present_sel, get_trigger_combo[i]));
+          if (cfg.en_cov) begin
+            cov.combo_detect_action[i].sysrst_ctrl_combo_detect_action_cg.sample(bat_act_triggered,
+                            intr_actions[i],
+                            ec_act_triggered,
+                            rst_act_triggered,
+                            get_field_val(ral.com_sel_ctl[i].key0_in_sel, get_trigger_combo[i]),
+                            get_field_val(ral.com_sel_ctl[i].key1_in_sel, get_trigger_combo[i]),
+                            get_field_val(ral.com_sel_ctl[i].key2_in_sel, get_trigger_combo[i]),
+                            get_field_val(ral.com_sel_ctl[i].pwrb_in_sel, get_trigger_combo[i]),
+                            get_field_val(ral.com_sel_ctl[i].ac_present_sel, get_trigger_combo[i]));
+          end
 
           if (get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i])) begin
             ec_act_triggered = 1;
-            // record which cycle the ec_rst occurs
-            ec_act_occur_cyc = min2(ec_act_occur_cyc, get_duration[i] + set_key_timer);
+            // record which cycle the ec_rst occurs, just need to know the last combo that triggers
+            // the ec_rst
+            ec_act_occur_cyc = max2(ec_act_occur_cyc, get_duration[i] + set_key_timer);
           end
         end
       end
@@ -219,18 +224,19 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
         // Sample the combo intr status covergroup
         // The combo_intr_status get updated only when the interrupt action is triggered
-        cov.combo_intr_status.sysrst_ctrl_combo_intr_status_cg.sample(
-          get_field_val(ral.combo_intr_status.combo0_h2l, rdata),
-          get_field_val(ral.combo_intr_status.combo1_h2l, rdata),
-          get_field_val(ral.combo_intr_status.combo2_h2l, rdata),
-          get_field_val(ral.combo_intr_status.combo3_h2l, rdata),
-          cfg.vif.key0_in,
-          cfg.vif.key1_in,
-          cfg.vif.key2_in,
-          cfg.vif.pwrb_in,
-          cfg.vif.ac_present,
-          intr_actions
-      );
+        if (cfg.en_cov) begin
+          cov.combo_intr_status.sysrst_ctrl_combo_intr_status_cg.sample(
+            get_field_val(ral.combo_intr_status.combo0_h2l, rdata),
+            get_field_val(ral.combo_intr_status.combo1_h2l, rdata),
+            get_field_val(ral.combo_intr_status.combo2_h2l, rdata),
+            get_field_val(ral.combo_intr_status.combo3_h2l, rdata),
+            cfg.vif.key0_in,
+            cfg.vif.key1_in,
+            cfg.vif.key2_in,
+            cfg.vif.pwrb_in,
+            cfg.vif.ac_present,
+            intr_actions);
+        end
       end else begin
         check_interrupts(.interrupts(1 << IntrSysrstCtrl), .check_set(0));
       end
