@@ -161,9 +161,8 @@ module keccak_round
       StPhase2Cycle1 = 6'b000011,
 
       // Chi Stage 2 and Iota for first lane halves. Chi Stage 1 for second
-      // lane halves. We don't need fresh randomness at this point as we can use
-      // intermediate results from StPhase1 for remasking. Unconditionally move
-      // to Phase2Cycle3.
+      // lane halves. We only move forward if the fresh randomness required for
+      // remasking is available. Otherwise, keep computing Phase2Cycle1.
       StPhase2Cycle2 = 6'b011000,
 
       // Chi Stage 2 and Iota for second lane halves.
@@ -284,16 +283,26 @@ module keccak_round
         // Chi Stage 1 for second lane halves.
         // Chi Stage 2 and Iota for first lane halves.
         phase_sel = MuBi4True;
-        cycle =  2'h 2;
 
-        // Trigger randomness update for next round.
-        keccak_rand_consumed = 1'b 1;
+        // Only update state and move on if the required randomness is
+        // available. This way the DOM multipliers inside keccak_2share will be
+        // presented the second lane halves at the same time as the new
+        // randomness. Otherwise, stale entropy is paired with fresh data or
+        // vice versa. This could lead to undesired SCA leakage.
+        if (rand_valid_i) begin
+          cycle =  2'h 2;
 
-        // Update first lane halves.
-        update_storage = 1'b 1;
+          // Trigger randomness update for next round.
+          keccak_rand_consumed = 1'b 1;
 
-        // Unconditionally move to next phase/cycle.
-        keccak_st_d = StPhase2Cycle3;
+          // Update first lane halves.
+          update_storage = 1'b 1;
+
+          keccak_st_d = StPhase2Cycle3;
+        end else begin
+          cycle =  2'h 1;
+          keccak_st_d = StPhase2Cycle2;
+        end
       end
 
       StPhase2Cycle3: begin
