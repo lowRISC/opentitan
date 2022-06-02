@@ -31,7 +31,7 @@ See example below:
 ```console
 $ cd $REPO_TOP
 $ ./util/fpga/splice_rom.sh
-$ ./util/fpga/cw310_loader.py --bitstream build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
+$ bazel run //sw/host/opentitantool load-bitstream build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
 ```
 
 The script assumes that there is an existing bitfile `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit` (this is created after following the steps in [FPGA Setup]({{< relref "doc/getting_started/setup_fpga" >}})).
@@ -39,38 +39,38 @@ The script assumes that there is an existing bitfile `build/lowrisc_systems_chip
 The script assumes that there is an existing boot ROM image under `build-bin/sw/device/lib/testing/test_rom` and then creates a new bitfile of the same name at the same location.
 The original input bitfile is moved to `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig`.
 
-The `cw310_loader.py` can then be used to directly flash the updated bitstream to the FPGA.
+`opentitantool` can then be used to directly flash the updated bitstream to the FPGA.
 
 ### General Software Development
 
 After building, the FPGA bitstream contains only the boot ROM.
 Using this boot ROM, the FPGA is able to load additional software to the emulated flash, such as software in the `sw/device/benchmark`, `sw/device/examples` and `sw/device/tests` directories.
-To load additional software, the `cw310_loader.py` is required.
+To load additional software, `opentitantool` is required.
 
 Also the binary you wish to load needs to be built first.
 For the purpose of this demonstration, we will use `sw/device/examples/hello_world`, but it applies to any software image that is able to fit in the emulated flash space.
 The example below builds the `hello_world` image and loads it onto the FPGA.
-The loading output is also shown.
 
 ```console
 $ cd ${REPO_TOP}
-$ ./meson_init.sh
-$ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_cw310
-$ ./util/fpga/cw310_loader.py --firmware build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin
+$ bazel run //sw/host/opentitantool set-pll # This needs to be done only once.
+$ bazel build //sw/device/examples/hello_world:hello_world_fpga_cw310_bin
+$ bazel run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw310_bin)
+```
 
-CW310 Loader: Attemping to find CW310 FPGA Board:
-    No bitstream specified
-CW310 Board Found:
-INFO: Programming firmware file: build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin
-Programming OpenTitan with "build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin"...
-Transferring frame 0x00000000 @             0x00000000.
-Transferring frame 0x00000001 @             0x000007D8.
-Transferring frame 0x00000002 @             0x00000FB0.
-Transferring frame 0x00000003 @             0x00001788.
-Transferring frame 0x00000004 @             0x00001F60.
-Transferring frame 0x00000005 @             0x00002738.
-Transferring frame 0x80000006 @             0x00002F10.
-Loading done.
+Uart output:
+```
+I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
+I00001 test_rom.c:87] TestROM:6b2ca9a1
+I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
+I00001 test_rom.c:87] TestROM:6b2ca9a1
+I00002 test_rom.c:118] Test ROM complete, jumping to flash!
+I00000 hello_world.c:66] Hello World!
+I00001 hello_world.c:67] Built at: Jun 13 2022, 14:16:59
+I00002 demos.c:18] Watch the LEDs!
+I00003 hello_world.c:74] Try out the switches on the board
+I00004 hello_world.c:75] or type anything into the console window.
+I00005 hello_world.c:76] The LEDs show the ASCII code of the last character.
 ```
 
 For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme]({{< relref "sw/device/lib/testing/test_rom/README.md" >}}).
