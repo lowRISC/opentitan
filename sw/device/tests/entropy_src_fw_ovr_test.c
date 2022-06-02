@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -58,27 +59,18 @@ static void entropy_data_flush(dif_entropy_src_t *entropy_src) {
  */
 static void entropy_with_fw_override_enable(dif_entropy_src_t *entropy_src) {
   const dif_entropy_src_config_t config = {
-      .mode = kDifEntropySrcModePtrng,
-      .tests =
-          {
-              [kDifEntropySrcTestRepCount] = false,
-              [kDifEntropySrcTestAdaptiveProportion] = false,
-              [kDifEntropySrcTestBucket] = false,
-              [kDifEntropySrcTestMarkov] = false,
-              [kDifEntropySrcTestMailbox] = false,
-              [kDifEntropySrcTestVendorSpecific] = false,
-          },
-      .reset_health_test_registers = false,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
+      .fips_enable = true,
       .route_to_firmware = true,
-      .fw_override =
-          {
-              .enable = true,
-              .entropy_insert_enable = true,
-              .buffer_threshold = kEntropyFifoBufferSize,
-          },
+      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
   };
-  CHECK_DIF_OK(dif_entropy_src_configure(entropy_src, config));
+  CHECK_DIF_OK(
+      dif_entropy_src_configure(entropy_src, config, kDifToggleEnabled));
+  const dif_entropy_src_fw_override_config_t fw_override_config = {
+      .entropy_insert_enable = true,
+      .buffer_threshold = kEntropyFifoBufferSize,
+  };
+  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
+      entropy_src, fw_override_config, kDifToggleEnabled));
 }
 
 /**
