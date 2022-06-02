@@ -58,11 +58,11 @@ class otbn_common_vseq extends otbn_base_vseq;
   endtask
 
   // Overriden from cip_base_vseq. Initialise Imem and Dmem and then call the super function.
-  task run_passthru_mem_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
+  task run_passthru_mem_tl_intg_err_vseq_sub(string ral_name);
     `uvm_info(`gfn, "Overriding run_passthru_mem_tl_intg_err_vseq_sub", UVM_HIGH)
     imem_init();
     dmem_init();
-    super.run_passthru_mem_tl_intg_err_vseq_sub(num_times, ral_name);
+    super.run_passthru_mem_tl_intg_err_vseq_sub(ral_name);
   endtask
 
   virtual function void inject_intg_fault_in_passthru_mem(dv_base_mem mem,

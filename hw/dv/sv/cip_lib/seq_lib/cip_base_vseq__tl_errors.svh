@@ -198,13 +198,16 @@ virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
   //  and pass in an appropriate "path" argument to the function to enable/disable
   //  ONLY the corresponding tlul_assert monitor.
   set_tl_assert_en(.enable(0));
-  `loop_ral_models_to_create_threads(run_tl_errors_vseq_sub(num_times, do_wait_clk, ral_name);)
+  for (int trans = 1; trans <= num_times; trans++) begin
+    `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", trans, num_times), UVM_LOW)
+    `loop_ral_models_to_create_threads(run_tl_errors_vseq_sub(do_wait_clk, ral_name);)
+  end
   csr_utils_pkg::wait_no_outstanding_access();
   set_tl_assert_en(.enable(1));
 endtask
 
 // generic task to check interrupt test reg functionality
-virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, string ral_name);
+virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
   addr_range_t loc_mem_range[$] = cfg.ral_models[ral_name].mem_ranges;
   bit has_mem = (loc_mem_range.size > 0);
   bit [BUS_AW-1:0] csr_base_addr = cfg.ral_models[ral_name].default_map.get_base_addr();
@@ -240,47 +243,39 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
 
   get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access_err, has_wo_mem, has_ro_mem);
 
-  for (int trans = 1; trans <= num_times; trans++) begin
-    `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", trans, num_times), UVM_LOW)
-    // TODO: once devmode is not tied internally in design, randomly drive devmode_vif
-    // if (cfg.en_devmode == 1) begin
-    //  cfg.devmode_vif.drive($urandom_range(0, 1));
-    // end
+  // use multiple thread to create outstanding access
+  fork
+    begin: isolation_fork
+      repeat ($urandom_range(10, 20)) begin
+        fork
+          begin
+            randcase
+              1: tl_protocol_err(p_sequencer.tl_sequencer_hs[ral_name]);
+              // only run when csr addresses exist
+              has_csr_addrs: tl_write_less_than_csr_width(ral_name);
 
-    // use multiple thread to create outstanding access
-    fork
-      begin: isolation_fork
-        repeat ($urandom_range(10, 20)) begin
-          fork
-            begin
-              randcase
-                1: tl_protocol_err(p_sequencer.tl_sequencer_hs[ral_name]);
-                // only run when csr addresses exist
-                has_csr_addrs: tl_write_less_than_csr_width(ral_name);
+              // only run when unmapped addr exists
+              cfg.ral_models[ral_name].has_unmapped_addrs: tl_access_unmapped_addr(ral_name);
 
-                // only run when unmapped addr exists
-                cfg.ral_models[ral_name].has_unmapped_addrs: tl_access_unmapped_addr(ral_name);
-
-                // only run this task when the error can be triggered
-                has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name);
-                has_wo_mem: tl_read_wo_mem_err(ral_name);
-                has_ro_mem: tl_write_ro_mem_err(ral_name);
-                1: tl_instr_type_err(ral_name);
-              endcase
-            end
-          join_none
-        end
-        wait fork;
-      end: isolation_fork
-    join
-    // when reset occurs, end this seq ASAP to avoid killing seq while sending trans
-    if (do_wait_clk) begin
-      repeat($urandom_range(500, 10_000)) begin
-        if (cfg.under_reset) return;
-        cfg.clk_rst_vif.wait_clks(1);
+              // only run this task when the error can be triggered
+              has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name);
+              has_wo_mem: tl_read_wo_mem_err(ral_name);
+              has_ro_mem: tl_write_ro_mem_err(ral_name);
+              1: tl_instr_type_err(ral_name);
+            endcase
+          end
+        join_none
       end
+      wait fork;
+    end: isolation_fork
+  join
+  // when reset occurs, end this seq ASAP to avoid killing seq while sending trans
+  if (do_wait_clk) begin
+    repeat($urandom_range(500, 10_000)) begin
+      if (cfg.under_reset) return;
+      cfg.clk_rst_vif.wait_clks(1);
     end
-  end // for
+  end
 endtask : run_tl_errors_vseq_sub
 
 virtual task run_tl_intg_err_vseq(int num_times = 1);
@@ -300,18 +295,17 @@ virtual task run_tl_intg_err_vseq(int num_times = 1);
   for (int trans = 1; trans <= num_times; trans++) begin
     `uvm_info(`gfn, $sformatf("Running run_tl_intg_err_vseq %0d/%0d", trans, num_times),
               UVM_LOW)
-    `loop_ral_models_to_create_threads(run_tl_intg_err_vseq_sub(num_times, ral_name);)
-    dut_init("HARD");
+    foreach (cfg.ral_models[ral_name]) begin
+      run_tl_intg_err_vseq_sub(ral_name);
+      dut_init("HARD");
+    end
   end
   csr_utils_pkg::wait_no_outstanding_access();
 
   set_tl_assert_en(.enable(1));
 endtask
 
-// when there are multiple TLUL interfaces, multiple thread may update and check integrity status
-// CSR. Use this semaphore to avoid race condition.
-semaphore sem_intg_err = new(1);
-virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
+virtual task run_tl_intg_err_vseq_sub(string ral_name);
   fork
     // run csr_rw seq to send some normal CSR accesses in parallel
     begin
@@ -319,7 +313,6 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
       run_csr_vseq(.csr_test_type("rw"), .ral_name(ral_name));
     end
     begin
-      sem_intg_err.get(1);
       // check integrity status before injecting fault
       foreach (cfg.tl_intg_alert_fields[csr_field]) begin
         csr_rd_check(.ptr(csr_field), .compare_vs_ral(1));
@@ -331,8 +324,6 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
       // This virtual task verifies the fatal alert is firing continuously and verifies integrity
       // error status register field is set.
       check_tl_intg_error_response();
-
-      sem_intg_err.put(1);
     end
   join
 endtask
@@ -392,13 +383,17 @@ virtual task run_passthru_mem_tl_intg_err_vseq(int num_times = 1);
     `uvm_info(`gfn, $sformatf("Running run_passthru_mem_tl_intg_err_vseq %0d/%0d",
                               trans, num_times),
               UVM_LOW)
-    `loop_ral_models_to_create_threads(run_passthru_mem_tl_intg_err_vseq_sub(num_times, ral_name);)
+    `loop_ral_models_to_create_threads(run_passthru_mem_tl_intg_err_vseq_sub(ral_name);)
+    // no fatal alert is triggered as the intg error will be detected in ibex instead of currect
+    // block.
+    check_no_fatal_alerts();
+    // calling dut_init to initialize the mem again
     dut_init("HARD");
   end
   csr_utils_pkg::wait_no_outstanding_access();
 endtask
 
-virtual task run_passthru_mem_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
+virtual task run_passthru_mem_tl_intg_err_vseq_sub(string ral_name);
   uvm_mem mems[$];
   dv_base_mem passthru_mems[$];
 
