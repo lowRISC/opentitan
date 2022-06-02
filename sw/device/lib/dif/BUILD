@@ -1149,6 +1149,7 @@ cc_test(
     name = "usbdev_unittest",
     srcs = [
         "autogen/dif_usbdev_autogen_unittest.cc",
+        "dif_usbdev_unittest.cc",
     ],
     deps = [
         ":test_base",
