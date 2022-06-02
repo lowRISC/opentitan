@@ -23,22 +23,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-enum {
-  /**
-   * Maximum pre-conditioning FIFO capacity.
-   */
-  // TODO: Synchronize value with hardware.
-  kDifEntropySrcFifoMaxCapacity = 64,
-
-  /**
-   * Default firmware observe FIFO threshold.
-   *
-   * Default value used to trigger the `kDifEntropySrcIrqEsObserveFifoReady`
-   * interrupt when enabled.
-   */
-  kDifEntropyFifoIntDefaultThreshold = 32,
-};
-
 /**
  * A statistical test on the bits emitted by an entropy source.
  */
@@ -173,13 +157,13 @@ typedef struct dif_entropy_src_fw_override_config {
    * firmware is required to implement additional health checks, and to perform
    * known answer tests of the preconditioner function.
    *
-   * This field requires `fw_override_enable` to be set.
+   * To take effect, this requires the firmware override feature to be enabled.
    */
   bool entropy_insert_enable;
 
   /**
    * This field sets the depth of the observe FIFO hardware buffer used when
-   * `fw_override_enable` is set to true.
+   * the firmware override feature is enabled.
    */
   uint8_t buffer_threshold;
 } dif_entropy_src_fw_override_config_t;
