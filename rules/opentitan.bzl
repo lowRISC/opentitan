@@ -85,15 +85,15 @@ def _sign_bin_impl(ctx):
         outputs = [signed_image],
         inputs = [
             ctx.file.bin,
-            ctx.file.elf,
             ctx.file.key,
             ctx.file._tool,
         ],
         arguments = [
-            "rom_ext",
+            "image",
+            "sign",
             ctx.file.bin.path,
             ctx.file.key.path,
-            ctx.file.elf.path,
+            "--output",
             signed_image.path,
         ],
         executable = ctx.file._tool.path,
@@ -107,7 +107,6 @@ sign_bin = rv_rule(
     implementation = _sign_bin_impl,
     attrs = {
         "bin": attr.label(allow_single_file = True),
-        "elf": attr.label(allow_single_file = True),
         "key": attr.label(
             default = "@//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
             allow_single_file = True,
@@ -117,7 +116,7 @@ sign_bin = rv_rule(
         # need for this transition, in order to build the ROM_EXT signer tool.
         "platform": attr.string(default = "@local_config_platform//:host"),
         "_tool": attr.label(
-            default = "@//sw/host/rom_ext_image_tools/signer:rom_ext_signer",
+            default = "//sw/host/opentitantool:opentitantool",
             allow_single_file = True,
         ),
     },
@@ -614,7 +613,6 @@ def opentitan_flash_binary(
             extract_sw_logs_db = extract_sw_logs_db and device.startswith("sim_"),
             **kwargs
         ))
-        elf_name = "{}_{}".format(devname, "elf")
         bin_name = "{}_{}".format(devname, "bin")
 
         # Sign BIN (if required) and generate scrambled VMEM images.
@@ -626,7 +624,6 @@ def opentitan_flash_binary(
                 sign_bin(
                     name = signed_bin_name,
                     bin = bin_name,
-                    elf = elf_name,
                     key = key,
                     key_name = key_name,
                 )
