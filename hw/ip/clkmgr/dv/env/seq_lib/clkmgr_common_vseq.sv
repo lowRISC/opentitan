@@ -41,13 +41,6 @@ class clkmgr_common_vseq extends clkmgr_base_vseq;
     end
   endfunction
 
-  task initialize_on_start();
-    super.initialize_on_start();
-    // update default idle to false for
-    // csr test.
-    cfg.clkmgr_vif.idle_i = {NUM_TRANS{MuBi4False}};
-  endtask : initialize_on_start
-
   // This task is used for non-main clock registers.
   // to compensate clock difference, wait longer until
   // see get_alert()

@@ -52,7 +52,12 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   virtual task initialize_on_start();
     `uvm_info(`gfn, "In clkmgr_if initialize_on_start", UVM_MEDIUM)
-    idle = {NUM_TRANS{MuBi4True}};
+    if (common_seq_type inside {"csr_mem_rw",
+                                "csr_mem_rw_with_rand_reset", "same_csr_outstanding"}) begin
+      idle = {NUM_TRANS{MuBi4False}};
+    end else begin
+      idle = {NUM_TRANS{MuBi4True}};
+    end
     scanmode = MuBi4False;
     cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_debug_en(Off));
     io_ip_clk_en   = 1'b1;
@@ -82,7 +87,15 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     // Disable the assertions requiring strict mubi4 and lc_tx_t to test non-strict-true values.
     $assertoff(0, "prim_mubi4_sync");
     $assertoff(0, "prim_lc_sync");
-    cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode), .lc_debug_en(Off));
+    if (common_seq_type inside {"csr_mem_rw",
+                                "csr_mem_rw_with_rand_reset", "same_csr_outstanding"}) begin
+      // hints_status can be modified by hw based on clock enables.
+      // Remove this register from csr rw test
+      ral.get_excl_item().add_excl("clkmgr_reg_block.clk_hints_status", CsrExclCheck);
+    end else begin
+      cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode), .lc_debug_en(Off));
+    end
+
     cfg.clkmgr_vif.update_io_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_main_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_usb_ip_clk_en(1'b0);
