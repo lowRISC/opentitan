@@ -19,7 +19,7 @@ To use the OpenTitan on an FPGA you need two things:
 * A tool from the FPGA vendor
 
 Depending on the design/target combination that you want to synthesize you will need different tools and boards.
-Refer to the design documentation for information what exactly is needed.
+Refer to the design documentation for information on what exactly is needed.
 
 * [Obtain an FPGA board]({{< relref "fpga_boards.md" >}})
 
@@ -35,9 +35,8 @@ If you are using the ChipWhisperer CW310 board with the Xilinx Kintex 7 XC7K410T
 For example, to download and unpack the bitstream, run the following:
 
 ```console
-cd $REPO_TOP
-mkdir -p build-bin/hw/top_earlgrey
-cd build-bin/hw/top_earlgrey
+mkdir -p /tmp/bitstream-latest
+cd /tmp/bitstream-latest
 curl https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz -o bitstream-latest.tar.gz
 tar -xvf bitstream-latest.tar.gz
 ```
@@ -148,25 +147,31 @@ To ensure that you have sufficient access permissions, set up the udev rules as 
 
 ## Flash the bitstream onto the FPGA
 
-To flash the bitstream onto the FPGA using the `cw310_loader` tool, use the following command:
+Note: The following examples assume that you have a `~/.config/opentitantool/config` with the proper `--interface` and `--conf` options.
+For CW310, its contents would look like:
+```
+--interface=cw310
+--conf=<ABS_PATH_TO_YOUR_CLONE>/sw/host/opentitantool/config/opentitan_cw310.json
+```
+
+To flash the bitstream onto the FPGA using `opentitantool`, use the following command:
 
 ```console
 cd $REPO_TOP
 
 # If you downloaded the bitstream:
-./util/fpga/cw310_loader.py --bitstream build-bin/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
+bazel run //sw/host/opentitantool load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig
 # If you built the bitstream yourself:
-./util/fpga/cw310_loader.py --bitstream build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
+bazel run //sw/host/opentitantool load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_cw310_test_rom)
 ```
 
 Depending on the FPGA device, the flashing itself may take several seconds.
 After completion, a message like this should be visible from the UART:
 
 ```
-Version:    opentitan-snapshot-20191101-1-366-gca61d28
-Build Date: 2019-12-13, 13:15:48
-Bootstrap requested, initialising HW...
-HW initialisation completed, waiting for SPI input...
+I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
+I00001 test_rom.c:87] TestROM:6b2ca9a1
+I00002 test_rom.c:118] Test ROM complete, jumping to flash!
 ```
 
 ## Testing the demo design
@@ -180,61 +185,27 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the 
    ```console
    screen /dev/ttyACM1 115200,cs8,-ixon,-ixoff
    ```
-1. Run the loading tool.
+1. Run `opentitantool`.
    ```console
    cd ${REPO_TOP}
-   ./util/fpga/cw310_loader.py --firmware build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin --set-pll-defaults
-   ```
-
-   This should report how the binary is split into frames:
-   ```
-   CW310 Loader: Attemping to find CW310 FPGA Board:
-       No bitstream specified
-   Board found, setting PLL2 to 100 MHz
-   INFO: Programming firmware file: build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin
-   Programming OpenTitan with "build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin"...
-   Transferring frame 0x00000000 @ 0x00000000.
-   Transferring frame 0x00000001 @ 0x000007D8.
-   Transferring frame 0x00000002 @ 0x00000FB0.
-   Transferring frame 0x00000003 @ 0x00001788.
-   Transferring frame 0x00000004 @ 0x00001F60.
-   Transferring frame 0x00000005 @ 0x00002738.
-   Transferring frame 0x00000006 @ 0x00002F10.
-   Transferring frame 0x80000007 @ 0x000036E8.
-   Loading done.
+   bazel run //sw/host/opentitantool set-pll # This needs to be done only once.
+   bazel build //sw/device/examples/hello_world:hello_world_fpga_cw310_bin
+   bazel run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw310_bin)
    ```
 
    and then output like this should appear from the UART:
    ```
-   Version:    opentitan-snapshot-20191101-1-4549-g504534121
-   Build Date: 2021-03-02, 18:15:49
-   Bootstrap requested, initialising HW...
-   HW initialisation completed, waiting for SPI input...
-   Processing frame #0, expecting #0
-   Processing frame #1, expecting #1
-   Processing frame #2, expecting #2
-   Processing frame #3, expecting #3
-   Processing frame #4, expecting #4
-   Processing frame #5, expecting #5
-   Processing frame #6, expecting #6
-   Processing frame #7, expecting #7
-   Bootstrap: DONE!
-   Boot ROM initialisation has completed, jump into flash!
-   Hello World!
-   Built at: May 17 2021, 18:44:21
-   Watch the LEDs!
-   Try out the switches on the board
-   or type anything into the console window.
-   The LEDs show the ASCII code of the last character.
-   GPIO switch #0 changed to 1
-   GPIO switch #1 changed to 1
-   GPIO switch #2 changed to 1
-   GPIO switch #3 changed to 1
-   GPIO switch #4 changed to 1
-   GPIO switch #5 changed to 1
-   GPIO switch #6 changed to 1
-   GPIO switch #7 changed to 1
-   FTDI control changed. Enable JTAG.
+   I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
+   I00001 test_rom.c:87] TestROM:6b2ca9a1
+   I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
+   I00001 test_rom.c:87] TestROM:6b2ca9a1
+   I00002 test_rom.c:118] Test ROM complete, jumping to flash!
+   I00000 hello_world.c:66] Hello World!
+   I00001 hello_world.c:67] Built at: Jun 13 2022, 14:16:59
+   I00002 demos.c:18] Watch the LEDs!
+   I00003 hello_world.c:74] Try out the switches on the board
+   I00004 hello_world.c:75] or type anything into the console window.
+   I00005 hello_world.c:76] The LEDs show the ASCII code of the last character.
    ```
 
 1. Observe the output both on the board and the serial console. Type any text into the console window.
@@ -242,7 +213,7 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the 
 
 ### Troubleshooting
 
-If the firmware load fails with a message like `Error transferring frame: 0x00000000`, try pressing the "USB RST" button before loading the bitstream.
+If the firmware load fails, try pressing the "USB RST" button before loading the bitstream.
 
 ## Connect with OpenOCD and debug
 
