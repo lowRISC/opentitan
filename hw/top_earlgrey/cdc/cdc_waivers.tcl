@@ -33,6 +33,18 @@ set_rule_status -rule {W_DATA W_MASYNC} -status {Waived} \
   -expression {(ReceivingFlop =~ "IO*")}                 \
   -comment {Direct output without flop}
 
+# Driving from PAD to gpio/ uart/ i2c
+set_rule_status -rule {W_MASYNC} -status {Waived}           \
+  -expression {(Driver=~"IO*") &&                           \
+    (ReceivingFlop=~"*u_gpio.gen_filter*prim_flop_2sync*")} \
+  -comment {Other than PADS, other signals are static}
+set_rule_status -rule {W_MASYNC} -status {Waived}                         \
+  -expression {(Driver=~"IO*") && (ReceivingFlop=~"*u_uart*.*u_sync_1*")} \
+  -comment {Other than PADS, other signals are static}
+set_rule_status -rule {W_CNTL} -status {Waived}                           \
+  -expression {(Signal=~"IO*") && (ReceivingFlop=~"*u_i2c*.*.u_sync_1*")} \
+  -comment {PAD driving to I2C. PADs are not clock bounded}
+
 # PADs attribute to multiple IPs
 # Assume the attributes are not used when IPs are active
 set_rule_status -rule {W_FANOUT} -status {Waived}           \
