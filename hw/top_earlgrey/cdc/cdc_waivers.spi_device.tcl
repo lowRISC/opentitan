@@ -172,5 +172,5 @@ set_rule_status -rule {W_DATA} -status {Waived} \
 
 set_rule_status -rule {W_DATA} -status {Waived} \
   -expression {(Signal =~ "SPI_DEV_D*") && \
-   (ReceivingFlop =~ "*u_spi_device.u_memory_2p*b_rdata*)} \
+   (ReceivingFlop =~ "*u_spi_device.u_memory_2p*b_rdata*")} \
   -comment {SPI line cannot have CDC}
