@@ -93,6 +93,19 @@ jobs:
     displayName: Check what kinds of changes the PR contains
     name: DetermineBuildType
 
+- job: download_bazel_dependencies
+  displayName: Download Bazel fetched dependencies
+  pool:
+    vmImage: ubuntu-18.04
+  steps:
+  - bash: |
+      util/prep-bazel-airgapped-build.sh
+      rm -rf bazel-airgapped/bitstreams-cache
+      tar -cf bazel-airgapped.tar.gz bazel-airgapped
+    displayName: Download and package dependencies
+  - publish: $(System.DefaultWorkingDirectory)/bazel-airgapped.tar.gz
+    artifact: bazel-dependencies
+
 - job: slow_lints
   displayName: Run code quality checks (in-depth lint)
   dependsOn: lint
@@ -197,7 +210,9 @@ jobs:
   displayName: Build and run fast tests on sim_verilator
   pool: ci-public
   timeoutInMinutes: 120
-  dependsOn: lint
+  dependsOn:
+    - lint
+    - download_bazel_dependencies
   steps:
   - template: ci/install-package-dependencies.yml
   - task: DownloadSecureFile@1
@@ -208,7 +223,14 @@ jobs:
   - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
     condition: eq(variables['Build.SourceBranchName'], 'master')
     displayName: Set the remote cache GCP key path
+  - download: current
+    artifact: bazel-dependencies
+    displayName: Download Bazel dependencies
   - bash: |
+      tar -xf $(Pipeline.Workspace)/bazel-dependencies/bazel-airgapped.tar.gz
+      export BAZEL_CACHE=$(pwd)/bazel-airgapped/bazel-cache
+      export BAZEL_DISTDIR=$(pwd)/bazel-airgapped/bazel-distdir
+      export BAZEL_PYTHON_WHEELS_REPO=$(pwd)/bazel-airgapped/ot_python_wheels
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       ci/scripts/run-verilator-tests.sh
     displayName: Build and execute tests
