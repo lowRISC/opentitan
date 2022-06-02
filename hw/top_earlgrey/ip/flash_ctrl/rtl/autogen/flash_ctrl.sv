@@ -496,7 +496,9 @@ module flash_ctrl
     .dis_access_o(dis_access),
 
     // init ongoing
-    .init_busy_o(ctrl_init_busy)
+    .init_busy_o(ctrl_init_busy),
+
+    .debug_state_o(hw2reg.debug_state.d)
   );
 
   // Program FIFO

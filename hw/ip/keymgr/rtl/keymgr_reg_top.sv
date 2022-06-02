@@ -59,9 +59,9 @@ module keymgr_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [61:0] reg_we_check;
+  logic [62:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(62)
+    .OneHotWidth(63)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -346,6 +346,21 @@ module keymgr_reg_top (
   logic fault_status_side_ctrl_fsm_qs;
   logic fault_status_side_ctrl_sel_qs;
   logic fault_status_key_ecc_qs;
+  logic debug_we;
+  logic debug_invalid_creator_seed_qs;
+  logic debug_invalid_creator_seed_wd;
+  logic debug_invalid_owner_seed_qs;
+  logic debug_invalid_owner_seed_wd;
+  logic debug_invalid_dev_id_qs;
+  logic debug_invalid_dev_id_wd;
+  logic debug_invalid_health_state_qs;
+  logic debug_invalid_health_state_wd;
+  logic debug_invalid_key_version_qs;
+  logic debug_invalid_key_version_wd;
+  logic debug_invalid_key_qs;
+  logic debug_invalid_key_wd;
+  logic debug_invalid_digest_qs;
+  logic debug_invalid_digest_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2576,8 +2591,185 @@ module keymgr_reg_top (
   );
 
 
+  // R[debug]: V(False)
+  //   F[invalid_creator_seed]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_debug_invalid_creator_seed (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [61:0] addr_hit;
+    // from register interface
+    .we     (debug_we),
+    .wd     (debug_invalid_creator_seed_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.invalid_creator_seed.de),
+    .d      (hw2reg.debug.invalid_creator_seed.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (debug_invalid_creator_seed_qs)
+  );
+
+  //   F[invalid_owner_seed]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_debug_invalid_owner_seed (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (debug_we),
+    .wd     (debug_invalid_owner_seed_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.invalid_owner_seed.de),
+    .d      (hw2reg.debug.invalid_owner_seed.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (debug_invalid_owner_seed_qs)
+  );
+
+  //   F[invalid_dev_id]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_debug_invalid_dev_id (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (debug_we),
+    .wd     (debug_invalid_dev_id_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.invalid_dev_id.de),
+    .d      (hw2reg.debug.invalid_dev_id.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (debug_invalid_dev_id_qs)
+  );
+
+  //   F[invalid_health_state]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_debug_invalid_health_state (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (debug_we),
+    .wd     (debug_invalid_health_state_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.invalid_health_state.de),
+    .d      (hw2reg.debug.invalid_health_state.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (debug_invalid_health_state_qs)
+  );
+
+  //   F[invalid_key_version]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_debug_invalid_key_version (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (debug_we),
+    .wd     (debug_invalid_key_version_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.invalid_key_version.de),
+    .d      (hw2reg.debug.invalid_key_version.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (debug_invalid_key_version_qs)
+  );
+
+  //   F[invalid_key]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_debug_invalid_key (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (debug_we),
+    .wd     (debug_invalid_key_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.invalid_key.de),
+    .d      (hw2reg.debug.invalid_key.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (debug_invalid_key_qs)
+  );
+
+  //   F[invalid_digest]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_debug_invalid_digest (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (debug_we),
+    .wd     (debug_invalid_digest_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.invalid_digest.de),
+    .d      (hw2reg.debug.invalid_digest.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (debug_invalid_digest_qs)
+  );
+
+
+
+  logic [62:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == KEYMGR_INTR_STATE_OFFSET);
@@ -2642,6 +2834,7 @@ module keymgr_reg_top (
     addr_hit[59] = (reg_addr == KEYMGR_OP_STATUS_OFFSET);
     addr_hit[60] = (reg_addr == KEYMGR_ERR_CODE_OFFSET);
     addr_hit[61] = (reg_addr == KEYMGR_FAULT_STATUS_OFFSET);
+    addr_hit[62] = (reg_addr == KEYMGR_DEBUG_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2710,7 +2903,8 @@ module keymgr_reg_top (
                (addr_hit[58] & (|(KEYMGR_PERMIT[58] & ~reg_be))) |
                (addr_hit[59] & (|(KEYMGR_PERMIT[59] & ~reg_be))) |
                (addr_hit[60] & (|(KEYMGR_PERMIT[60] & ~reg_be))) |
-               (addr_hit[61] & (|(KEYMGR_PERMIT[61] & ~reg_be)))));
+               (addr_hit[61] & (|(KEYMGR_PERMIT[61] & ~reg_be))) |
+               (addr_hit[62] & (|(KEYMGR_PERMIT[62] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -2908,6 +3102,21 @@ module keymgr_reg_top (
   assign err_code_invalid_kmac_input_wd = reg_wdata[1];
 
   assign err_code_invalid_shadow_update_wd = reg_wdata[2];
+  assign debug_we = addr_hit[62] & reg_we & !reg_error;
+
+  assign debug_invalid_creator_seed_wd = reg_wdata[0];
+
+  assign debug_invalid_owner_seed_wd = reg_wdata[1];
+
+  assign debug_invalid_dev_id_wd = reg_wdata[2];
+
+  assign debug_invalid_health_state_wd = reg_wdata[3];
+
+  assign debug_invalid_key_version_wd = reg_wdata[4];
+
+  assign debug_invalid_key_wd = reg_wdata[5];
+
+  assign debug_invalid_digest_wd = reg_wdata[6];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -2974,6 +3183,7 @@ module keymgr_reg_top (
     reg_we_check[59] = op_status_we;
     reg_we_check[60] = err_code_we;
     reg_we_check[61] = 1'b0;
+    reg_we_check[62] = debug_we;
   end
 
   // Read data return
@@ -3244,6 +3454,16 @@ module keymgr_reg_top (
         reg_rdata_next[11] = fault_status_side_ctrl_fsm_qs;
         reg_rdata_next[12] = fault_status_side_ctrl_sel_qs;
         reg_rdata_next[13] = fault_status_key_ecc_qs;
+      end
+
+      addr_hit[62]: begin
+        reg_rdata_next[0] = debug_invalid_creator_seed_qs;
+        reg_rdata_next[1] = debug_invalid_owner_seed_qs;
+        reg_rdata_next[2] = debug_invalid_dev_id_qs;
+        reg_rdata_next[3] = debug_invalid_health_state_qs;
+        reg_rdata_next[4] = debug_invalid_key_version_qs;
+        reg_rdata_next[5] = debug_invalid_key_qs;
+        reg_rdata_next[6] = debug_invalid_digest_qs;
       end
 
       default: begin
