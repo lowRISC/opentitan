@@ -89,6 +89,14 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           alert_en = ral.alert_en_shadowed[index].get_mirrored_value() &&
               prim_mubi_pkg::mubi4_test_false_loose(cfg.alert_handler_vif.lpg_cg_en[lpg_index]) &&
               prim_mubi_pkg::mubi4_test_false_loose(cfg.alert_handler_vif.lpg_rst_en[lpg_index]);
+
+          // Check that ping mechanism will only ping alerts that have been enabled and locked.
+          if (act_item.alert_esc_type == AlertEscPingTrans) begin
+            `DV_CHECK(alert_en, $sformatf("alert %0s triggered but not enabled", index))
+            `DV_CHECK((`gmv(ral.alert_regwen[index]) == 0),
+                      $sformatf("alert %0s triggered but not locked", index))
+          end
+
           if (alert_en) begin
             // alert detected
             if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.ping_timeout &&
