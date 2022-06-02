@@ -10,8 +10,12 @@ class rstmgr_sec_cm_scan_intersig_mubi_vseq extends rstmgr_smoke_vseq;
 
   `uvm_object_new
 
-  task body();
+  task pre_start();
     disable_assert();
+    super.pre_start();
+  endtask
+
+  task body();
     fork begin
       fork
         super.body();

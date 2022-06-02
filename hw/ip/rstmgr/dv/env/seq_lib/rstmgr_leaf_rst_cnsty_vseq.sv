@@ -47,6 +47,10 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
   constraint cycles_to_sw_reset_c {cycles_to_sw_reset inside {[2 : 8]};}
   constraint cycles_to_sw_release_c {cycles_to_sw_release inside {[3 : 6]};}
 
+  task pre_start();
+    $assertoff(0,"tb.dut.rstmgr_cascading_sva_if");
+    super.pre_start();
+  endtask
 
   task body();
     for (int i = 0; i < LIST_OF_LEAFS.size(); ++i) begin
