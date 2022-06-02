@@ -172,45 +172,6 @@ jobs:
       includePatterns:
         - "/sw/***"
 
-# Software targeting the English Breakfast top level is produced by patching
-# the source tree before building. This builds a selected subset of software
-# only.
-# TODO: This is a rather ugly hack, which will go away once we properly support
-# building more than one top-level design with different parametrizations.
-# Work towards this goal is tracked in issue #4669.
-- job: sw_build_englishbreakfast
-  displayName: Build Software for English Breakfast toplevel design
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool:
-    vmImage: ubuntu-18.04
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      set -x
-      sudo util/get-toolchain.py \
-        --install-dir="$TOOLCHAIN_PATH" \
-        --release-version="$TOOLCHAIN_VERSION" \
-        --update
-    displayName: Install toolchain
-  - bash: |
-      . util/build_consts.sh
-      ./meson_init.sh -A
-      # Patch software.
-      ./hw/top_englishbreakfast/util/prepare_sw.py
-      # Build FPGA boot ROM and aes_serial binary for FPGA SCA.
-      ninja -C "$OBJ_DIR" sw/device/lib/testing/test_rom/test_rom_export_fpga_nexysvideo
-      ninja -C "$OBJ_DIR" sw/device/sca/aes_serial_export_fpga_nexysvideo
-      # Build binaries for Verilator simulation.
-      ninja -C "$OBJ_DIR" sw/device/lib/testing/test_rom/test_rom_export_sim_verilator
-      ninja -C "$OBJ_DIR" sw/device/tests/aes_smoketest_export_sim_verilator
-      ninja -C "$OBJ_DIR" sw/device/examples/hello_world/hello_world_export_sim_verilator
-    displayName: Build embedded targets
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/sw/device/***"
-
 - job: chip_englishbreakfast_verilator
   displayName: Build Verilator simulation of the English Breakfast toplevel design
   dependsOn: lint
@@ -263,34 +224,12 @@ jobs:
       includePatterns:
         - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
 
-- job: execute_verilated_tests_englishbreakfast
-  displayName: Execute tests on the Verilated English Breakfast toplevel design
-  pool: ci-public
-  dependsOn:
-    - chip_englishbreakfast_verilator
-    - sw_build_englishbreakfast
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_englishbreakfast_verilator
-        - sw_build_englishbreakfast
-  - bash: |
-      # Install an additional pytest dependency for result upload.
-      pip3 install pytest-azurepipelines
-
-      . util/build_consts.sh
-      pytest --version
-      pytest test/systemtest/englishbreakfast/test_sim_verilator.py \
-        -m "not slow" \
-        --log-cli-level=DEBUG \
-        --test-run-title="Run English Breakfast system tests with Verilator simulation" \
-        --napoleon-docstrings
-    displayName: Execute tests
-
-# TODO: change this name and replace sw_build_englishbreakfast and execute_verilated_tests_englishbreakfast
-# once testing shows it's stable
+# Software targeting the English Breakfast top level is produced by patching
+# the source tree before building. This builds a selected subset of software
+# only.
+# TODO: This is a rather ugly hack, which will go away once we properly support
+# building more than one top-level design with different parametrizations.
+# Work towards this goal is tracked in issue #4669.
 - job: bazel_build_and_execute_verilated_tests_englishbreakfast
   displayName: Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
   pool:
@@ -306,7 +245,6 @@ jobs:
       . util/build_consts.sh
       ci/scripts/run-english-breakfast-verilator-tests.sh
     displayName: Execute tests
-    continueOnError: true #TODO: remove this line once this job is proven to be stable
   - bash: |
       . util/build_consts.sh
       mkdir -p "$BIN_DIR/sw/device/lib/testing/test_rom"
