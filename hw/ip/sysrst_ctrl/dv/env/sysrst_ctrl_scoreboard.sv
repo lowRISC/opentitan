@@ -143,7 +143,7 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
          end
       end
       "ec_rst_ctl": begin
-        if (addr_phase_write) begin
+        if (cfg.en_cov && addr_phase_write) begin
           cov.debounce_timer_cg["ec_rst_ctl"].debounce_timer_cg.sample(
             get_field_val(ral.ec_rst_ctl.ec_rst_pulse, item.a_data)
           );
@@ -202,28 +202,28 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       "ulp_ctl": begin
       end
       "ulp_ac_debounce_ctl": begin
-        if (addr_phase_write) begin
+        if (cfg.en_cov && addr_phase_write) begin
           cov.debounce_timer_cg["ulp_ac_debounce_ctl"].debounce_timer_cg.sample(
             get_field_val(ral.ulp_ac_debounce_ctl.ulp_ac_debounce_timer, item.a_data)
           );
         end
       end
       "ulp_lid_debounce_ctl": begin
-        if (addr_phase_write) begin
+        if (cfg.en_cov && addr_phase_write) begin
           cov.debounce_timer_cg["ulp_lid_debounce_ctl"].debounce_timer_cg.sample(
             get_field_val(ral.ulp_lid_debounce_ctl.ulp_lid_debounce_timer, item.a_data)
           );
         end
       end
       "ulp_pwrb_debounce_ctl": begin
-        if (addr_phase_write) begin
+        if (cfg.en_cov && addr_phase_write) begin
           cov.debounce_timer_cg["ulp_pwrb_debounce_ctl"].debounce_timer_cg.sample(
             get_field_val(ral.ulp_pwrb_debounce_ctl.ulp_pwrb_debounce_timer, item.a_data)
           );
         end
       end
       "key_intr_debounce_ctl": begin
-        if (addr_phase_write) begin
+        if (cfg.en_cov && addr_phase_write) begin
           cov.debounce_timer_cg["key_intr_debounce_ctl"].debounce_timer_cg.sample(
             get_field_val(ral.key_intr_debounce_ctl.debounce_timer, item.a_data)
           );
