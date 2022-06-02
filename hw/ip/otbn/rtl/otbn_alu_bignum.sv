@@ -370,15 +370,15 @@ module otbn_alu_bignum
 
   // If we're reading from an ISPR we must be using the ispr_rdata_intg_mux
   `ASSERT(IsprRDataIntgMuxSelIfIsprRd_A,
-    |ispr_predec_bignum_i.ispr_rd_en |-> |ispr_rdata_intg_mux_sel);
+    |ispr_predec_bignum_i.ispr_rd_en |-> |ispr_rdata_intg_mux_sel)
 
   // If we're reading from MOD or ACC we must not take the read data from the calculated integrity
   // path
   `ASSERT(IsprModMustTakeIntg_A,
-    ispr_predec_bignum_i.ispr_rd_en[IsprMod] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg]);
+    ispr_predec_bignum_i.ispr_rd_en[IsprMod] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg])
 
   `ASSERT(IsprAccMustTakeIntg_A,
-    ispr_predec_bignum_i.ispr_rd_en[IsprAcc] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg]);
+    ispr_predec_bignum_i.ispr_rd_en[IsprAcc] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg])
 
 
   prim_onehot_mux #(
