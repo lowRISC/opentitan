@@ -4,14 +4,14 @@
 
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
-    "//rules:cc_side_outputs.bzl",
+    "@//rules:cc_side_outputs.bzl",
     "rv_asm",
     "rv_llvm_ir",
     "rv_preprocess",
     "rv_relink_with_linkmap",
 )
 load(
-    "//rules:rv.bzl",
+    "@//rules:rv.bzl",
     "rv_rule",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
@@ -35,10 +35,10 @@ _targets_compatible_with = {
 # simulation platforms (DV and Verilator), and two FPGA platforms (NexysVideo
 # and CW310).
 PER_DEVICE_DEPS = {
-    "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
-    "sim_dv": ["//sw/device/lib/arch:sim_dv"],
-    "fpga_nexysvideo": ["//sw/device/lib/arch:fpga_nexysvideo"],
-    "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
+    "sim_verilator": ["@//sw/device/lib/arch:sim_verilator"],
+    "sim_dv": ["@//sw/device/lib/arch:sim_dv"],
+    "fpga_nexysvideo": ["@//sw/device/lib/arch:fpga_nexysvideo"],
+    "fpga_cw310": ["@//sw/device/lib/arch:fpga_cw310"],
 }
 
 def _obj_transform_impl(ctx):
@@ -109,7 +109,7 @@ sign_bin = rv_rule(
         "bin": attr.label(allow_single_file = True),
         "elf": attr.label(allow_single_file = True),
         "key": attr.label(
-            default = "//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
+            default = "@//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
             allow_single_file = True,
         ),
         "key_name": attr.string(),
@@ -117,7 +117,7 @@ sign_bin = rv_rule(
         # need for this transition, in order to build the ROM_EXT signer tool.
         "platform": attr.string(default = "@local_config_platform//:host"),
         "_tool": attr.label(
-            default = "//sw/host/rom_ext_image_tools/signer:rom_ext_signer",
+            default = "@//sw/host/rom_ext_image_tools/signer:rom_ext_signer",
             allow_single_file = True,
         ),
     },
@@ -150,7 +150,7 @@ elf_to_disassembly = rv_rule(
         "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_cleanup_script": attr.label(
             allow_single_file = True,
-            default = Label("//rules/scripts:expand_tabs.sh"),
+            default = Label("@//rules/scripts:expand_tabs.sh"),
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
@@ -194,12 +194,12 @@ elf_to_scrambled_rom_vmem = rv_rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "_scramble_tool": attr.label(
-            default = "//hw/ip/rom_ctrl/util:scramble_image",
+            default = "@//hw/ip/rom_ctrl/util:scramble_image",
             executable = True,
             cfg = "exec",
         ),
         "_config": attr.label(
-            default = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+            default = "@//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
             allow_single_file = True,
         ),
     },
@@ -291,7 +291,7 @@ scramble_flash_vmem = rv_rule(
     attrs = {
         "vmem": attr.label(allow_single_file = True),
         "_tool": attr.label(
-            default = "//util/design:gen-flash-img",
+            default = "@//util/design:gen-flash-img",
             executable = True,
             cfg = "exec",
         ),
@@ -341,7 +341,7 @@ gen_sim_dv_logs_db = rule(
         "srcs": attr.label_list(allow_files = True),
         "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_tool": attr.label(
-            default = "//util/device_sw_utils:extract_sw_logs_db",
+            default = "@//util/device_sw_utils:extract_sw_logs_db",
             cfg = "exec",
             executable = True,
         ),
@@ -557,7 +557,7 @@ def opentitan_flash_binary(
         name,
         platform = OPENTITAN_PLATFORM,
         signing_keys = {
-            "test_key_0": "//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
+            "test_key_0": "@//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
         },
         per_device_deps = PER_DEVICE_DEPS,
         extract_sw_logs_db = True,
