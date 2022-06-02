@@ -87,7 +87,7 @@ pub struct BootstrapOptions {
         long,
         possible_values = &BootstrapProtocol::variants(),
         case_insensitive = true,
-        default_value = "primitive",
+        default_value = "eeprom",
         help = "Bootstrap protocol to use"
     )]
     pub protocol: BootstrapProtocol,
