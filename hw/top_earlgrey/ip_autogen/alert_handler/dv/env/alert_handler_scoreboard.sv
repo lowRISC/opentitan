@@ -555,7 +555,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                        "crashdump value should not change after trigger condition is reached!")
           end
 
-        foreach (crashdump_val.class_esc_state[i]) begin
+          foreach (crashdump_val.class_esc_state[i]) begin
             uvm_reg crashdump_trigger_csr = ral.get_reg_by_name(
                     $sformatf("class%0s_crashdump_trigger_shadowed", class_name[i]));
             if (crashdump_val.class_esc_state[i] == (`gmv(crashdump_trigger_csr) + 3'b100)) begin
@@ -573,9 +573,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           end
           for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
             // TODO: check the remaining field of crashdump without using cycle accurate model.
-            if (state_per_class[i] != 0) begin
-              `DV_CHECK_GT(crashdump_val.class_accum_cnt, 0)
-              `DV_CHECK_GT(crashdump_val.class_esc_cnt, 0)
+            if (crashdump_val.class_esc_state[i] != 0) begin
+              // When esc state is not Idle, that means there are alerts and at least entered
+              // timeout mode. Usually both `class_accum_cnt` and `class_esc_cnt` should be larger
+              // than 0, but there is a corner case - when the class counter is cleared but
+              // interrupt is still high. In that case only class_accum_cnt is larger than 0.
+              `DV_CHECK_GT(crashdump_val.class_esc_cnt[i], 0)
             end
           end
         end
