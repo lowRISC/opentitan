@@ -34,17 +34,15 @@ module pinmux_assert_fpv
   input jtag_pkg::jtag_rsp_t rv_jtag_i,
   input jtag_pkg::jtag_req_t dft_jtag_o,
   input jtag_pkg::jtag_rsp_t dft_jtag_i,
-  input  usb_dppullup_en_upwr_i,
-  input  usb_dnpullup_en_upwr_i,
+  input usbdev_dppullup_en_i,
+  input usbdev_dnpullup_en_i,
   output usb_dppullup_en_o,
   output usb_dnpullup_en_o,
-  input  usb_out_of_rst_i,
-  input  usb_aon_wake_en_i,
-  input  usb_aon_wake_ack_i,
-  input  usb_suspend_i,
-  output usb_bus_reset_o,
-  output usb_sense_lost_o,
-  input usbdev_pkg::awk_state_t usb_state_debug_o,
+  input usbdev_suspend_req_i,
+  input usbdev_wake_ack_i,
+  output usbdev_bus_reset_o,
+  output usbdev_sense_lost_o,
+  output usbdev_wake_detect_active_o,
   input tlul_pkg::tl_h2d_t tl_i,
   input tlul_pkg::tl_d2h_t tl_o,
   input prim_alert_pkg::alert_rx_t[NumAlerts-1:0] alert_rx_i,
@@ -679,14 +677,11 @@ module pinmux_assert_fpv
   // ------ Check USB connectivity ------
   // TODO: the ones that added ##1 delays have cex, which might related to USB module being
   // black-boxed. Working on solving these cexs.
-  `ASSERT(UsbSleepEnI_A, sleep_en_i <->
-          u_usbdev_aon_wake.low_power_alw_i, clk_aon_i, !rst_aon_ni)
+  `ASSERT(UsbdevDppullupEnI_A, usbdev_dppullup_en_i <->
+          u_usbdev_aon_wake.usb_dppullup_en_i, clk_aon_i, !rst_aon_ni)
 
-  `ASSERT(UsbDppullupEnUpwrI_A, usb_dppullup_en_upwr_i <->
-          u_usbdev_aon_wake.usb_dppullup_en_upwr_i, clk_aon_i, !rst_aon_ni)
-
-  `ASSERT(UsbDnpullupEnUpwrI_A, usb_dnpullup_en_upwr_i <->
-          u_usbdev_aon_wake.usb_dnpullup_en_upwr_i, clk_aon_i, !rst_aon_ni)
+  `ASSERT(UsdevbDnpullupEnI_A, usbdev_dnpullup_en_i <->
+          u_usbdev_aon_wake.usb_dnpullup_en_i, clk_aon_i, !rst_aon_ni)
 
   `ASSERT(UsbDppullupEnO_A, ##1 usb_dppullup_en_o <->
           u_usbdev_aon_wake.usb_dppullup_en_o, clk_aon_i, !rst_aon_ni)
@@ -694,29 +689,20 @@ module pinmux_assert_fpv
   `ASSERT(UsbDnpullupEnO_A, ##1 usb_dnpullup_en_o <->
           u_usbdev_aon_wake.usb_dnpullup_en_o, clk_aon_i, !rst_aon_ni)
 
-  `ASSERT(UsbOutOfRstI_A, usb_out_of_rst_i <->
-          u_usbdev_aon_wake.usb_out_of_rst_upwr_i, clk_aon_i, !rst_aon_ni)
+  `ASSERT(UsbdevSuspendReqI_A, ##1 usbdev_suspend_req_i <->
+          u_usbdev_aon_wake.suspend_req_aon_i, clk_aon_i, !rst_aon_ni)
 
-  `ASSERT(UsbAonWakeEnUpwrI_A, usb_aon_wake_en_i <->
-          u_usbdev_aon_wake.usb_aon_wake_en_upwr_i, clk_aon_i, !rst_aon_ni)
+  `ASSERT(UsbdevWkupAckI_A, usbdev_wake_ack_i <->
+          u_usbdev_aon_wake.wake_ack_aon_i, clk_aon_i, !rst_aon_ni)
 
-  `ASSERT(UsbAonWakeAckUpwrI_A, usb_aon_wake_ack_i <->
-          u_usbdev_aon_wake.usb_aon_woken_upwr_i, clk_aon_i, !rst_aon_ni)
+  `ASSERT(UsbdevBusResetO_A, ##1 usbdev_bus_reset_o <->
+          u_usbdev_aon_wake.bus_reset_aon_o, clk_aon_i, !rst_aon_ni)
 
-  `ASSERT(UsbSuspendI_A, ##1 usb_suspend_i <->
-          u_usbdev_aon_wake.usb_suspend_upwr_i, clk_aon_i, !rst_aon_ni)
+  `ASSERT(UsbdevSenseLostO_A, ##1 usbdev_sense_lost_o <->
+          u_usbdev_aon_wake.sense_lost_aon_o, clk_aon_i, !rst_aon_ni)
 
-  `ASSERT(UsbWkupReqO_A, usb_wkup_req_o <->
-          u_usbdev_aon_wake.wake_req_alw_o, clk_aon_i, !rst_aon_ni)
-
-  `ASSERT(UsbBusResetO_A, ##1 usb_bus_reset_o <->
-          u_usbdev_aon_wake.bus_reset_alw_o, clk_aon_i, !rst_aon_ni)
-
-  `ASSERT(UsbSenseLostO_A, ##1 usb_sense_lost_o <->
-          u_usbdev_aon_wake.bus_lost_alw_o, clk_aon_i, !rst_aon_ni)
-
-  `ASSERT(UsbStateDebugO_A, ##1 usb_state_debug_o <->
-          u_usbdev_aon_wake.bus_debug_o, clk_aon_i, !rst_aon_ni)
+  `ASSERT(UsbdevWakeDetectActiveO_A, ##1 usbdev_wake_detect_active_o <->
+          u_usbdev_aon_wake.wake_detect_active_aon_o, clk_aon_i, !rst_aon_ni)
 
   // Fatal alert related assertions
   `ASSUME(TriggerAfterAlertInit_S, $stable(rst_ni) == 0 |->
