@@ -106,6 +106,11 @@
       uvm_test_seq: spi_host_passthrough_mode_vseq
       run_opts: ["+en_scb=0"]
     }
+    {
+      name: spi_host_status_stall
+      uvm_test_seq: spi_host_status_stall_vseq
+      run_opts: ["+en_scb=0"]
+    }
     // TODO: add more tests here
   ]
 

@@ -12,5 +12,6 @@
 `include "spi_host_stress_all_vseq.sv"
 `include "spi_host_overflow_underflow_vseq.sv"
 `include "spi_host_error_cmd_vseq.sv"
+`include "spi_host_status_stall_vseq.sv"
 `include "spi_host_passthrough_mode_vseq.sv"
 `include "spi_host_common_vseq.sv"
