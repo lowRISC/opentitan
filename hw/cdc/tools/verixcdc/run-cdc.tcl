@@ -101,6 +101,21 @@ set_user_cntl_synchronizer -name opentitan_2ff $prim_2ff_modules
 # Req/Ack synchronizer
 
 
+# TODO: These should not be hardcoded here, instead, we need to create another variable called CDC_CONSTRAINT
+# where a top could specifically suppli this
+#
+# The following paths ignore data integrity errors that are directly generated on the async fifo data
+# The path is as follows: asycn_fifo.rdata_o -> data integrity check -> a_valid
+# There are two such paths: One path is a the error pin directly into ibex, and the other is ibex's internal check
+set async_fifo_data [get_pins -of_objects [get_cells -hier * -filter {ref_name == prim_fifo_async}] -filter {name =~ rdata_o*}]
+set_ignore_cdc_paths -name async_fifo_to_ibex_data_err -through_signal $async_fifo_data -through_signal [get_pins top_earlgrey/u_rv_core_ibex/u_core/data_err_i]
+set_ignore_cdc_paths -name async_fifo_to_ibex_ecc_err -through_signal $async_fifo_data -through_signal [get_pins top_earlgrey/u_rv_core_ibex/u_core/u_ibex_core/load_store_unit_i/load_intg_err_o]
+
+# The following paths ignore valid qualification using the response data
+# In the socketm1 module, the returned ID is used to pick which of the original source made the request
+# CDC sees this as rdata directly affecting the control, but the control signal should already dictate whether the rdata is safe to use.
+set_ignore_cdc_paths -name async_fifo_to_ibex_ivalid -through_signal $async_fifo_data -through_signal [get_pins top_earlgrey/u_rv_core_ibex/u_core/instr_rvalid_i]
+set_ignore_cdc_paths -name async_fifo_to_ibex_dvalid -through_signal $async_fifo_data -through_signal [get_pins top_earlgrey/u_rv_core_ibex/u_core/data_rvalid_i]
 
 #########################
 ## Apply Constraints   ##
