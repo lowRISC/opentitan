@@ -534,8 +534,8 @@ module kmac_entropy
       StRandReady: begin
         timer_enable = 1'b 1; // If limit is zero, timer won't work
 
-        if ( (fast_process_i && in_keyblock_i && rand_consumed_i)
-          || (!fast_process_i && rand_consumed_i)) begin
+        if (rand_consumed_i &&
+            ((fast_process_i && in_keyblock_i) || !fast_process_i)) begin
           // If fast_process is set, don't clear the rand valid, even
           // consumed. So, the logic does not expand the entropy again.
           // If fast_process is not set, then every rand_consume signal
@@ -584,11 +584,14 @@ module kmac_entropy
           if (lfsr_seed_done) begin
             st_d = StRandGenerate;
 
-            rand_valid_clear = 1'b 1;
+            if ((fast_process_i && in_keyblock_i) || !fast_process_i) begin
+              rand_valid_clear = 1'b 1;
+            end
           end else begin
             st_d = StRandEdn;
           end
-        end else if (rand_consumed_i) begin
+        end else if (rand_consumed_i &&
+            ((fast_process_i && in_keyblock_i) || !fast_process_i)) begin
           // Somehow, while waiting the EDN entropy, the KMAC or SHA3 logic
           // consumed the remained entropy. This can happen when the previous
           // SHA3/ KMAC op completed and this Entropy FSM has moved to this
