@@ -1122,6 +1122,52 @@
       ]
     },
 
+    { name: "DEBUG",
+      desc: '''
+        The register holds some debug information that may be convenient if keymgr
+        misbehaves.
+      ''',
+      swaccess: "rw0c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "INVALID_CREATOR_SEED",
+          resval: "0x0"
+          desc: "Creator seed failed input checks during operation",
+        },
+        { bits: "1",
+          name: "INVALID_OWNER_SEED",
+          resval: "0x0"
+          desc: "Owner seed failed input checks during operation",
+        },
+        { bits: "2",
+          name: "INVALID_DEV_ID",
+          resval: "0x0"
+          desc: "Device ID failed input checks during operation",
+        },
+        { bits: "3",
+          name: "INVALID_HEALTH_STATE",
+          resval: "0x0"
+          desc: "Health state failed input checks during operation",
+        },
+        { bits: "4",
+          name: "INVALID_KEY_VERSION",
+          resval: "0x0"
+          desc: "Key version failed input checks during operation",
+        },
+        { bits: "5",
+          name: "INVALID_KEY",
+          resval: "0x0"
+          desc: "Key fed to kmac failed input checks during operation",
+        },
+        { bits: "6",
+          name: "INVALID_DIGEST",
+          resval: "0x0"
+          desc: "ROM digest failed input checks during operation",
+        },
+
+      ]
+    },
 
   ],
 }

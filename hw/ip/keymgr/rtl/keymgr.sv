@@ -267,6 +267,8 @@ module keymgr
     assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];
   end
 
+  logic op_start;
+  assign op_start = reg2hw.start.q;
   keymgr_ctrl #(
     .KmacEnMasking(KmacEnMasking)
   ) u_ctrl (
@@ -284,7 +286,7 @@ module keymgr
     .prng_en_o(ctrl_lfsr_en),
     .entropy_i(ctrl_rand),
     .op_i(keymgr_ops_e'(reg2hw.control_shadowed.operation.q)),
-    .op_start_i(reg2hw.start.q),
+    .op_start_i(op_start),
     .op_cdi_sel_i(reg2hw.control_shadowed.cdi_sel.q),
     .op_done_o(op_done),
     .init_o(init),
@@ -317,7 +319,7 @@ module keymgr
   assign hw2reg.start.d  = '0;
   assign hw2reg.start.de = op_done;
   // as long as operation is ongoing, capture status
-  assign hw2reg.op_status.de = reg2hw.start.q;
+  assign hw2reg.op_status.de = op_start;
 
   // working state is always visible
   assign hw2reg.working_state.de = 1'b1;
@@ -330,8 +332,8 @@ module keymgr
     .rst_ni,
     .init_i(1'b1), // cfg_regwen does not care about init
     .en_i(lc_keymgr_en[KeyMgrEnCfgEn] == lc_ctrl_pkg::On),
-    .set_i(reg2hw.start.q & op_done),
-    .clr_i(reg2hw.start.q),
+    .set_i(op_start & op_done),
+    .clr_i(op_start),
     .out_o(cfg_regwen)
   );
 
@@ -482,6 +484,23 @@ module keymgr
     .rom_digest_vld_o(rom_digest_vld)
   );
 
+  assign hw2reg.debug.invalid_creator_seed.d = 1'b1;
+  assign hw2reg.debug.invalid_owner_seed.d = 1'b1;
+  assign hw2reg.debug.invalid_dev_id.d = 1'b1;
+  assign hw2reg.debug.invalid_health_state.d = 1'b1;
+  assign hw2reg.debug.invalid_key_version.d = 1'b1;
+  assign hw2reg.debug.invalid_key.d = 1'b1;
+  assign hw2reg.debug.invalid_digest.d = 1'b1;
+
+  logic valid_op;
+  assign valid_op = adv_en | id_en | gen_en;
+  assign hw2reg.debug.invalid_creator_seed.de = valid_op & ~creator_seed_vld;
+  assign hw2reg.debug.invalid_owner_seed.de = valid_op & ~owner_seed_vld;
+  assign hw2reg.debug.invalid_dev_id.de = valid_op & ~devid_vld;
+  assign hw2reg.debug.invalid_health_state.de = valid_op & ~health_state_vld;
+  assign hw2reg.debug.invalid_key_version.de = valid_op & ~key_version_vld;
+  assign hw2reg.debug.invalid_key.de = valid_op & ~key_vld;
+  assign hw2reg.debug.invalid_digest.de = valid_op & ~rom_digest_vld;
 
   /////////////////////////////////////
   //  KMAC Control

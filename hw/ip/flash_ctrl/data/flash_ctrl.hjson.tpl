@@ -1182,6 +1182,21 @@
         ]
       },
 
+      { name: "DEBUG_STATE",
+        desc: "Current flash fsm state",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true"
+        fields: [
+          { bits: "10:0",
+            name: "lcmgr_state",
+            desc: "Current lcmgr interface staet ",
+            tags: [ // Bit changes immediately after start from reset value to 1b1 due to initialization
+            "excl:CsrAllTests:CsrExclAll"]
+          }
+        ]
+      },
+
       { name: "ERR_CODE",
         desc: '''
           Flash error code register.
