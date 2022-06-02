@@ -43,6 +43,17 @@ TEST_F(ConfigTest, NullHandle) {
       dif_entropy_src_configure(nullptr, config_, kDifToggleEnabled));
 }
 
+TEST_F(ConfigTest, BadEnabled) {
+  EXPECT_DIF_BADARG(dif_entropy_src_configure(&entropy_src_, config_,
+                                              static_cast<dif_toggle_t>(2)));
+}
+
+TEST_F(ConfigTest, BadSingleBitMode) {
+  config_.single_bit_mode = static_cast<dif_entropy_src_single_bit_mode_t>(5);
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_configure(&entropy_src_, config_, kDifToggleEnabled));
+}
+
 // TEST_F(ConfigTest, InvalidFifoThreshold) {
 // config_.fw_override.buffer_threshold = 65;
 // EXPECT_DIF_BADARG(dif_entropy_src_configure(&entropy_src_, config_));
