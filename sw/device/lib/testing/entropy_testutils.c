@@ -19,26 +19,12 @@ static void setup_entropy_src(void) {
   CHECK_DIF_OK(dif_entropy_src_disable(&entropy_src));
 
   const dif_entropy_src_config_t config = {
-      .mode = kDifEntropySrcModePtrng,
-      .tests =
-          {
-              [kDifEntropySrcTestRepCount] = false,
-              [kDifEntropySrcTestAdaptiveProportion] = false,
-              [kDifEntropySrcTestBucket] = false,
-              [kDifEntropySrcTestMarkov] = false,
-              [kDifEntropySrcTestMailbox] = false,
-              [kDifEntropySrcTestVendorSpecific] = false,
-          },
-      // this field needs to manually toggled by software.  Disable for now
-      .reset_health_test_registers = false,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
+      .fips_enable = true,
       .route_to_firmware = false,
-      .fw_override = {
-          .enable = false,
-          .entropy_insert_enable = false,
-          .buffer_threshold = kDifEntropyFifoIntDefaultThreshold,
-      }};
-  CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, config));
+      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
+  };
+  CHECK_DIF_OK(
+      dif_entropy_src_configure(&entropy_src, config, kDifToggleEnabled));
 }
 
 static void setup_csrng(void) {

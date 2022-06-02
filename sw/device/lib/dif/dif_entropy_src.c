@@ -13,113 +13,101 @@
 
 #include "entropy_src_regs.h"  // Generated.
 
-/**
- * Sets the `entropy` source configuration register with the settings
- * derived from `config`.
- */
-static void config_register_set(const dif_entropy_src_t *entropy_src,
-                                const dif_entropy_src_config_t *config) {
-  // TODO: Make this configurable at the API level.
-  uint32_t reg = bitfield_field32_write(
-      0, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD, kMultiBitBool4False);
+dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
+                                       dif_entropy_src_config_t config,
+                                       dif_toggle_t enabled) {
+  if (entropy_src == NULL ||
+      config.single_bit_mode > kDifEntropySrcSingleBitModeDisabled ||
+      !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
 
-  reg = bitfield_field32_write(
-      reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
-      config->route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False);
+  // ENTROPY_CONTROL register configuration.
 
-  // Configure single RNG bit mode
+  // Conditioning bypass is hardcoded to disabled. Conditioning bypass is not
+  // intended as a regular mode of operation. If, in the future, we want to
+  // expose the ES_TYPE field in the future, we need to check the ES_ROUTE ==
+  // true if ES_TYPE == true, and FIPS_ENABLE == false if ES_ROUTE and ES_TYPE
+  // are both true.
+  uint32_t es_route_val =
+      config.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
+  uint32_t entropy_ctrl_reg = bitfield_field32_write(
+      0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD, es_route_val);
+  entropy_ctrl_reg = bitfield_field32_write(
+      entropy_ctrl_reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
+      kMultiBitBool4False);
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET, entropy_ctrl_reg);
+
+  // CONF register configuration.
+
+  // Configure FIPS enable.
+  uint32_t entropy_conf_reg = bitfield_field32_write(
+      0, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
+      config.fips_enable ? kMultiBitBool4True : kMultiBitBool4False);
+
+  // Configure entropy data register enable (enables firmware to read entropy).
+  entropy_conf_reg = bitfield_field32_write(
+      entropy_conf_reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
+      config.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False);
+
+  // TODO: Move this to the `dif_entropy_src_heath_tests_configure()` DIF. This
+  // will require a read-modify-write sequence here.
+  entropy_conf_reg = bitfield_field32_write(
+      entropy_conf_reg, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD,
+      kMultiBitBool4False);
+
+  // Configure single RNG bit mode.
   uint32_t rng_bit_en =
-      (config->single_bit_mode == kDifEntropySrcSingleBitModeDisabled)
+      (config.single_bit_mode == kDifEntropySrcSingleBitModeDisabled)
           ? kMultiBitBool4False
           : kMultiBitBool4True;
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
-                               rng_bit_en);
-
-  uint32_t rng_bit_sel = rng_bit_en ? config->single_bit_mode : 0;
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD,
-                               rng_bit_sel);
+  entropy_conf_reg = bitfield_field32_write(
+      entropy_conf_reg, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD, rng_bit_en);
+  uint32_t rng_bit_sel =
+      (rng_bit_en == kMultiBitBool4True) ? config.single_bit_mode : 0;
+  entropy_conf_reg = bitfield_field32_write(
+      entropy_conf_reg, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD, rng_bit_sel);
 
   uint32_t sw_rd_en =
-      config->route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
-  reg = bitfield_field32_write(
-      reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD, sw_rd_en);
+      config.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
+  entropy_conf_reg = bitfield_field32_write(
+      entropy_conf_reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
+      sw_rd_en);
 
-  // Enable configuration
-  // TODO: Finalize protocols in dif for two-stage initialization.
-  // PR #9949 adds a second enable field, so that the preliminary configuration
-  // established by the bootrom is not accepted for FIPS/CC PTG.2 quality
-  // entropy.
-  //
-  // Here we as assume that this configuration (done in the dif, not boot room)
-  // is the "official" configuration so we apply the enable to both fields
-  // ("module" and "FIPS").  However this procedure should be discussed more
-  // widely
-  uint32_t enable_val = config->mode != kDifEntropySrcModeDisabled
-                            ? kMultiBitBool4True
-                            : kMultiBitBool4False;
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
-                               enable_val);
-  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_CONF_REG_OFFSET, reg);
+  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_CONF_REG_OFFSET,
+                      entropy_conf_reg);
 
-  // Set module enable field - TODO: add line below
+  // MODULE_ENABLE register configuration.
   mmio_region_write32(entropy_src->base_addr,
-                      ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET, enable_val);
-}
+                      ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
+                      dif_toggle_to_multi_bit_bool4(enabled));
 
-/**
- * Sets the `entropy` source firmware override register with the settings
- * derived from `config`.
- */
-static dif_result_t fw_override_set(
-    const dif_entropy_src_t *entropy_src,
-    const dif_entropy_src_fw_override_config_t *config) {
-  if (config->buffer_threshold > kDifEntropySrcFifoMaxCapacity) {
-    return kDifBadArg;
-  }
-
-  if (config->entropy_insert_enable && !config->enable) {
-    return kDifBadArg;
-  }
-  mmio_region_write32(entropy_src->base_addr,
-                      ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET,
-                      config->buffer_threshold);
-
-  uint32_t reg = bitfield_field32_write(
-      0, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD,
-      config->enable ? kMultiBitBool4True : kMultiBitBool4False);
-  reg = bitfield_field32_write(
-      reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_FIELD,
-      config->entropy_insert_enable ? kMultiBitBool4True : kMultiBitBool4False);
-  mmio_region_write32(entropy_src->base_addr,
-                      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, reg);
   return kDifOk;
 }
 
-dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
-                                       dif_entropy_src_config_t config) {
-  if (entropy_src == NULL) {
+dif_result_t dif_entropy_src_fw_override_configure(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_fw_override_config_t config, dif_toggle_t enabled) {
+  if (config.buffer_threshold > kDifEntropySrcFifoMaxCapacity ||
+      !dif_is_valid_toggle(enabled) ||
+      (config.entropy_insert_enable && !dif_toggle_to_bool(enabled))) {
     return kDifBadArg;
   }
 
-  dif_result_t result = fw_override_set(entropy_src, &config.fw_override);
-  if (result != kDifOk) {
-    return result;
-  }
-
-  // TODO: Add test configuration parameters.
-
-  // Conditioning bypass is hardcoded to disabled. Conditioning bypass is not
-  // intended as a regular mode of operation.
-  uint32_t es_route_val =
-      config.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
-  uint32_t reg = bitfield_field32_write(
-      0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD, es_route_val);
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
-                               kMultiBitBool4False);
   mmio_region_write32(entropy_src->base_addr,
-                      ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET, reg);
+                      ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET,
+                      config.buffer_threshold);
 
-  config_register_set(entropy_src, &config);
+  uint32_t reg =
+      bitfield_field32_write(0, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD,
+                             dif_toggle_to_multi_bit_bool4(enabled));
+  reg = bitfield_field32_write(
+      reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_FIELD,
+      config.entropy_insert_enable ? kMultiBitBool4True : kMultiBitBool4False);
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, reg);
+
   return kDifOk;
 }
 
@@ -228,15 +216,11 @@ dif_result_t dif_entropy_src_disable(const dif_entropy_src_t *entropy_src) {
   if (entropy_src == NULL) {
     return kDifBadArg;
   }
+
   // TODO: should first check if entropy is locked and return error if it is.
   mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
                       kMultiBitBool4False);
 
-  const dif_entropy_src_fw_override_config_t kDefaultFwOverrideConfig = {
-      .enable = false,
-      .entropy_insert_enable = false,
-      .buffer_threshold = kDifEntropyFifoIntDefaultThreshold,
-  };
-  return fw_override_set(entropy_src, &kDefaultFwOverrideConfig);
+  return kDifOk;
 }
