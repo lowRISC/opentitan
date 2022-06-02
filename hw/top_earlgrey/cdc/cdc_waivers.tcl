@@ -45,6 +45,11 @@ set_rule_status -rule {W_CNTL} -status {Waived}                           \
   -expression {(Signal=~"IO*") && (ReceivingFlop=~"*u_i2c*.*.u_sync_1*")} \
   -comment {PAD driving to I2C. PADs are not clock bounded}
 
+set_rule_status -rule {W_GLITCH} -status {Waived}          \
+  -expression {(GlitchInput=~"IO*") &&                     \
+    (GlitchOutput=~"*u_sync_1*")} \
+  -comment {Waive PADs input goes into synchronizer}
+
 # PADs attribute to multiple IPs
 # Assume the attributes are not used when IPs are active
 set_rule_status -rule {W_FANOUT} -status {Waived}           \
