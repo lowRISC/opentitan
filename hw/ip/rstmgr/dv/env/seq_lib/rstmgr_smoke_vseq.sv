@@ -28,9 +28,11 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     // Scan reset triggers an AON reset (and all others).
     wait(&cfg.rstmgr_vif.resets_o.rst_por_aon_n);
 
-    check_reset_info(1, "expected reset_info to be POR for scan reset");
-    // Alert and cpu info settings were reset. Check and re-enable them.
-    check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b0));
+    check_reset_info(detect_scan_mode, "expected reset_info to be POR for scan reset");
+    if (detect_scan_mode == 1) begin
+      // Alert and cpu info settings were reset. Check and re-enable them.
+      check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b0));
+    end
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     csr_wr(.ptr(ral.reset_info), .value('1));

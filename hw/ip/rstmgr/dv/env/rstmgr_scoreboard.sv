@@ -29,6 +29,7 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
+    do_alert_check = cfg.do_alert_check;
     fork
       monitor_por();
       monitor_capture();

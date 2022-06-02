@@ -54,6 +54,12 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   bit                                       reset_once;
 
+  // In scan mode stress test, scanmode_i can be false all
+  // scan_rst_ni =0 period. In that case,
+  // reset_info can't be reset value.
+  // To indicate such case, use this variable in 'check_reset_info'
+  bit                                       detect_scan_mode;
+
   rand cpu_crash_dump_t                     cpu_dump;
   rand alert_crashdump_t                    alert_dump;
 
@@ -362,21 +368,35 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual protected task send_scan_reset();
+    bit rst_done = 0;
     `uvm_info(`gfn, "Sending scan reset.", UVM_MEDIUM)
-    update_scanmode(prim_mubi_pkg::MuBi4True);
-    cfg.io_div4_clk_rst_vif.wait_clks(scanmode_to_scan_rst_cycles);
-    update_scan_rst_n(1'b0);
-    set_pwrmgr_rst_reqs(.rst_lc_req('1), .rst_sys_req('1));
-    set_reset_cause(pwrmgr_pkg::HwReq);
-    // The clocks are turned off, so wait in time units.
-    #1us;
-    update_scanmode(prim_mubi_pkg::MuBi4False);
-    update_scan_rst_n(1'b1);
-    reset_done();
+    $assertoff(0, "tb.dut.rstmgr_cascading_sva_if.StablePorToAonRise_A");
+    detect_scan_mode = 0;
+    fork
+      begin
+        while (rst_done == 0) begin
+          if (cfg.rstmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True) detect_scan_mode = 1;
+          cfg.clk_rst_vif.wait_clks(1);
+        end
+      end
+      begin
+        update_scanmode(prim_mubi_pkg::MuBi4True);
+        cfg.io_div4_clk_rst_vif.wait_clks(scanmode_to_scan_rst_cycles);
+        update_scan_rst_n(1'b0);
+        set_pwrmgr_rst_reqs(.rst_lc_req('1), .rst_sys_req('1));
+        set_reset_cause(pwrmgr_pkg::HwReq);
+        // The clocks are turned off, so wait in time units.
+        #1us;
+        update_scanmode(prim_mubi_pkg::MuBi4False);
+        update_scan_rst_n(1'b1);
+        reset_done();
 
-    // This makes sure the clock has restarted before this returns.
-    cfg.io_div4_clk_rst_vif.wait_clks(1);
-    `uvm_info(`gfn, "Done sending scan reset.", UVM_MEDIUM)
+        // This makes sure the clock has restarted before this returns.
+        cfg.io_div4_clk_rst_vif.wait_clks(1);
+        `uvm_info(`gfn, "Done sending scan reset.", UVM_MEDIUM)
+        rst_done = 1;
+      end
+    join
   endtask
 
   // Sends an ndm reset, and drops it once it should have

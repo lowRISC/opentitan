@@ -15,10 +15,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   logic extclk_ctrl_regwen;
   logic measure_ctrl_regwen;
 
-  // TLM agent fifos
-
-  // local queues to hold incoming packets pending comparison
-
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -287,9 +283,9 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           `DV_CHECK_EQ(clk_hints_t'(item.a_data), cfg.clkmgr_vif.clk_hints_csr)
         end
       end
-      "clk_hints_status": begin
-        // The status will respond to the hint once the target unit is idle. We check it in
-        // the sequence.
+      "clk_hints_status", "extclk_status": begin
+        // These registers are updated by hw. Can't be sync with ral.
+        // We check it in the separate sequence.
         do_read_check = 1'b0;
       end
       "measure_ctrl_regwen": begin

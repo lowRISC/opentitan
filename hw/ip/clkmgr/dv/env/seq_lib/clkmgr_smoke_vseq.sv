@@ -75,6 +75,10 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
     };
     idle = 0;
     cfg.clkmgr_vif.update_idle(idle);
+
+    // initialize hints_status to all 1
+    cfg.clkmgr_vif.update_main_ip_clk_en(1'b1);
+    cfg.clk_rst_vif.wait_clks(6);
     trans = trans.first;
     csr_rd(.ptr(ral.clk_hints), .value(value));
     `uvm_info(`gfn, $sformatf("Starting hints at 0x%0x, idle at 0x%x", value, idle), UVM_MEDIUM)
