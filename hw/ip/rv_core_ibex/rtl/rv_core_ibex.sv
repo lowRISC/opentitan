@@ -269,6 +269,21 @@ module rv_core_ibex
     .lc_en_o(pwrmgr_cpu_en)
   );
 
+  // TODO: This is a hoaky fix, we really should converge everthing
+  // through rv_plic.
+  // timer interrupts do not come from
+  // rv_plic and may not be synchronous to the ibex core
+  logic irq_timer_sync;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_intr_timer_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(irq_timer_i),
+    .q_o(irq_timer_sync)
+  );
+
+
   logic irq_software;
   logic irq_timer;
   logic irq_external;
@@ -277,7 +292,7 @@ module rv_core_ibex
     .Width(3)
   ) u_prim_buf_irq (
     .in_i({irq_software_i,
-           irq_timer_i,
+           irq_timer_sync,
            irq_external_i}),
     .out_o({irq_software,
             irq_timer,
