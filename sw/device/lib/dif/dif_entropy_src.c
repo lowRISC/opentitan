@@ -42,6 +42,7 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
   // CONF register configuration.
 
   // Configure FIPS enable.
+  // TODO: Add additional DIF to toggle this bit independently.
   uint32_t entropy_conf_reg = bitfield_field32_write(
       0, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
       config.fips_enable ? kMultiBitBool4True : kMultiBitBool4False);
@@ -89,9 +90,10 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
 dif_result_t dif_entropy_src_fw_override_configure(
     const dif_entropy_src_t *entropy_src,
     dif_entropy_src_fw_override_config_t config, dif_toggle_t enabled) {
-  if (config.buffer_threshold > kDifEntropySrcFifoMaxCapacity ||
-      !dif_is_valid_toggle(enabled) ||
-      (config.entropy_insert_enable && !dif_toggle_to_bool(enabled))) {
+  if (entropy_src == NULL ||
+      config.buffer_threshold >
+          ENTROPY_SRC_OBSERVE_FIFO_THRESH_OBSERVE_FIFO_THRESH_MASK ||
+      config.buffer_threshold == 0 || !dif_is_valid_toggle(enabled)) {
     return kDifBadArg;
   }
 

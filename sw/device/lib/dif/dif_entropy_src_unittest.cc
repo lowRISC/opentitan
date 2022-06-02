@@ -21,14 +21,6 @@ class EntropySrcTest : public testing::Test, public mock_mmio::MmioTest {
   const dif_entropy_src_t entropy_src_ = {.base_addr = dev().region()};
 };
 
-class FwOverrideConfigTest : public EntropySrcTest {
- protected:
-  dif_entropy_src_fw_override_config_t config_ = {
-      .entropy_insert_enable = false,
-      .buffer_threshold = kDifEntropyFifoIntDefaultThreshold,
-  };
-};
-
 class ConfigTest : public EntropySrcTest {
  protected:
   dif_entropy_src_config_t config_ = {
@@ -54,17 +46,6 @@ TEST_F(ConfigTest, BadSingleBitMode) {
       dif_entropy_src_configure(&entropy_src_, config_, kDifToggleEnabled));
 }
 
-// TEST_F(ConfigTest, InvalidFifoThreshold) {
-// config_.fw_override.buffer_threshold = 65;
-// EXPECT_DIF_BADARG(dif_entropy_src_configure(&entropy_src_, config_));
-//}
-
-// TEST_F(ConfigTest, InvalidFwOverrideSettings) {
-// config_.fw_override.enable = false;
-// config_.fw_override.entropy_insert_enable = true;
-// EXPECT_DIF_BADARG(dif_entropy_src_configure(&entropy_src_, config_));
-//}
-
 struct ConfigParams {
   bool fips_enable;
   bool route_to_firmware;
@@ -80,20 +61,6 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
   config_.fips_enable = test_param.fips_enable;
   config_.route_to_firmware = test_param.route_to_firmware;
   config_.single_bit_mode = test_param.single_bit_mode;
-
-  // EXPECT_WRITE32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET,
-  // config_.fw_override.buffer_threshold);
-  // EXPECT_WRITE32(
-  // ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
-  //{
-  //{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET,
-  //(uint32_t)(config_.fw_override.enable ? kMultiBitBool4True
-  //: kMultiBitBool4False)},
-  //{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
-  //(uint32_t)(config_.fw_override.entropy_insert_enable
-  //? kMultiBitBool4True
-  //: kMultiBitBool4False)},
-  //});
 
   multi_bit_bool_t route_to_firmware_mubi =
       test_param.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
@@ -161,6 +128,49 @@ INSTANTIATE_TEST_SUITE_P(
         // Test all enabled.
         ConfigParams{true, true, kDifEntropySrcSingleBitMode0,
                      kDifToggleEnabled}));
+
+class FwOverrideConfigTest : public EntropySrcTest {
+ protected:
+  dif_entropy_src_fw_override_config_t config_ = {
+      .entropy_insert_enable = true,
+      .buffer_threshold = ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_RESVAL,
+  };
+};
+
+TEST_F(FwOverrideConfigTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_entropy_src_fw_override_configure(nullptr, config_,
+                                                          kDifToggleEnabled));
+}
+
+TEST_F(FwOverrideConfigTest, BadBufferThreshold) {
+  config_.buffer_threshold =
+      ENTROPY_SRC_OBSERVE_FIFO_THRESH_OBSERVE_FIFO_THRESH_MASK + 1;
+  EXPECT_DIF_BADARG(dif_entropy_src_fw_override_configure(
+      &entropy_src_, config_, kDifToggleEnabled));
+
+  config_.buffer_threshold = 0;
+  EXPECT_DIF_BADARG(dif_entropy_src_fw_override_configure(
+      &entropy_src_, config_, kDifToggleEnabled));
+}
+
+TEST_F(FwOverrideConfigTest, BadEnabled) {
+  EXPECT_DIF_BADARG(dif_entropy_src_fw_override_configure(
+      &entropy_src_, config_, static_cast<dif_toggle_t>(2)));
+}
+
+TEST_F(FwOverrideConfigTest, Success) {
+  EXPECT_WRITE32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET,
+                 config_.buffer_threshold);
+  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0x66);
+  EXPECT_DIF_OK(dif_entropy_src_fw_override_configure(&entropy_src_, config_,
+                                                      kDifToggleEnabled));
+
+  EXPECT_WRITE32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET,
+                 config_.buffer_threshold);
+  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0x69);
+  EXPECT_DIF_OK(dif_entropy_src_fw_override_configure(&entropy_src_, config_,
+                                                      kDifToggleDisabled));
+}
 
 class ReadTest : public EntropySrcTest {};
 
