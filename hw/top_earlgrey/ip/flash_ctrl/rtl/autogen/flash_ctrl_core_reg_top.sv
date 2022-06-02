@@ -64,9 +64,9 @@ module flash_ctrl_core_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [105:0] reg_we_check;
+  logic [106:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(106)
+    .OneHotWidth(107)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -137,10 +137,10 @@ module flash_ctrl_core_reg_top (
   // Create steering logic
   always_comb begin
     unique case (tl_i.a_address[AW-1:0]) inside
-      [424:427]: begin
+      [428:431]: begin
         reg_steer = 0;
       end
-      [428:431]: begin
+      [432:435]: begin
         reg_steer = 1;
       end
       default: begin
@@ -946,6 +946,8 @@ module flash_ctrl_core_reg_top (
   logic status_prog_full_qs;
   logic status_prog_empty_qs;
   logic status_init_wip_qs;
+  logic debug_state_re;
+  logic [10:0] debug_state_qs;
   logic err_code_we;
   logic err_code_op_err_qs;
   logic err_code_op_err_wd;
@@ -9794,6 +9796,21 @@ module flash_ctrl_core_reg_top (
   );
 
 
+  // R[debug_state]: V(True)
+  prim_subreg_ext #(
+    .DW    (11)
+  ) u_debug_state (
+    .re     (debug_state_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.debug_state.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (debug_state_qs)
+  );
+
+
   // R[err_code]: V(False)
   //   F[op_err]: 0:0
   prim_subreg #(
@@ -10947,7 +10964,7 @@ module flash_ctrl_core_reg_top (
 
 
 
-  logic [105:0] addr_hit;
+  logic [106:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[  0] = (reg_addr == FLASH_CTRL_INTR_STATE_OFFSET);
@@ -11043,19 +11060,20 @@ module flash_ctrl_core_reg_top (
     addr_hit[ 90] = (reg_addr == FLASH_CTRL_MP_BANK_CFG_SHADOWED_OFFSET);
     addr_hit[ 91] = (reg_addr == FLASH_CTRL_OP_STATUS_OFFSET);
     addr_hit[ 92] = (reg_addr == FLASH_CTRL_STATUS_OFFSET);
-    addr_hit[ 93] = (reg_addr == FLASH_CTRL_ERR_CODE_OFFSET);
-    addr_hit[ 94] = (reg_addr == FLASH_CTRL_STD_FAULT_STATUS_OFFSET);
-    addr_hit[ 95] = (reg_addr == FLASH_CTRL_FAULT_STATUS_OFFSET);
-    addr_hit[ 96] = (reg_addr == FLASH_CTRL_ERR_ADDR_OFFSET);
-    addr_hit[ 97] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_CNT_OFFSET);
-    addr_hit[ 98] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0_OFFSET);
-    addr_hit[ 99] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_OFFSET);
-    addr_hit[100] = (reg_addr == FLASH_CTRL_PHY_ALERT_CFG_OFFSET);
-    addr_hit[101] = (reg_addr == FLASH_CTRL_PHY_STATUS_OFFSET);
-    addr_hit[102] = (reg_addr == FLASH_CTRL_SCRATCH_OFFSET);
-    addr_hit[103] = (reg_addr == FLASH_CTRL_FIFO_LVL_OFFSET);
-    addr_hit[104] = (reg_addr == FLASH_CTRL_FIFO_RST_OFFSET);
-    addr_hit[105] = (reg_addr == FLASH_CTRL_CURR_FIFO_LVL_OFFSET);
+    addr_hit[ 93] = (reg_addr == FLASH_CTRL_DEBUG_STATE_OFFSET);
+    addr_hit[ 94] = (reg_addr == FLASH_CTRL_ERR_CODE_OFFSET);
+    addr_hit[ 95] = (reg_addr == FLASH_CTRL_STD_FAULT_STATUS_OFFSET);
+    addr_hit[ 96] = (reg_addr == FLASH_CTRL_FAULT_STATUS_OFFSET);
+    addr_hit[ 97] = (reg_addr == FLASH_CTRL_ERR_ADDR_OFFSET);
+    addr_hit[ 98] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_CNT_OFFSET);
+    addr_hit[ 99] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0_OFFSET);
+    addr_hit[100] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_OFFSET);
+    addr_hit[101] = (reg_addr == FLASH_CTRL_PHY_ALERT_CFG_OFFSET);
+    addr_hit[102] = (reg_addr == FLASH_CTRL_PHY_STATUS_OFFSET);
+    addr_hit[103] = (reg_addr == FLASH_CTRL_SCRATCH_OFFSET);
+    addr_hit[104] = (reg_addr == FLASH_CTRL_FIFO_LVL_OFFSET);
+    addr_hit[105] = (reg_addr == FLASH_CTRL_FIFO_RST_OFFSET);
+    addr_hit[106] = (reg_addr == FLASH_CTRL_CURR_FIFO_LVL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -11168,7 +11186,8 @@ module flash_ctrl_core_reg_top (
                (addr_hit[102] & (|(FLASH_CTRL_CORE_PERMIT[102] & ~reg_be))) |
                (addr_hit[103] & (|(FLASH_CTRL_CORE_PERMIT[103] & ~reg_be))) |
                (addr_hit[104] & (|(FLASH_CTRL_CORE_PERMIT[104] & ~reg_be))) |
-               (addr_hit[105] & (|(FLASH_CTRL_CORE_PERMIT[105] & ~reg_be)))));
+               (addr_hit[105] & (|(FLASH_CTRL_CORE_PERMIT[105] & ~reg_be))) |
+               (addr_hit[106] & (|(FLASH_CTRL_CORE_PERMIT[106] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -11933,7 +11952,8 @@ module flash_ctrl_core_reg_top (
   assign op_status_done_wd = reg_wdata[0];
 
   assign op_status_err_wd = reg_wdata[1];
-  assign err_code_we = addr_hit[93] & reg_we & !reg_error;
+  assign debug_state_re = addr_hit[93] & reg_re & !reg_error;
+  assign err_code_we = addr_hit[94] & reg_we & !reg_error;
 
   assign err_code_op_err_wd = reg_wdata[0];
 
@@ -11950,28 +11970,28 @@ module flash_ctrl_core_reg_top (
   assign err_code_flash_macro_err_wd = reg_wdata[6];
 
   assign err_code_update_err_wd = reg_wdata[7];
-  assign ecc_single_err_cnt_we = addr_hit[97] & reg_we & !reg_error;
+  assign ecc_single_err_cnt_we = addr_hit[98] & reg_we & !reg_error;
 
   assign ecc_single_err_cnt_ecc_single_err_cnt_0_wd = reg_wdata[7:0];
 
   assign ecc_single_err_cnt_ecc_single_err_cnt_1_wd = reg_wdata[15:8];
-  assign phy_alert_cfg_we = addr_hit[100] & reg_we & !reg_error;
+  assign phy_alert_cfg_we = addr_hit[101] & reg_we & !reg_error;
 
   assign phy_alert_cfg_alert_ack_wd = reg_wdata[0];
 
   assign phy_alert_cfg_alert_trig_wd = reg_wdata[1];
-  assign scratch_we = addr_hit[102] & reg_we & !reg_error;
+  assign scratch_we = addr_hit[103] & reg_we & !reg_error;
 
   assign scratch_wd = reg_wdata[31:0];
-  assign fifo_lvl_we = addr_hit[103] & reg_we & !reg_error;
+  assign fifo_lvl_we = addr_hit[104] & reg_we & !reg_error;
 
   assign fifo_lvl_prog_wd = reg_wdata[4:0];
 
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
-  assign fifo_rst_we = addr_hit[104] & reg_we & !reg_error;
+  assign fifo_rst_we = addr_hit[105] & reg_we & !reg_error;
 
   assign fifo_rst_wd = reg_wdata[0];
-  assign curr_fifo_lvl_re = addr_hit[105] & reg_re & !reg_error;
+  assign curr_fifo_lvl_re = addr_hit[106] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -12069,19 +12089,20 @@ module flash_ctrl_core_reg_top (
     reg_we_check[90] = mp_bank_cfg_shadowed_gated_we;
     reg_we_check[91] = op_status_we;
     reg_we_check[92] = 1'b0;
-    reg_we_check[93] = err_code_we;
-    reg_we_check[94] = 1'b0;
+    reg_we_check[93] = 1'b0;
+    reg_we_check[94] = err_code_we;
     reg_we_check[95] = 1'b0;
     reg_we_check[96] = 1'b0;
-    reg_we_check[97] = ecc_single_err_cnt_we;
-    reg_we_check[98] = 1'b0;
+    reg_we_check[97] = 1'b0;
+    reg_we_check[98] = ecc_single_err_cnt_we;
     reg_we_check[99] = 1'b0;
-    reg_we_check[100] = phy_alert_cfg_we;
-    reg_we_check[101] = 1'b0;
-    reg_we_check[102] = scratch_we;
-    reg_we_check[103] = fifo_lvl_we;
-    reg_we_check[104] = fifo_rst_we;
-    reg_we_check[105] = 1'b0;
+    reg_we_check[100] = 1'b0;
+    reg_we_check[101] = phy_alert_cfg_we;
+    reg_we_check[102] = 1'b0;
+    reg_we_check[103] = scratch_we;
+    reg_we_check[104] = fifo_lvl_we;
+    reg_we_check[105] = fifo_rst_we;
+    reg_we_check[106] = 1'b0;
   end
 
   // Read data return
@@ -12708,6 +12729,10 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[93]: begin
+        reg_rdata_next[10:0] = debug_state_qs;
+      end
+
+      addr_hit[94]: begin
         reg_rdata_next[0] = err_code_op_err_qs;
         reg_rdata_next[1] = err_code_mp_err_qs;
         reg_rdata_next[2] = err_code_rd_err_qs;
@@ -12718,7 +12743,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[7] = err_code_update_err_qs;
       end
 
-      addr_hit[94]: begin
+      addr_hit[95]: begin
         reg_rdata_next[0] = std_fault_status_reg_intg_err_qs;
         reg_rdata_next[1] = std_fault_status_prog_intg_err_qs;
         reg_rdata_next[2] = std_fault_status_lcmgr_err_qs;
@@ -12730,7 +12755,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[8] = std_fault_status_fifo_err_qs;
       end
 
-      addr_hit[95]: begin
+      addr_hit[96]: begin
         reg_rdata_next[0] = fault_status_op_err_qs;
         reg_rdata_next[1] = fault_status_mp_err_qs;
         reg_rdata_next[2] = fault_status_rd_err_qs;
@@ -12746,48 +12771,48 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[12] = fault_status_host_gnt_err_qs;
       end
 
-      addr_hit[96]: begin
+      addr_hit[97]: begin
         reg_rdata_next[19:0] = err_addr_qs;
       end
 
-      addr_hit[97]: begin
+      addr_hit[98]: begin
         reg_rdata_next[7:0] = ecc_single_err_cnt_ecc_single_err_cnt_0_qs;
         reg_rdata_next[15:8] = ecc_single_err_cnt_ecc_single_err_cnt_1_qs;
       end
 
-      addr_hit[98]: begin
+      addr_hit[99]: begin
         reg_rdata_next[19:0] = ecc_single_err_addr_0_qs;
       end
 
-      addr_hit[99]: begin
+      addr_hit[100]: begin
         reg_rdata_next[19:0] = ecc_single_err_addr_1_qs;
       end
 
-      addr_hit[100]: begin
+      addr_hit[101]: begin
         reg_rdata_next[0] = phy_alert_cfg_alert_ack_qs;
         reg_rdata_next[1] = phy_alert_cfg_alert_trig_qs;
       end
 
-      addr_hit[101]: begin
+      addr_hit[102]: begin
         reg_rdata_next[0] = phy_status_init_wip_qs;
         reg_rdata_next[1] = phy_status_prog_normal_avail_qs;
         reg_rdata_next[2] = phy_status_prog_repair_avail_qs;
       end
 
-      addr_hit[102]: begin
+      addr_hit[103]: begin
         reg_rdata_next[31:0] = scratch_qs;
       end
 
-      addr_hit[103]: begin
+      addr_hit[104]: begin
         reg_rdata_next[4:0] = fifo_lvl_prog_qs;
         reg_rdata_next[12:8] = fifo_lvl_rd_qs;
       end
 
-      addr_hit[104]: begin
+      addr_hit[105]: begin
         reg_rdata_next[0] = fifo_rst_qs;
       end
 
-      addr_hit[105]: begin
+      addr_hit[106]: begin
         reg_rdata_next[4:0] = curr_fifo_lvl_prog_qs;
         reg_rdata_next[12:8] = curr_fifo_lvl_rd_qs;
       end

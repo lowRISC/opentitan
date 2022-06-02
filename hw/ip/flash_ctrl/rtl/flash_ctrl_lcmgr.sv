@@ -85,7 +85,10 @@ module flash_ctrl_lcmgr
   output lc_tx_t dis_access_o,
 
   // init ongoing
-  output logic init_busy_o
+  output logic init_busy_o,
+
+  // debug state output
+  output logic [10:0] debug_state_o
 );
 
   import lc_ctrl_pkg::lc_tx_test_true_strict;
@@ -140,6 +143,8 @@ module flash_ctrl_lcmgr
 
   lcmgr_state_e state_q, state_d;
   logic state_err;
+
+  assign debug_state_o = state_q;
 
   //SEC_CM: CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, lcmgr_state_e, StIdle)
