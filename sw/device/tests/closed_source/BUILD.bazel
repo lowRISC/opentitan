@@ -1,6 +1,9 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+
+load("@lowrisc_opentitan//rules:opentitan_test.bzl", "opentitan_functest")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -28,4 +31,12 @@ cc_library(
     # We use alwayslink to force the symbols exported by this library to
     # override any weak symbols provided by targets in `@lowrisc_opentitan`.
     alwayslink = True,
+)
+
+opentitan_functest(
+    name = "example_test",
+    srcs = ["example_test.c"],
+    deps = [
+        "@lowrisc_opentitan//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )

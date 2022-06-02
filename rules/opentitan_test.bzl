@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "opentitan_flash_binary", "opentitan_rom_binary")
+load("@//rules:opentitan.bzl", "opentitan_flash_binary", "opentitan_rom_binary")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 
 _EXIT_SUCCESS = r"PASS.*\n"
@@ -12,10 +12,10 @@ _BASE_PARAMS = {
     "args": [],
     "data": [],
     "local": True,
-    "otp": "//hw/ip/otp_ctrl/data:img_rma",
-    "rom": "//sw/device/lib/testing/test_rom:test_rom_{}_scr_vmem",
+    "otp": "@//hw/ip/otp_ctrl/data:img_rma",
+    "rom": "@//sw/device/lib/testing/test_rom:test_rom_{}_scr_vmem",
     "tags": [],
-    "test_runner": "//util:opentitantool_test_runner.sh",
+    "test_runner": "@//util:opentitantool_test_runner.sh",
     "timeout": "moderate",  # 5 minutes
 }
 
@@ -30,10 +30,10 @@ def dv_params(
         rom = _BASE_PARAMS["rom"].format("sim_dv"),
         tags = _BASE_PARAMS["tags"],
         timeout = _BASE_PARAMS["timeout"],
-        test_runner = "//util:dvsim_test_runner.sh",
+        test_runner = "@//util:dvsim_test_runner.sh",
         # DV-specific Parameters
         bootstrap_sw = False,  # Default to backdoor loading.
-        dvsim_config = "//hw/top_earlgrey/dv:chip_sim_cfg.hjson",
+        dvsim_config = "@//hw/top_earlgrey/dv:chip_sim_cfg.hjson",
         **kwargs):
     """A macro to create DV sim parameters for OpenTitan functional tests.
 
@@ -58,8 +58,8 @@ def dv_params(
     ]
     required_data = [
         dvsim_config,
-        "//util/dvsim",
-        "//hw:all_files",
+        "@//util/dvsim",
+        "@//hw:all_files",
     ]
     required_tags = ["dv"]
     kwargs.update(
@@ -113,14 +113,14 @@ def verilator_params(
         "--logging=info",
         "--interface=verilator",
         "--conf=sw/host/opentitantool/config/opentitan_verilator.json",
-        "--verilator-bin=$(location //hw:verilator)/sim-verilator/Vchip_sim_tb",
+        "--verilator-bin=$(location @//hw:verilator)/sim-verilator/Vchip_sim_tb",
         "--verilator-rom=$(location {rom})",
         "--verilator-flash=$(location {flash})",
         "--verilator-otp=$(location {otp})",
     ]
     required_data = [
-        "//sw/host/opentitantool:test_resources",
-        "//hw:verilator",
+        "@//sw/host/opentitantool:test_resources",
+        "@//hw:verilator",
     ]
     required_tags = ["verilator"]
     kwargs.update(
@@ -153,7 +153,7 @@ def cw310_params(
         timeout = _BASE_PARAMS["timeout"],
         test_runner = _BASE_PARAMS["test_runner"],
         # CW310-specific Parameters
-        bitstream = "//hw/bitstream:test_rom",
+        bitstream = "@//hw/bitstream:test_rom",
         rom_kind = None,
         bootstrap_protocol = "primitive",
         # None
@@ -179,7 +179,7 @@ def cw310_params(
         "--conf=sw/host/opentitantool/config/opentitan_cw310.json",
     ]
     required_data = [
-        "//sw/host/opentitantool:test_resources",
+        "@//sw/host/opentitantool:test_resources",
     ]
     required_tags = [
         "cw310",
@@ -366,7 +366,7 @@ def opentitan_functest(
             # line so that they'll be parsed as global options rather than
             # command-specific options.
             concat_args = select({
-                "//ci:lowrisc_fpga_cw310": ["--cw310-uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
+                "@//ci:lowrisc_fpga_cw310": ["--cw310-uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
                 "//conditions:default": [],
             }) + concat_args
         concat_data = _format_list(
