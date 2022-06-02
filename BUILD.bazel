@@ -98,8 +98,6 @@ rust_analyzer(
         "//sw/host/opentitanlib:opentitanlib",
         "//sw/host/opentitansession:opentitansession",
         "//sw/host/opentitantool:opentitantool",
-        "//sw/host/rom_ext_image_tools/signer:rom_ext_signer",
-        "//sw/host/rom_ext_image_tools/signer/image:rom_ext_image",
     ],
 )
 
