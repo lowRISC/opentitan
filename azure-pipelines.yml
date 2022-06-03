@@ -416,8 +416,10 @@ jobs:
       echo "" >> ${BITCACHE_DIR}/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice
       echo -n ${SHA} > ${BITCACHE_DIR}/../../latest.txt
       export BITSTREAM="--offline --list ${SHA}"
+      # TODO: remove the --notest_keep_going flag after the CW310 UART is reliable (#13044)
       ci/bazelisk.sh test \
           --define DISABLE_VERILATOR_BUILD=true \
+          --notest_keep_going \ 
           --test_tag_filters=cw310,-broken \
           --test_output=all \
           --build_tests_only \
