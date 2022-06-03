@@ -176,3 +176,9 @@ set_rule_status -rule {W_DATA} -status {Waived} \
       (ReceivingFlop=~"*u_spi_device.u_fwmode.u_rx_fifo.fifo_rptr*") ) && \
     (MultiClockDomains=~"IO_DIV4_CLK::*SPI_DEV_IN_CLK,SPI_DEV_PASSTHRU_IN_CLK")} \
   -comment {?xf_ctrl sits in DIV4, due to clock mux while Generic is not active, tool confused}
+
+# Waive W_G_CLK_GLITCH: When SPI_DEV_CLK toggles, other signals are static
+set_rule_status -rule {W_G_CLK_GLITCH} -status {Waived}    \
+  -expression {(GatedClock=~"*.u_spi_device.clk_spi_*") || \
+    (GatedClock=~"*.u_spi_device.u_sram_clk_*")}           \
+  -comment {When SPI_DEV_CLK toggles, other signals are static}
