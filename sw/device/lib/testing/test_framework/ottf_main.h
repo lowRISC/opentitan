@@ -77,4 +77,14 @@ extern const test_config_t kTestConfig;
  */
 extern bool test_main(void);
 
+/**
+ * TODO: add description
+ */
+extern bool manufacturer_pre_test_hook(void);
+
+/**
+ * TODO: add description
+ */
+extern bool manufacturer_post_test_hook(void);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_MAIN_H_

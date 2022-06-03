@@ -2,41 +2,136 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules:opentitan_test.bzl", "opentitan_functest")
+load("@//rules:opentitan_test.bzl", "opentitan_functest")
 
 package(default_visibility = ["//visibility:public"])
 
+# Note, this file contains step-by-step instructions on how to both:
+# 1. add custom test hook libraries (that override the default), labeled
+#    `TH-STEP *` for "Test Hook Step *", and,
+# 2. add custom closed-source tests, labeled `OTFT-STEP *` for "OpenTitan
+#    Functest Step *".
+# Read on to learn more about these features.
+
+################################################################################
+# Config Settings for each Test Hook Library.
+#
+# These allow you to select which set of test hooks Bazel should use via a
+# command line argument, e.g., `--define test_hooks=<config setting name>`
+#
+# Modify this as described below to add more test hooks libraries.
+################################################################################
+# Example running the open-source AES smoketest with default test hooks:
+#   bazel test //sw/device/tests:aes_smoketest --define test_hooks=default
+#        - or -
+#   bazel test //sw/device/tests:aes_smoketest
+config_setting(
+    name = "hooks_default",
+    define_values = {
+        "test_hooks": "default",
+    },
+)
+
+# Example running the open-source AES smoketest with non-default test hooks:
+#   bazel test //sw/device/tests:aes_smoketest --define test_hooks=hooks_1
+config_setting(
+    name = "hooks_1",
+    define_values = {
+        "test_hooks": "hooks_1",
+    },
+)
+
+# TH-Step 1: Copy/Uncomment below to add an additional set of test hooks.
+# config_setting(
+#     name = "hooks_2",
+#     define_values = {
+#         "test_hooks": "hooks_2",
+#     },
+# )
+
+# TH-Step 2: Copy/Uncomment the row below to add an additional set of test hooks.
+_TEST_HOOKS_DEPS = select({
+    "hooks_1": [":test_hooks_1"],
+    # "hooks_2": [":test_hooks_2"],
+    "hooks_default": [],
+    "//conditions:default": [],
+})
+
+################################################################################
+# Example Manufacturer Test Hook Library.
+#
+# Modify this section as described below to add more test hooks libraries.
+################################################################################
 cc_library(
-    # The name is the label that will be used to refer to this library.
-    # Tests will use the full label `@manufacturer_test_hooks//:test_hooks`.
-    name = "test_hooks",
-
-    # `srcs` is a list of source files and private header files.
-    srcs = [
-        "test_hooks.c",
-    ],
-
-    # `hdrs` is a list of public header files for this library.
-    hdrs = [],
-
-    # `deps` is a list of dependencies for this library.  You may use
-    # any library from the main opentitan repo; just prefix the label
-    # with `@lowrisc_opentitan`.
-    #
-    # Any dependencies local to this repo can simply start with `//`.
+    name = "test_hooks_1",
+    srcs = ["test_hooks_1.c"],
     deps = [
-        "@lowrisc_opentitan//sw/device/lib/runtime:log",
+        "@//sw/device/lib/runtime:log",
     ],
-
-    # We use alwayslink to force the symbols exported by this library to
-    # override any weak symbols provided by targets in `@lowrisc_opentitan`.
     alwayslink = True,
 )
 
+# TH-Step 3: Copy/Uncomment below to add an additional test hooks library that
+# may override the default test hooks.
+# cc_library(
+#    # The name is the label that will be used to refer to this library below,
+#    # in the single `test_hooks` library that is a dependency of the OTTF.
+#    name = "test_hooks_2",
+#
+#    # `srcs` is a list of source files and private header files.
+#    srcs = ["test_hooks_2.c"],
+#
+#    # `hdrs` is a list of public header files for the `test_hooks` library.
+#    hdrs = [],
+#
+#    # `deps` is a list of dependencies for this library.
+#    # Any dependencies local to this repo can start with `//`.
+#    # Any dependencies from the main opentitan repo must start with `@//`.
+#    deps = ["@//sw/device/lib/runtime:log"],
+#
+#    # We use alwayslink to force the symbols exported by this library to
+#    # override the default test hook weak symbols provided by the default
+#    # `test_hooks` library below.
+#    alwayslink = True,
+# )
+
+################################################################################
+# DO NOT MODIFY THIS SECTION
+#
+# The main `test_hooks` library that may be overridden by manufacturer test hook
+# libraries defined above.
+################################################################################
+cc_library(
+    name = "test_hooks",
+    srcs = ["test_hooks_default.c"],
+    deps = ["@//sw/device/lib/base:macros"] + _TEST_HOOKS_DEPS,
+)
+
+################################################################################
+# Manufacturer Tests
+#
+# These may make use of any manufacturer test hook libraries the same was as
+# open-source tests may, but it is probably uneccessary, since these are custom
+# manufacturer defined tests.
+#
+# Additional tests may be added below as `opentitan_functest` rules. Same as
+# above, any dependencies local to this repo can start with `//`. However, any
+# dependencies from the main opentitan repo must start with `@//`.
+#
+# To run the example test below using the default location:
+# `bazel test @manufacturer_test_hooks//:example_test`
+#
+# To run the example test below when the `@manufacturer_test_hooks` repo is in a
+# different location on the system, use:
+# `MANUFACTURER_HOOKS_DIR=/path/to/test_hooks
+#     bazel test @manufacturer_test_hooks//:example_test`
+################################################################################
+# OTFT-Step 1: Copy/paste the below `opentitan_functest` to add an additional
+# manufacturer-specific (closed-source) tests.
 opentitan_functest(
     name = "example_test",
     srcs = ["example_test.c"],
     deps = [
-        "@lowrisc_opentitan//sw/device/lib/testing/test_framework:ottf_main",
+        "@//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
