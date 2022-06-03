@@ -13,7 +13,7 @@ xargs ci/bazelisk.sh test \
     --test_timeout=2400,2400,3600,-1 \
     --local_test_jobs=4 \
     --local_cpu_resources=4 \
-    --test_tag_filters=verilator,-failing_verilator,-broken \
+    --test_tag_filters=verilator,-broken \
     --test_output=errors \
     --//hw:verilator_options=--threads,1 \
     //sw/device/tests:crt_test_sim_verilator \

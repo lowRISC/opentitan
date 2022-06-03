@@ -149,7 +149,7 @@ def cw310_params(
         local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
         rom = _BASE_PARAMS["rom"].format("fpga_cw310"),
-        tags = _BASE_PARAMS["tags"] + ["cpu:4"],
+        tags = _BASE_PARAMS["tags"],
         timeout = _BASE_PARAMS["timeout"],
         test_runner = _BASE_PARAMS["test_runner"],
         # CW310-specific Parameters
