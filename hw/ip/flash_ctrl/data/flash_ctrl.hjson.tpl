@@ -387,7 +387,7 @@
     },
 
     { name: "RegBusPgmResBytes",
-      desc: "Number of pages per bank",
+      desc: "Program resolution window in bytes",
       type: "int",
       default: "${cfg.pgm_resolution_bytes}",
       local: "true"

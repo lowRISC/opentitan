@@ -9,7 +9,7 @@ package flash_ctrl_reg_pkg;
   // Param list
   parameter int RegNumBanks = 2;
   parameter int RegPagesPerBank = 256;
-  parameter int RegBusPgmResBytes = 512;
+  parameter int RegBusPgmResBytes = 64;
   parameter int RegPageWidth = 8;
   parameter int RegBankWidth = 1;
   parameter int NumRegions = 8;

@@ -376,9 +376,9 @@
     },
 
     { name: "RegBusPgmResBytes",
-      desc: "Number of pages per bank",
+      desc: "Program resolution window in bytes",
       type: "int",
-      default: "512",
+      default: "64",
       local: "true"
     },
 
