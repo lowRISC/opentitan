@@ -324,7 +324,8 @@ class Flash:
         return {
             'banks': self.banks,
             'pages_per_bank': self.pages_per_bank,
-            'program_resolution': self.pgm_resolution_bytes,
+            'program_resolution': self.program_resolution,
+            'pgm_resolution_bytes': self.pgm_resolution_bytes,
             'bytes_per_page': self.bytes_per_page,
             'bytes_per_bank': self.bytes_per_bank,
             'size': self.size

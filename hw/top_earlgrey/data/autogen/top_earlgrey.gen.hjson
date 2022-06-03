@@ -4392,7 +4392,8 @@
           {
             banks: 2
             pages_per_bank: 256
-            program_resolution: 64
+            program_resolution: 8
+            pgm_resolution_bytes: 64
             bytes_per_page: 2048
             bytes_per_bank: 524288
             size: 0x100000
