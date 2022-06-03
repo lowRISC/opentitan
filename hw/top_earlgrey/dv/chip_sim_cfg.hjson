@@ -842,6 +842,30 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_clkmgr_off_aes_trans
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/clkmgr_off_aes_trans_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_clkmgr_off_hmac_trans
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/clkmgr_off_hmac_trans_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_clkmgr_off_kmac_trans
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/clkmgr_off_kmac_trans_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_clkmgr_off_otbn_trans
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/clkmgr_off_otbn_trans_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_clkmgr_external_clk_src_for_lc
       uvm_test_seq: chip_sw_lc_ctrl_transition_vseq
       sw_images: ["sw/device/tests/sim_dv/clkmgr_external_clk_src_for_lc_test:1"]
