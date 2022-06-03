@@ -113,8 +113,8 @@ module otp_ctrl
   // Regfile //
   /////////////
 
-  // We have one CSR node and one functional TL-UL window.
-  logic [1:0] intg_error;
+  // We have one CSR node, one functional TL-UL window and a gate module for that window
+  logic [2:0] intg_error;
 
   tlul_pkg::tl_h2d_t tl_win_h2d;
   tlul_pkg::tl_d2h_t tl_win_d2h;
@@ -735,7 +735,8 @@ module otp_ctrl
     .tl_d2h_o(prim_tl_o),
     .tl_h2d_o(prim_tl_h2d_gated),
     .tl_d2h_i(prim_tl_d2h_gated),
-    .lc_en_i (lc_dft_en[0])
+    .lc_en_i (lc_dft_en[0]),
+    .err_o   (intg_error[2])
   );
 
   // Test-related GPIOs.
@@ -1440,6 +1441,8 @@ module otp_ctrl
       u_otp_ctrl_lci.u_prim_count, alert_tx_o[1])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntScrmblCheck_A,
       u_otp_ctrl_scrmbl.u_prim_count, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
+      u_tlul_lc_gate.u_state_regs, alert_tx_o[1])
 
   // Alert assertions for double LFSR.
   `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(DoubleLfsrCheck_A,
