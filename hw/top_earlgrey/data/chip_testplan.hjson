@@ -1211,8 +1211,10 @@
       name: chip_sw_alert_handler_lpg
       desc: '''Verify alert's low_power_group(lpg).
 
-            Choose an always-on block and send alerts during deep sleep mode, check the
-            alert_senders can recover after system comes out of the deep sleep mode.
+            Choose an always-on block and send alerts during deep sleep and normal sleep mode,
+            check the alert_senders can recover after system comes out of both sleep modes.
+            Repeat the above sequence for multiple rounds with randomly chosen deep or normal sleep
+            mode for each round.
             '''
       milestone: V2
       tests: []
