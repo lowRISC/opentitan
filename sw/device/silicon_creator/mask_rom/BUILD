@@ -319,7 +319,6 @@ opentitan_functest(
         rom = ":mask_rom_sim_verilator_scr_vmem",
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [

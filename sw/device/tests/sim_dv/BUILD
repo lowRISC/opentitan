@@ -58,7 +58,7 @@ opentitan_functest(
     test_in_rom = True,
     # This test currently fails in Verilator when run by Bazel (#12486)
     verilator = verilator_params(
-        tags = ["failing_verilator"],
+        tags = ["broken"],
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",

@@ -15,7 +15,6 @@ opentitan_functest(
     verilator = verilator_params(
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [
@@ -40,7 +39,6 @@ opentitan_functest(
     verilator = verilator_params(
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [
@@ -151,7 +149,6 @@ opentitan_functest(
     verilator = verilator_params(
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [
@@ -173,8 +170,7 @@ opentitan_functest(
     srcs = ["pwrmgr_wdog_reset_reqs_test.c"],
     verilator = verilator_params(
         tags = [
-            "cpu:4",
-            "failing_verilator",
+            "broken",
         ],
     ),
     deps = [
@@ -245,7 +241,6 @@ opentitan_functest(
     verilator = verilator_params(
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [
@@ -264,7 +259,6 @@ opentitan_functest(
     verilator = verilator_params(
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [
@@ -403,7 +397,6 @@ opentitan_functest(
     verilator = verilator_params(
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [
@@ -425,7 +418,6 @@ opentitan_functest(
     verilator = verilator_params(
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [
@@ -448,7 +440,7 @@ opentitan_functest(
     ),
     verilator = verilator_params(
         timeout = "long",
-        tags = ["failing_verilator"],
+        tags = ["broken"],
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -480,7 +472,7 @@ opentitan_functest(
     # Verilator or CW310 params).
     test_in_rom = True,
     verilator = verilator_params(
-        tags = ["failing_verilator"],
+        tags = ["broken"],
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -508,7 +500,6 @@ opentitan_functest(
     verilator = verilator_params(
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [
@@ -609,7 +600,6 @@ opentitan_functest(
     verilator = verilator_params(
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [
@@ -891,7 +881,6 @@ opentitan_functest(
         # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [
@@ -915,7 +904,6 @@ opentitan_functest(
         # FIXME #12486 [bazel] pmp_smoketest_tor failing on cw310 and verilator when built by bazel
         tags = [
             "broken",
-            "cpu:4",
         ],
     ),
     deps = [
@@ -1259,7 +1247,7 @@ opentitan_functest(
     ),
     verilator = verilator_params(
         timeout = "long",
-        tags = ["failing_verilator"],
+        tags = ["broken"],
     ),
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
