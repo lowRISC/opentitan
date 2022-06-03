@@ -186,6 +186,10 @@ module spid_upload
   logic [7:0]         cmdfifo_wdata ;
   logic [CmdPtrW-1:0] cmdfifo_depth; // Write side depth to check if FIFO empty
 
+  // cmdfifo_depth is used in assertion not in the logic.
+  logic               unused_cmdfifo_depth;
+  assign unused_cmdfifo_depth = ^cmdfifo_depth;
+
   logic        addrfifo_wvalid;
   logic        addrfifo_wready; // Assume always ready
   logic [31:0] addrfifo_wdata ;
