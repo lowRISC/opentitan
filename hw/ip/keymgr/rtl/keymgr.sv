@@ -465,7 +465,9 @@ module keymgr
   logic key_vld;
   // SEC_CM: CONSTANTS.CONSISTENCY
   // SEC_CM: INTERSIG.CONSISTENCY
-  keymgr_input_checks u_checks (
+  keymgr_input_checks #(
+    .KmacEnMasking(KmacEnMasking)
+  ) u_checks (
     .rom_digest_i,
     .max_key_versions_i(max_key_versions),
     .stage_sel_i(stage_sel),
