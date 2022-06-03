@@ -304,6 +304,53 @@ opentitan_functest(
     ],
 )
 
+cc_library(
+    name = "clkmgr_off_trans_impl",
+    srcs = ["clkmgr_off_trans_impl.c"],
+    hdrs = ["clkmgr_off_trans_impl.h"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "clkmgr_off_aes_trans_test",
+    srcs = ["clkmgr_off_aes_trans_test.c"],
+    deps = ["clkmgr_off_trans_impl"],
+)
+
+opentitan_functest(
+    name = "clkmgr_off_hmac_trans_test",
+    srcs = ["clkmgr_off_hmac_trans_test.c"],
+    deps = ["clkmgr_off_trans_impl"],
+)
+
+opentitan_functest(
+    name = "clkmgr_off_kmac_trans_test",
+    srcs = ["clkmgr_off_kmac_trans_test.c"],
+    deps = ["clkmgr_off_trans_impl"],
+)
+
+opentitan_functest(
+    name = "clkmgr_off_otbn_trans_test",
+    srcs = ["clkmgr_off_otbn_trans_test.c"],
+    deps = ["clkmgr_off_trans_impl"],
+)
+
 opentitan_functest(
     name = "clkmgr_smoketest",
     srcs = ["clkmgr_smoketest.c"],

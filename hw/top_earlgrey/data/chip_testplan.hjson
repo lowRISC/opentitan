@@ -789,7 +789,10 @@
             check).
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_clkmgr_off_aes_trans",
+              "chip_sw_clkmgr_off_hmac_trans",
+              "chip_sw_clkmgr_off_kmac_trans",
+              "chip_sw_clkmgr_off_otbn_trans"]
     }
     {
       name: chip_sw_clkmgr_off_peri
