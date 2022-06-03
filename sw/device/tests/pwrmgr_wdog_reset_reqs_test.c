@@ -104,7 +104,8 @@ bool test_main(void) {
     wdog_bite_test(&aon_timer, &pwrmgr, /*bark_time_us=*/200);
   } else if (rst_info == kDifRstmgrResetInfoWatchdog) {
     LOG_INFO("Booting for the second time due to wdog bite reset");
+    return true;
   }
-
-  return true;
+  LOG_ERROR("Got unexpected reset info 0x%x", rst_info);
+  return false;
 }
