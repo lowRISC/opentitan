@@ -33,13 +33,8 @@ void rstmgr_testutils_compare_alert_info(
   dif_rstmgr_alert_info_dump_segment_t
       actual_alert_dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
 
-  if (expected_alert_dump == 0 || dump_size == 0) {
-    return;
-  }
-
   CHECK_DIF_OK(dif_rstmgr_alert_info_dump_read(
       rstmgr, actual_alert_dump, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &size_read));
-  CHECK(dump_size <= size_read);
   CHECK_ARRAYS_EQ(actual_alert_dump, expected_alert_dump, dump_size);
 }
 
@@ -50,13 +45,8 @@ void rstmgr_testutils_compare_cpu_info(
   dif_rstmgr_cpu_info_dump_segment_t
       actual_cpu_dump[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
 
-  if (expected_cpu_dump == 0 || dump_size == 0) {
-    return;
-  }
-
   CHECK_DIF_OK(dif_rstmgr_cpu_info_dump_read(
       rstmgr, actual_cpu_dump, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &size_read));
-  CHECK(dump_size <= size_read);
   CHECK_ARRAYS_EQ(actual_cpu_dump, expected_cpu_dump, dump_size);
 }
 
@@ -83,7 +73,11 @@ void rstmgr_testutils_post_reset(
         "Unexpected reset_info CSR mismatch, expected 0x%x, got 0x%x",
         expected_reset_info, actual_reset_info);
 
-  rstmgr_testutils_compare_alert_info(rstmgr, expected_alert_dump,
-                                      alert_dump_size);
-  rstmgr_testutils_compare_cpu_info(rstmgr, expected_cpu_dump, cpu_dump_size);
+  if (expected_alert_dump != NULL && alert_dump_size != 0) {
+    rstmgr_testutils_compare_alert_info(rstmgr, expected_alert_dump,
+                                        alert_dump_size);
+  }
+  if (expected_cpu_dump != NULL && cpu_dump_size != 0) {
+    rstmgr_testutils_compare_cpu_info(rstmgr, expected_cpu_dump, cpu_dump_size);
+  }
 }
