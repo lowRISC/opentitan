@@ -217,11 +217,12 @@ typedef uint32_t dif_rstmgr_alert_info_dump_segment_t;
  * Power-On-Reset (POR).
  *
  * @param handle A Reset Manager handle.
- * @param dump Alert info crash dump.
- * @param dump_size Size of the crash dump buffer. The entire crash dump will be
- *                  read, and the actual size can be determined through
- *                  the `segments_read` parameter.
- * @param segments_read Number of read segments.
+ * @param dump Address of buffer where the alert dump will be written.
+ * @param dump_size Size of the alert dump buffer. The entire crash dump will be
+ *                  read, and the actual size can be determined through the
+ *                  `segments_read` parameter. It is an error if dump_size is
+ *                  not large enough.
+ * @param[out] segments_read Number of segments read.
  *
  * @return The result of the operation.
  */
@@ -274,11 +275,12 @@ typedef uint32_t dif_rstmgr_cpu_info_dump_segment_t;
  * Power-On-Reset (POR).
  *
  * @param handle A Reset Manager handle.
- * @param dump CPU info crash dump.
- * @param dump_size Size of the crash dump buffer. The entire crash dump will be
- *                  read, and the actual size can be determined through
- *                  the `segments_read` parameter.
- * @param segments_read Number of read segments.
+ * @param dump Address of buffer where the crash dump will be written.
+ * @param dump_size Size of the crash dump buffer. The entire crash dump will
+ *                  be read, and the actual size can be determined through the
+ *                  `segments_read` parameter. It is an error if dump_size is
+ *                  not large enough.
+ * @param[out] segments_read Number of segments read.
  *
  * @return The result of the operation.
  */
