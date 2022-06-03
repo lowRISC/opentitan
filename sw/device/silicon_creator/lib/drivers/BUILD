@@ -92,7 +92,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
