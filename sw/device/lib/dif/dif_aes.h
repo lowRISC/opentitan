@@ -463,7 +463,7 @@ typedef enum dif_aes_status {
  *
  * @param aes AES state data.
  * @param flag Status flag to query.
- * @param set Flag state (set/unset).
+ * @param[out] set Flag state (set/unset).
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
