@@ -229,7 +229,8 @@ module otp_ctrl_scrmbl
   assign enc_data_out_xor = enc_data_out ^ digest_state_q;
   assign digest_state_d  = (digest_init) ? otp_digest_iv_mux : enc_data_out_xor;
 
-  assign data_o = data_state_q;
+  logic valid_q; //valid_d defined below
+  assign data_o = (valid_q) ? data_state_q : 0;
 
   /////////
   // FSM //
@@ -274,7 +275,7 @@ module otp_ctrl_scrmbl
   state_e state_d, state_q;
   logic [CntWidth-1:0] cnt;
   logic cnt_clr, cnt_en, cnt_err;
-  logic valid_d, valid_q;
+  logic valid_d; //valid_q defined above
 
   assign valid_o = valid_q;
 
