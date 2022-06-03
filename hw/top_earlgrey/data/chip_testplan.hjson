@@ -760,7 +760,7 @@
             the watchdog bark), then map each test to this testpoint.
             '''
       milestone: V2
-      tests: [""]
+      tests: []
     }
 
     // CLKMGR tests:
@@ -768,12 +768,13 @@
       name: chip_sw_clkmgr_idle_trans
       desc: '''Verify the ability to turn off the transactional clock via SW.
 
-            Ensure that the clock to transactional units can be turned off regardless of any
-            activity in the transactional IP.  Verify it is off via spinwait in hints_status CSR.
+            Ensure that the clock to transactional units will be turned off after any activity
+            completes in the transactional IP.  Verify it is off via spinwait in hints_status CSR.
             Verify that turning off this clock does not affect the other derived clocks.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_aes_idle",
+              "chip_sw_hmac_idle"]
     }
     {
       name: chip_sw_clkmgr_off_trans
@@ -1681,14 +1682,15 @@
       name: chip_sw_hmac_idle
       desc: '''Verify the HMAC clk idle signal to clkmgr.
 
-            - Write the HMAC clk hint to 1 within clkmgr to indicate HMAC clk is ready to be gated.
-              Verify that the HMAC clk hint status within clkmgr reads 0 (HMAC is idle).
+            - Write the HMAC clk hint to 0 within clkmgr to indicate HMAC clk can be gated and
+              verify that the HMAC clk hint status within clkmgr reads 0 (HMAC is disabled).
+            - Write the HMAC clk hint to 1 within clkmgr to indicate HMAC clk can be enabled.
+              Verify that the HMAC clk hint status within clkmgr reads 1 (HMAC is enabled).
             - Initiate an HMAC operation with a known key, plain text and digest.
-              Verify that the HMAC clk hint status within clkmgr now reads 1 (HMAC is not idle),
-              before the HMAC operation is complete.
+              Write HMAC clock hint to 0 and verify the HMAC clk hint status within clkmgr reads 1
+              (HMAC is enabled), before the HMAC operation is complete.
             - After the HMAC operation is complete, verify the digest for correctness.
-              Verify that the HMAC clk hint status within clkmgr now reads 0 again (HMAC is idle),
-              after the HMAC operation is complete.
+              Verify that the HMAC clk hint status within clkmgr now reads 0 again (HMAC is disabled).
             '''
       milestone: V2
       tests: []
@@ -1776,13 +1778,15 @@
       name: chip_sw_kmac_idle
       desc: '''Verify the KMAC idle signaling to clkmgr.
 
-            - Program the KMAC clk hint within clkmgr to indicate KMAC clk is ready to be gated.
-              Verify that the KMAC clk enabled status within clkmgr reads disabled (KMAC is idle).
+            - Write the KMAC clk hint to 0 within clkmgr to indicate KMAC clk can be gated and
+              verify that the KMAC clk hint status within clkmgr reads 0 (KMAC is disabled).
+            - Write the KMAC clk hint to 1 within clkmgr to indicate KMAC clk can be enabled.
+              Verify that the KMAC clk hint status within clkmgr reads 1 (KMAC is enabled).
             - Initiate a KMAC operation with a known key, plain text and digest.
-              Verify that when enabling the KMAC clk hint after the operation has started but is not
-              yet complete, the clk enabled status in clkmgr stays enabled (KMAC is not idle).
+              Write KMAC clock hint to 0 and verify the KMAC clk hint status within clkmgr reads 1
+              (KMAC is enabled), before the KMAC operation is complete.
             - After the KMAC operation is complete, verify the digest for correctness.
-              Verify that the KMAC clk enabled status reads as disabled (KMAC is idle).
+              Verify that the KMAC clk hint status within clkmgr now reads 0 again (KMAC is disabled).
             '''
       milestone: V2
       tests: ["chip_sw_kmac_idle"]
