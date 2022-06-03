@@ -20,7 +20,7 @@
     {
       name: mask_rom_keymgr_functest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/silicon_creator/testing/sw_silicon_creator_lib_driver_keymgr_functest:1"]
+      sw_images: ["sw/device/silicon_creator/lib/drivers/keymgr_functest:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=5000000"]
     }
