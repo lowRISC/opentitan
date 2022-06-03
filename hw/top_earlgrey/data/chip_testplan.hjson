@@ -1642,13 +1642,13 @@
       desc: '''Verify AES idle signaling to clkmgr.
 
             - Write the AES clk hint to 0 within clkmgr to indicate AES clk can be gated and
-              verify that the AES clk hint status within clkmgr reads 0 (AES is idle).
+              verify that the AES clk hint status within clkmgr reads 0 (AES is disabled).
             - Write the AES clk hint to 1 within clkmgr to indicate AES clk can be enabled.
             - Initiate an AES operation with a known key, plain text and digest, write AES clk
               hint to 0 and verify that the AES clk hint status within clkmgr now reads 1 (AES
-              is not idle), before the AES operation is complete.
+              is enabled), before the AES operation is complete.
             - After the AES operation is complete verify that the AES clk hint status within
-              clkmgr now reads 0 again (AES is idle).
+              clkmgr now reads 0 again (AES is disabled).
             - Write the AES clk hint to 1, read and check the AES output for correctness.
             '''
       milestone: V2

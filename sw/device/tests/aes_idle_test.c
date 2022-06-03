@@ -112,9 +112,9 @@ bool test_main(void) {
       .mask_reseeding = kDifAesReseedPerBlock,
   };
 
-  // Write the AES clk hint to 0 within clkmgr to indicate AES clk can be
-  // gated and verify that the AES clk hint status within clkmgr reads 0 (AES
-  // is idle).
+  // With the AES unit idle, write the AES clk hint to 0 within clkmgr to
+  // indicate AES clk can be gated and verify that the AES clk hint status
+  // within clkmgr reads 0 (AES is disabled).
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kAesClock, kDifToggleDisabled, kDifToggleDisabled);
 
@@ -125,7 +125,7 @@ bool test_main(void) {
 
   // Initiate an AES operation with a known key, plain text and digest, write
   // AES clk hint to 0 and verify that the AES clk hint status within clkmgr now
-  // reads 1 (AES is not idle), before the AES operation is complete.
+  // reads 1 (AES is enabled), before the AES operation is complete.
   CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, NULL));
 
   // "Convert" plain data byte arrays to `dif_aes_data_t`.
