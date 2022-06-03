@@ -120,6 +120,7 @@ module flash_ctrl
   logic update_err;
   logic intg_err;
   logic eflash_cmd_intg_err;
+  logic tl_gate_intg_err;
 
   // SEC_CM: REG.BUS.INTEGRITY
   // SEC_CM: CTRL.CONFIG.REGWEN
@@ -1064,7 +1065,8 @@ module flash_ctrl
   assign hw2reg.std_fault_status.phy_fsm_err.d     = 1'b1;
   assign hw2reg.std_fault_status.ctrl_cnt_err.d    = 1'b1;
   assign hw2reg.std_fault_status.fifo_err.d        = 1'b1;
-  assign hw2reg.std_fault_status.reg_intg_err.de   = intg_err | eflash_cmd_intg_err;
+  assign hw2reg.std_fault_status.reg_intg_err.de   = intg_err | eflash_cmd_intg_err |
+                                                     tl_gate_intg_err;
   assign hw2reg.std_fault_status.prog_intg_err.de  = flash_phy_rsp.prog_intg_err;
   assign hw2reg.std_fault_status.lcmgr_err.de      = lcmgr_err;
   assign hw2reg.std_fault_status.lcmgr_intg_err.de = lcmgr_intg_err;
@@ -1267,7 +1269,8 @@ module flash_ctrl
     .tl_d2h_o(mem_tl_o),
     .tl_h2d_o(gate_tl_h2d),
     .tl_d2h_i(gate_tl_d2h),
-    .lc_en_i(host_enable)
+    .lc_en_i(host_enable),
+    .err_o(tl_gate_intg_err)
   );
 
   // SEC_CM: HOST.BUS.INTEGRITY
@@ -1387,6 +1390,8 @@ module flash_ctrl
     u_flash_hw_if.u_rma_state_regs, alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ArbFsmCheck_A,
     u_ctrl_arb.u_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
+    u_tl_gate.u_state_regs, alert_tx_o[1])
 
    for (genvar i=0; i<NumBanks; i++) begin : gen_phy_assertions
      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyFsmCheck_A,

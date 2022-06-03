@@ -89,6 +89,7 @@ module rv_dm
   tlul_pkg::tl_d2h_t rom_tl_win_d2h;
   rv_dm_reg_pkg::rv_dm_regs_reg2hw_t regs_reg2hw;
   logic regs_intg_error, rom_intg_error;
+  logic sba_gate_intg_error, rom_gate_intg_error;
 
   rv_dm_regs_reg_top u_reg_regs (
     .clk_i,
@@ -115,7 +116,8 @@ module rv_dm
   // Alerts
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  assign alerts[0] = regs_intg_error | rom_intg_error;
+  assign alerts[0] = regs_intg_error | rom_intg_error |
+                     sba_gate_intg_error | rom_gate_intg_error;
 
   assign alert_test = {
     regs_reg2hw.alert_test.q &
@@ -212,7 +214,8 @@ module rv_dm
     .tl_d2h_o(sba_tl_h_i_int),
     .tl_h2d_o(sba_tl_h_o),
     .tl_d2h_i(sba_tl_h_i),
-    .lc_en_i (lc_hw_debug_en[EnSba])
+    .lc_en_i (lc_hw_debug_en[EnSba]),
+    .err_o   (sba_gate_intg_error)
   );
 
   tlul_adapter_host #(
@@ -345,7 +348,8 @@ module rv_dm
     .tl_d2h_o(rom_tl_win_d2h),
     .tl_h2d_o(rom_tl_win_h2d_gated),
     .tl_d2h_i(rom_tl_win_d2h_gated),
-    .lc_en_i (lc_hw_debug_en[EnRom])
+    .lc_en_i (lc_hw_debug_en[EnRom]),
+    .err_o   (rom_gate_intg_error)
   );
 
   prim_mubi_pkg::mubi4_t en_ifetch;
@@ -457,5 +461,11 @@ module rv_dm
   // JTAG TDO is driven by an inverted TCK in dmi_jtag_tap.sv
   `ASSERT_KNOWN(JtagRspOTdoKnown_A, jtag_o.tdo, !jtag_i.tck, !jtag_i.trst_n)
   `ASSERT_KNOWN(JtagRspOTdoOeKnown_A, jtag_o.tdo_oe, !jtag_i.tck, !jtag_i.trst_n)
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SbaTlLcGateFsm_A,
+    u_tlul_lc_gate_sba.u_state_regs, alert_tx_o[0])
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(RomTlLcGateFsm_A,
+    u_tlul_lc_gate_rom.u_state_regs, alert_tx_o[0])
 
 endmodule

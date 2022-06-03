@@ -30,23 +30,25 @@ module tlul_lc_gate
   input  tl_d2h_t tl_d2h_i,
 
   // LC control signal
-  input  lc_tx_t  lc_en_i
+  input  lc_tx_t  lc_en_i,
+  output logic err_o
 );
 
   //////////////////
   // Access Gates //
   //////////////////
 
-  // Make a separate MUBI copy for each gating mux.
-  lc_ctrl_pkg::lc_tx_t [2*NumGatesPerDirection:0] lc_en_buf;
+  lc_tx_t err_en;
+  lc_tx_t [NumGatesPerDirection-1:0] err_en_buf;
+
   prim_lc_sync #(
-    .NumCopies(2*NumGatesPerDirection+1),
+    .NumCopies(NumGatesPerDirection),
     .AsyncOn(0)
-  ) u_prim_lc_sync (
+  ) u_err_en_sync (
     .clk_i,
     .rst_ni,
-    .lc_en_i(lc_en_i),
-    .lc_en_o(lc_en_buf)
+    .lc_en_i(err_en),
+    .lc_en_o(err_en_buf)
   );
 
   tl_h2d_t tl_h2d_int [NumGatesPerDirection+1];
@@ -57,7 +59,7 @@ module tlul_lc_gate
       .Width($bits(tl_h2d_t))
     ) u_prim_blanker_h2d (
       .in_i(tl_h2d_int[k]),
-      .en_i(lc_tx_test_true_strict(lc_en_buf[2*k])),
+      .en_i(lc_tx_test_false_strict(err_en_buf[k])),
       .out_o(tl_h2d_int[k+1])
     );
 
@@ -66,7 +68,7 @@ module tlul_lc_gate
       .Width($bits(tl_d2h_t))
     ) u_prim_blanker_d2h (
       .in_i(tl_d2h_int[k+1]),
-      .en_i(lc_tx_test_true_strict(lc_en_buf[2*k+1])),
+      .en_i(lc_tx_test_false_strict(err_en_buf[k])),
       .out_o(tl_d2h_int[k])
     );
   end
@@ -79,23 +81,116 @@ module tlul_lc_gate
   // Host Side Interposing //
   ///////////////////////////
 
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 3 -n 8 \
+  //      -s 3379253306 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (66.67%)
+  //  6: |||||||||| (33.33%)
+  //  7: --
+  //  8: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 4
+  // Maximum Hamming weight: 5
+  //
+  localparam int StateWidth = 8;
+  typedef enum logic [StateWidth-1:0] {
+    StActive = 8'b11101010,
+    StOutstanding = 8'b11010001,
+    StError = 8'b00100111
+  } state_e;
+
+
+  state_e state_d, state_q;
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StActive)
+
+  logic [1:0] outstanding_txn;
+  logic a_ack;
+  logic d_ack;
+  assign a_ack = tl_h2d_i.a_valid & tl_d2h_o.a_ready;
+  assign d_ack = tl_h2d_i.d_ready & tl_d2h_o.d_valid;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      outstanding_txn <= '0;
+    end else if (a_ack && !d_ack) begin
+      outstanding_txn <= outstanding_txn + 1'b1;
+    end else if (d_ack && !a_ack) begin
+      outstanding_txn <= outstanding_txn - 1'b1;
+    end
+  end
+
+  logic block_cmd;
+  always_comb begin
+    block_cmd = '0;
+    state_d = state_q;
+    err_en = Off;
+    err_o = '0;
+
+    unique case (state_q)
+      StActive: begin
+        if (lc_tx_test_false_loose(lc_en_i)) begin
+          state_d = StOutstanding;
+        end
+      end
+
+      StOutstanding: begin
+        block_cmd = 1'b1;
+        if (outstanding_txn == '0) begin
+          state_d = StError;
+        end
+      end
+
+      StError: begin
+        // This design currently makes the assumption that if a module wants
+        // to return from error mode, it is not also going to be blasting
+        // the gasket with transactions at the same time.
+        // If this assumption turns out to be false, there needs to basically
+        // be a `StErrorOustanding` state that blocks off further commands
+        // to the err response module while allowing the already accepted
+        // transactions to respond (the error responder module does not need
+        // outstanding capacity).
+        err_en = On;
+
+        if (lc_tx_test_true_strict(lc_en_i)) begin
+          state_d = StActive;
+        end
+      end
+
+      default: begin
+        err_o = 1'b1;
+        err_en = On;
+      end
+
+    endcase // unique case (state_q)
+  end
+
+
   // At the host side, we interpose the ready / valid signals so that we can return a bus error
   // in case the lc signal is not set to ON. Note that this logic does not have to be duplicated
   // since erroring back is considered a convenience feature so that the bus does not lock up.
   tl_h2d_t tl_h2d_error;
   tl_d2h_t tl_d2h_error;
   always_comb begin
-    tl_h2d_int[0] = '0;
-    tl_d2h_o      = '0;
+    tl_h2d_int[0] = tl_h2d_i;
+    tl_d2h_o      = tl_d2h_int[0];
     tl_h2d_error  = '0;
 
-    if (lc_tx_test_true_strict(lc_en_buf[2*NumGatesPerDirection]) && !tl_d2h_error.d_valid) begin
-      tl_h2d_int[0] = tl_h2d_i;
-      tl_d2h_o      = tl_d2h_int[0];
-    end else begin
-      // In this case we route the incoming transactions through the error responder submodule.
+    if (lc_tx_test_true_loose(err_en)) begin
       tl_h2d_error  = tl_h2d_i;
       tl_d2h_o      = tl_d2h_error;
+    end else if (block_cmd) begin
+      tl_d2h_o.a_ready = '0;
+      tl_h2d_int[0].a_valid = '0;
     end
   end
 
@@ -105,5 +200,8 @@ module tlul_lc_gate
     .tl_h_i(tl_h2d_error),
     .tl_h_o(tl_d2h_error)
   );
+
+  // Add assertion
+  `ASSERT(OutStandingOvfl_A, &outstanding_txn |-> ~a_ack)
 
 endmodule : tlul_lc_gate

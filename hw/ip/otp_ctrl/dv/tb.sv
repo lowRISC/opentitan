@@ -224,9 +224,9 @@ module tb;
     $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients0_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients1_A);
-    $assertoff(0, tb.dut.u_tlul_lc_gate.u_prim_lc_sync.PrimLcSyncCheckTransients_A);
-    $assertoff(0, tb.dut.u_tlul_lc_gate.u_prim_lc_sync.PrimLcSyncCheckTransients0_A);
-    $assertoff(0, tb.dut.u_tlul_lc_gate.u_prim_lc_sync.PrimLcSyncCheckTransients1_A);
+    $assertoff(0, tb.dut.u_tlul_lc_gate.u_err_en_sync.PrimLcSyncCheckTransients_A);
+    $assertoff(0, tb.dut.u_tlul_lc_gate.u_err_en_sync.PrimLcSyncCheckTransients0_A);
+    $assertoff(0, tb.dut.u_tlul_lc_gate.u_err_en_sync.PrimLcSyncCheckTransients1_A);
 
     // These SVA checks the lc_sync_creator_seed_sw_rw_en is either Off or On, we will use more
     // than these 2 values.
