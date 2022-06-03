@@ -4,6 +4,7 @@
 
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
 load("//rules:quality.bzl", "clang_format_check", "html_coverage_report")
+load("//rules:cargo.bzl", "cargo_raze")
 load("@lowrisc_lint//rules:rules.bzl", "licence_check")
 load("@rules_rust//rust:defs.bzl", "rust_analyzer")
 
@@ -99,5 +100,12 @@ rust_analyzer(
         "//sw/host/opentitantool:opentitantool",
         "//sw/host/rom_ext_image_tools/signer:rom_ext_signer",
         "//sw/host/rom_ext_image_tools/signer/image:rom_ext_image",
+    ],
+)
+
+cargo_raze(
+    name = "cargo_raze",
+    cargo = [
+        "third_party/rust/crates/Cargo.toml",
     ],
 )
