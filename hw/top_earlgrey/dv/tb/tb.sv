@@ -65,6 +65,10 @@ module tb;
 
   spi_if spi_if(.rst_n);
   tl_if cpu_d_tl_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
+  // Use this until we decide what to do with m_tl_agent_rv_dm_debug_mem_reg_block
+  // TODO reveiw m_tl_agent_rv_dm_debug_mem_reg_block
+  tl_if dmi_tbd_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
+
   uart_if uart_if[NUM_UARTS-1:0]();
   jtag_if jtag_if();
   pwm_if pwm_if[NUM_PWM_CHANNELS]();
@@ -296,17 +300,20 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "cpu_clk_rst_vif", cpu_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(
+        null, "*.env", "clk_rst_vif_rv_dm_debug_mem_reg_block", clk_rst_if);
 
     // IO Interfaces
     uvm_config_db#(virtual pins_if #(NUM_GPIOS))::set(null, "*.env", "gpio_vif", gpio_if);
     uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_riscv_agent*", "vif", jtag_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", cpu_d_tl_if);
+    uvm_config_db#(virtual tl_if)::set(
+        null, "*.env.m_tl_agent_chip_reg_block*", "vif", cpu_d_tl_if);
 
     // RV_DM DMI
     uvm_config_db#(virtual clk_rst_if)::set(
         null, "*.env", "clk_rst_vif_rv_dm_debug_mem_reg_block", clk_rst_if);
-
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_rv_dm*", "vif", dmi_tbd_if);
 
     // Strap pins
     uvm_config_db#(virtual pins_if #(2))::set(

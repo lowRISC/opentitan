@@ -544,7 +544,7 @@
             - Read CSRs / mem in the debug domain to ensure that the values survive the reset.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_rv_dm_ndm_reset_req"]
     }
     // TODO, this could be a block-level test. Put it here since we don't have block-level testplan.
     {

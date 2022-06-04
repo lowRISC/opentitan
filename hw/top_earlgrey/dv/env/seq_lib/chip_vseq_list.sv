@@ -8,9 +8,9 @@
 `include "chip_common_vseq.sv"
 `include "chip_jtag_csr_rw_vseq.sv"
 `include "chip_jtag_mem_vseq.sv"
-`include "chip_jtag_base_vseq.sv"
 // This needs to be listed prior to all sequences that derive from it.
 `include "chip_sw_base_vseq.sv"
+`include "chip_jtag_base_vseq.sv"
 `include "chip_sw_full_aon_reset_vseq.sv"
 `include "chip_sw_main_power_glitch_vseq.sv"
 `include "chip_sw_sysrst_ctrl_vseq.sv"
@@ -40,3 +40,4 @@
 `include "chip_tap_straps_vseq.sv"
 `include "chip_sw_repeat_reset_wkup_vseq.sv"
 `include "chip_sw_rstmgr_alert_info_vseq.sv"
+`include "chip_rv_dm_ndm_reset_vseq.sv"
