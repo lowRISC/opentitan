@@ -223,10 +223,7 @@
         name: por
         gen: true
         type: top
-        domains:
-        [
-          Aon
-        ]
+        domains: []
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_por_n
@@ -248,20 +245,6 @@
         clock: io
       }
       {
-        name: por_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_por_io_div2_n
-        parent: por_aon
-        clock: io_div2
-      }
-      {
         name: por_io_div4
         gen: true
         type: top
@@ -276,7 +259,22 @@
         clock: io_div4
       }
       {
-        name: por_usb
+        name: lc
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+          "0"
+        ]
+        shadowed: true
+        sw: false
+        path: rstmgr_aon_resets.rst_lc_n
+        parent: lc_src
+        clock: main
+      }
+      {
+        name: lc_aon
         gen: true
         type: top
         domains:
@@ -285,23 +283,37 @@
         ]
         shadowed: false
         sw: false
-        path: rstmgr_aon_resets.rst_por_usb_n
-        parent: por_aon
-        clock: usb
+        path: rstmgr_aon_resets.rst_lc_aon_n
+        parent: lc_src
+        clock: aon
       }
       {
-        name: lc
+        name: lc_io
         gen: true
         type: top
         domains:
         [
-          "0"
+          Aon
         ]
-        shadowed: true
+        shadowed: false
         sw: false
-        path: rstmgr_aon_resets.rst_lc_n
+        path: rstmgr_aon_resets.rst_lc_io_n
         parent: lc_src
-        clock: main
+        clock: io
+      }
+      {
+        name: lc_io_div2
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_lc_io_div2_n
+        parent: lc_src
+        clock: io_div2
       }
       {
         name: lc_io_div4
@@ -319,7 +331,7 @@
         clock: io_div4
       }
       {
-        name: lc_aon
+        name: lc_usb
         gen: true
         type: top
         domains:
@@ -328,9 +340,9 @@
         ]
         shadowed: false
         sw: false
-        path: rstmgr_aon_resets.rst_lc_aon_n
+        path: rstmgr_aon_resets.rst_lc_usb_n
         parent: lc_src
-        clock: aon
+        clock: usb
       }
       {
         name: sys
@@ -3027,39 +3039,39 @@
           name: lc_io_div4
           domain: Aon
         }
-        rst_pwrmgr_ni:
+        rst_aon_ni:
         {
-          name: por_io_div4
-          domain: Aon
-        }
-        rst_main_ni:
-        {
-          name: por
+          name: lc_aon
           domain: Aon
         }
         rst_io_ni:
         {
-          name: por_io
-          domain: Aon
-        }
-        rst_usb_ni:
-        {
-          name: por_usb
+          name: lc_io
           domain: Aon
         }
         rst_io_div2_ni:
         {
-          name: por_io_div2
+          name: lc_io_div2
           domain: Aon
         }
         rst_io_div4_ni:
         {
-          name: por_io_div4
+          name: lc_io_div4
           domain: Aon
         }
-        rst_aon_ni:
+        rst_main_ni:
         {
-          name: por_aon
+          name: lc
+          domain: Aon
+        }
+        rst_usb_ni:
+        {
+          name: lc_usb
+          domain: Aon
+        }
+        rst_por_io_ni:
+        {
+          name: por_io
           domain: Aon
         }
       }

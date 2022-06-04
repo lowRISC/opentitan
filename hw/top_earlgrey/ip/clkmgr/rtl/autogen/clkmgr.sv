@@ -26,7 +26,6 @@
   input clk_i,
   input rst_ni,
   input rst_shadowed_ni,
-  input rst_pwrmgr_ni,
 
   // System clocks and resets
   // These are the source clocks for the system
@@ -43,6 +42,12 @@
   // clocks are derived locally
   input rst_io_div2_ni,
   input rst_io_div4_ni,
+
+  // Sources for derived clocks need both a functional reset (above) and a
+  // por reset. The por reset allows the block to begin
+  // generating the derived clocks immediately, even if other
+  // downstream resets are not yet released
+  input rst_por_io_ni,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -106,14 +111,8 @@
   import prim_mubi_pkg::mubi4_test_true_loose;
 
   ////////////////////////////////////////////////////
-  // Divided clocks
+  // External step down request
   ////////////////////////////////////////////////////
-
-  logic [1:0] step_down_acks;
-
-  logic clk_io_div2_i;
-  logic clk_io_div4_i;
-
   mubi4_t io_step_down_req;
   prim_mubi4_sync #(
     .NumCopies(1),
@@ -126,6 +125,19 @@
     .mubi_i(div_step_down_req_i),
     .mubi_o(io_step_down_req)
   );
+
+
+  ////////////////////////////////////////////////////
+  // Divided clocks
+  // Note divided clocks must use the por version of
+  // its related reset to ensure clock division
+  // can happen without any dependency
+  ////////////////////////////////////////////////////
+
+  logic [1:0] step_down_acks;
+
+  logic clk_io_div2_i;
+  logic clk_io_div4_i;
 
 
   // Declared as size 1 packed array to avoid FPV warning.
@@ -144,7 +156,7 @@
     .Divisor(2)
   ) u_no_scan_io_div2_div (
     .clk_i(clk_io_i),
-    .rst_ni(rst_io_ni),
+    .rst_ni(rst_por_io_ni),
     .step_down_req_i(mubi4_test_true_strict(io_step_down_req)),
     .step_down_ack_o(step_down_acks[0]),
     .test_en_i(mubi4_test_true_strict(io_div2_div_scanmode[0])),
@@ -167,7 +179,7 @@
     .Divisor(4)
   ) u_no_scan_io_div4_div (
     .clk_i(clk_io_i),
-    .rst_ni(rst_io_ni),
+    .rst_ni(rst_por_io_ni),
     .step_down_req_i(mubi4_test_true_strict(io_step_down_req)),
     .step_down_ack_o(step_down_acks[1]),
     .test_en_i(mubi4_test_true_strict(io_div4_div_scanmode[0])),
@@ -411,7 +423,7 @@
     .NumClocks(1)
   ) u_main_status (
     .clk_i,
-    .rst_ni(rst_pwrmgr_ni),
+    .rst_ni,
     .ens_i(main_ens),
     .status_o(pwr_o.main_status)
   );
@@ -460,7 +472,7 @@
     .NumClocks(3)
   ) u_io_status (
     .clk_i,
-    .rst_ni(rst_pwrmgr_ni),
+    .rst_ni,
     .ens_i(io_ens),
     .status_o(pwr_o.io_status)
   );
@@ -485,7 +497,7 @@
     .NumClocks(1)
   ) u_usb_status (
     .clk_i,
-    .rst_ni(rst_pwrmgr_ni),
+    .rst_ni,
     .ens_i(usb_ens),
     .status_o(pwr_o.usb_status)
   );

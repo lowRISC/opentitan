@@ -154,6 +154,23 @@ The following is a high level block diagram of the clock manager.
 
 ![Clock Manager Block Diagram](clkmgr_block_diagram.svg)
 
+### Reset Domains
+
+Since the function of the clock manager is tied closely into the power-up behavior of the device, the reset domain selection must also be purposefully done.
+To ensure that default clocks are available for the [power manager to release resets and initialize memories]({{< relref "hw/ip/pwrmgr/doc/_index.md#fast-clock-domain-fsm" >}}), the clock dividers inside the clock manager directly use `por` (power-on-reset) derived resets.
+This ensures that the root clocks are freely running after power-up, regardless of any other activity in the device.
+
+The other functions inside the clock manager operate on the `life cycle reset` domain.
+This ensures that other clock manager functions still release early relative to most functions in the system, and that a user or escalation initiated reset still restores the clock manager to a default clean slate.
+
+The escalation reset restoration is especially important as the clock manager can generate fatal faults that lead to escalation.
+If there were not a mechanism that allows escalation to clear the original fault, the system would simply remain in a faulted state until a user initiated a `por` event.
+
+For a detailed breakdown between `por` and `life cycle` resets, please see the [reset manager]({{< relref "hw/ip/rstmgr/doc" >}}).
+
+The following diagram enhances the block diagram to illustrate the overall reset domains of the clock manager.
+![Clock Manager Block Diagram](clkmgr_rst_domain.svg)
+
 ## Hardware Interfaces
 
 {{< incGenFromIpDesc "/hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson" "hwcfg" >}}

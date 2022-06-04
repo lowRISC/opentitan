@@ -23,7 +23,6 @@ from topgen.lib import Name
   input clk_i,
   input rst_ni,
   input rst_shadowed_ni,
-  input rst_pwrmgr_ni,
 
   // System clocks and resets
   // These are the source clocks for the system
@@ -36,6 +35,14 @@ from topgen.lib import Name
   // clocks are derived locally
 % for src_name in clocks.derived_srcs:
   input rst_${src_name}_ni,
+% endfor
+
+  // Sources for derived clocks need both a functional reset (above) and a
+  // por reset. The por reset allows the block to begin
+  // generating the derived clocks immediately, even if other
+  // downstream resets are not yet released
+% for src_name in clocks.all_derived_srcs():
+  input rst_por_${src_name}_ni,
 % endfor
 
   // Bus Interface
@@ -103,15 +110,8 @@ from topgen.lib import Name
   import prim_mubi_pkg::mubi4_test_true_loose;
 
   ////////////////////////////////////////////////////
-  // Divided clocks
+  // External step down request
   ////////////////////////////////////////////////////
-
-  logic [${len(clocks.derived_srcs)-1}:0] step_down_acks;
-
-% for src_name in clocks.derived_srcs:
-  logic clk_${src_name}_i;
-% endfor
-
 % for src_name in clocks.all_derived_srcs():
   mubi4_t ${src_name}_step_down_req;
   prim_mubi4_sync #(
@@ -127,6 +127,20 @@ from topgen.lib import Name
   );
 
 % endfor
+
+  ////////////////////////////////////////////////////
+  // Divided clocks
+  // Note divided clocks must use the por version of
+  // its related reset to ensure clock division
+  // can happen without any dependency
+  ////////////////////////////////////////////////////
+
+  logic [${len(clocks.derived_srcs)-1}:0] step_down_acks;
+
+% for src_name in clocks.derived_srcs:
+  logic clk_${src_name}_i;
+% endfor
+
 % for src in clocks.derived_srcs.values():
 
   // Declared as size 1 packed array to avoid FPV warning.
@@ -145,7 +159,7 @@ from topgen.lib import Name
     .Divisor(${src.div})
   ) u_no_scan_${src.name}_div (
     .clk_i(clk_${src.src.name}_i),
-    .rst_ni(rst_${src.src.name}_ni),
+    .rst_ni(rst_por_${src.src.name}_ni),
     .step_down_req_i(mubi4_test_true_strict(${src.src.name}_step_down_req)),
     .step_down_ack_o(step_down_acks[${loop.index}]),
     .test_en_i(mubi4_test_true_strict(${src.name}_div_scanmode[0])),
@@ -314,7 +328,7 @@ from topgen.lib import Name
     .NumClocks(${len(clk_family)})
   ) u_${root}_status (
     .clk_i,
-    .rst_ni(rst_pwrmgr_ni),
+    .rst_ni,
     .ens_i(${root}_ens),
     .status_o(pwr_o.${root}_status)
   );
