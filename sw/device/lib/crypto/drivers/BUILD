@@ -5,7 +5,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:opentitan_test.bzl", "opentitan_functest")
+load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 
 cc_library(
     name = "aes",
@@ -23,6 +23,9 @@ cc_library(
 opentitan_functest(
     name = "aes_test",
     srcs = ["aes_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":aes",
         "//sw/device/lib/base:macros",
