@@ -41,7 +41,8 @@
   en_build_modes: ["{tool}_memutil_dpi_scrambled_build_opts"]
 
   // Add additional tops for simulation.
-  sim_tops: ["sram_ctrl_bind", "sram_ctrl_cov_bind", "sec_cm_prim_count_bind"]
+  sim_tops: ["sram_ctrl_bind", "sram_ctrl_cov_bind",
+             "sec_cm_prim_onehot_check_bind", "sec_cm_prim_count_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
