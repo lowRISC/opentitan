@@ -161,14 +161,14 @@ interface rstmgr_cascading_sva_if (
   end
 
   // Aon to POR
-  `CASCADED_ASSERTS(CascadeEffAonToRstPor, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
-                    resets_o.rst_por_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_main_i)
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorIo, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
-                    resets_o.rst_por_io_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_i)
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv2, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
-                    resets_o.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_div2_i)
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorUcb, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
-                    resets_o.rst_por_usb_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_usb_i)
+  //`CASCADED_ASSERTS(CascadeEffAonToRstPor, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
+  //                  resets_o.rst_por_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_main_i)
+  //`CASCADED_ASSERTS(CascadeEffAonToRstPorIo, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
+  //                  resets_o.rst_por_io_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_i)
+  //`CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv2, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
+  //                  resets_o.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_div2_i)
+  //`CASCADED_ASSERTS(CascadeEffAonToRstPorUcb, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
+  //                  resets_o.rst_por_usb_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_usb_i)
 
   // Controlled by rst_lc_src_n.
   `CASCADED_ASSERTS(CascadeLcToLcAon, rst_lc_src_n[rstmgr_pkg::DomainAonSel],
