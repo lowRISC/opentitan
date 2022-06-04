@@ -16,6 +16,7 @@ filesets:
       - lowrisc:dv:digestpp_dpi
       - lowrisc:ip:jtag_pkg
       - lowrisc:dv:jtag_riscv_agent
+      - lowrisc:dv:jtag_dmi_agent
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:ralgen
       - lowrisc:dv:spi_agent
@@ -41,6 +42,7 @@ filesets:
       - seq_lib/chip_common_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_csr_rw_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_mem_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_jtag_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_tap_straps_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_full_aon_reset_vseq.sv: {is_include_file: true}
@@ -81,6 +83,11 @@ generate:
     parameters:
       name: chip
       top_hjson: ../../data/top_earlgrey.hjson
+  debug_mem_ral:
+    generator: ralgen
+    parameters:
+      name: rv_dm_debug_mem
+      ip_hjson: ../../../ip/rv_dm/data/rv_dm_debug_mem.hjson
 
 targets:
   default:
@@ -88,3 +95,4 @@ targets:
       - files_dv
     generate:
       - "!skip_ral_gen ? (ral)"
+      - "!skip_ral_gen ? (debug_mem_ral)"

@@ -14,6 +14,11 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   bit under_reset       = 0;
   bit is_initialized;        // Indicates that the initialize() method has been called.
 
+  // JTAG DMI knob
+  // this has to be set test.build
+  // before cfg.initialize
+  bit use_jtag_dmi = 0;
+
   // The scope and runtime of a existing test can be reduced by setting this variable. This is
   // useful to keep the runtime down especially in time-sensitive runs such as CI, which is meant
   // to check the code health and not find design bugs. It is set via plusarg and retrieved in

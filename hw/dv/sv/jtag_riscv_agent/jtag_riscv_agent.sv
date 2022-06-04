@@ -20,9 +20,14 @@ class jtag_riscv_agent extends dv_base_agent #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    cfg.m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
-    `DV_CHECK_RANDOMIZE_FATAL(cfg.m_jtag_agent_cfg)
-
+    // In dmi mode, jtag_agent_cfg has to be created at
+    // *_env_cfg.initialize().
+    // So mask these two lines when jtag_dmi is enabled and
+    // get cfg from *_env_cfg.initialize()
+    if (cfg.use_jtag_dmi == 0) begin
+      cfg.m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
+      `DV_CHECK_RANDOMIZE_FATAL(cfg.m_jtag_agent_cfg)
+    end
     m_jtag_agent = jtag_agent::type_id::create("m_jtag_agent", this);
     uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent", "cfg", cfg.m_jtag_agent_cfg);
     cfg.m_jtag_agent_cfg.en_cov = cfg.en_cov;
@@ -32,7 +37,9 @@ class jtag_riscv_agent extends dv_base_agent #(
     super.connect_phase(phase);
     sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
     cfg.jtag_sequencer_h       = m_jtag_agent.sequencer;
-    m_jtag_agent.monitor.analysis_port.connect(monitor.jtag_item_fifo.analysis_export);
+    if (cfg.use_jtag_dmi == 0) begin
+      m_jtag_agent.monitor.analysis_port.connect(monitor.jtag_item_fifo.analysis_export);
+    end
   endfunction
 
 endclass
