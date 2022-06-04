@@ -307,13 +307,13 @@ module alert_handler_esc_timer import alert_pkg::*; (
       !(state_q inside {IdleSt, TimeoutSt, FsmErrorSt})
       |=>
       state_q == IdleSt)
-  // if currently in idle and not enabled, must remain here
+  // if currently in idle and not enabled, must remain here or goes to Error state
   `ASSERT(CheckEn_A,
       !accu_fail_i &&
       state_q == IdleSt &&
       !en_i
       |=>
-      state_q == IdleSt)
+      state_q inside {IdleSt, FsmErrorSt})
   // Check if accumulation trigger correctly captured
   `ASSERT(CheckAccumTrig0_A,
       !accu_fail_i &&
