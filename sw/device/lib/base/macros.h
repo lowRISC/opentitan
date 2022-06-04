@@ -112,6 +112,15 @@
   static_assert(sizeof(type) == UINT32_C(size), "Unexpected size for " #type)
 
 /**
+ * A macro that expands to an assertion for an expected enum value.
+ *
+ * @param var An enum entry.
+ * @param expected_value Expected enum value.
+ */
+#define OT_ASSERT_ENUM_VALUE(var, expected_value) \
+  static_assert(var == expected_value, "Unexpected value for " #var)
+
+/**
  * A macro representing the OpenTitan execution platform.
  */
 #if __riscv_xlen == 32
