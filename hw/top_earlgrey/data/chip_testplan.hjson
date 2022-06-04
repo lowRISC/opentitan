@@ -926,15 +926,15 @@
       tests: ["chip_sw_aon_timer_wdog_bite_reset"]
     }
     {
-      name: chip_sw_pwrmgr_all_reset_reqs
-      desc: '''Verify that the chip can be reset by ALL available reset sources.
+      name: chip_sw_pwrmgr_wdog_reset
+      desc: '''Verify that the chip can be reset by watchdog timer reset source.
 
-            This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
+            This verifies watchdog timer reset source. This also verifies that the pwrmgr sequencing is
             working correctly as expected. X-ref'ed with all individual IP tests. Similar to
             chip_pwrmgr_sleep_all_reset_reqs, except the chip is not put in low power mode.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_pwrmgr_wdog_reset"]
     }
     {
       name: chip_sw_pwrmgr_aon_power_glitch_reset

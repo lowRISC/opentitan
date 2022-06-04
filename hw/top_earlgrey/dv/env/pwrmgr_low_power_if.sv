@@ -22,4 +22,5 @@ interface pwrmgr_low_power_if (
   // main clock
   clocking fast_cb @(posedge fast_clk);
   endclocking
+
 endinterface // pwrmgr_low_power_if
