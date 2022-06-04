@@ -1214,12 +1214,12 @@ sw_tests += {
 }
 
 # PWRMGR all reset test.
-pwrmgr_all_reset_reqs_test = declare_dependency(
+pwrmgr_wdog_reset_reqs_test = declare_dependency(
   link_with: static_library(
-    'pwrmgr_all_reset_reqs_test',
+    'pwrmgr_wdog_reset_reqs_test',
     sources: [
       hw_ip_rstmgr_reg_h,
-      'pwrmgr_all_reset_reqs_test.c',
+      'pwrmgr_wdog_reset_reqs_test.c',
     ],
     dependencies: [
       sw_lib_dif_rstmgr,
@@ -1234,8 +1234,8 @@ pwrmgr_all_reset_reqs_test = declare_dependency(
   ),
 )
 sw_tests += {
-  'pwrmgr_all_reset_reqs_test': {
-    'library': pwrmgr_all_reset_reqs_test,
+  'pwrmgr_wdog_reset_reqs_test': {
+    'library': pwrmgr_wdog_reset_reqs_test,
   }
 }
 

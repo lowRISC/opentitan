@@ -184,8 +184,8 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "pwrmgr_all_reset_reqs_test",
-    srcs = ["pwrmgr_all_reset_reqs_test.c"],
+    name = "pwrmgr_wdog_reset_reqs_test",
+    srcs = ["pwrmgr_wdog_reset_reqs_test.c"],
     verilator = verilator_params(
         tags = [
             "cpu:4",

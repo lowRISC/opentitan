@@ -9,6 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:prim:alert
+      - lowrisc:prim:onehot_check
       - lowrisc:prim:count
       - lowrisc:prim:sparse_fsm
       - lowrisc:prim:double_lfsr
@@ -16,9 +17,11 @@ filesets:
     files:
       - sec_cm_pkg.sv
       - sec_cm_base_if_proxy.sv: {is_include_file: true}
+      - prim_onehot_check_if.sv
       - prim_count_if.sv
       - prim_sparse_fsm_flop_if.sv
       - prim_double_lfsr_if.sv
+      - sec_cm_prim_onehot_check_bind.sv
       - sec_cm_prim_count_bind.sv
       - sec_cm_prim_sparse_fsm_flop_bind.sv
       - sec_cm_prim_double_lfsr_bind.sv

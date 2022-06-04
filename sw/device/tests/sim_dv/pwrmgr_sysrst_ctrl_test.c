@@ -6,15 +6,18 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -22,6 +25,40 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 const test_config_t kTestConfig;
+static volatile const uint8_t RST_IDX[5] = {3, 30, 130, 5, 50};
+static dif_flash_ctrl_state_t flash_ctrl;
+
+__attribute__((section(".non_volatile_scratch")))
+const volatile uint32_t events_vector = UINT32_MAX;
+
+/**
+ *  Extracts current event id from the bit-strike counter.
+ */
+static uint32_t event_to_test(void) {
+  uint32_t addr = (uint32_t)(&events_vector);
+  uint32_t val = abs_mmio_read32(addr);
+
+  for (size_t i = 0; i < 32; ++i) {
+    if (val >> i & 0x1) {
+      return i;
+    }
+  }
+  return -1;
+};
+
+/**
+ *  Increment flash bit-strike counter.
+ */
+static bool incr_flash_cnt(uint32_t tested_idx) {
+  uint32_t addr = (uint32_t)(&events_vector);
+
+  // set the tested bit to 0
+  uint32_t val = abs_mmio_read32(addr) & ~(1 << tested_idx);
+
+  // program the word into flash
+  return flash_ctrl_testutils_write(&flash_ctrl, addr, 0, &val,
+                                    kDifFlashCtrlPartitionTypeData, 1);
+};
 
 /**
  * Configure the sysrst.
@@ -145,6 +182,31 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
+  // Initialize flash_ctrl
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash_ctrl,
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+
+  // First check the flash stored value
+  uint32_t event_idx = event_to_test();
+
+  // Enable flash access
+  flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                             /*rd_en*/ true,
+                                             /*prog_en*/ true,
+                                             /*erase_en*/ true,
+                                             /*scramble_en*/ false,
+                                             /*ecc_en*/ false,
+                                             /*he_en*/ false);
+
+  // Increment flash counter to know where we are
+  if (incr_flash_cnt(event_idx)) {
+    LOG_ERROR("Error when incrementing flash counter");
+  }
+
+  LOG_INFO("Test round %d", event_idx);
+  LOG_INFO("RST_IDX[%d] = %d", event_idx, RST_IDX[event_idx]);
+
   // Check if there was a HW reset caused by the wdog bite.
   dif_rstmgr_reset_info_bitfield_t rst_info;
   CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &rst_info));
@@ -164,6 +226,9 @@ bool test_main(void) {
     wdog_bite_test(&aon_timer, &pwrmgr, /*bark_time_us=*/200);
   } else if (rst_info == kDifRstmgrResetInfoWatchdog) {
     LOG_INFO("Booting for the third time due to wdog bite reset");
+    LOG_INFO("Last Booting");
   }
+  LOG_INFO("Test finish");
+
   return true;
 }

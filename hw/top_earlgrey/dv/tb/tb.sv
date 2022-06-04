@@ -330,7 +330,6 @@ module tb;
     uvm_config_db#(virtual pwrmgr_low_power_if)::set(
         null, "*.env*", "pwrmgr_low_power_vif", pwrmgr_low_power_if);
 
-
     // POR reset handle
     uvm_config_db#(virtual pins_if #(1))::set(
        null, "*.env", "por_rstn_vif", por_rstn_if);

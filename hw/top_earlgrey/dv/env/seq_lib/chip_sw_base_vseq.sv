@@ -505,6 +505,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.por_rstn_vif.drive(1);
   endtask // assert_por_reset
 
+  task assert_por_reset_deep_sleep (int delay = 0);
+    repeat (delay) @cfg.pwrmgr_low_power_vif.cb;
+    cfg.por_rstn_vif.drive(0);
+    repeat (6) @cfg.pwrmgr_low_power_vif.cb;
+
+    cfg.clk_rst_vif.wait_clks(10);
+    cfg.por_rstn_vif.drive(1);
+  endtask // assert_por_reset
+
   // push button 50us;
   // this task requires proper sysrst_ctrl config
   // see sw/device/tests/pwrmgr_b2b_sleep_reset_test.c

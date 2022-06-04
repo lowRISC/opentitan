@@ -528,7 +528,7 @@
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_sysrst_reqs
-      uvm_test_seq: chip_sw_sysrst_ctrl_vseq
+      uvm_test_seq: chip_sw_deep_sleep_sysrst_vseq
       sw_images: ["sw/device/tests/sim_dv/pwrmgr_deep_sleep_sysrst_reqs_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
@@ -587,9 +587,9 @@
       run_opts: ["+sw_test_timeout_ns=18000000"]
     }
     {
-      name: chip_sw_pwrmgr_all_reset_reqs
+      name: chip_sw_pwrmgr_wdog_reset
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/pwrmgr_all_reset_reqs_test:1"]
+      sw_images: ["sw/device/tests/pwrmgr_wdog_reset_reqs_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=18000000"]
     }
