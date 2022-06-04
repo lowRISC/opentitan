@@ -862,6 +862,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_regwen_7_qs)
@@ -1109,6 +1110,7 @@ module rstmgr_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.sw_rst_ctrl_n[7].q),
+    .ds     (),
 
     // to register interface (read)
     .qs     (sw_rst_ctrl_n_7_qs)

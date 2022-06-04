@@ -42,9 +42,9 @@ filesets:
       - seq_lib/chip_common_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_csr_rw_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_mem_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_jtag_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_tap_straps_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_base_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_jtag_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_full_aon_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_main_power_glitch_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sysrst_ctrl_vseq.sv: {is_include_file: true}
@@ -73,6 +73,7 @@ filesets:
       - seq_lib/chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_repeat_reset_wkup_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rstmgr_alert_info_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_rv_dm_ndm_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_callback_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
       - ast_ext_clk_if.sv

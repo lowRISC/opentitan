@@ -458,6 +458,34 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "rv_dm_ndm_reset_req",
+    srcs = ["rv_dm_ndm_reset_req.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/pinmux/data:pinmux_regs",
+        "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:adc_ctrl",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "sram_ctrl_execution_test_main",
     srcs = ["sram_ctrl_execution_test_main.c"],
     targets = ["dv"],
