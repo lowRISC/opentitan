@@ -268,16 +268,15 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateEnableClocks: begin
         ip_clk_en_d = 1'b1;
-
-        if (clks_enabled) begin
-          state_d = FastPwrStateReleaseLcRst;
-        end
+        state_d = FastPwrStateReleaseLcRst;
       end
 
       FastPwrStateReleaseLcRst: begin
         rst_lc_req_d = '0;  // release rst_lc_n for all power domains
 
-        if (&pwr_rst_i.rst_lc_src_n) begin // once all resets are released
+        // once all resets are released and clocks are stable
+        // continue to otp initilization
+        if (&pwr_rst_i.rst_lc_src_n & clks_enabled) begin
           state_d = FastPwrStateOtpInit;
         end
       end
