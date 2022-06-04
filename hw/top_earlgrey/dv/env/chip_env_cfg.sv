@@ -93,17 +93,28 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // ext component cfgs
   rand uart_agent_cfg       m_uart_agent_cfgs[NUM_UARTS];
   rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
+  rand jtag_agent_cfg       m_jtag_agent_cfg;
   rand spi_agent_cfg        m_spi_agent_cfg;
   pwm_monitor_cfg           m_pwm_monitor_cfg[NUM_PWM_CHANNELS];
+
+  // JTAG DMI register model
+  rand jtag_dmi_reg_block jtag_dmi_ral;
+  // A constant that can be referenced from anywhere.
+  string rv_dm_rom_ral_name = "rv_dm_debug_mem_reg_block";
+  parameter uint RV_DM_JTAG_IDCODE = `BUILD_SEED;
+  // Design uses 5 bits for IR.
+  parameter uint JTAG_IR_LEN = 5;
 
   `uvm_object_utils_begin(chip_env_cfg)
     `uvm_field_int   (stub_cpu,               UVM_DEFAULT)
     `uvm_field_object(m_jtag_riscv_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(m_spi_agent_cfg,        UVM_DEFAULT)
+    `uvm_field_object(jtag_dmi_ral,           UVM_DEFAULT)
   `uvm_object_utils_end
 
   constraint clk_freq_mhz_c {
     clk_freq_mhz inside {48, 96};
+    foreach (clk_freqs_mhz[i]) clk_freqs_mhz[i] == clk_freq_mhz;
   }
 
   `uvm_object_new
@@ -113,7 +124,14 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     has_devmode = 0;
     list_of_alerts = chip_env_pkg::LIST_OF_ALERTS;
 
+    // Set up second RAL model for ROM memory and associated collateral
+    if (use_jtag_dmi == 1) begin
+      ral_model_names.push_back(rv_dm_rom_ral_name);
+      clk_freqs_mhz[rv_dm_rom_ral_name] = clk_freq_mhz;
+    end
+
     super.initialize(csr_base_addr);
+    `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
 
     // Set the a_source width limitation for the TL agent hooked up to the CPU cored port.
     // TODO: use a parameter (or some better way)?
@@ -126,6 +144,21 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     // create jtag agent config obj
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
+    m_jtag_riscv_agent_cfg.use_jtag_dmi = use_jtag_dmi;
+    if (use_jtag_dmi == 1) begin
+      // Both, the regs and the debug mem TL device (in the DUT) only support 1 outstanding.
+      m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
+      m_tl_agent_cfgs[rv_dm_rom_ral_name].max_outstanding_req = 1;
+
+      m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
+      m_jtag_agent_cfg.if_mode = dv_utils_pkg::Host;
+      m_jtag_agent_cfg.is_active = 1'b1;
+      m_jtag_agent_cfg.ir_len = JTAG_IR_LEN;
+
+      // Set the 'correct' IDCODE register value to the JTAG DTM RAL.
+      m_jtag_agent_cfg.jtag_dtm_ral.idcode.set_reset(RV_DM_JTAG_IDCODE);
+      m_jtag_riscv_agent_cfg.m_jtag_agent_cfg = m_jtag_agent_cfg;
+    end
 
     // create spi agent config obj
     m_spi_agent_cfg = spi_agent_cfg::type_id::create("m_spi_agent_cfg");
@@ -151,7 +184,27 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
       ExtClkLowSpeed:  clk_freq_mhz = 48;
       ExtClkHighSpeed: clk_freq_mhz = 96;
       default: `uvm_fatal(`gfn, $sformatf("Unexpected ext_clk_type: %s", ext_clk_type.name))
-    endcase
+    endcase // case (ext_clk_type)
+
+    // ral_model_names = chip_reg_block // 1 entry
+    if (use_jtag_dmi == 1) begin
+      clk_freqs_mhz[rv_dm_rom_ral_name] = clk_freq_mhz;
+      jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_riscv_agent_cfg.m_jtag_agent_cfg);
+      // Fix the reset values of these fields based on our design.
+      `uvm_info(`gfn, "Fixing reset values in jtag_dmi_ral", UVM_LOW)
+      jtag_dmi_ral.hartinfo.dataaddr.set_reset(dm::DataAddr);
+      jtag_dmi_ral.hartinfo.datasize.set_reset(dm::DataCount);
+      jtag_dmi_ral.hartinfo.dataaccess.set_reset(1);  // TODO: verify this!
+      jtag_dmi_ral.hartinfo.nscratch.set_reset(2);  // TODO: verify this!
+      jtag_dmi_ral.abstractcs.datacount.set_reset(dm::DataCount);
+      jtag_dmi_ral.abstractcs.progbufsize.set_reset(dm::ProgBufSize);
+      jtag_dmi_ral.dmstatus.authenticated.set_reset(1);  // No authentication performed.
+      jtag_dmi_ral.sbcs.sbaccess32.set_reset(1);
+      jtag_dmi_ral.sbcs.sbaccess16.set_reset(1);
+      jtag_dmi_ral.sbcs.sbaccess8.set_reset(1);
+      jtag_dmi_ral.sbcs.sbasize.set_reset(32);
+      apply_jtag_dmi_ral_csr_excl();
+    end
   endfunction
 
   // Apply RAL fixes before it is locked.
@@ -161,7 +214,104 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     if (!$cast(chip_ral, ral)) return;
     // Out of reset, the link is in disconnected state.
     chip_ral.usbdev.intr_state.disconnected.set_reset(1'b1);
+    if (ral.get_name() == rv_dm_rom_ral_name) begin
+      rv_dm_debug_mem_reg_block debug_mem_ral;
+      uvm_reg regs[$];
+
+      ral.get_registers(regs);
+      foreach (regs[i]) begin
+        regs[i].clear_hdl_path("ALL");
+      end
+
+      // ROM within the debug mem is RO - it ignores writes instead of throwing an error response.
+      `downcast(debug_mem_ral, ral)
+      debug_mem_ral.rom.set_write_to_ro_mem_ok(1);
+      debug_mem_ral.rom.set_mem_partial_write_support(1);
+
+      // TODO(#10837): Accesses to unmapped regions of debug mem RAL space does not return an error
+      // response. Fix this if design is updated.
+      debug_mem_ral.set_unmapped_access_ok(1);
+
+      // Debug mem does not error on any type of sub-word writes.
+      debug_mem_ral.set_supports_sub_word_csr_writes(1);
+    end
   endfunction
+
+  // Apply RAL exclusions externally since the RAL itself is considered generic. The IP it is used
+  // in constrains the RAL with its implementation details.
+  virtual function void apply_jtag_dmi_ral_csr_excl();
+    csr_excl_item csr_excl = jtag_dmi_ral.get_excl_item();
+
+    // We leave the DM 'activated' for CSR tests to reduce noise. We exclude this from further
+    // writes to avoid side-effects.
+    csr_excl.add_excl(jtag_dmi_ral.dmcontrol.dmactive.get_full_name(),
+        CsrExclWrite, CsrNonInitTests);
+
+    // This field is tied off to 0 due to no hart array mask being implemented.
+    // TODO: Change these to access policy.
+    csr_excl.add_excl(jtag_dmi_ral.dmcontrol.hasel.get_full_name(),
+        CsrExclWriteCheck, CsrNonInitTests);
+    csr_excl.add_excl(jtag_dmi_ral.dmcontrol.hartreset.get_full_name(),
+        CsrExclWriteCheck, CsrNonInitTests);
+
+    // Selecting a different hart in the middle of random read/writes impact other registers.
+    csr_excl.add_excl(jtag_dmi_ral.dmcontrol.hartsello.get_full_name(),
+        CsrExclWrite, CsrNonInitTests);
+    csr_excl.add_excl(jtag_dmi_ral.dmcontrol.hartselhi.get_full_name(),
+        CsrExclWrite, CsrNonInitTests);
+
+    // Writes to other CSRs may affect dmstatus, even the HW reset test.
+    csr_excl.add_excl(jtag_dmi_ral.dmstatus.get_full_name(), CsrExclCheck, CsrAllTests);
+
+    // We have only upto dm::DataCount number of these registers available.
+    foreach (jtag_dmi_ral.abstractdata[i]) begin
+      if (i >= dm::DataCount) begin
+        csr_excl.add_excl(jtag_dmi_ral.abstractdata[i].get_full_name(),
+            CsrExclWriteCheck, CsrNonInitTests);
+      end
+    end
+
+    // We have only upto dm::ProgBufSize number of these registers available.
+    foreach (jtag_dmi_ral.progbuf[i]) begin
+      if (i >= dm::ProgBufSize) begin
+        csr_excl.add_excl(jtag_dmi_ral.progbuf[i].get_full_name(),
+            CsrExclWriteCheck, CsrNonInitTests);
+      end
+    end
+
+    // These prevent an SBA access from being triggered, which have other side effects.
+    csr_excl.add_excl(jtag_dmi_ral.sbcs.sbreadondata.get_full_name(),
+        CsrExclWrite, CsrNonInitTests);
+    csr_excl.add_excl(jtag_dmi_ral.sbcs.sbreadonaddr.get_full_name(),
+        CsrExclWrite, CsrNonInitTests);
+    csr_excl.add_excl(jtag_dmi_ral.sbdata0.get_full_name(),
+        CsrExclWrite, CsrNonInitTests);
+
+    // TODO: This should be an access policy change.
+    csr_excl.add_excl(jtag_dmi_ral.sbcs.sbaccess.get_full_name(),
+        CsrExclWriteCheck, CsrNonInitTests);
+
+    // These SBA registers are not implemented, or unsupported due to 32-bit system.
+    csr_excl.add_excl(jtag_dmi_ral.sbaddress1.get_full_name(),
+        CsrExclWriteCheck, CsrNonInitTests);
+    csr_excl.add_excl(jtag_dmi_ral.sbaddress2.get_full_name(),
+        CsrExclWriteCheck, CsrNonInitTests);
+    csr_excl.add_excl(jtag_dmi_ral.sbaddress3.get_full_name(),
+        CsrExclWriteCheck, CsrNonInitTests);
+    csr_excl.add_excl(jtag_dmi_ral.sbdata2.get_full_name(),
+        CsrExclWriteCheck, CsrNonInitTests);
+    csr_excl.add_excl(jtag_dmi_ral.sbdata3.get_full_name(),
+        CsrExclWriteCheck, CsrNonInitTests);
+
+    // Abstractcs cmderr bits are updated by RTL.
+    csr_excl.add_excl(jtag_dmi_ral.abstractcs.cmderr.get_full_name(),
+        CsrExclWriteCheck, CsrNonInitTests);
+
+    // Not all bits of abstractauto are set - and its also impacted by writes to other CSRs.
+    csr_excl.add_excl(jtag_dmi_ral.abstractauto.get_full_name(),
+        CsrExclWriteCheck, CsrNonInitTests);
+  endfunction
+
 
   // Parse a space-separated list of sw_images supplied as a string.
   //

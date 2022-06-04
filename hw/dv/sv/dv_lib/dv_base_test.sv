@@ -36,6 +36,7 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
 
     env = ENV_T::type_id::create("env", this);
     cfg = CFG_T::type_id::create("cfg", this);
+    void'($value$plusargs("use_jtag_dmi=%0b", cfg.use_jtag_dmi));
     cfg.initialize();
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     uvm_config_db#(CFG_T)::set(this, "env", "cfg", cfg);

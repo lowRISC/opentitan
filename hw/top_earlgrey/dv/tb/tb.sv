@@ -301,6 +301,11 @@ module tb;
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", cpu_d_tl_if);
 
+    // RV_DM DMI
+    uvm_config_db#(virtual clk_rst_if)::set(
+        null, "*.env", "clk_rst_vif_rv_dm_debug_mem_reg_block", clk_rst_if);
+
+
     // Strap pins
     uvm_config_db#(virtual pins_if #(2))::set(
         null, "*.env", "tap_straps_vif", tap_straps_if);

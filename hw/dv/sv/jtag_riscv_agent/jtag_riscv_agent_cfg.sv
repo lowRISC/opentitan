@@ -30,6 +30,7 @@ class jtag_riscv_agent_cfg extends dv_base_agent_cfg;
   // status to return if we assert in_reset
   logic [DMI_OPW-1:0] status_in_reset;
 
+  bit                 use_jtag_dmi = 0;
   function new(string name = "");
     super.new(name);
     // Default active
