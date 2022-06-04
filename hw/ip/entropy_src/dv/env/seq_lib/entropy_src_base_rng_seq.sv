@@ -60,35 +60,6 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
     Markov
   } health_test_e;
 
-  // Determine a random failure time according to an exponential distribution with
-  // mean failure time mtbf.
-  //
-  // The exponential distribution is appropriate for any process where the instantaneous likelihood
-  // of failure is the same regardless of how long the device has been active.  For example,
-  // if the MTBF is 1s, then the probability of failing in any particular 1 ns period is 1e-9.
-  //
-  // For more information about the exponential distribution see (for example):
-  // https://en.wikipedia.org/wiki/Exponential_distribution
-
-  function realtime randomize_failure_time(realtime mtbf);
-    // Random non-zero integer
-    int      rand_i;
-    // Uniformly distributed random float in range (0, 1].
-    // 0 is not included in this range, but 1 is.
-    real     rand_r;
-    realtime now, random_fail_time;
-
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rand_i, rand_i > 0;)
-
-    rand_r = real'(rand_i)/{$bits(rand_i){1'b1}};
-
-    now = $realtime();
-
-    random_fail_time = now - $ln(rand_r) * mtbf;
-
-    return random_fail_time;
-  endfunction
-
   task reset_rng();
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(hard_fail_bit_ctrl);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(hard_fail_state)
@@ -100,12 +71,14 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
       is_soft_failed = 0;
     end
     soft_fail_time = randomize_failure_time(soft_mtbf);
+    `DV_CHECK_FATAL(soft_fail_time >= 0, "Failed to schedule soft failure")
 
     if (check_hard_failure()) begin
       `uvm_info(`gfn, "Resetting hard failure", UVM_MEDIUM)
       is_hard_failed = 0;
     end
     hard_fail_time = randomize_failure_time(hard_mtbf);
+    `DV_CHECK_FATAL(hard_fail_time >= 0, "Failed to schedule hard failure")
 
     is_initialized = 1;
 

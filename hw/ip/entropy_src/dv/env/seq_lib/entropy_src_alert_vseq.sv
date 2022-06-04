@@ -189,17 +189,17 @@ class entropy_src_alert_vseq extends entropy_src_base_vseq;
     uvm_reg_field fld;
 
     // Set the fields to invalid values
-    ral.conf.threshold_scope.set(cfg.ht_threshold_scope);
+    ral.conf.threshold_scope.set(cfg.dut_cfg.ht_threshold_scope);
     csr_update(.csr(ral.conf));
-    ral.fw_ov_control.fw_ov_mode.set(cfg.fw_read_enable);
-    ral.fw_ov_control.fw_ov_entropy_insert.set(cfg.fw_over_enable);
+    ral.fw_ov_control.fw_ov_mode.set(cfg.dut_cfg.fw_read_enable);
+    ral.fw_ov_control.fw_ov_entropy_insert.set(cfg.dut_cfg.fw_over_enable);
     csr_update(.csr(ral.fw_ov_control));
 
     cfg.clk_rst_vif.wait_clks(100);
 
     // Check the recov_alert_sts register
     reg_name = "recov_alert_sts";
-    fld_name = cfg.which_invalid_mubi.name();
+    fld_name = cfg.dut_cfg.which_invalid_mubi.name();
 
     first_index = find_index("_", fld_name, "first");
 

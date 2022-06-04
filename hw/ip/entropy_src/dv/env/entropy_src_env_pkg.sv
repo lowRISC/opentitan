@@ -169,7 +169,39 @@ package entropy_src_env_pkg;
 
   endfunction
 
+  // Determine a random failure time according to an exponential distribution with
+  // mean failure time mtbf.
+  //
+  // The exponential distribution is appropriate for any process where the instantaneous likelihood
+  // of failure is the same regardless of how long the device has been active.  For example,
+  // if the MTBF is 1s, then the probability of failing in any particular 1 ns period is 1e-9.
+  //
+  // For more information about the exponential distribution see (for example):
+  // https://en.wikipedia.org/wiki/Exponential_distribution
+
+  function automatic realtime randomize_failure_time(realtime mtbf);
+    // Random non-zero integer
+    int      rand_i;
+    // Uniformly distributed random float in range (0, 1].
+    // 0 is not included in this range, but 1 is.
+    real     rand_r;
+    realtime now, random_fail_time;
+
+    if (!std::randomize(rand_i) with {rand_i > 0;}) begin
+      return -1;
+    end
+
+    rand_r = real'(rand_i)/{$bits(rand_i){1'b1}};
+
+    now = $realtime();
+
+    random_fail_time = now - $ln(rand_r) * mtbf;
+
+    return random_fail_time;
+  endfunction // randomize_failure_time
+
   // package sources
+  `include "entropy_src_dut_cfg.sv"
   `include "entropy_src_env_cfg.sv"
   `include "entropy_src_env_cov.sv"
   `include "entropy_src_virtual_sequencer.sv"

@@ -10,17 +10,17 @@ class entropy_src_intr_test extends entropy_src_base_test;
   function void configure_env();
     super.configure_env();
 
-    cfg.en_scb                      = 0;
-    cfg.use_invalid_mubi            = 0;
-    cfg.route_software_pct          = 100;
-    cfg.entropy_data_reg_enable_pct = 100;
-    cfg.route_software_pct          = 100;
-    cfg.entropy_data_reg_enable_pct = 100;
-    cfg.fw_read_pct                 = 100;
-    cfg.fw_over_pct                 = 0;
-    cfg.module_enable_pct           = 0;
-    cfg.fips_enable_pct             = 100;
-    cfg.sw_regupd_pct               = 100;
+    cfg.en_scb                              = 0;
+    cfg.dut_cfg.use_invalid_mubi            = 0;
+    cfg.dut_cfg.route_software_pct          = 100;
+    cfg.dut_cfg.entropy_data_reg_enable_pct = 100;
+    cfg.dut_cfg.route_software_pct          = 100;
+    cfg.dut_cfg.entropy_data_reg_enable_pct = 100;
+    cfg.dut_cfg.fw_read_pct                 = 100;
+    cfg.dut_cfg.fw_over_pct                 = 0;
+    cfg.dut_cfg.module_enable_pct           = 0;
+    cfg.dut_cfg.fips_enable_pct             = 100;
+    cfg.dut_cfg.sw_regupd_pct               = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
 

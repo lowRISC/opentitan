@@ -14,6 +14,7 @@ interface entropy_src_cov_if
 
   import uvm_pkg::*;
   import dv_utils_pkg::*;
+  import entropy_src_pkg::*;
   import entropy_src_reg_pkg::*;
   import entropy_src_env_pkg::*;
   `include "dv_fcov_macros.svh"
@@ -110,7 +111,7 @@ interface entropy_src_cov_if
     // Entropy data interface functions despite any changes to the fw_ov settings
     cr_fw_ov: cross cp_fw_ov_mode, cp_entropy_insert;
 
-  endgroup : entropy_src_seed_output_csr_cg;
+  endgroup : entropy_src_seed_output_csr_cg
 
   // Covergroup to confirm that the CSRNG HW interface works
   // for all configurations
@@ -285,9 +286,42 @@ interface entropy_src_cov_if
 
   endgroup : entropy_src_observe_fifo_cg;
 
+  covergroup entropy_src_sw_update_cg with function sample(uvm_reg_addr_t offset,
+                                                           bit sw_regupd,
+                                                           bit module_enable);
+
+    option.name         = "entropy_src_sw_update_cg";
+    option.per_instance = 1;
+
+    cp_lock_state: coverpoint {sw_regupd, module_enable} {
+      bins locked_states[] = {2'b00, 2'b01, 2'b11};
+    }
+
+    cp_offset: coverpoint offset {
+      bins lockable_offsets[] = {
+          entropy_src_reg_pkg::ENTROPY_SRC_CONF_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_ENTROPY_CONTROL_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_HEALTH_TEST_WINDOWS_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_REPCNT_THRESHOLDS_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_REPCNTS_THRESHOLDS_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_BUCKET_THRESHOLDS_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_HI_THRESHOLDS_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_LO_THRESHOLDS_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_FW_OV_CONTROL_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_OBSERVE_FIFO_THRESH_OFFSET
+      };
+    }
+
+    cr_cross: cross cp_lock_state, cp_offset;
+
+  endgroup : entropy_src_sw_update_cg
+
   `DV_FCOV_INSTANTIATE_CG(entropy_src_seed_output_csr_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(entropy_src_csrng_hw_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(entropy_src_observe_fifo_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(entropy_src_sw_update_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_seed_output_csr_sample(mubi4_t   fips_enable,
@@ -339,6 +373,19 @@ interface entropy_src_cov_if
                                             fw_ov_mode, entropy_insert);
   endfunction
 
+  function automatic void cg_sw_update_sample(uvm_pkg::uvm_reg_addr_t offset,
+                                              bit sw_regupd,
+                                              bit module_enable);
+     string msg, fmt;
+
+     fmt = "offset: %01d, regupd: %01d, mod_en: %01d";
+     msg = $sformatf(fmt, offset, sw_regupd, module_enable);
+    `uvm_info("", msg, UVM_LOW)
+    entropy_src_sw_update_cg_inst.sample(offset, sw_regupd, module_enable);
+
+  endfunction
+
+  // Sample the csrng_hw_cg whenever data is output on the csrng pins
   logic csrng_if_req, csrng_if_ack;
   mubi4_t fips_enable_csr, threshold_scope_csr, rng_bit_enable_csr, rng_bit_sel_csr, es_route_csr,
           es_type_csr, entropy_data_reg_enable_csr, fw_ov_mode_csr, entropy_insert_csr;
