@@ -152,14 +152,25 @@
 // FPV assertion that proves that the FSM control flow is linear (no loops)
 // The sequence triggers whenever the state changes and stores the current state as "initial_state".
 // Then thereafter we must never see that state again until reset.
+// It is possible for the reset to release ahead of the clock.
+// Create a small "gray" window beyond the usual rst time to avoid
+// checking.
 `define ASSERT_FPV_LINEAR_FSM(__name, __state, __type, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
   `ifdef INC_ASSERT                                                                                              \
-      property __name``_p;                                                                                       \
-        __type initial_state;                                                                                    \
-        (!$stable(__state), initial_state = $past(__state)) |->                                                  \
-            (__state != initial_state) until (__rst == 1'b1);                                                    \
-      endproperty                                                                                                \
-    `ASSERT(__name, __name``_p, __clk, __rst)                                                                    \
+     bit __name``_cond;                                                                                          \
+     always_ff @(posedge __clk or posedge __rst) begin                                                           \
+       if (__rst) begin                                                                                          \
+         __name``_cond <= 0;                                                                                     \
+       end else begin                                                                                            \
+         __name``_cond <= 1;                                                                                     \
+       end                                                                                                       \
+     end                                                                                                         \
+     property __name``_p;                                                                                        \
+       __type initial_state;                                                                                     \
+       (!$stable(__state) & __name``_cond, initial_state = $past(__state)) |->                                   \
+           (__state != initial_state) until (__rst == 1'b1);                                                     \
+     endproperty                                                                                                 \
+   `ASSERT(__name, __name``_p, __clk, __rst)                                                                     \
   `endif
 
 `include "prim_assert_sec_cm.svh"
