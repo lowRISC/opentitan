@@ -182,6 +182,9 @@ impl Transport for CW310 {
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Serialize>>> {
         if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
+            // Open the console UART.  We do this first so we get the receiver
+            // started and the uart buffering data for us.
+            let uart = self.uart("0")?;
             if fpga_program.bitstream.starts_with(b"__skip__") {
                 log::info!("Skip loading the __skip__ bitstream.");
                 return Ok(None);
@@ -192,8 +195,6 @@ impl Transport for CW310 {
                     &fpga_program.bitstream,
                     Some(fpga_program.rom_timeout),
                 )?;
-                // Open the console UART.
-                let uart = self.uart("0")?;
 
                 // Send a reset pulse so the ROM will print the FPGA version.
                 let reset_pin = self.gpio_pin(Self::PIN_SRST)?;
