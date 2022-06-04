@@ -48,20 +48,23 @@ typedef struct aes_block {
  * A cipher mode supported natively by the AES hardware.
  */
 typedef enum aes_cipher_mode {
-  kAesCipherModeEcb,
-  kAesCipherModeCbc,
-  kAesCipherModeCfb,
-  kAesCipherModeOfb,
-  kAesCipherModeCtr,
+  kAesCipherModeEcb = 1,
+  kAesCipherModeCbc = 2,
+  kAesCipherModeCfb = 4,
+  kAesCipherModeOfb = 8,
+  kAesCipherModeCtr = 16,
 } aes_cipher_mode_t;
 
 /**
  * A key length supported by the AES hardware.
+ *
+ * The encoded values are used as identifiers to configure the hardware and
+ * don't represent the key length in any specific format.
  */
 typedef enum aes_key_len {
-  kAesKeyLen128 = 128,
-  kAesKeyLen192 = 192,
-  kAesKeyLen256 = 256,
+  kAesKeyLen128 = 1,
+  kAesKeyLen192 = 2,
+  kAesKeyLen256 = 4,
 } aes_key_len_t;
 
 /**
