@@ -24,6 +24,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   int do_background_procs;
 
+  // Scheduled time for next unexpected reconfig event;
+  // This time is exponentially distributed to yeild an average period between
+  // reconfig events of cfg.mean_unexpected_reconfig_period
+  realtime sched_reconfig_time;
+
   // Signal to start and stop the RNG when it becomes halted in boot/bypass modes
   int do_reenable = 0;
 
@@ -96,43 +101,43 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     csr_update(.csr(ral.module_enable));
   endtask
 
-  virtual task entropy_src_init();
+  virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg);
     int hi_thresh, lo_thresh;
-
 
     // TODO: RepCnt and RepCntS thresholds
     // TODO: Separate sigmas for bypass and FIPS operation
     // TODO: cfg for threshold_rec per_line arguments
 
-    if (!cfg.default_ht_thresholds) begin
+//    if (!newcfg.default_ht_thresholds) begin
+    if (0) begin
       // AdaptP thresholds
-      m_rng_push_seq.threshold_rec(cfg.fips_window_size, entropy_src_base_rng_seq::AdaptP, 0,
-                                   cfg.adaptp_sigma, lo_thresh, hi_thresh);
+      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, entropy_src_base_rng_seq::AdaptP, 0,
+                                   newcfg.adaptp_sigma, lo_thresh, hi_thresh);
       ral.adaptp_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
       ral.adaptp_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(cfg.bypass_window_size, entropy_src_base_rng_seq::AdaptP, 0,
-                                   cfg.adaptp_sigma, lo_thresh, hi_thresh);
+      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, entropy_src_base_rng_seq::AdaptP, 0,
+                                   newcfg.adaptp_sigma, lo_thresh, hi_thresh);
       ral.adaptp_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       ral.adaptp_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
       csr_update(.csr(ral.adaptp_hi_thresholds));
       csr_update(.csr(ral.adaptp_lo_thresholds));
 
       // Bucket thresholds
-      m_rng_push_seq.threshold_rec(cfg.fips_window_size, entropy_src_base_rng_seq::Bucket, 0,
-                                   cfg.bucket_sigma, lo_thresh, hi_thresh);
+      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, entropy_src_base_rng_seq::Bucket, 0,
+                                   newcfg.bucket_sigma, lo_thresh, hi_thresh);
       ral.bucket_thresholds.fips_thresh.set(hi_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(cfg.bypass_window_size, entropy_src_base_rng_seq::Bucket, 0,
-                                   cfg.bucket_sigma, lo_thresh, hi_thresh);
+      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, entropy_src_base_rng_seq::Bucket, 0,
+                                   newcfg.bucket_sigma, lo_thresh, hi_thresh);
       ral.bucket_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       csr_update(.csr(ral.bucket_thresholds));
 
       // TODO: Markov DUT is currently cofigured for per_line operation (see Issue #9759)
-      m_rng_push_seq.threshold_rec(cfg.fips_window_size, entropy_src_base_rng_seq::Markov, 1,
-                                   cfg.markov_sigma, lo_thresh, hi_thresh);
+      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, entropy_src_base_rng_seq::Markov, 1,
+                                   newcfg.markov_sigma, lo_thresh, hi_thresh);
       ral.markov_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
       ral.markov_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(cfg.bypass_window_size, entropy_src_base_rng_seq::Markov, 1,
-                                   cfg.markov_sigma, lo_thresh, hi_thresh);
+      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, entropy_src_base_rng_seq::Markov, 1,
+                                   newcfg.markov_sigma, lo_thresh, hi_thresh);
       ral.markov_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       ral.markov_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
       csr_update(.csr(ral.markov_hi_thresholds));
@@ -141,7 +146,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     // configure the rest of the variables afterwards so that sw_regupd & module_enable
     // get written last
-    super.entropy_src_init();
+    super.entropy_src_init(newcfg);
 
   endtask
 
@@ -211,6 +216,13 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       `uvm_info(`gfn, "HT value check complete", UVM_HIGH)
     end
 
+    if ((cfg.dut_cfg.sw_regupd == 0) && (ral.sw_regupd.sw_regupd.get() == 0)) begin
+      // Take this opportunity to test the sw_regupd register
+      // Even though the module is disabled, the reconfig should not work
+      random_reconfig();
+      check_reconfig();
+    end
+
     enable_dut();
 
   endtask
@@ -270,7 +282,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       do_entropy_data_read(.source(TlSrcEntropyDataReg),
                            .bundles_found(bundles_found));
       `uvm_info(`gfn, $sformatf("Found %d entropy_data bundles", bundles_found), UVM_HIGH)
-      if(cfg.type_bypass == MuBi4True) begin
+      if(ral.entropy_control.es_type.get_mirrored_value() == MuBi4True) begin
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut);
         cfg.clk_rst_vif.wait_clks(dly_to_reenable_dut);
         reinit_dut();
@@ -295,15 +307,53 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     `uvm_info(`gfn, "Exiting test body.", UVM_LOW)
   endtask
 
+  function void randomize_unexpected_config_time();
+    //sched_reconfig_time = randomize_failure_time(cfg.mean_rand_reconfig_time);
+    sched_reconfig_time = 15ms;
+    `DV_CHECK_FATAL(sched_reconfig_time >= 0, "Failed to schedule reconfig event")
+  endfunction
+
+  // A task to test the regupd and auto-lock regwen features.
+  // Copies the existing env_cfg (with existing knobs)
+  // and randomizes it to yield a new random configuration,
+  // which it then applies to the DUT.
+  //
+  // If the Reg-locking features are working properly this
+  // should have no effect
+  task random_reconfig();
+     entropy_src_dut_cfg altcfg;
+    `uvm_info(`gfn, "Randomly reconfiguring DUT", UVM_HIGH)
+    altcfg = new cfg.dut_cfg;
+
+    `DV_CHECK_RANDOMIZE_FATAL(altcfg);
+    altcfg.default_ht_thresholds = 1;
+    `uvm_info(`gfn, altcfg.convert2string(), UVM_HIGH)
+    entropy_src_init(altcfg);
+  endtask
+
+  task check_reconfig();
+    string lockable_conf_regs [] = '{
+        "conf", "entropy_control", "health_test_windows", "repcnt_thresholds", "repcnts_thresholds",
+        "adaptp_hi_thresholds", "adaptp_lo_thresholds", "bucket_thresholds", "markov_hi_thresholds",
+        "markov_lo_thresholds", "fw_ov_control", "observe_fifo_thresh"
+    };
+    foreach (lockable_conf_regs[i]) begin
+      bit [TL_DW - 1:0] val;
+      uvm_reg csr = ral.get_reg_by_name(lockable_conf_regs[i]);
+      val = csr.get();
+    end
+  endtask
 
   task body();
     bit [TL_DW - 1:0] fw_ov_value;
     super.body();
+    randomize_unexpected_config_time();
     // Start sequences
     fork
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
       begin
-        if (cfg.route_software == MuBi4False && cfg.fips_enable == MuBi4False) begin
+        if (cfg.dut_cfg.route_software == MuBi4False &&
+            cfg.dut_cfg.fips_enable == MuBi4False) begin
           // Notify the CSR access thread after the single boot mode seed has been received
           m_csrng_pull_seq_single.start(p_sequencer.csrng_sequencer_h);
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut);
@@ -327,6 +377,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
             do_reenable = 0;
             reinit_dut(1);
           end
+          // Check if it is time to attempt another random reconfig event
+          if ($realtime() > sched_reconfig_time) begin
+            random_reconfig();
+            randomize_unexpected_config_time();
+            check_reconfig();
+          end
         end
         `uvm_info(`gfn, "Exiting interrupt loop", UVM_HIGH)
       end
@@ -334,7 +390,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       // 1. the DUT config requires it, or
       // 2. the env config wants to inject it spuriously
       if (cfg.spurious_inject_entropy ||
-          ((cfg.fw_over_enable == MuBi4True) && (cfg.fw_read_enable == MuBi4True)) ) begin
+          ((cfg.dut_cfg.fw_over_enable == MuBi4True)
+            && (cfg.dut_cfg.fw_read_enable == MuBi4True)) ) begin
         while (do_background_procs) begin
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fw_ov_insert_per_seed);
           ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4True);

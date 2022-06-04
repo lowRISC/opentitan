@@ -15,6 +15,7 @@ filesets:
       - entropy_src_env_pkg.sv
       - entropy_src_path_if.sv
       - entropy_src_env_cfg.sv: {is_include_file: true}
+      - entropy_src_dut_cfg.sv: {is_include_file: true}
       - entropy_src_env_cov.sv: {is_include_file: true}
       - entropy_src_virtual_sequencer.sv: {is_include_file: true}
       - entropy_src_scoreboard.sv: {is_include_file: true}

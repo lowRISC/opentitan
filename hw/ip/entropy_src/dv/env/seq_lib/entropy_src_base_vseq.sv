@@ -94,46 +94,64 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask
 
   // setup basic entropy_src features
-  virtual task entropy_src_init();
+  virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg);
+
+    #50us;
+
     // Controls
-    ral.entropy_control.es_type.set(cfg.type_bypass);
-    ral.entropy_control.es_route.set(cfg.route_software);
+    ral.entropy_control.es_type.set(newcfg.type_bypass);
+    ral.entropy_control.es_route.set(newcfg.route_software);
     csr_update(.csr(ral.entropy_control));
 
     // Thresholds managed in derived vseq classes
 
-    // FW_OV registers
-    ral.fw_ov_control.fw_ov_mode.set(cfg.fw_read_enable);
-    ral.fw_ov_control.fw_ov_entropy_insert.set(cfg.fw_over_enable);
-    csr_update(.csr(ral.fw_ov_control));
+    #50us;
 
-    ral.observe_fifo_thresh.observe_fifo_thresh.set(cfg.observe_fifo_thresh);
+
+    // FW_OV registers
+    ral.fw_ov_control.fw_ov_mode.set(newcfg.fw_read_enable);
+    ral.fw_ov_control.fw_ov_entropy_insert.set(newcfg.fw_over_enable);
+    csr_update(.csr(ral.fw_ov_control));
+    #50us;
+
+    ral.observe_fifo_thresh.observe_fifo_thresh.set(newcfg.observe_fifo_thresh);
     csr_update(ral.observe_fifo_thresh);
 
+    #50us;
+
     // Enables (should be done last)
-    ral.conf.fips_enable.set(cfg.fips_enable);
-    ral.conf.entropy_data_reg_enable.set(cfg.entropy_data_reg_enable);
-    ral.conf.rng_bit_enable.set(cfg.rng_bit_enable);
-    ral.conf.rng_bit_sel.set(cfg.rng_bit_sel);
-    ral.conf.threshold_scope.set(cfg.ht_threshold_scope);
+    ral.conf.fips_enable.set(newcfg.fips_enable);
+    ral.conf.entropy_data_reg_enable.set(newcfg.entropy_data_reg_enable);
+    ral.conf.rng_bit_enable.set(newcfg.rng_bit_enable);
+    ral.conf.rng_bit_sel.set(newcfg.rng_bit_sel);
+    ral.conf.threshold_scope.set(newcfg.ht_threshold_scope);
     csr_update(.csr(ral.conf));
+
+    #50us;
 
     // Register write enable lock is on be default
     // Setting this to zero will lock future writes
-    csr_wr(.ptr(ral.sw_regupd), .value(cfg.sw_regupd));
+    csr_wr(.ptr(ral.sw_regupd), .value(newcfg.sw_regupd));
+
+    #50us;
+
 
     // Module_enables (should be done last)
-    ral.module_enable.set(cfg.module_enable);
+    ral.module_enable.set(newcfg.module_enable);
     csr_update(.csr(ral.module_enable));
 
-    ral.me_regwen.set(cfg.me_regwen);
+    #50us;
+
+    ral.me_regwen.set(newcfg.me_regwen);
     csr_update(.csr(ral.me_regwen));
+
+    #50us;
 
     if (do_interrupt) begin
       ral.intr_enable.set(en_intr);
       csr_update(ral.intr_enable);
     end
-  endtask
+  endtask // entropy_src_init
 
   typedef enum int {
     TlSrcEntropyDataReg,

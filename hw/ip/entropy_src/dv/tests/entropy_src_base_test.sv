@@ -28,12 +28,12 @@ class entropy_src_base_test extends cip_base_test #(
 
   virtual function void configure_env();
     // TODO: randomize seed_cnt
-    cfg.seed_cnt               = 1;
-    cfg.otp_en_es_fw_read_pct  = 100;
-    cfg.otp_en_es_fw_over_pct  = 100;
-    cfg.me_regwen_pct          = 100;
-    cfg.module_enable_pct      = 100;
-    cfg.type_bypass_pct        = 100;
+    cfg.seed_cnt                  = 1;
+    cfg.otp_en_es_fw_read_pct     = 100;
+    cfg.otp_en_es_fw_over_pct     = 100;
+    cfg.dut_cfg.me_regwen_pct     = 100;
+    cfg.dut_cfg.module_enable_pct = 100;
+    cfg.dut_cfg.type_bypass_pct   = 100;
   endfunction
 
 endclass : entropy_src_base_test

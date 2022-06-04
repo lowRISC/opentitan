@@ -66,6 +66,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // TODO: Add health check failure and clearing to integration tests.
   bit threshold_alert_active = 1'b0;
 
+  // Bit to signify that the module_enable bit is locked
+  bit dut_me_reglocked = 1'b0;
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH)))
       csrng_fifo;
@@ -636,7 +639,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           if (seed_tl_read_cnt == CSRNG_BUS_WIDTH / TL_DW) begin
             full_seed_found = 1;
             seed_tl_read_cnt = 0;
-            entropy_data_q.pop_front();
+            void'(entropy_data_q.pop_front());
             entropy_data_seeds++;
           end else if (seed_tl_read_cnt > CSRNG_BUS_WIDTH / TL_DW) begin
             `uvm_error(`gfn, "testbench error: too many segments read from candidate seed")
@@ -656,7 +659,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           );
           break;
         end else begin
-          entropy_data_q.pop_front();
+          void'(entropy_data_q.pop_front());
           entropy_data_drops++;
         end
       end : seed_trial_loop
@@ -717,11 +720,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
-    // TODO: Add conditioning prediction, still TBD in design
     bit do_read_check       = 1'b1;
+    bit locked_reg_access   = 1'b0;
+    bit dut_reg_locked, sw_regupd, module_enabled;
     bit write               = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     string msg;
+
+    sw_regupd = ral.sw_regupd.sw_regupd.get_mirrored_value;
+    module_enabled = ral.module_enable.module_enable.get_mirrored_value == MuBi4True;
+    dut_reg_locked = !sw_regupd || module_enabled;
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -731,99 +739,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
-    if (channel == AddrChannel) begin
-      // if incoming access is a write to a valid csr, then make updates right away
-      if (write) begin
-        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-        // Special handling for registers with broader impacts
-        case (csr.get_name())
-          "module_enable": begin
-            bit do_disable, do_enable;
-            uvm_reg_field enable_field = csr.get_field_by_name("module_enable");
-            prim_mubi_pkg::mubi4_t enable_mubi = enable_field.get_mirrored_value();
-            // TODO: integrate this with invalid MuBi checks
-            do_disable = (enable_mubi == prim_mubi_pkg::MuBi4False);
-            do_enable  = (enable_mubi == prim_mubi_pkg::MuBi4True);
-            if (do_enable && !dut_pipeline_enabled) begin
-              dut_pipeline_enabled = 1;
-              fork
-                begin
-                  handle_disable_reset(Enable);
-                  fifos_cleared = 0;
-                  collect_entropy();
-                  handle_disable_reset(Disable);
-                end
-              join_none
-            end
-            if (do_disable && dut_pipeline_enabled) begin
-              fork : background_process
-                begin
-                  // The DUT does not immediately turn off the RNG input
-                  // We wait a few cycles to let any last couple RNG
-                  // samples come into the dut (so we know to delete them
-                  // from our model of the DUT);
-                  cfg.clk_rst_vif.wait_clks(cfg.tlul_to_rng_disable_delay);
-                  dut_pipeline_enabled = 0;
-                end
-                begin
-                  cfg.clk_rst_vif.wait_clks(cfg.tlul_to_fifo_clr_delay);
-                  handle_disable_reset(FIFOClr);
-                  fifos_cleared = 1;
-                end
-              join_none : background_process
-            end
-          end
-          "fw_ov_sha3_start": begin
-            // The fw_ov_sha3_start field triggers the internal processing of SHA data
-            mubi4_t start_mubi  = csr.get_field_by_name("fw_ov_insert_start").get_mirrored_value();
-            bit fips_enabled    = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
-            bit es_route        = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
-            bit es_type         = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
-            bit is_fips_mode    = fips_enabled && !(es_route && es_type);
-            bit fw_ov_mode      = (cfg.otp_en_es_fw_read == MuBi8True) &&
-                                  (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True);
-            mubi4_t insert_mubi = ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value();
-            bit fw_ov_insert    = fw_ov_mode && (insert_mubi == MuBi4True);
-            bit do_disable_sha  = fw_ov_sha_enabled && (start_mubi == MuBi4False);
-            // Disabling the fw_ov_sha3_start field triggers the conditioner, but only
-            // if the DUT is configured properly.
-            if (dut_pipeline_enabled && is_fips_mode && fw_ov_insert && do_disable_sha) begin
-              `uvm_info(`gfn, "SHA3 disabled for FW_OV", UVM_HIGH)
-              package_and_release_entropy();
-            end
-            fw_ov_sha_enabled = (start_mubi == MuBi4True);
-            if (fw_ov_sha_enabled && fw_ov_insert) begin
-              `uvm_info(`gfn, "SHA3 enabled for FW_OV", UVM_HIGH)
-            end
-          end
-          "fw_ov_wr_data": begin
-            bit fips_enabled    = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
-            bit es_route        = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
-            bit es_type         = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
-            bit is_fips_mode    = fips_enabled && !(es_route && es_type);
-
-            bit fw_ov_entropy_insert =
-                (cfg.otp_en_es_fw_over == MuBi8True) &&
-                (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
-                (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
-            msg = $sformatf("fw_ov_wr_data captured: 0x%08x", item.a_data);
-            `uvm_info(`gfn, msg, UVM_FULL)
-
-            if (dut_pipeline_enabled && fw_ov_entropy_insert) begin
-              msg = $sformatf("Inserting word 0x%08x into pipeline", item.a_data);
-              `uvm_info(`gfn, msg, UVM_MEDIUM)
-              process_fifo_q.push_back(item.a_data);
-              // In bypass mode, data is automatically released when a full seed is acquired
-              if (!is_fips_mode && process_fifo_q.size() == (CSRNG_BUS_WIDTH / TL_DW)) begin
-                package_and_release_entropy();
-              end
-            end
-          end
-          default: begin
-          end
-        endcase
-      end
-    end
     // process the csr req
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
@@ -846,30 +761,38 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "module_enable": begin
       end
       "conf": begin
+        locked_reg_access = dut_reg_locked;
       end
       "rev": begin
       end
-      "rate": begin
-      end
       "entropy_control": begin
+        locked_reg_access = dut_reg_locked;
       end
       "entropy_data": begin
       end
       "health_test_windows": begin
+        locked_reg_access = dut_reg_locked;
       end
       "repcnt_thresholds": begin
+        locked_reg_access = dut_reg_locked;
       end
       "repcnts_thresholds": begin
+        locked_reg_access = dut_reg_locked;
       end
       "adaptp_hi_thresholds": begin
+        locked_reg_access = dut_reg_locked;
       end
       "adaptp_lo_thresholds": begin
+        locked_reg_access = dut_reg_locked;
       end
       "bucket_thresholds": begin
+        locked_reg_access = dut_reg_locked;
       end
       "markov_hi_thresholds": begin
+        locked_reg_access = dut_reg_locked;
       end
       "markov_lo_thresholds": begin
+        locked_reg_access = dut_reg_locked;
       end
       "repcnt_hi_watermarks": begin
         // TODO: KNOWN ISSUE: pending resolution to #9819
@@ -920,6 +843,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "extht_fail_counts": begin
       end
       "fw_ov_control": begin
+        locked_reg_access = dut_reg_locked;
       end
       "fw_ov_sha3_start": begin
       end
@@ -928,6 +852,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "fw_ov_wr_data": begin
       end
       "observe_fifo_thresh": begin
+        locked_reg_access = dut_reg_locked;
       end
       "debug_status": begin
       end
@@ -942,6 +867,119 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
     endcase
+
+
+    if (channel == AddrChannel) begin
+      // if incoming access is a write to a valid csr, then make updates right away
+      if (write) begin
+        if (locked_reg_access) begin
+          string msg = $sformatf("Attempt to write while locked: %s", csr.get_name());
+          `uvm_info(`gfn, msg, UVM_FULL)
+          `uvm_info(`gfn, "SAMPLE_A", UVM_LOW)
+          cov_vif.cg_sw_update_sample(
+              csr.get_offset(),
+              ral.sw_regupd.sw_regupd.get_mirrored_value(),
+              ral.module_enable.module_enable.get_mirrored_value() == MuBi4True
+          );
+        end else begin
+          string msg = $sformatf("Unlocked write to: %s", csr.get_name());
+          `uvm_info(`gfn, msg, UVM_FULL)
+          void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+          // Special handling for registers with broader impacts
+          case (csr.get_name())
+            "module_enable": begin
+              string msg;
+              bit do_disable, do_enable;
+              uvm_reg_field enable_field = csr.get_field_by_name("module_enable");
+              prim_mubi_pkg::mubi4_t enable_mubi = enable_field.get_mirrored_value();
+              // TODO: integrate this with invalid MuBi checks
+              do_disable = (enable_mubi == prim_mubi_pkg::MuBi4False);
+              do_enable  = (enable_mubi == prim_mubi_pkg::MuBi4True);
+              msg = $sformatf("locked? %01d", dut_reg_locked);
+              `uvm_info(`gfn, msg, UVM_FULL)
+              if (do_enable && !dut_pipeline_enabled) begin
+                dut_pipeline_enabled = 1;
+                fork
+                  begin
+                    handle_disable_reset(Enable);
+                    fifos_cleared = 0;
+                    collect_entropy();
+                    handle_disable_reset(Disable);
+                  end
+                join_none
+              end
+              if (do_disable && dut_pipeline_enabled) begin
+                fork : background_process
+                  begin
+                    // The DUT does not immediately turn off the RNG input
+                    // We wait a few cycles to let any last couple RNG
+                    // samples come into the dut (so we know to delete them
+                    // from our model of the DUT);
+                    cfg.clk_rst_vif.wait_clks(cfg.tlul_to_rng_disable_delay);
+                    dut_pipeline_enabled = 0;
+                  end
+                  begin
+                    cfg.clk_rst_vif.wait_clks(cfg.tlul_to_fifo_clr_delay);
+                    handle_disable_reset(FIFOClr);
+                    fifos_cleared = 1;
+                  end
+                join_none : background_process
+              end
+            end
+            "fw_ov_sha3_start": begin
+              // The fw_ov_sha3_start field triggers the internal processing of SHA data
+              mubi4_t start_mubi  = ral.fw_ov_sha3_start.fw_ov_insert_start.get_mirrored_value();
+              bit fips_enabled    = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
+              bit es_route        = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
+              bit es_type         = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
+              bit is_fips_mode    = fips_enabled && !(es_route && es_type);
+              mubi4_t fw_ov_mubi  = ral.fw_ov_control.fw_ov_mode.get_mirrored_value();
+
+              bit fw_ov_mode      = (cfg.otp_en_es_fw_read == MuBi8True) &&
+                                    (fw_ov_mubi == MuBi4True);
+              mubi4_t insert_mubi = ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value();
+              bit fw_ov_insert    = fw_ov_mode && (insert_mubi == MuBi4True);
+              bit do_disable_sha  = fw_ov_sha_enabled && (start_mubi == MuBi4False);
+              // Disabling the fw_ov_sha3_start field triggers the conditioner, but only
+              // if the DUT is configured properly.
+              if (dut_pipeline_enabled && is_fips_mode && fw_ov_insert && do_disable_sha) begin
+                `uvm_info(`gfn, "SHA3 disabled for FW_OV", UVM_HIGH)
+                package_and_release_entropy();
+              end
+              fw_ov_sha_enabled = (start_mubi == MuBi4True);
+              if (fw_ov_sha_enabled && fw_ov_insert) begin
+                `uvm_info(`gfn, "SHA3 enabled for FW_OV", UVM_HIGH)
+              end
+            end
+            "fw_ov_wr_data": begin
+              bit fips_enabled = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
+              bit es_route     = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
+              bit es_type      = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
+              bit is_fips_mode = fips_enabled && !(es_route && es_type);
+
+              bit fw_ov_entropy_insert =
+                  (cfg.otp_en_es_fw_over == MuBi8True) &&
+                  (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
+                  (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
+              msg = $sformatf("fw_ov_wr_data captured: 0x%08x", item.a_data);
+              `uvm_info(`gfn, msg, UVM_FULL)
+
+              if (dut_pipeline_enabled && fw_ov_entropy_insert) begin
+                msg = $sformatf("Inserting word 0x%08x into pipeline", item.a_data);
+                `uvm_info(`gfn, msg, UVM_MEDIUM)
+                process_fifo_q.push_back(item.a_data);
+                // In bypass mode, data is automatically released when a full seed is acquired
+                if (!is_fips_mode && process_fifo_q.size() == (CSRNG_BUS_WIDTH / TL_DW)) begin
+                  package_and_release_entropy();
+                end
+              end
+            end
+            default: begin
+            end
+          endcase
+        end
+      end
+    end
 
     // On reads, if do_read_check is set, then check mirrored_value against item.d_data
     if (!write && channel == DataChannel) begin
@@ -1091,7 +1129,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // If at any point dut_pipeline_enabled is deasserted, halt and assert disable_detected.
   task wait_rng_queue(output rng_val_t val, output bit disable_detected);
     push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH))  rng_item;
-    bit bit_sel_enable = (cfg.rng_bit_enable == prim_mubi_pkg::MuBi4True);
+    bit bit_sel_enable = (ral.conf.rng_bit_enable.get_mirrored_value() == MuBi4True);
     int n_items        = bit_sel_enable ? RNG_BUS_WIDTH : 1;
     disable_detected   = 0;
 
@@ -1118,7 +1156,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         break;
       end
       if (bit_sel_enable) begin
-        val[i] = rng_item.h_data[cfg.rng_bit_sel];
+        val[i] = rng_item.h_data[ral.conf.rng_bit_sel.get_mirrored_value()];
       end else begin
         val    = rng_item.h_data;
       end
@@ -1190,7 +1228,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       `uvm_info(`gfn, $sformatf("phase: %s\n", dut_fsm_phase.name), UVM_HIGH)
 
       window_size = rng_window_size(seed_idx, is_fips_mode,
-                                    fw_ov_insert, cfg.fips_window_size);
+                                    fw_ov_insert, cfg.dut_cfg.fips_window_size);
 
       `uvm_info(`gfn, $sformatf("window_size: %08d\n", window_size), UVM_HIGH)
 
