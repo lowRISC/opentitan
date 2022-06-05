@@ -109,7 +109,7 @@
     {
       name: spi_host_status_stall
       uvm_test_seq: spi_host_status_stall_vseq
-      run_opts: ["+en_scb=0"]
+      run_opts: ["+test_timeout_ns=1_00_000_000"]
     }
     // TODO: add more tests here
   ]

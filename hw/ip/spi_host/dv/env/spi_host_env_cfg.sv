@@ -19,6 +19,7 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
   rand int    num_dummy;
   int         max_dummy_cycles = 16;
   int         min_dummy_cycles = 0;
+  bit         tx_stall_check = 1'b0;
 
   // bumber of address bytes
   rand int    num_cmd_bytes;

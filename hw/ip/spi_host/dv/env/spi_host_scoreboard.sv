@@ -51,7 +51,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   int                               checked_tx_seg_cnt = 0;
   int                               in_rx_seq_cnt      = 0;
   int                               checked_rx_seq_cnt = 0;
-
+  // flag used used for SB when spi tx data is programmed later than command
+  local bit wr_cmd = 0;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -178,6 +179,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     bit [TL_AW-1:0] csr_addr_mask = ral.get_addr_mask();
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
     spi_segment_item rd_segment;
+    spi_segment_item wr_segment;
 
     bit cmd_phase_write = (write && channel  == AddrChannel);
     bit data_phase_read  = (!write && channel == DataChannel);
@@ -204,6 +206,15 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
         if (cmd_phase_write) begin
           // collect write data
           host_wr_segment.spi_data.push_back(tl_byte[i]);
+        end
+      end
+      if (cfg.tx_stall_check) begin
+        if (wr_cmd) begin
+          `downcast(wr_segment, host_wr_segment.clone());
+          write_segment_q.push_back(wr_segment);
+          wr_cmd = 1'b0;
+          // clear item
+          host_wr_segment = new();
         end
       end
     end else if ((csr_addr & csr_addr_mask) inside {[SPI_HOST_RX_FIFO_START :
@@ -282,7 +293,6 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
         end
 
         "command": begin
-          spi_segment_item    wr_segment;
           spi_cmd_reg.direction = spi_dir_e'(get_field_val(ral.command.direction, item.a_data));
           spi_cmd_reg.mode      = spi_mode_e'(get_field_val(ral.command.speed, item.a_data));
           spi_cmd_reg.csaat     = get_field_val(ral.command.csaat, item.a_data);
@@ -293,19 +303,23 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           host_wr_segment.command_reg.direction = spi_cmd_reg.direction;
           host_wr_segment.command_reg.mode      = spi_cmd_reg.mode;
           host_wr_segment.command_reg.csaat     = spi_cmd_reg.csaat;
-          `downcast(wr_segment, host_wr_segment.clone());
           if (write) begin
-            write_segment_q.push_back(wr_segment);
-            `uvm_info(`gfn, $sformatf("\n  created expeted segment item %s",
-                                        wr_segment.convert2string()), UVM_HIGH)
+            `downcast(wr_segment, host_wr_segment.clone());
+            if (cfg.tx_stall_check) begin
+              wr_cmd = 1'b1;
+            end else begin
+              write_segment_q.push_back(wr_segment);
+              `uvm_info(`gfn, $sformatf("\n  created expeted segment item %s",
+                                          wr_segment.convert2string()), UVM_HIGH)
+              // clear item
+              host_wr_segment = new();
+            end
           end
           if (cfg.en_cov) begin
             cov.duplex_cg.sample(spi_cmd_reg.direction);
             cov.command_cg.sample(spi_cmd_reg);
             cov.segment_speed_cg.sample(spi_cmd_reg);
           end
-          // clear item
-          host_wr_segment = new();
         end
         "intr_enable": begin
           spi_intr_enable_reg.spi_event  = bit'(get_field_val(ral.intr_enable.spi_event,
