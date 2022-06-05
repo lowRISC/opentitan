@@ -31,10 +31,11 @@ filesets:
       - seq_lib/spi_host_event_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_performance_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_sw_reset_vseq.sv: {is_include_file: true}
-      - seq_lib/spi_host_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_overflow_underflow_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_error_cmd_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_status_stall_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_host_idlecsbactive_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_host_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_passthrough_mode_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
