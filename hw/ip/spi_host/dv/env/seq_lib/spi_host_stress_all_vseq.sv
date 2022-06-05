@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // sw_reset test vseq
-class spi_host_stress_all_vseq extends spi_host_base_vseq;
+class spi_host_stress_all_vseq extends spi_host_tx_rx_vseq;
   `uvm_object_utils(spi_host_stress_all_vseq)
   `uvm_object_new
 
@@ -15,10 +15,7 @@ class spi_host_stress_all_vseq extends spi_host_base_vseq;
   virtual task body();
     string seq_names[] = {"spi_host_smoke_vseq",
                           "spi_host_speed_vseq",
-                          "spi_host_performance_vseq",
-                          "spi_host_event_vseq",
-                          "spi_host_overflow_underflow_vseq",
-                          "spi_host_sw_reset_vseq"};
+                          "spi_host_performance_vseq"};
 
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence   seq;
