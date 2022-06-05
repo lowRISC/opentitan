@@ -4,13 +4,20 @@
 
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 #include "sensor_ctrl_regs.h"
+
+#ifndef OT_PLATFORM_RV32
+// Provide a definition for off-target unit tests.
+const uint32_t kAstCheckPollCpuCycles = 10000;
+#endif
 
 enum {
   kBase = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR,
@@ -50,15 +57,21 @@ rom_error_t ast_check(lifecycle_state_t lc_state) {
 
   // AST initialization may take up to 100us. It is most likely already complete
   // at this point but for resilience poll for up to 100us.
-  // TODO: tune this timeout or use mcycle.
-  for (int i = 0; i < 10000; ++i) {
-    if (ast_init_done() == kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(ast_init_done(), kHardenedBoolTrue);
-      return kErrorOk;
+  uint32_t mcycle;
+  rom_error_t res = kErrorAstInitNotDone;
+  CSR_WRITE(CSR_REG_MCYCLE, 0);
+  do {
+    CSR_READ(CSR_REG_MCYCLE, &mcycle);
+    hardened_bool_t init_done = ast_init_done();
+    if (init_done != kHardenedBoolFalse) {
+      static_assert(kErrorOk == (rom_error_t)kHardenedBoolTrue,
+                    "kErrorOk must be equal to kHardenedBoolTrue");
+      res = (rom_error_t)init_done;
+      break;
     }
-  }
+  } while (mcycle < kAstCheckPollCpuCycles);
 
-  return kErrorAstInitNotDone;
+  return res;
 }
 
 static bool done_bit_get(void) {
