@@ -29,6 +29,9 @@ const uint32_t kUartNCOValue =
 const uint32_t kUartTxFifoCpuCycles =
     CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
 
+const uint32_t kAstCheckPollCpuCycles =
+    CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
+
 const uintptr_t kDeviceTestStatusAddress = 0;
 
 const uintptr_t kDeviceLogBypassUartAddress = 0;
