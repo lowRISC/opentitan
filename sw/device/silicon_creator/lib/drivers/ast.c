@@ -17,14 +17,6 @@ enum {
 };
 
 rom_error_t ast_check(lifecycle_state_t lc_state) {
-  // OTP can be configured to skip AST initialization. In this situation we do
-  // not check that AST_INIT_DONE is set.
-  uint32_t en = otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET);
-  if (launder32(en) == kMultiBitBool4False) {
-    HARDENED_CHECK_EQ(en, kMultiBitBool4False);
-    return kErrorOk;
-  }
-
   // In some lifecycle states we want to continue the boot process even if the
   // AST is not initialized. Note that in these states OTP may not have been
   // configured.
@@ -46,6 +38,14 @@ rom_error_t ast_check(lifecycle_state_t lc_state) {
       break;
     default:
       HARDENED_UNREACHABLE();
+  }
+
+  // OTP can be configured to skip AST initialization. In this situation we do
+  // not check that AST_INIT_DONE is set.
+  uint32_t en = otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET);
+  if (launder32(en) == kMultiBitBool4False) {
+    HARDENED_CHECK_EQ(en, kMultiBitBool4False);
+    return kErrorOk;
   }
 
   // AST initialization may take up to 100us. It is most likely already complete
