@@ -9,11 +9,11 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"     // Generated.
-#include "sensor_ctrl_regs.h"  // Generated.
+#include "otp_ctrl_regs.h"
+#include "sensor_ctrl_regs.h"
 
 enum {
-  kSensorCtrlBase = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR,
+  kBase = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR,
 };
 
 rom_error_t ast_check(lifecycle_state_t lc_state) {
@@ -61,11 +61,24 @@ rom_error_t ast_check(lifecycle_state_t lc_state) {
   return kErrorAstInitNotDone;
 }
 
+static bool done_bit_get(void) {
+  uint32_t reg = abs_mmio_read32(kBase + SENSOR_CTRL_STATUS_REG_OFFSET);
+  return bitfield_bit32_read(reg, SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT);
+}
+
 hardened_bool_t ast_init_done(void) {
-  uint32_t status =
-      abs_mmio_read32(kSensorCtrlBase + SENSOR_CTRL_STATUS_REG_OFFSET);
-  if (!bitfield_bit32_read(status, SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT)) {
+  static_assert(kHardenedBoolTrue == 0x739,
+                "This function expects kHardenedBoolTrue to be 0x739");
+
+  // The code below reads the AST_INIT_DONE bit twice and modifies `res` with
+  // the result of each attempt. `res` should be `kHardenedBoolTrue` if all
+  // attempts return true.
+  hardened_bool_t res = 0x631;
+  res |= done_bit_get() << 3;
+  res |= done_bit_get() << 8;
+
+  if (res != kHardenedBoolTrue) {
     return kHardenedBoolFalse;
   }
-  return kHardenedBoolTrue;
+  return res;
 }
