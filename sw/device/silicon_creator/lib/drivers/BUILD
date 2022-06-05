@@ -101,6 +101,16 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "ast_unittest",
+    srcs = ["ast_unittest.cc"],
+    deps = [
+        ":ast",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 dual_cc_library(
     name = "flash_ctrl",
     srcs = dual_inputs(
