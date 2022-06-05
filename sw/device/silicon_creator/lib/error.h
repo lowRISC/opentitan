@@ -133,8 +133,7 @@ enum module_ {
   X(kErrorBootDataWriteCheck,         ERROR_(2, kModuleBootData, kInternal)), \
   X(kErrorBootDataInvalid,            ERROR_(3, kModuleBootData, kInternal)), \
   X(kErrorSpiDevicePayloadOverflow,   ERROR_(1, kModuleSpiDevice, kInternal)), \
-  X(kErrorAstBadConfiguration,        ERROR_(1, kModuleAst, kInternal)), \
-  X(kErrorAstInitNotDone,             ERROR_(2, kModuleAst, kInternal)), \
+  X(kErrorAstInitNotDone,             ERROR_(1, kModuleAst, kInternal)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 

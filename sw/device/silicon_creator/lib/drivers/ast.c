@@ -48,12 +48,6 @@ rom_error_t ast_check(lifecycle_state_t lc_state) {
       HARDENED_UNREACHABLE();
   }
 
-  // If OTP has not been configured correctly then the AST configuration may
-  // have been skipped. Report a specific error in this scenario.
-  if (en != kMultiBitBool4True) {
-    return kErrorAstBadConfiguration;
-  }
-
   // AST initialization may take up to 100us. It is most likely already complete
   // at this point but for resilience poll for up to 100us.
   // TODO: tune this timeout or use mcycle.
