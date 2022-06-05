@@ -127,6 +127,21 @@ extern const uint32_t kUartNCOValue;
 extern const uint32_t kUartTxFifoCpuCycles;
 
 /**
+ * Helper macro to calculate the maximum duration of the AST initialization
+ * check poll in CPU cycles.
+ *
+ * This macro assumes that the desired duration is 100us.
+ */
+#define CALCULATE_AST_CHECK_POLL_CPU_CYCLES(cpu_freq_) \
+  ((cpu_freq_)*100 / 1000000)
+
+/**
+ * Maximum duration of the AST initialization check poll in CPU cycles. This
+ * number depends on `kClockFreqCpuHz` and the resulting duration must be 100us.
+ */
+extern const uint32_t kAstCheckPollCpuCycles;
+
+/**
  * An address to write to to report test status.
  *
  * If this is zero, there is no address to write to to report test status.
