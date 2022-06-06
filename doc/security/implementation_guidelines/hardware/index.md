@@ -65,7 +65,7 @@ designer should consider the consequences of any particular net/node being
 inverted or forced by an adversary. State of the art fault attacks can stimulate
 two nodes in close succession; robustness to this type of attack depends on the
 declared threat model. Designers need to be well aware of the power of an attack
-like SIFA, which can bypass "conventional" fault countermeasures (e.g.
+like SIFA [[15](#ref-15)], which can bypass "conventional" fault countermeasures (e.g.
 redundancy/detectors) and requires only modest numbers of traces.
 
 For increased resistance against side channel leakage (typically: power,
@@ -381,6 +381,9 @@ https://eprint.iacr.org/2004/100.pdf
 
 [<span id="ref-14">14</span>]: Fault Mitigation Patterns -
 https://www.riscure.com/uploads/2020/05/Riscure_Whitepaper_Fault_Mitigation_Patterns_final.pdf
+
+[<span id="ref-15">15</span>]: SIFA: Exploiting Ineffective Fault Inductions on Symmetric Cryptography -
+https://eprint.iacr.org/2018/071.pdf
 
 <!-- Footnotes themselves at the bottom. -->
 
