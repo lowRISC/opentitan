@@ -27,11 +27,14 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["alert_handler_bind"]
+  sim_tops: ["alert_handler_bind",
+             "sec_cm_prim_count_bind",
+             "sec_cm_prim_double_lfsr_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

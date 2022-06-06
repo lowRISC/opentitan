@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 virtual task run_sec_cm_fi_vseq(int num_times = 1);
-  `DV_CHECK_FATAL(cfg.sec_cm_alert_name inside {cfg.list_of_alerts},
-                  $sformatf("sec_cm_alert_name (%s) is not inside %p",
-                            cfg.sec_cm_alert_name, cfg.list_of_alerts))
+  // Adding an exception for alert_handler who does not have list_of_alerts.
+  if (cfg.list_of_alerts.size()) begin
+    `DV_CHECK_FATAL(cfg.sec_cm_alert_name inside {cfg.list_of_alerts},
+                    $sformatf("sec_cm_alert_name (%s) is not inside %p",
+                              cfg.sec_cm_alert_name, cfg.list_of_alerts))
+  end
 
   pre_run_sec_cm_fi_vseq();
   for (int trans = 1; trans <= num_times; trans++) begin
