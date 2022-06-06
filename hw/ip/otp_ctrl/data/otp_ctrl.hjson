@@ -333,6 +333,42 @@
       default: "4",
       local: "true"
     },
+    { name: "CreatorSwCfgMinSecVerRomExtOffset",
+      desc: "Offset of CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT",
+      type: "int",
+      default: "272",
+      local: "true"
+    },
+    { name: "CreatorSwCfgMinSecVerRomExtSize",
+      desc: "Size of CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "CreatorSwCfgMinSecVerBl0Offset",
+      desc: "Offset of CREATOR_SW_CFG_MIN_SEC_VER_BL0",
+      type: "int",
+      default: "276",
+      local: "true"
+    },
+    { name: "CreatorSwCfgMinSecVerBl0Size",
+      desc: "Size of CREATOR_SW_CFG_MIN_SEC_VER_BL0",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "CreatorSwCfgDefaultBootDataInProdEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN",
+      type: "int",
+      default: "280",
+      local: "true"
+    },
+    { name: "CreatorSwCfgDefaultBootDataInProdEnSize",
+      desc: "Size of CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "CreatorSwCfgDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_DIGEST",
       type: "int",
