@@ -412,11 +412,23 @@
              // FPV only verifies the security countermeasure assertions,
              // so will not collect FPV coverage.
              {
-               name: aes_sec_cm
+               name: aes_masking_sec_cm
                dut: aes
                fusesoc_core: lowrisc:dv:aes_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/ip/aes/{sub_flow}/{tool}"
+               rel_path: "hw/ip/aes/masking/{sub_flow}/{tool}"
+               defines: "EN_MASKING=1"
+               cov: false
+               task: "FpvSecCm"
+               stopats: ["*u_state_regs.state_o"]
+             }
+             {
+               name: aes_no_masking_sec_cm
+               dut: aes
+               fusesoc_core: lowrisc:dv:aes_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/aes/no_masking/{sub_flow}/{tool}"
+               defines: "EN_MASKING=0"
                cov: false
                task: "FpvSecCm"
                stopats: ["*u_state_regs.state_o"]

@@ -65,41 +65,4 @@ if (`EN_MASKING) begin : gen_prng_bind
     .lfsr_q_4     (gen_lfsrs[4].u_lfsr_chunk.lfsr_q)
   );
 end
-
-  // bind fault inject if to control_fsm
-  bind aes_control_fsm signal_force
-    #(.Signal("aes_ctrl_cs"),
-      .IfName("aes_fi_vif"),
-      .SignalWidth(aes_env_pkg::StateWidth)
-     )
-  u_fi
-    (
-     .clk          (clk_i),
-     .rst_ni       (rst_ni)
-    );
-
-  // bind fault inject if to cipher fsm
-  bind aes_cipher_control_fsm signal_force
-    #(.Signal("aes_cipher_ctrl_cs"),
-      .IfName("aes_cipher_fi_vif"),
-      .SignalWidth(aes_env_pkg::StateWidth)
-     )
-  u_cipher_fi
-    (
-     .clk          (clk_i),
-     .rst_ni       (rst_ni)
-    );
-
-  // bind fault inject if to round counter
-  bind aes_ctr_fsm signal_force
-    #(.Signal("aes_ctr_cs"),
-      .IfName("aes_ctr_fi_vif"),
-      .SignalWidth(aes_env_pkg::StateWidth)
-     )
-  u_ctr_fi
-    (
-     .clk          (clk_i),
-     .rst_ni       (rst_ni)
-    );
-
 endmodule
