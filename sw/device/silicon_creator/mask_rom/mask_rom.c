@@ -338,7 +338,6 @@ void mask_rom_main(void) {
   hardened_bool_t bootstrap_req = bootstrap_requested();
   if (launder32(bootstrap_req) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(bootstrap_req, kHardenedBoolTrue);
-    // TODO(lowRISC/opentitan#10631): decide on watchdog strategy for bootstrap.
     watchdog_disable();
     shutdown_finalize(bootstrap());
   }
