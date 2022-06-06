@@ -58,7 +58,7 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
     end
   endfunction
 
-  virtual task check_sec_cm_fi_resp(sec_cm_pkg::sec_cm_base_if_proxy if_proxy);
+  virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
     if (!uvm_re_match("tb.dut.u_ping_timer.*", if_proxy.path)) begin
       // TODO:  check local alert regarding ping timeout triggered.
     end else begin
@@ -70,7 +70,21 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
   endtask
 
   virtual task pre_run_sec_cm_fi_vseq();
+    // Disable prim_sparse_fsm assertions.
+    $assertoff(0, "tb.dut.gen_classes[0].u_esc_timer.CheckEn_A");
+    $assertoff(0, "tb.dut.gen_classes[1].u_esc_timer.CheckEn_A");
+    $assertoff(0, "tb.dut.gen_classes[2].u_esc_timer.CheckEn_A");
+    $assertoff(0, "tb.dut.gen_classes[3].u_esc_timer.CheckEn_A");
     // Enable ping timer to get ping counter error
     csr_wr(ral.ping_timer_en_shadowed, 1);
   endtask : pre_run_sec_cm_fi_vseq
+
+  virtual task post_run_sec_cm_fi_vseq();
+    // Enable prim_sparse_fsm assertions.
+    $asserton(0, "tb.dut.gen_classes[0].u_esc_timer.CheckEn_A");
+    $asserton(0, "tb.dut.gen_classes[1].u_esc_timer.CheckEn_A");
+    $asserton(0, "tb.dut.gen_classes[2].u_esc_timer.CheckEn_A");
+    $asserton(0, "tb.dut.gen_classes[3].u_esc_timer.CheckEn_A");
+  endtask : post_run_sec_cm_fi_vseq
+
 endclass
