@@ -10,25 +10,14 @@ subdir('runtime')
 subdir('crypto')
 
 # Temp ibex peri library (sw_lib_ibex)
-sw_lib_ibex = declare_dependency(
-  link_with: static_library(
-    'ibex_ot',
-    sources: [
-      hw_ip_ibex_reg_h,
-      'ibex_peri.c',
-    ],
-    dependencies: [
-      top_earlgrey,
-    ]
-  )
-)
+sw_lib_ibex = sw_lib_runtime_ibex
 
 # IRQ library (sw_lib_irq)
 sw_lib_irq = declare_dependency(
   link_with: static_library(
     'irq_ot',
     sources: [
-      'irq.c',
+      meson.source_root() / 'sw/device/lib/runtime/ibex_irq.c',
     ],
   )
 )

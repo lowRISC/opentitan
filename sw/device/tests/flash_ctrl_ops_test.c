@@ -5,7 +5,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/irq.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -335,8 +335,8 @@ bool test_main(void) {
                                      kTopEarlgreyPlicIrqIdFlashCtrlOpDone);
 
   // Enable the external IRQ at Ibex.
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
+  ibex_irq_global_ctrl(true);
+  ibex_irq_external_ctrl(true);
 
   do_info_partition_test(kFlashInfoPageIdCreatorSecret, kRandomData1);
   do_info_partition_test(kFlashInfoPageIdOwnerSecret, kRandomData2);

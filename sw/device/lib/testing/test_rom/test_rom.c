@@ -10,8 +10,8 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/ibex_peri.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
@@ -82,7 +82,7 @@ bool rom_test_main(void) {
 
   // Print the FPGA version-id.
   // This is guaranteed to be zero on all non-FPGA implementations.
-  uint32_t fpga = fpga_version();
+  uint32_t fpga = ibex_fpga_version();
   if (fpga != 0) {
     LOG_INFO("TestROM:%08x", fpga);
   }

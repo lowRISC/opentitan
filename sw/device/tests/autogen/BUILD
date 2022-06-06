@@ -18,7 +18,6 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib:irq",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:adc_ctrl",
         "//sw/device/lib/dif:alert_handler",
@@ -44,6 +43,7 @@ opentitan_functest(
         "//sw/device/lib/dif:sysrst_ctrl",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:ibex_irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",

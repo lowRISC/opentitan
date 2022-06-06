@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/ibex.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
@@ -93,13 +93,13 @@ static void run_test_with_irqs(otbn_t *otbn_ctx, otbn_app_t app,
     // we run the WFI instruction. The trick is that WFI returns when an
     // interrupt comes in even if interrupts are globally disabled, which means
     // that the WFI can actually sit *inside* the critical section.
-    irq_global_ctrl(false);
+    ibex_irq_global_ctrl(false);
     if (otbn_finished)
       break;
     wait_for_interrupt();
-    irq_global_ctrl(true);
+    ibex_irq_global_ctrl(true);
   }
-  irq_global_ctrl(true);
+  ibex_irq_global_ctrl(true);
 
   check_otbn_status(otbn_ctx, expected_status);
   check_otbn_err_bits(otbn_ctx, expected_insn_cnt);
@@ -162,8 +162,8 @@ bool test_main() {
   plic_init_with_irqs();
 
   // Enable the external IRQ (so that we see the interrupt from the PLIC)
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
+  ibex_irq_global_ctrl(true);
+  ibex_irq_external_ctrl(true);
 
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
 

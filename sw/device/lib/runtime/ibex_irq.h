@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_IRQ_H_
-#define OPENTITAN_SW_DEVICE_LIB_IRQ_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_IRQ_H_
+#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_IRQ_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -13,26 +13,26 @@
  *
  * The address must be 256-byte aligned.
  */
-void irq_set_vector_offset(uintptr_t address);
+void ibex_irq_set_vector_offset(uintptr_t address);
 
 /**
  * Enable / disable ibex globlal interrupts
  */
-void irq_global_ctrl(bool en);
+void ibex_irq_global_ctrl(bool enable);
 
 /**
  * Enable / disable ibex external interrupts
  */
-void irq_external_ctrl(bool en);
+void ibex_irq_external_ctrl(bool enable);
 
 /**
  * Enable / disable ibex timer interrupts
  */
-void irq_timer_ctrl(bool en);
+void ibex_irq_timer_ctrl(bool enable);
 
 /**
  * Enable / disable ibex software interrupts
  */
-void irq_software_ctrl(bool en);
+void ibex_irq_software_ctrl(bool enable);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_IRQ_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_IRQ_H_

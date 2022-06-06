@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 
 #ifdef FREERTOS_IS_BAZEL
@@ -23,7 +23,7 @@
  */
 void vApplicationMallocFailedHook(void) {
   LOG_INFO("FreeRTOS malloc failed. Increase heap size in FreeRTOSConfig.h");
-  irq_global_ctrl(false);
+  ibex_irq_global_ctrl(false);
   abort();
 }
 
@@ -33,6 +33,6 @@ void vApplicationMallocFailedHook(void) {
  */
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
   LOG_INFO("FreeRTOS stack overflow. Increase stack size of task: %s");
-  irq_global_ctrl(false);
+  ibex_irq_global_ctrl(false);
   abort();
 }

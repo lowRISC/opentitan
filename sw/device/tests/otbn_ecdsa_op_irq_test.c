@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/dif/dif_otbn.h"
-#include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/ibex.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
@@ -149,14 +149,14 @@ static void otbn_wait_for_done_irq(otbn_t *otbn_ctx) {
     // we run the WFI instruction. The trick is that WFI returns when an
     // interrupt comes in even if interrupts are globally disabled, which means
     // that the WFI can actually sit *inside* the critical section.
-    irq_global_ctrl(false);
+    ibex_irq_global_ctrl(false);
     if (plic_peripheral != UINT32_MAX) {
       break;
     }
     wait_for_interrupt();
-    irq_global_ctrl(true);
+    ibex_irq_global_ctrl(true);
   }
-  irq_global_ctrl(true);
+  ibex_irq_global_ctrl(true);
 
   CHECK(plic_peripheral == kTopEarlgreyPlicPeripheralOtbn,
         "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
@@ -188,8 +188,8 @@ static void otbn_init_irq(void) {
       &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
 
   // Enable the external IRQ (so that we see the interrupt from the PLIC).
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
+  ibex_irq_global_ctrl(true);
+  ibex_irq_external_ctrl(true);
 }
 
 /**

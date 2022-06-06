@@ -5,8 +5,8 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_otbn.h"
-#include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/ibex.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/clkmgr_testutils.h"
@@ -68,8 +68,8 @@ void ottf_external_isr(void) {
 
   // Otbn clock is disabled, so we can not acknowledge the irq. Disabling it to
   // avoid an infinite loop here.
-  irq_global_ctrl(false);
-  irq_external_ctrl(false);
+  ibex_irq_global_ctrl(false);
+  ibex_irq_external_ctrl(false);
 
   // Complete the IRQ by writing the IRQ source to the Ibex register.
   CHECK_DIF_OK(
@@ -93,13 +93,13 @@ static void otbn_wait_for_done_irq(otbn_t *otbn_ctx) {
     // we run the WFI instruction. The trick is that WFI returns when an
     // interrupt comes in even if interrupts are globally disabled, which means
     // that the WFI can actually sit *inside* the critical section.
-    irq_global_ctrl(false);
+    ibex_irq_global_ctrl(false);
     if (plic_peripheral != UINT32_MAX) {
       break;
     }
 
     wait_for_interrupt();
-    irq_global_ctrl(true);
+    ibex_irq_global_ctrl(true);
   }
 
   CHECK(plic_peripheral == kTopEarlgreyPlicPeripheralOtbn,
@@ -125,8 +125,8 @@ static void otbn_init_irq(void) {
   CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
       &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
 
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
+  ibex_irq_global_ctrl(true);
+  ibex_irq_external_ctrl(true);
 }
 
 /**

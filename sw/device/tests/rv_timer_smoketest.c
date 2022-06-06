@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/dif/dif_rv_timer.h"
-#include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -54,8 +54,8 @@ void ottf_timer_isr(void) {
 const test_config_t kTestConfig;
 
 bool test_main(void) {
-  irq_global_ctrl(true);
-  irq_timer_ctrl(true);
+  ibex_irq_global_ctrl(true);
+  ibex_irq_timer_ctrl(true);
 
   CHECK_DIF_OK(dif_rv_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));

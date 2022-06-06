@@ -13,8 +13,8 @@
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
@@ -123,8 +123,8 @@ static void sca_init_timer(void) {
   OT_DISCARD(dif_rv_timer_set_tick_params(&timer, kRvTimerHart, tick_params));
   OT_DISCARD(dif_rv_timer_irq_set_enabled(
       &timer, kDifRvTimerIrqTimerExpiredHart0Timer0, kDifToggleEnabled));
-  irq_timer_ctrl(true);
-  irq_global_ctrl(true);
+  ibex_irq_timer_ctrl(true);
+  ibex_irq_global_ctrl(true);
 }
 
 /**
