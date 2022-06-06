@@ -377,18 +377,6 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
 
     if src_file:
         genout(outfile, '// Original reference file: {}\n', src_file)
-    if src_copy:
-        genout(
-            outfile,
-            '// Copyright information found in the reference file:\n')
-        genout(outfile, '//   {}\n', src_copy)
-    if src_lic is not None:
-        genout(
-            outfile,
-            '// Licensing information found in the reference file:\n')
-        for line in src_lic.splitlines():
-            genout(outfile, '//   {}\n', line)
-        genout(outfile, '\n')
 
     for access in sorted(access_type):
         genout(outfile, "use kernel::utilities::registers::{};\n", access)
