@@ -110,6 +110,7 @@ module aes_ctr_fsm import aes_pkg::*;
       // glitch), error out immediately.
       default: begin
         aes_ctr_ns = ERROR;
+        alert_o = 1'b1;
       end
     endcase
 

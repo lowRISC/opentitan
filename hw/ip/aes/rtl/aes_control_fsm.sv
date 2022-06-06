@@ -647,6 +647,7 @@ module aes_control_fsm
       // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
       default: begin
         aes_ctrl_ns = ERROR;
+        alert_o = 1'b1;
       end
     endcase
 
