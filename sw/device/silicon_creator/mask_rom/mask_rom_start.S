@@ -153,10 +153,11 @@ _mask_rom_start_boot:
   sw t1, PWRMGR_CFG_CDC_SYNC_REG_OFFSET(t0)
 
   // Setup the watchdog bite timer in order to reset the chip if the ROM stalls.
+  // The value below corresponds to 1 s for a clock frequency of 200 kHz.
   // Since interrupts are disabled the watchdog bark will have no effect
   // therefore the bark threshold is just set to the highest possible value.
   li t0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
-  li t1, 0xffffffff // TODO(lowRISC/opentitan#10215): reduce bite timer value.
+  li t1, 0x30d40
   sw t1, AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET(t0)
   li t1, 0xffffffff
   sw t1, AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET(t0)
