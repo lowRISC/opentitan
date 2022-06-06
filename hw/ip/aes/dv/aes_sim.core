@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:aes_test
       - lowrisc:dv:aes_sva
+      - lowrisc:dv:aes_err_injection
       - lowrisc:dv:aes_cov
     files:
       - tb/tb.sv
