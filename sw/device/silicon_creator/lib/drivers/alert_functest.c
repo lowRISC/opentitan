@@ -93,9 +93,6 @@ bool test_main(void) {
   // next reset.
   rstmgr_reason_clear(reason);
 
-  // This test assumes that the reset reason is unique.
-  CHECK(bitfield_popcount32(reason) == 1, "Expected exactly 1 reset reason.");
-
   if (bitfield_bit32_read(reason, kRstmgrReasonPowerOn)) {
     sec_mmio_init();
     EXECUTE_TEST(result, alert_no_escalate_test);
@@ -103,6 +100,7 @@ bool test_main(void) {
     LOG_ERROR("Test failure: should have reset before this line.");
     result = kErrorUnknown;
   } else if (bitfield_bit32_read(reason, kRstmgrReasonEscalation)) {
+    CHECK(bitfield_popcount32(reason) == 1, "Expected exactly 1 reset reason.");
     LOG_INFO("Detected reset after escalation test");
   } else {
     LOG_ERROR("Unknown reset reason");

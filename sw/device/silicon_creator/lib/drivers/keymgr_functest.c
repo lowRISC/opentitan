@@ -232,7 +232,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
-  if (info == kDifRstmgrResetInfoPor) {
+  if (info & kDifRstmgrResetInfoPor) {
     LOG_INFO("Powered up for the first time, program flash");
     init_flash();
 

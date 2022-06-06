@@ -21,7 +21,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   LOG_INFO("Checking reset status.");
-  rstmgr_testutils_post_reset(&rstmgr, kDifRstmgrResetInfoPor, 0, 0, 0, 0);
+  rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoPor);
   LOG_INFO("Reset status indicates a POR");
 
   return true;
