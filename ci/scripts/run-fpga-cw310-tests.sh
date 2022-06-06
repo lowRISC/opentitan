@@ -26,17 +26,37 @@ ci/bazelisk.sh test \
     --test_output=all \
     --build_tests_only \
     --define cw310=lowrisc \
-    //sw/device/tests:otbn_randomness_test_fpga_cw310 \
+    //sw/device/tests:aes_smoketest_fpga_cw310 \
+    //sw/device/tests:aon_timer_smoketest_fpga_cw310 \
+    //sw/device/tests:clkmgr_smoketest_fpga_cw310 \
+    //sw/device/tests:crt_test_fpga_cw310 \
+    //sw/device/tests:flash_ctrl_test_fpga_cw310 \
+    //sw/device/tests:gpio_smoketest_fpga_cw310 \
+    //sw/device/tests:kmac_smoketest_fpga_cw310 \
     //sw/device/tests:kmac_mode_cshake_test_fpga_cw310 \
     //sw/device/tests:kmac_mode_kmac_test_fpga_cw310 \
+    //sw/device/tests:otbn_randomness_test_fpga_cw310 \
+    //sw/device/tests:otbn_irq_test_fpga_cw310 \
+    //sw/device/tests:otbn_rsa_test_fpga_cw310 \
+    //sw/device/tests:otbn_ecdsa_op_irq_test_fpga_cw310 \
+    //sw/device/tests:otp_ctrl_smoketest_fpga_cw310 \
+    //sw/device/tests:pwrmgr_smoketest_fpga_cw310 \
+    //sw/device/tests:rstmgr_smoketest_fpga_cw310 \
+    //sw/device/tests:rv_plic_smoketest_fpga_cw310 \
+    //sw/device/tests:rv_timer_smoketest_fpga_cw310 \
+    //sw/device/tests:sram_ctrl_smoketest_fpga_cw310 \
+    //sw/device/tests:uart_smoketest_fpga_cw310 \
+    //sw/device/silicon_creator/lib:boot_data_functest_fpga_cw310 \
     //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 \
+    //sw/device/silicon_creator/lib/drivers:retention_sram_functest_fpga_cw310 \
     //sw/device/silicon_creator/lib/drivers:uart_functest_fpga_cw310 \
-    //sw/device/silicon_creator/lib/drivers:retention_sram_functest_fpga_cw310
-    # //sw/device/tests:pmp_smoketest_napot_fpga_cw310 \
-    # //sw/device/tests:pmp_smoketest_tor_fpga_cw310 \
-    # Note that the pmp_smoketest_* tests were included in the original
-    # systemtest but are failing when run under bazel and so are excluded from
-    # this run
+    //sw/device/silicon_creator/lib/sigverify:sigverify_functest_fpga_cw310
+
+    # Note that some tests were included in the original systemtest but are
+    # failing when run under bazel and so are excluded from this run. These
+    # tests are:
+    # - pmp_smoketest_napot
+    # - pmp_smoktetest_tor
     # TODO: use the following query instead of the list above after the CW310
     # UART is reliable (#13044)
     # $(./bazelisk.sh query 'rdeps(//...,@bitstreams//:bitstream_test_rom)') \
