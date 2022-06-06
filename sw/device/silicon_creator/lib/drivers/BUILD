@@ -217,6 +217,10 @@ cc_test(
 opentitan_functest(
     name = "keymgr_functest",
     srcs = ["keymgr_functest.c"],
+    cw310 = cw310_params(
+        #TODO: Remove this broken tag when #13045 is merged
+        tags = ["broken"],
+    ),
     deps = [
         ":keymgr",
         ":lifecycle",
