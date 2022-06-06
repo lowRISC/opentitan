@@ -13,6 +13,7 @@ package alert_handler_env_pkg;
   import dv_base_reg_pkg::*;
   import cip_base_pkg::*;
   import alert_handler_ral_pkg::*;
+  import sec_cm_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
