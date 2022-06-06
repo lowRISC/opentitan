@@ -520,6 +520,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task run_alert_test_vseq(int num_times = 1);
     int num_alerts = cfg.list_of_alerts.size();
     dv_base_reg alert_test_csr = ral.get_dv_base_reg_by_name("alert_test");
+    `DV_CHECK_FATAL(num_alerts > 0, "Please declare `list_of_alerts` under cfg!")
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running alert test iteration %0d/%0d", trans, num_times), UVM_LOW)
