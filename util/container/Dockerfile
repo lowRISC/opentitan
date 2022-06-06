@@ -12,6 +12,8 @@ ARG VERIBLE_VERSION=v0.0-2135-gb534c1fe
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
 ARG RUST_VERSION=1.60.0
+# This should match the version in bazelish.sh.
+ARG BAZELISK_VERSION=v1.11.0
 
 # Main container image.
 FROM ubuntu:18.04 AS opentitan
@@ -20,6 +22,7 @@ ARG OPENOCD_VERSION
 ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
 ARG RUST_VERSION
+ARG BAZELISK_VERSION
 
 LABEL version="1.0"
 LABEL description="OpenTitan development container."
@@ -124,5 +127,14 @@ RUN python3 -m pip install --user -U pip setuptools \
     && rm -f /tmp/python-requirements.txt
 
 USER root:root
+
+# Install bazel using bazelisk.
+RUN BAZELISK_PATH="/usr/local/bin/bazelisk"; \
+    BAZELISK_URL="https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-amd64"; \
+    curl -L -o ${BAZELISK_PATH} ${BAZELISK_URL} && \
+    chmod +x ${BAZELISK_PATH} && \
+    ln -s ${BAZELISK_PATH} /usr/local/bin/bazel
+
+RUN runuser dev -c "bazel > /dev/null"
 
 ENTRYPOINT [ "/start.sh" ]
