@@ -369,7 +369,7 @@ https://link.springer.com/content/pdf/10.1007/s13389-011-0006-y.pdf
 
 [<span id="ref-10">10</span>]: Principles of Secure Processor Architecture Design -
 https://caslab.csl.yale.edu/tutorials/hpca2019/ and
-https://caslab.csl.yale.edu/tutorials/hpca2019/tutorial\_principles\_sec\_arch\_20190217.pdf
+https://caslab.csl.yale.edu/tutorials/hpca2019/tutorial_principles_sec_arch_20190217.pdf
 
 [<span id="ref-11">11</span>]: Time Protection - https://ts.data61.csiro.au/projects/TS/timeprotection/
 
@@ -380,7 +380,7 @@ https://arxiv.org/pdf/2003.10513.pdf
 https://eprint.iacr.org/2004/100.pdf
 
 [<span id="ref-14">14</span>]: Fault Mitigation Patterns -
-https://www.riscure.com/uploads/2020/05/Riscure\_Whitepaper\_Fault\_Mitigation\_Patterns\_final.pdf
+https://www.riscure.com/uploads/2020/05/Riscure_Whitepaper_Fault_Mitigation_Patterns_final.pdf
 
 <!-- Footnotes themselves at the bottom. -->
 
