@@ -20,6 +20,9 @@
  *   - Version ('v')+,
  *   - Seed PRNG ('s')+,
  *   - Batch encrypt ('b')*,
+ *   - FvsR batch fixed key set ('t')*,
+ *   - FvsR batch generate ('g')*,
+ *   - FvsR batch encrypt and generate ('f')*,
  * Commands marked with * are implemented in this file. Those marked with + are
  * implemented in the simple serial library. Encryption is done in AES-ECB-128
  * mode. See https://wiki.newae.com/SimpleSerial for details on the protocol.
@@ -47,12 +50,12 @@ enum {
 };
 
 /**
- * An array of keys to be used in a batch
+ * An array of keys to be used in a batch.
  */
 uint8_t batch_keys[kNumBatchOpsMax][kAesKeyLength];
 
 /**
- * An array of plaintexts to be used in a batch
+ * An array of plaintexts to be used in a batch.
  */
 uint8_t batch_plaintexts[kNumBatchOpsMax][kAesTextLength];
 
@@ -62,7 +65,7 @@ uint8_t batch_plaintexts[kNumBatchOpsMax][kAesTextLength];
 bool sample_fixed = true;
 
 /**
- * Fixed key for fvsr key TVLA batch capture
+ * Fixed key for fvsr key TVLA batch capture.
  */
 uint8_t key_fixed[kAesKeyLength];
 
@@ -84,11 +87,10 @@ dif_aes_transaction_t transaction = {
  * Simple serial 'k' (set key) command handler.
  *
  * This function does not use key shares to simplify side-channel analysis.
- * The key must be `kAesKeySize` bytes long.
+ * The key must be `kAesKeyLength` bytes long.
  *
  * @param key Key.
  * @param key_len Key length.
- * @return Result of the operation.
  */
 static void aes_serial_set_key(const uint8_t *key, size_t key_len) {
   SS_CHECK(key_len == kAesKeyLength);
@@ -99,18 +101,16 @@ static void aes_serial_set_key(const uint8_t *key, size_t key_len) {
 }
 
 /**
- * Set key with shares
+ * Set key with shares.
  *
  * This function uses key shares.
- * The key must be `kAesKeySize` bytes long.
+ * The key must be `kAesKeyLength` bytes long.
  *
  * @param key Key.
  * @param key_len Key length.
- * @return Result of the operation.
  */
 static void aes_serial_set_key_share(const uint8_t *key, size_t key_len) {
   SS_CHECK(key_len == kAesKeyLength);
-
   dif_aes_key_share_t key_shares;
   prng_rand_bytes((uint8_t *)key_shares.share1, key_len);
   for (int i = 0; i < key_len / 4; ++i) {
@@ -131,19 +131,19 @@ static void aes_manual_trigger(void) {
  *
  * This function uses `sca_call_and_sleep()` from the sca library to put Ibex to
  * sleep in order to minimize noise during captures. The plaintext must be
- * `kAesKeySize` bytes long.
+ * `kAesTextLength` bytes long.
  *
  * @param plaintext Plaintext.
  * @param plaintext_len Length of the plaintext.
- * @return Result of the operation.
  */
 static void aes_serial_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
   bool ready = false;
   do {
     SS_CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusInputReady, &ready));
   } while (!ready);
+
   dif_aes_data_t data;
-  SS_CHECK(plaintext_len <= sizeof(data.data));
+  SS_CHECK(plaintext_len == sizeof(data.data));
   memcpy(data.data, plaintext, plaintext_len);
   SS_CHECK_DIF_OK(dif_aes_load_data(&aes, data));
 
@@ -156,9 +156,11 @@ static void aes_serial_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
 
 /**
  * Wait until AES output is valid and then get ciphertext and send it over
- * serial communication
+ * serial communication.
+ *
+ * @param only_first_word Send only the first word of the ciphertext.
  */
-static void aes_send_ciphertext(void) {
+static void aes_send_ciphertext(bool only_first_word) {
   bool ready = false;
   do {
     SS_CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusOutputValid, &ready));
@@ -167,13 +169,17 @@ static void aes_send_ciphertext(void) {
   dif_aes_data_t ciphertext;
   SS_CHECK_DIF_OK(dif_aes_read_output(&aes, &ciphertext));
 
-  simple_serial_send_packet('r', (uint8_t *)ciphertext.data, kAesTextLength);
+  if (only_first_word) {
+    simple_serial_send_packet('r', (uint8_t *)ciphertext.data, 4);
+  } else {
+    simple_serial_send_packet('r', (uint8_t *)ciphertext.data, kAesTextLength);
+  }
 }
 
 /**
  * Simple serial 'p' (encrypt) command handler.
  *
- * Encrypts a `kAesKeySize` bytes long plaintext using the AES peripheral and
+ * Encrypts a `kAesTextLength` bytes long plaintext using the AES peripheral and
  * sends the ciphertext over UART. This function also handles the trigger
  * signal.
  *
@@ -188,7 +194,7 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
   aes_serial_encrypt(plaintext, plaintext_len);
   sca_set_trigger_low();
 
-  aes_send_ciphertext();
+  aes_send_ciphertext(false);
 }
 
 /**
@@ -207,7 +213,8 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
  * no limit on the number of encryptions.
  *
  * The PRNG should be initialized using the 's' (seed PRNG) command before
- * starting batch encryption.
+ * starting batch encryption. In addition, the key should also be set
+ * using 'k' (key set) command before starting batch captures.
  *
  * Note that the host can partially verify this operation by checking the
  * contents of the 'r' (ciphertext) packet that is sent at the end.
@@ -228,7 +235,7 @@ static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
   }
   sca_set_trigger_low();
 
-  aes_send_ciphertext();
+  aes_send_ciphertext(true);
 }
 
 /**
@@ -248,7 +255,55 @@ static void aes_serial_fvsr_key_set(const uint8_t *key, size_t key_len) {
 }
 
 /**
- * Simple serial 'f' (fixed vs random key batch encrypt) command handler.
+ * Simple serial 'g' (fixed vs random key batch generate) command handler.
+ *
+ * This command generates random plaintexts and fixed or random keys using PRNG
+ * for AES fixed vs random key batch capture in order to remove fake leakage.
+ * Fixed or random key sequence is also determined here by using the lsb bit of
+ * the plaintext. In order to simplify the analysis, the first encryption has to
+ * use fixed key. The data collection method is based on the derived test
+ * requirements (DTR) for TVLA:
+ * https://www.rambus.com/wp-content/uploads/2015/08/TVLA-DTR-with-AES.pdf
+ * The measurements are taken by using either fixed or randomly selected keys.
+ * In addition, a PRNG is used for random key and plaintext generation instead
+ * of AES algorithm as specified in the TVLA DTR.
+ *
+ * Packet payload must be a `uint32_t` representation of the number of
+ * encryptions to perform. Number of operations of a batch should not be greater
+ * than the 'kNumBatchOpsMax' value.
+ *
+ * The PRNG should be initialized using the 's' (seed PRNG) command before
+ * starting batch captures. In addition, the fixed key should also be set
+ * using 't' (fvsr key set) command before starting batch captures.
+ *
+ * @param data Packet payload.
+ * @param data_len Packet payload length.
+ */
+static void aes_serial_fvsr_key_batch_generate(const uint8_t *data,
+                                               size_t data_len) {
+  uint32_t num_encryptions = 0;
+  SS_CHECK(data_len == sizeof(num_encryptions));
+  num_encryptions = read_32(data);
+  SS_CHECK(num_encryptions <= kNumBatchOpsMax);
+
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    if (sample_fixed) {
+      memcpy(batch_keys[i], key_fixed, kAesKeyLength);
+    } else {
+      prng_rand_bytes(batch_keys[i], kAesKeyLength);
+    }
+    // Note: To decrease memory usage, plaintexts may be generated before use in
+    // every encryption operation instead of generating and storing them for all
+    // encyrption operation in a batch. Also, a new method should be selected
+    // to set sample_fixed variable.
+    prng_rand_bytes(batch_plaintexts[i], kAesTextLength);
+    sample_fixed = batch_plaintexts[i][0] & 0x1;
+  }
+}
+
+/**
+ * Simple serial 'f' (fixed vs random key batch encrypt and generate) command
+ * handler.
  *
  * This command is designed to maximize the capture rate for side-channel
  * attacks. Instead of expecting a plaintext and sending the resulting
@@ -258,22 +313,23 @@ static void aes_serial_fvsr_key_set(const uint8_t *key, size_t key_len) {
  * https://www.rambus.com/wp-content/uploads/2015/08/TVLA-DTR-with-AES.pdf
  * The measurements are taken by using either fixed or randomly selected keys.
  * In order to simplify the analysis, the first encryption has to use fixed key.
- * In addition a PRNG is used for random key and plaintext generation instead
+ * In addition, a PRNG is used for random key and plaintext generation instead
  * of AES algorithm as specified in the TVLA DTR.
  * This minimizes the overhead of UART communication and significantly improves
  * the capture rate. The host must use the same PRNG to be able to compute the
  * random plaintext, random key and the ciphertext of each trace.
  *
  * Packet payload must be a `uint32_t` representation of the number of
- * encryptions to perform. Since generated plaintexts are not cached, there is
- * no limit on the number of encryptions.
+ * encryptions to perform. Number of operations of a batch should not be greater
+ * than the 'kNumBatchOpsMax' value.
  *
  * The PRNG should be initialized using the 's' (seed PRNG) command before
  * starting batch encryption. In addition, the fixed key should also be set
  * using 't' (fvsr key set) command before starting batch encryption.
  *
  * Note that the host can partially verify this operation by checking the
- * contents of the 'r' (ciphertext) packet that is sent at the end.
+ * contents of the 'r' (last ciphertext) packet that is sent at the end of every
+ * batch.
  *
  * @param data Packet payload.
  * @param data_len Packet payload length.
@@ -285,22 +341,6 @@ static void aes_serial_fvsr_key_batch_encrypt(const uint8_t *data,
   num_encryptions = read_32(data);
   SS_CHECK(num_encryptions <= kNumBatchOpsMax);
 
-  // In order to remove fake leakage we are generating all keys and plaintexts
-  // in the batch before using them.
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (sample_fixed) {
-      memcpy(batch_keys[i], key_fixed, kAesKeyLength);
-    } else if (!sample_fixed) {
-      prng_rand_bytes(batch_keys[i], kAesKeyLength);
-    }
-    // Note: To decrease memory usage plaintexts may be generated before use in
-    // every encryption operation instead of generating and storing for all
-    // encyrption operation in a batch. Also, a new method should be selected
-    // to set sample_fixed variable
-    prng_rand_bytes(batch_plaintexts[i], kAesTextLength);
-    sample_fixed = batch_plaintexts[i][0] & 0x1;
-  }
-
   sca_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_serial_set_key_share(batch_keys[i], kAesKeyLength);
@@ -308,7 +348,12 @@ static void aes_serial_fvsr_key_batch_encrypt(const uint8_t *data,
   }
   sca_set_trigger_low();
 
-  aes_send_ciphertext();
+  // Only send the first word to increase capture rate
+  aes_send_ciphertext(true);
+
+  // Start to generate random keys and plaintexts for the next batch when the
+  // waves are getting from scope by the host to increase capture rate.
+  aes_serial_fvsr_key_batch_generate(data, data_len);
 }
 
 /**
@@ -337,6 +382,7 @@ void _ottf_main(void) {
   simple_serial_register_handler('p', aes_serial_single_encrypt);
   simple_serial_register_handler('b', aes_serial_batch_encrypt);
   simple_serial_register_handler('t', aes_serial_fvsr_key_set);
+  simple_serial_register_handler('g', aes_serial_fvsr_key_batch_generate);
   simple_serial_register_handler('f', aes_serial_fvsr_key_batch_encrypt);
 
   LOG_INFO("Initializing AES unit.");
