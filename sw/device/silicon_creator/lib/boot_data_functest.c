@@ -31,8 +31,8 @@ boot_data_t kTestBootData = (boot_data_t){
                 0xa58d38b2, 0x60693f97, 0x67e132d9}},
     .identifier = kBootDataIdentifier,
     .is_valid = kBootDataValidEntry,
-    // `kBootDataDefault.counter` + 1 for consistency.
-    .counter = 6,
+    // `kBootDataDefaultCounterVal` + 1 for consistency.
+    .counter = kBootDataDefaultCounterVal + 1,
     .min_security_version_rom_ext = 0,
 };
 
@@ -279,9 +279,7 @@ rom_error_t write_page_switch_test(void) {
   erase_boot_data_pages();
   boot_data_t boot_data_act;
   boot_data_t boot_data_exp;
-  // Counter value starts from `kBootDataDefault.counter` defined in
-  // `boot_data.c` and is incremented before each write.
-  uint32_t counter_exp = 5;
+  uint32_t counter_exp = kBootDataDefaultCounterVal;
 
   // Write `kBootDataEntriesPerPage` + 1 entries to test the switch from page 0
   // to page 1.

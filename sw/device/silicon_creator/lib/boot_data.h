@@ -53,9 +53,13 @@ typedef struct boot_data {
    */
   uint32_t min_security_version_rom_ext;
   /**
+   * Minimum required security version for BL0.
+   */
+  uint32_t min_security_version_bl0;
+  /**
    * Padding to make the size of `boot_data_t` a power of two.
    */
-  uint32_t padding[3];
+  uint8_t padding[8];
 } boot_data_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
@@ -63,7 +67,8 @@ OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 32);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 40);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, counter, 44);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_rom_ext, 48);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 52);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_bl0, 52);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 56);
 OT_ASSERT_SIZE(boot_data_t, 64);
 
 enum {
@@ -82,6 +87,13 @@ enum {
    * entry.
    */
   kBootDataInvalidEntry = 0,
+  /**
+   * Value of the counter field of the default boot data entry.
+   *
+   * This starts from 5 to have a slightly less trivial value in case we need to
+   * distinguish the default entry.
+   */
+  kBootDataDefaultCounterVal = 5,
   /**
    * Size of `boot_data_t` in words.
    */
