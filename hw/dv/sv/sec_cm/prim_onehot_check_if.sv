@@ -24,54 +24,88 @@ interface prim_onehot_check_if #(
   `include "uvm_macros.svh"
   import uvm_pkg::*;
 
+  typedef enum bit [1:0] {
+    OnehotFault,
+    OnehotEnableFault,
+    OnehotAddrFault
+  } onehot_fault_type_e;
+
   string msg_id = $sformatf("%m");
 
   string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
   string oh_signal_forced = $sformatf("%s.oh_i", path);
   string en_signal_forced = $sformatf("%s.en_i", path);
-
-  // TODO, so far this parameter is always tie to 0 in design
-  // Add more support when it's used
-  `ASSERT_INIT(AddrCheckNotSupported, !AddrCheck)
+  string addr_signal_forced = $sformatf("%s.addr_i", path);
 
   class prim_onehot_check_if_proxy extends sec_cm_pkg::sec_cm_base_if_proxy;
     `uvm_object_new
 
     logic[OneHotWidth-1:0] oh_orig_value;
+    logic[AddrWidth-1:0]   addr_orig_value;
     logic                  en_orig_value;
 
     virtual task inject_fault();
-      logic[OneHotWidth-1:0] oh_force_value;
-      logic                  en_force_value;
+      onehot_fault_type_e  onehot_fault_type;
+      bit[OneHotWidth-1:0] oh_force_value;
+      bit[AddrWidth-1:0]   addr_force_value;
+      bit                  en_force_value;
+      bit                  success;
 
       @(negedge clk_i);
       `DV_CHECK(uvm_hdl_read(oh_signal_forced, oh_orig_value))
       `DV_CHECK(uvm_hdl_read(en_signal_forced, en_orig_value))
-      `DV_CHECK_STD_RANDOMIZE_FATAL(en_force_value)
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(oh_force_value,
-                                         if (StrictCheck) {
-                                           if (en_force_value) $countones(oh_force_value) != 1;
-                                           else                $countones(oh_force_value) != 0;
-                                         } else if (!StrictCheck) {
-                                           if (en_force_value) $countones(oh_force_value) > 1;
-                                           else                $countones(oh_force_value) != 0;
-                                         }
-                                         // higher chance to test oh=0/1, when StrictCheck is set
-                                         oh_force_value dist {
-                                           0     :/ 1,
-                                           1     :/ 1,
-                                           [2:$] :/ 5};
+      `DV_CHECK(uvm_hdl_read(addr_signal_forced, addr_orig_value))
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(onehot_fault_type,
+                                         AddrWidth == 1 -> onehot_fault_type != OnehotFault;
+                                         !AddrCheck -> onehot_fault_type != OnehotAddrFault;
+                                         !EnableCheck -> onehot_fault_type != OnehotEnableFault;
                                          )
+
+      // TODO, add covergroup for onehot_fault_type
+      case (onehot_fault_type)
+        OnehotFault: begin
+          success = std::randomize(en_force_value, oh_force_value, addr_force_value) with {
+              !$onehot0(oh_force_value);
+              AddrCheck -> oh_force_value[addr_force_value] == (|oh_force_value);
+            };
+        end
+        OnehotEnableFault: begin
+          success = std::randomize(en_force_value, oh_force_value, addr_force_value) with {
+              $onehot0(oh_force_value);
+              AddrCheck -> oh_force_value[addr_force_value] == (|oh_force_value);
+              if (StrictCheck) {
+                (|oh_force_value) != en_force_value;
+              } else {
+                !en_force_value && (|oh_force_value);
+              }
+            };
+        end
+        OnehotAddrFault: begin
+          success = std::randomize(en_force_value, oh_force_value, addr_force_value) with {
+              $onehot0(oh_force_value);
+              oh_force_value[addr_force_value] != (|oh_force_value);
+            };
+        end
+        default: `uvm_fatal(msg_id, $sformatf("Unexpected onehot_fault_type: %s",
+                                              onehot_fault_type.name))
+      endcase
+      `uvm_info(msg_id, $sformatf("onehot_fault_type: %0s", onehot_fault_type.name), UVM_LOW)
+      `DV_CHECK_FATAL(success)
 
       `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
                                   en_signal_forced, en_orig_value, en_force_value), UVM_LOW)
       `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
                                   oh_signal_forced, oh_orig_value, oh_force_value), UVM_LOW)
+      `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
+                                  addr_signal_forced, addr_orig_value, addr_force_value), UVM_LOW)
+
       `DV_CHECK(uvm_hdl_force(en_signal_forced, en_force_value))
       `DV_CHECK(uvm_hdl_force(oh_signal_forced, oh_force_value))
+      `DV_CHECK(uvm_hdl_force(addr_signal_forced, addr_force_value))
       @(negedge clk_i);
       `DV_CHECK(uvm_hdl_release(en_signal_forced))
       `DV_CHECK(uvm_hdl_release(oh_signal_forced))
+      `DV_CHECK(uvm_hdl_release(addr_signal_forced))
     endtask
 
     virtual task restore_fault();
@@ -79,8 +113,11 @@ interface prim_onehot_check_if #(
                                   en_signal_forced, en_orig_value), UVM_LOW)
       `uvm_info(msg_id, $sformatf("Forcing %s original value %0d",
                                   oh_signal_forced, oh_orig_value), UVM_LOW)
+      `uvm_info(msg_id, $sformatf("Forcing %s original value %0d",
+                                  addr_signal_forced, addr_orig_value), UVM_LOW)
       `DV_CHECK(uvm_hdl_deposit(en_signal_forced, en_orig_value))
       `DV_CHECK(uvm_hdl_deposit(oh_signal_forced, oh_orig_value))
+      `DV_CHECK(uvm_hdl_deposit(addr_signal_forced, addr_orig_value))
     endtask
   endclass
 
