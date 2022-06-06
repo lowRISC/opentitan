@@ -464,6 +464,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
       // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
       default: begin
         aes_cipher_ctrl_ns = ERROR;
+        alert_o = 1'b1;
       end
     endcase
 
