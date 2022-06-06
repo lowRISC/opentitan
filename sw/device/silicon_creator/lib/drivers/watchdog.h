@@ -36,7 +36,6 @@ enum {
  * OTP is less than this value.
  */
 enum {
-  // TODO(#10808): Determine this value.
   kWatchdogMinThreshold = 1,
 };
 
