@@ -22,7 +22,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &info));
 
   // If POR, clear reason and request software reset
-  if (info == kDifRstmgrResetInfoPor) {
+  if (info & kDifRstmgrResetInfoPor) {
     LOG_INFO("POR encountered!");
     CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
