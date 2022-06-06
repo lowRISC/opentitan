@@ -59,10 +59,12 @@
       name: tl_intg_err
       desc: ''' Verify that the data integrity check violation generates an alert.
 
-            Randomly inject errors on the control, data, or the ECC bits during CSR accesses.
-            Verify that triggers the correct fatal alert.'''
+            - Randomly inject errors on the control, data, or the ECC bits during CSR accesses.
+              Verify that triggers the correct fatal alert.
+            - Inject a fault at the onehot check in `u_reg.u_prim_reg_we_check` and verify the
+              corresponding fatal alert occurs'''
       milestone: V2S
-      tests: ["{name}_tl_intg_err"]
+      tests: ["{name}_tl_intg_err", "{name}_sec_cm"]
     }
   ]
   covergroups: [

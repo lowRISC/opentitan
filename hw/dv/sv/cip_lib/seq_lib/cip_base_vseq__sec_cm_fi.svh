@@ -3,13 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 virtual task run_sec_cm_fi_vseq(int num_times = 1);
-  // Adding an exception for alert_handler who does not have list_of_alerts.
-  if (cfg.list_of_alerts.size()) begin
-    `DV_CHECK_FATAL(cfg.sec_cm_alert_name inside {cfg.list_of_alerts},
-                    $sformatf("sec_cm_alert_name (%s) is not inside %p",
-                              cfg.sec_cm_alert_name, cfg.list_of_alerts))
-  end
-
   pre_run_sec_cm_fi_vseq();
   for (int trans = 1; trans <= num_times; trans++) begin
     `uvm_info(`gfn, $sformatf("Running run_sec_cm_fi_vseq %0d/%0d", trans, num_times), UVM_LOW)
@@ -31,6 +24,10 @@ endtask : post_run_sec_cm_fi_vseq
 // - Verify any operations that follow fail (as applicable).
 // refer to ip/keymgr/dv/env/seq_lib/keymgr_common_vseq.sv as an example
 virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
+  `DV_CHECK_FATAL(cfg.sec_cm_alert_name inside {cfg.list_of_alerts},
+                  $sformatf("sec_cm_alert_name (%s) is not inside %p",
+                            cfg.sec_cm_alert_name, cfg.list_of_alerts))
+
   `uvm_info(`gfn, $sformatf("expected fatal alert is triggered for %s", if_proxy.sec_cm_type.name),
             UVM_LOW)
 
@@ -58,7 +55,8 @@ virtual task test_sec_cm_fi();
     end
 
     // when a fault occurs at the reg_we_check, it's treated as a TL intg error
-    if (if_proxy.sec_cm_type == SecCmPrimOnehot && !uvm_re_match("*u_prim_reg_we_check*", if_proxy.path)) begin
+    if (if_proxy.sec_cm_type == SecCmPrimOnehot &&
+        !uvm_re_match("*u_prim_reg_we_check*", if_proxy.path)) begin
       check_tl_intg_error_response();
     end else begin
       check_sec_cm_fi_resp(if_proxy);
