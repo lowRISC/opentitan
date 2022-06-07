@@ -1280,7 +1280,7 @@ def main():
 
         # Auto-generate tests in "sw/device/tests/autogen" area.
         gencmd = warnhdr + GENCMD.format(topname=topname)
-        for fname in ["plic_all_irqs_test.c", "alert_test.c", "meson.build", "BUILD"]:
+        for fname in ["plic_all_irqs_test.c", "alert_test.c", "BUILD"]:
             outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
             render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
                             outfile,
