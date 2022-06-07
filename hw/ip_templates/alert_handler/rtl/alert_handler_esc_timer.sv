@@ -267,6 +267,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
       default: begin
         state_d = FsmErrorSt;
         esc_state_o = FsmError;
+        fsm_error = 1'b1;
       end
     endcase
 
@@ -275,6 +276,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
     // we move into the terminal FSM error state.
     if (accu_fail_i || cnt_error) begin
       state_d = FsmErrorSt;
+      fsm_error = 1'b1;
     end
   end
 
