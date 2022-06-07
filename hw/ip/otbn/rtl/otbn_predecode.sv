@@ -6,20 +6,36 @@
 
 module otbn_predecode
   import otbn_pkg::*;
-(
+#(
+  parameter int ImemSizeByte = 4096,
+
+  localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte)
+) (
   input  logic                   clk_i,
   input  logic                   rst_ni,
 
-  input  logic [31:0]            imem_rdata_i,
-  input  logic                   imem_rvalid_i,
+  input  logic [31:0]              imem_rdata_i,
+  input  logic                     imem_rvalid_i,
+  input  logic [ImemAddrWidth-1:0] imem_raddr_i,
 
-  output rf_predec_bignum_t   rf_predec_bignum_o,
-  output alu_predec_bignum_t  alu_predec_bignum_o,
-  output ispr_predec_bignum_t ispr_predec_bignum_o,
-  output mac_predec_bignum_t  mac_predec_bignum_o,
-  output logic                lsu_addr_en_predec_o,
-  output ctrl_flow_predec_t   ctrl_flow_predec_o
+  output rf_predec_bignum_t        rf_predec_bignum_o,
+  output alu_predec_bignum_t       alu_predec_bignum_o,
+  output ispr_predec_bignum_t      ispr_predec_bignum_o,
+  output mac_predec_bignum_t       mac_predec_bignum_o,
+  output logic                     lsu_addr_en_predec_o,
+  output ctrl_flow_predec_t        ctrl_flow_predec_o,
+  output logic [ImemAddrWidth-1:0] ctrl_flow_target_predec_o
 );
+  // The ISA has a fixed 12 bits for loop_bodysize. The maximum possible address for the end of a
+  // loop is the maximum address in Imem (2^ImemAddrWidth - 4) plus loop_bodysize instructions
+  // (which take 4 * (2^12 - 1) bytes), plus 4 extra bytes. This simplifies to
+  //
+  //    (1 << ImemAddrWidth) + (1 << 14) - 4
+  //
+  // which is strictly less than (1 << (max(ImemAddrWidth, 14) + 1)), so can be represented with
+  // max(ImemAddrWidth, 14) + 1 bits.
+  localparam int unsigned LoopEndAddrWidth = 1 + (ImemAddrWidth < 14 ? 14 : ImemAddrWidth);
+
   logic rf_ren_a_base;
   logic rf_ren_b_base;
   logic rf_we_a_base;
@@ -53,8 +69,33 @@ module otbn_predecode
   csr_e  csr_addr;
   ispr_e ispr_addr;
 
+  logic [31:0]                 imm_b_type_base;
+  logic [31:0]                 imm_j_type_base;
+  logic [LoopEndAddrWidth-1:0] loop_end_addr;
+
   assign csr_addr = csr_e'(imem_rdata_i[31:20]);
   assign wsr_addr = wsr_e'(imem_rdata_i[20 +: WsrNumWidth]);
+
+  assign imm_b_type_base = {{19{imem_rdata_i[31]}}, imem_rdata_i[31], imem_rdata_i[7],
+    imem_rdata_i[30:25], imem_rdata_i[11:8], 1'b0};
+
+  assign imm_j_type_base =
+    {{12{imem_rdata_i[31]}}, imem_rdata_i[19:12], imem_rdata_i[20], imem_rdata_i[30:21], 1'b0};
+
+  logic unused_imm_b_type_base;
+  assign unused_imm_b_type_base = ^imm_b_type_base[31:ImemAddrWidth];
+
+  logic unused_imm_j_type_base;
+  assign unused_imm_j_type_base = ^imm_j_type_base[31:ImemAddrWidth];
+
+  assign loop_end_addr = LoopEndAddrWidth'(imem_raddr_i) +
+                         LoopEndAddrWidth'({imem_rdata_i[31:20], 2'b00}) + 'd4;
+
+  if (LoopEndAddrWidth > ImemAddrWidth) begin : g_unused_loop_end_addr
+    logic unused_loop_end_addr;
+
+    assign unused_loop_end_addr = ^loop_end_addr[LoopEndAddrWidth-1:ImemAddrWidth];
+  end
 
   always_comb begin
     rf_ren_a_base   = 1'b0;
@@ -88,6 +129,8 @@ module otbn_predecode
     branch_insn = 1'b0;
     jump_insn   = 1'b0;
     loop_insn   = 1'b0;
+
+    ctrl_flow_target_predec_o = '0;
 
     if (imem_rvalid_i) begin
       unique case (imem_rdata_i[6:0])
@@ -139,14 +182,16 @@ module otbn_predecode
         ////////////////////////
 
         InsnOpcodeBaseBranch: begin
-          rf_ren_a_base = 1'b1;
-          rf_ren_b_base = 1'b1;
-          branch_insn   = 1'b1;
+          rf_ren_a_base             = 1'b1;
+          rf_ren_b_base             = 1'b1;
+          branch_insn               = 1'b1;
+          ctrl_flow_target_predec_o = imem_raddr_i + imm_b_type_base[ImemAddrWidth-1:0];
         end
 
         InsnOpcodeBaseJal: begin
-          rf_we_d_base = 1'b1;
-          jump_insn    = 1'b1;
+          rf_we_d_base              = 1'b1;
+          jump_insn                 = 1'b1;
+          ctrl_flow_target_predec_o = imem_raddr_i + imm_j_type_base[ImemAddrWidth-1:0];
         end
 
         InsnOpcodeBaseJalr: begin
@@ -230,8 +275,9 @@ module otbn_predecode
         InsnOpcodeBignumBaseMisc: begin
           unique case (imem_rdata_i[14:12])
             3'b000, 3'b001: begin // BN.LOOP[I]
-              rf_ren_a_base = ~imem_rdata_i[12];
-              loop_insn     = 1'b1;
+              rf_ren_a_base             = ~imem_rdata_i[12];
+              loop_insn                 = 1'b1;
+              ctrl_flow_target_predec_o = loop_end_addr[ImemAddrWidth-1:0];
             end
             3'b010, 3'b100, 3'b110:  begin  // BN.AND/BN.OR/BN.XOR
               rf_we_bignum                = 1'b1;

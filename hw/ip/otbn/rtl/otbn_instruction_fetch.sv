@@ -36,12 +36,13 @@ module otbn_instruction_fetch
   output logic [31:0]              insn_fetch_resp_data_o,
   input  logic                     insn_fetch_resp_clear_i,
 
-  output rf_predec_bignum_t   rf_predec_bignum_o,
-  output alu_predec_bignum_t  alu_predec_bignum_o,
-  output ctrl_flow_predec_t   ctrl_flow_predec_o,
-  output ispr_predec_bignum_t ispr_predec_bignum_o,
-  output mac_predec_bignum_t  mac_predec_bignum_o,
-  output logic                lsu_addr_en_predec_o,
+  output rf_predec_bignum_t        rf_predec_bignum_o,
+  output alu_predec_bignum_t       alu_predec_bignum_o,
+  output ctrl_flow_predec_t        ctrl_flow_predec_o,
+  output logic [ImemAddrWidth-1:0] ctrl_flow_target_predec_o,
+  output ispr_predec_bignum_t      ispr_predec_bignum_o,
+  output mac_predec_bignum_t       mac_predec_bignum_o,
+  output logic                     lsu_addr_en_predec_o,
 
   input logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot_i,
   input logic [NWdr-1:0] rf_bignum_rd_b_indirect_onehot_i,
@@ -92,6 +93,9 @@ module otbn_instruction_fetch
 
   ctrl_flow_predec_t ctrl_flow_predec, ctrl_flow_predec_d, ctrl_flow_predec_q;
 
+  logic [ImemAddrWidth-1:0] ctrl_flow_target_predec, ctrl_flow_target_predec_d;
+  logic [ImemAddrWidth-1:0] ctrl_flow_target_predec_q;
+
   logic [NWdr-1:0] rf_bignum_wr_sec_wipe_onehot;
 
   // The prefetch has failed if a fetch is requested and either no prefetch has done or was done to
@@ -114,19 +118,23 @@ module otbn_instruction_fetch
   end
 
   // SEC_CM: DATA_REG_SW.SCA
-  otbn_predecode u_otbn_predecode (
+  otbn_predecode #(
+    .ImemSizeByte(ImemSizeByte)
+  ) u_otbn_predecode (
     .clk_i,
     .rst_ni,
 
     .imem_rdata_i (imem_rdata_i[31:0]),
+    .imem_raddr_i (insn_prefetch_addr),
     .imem_rvalid_i,
 
-    .rf_predec_bignum_o   (rf_predec_bignum_insn),
-    .alu_predec_bignum_o  (alu_predec_bignum),
-    .ctrl_flow_predec_o   (ctrl_flow_predec),
-    .ispr_predec_bignum_o (ispr_predec_bignum),
-    .mac_predec_bignum_o  (mac_predec_bignum),
-    .lsu_addr_en_predec_o (lsu_addr_en_predec_insn)
+    .rf_predec_bignum_o        (rf_predec_bignum_insn),
+    .alu_predec_bignum_o       (alu_predec_bignum),
+    .ctrl_flow_predec_o        (ctrl_flow_predec),
+    .ctrl_flow_target_predec_o (ctrl_flow_target_predec),
+    .ispr_predec_bignum_o      (ispr_predec_bignum),
+    .mac_predec_bignum_o       (mac_predec_bignum),
+    .lsu_addr_en_predec_o      (lsu_addr_en_predec_insn)
   );
 
   prim_onehot_enc #(
@@ -194,6 +202,10 @@ module otbn_instruction_fetch
                               insn_fetch_resp_clear_i ? '0                 :
                                                         ctrl_flow_predec_q;
 
+  assign ctrl_flow_target_predec_d = insn_fetch_en ? ctrl_flow_target_predec   :
+                                                     ctrl_flow_target_predec_q;
+
+
   prim_flop #(
     .Width($bits(alu_predec_bignum_t)),
     .ResetValue('0)
@@ -225,6 +237,17 @@ module otbn_instruction_fetch
 
     .d_i(ctrl_flow_predec_d),
     .q_o(ctrl_flow_predec_q)
+  );
+
+  prim_flop #(
+    .Width(ImemAddrWidth),
+    .ResetValue('0)
+  ) u_ctrl_flow_target_predec_flop (
+    .clk_i,
+    .rst_ni,
+
+    .d_i(ctrl_flow_target_predec_d),
+    .q_o(ctrl_flow_target_predec_q)
   );
 
   prim_flop #(
@@ -325,12 +348,13 @@ module otbn_instruction_fetch
     .out_o(insn_addr_err_o)
   );
 
-  assign rf_predec_bignum_o   = rf_predec_bignum_q;
-  assign alu_predec_bignum_o  = alu_predec_bignum_q;
-  assign ctrl_flow_predec_o   = ctrl_flow_predec_q;
-  assign ispr_predec_bignum_o = ispr_predec_bignum_q;
-  assign mac_predec_bignum_o  = mac_predec_bignum_q;
-  assign lsu_addr_en_predec_o = lsu_addr_en_predec_q;
+  assign rf_predec_bignum_o        = rf_predec_bignum_q;
+  assign alu_predec_bignum_o       = alu_predec_bignum_q;
+  assign ctrl_flow_predec_o        = ctrl_flow_predec_q;
+  assign ctrl_flow_target_predec_o = ctrl_flow_target_predec_q;
+  assign ispr_predec_bignum_o      = ispr_predec_bignum_q;
+  assign mac_predec_bignum_o       = mac_predec_bignum_q;
+  assign lsu_addr_en_predec_o      = lsu_addr_en_predec_q;
 
   `ASSERT(FetchEnOnlyIfValidIMem, insn_fetch_en |-> imem_rvalid_i)
   `ASSERT(NoFetchEnAndIndirectEn, !(insn_fetch_en && rf_bignum_indirect_en_i))

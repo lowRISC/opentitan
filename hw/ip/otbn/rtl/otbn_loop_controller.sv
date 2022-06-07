@@ -16,16 +16,18 @@ module otbn_loop_controller
   input [ImemAddrWidth-1:0] insn_addr_i,
   input [ImemAddrWidth-1:0] next_insn_addr_i,
 
-  input        loop_start_req_i,
-  input        loop_start_commit_i,
-  input [11:0] loop_bodysize_i,
-  input [31:0] loop_iterations_i,
+  input                     loop_start_req_i,
+  input                     loop_start_commit_i,
+  input [11:0]              loop_bodysize_i,
+  input [31:0]              loop_iterations_i,
+  input [ImemAddrWidth-1:0] loop_end_addr_predec_i,
 
   output                     loop_jump_o,
   output [ImemAddrWidth-1:0] loop_jump_addr_o,
 
   output sw_err_o,
   output hw_err_o,
+  output predec_err_o,
 
   output                     prefetch_loop_active_o,
   output [31:0]              prefetch_loop_iterations_o,
@@ -260,6 +262,9 @@ module otbn_loop_controller
 
   assign hw_err_o =
     (|loop_counter_err) | loop_stack_cnt_err | ((|current_loop_intg_err) & current_loop_valid);
+
+  assign predec_err_o =
+    (loop_end_addr_predec_i != new_loop_end_addr_full[ImemAddrWidth-1:0]) & loop_start_req_i;
 
   // Forward info about loop state for next cycle to prefetch stage
   assign prefetch_loop_active_o = next_loop_valid;

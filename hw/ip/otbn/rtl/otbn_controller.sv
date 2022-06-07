@@ -159,8 +159,9 @@ module otbn_controller
   output logic                     prefetch_ignore_errs_o,
 
   // Predecoded control
-  input  ctrl_flow_predec_t ctrl_flow_predec_i,
-  output logic              predec_error_o
+  input  ctrl_flow_predec_t        ctrl_flow_predec_i,
+  input  logic [ImemAddrWidth-1:0] ctrl_flow_target_predec_i,
+  output logic                     predec_error_o
 );
   import prim_mubi_pkg::*;
 
@@ -228,7 +229,7 @@ module otbn_controller
   logic                     expected_lsu_addr_en;
 
   logic                     expected_call_stack_push, expected_call_stack_pop;
-  logic                     lsu_predec_error, ctrl_predec_error;
+  logic                     lsu_predec_error, branch_target_predec_error, ctrl_predec_error;
 
   logic rnd_req_raw;
 
@@ -278,7 +279,7 @@ module otbn_controller
 
   logic [WLEN-1:0] mac_bignum_rf_wr_data;
 
-  logic loop_hw_err;
+  logic loop_hw_err, loop_predec_err;
   logic csr_illegal_addr, wsr_illegal_addr, ispr_illegal_addr;
   logic imem_addr_err, loop_sw_err, ispr_err;
   logic dmem_addr_err_check, dmem_addr_err;
@@ -615,16 +616,18 @@ module otbn_controller
     .insn_addr_i,
     .next_insn_addr_i(next_insn_addr),
 
-    .loop_start_req_i   (loop_start_req),
-    .loop_start_commit_i(loop_start_commit),
-    .loop_bodysize_i    (loop_bodysize),
-    .loop_iterations_i  (loop_iterations),
+    .loop_start_req_i       (loop_start_req),
+    .loop_start_commit_i    (loop_start_commit),
+    .loop_bodysize_i        (loop_bodysize),
+    .loop_iterations_i      (loop_iterations),
+    .loop_end_addr_predec_i (ctrl_flow_target_predec_i),
 
     .loop_jump_o     (loop_jump),
     .loop_jump_addr_o(loop_jump_addr),
 
-    .sw_err_o (loop_sw_err),
-    .hw_err_o (loop_hw_err),
+    .sw_err_o     (loop_sw_err),
+    .hw_err_o     (loop_hw_err),
+    .predec_err_o (loop_predec_err),
 
     .jump_or_branch_i(jump_or_branch),
     .otbn_stall_i    (stall),
@@ -1350,12 +1353,22 @@ module otbn_controller
                                    ((insn_dec_base_i.rf_ren_a & rf_base_rd_addr_a_o == 5'd1) |
                                     (insn_dec_base_i.rf_ren_b & rf_base_rd_addr_b_o == 5'd1));
 
+  // Check branch target against the precalculated target from pre-decode. Pre-decode cannot
+  // calculate the jump target of a JALR as it requires a register read so this is excluded from the
+  // check (by looking at the ALU op a selection).
+  assign branch_target_predec_error =
+    insn_dec_shared_i.branch_insn                                            &
+    insn_dec_shared_i.jump_insn & insn_dec_base_i.op_a_sel != OpASelRegister &
+    (ctrl_flow_target_predec_i != branch_target);
+
   assign ctrl_predec_error =
     |{ctrl_flow_predec_i.jump            != (insn_dec_shared_i.jump_insn   & insn_valid_i),
       ctrl_flow_predec_i.loop            != (insn_dec_shared_i.loop_insn   & insn_valid_i),
       ctrl_flow_predec_i.branch          != (insn_dec_shared_i.branch_insn & insn_valid_i),
       ctrl_flow_predec_i.call_stack_push != expected_call_stack_push,
-      ctrl_flow_predec_i.call_stack_pop  != expected_call_stack_pop};
+      ctrl_flow_predec_i.call_stack_pop  != expected_call_stack_pop,
+      branch_target_predec_error,
+      loop_predec_err};
 
   assign predec_error_o = lsu_predec_error | ctrl_predec_error;
 
