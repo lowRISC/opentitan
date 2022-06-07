@@ -92,3 +92,6 @@ set_rule_status -rule {W_CNTL} -status {Waived} \
 set_rule_status -rule {W_DATA} -status {Waived} \
   -expression {(Signal=~"*u_pinmux_aon.dio_pad_attr_*")} \
   -comment {PAD Attributes are static signals.}
+
+# ndmreset
+set_rule_status -rule {W_CNTL} -status {Waived} -expression {(ReceivingFlop=~"*.u_rstmgr_aon.u_ndm_sync*") && ((Signal=~"*.u_rv_dm.*ndmreset") || (Signal=~"*u_rv_dm.u_lc_en_sync*"))} -comment {LC Sync remains the value until escalation ndmreset only affects the rstmgr}
