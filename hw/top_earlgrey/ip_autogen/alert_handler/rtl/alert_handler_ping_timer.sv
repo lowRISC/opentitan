@@ -362,6 +362,8 @@ module alert_handler_ping_timer import alert_pkg::*; #(
       end
       default: begin
         state_d = FsmErrorSt;
+        alert_ping_fail_o = 1'b1;
+        esc_ping_fail_o   = 1'b1;
       end
     endcase
 
@@ -369,7 +371,9 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     // if the two LFSR or counter states do not agree,
     // we move into the terminal state.
     if (lfsr_err || cnt_error || esc_cnt_error) begin
-       state_d = FsmErrorSt;
+      state_d = FsmErrorSt;
+      alert_ping_fail_o = 1'b1;
+      esc_ping_fail_o   = 1'b1;
     end
   end
 
