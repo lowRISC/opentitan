@@ -12,11 +12,6 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
-// FIXME(lowRISC/opentitan#12065) Eliminating this dependency from the SW build
-// for englishbreakfast is nontrivial, so we use the IS_ENGLISH_BREAKFAST hack
-// here. This should be removed once the linked bug is resolved.
-#if !OT_IS_ENGLISH_BREAKFAST
-
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "lc_ctrl_regs.h"
 
@@ -94,5 +89,3 @@ void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
       .chip_rev = bitfield_field32_read(reg, LC_CTRL_HW_REV_CHIP_REV_FIELD),
   };
 }
-
-#endif
