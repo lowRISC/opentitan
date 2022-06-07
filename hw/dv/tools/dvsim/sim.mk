@@ -141,7 +141,7 @@ cov_unr_xcelium:
 	cd ${cov_unr_dir} && ${cov_unr_run_cmd} ${cov_unr_run_opts}
 
 cov_unr_merge:
-	cd ${cov_unr_dir} && ${cov_merge_cmd} -init ${cov_unr_dir}/jgproject/sessionLogs/session_0/unr_imc_coverage_merge.cmd
+	cd ${cov_unr_dir} && ${job_prefix} ${cov_merge_cmd} -init ${cov_unr_dir}/jgproject/sessionLogs/session_0/unr_imc_coverage_merge.cmd
 
 ifeq (${SIMULATOR}, xcelium)
   cov_unr: cov_unr_xcelium cov_unr_merge
@@ -152,7 +152,7 @@ endif
 # Merge coverage if there are multiple builds.
 cov_merge:
 	@echo "[make]: cov_merge"
-	${cov_merge_cmd} ${cov_merge_opts}
+	${job_prefix} ${cov_merge_cmd} ${cov_merge_opts}
 
 # Generate coverage reports.
 cov_report:
