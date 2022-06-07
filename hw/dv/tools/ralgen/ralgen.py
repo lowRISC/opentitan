@@ -5,7 +5,6 @@
 r"""FuseSoc generator for UVM RAL package created with either regtool or
 topgen tools.
 """
-import logging as log
 import os
 import shlex
 import subprocess
@@ -19,22 +18,9 @@ try:
 except ImportError:
     from yaml import SafeLoader as YamlLoader
 
-
-# Get the REPO_TOP directory path. This is used to construct full paths below.
-def get_repo_top():
-    cmd = ["git", "rev-parse", "--show-toplevel"]
-    result = subprocess.run(cmd,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    repo_top = result.stdout.decode("utf-8").strip()
-    if not repo_top:
-        log.error(
-            "Attempted to find the root of this GitHub repository by running:\n"
-            "{}\n"
-            "But this command has failed:\n"
-            "{}".format(' '.join(cmd), result.stderr.decode("utf-8")))
-        sys.exit(1)
-    return repo_top
+# Repo root is 4 levels up. Note that this will require an update if the path to
+# this tool is changed.
+REPO_ROOT = "../../../.."
 
 
 def main():
@@ -45,8 +31,8 @@ def main():
     gapi_filepath = sys.argv[1]
     gapi = yaml.load(open(gapi_filepath), Loader=YamlLoader)
 
-    # The reggen and topgen tools live in REPO_TOP/util area.
-    util_path = Path(get_repo_top()) / "util"
+    # The reggen and topgen tools live in REPO_ROOT/util area.
+    util_path = Path(__file__).parent / REPO_ROOT / "util"
 
     # Retrieve the parameters from the yml.
     root_dir = Path(gapi['files_root'])
