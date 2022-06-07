@@ -138,7 +138,7 @@ class keymgr_common_vseq extends keymgr_base_vseq;
           $assertoff(0, "tb.dut.KmacDataKnownO_A");
         end
       end
-      SecCmPrimSparseFsmFlop: begin
+      SecCmPrimSparseFsmFlop, SecCmPrimOnehot: begin
         // No need to disable any assertion
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))

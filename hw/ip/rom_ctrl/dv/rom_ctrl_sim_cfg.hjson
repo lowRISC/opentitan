@@ -41,7 +41,8 @@
   en_build_modes: ["{tool}_crypto_dpi_prince_build_opts"]
 
   // Add additional tops for simulation.
-  sim_tops: ["rom_ctrl_bind", "rom_ctrl_cov_bind", "sec_cm_prim_sparse_fsm_flop_bind"]
+  sim_tops: ["rom_ctrl_bind", "rom_ctrl_cov_bind",
+             "sec_cm_prim_sparse_fsm_flop_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
