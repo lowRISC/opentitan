@@ -85,7 +85,11 @@
     {cov_unr_dir:     "{cov_unr_dir}" }
     // Add an additional single quotation because `cov_merge_cmd` has an empty space, it will cause
     // trouble when exporting the entire command in the environment.
-    {cov_merge_cmd: "'{cov_merge_cmd}'"}
+    {cov_merge_cmd: "{cov_merge_cmd}"}
+
+    // job prefix
+    {job_prefix: "{job_prefix}"}
+
   ]
 
   // Supported wave dumping formats (in order of preference).
@@ -121,7 +125,7 @@
   // It is constructed by the tool itself.
   cov_merge_dir:    "{scratch_path}/cov_merge"
   cov_merge_db_dir: "{cov_merge_dir}/merged"
-  cov_merge_cmd:    "{job_prefix} imc"
+  cov_merge_cmd:    "imc"
   cov_merge_opts:   ["-64bit",
                      "-licqueue",
                      "-exec {dv_root}/tools/xcelium/cov_merge.tcl"]
