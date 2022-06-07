@@ -238,6 +238,14 @@ cc_test(
     ],
 )
 
+filegroup(
+    name = "english_breakfast_test_rom_manifest_srcs",
+    srcs = [
+        "manifest.c",
+        "manifest.h",
+    ],
+)
+
 cc_library(
     name = "otbn_util",
     srcs = ["otbn_util.c"],

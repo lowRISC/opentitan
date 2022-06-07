@@ -48,10 +48,7 @@ cc_library(
         "//hw/ip/spi_device/data:spi_device_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:multibits",
-        "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
@@ -61,6 +58,42 @@ alias(
     actual = select({
         "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_bootstrap",
         "//conditions:default": "//sw/device/silicon_creator/mask_rom:bootstrap",
+    }),
+    visibility = ["//visibility:private"],
+)
+
+# TODO(#12905): Use a slightly hollowed out version of the silicon_creator manifest
+# implementation when building the test_rom for the english breakfast top level.
+cc_library(
+    name = "english_breakfast_test_rom_manifest",
+    srcs = [
+        "//sw/device/silicon_creator/lib:english_breakfast_test_rom_manifest_srcs",
+        "//sw/device/silicon_creator/lib/drivers:english_breakfast_test_rom_driver_srcs",
+    ],
+    # This should be built only for english breakfast and skipped if using wildcards.
+    tags = ["manual"],
+    deps = [
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/spi_device/data:spi_device_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/silicon_creator/lib:epmp",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib:manifest_size",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+    ],
+)
+
+alias(
+    name = "test_rom_manifest",
+    actual = select({
+        "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_manifest",
+        "//conditions:default": "//sw/device/silicon_creator/lib:manifest",
     }),
     visibility = ["//visibility:private"],
 )
@@ -75,6 +108,7 @@ cc_library(
     deps = [
         ":chip_info",
         ":test_rom_bootstrap",
+        ":test_rom_manifest",
         "//hw/ip/clkmgr/data:clkmgr_regs",
         "//hw/ip/csrng/data:csrng_regs",
         "//hw/ip/edn/data:edn_regs",
@@ -101,7 +135,6 @@ cc_library(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/silicon_creator/lib:manifest",
     ],
 )
 
