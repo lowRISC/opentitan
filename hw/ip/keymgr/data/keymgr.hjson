@@ -31,7 +31,7 @@
       act:     "req",
       package: "edn_pkg",
     },
-    { struct:  "hw_key_req",  // aes_key_req_t
+    { struct:  "hw_key_req",
       type:    "uni",
       name:    "aes_key",     // aes_key_o (req)
       act:     "req",
