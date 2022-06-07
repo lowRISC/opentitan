@@ -15,7 +15,7 @@ set -e
 ci/bazelisk.sh clean
 
 # Build the modified EB software.
-./hw/top_englishbreakfast/util/prepare_sw.py --bazel -b
+./hw/top_englishbreakfast/util/prepare_sw.py -b
 
 # Build some other dependencies.
 ci/bazelisk.sh build //sw/host/opentitantool //hw/ip/otp_ctrl/data:img_rma

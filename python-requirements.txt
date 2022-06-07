@@ -42,10 +42,6 @@ types-tabulate
 # Dependency of sw/host/vendor/google_verible_verilog_syntax_py
 anytree
 
-# To be removed with Meson.
-# Minimum matches version in meson.build
-meson >= 0.56.2, <= 0.57.2
-
 # Development version with OT-specific changes
 git+https://github.com/lowRISC/fusesoc.git@ot-0.1
 

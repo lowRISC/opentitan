@@ -43,18 +43,9 @@ import tempfile
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from elftools.elf.elffile import ELFFile, SymbolTableSection  # type: ignore
-
-# yapf: disable
-
-# TODO: remove with meson; bazel will set the PYTHONPATH to locate otbn tools
-otbn_tools_path = os.environ.get('OTBN_TOOLS', None)
-if otbn_tools_path:
-    sys.path.append(otbn_tools_path)
 import otbn_as
 import otbn_ld
-
-# yapf: enable
+from elftools.elf.elffile import ELFFile, SymbolTableSection  # type: ignore
 
 
 def cmd_to_str(cmd: List[str]) -> str:
@@ -82,8 +73,8 @@ def run_tool(tool, out_file: Path, args) -> None:
     This works by writing to a temporary file (in the same directory) and then
     atomically replacing any existing destination file when done. This is
     needed if we need to run multiple otbn_build processes that generate the
-    same files in parallel (a requirement because of our current Meson-based
-    infrastructure).
+    same files in parallel (this was a requirement of our old Meson-based
+    infrastructure; it may not be needed now that we use Bazel).
 
     '''
     out_dir, out_base = os.path.split(out_file)

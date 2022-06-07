@@ -81,13 +81,11 @@
 
   // List of test specifications.
   //
-  // If you are adding a test that has been generated from the `sw_tests`
-  // dictionary declared in `sw/device/tests/meson.build`, the `sw_images` list
-  // below should contain `sw/device/tests/<sw_test_name>` (without any more
-  // subdirectories) because that is where the meson target is created. For
-  // example `gpio_test` is added to `sw_tests` in
-  // `sw/device/tests/sim_div/meson.build`, but the final meson targets all
-  // start with `sw/device/tests/gpio_test_`.
+  // If you are adding a test that has been generated from a Bazel
+  // `opentitan_functest` macro, you can specify the test using the path to the
+  // Bazel target. For example, if the Bazel target is:
+  // `//sw/device/tests:example_test_from_flash`, then you would specify this as
+  // `sw/device/tests/example_test_from_flash`.
   //
   // Each entry in `sw_images` is followed by an index separated with ':' which
   // is used by the testbench to know what type of image is it:

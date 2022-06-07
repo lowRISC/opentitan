@@ -53,7 +53,6 @@ ignoreFiles = [
   "/hw/vendor/.*",
   "/hw/ip_templates/.*",
   "/sw/vendor/.*",
-  "/meson.build$",
   "/opentitan-docs/",
   "/scratch/",
   "/site/.*",
