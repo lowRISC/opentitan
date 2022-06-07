@@ -62,7 +62,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Types of SW images used in the test.
   //
   // Set via plusarg. This is the path (relative to ~sw_build_bin_dir~) upto the basename of the SW
-  // image. If the SW image is not pre-built (generated with meson), then the ~sw_build_device~ is
+  // image. If the SW image is not pre-built (generated with Bazel), then the ~sw_build_device~ is
   // suffixed to the basename to pick the correct image. The following files (extensions) with this
   // basename are expected to exist there:
   // - .elf:          embedded executable
@@ -361,7 +361,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
         sw_images[i] = $sformatf("%0s/%0s", sw_build_bin_dir, sw_images[i]);
       end else if ("signed" inside {sw_image_flags[i]}) begin
         // TODO: support multiple signing keys. See "signing_keys" in
-        // `sw/device/meson.build` for options.
+        // `rules/opentitan.bzl` for options.
         sw_images[i] = $sformatf("%0s/%0s_prog_%0s.test_key_0.signed",
           sw_build_bin_dir, sw_images[i], sw_build_device);
       end else begin

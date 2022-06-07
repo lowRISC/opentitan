@@ -17,7 +17,6 @@ tools=(
     rustfmt
     flake8
     ninja
-    meson
     doxygen
     verible-verilog-lint
 )

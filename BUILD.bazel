@@ -47,7 +47,7 @@ clang_format_check(
         "./**/vendor/**",
         # Rust cargo build dirs
         "./**/target/**",
-        # Meson build dirs
+        # (Old) Meson build dirs that Bazel artifacts are still copied into.
         "./build-out/**",
         "./build-bin/**",
         # fusesoc build dir
@@ -63,7 +63,7 @@ clang_format_check(
         "./**/vendor/**",
         # Rust cargo build dirs
         "./**/target/**",
-        # Meson build dirs
+        # (Old) Meson build dirs that Bazel artifacts are still copied into.
         "./build-out/**",
         "./build-bin/**",
         # fusesoc build dir

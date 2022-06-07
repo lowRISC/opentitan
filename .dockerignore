@@ -22,9 +22,6 @@ jgproject/
 # FPGA splice intermediate files
 *.jou
 
-# Environment configuration (produced by Meson)
-.env
-
 # Simulation Results
 *.log
 vdCovLog/
