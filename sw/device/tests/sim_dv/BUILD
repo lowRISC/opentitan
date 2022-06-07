@@ -289,8 +289,8 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "pwrmgr_deep_sleep_sysrst_reqs_test",
-    srcs = ["pwrmgr_deep_sleep_sysrst_reqs_test.c"],
+    name = "pwrmgr_random_sleep_all_reset_reqs_test",
+    srcs = ["pwrmgr_random_sleep_all_reset_reqs_test.c"],
     targets = ["dv"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
