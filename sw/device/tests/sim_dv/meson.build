@@ -348,12 +348,12 @@ sw_tests += {
   }
 }
 
-pwrmgr_deep_sleep_sysrst_reqs_test = declare_dependency(
+pwrmgr_random_sleep_all_reset_reqs_test = declare_dependency(
   link_with: static_library(
-    'pwrmgr_deep_sleep_sysrst_reqs_test',
+    'pwrmgr_random_sleep_all_reset_reqs_test',
     sources: [
       hw_ip_rstmgr_reg_h,
-      'pwrmgr_deep_sleep_sysrst_reqs_test.c',
+      'pwrmgr_random_sleep_all_reset_reqs_test.c',
     ],
     dependencies: [
       sw_lib_dif_aon_timer,
@@ -379,8 +379,8 @@ pwrmgr_deep_sleep_sysrst_reqs_test = declare_dependency(
   ),
 )
 sw_tests += {
-  'pwrmgr_deep_sleep_sysrst_reqs_test': {
-    'library': pwrmgr_deep_sleep_sysrst_reqs_test,
+  'pwrmgr_random_sleep_all_reset_reqs_test': {
+    'library': pwrmgr_random_sleep_all_reset_reqs_test,
   }
 }
 

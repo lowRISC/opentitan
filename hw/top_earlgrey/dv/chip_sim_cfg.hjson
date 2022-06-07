@@ -527,9 +527,9 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_pwrmgr_deep_sleep_sysrst_reqs
-      uvm_test_seq: chip_sw_deep_sleep_sysrst_vseq
-      sw_images: ["sw/device/tests/sim_dv/pwrmgr_deep_sleep_sysrst_reqs_test:1"]
+      name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
+      uvm_test_seq: chip_sw_random_sleep_all_reset_vseq
+      sw_images: ["sw/device/tests/sim_dv/pwrmgr_random_sleep_all_reset_reqs_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {

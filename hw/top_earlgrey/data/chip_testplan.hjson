@@ -986,7 +986,7 @@
       tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
     }
     {
-      name: chip_sw_pwrmgr_deep_sleep_sysrst_reqs
+      name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
       desc: '''Verify that this chip can be reset by All available reset sources.
 
             - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
@@ -1002,7 +1002,7 @@
               the wdog reset phase + low power phase.
             '''
       milestone: V2
-      tests: ["chip_sw_pwrmgr_deep_sleep_sysrst_reqs"]
+      tests: ["chip_sw_pwrmgr_random_sleep_all_reset_reqs"]
     }
     {
       name: chip_sw_pwrmgr_sysrst_ctrl_reset
