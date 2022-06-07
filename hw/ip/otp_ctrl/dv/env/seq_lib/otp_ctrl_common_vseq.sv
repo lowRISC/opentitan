@@ -154,10 +154,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
           $asserton(0, "tb.dut.gen_partitions[7].gen_lifecycle.u_part_buf.ScrmblDataKnown_A");
        end
       end
-      SecCmPrimSparseFsmFlop: begin
-        // No assertion error.
-      end
-      SecCmPrimDoubleLfsr: begin
+      SecCmPrimSparseFsmFlop, SecCmPrimDoubleLfsr, SecCmPrimOnehot: begin
         // No assertion error.
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))

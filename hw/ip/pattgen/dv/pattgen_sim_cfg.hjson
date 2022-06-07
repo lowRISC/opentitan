@@ -32,10 +32,8 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
-
-  // Add additional tops for simulation.
-  sim_tops: ["pattgen_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
@@ -45,7 +43,7 @@
   uvm_test_seq: pattgen_base_vseq,
 
   // additional top for coverage
-  sim_tops: [ "pattgen_bind", "pattgen_cov_bind"]
+  sim_tops: [ "pattgen_bind", "pattgen_cov_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Pattgen coverage exclusion
   xcelium_cov_refine_files: ["{proj_root}/hw/ip/pattgen/dv/cov/pattgen_cov.vRefine"]

@@ -40,7 +40,8 @@
   // Add additional tops for simulation.
   sim_tops: [ "aes_bind",
               "aes_cov_bind",
-              "sec_cm_prim_sparse_fsm_flop_bind"]
+              "sec_cm_prim_sparse_fsm_flop_bind",
+              "sec_cm_prim_onehot_check_bind"]
 
   // TODO remove v2s refine for v2s
   xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/aes_remove_for_v2s.vRefine"]

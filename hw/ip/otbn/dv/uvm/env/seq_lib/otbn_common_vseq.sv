@@ -108,8 +108,15 @@ class otbn_common_vseq extends otbn_base_vseq;
   endfunction
 
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
+    uvm_reg_field fatal_cause;
     super.check_sec_cm_fi_resp(if_proxy);
-    csr_utils_pkg::csr_rd_check(.ptr(ral.fatal_alert_cause.bad_internal_state), .compare_value(1));
+
+    if (if_proxy.sec_cm_type == SecCmPrimOnehot) begin
+      fatal_cause = ral.fatal_alert_cause.reg_intg_violation;
+    end else begin
+      fatal_cause = ral.fatal_alert_cause.bad_internal_state;
+    end
+    csr_utils_pkg::csr_rd_check(.ptr(fatal_cause), .compare_value(1));
     csr_utils_pkg::csr_rd_check(.ptr(ral.status), .compare_value('hFF));
   endtask : check_sec_cm_fi_resp
 

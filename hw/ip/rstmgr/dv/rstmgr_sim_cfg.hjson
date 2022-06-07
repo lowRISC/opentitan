@@ -53,7 +53,7 @@
 
   // Add additional tops for simulation.
   sim_tops: ["rstmgr_bind", "rstmgr_cov_bind",
-             "sec_cm_prim_sparse_fsm_flop_bind"]
+             "sec_cm_prim_sparse_fsm_flop_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
