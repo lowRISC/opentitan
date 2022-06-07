@@ -1281,7 +1281,9 @@ module otp_ctrl
   assign otp_hw_cfg_o.valid = (part_init_done[HwCfgIdx]) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
   assign otp_hw_cfg_o.data = otp_hw_cfg_data_t'(part_buf_data[HwCfgOffset +: HwCfgSize]);
   // Root keys
-  assign otp_keymgr_key_o.valid = part_digest[Secret2Idx] != '0;
+  logic otp_keymgr_key_valid_d, otp_keymgr_key_valid_q; // need to latch valid
+  assign otp_keymgr_key_valid_d = part_digest[Secret2Idx] != '0;
+  assign otp_keymgr_key_o.valid = otp_keymgr_key_valid_q;
   assign otp_keymgr_key_o.key_share0 = (lc_seed_hw_rd_en == lc_ctrl_pkg::On) ?
                                        part_buf_data[CreatorRootKeyShare0Offset +:
                                                      CreatorRootKeyShare0Size] :
@@ -1292,6 +1294,22 @@ module otp_ctrl
                                                      CreatorRootKeyShare1Size] :
                                        PartInvDefault[CreatorRootKeyShare1Offset*8 +:
                                                       CreatorRootKeyShare1Size*8];
+  prim_flop #(
+    .Width(1)
+  ) u_keygmr_key_valid (
+    .clk_i,
+    .rst_ni,
+    .d_i (otp_keymgr_key_valid_d),
+    .q_o (otp_keymgr_key_valid_q)
+  );
+  // as key_share0, key_share1 are directly connected from digest and go
+  // through mux, Assertion is added to check the relationship between
+  // lc_seed_hw_rd_en and key_valid
+  `ASSERT(LcSeedHwRdEnStable_A,
+    $rose(otp_keymgr_key_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i,
+    !rst_ni || (lc_escalate_en_i == lc_ctrl_pkg::On) // Disable assertion if esc is high
+  )
 
   // Scrambling Keys
   assign scrmbl_key_seed_valid = part_digest[Secret1Idx] != '0;
