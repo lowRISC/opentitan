@@ -79,6 +79,8 @@ module tb;
     .trigger(top_earlgrey.rv_core_ibex_pwrmgr.core_sleeping)
   );
 
+  bind dut ast_ext_clk_if ast_ext_clk_if ();
+
   // POR reset if
   pins_if #(1) por_rstn_if();
   assign (weak0, weak1) por_rstn_if.pins = 1;
@@ -330,6 +332,10 @@ module tb;
     // AST supply interface.
     uvm_config_db#(virtual ast_supply_if)::set(
         null, "*.env", "ast_supply_vif", dut.ast_supply_if);
+
+    // AST io clk blocker interface.
+    uvm_config_db#(virtual ast_ext_clk_if)::set(
+        null, "*.env", "ast_ext_clk_vif", dut.ast_ext_clk_if);
 
     // PWRGMR.low_power_o only
     uvm_config_db#(virtual pwrmgr_low_power_if)::set(

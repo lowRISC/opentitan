@@ -73,6 +73,7 @@ filesets:
       - seq_lib/chip_sw_rstmgr_alert_info_vseq.sv: {is_include_file: true}
       - seq_lib/chip_callback_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
+      - ast_ext_clk_if.sv
       - ast_supply_if.sv
       - pwrmgr_low_power_if.sv
     file_type: systemVerilogSource
