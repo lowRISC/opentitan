@@ -19,6 +19,7 @@ build_reason="$2"
 only_doc_changes=0
 only_dv_changes=0
 has_otbn_changes=1
+only_cdc_change=0
 if [[ "$build_reason" = "PullRequest" ]]; then
     # Conservative way of checking for documentation-only and OTBN changes.
     # Only relevant for pipelines triggered from pull requests
@@ -57,7 +58,18 @@ if [[ "$build_reason" = "PullRequest" ]]; then
     else
         echo "PR doesn't contain OTBN changes"
     fi
+
+    # Check if the commit has only CDC related changes (run-cdc.tcl,
+    # cdc_waivers*.tcl).
+    echo "Checking for changes in this PR other than to CDC waivers"
+    git diff --quiet "$merge_base" -- ':(attr:!cdc)*.tcl' && only_cdc_change=1 || true
+    if [[ $only_cdc_change -eq 1 ]]; then
+        echo "PR is only CDC waiver changes"
+    else
+        echo "PR contains non CDC-related changes"
+    fi
 fi
 echo "##vso[task.setvariable variable=onlyDocChanges;isOutput=true]${only_doc_changes}"
 echo "##vso[task.setvariable variable=onlyDvChanges;isOutput=true]${only_dv_changes}"
 echo "##vso[task.setvariable variable=hasOTBNChanges;isOutput=true]${has_otbn_changes}"
+echo "##vso[task.setvariable variable=onlyCdcChanges;isOutput=true]${only_cdc_changes}"
