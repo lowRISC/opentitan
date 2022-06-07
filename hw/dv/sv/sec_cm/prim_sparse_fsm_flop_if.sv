@@ -44,24 +44,34 @@ interface prim_sparse_fsm_flop_if #(
 
       `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
                                   signal_forced, orig_value, force_value), UVM_LOW)
-      `DV_CHECK(uvm_hdl_deposit(signal_forced, force_value))
+      `DV_CHECK(uvm_hdl_force(signal_forced, force_value))
       if (CustomForceName != "") begin
         `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
                                     custom_signal_forced, orig_value, force_value), UVM_LOW)
         `DV_CHECK(uvm_hdl_deposit(custom_signal_forced, force_value))
       end
       @(negedge clk_i);
+      `DV_CHECK(uvm_hdl_release(signal_forced))
     endtask
 
     virtual task automatic restore_fault();
+      // Don't invoke restore_fault if CustomForceName is set, so as to avoid some complication,
+      // becasue restore_fault may cause misaligment on signal_forced and custom_signal_forced
+      // signal_forced is net, while custom_signal_forced is a flop.
+      // For example, if the state_d stays at error_state, we restore the net (signal_forced) and
+      // the flop (custom_signal_forced) to an idle_state. signal_forced won't be changed to
+      // idle_state as state_d has no change, while custom_signal_forced will become idile_state as
+      // it's updated in every cycle.
+      // Another approach is to deposit the value in the flop but we will have different
+      // implementation in the prim and the path is different in the close source
+      if (CustomForceName != "") return;
+
       `uvm_info(msg_id, $sformatf("Forcing %s to original value %0d", signal_forced, orig_value),
                 UVM_LOW)
       `DV_CHECK(uvm_hdl_deposit(signal_forced, orig_value))
-      if (CustomForceName != "") begin
-        `uvm_info(msg_id, $sformatf("Forcing %s to original value %0d", custom_signal_forced,
-                  orig_value), UVM_LOW)
-        `DV_CHECK(uvm_hdl_deposit(custom_signal_forced, orig_value))
-      end
+      `uvm_info(msg_id, $sformatf("Forcing %s to original value %0d", custom_signal_forced,
+                orig_value), UVM_LOW)
+      `DV_CHECK(uvm_hdl_deposit(custom_signal_forced, orig_value))
     endtask
   endclass
 
