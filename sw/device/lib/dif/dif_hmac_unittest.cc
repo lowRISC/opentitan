@@ -167,4 +167,19 @@ TEST_F(HmacSha256Test, StartError) {
   EXPECT_EQ(dif_hmac_mode_sha256_start(&hmac_, transaction_), kDifError);
 }
 
+class HmacProcessTest : public HmacTest {
+ protected:
+  HmacProcessTest() {}
+};
+
+TEST_F(HmacProcessTest, StartSuccess) {
+  EXPECT_READ32(HMAC_CMD_REG_OFFSET, 0);
+  EXPECT_WRITE32(HMAC_CMD_REG_OFFSET, {{HMAC_CMD_HASH_PROCESS_BIT, true}});
+  EXPECT_DIF_OK(dif_hmac_process(&hmac_));
+}
+
+TEST_F(HmacProcessTest, ProcessBadArg) {
+  EXPECT_DIF_BADARG(dif_hmac_process(nullptr));
+}
+
 }  // namespace dif_hmac_unittest
