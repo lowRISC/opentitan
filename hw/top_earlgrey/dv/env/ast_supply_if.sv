@@ -28,7 +28,7 @@ interface ast_supply_if (
   // index of key0 input pin in top_earlgrey
   localparam int DioSysrstCtrlAonEcRstL = 10;
   // index of key input pin in top_earlgrey
-  localparam int  MioInSysrstCtrlAonKey0In = 46;
+  localparam int MioInSysrstCtrlAonKey0In = 46;
 
   function static void force_vcaon_pok(bit value);
     force u_ast.u_rglts_pdm_3p3v.vcaon_pok_h_o = value;
@@ -68,12 +68,12 @@ interface ast_supply_if (
     force_vcmain_pok(1'b0);
     repeat (GlitchCycles) @(posedge clk);
     force_vcmain_pok(1'b1);
-  endtask // glitch_vcmain_pok_on_next_trigger
+  endtask : glitch_vcmain_pok_on_next_trigger
 
   // Create pulses in key0 after a trigger transitions high.
   // Since it's top input pin, GLS signal mismatch is not supposed to occur
   task automatic pulse_key0_i_next_trigger(int cycles);
-    `uvm_info("ast_supply_if", $sformatf("sysrst configured, cycles : %0d",cycles), UVM_MEDIUM)
+    `uvm_info("ast_supply_if", $sformatf("sysrst configured, cycles : %0d", cycles), UVM_MEDIUM)
     force_key0_i(1'b0);
     `uvm_info("ast_supply_if", "sysrst key0 input low", UVM_MEDIUM)
     repeat (cycles) @(posedge clk);

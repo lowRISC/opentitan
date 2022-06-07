@@ -70,10 +70,11 @@ package chip_env_pkg;
   localparam uint TokenWidthBit  = kmac_pkg::MsgWidth * 2;
   localparam uint TokenWidthByte = TokenWidthBit / 8;
 
-  typedef virtual pins_if #(NUM_GPIOS)  gpio_vif;
-  typedef virtual sw_logger_if          sw_logger_vif;
-  typedef virtual sw_test_status_if     sw_test_status_vif;
-  typedef virtual ast_supply_if         ast_supply_vif;
+  typedef virtual pins_if #(NUM_GPIOS) gpio_vif;
+  typedef virtual sw_logger_if         sw_logger_vif;
+  typedef virtual sw_test_status_if    sw_test_status_vif;
+  typedef virtual ast_supply_if        ast_supply_vif;
+  typedef virtual ast_ext_clk_if       ast_ext_clk_vif;
 
   // Types of memories in the chip.
   //

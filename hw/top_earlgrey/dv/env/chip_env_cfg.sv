@@ -81,10 +81,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   lc_ctrl_state_pkg::lc_state_e use_otp_image = lc_ctrl_state_pkg::LcStRma;
   string otp_images[lc_ctrl_state_pkg::lc_state_e];
 
-  uint                sw_test_timeout_ns = 12_000_000; // 12ms
-  sw_logger_vif       sw_logger_vif;
-  sw_test_status_vif  sw_test_status_vif;
-  ast_supply_vif      ast_supply_vif;
+  uint               sw_test_timeout_ns = 12_000_000; // 12ms
+  sw_logger_vif      sw_logger_vif;
+  sw_test_status_vif sw_test_status_vif;
+  ast_supply_vif     ast_supply_vif;
+  ast_ext_clk_vif    ast_ext_clk_vif;
 
   // Number of RAM tiles for each RAM instance.
   uint num_ram_main_tiles;
