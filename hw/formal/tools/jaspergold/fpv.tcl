@@ -129,34 +129,6 @@ assert -disable {*SyncCheckTransients_A}
 assert -disable {*SyncCheckTransients0_A}
 assert -disable {*SyncCheckTransients1_A}
 
-# Use counter abstractions to reduce the run time.
-if {$env(DUT_TOP) == "alert_handler"} {
-  abstract -counter -env \
-      {u_ping_timer.u_prim_double_lfsr.gen_double_lfsr[0].u_prim_lfsr.gen_max_len_sva.cnt_q}
-  abstract -counter -env \
-      {u_ping_timer.u_prim_double_lfsr.gen_double_lfsr[1].u_prim_lfsr.gen_max_len_sva.cnt_q}
-  abstract -counter -env {gen_classes[0].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
-  abstract -counter -env {gen_classes[1].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
-  abstract -counter -env {gen_classes[2].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
-  abstract -counter -env {gen_classes[3].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
-
-} elseif {$env(DUT_TOP) == "hmac"} {
-  # SHA2: does not check any calculation results, so 64 rounds of calculation can be abstracted.
-  abstract -counter -env u_sha2.round
-  # disable these assertions because they are unreachable when the fifo is WO
-  assert -disable {*hmac.u_tlul_adapter.u_*fifo.*.depthShallNotExceedParamDepth}
-  assert -disable {*hmac.u_tlul_adapter.u_*fifo.DataKnown_A}
-  assert -disable {*hmac.u_tlul_adapter.rvalidHighReqFifoEmpty}
-  assert -disable {*hmac.u_tlul_adapter.rvalidHighWhenRspFifoFull}
-
-} elseif {$env(DUT_TOP) == "flash_ctrl"} {
-  # disable these assertions because they are unreachable when the fifo is WO
-  assert -disable {*flash_ctrl.u_to_prog_fifo.u_*fifo.depthShallNotExceedParamDepth}
-  assert -disable {*flash_ctrl.u_to_prog_fifo.u_*fifo.DataKnown_A}
-  assert -disable {*flash_ctrl.u_to_prog_fifo.rvalidHighReqFifoEmpty}
-  assert -disable {*flash_ctrl.u_to_prog_fifo.rvalidHighWhenRspFifoFull}
-}
-
 #-------------------------------------------------------------------------
 # assume properties for inputs
 #-------------------------------------------------------------------------

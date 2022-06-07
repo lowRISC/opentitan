@@ -142,6 +142,23 @@ module alert_handler
     .esc_ping_fail_o    ( loc_alert_trig[1]              )
   );
 
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(PingTimerEscCnterCheck_A,
+      u_ping_timer.u_prim_count_esc_cnt,
+      loc_alert_trig[0] & loc_alert_trig[1],
+      (reg2hw_wrap.ping_enable == 0))
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(PingTimerCnterCheck_A,
+      u_ping_timer.u_prim_count_cnt,
+      loc_alert_trig[0] & loc_alert_trig[1],
+      (reg2hw_wrap.ping_enable == 0))
+  `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ERR(PingTimerDoubleLfsrCheck_A,
+      u_ping_timer.u_prim_double_lfsr,
+      loc_alert_trig[0] & loc_alert_trig[1],
+      (reg2hw_wrap.ping_enable == 0))
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(PingTimerFsmCheck_A,
+      u_ping_timer.u_state_regs,
+      loc_alert_trig[0] & loc_alert_trig[1],
+      (reg2hw_wrap.ping_enable == 0))
+
   /////////////////////////////
   // Low-power group control //
   /////////////////////////////
@@ -218,6 +235,9 @@ module alert_handler
       .accu_trig_o   ( class_accu_trig                   ),
       .accu_fail_o   ( class_accu_fail                   )
     );
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(AccuCnterCheck_A,
+        u_accu.u_prim_count,
+        esc_tx_o[0].esc_p & esc_tx_o[1].esc_p & esc_tx_o[2].esc_p & esc_tx_o[3].esc_p)
 
     alert_handler_esc_timer u_esc_timer (
       .clk_i,
@@ -240,6 +260,13 @@ module alert_handler
       .esc_state_o       ( hw2reg_wrap.class_esc_state[k]       ),
       .esc_sig_req_o     ( class_esc_sig_req[k]                 )
     );
+
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(EscTimerCnterCheck_A,
+        u_esc_timer.u_prim_count,
+        esc_tx_o[0].esc_p & esc_tx_o[1].esc_p & esc_tx_o[2].esc_p & esc_tx_o[3].esc_p)
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(EscTimerFsmCheck_A,
+        u_esc_timer.u_state_regs,
+        esc_tx_o[0].esc_p & esc_tx_o[1].esc_p & esc_tx_o[2].esc_p & esc_tx_o[3].esc_p)
   end
 
   ////////////////////////
