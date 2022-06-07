@@ -20,6 +20,8 @@
  * This program implements the following simple serial commands:
  *   - Set key ('k')*,
  *   - Absorb ('p')*,
+ *   - FvsR batch absorb ('b')*,
+ *   - FvsR batch fixed key set ('t')*,
  *   - Version ('v')+,
  *   - Seed PRNG ('s')+,
  * Commands marked with * are implemented in this file. Those marked with + are
@@ -53,6 +55,10 @@ enum {
    * (2000 samples).
    */
   kIbexSha3SleepCycles = 800,
+  /**
+   * Max number of traces per batch.
+   */
+  kNumBatchOpsMax = 128,
 };
 
 /**
@@ -72,6 +78,32 @@ static dif_kmac_operation_state_t kmac_operation_state;
  * when handling a 'p' (absorb) command.
  */
 static dif_kmac_key_t kmac_key;
+
+/**
+ * KMAC fixed key.
+ *
+ * Used for caching the fixed key in the 't' (set fixed key) command packet
+ * until it is used when handling a 'b' (batch capture) command.
+ */
+uint8_t key_fixed[kKeyLength];
+
+/**
+ * Fixed-key indicator.
+ *
+ * Used in the 'b' (batch capture) command for indicating whether to use fixed
+ * or random key.
+ */
+static bool run_fixed = false;
+
+/**
+ * An array of keys to be used in a batch
+ */
+uint8_t batch_keys[kNumBatchOpsMax][kKeyLength];
+
+/**
+ * An array of messages to be used in a batch
+ */
+uint8_t batch_messages[kNumBatchOpsMax][kMessageLength];
 
 /**
  * Blocks until KMAC is idle.
@@ -471,6 +503,54 @@ static void sha3_serial_single_absorb(const uint8_t *msg, size_t msg_len) {
   kmac_reset();
 }
 
+static void sha3_serial_fixed_key_set(const uint8_t *key, size_t key_len) {
+  SS_CHECK(key_len == kKeyLength);
+  memcpy(key_fixed, key, key_len);
+}
+
+static void sha3_serial_batch(const uint8_t *data, size_t data_len) {
+  uint32_t num_encryptions = 0;
+  uint32_t out[kDigestLength];
+  uint32_t batch_digest[kDigestLength];
+  SS_CHECK(data_len == sizeof(num_encryptions));
+  num_encryptions = read_32(data);
+
+  for (uint32_t j = 0; j < kDigestLength; ++j) {
+    batch_digest[j] = 0;
+  }
+
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    if (run_fixed) {
+      memcpy(batch_keys[i], key_fixed, kKeyLength);
+    } else {
+      prng_rand_bytes(batch_keys[i], kKeyLength);
+    }
+    prng_rand_bytes(batch_messages[i], kMessageLength);
+    run_fixed = batch_messages[i][0] & 0x1;
+  }
+
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    kmac_reset();
+    memcpy(kmac_key.share0, batch_keys[i], kKeyLength);
+
+    sca_set_trigger_high();
+    sha3_serial_absorb(batch_messages[i], kMessageLength);
+    sca_set_trigger_low();
+
+    kmac_msg_done();
+    SS_CHECK_DIF_OK(kmac_get_digest(out, kDigestLength));
+
+    // The correctness of each batch is verified by computing and sending
+    // the batch digest. This digest is computed by XORing all outputs of
+    // the batch.
+    for (uint32_t j = 0; j < kDigestLength; ++j) {
+      batch_digest[j] ^= out[j];
+    }
+  }
+  // Send the batch digest to the host for verification.
+  simple_serial_send_packet('r', (uint8_t *)batch_digest, kDigestLength * 4);
+}
+
 /**
  * Main function.
  *
@@ -486,6 +566,8 @@ void _ottf_main(void) {
   simple_serial_init(sca_get_uart());
   simple_serial_register_handler('k', sha3_serial_set_key);
   simple_serial_register_handler('p', sha3_serial_single_absorb);
+  simple_serial_register_handler('b', sha3_serial_batch);
+  simple_serial_register_handler('t', sha3_serial_fixed_key_set);
 
   LOG_INFO("Initializing the KMAC peripheral.");
   kmac_init();
