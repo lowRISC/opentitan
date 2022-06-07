@@ -97,10 +97,11 @@ ifneq (${sw_images},)
 				bazel_opts+=" --distdir=$${BAZEL_DISTDIR} --repository_cache=$${BAZEL_CACHE}"; \
 				bazel_cmd="bazel"; \
 			fi; \
+			$${bazel_cmd} clean; \
 			$${bazel_cmd} build $${bazel_opts} $${bazel_label}; \
 			find -L $$($${bazel_cmd} info output_path)/ \
 				-type f -name "$$(basename $${image})*" | \
-				xargs -I % cp % $${target_dir}; \
+				xargs -I % install -C -m 777 % $${target_dir}; \
 		fi; \
 	done;
 endif
