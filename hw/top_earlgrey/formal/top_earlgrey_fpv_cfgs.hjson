@@ -421,16 +421,16 @@
                task: "FpvSecCm"
                stopats: ["*u_state_regs.state_o"]
              }
-             // TODO: alert_handler does not fire alerts.
-             /*
              {
-               name: alert_handler
+               name: alert_handler_sec_cm
                dut: alert_handler
                fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/{sub_flow}/{tool}"
                cov: false
-             } */
+               task: "FpvSecCm"
+               stopats: ["*u_state_regs.state_o"]
+             }
              {
                name: clkmgr_sec_cm
                dut: clkmgr
