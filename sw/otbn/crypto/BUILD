@@ -52,6 +52,7 @@ otbn_sim_test(
     ],
     deps = [
         ":ed25519",
+        ":ed25519_scalar",
         ":field25519",
     ],
 )
@@ -67,6 +68,18 @@ otbn_library(
     name = "div",
     srcs = [
         "div.s",
+    ],
+)
+
+otbn_sim_test(
+    name = "ed25519_verify_test",
+    srcs = [
+        "ed25519_verify_test.s",
+    ],
+    deps = [
+        ":ed25519",
+        ":ed25519_scalar",
+        ":field25519",
     ],
 )
 
