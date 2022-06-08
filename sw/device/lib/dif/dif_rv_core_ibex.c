@@ -298,3 +298,14 @@ dif_result_t dif_rv_core_ibex_read_rnd_data(
                              RV_CORE_IBEX_RND_DATA_REG_OFFSET);
   return kDifOk;
 }
+
+dif_result_t dif_rv_core_ibex_read_fpga_info(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_fpga_info_t *info) {
+  if (rv_core_ibex == NULL || info == NULL) {
+    return kDifBadArg;
+  }
+  *info = mmio_region_read32(rv_core_ibex->base_addr,
+                             RV_CORE_IBEX_FPGA_INFO_REG_OFFSET);
+  return kDifOk;
+}
