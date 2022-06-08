@@ -154,11 +154,20 @@ module prim_dom_and_2share #(
     $changed(a0_i) || $changed(a1_i) || $changed(b0_i) || $changed(b1_i)
       |-> ##[0:2] z_valid_i,
     clk_i, !rst_ni)
+
+  if (Pipeline == 0) begin: g_assert_stable
+    // If Pipeline is not set, the computation takes two cycles without flop
+    // crossing the domain. In this case, the signal should be stable for at
+    // least two cycles.
+    `ASSUME(StableTwoCycles_M,
+      ($changed(a0_i)  || $changed(a1_i) || $changed(b0_i) || $changed(b1_i))
+        ##[0:$] z_valid_i |=>
+        $stable(a0_i) && $stable(a1_i) && $stable(b0_i) && $stable(b1_i))
+  end
+
   `ASSERT(UnmaskedAndMatched_A,
-    $changed(a0_i) || $changed(a1_i) || $changed(b0_i) || $changed(b1_i)
-      |-> ##[0:$] z_valid_i
-      |=> $stable(a0_i) && $stable(a1_i) && $stable(b0_i) && $stable(b1_i)
-      |-> (q0_o ^ q1_o) == ((a0_i ^ a1_i) & (b0_i ^ b1_i)),
+    z_valid_i |=> (q0_o ^ q1_o) ==
+      (($past(a0_i) ^ $past(a1_i)) & ($past(b0_i) ^ $past(b1_i))),
     clk_i, !rst_ni)
 
 endmodule
