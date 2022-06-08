@@ -29,4 +29,5 @@ steps:
         --openocd-version $(OPENOCD_VERSION) \
         --verible-version $(VERIBLE_VERSION) \
         --rust-version $(RUST_VERSION)
+    retryCountOnTaskFailure: 3
     displayName: 'Install package dependencies'
