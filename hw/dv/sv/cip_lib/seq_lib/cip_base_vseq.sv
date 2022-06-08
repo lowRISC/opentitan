@@ -127,8 +127,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   task post_start();
     super.post_start();
-    void'($value$plusargs("do_clear_all_interrupts=%0b", do_clear_all_interrupts));
-    if (do_clear_all_interrupts) clear_all_interrupts();
 
     if (expect_fatal_alerts) begin
       // Fatal alert is triggered in this seq. Wait 10_000ns so the background check
@@ -139,6 +137,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end else begin
       check_no_fatal_alerts();
     end
+
+    // Some fatal alerts might trigger interrupt as well, so only check interrupt after fatal alert
+    // is cleared.
+    void'($value$plusargs("do_clear_all_interrupts=%0b", do_clear_all_interrupts));
+    if (do_clear_all_interrupts) clear_all_interrupts();
   endtask
 
   virtual task apply_reset(string kind = "HARD");
