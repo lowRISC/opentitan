@@ -8,6 +8,11 @@ cc_library(
     name = "prng",
     srcs = ["prng.c"],
     hdrs = ["prng.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//third_party/xoshiro:splitmix64",
+        "//third_party/xoshiro:xoshiro128pp",
+    ],
 )
 
 cc_test(

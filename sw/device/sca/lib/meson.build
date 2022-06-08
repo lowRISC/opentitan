@@ -31,7 +31,11 @@ sw_sca_lib_sca  = declare_dependency(
 sw_sca_lib_prng = declare_dependency(
   link_with: static_library(
     'lib_prng',
-    sources: ['prng.c'],
+    sources: [
+      'prng.c',
+      meson.sources_root() / 'third_party/xoshiro/xoshiro128pp.c',
+      meson.sources_root() / 'third_party/xoshiro/splitmix64.c',
+    ],
   ),
 )
 
