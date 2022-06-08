@@ -70,6 +70,340 @@
 .equ CSR_FG0,          0x7c0
 
 /**
+ * Top-level Ed25519 signature verification operation.
+ *
+ * Returns SUCCESS or FAILURE.
+ *
+ * This routine follows RFC 8032, section 5.1.7, but because SHA-512 is not in
+ * the same OTBN program we have to slightly rearrange the order of operations.
+ * In particular, we assume that Ibex computes step 2 (computation of k =
+ * SHA2-512(dom2(F,C) || R_ || A_ || PH(M)), where R_ and A_ are the encoded
+ * values of curve points from the signature and public key respectively). This
+ * procedure takes k, S, and the encoded points R_ and A_ as arguments, and
+ * does the following:
+ *
+ *   1. Decodes and checks validity of the points R and A.
+ *   2. Decodes and checks the range of the scalar value S.
+ *   3. Checks the group equation [8][S]B = [8]R + [8][k]A.
+ *
+ * This verification uses the ZIP15 point validation criteria, so it checks
+ * that S < L and always uses the group equation with the cofactors of 8 rather
+ * than the optional version without these also offered by the RFC. See the
+ * comments about ZIP15 at the top of this file for details.
+ *
+ * This routine runs in variable time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w31: all-zero
+ * @param[in]  dmem[ed25519_hash_k]: precomputed hash k, 512 bits
+ * @param[in]  dmem[ed25519_sig_R]: encoded signature point R_, 256 bits
+ * @param[in]  dmem[ed25519_sig_S]: signature scalar S, 256 bits
+ * @param[in]  dmem[ed25519_public_key]: encoded public key A_, 512 bits
+ * @param[out] dmem[ed25519_verify_result]: SUCCESS or FAILURE
+ *
+ * clobbered registers: x2 to x4, x20 to x23, w2 to w30
+ * clobbered flag groups: FG0
+ */
+.globl ed25519_verify_var
+ed25519_verify_var:
+  /* Set up for scalar arithmetic.
+       [w15:w14] <= mu
+       MOD <= L */
+  jal      x1, sc_init
+
+  /* Load the 512-bit precomputed hash k.
+       [w17:w16] <= k */
+  li       x2, 16
+  la       x3, ed25519_hash_k
+  bn.lid   x2, 0(x3++)
+  addi     x2, x2, 1
+  bn.lid   x2, 0(x3)
+
+  /* Reduce k modulo L.
+       w18 <= [w17:w16] mod L = k mod L */
+  jal      x1, sc_reduce
+
+  /* Compute (8 * k) mod L.
+       w3 <= (2 * (2 * (2 * w18) mod L) mod L) mod L = (8 * k) mod L */
+  bn.addm  w3, w18, w18
+  bn.addm  w3, w3, w3
+  bn.addm  w3, w3, w3
+
+  /* Load the 512-bit signature (R_ || S).
+       w11 <= R_
+       w29 <= S */
+  li       x2, 11
+  la       x3, ed25519_sig_R
+  bn.lid   x2, 0(x3)
+  li       x2, 29
+  la       x3, ed25519_sig_S
+  bn.lid   x2, 0(x3)
+
+  /* Check that S is in range (0 <= S < L). */
+
+  /* w27 <= MOD = L */
+  bn.wsrr  w27, 0x0
+  /* FG0.C <= (w29 - w27) <? 0 = S <? L */
+  bn.cmp   w29, w27
+  /* x2 <= FG0[0] = FG0.C */
+  csrrs    x2, CSR_FG0, x0
+  andi     x2, x2, 1
+
+  /* Fail if S >= L. */
+  li       x3, 1
+  bne      x2, x3, verify_fail
+
+  /* Compute (8 * S) mod L.
+       w29 <= (2 * (2 * (2 * w29) mod L) mod L) mod L = (8 * S) mod L */
+  bn.addm  w29, w29, w29
+  bn.addm  w29, w29, w29
+  bn.addm  w29, w29, w29
+
+  /* Set up for field arithmetic in preparation for scalar multiplication and
+     point addition.
+       MOD <= p
+       w19 <= 19 */
+  jal      x1, fe_init
+
+  /* Initialize curve parameter d.
+       w30 <= dmem[d] = (-121665/121666) mod p */
+  li      x2, 30
+  la      x3, ed25519_d
+  bn.lid  x2, 0(x3)
+
+  /* Decode the signature point R.
+       x20 <= SUCCESS or FAILURE
+       [w11:w10] <= decode(w11) = decode(R_) = (R.x, R.y) */
+  jal     x1, affine_decode_var
+
+  /* If R was not a valid point (x20 != SUCCESS), fail. */
+  li      x21, 0xf77fe650
+  bne     x20, x21, verify_fail
+
+  /* Save R (in affine coordinates) for later.
+       [w5:w4] <= [w11:w10] = R */
+  bn.mov  w4, w10
+  bn.mov  w5, w11
+
+  /* Load the encoded public key A_.
+       w11 <= dmem[ed25519_public_key] = A_ */
+  li       x2, 11
+  la       x3, ed25519_public_key
+  bn.lid   x2, 0(x3)
+
+  /* Decode the public key point A.
+       x20 <= SUCCESS or FAILURE
+       [w11:w10] <= decode(w11) = decode(A_) = (A.x, A.y) */
+  jal      x1, affine_decode_var
+
+  /* If A was not a valid point (x20 != SUCCESS), fail. */
+  bne      x20, x21, verify_fail
+
+  /* Precompute (2*d) mod p in preparation for scalar multiplication.
+       w30 <= (w30 + w30) mod p = (2 * d) mod p */
+  bn.addm  w30, w30, w30
+
+  /* Convert A to extended coordinates.
+      [w9:w6] <= extended(A) = (A.X, A.Y, A.Z, A.T) */
+  bn.mov   w6, w10
+  bn.mov   w7, w11
+  jal      x1, affine_to_ext
+
+  /* w28 <= w3 = (8 * k) mod L */
+  bn.mov   w28, w3
+
+  /* [w13:w10] <= w28 * [w9:w6] = [8][k]A */
+  jal      x1, ext_scmul
+
+  /* Convert R to extended coordinates.
+       [w9:w6] <= extended(R) = (R.X, R.Y, R.Z, R.T) */
+  bn.mov   w6, w4
+  bn.mov   w7, w5
+  jal      x1, affine_to_ext
+
+  /* Store the intermediate result [8][k]A for later.
+       [w5:w2] <= [w13:w10] = [8][k]A */
+  bn.mov   w2, w10
+  bn.mov   w3, w11
+  bn.mov   w4, w12
+  bn.mov   w5, w13
+
+  /* Compute [8]R with three doublings. */
+
+  /* [w13:w10] <= [w9:w6] = R */
+  bn.mov   w10, w6
+  bn.mov   w11, w7
+  bn.mov   w12, w8
+  bn.mov   w13, w9
+  /* [w13:w10] <= [w13:w10] + [w13:w10] = [2]R */
+  jal      x1, ext_double
+  /* [w13:w10] <= [w13:w10] + [w13:w10] = [4]R */
+  jal      x1, ext_double
+  /* [w13:w10] <= [w13:w10] + [w13:w10] = [8]R */
+  jal      x1, ext_double
+
+  /* Compute the right-hand side of the curve equation.
+       [w13:w10] <= [w13:w10] + [w5:w2] = [8]R + [8][k]A */
+  bn.mov   w14, w2
+  bn.mov   w15, w3
+  bn.mov   w16, w4
+  bn.mov   w17, w5
+  jal      x1, ext_add
+
+  /* Store the right-hand side for later.
+       [w5:w2] <= [w13:w10] = [8]R + [8][k]A */
+  bn.mov   w2, w10
+  bn.mov   w3, w11
+  bn.mov   w4, w12
+  bn.mov   w5, w13
+
+  /* Load the base point B (in affine coordinates).
+       w6 <= dmem[ed25519_Bx] = B.x
+       w7 <= dmem[ed25519_By] = B.y */
+  li       x2, 6
+  la       x3, ed25519_Bx
+  bn.lid   x2++, 0(x3)
+  la       x3, ed25519_By
+  bn.lid   x2, 0(x3)
+
+  /* Convert B to extended coordinates.
+       [w9:w6] <= extended(B) = (B.X, B.Y, B.Z, B.T) */
+  jal      x1, affine_to_ext
+
+  /* w28 <= w29 = (8 * S) mod L */
+  bn.mov   w28, w29
+
+  /* Compute the left-hand side of the curve equation.
+       [w13:w10] <= w28 * [w9:w6] = [8][S]B */
+  jal      x1, ext_scmul
+
+  /* Compare both sides of the equation for equality.
+       dmem[ed25519_verify_result] <= SUCCESS if [w5:w2] == [w13:w10],
+                                      otherwise FAILURE */
+  jal      x1, ext_equal_var
+
+  ret
+
+  verify_fail:
+  /* Write the FAILURE magic value.
+       dmem[ed25519_verify_result] <= x23 = FAILURE */
+  li       x22, 0xeda2bfaf
+  la       x2, ed25519_verify_result
+  sw       x22, 0(x2)
+  ret
+
+/**
+ * Convert a point from affine (x, y) to extended (X, Y, Z, T) coordinates.
+ *
+ * Returns (X, Y, Z, T) = (x, y, 1, (x*y) mod p)
+ *
+ * The standard way to represent a point on an elliptic curve is with (X, Y)
+ * coordinates. However, alternative point representations using multiple
+ * related variables are often much faster. In this case, an "extended twisted
+ * Edwards" point (X, Y, Z, T) is related to an affine point (x, y) with the
+ * following equations (in terms of the coordinate finite field modulo p):
+ *   x = (X / Z)
+ *   y = (Y / Z)
+ *   x*y = T / Z
+ *
+ * To convert an affine point into extended form, therefore, we can just set
+ * X=x, Y=y, Z=1, and T=(x*y) mod p.
+ *
+ * More details can be found in the original paper and the Explicit Formulas
+ * Database:
+ *   https://eprint.iacr.org/2008/522.pdf
+ *   https://hyperelliptic.org/EFD/g1p/auto-twisted.html
+ *
+ * Here, we follow the same convention as the Explicit Formulas Database and
+ * represent affine coordinates with lowercase (x, y) and extended coordinates
+ * with uppercase (X, Y, Z, T).
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w6: input x (x < p)
+ * @param[in]  w7: input y (y < p)
+ * @param[in]  w19: constant, w19 = 19
+ * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[in]  w31: all-zero
+ * @param[out] w6: output X (X < p)
+ * @param[out] w7: output Y (Y < p)
+ * @param[out] w8: output Z (Z < p)
+ * @param[out] w9: output T (T < p)
+ *
+ * clobbered registers: w6 to w9, w18, w20 to w23
+ * clobbered flag groups: FG0
+ */
+affine_to_ext:
+  /* w8 <= 1 = Z */
+  bn.addi  w8, w31, 1
+
+  /* w22 <= (w6 * w7) mod p = T */
+  bn.mov  w22, w6
+  bn.mov  w23, w7
+  jal     x1, fe_mul
+  /* w9 <= w22 = T */
+  bn.mov  w9, w22
+
+  /* X=x and Y=y, so nothing needs to be done for these. */
+
+  ret
+
+/**
+ * Convert a point from extended (X, Y, Z, T) to affine (x, y) coordinates.
+ *
+ * Returns (x, y) = ((X * Z^-1) mod p, (Y * Z^-1) mod p)
+ *
+ * See `affine_to_ext` for background on affine vs extended coordinates. To
+ * convert a point from extended to affine coordinates, we need to compute:
+ *   x = (X / Z)
+ *   y = (Y / Z)
+ *
+ * As always, operations on the coordinates are in terms of the coordinate
+ * field modulo p. Therefore, to divide by Z, what we actually need to do is
+ * compute the inverse of Z modulo p, and then multiply by X and Y. The T input
+ * is not actually needed for this computation, so it is omitted here.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w10: input X (X < p)
+ * @param[in]  w11: input Y (Z < p)
+ * @param[in]  w12: input Z (Z < p)
+ * @param[in]  w19: constant, w19 = 19
+ * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[out] w10: output x (x < p)
+ * @param[out] w11: output y (y < p)
+ *
+ * clobbered registers: w10, w11, w14 to w18, w20 to w23
+ * clobbered flag groups: FG0
+ */
+ext_to_affine:
+  /* w22 <= (Z^-1) mod p */
+  bn.mov  w16, w12
+  jal     x1, fe_inv
+  /* w23 <= w22 = (Z^-1) mod p */
+  bn.mov  w23, w22
+
+  /* w22 <= (w10 * w23) mod p = (X * Z^-1) mod p = x */
+  bn.mov  w22, w10
+  jal     x1, fe_mul
+  /* w10 <= w22 = x */
+  bn.mov  w10, w22
+
+  /* w22 <= (w11 * w23) mod p = (Y * Z^-1) mod p = y */
+  bn.mov  w22, w11
+  jal     x1, fe_mul
+  /* w11 <= w22 = y */
+  bn.mov  w11, w22
+
+  ret
+
+/**
  * Encode a point as described in RFC 8032, section 5.1.2.
  *
  * Returns enc = y | (lsb(x) << 255).
@@ -482,6 +816,45 @@ ext_scmul:
   ret
 
 /**
+ * Add a point to itself in extended twisted Edwards coordinates.
+ *
+ * Returns (X3, Y3, Z3, T3) = (X1, Y1, Z1, T1) + (X1, Y1, Z1, T1)
+ *
+ * This is a thin, convenient wrapper around ext_add.
+ *
+ * Note: at the expense of code size, it is possible to speed up sign and
+ * verify by optimizing the point addition formula for the special case of
+ * doubling, but we do not currently do so.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w19: constant, w19 = 19
+ * @param[in]  w30: constant, w30 = (2*d) mod p, d = (-121665/121666) mod p
+ * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[in,out] w10: input X1 (X1 < p), output X3
+ * @param[in,out] w11: input Y1 (Y1 < p), output Y3
+ * @param[in,out] w12: input Z1 (Z1 < p), output Z3
+ * @param[in,out] w13: input T1 (T1 < p), output T3
+ *
+ * clobbered registers: w10 to w18, w20 to w23, w24 to w27
+ * clobbered flag groups: FG0
+ */
+.globl ext_double
+ext_double:
+  /* [w17:w14] <= [w13:w10] = (X1, Y1, Z1, T1) */
+  bn.mov  w14, w10
+  bn.mov  w15, w11
+  bn.mov  w16, w12
+  bn.mov  w17, w13
+
+  /* [w13:w10] <= [w13:w10] + [w17:w14] = (X3, Y3, Z3, T3) */
+  jal     x1, ext_add
+  ret
+
+/**
  * Add two points in extended twisted Edwards coordinates.
  *
  * Returns (X3, Y3, Z3, T3) = (X1, Y1, Z1, T1) + (X2, Y2, Z2, T2)
@@ -631,6 +1004,128 @@ ext_add:
   ret
 
 /**
+ * Check if two points in extended coordinates are equal.
+ *
+ * If the input points (X1, Y1, Z1, T1) and (X2, Y2, Z2, T2) are not equal,
+ * this procedure writes FAILURE to dmem[ed25519_verify_result]. If the points
+ * are equal, it appends the third and final byte of the SUCCESS magic value to
+ * dmem[ed25519_verify_result] by shifting the current value left by 8 and then
+ * ORing with the final byte.
+ *
+ * As per RFC 8032, returns 1 iff:
+ *   (X1 * Z2 - X2 * Z1) mod p = 0, and
+ *   (Y1 * Z2 - Y2 * Z2) mod p = 0.
+ *
+ * This routine runs in variable time.
+ *
+ * @param[in]  w2: input X1 (X1 < p)
+ * @param[in]  w3: input Y1 (Y1 < p)
+ * @param[in]  w4: input Z1 (Z1 < p)
+ * @param[in]  w5: input T1 (T1 < p)
+ * @param[in]  w10: input X2 (X2 < p)
+ * @param[in]  w11: input Y2 (Y2 < p)
+ * @param[in]  w12: input Z2 (Z2 < p)
+ * @param[in]  w13: input T2 (T2 < p)
+ * @param[in]  w19: constant, w19 = 19
+ * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[out] dmem[ed25519_verify_result]: result, SUCCESS or FAILURE
+ *
+ * clobbered registers: w14 to w17
+ * clobbered flag groups: FG0
+ */
+ext_equal_var:
+  /* x22 <= FAILURE */
+  li       x22, 0xeda2bfaf
+  /* x23 <= SUCCESS */
+  li       x23, 0xf77fe650
+
+  /* Compute (X1 * Z2). */
+
+  /* w22 <= w2 = X1 */
+  bn.mov   w22, w2
+  /* w23 <= w12 = Z2 */
+  bn.mov   w23, w12
+  /* w22 <= w22 * w23 = X1 * Z2 */
+  jal      x1, fe_mul
+  /* w16 <= w22 <= X1 * Z2 */
+  bn.mov   w16, w22
+
+  /* Compute (X2 * Z1). */
+
+  /* w22 <= w10 = X2 */
+  bn.mov   w22, w10
+  /* w23 <= w4 = Z1 */
+  bn.mov   w23, w4
+  /* w22 <= w22 * w23 = X2 * Z1 */
+  jal      x1, fe_mul
+
+  /* First check. */
+
+  /* w16 <= w16 - w22 <= (X1 * Z2) - (X2 * Z1) */
+  bn.sub  w16, w16, w22
+  /* x2 <= FG0[3] = FG0.Z << 3 = result of check 1 */
+  csrrs    x2, CSR_FG0, x0
+  andi     x2, x2, 8
+
+  /* Fail if the FG0.Z flag was unset. */
+  li       x3, 8
+  bne      x2, x3, ext_equal_var_fail
+
+  /* Compute (Y1 * Z2). */
+
+  /* w22 <= w3 = Y1 */
+  bn.mov   w22, w3
+  /* w23 <= w12 = Z2 */
+  bn.mov   w23, w12
+  /* w22 <= w22 * w23 = Y1 * Z2 */
+  jal      x1, fe_mul
+  /* w6 <= w22 <= Y1 * Z2 */
+  bn.mov   w16, w22
+
+  /* Compute (Y2 * Z1). */
+
+  /* w22 <= w11 = Y2 */
+  bn.mov   w22, w11
+  /* w23 <= w4 = Z1 */
+  bn.mov   w23, w4
+  /* w22 <= w22 * w23 = Y2 * Z1 */
+  jal      x1, fe_mul
+
+  /* Second check. */
+
+  /* w16 <= w16 - w22 <= (Y1 * Z2) - (Y2 * Z1) */
+  bn.sub  w16, w16, w22
+  /* x2 <= FG0[3] = FG0.Z << 3 = result of check 2 */
+  csrrs    x2, CSR_FG0, x0
+  andi     x2, x2, 8
+
+  /* Fail if the FG0.Z flag was unset. */
+  li       x3, 8
+  bne      x2, x3, ext_equal_var_fail
+
+  /* If we got here, both checks passed; write the SUCCESS value to DMEM.
+
+     TODO: this should be hardened against glitching attacks that simply jump
+     to this point in the code, perhaps by separating the SUCCESS code into
+     multiple shares that get XORed into the final value at multiple points in
+     the successful code path. */
+
+  /* Write the SUCCESS magic value.
+       dmem[ed25519_verify_result] <= x23 = SUCCESS */
+  la       x4, ed25519_verify_result
+  sw       x23, 0(x4)
+
+  ret
+
+  ext_equal_var_fail:
+  /* Write the FAILURE magic value.
+       dmem[ed25519_verify_result] <= x22 = FAILURE */
+  la       x4, ed25519_verify_result
+  sw       x22, 0(x4)
+  ret
+
+/**
  * Raise a coordinate field element (modulo p) to the power of ((p-5) / 8).
  *
  * Returns c = a^(2^252-3) mod p.
@@ -767,7 +1262,65 @@ fe_pow_2252m3:
 
   ret
 
+.bss
+
+/* Verification result code (32 bits). Output for verify.
+   If verification is successful, this will be SUCCESS = 0xf77fe650.
+   Otherwise, this will be FAILURE = 0xeda2bfaf. */
+.balign 32
+.weak ed25519_verify_result
+ed25519_verify_result:
+  .zero 4
+
+/* Signature point R (256 bits). Input for verify and output for sign. */
+.balign 32
+.weak ed25519_sig_R
+ed25519_sig_R:
+  .zero 32
+
+/* Signature scalar S (253 bits). Input for verify and output for sign. */
+.balign 32
+.weak ed25519_sig_S
+ed25519_sig_S:
+  .zero 32
+
+/* Encoded public key A_ (256 bits). Input for verify. */
+.balign 32
+.weak ed25519_public_key
+ed25519_public_key:
+  .zero 32
+
+/* Precomputed hash k (512 bits). Input for verify and sign. */
+.balign 32
+.weak ed25519_hash_k
+ed25519_hash_k:
+  .zero 64
+
 .data
+
+/* Affine x coordinate of base point B (see RFC 8032, section 5.1). */
+.balign 32
+ed25519_Bx:
+  .word 0x8f25d51a
+  .word 0xc9562d60
+  .word 0x9525a7b2
+  .word 0x692cc760
+  .word 0xfdd6dc5c
+  .word 0xc0a4e231
+  .word 0xcd6e53fe
+  .word 0x216936d3
+
+/* Affine y coordinate of base point B (see RFC 8032, section 5.1). */
+.balign 32
+ed25519_By:
+  .word 0x66666658
+  .word 0x66666666
+  .word 0x66666666
+  .word 0x66666666
+  .word 0x66666666
+  .word 0x66666666
+  .word 0x66666666
+  .word 0x66666666
 
 /* Square root of -1 modulo p=2^255-19.
    Equal to (2^((p-1)/4)) mod p. */
@@ -781,3 +1334,15 @@ ed25519_sqrt_m1:
   .word 0x2b4d0099
   .word 0x4fc1df0b
   .word 0x2b832480
+
+/* Constant d where d=(-121665/121666) mod p (from RFC 8032 section 5.1) */
+.balign 32
+ed25519_d:
+  .word 0x135978a3
+  .word 0x75eb4dca
+  .word 0x4141d8ab
+  .word 0x00700a4d
+  .word 0x7779e898
+  .word 0x8cc74079
+  .word 0x2b6ffe73
+  .word 0x52036cee
