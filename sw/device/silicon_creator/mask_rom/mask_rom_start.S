@@ -132,6 +132,16 @@ _mask_rom_start_boot:
    * need to be careful.
    */
 
+  // Check if we should halt here.
+  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_ROM_EXEC_EN_OFFSET(a0)
+  bnez t0, .L_exec_en
+.L_halt_loop:
+  wfi
+  j .L_halt_loop
+
+.L_exec_en:
   // Configure the power manager to enable resets.
   // Note: this enables all types of reset request for simplicity.
   li t0, TOP_EARLGREY_PWRMGR_AON_BASE_ADDR
