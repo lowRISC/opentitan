@@ -817,7 +817,9 @@ module spi_device
     .mubi_o(scanmode)
   );
 
-  prim_clock_inv u_clk_spi (
+  prim_clock_inv #(
+    .NoFpgaBufG(1'b1)
+  ) u_clk_spi (
     .clk_i(cio_sck_i),
     .clk_no(sck_n),
     .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkInvSel]))
@@ -836,7 +838,9 @@ module spi_device
     .clk_o(clk_spi_in_muxed)
   );
 
-  prim_clock_buf u_clk_spi_in_buf(
+  prim_clock_buf #(
+    .RegionSel(1'b1)
+  ) u_clk_spi_in_buf(
     .clk_i (clk_spi_in_muxed),
     .clk_o (clk_spi_in_buf)
   );
@@ -850,7 +854,9 @@ module spi_device
     .clk_o(clk_spi_out_muxed)
   );
 
-  prim_clock_buf u_clk_spi_out_buf(
+  prim_clock_buf #(
+    .RegionSel(1'b1)
+  ) u_clk_spi_out_buf(
     .clk_i (clk_spi_out_muxed),
     .clk_o (clk_spi_out_buf)
   );
@@ -921,7 +927,7 @@ module spi_device
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_sram_clk_sel (
-    .clk0_i (clk_spi_in_muxed),
+    .clk0_i (clk_spi_in_buf),
     .clk1_i (clk_i),
     .sel_i  (spi_mode == FwMode),
     .clk_o  (sram_clk_ungated)
