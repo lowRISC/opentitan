@@ -294,6 +294,299 @@ ed25519_verify_var:
   ret
 
 /**
+ * Top-level Ed25519 signature generation operation (first stage).
+ *
+ * Returns R_ (encoded signature point) and A_ (encoded public key point).
+ *
+ * The signature generation is split into two stages, because this program does
+ * not have direct access to a SHA-512 implementation and therefore must pass
+ * data to Ibex when a hash is needed. Ibex may then compute the hash, most
+ * likely using a separate OTBN program, but the details of how are irrelevant
+ * to this program. The full process looks like this:
+ *   Ibex:
+ *    - Inputs: secretkey, M
+ *    - Compute h = SHA-512(secretkey). Denote the second half of h as prefix.
+ *    - Compute r = SHA-512(dom2(F, C) || prefix || PH(M))
+ *    - Outputs: h, r, PH(M)
+ *   Stage 1:
+ *    - Inputs: h (first half only), r
+ *    - Construct the secret scalar s from the first half of h.
+ *    - Compute the public key A = [s]B. Encode A as A_.
+ *    - Compute the signature point R = [r]B. Encode R as R_.
+ *    - Ouputs: R_, A_
+ *  Ibex:
+ *    - Inputs: R_, A_, PH(M)
+ *    - Compute k = SHA-512(dom2(F, C) || R_ || A_ || PH(M))
+ *    - Outputs: k
+ *   Stage 2:
+ *    - Inputs: h (first half only), r, k
+ *    - Construct the secret scalar s from the first half of h.
+ *    - Compute the signature scalar S = (r + k * s) mod L.
+ *    - Ouputs: S
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w31: all-zero
+ * @param[in]  dmem[ed25519_hash_r]: precomputed hash r, 512 bits
+ * @param[in]  dmem[ed25519_hash_h_low]: lower half of precomputed hash h, 256 bits
+ * @param[out] dmem[ed25519_sig_R]: encoded signature point R_, 256 bits
+ * @param[out] dmem[ed25519_public_key]: encoded public key A_, 256 bits
+ *
+ * clobbered registers: x2 to x4, x20 to x23, w2 to w30
+ * clobbered flag groups: FG0
+ */
+.globl ed25519_sign_stage1
+ed25519_sign_stage1:
+  /* Set up for scalar arithmetic.
+       [w15:w14] <= mu
+       MOD <= L */
+  jal      x1, sc_init
+
+  /* Load the 256-bit lower half of the precomputed hash h.
+       w16 <= h[255:0] */
+  li       x2, 16
+  la       x3, ed25519_hash_h_low
+  bn.lid   x2, 0(x3)
+
+  /* Recover the secret scalar s from h.
+       w16 <= s */
+  jal      x1, sc_clamp
+
+  /* Reduce s modulo L. Note: s is only 255 bits, so this full 512-bit
+     reduction could be much faster (in fact, since clamping guarantees 3L < s
+     < 4L, we can simply subtract 3L instead). However, this routine is not
+     performance-critical, so we use the generalized routine and set the high
+     bits to zero.
+       w18 <= [w31,w16] mod L = s mod L */
+  bn.mov   w17, w31
+  jal      x1, sc_reduce
+
+  /* Save s for later.
+       w5 <= s mod L */
+  bn.mov   w5, w18
+
+  /* Load the 512-bit precomputed hash r.
+       [w17:w16] <= r */
+  li       x2, 16
+  la       x3, ed25519_hash_r
+  bn.lid   x2, 0(x3++)
+  addi     x2, x2, 1
+  bn.lid   x2, 0(x3)
+
+  /* Reduce r modulo L.
+       w18 <= [w17:w16] mod L = r mod L */
+  jal      x1, sc_reduce
+
+  /* Save r for later.
+       w28 <= w18 = r mod L */
+  bn.mov   w28, w18
+
+  /* Set up for field arithmetic in preparation for scalar multiplication.
+       MOD <= p
+       w19 <= 19 */
+  jal      x1, fe_init
+
+  /* Initialize curve parameter d.
+       w30 <= dmem[d] = (-121665/121666) mod p */
+  li      x2, 30
+  la      x3, ed25519_d
+  bn.lid  x2, 0(x3)
+
+  /* Precompute (2*d) mod p in preparation for scalar multiplication.
+       w30 <= (w30 + w30) mod p = (2 * d) mod p */
+  bn.addm  w30, w30, w30
+
+  /* Load the base point B (in affine coordinates).
+       w6 <= dmem[ed25519_Bx] = B.x
+       w7 <= dmem[ed25519_By] = B.y */
+  li       x2, 6
+  la       x3, ed25519_Bx
+  bn.lid   x2++, 0(x3)
+  la       x3, ed25519_By
+  bn.lid   x2, 0(x3)
+
+  /* Convert B to extended coordinates.
+       [w9:w6] <= extended(B) = (B.X, B.Y, B.Z, B.T) */
+  jal      x1, affine_to_ext
+
+  /* Compute the signature point R = [r]B.
+       [w13:w10] <= w28 * [w9:w6] = [r]B */
+  jal      x1, ext_scmul
+
+  /* Convert R to affine coordinates.
+       w10 <= R.x, w11 <= R.y */
+  jal      x1, ext_to_affine
+
+  /* Encode R.
+       w11 <= encode(w10, w11) = R_ */
+  jal      x1, affine_encode
+
+  /* Write encoded R (R_) to DMEM.
+       dmem[ed25519_sig_R] <= w11 = R_ */
+  li       x2, 11
+  la       x3, ed25519_sig_R
+  bn.sid   x2, 0(x3)
+
+  /* Compute the public key point A = [s]B.
+       [w13:w10] <= w5 * [w9:w6] = [s]B */
+  bn.mov   w28, w5
+  jal      x1, ext_scmul
+
+  /* Convert A to affine coordinates.
+       w10 <= A.x, w11 <= A.y */
+  jal      x1, ext_to_affine
+
+  /* Encode A.
+       w11 <= encode(w10, w11) = A_ */
+  jal      x1, affine_encode
+
+  /* Write encoded A (A_) to DMEM.
+       dmem[ed25519_public_key] <= w11 = A_ */
+  li       x2, 11
+  la       x3, ed25519_public_key
+  bn.sid   x2, 0(x3)
+
+  ret
+
+/**
+ * Top-level Ed25519 signature generation operation (second stage).
+ *
+ * Returns S (a scalar modulo L), the second half of the signature.
+ *
+ * See the docstring of ed25519_sign_stage1 for details about the breakdown of
+ * the signature generation into two stages. This second stage takes inputs h,
+ * r, and k, where r and k are SHA-512 hashes, and h is the first half of a
+ * SHA-512 hash. This routine:
+ *    - Reduces r and k modulo L (for efficiency)
+ *    - Constructs the secret scalar s from the first half of h.
+ *    - Computes the signature scalar S = (r + k * s) mod L.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w31: all-zero
+ * @param[in]  dmem[ed25519_hash_k]: precomputed hash k, 512 bits
+ * @param[in]  dmem[ed25519_hash_r]: precomputed hash r, 512 bits
+ * @param[in]  dmem[ed25519_hash_h_low]: lower half of precomputed hash h, 256 bits
+ * @param[out] dmem[ed25519_sig_S]: signature scalar S, 256 bits
+ *
+ * clobbered registers: x2 to x4, x20 to x23, w2 to w30
+ * clobbered flag groups: FG0
+ */
+.globl ed25519_sign_stage2
+ed25519_sign_stage2:
+  /* Set up for scalar arithmetic.
+       [w15:w14] <= mu
+       MOD <= L */
+  jal      x1, sc_init
+
+  /* Load the 512-bit precomputed hash r.
+       [w17:w16] <= r */
+  li       x2, 16
+  la       x3, ed25519_hash_r
+  bn.lid   x2, 0(x3++)
+  addi     x2, x2, 1
+  bn.lid   x2, 0(x3)
+
+  /* Reduce r modulo L.
+       w18 <= [w17:w16] mod L = r mod L */
+  jal      x1, sc_reduce
+
+  /* Save r for later.
+       w5 <= r mod L */
+  bn.mov   w5, w18
+
+  /* Load the 512-bit precomputed hash k.
+       [w17:w16] <= k */
+  li       x2, 16
+  la       x3, ed25519_hash_k
+  bn.lid   x2, 0(x3++)
+  addi     x2, x2, 1
+  bn.lid   x2, 0(x3)
+
+  /* Reduce k modulo L.
+       w18 <= [w17:w16] mod L = k mod L */
+  jal      x1, sc_reduce
+
+  /* Save k for later.
+       w4 <= k mod L */
+  bn.mov   w4, w18
+
+  /* Load the 256-bit lower half of the precomputed hash h.
+       w16 <= h[255:0] */
+  li       x2, 16
+  la       x3, ed25519_hash_h_low
+  bn.lid   x2, 0(x3)
+
+  /* Recover the secret scalar s from h.
+       w16 <= s */
+  jal      x1, sc_clamp
+
+  /* Compute the signature scalar S = (r + (k * s)) mod L. Note: s is not fully
+     reduced modulo L here, but that is permitted according to the
+     specification of sc_mul, which only requires that its inputs fit in 256
+     bits. */
+
+  /* w18 <= (w4 * w16) mod L = (k * s) mod L */
+  bn.mov   w21, w4
+  bn.mov   w22, w16
+  jal      x1, sc_mul
+
+  /* w4 <= (w5 + w18) mod L = (r + k * s) mod L = S */
+  bn.addm  w4, w5, w18
+
+  /* Write S to dmem.
+       dmem[ed25519_sig_S] <= w4 = S */
+  li       x2, 4
+  la       x3, ed25519_sig_S
+  bn.sid   x2, 0(x3)
+
+  ret
+
+/**
+ * Extract the secret scalar s from a hash (see RFC 8032, section 5.1.5).
+ *
+ * Returns s = 2^254 + (h[253:3] << 3)
+ *
+ * This is referred to as "clamping" in some places and is a way of
+ * manipulating the hash value to be a number that 1) is a multiple of the
+ * cofactor 8 and 2) has the MSB at position 254, while preserving
+ * unpredictability.
+ *
+ * From the RFC:
+ *
+ *     2.  Prune the buffer: The lowest three bits of the first octet are
+ *         cleared, the highest bit of the last octet is cleared, and the
+ *         second highest bit of the last octet is set.
+ *     3.  Interpret the buffer as [a] little-endian integer, forming a
+ *         secret scalar s.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w16: input h, 256 bits
+ * @param[in]  w31: all-zero
+ * @param[out] w16: output s
+ *
+ * clobbered registers: w16, w17
+ * clobbered flag groups: FG0
+ */
+sc_clamp:
+  /* w16 <= w16 >> 3 = h[255:3] */
+  bn.rshi  w16, w31, w16 >> 3
+  /* w16 <= w16 << 5 = h[253:3] << 5 */
+  bn.rshi  w16, w16, w31 >> 251
+  /* w17 <= 1 */
+  bn.addi  w17, w31, 1
+  /* w16 <= [w17:w16] >> 2 = (1 << 254) + (h[255:3] << 3) */
+  bn.rshi  w16, w17, w16 >> 2
+  ret
+
+/**
  * Convert a point from affine (x, y) to extended (X, Y, Z, T) coordinates.
  *
  * Returns (X, Y, Z, T) = (x, y, 1, (x*y) mod p)
@@ -1294,6 +1587,20 @@ ed25519_public_key:
 .balign 32
 .weak ed25519_hash_k
 ed25519_hash_k:
+  .zero 64
+
+/* Lower half of precomputed hash h (256 bits). See RFC 8032, section
+   5.1.6, step 1 or the docstring of ed25519_sign. Input for sign. */
+.balign 32
+.weak ed25519_hash_h_low
+ed25519_hash_h_low:
+  .zero 32
+
+/* Precomputed hash r (512 bits). See RFC 8032, section 5.1.6, step 2 or the
+   docstring of ed25519_sign. Input for sign. */
+.balign 32
+.weak ed25519_hash_r
+ed25519_hash_r:
   .zero 64
 
 .data
