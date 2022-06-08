@@ -476,4 +476,27 @@ TEST_F(RndTest, StatusBadArg) {
   EXPECT_DIF_BADARG(dif_rv_core_ibex_get_rnd_status(nullptr, &status));
   EXPECT_DIF_BADARG(dif_rv_core_ibex_get_rnd_status(&ibex_, nullptr));
 }
+
+class FpgaInfoTest : public RvCoreIbexTestInitialized {};
+
+TEST_F(FpgaInfoTest, ReadSuccess) {
+  EXPECT_READ32(RV_CORE_IBEX_FPGA_INFO_REG_OFFSET, 0xf55ef65e);
+
+  dif_rv_core_ibex_fpga_info_t info;
+  EXPECT_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ibex_, &info));
+  EXPECT_EQ(info, 0xf55ef65e);
+}
+
+TEST_F(FpgaInfoTest, ReadZero) {
+  EXPECT_READ32(RV_CORE_IBEX_FPGA_INFO_REG_OFFSET, 0);
+  dif_rv_core_ibex_fpga_info_t info;
+  EXPECT_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ibex_, &info));
+  EXPECT_EQ(info, 0);
+}
+
+TEST_F(FpgaInfoTest, ReadBadArg) {
+  dif_rv_core_ibex_fpga_info_t info;
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_read_fpga_info(nullptr, &info));
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_read_fpga_info(&ibex_, nullptr));
+}
 }  // namespace dif_rv_core_ibex_test
