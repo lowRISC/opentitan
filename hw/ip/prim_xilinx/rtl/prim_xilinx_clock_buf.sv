@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module prim_xilinx_clock_buf #(
-  parameter bit NoFpgaBuf = 1'b0
+  parameter bit NoFpgaBuf = 1'b0,
+  parameter bit RegionSel = 1'b0
 ) (
   input clk_i,
   output logic clk_o
@@ -12,10 +13,17 @@ module prim_xilinx_clock_buf #(
   if (NoFpgaBuf) begin : gen_no_fpga_buf
     assign clk_o = clk_i;
   end else begin : gen_fpga_buf
-    BUFG bufg_i (
-      .I(clk_i),
-      .O(clk_o)
-    );
+    if (RegionSel) begin : gen_bufr
+      BUFR bufr_i (
+        .I(clk_i),
+        .O(clk_o)
+      );
+    end else begin : gen_bufg
+      BUFG bufg_i (
+        .I(clk_i),
+        .O(clk_o)
+      );
+    end
   end
 
 
