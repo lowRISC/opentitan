@@ -4,14 +4,14 @@
 
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
-    "@//rules:cc_side_outputs.bzl",
+    "@lowrisc_opentitan//rules:cc_side_outputs.bzl",
     "rv_asm",
     "rv_llvm_ir",
     "rv_preprocess",
     "rv_relink_with_linkmap",
 )
 load(
-    "@//rules:rv.bzl",
+    "@lowrisc_opentitan//rules:rv.bzl",
     "rv_rule",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
