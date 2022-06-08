@@ -213,9 +213,13 @@ impl Transport for CW310 {
             }
 
             // Program the FPGA bitstream.
+            log::info!("Programming the FPGA bitstream.");
             let usb = self.device.borrow();
             usb.spi1_enable(false)?;
-            usb.fpga_program(&fpga_program.bitstream)?;
+            usb.fpga_program(
+                &fpga_program.bitstream,
+                fpga_program.progress.as_ref().map(Box::as_ref),
+            )?;
             Ok(None)
         } else if let Some(_set_pll) = action.downcast_ref::<SetPll>() {
             const TARGET_FREQ: u32 = 100_000_000;
@@ -235,7 +239,7 @@ impl Transport for CW310 {
 }
 
 /// Command for Transport::dispatch().
-pub struct FpgaProgram {
+pub struct FpgaProgram<'a> {
     /// The bitstream content to load into the FPGA.
     pub bitstream: Vec<u8>,
     /// What type of ROM to expect.
@@ -244,6 +248,9 @@ pub struct FpgaProgram {
     pub rom_reset_pulse: Duration,
     /// How long to wait for the ROM to print its type and version.
     pub rom_timeout: Duration,
+    /// A progress function to provide user feedback.
+    /// Will be called with the address and length of each chunk sent to the target device.
+    pub progress: Option<Box<dyn Fn(u32, u32) -> () + 'a>>,
 }
 
 /// Command for Transport::dispatch().
