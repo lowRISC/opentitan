@@ -42,6 +42,12 @@
                     // sw/device/lib/base/hardened.h.
                     value: "0x739",
                 },
+                {
+                    name: "CREATOR_SW_CFG_ROM_EXEC_EN",
+                    // Mask ROM execution is enabled if this item is set to a
+                    // non-zero value.
+                    value: "0xffffffff",
+                },
             ],
         }
         {
