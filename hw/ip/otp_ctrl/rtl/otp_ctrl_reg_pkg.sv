@@ -44,6 +44,8 @@ package otp_ctrl_reg_pkg;
   parameter int CreatorSwCfgRetRamResetMaskSize = 4;
   parameter int CreatorSwCfgManufStateOffset = 260;
   parameter int CreatorSwCfgManufStateSize = 4;
+  parameter int CreatorSwCfgRomExecEnOffset = 264;
+  parameter int CreatorSwCfgRomExecEnSize = 4;
   parameter int CreatorSwCfgDigestOffset = 856;
   parameter int CreatorSwCfgDigestSize = 8;
   parameter int OwnerSwCfgOffset = 864;
