@@ -18,7 +18,8 @@ void hmac_sha256_init(void) {
   // Disable and clear interrupts. INTR_STATE register is rw1c.
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_ENABLE_REG_OFFSET,
                    0);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET, 0);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET,
+                   UINT32_MAX);
 
   uint32_t reg = 0;
   // Digest is little-endian by default.
