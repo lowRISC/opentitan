@@ -14,6 +14,18 @@ otbn_library(
 )
 
 otbn_sim_test(
+    name = "ed25519_encode_decode_test",
+    srcs = [
+        "ed25519_encode_decode_test.s",
+    ],
+    deps = [
+        ":ed25519",
+        ":ed25519_scalar",
+        ":field25519",
+    ],
+)
+
+otbn_sim_test(
     name = "ed25519_ext_add_test",
     srcs = [
         "ed25519_ext_add_test.s",
