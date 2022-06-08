@@ -12,6 +12,9 @@
 
 set -euo pipefail
 
+# Change to this script's directory, as it is the location of the bazel workspace.
+cd "$(dirname "$0")"
+
 : "${CURL_FLAGS:=--silent}"
 : "${REPO_TOP:=$(git rev-parse --show-toplevel)}"
 : "${BINDIR:=.bin}"
