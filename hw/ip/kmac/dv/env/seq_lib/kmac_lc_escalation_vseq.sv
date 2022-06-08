@@ -60,6 +60,7 @@ class kmac_lc_escalation_vseq extends kmac_app_vseq;
 
   virtual task post_start();
     expect_fatal_alerts = 1;
+    cfg.kmac_vif.drive_lc_escalate(lc_ctrl_pkg::Off);
     super.post_start();
   endtask
 
