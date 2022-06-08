@@ -96,6 +96,11 @@ static rom_error_t mask_rom_init(void) {
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
 
+  // Write the OTP value to bits 0 to 5 of the cpuctrl CSR.
+  uint32_t cpuctrl_otp =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_CPUCTRL_OFFSET) & 0x3f;
+  CSR_WRITE(CSR_REG_CPUCTRL, cpuctrl_otp);
+
   lc_state = lifecycle_state_get();
 
   // Update epmp config for debug rom according to lifecycle state.
