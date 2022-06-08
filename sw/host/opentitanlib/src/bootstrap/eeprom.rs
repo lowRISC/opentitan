@@ -42,11 +42,12 @@ impl UpdateProtocol for Eeprom {
         container: &Bootstrap,
         transport: &TransportWrapper,
         payload: &[u8],
+        progress: &dyn Fn(u32, u32),
     ) -> Result<()> {
         let spi = container.spi_params.create(transport)?;
         let flash = SpiFlash::from_spi(&*spi)?;
         flash.chip_erase(&*spi)?;
-        flash.program(&*spi, 0, payload)?;
+        flash.program_with_progress(&*spi, 0, payload, progress)?;
         SpiFlash::chip_reset(&*spi)?;
         Ok(())
     }

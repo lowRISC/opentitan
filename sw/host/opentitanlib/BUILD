@@ -109,6 +109,7 @@ rust_library(
         "//third_party/rust/crates:erased_serde",
         "//third_party/rust/crates:hex",
         "//third_party/rust/crates:humantime",
+        "//third_party/rust/crates:indicatif",
         "//third_party/rust/crates:lazy_static",
         "//third_party/rust/crates:log",
         "//third_party/rust/crates:memoffset",

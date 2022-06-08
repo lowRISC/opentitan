@@ -304,6 +304,7 @@ impl UpdateProtocol for Rescue {
         container: &Bootstrap,
         transport: &TransportWrapper,
         payload: &[u8],
+        progress: &dyn Fn(u32, u32),
     ) -> Result<()> {
         let frames = Frame::from_payload(payload)?;
         let uart = container.uart_params.create(transport)?;
@@ -314,6 +315,7 @@ impl UpdateProtocol for Rescue {
         'next_block: for (idx, frame) in frames.iter().enumerate() {
             for consecutive_errors in 0..Self::MAX_CONSECUTIVE_ERRORS {
                 eprint!("{}.", idx);
+                progress(frame.header.flash_offset, frame.data.len() as u32);
                 uart.write(frame.as_bytes())?;
                 let mut response = [0u8; Frame::HASH_LEN];
                 let mut index = 0;

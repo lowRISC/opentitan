@@ -230,6 +230,7 @@ impl UpdateProtocol for Legacy {
         container: &Bootstrap,
         transport: &TransportWrapper,
         payload: &[u8],
+        progress: &dyn Fn(u32, u32),
     ) -> Result<()> {
         let spi = container.spi_params.create(transport)?;
 
@@ -269,6 +270,7 @@ impl UpdateProtocol for Legacy {
             std::thread::sleep(self.inter_frame_delay);
 
             // Write the frame and read back the ack of a previously transmitted frame.
+            progress(frame.header.flash_offset, frame.data.len() as u32);
             let mut response = [0u8; std::mem::size_of::<Frame>()];
             spi.run_transaction(&mut [Transfer::Both(frame.as_bytes(), &mut response)])?;
 

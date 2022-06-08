@@ -15,10 +15,22 @@ use crate::transport::{ProxyOps, Transport, TransportError};
 use anyhow::Result;
 
 use erased_serde::Serialize;
+use indicatif::{ProgressBar, ProgressStyle};
 use std::any::Any;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+
+/// Helper function to create a progress bar in the same form for each of
+/// the commands which will use it.
+pub fn progress_bar(total: u64) -> ProgressBar {
+    let progress = ProgressBar::new(total);
+    progress.set_style(
+        ProgressStyle::default_bar()
+            .template("[{elapsed_precise}] [{wide_bar}] {bytes}/{total_bytes} ({eta})"),
+    );
+    progress
+}
 
 #[derive(Default)]
 pub struct PinConfiguration {

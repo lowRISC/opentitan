@@ -70,6 +70,7 @@ trait UpdateProtocol {
         container: &Bootstrap,
         transport: &TransportWrapper,
         payload: &[u8],
+        progress: &dyn Fn(u32, u32),
     ) -> Result<()>;
 }
 
@@ -117,6 +118,18 @@ impl<'a> Bootstrap<'a> {
         options: &BootstrapOptions,
         payload: &[u8],
     ) -> Result<()> {
+        Self::update_with_progress(transport, options, payload, |_, _| {})
+    }
+
+    /// Perform the update, sending the firmware `payload` to a SPI or UART target depending on
+    /// given `options`, which specifies protocol and port to use.  The `progress` callback will
+    /// be called with the flash address and length of each chunk sent to the target device.
+    pub fn update_with_progress(
+        transport: &TransportWrapper,
+        options: &BootstrapOptions,
+        payload: &[u8],
+        progress: impl Fn(u32, u32),
+    ) -> Result<()> {
         if transport
             .capabilities()?
             .request(Capability::PROXY)
@@ -146,7 +159,7 @@ impl<'a> Bootstrap<'a> {
             reset_pin: transport.gpio_pin("RESET")?,
             reset_delay: options.reset_delay.unwrap_or(Self::RESET_DELAY),
         }
-        .do_update(updater, transport, payload)
+        .do_update(updater, transport, payload, &progress)
     }
 
     fn do_update(
@@ -154,6 +167,7 @@ impl<'a> Bootstrap<'a> {
         updater: Box<dyn UpdateProtocol>,
         transport: &TransportWrapper,
         payload: &[u8],
+        progress: &dyn Fn(u32, u32),
     ) -> Result<()> {
         updater.verify_capabilities(&self, transport)?;
         let perform_bootstrap_reset = updater.uses_common_bootstrap_reset();
@@ -170,7 +184,7 @@ impl<'a> Bootstrap<'a> {
 
             log::info!("Performing bootstrap...");
         }
-        let result = updater.update(&self, transport, payload);
+        let result = updater.update(&self, transport, payload, progress);
 
         if perform_bootstrap_reset {
             log::info!("Releasing bootstrap pins...");

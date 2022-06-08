@@ -35,7 +35,6 @@ rust_binary(
         "//third_party/rust/crates:erased_serde",
         "//third_party/rust/crates:hex",
         "//third_party/rust/crates:humantime",
-        "//third_party/rust/crates:indicatif",
         "//third_party/rust/crates:log",
         "//third_party/rust/crates:nix",
         "//third_party/rust/crates:raw_tty",
