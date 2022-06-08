@@ -264,6 +264,10 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "CTRL_CFG_REGWEN",
+      tags: [// Turning off USB clock in active state impacts other CSRs
+             // at the chip level (in other blocks, such as clkmgr),
+             // so we exclude writing from this register.
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "0",
           hwaccess: "hrw",
@@ -374,9 +378,6 @@
                 '''
             },
           ]
-          tags: [// Turning off USB clock in active state impacts other CSRs
-                 // at the chip level (in other blocks, such as clkmgr).
-                 "excl:CsrAllTests:CsrExclWrite"]
         },
 
         { bits: "8",
