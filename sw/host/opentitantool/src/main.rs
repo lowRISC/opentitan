@@ -128,16 +128,20 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
 }
 
 // Print the result of a command.
-// If there is an error and `RUST_BACKTRACE=1` _and_ `--logging=debug`, print a backtrace.
+// If there is an error and `RUST_BACKTRACE=1`, print a backtrace.
 fn print_command_result(result: Result<Option<Box<dyn Serialize>>>) -> Result<()> {
     match result {
         Ok(Some(value)) => {
+            log::info!("Command result: success.");
             println!("{}", serde_json::to_string_pretty(&value)?);
             Ok(())
         }
-        Ok(None) => Ok(()),
+        Ok(None) => {
+            log::info!("Command result: success.");
+            Ok(())
+        }
         Err(e) => {
-            log::debug!("{:?}", e);
+            log::info!("Command result: {:?}", e);
             Err(e)
         }
     }
