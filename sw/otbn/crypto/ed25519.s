@@ -363,6 +363,125 @@ affine_decode_var:
   ret
 
 /**
+ * Multiply a point by a scalar in extended twisted Edwards coordinates.
+ *
+ * Returns (X2, Y2, Z2, T2) = a * (X1, Y1, Z1, T1)
+ *
+ * This implementation uses a constant-time double-and-add operation, which
+ * iterates over the bits of the scalar, computes both the double and
+ * double-and-add cases for each, then selects one based on the next scalar
+ * bit.
+ *
+ * Note: To speed up verification, where no secret scalars are involved, it
+ * would be possible to do this in variable time and skip the double-add when
+ * the scalar bit is 0. This would speed up scalar multiplication by
+ * approximately 25% (because 50% of the time you skip 50% of the work).
+ *
+ * Note: To speed up both signing and verification (signing especially), many
+ * implementations use a specialized implementation of multiplication by the
+ * base point that looks up precomputed values from a table as described in the
+ * original Ed25519 paper. However, this raises side-channel concerns because
+ * the table lookups would be based on slices of the secret scalar. Additionally, each
+ * point is 512 bits (even if stored in affine coordinates) so given limited
+ * DMEM space we would only be able to use a maximum of 8 lookup values, even
+ * assuming we consume all of DMEM.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]   w6: input X1 (X1 < p)
+ * @param[in]   w7: input Y1 (Y1 < p)
+ * @param[in]   w8: input Z1 (Z1 < p)
+ * @param[in]   w9: input T1 (T1 < p)
+ * @param[in]  w19: constant, w19 = 19
+ * @param[in]  w28: a, scalar input, a < L
+ * @param[in]  w30: constant, w30 = (2*d) mod p, d = (-121665/121666) mod p
+ * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[out] w10: output X2
+ * @param[out] w11: output Y2
+ * @param[out] w12: output Z2
+ * @param[out] w13: output T2
+ *
+ * clobbered registers: w10 to w18, w20 to w28
+ * clobbered flag groups: FG0
+ */
+.globl ext_scmul
+ext_scmul:
+  /* Initialize the intermediate result P to the origin point.
+       [w13:w10] <= (0, 1, 1, 0) */
+  bn.mov   w10, w31
+  bn.addi  w11, w31, 1
+  bn.addi  w12, w31, 1
+  bn.mov   w13, w31
+
+  /* Shift the 253-bit scalar value so the MSB is in position 255.
+       w28 <= w28 << 3 = a << 3 */
+  bn.rshi  w28, w28, w31 >> 253
+
+  /* Loop over the 253 bits of the scalar a.
+
+     Loop intermediate values:
+       P (intermediate result, starts at P = origin)
+
+     Loop invariants (at start of loop iteration i):
+       w28 = a << (i + 3)
+       [w9:w6] = (X1, Y1, Z1, T1)
+       [w13:w10] = P = (a[252:253-i]) * (X1, Y1, Z1, T1)
+    */
+  loopi  253, 20
+    /* Compute 2P = (P + P).
+         [w13:w10] <= [w13:w10] + [w13:w10] = 2P  */
+    jal      x1, ext_double
+
+    /* Copy the value of the original point (X1, Y1, Z1, T1).
+         [w17:w14] <= [w9:w6] = (X1,Y1,Z1,T1) */
+    bn.mov   w14, w6
+    bn.mov   w15, w7
+    bn.mov   w16, w8
+    bn.mov   w17, w9
+
+    /* Save the value of 2P for later.
+         [w9:w6] <= [w13:w10] = 2P */
+    bn.mov   w6, w10
+    bn.mov   w7, w11
+    bn.mov   w8, w12
+    bn.mov   w9, w13
+
+    /* Add the original point to 2P.
+         [w13:w10] <= [w13:w10] + [w17:w14] = 2P + (X1, Y1, Z1, T1) */
+    jal      x1, ext_add
+
+    /* Set the M flag to the current bit of the scalar.
+         FG0.M <= w28[255] = (a << (i + 3))[255] = a[252-i] */
+    bn.addi  w28, w28, 0
+
+    /* Select either the double or double-add case.
+         [w13:w10] <= FG0.M ? [w10:w13] : [w9:w6]
+                    = a[252-i] ? 2P + (X1, Y1, Z1, T1) : 2P
+                    = a[252:253-(i+1)] * (X1, Y1, Z1, T1) */
+    bn.sel   w10, w10, w6, FG0.M
+    bn.sel   w11, w11, w7, FG0.M
+    bn.sel   w12, w12, w8, FG0.M
+    bn.sel   w13, w13, w9, FG0.M
+
+    /* Restore (X1, Y1, Z1, T1) to original registers.
+         [w9:w6] <= [w17:w14] = (X1, Y1, Z1, T1) */
+    bn.mov   w6, w14
+    bn.mov   w7, w15
+    bn.mov   w8, w16
+    bn.mov   w9, w17
+
+    /* Shift the scalar value to prepare for the next loop iteration.
+         w28 <= w28 >> 1 = a << ((i + 1) + 3) */
+    bn.rshi  w28, w28, w31 >> 255
+
+  /* End loop. From the loop invariants, we know
+       [w13:w10] = P = a * (X1, Y1, Z1, T1) */
+  ret
+
+/**
  * Add two points in extended twisted Edwards coordinates.
  *
  * Returns (X3, Y3, Z3, T3) = (X1, Y1, Z1, T1) + (X2, Y2, Z2, T2)
