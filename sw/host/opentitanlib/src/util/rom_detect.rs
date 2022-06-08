@@ -56,14 +56,14 @@ impl RomDetect {
             .nth(1)
             .ok_or(Error::UsrAccessNotFound)?;
         let usr_access = u32::from_be_bytes(operand.try_into()?);
-        log::info!("Bitstream USR_ACCESS value: {:#x}", usr_access);
+        log::info!("Bitstream file USR_ACCESS value: {:#x}", usr_access);
         Ok(usr_access)
     }
 
     pub fn detect(&mut self, uart: &dyn Uart) -> Result<bool> {
         self.console.interact(uart, None, None)?;
         if let Some(cap) = self.console.captures(ExitStatus::ExitSuccess) {
-            log::info!("Found: {:?}", cap.get(0).unwrap().as_str());
+            log::info!("Current bitstream: {:?}", cap.get(0).unwrap().as_str());
             let romkind = cap.get(1).unwrap().as_str();
             let kind = match RomKind::from_str(romkind) {
                 Ok(k) => k,

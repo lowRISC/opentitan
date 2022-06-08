@@ -307,7 +307,7 @@ impl Backend {
         Ok(())
     }
 
-    fn fpga_download(&self, bitstream: &[u8]) -> Result<()> {
+    fn fpga_download(&self, bitstream: &[u8], progress: Option<&dyn Fn(u32, u32)>) -> Result<()> {
         // This isn't really documented well in the python implementation:
         // There appears to be a header on the bitstream which we do not
         // want to send to the board.
@@ -322,15 +322,20 @@ impl Backend {
         // Finally, chunk the payload into 2k chunks and send it to the
         // bulk endpoint.
         for chunk in stream.chunks(2048) {
+            progress.map(|prg| prg(0, chunk.len() as u32));
             self.usb.write_bulk(Backend::BULK_OUT_EP, chunk)?;
         }
         Ok(())
     }
 
     /// Program a bitstream into the FPGA.
-    pub fn fpga_program(&self, bitstream: &[u8]) -> Result<()> {
+    pub fn fpga_program(
+        &self,
+        bitstream: &[u8],
+        progress: Option<&dyn Fn(u32, u32)>,
+    ) -> Result<()> {
         self.fpga_erase()?;
-        let result = self.fpga_download(bitstream);
+        let result = self.fpga_download(bitstream, progress);
 
         let mut status = false;
         if result.is_ok() {
