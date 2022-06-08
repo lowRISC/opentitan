@@ -11,3 +11,18 @@ hw/top_*/rdc/*.tcl           cdc
 hw/rdc/tools/*/run-rdc.tcl   cdc
 hw/rdc/tools/dvsim/rdc.mk    cdc dvsim
 hw/rdc/tools/dvsim/*.hjson   cdc dvsim
+
+# doc
+/doc/   doc
+**/*.md doc
+
+hw/**/doc/*.md         doc
+hw/**/doc/*.svg        doc
+hw/**/doc/*.png        doc
+hw/**/doc/*.jpg        doc
+hw/**/data/*.prj.hjson doc
+
+sw/**/*.md  doc
+sw/**/*.svg doc
+sw/**/*.jpg doc
+sw/**/*.png doc
