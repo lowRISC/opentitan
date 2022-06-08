@@ -85,8 +85,8 @@ class BitstreamCache(object):
         Args:
             key: str; The git hash of the latest bitstream.
         """
-        with open(self.latest_update, 'w') as f:
-            f.write(key)
+        with open(self.latest_update, 'wt') as f:
+            print(key, file=f)
 
     def NeedRefresh(self, interval):
         """Determine if the cache needs a refresh.
@@ -124,8 +124,8 @@ class BitstreamCache(object):
                 for d in dirnames:
                     self.available[d] = 'local'
             try:
-                with open(self.latest_update) as f:
-                    self.available['latest'] = f.read()
+                with open(self.latest_update, 'rt') as f:
+                    self.available['latest'] = f.read().strip()
             except FileNotFoundError:
                 if self.offline:
                     logging.error(
