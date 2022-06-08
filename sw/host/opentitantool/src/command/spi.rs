@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use erased_serde::Serialize;
-use indicatif::{ProgressBar, ProgressStyle};
 use std::any::Any;
 use std::fs::{self, File};
 use std::io::{self, Write};
@@ -13,7 +12,7 @@ use std::time::Instant;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{self, TransportWrapper};
 use opentitanlib::io::spi::{SpiParams, Transfer};
 use opentitanlib::spiflash::SpiFlash;
 use opentitanlib::transport::Capability;
@@ -57,17 +56,6 @@ fn hexdump(mut writer: impl Write, buf: &[u8]) -> Result<()> {
         writeln!(writer, "  {}", std::str::from_utf8(&ascii[0..j]).unwrap())?;
     }
     Ok(())
-}
-
-// Helper function to create a progress bar in the same form for each of
-// the commands which will use it.
-fn progress_bar(total: u64) -> ProgressBar {
-    let progress = ProgressBar::new(total);
-    progress.set_style(
-        ProgressStyle::default_bar()
-            .template("[{elapsed_precise}] [{wide_bar}] {bytes}/{total_bytes} ({eta})"),
-    );
-    progress
 }
 
 impl CommandDispatch for SpiSfdp {
@@ -174,7 +162,7 @@ impl CommandDispatch for SpiRead {
         flash.set_address_mode_auto(&*spi)?;
 
         let mut buffer = vec![0u8; self.length];
-        let progress = progress_bar(self.length as u64);
+        let progress = app::progress_bar(self.length as u64);
         let t0 = Instant::now();
         flash.read_with_progress(&*spi, self.start, &mut buffer, |_, chunk| {
             progress.inc(chunk as u64);
@@ -223,7 +211,7 @@ impl CommandDispatch for SpiErase {
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
 
-        let progress = progress_bar(self.length as u64);
+        let progress = app::progress_bar(self.length as u64);
         let t0 = Instant::now();
         flash.erase_with_progress(&*spi, self.start, self.length, |_, chunk| {
             progress.inc(chunk as u64);
@@ -266,7 +254,7 @@ impl CommandDispatch for SpiProgram {
         flash.set_address_mode_auto(&*spi)?;
 
         let buffer = fs::read(&self.filename)?;
-        let progress = progress_bar(buffer.len() as u64);
+        let progress = app::progress_bar(buffer.len() as u64);
         let t0 = Instant::now();
         flash.program_with_progress(&*spi, self.start, &buffer, |_, chunk| {
             progress.inc(chunk as u64);
