@@ -309,6 +309,18 @@
       default: "4",
       local: "true"
     },
+    { name: "CreatorSwCfgRomExecEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_ROM_EXEC_EN",
+      type: "int",
+      default: "264",
+      local: "true"
+    },
+    { name: "CreatorSwCfgRomExecEnSize",
+      desc: "Size of CREATOR_SW_CFG_ROM_EXEC_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "CreatorSwCfgDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_DIGEST",
       type: "int",
