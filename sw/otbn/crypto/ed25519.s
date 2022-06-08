@@ -156,3 +156,140 @@ ext_add:
   bn.mov   w13, w22
 
   ret
+
+/**
+ * Raise a coordinate field element (modulo p) to the power of ((p-5) / 8).
+ *
+ * Returns c = a^(2^252-3) mod p.
+ *
+ * This calculation is used during point decoding (see RFC 8032, section
+ * 5.1.3):
+ *
+ * Note: Most of this chain is the same as fe_inv. To save code size, it would
+ * be possible to have both fe_inv and this routine share some code. For some
+ * performance gains, it may well be possible to find a more efficient chain.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w19: constant, w19 = 19
+ * @param[in]  w16: a, first operand, a < p
+ * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[in]  w31: all-zero
+ * @param[out] w22: c, result
+ *
+ * clobbered registers: w14, w15, w17, w18, w20 to w23
+ * clobbered flag groups: FG0
+ */
+fe_pow_2252m3:
+  /* w22 <= w16^2 = a^2 */
+  bn.mov  w22, w16
+  jal     x1, fe_square
+  /* w23 <= w22 = a^2 */
+  bn.mov  w23, w22
+
+  /* w22 <= w22^4 = a^8 */
+  jal     x1, fe_square
+  jal     x1, fe_square
+
+  /* w22 <= w22 * w23 = a^10 */
+  jal     x1, fe_mul
+  /* w15 <= w22 = a^10 */
+  bn.mov  w15, w22
+
+  /* w22 <= w22 * w16 = a^11 */
+  bn.mov  w23, w16
+  jal     x1, fe_mul
+  /* w14 <= w22 <= a^11 */
+  bn.mov  w14, w22
+
+  /* w22 <= w15^2 = a^20 */
+  bn.mov  w22, w15
+  jal     x1, fe_square
+
+  /* w22 <= w22 * w14 = a^31 = a^(2^5 - 1) */
+  bn.mov  w23, w14
+  jal     x1, fe_mul
+  /* w23 <= w22 = a^(2^5 - 1) */
+  bn.mov  w23, w22
+
+  /* w22 <= w22^(2^5) = a^(2^10-2^5) */
+  loopi   5,2
+    jal     x1, fe_square
+    nop
+
+  /* w22 <= w22 * w23 = a^(2^10-1) */
+  jal     x1, fe_mul
+  /* w23 <= w22 <= a^(2^10-1) */
+  bn.mov  w23, w22
+  /* w15 <= w22 <= a^(2^10-1) */
+  bn.mov  w15, w22
+
+  /* w22 <= w22^(2^10) = a^(2^20-2^10) */
+  loopi   10,2
+    jal     x1, fe_square
+    nop
+
+  /* w22 <= w22 * w23 = a^(2^20-1) */
+  jal     x1, fe_mul
+  /* w23 <= w22 <= a^(2^20-1) */
+  bn.mov  w23, w22
+
+  /* w22 <= w22^(2^20) = a^(2^40-2^20) */
+  loopi   20,2
+    jal     x1, fe_square
+    nop
+
+  /* w22 <= w22 * w23 = a^(2^40-1) */
+  jal     x1, fe_mul
+
+  /* w22 <= w22^(2^10) = a^(2^50-2^10) */
+  loopi   10,2
+    jal     x1, fe_square
+    nop
+
+  /* w22 <= w22 * w15 = a^(2^50-1) */
+  bn.mov  w23, w15
+  jal     x1, fe_mul
+  /* w23 <= w22 <= a^(2^50-1) */
+  bn.mov  w23, w22
+  /* w15 <= w22 <= a^(2^50-1) */
+  bn.mov  w15, w22
+
+  /* w22 <= w22^(2^50) = a^(2^100-2^50) */
+  loopi   50,2
+    jal     x1, fe_square
+    nop
+
+  /* w22 <= w22 * w23 = a^(2^100-1) */
+  jal     x1, fe_mul
+  /* w23 <= w22 <= a^(2^100-1) */
+  bn.mov  w23, w22
+
+  /* w22 <= w22^(2^100) = a^(2^200-2^100) */
+  loopi   100,2
+    jal     x1, fe_square
+    nop
+
+  /* w22 <= w22 * w23 = a^(2^200-1) */
+  jal     x1, fe_mul
+
+  /* w22 <= w22^(2^50) = a^(2^250-2^50) */
+  loopi   50,2
+    jal     x1, fe_square
+    nop
+
+  /* w22 <= w22 * w15 = a^(2^250-1) */
+  bn.mov  w23, w15
+  jal     x1, fe_mul
+
+  /* w22 <= w22^4 = a^(2^252-2^2) */
+  jal     x1, fe_square
+  jal     x1, fe_square
+
+  /* w22 <= w22 * w16 = a^(2^252 - 2^2 + 1) = a^(2^252 - 3) */
+  bn.mov  w23, w16
+  jal     x1, fe_mul
+
+  ret
