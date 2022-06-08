@@ -1,5 +1,0 @@
-# cdc
-hw/top_*/cdc/*.tcl         cdc
-hw/cdc/tools/*/run-cdc.tcl cdc
-hw/cdc/tools/dvsim/cdc.mk  cdc
-# common_cdc_cfg.hjson & verixcdc.hjson may affect dvsim flow, so leave it
