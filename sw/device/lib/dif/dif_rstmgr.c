@@ -212,6 +212,17 @@ dif_result_t dif_rstmgr_alert_info_get_enabled(const dif_rstmgr_t *handle,
   return kDifOk;
 }
 
+dif_result_t dif_rstmgr_alert_info_get_size(const dif_rstmgr_t *handle,
+                                            size_t *size) {
+  if (handle == NULL || size == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_t base_addr = handle->base_addr;
+  *size = mmio_region_read32(base_addr, RSTMGR_ALERT_INFO_ATTR_REG_OFFSET);
+  return kDifOk;
+}
+
 dif_result_t dif_rstmgr_alert_info_dump_read(
     const dif_rstmgr_t *handle, dif_rstmgr_alert_info_dump_segment_t *dump,
     size_t dump_size, size_t *segments_read) {
@@ -286,6 +297,17 @@ dif_result_t dif_rstmgr_cpu_info_get_enabled(const dif_rstmgr_t *handle,
 
   *state = enabled ? kDifToggleEnabled : kDifToggleDisabled;
 
+  return kDifOk;
+}
+
+dif_result_t dif_rstmgr_cpu_info_get_size(const dif_rstmgr_t *handle,
+                                          size_t *size) {
+  if (handle == NULL || size == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_t base_addr = handle->base_addr;
+  *size = mmio_region_read32(base_addr, RSTMGR_CPU_INFO_ATTR_REG_OFFSET);
   return kDifOk;
 }
 
