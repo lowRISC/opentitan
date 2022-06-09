@@ -556,7 +556,7 @@ module otbn_alu_bignum
     adder_x_carry_in          = 1'b0;
     adder_x_op_b_invert       = 1'b0;
     x_res_operand_a_sel       = 1'b0;
-    shift_mod_sel             = 1'b0;
+    shift_mod_sel             = 1'b1;
     adder_y_carry_in          = 1'b0;
     adder_y_op_b_invert       = 1'b0;
     adder_update_flags_en_raw = 1'b0;
@@ -664,7 +664,10 @@ module otbn_alu_bignum
       AluOpBignumRshi: begin
         // Shifter computes {A, B} >> shift_amt
         // X, Y ignored
-        shift_right = 1'b1;
+        // Feed blanked shifter output (adder_y_op_shifter_res_blanked) to Y to avoid undesired
+        // leakage in the zero flag computation.
+        shift_right   = 1'b1;
+        shift_mod_sel = 1'b1;
 
         expected_shifter_a_en = 1'b1;
         expected_shifter_b_en = 1'b1;
@@ -675,7 +678,10 @@ module otbn_alu_bignum
       AluOpBignumNot: begin
         // Shift computes one operand for the logical operation
         // X & Y ignored
+        // Feed blanked shifter output (adder_y_op_shifter_res_blanked) to Y to avoid undesired
+        // leakage in the zero flag computation.
         shift_right               = operation_i.shift_right;
+        shift_mod_sel             = 1'b1;
         logic_update_flags_en_raw = 1'b1;
 
         expected_shifter_b_en     = 1'b1;
