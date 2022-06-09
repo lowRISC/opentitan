@@ -76,7 +76,10 @@ alias(
 # relationships between verilog components.
 filegroup(
     name = "all_files",
-    srcs = glob(["**"]) + [
+    srcs = glob(
+        ["**"],
+        exclude = ["dv/tools/ralgen/*"],
+    ) + [
         "//hw/ip:all_files",
         "//hw/top_earlgrey:all_files",
     ],
