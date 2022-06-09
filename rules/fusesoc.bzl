@@ -36,6 +36,8 @@ def _fusesoc_build_impl(ctx):
         verilator_options = ctx.attr.verilator_options[BuildSettingInfo].value
         flags.append("--verilator_options={}".format(" ".join(verilator_options)))
 
+    # Note: the `fileset_top` flag used above is specific to the OpenTitan
+    # project to select the correct RTL fileset.
     ctx.actions.run(
         mnemonic = "FuseSoC",
         outputs = outputs,

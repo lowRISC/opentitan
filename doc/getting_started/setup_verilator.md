@@ -11,8 +11,6 @@ _Before following this guide, make sure you've followed the [dependency installa
 Verilator is a cycle-accurate simulation tool.
 It translates synthesizable Verilog code into a simulation program in C++, which is then compiled and executed.
 
-<!-- TODO: Switch all calls to fusesoc and the Verilated system to refer to Meson, once it supports fusesoc. -->
-
 ### Install Verilator
 
 Even though Verilator is packaged for most Linux distributions these versions tend to be too old to be usable.
@@ -21,16 +19,16 @@ We recommend compiling Verilator from source, as outlined here.
 Fetch, build and install Verilator itself (this should be done outside the `$REPO_TOP` directory).
 
 ```console
-$ export VERILATOR_VERSION={{< tool_version "verilator" >}}
+export VERILATOR_VERSION={{< tool_version "verilator" >}}
 
-$ git clone https://github.com/verilator/verilator.git
-$ cd verilator
-$ git checkout v$VERILATOR_VERSION
+git clone https://github.com/verilator/verilator.git
+cd verilator
+git checkout v$VERILATOR_VERSION
 
-$ autoconf
-$ ./configure --prefix=/tools/verilator/$VERILATOR_VERSION
-$ make
-$ make install
+autoconf
+./configure --prefix=/tools/verilator/$VERILATOR_VERSION
+make
+make install
 ```
 
 After installation you need to add `/tools/verilator/$VERILATOR_VERSION/bin` to your `PATH` environment variable.
@@ -49,109 +47,97 @@ Verilator 4.210 2021-07-07 rev v4.210 (mod)
 
 If you need to install to a different location than `/tools/verilator/...`, you can pass a different directory to `./configure --prefix` above and add `your/install/location/bin` to `PATH` instead.
 
-## Simulating a design with Verilator
+## Running Software on a Verilator Simulation with Bazel
 
 First the RTL must be built into a simulator binary.
 This is done by running fusesoc, which collects up RTL code and passes it to Verilator to generate and then compile a C++ model.
-The fusesoc command line arguments are reasonably complicated so we have a wrapper script:
-
-```console
-$ cd $REPO_TOP
-$ ci/scripts/build-chip-verilator.sh earlgrey
-```
-
-Then we need to build software to run on the simulated system.
-If you followed the [building software guide]({{< relref "build_sw" >}}), you've done this step already.
-
-```console
-$ cd $REPO_TOP
-$ ./meson_init.sh
-$ ninja -C build-out all
-```
-
-The above command also builds the OTP image that contains the root secrets and life cycle state.
-By default, the life cycle state will be moved into DEV, which enables debugging features such as the JTAG interface for the main processor.
-
-Now the simulation can be run.
-
-```console
-$ cd $REPO_TOP
-$ build-bin/hw/top_earlgrey/Vchip_earlgrey_verilator \
-  --meminit=rom,build-bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem \
-  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem \
-  --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
-```
-
-To stop the simulation press CTRL-c.
-
-The programs listed after `--meminit` are loaded into the system's specified memory and execution is started immediately.
-There are 4 memory types: ROM, Flash, OTP, and SRAM.
+Next software must be built to run on the simulated hardware.
+There are 4 memory types on OpenTitan hardware: ROM, Flash, OTP, and SRAM.
+Software images need to be provided for ROM, Flash, and OTP (SRAM is populated at runtime).
 By default, the system will first execute out of ROM and then jump to Flash.
-Memory images need to be provided for ROM, Flash, and OTP (SRAM is populated at runtime).
+The OTP image does not contain executable code, rather it contains root secrets, runtime configuration data, and life cycle state.
+(By default, the life cycle state is set to RMA, which enables debugging features such as the JTAG interface for the main processor.)
+Lastly, the Verilator simulation binary must be run with the correct arguments.
 
-If you want to run a program other than `hello_world`, you'll change the second (flash) `--meminit` argument to point to a different `64.scr.vmem` file under `build-bin`.
-For the most part, the structure under `build-bin` follows the structure in the repository, and executables intended for Verilator are suffixed with `sim_verilator`.
-For example, the `build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem` file used above corresponds to the `sw/device/examples/hello_world/hello_world.c` source file.
+Thankfully, Bazel (and `opentitantool`) simplify this process by providing a single interface for performing all of the above steps.
+Moreover, Bazel automatically connects to the simulated UART (via `opentitantool`) to print the test output in real time.
 
-All executed instructions in the loaded software are logged to the file `trace_core_00000000.log`.
-The columns in this file are tab separated; change the tab width in your editor if the columns don't appear clearly, or open the file in a spreadsheet application.
-
-## Interact with the simulated UART
-
-When starting the simulation you should see a message like:
+For example, to run the UART smoke test on Verilator simulated hardware, and see the output in real time, use
 ```console
-UART: Created /dev/pts/11 for uart0. Connect to it with any terminal program, e.g.
-$ screen /dev/pts/11
+cd $REPO_TOP
+bazel test --test_tag_filters=verilator --test_output=streamed //sw/device/tests:uart_smoketest
+```
+or
+```console
+cd $REPO_TOP
+bazel test --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
 ```
 
-Use any terminal program, e.g. `screen` to connect to the simulation.
-If you only want to see the program output you can use `cat` instead.
-
+You should expect to see something like:
 ```console
-$ # to only see the program output
-$ cat /dev/pts/11
+Invoking: sw/host/opentitantool/opentitantool --rcfile= --logging=info --interface=verilator --conf=sw/host/opentitantool/config/opentitan_verilator.json --verilator-bin=hw/build.verilator_real/sim-verilator/Vchip_sim_tb --verilator-rom=sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem --verilator-flash=sw/device/tests/uart_smoketest_prog_sim_verilator.64.scr.vmem --verilator-otp=hw/ip/otp_ctrl/data/img_rma.vmem console --exit-failure=(FAIL|FAULT).*\n --exit-success=PASS.*\n --timeout=3600s
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::subprocess] Spawning verilator: "hw/build.verilator_real/sim-verilator/Vchip_sim_tb" ["--meminit=rom,sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem", "--meminit=flash,sw/device/tests/uart_smoketest_prog_sim_verilator.64.scr.vmem", "--meminit=otp,hw/ip/otp_ctrl/data/img_rma.vmem"]
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] Simulation of OpenTitan Earl Grey
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] =================================
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] Tracing can be toggled by sending SIGUSR1 to this process:
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] $ kill -USR1 3422749
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] GPIO: FIFO pipes created at $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/gpio0-read (read) and $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/gpio0-write (write) for 32-bit wide GPIO.
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] GPIO: To measure the values of the pins as driven by the device, run
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] $ cat $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/gpio0-read  # '0' low, '1' high, 'X' floating
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] GPIO: To drive the pins, run a command like
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] $ echo 'h09 l31' > $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/gpio0-write  # Pull the pin 9 high, and pin 31 low.
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] SPI: Created /dev/pts/9 for spi0. Connect to it with any terminal program, e.g.
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] $ screen /dev/pts/9
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] NOTE: a SPI transaction is run for every 4 characters entered.
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] SPI: Monitor output file created at $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/spi0.log. Works well with tail:
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] $ tail -f $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/spi0.log
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] UART: Created /dev/pts/10 for uart0. Connect to it with any terminal program, e.g.
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] $ screen /dev/pts/10
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] UART: Additionally writing all UART output to 'uart0.log'.
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] USB: Monitor output file created at $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/usb0.log. Works well with tail:
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] $ tail -f $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/usb0.log
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] JTAG: Virtual JTAG interface dmi0 is listening on port 44853. Use
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] OpenOCD and the following configuration to connect:
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]   interface remote_bitbang
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]   remote_bitbang_host localhost
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]   remote_bitbang_port 44853
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] Simulation running, end by pressing CTRL-c.
+[2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
+[2022-06-09T08:08:17Z INFO  opentitanlib::transport::verilator::transport] Verilator started with the following interaces:
+[2022-06-09T08:08:17Z INFO  opentitanlib::transport::verilator::transport] gpio_read = $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/gpio0-read
+[2022-06-09T08:08:17Z INFO  opentitanlib::transport::verilator::transport] gpio_write = $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/gpio0-write
+[2022-06-09T08:08:17Z INFO  opentitanlib::transport::verilator::transport] uart = /dev/pts/10
+[2022-06-09T08:08:17Z INFO  opentitanlib::transport::verilator::transport] spi = /dev/pts/9
+Starting interactive console
+[CTRL+C] to exit.
 
-$ # to interact with the simulation
-$ screen /dev/pts/11
-```
+I00000 test_rom.c:81] Version:    earlgrey_silver_release_v5-5775-gefa09d3b8
+Build Date: 2022-06-09, 00:12:35
 
-Note that `screen` will only show output that has been generated after `screen` starts, whilst `cat` will show output that was produced before `cat` started.
+I00001 test_rom.c:118] Test ROM complete, jumping to flash!
+I00000 status.c:28] PASS!
 
-You can exit `screen` (in the default configuration) by pressing `CTRL-a k` and confirm with `y`.
 
-If everything is working correctly you should expect to see text like the following from the virtual UART (replacing `/dev/pts/11` with the reported device):
-
-```console
-$ cat /dev/pts/11
-I00000 test_rom.c:35] Version:    opentitan-snapshot-20191101-1-1182-g2aedf641
-Build Date: 2020-05-13, 15:04:09
-
-I00001 test_rom.c:44] Boot ROM initialisation has completed, jump into flash!
-I00000 hello_world.c:30] Hello World!
-I00001 hello_world.c:31] Built at: May 13 2020, 15:27:31
-I00002 demos.c:17] Watch the LEDs!
-I00003 hello_world.c:44] Try out the switches on the board
-I00004 hello_world.c:45] or type anything into the console window.
-I00005 hello_world.c:46] The LEDs show the ASCII code of the last character.
-```
-
-Instead of interacting with the UART through a pseudo-terminal, the UART output can be written to a log file, or to STDOUT.
-This is done by passing the `UARTDPI_LOG_uart0` plus argument ("plusarg") to the verilated simulation at runtime.
-To write all UART output to STDOUT, pass `+UARTDPI_LOG_uart0=-` to the simulation.
-To write all UART output to a file called `your-log-file.log`, pass `+UARTDPI_LOG_uart0=your-log-file.log`.
-
-A full command-line invocation of the simulation could then look like that:
-```console
-$ cd $REPO_TOP
-$ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
-  --meminit=rom,build-bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem \
-  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem \
-  --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
-  +UARTDPI_LOG_uart0=-
+Exiting interactive console.
+[2022-06-09T08:09:38Z INFO  opentitantool::command::console] ExitSuccess("PASS!\r\n")
 ```
 
 **For most use cases, interacting with the UART is all you will need and you can stop here.**
 However, if you want to interact with the simulation in additional ways, there are more options listed below.
+
+## Execution Log
+
+All executed instructions in the loaded software into Verilator simulations are logged to the file `trace_core_00000000.log`.
+The columns in this file are tab separated; change the tab width in your editor if the columns don't appear clearly, or open the file in a spreadsheet application.
 
 ## Interact with GPIO (optional)
 
@@ -170,7 +156,6 @@ Multiple commands can be issued by separating them with a single space.
 $ echo 'h09 l31' > gpio0-write  # Pull the pin 9 high, and pin 31 low.
 ```
 
-
 ## Connect with OpenOCD to the JTAG port and use GDB (optional)
 
 The simulation includes a "virtual JTAG" port to which OpenOCD can connect using its `remote_bitbang` driver.
@@ -178,18 +163,25 @@ All necessary configuration files are included in this repository.
 
 See the [OpenOCD install instructions]({{< relref "install_openocd.md" >}}) for guidance on installing OpenOCD.
 
-Run the simulation, then connect with OpenOCD using the following command.
-
+Run the simulation with Bazel, making sure to build the device software with debug symbols using
 ```console
-$ cd $REPO_TOP
-$ /tools/openocd/bin/openocd -s util/openocd -f board/lowrisc-earlgrey-verilator.cfg
+cd $REPO_TOP
+bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
 ```
 
-To connect GDB use the following command (noting it needs to be altered to point to the sw binary in use).
+Then, connect with OpenOCD using the following command.
 
 ```console
-$ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
-  build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf
+cd $REPO_TOP
+/tools/openocd/bin/openocd -s util/openocd -f board/lowrisc-earlgrey-verilator.cfg
+```
+
+Lastly, connect GDB using the following command (noting it needs to be altered to point to the sw binary in use).
+
+```console
+cd $REPO_TOP
+riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
+  $(find -L bazel-out/ -type f -name "uart_smoketest_sim_verilator | head -n 1")
 ```
 
 ## SPI device test interface (optional)
@@ -208,12 +200,12 @@ $ tail -f /auto/homes/mdh10/github/opentitan/spi0.log
 Use any terminal program, e.g. `screen` or `microcom` to connect to the simulation.
 
 ```console
-$ screen /dev/pts/4
+screen /dev/pts/4
 ```
 
 Microcom seems less likely to send unexpected control codes when starting:
 ```console
-$ microcom -p /dev/pts/4
+microcom -p /dev/pts/4
 ```
 
 The terminal will accept (but not echo) characters.
@@ -228,15 +220,17 @@ The output consists of a textual "waveform" representing the SPI signals.
 
 ## Generating waveforms (optional)
 
+TODO(lowRISC/opentitan[#13042](https://github.com/lowRISC/opentitan/issues/13042)): the below does not work with the Bazel test running flow.
+
 With the `--trace` argument the simulation generates a FST signal trace which can be viewed with Gtkwave (only).
 Tracing slows down the simulation by roughly factor of 1000.
 
 ```console
-$ cd $REPO_TOP
-$ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
+cd $REPO_TOP
+build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
   --meminit=rom,build-bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem \
   --trace
-$ gtkwave sim.fst
+gtkwave sim.fst
 ```
