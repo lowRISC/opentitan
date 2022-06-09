@@ -60,6 +60,7 @@ def dv_params(
         dvsim_config,
         "@//util/dvsim",
         "@//hw:all_files",
+        "@//hw:fusesoc_ignore",
     ]
     required_tags = ["dv"]
     kwargs.update(
@@ -121,6 +122,7 @@ def verilator_params(
     required_data = [
         "@//sw/host/opentitantool:test_resources",
         "@//hw:verilator",
+        "@//hw:fusesoc_ignore",
     ]
     required_tags = ["verilator"]
     kwargs.update(
