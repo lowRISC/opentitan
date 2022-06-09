@@ -14,6 +14,8 @@ ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
 ARG RUST_VERSION=1.60.0
 # This should match the version in bazelish.sh.
 ARG BAZELISK_VERSION=v1.11.0
+# This should match the version in ci/install-package-dependencies.sh
+ARG GCC_VERION=9
 
 # Main container image.
 FROM ubuntu:18.04 AS opentitan
@@ -23,6 +25,7 @@ ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
 ARG RUST_VERSION
 ARG BAZELISK_VERSION
+ARG GCC_VERSION
 
 LABEL version="1.0"
 LABEL description="OpenTitan development container."
@@ -59,9 +62,10 @@ RUN OBS_URL="https://download.opensuse.org/repositories"; \
 # - locales and locales-all are required to set the locale.
 # - minicom and screen are useful to see UART communication.
 # - dc and time are requirements of Synopsys VCS.
+# - software-properties-common is required to be able to install newer gcc versions.
 COPY apt-requirements.txt /tmp/apt-requirements.txt
 RUN echo "verilator-${VERILATOR_VERSION}" >>/tmp/apt-requirements.txt \
-    && echo "openocd-${OPENOCD_VERSION}"     >>/tmp/apt-requirements.txt \
+    && echo "openocd-${OPENOCD_VERSION}"  >>/tmp/apt-requirements.txt \
     && sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
     && apt-get update \
     && xargs apt-get install -y </tmp/apt-requirements.txt \
@@ -74,8 +78,16 @@ RUN echo "verilator-${VERILATOR_VERSION}" >>/tmp/apt-requirements.txt \
         screen \
         dc \
         time \
+        software-properties-common \
     && apt-get clean; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+
+# Install the CI version of gcc and g++
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
+    && apt-get update \
+    && apt-get install -y gcc-9 g++-9 \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 \
+    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
 
 # RISC-V device toolchain
 COPY util/get-toolchain.py /tmp/get-toolchain.py
