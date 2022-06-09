@@ -490,6 +490,7 @@ module rv_core_ibex
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       previous_valid <= '0;
+      crash_dump_previous <= '0;
     end else if (double_fault) begin
       previous_valid <= '1;
       crash_dump_previous <= crash_dump;
