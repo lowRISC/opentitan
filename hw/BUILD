@@ -71,6 +71,15 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+genrule(
+    name = "fusesoc_ignore",
+    outs = ["FUSESOC_IGNORE"],
+    cmd = """
+        touch $@
+    """,
+    visibility = ["//visibility:public"],
+)
+
 # TODO(lowRISC/opentitan#7972): Globbing all of the //hw/... hierarchy together
 # is a bit of a hack.  Longer term, we need proper rules for expressing the
 # relationships between verilog components.
