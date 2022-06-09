@@ -1286,18 +1286,64 @@
       tests: ["chip_sw_alert_handler_ping_timeout"]
     }
     {
-      name: chip_sw_alert_handler_lpg
-      desc: '''Verify alert's low_power_group(lpg).
+      name: chip_sw_alert_handler_lpg_sleep_mode_alerts
+      desc: '''Verify alert_handler can preserve alerts during low_power mode.
 
-            Choose an always-on block and send alerts during deep sleep and normal sleep mode,
-            check the alert_senders can recover after system comes out of both sleep modes.
-            Repeat the above sequence for multiple rounds with randomly chosen deep or normal sleep
-            mode for each round.
+            - Trigger fatal alerts for all IPs but configure alert_handler so it won't trigger
+              reset.
+            - Randomly enter normal or deep sleep mode.
+            - Wait random cycles then wake up from the sleep mode.
+            - After wake up from normal sleep mode, clear all alert cause registers and check that
+              all alerts are still firing after waking up.
+            - Repeat the previous steps for random number of iterations.
             '''
       milestone: V2
       tests: []
     }
     {
+      name: chip_sw_alert_handler_lpg_sleep_mode_pings
+      desc: '''Verify alert_handler's ping mechanism works correctly during sleep and wake up.
+
+            There are two scenarios to check:
+            - Configure alert_handler's ping timeout register to a reasonble value that won't cause
+              ping timeout in normal cases.
+              Then randomly enter and exit normal or deep sleep modes.
+              Check that no local alerts triggered in alert_handler.
+              This scenario ensures that ping mechanism won't send out spurious failure.
+            - Configure alert_handler's ping timeout register to a small value that will always
+              causes ping timeout.
+              Then randomly enter and exit normal or deep sleep modes.
+              Clear local alert cause register and check that alert ping timeout continue to fire
+              after wake up.
+              This scenario ensures the ping mechanism will continue to send out pings after waking
+              up from sleep modes.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sw_alert_handler_lpg_clock_off
+      desc: '''Verify alert_handler's works correctly when sender clock is turned off.
+
+            - Configure clkmgr to randomly turn off one of the IP's clock and check alert_handler
+              won't trigger a ping timeout error on that block.
+            - Trigger fatal alerts in an IP then configure clkmgr to turn off the IP clock. Check
+              the IP's fatal alert resumes after clock is turned back on.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sw_alert_handler_lpg_reset_toggle
+      desc: '''Verify alert_handler's works correctly when sender reset is toggled.
+
+            - Configure rstmgr to randomly toggle one IP block's SW reset and check alert_handler
+              won't trigger a ping timeout error on that block.
+           '''
+      milestone: V2
+      tests: []
+   }
+   {
       name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
       desc: '''Verify escalation reverse ping timer disabled in sleep mode.
 
