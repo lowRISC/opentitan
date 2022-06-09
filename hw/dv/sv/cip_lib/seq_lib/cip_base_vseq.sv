@@ -864,8 +864,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 if (mem.get_mem_partial_write_support()) mask = get_rand_contiguous_mask();
                 else                                     mask = '1;
                 data = $urandom;
+                // set check_rsp to 0 to skip checking rsp in sequence, as there could be a mem
+                // which always returns d_error = 1. scb will be overriden to handle it and check
+                // the d_error.
                 tl_access_w_abort(.addr(addr), .write(1), .data(data),
-                                  .completed(write_completed), .saw_err(write_error),
+                                  .completed(write_completed), .saw_err(write_error), .check_rsp(0),
                                   .mask(mask), .blocking(1), .req_abort_pct($urandom_range(0, 100)),
                                   .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
 
@@ -888,9 +891,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 if (get_mem_access_by_addr(local_ral, addr) != "WO") begin
                   bit completed, saw_err;
                   mask = get_rand_contiguous_mask(addr_mask.mask);
+                  // set check_rsp to 0 due to a reason above (in the write section)
                   tl_access_w_abort(.addr(addr), .write(0), .data(data),
                                     .completed(completed), .saw_err(saw_err),
-                                    .mask(mask), .blocking(1),
+                                    .mask(mask), .blocking(1), .check_rsp(0),
                                     .req_abort_pct($urandom_range(0, 100)),
                                     .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
                 end
