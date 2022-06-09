@@ -204,6 +204,18 @@ dif_result_t dif_rstmgr_alert_info_get_enabled(const dif_rstmgr_t *handle,
                                                dif_toggle_t *state);
 
 /**
+ * Get alert info dump size.
+ *
+ *
+ * @param handle A Reset Manager handle.
+ * @param[out] size The size of the alert info dump in 32 bit words.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rstmgr_alert_info_get_size(const dif_rstmgr_t *handle,
+                                            size_t *size);
+
+/**
  * Alert info crash dump segment.
  *
  * The alert info crash dump consists of 32-bit data segments
@@ -260,6 +272,18 @@ dif_result_t dif_rstmgr_cpu_info_set_enabled(const dif_rstmgr_t *handle,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rstmgr_cpu_info_get_enabled(const dif_rstmgr_t *handle,
                                              dif_toggle_t *state);
+
+/**
+ * Get cpu info dump size.
+ *
+ *
+ * @param handle A Reset Manager handle.
+ * @param[out] size The size of the cpu info dump in 32 bit words.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rstmgr_cpu_info_get_size(const dif_rstmgr_t *handle,
+                                          size_t *size);
 
 /**
  * CPU info crash dump segment.

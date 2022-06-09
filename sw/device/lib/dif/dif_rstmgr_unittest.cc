@@ -233,6 +233,23 @@ TEST_F(AlertInfoGetTest, Success) {
   EXPECT_EQ(state, kDifToggleDisabled);
 }
 
+class AlertInfoGetSizeTest : public RstmgrTest {};
+
+TEST_F(AlertInfoGetSizeTest, Success) {
+  EXPECT_READ32(RSTMGR_ALERT_INFO_ATTR_REG_OFFSET, 5);
+
+  size_t size = 0;
+  EXPECT_DIF_OK(dif_rstmgr_alert_info_get_size(&rstmgr_, &size));
+  EXPECT_EQ(size, 5);
+}
+
+TEST_F(AlertInfoGetSizeTest, BadArgs) {
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_get_size(nullptr, nullptr));
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_get_size(&rstmgr_, nullptr));
+  size_t size;
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_get_size(nullptr, &size));
+}
+
 class AlertInfoDumpReadTest : public RstmgrTest {
  protected:
   AlertInfoDumpReadTest() {
@@ -398,6 +415,23 @@ TEST_F(CpuInfoGetTest, Success) {
   state = kDifToggleEnabled;
   EXPECT_DIF_OK(dif_rstmgr_cpu_info_get_enabled(&rstmgr_, &state));
   EXPECT_EQ(state, kDifToggleDisabled);
+}
+
+class CpuInfoGetSizeTest : public RstmgrTest {};
+
+TEST_F(CpuInfoGetSizeTest, Success) {
+  EXPECT_READ32(RSTMGR_CPU_INFO_ATTR_REG_OFFSET, 5);
+
+  size_t size = 0;
+  EXPECT_DIF_OK(dif_rstmgr_cpu_info_get_size(&rstmgr_, &size));
+  EXPECT_EQ(size, 5);
+}
+
+TEST_F(CpuInfoGetSizeTest, BadArgs) {
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_get_size(nullptr, nullptr));
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_get_size(&rstmgr_, nullptr));
+  size_t size;
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_get_size(nullptr, &size));
 }
 
 class CpuInfoDumpReadTest : public RstmgrTest {

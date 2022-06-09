@@ -76,7 +76,7 @@ uint32_t flash_ctrl_testutils_data_region_scrambled_setup(
  * @param flash_state A flash_ctrl state handle.
  * @param page_id Region page index.
  * @param bank The required bank.
- * @param paritiion_id The partition index.
+ * @param partition_id The partition index.
  * @param region_properties The properties for the info region.
  * @return The byte address offset of the region.
  */
@@ -91,7 +91,7 @@ uint32_t flash_ctrl_testutils_info_region_setup_properties(
  * @param flash_state A flash_ctrl state handle.
  * @param page_id Region page index.
  * @param bank The required bank.
- * @param paritiion_id The partition index.
+ * @param partition_id The partition index.
  * @return The byte address offset of the region.
  */
 uint32_t flash_ctrl_testutils_info_region_setup(
@@ -104,7 +104,7 @@ uint32_t flash_ctrl_testutils_info_region_setup(
  * @param flash_state A flash_ctrl state handle.
  * @param page_id Region page index.
  * @param bank The required bank.
- * @param paritiion_id The partition index.
+ * @param partition_id The partition index.
  * @return The byte address offset of the region.
  */
 uint32_t flash_ctrl_testutils_info_region_scrambled_setup(
@@ -117,7 +117,7 @@ uint32_t flash_ctrl_testutils_info_region_scrambled_setup(
  *
  * @param flash_state A flash_ctrl state handle.
  * @param byte_address The byte address of the page to erase.
- * @param paritiion_id The partition index.
+ * @param partition_id The partition index.
  * @param partition_type The partition type, data or info.
  * @return The operation error flag.
  */
@@ -134,7 +134,7 @@ bool flash_ctrl_testutils_erase_page(
  *
  * @param flash_state A flash_ctrl state handle.
  * @param byte_address The byte address of the page to program.
- * @param paritiion_id The partition index.
+ * @param partition_id The partition index.
  * @param data The data to program.
  * @param partition_type The partition type, data or info.
  * @param word_count The number of words to program.
@@ -153,7 +153,7 @@ bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
  *
  * @param flash_state A flash_ctrl state handle.
  * @param byte_address The byte address of the page to erase and program.
- * @param paritiion_id The partition index.
+ * @param partition_id The partition index.
  * @param data The data to program.
  * @param partition_type The partition type, data or info.
  * @param word_count The number of words to program.
