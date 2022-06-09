@@ -182,12 +182,15 @@
       desc: "Blanking of bignum data paths when unused by the executing instruction."
     }
     { name: "CTRL.REDUN",
-      desc: "Check pre-decoded control used for blanking matches seperately decoded control from main decoder."
+      desc: '''
+        Check pre-decoded control matches separately decoded control from main decoder.
+        This includes control signals used for blanking, pushing/popping the call stack, controlling loop and branch/jump instructions, as well as the actual branch target.
+      '''
     }
     { name: "PC.CTRL_FLOW.REDUN",
       desc: '''
         Check prefetch stage PC and execute stage PC match.
-        The prefetch stage and execute stage store their PC's seperately and have seperate increment calculations.
+        The prefetch stage and execute stage store their PC's separately and have separate increment calculations.
       '''
     }
     { name: "RND.BUS.CONSISTENCY",
