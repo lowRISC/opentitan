@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -24,6 +26,9 @@ extern "C" {
 typedef struct keymgr_binding_value {
   uint32_t data[8];
 } keymgr_binding_value_t;
+
+OT_ASSERT_MEMBER_OFFSET(keymgr_binding_value_t, data, 0);
+OT_ASSERT_SIZE(keymgr_binding_value_t, 32);
 
 #ifdef __cplusplus
 }  // extern "C"

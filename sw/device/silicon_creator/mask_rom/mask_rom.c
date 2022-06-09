@@ -13,6 +13,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/cfi.h"
@@ -186,6 +187,11 @@ static rom_error_t mask_rom_verify(const manifest_t *manifest,
   HARDENED_RETURN_IF_ERROR(sigverify_rsa_key_get(
       sigverify_rsa_key_id_get(&manifest->modulus), lc_state, &key));
 
+  uint32_t clobber_value = rnd_uint32();
+  for (size_t i = 0; i < ARRAYSIZE(boot_measurements.rom_ext.data); ++i) {
+    boot_measurements.rom_ext.data[i] = clobber_value;
+  }
+
   hmac_sha256_init();
   // Invalidate the digest if the security version of the manifest is smaller
   // than the minimum required security version.
@@ -210,6 +216,14 @@ static rom_error_t mask_rom_verify(const manifest_t *manifest,
   // Verify signature
   hmac_digest_t act_digest;
   hmac_sha256_final(&act_digest);
+
+  static_assert(
+      sizeof(boot_measurements.rom_ext.data) == sizeof(act_digest.digest),
+      "Unexpected ROM_EXT digest size.");
+  for (size_t i = 0; i < ARRAYSIZE(act_digest.digest); ++i) {
+    boot_measurements.rom_ext.data[i] = act_digest.digest[i];
+  }
+
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
   return sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state,
                               flash_exec);
@@ -290,7 +304,18 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest,
                                  uint32_t flash_exec) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 1);
   HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateReset));
-  keymgr_sw_binding_set(&manifest->binding_value, &manifest->binding_value);
+
+  const keymgr_binding_value_t *attestation_measurement =
+      &manifest->binding_value;
+  uint32_t use_rom_ext_measurement =
+      otp_read32(OTP_CTRL_PARAM_ROM_KEYMGR_ROM_EXT_MEAS_EN_OFFSET);
+  if (launder32(use_rom_ext_measurement) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(use_rom_ext_measurement, kHardenedBoolTrue);
+    attestation_measurement = &boot_measurements.rom_ext;
+  } else {
+    HARDENED_CHECK_NE(use_rom_ext_measurement, kHardenedBoolTrue);
+  }
+  keymgr_sw_binding_set(&manifest->binding_value, attestation_measurement);
   keymgr_creator_max_ver_set(manifest->max_key_version);
   SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
                            kKeymgrSecMmioCreatorMaxVerSet);

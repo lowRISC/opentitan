@@ -63,6 +63,20 @@ cc_library(
     alwayslink = True,
 )
 
+cc_library(
+    name = "static_critical_boot_measurements",
+    srcs = ["static_critical_boot_measurements.c"],
+    hdrs = ["boot_measurements.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
+    ],
+    # This library provides a special symbol that the linker will find.
+    # We want this to be a linker input to ensure the weak version in
+    # sec_mmio.c is overriden.
+    alwayslink = True,
+)
+
 ld_library(
     name = "static_critical_sections",
     fragments = ["static_critical.ld"],

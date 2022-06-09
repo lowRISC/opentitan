@@ -489,10 +489,22 @@
       default: "4",
       local: "true"
     },
+    { name: "RomKeymgrRomExtMeasEnOffset",
+      desc: "Offset of ROM_KEYMGR_ROM_EXT_MEAS_EN",
+      type: "int",
+      default: "1368",
+      local: "true"
+    },
+    { name: "RomKeymgrRomExtMeasEnSize",
+      desc: "Size of ROM_KEYMGR_ROM_EXT_MEAS_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "OwnerSwCfgManufStateOffset",
       desc: "Offset of OWNER_SW_CFG_MANUF_STATE",
       type: "int",
-      default: "1368",
+      default: "1372",
       local: "true"
     },
     { name: "OwnerSwCfgManufStateSize",

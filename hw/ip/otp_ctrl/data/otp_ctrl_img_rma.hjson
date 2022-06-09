@@ -34,7 +34,7 @@
                     // definition of `hardened_byte_bool_t` in
                     // sw/device/lib/base/hardened.h.
                     value: "0x4b4b4b4b4b4ba5a5",
-                }
+                },
                 {
                     name: "CREATOR_SW_CFG_RNG_EN",
                     // Enable use of entropy for countermeasures. See the
@@ -68,6 +68,12 @@
                     // Enable bootstrap. See `hardened_bool_t` in
                     // sw/device/lib/base/hardened.h.
                     value: "0x739",
+                },
+                {
+                    name: "ROM_KEYMGR_ROM_EXT_MEAS_EN",
+                    // Set to 0x739 to use the ROM_EXT hash measurement as the
+                    // key manager attestation binding value.
+                    value: "0x0",
                 },
                 {
                     name: "ROM_ALERT_CLASS_EN"
