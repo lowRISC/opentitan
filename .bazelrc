@@ -6,6 +6,10 @@
 build --cxxopt='-std=c++14'
 build --conlyopt='-std=c11'
 
+# Never strip debugging information so that we can produce annotated
+# disassemblies when compilation mode is fastbuild.
+build --strip='never'
+
 # Bazel embedded enables the following feature which along with -std=c11 and
 # our codebase generates a lot of warnings by setting the -Wpedantic flag
 build --features=-all_warnings
