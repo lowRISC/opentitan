@@ -8,8 +8,15 @@ include_ccf ${dv_root}/tools/xcelium/common.ccf
 // Only collect code coverage on the *_reg_top instance.
 deselect_coverage -betfs -module ${DUT_TOP}...
 select_coverage -befs -module *_reg_top...
-select_coverage -assert -module tlul_assert
-select_coverage -assert -module *_csr_assert_fpv
+
+// csr_assert_fpv is an auto-generated csr read assertion module. So only assertion coverage is
+// meaningful to collect.
+deselect_coverage -betf -module *csr_assert_fpv...
+select_coverage -assert -module *csr_assert_fpv
+
+// Only enable assertion coverage
+deselect_coverage -betf -module *tlul_assert...
+select_coverage -assert -module *tlul_assert
 
 // Include toggle coverage on `prim_alert_sender` because the `alert_test` task under
 // `cip_base_vseq` drives `alert_test_i` and verifies `alert_rx/tx` handshake in each IP.
