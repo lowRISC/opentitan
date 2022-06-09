@@ -24,6 +24,7 @@ class otbn_common_vseq extends otbn_base_vseq;
                          inout bit [BUS_DW-1:0]    data,
                          output bit                completed,
                          output bit                saw_err,
+                         input uint             tl_access_timeout_ns = default_spinwait_timeout_ns,
                          input bit [BUS_DBW-1:0]   mask = '1,
                          input bit                 check_rsp = 1'b1,
                          input bit                 exp_err_rsp = 1'b0,
@@ -35,9 +36,9 @@ class otbn_common_vseq extends otbn_base_vseq;
                          tl_sequencer              tl_sequencer_h = p_sequencer.tl_sequencer_h,
                          input tl_intg_err_e       tl_intg_err_type = TlIntgErrNone,
                          input int                 req_abort_pct = 0);
-    super.tl_access_w_abort(addr, write, data, completed, saw_err, mask, check_rsp, exp_err_rsp,
-                            exp_data, compare_mask, check_exp_data, blocking, instr_type,
-                            tl_sequencer_h, tl_intg_err_type, req_abort_pct);
+    super.tl_access_w_abort(addr, write, data, completed, saw_err, tl_access_timeout_ns, mask,
+                            check_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data,
+                            blocking, instr_type, tl_sequencer_h, tl_intg_err_type, req_abort_pct);
 
     // If we see a write which causes an integrity error AND we've disabled the scoreboard (which
     // has its own predictor), we update the predicted value of the STATUS register to be LOCKED.
