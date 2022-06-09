@@ -865,6 +865,28 @@
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"]
     }
+    {
+      name: chip_sw_clkmgr_deep_sleep_frequency
+      desc: '''Verify the frequency measurement through deep sleep.
+
+            Enable clock cycle counts. Put the chip in deep sleep. Upon wakeup reset the
+            clock measurements should be off, and the recoverable fault status should be
+            all clear.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sw_clkmgr_sleep_frequency
+      desc: '''Verify the frequency measurement through shallow sleep.
+
+            Enable clock cycle counts. Put the chip in shallow sleep with pwrmgr's CONTROL CSR
+            randomly enabling clocks. Upon wakeup interrupt the clock measurements should be on,
+            and the recoverable fault status may have faults for only the disabled clocks.
+            '''
+      milestone: V2
+      tests: []
+    }
 
     // PWRMGR tests:
     {
