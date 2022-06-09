@@ -25,6 +25,11 @@ deselect_coverage -betfs -module prim_cdc_rand_delay
 // csr_assert_fpv is an auto-generated csr read assertion module. So only assertion coverage is
 // meaningful to collect.
 deselect_coverage -betf -module *csr_assert_fpv...
+select_coverage -assert -module *csr_assert_fpv
+
+// Only enable assertion coverage
+deselect_coverage -betf -module *tlul_assert...
+select_coverage -assert -module *tlul_assert
 
 // Only collect toggle coverage on the DUT and the black-boxed IP (above) ports.
 deselect_coverage -toggle -module ${DUT_TOP}...
