@@ -2,6 +2,8 @@
 title: "CoreMark Benchmark"
 ---
 
+TODO(lowRISC/opentitan[#12504](https://github.com/lowRISC/opentitan/issues/12504)): update instructions for Bazel builds.
+
 ## Building CoreMark
 
 To build CoreMark under meson:
