@@ -32,8 +32,9 @@ def _fusesoc_build_impl(ctx):
         outputs.extend(deps)
         groups[group] = depset(deps)
 
-    verilator_options = ctx.attr.verilator_options[BuildSettingInfo].value
-    flags.append("--verilator_options={}".format(" ".join(verilator_options)))
+    if ctx.attr.verilator_options:
+        verilator_options = ctx.attr.verilator_options[BuildSettingInfo].value
+        flags.append("--verilator_options={}".format(" ".join(verilator_options)))
 
     ctx.actions.run(
         mnemonic = "FuseSoC",
