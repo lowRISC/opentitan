@@ -200,7 +200,7 @@ attacks, see [[12](#ref-12)] and [[13](#ref-13)])
     recovered on the next clock and the denial will be continued/preserved.
 13. CFI (control flow integrity) hardware can help protect a processor /
     programmable peripheral from some types of glitch attacks. This topic is
-    very involved and beyond the scope of these guidelines, consult [[2](#ref-2)] 
+    very involved and beyond the scope of these guidelines, consult [[2](#ref-2)]
     for an introduction to previous techniques.
 14. Analog sensors (under/over-voltage, laser light, mesh breach, among others)
     can be used to generate SoC-level alerts and/or inhibit sensitive
@@ -340,10 +340,10 @@ attacks, see [[12](#ref-12)] and [[13](#ref-13)])
 
 ## References and further reading
 
-[<span id="ref-1">1</span>]: Overview of checksums and hashes - 
-https://cybergibbons.com/reverse-engineering-2/checksums-hashes-and-security/ 
+[<span id="ref-1">1</span>]: Overview of checksums and hashes -
+https://cybergibbons.com/reverse-engineering-2/checksums-hashes-and-security/
 
-[<span id="ref-2">2</span>]: A Survey of hardware-based Control Flow Integrity - 
+[<span id="ref-2">2</span>]: A Survey of hardware-based Control Flow Integrity -
 https://arxiv.org/pdf/1706.07257.pdf
 
 [<span id="ref-3">3</span>]: Cache-timing attacks on AES -
