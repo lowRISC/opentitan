@@ -153,7 +153,10 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   endfunction
 
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
-    if (ral_name == cfg.sram_ral_name && get_sram_instr_type_err(item, channel)) return 1;
+    if (ral_name == cfg.sram_ral_name && get_sram_instr_type_err(item, channel)) begin
+      `DV_CHECK_EQ(item.d_error, 1)
+      return 1;
+    end
     return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
