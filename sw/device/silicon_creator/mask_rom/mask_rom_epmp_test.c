@@ -39,15 +39,6 @@
  */
 
 /**
- * Secure MMIO context.
- *
- * This is placed at a fixed location in memory within the .static_critical
- * section. The location of this data is known to ROM_EXT.
- */
-__attribute__((section(".static_critical.sec_mmio_ctx")))  //
-volatile sec_mmio_ctx_t sec_mmio_ctx;
-
-/**
  * Exception types that may be encountered.
  *
  * TODO(#7190): use global definitions instead.

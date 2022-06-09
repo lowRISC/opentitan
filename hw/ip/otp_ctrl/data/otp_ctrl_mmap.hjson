@@ -229,6 +229,10 @@
                     size: "4"
                 }
                 {
+                    name: "ROM_KEYMGR_ROM_EXT_MEAS_EN",
+                    size: "4"
+                }
+                {
                     name: "OWNER_SW_CFG_MANUF_STATE",
                     size: "4"
                 }
