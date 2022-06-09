@@ -316,14 +316,17 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask : flash_ctrl_read
 
   // Task to perform a direct Flash read at the specified location
+  // Used timeout is to match the longest waiting timeout possible for the host, which will happen
+  //  when the host is waiting for the controller to finish bank-erase
   virtual task do_direct_read(
       input addr_t addr, input bit [TL_DBW-1:0] mask = get_rand_contiguous_mask(),
       input bit blocking = $urandom_range(0, 1), input bit check_rdata = 0,
       input data_t exp_rdata = '0, input mubi4_t instr_type = MuBi4False,
       output data_4s_t rdata, input bit exp_err_rsp = 1'b0);
-    tl_access(.addr(addr), .write(1'b0), .data(rdata), .mask(mask), .blocking(blocking),
-              .check_exp_data(check_rdata), .exp_data(exp_rdata), .compare_mask(mask),
-              .instr_type(instr_type), .exp_err_rsp(exp_err_rsp),
+    tl_access(.addr(addr), .write(1'b0), .data(rdata),
+              .tl_access_timeout_ns(cfg.seq_cfg.erase_timeout_ns), .mask(mask),
+              .blocking(blocking), .check_exp_data(check_rdata), .exp_data(exp_rdata),
+              .compare_mask(mask), .instr_type(instr_type), .exp_err_rsp(exp_err_rsp),
               .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.flash_ral_name]));
   endtask : do_direct_read
 

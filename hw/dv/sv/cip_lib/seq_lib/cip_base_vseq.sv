@@ -173,6 +173,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task tl_access(input bit [BUS_AW-1:0]  addr,
                          input bit               write,
                          inout bit [BUS_DW-1:0]  data,
+                         input uint             tl_access_timeout_ns = default_spinwait_timeout_ns,
                          input bit [BUS_DBW-1:0] mask = '1,
                          input bit               check_rsp = 1'b1,
                          input bit               exp_err_rsp = 1'b0,
@@ -184,9 +185,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
                          input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone);
     bit completed, saw_err;
-    tl_access_w_abort(addr, write, data, completed, saw_err, mask, check_rsp, exp_err_rsp, exp_data,
-                      compare_mask, check_exp_data, blocking, instr_type, tl_sequencer_h,
-                      tl_intg_err_type);
+    tl_access_w_abort(addr, write, data, completed, saw_err, tl_access_timeout_ns, mask, check_rsp,
+                      exp_err_rsp, exp_data, compare_mask, check_exp_data, blocking, instr_type,
+                      tl_sequencer_h, tl_intg_err_type);
   endtask
 
   // this tl_access can input req_abort_pct (pertentage to enable req abort) and output status for
@@ -197,6 +198,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       inout bit [BUS_DW-1:0]  data,
       output bit              completed,
       output bit              saw_err,
+      input uint              tl_access_timeout_ns = default_spinwait_timeout_ns,
       input bit [BUS_DBW-1:0] mask = '1,
       input bit               check_rsp = 1'b1,
       input bit               exp_err_rsp = 1'b0,
@@ -211,14 +213,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
     cip_tl_seq_item rsp;
     if (blocking) begin
-      tl_access_sub(addr, write, data, completed, saw_err, rsp, mask, check_rsp,
-                    exp_err_rsp, exp_data, compare_mask, check_exp_data, req_abort_pct,
+      tl_access_sub(addr, write, data, completed, saw_err, rsp, tl_access_timeout_ns, mask,
+                    check_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data, req_abort_pct,
                     instr_type, tl_sequencer_h, tl_intg_err_type);
     end else begin
       fork
-        tl_access_sub(addr, write, data, completed, saw_err, rsp, mask, check_rsp,
-                      exp_err_rsp, exp_data, compare_mask, check_exp_data, req_abort_pct,
-                      instr_type, tl_sequencer_h, tl_intg_err_type);
+        tl_access_sub(addr, write, data, completed, saw_err, rsp, tl_access_timeout_ns, mask,
+                      check_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data,
+                      req_abort_pct, instr_type, tl_sequencer_h, tl_intg_err_type);
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
       #0;
@@ -231,6 +233,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              output bit              completed,
                              output bit              saw_err,
                              output cip_tl_seq_item  rsp,
+                             input uint         tl_access_timeout_ns = default_spinwait_timeout_ns,
                              input bit [BUS_DBW-1:0] mask = '1,
                              input bit               check_rsp = 1'b1,
                              input bit               exp_err_rsp = 1'b0,
@@ -281,7 +284,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
         csr_utils_pkg::decrement_outstanding_access();,
         // thread to check timeout
-        $sformatf("Timeout waiting tl_access : addr=0x%0h", addr))
+        $sformatf("Timeout waiting tl_access : addr=0x%0h", addr),
+        // Timeout parameter
+        tl_access_timeout_ns)
   endtask
 
   // CIP spec indicates all comportable IPs will have the same standardized interrupt csrs. We can
