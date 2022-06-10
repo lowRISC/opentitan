@@ -135,8 +135,9 @@ static rom_error_t mask_rom_init(void) {
   // Initialize the retention RAM based on the reset reason and the OTP value.
   // Note: Retention RAM is always reset on PoR regardless of the OTP value.
   uint32_t reset_reasons = rstmgr_reason_get();
-  uint32_t reset_mask = (1 << kRstmgrReasonPowerOn)
-      | otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RET_RAM_RESET_MASK_OFFSET);
+  uint32_t reset_mask =
+      (1 << kRstmgrReasonPowerOn) |
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RET_RAM_RESET_MASK_OFFSET);
   if ((reset_reasons & reset_mask) != 0) {
     retention_sram_init();
   }
@@ -212,9 +213,9 @@ static rom_error_t mask_rom_verify(const manifest_t *manifest,
 }
 
 /* These symbols are defined in
-* `opentitan/sw/device/silicon_creator/mask_rom/mask_rom.ld`, and describes the
-* location of the flash header.
-*/
+ * `opentitan/sw/device/silicon_creator/mask_rom/mask_rom.ld`, and describes the
+ * location of the flash header.
+ */
 extern char _rom_ext_virtual_start_address[];
 extern char _rom_ext_virtual_size[];
 /**
@@ -224,8 +225,10 @@ extern char _rom_ext_virtual_size[];
  * @param lma_addr Load address or physical address.
  * @return the computed virtual address.
  */
-static inline  uintptr_t rom_ext_vma_get(const manifest_t *manifest, uintptr_t lma_addr){
-  return (lma_addr - (uintptr_t)manifest + (uintptr_t)_rom_ext_virtual_start_address);
+static inline uintptr_t rom_ext_vma_get(const manifest_t *manifest,
+                                        uintptr_t lma_addr) {
+  return (lma_addr - (uintptr_t)manifest +
+          (uintptr_t)_rom_ext_virtual_start_address);
 }
 
 /**
@@ -293,23 +296,27 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest,
 
   // Configure address translation, compute the epmp regions and the entry
   // point for the virtual address in case the address translation is enabled.
-  // Otherwise, compute the epmp regions and the entry point for the load address.
+  // Otherwise, compute the epmp regions and the entry point for the load
+  // address.
   epmp_region_t text_region = manifest_code_region_get(manifest);
   uintptr_t entry_point = manifest_entry_point_get(manifest);
-  switch(launder32(manifest->address_translation)){
+  switch (launder32(manifest->address_translation)) {
     case kHardenedBoolTrue:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
       ibex_addr_remap_0_set((uintptr_t)_rom_ext_virtual_start_address,
-                           (uintptr_t)manifest, (size_t)_rom_ext_virtual_size);
+                            (uintptr_t)manifest, (size_t)_rom_ext_virtual_size);
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
       // Unlock read-only for the whole rom_ext virtual memory.
       HARDENED_RETURN_IF_ERROR(epmp_state_check(&epmp));
-      mask_rom_epmp_unlock_rom_ext_r(&epmp, (epmp_region_t) {
-        .start = (uintptr_t)_rom_ext_virtual_start_address,
-        .end = (uintptr_t)_rom_ext_virtual_start_address + (uintptr_t)_rom_ext_virtual_size});
+      mask_rom_epmp_unlock_rom_ext_r(
+          &epmp,
+          (epmp_region_t){.start = (uintptr_t)_rom_ext_virtual_start_address,
+                          .end = (uintptr_t)_rom_ext_virtual_start_address +
+                                 (uintptr_t)_rom_ext_virtual_size});
 
-      // Move the ROM_EXT execution section from the load address to the virtual address.
+      // Move the ROM_EXT execution section from the load address to the virtual
+      // address.
       text_region.start = rom_ext_vma_get(manifest, text_region.start);
       text_region.end = rom_ext_vma_get(manifest, text_region.end);
       entry_point = rom_ext_vma_get(manifest, entry_point);
