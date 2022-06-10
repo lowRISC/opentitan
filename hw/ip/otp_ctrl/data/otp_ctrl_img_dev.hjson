@@ -41,6 +41,12 @@
                     // non-zero value.
                     value: "0xffffffff",
                 },
+                {
+                    name: "CREATOR_SW_CFG_CPUCTRL",
+                    // Value to write to the cpuctrl CSR in `mask_rom_init()`.
+                    // See: https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-register-cpuctrl
+                    value: "0x1",
+                },
             ],
         }
         {
