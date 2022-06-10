@@ -51,4 +51,4 @@ git+https://github.com/lowRISC/edalize.git@ot-0.1
 # Development version of minimal ChipWhisperer toolchain with latest features
 # and bug fixes. We fix the version for improved stability and manually update
 # if necessary.
-git+https://github.com/newaetech/chipwhisperer-minimal.git@ec1eab08fb3086b705706a9b35d9a05cb26ecf99#egg=chipwhisperer
+git+https://github.com/newaetech/chipwhisperer-minimal.git@2643131b71e528791446ee1bab7359120288f4ab#egg=chipwhisperer
