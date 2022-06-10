@@ -273,10 +273,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "jitter_regwen": begin
       end
       "jitter_enable": begin
-        if (addr_phase_write) begin
-          if (`gmv(ral.jitter_regwen)) begin
-            `DV_CHECK_EQ(prim_mubi_pkg::mubi4_t'(item.a_data), cfg.clkmgr_vif.jitter_enable_csr)
-          end
+        if (addr_phase_write && `gmv(ral.jitter_regwen)) begin
+          `DV_CHECK_EQ(prim_mubi_pkg::mubi4_t'(item.a_data), cfg.clkmgr_vif.jitter_enable_csr)
         end
       end
       "clk_enables": begin
