@@ -82,7 +82,7 @@ module tlul_lc_gate
   ///////////////////////////
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 3 -n 8 \
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 4 -n 8 \
   //      -s 3379253306 --language=sv
   //
   // Hamming distance histogram:
@@ -99,19 +99,20 @@ module tlul_lc_gate
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 6
-  // Minimum Hamming weight: 4
+  // Minimum Hamming weight: 3
   // Maximum Hamming weight: 5
   //
   localparam int StateWidth = 8;
   typedef enum logic [StateWidth-1:0] {
     StActive = 8'b11101010,
     StOutstanding = 8'b11010001,
-    StError = 8'b00100111
+    StError = 8'b00100111,
+    StErrorOustanding = 8'b00011100
   } state_e;
 
 
   state_e state_d, state_q;
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StActive)
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StError)
 
   logic [1:0] outstanding_txn;
   logic a_ack;
@@ -151,17 +152,16 @@ module tlul_lc_gate
       end
 
       StError: begin
-        // This design currently makes the assumption that if a module wants
-        // to return from error mode, it is not also going to be blasting
-        // the gasket with transactions at the same time.
-        // If this assumption turns out to be false, there needs to basically
-        // be a `StErrorOustanding` state that blocks off further commands
-        // to the err response module while allowing the already accepted
-        // transactions to respond (the error responder module does not need
-        // outstanding capacity).
         err_en = On;
-
         if (lc_tx_test_true_strict(lc_en_i)) begin
+          state_d = StActive;
+        end
+      end
+
+      StErrorOustanding: begin
+        err_en = On;
+        block_cmd = 1'b1;
+        if (outstanding_txn == '0) begin
           state_d = StActive;
         end
       end
@@ -188,9 +188,12 @@ module tlul_lc_gate
     if (lc_tx_test_true_loose(err_en)) begin
       tl_h2d_error  = tl_h2d_i;
       tl_d2h_o      = tl_d2h_error;
-    end else if (block_cmd) begin
-      tl_d2h_o.a_ready = '0;
-      tl_h2d_int[0].a_valid = '0;
+    end
+
+    if (block_cmd) begin
+      tl_d2h_o.a_ready = 1'b0;
+      tl_h2d_int[0].a_valid = 1'b0;
+      tl_h2d_error.a_valid = 1'b0;
     end
   end
 
