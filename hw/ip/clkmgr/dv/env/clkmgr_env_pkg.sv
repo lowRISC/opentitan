@@ -61,8 +61,8 @@ package clkmgr_env_pkg;
     PeriIo
   } peri_e;
   typedef struct packed {
-    logic io_peri_en;
     logic usb_peri_en;
+    logic io_peri_en;
     logic io_div2_peri_en;
     logic io_div4_peri_en;
   } clk_enables_t;
