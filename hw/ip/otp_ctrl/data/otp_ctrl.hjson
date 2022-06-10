@@ -321,6 +321,18 @@
       default: "4",
       local: "true"
     },
+    { name: "CreatorSwCfgCpuctrlOffset",
+      desc: "Offset of CREATOR_SW_CFG_CPUCTRL",
+      type: "int",
+      default: "268",
+      local: "true"
+    },
+    { name: "CreatorSwCfgCpuctrlSize",
+      desc: "Size of CREATOR_SW_CFG_CPUCTRL",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "CreatorSwCfgDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_DIGEST",
       type: "int",

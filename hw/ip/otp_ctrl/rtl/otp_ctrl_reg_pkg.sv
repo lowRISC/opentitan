@@ -46,6 +46,8 @@ package otp_ctrl_reg_pkg;
   parameter int CreatorSwCfgManufStateSize = 4;
   parameter int CreatorSwCfgRomExecEnOffset = 264;
   parameter int CreatorSwCfgRomExecEnSize = 4;
+  parameter int CreatorSwCfgCpuctrlOffset = 268;
+  parameter int CreatorSwCfgCpuctrlSize = 4;
   parameter int CreatorSwCfgDigestOffset = 856;
   parameter int CreatorSwCfgDigestSize = 8;
   parameter int OwnerSwCfgOffset = 864;
