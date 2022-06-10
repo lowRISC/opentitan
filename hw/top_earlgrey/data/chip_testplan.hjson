@@ -887,6 +887,17 @@
       milestone: V2
       tests: []
     }
+    {
+      name: chip_sw_clkmgr_escalation_reset
+      desc: '''Verify the clock manager resets to a clean state after an internal fault
+               (measurement error timeout) causes the system to escalate to reset.
+
+               Upon alert escalation reset, the internal status should be clear and the
+               clkmgr should not attempt to send out more alerts.
+            '''
+      milestone: V2
+      tests: []
+    }
 
     // PWRMGR tests:
     {
@@ -1070,6 +1081,17 @@
       milestone: V2
       tests: []
     }
+    {
+      name: chip_sw_pwrmgr_escalation_reset
+      desc: '''Verify the power manager resets to a clean state after an internal fault
+               causes the system to escalate to reset.
+
+               Upon alert escalation reset, the internal status should be clear and the
+               pwrmgr should not attempt to send out more alerts.
+            '''
+      milestone: V2
+      tests: []
+    }
 
     // RSTMGR tests:
     {
@@ -1160,6 +1182,17 @@
             '''
       milestone: V2
       tests: ["chip_sw_rstmgr_sw_rst"]
+    }
+    {
+      name: chip_sw_rstmgr_escalation_reset
+      desc: '''Verify the reset manager resets to a clean state after an internal fault
+               causes the system to escalate to reset.
+
+               Upon alert escalation reset, the internal status should be clear and the
+               rstmgr should not attempt to send out more alerts.
+            '''
+      milestone: V2
+      tests: []
     }
 
     // ALERT_HANDLER (pre-verified IP) integration tests:
