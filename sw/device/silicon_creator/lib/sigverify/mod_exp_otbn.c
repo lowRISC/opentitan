@@ -88,6 +88,17 @@ rom_error_t run_otbn_rsa_3072_modexp(
   // Start the OTBN routine.
   HARDENED_RETURN_IF_ERROR(otbn_execute_app(&otbn));
 
+  // Check that the instruction count falls within the expected range. If the
+  // instruction count falls outside this range, it indicates that there was a
+  // fault injection attack of some kind during OTBN execution.
+  uint32_t count = otbn_instruction_count_get();
+  if (launder32(count) < kModExpOtbnInsnCountMin ||
+      launder32(count) > kModExpOtbnInsnCountMax) {
+    return kErrorOtbnBadInsnCount;
+  }
+  HARDENED_CHECK_GE(count, kModExpOtbnInsnCountMin);
+  HARDENED_CHECK_LE(count, kModExpOtbnInsnCountMax);
+
   // Read recovered message out of OTBN dmem.
   return read_rsa_3072_int_from_otbn(&otbn, kOtbnVarRsaOutBuf,
                                      recovered_message);

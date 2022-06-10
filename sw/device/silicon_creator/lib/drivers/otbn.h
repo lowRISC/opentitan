@@ -120,7 +120,23 @@ typedef enum otbn_err_bits {
  *
  * @param[out] err_bits The error bits returned by the hardware.
  */
-void otbn_get_err_bits(otbn_err_bits_t *err_bits);
+void otbn_err_bits_get(otbn_err_bits_t *err_bits);
+
+/**
+ * Read OTBN's instruction count register.
+ *
+ * OTBN automatically calculates how many instructions are executed in a given
+ * program and writes the result to this register. Software can read it to
+ * verify that instructions were not unexpectedly skipped or added (for
+ * instance, due to fault injection attacks).
+ *
+ * Note that the OTBN hardware resets the instruction count register to 0 when
+ * the EXECUTE command is issued, so there is no need for software to reset the
+ * counter between programs.
+ *
+ * @return count the value from the instruction count register
+ */
+uint32_t otbn_instruction_count_get(void);
 
 /**
  * Wipe IMEM securely.
@@ -193,8 +209,6 @@ void otbn_zero_dmem(void);
  * changed when the OTBN status is IDLE.
  *
  * @param enable Enable or disable whether software errors are fatal.
- * @return `kErrorOtbnUnavailable` if the requested change cannot be made or
- * `kErrorOk` otherwise.
  */
 void otbn_set_ctrl_software_errs_fatal(bool enable);
 

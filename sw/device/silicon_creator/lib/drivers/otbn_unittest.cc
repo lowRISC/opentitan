@@ -90,7 +90,7 @@ TEST_F(GetErrBitsTest, Success) {
                     kOtbnErrBitsIllegalInsn | kOtbnErrBitsRegIntgViolation);
 
   otbn_err_bits_t err_bits;
-  otbn_get_err_bits(&err_bits);
+  otbn_err_bits_get(&err_bits);
   EXPECT_EQ(err_bits, kOtbnErrBitsIllegalInsn | kOtbnErrBitsRegIntgViolation);
 }
 

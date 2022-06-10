@@ -16,6 +16,21 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Manually-calculated instruction count range.
+ *
+ * The OTBN modexp implementation is not constant-time (which is okay because
+ * it has no secret inputs). However, all valid control-flow paths should fall
+ * within this range, which is calculated by changing the code to either take
+ * all branches or skip them all.
+ *
+ * IMPORTANT: This may need to be modified if the modexp routine is changed!
+ */
+enum {
+  kModExpOtbnInsnCountMin = 182578,
+  kModExpOtbnInsnCountMax = 197207,
+};
+
+/**
  * Computes the modular exponentiation of an RSA signature on OTBN.
  *
  * Given an RSA public key and sig, this function computes sig^e mod n using
