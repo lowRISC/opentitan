@@ -26,7 +26,7 @@ rom_error_t otbn_busy_wait_for_done(otbn_t *ctx) {
   }
 
   otbn_err_bits_t err_bits;
-  otbn_get_err_bits(&err_bits);
+  otbn_err_bits_get(&err_bits);
   if (err_bits != kOtbnErrBitsNoError) {
     ctx->error_bits = err_bits;
     return kErrorOtbnExecutionFailed;

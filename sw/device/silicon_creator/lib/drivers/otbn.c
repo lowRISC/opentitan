@@ -115,7 +115,7 @@ static rom_error_t otbn_cmd_run(otbn_cmd_t cmd, rom_error_t error) {
   abs_mmio_write32(kBase + OTBN_INTR_STATE_REG_OFFSET, kIntrStateDone);
 
   otbn_err_bits_t err_bits;
-  otbn_get_err_bits(&err_bits);
+  otbn_err_bits_get(&err_bits);
   res ^= err_bits;
 
   if (launder32(res) == kErrorOk) {
@@ -135,8 +135,12 @@ bool otbn_is_busy(void) {
   return status != kOtbnStatusIdle && status != kOtbnStatusLocked;
 }
 
-void otbn_get_err_bits(otbn_err_bits_t *err_bits) {
+void otbn_err_bits_get(otbn_err_bits_t *err_bits) {
   *err_bits = abs_mmio_read32(kBase + OTBN_ERR_BITS_REG_OFFSET);
+}
+
+uint32_t otbn_instruction_count_get(void) {
+  return abs_mmio_read32(kBase + OTBN_INSN_CNT_REG_OFFSET);
 }
 
 rom_error_t otbn_imem_sec_wipe(void) {
