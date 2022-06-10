@@ -7,7 +7,7 @@ import chipwhisperer as cw
 
 
 def main():
-    target = cw.target(None, cw.targets.CW310)
+    target = cw.target(None, cw.targets.CW310, slurp=False)
     print("Found CW310 with FW Version: " + target.fw_version_str)
     target.reset_sam3u()
 
