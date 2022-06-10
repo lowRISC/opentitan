@@ -889,20 +889,16 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               addr_mask_t addr_mask = mem_exist_addr_q[ral_name][
                    $urandom_range(0, mem_exist_addr_q[ral_name].size - 1)];
 
-              // TODO, Remove this if condition when #5262 is solved
-              // Only read when it's fully written
-              if (addr_mask.mask == '1) begin
-                addr = addr_mask.addr;
-                if (get_mem_access_by_addr(local_ral, addr) != "WO") begin
-                  bit completed, saw_err;
-                  mask = get_rand_contiguous_mask(addr_mask.mask);
-                  // set check_rsp to 0 due to a reason above (in the write section)
-                  tl_access_w_abort(.addr(addr), .write(0), .data(data),
-                                    .completed(completed), .saw_err(saw_err),
-                                    .mask(mask), .blocking(1), .check_rsp(0),
-                                    .req_abort_pct($urandom_range(0, 100)),
-                                    .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
-                end
+              addr = addr_mask.addr;
+              if (get_mem_access_by_addr(local_ral, addr) != "WO") begin
+                bit completed, saw_err;
+                mask = get_rand_contiguous_mask(addr_mask.mask);
+                // set check_rsp to 0 due to a reason above (in the write section)
+                tl_access_w_abort(.addr(addr), .write(0), .data(data),
+                                  .completed(completed), .saw_err(saw_err),
+                                  .mask(mask), .blocking(1), .check_rsp(0),
+                                  .req_abort_pct($urandom_range(0, 100)),
+                                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
               end
             end
           endcase
