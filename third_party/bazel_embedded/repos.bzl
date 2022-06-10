@@ -10,9 +10,9 @@ def bazel_embedded_repos(bazel_embedded = None, platforms = None):
     http_archive_or_local(
         name = "bazel_embedded",
         local = bazel_embedded,
-        sha256 = "278562634fb0261bc85c9da3ed003eba86430a56bd4668cc742779c3fa085fec",
-        strip_prefix = "bazel-embedded-322dd944eb6b2f1c7736d854ff3026840f3ef8f3",
-        url = "https://github.com/lowRISC/bazel-embedded/archive/322dd944eb6b2f1c7736d854ff3026840f3ef8f3.tar.gz",
+        sha256 = "21a94e15160bad5578a1c93aabeb3e8241113ed9cc976bee80ded2a16713767a",
+        strip_prefix = "bazel-embedded-ad7fc22e13e2ff3e9b9470fde1bde15ab31f8a01",
+        url = "https://github.com/lowRISC/bazel-embedded/archive/ad7fc22e13e2ff3e9b9470fde1bde15ab31f8a01.tar.gz",
     )
 
     # The platforms repo contains standard cpu/os/disto contraints.
