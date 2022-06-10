@@ -12,7 +12,6 @@ class pwm_scoreboard extends cip_base_scoreboard #(
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(pwm_item) item_fifo[PWM_NUM_CHANNELS];
-  pwm_item                          exp_item, exp_clone;
 
   // type definitions
   typedef enum bit { CycleA = 1'b0, CycleB = 1'b1} state_e;
@@ -26,16 +25,16 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   bit [PWM_NUM_CHANNELS-1:0]        invert                   = '0;
   state_e                           blink_state[PWM_NUM_CHANNELS] = '{default:0};
   int                               blink_cnt[PWM_NUM_CHANNELS]   = '{default:0};
+  int                               ignore_start_pulse[PWM_NUM_CHANNELS]   = '{default:2};
+  int                               ignore_state_change[PWM_NUM_CHANNELS]   = '{default:0};
   param_reg_t                       channel_param[PWM_NUM_CHANNELS];
   dc_blink_t                        duty_cycle[PWM_NUM_CHANNELS];
   dc_blink_t                        blink[PWM_NUM_CHANNELS];
   string                            txt                      ="";
 
-  local pwm_item   exp_item_q[PWM_NUM_CHANNELS][$];
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    exp_item  = new("exp_item");
     for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
       item_fifo[i] = new($sformatf("item_fifo[%0d]", i), this);
     end
@@ -44,13 +43,19 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
 
-    for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
-      fork
-        automatic int channel = i;
-        compare_trans(channel);
-      join_none
+    forever begin
+      `DV_SPINWAIT_EXIT(
+        fork
+          compare_trans(0);
+          compare_trans(1);
+          compare_trans(2);
+          compare_trans(3);
+          compare_trans(4);
+          compare_trans(5);
+        join,
+        @(negedge cfg.clk_rst_vif.rst_n),
+      )
     end
-    wait fork;
   endtask : run_phase
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -81,36 +86,31 @@ class pwm_scoreboard extends cip_base_scoreboard #(
       // process the csr req
       // for write, update local variable and fifo at address phase
       // for read, update predication at address phase and compare at data phase
-      case (1)
-        (!uvm_re_match("regwen", csr_name)): begin
-          regwen = item.a_data[0];
-          `uvm_info(`gfn, $sformatf("Register Write en: %0b", regwen), UVM_HIGH)
-        end
+      case (csr.get_name())
+      "regwen": begin
+        regwen = item.a_data[0];
+        `uvm_info(`gfn, $sformatf("Register Write en: %0b", regwen), UVM_HIGH)
+      end
 
-        (!uvm_re_match("pwm_en", csr_name)): begin
-          channel_en = item.a_data[PWM_NUM_CHANNELS-1:0];
-          foreach(channel_en[ii]) begin
-            if (prev_channel_en[ii] & ~channel_en[ii]) begin
-              `uvm_info(`gfn, $sformatf("detected toggle of channel[%d]", ii), UVM_HIGH)
-              generate_exp_item(exp_item, ii);
-              `downcast(exp_clone, exp_item.clone());
-              // ignore items when resolution would round the duty cycle to 0 or 100
-              if ((exp_clone.active_cnt != 0) && (exp_clone.inactive_cnt != 0)) begin
-                exp_item_q[ii].push_front(exp_clone);
-              end
-            end
-            txt = { txt, $sformatf("\n Channel[%d] : %0b",ii, channel_en[ii]) };
-            if (cfg.en_cov) begin
-              cov.lowpower_cg.sample(cfg.clk_rst_vif.clk_gate,
-                                     $sformatf("cfg.m_pwm_monitor_[%0d]_vif", ii));
-            end
+      "pwm_en": begin
+        channel_en = item.a_data[PWM_NUM_CHANNELS-1:0];
+        foreach(channel_en[ii]) begin
+        bit pwm_en = get_field_val(ral.pwm_en[0].en[ii],item.a_data);
+          if (pwm_en)begin
+            `uvm_info(`gfn, $sformatf("detected toggle of channel[%d]", ii), UVM_HIGH)
           end
+          txt = { txt, $sformatf("\n Channel[%d] : %0b",ii, channel_en[ii]) };
+          if (cfg.en_cov) begin
+            cov.lowpower_cg.sample(cfg.clk_rst_vif.clk_gate,
+                                   $sformatf("cfg.m_pwm_monitor_[%0d]_vif", ii));
+          end
+         end
           `uvm_info(`gfn, $sformatf("Setting channel enables %s ", txt), UVM_HIGH)
           txt = "";
           prev_channel_en = channel_en;
         end
 
-        (!uvm_re_match("cfg", csr_name)): begin
+      "cfg": begin
           channel_cfg.ClkDiv = get_field_val(ral.cfg.clk_div, item.a_data);
           channel_cfg.DcResn = get_field_val(ral.cfg.dc_resn, item.a_data);
           channel_cfg.CntrEn = get_field_val(ral.cfg.cntr_en, item.a_data);
@@ -119,7 +119,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
                               channel_cfg.ClkDiv, channel_cfg.DcResn, channel_cfg.CntrEn), UVM_HIGH)
         end
 
-        (!uvm_re_match("invert", csr_name)): begin
+      "invert": begin
           invert = item.a_data[PWM_NUM_CHANNELS-1:0];
           foreach(invert[ii]) begin
             txt = {txt, $sformatf("\n Invert Channel[%d] : %0b",ii, invert[ii])};
@@ -127,7 +127,12 @@ class pwm_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("Setting channel Inverts %s ", txt), UVM_HIGH)
         end
 
-        (!uvm_re_match("pwm_param_*", csr_name)): begin
+      "pwm_param_0",
+      "pwm_param_1",
+      "pwm_param_2",
+      "pwm_param_3",
+      "pwm_param_4",
+      "pwm_param_5": begin
           int idx = get_multireg_idx(csr_name);
           channel_param[idx].PhaseDelay = get_field_val(ral.pwm_param[idx].phase_delay,
                                                         item.a_data);
@@ -140,7 +145,12 @@ class pwm_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("Setting Channel Param for CH[%d], %s",idx, txt), UVM_HIGH)
         end
 
-        (!uvm_re_match("duty_cycle_*",csr_name)): begin
+       "duty_cycle_0",
+       "duty_cycle_1",
+       "duty_cycle_2",
+       "duty_cycle_3",
+       "duty_cycle_4",
+       "duty_cycle_5": begin
           int idx = get_multireg_idx(csr_name);
           duty_cycle[idx].A = get_field_val(ral.duty_cycle[idx].a, item.a_data);
           duty_cycle[idx].B = get_field_val(ral.duty_cycle[idx].b, item.a_data);
@@ -148,7 +158,12 @@ class pwm_scoreboard extends cip_base_scoreboard #(
                                     idx, duty_cycle[idx].A ,duty_cycle[idx].B), UVM_HIGH)
         end
 
-        (!uvm_re_match("blink_*",csr_name)): begin
+        "blink_param_0",
+        "blink_param_1",
+        "blink_param_2",
+        "blink_param_3",
+        "blink_param_4",
+        "blink_param_5": begin
           int idx = get_multireg_idx(csr_name);
           blink[idx].A = get_field_val(ral.blink_param[idx].x, item.a_data);
           blink[idx].B = get_field_val(ral.blink_param[idx].y, item.a_data);
@@ -193,11 +208,12 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task compare_trans(int channel);
-    pwm_item compare_item = new($sformatf("compare_item_%d", channel));
-    pwm_item input_item   = new($sformatf("input_item_%d", channel));
+    pwm_item compare_item = new($sformatf("expected_item_%0d", channel));
+    pwm_item input_item   = new($sformatf("input_item_%0d", channel));
     string txt            = "";
     int    p = 0;
 
+    forever begin
     // as this DUT signals needs to be evaluated over time
     // they are only evaluated when the channel is off.
     // this way it is known what the first and last item are
@@ -206,35 +222,39 @@ class pwm_scoreboard extends cip_base_scoreboard #(
 
     // The very first item will be when the monitor detects the first active edge
     // it will have no information
-    item_fifo[channel].get(input_item);
     // wait for the first expected item
-    wait(exp_item_q[channel].size() > 0);
-    compare_item = exp_item_q[channel].pop_front();
-    // drop the first pwm pulse as it will not match
-    item_fifo[channel].get(input_item);
-    `uvm_info(`gfn, $sformatf("dropped first item %s", input_item.convert2string()), UVM_HIGH)
-    // keep going until channel is disabled.
-    while (item_fifo[channel].used() > 0) begin
-      // get next item and compare
-      item_fifo[channel].get(input_item);
-      if (!compare_item.compare(input_item)) begin
-        txt = "\n.......| Exp Item |.......";
-        txt = {txt, $sformatf("\n %s", compare_item.convert2string())};
-        txt = {txt, "\n.......| Actual Item |......."};
-        txt = {txt, $sformatf("\n %s", input_item.convert2string())};
-        `uvm_fatal(`gfn, $sformatf("\n PWM pulse on Channel %d did not match %s", channel, txt ))
+    wait(item_fifo[channel].used() > 0);
+      if((ignore_start_pulse[channel] == 2 ) || ( ignore_start_pulse[channel] == 1 )) begin
+        item_fifo[channel].get(input_item);
+        generate_exp_item(compare_item, channel);
       end else begin
-        txt = "\n.......| Exp Item |.......";
-        txt = {txt, $sformatf("\n %s", compare_item.convert2string())};
-        txt = {txt, "\n.......| Actual Item |......."};
-        txt = {txt, $sformatf("\n %s", input_item.convert2string())};
-        `uvm_info(`gfn, $sformatf("\n PWM pulse on Channel %d MATCHED %s", channel, txt),
-          UVM_HIGH)
+        item_fifo[channel].get(input_item);
+        generate_exp_item(compare_item, channel);
+        // After the state has switched to different state, settings will change
+        // Comparision ignored till two pulses
+        if(!((ignore_state_change[channel] == 2 ) || (ignore_state_change[channel] == 1 ))) begin
+           // ignore items when resolution would round the duty cycle to 0 or 100
+           if((compare_item.active_cnt != 0) && (compare_item.inactive_cnt != 0)
+             && (input_item.period == compare_item.period)) begin
+               if(!input_item.compare(compare_item)) begin
+                 `uvm_error(`gfn, $sformatf("\n PWM :: Channel = [%0d] did not MATCH", channel))
+                 `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
+                   channel, compare_item.sprint()),UVM_HIGH)
+                 `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
+                   channel, input_item.sprint()),UVM_HIGH)
+               end else begin
+                 `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] MATCHED", channel),UVM_HIGH)
+                 `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
+                   channel, compare_item.sprint()),UVM_HIGH)
+                 `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
+                   channel, input_item.sprint()),UVM_HIGH)
+               end
+           end
+        end
+          ignore_state_change[channel] -= 1 ;
       end
-      generate_exp_item(compare_item, channel);
+      ignore_start_pulse[channel] -= 1 ;
     end
-    // drop last item as it is not expected to match settings
-    item_fifo[channel].get(input_item);
   endtask : compare_trans
 
   virtual task generate_exp_item(ref pwm_item item, input bit [PWM_NUM_CHANNELS-1:0] channel);
@@ -268,6 +288,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
               blink_cnt[channel]   = blink[channel].B;
               int_dc = duty_cycle[channel].B;
             end
+            ignore_state_change[channel] = 2 ;
           end else begin
             int_dc = (blink_state[channel] == CycleA) ? duty_cycle[channel].A :
               duty_cycle[channel].B;
@@ -387,14 +408,12 @@ class pwm_scoreboard extends cip_base_scoreboard #(
     super.reset(kind);
     for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
       item_fifo[i].flush();
-      exp_item_q[i].delete();
     end
   endfunction
 
   virtual function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
-      `DV_EOT_PRINT_Q_CONTENTS(pwm_item, exp_item_q[i])
       `DV_EOT_PRINT_TLM_FIFO_CONTENTS(pwm_item, item_fifo[i])
     end
   endfunction
