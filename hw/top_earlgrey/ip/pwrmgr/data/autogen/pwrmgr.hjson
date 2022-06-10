@@ -451,7 +451,7 @@
       The configuration registers CONTROL, WAKEUP_EN, RESET_EN are all written in the
       fast clock domain but used in the slow clock domain.
 
-      The configuration are not propogated across the clock boundary until this
+      The configuration are not propagated across the clock boundary until this
       register is triggered and read.  See fields below for more details
       ''',
 
@@ -470,7 +470,7 @@
       ]
       tags: [// This bit triggers a payload synchronization and self clears when complete.
              // Do not write this bit as there will be side effects and the value will not persist
-             "excl:CsrNonInitTests:CsrExclCheck"]
+             "excl:CsrNonInitTests:CsrExclWrite"]
     },
 
     { name: "WAKEUP_EN_REGWEN",

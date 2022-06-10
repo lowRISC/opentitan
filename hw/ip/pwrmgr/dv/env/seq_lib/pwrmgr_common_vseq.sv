@@ -20,14 +20,6 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
       csr_excl.add_excl("pwrmgr_reg_block.fault_status", CsrExclCheck);
       expect_fatal_alerts = 1;
     end
-
-    // pounding write to this register cause back-to-back dst_pulse_o and
-    // create spurious assertion failure
-    // tb.dut.u_cdc.u_slow_cdc_sync.DstPulseCheck_A
-    // remove this register from the same_csr_outstanding write test
-    if (common_seq_type == "same_csr_outstanding") begin
-      csr_excl.add_excl("pwrmgr_reg_block.cfg_cdc_sync", CsrExclWrite);
-    end
   endtask
 
   virtual task body();
