@@ -74,6 +74,11 @@
       name: pwm_perf
       uvm_test_seq: pwm_perf_vseq
     }
+    {
+      name: pwm_stress_all
+      uvm_test_seq: pwm_stress_all_vseq
+      run_opts:["+test_timeout_ns=10_000_000_000"]
+    }
   ]
 
   // List of regressions.

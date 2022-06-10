@@ -71,9 +71,12 @@ class pwm_base_vseq extends cip_base_vseq #(
     csr_update(ral.blink_param[channel]);
   endtask // set_blink
 
+  // Summation of PARAM.X and PARAM.Y shouldn't go beyond MAX_16
+  // Summation of PARAM.y and DUTY_CYLE.A shouldn't go beyond MAX_16
+  // This is to prevent counter overflow
   virtual task automatic rand_pwm_blink(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel);
-    cfg.blink[channel].A = $urandom_range(16'h1, MAX_16);
-    cfg.blink[channel].B = $urandom_range(16'h1, MAX_16);
+    cfg.blink[channel].B = $urandom_range(16'h1, (MAX_16-cfg.duty_cycle[channel].A));
+    cfg.blink[channel].A = $urandom_range(16'h1, (MAX_16-cfg.blink[channel].B));
     set_blink(channel, cfg.blink[channel]);
   endtask
 

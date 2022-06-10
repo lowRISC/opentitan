@@ -136,7 +136,7 @@
                 - All sequences should be finished and checked by the scoreboard
             '''
       milestone: V2
-      tests: ["pwm_stress_perf"]
+      tests: ["pwm_stress_all"]
     }
   ]
 
