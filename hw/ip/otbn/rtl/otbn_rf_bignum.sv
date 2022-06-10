@@ -62,9 +62,7 @@ module otbn_rf_bignum
   assign wr_en_internal = wr_en_i & {2{wr_commit_i}};
 
   if (RegFile == RegFileFF) begin : gen_rf_bignum_ff
-    otbn_rf_bignum_ff #(
-      .WordZeroVal(prim_secded_pkg::SecdedInv3932ZeroWord)
-    ) u_otbn_rf_bignum_inner (
+    otbn_rf_bignum_ff u_otbn_rf_bignum_inner (
       .clk_i,
       .rst_ni,
 

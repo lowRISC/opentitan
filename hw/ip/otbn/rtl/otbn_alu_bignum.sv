@@ -228,10 +228,8 @@ module otbn_alu_bignum
     );
     assign mod_no_intg_q[i_word*32+:32] = mod_intg_q[i_word*39+:32];
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        mod_intg_q[i_word*39+:39] <= EccZeroWord;
-      end else if (mod_wr_en[i_word]) begin
+    always_ff @(posedge clk_i) begin
+      if (mod_wr_en[i_word]) begin
         mod_intg_q[i_word*39+:39] <= mod_intg_d[i_word*39+:39];
       end
     end
