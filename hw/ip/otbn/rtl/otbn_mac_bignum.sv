@@ -91,6 +91,13 @@ module otbn_mac_bignum
   `ASSERT_KNOWN_IF(OperandAQWSelKnown, operation_i.operand_a_qw_sel, mac_en_i)
   `ASSERT_KNOWN_IF(OperandBQWSelKnown, operation_i.operand_b_qw_sel, mac_en_i)
 
+  // The reset signal is not used for any registers in this module but for assertions.  As those
+  // assertions are not visible to EDA tools working with the synthesizable subset of the code
+  // (e.g., Verilator), they cause lint errors in some of those tools.  Prevent these errors by
+  // assigning the reset signal to a signal that is okay to be unused.
+  logic _unused_ok;
+  assign _unused_ok = &(rst_ni);
+
   assign mul_res = mul_op_a * mul_op_b;
 
   // Shift the QWLEN multiply result into a WLEN word before accumulating using the shift amount
@@ -210,10 +217,8 @@ module otbn_mac_bignum
   // wipe of the internal state is occuring.
   assign acc_en = (mac_en_i & mac_commit_i) | ispr_acc_wr_en_i | sec_wipe_acc_urnd_i;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      acc_intg_q <= EccWideZeroWord;
-    end else if (acc_en) begin
+  always_ff @(posedge clk_i) begin
+    if (acc_en) begin
       acc_intg_q <= acc_intg_d;
     end
   end

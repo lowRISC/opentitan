@@ -48,10 +48,8 @@ module otbn_rf_base_ff
   for (genvar i = 1; i < NGpr; i++) begin : g_rf_flops
     logic [BaseIntgWidth-1:0] rf_reg_q;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        rf_reg_q <= WordZeroVal;
-      end else if(we_onehot[i]) begin
+    always_ff @(posedge clk_i) begin
+      if(we_onehot[i]) begin
         rf_reg_q <= wr_data_i;
       end
     end
