@@ -133,6 +133,7 @@ cc_library(
 opentitan_flash_binary(
     name = "slot_a",
     srcs = ["rom_ext_start.S"],
+    output_signed = True,
     deps = [
         ":ld_slot_a",
         ":rom_ext",
@@ -144,6 +145,7 @@ opentitan_flash_binary(
 opentitan_flash_binary(
     name = "slot_b",
     srcs = ["rom_ext_start.S"],
+    output_signed = True,
     deps = [
         ":ld_slot_b",
         ":rom_ext",
@@ -155,6 +157,7 @@ opentitan_flash_binary(
 opentitan_flash_binary(
     name = "virtual_addr",
     srcs = ["rom_ext_start.S"],
+    output_signed = True,
     deps = [
         ":ld_virtual_addr",
         ":rom_ext",
