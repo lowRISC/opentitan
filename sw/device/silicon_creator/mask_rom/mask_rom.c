@@ -253,9 +253,21 @@ static void mask_rom_pre_boot_check(void) {
   HARDENED_CHECK_EQ(boot_data_ok, kErrorOk);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 3);
 
-  sec_mmio_check_values(rnd_uint32());
-  sec_mmio_check_counters(/*expected_check_count=*/4);
+  // Check the cpuctrl CSR.
+  // Note: We don't mask the CSR value here to include exception flags
+  // (bits 6 and 7) in the check.
+  uint32_t cpuctrl_csr;
+  uint32_t cpuctrl_otp =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_CPUCTRL_OFFSET);
+  CSR_READ(CSR_REG_CPUCTRL, &cpuctrl_csr);
+  if (launder32(cpuctrl_csr) != cpuctrl_otp) {
+    HARDENED_UNREACHABLE();
+  }
+  HARDENED_CHECK_EQ(cpuctrl_csr, cpuctrl_otp);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 4);
+
+  sec_mmio_check_counters(/*expected_check_count=*/3);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 5);
 }
 
 /**
@@ -317,7 +329,7 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest,
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomBoot, 2, kCfiRomPreBootCheck);
   mask_rom_pre_boot_check();
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 4);
-  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 5);
+  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 6);
 
   // Enable execution of code from flash if signature is verified.
   flash_ctrl_exec_set(flash_exec);
