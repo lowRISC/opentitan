@@ -27,7 +27,7 @@ Clock(s) and reset(s) are connected to all sub-modules.
 
 ### IP_TOP
 
-The unit `.sv` exists and meets comportability requirements.
+The unit `.sv` exists and meets [comportability]({{< relref "doc/rm/comportability_specification" >}}) requirements.
 
 ### IP_INSTANTIABLE
 
@@ -57,7 +57,7 @@ All the outputs of the IP have `ASSERT_KNOWN` assertions.
 
 ### LINT_SETUP
 
-A lint flow is setup which compiles and runs.
+A lint flow is set up which compiles and runs.
 It is acceptable to have lint warnings at this stage.
 
 ## D2
