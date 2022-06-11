@@ -42,10 +42,10 @@ cc_library(
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
-        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/gpio/data:gpio_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:multibits",
@@ -73,9 +73,9 @@ cc_library(
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
-        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",

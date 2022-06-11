@@ -177,7 +177,7 @@ cc_test(
     srcs = ["sigverify_unittest.cc"],
     deps = [
         ":sigverify",
-        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
