@@ -16,7 +16,9 @@ echo "" >> ${BITCACHE_DIR}/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice
 echo -n ${SHA} > ${BITCACHE_DIR}/../../latest.txt
 export BITSTREAM="--offline --list ${SHA}"
 
-python3 ./util/fpga/cw310_reboot.py
+# We will lose serial access when we reboot, but if tests fail we should reboot
+# in case we've crashed the UART handler on the CW310's SAM3U
+trap 'python3 ./util/fpga/cw310_reboot.py' EXIT
 
 # TODO: remove the --notest_keep_going and --nokeep_going flag after the CW310
 # tests are reliable (#13044)
