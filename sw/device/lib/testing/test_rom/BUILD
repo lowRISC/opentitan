@@ -49,6 +49,7 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
@@ -84,6 +85,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib:manifest_size",
+        "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
     ],

@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/rom_print.h"
 
 #include "flash_ctrl_regs.h"
 #include "gpio_regs.h"
@@ -253,12 +254,17 @@ static rom_error_t bootstrap_handle_erase(bootstrap_state_t *state) {
 static rom_error_t bootstrap_handle_erase_verify(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateEraseVerify);
 
+  rom_printf("verifying first bank\r\n");
   rom_error_t err_0 = flash_ctrl_data_erase_verify(0, kFlashCtrlEraseTypeBank);
+  rom_printf("res: %x\r\n", err_0);
+  rom_printf("verifying second bank\r\n");
   rom_error_t err_1 = flash_ctrl_data_erase_verify(
       FLASH_CTRL_PARAM_BYTES_PER_BANK, kFlashCtrlEraseTypeBank);
+  rom_printf("res: %x\r\n", err_1);
   HARDENED_RETURN_IF_ERROR(err_0);
   HARDENED_RETURN_IF_ERROR(err_1);
 
+  rom_printf("clearing status and transitioning\r\n");
   *state = kBootstrapStateProgram;
   spi_device_flash_status_clear();
   return err_0;
@@ -358,14 +364,17 @@ rom_error_t bootstrap(void) {
   while (true) {
     switch (launder32(state)) {
       case kBootstrapStateErase:
+        rom_printf("state: erase\r\n");
         HARDENED_CHECK_EQ(state, kBootstrapStateErase);
         error = bootstrap_handle_erase(&state);
         break;
       case kBootstrapStateEraseVerify:
+        rom_printf("state: verify\r\n");
         HARDENED_CHECK_EQ(state, kBootstrapStateEraseVerify);
         error = bootstrap_handle_erase_verify(&state);
         break;
       case kBootstrapStateProgram:
+        rom_printf("state: program\r\n");
         HARDENED_CHECK_EQ(state, kBootstrapStateProgram);
         error = bootstrap_handle_program(&state);
         break;

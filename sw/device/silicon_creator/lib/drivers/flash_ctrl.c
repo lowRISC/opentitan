@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/rom_print.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -406,6 +407,7 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
   static_assert(__builtin_popcount(FLASH_CTRL_PARAM_BYTES_PER_PAGE) == 1,
                 "Bytes per page must be a power of two.");
 
+  rom_printf("erase_verify: start\r\n");
   size_t byte_count;
   rom_error_t error = kErrorFlashCtrlDataEraseVerify;
   switch (launder32(erase_type)) {
@@ -422,24 +424,35 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
     default:
       HARDENED_UNREACHABLE();
   }
+  rom_printf("byte_count: %x\r\n", byte_count);
+  rom_printf("error: %x\r\n", error);
 
   // Truncate to the closest lower bank/page aligned address.
   addr &= ~byte_count + 1;
   uint32_t mask = kFlashCtrlErasedWord;
   size_t i = 0;
+
+  rom_printf("addr: %x\r\n", addr);
+  rom_printf("mask: %x\r\n", mask);
   for (; launder32(i) < byte_count; i += sizeof(uint32_t)) {
     uint32_t word =
         abs_mmio_read32(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + addr + i);
     mask &= word;
     error &= word;
+    if ((i & 0xff) == 0) {
+      rom_printf("i: %x\r\n", i);
+    }
   }
   HARDENED_CHECK_EQ(i, byte_count);
+  rom_printf("loop end\r\n");
 
   if (launder32(mask) == kFlashCtrlErasedWord) {
+    rom_printf("ok\r\n");
     HARDENED_CHECK_EQ(mask, kFlashCtrlErasedWord);
     return error ^ (byte_count - 1);
   }
 
+  rom_printf("fail\r\n");
   return kErrorFlashCtrlDataEraseVerify;
 }
 
