@@ -206,6 +206,46 @@ TEST_F(UsbdevTest, PhyConfig) {
   EXPECT_WRITE32(USBDEV_PHY_PINS_DRIVE_REG_OFFSET, 0);
   EXPECT_DIF_OK(
       dif_usbdev_set_phy_pins_state(&usbdev_, kDifToggleDisabled, overrides));
+
+  EXPECT_READ32(USBDEV_PHY_CONFIG_REG_OFFSET,
+                {
+                    {USBDEV_PHY_CONFIG_USE_DIFF_RCVR_BIT, 1},
+                    {USBDEV_PHY_CONFIG_TX_USE_D_SE0_BIT, 0},
+                    {USBDEV_PHY_CONFIG_EOP_SINGLE_BIT_BIT, 0},
+                    {USBDEV_PHY_CONFIG_PINFLIP_BIT, 1},
+                    {USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT, 0},
+                    {USBDEV_PHY_CONFIG_TX_OSC_TEST_MODE_BIT, 0},
+                });
+  EXPECT_WRITE32(USBDEV_PHY_CONFIG_REG_OFFSET,
+                 {
+                     {USBDEV_PHY_CONFIG_USE_DIFF_RCVR_BIT, 1},
+                     {USBDEV_PHY_CONFIG_TX_USE_D_SE0_BIT, 0},
+                     {USBDEV_PHY_CONFIG_EOP_SINGLE_BIT_BIT, 0},
+                     {USBDEV_PHY_CONFIG_PINFLIP_BIT, 1},
+                     {USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT, 0},
+                     {USBDEV_PHY_CONFIG_TX_OSC_TEST_MODE_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_usbdev_set_osc_test_mode(&usbdev_, kDifToggleEnabled));
+
+  EXPECT_READ32(USBDEV_PHY_CONFIG_REG_OFFSET,
+                {
+                    {USBDEV_PHY_CONFIG_USE_DIFF_RCVR_BIT, 1},
+                    {USBDEV_PHY_CONFIG_TX_USE_D_SE0_BIT, 0},
+                    {USBDEV_PHY_CONFIG_EOP_SINGLE_BIT_BIT, 0},
+                    {USBDEV_PHY_CONFIG_PINFLIP_BIT, 1},
+                    {USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT, 0},
+                    {USBDEV_PHY_CONFIG_TX_OSC_TEST_MODE_BIT, 1},
+                });
+  EXPECT_WRITE32(USBDEV_PHY_CONFIG_REG_OFFSET,
+                 {
+                     {USBDEV_PHY_CONFIG_USE_DIFF_RCVR_BIT, 1},
+                     {USBDEV_PHY_CONFIG_TX_USE_D_SE0_BIT, 0},
+                     {USBDEV_PHY_CONFIG_EOP_SINGLE_BIT_BIT, 0},
+                     {USBDEV_PHY_CONFIG_PINFLIP_BIT, 1},
+                     {USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT, 0},
+                     {USBDEV_PHY_CONFIG_TX_OSC_TEST_MODE_BIT, 0},
+                 });
+  EXPECT_DIF_OK(dif_usbdev_set_osc_test_mode(&usbdev_, kDifToggleDisabled));
 }
 
 TEST_F(UsbdevTest, ConnectAndConfig) {
@@ -571,6 +611,409 @@ TEST_F(UsbdevTest, OutPacket) {
       sizeof(recvd_data) - bytes_written, &bytes_written));
   EXPECT_EQ(bytes_written, sizeof(recvd_data) - 4 - 1);
   EXPECT_EQ(memcmp(expected_data, recvd_data, sizeof(expected_data)), 0);
+}
+
+TEST_F(UsbdevTest, InPacket) {
+  dif_usbdev_buffer_pool_t buffer_pool;
+  dif_usbdev_config_t phy_config = {
+      .have_differential_receiver = kDifToggleEnabled,
+      .use_tx_d_se0 = kDifToggleDisabled,
+      .single_bit_eop = kDifToggleDisabled,
+      .pin_flip = kDifToggleDisabled,
+      .clock_sync_signals = kDifToggleEnabled,
+  };
+  EXPECT_WRITE32(USBDEV_PHY_CONFIG_REG_OFFSET,
+                 {
+                     {USBDEV_PHY_CONFIG_USE_DIFF_RCVR_BIT, 1},
+                     {USBDEV_PHY_CONFIG_TX_USE_D_SE0_BIT, 0},
+                     {USBDEV_PHY_CONFIG_EOP_SINGLE_BIT_BIT, 0},
+                     {USBDEV_PHY_CONFIG_PINFLIP_BIT, 0},
+                     {USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT, 0},
+                 });
+  EXPECT_DIF_OK(dif_usbdev_configure(&usbdev_, &buffer_pool, phy_config));
+
+  dif_usbdev_buffer_t buffer;
+  EXPECT_DIF_OK(dif_usbdev_buffer_request(&usbdev_, &buffer_pool, &buffer));
+  EXPECT_EQ(buffer.type, kDifUsbdevBufferTypeWrite);
+
+  uint32_t data[16];
+  uint8_t *bytes = reinterpret_cast<uint8_t *>(data);
+  size_t bytes_written;
+  EXPECT_DIF_OK(dif_usbdev_buffer_return(&usbdev_, &buffer_pool, &buffer));
+  EXPECT_EQ(buffer.type, kDifUsbdevBufferTypeStale);
+  // Can't return a stale buffer.
+  EXPECT_DIF_BADARG(dif_usbdev_buffer_return(&usbdev_, &buffer_pool, &buffer));
+  // Can't submit a stale buffer.
+  EXPECT_DIF_BADARG(dif_usbdev_buffer_write(&usbdev_, &buffer, bytes,
+                                            sizeof(data), &bytes_written));
+
+  // Request the buffer.
+  EXPECT_DIF_OK(dif_usbdev_buffer_request(&usbdev_, &buffer_pool, &buffer));
+  for (size_t i = 0; i < sizeof(data); i++) {
+    bytes[i] = i;
+    if (i % 4 == 3) {
+      EXPECT_WRITE32(USBDEV_BUFFER_REG_OFFSET + buffer.id * 64 + i - 3,
+                     data[i / 4]);
+    }
+  }
+  EXPECT_DIF_OK(dif_usbdev_buffer_write(&usbdev_, &buffer, bytes, sizeof(data),
+                                        &bytes_written));
+  EXPECT_EQ(bytes_written, sizeof(data));
+
+  // Queue up the buffer for transmission.
+  EXPECT_WRITE32(USBDEV_CONFIGIN_5_REG_OFFSET,
+                 {
+                     {USBDEV_CONFIGIN_5_BUFFER_5_OFFSET, buffer.id},
+                     {USBDEV_CONFIGIN_5_SIZE_5_OFFSET, bytes_written},
+                 });
+  EXPECT_WRITE32(USBDEV_CONFIGIN_5_REG_OFFSET,
+                 {
+                     {USBDEV_CONFIGIN_5_BUFFER_5_OFFSET, buffer.id},
+                     {USBDEV_CONFIGIN_5_SIZE_5_OFFSET, bytes_written},
+                     {USBDEV_CONFIGIN_5_RDY_5_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_usbdev_send(&usbdev_, /*endpoint=*/5, &buffer));
+
+  // Get TX status for a buffer with a transmission that had to be canceled. The
+  // buffer is returned to the free pool.
+  dif_usbdev_tx_status_t tx_status;
+  EXPECT_READ32(USBDEV_CONFIGIN_0_REG_OFFSET,
+                {
+                    {USBDEV_CONFIGIN_0_BUFFER_0_OFFSET, buffer.id},
+                    {USBDEV_CONFIGIN_0_SIZE_0_OFFSET, sizeof(data)},
+                    {USBDEV_CONFIGIN_0_RDY_0_BIT, 0},
+                    {USBDEV_CONFIGIN_0_PEND_0_BIT, 1},
+                });
+  EXPECT_READ32(USBDEV_IN_SENT_REG_OFFSET, {
+                                               {USBDEV_IN_SENT_SENT_0_BIT, 0},
+                                           });
+  EXPECT_WRITE32(USBDEV_CONFIGIN_0_REG_OFFSET,
+                 {
+                     {USBDEV_CONFIGIN_0_PEND_0_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, &buffer_pool, /*endpoint=*/0,
+                                         &tx_status));
+  EXPECT_EQ(tx_status, kDifUsbdevTxStatusCancelled);
+
+  // Request a new buffer.
+  EXPECT_DIF_OK(dif_usbdev_buffer_request(&usbdev_, &buffer_pool, &buffer));
+  for (size_t i = 0; i < sizeof(data); i++) {
+    bytes[i] = i;
+    if (i % 4 == 3) {
+      EXPECT_WRITE32(USBDEV_BUFFER_REG_OFFSET + buffer.id * 64 + i - 3,
+                     data[i / 4]);
+    }
+  }
+  EXPECT_DIF_OK(dif_usbdev_buffer_write(&usbdev_, &buffer, bytes, sizeof(data),
+                                        &bytes_written));
+
+  // Queue the buffer for transmission.
+  EXPECT_WRITE32(USBDEV_CONFIGIN_4_REG_OFFSET,
+                 {
+                     {USBDEV_CONFIGIN_4_BUFFER_4_OFFSET, buffer.id},
+                     {USBDEV_CONFIGIN_4_SIZE_4_OFFSET, sizeof(data)},
+                 });
+  EXPECT_WRITE32(USBDEV_CONFIGIN_4_REG_OFFSET,
+                 {
+                     {USBDEV_CONFIGIN_4_BUFFER_4_OFFSET, buffer.id},
+                     {USBDEV_CONFIGIN_4_SIZE_4_OFFSET, sizeof(data)},
+                     {USBDEV_CONFIGIN_4_RDY_4_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_usbdev_send(&usbdev_, /*endpoint=*/4, &buffer));
+
+  // Get status of an endpoint without a buffer queued for transmission.
+  EXPECT_READ32(USBDEV_CONFIGIN_7_REG_OFFSET,
+                {
+                    {USBDEV_CONFIGIN_7_BUFFER_7_OFFSET, buffer.id},
+                    {USBDEV_CONFIGIN_7_SIZE_7_OFFSET, sizeof(data)},
+                    {USBDEV_CONFIGIN_7_RDY_7_BIT, 0},
+                });
+  EXPECT_READ32(USBDEV_IN_SENT_REG_OFFSET, {
+                                               {USBDEV_IN_SENT_SENT_7_BIT, 0},
+                                           });
+  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, &buffer_pool, /*endpoint=*/7,
+                                         &tx_status));
+  EXPECT_EQ(tx_status, kDifUsbdevTxStatusNoPacket);
+
+  // Get TX status for a queued, but not sent buffer.
+  EXPECT_READ32(USBDEV_CONFIGIN_8_REG_OFFSET,
+                {
+                    {USBDEV_CONFIGIN_8_BUFFER_8_OFFSET, buffer.id},
+                    {USBDEV_CONFIGIN_8_SIZE_8_OFFSET, sizeof(data)},
+                    {USBDEV_CONFIGIN_8_RDY_8_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, &buffer_pool, /*endpoint=*/8,
+                                         &tx_status));
+  EXPECT_EQ(tx_status, kDifUsbdevTxStatusPending);
+
+  // Buffer was transmitted successfully.
+  EXPECT_READ32(USBDEV_CONFIGIN_5_REG_OFFSET,
+                {
+                    {USBDEV_CONFIGIN_5_BUFFER_5_OFFSET, buffer.id},
+                    {USBDEV_CONFIGIN_5_SIZE_5_OFFSET, sizeof(data)},
+                    {USBDEV_CONFIGIN_5_RDY_5_BIT, 0},
+                });
+  EXPECT_READ32(USBDEV_IN_SENT_REG_OFFSET, {
+                                               {USBDEV_IN_SENT_SENT_3_BIT, 1},
+                                               {USBDEV_IN_SENT_SENT_5_BIT, 1},
+                                           });
+  EXPECT_WRITE32(USBDEV_IN_SENT_REG_OFFSET, {
+                                                {USBDEV_IN_SENT_SENT_5_BIT, 1},
+                                            });
+  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, &buffer_pool, /*endpoint=*/5,
+                                         &tx_status));
+  EXPECT_EQ(tx_status, kDifUsbdevTxStatusSent);
+  EXPECT_EQ(buffer.type, kDifUsbdevBufferTypeStale);
+}
+
+TEST_F(UsbdevTest, DeviceAddresses) {
+  uint8_t address = 101;
+  EXPECT_READ32(USBDEV_USBCTRL_REG_OFFSET,
+                {
+                    {USBDEV_USBCTRL_ENABLE_BIT, 1},
+                    {USBDEV_USBCTRL_DEVICE_ADDRESS_OFFSET, 0},
+                });
+  EXPECT_WRITE32(USBDEV_USBCTRL_REG_OFFSET,
+                 {
+                     {USBDEV_USBCTRL_ENABLE_BIT, 1},
+                     {USBDEV_USBCTRL_DEVICE_ADDRESS_OFFSET, address},
+                 });
+  EXPECT_DIF_OK(dif_usbdev_address_set(&usbdev_, address));
+
+  EXPECT_READ32(USBDEV_USBCTRL_REG_OFFSET,
+                {
+                    {USBDEV_USBCTRL_ENABLE_BIT, 1},
+                    {USBDEV_USBCTRL_DEVICE_ADDRESS_OFFSET, 58},
+                });
+  EXPECT_DIF_OK(dif_usbdev_address_get(&usbdev_, &address));
+  EXPECT_EQ(address, 58);
+}
+
+TEST_F(UsbdevTest, Status) {
+  EXPECT_WRITE32(USBDEV_DATA_TOGGLE_CLEAR_REG_OFFSET,
+                 {{USBDEV_DATA_TOGGLE_CLEAR_CLEAR_3_BIT, 1}});
+  EXPECT_DIF_OK(dif_usbdev_clear_data_toggle(&usbdev_, /*endpoint=*/3));
+  EXPECT_WRITE32(USBDEV_DATA_TOGGLE_CLEAR_REG_OFFSET,
+                 {{USBDEV_DATA_TOGGLE_CLEAR_CLEAR_9_BIT, 1}});
+  EXPECT_DIF_OK(dif_usbdev_clear_data_toggle(&usbdev_, /*endpoint=*/9));
+
+  uint16_t frame;
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_FRAME_OFFSET, 92},
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
+                    {USBDEV_USBSTAT_AV_DEPTH_OFFSET, 2},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_frame(&usbdev_, &frame));
+  EXPECT_EQ(frame, 92);
+
+  bool host_lost;
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_FRAME_OFFSET, 18},
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE_NOSOF},
+                    {USBDEV_USBSTAT_AV_DEPTH_OFFSET, 2},
+                    {USBDEV_USBSTAT_HOST_LOST_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_host_lost(&usbdev_, &host_lost));
+  EXPECT_TRUE(host_lost);
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_FRAME_OFFSET, 18},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE_NOSOF},
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_AV_DEPTH_OFFSET, 2},
+                    {USBDEV_USBSTAT_HOST_LOST_BIT, 0},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_host_lost(&usbdev_, &host_lost));
+  EXPECT_FALSE(host_lost);
+
+  bool vbus_sense;
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_FRAME_OFFSET, 31},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE_NOSOF},
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_sense(&usbdev_, &vbus_sense));
+  EXPECT_TRUE(vbus_sense);
+
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_FRAME_OFFSET, 31},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_DISCONNECTED},
+                    {USBDEV_USBSTAT_SENSE_BIT, 0},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_sense(&usbdev_, &vbus_sense));
+  EXPECT_FALSE(vbus_sense);
+
+  uint8_t av_fifo_depth;
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_FRAME_OFFSET, 11},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_AV_DEPTH_OFFSET, 3},
+                    {USBDEV_USBSTAT_RX_EMPTY_BIT, 1},
+                });
+  EXPECT_DIF_OK(
+      dif_usbdev_status_get_available_fifo_depth(&usbdev_, &av_fifo_depth));
+  EXPECT_EQ(av_fifo_depth, 3);
+
+  bool av_fifo_full;
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_FRAME_OFFSET, 12},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_AV_DEPTH_OFFSET, 4},
+                    {USBDEV_USBSTAT_AV_FULL_BIT, 1},
+                    {USBDEV_USBSTAT_RX_EMPTY_BIT, 1},
+                });
+  EXPECT_DIF_OK(
+      dif_usbdev_status_get_available_fifo_full(&usbdev_, &av_fifo_full));
+  EXPECT_TRUE(av_fifo_full);
+
+  uint8_t rx_fifo_depth;
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_FRAME_OFFSET, 12},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_AV_DEPTH_OFFSET, 4},
+                    {USBDEV_USBSTAT_AV_FULL_BIT, 1},
+                    {USBDEV_USBSTAT_RX_EMPTY_BIT, 0},
+                    {USBDEV_USBSTAT_RX_DEPTH_OFFSET, 2},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_rx_fifo_depth(&usbdev_, &rx_fifo_depth));
+  EXPECT_EQ(rx_fifo_depth, 2);
+
+  bool rx_fifo_empty;
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_FRAME_OFFSET, 12},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_AV_DEPTH_OFFSET, 4},
+                    {USBDEV_USBSTAT_AV_FULL_BIT, 1},
+                    {USBDEV_USBSTAT_RX_EMPTY_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_rx_fifo_empty(&usbdev_, &rx_fifo_empty));
+  EXPECT_TRUE(rx_fifo_empty);
+}
+
+TEST_F(UsbdevTest, LinkState) {
+  dif_usbdev_link_state_t link_state;
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_FRAME_OFFSET, 27},
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
+                    {USBDEV_USBSTAT_AV_DEPTH_OFFSET, 2},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_link_state(&usbdev_, &link_state));
+  EXPECT_EQ(link_state, kDifUsbdevLinkStateActive);
+
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_DISCONNECTED},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_link_state(&usbdev_, &link_state));
+  EXPECT_EQ(link_state, kDifUsbdevLinkStateDisconnected);
+
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_POWERED},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_link_state(&usbdev_, &link_state));
+  EXPECT_EQ(link_state, kDifUsbdevLinkStatePowered);
+
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_POWERED_SUSPENDED},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_link_state(&usbdev_, &link_state));
+  EXPECT_EQ(link_state, kDifUsbdevLinkStatePoweredSuspended);
+
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_SUSPENDED},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_link_state(&usbdev_, &link_state));
+  EXPECT_EQ(link_state, kDifUsbdevLinkStateSuspended);
+
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE_NOSOF},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_link_state(&usbdev_, &link_state));
+  EXPECT_EQ(link_state, kDifUsbdevLinkStateActiveNoSof);
+
+  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
+                {
+                    {USBDEV_USBSTAT_SENSE_BIT, 1},
+                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+                     USBDEV_USBSTAT_LINK_STATE_VALUE_RESUMING},
+                });
+  EXPECT_DIF_OK(dif_usbdev_status_get_link_state(&usbdev_, &link_state));
+  EXPECT_EQ(link_state, kDifUsbdevLinkStateResuming);
+}
+
+TEST_F(UsbdevTest, WakeFromSleep) {
+  EXPECT_WRITE32(USBDEV_WAKE_CONTROL_REG_OFFSET,
+                 {{USBDEV_WAKE_CONTROL_SUSPEND_REQ_BIT, 1}});
+  EXPECT_DIF_OK(dif_usbdev_set_wake_enable(&usbdev_, kDifToggleEnabled));
+
+  dif_usbdev_wake_status_t wake_status;
+  EXPECT_READ32(USBDEV_WAKE_EVENTS_REG_OFFSET,
+                {
+                    {USBDEV_WAKE_EVENTS_MODULE_ACTIVE_BIT, 1},
+                    {USBDEV_WAKE_EVENTS_DISCONNECTED_BIT, 0},
+                    {USBDEV_WAKE_EVENTS_BUS_RESET_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_usbdev_get_wake_status(&usbdev_, &wake_status));
+  EXPECT_TRUE(wake_status.active);
+  EXPECT_FALSE(wake_status.disconnected);
+  EXPECT_TRUE(wake_status.bus_reset);
+
+  EXPECT_READ32(USBDEV_USBCTRL_REG_OFFSET,
+                {
+                    {USBDEV_USBCTRL_ENABLE_BIT, 1},
+                    {USBDEV_USBCTRL_DEVICE_ADDRESS_OFFSET, 88},
+                    {USBDEV_USBCTRL_RESUME_LINK_ACTIVE_BIT, 0},
+                });
+  EXPECT_WRITE32(USBDEV_USBCTRL_REG_OFFSET,
+                 {
+                     {USBDEV_USBCTRL_ENABLE_BIT, 1},
+                     {USBDEV_USBCTRL_DEVICE_ADDRESS_OFFSET, 88},
+                     {USBDEV_USBCTRL_RESUME_LINK_ACTIVE_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_usbdev_resume_link_to_active(&usbdev_));
+
+  EXPECT_WRITE32(USBDEV_WAKE_CONTROL_REG_OFFSET,
+                 {{USBDEV_WAKE_CONTROL_WAKE_ACK_BIT, 1}});
+  EXPECT_DIF_OK(dif_usbdev_set_wake_enable(&usbdev_, kDifToggleDisabled));
 }
 
 }  // namespace
