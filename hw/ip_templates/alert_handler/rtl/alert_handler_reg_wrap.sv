@@ -339,9 +339,12 @@ module alert_handler_reg_wrap import alert_pkg::*; (
       // is that during escalation, certain alert senders may start to trigger due to FSMs being
       // moved into escalation mode - thereby masking the actual alert reasons exposed in the cause
       // registers. Note that the alert handler only captures the crashdump once upon first
-      // assertion of this signal, and needs to be reset to re-arm the crashdump latching
+      // assertion of this signal, and needs to be cleared or reset to re-arm the crashdump latching
       // mechanism.
-      if (latch_crashdump_i && !crashump_latched_q) begin
+      if (|reg2hw_wrap.class_clr) begin
+        crashump_latched_q <= 1'b0;
+        crashdump_q <= '0;
+      end else if (latch_crashdump_i && !crashump_latched_q) begin
         crashump_latched_q <= 1'b1;
         crashdump_q <= crashdump_d;
       end
