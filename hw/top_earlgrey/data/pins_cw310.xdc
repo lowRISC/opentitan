@@ -44,10 +44,10 @@ set_property -dict { PACKAGE_PIN W9 IOSTANDARD LVCMOS18 }  [get_ports { IOB2 }];
 #set_property -dict { PACKAGE_PIN V11 IOSTANDARD LVCMOS18 } [get_ports {  }]; #USRDIP7
 
 ## SPI / JTAG (part of it, other JTAG signals further below)
-set_property -dict { PACKAGE_PIN D26 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_CLK }]; #SCK (SPI1_SCK)
-set_property -dict { PACKAGE_PIN A24 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_D0 }]; #SDI (SPI1_COPI)
-set_property -dict { PACKAGE_PIN A22 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_D1 }]; #SDO (SPI1_CIPO)
-set_property -dict { PACKAGE_PIN C26 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_CS_L }]; #CSB (SPI1_CS)
+set_property -dict { PACKAGE_PIN N18 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_CLK }];  #SCK (USR_DBG_TCK)
+set_property -dict { PACKAGE_PIN R16 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_D0 }];   #SDI (USR_DBG_TDI)
+set_property -dict { PACKAGE_PIN P16 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_D1 }];   #SDO (USR_DBG_TDO)
+set_property -dict { PACKAGE_PIN N16 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_CS_L }]; #CSB (USR_DBG_TMS)
 
 # JTAG (second part)
 set_property -dict { PACKAGE_PIN  U24  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR4 }];       #USB_A13 (SAM3X)
