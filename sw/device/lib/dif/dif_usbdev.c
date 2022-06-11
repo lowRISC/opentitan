@@ -541,8 +541,7 @@ dif_result_t dif_usbdev_send(const dif_usbdev_t *usbdev, uint8_t endpoint,
   // Note: Using mask and offset values for the USBDEV_CONFIGIN0 register
   // for all endpoints because all USBDEV_CONFIGINX registers have the same
   // layout.
-  uint32_t config_in_val =
-      mmio_region_read32(usbdev->base_addr, config_in_reg_offset);
+  uint32_t config_in_val = 0;
   config_in_val = bitfield_field32_write(
       config_in_val, USBDEV_CONFIGIN_0_BUFFER_0_FIELD, buffer->id);
   config_in_val = bitfield_field32_write(
