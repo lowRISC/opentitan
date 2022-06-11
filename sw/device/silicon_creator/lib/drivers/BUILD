@@ -68,9 +68,9 @@ opentitan_functest(
     deps = [
         ":alert",
         ":rstmgr",
-        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -665,7 +665,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
             "//hw/ip/spi_device/data:spi_device_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
