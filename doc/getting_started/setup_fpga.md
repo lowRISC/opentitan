@@ -9,8 +9,6 @@ _Before following this guide, make sure you've followed the [dependency installa
 Do you want to try out OpenTitan, but don't have a couple thousand or million dollars ready for an ASIC tapeout?
 Running OpenTitan on an FPGA board can be the answer!
 
-<!-- TODO: Switch all calls to fusesoc and the Verilated system to refer to Meson, once it supports fusesoc. -->
-
 ## Prerequisites
 
 To use the OpenTitan on an FPGA you need two things:
@@ -47,35 +45,24 @@ This can be spliced into the bitstream to overwrite the testing boot ROM as desc
 However, if you do not want to do the splicing yourself, both versions of the bitstream are available in the download as `*.bit.orig` and `*.bit.splice` (containing the test ROM and the mask ROM respectively).
 The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest/latest.txt).
 
-### Create an FPGA bitstream
+### Build an FPGA bitstream
 
-Synthesizing a design for an FPGA board is done with the following commands.
+Synthesizing a design for an FPGA board is simple with Bazel.
+While Bazel is the entry point for kicking off the FPGA sythesis, under the hood, it invokes FuseSoC, the hardware package manager / build system supported by OpenTitan.
+During the build process, the boot ROM is baked into the bitstream.
+As mentioned above, we maintain two boot ROM programs, one for testing (_test ROM_), and one for production (_mask ROM_).
 
-The FPGA build will pull in a program to act as the boot ROM.
-This must be built before running the FPGA build.
-This is pulled in from the `sw/device/lib/testing/test_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/chip_earlgrey_cw310.core` file).
-
-To build it:
+To build an FPGA bitstream with the _test ROM_, use:
 ```console
 cd $REPO_TOP
-./meson_init.sh
-ninja -C build-out all
+bazel build //hw/bitstream/vivado:fpga_cw310_test_rom
 ```
 
-Next, the actual FPGA implementation can be started.
-In the following example we synthesize the Earl Grey design for the ChipWhisperer CW310 board using Xilinx Vivado {{< tool_version "vivado" >}}.
-
+To build an FPGA bitstream with the _mask ROM_, use:
 ```console
-. /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
 cd $REPO_TOP
-./meson_init.sh
-ninja -C build-out all
-fusesoc --verbose --cores-root . run --flag=fileset_top --target=synth lowrisc:systems:chip_earlgrey_cw310
+bazel build //hw/bitstream/vivado:fpga_cw310_mask_rom
 ```
-The `fileset_top` flag used above is specific to the OpenTitan project to select the correct fileset.
-
-The resulting bitstream is located at `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
-See the [reference manual]({{< relref "ref_manual_fpga.md" >}}) for more information.
 
 #### Dealing with FPGA Congestion Issues
 
@@ -84,7 +71,7 @@ When this happens, the implemenation time and results become unpredictable.
 It may become necessary for the user to manually adjust certain placement.
 See [this comment](https://github.com/lowRISC/opentitan/pull/8138#issuecomment-916696830) for a thorough analysis of one such situation and what changes were made to improve congestion.
 
-#### Opening existing project with the Vivado GUI
+#### Opening an existing project with the Vivado GUI
 
 Sometimes, it may be desirable to open the generated project in the Vivado GUI for inspection.
 To this end, run:
@@ -92,21 +79,23 @@ To this end, run:
 ```console
 . /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
 cd $REPO_TOP
-make -C build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado build-gui
+make -C $(dirname $(find bazel-out/* -wholename '*synth-vivado/Makefile')) build-gui
 ```
 
 Now the Vivado GUI opens and loads the project.
 
 #### Develop with the Vivado GUI
 
+TODO(lowRISC/opentitan[#13213](https://github.com/lowRISC/opentitan/issues/13213)): the below does not work with the Bazel FPGA bitstream build flow.
+
 Sometimes it is helpful to use the Vivado GUI to debug a design.
-fusesoc makes that easy, with one small caveat: by default fusesoc copies all source files into a staging directory before the synthesis process starts.
+FuseSoC (the tool Bazel invokes) makes that easy, with one small caveat: by default FuseSoC copies all source files into a staging directory before the synthesis process starts.
 This behavior is helpful to create reproducible builds and avoids Vivado modifying checked-in source files.
 But during debugging this behavior is not helpful.
-The `--no-export` option of fusesoc disables copying the source files into the staging area, and `--setup` instructs fusesoc to not start the synthesis process.
+The `--no-export` option of FuseSoC disables copying the source files into the staging area, and `--setup` instructs fusesoc to not start the synthesis process.
 
 ```console
-# only create Vivado project directory
+# Only create Vivado project directory by using FuseSoC directly (skipping Bazel invocation).
 cd $REPO_TOP
 fusesoc --cores-root . run --flag=fileset_top --target=synth --no-export --setup lowrisc:systems:chip_earlgrey_cw310
 ```
@@ -118,7 +107,7 @@ cd $REPO_TOP/build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/
 vivado
 ```
 
-Finally, using the tcl console, you can kick off the project setup with
+Finally, using the Tcl console, you can kick off the project setup with
 ```console
 source lowrisc_systems_chip_earlgrey_cw310_0.1.tcl
 ```
@@ -145,10 +134,64 @@ When properly connected, `dmesg` should identify the board, not show any errors,
 They should be named `'/dev/ttyACM*'`, e.g. `/dev/ttyACM1`.
 To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions]({{< relref "install_vivado" >}}).
 
-## Flash the bitstream onto the FPGA
+## Flash the bitstream onto the FPGA and bootstrap software into flash
+
+There are two ways to load a bitstream on to the FPGA and bootstrap software into the OpenTitan embedded flash:
+1. **automatically**, on single invocations of `bazel test ...`.
+1. **manually**, using multiple invocations of `opentitantool`, and
+Which one you use, will depend on how the build target is defined for the software you would like to test on the FPGA.
+Specifically, for software build targets defined in Bazel BUILD files uing the `opentitan_functest` Bazel macro, you will use the latter (**automatic**) approach.
+Alternatively, for software build targets defined in Bazel BUILD files using the `opentitan_flash_binary` Bazel macro, you will use the former (**manual**) approach.
+
+See below for details on both approaches.
+
+### Automatically loading FPGA bitstreams and bootstrapping software Bazel
+
+A majority of on-device software tests are defined using the custom `opentitan_functest` Bazel macro, which under the hood, instantiates several Bazel [`native.sh_test` rules](https://docs.bazel.build/versions/main/be/shell.html#sh_test).
+In doing so, this macro provides a convenient interface for developers to run software tests on OpenTitan FPGA instances with a single invocation of `bazel test ...`.
+For example, to run the UART smoke test (which is an `opentitan_functest` defined in `sw/device/tests/BUILD`) on FPGA hardware, and see the output in real time, use:
+```console
+cd $REPO_TOP
+bazel test --test_tag_filters=cw310 --test_output=streamed //sw/device/tests:uart_smoketest
+```
+or
+```console
+cd $REPO_TOP
+bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+```
+
+Under the hood, Bazel conveniently dispatches `opentitantool` to both:
+* ensure the correct version of the FPGA bitstream has been loaded onto the FPGA, and
+* bootstrap the desired software test image into the OpenTitan embedded flash.
+
+To get a better understanding of the `opentitantool` functions Bazel invokes automatically, follow the instructions for manually loading FPGA bitstreams below.
+
+#### Configuring Bazel to load the Vivado-built bitstream
+
+By default, the above invocations of `bazel test ...` use the pre-built (Internet downloaded) FPGA bitstream.
+To instruct bazel to load the bitstream built earlier, or to have bazel build an FPGA bitstream on the fly, and load that bitstream onto the FPGA, add the `--define bitstream=vivado` flag to either of the above Bazel commands, for example, run:
+```
+bazel test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+```
+
+#### Configuring Bazel to skip loading a bitstream
+
+Alternatively, if you would like to instruct Bazel to skip loading any bitstream at all, and simply use the bitstream that is already loaded, add the `--define bitstream=skip` flag, for example, run:
+```
+bazel test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+```
+
+### Manually loading FPGA bitstreams and bootstrapping OpenTitan software with `opentitantool`
+
+Some on-device software targets are defined using the custom `opentitan_flash_binary` Bazel macro.
+Unlike the `opentitan_functest` macro, the `opentitan_flash_binary` macro does **not** instantiate any Bazel test rules under the hood.
+Therefore, to run such software on OpenTitan FPGA hardware, both a bitstream and the software target must be loaded manually onto the FPGA.
+Below, we describe how to accomplish this, and in doing so, we shed some light on the tasks that Bazel automates through the use of `opentitan_functest` Bazel rules.
+
+#### Manually loading a bitstream onto the FPGA with `opentitantool`
 
 Note: The following examples assume that you have a `~/.config/opentitantool/config` with the proper `--interface` and `--conf` options.
-For CW310, its contents would look like:
+For the CW310, its contents would look like:
 ```
 --interface=cw310
 --conf=<ABS_PATH_TO_YOUR_CLONE>/sw/host/opentitantool/config/opentitan_cw310.json
@@ -159,9 +202,10 @@ To flash the bitstream onto the FPGA using `opentitantool`, use the following co
 ```console
 cd $REPO_TOP
 
-# If you downloaded the bitstream:
+### If you downloaded the bitstream from the Internet:
 bazel run //sw/host/opentitantool load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig
-# If you built the bitstream yourself:
+
+### If you built the bitstream yourself:
 bazel run //sw/host/opentitantool load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_cw310_test_rom)
 ```
 
@@ -174,9 +218,9 @@ I00001 test_rom.c:87] TestROM:6b2ca9a1
 I00002 test_rom.c:118] Test ROM complete, jumping to flash!
 ```
 
-## Testing the demo design
+#### Bootstrapping the demo software
 
-The `hello_world` demo software shows off some capabilities of the design.
+The `hello_world` demo software shows off some capabilities of the OpenTitan hardware.
 To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the steps shown below.
 
 1. Generate the bitstream and flash it to the FPGA as described above.
@@ -211,7 +255,7 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the 
 1. Observe the output both on the board and the serial console. Type any text into the console window.
 1. Exit `screen` by pressing CTRL-a k, and confirm with y.
 
-### Troubleshooting
+#### Troubleshooting
 
 If the firmware load fails, try pressing the "USB RST" button before loading the bitstream.
 
@@ -239,12 +283,21 @@ mdw 0x8000 0x10 // read 16 bytes at address 0x8000
 
 ### Debug with GDB
 
-An example connection with GDB, which prints the registers after the connection to OpenOCD is established
-
+Fist, make sure the device software has been built with debug symbols (by default Bazel does not build software with debug symbols).
+For example, to build and test the UART smoke test with debug symbols, you can add `--copt=-g` flag to the `bazel test ...` command:
 ```console
 cd $REPO_TOP
-/tools/riscv/bin/riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.elf
+bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
 ```
+
+Then a connection between OpenOCD and GDB may be established with:
+```console
+cd $REPO_TOP
+riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
+  $(find -L bazel-out/ -type f -name "uart_smoketest_sim_verilator | head -n 1")
+```
+
+Note, the above will print out the contents of the registers upon successs.
 
 #### Common operations with GDB
 
