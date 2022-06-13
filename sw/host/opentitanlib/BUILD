@@ -65,6 +65,7 @@ rust_library(
         "src/transport/hyperdebug/mod.rs",
         "src/transport/hyperdebug/spi.rs",
         "src/transport/mod.rs",
+        "src/transport/proxy/emu.rs",
         "src/transport/proxy/gpio.rs",
         "src/transport/proxy/i2c.rs",
         "src/transport/proxy/mod.rs",

@@ -13,6 +13,7 @@ use thiserror::Error;
 
 use crate::bootstrap::BootstrapOptions;
 use crate::impl_serializable_error;
+use crate::io::emu::Emulator;
 use crate::io::gpio::GpioPin;
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
@@ -20,6 +21,7 @@ use crate::io::uart::Uart;
 use crate::proxy::protocol::{Message, ProxyRequest, ProxyResponse, Request, Response};
 use crate::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
 
+mod emu;
 mod gpio;
 mod i2c;
 mod spi;
@@ -167,6 +169,11 @@ impl Transport for Proxy {
     // Create GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(Rc::new(gpio::ProxyGpioPin::open(self, pinname)?))
+    }
+
+    // Create Emulator instance, or return one from a cache of previously created instances.
+    fn emulator(&self) -> Result<Rc<dyn Emulator>> {
+        Ok(Rc::new(emu::ProxyEmu::open(self)?))
     }
 
     // Create ProxyOps instance.
