@@ -6,7 +6,7 @@
 # Use Bazel to query for the location of targets instead of searching
 
 set -e
-REPO=$(dirname "$0")/../..
+readonly REPO_TOP=$(git rev-parse --show-toplevel)
 
 verbose='false'
 print_usage() {
@@ -29,4 +29,5 @@ then
   REDIR='/dev/null'
 fi
 
-exec $REPO/bazelisk.sh cquery $@ --output starlark --starlark:file=$REPO/rules/output.cquery 2>$REDIR
+readonly REL_PATH=$(${REPO_TOP}/bazelisk.sh cquery $@ --output starlark --starlark:file=${REPO_TOP}/rules/output.cquery 2>$REDIR)
+echo "${REPO_TOP}/${REL_PATH}"
