@@ -35,6 +35,7 @@ enum RootCommandHierarchy {
     NoOp(command::NoOp),
     Rsa(command::rsa::Rsa),
     Spi(command::spi::SpiCommand),
+    Transport(command::transport::TransportCommand),
     Version(command::version::Version),
 
     // Flattened because `Greetings` is a subcommand hierarchy.

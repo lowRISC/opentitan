@@ -23,6 +23,7 @@ rust_binary(
         "src/command/rsa.rs",
         "src/command/set_pll.rs",
         "src/command/spi.rs",
+        "src/command/transport.rs",
         "src/command/update_usr_access.rs",
         "src/command/version.rs",
         "src/main.rs",
