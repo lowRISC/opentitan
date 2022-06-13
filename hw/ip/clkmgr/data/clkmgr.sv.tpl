@@ -472,13 +472,21 @@ from topgen.lib import Name
     .rst_ni(rst_${sig.src.name}_ni),
     .en_i(clk_${sig.src.name}_en),
     .idle_i(idle_i[${hint_names[clk]}]),
+% if len(typed_clocks.hint_clks.items()) > 1:
     .sw_hint_i(reg2hw.clk_hints.${clk}_hint.q),
+% else:
+    .sw_hint_i(reg2hw.clk_hints.q),
+% endif
     .scanmode_i,
     .alert_cg_en_o(cg_en_o.${clk.split('clk_')[-1]}),
     .clk_o(clocks_o.${clk}),
     .clk_reg_i(clk_i),
     .rst_reg_ni(rst_ni),
+% if len(typed_clocks.hint_clks.items()) > 1:
     .reg_en_o(hw2reg.clk_hints_status.${clk}_val.d),
+% else:
+    .reg_en_o(hw2reg.clk_hints_status.d),
+% endif
     .reg_cnt_err_o(idle_cnt_err[${hint_names[clk]}])
   );
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
@@ -490,9 +498,13 @@ from topgen.lib import Name
   assign hw2reg.fatal_err_code.idle_cnt.de = |idle_cnt_err;
 
   // state readback
+% if len(typed_clocks.hint_clks.items()) > 1:
 % for clk in typed_clocks.hint_clks.keys():
   assign hw2reg.clk_hints_status.${clk}_val.de = 1'b1;
 % endfor
+% else:
+  assign hw2reg.clk_hints_status.de = 1'b1;
+% endif
 
   // SEC_CM: JITTER.CONFIG.MUBI
   assign jitter_en_o = mubi4_t'(reg2hw.jitter_enable.q);
