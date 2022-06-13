@@ -7,12 +7,12 @@ load("@//rules:repo.bzl", "http_archive_or_local")
 def bazel_embedded_repos(bazel_embedded = None, platforms = None):
     # Contains rules that support building SW for embedded targets. Specifically, we
     # maintain a fork to build for RISCV32I.
-    commit = "322dd944eb6b2f1c7736d854ff3026840f3ef8f3"
+    commit = "a274de4b4c51d8a9fb76c153fd66b4b1703ae872"
     fork = "lowRISC"
     http_archive_or_local(
         name = "bazel_embedded",
         local = bazel_embedded,
-        sha256 = "278562634fb0261bc85c9da3ed003eba86430a56bd4668cc742779c3fa085fec",
+        sha256 = "6ccd63a2f71c3dd6b35d2917e903217c20288c162f80578d48ea3a8a14a60c68",
         strip_prefix = "bazel-embedded-{}".format(commit),
         url = "https://github.com/{}/bazel-embedded/archive/{}.tar.gz".format(fork, commit),
     )
