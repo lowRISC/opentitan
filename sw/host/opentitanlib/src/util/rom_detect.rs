@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::str::FromStr;
 use std::time::Duration;
+use std::time::Instant;
 use structopt::clap::arg_enum;
 use thiserror::Error;
 
@@ -43,7 +44,7 @@ impl RomDetect {
             usr_access: Self::scan_usr_access(bitstream)?,
             console: UartConsole {
                 timeout: timeout,
-                exit_success: Some(Regex::new(r"(\w+ROM):([^\r\n]+)").unwrap()),
+                exit_success: Some(Regex::new(r"(\w+ROM):([^\r\n]+)[\r\n]").unwrap()),
                 ..Default::default()
             },
         })
@@ -61,7 +62,10 @@ impl RomDetect {
     }
 
     pub fn detect(&mut self, uart: &dyn Uart) -> Result<bool> {
-        self.console.interact(uart, None, None)?;
+        let t0 = Instant::now();
+        let rc = self.console.interact(uart, None, None)?;
+        let t1 = Instant::now();
+        log::debug!("detect exit={:?}, duration={:?}", rc, t1 - t0);
         if let Some(cap) = self.console.captures(ExitStatus::ExitSuccess) {
             log::info!("Current bitstream: {:?}", cap.get(0).unwrap().as_str());
             let romkind = cap.get(1).unwrap().as_str();

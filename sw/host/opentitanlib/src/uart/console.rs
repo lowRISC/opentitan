@@ -24,7 +24,7 @@ pub struct UartConsole {
     pub newline: bool,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum ExitStatus {
     None,
     CtrlC,
