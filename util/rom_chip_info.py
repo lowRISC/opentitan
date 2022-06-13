@@ -22,8 +22,7 @@ header_template = r"""
 #define _F_CHIPINFO_H__
 
 static const char chip_info[128] __attribute__((section(".chip_info"))) =
-  "Version:    {%version%}\r\n"
-  "Build Date: {%build_date%}\r\n";
+  "Version: {%version%}, Build Date: {%build_date%}";
 
 #endif  // _F_CHIPINFO_H__
 
@@ -65,7 +64,7 @@ def main():
     out_path = outdir / "chip_info.h"
 
     now = datetime.now()
-    wall_time = now.strftime("%Y-%m-%d, %H:%M:%S")
+    wall_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
     log.info("Version: %s" % (version, ))
     log.info("Build Date: %s" % (wall_time, ))
