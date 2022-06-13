@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 # Note, this file contains step-by-step instructions on how to both:
 # 1. add custom test hook libraries (that override the default), labeled
 #    `TH-STEP *` for "Test Hook Step *", and,
-# 2. add custom closed-source tests, labeled `OTFT-STEP *` for "OpenTitan
+# 2. add custom manufacturer tests, labeled `OTFT-STEP *` for "OpenTitan
 #    Functest Step *".
 # Read on to learn more about these features.
 
@@ -127,11 +127,38 @@ cc_library(
 #     bazel test @manufacturer_test_hooks//:example_test`
 ################################################################################
 # OTFT-Step 1: Copy/paste the below `opentitan_functest` to add an additional
-# manufacturer-specific (closed-source) tests.
+# manufacturer-specific test.
 opentitan_functest(
     name = "example_test",
     srcs = ["example_test.c"],
     deps = [
         "@//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+################################################################################
+# Statically Hooked Manufacturer Tests
+#
+# This provides an example of how to use open source test code in
+# `sw/device/tests/` with manufacturer test hooks (defined in this Bazel
+# repository) without having to specify which test hooks library should be
+# executed with the test on the command line.
+#
+# TODO(lowRISC:opentitan#13180): see description in `sw/device/tests/BUILD`.
+#
+# To run the example test below using the default location:
+# `bazel test @manufacturer_test_hooks//:statically_hooked_opensource_test`
+#
+# To run the example test below when the `@manufacturer_test_hooks` repo is in a
+# different location on the system, use:
+# `MANUFACTURER_HOOKS_DIR=/path/to/test_hooks
+#     bazel test @manufacturer_test_hooks//:statically_hooked_opensource_test`
+################################################################################
+opentitan_functest(
+    name = "statically_hooked_opensource_test",
+    srcs = ["@//sw/device/tests:example_test_from_flash.c"],
+    deps = [
+        "@//sw/device/lib/testing/test_framework:ottf_main",
+        "@manufacturer_test_hooks//:test_hooks_1",
     ],
 )

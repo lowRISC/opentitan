@@ -5,6 +5,17 @@
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
 
+# TODO(lowRISC:opentitan#13180): this is a temporary solution to enable writing
+# manufacturer specific tests in the `manufacturer_test_hooks` repository that
+# use open source test code. Specifically, this enables defining an
+# `opentitan_functest` in the `manufacturer_test_hooks` repository without the
+# need to specify the corresponding test hooks that should be used with the test
+# on the command line.
+exports_files(glob([
+    "*.c",
+    "*.h",
+]))
+
 opentitan_functest(
     name = "aes_entropy_test",
     srcs = ["aes_entropy_test.c"],
