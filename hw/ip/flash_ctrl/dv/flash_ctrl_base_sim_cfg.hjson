@@ -170,5 +170,12 @@
       name: smoke
       tests: ["flash_ctrl_smoke"]
     }
+    {
+      // For test clean up run subset of tests
+      name: sub
+      tests: ["flash_ctrl_smoke",
+              "flash_ctrl_smoke_hw"
+              ]
+    }
   ]
 }
