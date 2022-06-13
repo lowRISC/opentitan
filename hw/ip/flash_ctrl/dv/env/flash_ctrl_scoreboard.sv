@@ -283,6 +283,12 @@ class flash_ctrl_scoreboard #(
           if (do_read_check) begin
             `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, $sformatf(
                          "reg name: %0s", csr.get_full_name()))
+            if (csr.get_name() == "err_code") begin
+              csr_rd(.ptr(ral.err_code), .value(data), .backdoor(1));
+              if (cfg.en_cov) begin
+                cov.error_cg.sample(data);
+              end
+            end
           end
           void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
         end else if (is_mem_addr(item, ral_name) && cfg.scb_check) begin  // rd fifo
