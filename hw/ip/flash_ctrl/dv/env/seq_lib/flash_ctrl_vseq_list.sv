@@ -25,3 +25,4 @@
 `include "flash_ctrl_error_mp_vseq.sv"
 `include "flash_ctrl_invalid_op_vseq.sv"
 `include "flash_ctrl_mid_op_rst_vseq.sv"
+`include "flash_ctrl_stress_all_vseq.sv"
