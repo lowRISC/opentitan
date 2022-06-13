@@ -1056,10 +1056,6 @@ module chip_${top["name"]}_${target["name"]} (
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
-    .RvCoreIbexICache(0),
-    .RvCoreIbexICacheECC(0),
-    .RvCoreIbexBranchTargetALU(0),
-    .RvCoreIbexWritebackStage(0),
 % else:
     .SecAesMasking(1'b0),
     .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
