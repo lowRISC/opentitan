@@ -451,7 +451,7 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
                 if common_constants is None:
                     common_constants = local_constants
                 else:
-                    common_constants.intersect(local_constants)
+                    common_constants = common_constants.intersect(local_constants)
 
             # Update return_iflow with the current iflow composed with return
             # paths
