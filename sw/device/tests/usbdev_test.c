@@ -17,16 +17,15 @@
 // transactions with a data payload of "Hi!" to Endpoint 1. If these two OUT
 // transactions are succesfully received by the device, the test passes.
 
-#include "sw/device/lib/usbdev.h"
-
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/lib/usb_controlep.h"
-#include "sw/device/lib/usb_simpleserial.h"
+#include "sw/device/lib/testing/usb_testutils.h"
+#include "sw/device/lib/testing/usb_testutils_controlep.h"
+#include "sw/device/lib/testing/usb_testutils_simpleserial.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
@@ -48,9 +47,9 @@ static uint8_t config_descriptors[] = {
 /**
  * USB device context types.
  */
-static usbdev_ctx_t usbdev;
-static usb_controlep_ctx_t usbdev_control;
-static usb_ss_ctx_t simple_serial;
+static usb_testutils_ctx_t usbdev;
+static usb_testutils_controlep_ctx_t usbdev_control;
+static usb_testutils_ss_ctx_t simple_serial;
 
 /**
  * Pinmux handle
@@ -108,17 +107,18 @@ bool test_main(void) {
   // Call `usbdev_init` here so that DPI will not start until the
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
-  usbdev_init(&usbdev, /* pinflip= */ false, /* en_diff_rcvr= */ false,
-              /* tx_use_d_se0= */ false);
-  usb_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
-                     sizeof(config_descriptors));
-  while (usbdev_control.device_state != kUsbDeviceConfigured) {
-    usbdev_poll(&usbdev);
+  usb_testutils_init(&usbdev, /*pinflip=*/false, /*en_diff_rcvr=*/false,
+                     /*tx_use_d_se0=*/false);
+  usb_testutils_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
+                               sizeof(config_descriptors));
+  while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
+    usb_testutils_poll(&usbdev);
   }
-  usb_simpleserial_init(&simple_serial, &usbdev, 1, usb_receipt_callback);
+  usb_testutils_simpleserial_init(&simple_serial, &usbdev, 1,
+                                  usb_receipt_callback);
 
   while (usb_chars_recved_total < kExpectedUsbCharsRecved) {
-    usbdev_poll(&usbdev);
+    usb_testutils_poll(&usbdev);
   }
 
   base_printf("\r\n");

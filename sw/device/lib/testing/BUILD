@@ -256,3 +256,32 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
+
+cc_library(
+    name = "usb_testutils",
+    srcs = [
+        "usb_testutils.c",
+        "usb_testutils_controlep.c",
+    ],
+    hdrs = [
+        "usb_testutils.h",
+        "usb_testutils_controlep.h",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
+    name = "usb_testutils_simpleserial",
+    srcs = ["usb_testutils_simpleserial.c"],
+    hdrs = ["usb_testutils_simpleserial.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":usb_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
