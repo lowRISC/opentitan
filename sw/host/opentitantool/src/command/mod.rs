@@ -13,6 +13,7 @@ pub mod load_bitstream;
 pub mod rsa;
 pub mod set_pll;
 pub mod spi;
+pub mod transport;
 pub mod update_usr_access;
 pub mod version;
 
