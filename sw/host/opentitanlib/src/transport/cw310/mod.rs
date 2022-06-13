@@ -211,7 +211,6 @@ impl Transport for CW310 {
                     return Ok(None);
                 }
             }
-
             // Program the FPGA bitstream.
             log::info!("Programming the FPGA bitstream.");
             let usb = self.device.borrow();

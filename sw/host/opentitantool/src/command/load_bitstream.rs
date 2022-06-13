@@ -30,7 +30,7 @@ pub struct LoadBitstream {
     pub rom_kind: Option<RomKind>,
     #[structopt(long, parse(try_from_str=humantime::parse_duration), default_value="50ms", help = "Duration of the reset pulse.")]
     pub rom_reset_pulse: Duration,
-    #[structopt(long, parse(try_from_str=humantime::parse_duration), default_value="1s", help = "Duration of ROM detection timeout")]
+    #[structopt(long, parse(try_from_str=humantime::parse_duration), default_value="2s", help = "Duration of ROM detection timeout")]
     pub rom_timeout: Duration,
 }
 
