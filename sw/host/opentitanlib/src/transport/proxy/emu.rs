@@ -35,7 +35,7 @@ impl Emulator for ProxyEmu {
     fn get_state(&self) -> Result<EmuState> {
         match self.execute_command(EmuRequest::GetState)? {
             EmuResponse::GetState { state } => Ok(state),
-            _ => bail!(ProxyError::UnexpectedReply()),
+            _ => Err(ProxyError::UnexpectedReply().into()),
         }
     }
 
@@ -45,14 +45,14 @@ impl Emulator for ProxyEmu {
             args: args.clone(),
         })? {
             EmuResponse::Start => Ok(()),
-            _ => bail!(ProxyError::UnexpectedReply()),
+            _ => Err(ProxyError::UnexpectedReply().into()),
         }
     }
 
     fn stop(&self) -> Result<()> {
         match self.execute_command(EmuRequest::Stop)? {
             EmuResponse::Stop => Ok(()),
-            _ => bail!(ProxyError::UnexpectedReply()),
+            _ => Err(ProxyError::UnexpectedReply().into()),
         }
     }
 }

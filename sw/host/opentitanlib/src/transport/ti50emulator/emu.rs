@@ -258,6 +258,11 @@ impl EmulatorProcess {
                     )));
                 }
             }
+        } else {
+            if self.state == EmuState::Error {
+                log::warn!("Stop sub-process don't exist clean error state");
+                self.state = EmuState::Off;
+            }
         }
         Ok(())
     }
@@ -379,7 +384,6 @@ impl Emulator for Ti50SubProcess {
             }
             _ => {}
         };
-        process.state = EmuState::Busy;
         process.update_args(factory_reset, args)?;
         process.spawn_process()?;
         process.state = EmuState::On;
