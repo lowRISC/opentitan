@@ -14,16 +14,17 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
+#include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/lib/usbdev.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_pwrmgr_t pwrmgr;
+static dif_usbdev_t usbdev;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -35,6 +36,8 @@ static bool compare_wakeup_reasons(dif_pwrmgr_wakeup_reason_t lhs,
 bool test_main(void) {
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_usbdev_init(
+      mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
 
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
@@ -63,11 +66,16 @@ bool test_main(void) {
   }
 
   // Fake low power entry through usb
-  // Force usb to output suspend indication
+  // Force wake detection module active
   if (!low_power_exit) {
-    usbdev_set_wake_module_active(true);
-    usbdev_force_dx_pullup(kDpSel, true);
-    usbdev_force_dx_pullup(kDnSel, false);
+    CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleDisabled));
+    dif_usbdev_phy_pins_drive_t pins = {
+        .dp_pullup_en = true,
+        .dn_pullup_en = false,
+    };
+    CHECK_DIF_OK(
+        dif_usbdev_set_phy_pins_state(&usbdev, kDifToggleEnabled, pins));
+    CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleEnabled));
 
     // give the hardware a chance to recognize the wakeup values are the same
     busy_spin_micros(20);  // 20us

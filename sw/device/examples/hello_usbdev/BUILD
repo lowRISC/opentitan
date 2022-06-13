@@ -27,8 +27,6 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/examples:demos",
-        "//sw/device/lib:usb",
-        "//sw/device/lib:usb_simpleserial",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:gpio",
@@ -39,6 +37,8 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing:usb_testutils_simpleserial",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/device/lib/testing/test_framework:ottf_test_config",

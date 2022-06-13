@@ -576,7 +576,7 @@ dif_result_t dif_usbdev_clear_tx_status(const dif_usbdev_t *usbdev,
   if (usbdev == NULL || buffer_pool == NULL || !is_valid_endpoint(endpoint)) {
     return kDifBadArg;
   }
-  // Get the configin register offset and bit index of the endpoint
+  // Get the configin register offset and bit index of the endpoint.
   uint32_t config_in_reg_offset =
       kEndpointHwInfos[endpoint].config_in_reg_offset;
   uint32_t config_in_reg_val =
@@ -586,10 +586,10 @@ dif_result_t dif_usbdev_clear_tx_status(const dif_usbdev_t *usbdev,
 
   mmio_region_write32(usbdev->base_addr, config_in_reg_offset,
                       1u << USBDEV_CONFIGIN_0_PEND_0_BIT);
-  // Clear IN_SENT bit (rw1c)
+  // Clear IN_SENT bit (rw1c).
   mmio_region_write32(usbdev->base_addr, USBDEV_IN_SENT_REG_OFFSET,
                       1u << endpoint);
-  // Return the buffer back to the free buffer pool
+  // Return the buffer back to the free buffer pool.
   if (!buffer_pool_add(buffer_pool, buffer)) {
     return kDifError;
   }
@@ -603,29 +603,29 @@ dif_result_t dif_usbdev_get_tx_status(const dif_usbdev_t *usbdev,
     return kDifBadArg;
   }
 
-  // Get the configin register offset and bit index of the endpoint
+  // Get the configin register offset and bit index of the endpoint.
   uint32_t config_in_reg_offset =
       kEndpointHwInfos[endpoint].config_in_reg_offset;
   uint8_t endpoint_bit_index = kEndpointHwInfos[endpoint].bit_index;
 
-  // Read the configin register
+  // Read the configin register.
   uint32_t config_in_val =
       mmio_region_read32(usbdev->base_addr, config_in_reg_offset);
 
-  // Check the status of the packet
+  // Check the status of the packet.
   if (bitfield_bit32_read(config_in_val, USBDEV_CONFIGIN_0_RDY_0_BIT)) {
-    // Packet is marked as ready to be sent and pending transmission
+    // Packet is marked as ready to be sent and pending transmission.
     *status = kDifUsbdevTxStatusPending;
   } else if (bitfield_bit32_read(mmio_region_read32(usbdev->base_addr,
                                                     USBDEV_IN_SENT_REG_OFFSET),
                                  endpoint_bit_index)) {
-    // Packet was sent successfully
+    // Packet was sent successfully.
     *status = kDifUsbdevTxStatusSent;
   } else if (bitfield_bit32_read(config_in_val, USBDEV_CONFIGIN_0_PEND_0_BIT)) {
-    // Canceled due to an IN SETUP packet or link reset
+    // Canceled due to an IN SETUP packet or link reset.
     *status = kDifUsbdevTxStatusCancelled;
   } else {
-    // No packet has been queued for this endpoint
+    // No packet has been queued for this endpoint.
     *status = kDifUsbdevTxStatusNoPacket;
   }
 

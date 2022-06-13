@@ -9,6 +9,7 @@
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_sensor_ctrl.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
+#include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
@@ -17,7 +18,6 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/lib/usbdev.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwrmgr_regs.h"
@@ -154,9 +154,12 @@ static void prgm_pinmux_wakeup(void *dif) {
  * to be called from execute_test
  */
 static void prgm_usb_wakeup(void *dif) {
-  usbdev_set_wake_module_active(true);
-  usbdev_force_dx_pullup(kDpSel, true);
-  usbdev_force_dx_pullup(kDnSel, false);
+  dif_usbdev_phy_pins_drive_t pins = {
+      .dp_pullup_en = true,
+      .dn_pullup_en = false,
+  };
+  CHECK_DIF_OK(dif_usbdev_set_phy_pins_state(dif, kDifToggleEnabled, pins));
+  CHECK_DIF_OK(dif_usbdev_set_wake_enable(dif, kDifToggleEnabled));
 
   LOG_INFO("prgm_usb_wakeup: wait 20us (usb)");
   // Give the hardware a chance to recognize the wakeup values are the same.
@@ -277,7 +280,7 @@ static void cleanup(uint32_t test_idx) {
       CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
       break;
     case PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX:
-      usbdev_set_wake_module_active(false);
+      CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleDisabled));
       CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
       break;
     case PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX:

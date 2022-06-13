@@ -2,42 +2,43 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_USB_CONTROLEP_H_
-#define OPENTITAN_SW_DEVICE_LIB_USB_CONTROLEP_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_CONTROLEP_H_
+#define OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_CONTROLEP_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/usbdev.h"
+#include "sw/device/lib/testing/usb_testutils.h"
 
-typedef enum ctstate {
-  kCtIdle,
-  kCtWaitIn,      // Queued IN data stage, waiting ack
-  kCtStatOut,     // Waiting for OUT status stage
-  kCtAddrStatIn,  // Queued status stage, waiting ack afterwhich set dev_addr
-  kCtStatIn,      // Queued status stage, waiting ack
-  kCtError        // Something bad
-} ctstate_t;
+typedef enum usb_testutils_ctstate {
+  kUsbTestutilsCtIdle,
+  kUsbTestutilsCtWaitIn,      // Queued IN data stage, waiting ack
+  kUsbTestutilsCtStatOut,     // Waiting for OUT status stage
+  kUsbTestutilsCtAddrStatIn,  // Queued status stage, waiting ack afterwhich set
+                              // dev_addr
+  kUsbTestutilsCtStatIn,      // Queued status stage, waiting ack
+  kUsbTestutilsCtError        // Something bad
+} usb_testutils_ctstate_t;
 
-typedef enum usbdevice_state {
-  kUsbDeviceAttached,
-  kUsbDevicePowered,
-  kUsbDeviceDefault,
-  kUsbDeviceAddressed,
-  kUsbDeviceConfigured,
-  kUsbDeviceSuspended,
-} usb_device_state_t;
+typedef enum usb_testutils_device_state {
+  kUsbTestutilsDeviceAttached,
+  kUsbTestutilsDevicePowered,
+  kUsbTestutilsDeviceDefault,
+  kUsbTestutilsDeviceAddressed,
+  kUsbTestutilsDeviceConfigured,
+  kUsbTestutilsDeviceSuspended,
+} usb_testutils_device_state_t;
 
-typedef struct usb_controlep_ctx {
-  usbdev_ctx_t *ctx;
+typedef struct usb_testutils_controlep_ctx {
+  usb_testutils_ctx_t *ctx;
   int ep;
-  ctstate_t ctrlstate;
-  usb_device_state_t device_state;
+  usb_testutils_ctstate_t ctrlstate;
+  usb_testutils_device_state_t device_state;
   uint32_t new_dev;
   uint8_t usb_config;
   const uint8_t *cfg_dscr;
   size_t cfg_dscr_len;
-} usb_controlep_ctx_t;
+} usb_testutils_controlep_ctx_t;
 
 /**
  * Initialize control endpoint
@@ -48,8 +49,9 @@ typedef struct usb_controlep_ctx {
  * @param cfg_dscr configuration descriptor for the device
  * @param cfg_dscr_len length of cfg_dscr
  */
-void usb_controlep_init(usb_controlep_ctx_t *ctctx, usbdev_ctx_t *ctx, int ep,
-                        const uint8_t *cfg_dscr, size_t cfg_dscr_len);
+void usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
+                                  usb_testutils_ctx_t *ctx, int ep,
+                                  const uint8_t *cfg_dscr, size_t cfg_dscr_len);
 
 /********************************************************************/
 /* Below this point are macros used to construct the USB descriptor */
@@ -104,4 +106,4 @@ void usb_controlep_init(usb_controlep_ctx_t *ctctx, usbdev_ctx_t *ctx, int ep,
 
 // KEEP BLANK LINE ABOVE, it is in the macro!
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_USB_CONTROLEP_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_CONTROLEP_H_
