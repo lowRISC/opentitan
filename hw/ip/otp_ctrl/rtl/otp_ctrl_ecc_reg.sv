@@ -4,8 +4,6 @@
 //
 // Register file for buffered OTP partitions. ECC is used to detect up
 // to two simultaneous errors within each 64bit word.
-//
-// TODO: discuss whether reset is allowed here. We may also need a secure wiping feature.
 
 `include "prim_assert.sv"
 
