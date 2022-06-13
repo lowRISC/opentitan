@@ -12,7 +12,7 @@
 // flash_ctrl_base_sim_cfg.hjson.
 {
   // Simulator used to sign off this block
-  tool: xcelium
+  tool: vcs
 
   import_cfgs: ["{proj_root}/hw/ip/flash_ctrl/dv/flash_ctrl_base_sim_cfg.hjson"]
 }
