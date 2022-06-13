@@ -179,6 +179,12 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_wdog_reset_reqs_test",
     srcs = ["pwrmgr_wdog_reset_reqs_test.c"],
+    cw310 = cw310_params(
+        # FIXME #13198 Running
+        # //sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310
+        # more than once cause these tests to fail
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         tags = [
             "broken",
@@ -314,6 +320,10 @@ opentitan_functest(
 opentitan_functest(
     name = "clkmgr_off_peri_test",
     srcs = ["clkmgr_off_peri_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -356,24 +366,42 @@ cc_library(
 opentitan_functest(
     name = "clkmgr_off_aes_trans_test",
     srcs = ["clkmgr_off_aes_trans_test.c"],
+    cw310 = cw310_params(
+        # FIXME #13198 Running
+        # //sw/device/tests:clkmgr_off_aes_trans_test_fpga_cw310
+        # more than once cause these tests to fail
+        tags = ["broken"],
+    ),
     deps = ["clkmgr_off_trans_impl"],
 )
 
 opentitan_functest(
     name = "clkmgr_off_hmac_trans_test",
     srcs = ["clkmgr_off_hmac_trans_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     deps = ["clkmgr_off_trans_impl"],
 )
 
 opentitan_functest(
     name = "clkmgr_off_kmac_trans_test",
     srcs = ["clkmgr_off_kmac_trans_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     deps = ["clkmgr_off_trans_impl"],
 )
 
 opentitan_functest(
     name = "clkmgr_off_otbn_trans_test",
     srcs = ["clkmgr_off_otbn_trans_test.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     deps = ["clkmgr_off_trans_impl"],
 )
 
@@ -989,6 +1017,10 @@ opentitan_functest(
 opentitan_functest(
     name = "rstmgr_smoketest",
     srcs = ["rstmgr_smoketest.c"],
+    cw310 = cw310_params(
+        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
