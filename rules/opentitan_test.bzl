@@ -141,7 +141,7 @@ def cw310_params(
         # Base Parameters
         args = _BASE_PARAMS["args"] + [
             "--exec=\"load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
-            "--exec=\"bootstrap --protocol {bootstrap_protocol} $(location {flash})\"",
+            "--exec=\"bootstrap $(location {flash})\"",
             "console",
             "--exit-failure=" + shell.quote(_EXIT_FAILURE),
             "--exit-success=" + shell.quote(_EXIT_SUCCESS),
@@ -157,7 +157,6 @@ def cw310_params(
         # CW310-specific Parameters
         bitstream = "@//hw/bitstream:test_rom",
         rom_kind = None,
-        bootstrap_protocol = "eeprom",
         # None
         **kwargs):
     """A macro to create CW310 parameters for OpenTitan functional tests.
@@ -356,7 +355,6 @@ def opentitan_functest(
             rom = rom,
             rom_kind = rom_kind,
             bitstream = bitstream,
-            bootstrap_protocol = "eeprom",
         )
         if target == "fpga_cw310":
             # We attach the uarts configuration to the front of the command
