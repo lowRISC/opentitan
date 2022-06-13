@@ -873,7 +873,7 @@ module otbn_core
   `ASSERT_KNOWN(DmemReqOKnown_A, dmem_req_o)
   `ASSERT_KNOWN_IF(DmemWriteOKnown_A, dmem_write_o, dmem_req_o)
   `ASSERT_KNOWN_IF(DmemAddrOKnown_A, dmem_addr_o, dmem_req_o)
-  `ASSERT_KNOWN_IF(DmemWdataOKnown_A, dmem_wdata_o, dmem_req_o)
+  `ASSERT_KNOWN_IF(DmemWdataOKnown_A, dmem_wdata_o, dmem_req_o & dmem_write_o)
   `ASSERT_KNOWN_IF(DmemRmaskOKnown_A, dmem_rmask_o, dmem_req_o)
   `ASSERT_KNOWN(EdnRndReqOKnown_A, edn_rnd_req_o)
   `ASSERT_KNOWN(EdnUrndReqOKnown_A, edn_urnd_req_o)
