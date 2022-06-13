@@ -54,7 +54,6 @@ class AesTest : public testing::Test, public mock_mmio::MmioTest {
     uint32_t operation = AES_CTRL_SHADOWED_OPERATION_VALUE_AES_ENC;
     uint32_t mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1;
     bool manual_op = false;
-    bool force_zero_masks = false;
     bool key_sideloaded = false;
   };
 
@@ -66,21 +65,23 @@ class AesTest : public testing::Test, public mock_mmio::MmioTest {
          {AES_CTRL_SHADOWED_OPERATION_OFFSET, options.operation},
          {AES_CTRL_SHADOWED_PRNG_RESEED_RATE_OFFSET, options.mask_reseed},
          {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, options.manual_op},
-         {AES_CTRL_SHADOWED_SIDELOAD_BIT, options.key_sideloaded},
-         {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, options.force_zero_masks}});
+         {AES_CTRL_SHADOWED_SIDELOAD_BIT, options.key_sideloaded}});
   }
 
   struct AuxConfigOptions {
     bool reseed_on_key_change = false;
+    bool force_masks = false;
     bool lock = false;
   };
   void ExpectAuxConfig(const AuxConfigOptions &options) {
     EXPECT_READ32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
                   {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, 1}});
 
-    EXPECT_WRITE32_SHADOWED(AES_CTRL_AUX_SHADOWED_REG_OFFSET,
-                            {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT,
-                              options.reseed_on_key_change}});
+    EXPECT_WRITE32_SHADOWED(
+        AES_CTRL_AUX_SHADOWED_REG_OFFSET,
+        {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT,
+          options.reseed_on_key_change},
+         {AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT, options.force_masks}});
 
     EXPECT_WRITE32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
                    {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, !options.lock}});
@@ -110,11 +111,11 @@ class AesTestInitialized : public AesTest {
       .mode = kDifAesModeEcb,
       .key_len = kDifAesKey128,
       .manual_operation = kDifAesManualOperationAuto,
-      .masking = kDifAesMaskingInternalPrng,
       .key_provider = kDifAesKeySoftwareProvided,
       .mask_reseeding = kDifAesReseedPerBlock,
-
-      .reseed_on_key_change_lock = false,
+      .reseed_on_key_change = false,
+      .force_masks = false,
+      .ctrl_aux_lock = false,
   };
 
   const dif_aes_key_share_t kKey = {
@@ -308,27 +309,6 @@ TEST_F(ManualOperationTest, start) {
       .operation = AES_CTRL_SHADOWED_OPERATION_VALUE_AES_ENC,
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
       .manual_op = true,
-  });
-  ExpectAuxConfig({});
-  ExpectKey(kKey, 8);
-
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, nullptr));
-}
-
-// Zero masking
-class ZeroMaskingTest : public AesTestInitialized {
- protected:
-  ZeroMaskingTest() { transaction_.masking = kDifAesMaskingForceZero; }
-};
-
-TEST_F(ZeroMaskingTest, start) {
-  EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
-  ExpectConfig({
-      .key_len = AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128,
-      .mode = AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB,
-      .operation = AES_CTRL_SHADOWED_OPERATION_VALUE_AES_ENC,
-      .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
-      .force_zero_masks = true,
   });
   ExpectAuxConfig({});
   ExpectKey(kKey, 8);
@@ -622,9 +602,9 @@ TEST_F(MaskReseedingTest, ReseedPer8kBlock) {
 }
 
 // Reseed on key change.
-class RessedOnKeyChangeTest : public AesTestInitialized {};
+class CtrlAuxTest : public AesTestInitialized {};
 
-TEST_F(RessedOnKeyChangeTest, Unlock) {
+TEST_F(CtrlAuxTest, Unlock) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
   ExpectConfig({
       .key_len = AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128,
@@ -634,15 +614,16 @@ TEST_F(RessedOnKeyChangeTest, Unlock) {
   });
 
   transaction_.reseed_on_key_change = true;
-  transaction_.reseed_on_key_change_lock = false;
+  transaction_.force_masks = true;
   ExpectAuxConfig({
       .reseed_on_key_change = true,
+      .force_masks = true,
   });
   ExpectKey(kKey, 8);
   EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, nullptr));
 }
 
-TEST_F(RessedOnKeyChangeTest, Lock) {
+TEST_F(CtrlAuxTest, Lock) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
   ExpectConfig({
       .key_len = AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128,
@@ -652,13 +633,13 @@ TEST_F(RessedOnKeyChangeTest, Lock) {
   });
 
   transaction_.reseed_on_key_change = true;
-  transaction_.reseed_on_key_change_lock = true;
+  transaction_.ctrl_aux_lock = true;
   ExpectAuxConfig({.reseed_on_key_change = true, .lock = true});
   ExpectKey(kKey, 8);
   EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, nullptr));
 }
 
-TEST_F(RessedOnKeyChangeTest, LockedSuccess) {
+TEST_F(CtrlAuxTest, LockedSuccess) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
   ExpectConfig({
       .key_len = AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128,
@@ -668,17 +649,18 @@ TEST_F(RessedOnKeyChangeTest, LockedSuccess) {
   });
 
   transaction_.reseed_on_key_change = true;
-  transaction_.reseed_on_key_change_lock = true;
+  transaction_.ctrl_aux_lock = true;
 
   EXPECT_READ32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
                 {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, 0}});
   EXPECT_READ32(AES_CTRL_AUX_SHADOWED_REG_OFFSET,
-                {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT, true}});
+                {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT, true},
+                 {AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT, false}});
   ExpectKey(kKey, 8);
   EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, nullptr));
 }
 
-TEST_F(RessedOnKeyChangeTest, LockedError) {
+TEST_F(CtrlAuxTest, LockedErrorReseedOnKeyChange) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
   ExpectConfig({
       .key_len = AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128,
@@ -688,12 +670,34 @@ TEST_F(RessedOnKeyChangeTest, LockedError) {
   });
 
   transaction_.reseed_on_key_change = true;
-  transaction_.reseed_on_key_change_lock = true;
+  transaction_.ctrl_aux_lock = true;
 
   EXPECT_READ32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
                 {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, 0}});
   EXPECT_READ32(AES_CTRL_AUX_SHADOWED_REG_OFFSET,
-                {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT, false}});
+                {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT, false},
+                 {AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT, false}});
+
+  EXPECT_EQ(dif_aes_start(&aes_, &transaction_, &kKey, nullptr), kDifError);
+}
+
+TEST_F(CtrlAuxTest, LockedErrorForceMasks) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
+  ExpectConfig({
+      .key_len = AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128,
+      .mode = AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB,
+      .operation = AES_CTRL_SHADOWED_OPERATION_VALUE_AES_ENC,
+      .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
+  });
+
+  transaction_.reseed_on_key_change = true;
+  transaction_.ctrl_aux_lock = true;
+
+  EXPECT_READ32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
+                {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, 0}});
+  EXPECT_READ32(AES_CTRL_AUX_SHADOWED_REG_OFFSET,
+                {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT, true},
+                 {AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT, true}});
 
   EXPECT_EQ(dif_aes_start(&aes_, &transaction_, &kKey, nullptr), kDifError);
 }

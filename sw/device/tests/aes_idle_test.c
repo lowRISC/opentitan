@@ -79,9 +79,11 @@ bool test_main(void) {
       .operation = kDifAesOperationEncrypt,
       .mode = kDifAesModeEcb,
       .key_len = kDifAesKey256,
-      .manual_operation = kDifAesManualOperationManual,
-      .masking = kDifAesMaskingInternalPrng,
+      .key_provider = kDifAesKeySoftwareProvided,
       .mask_reseeding = kDifAesReseedPerBlock,
+      .manual_operation = kDifAesManualOperationManual,
+      .reseed_on_key_change = false,
+      .ctrl_aux_lock = false,
   };
 
   // With the AES unit idle, write the AES clk hint to 0 within clkmgr to

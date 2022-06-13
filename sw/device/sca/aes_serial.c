@@ -97,12 +97,12 @@ dif_aes_transaction_t transaction = {
     .operation = kDifAesOperationEncrypt,
     .mode = kDifAesModeEcb,
     .key_len = kDifAesKey128,
-    .masking = kDifAesMaskingInternalPrng,
     .manual_operation = kDifAesManualOperationManual,
     .key_provider = kDifAesKeySoftwareProvided,
     .mask_reseeding = kDifAesReseedPer8kBlock,
     .reseed_on_key_change = false,
-    .reseed_on_key_change_lock = false,
+    .force_masks = false,
+    .ctrl_aux_lock = false,
 };
 
 /**
@@ -449,7 +449,7 @@ bool test_main(void) {
   init_aes();
 
 #if !OT_IS_ENGLISH_BREAKFAST
-  if (transaction.masking == kDifAesMaskingForceZero) {
+  if (transaction.force_masks) {
     LOG_INFO("Initializing entropy complex.");
     aes_testutils_masking_prng_zero_output_seed();
     CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));

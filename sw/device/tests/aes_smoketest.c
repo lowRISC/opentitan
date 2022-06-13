@@ -51,7 +51,11 @@ bool test_main(void) {
       .operation = kDifAesOperationEncrypt,
       .mode = kDifAesModeEcb,
       .key_len = kDifAesKey256,
+      .key_provider = kDifAesKeySoftwareProvided,
+      .mask_reseeding = kDifAesReseedPerBlock,
       .manual_operation = kDifAesManualOperationAuto,
+      .reseed_on_key_change = false,
+      .ctrl_aux_lock = false,
   };
   CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, NULL));
 

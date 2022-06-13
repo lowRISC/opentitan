@@ -5311,7 +5311,7 @@
           name: SecAllowForcingMasks
           desc:
             '''
-            Forbid (0) or allow (1) forcing the mask to zero via FORCE_ZERO_MASK bit in the Control Register.
+            Forbid (0) or allow (1) forcing the masking PRNG output to a constant value via FORCE_MASKS bit in the Auxiliary Control Register.
             Useful for SCA measurements.
             Meaningful only if masking is enabled.
             '''

@@ -116,9 +116,6 @@ static dif_result_t configure(const dif_aes_t *aes,
   bool flag = transaction->manual_operation == kDifAesManualOperationManual;
   reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, flag);
 
-  flag = transaction->masking == kDifAesMaskingForceZero;
-  reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, flag);
-
   flag = transaction->key_provider == kDifAesKeySideload;
   reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_SIDELOAD_BIT, flag);
 
@@ -136,23 +133,30 @@ static dif_result_t configure(const dif_aes_t *aes,
  */
 static dif_result_t configure_aux(const dif_aes_t *aes,
                                   const dif_aes_transaction_t *transaction) {
-  // Return an error in case the register is locked with a different value.
+  // Return an error in case the register is locked with different values.
   uint32_t reg_val =
       mmio_region_read32(aes->base_addr, AES_CTRL_AUX_REGWEN_REG_OFFSET);
   if (!reg_val) {
-    if (mmio_region_get_bit32(
-            aes->base_addr, AES_CTRL_AUX_SHADOWED_REG_OFFSET,
-            AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT) !=
-        transaction->reseed_on_key_change) {
+    reg_val =
+        mmio_region_read32(aes->base_addr, AES_CTRL_AUX_SHADOWED_REG_OFFSET);
+    if (bitfield_bit32_read(
+            reg_val, AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT) !=
+            transaction->reseed_on_key_change ||
+        bitfield_bit32_read(reg_val, AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT) !=
+            transaction->force_masks) {
       return kDifError;
     }
     return kDifOk;
   }
 
-  reg_val = transaction->reseed_on_key_change == true;
+  reg_val =
+      bitfield_bit32_write(0, AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT,
+                           transaction->reseed_on_key_change);
+  reg_val = bitfield_bit32_write(reg_val, AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT,
+                                 transaction->force_masks);
   aes_shadowed_write(aes->base_addr, AES_CTRL_AUX_SHADOWED_REG_OFFSET, reg_val);
 
-  reg_val = transaction->reseed_on_key_change_lock == false;
+  reg_val = transaction->ctrl_aux_lock == false;
   mmio_region_write32(aes->base_addr, AES_CTRL_AUX_REGWEN_REG_OFFSET, reg_val);
 
   return kDifOk;

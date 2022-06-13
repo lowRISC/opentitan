@@ -65,19 +65,24 @@ class aes_common_vseq extends aes_base_vseq;
     if (!$cast(prs_rate_e, prs_rate_val)) begin
       val = get_csr_val_with_updated_field(ral.ctrl_shadowed.prng_reseed_rate, val, PER_1);
     end
-
-    // Force_zero_masks field should be 0 unless the maksing parameters are enabled.
-    val[ral.ctrl_shadowed.force_zero_masks.get_lsb_pos()] = 0;
   endfunction
 
-  // Discussed in Issue #10617, fatal storage error will lock the shadow regs write access.
+  // Any fatal error inside AES including storage errors inside any field of any shadow register
+  // will completely lock up write access to the shadowed main control register (ctrl_shadowed)
+  // until reset.
+  // In contrast, the shadowed auxiliary control register behaves more like regular shadow
+  // register:
+  // - Fatal alerts inside AES don't generally block write access to the aux control register.
+  // - A fatal storage error in one field of the shadowed aux control register doesn't block write
+  //   access to other fields in the same register.
+  //
+  // For further details, refer to lowRISC/OpenTitan#8460 and lowRISC/OpenTitan#10617.
   virtual function void predict_shadow_reg_status(bit predict_update_err  = 0,
                                                   bit predict_storage_err = 0);
     super.predict_shadow_reg_status(predict_update_err, predict_storage_err);
 
     if (predict_storage_err) begin
       ral.ctrl_shadowed.lock_shadow_reg();
-      ral.ctrl_aux_shadowed.lock_shadow_reg();
     end
   endfunction
 
