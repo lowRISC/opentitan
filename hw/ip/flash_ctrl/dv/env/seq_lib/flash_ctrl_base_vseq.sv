@@ -1014,7 +1014,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     endcase
     csr_rd_check(.ptr(ral.op_status.err), .compare_value(exp_alert));
 
-    // For 'prog_type_err' and 'prog_win_err' check via backdoor ff Pass,
+    // For 'prog_type_err' and 'prog_win_err' check via backdoor if Pass,
     // 'mp_err' is Backdoor checked directly within its own test.
     if ((alert_name inside {"prog_type_err", "prog_win_err"}) && (exp_alert == 0)) begin
       cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);

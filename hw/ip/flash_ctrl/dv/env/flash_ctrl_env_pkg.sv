@@ -122,6 +122,17 @@ package flash_ctrl_env_pkg;
   parameter bit MP_PASS      = 0;
   parameter bit MP_VIOLATION = 1;
 
+  // Flash Error Bits (flash_ctrl.err_code)
+  parameter uint NumFlashErrBits  = 8;
+  parameter uint FlashOpErr       = 0;
+  parameter uint FlashMpErr       = 1;
+  parameter uint FlashRdErr       = 2;
+  parameter uint FlashProgErr     = 3;
+  parameter uint FlashProgWinErr  = 4;
+  parameter uint FlashProgTypeErr = 5;
+  parameter uint FlashMacroErr    = 6;
+  parameter uint FlashUpdateErr   = 7;
+
   // types
   typedef enum int {
     FlashCtrlIntrProgEmpty = 0,
