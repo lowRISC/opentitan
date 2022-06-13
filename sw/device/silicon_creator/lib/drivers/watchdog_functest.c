@@ -87,9 +87,6 @@ bool test_main(void) {
   // next reset.
   rstmgr_reason_clear(reason);
 
-  // This test assumes the reset reason is unique.
-  CHECK(bitfield_popcount32(reason) == 1, "Expected exactly 1 reset reason.");
-
   // Use the part of the retention SRAM reserved for the silicon owner to
   // store the test phase.
   volatile uint32_t *phase = &retention_sram_get()->reserved_owner[0];

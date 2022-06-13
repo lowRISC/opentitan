@@ -631,12 +631,6 @@ cc_test(
 opentitan_functest(
     name = "watchdog_functest",
     srcs = ["watchdog_functest.c"],
-    cw310 = cw310_params(
-        # (lowRISC/opentitan#6965) This test resets the chip and appears to
-        # cause a test failure on FPGA boards.  Restrict this test to
-        # verilator for now.
-        tags = ["broken"],
-    ),
     verilator = verilator_params(
         timeout = "long",
     ),
