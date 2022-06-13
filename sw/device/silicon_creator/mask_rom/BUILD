@@ -326,7 +326,6 @@ opentitan_functest(
     ],
 )
 
-# TODO: Add verilator test
 opentitan_functest(
     name = "e2e_bootup_no_rom_ext_signature",
     srcs = ["mask_rom_test.c"],
@@ -335,15 +334,20 @@ opentitan_functest(
             "--exec=\"load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
             "--exec=\"bootstrap $(location {flash})\"",
             "console",
-            "--timeout=3600s",
+            "--timeout=30s",
             "--exit-success='{}'".format(BOOT_FAILURE_MSG),
             "--exit-failure='PASS!'",
         ],
         bitstream = "//hw/bitstream:mask_rom",
-        tags = ["broken"],
     ),
     signed = False,
-    targets = ["cw310"],
+    targets = [
+        "verilator",
+        "cw310",
+    ],
+    verilator = verilator_params(
+        rom = ":mask_rom_sim_verilator_scr_vmem",
+    ),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
