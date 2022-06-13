@@ -64,7 +64,7 @@ bool test_main(void) {
   // For this to work:
   // - CSRNG needs to generate the required seed to have the AES masking PRNG
   //   output an all-zero vector and forward that to AES over EDN.
-  // - AES needs to be configured with the CTRL_SHADOWED.FORCE_ZERO_MASKS bit
+  // - AES needs to be configured with the CTRL_AUX_SHADOWED.FORCE_MASKS bit
   //   set.
   //
   // Since the masking is transparent to software, software cannot actually
@@ -92,8 +92,8 @@ bool test_main(void) {
   memcpy(key.share0, key_share0, sizeof(key.share0));
   memcpy(key.share1, kKeyShare1, sizeof(key.share1));
 
-  // Setup ECB encryption transaction with the CTRL_SHADOWED.FORCE_ZERO_MASKS
-  // bit set.
+  // Setup ECB encryption transaction with the CTRL_AUX_SHADOWED.FORCE_MASKS bit
+  // set.
   dif_aes_transaction_t transaction = {
       .operation = kDifAesOperationEncrypt,
       .mode = kDifAesModeEcb,
@@ -101,9 +101,9 @@ bool test_main(void) {
       .key_provider = kDifAesKeySoftwareProvided,
       .mask_reseeding = kDifAesReseedPer8kBlock,
       .manual_operation = kDifAesManualOperationAuto,
-      .masking = kDifAesMaskingForceZero,
       .reseed_on_key_change = false,
-      .reseed_on_key_change_lock = false,
+      .force_masks = true,
+      .ctrl_aux_lock = false,
   };
   CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, NULL));
 

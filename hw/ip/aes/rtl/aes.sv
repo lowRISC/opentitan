@@ -20,9 +20,9 @@ module aes
                                                     // SCA measurements. A value of e.g. 40
                                                     // allows the processor to go into sleep
                                                     // before AES starts operation.
-  parameter bit          SecAllowForcingMasks  = 0, // Allow forcing masks to 0 using
-                                                    // FORCE_ZERO_MASK bit in Control Register.
-                                                    // Useful for SCA only.
+  parameter bit          SecAllowForcingMasks  = 0, // Allow forcing masks to constant values using
+                                                    // FORCE_MASKS bit in Auxiliary Control
+                                                    // Register. Useful for SCA only.
   parameter bit          SecSkipPRNGReseeding  = 0, // The current SCA setup doesn't provide enough
                                                     // resources to implement the infrastucture
                                                     // required for PRNG reseeding (CSRNG, EDN).

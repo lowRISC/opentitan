@@ -70,8 +70,11 @@ static void aes_test(entropy_src_test_context_t *ctx) {
       .operation = kDifAesOperationEncrypt,
       .mode = kDifAesModeEcb,
       .key_len = kDifAesKey128,
-      .manual_operation = kDifAesManualOperationManual,
       .key_provider = kDifAesKeySideload,
+      .mask_reseeding = kDifAesReseedPerBlock,
+      .manual_operation = kDifAesManualOperationManual,
+      .reseed_on_key_change = false,
+      .ctrl_aux_lock = false,
   };
   CHECK_DIF_OK(dif_aes_start(&ctx->aes, &transaction, NULL, NULL));
   CHECK_DIF_OK(dif_aes_trigger(&ctx->aes, kDifAesTriggerPrngReseed));

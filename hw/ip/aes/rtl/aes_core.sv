@@ -68,7 +68,6 @@ module aes_core
   logic                                       sideload_q;
   prs_rate_e                                  prng_reseed_rate_q;
   logic                                       manual_operation_q;
-  logic                                       force_zero_masks_q;
   logic                                       ctrl_reg_err_update;
   logic                                       ctrl_reg_err_storage;
   logic                                       ctrl_err_update;
@@ -76,6 +75,8 @@ module aes_core
   logic                                       ctrl_err_storage_d;
   logic                                       ctrl_err_storage_q;
   logic                                       ctrl_alert;
+  logic                                       key_touch_forces_reseed;
+  logic                                       force_masks;
   logic                                       mux_sel_err;
   logic                                       sp_enc_err_d, sp_enc_err_q;
   logic                                       clear_on_fatal;
@@ -463,42 +464,42 @@ module aes_core
     .RndCnstMaskingLfsrSeed ( RndCnstMaskingLfsrSeed ),
     .RndCnstMaskingLfsrPerm ( RndCnstMaskingLfsrPerm )
   ) u_aes_cipher_core (
-    .clk_i              ( clk_i                      ),
-    .rst_ni             ( rst_ni                     ),
+    .clk_i            ( clk_i                      ),
+    .rst_ni           ( rst_ni                     ),
 
-    .in_valid_i         ( cipher_in_valid            ),
-    .in_ready_o         ( cipher_in_ready            ),
+    .in_valid_i       ( cipher_in_valid            ),
+    .in_ready_o       ( cipher_in_ready            ),
 
-    .out_valid_o        ( cipher_out_valid           ),
-    .out_ready_i        ( cipher_out_ready           ),
+    .out_valid_o      ( cipher_out_valid           ),
+    .out_ready_i      ( cipher_out_ready           ),
 
-    .cfg_valid_i        ( ~ctrl_err_storage          ), // Used for gating assertions only.
-    .op_i               ( cipher_op_buf              ),
-    .key_len_i          ( key_len_q                  ),
-    .crypt_i            ( cipher_crypt               ),
-    .crypt_o            ( cipher_crypt_busy          ),
-    .dec_key_gen_i      ( cipher_dec_key_gen         ),
-    .dec_key_gen_o      ( cipher_dec_key_gen_busy    ),
-    .prng_reseed_i      ( cipher_prng_reseed         ),
-    .prng_reseed_o      ( cipher_prng_reseed_busy    ),
-    .key_clear_i        ( cipher_key_clear           ),
-    .key_clear_o        ( cipher_key_clear_busy      ),
-    .data_out_clear_i   ( cipher_data_out_clear      ),
-    .data_out_clear_o   ( cipher_data_out_clear_busy ),
-    .alert_fatal_i      ( alert_fatal_o              ),
-    .alert_o            ( cipher_alert               ),
+    .cfg_valid_i      ( ~ctrl_err_storage          ), // Used for gating assertions only.
+    .op_i             ( cipher_op_buf              ),
+    .key_len_i        ( key_len_q                  ),
+    .crypt_i          ( cipher_crypt               ),
+    .crypt_o          ( cipher_crypt_busy          ),
+    .dec_key_gen_i    ( cipher_dec_key_gen         ),
+    .dec_key_gen_o    ( cipher_dec_key_gen_busy    ),
+    .prng_reseed_i    ( cipher_prng_reseed         ),
+    .prng_reseed_o    ( cipher_prng_reseed_busy    ),
+    .key_clear_i      ( cipher_key_clear           ),
+    .key_clear_o      ( cipher_key_clear_busy      ),
+    .data_out_clear_i ( cipher_data_out_clear      ),
+    .data_out_clear_o ( cipher_data_out_clear_busy ),
+    .alert_fatal_i    ( alert_fatal_o              ),
+    .alert_o          ( cipher_alert               ),
 
-    .prd_clearing_i     ( cipher_prd_clearing        ),
+    .prd_clearing_i   ( cipher_prd_clearing        ),
 
-    .force_zero_masks_i ( force_zero_masks_q         ),
-    .data_in_mask_o     ( state_mask                 ),
-    .entropy_req_o      ( entropy_masking_req_o      ),
-    .entropy_ack_i      ( entropy_masking_ack_i      ),
-    .entropy_i          ( entropy_masking_i          ),
+    .force_masks_i    ( force_masks                ),
+    .data_in_mask_o   ( state_mask                 ),
+    .entropy_req_o    ( entropy_masking_req_o      ),
+    .entropy_ack_i    ( entropy_masking_ack_i      ),
+    .entropy_i        ( entropy_masking_i          ),
 
-    .state_init_i       ( state_init                 ),
-    .key_init_i         ( key_init_cipher            ),
-    .state_o            ( state_done                 )
+    .state_init_i     ( state_init                 ),
+    .key_init_i       ( key_init_cipher            ),
+    .state_o          ( state_done                 )
   );
 
   if (!SecMasking) begin : gen_state_out_unmasked
@@ -548,8 +549,7 @@ module aes_core
 
   // Shadowed register primitve
   aes_ctrl_reg_shadowed #(
-    .AES192Enable         ( AES192Enable         ),
-    .SecAllowForcingMasks ( SecAllowForcingMasks )
+    .AES192Enable ( AES192Enable )
   ) u_ctrl_reg_shadowed (
     .clk_i              ( clk_i                ),
     .rst_ni             ( rst_ni               ),
@@ -563,12 +563,15 @@ module aes_core
     .sideload_o         ( sideload_q           ),
     .prng_reseed_rate_o ( prng_reseed_rate_q   ),
     .manual_operation_o ( manual_operation_q   ),
-    .force_zero_masks_o ( force_zero_masks_q   ),
     .err_update_o       ( ctrl_reg_err_update  ),
     .err_storage_o      ( ctrl_reg_err_storage ),
     .reg2hw_ctrl_i      ( reg2hw.ctrl_shadowed ),
     .hw2reg_ctrl_o      ( hw2reg.ctrl_shadowed )
   );
+
+  // Auxiliary control register signals
+  assign key_touch_forces_reseed = reg2hw.ctrl_aux_shadowed.key_touch_forces_reseed.q;
+  assign force_masks             = reg2hw.ctrl_aux_shadowed.force_masks.q;
 
   /////////////
   // Control //
@@ -592,7 +595,7 @@ module aes_core
     .sideload_i                ( sideload_q                             ),
     .prng_reseed_rate_i        ( prng_reseed_rate_q                     ),
     .manual_operation_i        ( manual_operation_q                     ),
-    .key_touch_forces_reseed_i ( reg2hw.ctrl_aux_shadowed.q             ),
+    .key_touch_forces_reseed_i ( key_touch_forces_reseed                ),
     .start_i                   ( reg2hw.trigger.start.q                 ),
     .key_iv_data_in_clear_i    ( reg2hw.trigger.key_iv_data_in_clear.q  ),
     .data_out_clear_i          ( reg2hw.trigger.data_out_clear.q        ),

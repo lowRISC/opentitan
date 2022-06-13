@@ -56,10 +56,11 @@ void aes_test(void) {
       .operation = kDifAesOperationEncrypt,
       .mode = kDifAesModeEcb,
       .key_len = kDifAesKey256,
-      .manual_operation = kDifAesManualOperationManual,
-      .masking = kDifAesMaskingInternalPrng,
       .key_provider = kDifAesKeySideload,
       .mask_reseeding = kDifAesReseedPer64Block,
+      .manual_operation = kDifAesManualOperationManual,
+      .reseed_on_key_change = false,
+      .ctrl_aux_lock = false,
   };
 
   LOG_INFO("Encrypting the plain text with the side loaded key.");

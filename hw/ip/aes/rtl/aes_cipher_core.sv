@@ -138,7 +138,7 @@ module aes_cipher_core import aes_pkg::*;
   input  logic [WidthPRDClearing-1:0] prd_clearing_i [NumShares],
 
   // Masking PRNG
-  input  logic                        force_zero_masks_i, // Useful for SCA only.
+  input  logic                        force_masks_i, // Useful for SCA only.
   output logic        [3:0][3:0][7:0] data_in_mask_o,
   output logic                        entropy_req_o,
   input  logic                        entropy_ack_i,
@@ -282,10 +282,10 @@ module aes_cipher_core import aes_pkg::*;
     assign unused_entropy     = entropy_i;
     assign entropy_req_o      = 1'b0;
 
-    logic unused_force_zero_masks;
+    logic unused_force_masks;
     logic unused_prd_masking_upd;
     logic unused_prd_masking_rsd_req;
-    assign unused_force_zero_masks    = force_zero_masks_i;
+    assign unused_force_masks         = force_masks_i;
     assign unused_prd_masking_upd     = prd_masking_upd;
     assign unused_prd_masking_rsd_req = prd_masking_rsd_req;
     assign prd_masking_rsd_ack        = 1'b0;
@@ -309,16 +309,16 @@ module aes_cipher_core import aes_pkg::*;
       .RndCnstLfsrSeed      ( RndCnstMaskingLfsrSeed ),
       .RndCnstLfsrPerm      ( RndCnstMaskingLfsrPerm )
     ) u_aes_prng_masking (
-      .clk_i              ( clk_i               ),
-      .rst_ni             ( rst_ni              ),
-      .force_zero_masks_i ( force_zero_masks_i  ),
-      .data_update_i      ( prd_masking_upd     ),
-      .data_o             ( prd_masking         ),
-      .reseed_req_i       ( prd_masking_rsd_req ),
-      .reseed_ack_o       ( prd_masking_rsd_ack ),
-      .entropy_req_o      ( entropy_req_o       ),
-      .entropy_ack_i      ( entropy_ack_i       ),
-      .entropy_i          ( entropy_i           )
+      .clk_i         ( clk_i               ),
+      .rst_ni        ( rst_ni              ),
+      .force_masks_i ( force_masks_i       ),
+      .data_update_i ( prd_masking_upd     ),
+      .data_o        ( prd_masking         ),
+      .reseed_req_i  ( prd_masking_rsd_req ),
+      .reseed_ack_o  ( prd_masking_rsd_ack ),
+      .entropy_req_o ( entropy_req_o       ),
+      .entropy_ack_i ( entropy_ack_i       ),
+      .entropy_i     ( entropy_i           )
     );
   end
 

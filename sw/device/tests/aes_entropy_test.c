@@ -56,7 +56,11 @@ bool test_main(void) {
       .operation = kDifAesOperationEncrypt,
       .mode = kDifAesModeCbc,
       .key_len = kDifAesKey256,
+      .key_provider = kDifAesKeySoftwareProvided,
+      .mask_reseeding = kDifAesReseedPerBlock,
       .manual_operation = kDifAesManualOperationManual,
+      .reseed_on_key_change = false,
+      .ctrl_aux_lock = false,
   };
 
   // Write the initial key share, IV and data in CSRs (known combinations).

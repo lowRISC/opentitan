@@ -121,7 +121,7 @@ module csrng_block_encrypt import csrng_pkg::*; #(
     .data_out_clear_i   ( 1'b0                       ), // Disable
     .data_out_clear_o   (                            ),
     .prd_clearing_i     ( prd_clearing               ),
-    .force_zero_masks_i ( 1'b0                       ),
+    .force_masks_i      ( 1'b0                       ),
     .data_in_mask_o     (                            ),
     .entropy_req_o      (                            ),
     .entropy_ack_i      ( 1'b0                       ),

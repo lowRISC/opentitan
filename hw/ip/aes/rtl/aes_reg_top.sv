@@ -206,14 +206,16 @@ module aes_reg_top (
   logic [2:0] ctrl_shadowed_prng_reseed_rate_wd;
   logic ctrl_shadowed_manual_operation_qs;
   logic ctrl_shadowed_manual_operation_wd;
-  logic ctrl_shadowed_force_zero_masks_qs;
-  logic ctrl_shadowed_force_zero_masks_wd;
   logic ctrl_aux_shadowed_re;
   logic ctrl_aux_shadowed_we;
-  logic ctrl_aux_shadowed_qs;
-  logic ctrl_aux_shadowed_wd;
-  logic ctrl_aux_shadowed_storage_err;
-  logic ctrl_aux_shadowed_update_err;
+  logic ctrl_aux_shadowed_key_touch_forces_reseed_qs;
+  logic ctrl_aux_shadowed_key_touch_forces_reseed_wd;
+  logic ctrl_aux_shadowed_key_touch_forces_reseed_storage_err;
+  logic ctrl_aux_shadowed_key_touch_forces_reseed_update_err;
+  logic ctrl_aux_shadowed_force_masks_qs;
+  logic ctrl_aux_shadowed_force_masks_wd;
+  logic ctrl_aux_shadowed_force_masks_storage_err;
+  logic ctrl_aux_shadowed_force_masks_update_err;
   logic ctrl_aux_regwen_we;
   logic ctrl_aux_regwen_qs;
   logic ctrl_aux_regwen_wd;
@@ -918,7 +920,7 @@ module aes_reg_top (
 
   // R[ctrl_shadowed]: V(True)
   logic ctrl_shadowed_qe;
-  logic [6:0] ctrl_shadowed_flds_we;
+  logic [5:0] ctrl_shadowed_flds_we;
   assign ctrl_shadowed_qe = &ctrl_shadowed_flds_we;
   //   F[operation]: 1:0
   prim_subreg_ext #(
@@ -1016,32 +1018,17 @@ module aes_reg_top (
   );
   assign reg2hw.ctrl_shadowed.manual_operation.qe = ctrl_shadowed_qe;
 
-  //   F[force_zero_masks]: 16:16
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_ctrl_shadowed_force_zero_masks (
-    .re     (ctrl_shadowed_re),
-    .we     (ctrl_shadowed_we),
-    .wd     (ctrl_shadowed_force_zero_masks_wd),
-    .d      (hw2reg.ctrl_shadowed.force_zero_masks.d),
-    .qre    (reg2hw.ctrl_shadowed.force_zero_masks.re),
-    .qe     (ctrl_shadowed_flds_we[6]),
-    .q      (reg2hw.ctrl_shadowed.force_zero_masks.q),
-    .ds     (),
-    .qs     (ctrl_shadowed_force_zero_masks_qs)
-  );
-  assign reg2hw.ctrl_shadowed.force_zero_masks.qe = ctrl_shadowed_qe;
-
 
   // R[ctrl_aux_shadowed]: V(False)
   // Create REGWEN-gated WE signal
   logic ctrl_aux_shadowed_gated_we;
   assign ctrl_aux_shadowed_gated_we = ctrl_aux_shadowed_we & ctrl_aux_regwen_qs;
+  //   F[key_touch_forces_reseed]: 0:0
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
-  ) u_ctrl_aux_shadowed (
+  ) u_ctrl_aux_shadowed_key_touch_forces_reseed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .rst_shadowed_ni (rst_shadowed_ni),
@@ -1049,7 +1036,7 @@ module aes_reg_top (
     // from register interface
     .re     (ctrl_aux_shadowed_re),
     .we     (ctrl_aux_shadowed_gated_we),
-    .wd     (ctrl_aux_shadowed_wd),
+    .wd     (ctrl_aux_shadowed_key_touch_forces_reseed_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1057,18 +1044,53 @@ module aes_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl_aux_shadowed.q),
+    .q      (reg2hw.ctrl_aux_shadowed.key_touch_forces_reseed.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (ctrl_aux_shadowed_qs),
+    .qs     (ctrl_aux_shadowed_key_touch_forces_reseed_qs),
 
     // Shadow register phase. Relevant for hwext only.
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (ctrl_aux_shadowed_update_err),
-    .err_storage (ctrl_aux_shadowed_storage_err)
+    .err_update  (ctrl_aux_shadowed_key_touch_forces_reseed_update_err),
+    .err_storage (ctrl_aux_shadowed_key_touch_forces_reseed_storage_err)
+  );
+
+  //   F[force_masks]: 1:1
+  prim_subreg_shadow #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_ctrl_aux_shadowed_force_masks (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
+
+    // from register interface
+    .re     (ctrl_aux_shadowed_re),
+    .we     (ctrl_aux_shadowed_gated_we),
+    .wd     (ctrl_aux_shadowed_force_masks_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl_aux_shadowed.force_masks.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (ctrl_aux_shadowed_force_masks_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (ctrl_aux_shadowed_force_masks_update_err),
+    .err_storage (ctrl_aux_shadowed_force_masks_storage_err)
   );
 
 
@@ -1570,12 +1592,12 @@ module aes_reg_top (
   assign ctrl_shadowed_prng_reseed_rate_wd = reg_wdata[14:12];
 
   assign ctrl_shadowed_manual_operation_wd = reg_wdata[15];
-
-  assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[16];
   assign ctrl_aux_shadowed_re = addr_hit[30] & reg_re & !reg_error;
   assign ctrl_aux_shadowed_we = addr_hit[30] & reg_we & !reg_error;
 
-  assign ctrl_aux_shadowed_wd = reg_wdata[0];
+  assign ctrl_aux_shadowed_key_touch_forces_reseed_wd = reg_wdata[0];
+
+  assign ctrl_aux_shadowed_force_masks_wd = reg_wdata[1];
   assign ctrl_aux_regwen_we = addr_hit[31] & reg_we & !reg_error;
 
   assign ctrl_aux_regwen_wd = reg_wdata[0];
@@ -1756,11 +1778,11 @@ module aes_reg_top (
         reg_rdata_next[11] = ctrl_shadowed_sideload_qs;
         reg_rdata_next[14:12] = ctrl_shadowed_prng_reseed_rate_qs;
         reg_rdata_next[15] = ctrl_shadowed_manual_operation_qs;
-        reg_rdata_next[16] = ctrl_shadowed_force_zero_masks_qs;
       end
 
       addr_hit[30]: begin
-        reg_rdata_next[0] = ctrl_aux_shadowed_qs;
+        reg_rdata_next[0] = ctrl_aux_shadowed_key_touch_forces_reseed_qs;
+        reg_rdata_next[1] = ctrl_aux_shadowed_force_masks_qs;
       end
 
       addr_hit[31]: begin
@@ -1815,10 +1837,12 @@ module aes_reg_top (
 
   // Collect up storage and update errors
   assign shadowed_storage_err_o = |{
-    ctrl_aux_shadowed_storage_err
+    ctrl_aux_shadowed_key_touch_forces_reseed_storage_err,
+    ctrl_aux_shadowed_force_masks_storage_err
   };
   assign shadowed_update_err_o = |{
-    ctrl_aux_shadowed_update_err
+    ctrl_aux_shadowed_key_touch_forces_reseed_update_err,
+    ctrl_aux_shadowed_force_masks_update_err
   };
 
   // register busy

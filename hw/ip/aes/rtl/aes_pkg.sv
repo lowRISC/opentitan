@@ -346,7 +346,6 @@ parameter sp2v_logic_t SP2V_LOGIC_HIGH = {SP2V_HIGH};
 
 // Control register type
 typedef struct packed {
-  logic      force_zero_masks;
   logic      manual_operation;
   prs_rate_e prng_reseed_rate;
   logic      sideload;
@@ -356,7 +355,6 @@ typedef struct packed {
 } ctrl_reg_t;
 
 parameter ctrl_reg_t CTRL_RESET = '{
-  force_zero_masks: aes_reg_pkg::AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_RESVAL,
   manual_operation: aes_reg_pkg::AES_CTRL_SHADOWED_MANUAL_OPERATION_RESVAL,
   prng_reseed_rate: prs_rate_e'(aes_reg_pkg::AES_CTRL_SHADOWED_PRNG_RESEED_RATE_RESVAL),
   sideload:         aes_reg_pkg::AES_CTRL_SHADOWED_SIDELOAD_RESVAL,

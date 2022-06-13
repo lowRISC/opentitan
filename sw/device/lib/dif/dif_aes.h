@@ -205,24 +205,6 @@ typedef enum dif_aes_manual_operation {
 } dif_aes_manual_operation_t;
 
 /**
- * AES masking.
- *
- * NOTE:
- * This should only be used for development purpose (SCA), and expected to be
- * removed before the production version.
- */
-typedef enum dif_aes_masking {
-  /**
-   * Pseudo-random generator is used for masking.
-   */
-  kDifAesMaskingInternalPrng = 0,
-  /**
-   * Completely disables masking by forcing all masks to zero.
-   */
-  kDifAesMaskingForceZero,
-} dif_aes_masking_t;
-
-/**
  * AES key sideloaded.
  *
  * Controls whether the AES uses the key provided by the key manager
@@ -268,19 +250,26 @@ typedef struct dif_aes_transaction {
   dif_aes_mode_t mode;
   dif_aes_key_length_t key_len;
   dif_aes_manual_operation_t manual_operation;
-  dif_aes_masking_t masking;
   dif_aes_key_provider_t key_provider;
   dif_aes_mask_reseeding_t mask_reseeding;
   /**
-   * If true the internal psudo-random number used for clearing and masking will
-   * be reseeded every time the key changes.
+   * If true the internal pseudo-random number generators used for clearing and
+   * masking will be reseeded every time the key changes.
    */
   bool reseed_on_key_change;
   /**
-   * If true the `reseed_on_key_change` will be locked until the device is
-   * reset.
+   * If true, the internal pseudo-random number generator used for masking is
+   * not advancing leading to constant masks.
+   *
+   * NOTE: This should only be used for development purpose (SCA), and is
+   * expected to be removed for the production version.
    */
-  bool reseed_on_key_change_lock;
+  bool force_masks;
+  /**
+   * If true `reseed_on_key_change` and `force_masks` will be locked until the
+   * device is reset.
+   */
+  bool ctrl_aux_lock;
 } dif_aes_transaction_t;
 
 /**
