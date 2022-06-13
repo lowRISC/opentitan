@@ -1225,7 +1225,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // IP              - GPIO[11:9] - Index for clkmgr_aon_idle
   // ------------------------------------------------------------
   //  AES            -   000      -  0
-  //  HMAC           -   001      -  1
+  //  HMAC           -   001      -  1 - not implemented on CW305
   //  KMAC           -   010      -  2 - not implemented on CW305
   //  OTBN (IO_DIV4) -   011      -  3 - not implemented on CW305
   //  OTBN           -   100      -  4 - not implemented on CW305
@@ -1234,11 +1234,12 @@ module chip_${top["name"]}_${target["name"]} #(
   // Note that GPIO[11:8] are connected to LED[3:0] on the CW310.
   // On the CW305, GPIO[9,8] are connected to LED[5,7].
 
-  clkmgr_pkg::hint_names_e trigger_sel;
+  prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
+
   % if target["name"] == "cw305":
-  assign trigger_sel = mio_out[MioOutGpioGpio9] ? clkmgr_pkg::HintMainHmac :
-                                                  clkmgr_pkg::HintMainAes;
+  assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle;
   % else:
+  clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
     unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10], mio_out[MioOutGpioGpio9]})
       3'b000:  trigger_sel = clkmgr_pkg::HintMainAes;
@@ -1248,10 +1249,8 @@ module chip_${top["name"]}_${target["name"]} #(
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end
-  % endif
-
-  prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
   assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle[trigger_sel];
+  % endif
 
   logic clk_io_div4_trigger_en, manual_in_io_clk_trigger_en;
   logic clk_io_div4_trigger_oe, manual_in_io_clk_trigger_oe;

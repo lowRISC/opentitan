@@ -78,13 +78,6 @@
       req_fifo_pass: true,
       rsp_fifo_pass: false,
     },
-    { name:      "hmac",
-      type:      "device",
-      clock:     "clk_main_i",
-      reset:     "rst_main_ni",
-      req_fifo_pass: true,
-      rsp_fifo_pass: false,
-    },
     { name:      "aes",
       type:      "device",
       clock:     "clk_main_i"
@@ -125,7 +118,7 @@
     rv_core_ibex.cored:  [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
       "sram_ctrl_main.ram", "flash_ctrl.mem", "peri", "flash_ctrl.core", "flash_ctrl.prim",
-      "aes", "hmac",
+      "aes",
       "rv_plic", "sram_ctrl_main.ram", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg"
     ],

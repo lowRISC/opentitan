@@ -225,10 +225,12 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
     OT_DISCARD(dif_clkmgr_hintable_clock_set_hint(
         &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT, kDifToggleDisabled));
   }
+#if !OT_IS_ENGLISH_BREAKFAST
   if (disable & kScaPeripheralHmac) {
     OT_DISCARD(dif_clkmgr_hintable_clock_set_hint(
         &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT, kDifToggleDisabled));
   }
+#endif
   if (disable & kScaPeripheralIoDiv4) {
     OT_DISCARD(dif_clkmgr_gateable_clock_set_enabled(
         &clkmgr, CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT,

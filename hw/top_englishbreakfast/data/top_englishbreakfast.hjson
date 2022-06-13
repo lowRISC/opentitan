@@ -420,13 +420,6 @@
       }
       base_addr: "0x41100000",
     },
-    { name: "hmac",
-      type: "hmac",
-      clock_srcs: {clk_i: "main"},
-      clock_group: "trans",
-      reset_connections: {rst_ni: "sys"},
-      base_addr: "0x41110000",
-    },
     { name: "sram_ctrl_main",
       type: "sram_ctrl",
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
@@ -735,7 +728,6 @@
     "pwrmgr_aon",
     "aon_timer_aon",
     "flash_ctrl",
-    "hmac",
   ]
 
   // ===== PINMUX & PINOUT ======================================================
