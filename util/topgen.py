@@ -470,9 +470,11 @@ def generate_pwrmgr(top, out_path):
     # Generate reg files
     generate_regfile_from_path(hjson_path, rtl_path, original_rtl_path)
 
+
 def get_rst_ni(top):
     rstmgrs = [m for m in top['module'] if m['type'] == 'rstmgr']
     return rstmgrs[0]["reset_connections"]
+
 
 # generate rstmgr
 def generate_rstmgr(topcfg, out_path):
@@ -639,7 +641,6 @@ def generate_top_only(top_only_dict, out_path, topname, alt_hjson_path):
 def generate_top_ral(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
                      dv_base_names: List[str], out_path: str):
     # construct top ral block
-
     regwidth = int(top["datawidth"])
     assert regwidth % 8 == 0
     addrsep = regwidth // 8
@@ -871,6 +872,22 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
         assert lblock not in name_to_block
         name_to_block[lblock] = block
 
+    # Read in alias files one-by-one, peek inside to figure out which IP block
+    # they belong to and apply the alias file to that IP block.
+    if args.alias_files:
+        for alias in args.alias_files:
+            with open(alias, 'r', encoding='utf-8') as handle:
+                raw = hjson.loads(handle.read(), use_decimal=True)
+                if 'alias_target' not in raw:
+                    raise ValueError('Missing alias_target key '
+                                     'in alias file {}.'.format(alias))
+                alias_target = raw['alias_target'].lower()
+                if alias_target not in name_to_block:
+                    raise ValueError('Alias target {} is not defined.'
+                                     .format(alias_target))
+                where = 'alias file at {}'.format(alias)
+                name_to_block[alias_target].alias_from_raw(False, raw, where)
+
     connect_clocks(topcfg, name_to_block)
 
     # Read the crossbars under the top directory
@@ -997,6 +1014,16 @@ def main():
         default=False,
         action="store_true",
         help="If set, the tool generates top level RAL model for DV")
+    parser.add_argument(
+        "--alias-files",
+        nargs="+",
+        type=Path,
+        default=None,
+        help="""
+          If defined, topgen uses supplied alias hjson file(s) to override the
+          generic register definitions when building the RAL model. This
+          argument is only relevant in conjunction with the `--top_ral` switch.
+        """)
     parser.add_argument(
         "--dv-base-names",
         nargs="+",

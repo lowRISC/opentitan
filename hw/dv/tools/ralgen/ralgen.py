@@ -52,18 +52,18 @@ def main():
     if ip_hjson:
         ral_spec = root_dir / ip_hjson
         cmd = util_path / "regtool.py"
+        args = [cmd, "-s", "-t", os.getcwd(), ral_spec]
         if alias_hjson:
-            ral_alias = root_dir / alias_hjson
-            args = [cmd, "-s", "-a", ral_alias, "-t", os.getcwd(), ral_spec]
-        else:
-            args = [cmd, "-s", "-t", os.getcwd(), ral_spec]
+            args += ["--alias", root_dir / alias_hjson]
     else:
         ral_spec = root_dir / top_hjson
         cmd = util_path / "topgen.py"
         args = [cmd, "-r", "-o", os.getcwd(), "-t", ral_spec]
         if hjson_path:
             args += ["--hjson-path", root_dir / hjson_path]
-
+        if alias_hjson:
+            for alias in alias_hjson:
+                args += ["--alias-files", root_dir / alias]
     if dv_base_names:
         args += ["--dv-base-names"] + dv_base_names
 
