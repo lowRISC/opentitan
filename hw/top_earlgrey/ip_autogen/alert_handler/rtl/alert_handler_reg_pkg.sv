@@ -43,7 +43,7 @@ package alert_handler_reg_pkg;
   5'd16,
   5'd16,
   5'd15,
-  5'd14,
+  5'd11,
   5'd14,
   5'd13,
   5'd12,
