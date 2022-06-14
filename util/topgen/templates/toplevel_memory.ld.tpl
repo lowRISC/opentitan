@@ -51,6 +51,5 @@ MEMORY {
 % for m in top["memory"]:
   ${m["name"]}(${memory_to_flags(m)}) : ORIGIN = ${m["base_addr"]}, LENGTH = ${m["size"]}
 % endfor
-  eflash_virtual(rx) : ORIGIN = 0x80000000, LENGTH = 0x100000
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = 0x80000
 }
