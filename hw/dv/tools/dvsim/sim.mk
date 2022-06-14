@@ -100,7 +100,7 @@ ifneq (${sw_images},)
 			$${bazel_cmd} build $${bazel_opts} $${bazel_label}; \
 			find -L $$($${bazel_cmd} info output_path)/ \
 				-type f -name "$$(basename $${image})*" | \
-				xargs -I % cp % $${target_dir}; \
+				xargs -I % cp -f % $${target_dir}; \
 		fi; \
 	done;
 endif
