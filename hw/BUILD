@@ -85,10 +85,7 @@ genrule(
 # relationships between verilog components.
 filegroup(
     name = "all_files",
-    srcs = glob(
-        ["**"],
-        exclude = ["dv/tools/ralgen/*"],
-    ) + [
+    srcs = glob(["**"]) + [
         "//hw/ip:all_files",
         "//hw/top_earlgrey:all_files",
     ],
