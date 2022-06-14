@@ -417,13 +417,14 @@ jobs:
   timeoutInMinutes: 30
   dependsOn:
     - chip_earlgrey_cw310
+    - chip_earlgrey_cw310_splice_mask_rom
     - sw_build
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
+        - chip_earlgrey_cw310_splice_mask_rom
         - sw_build
   - bash: |
       set -e
