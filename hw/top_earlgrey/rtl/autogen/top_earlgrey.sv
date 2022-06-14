@@ -978,11 +978,15 @@ module top_earlgrey #(
     prim_mubi_pkg::mubi4_t unused_rst_en_28;
     assign unused_rst_en_28 = rstmgr_aon_rst_en.usb[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_29;
-    assign unused_rst_en_29 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_29 = rstmgr_aon_rst_en.usb_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_30;
-    assign unused_rst_en_30 = rstmgr_aon_rst_en.i2c1[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_30 = rstmgr_aon_rst_en.usb_aon[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_31;
-    assign unused_rst_en_31 = rstmgr_aon_rst_en.i2c2[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_31 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
+    prim_mubi_pkg::mubi4_t unused_rst_en_32;
+    assign unused_rst_en_32 = rstmgr_aon_rst_en.i2c1[rstmgr_pkg::DomainAonSel];
+    prim_mubi_pkg::mubi4_t unused_rst_en_33;
+    assign unused_rst_en_33 = rstmgr_aon_rst_en.i2c2[rstmgr_pkg::DomainAonSel];
 
   // Peripheral Instantiation
 
@@ -1652,7 +1656,7 @@ module top_earlgrey #(
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_peri),
       .clk_usb_48mhz_i (clkmgr_aon_clocks.clk_usb_peri),
       .rst_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::Domain0Sel]),
-      .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::Domain0Sel]),
+      .rst_aon_ni (rstmgr_aon_resets.rst_usb_aon_n[rstmgr_pkg::Domain0Sel]),
       .rst_usb_48mhz_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::Domain0Sel])
   );
   pwrmgr #(

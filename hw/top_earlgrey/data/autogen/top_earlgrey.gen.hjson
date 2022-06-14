@@ -379,7 +379,6 @@
         type: top
         domains:
         [
-          "0"
           Aon
         ]
         shadowed: false
@@ -443,6 +442,20 @@
         path: rstmgr_aon_resets.rst_usb_n
         parent: sys_src
         clock: usb
+      }
+      {
+        name: usb_aon
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: true
+        path: rstmgr_aon_resets.rst_usb_aon_n
+        parent: sys_src
+        clock: aon
       }
       {
         name: i2c0
@@ -2246,7 +2259,7 @@
         }
         rst_aon_ni:
         {
-          name: sys_aon
+          name: usb_aon
           domain: "0"
         }
         rst_usb_48mhz_ni:

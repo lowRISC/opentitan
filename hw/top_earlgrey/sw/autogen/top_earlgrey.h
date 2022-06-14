@@ -1646,10 +1646,11 @@ typedef enum top_earlgrey_reset_manager_sw_resets {
   kTopEarlgreyResetManagerSwResetsSpiHost0 = 1, /**<  */
   kTopEarlgreyResetManagerSwResetsSpiHost1 = 2, /**<  */
   kTopEarlgreyResetManagerSwResetsUsb = 3, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c0 = 4, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c1 = 5, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c2 = 6, /**<  */
-  kTopEarlgreyResetManagerSwResetsLast = 6, /**< \internal Last valid rstmgr software reset request */
+  kTopEarlgreyResetManagerSwResetsUsbAon = 4, /**<  */
+  kTopEarlgreyResetManagerSwResetsI2c0 = 5, /**<  */
+  kTopEarlgreyResetManagerSwResetsI2c1 = 6, /**<  */
+  kTopEarlgreyResetManagerSwResetsI2c2 = 7, /**<  */
+  kTopEarlgreyResetManagerSwResetsLast = 7, /**< \internal Last valid rstmgr software reset request */
 } top_earlgrey_reset_manager_sw_resets_t;
 
 /**

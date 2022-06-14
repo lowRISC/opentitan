@@ -31,7 +31,7 @@ static_assert(kDifRstmgrResetInfoHwReq == (RSTMGR_RESET_INFO_HW_REQ_MASK
               "kDifRstmgrResetInfoHwReq must match the register definition!");
 
 static_assert(
-    RSTMGR_PARAM_NUM_SW_RESETS == 7,
+    RSTMGR_PARAM_NUM_SW_RESETS == 8,
     "Number of software resets has changed, please update this file!");
 
 // The Reset Manager implementation will have to be updated if the number
