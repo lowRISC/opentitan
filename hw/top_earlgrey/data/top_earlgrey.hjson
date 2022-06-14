@@ -445,7 +445,7 @@
       type: "pinmux",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
+      reset_connections: {rst_ni: "lc_io_div4", rst_aon_ni: "lc_aon"},
       domain: ["Aon"],
       base_addr: "0x40460000",
       attr: "templated",
