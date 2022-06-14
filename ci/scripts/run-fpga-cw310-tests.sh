@@ -7,13 +7,16 @@ set -x
 set -e
 
 . util/build_consts.sh
-SHA=$(git rev-parse HEAD)
-BITCACHE_DIR=~/.cache/opentitan-bitstreams/cache/${SHA}
-mkdir -p $BITCACHE_DIR
-BITCACHE_FILE=$BITCACHE_DIR/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig
-cp $BIN_DIR/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit ${BITCACHE_FILE}
-echo "" >> ${BITCACHE_DIR}/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice
-echo -n ${SHA} > ${BITCACHE_DIR}/../../latest.txt
+readonly SHA=$(git rev-parse HEAD)
+readonly BIT_CACHE_DIR="${HOME}/.cache/opentitan-bitstreams/cache/${SHA}"
+readonly BIT_SRC_PREFIX="${BIN_DIR}/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"
+readonly BIT_DST_PREFIX="${BIT_CACHE_DIR}/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"
+
+mkdir -p ${BIT_CACHE_DIR}
+for suffix in orig splice; do
+  cp "${BIT_SRC_PREFIX}.${suffix}" "${BIT_DST_PREFIX}.${suffix}"
+done
+echo -n ${SHA} > ${BIT_CACHE_DIR}/../../latest.txt
 export BITSTREAM="--offline --list ${SHA}"
 
 # We will lose serial access when we reboot, but if tests fail we should reboot
