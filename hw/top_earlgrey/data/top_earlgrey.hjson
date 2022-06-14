@@ -155,6 +155,7 @@
       { name: "spi_host0",      gen: true,  type: "top", parent: "sys_src", clk: "io",      sw: true }
       { name: "spi_host1",      gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true }
       { name: "usb",            gen: true,  type: "top", parent: "sys_src", clk: "usb",     sw: true }
+      { name: "usb_aon",        gen: true,  type: "top", parent: "sys_src", clk: "aon",     sw: true }
       { name: "i2c0",           gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true },
       { name: "i2c1",           gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true },
       { name: "i2c2",           gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true },
@@ -333,7 +334,7 @@
       type: "usbdev",
       clock_srcs: {clk_i: "usb", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "usb", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usb"},
+      reset_connections: {rst_ni: "usb", rst_aon_ni: "usb_aon", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40320000",
       param_decl: {
         RcvrWakeTimeUs: "100"

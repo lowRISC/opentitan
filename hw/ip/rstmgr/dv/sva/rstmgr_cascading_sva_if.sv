@@ -154,8 +154,11 @@ interface rstmgr_cascading_sva_if (
     `CASCADED_ASSERTS(CascadeLcToSys, lc_rst_or_sys_req_n[pd], rst_sys_src_n[pd], SysCycles, clk_i)
 
     // Controlled by rst_sys_src_n.
+    // rst_sys_aon_n[Domain0Sel] is not used by anyone
+    if (pd == rstmgr_pkg::DomainAonSel) begin : gen_sys_aon_chk
     `CASCADED_ASSERTS(CascadeSysToSysAon, rst_sys_src_n[pd], resets_o.rst_sys_aon_n[pd], SysCycles,
                       clk_aon_i)
+    end
     `CASCADED_ASSERTS(CascadeSysToSysIoDiv4, rst_sys_src_n[pd], resets_o.rst_sys_io_div4_n[pd],
                       SysCycles, clk_io_div4_i)
   end
