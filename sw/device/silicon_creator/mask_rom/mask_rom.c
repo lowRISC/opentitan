@@ -107,9 +107,12 @@ static rom_error_t mask_rom_init(void) {
   uart_init(kUartNCOValue);
 
   // Write the OTP value to bits 0 to 5 of the cpuctrl CSR.
-  uint32_t cpuctrl_otp =
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_CPUCTRL_OFFSET) & 0x3f;
-  CSR_WRITE(CSR_REG_CPUCTRL, cpuctrl_otp);
+  uint32_t cpuctrl_csr;
+  CSR_READ(CSR_REG_CPUCTRL, &cpuctrl_csr);
+  cpuctrl_csr = bitfield_field32_write(
+      cpuctrl_csr, (bitfield_field32_t){.mask = 0x3f, .index = 0},
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_CPUCTRL_OFFSET));
+  CSR_WRITE(CSR_REG_CPUCTRL, cpuctrl_csr);
 
   lc_state = lifecycle_state_get();
 
