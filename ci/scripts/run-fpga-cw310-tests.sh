@@ -54,6 +54,8 @@ ci/bazelisk.sh test \
     //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 \
     //sw/device/silicon_creator/lib/drivers:retention_sram_functest_fpga_cw310 \
     //sw/device/silicon_creator/lib/drivers:uart_functest_fpga_cw310 \
+    //sw/device/silicon_creator/lib/drivers:watchdog_functest_fpga_cw310 \
+    //sw/device/silicon_creator/mask_rom:e2e_bootup_no_rom_ext_signature_fpga_cw310 \
     //sw/device/silicon_creator/lib/sigverify:sigverify_functest_fpga_cw310
 
     # Note that some tests were included in the original systemtest but are
