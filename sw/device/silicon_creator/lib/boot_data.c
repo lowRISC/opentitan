@@ -12,10 +12,12 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
+#include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 static_assert(kBootDataEntriesPerPage ==
                   FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(boot_data_t),
@@ -472,25 +474,12 @@ static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
 }
 
 /**
- * Default boot data to use if the device is in a non-prod state and there is
- * no valid boot data entry in the flash info pages.
- */
-static const boot_data_t kBootDataDefault = (boot_data_t){
-    .digest = {{0x0d044e5c, 0x33ceed53, 0x05aa74a4, 0x57b7017f, 0x574a685d,
-                0x6ec8f5f7, 0x594b0141, 0x656bae85}},
-    .is_valid = kBootDataValidEntry,
-    .identifier = kBootDataIdentifier,
-    // Note: This starts from 5 to have a slightly less trivial value in case we
-    // need to distinguish the default entry.
-    .counter = kBootDataDefaultCounterVal,
-    .min_security_version_rom_ext = 0,
-};
-
-/**
  * Returns the default boot data.
  *
  * Default boot data can be used only in TEST_UNLOCKED, DEV, and RMA life cycle
- * states.
+ * states unless explicitly allowed by setting the
+ * `CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN` OTP item to
+ * `kHardenedBoolTrue`.
  *
  * @param lc_state Life cycle state of the device.
  * @param[out] boot_data Default boot data.
@@ -498,29 +487,57 @@ static const boot_data_t kBootDataDefault = (boot_data_t){
  */
 static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
                                          boot_data_t *boot_data) {
-  // TODO(#8778): Default boot data.
+  uint32_t allowed_in_prod = otp_read32(
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN_OFFSET);
+  rom_error_t res = lc_state ^ launder32(kErrorBootDataNotFound);
+  barrier32(res);
   switch (launder32(lc_state)) {
     case kLcStateTest:
       HARDENED_CHECK_EQ(lc_state, kLcStateTest);
-      *boot_data = kBootDataDefault;
-      return kErrorOk;
+      res ^= kLcStateTest ^ kErrorBootDataNotFound ^ kErrorOk;
+      break;
     case kLcStateDev:
       HARDENED_CHECK_EQ(lc_state, kLcStateDev);
-      *boot_data = kBootDataDefault;
-      return kErrorOk;
+      res ^= kLcStateDev ^ kErrorBootDataNotFound ^ kErrorOk;
+      break;
     case kLcStateProd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProd);
-      return kErrorBootDataNotFound;
+      res ^= kLcStateProd;
+      if (launder32(allowed_in_prod) == kHardenedBoolTrue) {
+        HARDENED_CHECK_EQ(allowed_in_prod, kHardenedBoolTrue);
+        res ^= kErrorBootDataNotFound ^ kErrorOk;
+      }
+      break;
     case kLcStateProdEnd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
-      return kErrorBootDataNotFound;
+      res ^= kLcStateProdEnd;
+      if (launder32(allowed_in_prod) == kHardenedBoolTrue) {
+        HARDENED_CHECK_EQ(allowed_in_prod, kHardenedBoolTrue);
+        res ^= kErrorBootDataNotFound ^ kErrorOk;
+      }
+      break;
     case kLcStateRma:
       HARDENED_CHECK_EQ(lc_state, kLcStateRma);
-      *boot_data = kBootDataDefault;
-      return kErrorOk;
+      res ^= kLcStateRma ^ kErrorBootDataNotFound ^ kErrorOk;
+      break;
     default:
       HARDENED_UNREACHABLE();
   }
+
+  HARDENED_RETURN_IF_ERROR(res);
+
+  boot_data->is_valid = kBootDataValidEntry;
+  boot_data->identifier = kBootDataIdentifier;
+  boot_data->counter = kBootDataDefaultCounterVal;
+  boot_data->min_security_version_rom_ext =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT_OFFSET);
+  boot_data->min_security_version_bl0 =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_BL0_OFFSET);
+  // We cannot use a constant digest since some fields are read from the OTP
+  // and we check the digest of the cached boot data entry in mask_rom.c
+  boot_data_digest_compute(boot_data, &boot_data->digest);
+
+  return res;
 }
 
 rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
@@ -532,7 +549,6 @@ rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
       return kErrorOk;
     case kHardenedBoolFalse:
       HARDENED_CHECK_EQ(active_page.has_valid_entry, kHardenedBoolFalse);
-      // TODO(#8779): Recovery paths for failures in prod life cycle states?
       return boot_data_default_get(lc_state, boot_data);
     default:
       HARDENED_UNREACHABLE();
