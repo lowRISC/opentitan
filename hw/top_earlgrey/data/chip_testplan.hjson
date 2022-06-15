@@ -1488,7 +1488,7 @@
             - Read the pin_in_value CSR to check for correctness.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_sysrst_ctrl_inputs"]
     }
     {
       name: chip_sw_sysrst_ctrl_outputs
