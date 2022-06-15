@@ -21,6 +21,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:memory",
@@ -36,6 +37,7 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:otp",
         ],
     ),
 )

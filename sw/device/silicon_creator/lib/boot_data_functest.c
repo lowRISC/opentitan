@@ -8,10 +8,12 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -189,7 +191,7 @@ rom_error_t check_test_data_test(void) {
   return kErrorOk;
 }
 
-rom_error_t read_empty_default_allowed_test(void) {
+rom_error_t read_empty_default_in_non_prod(void) {
   erase_boot_data_pages();
 
   boot_data_t boot_data;
@@ -198,11 +200,18 @@ rom_error_t read_empty_default_allowed_test(void) {
   return kErrorOk;
 }
 
-rom_error_t read_empty_default_not_allowed_test(void) {
+rom_error_t read_empty_default_in_prod(void) {
   erase_boot_data_pages();
 
+  rom_error_t exp_error = kErrorBootDataNotFound;
+  hardened_bool_t allowed_in_prod = otp_read32(
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN_OFFSET);
+  if (allowed_in_prod == kHardenedBoolTrue) {
+    exp_error = kErrorOk;
+  }
+
   boot_data_t boot_data;
-  if (boot_data_read(kLcStateProd, &boot_data) == kErrorBootDataNotFound) {
+  if (boot_data_read(kLcStateProd, &boot_data) == exp_error) {
     return kErrorOk;
   }
   return kErrorUnknown;
@@ -338,8 +347,8 @@ bool test_main(void) {
   sec_mmio_check_counters(/*expected_check_count=*/0);
 
   EXECUTE_TEST(result, check_test_data_test);
-  EXECUTE_TEST(result, read_empty_default_allowed_test);
-  EXECUTE_TEST(result, read_empty_default_not_allowed_test);
+  EXECUTE_TEST(result, read_empty_default_in_non_prod);
+  EXECUTE_TEST(result, read_empty_default_in_prod);
   EXECUTE_TEST(result, read_single_page_0_test);
   EXECUTE_TEST(result, read_single_page_1_test);
   EXECUTE_TEST(result, read_full_page_0_test);
