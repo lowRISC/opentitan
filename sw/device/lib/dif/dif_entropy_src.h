@@ -24,59 +24,6 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * A statistical test on the bits emitted by an entropy source.
- */
-typedef enum dif_entropy_src_test {
-  /**
-   * An SP 800-90B repetition count test.
-   *
-   * This test screens for stuck bits, or a total failure of the noise source.
-   * This test fails if any sequence of bits repeats too many times in a row
-   * for too many samples.
-   */
-  kDifEntropySrcTestRepCount,
-
-  /**
-   * An SP 800-90B adaptive proportion test.
-   *
-   * This test screens for statistical bias in the number of ones or zeros
-   * output by the noise source.
-   */
-  kDifEntropySrcTestAdaptiveProportion,
-
-  /**
-   * A bucket test.
-   *
-   * This test looks for correlations between individual noise channels.
-   */
-  kDifEntropySrcTestBucket,
-
-  /**
-   * A "Markov" test.
-   *
-   * This test looks for unexpected first-order temporal correlations
-   * between individual noise channels.
-   */
-  kDifEntropySrcTestMarkov,
-
-  /**
-   * A firmware-driven "mailbox" test.
-   *
-   * This test allows firmware to inspect 2kbit blocks of entropy, and signal
-   * potential concerns to the hardware.
-   */
-  kDifEntropySrcTestMailbox,
-
-  /**
-   * A vendor-specific test implemented externally to the IP.
-   */
-  kDifEntropySrcTestVendorSpecific,
-
-  /** \internal */
-  kDifEntropySrcTestNumVariants,
-} dif_entropy_src_test_t;
-
-/**
  * A single-bit RNG mode, where only one bit is sampled.
  */
 typedef enum dif_entropy_src_single_bit_mode {
@@ -84,68 +31,27 @@ typedef enum dif_entropy_src_single_bit_mode {
    * Single-bit-mode, sampling the zeroth bit.
    */
   kDifEntropySrcSingleBitMode0 = 0,
+
   /**
    * Single-bit-mode, sampling the first bit.
    */
   kDifEntropySrcSingleBitMode1 = 1,
+
   /**
    * Single-bit-mode, sampling the second bit.
    */
   kDifEntropySrcSingleBitMode2 = 2,
+
   /**
    * Single-bit-mode, sampling the third bit.
    */
   kDifEntropySrcSingleBitMode3 = 3,
+
   /**
    * Indicates that single-bit-mode is disabled.
    */
   kDifEntropySrcSingleBitModeDisabled = 4,
 } dif_entropy_src_single_bit_mode_t;
-
-/**
- * Criteria used by various entropy source health tests to decide whether the
- * test has failed.
- */
-typedef struct dif_entropy_src_health_tests_config {
-  /**
-   * The size of the window to use for health tests, in bits.
-   */
-  uint16_t health_test_window;
-
-  /**
-   * The threshold for the repetition count test.
-   */
-  uint16_t rep_count_threshold;
-
-  /**
-   * The value range for the adaptive proportion test.
-   *
-   * The first value is the lower threshold; the second is the higher
-   * threshold.
-   */
-  uint16_t adaptive_range[2];
-
-  /**
-   * The threshold for the bucket test.
-   */
-  uint16_t bucket_threshold;
-
-  /**
-   * The range for the "Markov" test.
-   *
-   * The first value is the lower threshold; the second is the higher
-   * threshold.
-   */
-  uint16_t markov_range[2];
-
-  /**
-   * The value range for the vendor-specific test.
-   *
-   * The first value is the lower threshold; the second is the higher
-   * threshold. However, vendors may interpret these values however they wish.
-   */
-  uint16_t vendor_range[2];
-} dif_entropy_src_health_tests_config_t;
 
 /**
  * Firmware override parameters for an entropy source.
@@ -195,7 +101,104 @@ typedef struct dif_entropy_src_config {
    * Specifies which single-bit-mode to use, if any at all.
    */
   dif_entropy_src_single_bit_mode_t single_bit_mode;
+
+  /**
+   * Controls the scope (either by-line or by-sum) of the health tests.
+   *
+   * If true, the Adaptive Proportion and Markov Tests will accumulate all RNG
+   * input lines into a single score, and thresholds will be applied to the sum
+   * of all the entropy input lines.
+   *
+   * If false, the RNG input lines are all scored individually. A statistical
+   * deviation in any one input line, be it due to coincidence or failure, will
+   * force rejection of the sample, and count toward the total alert count.
+   */
+  bool health_test_threshold_scope;
+
+  /**
+   * The size of the window used for health tests.
+   *
+   * Units: bits
+   */
+  uint16_t health_test_window_size;
 } dif_entropy_src_config_t;
+
+/**
+ * A statistical test on the bits emitted by an entropy source.
+ */
+typedef enum dif_entropy_src_test {
+  /**
+   * An SP 800-90B repetition count test.
+   *
+   * This test screens for stuck bits, or a total failure of the noise source.
+   * This test fails if any sequence of bits repeats too many times in a row
+   * for too many samples.
+   */
+  kDifEntropySrcTestRepetitionCount = 0,
+
+  /**
+   * An SP 800-90B adaptive proportion test.
+   *
+   * This test screens for statistical bias in the number of ones or zeros
+   * output by the noise source.
+   */
+  kDifEntropySrcTestAdaptiveProportion = 1,
+
+  /**
+   * A bucket test.
+   *
+   * This test looks for correlations between individual noise channels.
+   */
+  kDifEntropySrcTestBucket = 2,
+
+  /**
+   * A "Markov" test.
+   *
+   * This test looks for unexpected first-order temporal correlations
+   * between individual noise channels.
+   */
+  kDifEntropySrcTestMarkov = 3,
+
+  /**
+   * A firmware-driven "mailbox" test.
+   *
+   * This test allows firmware to inspect 2kbit blocks of entropy, and signal
+   * potential concerns to the hardware.
+   */
+  kDifEntropySrcTestMailbox = 4,
+
+  /**
+   * A vendor-specific test implemented externally to the IP.
+   */
+  kDifEntropySrcTestVendorSpecific = 5,
+
+  /** \internal */
+  kDifEntropySrcTestNumVariants = 6,
+} dif_entropy_src_test_t;
+
+/**
+ * Criteria used by various entropy source health tests to decide whether the
+ * test has failed.
+ */
+typedef struct dif_entropy_src_health_test_config {
+  /**
+   * The entropy source health test type to configure.
+   */
+  dif_entropy_src_test_t test_type;
+
+  /**
+   * The high threshold for the health test.
+   */
+  uint16_t high_threshold;
+
+  /**
+   * The low threshold for the health test.
+   *
+   * If the corresponding health test has no low threshold, set to 0, otherwise
+   * `dif_entropy_src_health_test_configure()` will return `kDifBadArg`.
+   */
+  uint16_t low_threshold;
+} dif_entropy_src_health_test_config_t;
 
 /**
  * Revision information for an entropy source.
@@ -278,19 +281,19 @@ dif_result_t dif_entropy_src_fw_override_configure(
     dif_entropy_src_fw_override_config_t config, dif_toggle_t enabled);
 
 /**
- * Configures entropy source health test features with runtime information.
+ * Configures an entropy source health test feature with runtime information.
  *
- * This function should only need to be called once for the lifetime of the
- * `entropy` handle.
+ * This function should only need to be called once for each health test that
+ * requires configuration for the lifetime of the `entropy` handle.
  *
  * @param entropy An entropy source handle.
- * @param config Runtime configuration parameters for the various health tests.
+ * @param config Runtime configuration parameters for the health test.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_heath_tests_configure(
+dif_result_t dif_entropy_src_health_test_configure(
     const dif_entropy_src_t *entropy_src,
-    dif_entropy_src_health_tests_config_t config);
+    dif_entropy_src_health_test_config_t config);
 
 /**
  * Queries the entropy source IP for its revision information.
