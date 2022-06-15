@@ -541,15 +541,7 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_deep_sleep_all_wake_ups",
     srcs = ["pwrmgr_deep_sleep_all_wake_ups.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
     targets = ["dv"],
-    verilator = verilator_params(
-        timeout = "long",
-        tags = ["failing_verilator"],
-    ),
     deps = [
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
