@@ -120,6 +120,7 @@ Otherwise, try to find the `riscv32-unknown-elf-as` file in your file system and
 ## Step 4: Build OpenTitan Software
 
 Follow the [dedicated guide]({{< relref "build_sw" >}}) to build OpenTitan's software, and then return to this page.
+Some tests might fail because you don't have Verilator installed, which we will do in the next step.
 
 ## Step 5: Set up your Simulation Tool or FPGA
 
