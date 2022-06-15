@@ -174,6 +174,7 @@ pub enum I2cResponse {
         transaction: Vec<I2cTransferResponse>,
     },
 }
+
 #[derive(Serialize, Deserialize)]
 pub enum EmuRequest {
     GetState,
