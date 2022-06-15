@@ -560,12 +560,45 @@ dif_result_t dif_usbdev_send(const dif_usbdev_t *usbdev, uint8_t endpoint,
   return kDifOk;
 }
 
+dif_result_t dif_usbdev_get_tx_sent(const dif_usbdev_t *usbdev,
+                                    uint16_t *sent) {
+  if (usbdev == NULL || sent == NULL) {
+    return kDifBadArg;
+  }
+  *sent = mmio_region_read32(usbdev->base_addr, USBDEV_IN_SENT_REG_OFFSET);
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_clear_tx_status(const dif_usbdev_t *usbdev,
+                                        dif_usbdev_buffer_pool_t *buffer_pool,
+                                        uint8_t endpoint) {
+  if (usbdev == NULL || buffer_pool == NULL || !is_valid_endpoint(endpoint)) {
+    return kDifBadArg;
+  }
+  // Get the configin register offset and bit index of the endpoint
+  uint32_t config_in_reg_offset =
+      kEndpointHwInfos[endpoint].config_in_reg_offset;
+  uint32_t config_in_reg_val =
+      mmio_region_read32(usbdev->base_addr, config_in_reg_offset);
+  uint8_t buffer = bitfield_field32_read(config_in_reg_val,
+                                         USBDEV_CONFIGIN_0_BUFFER_0_FIELD);
+
+  mmio_region_write32(usbdev->base_addr, config_in_reg_offset,
+                      1u << USBDEV_CONFIGIN_0_PEND_0_BIT);
+  // Clear IN_SENT bit (rw1c)
+  mmio_region_write32(usbdev->base_addr, USBDEV_IN_SENT_REG_OFFSET,
+                      1u << endpoint);
+  // Return the buffer back to the free buffer pool
+  if (!buffer_pool_add(buffer_pool, buffer)) {
+    return kDifError;
+  }
+  return kDifOk;
+}
+
 dif_result_t dif_usbdev_get_tx_status(const dif_usbdev_t *usbdev,
-                                      dif_usbdev_buffer_pool_t *buffer_pool,
                                       uint8_t endpoint,
                                       dif_usbdev_tx_status_t *status) {
-  if (usbdev == NULL || buffer_pool == NULL || status == NULL ||
-      !is_valid_endpoint(endpoint)) {
+  if (usbdev == NULL || status == NULL || !is_valid_endpoint(endpoint)) {
     return kDifBadArg;
   }
 
@@ -578,43 +611,17 @@ dif_result_t dif_usbdev_get_tx_status(const dif_usbdev_t *usbdev,
   uint32_t config_in_val =
       mmio_region_read32(usbdev->base_addr, config_in_reg_offset);
 
-  // Buffer used by this endpoint
-  uint8_t buffer =
-      bitfield_field32_read(config_in_val, USBDEV_CONFIGIN_0_BUFFER_0_FIELD);
-
   // Check the status of the packet
-  if (bitfield_field32_read(config_in_val,
-                            (bitfield_field32_t){
-                                .mask = 1,
-                                .index = USBDEV_CONFIGIN_0_RDY_0_BIT,
-                            })) {
+  if (bitfield_bit32_read(config_in_val, USBDEV_CONFIGIN_0_RDY_0_BIT)) {
     // Packet is marked as ready to be sent and pending transmission
     *status = kDifUsbdevTxStatusPending;
   } else if (bitfield_bit32_read(mmio_region_read32(usbdev->base_addr,
                                                     USBDEV_IN_SENT_REG_OFFSET),
                                  endpoint_bit_index)) {
     // Packet was sent successfully
-    // Clear IN_SENT bit (rw1c)
-    mmio_region_write32(usbdev->base_addr, USBDEV_IN_SENT_REG_OFFSET,
-                        1u << endpoint_bit_index);
-    // Return the buffer back to the free buffer pool
-    if (!buffer_pool_add(buffer_pool, buffer)) {
-      return kDifError;
-    }
     *status = kDifUsbdevTxStatusSent;
-  } else if (bitfield_field32_read(config_in_val,
-                                   (bitfield_field32_t){
-                                       .mask = 1,
-                                       .index = USBDEV_CONFIGIN_0_PEND_0_BIT,
-                                   })) {
+  } else if (bitfield_bit32_read(config_in_val, USBDEV_CONFIGIN_0_PEND_0_BIT)) {
     // Canceled due to an IN SETUP packet or link reset
-    // Clear pending bit (rw1c)
-    mmio_region_write32(usbdev->base_addr, config_in_reg_offset,
-                        (1u << USBDEV_CONFIGIN_0_PEND_0_BIT));
-    // Return the buffer back to the free buffer pool
-    if (!buffer_pool_add(buffer_pool, buffer)) {
-      return kDifError;
-    }
     *status = kDifUsbdevTxStatusCancelled;
   } else {
     // No packet has been queued for this endpoint

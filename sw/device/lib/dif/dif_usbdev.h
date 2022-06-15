@@ -512,6 +512,43 @@ dif_result_t dif_usbdev_send(const dif_usbdev_t *usbdev, uint8_t endpoint,
                              dif_usbdev_buffer_t *buffer);
 
 /**
+ * Get which IN endpoints have sent packets.
+ *
+ * This function provides which endpoints have buffers that have successfully
+ * completed transmission to the host. It may be used to guide calls to
+ * `dif_usbdev_clear_tx_status` to return the used buffer to the pool and clear
+ * the state for the next transaction.
+ *
+ * @param usbdev A USB device.
+ * @param[out] sent A bitmap of which endpoints have sent packets.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_get_tx_sent(const dif_usbdev_t *usbdev, uint16_t *sent);
+
+/**
+ * Clear the TX state of the provided endpoint and restore its associated buffer
+ * to the pool.
+ *
+ * Note that this function should only be called when an endpoint has been
+ * provided a buffer. Without it, the buffer pool will become corrupted, as this
+ * function does not check the status.
+ *
+ * In addition, if the endpoint has not yet completed or canceled the
+ * transaction, the user must not call this function while the device is in an
+ * active state. Otherwise, the user risks corrupting an ongoing transaction.
+ *
+ * @param usbdev A USB device.
+ * @param buffer_pool A USB device buffer pool.
+ * @param endpoint An IN endpoint number.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_clear_tx_status(const dif_usbdev_t *usbdev,
+                                        dif_usbdev_buffer_pool_t *buffer_pool,
+                                        uint8_t endpoint);
+
+/**
  * Status of an outgoing packet.
  */
 typedef enum dif_usbdev_tx_status {
@@ -542,19 +579,16 @@ typedef enum dif_usbdev_tx_status {
  * transmitted. In these cases, clients should handle the SETUP packet or the
  * link reset first and then optionally send the same packet again.
  *
- * This function returns the buffer that holds the packet payload to the free
- * buffer pool once the packet is either successfully transmitted or canceled
- * due to an incoming SETUP packet or a link reset.
+ * This function does not modify any device state. `dif_usbdev_clear_tx_status`
+ * can be used to clear the status and return the buffer to the pool.
  *
  * @param usbdev A USB device.
- * @param buffer_pool A USB device buffer pool.
- * @param endpoint An OUT endpoint number.
+ * @param endpoint An IN endpoint number.
  * @param[out] status Status of the packet.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_get_tx_status(const dif_usbdev_t *usbdev,
-                                      dif_usbdev_buffer_pool_t *buffer_pool,
                                       uint8_t endpoint,
                                       dif_usbdev_tx_status_t *status);
 
