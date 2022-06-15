@@ -268,7 +268,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       "extclk_status": begin
-         do_read_check = 1'b0;
+        do_read_check = 1'b0;
       end
       "jitter_regwen": begin
       end

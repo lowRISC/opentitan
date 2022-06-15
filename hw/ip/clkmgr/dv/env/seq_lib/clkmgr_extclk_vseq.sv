@@ -70,8 +70,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     super.post_randomize();
 
     extclk_ctrl_sel = get_rand_mubi4_val(.t_weight(8), .f_weight(1), .other_weight(1));
-    `uvm_info(`gfn, $sformatf(
-                              "overwrite extclk_ctrl_sel=0x%x", extclk_ctrl_sel), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("overwrite extclk_ctrl_sel=0x%x", extclk_ctrl_sel), UVM_MEDIUM)
 
   endfunction
 

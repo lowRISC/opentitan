@@ -17,6 +17,7 @@ filesets:
       - clkmgr_aon_cg_en_sva_if.sv
       - clkmgr_cg_en_sva_if.sv
       - clkmgr_extclk_sva_if.sv
+      - clkmgr_trans_sva_if.sv
     file_type: systemVerilogSource
 
 targets:

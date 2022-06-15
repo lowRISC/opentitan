@@ -51,7 +51,6 @@ interface clkmgr_pwrmgr_sva_if (
           $fell(usb_clk_en) |-> ##[FallCyclesMin:FallCyclesMax] usb_clk_en || !usb_status, clk_i,
           !rst_ni || disable_sva)
   `ASSERT(UsbStatusRise_A,
-          $rose(usb_clk_en) |->
-          ##[RiseCyclesMin:UsbRiseCyclesMax] !usb_clk_en || usb_status, clk_i,
+          $rose(usb_clk_en) |-> ##[RiseCyclesMin:UsbRiseCyclesMax] !usb_clk_en || usb_status, clk_i,
           !rst_ni || disable_sva)
 endinterface

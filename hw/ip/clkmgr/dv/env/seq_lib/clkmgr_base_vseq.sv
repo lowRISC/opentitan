@@ -17,8 +17,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   localparam int POST_APPLY_RESET_CYCLES = 10;
 
   // This delay in io_clk cycles is needed to allow updates to the hints_status CSR to go through
-  // synchronizers.
-  localparam int IO_DIV4_SYNC_CYCLES = 16;
+  // synchronizers plus some counters.
+  localparam int IO_DIV4_SYNC_CYCLES = 20;
 
   rand bit              io_ip_clk_en;
   rand bit              main_ip_clk_en;
@@ -27,7 +27,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   rand mubi_hintables_t idle;
 
   mubi4_t               scanmode;
-  int                   scanmode_on_weight         = 8;
+  int                   scanmode_on_weight          = 8;
 
   mubi4_t               extclk_ctrl_high_speed_sel;
   mubi4_t               extclk_ctrl_sel;
@@ -42,8 +42,11 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     extclk_ctrl_sel = get_rand_mubi4_val(4, 2, 2);
     scanmode = get_rand_mubi4_val(scanmode_on_weight, 4, 4);
     `uvm_info(`gfn, $sformatf(
-       "randomize gives extclk_ctrl_sel=0x%x, extclk_ctrl_high_speed_sel=0x%x, scanmode=0x%x",
-       extclk_ctrl_sel, extclk_ctrl_high_speed_sel, scanmode), UVM_MEDIUM)
+              "randomize: extclk_ctrl_sel=0x%x, extclk_ctrl_high_speed_sel=0x%x, scanmode=0x%x",
+              extclk_ctrl_sel,
+              extclk_ctrl_high_speed_sel,
+              scanmode
+              ), UVM_MEDIUM)
     super.post_randomize();
   endfunction
 
