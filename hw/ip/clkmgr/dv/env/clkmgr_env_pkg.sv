@@ -97,12 +97,12 @@ package clkmgr_env_pkg;
 
   // Mubi test mode
   typedef enum int {
-    ClkmgrMubiNone = 0,
-    ClkmgrMubiIdle = 1,
+    ClkmgrMubiNone   = 0,
+    ClkmgrMubiIdle   = 1,
     ClkmgrMubiLcCtrl = 2,
     ClkmgrMubiLcHand = 3,
-    ClkmgrMubiHand = 4,
-    ClkmgrMubiDiv = 5
+    ClkmgrMubiHand   = 4,
+    ClkmgrMubiDiv    = 5
   } clkmgr_mubi_e;
 
   // This is to examine separately the measurement and timeout recoverable error bits.
@@ -111,7 +111,7 @@ package clkmgr_env_pkg;
   typedef struct packed {
     recov_bits_t timeouts;
     recov_bits_t measures;
-    logic        shadow_update;
+    logic shadow_update;
   } clkmgr_recov_err_t;
 
   // These must be after the declaration of clk_mesr_e for sizing.
@@ -128,17 +128,17 @@ package clkmgr_env_pkg;
   // functions
   function automatic void print_hintable(hintables_t tbl);
     foreach (tbl[i]) begin
-      `uvm_info("HINTBL",$sformatf("entry%0d : %b", i, tbl[i]), UVM_LOW)
+      `uvm_info("HINTBL", $sformatf("entry%0d : %b", i, tbl[i]), UVM_LOW)
     end
-  endfunction // print_hintable
+  endfunction : print_hintable
 
   function automatic void print_mubi_hintable(mubi_hintables_t tbl);
     string val = "INVALID";
     foreach (tbl[i]) begin
-      if(tbl[i].name !="") val = tbl[i].name;
-      `uvm_info("MUBIHINTBL",$sformatf("entry%0d : %s", i, val), UVM_LOW)
+      if (tbl[i].name != "") val = tbl[i].name;
+      `uvm_info("MUBIHINTBL", $sformatf("entry%0d : %s", i, val), UVM_LOW)
     end
-  endfunction // print_mubi_hintable
+  endfunction : print_mubi_hintable
 
   // package sources
   `include "clkmgr_env_cfg.sv"

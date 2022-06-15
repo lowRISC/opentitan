@@ -97,6 +97,47 @@ module clkmgr_bind;
     .gated_clk(clocks_o.clk_main_otbn)
   );
 
+  // Assertions for transactional clocks.
+  bind clkmgr clkmgr_trans_sva_if clkmgr_aes_trans_sva_if (
+    .clk(clk_main_i),
+    .rst_n(rst_main_ni),
+    .hint(reg2hw.clk_hints.clk_main_aes_hint.q),
+    .idle(idle_i[0] == prim_mubi_pkg::MuBi4True),
+    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
+    .status(hw2reg.clk_hints_status.clk_main_aes_val.d),
+    .trans_clk(clocks_o.clk_main_aes)
+  );
+
+  bind clkmgr clkmgr_trans_sva_if clkmgr_hmac_trans_sva_if (
+    .clk(clk_main_i),
+    .rst_n(rst_main_ni),
+    .hint(reg2hw.clk_hints.clk_main_hmac_hint.q),
+    .idle(idle_i[1] == prim_mubi_pkg::MuBi4True),
+    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
+    .status(hw2reg.clk_hints_status.clk_main_hmac_val.d),
+    .trans_clk(clocks_o.clk_main_hmac)
+  );
+
+  bind clkmgr clkmgr_trans_sva_if clkmgr_kmac_trans_sva_if (
+    .clk(clk_main_i),
+    .rst_n(rst_main_ni),
+    .hint(reg2hw.clk_hints.clk_main_kmac_hint.q),
+    .idle(idle_i[2] == prim_mubi_pkg::MuBi4True),
+    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
+    .status(hw2reg.clk_hints_status.clk_main_kmac_val.d),
+    .trans_clk(clocks_o.clk_main_kmac)
+  );
+
+  bind clkmgr clkmgr_trans_sva_if clkmgr_otbn_trans_sva_if (
+    .clk(clk_main_i),
+    .rst_n(rst_main_ni),
+    .hint(reg2hw.clk_hints.clk_main_otbn_hint.q),
+    .idle(idle_i[3] == prim_mubi_pkg::MuBi4True),
+    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
+    .status(hw2reg.clk_hints_status.clk_main_otbn_val.d),
+    .trans_clk(clocks_o.clk_main_otbn)
+  );
+
   bind clkmgr clkmgr_extclk_sva_if clkmgr_extclk_sva_if (
     .clk_i,
     .rst_ni,
@@ -334,4 +375,4 @@ module clkmgr_bind;
     .step_down_acks_sync(u_clkmgr_byp.step_down_acks_sync),
     .extclk_ctrl_sel
   );
-endmodule
+endmodule : clkmgr_bind
