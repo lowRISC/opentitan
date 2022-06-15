@@ -99,6 +99,7 @@ jobs:
     vmImage: ubuntu-18.04
   steps:
   - bash: |
+      set -x -e
       util/prep-bazel-airgapped-build.sh
       rm -rf bazel-airgapped/bitstreams-cache
       tar -cf bazel-airgapped.tar.gz bazel-airgapped
