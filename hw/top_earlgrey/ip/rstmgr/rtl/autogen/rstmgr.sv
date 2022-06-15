@@ -376,7 +376,7 @@ module rstmgr
 
   // Generating resets for lc
   // Power Domains: ['Aon', '0']
-  // Shadowed: True
+  // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
@@ -425,54 +425,8 @@ module rstmgr
     u_d0_lc.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-  rstmgr_leaf_rst #(
-    .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay),
-    .SwRstReq(1'b0)
-  ) u_daon_lc_shadowed (
-    .clk_i,
-    .rst_ni,
-    .leaf_clk_i(clk_main_i),
-    .parent_rst_ni(rst_lc_src_n[DomainAonSel]),
-    .sw_rst_req_ni(1'b1),
-    .scan_rst_ni,
-    .scanmode_i,
-    .rst_en_o(rst_en_o.lc_shadowed[DomainAonSel]),
-    .leaf_rst_o(resets_o.rst_lc_shadowed_n[DomainAonSel]),
-    .err_o(shadow_cnsty_chk_errs[3][DomainAonSel]),
-    .fsm_err_o(shadow_fsm_errs[3][DomainAonSel])
-  );
-
-  if (SecCheck) begin : gen_daon_lc_shadowed_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    DAonLcShadowedFsmCheck_A,
-    u_daon_lc_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
-  end
-  rstmgr_leaf_rst #(
-    .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay),
-    .SwRstReq(1'b0)
-  ) u_d0_lc_shadowed (
-    .clk_i,
-    .rst_ni,
-    .leaf_clk_i(clk_main_i),
-    .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
-    .sw_rst_req_ni(1'b1),
-    .scan_rst_ni,
-    .scanmode_i,
-    .rst_en_o(rst_en_o.lc_shadowed[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_lc_shadowed_n[Domain0Sel]),
-    .err_o(shadow_cnsty_chk_errs[3][Domain0Sel]),
-    .fsm_err_o(shadow_fsm_errs[3][Domain0Sel])
-  );
-
-  if (SecCheck) begin : gen_d0_lc_shadowed_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0LcShadowedFsmCheck_A,
-    u_d0_lc_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
-  end
+  assign shadow_cnsty_chk_errs[3] = '0;
+  assign shadow_fsm_errs[3] = '0;
 
   // Generating resets for lc_aon
   // Power Domains: ['Aon']

@@ -267,7 +267,7 @@
           Aon
           "0"
         ]
-        shadowed: true
+        shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_lc_n
         parent: lc_src
@@ -4028,7 +4028,7 @@
       {
         rst_ast_tlul_ni:
         {
-          name: lc_io_div4
+          name: sys_io_div4
           domain: "0"
         }
         rst_ast_adc_ni:
@@ -4105,12 +4105,12 @@
       {
         rst_ni:
         {
-          name: lc_io_div4
+          name: sys_io_div4
           domain: Aon
         }
         rst_aon_ni:
         {
-          name: lc_aon
+          name: sys_aon
           domain: Aon
         }
       }
@@ -4427,12 +4427,12 @@
       {
         rst_ni:
         {
-          name: lc
+          name: sys
           domain: "0"
         }
         rst_otp_ni:
         {
-          name: lc_io_div4
+          name: sys_io_div4
           domain: "0"
         }
       }
@@ -13858,8 +13858,8 @@
       type: alert
       async: "1"
       module_name: sensor_ctrl
-      lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 16
+      lpg_name: secure_sys_io_div4_Aon
+      lpg_idx: 17
     }
     {
       name: sensor_ctrl_fatal_alert
@@ -13867,8 +13867,8 @@
       type: alert
       async: "1"
       module_name: sensor_ctrl
-      lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 16
+      lpg_name: secure_sys_io_div4_Aon
+      lpg_idx: 17
     }
     {
       name: sram_ctrl_ret_aon_fatal_error
@@ -13885,8 +13885,8 @@
       type: alert
       async: "1"
       module_name: flash_ctrl
-      lpg_name: infra_lc_0
-      lpg_idx: 17
+      lpg_name: infra_sys_0
+      lpg_idx: 18
     }
     {
       name: flash_ctrl_fatal_std_err
@@ -13894,8 +13894,8 @@
       type: alert
       async: "1"
       module_name: flash_ctrl
-      lpg_name: infra_lc_0
-      lpg_idx: 17
+      lpg_name: infra_sys_0
+      lpg_idx: 18
     }
     {
       name: flash_ctrl_fatal_err
@@ -13903,8 +13903,8 @@
       type: alert
       async: "1"
       module_name: flash_ctrl
-      lpg_name: infra_lc_0
-      lpg_idx: 17
+      lpg_name: infra_sys_0
+      lpg_idx: 18
     }
     {
       name: rv_dm_fatal_fault
@@ -13913,7 +13913,7 @@
       async: "1"
       module_name: rv_dm
       lpg_name: infra_lc_0
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: rv_plic_fatal_fault
@@ -13922,7 +13922,7 @@
       async: "1"
       module_name: rv_plic
       lpg_name: secure_sys_0
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: aes_recov_ctrl_update_err
@@ -13931,7 +13931,7 @@
       async: "1"
       module_name: aes
       lpg_name: trans_sys_0
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: aes_fatal_fault
@@ -13940,7 +13940,7 @@
       async: "1"
       module_name: aes
       lpg_name: trans_sys_0
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: hmac_fatal_fault
@@ -13949,7 +13949,7 @@
       async: "1"
       module_name: hmac
       lpg_name: trans_sys_0
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: kmac_recov_operation_err
@@ -13958,7 +13958,7 @@
       async: "1"
       module_name: kmac
       lpg_name: trans_sys_0
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: kmac_fatal_fault_err
@@ -13967,7 +13967,7 @@
       async: "1"
       module_name: kmac
       lpg_name: trans_sys_0
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: otbn_fatal
@@ -13976,7 +13976,7 @@
       async: "1"
       module_name: otbn
       lpg_name: trans_sys_0
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: otbn_recov
@@ -13985,7 +13985,7 @@
       async: "1"
       module_name: otbn
       lpg_name: trans_sys_0
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: keymgr_recov_operation_err
@@ -13994,7 +13994,7 @@
       async: "1"
       module_name: keymgr
       lpg_name: secure_sys_0
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: keymgr_fatal_fault_err
@@ -14003,7 +14003,7 @@
       async: "1"
       module_name: keymgr
       lpg_name: secure_sys_0
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: csrng_recov_alert
@@ -14012,7 +14012,7 @@
       async: "1"
       module_name: csrng
       lpg_name: secure_sys_0
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: csrng_fatal_alert
@@ -14021,7 +14021,7 @@
       async: "1"
       module_name: csrng
       lpg_name: secure_sys_0
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: entropy_src_recov_alert
@@ -14030,7 +14030,7 @@
       async: "1"
       module_name: entropy_src
       lpg_name: secure_sys_0
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: entropy_src_fatal_alert
@@ -14039,7 +14039,7 @@
       async: "1"
       module_name: entropy_src
       lpg_name: secure_sys_0
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: edn0_recov_alert
@@ -14048,7 +14048,7 @@
       async: "1"
       module_name: edn0
       lpg_name: secure_sys_0
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: edn0_fatal_alert
@@ -14057,7 +14057,7 @@
       async: "1"
       module_name: edn0
       lpg_name: secure_sys_0
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: edn1_recov_alert
@@ -14066,7 +14066,7 @@
       async: "1"
       module_name: edn1
       lpg_name: secure_sys_0
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: edn1_fatal_alert
@@ -14075,7 +14075,7 @@
       async: "1"
       module_name: edn1
       lpg_name: secure_sys_0
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: sram_ctrl_main_fatal_error
@@ -14084,7 +14084,7 @@
       async: "1"
       module_name: sram_ctrl_main
       lpg_name: infra_sys_0
-      lpg_idx: 20
+      lpg_idx: 18
     }
     {
       name: rom_ctrl_fatal
@@ -14093,7 +14093,7 @@
       async: "1"
       module_name: rom_ctrl
       lpg_name: infra_sys_0
-      lpg_idx: 20
+      lpg_idx: 18
     }
     {
       name: rv_core_ibex_fatal_sw_err
@@ -14102,7 +14102,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_sys_0
-      lpg_idx: 20
+      lpg_idx: 18
     }
     {
       name: rv_core_ibex_recov_sw_err
@@ -14111,7 +14111,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_sys_0
-      lpg_idx: 20
+      lpg_idx: 18
     }
     {
       name: rv_core_ibex_fatal_hw_err
@@ -14120,7 +14120,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_sys_0
-      lpg_idx: 20
+      lpg_idx: 18
     }
     {
       name: rv_core_ibex_recov_hw_err
@@ -14129,7 +14129,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_sys_0
-      lpg_idx: 20
+      lpg_idx: 18
     }
   ]
   exported_rsts: {}
@@ -14296,13 +14296,33 @@
       }
     }
     {
-      name: secure_lc_io_div4_Aon
+      name: secure_sys_io_div4_0
       clock_group: secure
       clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
       reset_connection:
       {
-        name: lc_io_div4
+        name: sys_io_div4
+        domain: "0"
+      }
+    }
+    {
+      name: secure_sys_io_div4_Aon
+      clock_group: secure
+      clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
+      reset_connection:
+      {
+        name: sys_io_div4
         domain: Aon
+      }
+    }
+    {
+      name: infra_sys_0
+      clock_group: infra
+      clock_connection: clkmgr_aon_clocks.clk_main_infra
+      reset_connection:
+      {
+        name: sys
+        domain: "0"
       }
     }
     {
@@ -14329,16 +14349,6 @@
       name: trans_sys_0
       clock_group: trans
       clock_connection: clkmgr_aon_clocks.clk_main_aes
-      reset_connection:
-      {
-        name: sys
-        domain: "0"
-      }
-    }
-    {
-      name: infra_sys_0
-      clock_group: infra
-      clock_connection: clkmgr_aon_clocks.clk_main_infra
       reset_connection:
       {
         name: sys
