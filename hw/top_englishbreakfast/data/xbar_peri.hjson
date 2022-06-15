@@ -47,12 +47,6 @@
       reset:     "rst_peri_ni",
       pipeline:  false
     },
-    { name:      "usbdev",
-      type:      "device",
-      clock:     "clk_usb_i",
-      reset:     "rst_usb_ni",
-      pipeline:  false
-    },
     { name:      "pwrmgr_aon",
       type:      "device",
       clock:     "clk_peri_i",
@@ -99,7 +93,7 @@
   connections: {
     main:  [
       "uart0",
-      "gpio", "spi_device", "spi_host0", "rv_timer", "usbdev",
+      "gpio", "spi_device", "spi_host0", "rv_timer",
       "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
       "sram_ctrl_ret_aon.ram", "sram_ctrl_ret_aon.regs", "ast"
     ],

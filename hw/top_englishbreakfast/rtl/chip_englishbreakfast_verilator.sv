@@ -39,32 +39,9 @@ module chip_englishbreakfast_verilator (
     dio_in[DioSpiDeviceSck] = cio_spi_device_sck_p2d;
     dio_in[DioSpiDeviceCsb] = cio_spi_device_csb_p2d;
     dio_in[DioSpiDeviceSd0] = cio_spi_device_sdi_p2d;
-    dio_in[DioUsbdevUsbDp] = cio_usbdev_dp_p2d;
-    dio_in[DioUsbdevUsbDn] = cio_usbdev_dn_p2d;
   end
 
-  logic usb_dp_pullup;
-  logic usb_dn_pullup;
-  logic usb_rx_d;
-  logic usb_tx_d;
-  logic usb_tx_se0;
-  logic usb_tx_use_d_se0;
-  logic usb_rx_enable;
-
-  assign usb_rx_d = cio_usbdev_d_p2d;
-  assign cio_usbdev_dn_d2p = dio_out[DioUsbdevUsbDn];
-  assign cio_usbdev_dp_d2p = dio_out[DioUsbdevUsbDp];
-  assign cio_usbdev_d_d2p  = usb_tx_d;
-  assign cio_usbdev_rx_enable_d2p = usb_rx_enable;
-  assign cio_usbdev_tx_use_d_se0_d2p = usb_tx_use_d_se0;
-  assign cio_usbdev_dn_pullup_d2p = usb_dn_pullup;
-  assign cio_usbdev_dp_pullup_d2p = usb_dp_pullup;
-  assign cio_usbdev_se0_d2p = usb_tx_se0;
   assign cio_spi_device_sdo_d2p = dio_out[DioSpiDeviceSd1];
-
-  assign cio_usbdev_dn_en_d2p = dio_oe[DioUsbdevUsbDn];
-  assign cio_usbdev_dp_en_d2p = dio_oe[DioUsbdevUsbDp];
-  assign cio_usbdev_d_en_d2p  = dio_oe[DioUsbdevUsbDp];
   assign cio_spi_device_sdo_en_d2p = dio_oe[DioSpiDeviceSd1];
 
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
@@ -75,8 +52,6 @@ module chip_englishbreakfast_verilator (
     mio_in = '0;
     mio_in[31:0] = cio_gpio_p2d;
     mio_in[25] = cio_uart_rx_p2d;
-    mio_in[35] = cio_usbdev_sense_p2d;
-    mio_in[36] = cio_usbdev_sense_p2d;
   end
 
   assign cio_gpio_d2p[25:0]       = mio_out[25:0];
@@ -145,9 +120,9 @@ module chip_englishbreakfast_verilator (
     dft_strap0_idx: 21, // MIO 21
     dft_strap1_idx: 22, // MIO 22
     // TODO: check whether there is a better way to pass these USB-specific params
-    usb_dp_idx:        DioUsbdevUsbDp,
-    usb_dn_idx:        DioUsbdevUsbDn,
-    usb_sense_idx:     MioInUsbdevSense,
+    usb_dp_idx:        0,
+    usb_dn_idx:        0,
+    usb_sense_idx:     0,
     // TODO: connect these once the verilator chip-level has been merged with the chiplevel.sv.tpl
     dio_pad_type: {pinmux_reg_pkg::NDioPads{prim_pad_wrapper_pkg::BidirStd}},
     mio_pad_type: {pinmux_reg_pkg::NMioPads{prim_pad_wrapper_pkg::BidirStd}}
@@ -176,8 +151,6 @@ module chip_englishbreakfast_verilator (
     .clk_main_jitter_en_o         (                  ),
     .pwrmgr_ast_req_o             (                  ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr     ),
-    .usbdev_usb_ref_val_o         (                  ),
-    .usbdev_usb_ref_pulse_o       (                  ),
     .ast_edn_req_i                ( '0               ),
     .ast_edn_rsp_o                (                  ),
     .flash_bist_enable_i          ( lc_ctrl_pkg::Off ),
@@ -191,11 +164,6 @@ module chip_englishbreakfast_verilator (
     // USB signals
     .usb_dp_pullup_en_o           (usb_dp_pullup),
     .usb_dn_pullup_en_o           (usb_dn_pullup),
-    .usbdev_usb_rx_d_i            (usb_rx_d),
-    .usbdev_usb_tx_d_o            (usb_tx_d),
-    .usbdev_usb_tx_se0_o          (usb_tx_se0),
-    .usbdev_usb_tx_use_d_se0_o      (usb_tx_use_d_se0),
-    .usbdev_usb_rx_enable_o       (usb_rx_enable),
 
     // Multiplexed I/O
     .mio_in_i                     (mio_in),
@@ -289,28 +257,6 @@ module chip_englishbreakfast_verilator (
     .spi_device_sdi_o     (cio_spi_device_sdi_p2d),
     .spi_device_sdo_i     (cio_spi_device_sdo_d2p),
     .spi_device_sdo_en_i  (cio_spi_device_sdo_en_d2p)
-  );
-
-  // USB DPI
-  usbdpi u_usbdpi (
-    .clk_i           (clk_i),
-    .rst_ni          (rst_ni),
-    .clk_48MHz_i     (clk_i),
-    .sense_p2d       (cio_usbdev_sense_p2d),
-    .pullupdp_d2p    (cio_usbdev_dp_pullup_d2p),
-    .pullupdn_d2p    (cio_usbdev_dn_pullup_d2p),
-    .dp_p2d          (cio_usbdev_dp_p2d),
-    .dp_d2p          (cio_usbdev_dp_d2p),
-    .dp_en_d2p       (cio_usbdev_dp_en_d2p),
-    .dn_p2d          (cio_usbdev_dn_p2d),
-    .dn_d2p          (cio_usbdev_dn_d2p),
-    .dn_en_d2p       (cio_usbdev_dn_en_d2p),
-    .d_p2d           (cio_usbdev_d_p2d),
-    .d_d2p           (cio_usbdev_d_d2p),
-    .d_en_d2p        (cio_usbdev_d_en_d2p),
-    .se0_d2p         (cio_usbdev_se0_d2p),
-    .rx_enable_d2p   (cio_usbdev_rx_enable_d2p),
-    .tx_use_d_se0_d2p(cio_usbdev_tx_use_d_se0_d2p)
   );
 
   `define RV_CORE_IBEX      top_englishbreakfast.u_rv_core_ibex
