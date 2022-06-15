@@ -114,16 +114,16 @@ interface entropy_src_cov_if
 
   // Covergroup to confirm that the CSRNG HW interface works
   // for all configurations
-  covergroup entropy_src_csrng_hw_cg with function sample(mubi4_t   fips_enable,
-                                                          mubi4_t   threshold_scope,
-                                                          mubi4_t   rng_bit_enable,
+  covergroup entropy_src_csrng_hw_cg with function sample(bit [3:0] fips_enable,
+                                                          bit [3:0] threshold_scope,
+                                                          bit [3:0] rng_bit_enable,
                                                           bit [1:0] rng_bit_sel,
-                                                          mubi4_t   es_route,
-                                                          mubi4_t   es_type,
-                                                          mubi4_t   entropy_data_reg_enable,
-                                                          mubi8_t   otp_en_es_fw_read,
-                                                          mubi4_t   fw_ov_mode,
-                                                          mubi4_t   entropy_insert);
+                                                          bit [3:0] es_route,
+                                                          bit [3:0] es_type,
+                                                          bit [3:0] entropy_data_reg_enable,
+                                                          bit [7:0] otp_en_es_fw_read,
+                                                          bit [3:0] fw_ov_mode,
+                                                          bit [3:0] entropy_insert);
 
     option.name         = "entropy_src_csrng_hw_cg";
     option.per_instance = 1;
@@ -307,16 +307,16 @@ interface entropy_src_cov_if
                                                fw_ov_mode, entropy_insert, full_seed);
   endfunction
 
-  function automatic void cg_csrng_hw_sample(mubi4_t   fips_enable,
-                                             mubi4_t   threshold_scope,
-                                             mubi4_t   rng_bit_enable,
+  function automatic void cg_csrng_hw_sample(bit [3:0] fips_enable,
+                                             bit [3:0] threshold_scope,
+                                             bit [3:0] rng_bit_enable,
                                              bit [1:0] rng_bit_sel,
-                                             mubi4_t   es_route,
-                                             mubi4_t   es_type,
-                                             mubi4_t   entropy_data_reg_enable,
-                                             mubi8_t   otp_en_es_fw_read,
-                                             mubi4_t   fw_ov_mode,
-                                             mubi4_t   entropy_insert);
+                                             bit [3:0] es_route,
+                                             bit [3:0] es_type,
+                                             bit [3:0] entropy_data_reg_enable,
+                                             bit [7:0] otp_en_es_fw_read,
+                                             bit [3:0] fw_ov_mode,
+                                             bit [3:0] entropy_insert);
     entropy_src_csrng_hw_cg_inst.sample(fips_enable, threshold_scope, rng_bit_enable,
                                         rng_bit_sel, es_route, es_type,
                                         entropy_data_reg_enable, otp_en_es_fw_read,
@@ -344,21 +344,21 @@ interface entropy_src_cov_if
           es_type_csr, entropy_data_reg_enable_csr, fw_ov_mode_csr, entropy_insert_csr;
   mubi8_t otp_en_es_fw_read_val;
 
-  assign csrng_if_req = entropy_src_hw_if_i.es_req;
-  assign csrng_if_ack = entropy_src_hw_if_o.es_ack;
+  assign csrng_if_req = tb.dut.entropy_src_hw_if_i.es_req;
+  assign csrng_if_ack = tb.dut.entropy_src_hw_if_o.es_ack;
 
   always @(posedge clk_i) begin
     if(csrng_if_req && csrng_if_ack) begin
-      cg_csrng_hw_sample(reg2hw.conf.fips_enable.q,
-                         reg2hw.conf.threshold_scope.q,
-                         reg2hw.conf.rng_bit_enable.q,
-                         reg2hw.conf.rng_bit_sel.q,
-                         reg2hw.entropy_control.es_route.q,
-                         reg2hw.entropy_control.es_type.q,
-                         reg2hw.conf.entropy_data_reg_enable.q,
+      cg_csrng_hw_sample(tb.dut.reg2hw.conf.fips_enable.q,
+                         tb.dut.reg2hw.conf.threshold_scope.q,
+                         tb.dut.reg2hw.conf.rng_bit_enable.q,
+                         tb.dut.reg2hw.conf.rng_bit_sel.q,
+                         tb.dut.reg2hw.entropy_control.es_route.q,
+                         tb.dut.reg2hw.entropy_control.es_type.q,
+                         tb.dut.reg2hw.conf.entropy_data_reg_enable.q,
                          otp_en_entropy_src_fw_read_i,
-                         reg2hw.fw_ov_control.fw_ov_mode.q,
-                         reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
+                         tb.dut.reg2hw.fw_ov_control.fw_ov_mode.q,
+                         tb.dut.reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
     end
   end
 
