@@ -275,7 +275,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     const sw_rst_t sw_rst_all_ones = '1;
     rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_ctrl_n), .value(sw_rst_all_ones));
     rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_ctrl_n), .compare_value(sw_rst_all_ones),
-                 .err_msg("Expected sw_rst_ctrl_n to be set"));
+                               .err_msg("Expected sw_rst_ctrl_n to be set"));
   endtask
 
   virtual protected task clear_sw_rst_ctrl_n_per_entry(int entry);
@@ -299,14 +299,12 @@ class rstmgr_base_vseq extends cip_base_vseq #(
               "regen=%b, ctrl_n=%b, expected=%b", sw_rst_regen, sw_rst_ctrl_n, exp_ctrl_n),
               UVM_MEDIUM)
     rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_ctrl_n), .compare_value(exp_ctrl_n),
-                 .err_msg("Expected enabled updates in sw_rst_ctrl_n"));
+                               .err_msg("Expected enabled updates in sw_rst_ctrl_n"));
     if (erase_ctrl_n) clear_sw_rst_ctrl_n();
   endtask
 
-  virtual protected task check_sw_rst_ctrl_n_per_entry(sw_rst_t sw_rst_ctrl_n,
-                                                       sw_rst_t sw_rst_regen,
-                                                       bit erase_ctrl_n,
-                                                       int entry);
+  virtual protected task check_sw_rst_ctrl_n_per_entry(
+      sw_rst_t sw_rst_ctrl_n, sw_rst_t sw_rst_regen, bit erase_ctrl_n, int entry);
     sw_rst_t exp_ctrl_n;
 
     `uvm_info(`gfn, $sformatf("Set sw_rst_ctrl_n[%0d] to 0x%0x", entry, sw_rst_ctrl_n), UVM_MEDIUM)
@@ -315,9 +313,8 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     // Allow for domain crossing delay.
     cfg.io_div2_clk_rst_vif.wait_clks(3);
     exp_ctrl_n = ~sw_rst_regen | sw_rst_ctrl_n;
-    `uvm_info(`gfn,
-              $sformatf("regen=%b, ctrl_n=%b, expected=%b",
-                        sw_rst_regen, sw_rst_ctrl_n, exp_ctrl_n),
+    `uvm_info(`gfn, $sformatf(
+              "regen=%b, ctrl_n=%b, expected=%b", sw_rst_regen, sw_rst_ctrl_n, exp_ctrl_n),
               UVM_MEDIUM)
     csr_rd_check(.ptr(ral.sw_rst_ctrl_n[entry]), .compare_value(exp_ctrl_n[entry]),
                  .err_msg($sformatf("Expected enabled updates in sw_rst_ctrl_n[%0d]", entry)));
@@ -488,16 +485,14 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   // csr method wrapper for unpacked array registers
-  virtual task rstmgr_csr_rd_check_unpack(input  uvm_object     ptr[],
-                                          input        uvm_reg_data_t compare_value = 0,
-                                          input string err_msg = "");
+  virtual task rstmgr_csr_rd_check_unpack(
+      input uvm_object ptr[], input uvm_reg_data_t compare_value = 0, input string err_msg = "");
     foreach (ptr[i]) begin
-      csr_rd_check(.ptr(ptr[i]), .compare_value(compare_value[i]),
-                   .err_msg(err_msg));
+      csr_rd_check(.ptr(ptr[i]), .compare_value(compare_value[i]), .err_msg(err_msg));
     end
-  endtask // rstmgr_csr_rd_check_unpack
-  virtual task rstmgr_csr_wr_unpack(input uvm_object     ptr[],
-                                    input uvm_reg_data_t value);
+  endtask : rstmgr_csr_rd_check_unpack
+
+  virtual task rstmgr_csr_wr_unpack(input uvm_object ptr[], input uvm_reg_data_t value);
     foreach (ptr[i]) begin
       csr_wr(.ptr(ptr[i]), .value(value[i]));
     end

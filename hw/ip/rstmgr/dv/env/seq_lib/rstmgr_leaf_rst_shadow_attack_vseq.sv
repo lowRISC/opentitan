@@ -19,25 +19,26 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
       leaf_rst_attack(leaf_path, {leaf_path, "_shadowed"});
       leaf_rst_attack({leaf_path, "_shadowed"}, leaf_path);
     end
-  endtask // body
+  endtask : body
 
   task leaf_rst_attack(string npath, string gpath);
-      wait(cfg.rstmgr_vif.resets_o.rst_sys_aon_n == 2'h3);
-      add_glitch(gpath);
-      wait_and_check(npath);
-      remove_glitch(gpath);
+    wait(cfg.rstmgr_vif.resets_o.rst_sys_aon_n == 2'h3);
+    add_glitch(gpath);
+    wait_and_check(npath);
+    remove_glitch(gpath);
 
-      cfg.clk_rst_vif.wait_clks(10);
-      apply_reset();
-  endtask // leaf_rst_attach
+    cfg.clk_rst_vif.wait_clks(10);
+    apply_reset();
+  endtask : leaf_rst_attack
 
 
   function void add_glitch(string path);
     string epath = {path, ".rst_en_o"};
     string opath = {path, ".leaf_rst_o"};
 
-    `DV_CHECK(uvm_hdl_force(epath, prim_mubi_pkg::MuBi4True))
-    `DV_CHECK(uvm_hdl_force(opath, 0))
+    `DV_CHECK(uvm_hdl_force(epath, prim_mubi_pkg::MuBi4True), $sformatf(
+              "Path %0s has problem", epath))
+    `DV_CHECK(uvm_hdl_force(opath, 0), $sformatf("Path %0s has problem", opath))
   endfunction
 
   task wait_and_check(string path);
@@ -48,20 +49,18 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
 
     cfg.clk_rst_vif.wait_clks(10);
 
-    `DV_CHECK(uvm_hdl_read(epath, rst_en))
-    `DV_CHECK(uvm_hdl_read(opath, leaf_rst))
+    `DV_CHECK(uvm_hdl_read(epath, rst_en), $sformatf("Path %0s has problem", epath))
+    `DV_CHECK(uvm_hdl_read(opath, leaf_rst), $sformatf("Path %0s has problem", opath))
 
-    `DV_CHECK_EQ_FATAL(rst_en, prim_mubi_pkg::MuBi4False,
-                       $sformatf("%s value mismatch",epath))
-    `DV_CHECK_EQ_FATAL(leaf_rst, 1,
-                       $sformatf("%s value mismatch",opath))
-  endtask // wait_and_check
+    `DV_CHECK_EQ_FATAL(rst_en, prim_mubi_pkg::MuBi4False, $sformatf("%s value mismatch", epath))
+    `DV_CHECK_EQ_FATAL(leaf_rst, 1, $sformatf("%s value mismatch", opath))
+  endtask : wait_and_check
 
   function void remove_glitch(string path);
     string epath = {path, ".rst_en_o"};
     string opath = {path, ".leaf_rst_o"};
-    `DV_CHECK(uvm_hdl_release(epath))
-    `DV_CHECK(uvm_hdl_release(opath))
+    `DV_CHECK(uvm_hdl_release(epath), $sformatf("Path %0s has problem", epath))
+    `DV_CHECK(uvm_hdl_release(opath), $sformatf("Path %0s has problem", opath))
   endfunction
 
   // clean up glitch will create reset consistency error
@@ -71,4 +70,4 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
     super.post_start();
   endtask
 
-endclass // rstmgr_leaf_rst_shadow_attack_vseq
+endclass : rstmgr_leaf_rst_shadow_attack_vseq

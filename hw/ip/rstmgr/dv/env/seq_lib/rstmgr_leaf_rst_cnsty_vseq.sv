@@ -75,8 +75,8 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
           `DV_CHECK_RANDOMIZE_FATAL(this)
           set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
           send_reset(pwrmgr_pkg::HwReq, rstreqs);
-          check_reset_info({rstreqs, 4'h0},
-                           $sformatf("expected reset_info to match 0x%x", {rstreqs, 4'h0}));
+          check_reset_info({rstreqs, 4'h0}, $sformatf(
+                           "expected reset_info to match 0x%x", {rstreqs, 4'h0}));
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
 
           csr_wr(.ptr(ral.reset_info), .value('1));
@@ -120,7 +120,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
 
     // assert child reset
     set_leaf_reset(.path({path, ".child_rst_ni"}), .value(0), .cycles(cycles_to_child_reset));
-  endtask // send_unexpected_child_reset
+  endtask : send_unexpected_child_reset
 
   task send_unexpected_child_release(string path);
     `uvm_info(`gfn, "unexpected child release start", UVM_MEDIUM)
@@ -130,39 +130,31 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
       set_leaf_reset(.path({path, ".child_rst_ni"}), .value(0), .cycles(cycles_to_child_reset));
     join
     set_leaf_reset(.path({path, ".child_rst_ni"}), .value(1), .cycles(cycles_to_child_release));
-  endtask // send_unexpected_child_release
+  endtask : send_unexpected_child_release
 
   local task set_leaf_reset(string path, logic value, int cycles);
     cfg.clk_rst_vif.wait_clks(cycles);
     `uvm_info(`gfn, $sformatf("Force %s = %b", path, value), UVM_MEDIUM)
     `DV_CHECK(uvm_hdl_force(path, value))
-  endtask // set_leaf_reset
+  endtask : set_leaf_reset
 
   task unexpected_child_activity(string path);
     int err_value;
     string lpath;
-    `DV_SPINWAIT(
-        while (my_pos < error_pos) @cfg.clk_rst_vif.cb;,
-        "Timeout waiting for my_pos < error_pos",
-        1000_000)
+    `DV_SPINWAIT(while (my_pos < error_pos) @cfg.clk_rst_vif.cb;,
+                 "Timeout waiting for my_pos < error_pos", 1000_000)
 
-    `DV_SPINWAIT(
-        wait_for_cnsty_idle(path);,
-        "Timeout waiting for cnsty_idle",
-        1000_000)
+    `DV_SPINWAIT(wait_for_cnsty_idle(path);, "Timeout waiting for cnsty_idle", 1000_000)
 
     `DV_CHECK_RANDOMIZE_FATAL(this);
     randcase
       1: send_unexpected_child_reset(path);
       1: send_unexpected_child_release(path);
-    endcase // randcase
+    endcase
 
     cfg.clk_rst_vif.wait_clks(cycles_to_check);
-
-    `DV_SPINWAIT(
-        wait(cfg.m_alert_agent_cfg["fatal_cnsty_fault"].vif.alert_tx_final.alert_p);,
-        "Timeout waiting for alert fatal_cnsty_fault",
-        10_000)
+    `DV_SPINWAIT(wait(cfg.m_alert_agent_cfg["fatal_cnsty_fault"].vif.alert_tx_final.alert_p);,
+                 "Timeout waiting for alert fatal_cnsty_fault", 10_000)
 
     lpath = {path, ".child_rst_ni"};
     `DV_CHECK(uvm_hdl_release(lpath))
@@ -175,7 +167,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
     // set error_pos to large value
     // after error injection.
     error_pos = 100;
-  endtask // unexpected_child_activity
+  endtask : unexpected_child_activity
 
   // wait for parent and child reset deassert.
   // to make sure rstmgr_cnsty_chk state is not Reset state.
@@ -194,21 +186,19 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
       lpath = {path, ".sync_child_rst"};
       `DV_CHECK(uvm_hdl_read(lpath, value))
     end
-  endtask // wait_for_cnsty_idle
+  endtask : wait_for_cnsty_idle
 
-  task check_alert_and_cpu_info_after_reset(
-    alert_crashdump_t alert_dump, cpu_crash_dump_t cpu_dump, logic enable);
+  task check_alert_and_cpu_info_after_reset(alert_crashdump_t alert_dump, cpu_crash_dump_t cpu_dump,
+                                            logic enable);
 
     if (error_pos != my_pos) begin
       super.check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, enable);
     end
-  endtask // check_alert_and_cpu_info_after_reset
+  endtask : check_alert_and_cpu_info_after_reset
 
   task set_pos_and_wait();
     my_pos++;
-    `DV_SPINWAIT(
-        while (my_pos == error_pos) @cfg.clk_rst_vif.cb;,
-        $sformatf("Timeout waiting for my_pos == error_pos ends my_pos:%0d",my_pos),
-        1000_000)
-  endtask // set_pos_and_wait
-endclass // rstmgr_leaf_rst_cnsty_vseq
+    `DV_SPINWAIT(while (my_pos == error_pos) @cfg.clk_rst_vif.cb;, $sformatf(
+                 "Timeout waiting for my_pos == error_pos ends my_pos:%0d", my_pos), 1000_000)
+  endtask : set_pos_and_wait
+endclass : rstmgr_leaf_rst_cnsty_vseq

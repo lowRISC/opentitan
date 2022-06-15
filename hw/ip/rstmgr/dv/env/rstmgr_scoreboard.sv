@@ -149,7 +149,7 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
       end
       default: begin
         // add regex match here
-        if (!uvm_re_match("sw_rst_ctrl_n_*",csr.get_name())) begin
+        if (!uvm_re_match("sw_rst_ctrl_n_*", csr.get_name())) begin
           // TODO Check with bitwise enables from sw_rst_regwen.
           do_read_check = 1'b0;
           if (cfg.en_cov && addr_phase_write) begin
@@ -159,7 +159,7 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
               cov.sw_rst_cg_wrap[i].sample(enables[i], item.a_data[i]);
             end
           end
-        end else if (!uvm_re_match("sw_rst_regwen_*",csr.get_name())) begin
+        end else if (!uvm_re_match("sw_rst_regwen_*", csr.get_name())) begin
         end else begin
           `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
         end

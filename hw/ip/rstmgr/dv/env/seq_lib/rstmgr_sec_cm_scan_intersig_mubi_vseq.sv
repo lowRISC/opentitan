@@ -12,21 +12,23 @@ class rstmgr_sec_cm_scan_intersig_mubi_vseq extends rstmgr_smoke_vseq;
 
   task body();
     disable_assert();
-    fork begin
-      fork
-        super.body();
-        add_noise();
-      join_any
-      disable fork;
-    end join
-  endtask // body
+    fork
+      begin
+        fork
+          super.body();
+          add_noise();
+        join_any
+        disable fork;
+      end
+    join
+  endtask : body
 
   function void disable_assert();
     $assertoff(0, "prim_mubi4_sync");
-  endfunction // disable_assert
+  endfunction : disable_assert
 
   task add_noise();
-    int      delay;
+    int delay;
 
     forever begin
       cfg.clk_rst_vif.wait_clks(1);
@@ -35,5 +37,5 @@ class rstmgr_sec_cm_scan_intersig_mubi_vseq extends rstmgr_smoke_vseq;
       delay = $urandom_range(0, 30);
       cfg.clk_rst_vif.wait_clks(delay);
     end
-  endtask // add_noise
+  endtask : add_noise
 endclass : rstmgr_sec_cm_scan_intersig_mubi_vseq

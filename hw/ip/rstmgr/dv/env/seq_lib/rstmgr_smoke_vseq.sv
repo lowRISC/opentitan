@@ -90,16 +90,16 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
       `uvm_info(`gfn, $sformatf("sw_rst_regwen set to 0x%0h", sw_rst_regwen), UVM_LOW)
       rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_regwen), .compare_value(sw_rst_regwen));
 
-// XXX: Need a review
-//      // Check sw_rst_regwen can not be set to all ones again because it is rw0c.
-//      rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_regwen), .value({NumSwResets{1'b1}}));
-//      rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_regwen), .compare_value(sw_rst_regwen),
-//                   .err_msg("Expected sw_rst_regwen block raising individual bits because rw0c"));
+      // TODO: verify this is tested by common CSR tests.
+      // Check sw_rst_regwen can not be set to all ones again because it is rw0c.
+      // rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_regwen), .value({NumSwResets{1'b1}}));
+      // rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_regwen), .compare_value(sw_rst_regwen),
+      //     .err_msg("Expected sw_rst_regwen block raising individual bits because rw0c"));
 
       // Check that the regwen disabled bits block corresponding updated to ctrl_n.
       rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_ctrl_n), .value(sw_rst_regwen));
       rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_ctrl_n), .compare_value(sw_rst_all_ones),
-                   .err_msg("Expected sw_rst_ctrl_n not to change"));
+                                 .err_msg("Expected sw_rst_ctrl_n not to change"));
 
       check_sw_rst_ctrl_n(sw_rst_ctrl_n, sw_rst_regwen, 1);
       check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
