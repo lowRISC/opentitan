@@ -6,13 +6,9 @@
 set -e
 
 # Increase the test_timeout due to slow performance on CI
-# In CI, this script uses pre-downloaded bazel dependencies located in
-# $BAZEL_CACHE and $BAZEL_DISTDIR
 
 ./bazelisk.sh query "filter('sim_verilator\_.*\_smoketest', tests(//sw/device/...))" | \
 xargs ci/bazelisk.sh test \
-    --repository_cache=$BAZEL_CACHE \
-    --distdir=$BAZEL_DISTDIR \
     --build_tests_only=true \
     --test_timeout=2400,2400,3600,-1 \
     --local_test_jobs=4 \

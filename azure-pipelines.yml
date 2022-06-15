@@ -95,6 +95,7 @@ jobs:
 
 - job: download_bazel_dependencies
   displayName: Download Bazel fetched dependencies
+  continueOnError: True
   pool:
     vmImage: ubuntu-18.04
   steps:
@@ -211,9 +212,7 @@ jobs:
   displayName: Build and run fast tests on sim_verilator
   pool: ci-public
   timeoutInMinutes: 120
-  dependsOn:
-    - lint
-    - download_bazel_dependencies
+  dependsOn: lint
   steps:
   - template: ci/install-package-dependencies.yml
   - task: DownloadSecureFile@1
@@ -224,14 +223,8 @@ jobs:
   - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
     condition: eq(variables['Build.SourceBranchName'], 'master')
     displayName: Set the remote cache GCP key path
-  - download: current
-    artifact: bazel-dependencies
-    displayName: Download Bazel dependencies
   - bash: |
-      tar -xf $(Pipeline.Workspace)/bazel-dependencies/bazel-airgapped.tar.gz
-      export BAZEL_CACHE=$(pwd)/bazel-airgapped/bazel-cache
-      export BAZEL_DISTDIR=$(pwd)/bazel-airgapped/bazel-distdir
-      export BAZEL_PYTHON_WHEELS_REPO=$(pwd)/bazel-airgapped/ot_python_wheels
+      set -x -e
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       ci/scripts/run-verilator-tests.sh
     displayName: Build and execute tests
