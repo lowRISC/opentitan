@@ -482,7 +482,7 @@ static const boot_data_t kBootDataDefault = (boot_data_t){
     .identifier = kBootDataIdentifier,
     // Note: This starts from 5 to have a slightly less trivial value in case we
     // need to distinguish the default entry.
-    .counter = 5,
+    .counter = kBootDataDefaultCounterVal,
     .min_security_version_rom_ext = 0,
 };
 
@@ -571,7 +571,7 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
   } else {
     // Erase the first page and write the entry there if the active page cannot
     // be found, i.e. the storage is not initialized yet.
-    new_entry.counter = kBootDataDefault.counter + 1;
+    new_entry.counter = kBootDataDefaultCounterVal + 1;
     boot_data_digest_compute(&new_entry, &new_entry.digest);
     RETURN_IF_ERROR(
         boot_data_entry_write(kPages[0], 0, &new_entry, kHardenedBoolTrue));
