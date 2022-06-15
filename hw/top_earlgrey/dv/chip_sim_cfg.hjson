@@ -768,7 +768,7 @@
     {
       name: chip_sw_sram_ctrl_main_scrambled_access
       uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
-      sw_images: ["sw/device/tests/sram_ctrl_main_scrambled_access_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/sram_ctrl_main_scrambled_access_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+mem_sel=main",
                  "+sw_test_timeout_ns=12000000"]
