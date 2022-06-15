@@ -137,12 +137,18 @@ However, if you want to interact with the simulation in additional ways, there a
 ## Execution Log
 
 All executed instructions in the loaded software into Verilator simulations are logged to the file `trace_core_00000000.log`.
+By default this file is stored somewhere in `~/.cache/bazel`, you can find it using the following command:
+
+```console
+$ find ~/.cache/bazel -name "trace_core_00000000.log"
+```
+
 The columns in this file are tab separated; change the tab width in your editor if the columns don't appear clearly, or open the file in a spreadsheet application.
 
 ## Interact with GPIO (optional)
 
 The simulation includes a DPI module to map general-purpose I/O (GPIO) pins to two POSIX FIFO files: one for input, and one for output.
-Observe the `gpio0-read` file for outputs:
+Observe the `gpio0-read` file for outputs (in the same directory as the trace):
 
 ```console
 $ cat gpio0-read
