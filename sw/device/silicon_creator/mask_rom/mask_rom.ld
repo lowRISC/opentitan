@@ -141,15 +141,22 @@ SECTIONS {
   INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
 
   /**
-   * Mutable data section. This will be initialized from rom at runtime by the
-   * CRT.
-   *
-   * Load this by copying the bytes from [_data_init_start, _data_init_end) into
-   * the range [_data_start, _data_end).
+   * OpenTitan Mask ROM does not have a mutable `.data` section.
    */
-  .data : ALIGN(4) {
-    _data_start = .;
-    _data_init_start = LOADADDR(.data);
+  .data (NOLOAD) : {
+    *(.sdata)
+    *(.sdata.*)
+    *(.data)
+    *(.data.*)
+
+    ASSERT(SIZEOF(.data) == 0, "Error: .data section must be empty");
+  } > ram_main
+
+  /**
+   * Standard BSS section. This will be zeroed at runtime by the CRT.
+   */
+  .bss : ALIGN(4) {
+    _bss_start = .;
 
     /* This will get loaded into `gp`, and the linker will use that register for
      * accessing data within [-2048,2047] of `__global_pointer$`.
@@ -159,39 +166,9 @@ SECTIONS {
      */
     __global_pointer$ = . + 2048;
 
-    /* Small data should come before larger data. This helps to ensure small
+    /* Small BSS should come before regular BSS. This helps to ensure small
      * globals are within 2048 bytes of the value of `gp`, making their accesses
      * hopefully only take one instruction. */
-    *(.sdata)
-    *(.sdata.*)
-
-    /* Other data will likely need multiple instructions to load, so we're less
-     * concerned about address materialisation taking more than one instruction.
-     */
-    *(.data)
-    *(.data.*)
-
-    /* Ensure section end is word-aligned. */
-    . = ALIGN(4);
-    _data_end = .;
-    _data_init_end = LOADADDR(.data) + SIZEOF(.data);
-
-    /* This puts it in ram_main at runtime (for the VMA), but puts the section
-     * into rom for load time (for the LMA). This is why `_data_init_*` uses
-     * `LOADADDR`.
-     *
-     * Using `AT>` means we don't have to keep track of the next free part of
-     * rom, as we do in our other linker scripts. */
-  } > ram_main AT> rom
-
-  /**
-   * Standard BSS section. This will be zeroed at runtime by the CRT.
-   */
-  .bss : ALIGN(4) {
-    _bss_start = .;
-
-    /* Small BSS comes before regular BSS for the same reasons as in the data
-     * section */
     *(.sbss)
     *(.sbss.*)
     *(.bss)

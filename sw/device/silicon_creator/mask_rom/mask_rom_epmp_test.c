@@ -100,7 +100,7 @@ void mask_rom_interrupt_handler(void) { wait_for_interrupt(); }
  *
  * Set by the exception handler.
  */
-volatile exception_t exception_received = kExceptionNone;
+volatile exception_t exception_received = 0;
 
 /**
  * The `mepc` value for the last exception (if any) received.
@@ -208,10 +208,10 @@ static const uint32_t illegal_ins_ro[] = {
 };
 
 /**
- * Illegal instruction residing in .data.
+ * Illegal instruction residing in .bss.
  */
 static uint32_t illegal_ins_rw[] = {
-    kUnimpInstruction,
+    0,
 };
 
 /**
@@ -231,7 +231,7 @@ static bool is_in_address_space(const void *ptr, uintptr_t start,
 /**
  * Set to false if a test fails.
  */
-static bool passed = true;
+static bool passed = false;
 
 /**
  * Custom CHECK macro to assert a condition that if false should cause the
@@ -254,7 +254,7 @@ static void test_noexec_rodata(void) {
 }
 
 /**
- * Test that the .data section in RAM is not executable.
+ * Test that the .bss section in RAM is not executable.
  */
 static void test_noexec_rwdata(void) {
   dif_sram_ctrl_t sram_ctrl;
@@ -352,6 +352,12 @@ static void test_unlock_exec_eflash(epmp_state_t *epmp) {
 }
 
 void mask_rom_main(void) {
+  // Initialize global variables here so that they don't end up in the .data
+  // section since OpenTitan Mask ROM does not have one.
+  passed = true;
+  exception_received = kExceptionNone;
+  illegal_ins_rw[0] = kUnimpInstruction;
+
   // Initialize sec_mmio.
   sec_mmio_init();
 
