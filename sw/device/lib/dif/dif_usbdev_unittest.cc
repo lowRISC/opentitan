@@ -92,12 +92,16 @@ TEST_F(UsbdevTest, NullArgsTest) {
                                             /*src_len=*/1, nullptr));
   EXPECT_DIF_BADARG(dif_usbdev_send(nullptr, /*endpoint=*/0, &buffer));
   EXPECT_DIF_BADARG(dif_usbdev_send(&usbdev_, /*endpoint=*/0, nullptr));
-  EXPECT_DIF_BADARG(dif_usbdev_get_tx_status(nullptr, &buffer_pool,
-                                             /*endpoint=*/0, &tx_status));
+  EXPECT_DIF_BADARG(dif_usbdev_get_tx_sent(nullptr, &uint16_arg));
+  EXPECT_DIF_BADARG(dif_usbdev_get_tx_sent(&usbdev_, nullptr));
   EXPECT_DIF_BADARG(
-      dif_usbdev_get_tx_status(&usbdev_, nullptr, /*endpoint=*/0, &tx_status));
-  EXPECT_DIF_BADARG(dif_usbdev_get_tx_status(&usbdev_, &buffer_pool,
-                                             /*endpoint=*/0, nullptr));
+      dif_usbdev_clear_tx_status(nullptr, &buffer_pool, /*endpoint=*/0));
+  EXPECT_DIF_BADARG(
+      dif_usbdev_clear_tx_status(&usbdev_, nullptr, /*endpoint=*/0));
+  EXPECT_DIF_BADARG(
+      dif_usbdev_get_tx_status(nullptr, /*endpoint=*/0, &tx_status));
+  EXPECT_DIF_BADARG(
+      dif_usbdev_get_tx_status(&usbdev_, /*endpoint=*/0, nullptr));
   EXPECT_DIF_BADARG(dif_usbdev_address_set(nullptr, /*addr=*/1));
   EXPECT_DIF_BADARG(dif_usbdev_address_get(nullptr, &uint8_arg));
   EXPECT_DIF_BADARG(dif_usbdev_address_get(&usbdev_, nullptr));
@@ -687,13 +691,20 @@ TEST_F(UsbdevTest, InPacket) {
   EXPECT_READ32(USBDEV_IN_SENT_REG_OFFSET, {
                                                {USBDEV_IN_SENT_SENT_0_BIT, 0},
                                            });
-  EXPECT_WRITE32(USBDEV_CONFIGIN_0_REG_OFFSET,
-                 {
-                     {USBDEV_CONFIGIN_0_PEND_0_BIT, 1},
-                 });
-  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, &buffer_pool, /*endpoint=*/0,
-                                         &tx_status));
+  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, /*endpoint=*/0, &tx_status));
   EXPECT_EQ(tx_status, kDifUsbdevTxStatusCancelled);
+  EXPECT_READ32(USBDEV_CONFIGIN_0_REG_OFFSET,
+                {
+                    {USBDEV_CONFIGIN_0_BUFFER_0_OFFSET, buffer.id},
+                    {USBDEV_CONFIGIN_0_SIZE_0_OFFSET, sizeof(data)},
+                    {USBDEV_CONFIGIN_0_RDY_0_BIT, 0},
+                    {USBDEV_CONFIGIN_0_PEND_0_BIT, 1},
+                });
+  EXPECT_WRITE32(USBDEV_CONFIGIN_0_REG_OFFSET,
+                 {{USBDEV_CONFIGIN_0_PEND_0_BIT, 1}});
+  EXPECT_WRITE32(USBDEV_IN_SENT_REG_OFFSET, {{USBDEV_IN_SENT_SENT_0_BIT, 1}});
+  EXPECT_DIF_OK(
+      dif_usbdev_clear_tx_status(&usbdev_, &buffer_pool, /*endpoint=*/0));
 
   // Request a new buffer.
   EXPECT_DIF_OK(dif_usbdev_buffer_request(&usbdev_, &buffer_pool, &buffer));
@@ -731,8 +742,7 @@ TEST_F(UsbdevTest, InPacket) {
   EXPECT_READ32(USBDEV_IN_SENT_REG_OFFSET, {
                                                {USBDEV_IN_SENT_SENT_7_BIT, 0},
                                            });
-  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, &buffer_pool, /*endpoint=*/7,
-                                         &tx_status));
+  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, /*endpoint=*/7, &tx_status));
   EXPECT_EQ(tx_status, kDifUsbdevTxStatusNoPacket);
 
   // Get TX status for a queued, but not sent buffer.
@@ -742,11 +752,18 @@ TEST_F(UsbdevTest, InPacket) {
                     {USBDEV_CONFIGIN_8_SIZE_8_OFFSET, sizeof(data)},
                     {USBDEV_CONFIGIN_8_RDY_8_BIT, 1},
                 });
-  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, &buffer_pool, /*endpoint=*/8,
-                                         &tx_status));
+  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, /*endpoint=*/8, &tx_status));
   EXPECT_EQ(tx_status, kDifUsbdevTxStatusPending);
 
   // Buffer was transmitted successfully.
+  uint16_t endpoints_done;
+  EXPECT_READ32(USBDEV_IN_SENT_REG_OFFSET, {
+                                               {USBDEV_IN_SENT_SENT_3_BIT, 1},
+                                               {USBDEV_IN_SENT_SENT_5_BIT, 1},
+                                           });
+  EXPECT_DIF_OK(dif_usbdev_get_tx_sent(&usbdev_, &endpoints_done));
+  EXPECT_EQ(endpoints_done, (1u << 3) | (1u << 5));
+
   EXPECT_READ32(USBDEV_CONFIGIN_5_REG_OFFSET,
                 {
                     {USBDEV_CONFIGIN_5_BUFFER_5_OFFSET, buffer.id},
@@ -757,13 +774,21 @@ TEST_F(UsbdevTest, InPacket) {
                                                {USBDEV_IN_SENT_SENT_3_BIT, 1},
                                                {USBDEV_IN_SENT_SENT_5_BIT, 1},
                                            });
-  EXPECT_WRITE32(USBDEV_IN_SENT_REG_OFFSET, {
-                                                {USBDEV_IN_SENT_SENT_5_BIT, 1},
-                                            });
-  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, &buffer_pool, /*endpoint=*/5,
-                                         &tx_status));
+  EXPECT_DIF_OK(dif_usbdev_get_tx_status(&usbdev_, /*endpoint=*/5, &tx_status));
   EXPECT_EQ(tx_status, kDifUsbdevTxStatusSent);
   EXPECT_EQ(buffer.type, kDifUsbdevBufferTypeStale);
+
+  EXPECT_READ32(USBDEV_CONFIGIN_5_REG_OFFSET,
+                {
+                    {USBDEV_CONFIGIN_5_BUFFER_5_OFFSET, buffer.id},
+                    {USBDEV_CONFIGIN_5_SIZE_5_OFFSET, sizeof(data)},
+                    {USBDEV_CONFIGIN_5_RDY_5_BIT, 0},
+                });
+  EXPECT_WRITE32(USBDEV_CONFIGIN_5_REG_OFFSET,
+                 {{USBDEV_CONFIGIN_5_PEND_5_BIT, 1}});
+  EXPECT_WRITE32(USBDEV_IN_SENT_REG_OFFSET, {{USBDEV_IN_SENT_SENT_5_BIT, 1}});
+  EXPECT_DIF_OK(
+      dif_usbdev_clear_tx_status(&usbdev_, &buffer_pool, /*endpoint=*/5));
 }
 
 TEST_F(UsbdevTest, DeviceAddresses) {
