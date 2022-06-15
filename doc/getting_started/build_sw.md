@@ -5,7 +5,8 @@ aliases:
 ---
 
 _Before following this guide, make sure you have read the_:
-* main [Getting Started]({{< relref "getting_started" >}}) instructions, and
+* main [Getting Started]({{< relref "getting_started" >}}) instructions,
+* install Verilator section of the [Verilator guide]({{< relref "setup_verilator.md" >}}), and
 * [OpenTitan Software]({{< relref "sw/" >}}) documentation.
 
 All OpenTitan software is built with [Bazel](https://bazel.build/).
@@ -59,6 +60,7 @@ Running
 bazel build //sw/...
 ```
 will build all software in our repository.
+If you do not have Verilator installed yet, you can use the `--define DISABLE_VERILATOR_BUILD=true` flag to skip the jobs that depend on that.
 
 In general, you can build any software target (and all of it's dependencies) using the following syntax:
 ```console
