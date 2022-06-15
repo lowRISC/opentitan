@@ -234,7 +234,30 @@ Note, `<device>` will be in {`sim_dv`, `sim_verilator`, `fpga_cw310`}, and `<tar
 
 #### OTBN Artifacts
 
-TODO: add documentation on OTBN artifacts.
+OTBN programs use a specialized build flow (defined in `rules/otbn.bzl`).
+OTBN programs produce the following artifacts:
+* `<target>.o`: unlinked object file usually representing a single assembly file
+* `<target>.elf`: standalone executable binary representing one or more assembly/object files
+* `<target>.rv32embed.{a,o}`: artifacts representing an OTBN binary, set up to be linked into a RISC-V program
+
+In terms of Bazel rules:
+* the `otbn_library` rule runs the assembler to create `<target>.o` artifacts, and
+* the `otbn_binary` and `otbn_sim_test` rules run the linker on one or more `.o` files to create the `.elf` and `.rv32embed.{a,o}` artifacts.
+
+Since OTBN has limited instruction memory, the best practice is to list each file individually as an `otbn_library`.
+This way, binary targets can easily include only the files they need.
+
+OTBN programs run on the OTBN coprocessor, unlike standard "on-device" programs that run on the main processor (Ibex).
+There are two ways to run an OTBN program:
+1. Run a standalone binary (`.elf`) on the specialized OTBN simulator.
+1. Include a `.rv32embed` artifact in a C program that runs on Ibex, and create an on-device target as described in the previous section.
+
+You can run `.elf` artifacts directly using the simulator as described in [the OTBN README]({{< relref "/hw/ip/otbn/README/index.html#run-the-python-simulator">}}).
+The `otbn_sim_test` rule is a thin wrapper around `otbn_binary`.
+If you use it, `bazel test` will run the OTBN simulator for you and check the test result.
+
+To include an OTBN program in a C program, you need to add the desired OTBN `otbn_binary` Bazel target to the `deps` list of the C program's Bazel target.
+No `#include` is necessary, but you will likely need to initialize the symbols from the OTBN program as required by the OTBN driver you are using.
 
 #### Host Artifacts
 
