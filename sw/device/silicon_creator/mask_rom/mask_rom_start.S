@@ -280,12 +280,6 @@ _mask_rom_start_boot:
    * Setup C Runtime
    */
 
-  // Initialize the `.data` section.
-  la   a0, _data_start
-  la   a1, _data_end
-  la   a2, _data_init_start
-  call crt_section_copy
-
   // Initialize the `.bss` section.
   la   a0, _bss_start
   la   a1, _bss_end

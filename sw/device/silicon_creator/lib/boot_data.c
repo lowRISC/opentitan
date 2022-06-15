@@ -475,7 +475,7 @@ static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
  * Default boot data to use if the device is in a non-prod state and there is
  * no valid boot data entry in the flash info pages.
  */
-boot_data_t kBootDataDefault = (boot_data_t){
+static const boot_data_t kBootDataDefault = (boot_data_t){
     .digest = {{0x0d044e5c, 0x33ceed53, 0x05aa74a4, 0x57b7017f, 0x574a685d,
                 0x6ec8f5f7, 0x594b0141, 0x656bae85}},
     .is_valid = kBootDataValidEntry,
