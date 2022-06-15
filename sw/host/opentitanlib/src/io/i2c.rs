@@ -33,6 +33,8 @@ pub enum I2cError {
     Timeout,
     #[error("Bus busy")]
     Busy,
+    #[error("Generic error {0}")]
+    Generic(String),
 }
 impl_serializable_error!(I2cError);
 

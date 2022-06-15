@@ -27,6 +27,7 @@ mod spi;
 mod uart;
 
 use crate::transport::ti50emulator::emu::{EmulatorProcess, Ti50SubProcess};
+use crate::transport::ti50emulator::i2c::Ti50I2cBus;
 use crate::transport::ti50emulator::uart::Ti50Uart;
 
 pub struct Ti50Emulator {
@@ -129,9 +130,11 @@ impl Transport for Ti50Emulator {
     // Returns one of existing I2C instance.
     fn i2c(&self, instance: &str) -> Result<Rc<dyn Bus>> {
         Ok(Rc::clone(
-            self.inner.borrow().i2c_map.get(instance).ok_or_else(|| {
-                TransportError::InvalidInstance(TransportInterfaceType::I2c, instance.to_string())
-            })?,
+            self.inner
+                .borrow_mut()
+                .i2c_map
+                .entry(instance.to_string())
+                .or_insert(Rc::new(Ti50I2cBus::open(self, instance)?)),
         ))
     }
 
