@@ -52,11 +52,11 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
       entropy_conf_reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
       config.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False);
 
-  // TODO: Move this to the `dif_entropy_src_heath_tests_configure()` DIF. This
-  // will require a read-modify-write sequence here.
+  // Configure the health test threshold scope.
   entropy_conf_reg = bitfield_field32_write(
       entropy_conf_reg, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD,
-      kMultiBitBool4False);
+      config.health_test_threshold_scope ? kMultiBitBool4True
+                                         : kMultiBitBool4False);
 
   // Configure single RNG bit mode.
   uint32_t rng_bit_en =
@@ -78,6 +78,14 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
 
   mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_CONF_REG_OFFSET,
                       entropy_conf_reg);
+
+  // Configure health test window.
+  // Conditioning bypass is hardcoded to disabled (see above). If we want to
+  // expose the ES_TYPE field in the future, we need to also configure the
+  // health test window size for bypass mode.
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
+                      config.health_test_window_size);
 
   // MODULE_ENABLE register configuration.
   mmio_region_write32(entropy_src->base_addr,
