@@ -7,8 +7,6 @@ title: "Earl Grey Top Level Specification"
 <img src="earlgrey.png" align="right" alt="Earl Grey logo" width=200 title="Earl Grey" hspace="20"/>
 
 This document specifies the top level functionality of the "Earl Grey" chip (`top_earlgrey`).
-This version of the chip specification is intended to be kept up to date with the current content of the project repository, but might lag or contain *coming soon* placeholders.
-This is not a specification of the final implementation.
 
 ## Features
 
@@ -16,121 +14,67 @@ This is not a specification of the final implementation.
   - DM (debug module)
   - PLIC (platform level interrupt controller)
   - U/M execution modes (user/machine)
-- Memory contents
-  - 512kB emulated eFlash for code and data storage
-  - 64kB SRAM for data storage
-  - 16kB ROM for secure boot code storage
+  - Enhanced Physical Memory Protection (ePMP)
+  - Security features:
+    - Dual core lockstep configuration
+    - Data independent timing
+    - Dummy instruction insertion
+    - Bus and register file integrity
+    - Hardened PC
+- Memory
+  - 1024kB eFlash
+  - 128kB SRAM
+  - 4KB Always ON (AON) retention SRAM
+  - 32kB ROM
+  - All memories support scrambling and integrity checks.
 - Security peripherals
   - Flash controller
-  - AES module with support for ECB, CBC, CFB, OFB and CTR modes of operation
-  - SHA-256/HMAC module
-  - Basic alert responder
-  - (coming soon) emulated TRNG entropy source
+  - AES
+  - SHA2-256/HMAC
+  - SHA3-KMAC
+  - CSRNG
+  - Big Number Accelerator (OTBN)
+  - Key Manager with DICE support
+  - Alert handler
+  - Digital wrapper for entropy source
 - IO peripherals
-  - 32 multiplexable IO pads with pin multiplexing unit and pad control
-  - One UART peripheral (using multiplexable IO)
-  - GPIO peripheral (using multiplexable IO)
-  - (coming soon) I2C host (using multiplexable IO)
-  - SPI device (using fixed IO)
+  - x32 multiplexable IO pads with pin multiplexing unit and pad control
+  - GPIO (using multiplexable IO)
+  - x4 UART (using multiplexable IO)
+  - x3 I2C with support for host and device modes (using multiplexable IO)
+  - SPI device (using fixed IO) with the following modes of operation: TPM, generic, flash and passthrough
+  - x2 SPI host
 - Other peripherals
   - Fixed-frequency timer
-- clock and reset IO and management
+  - Always ON (AON) timer
+  - Pulse-Width Modulator (PWM)
+  - Pattern Generator
+- Clock and reset IO and management
 - Software
-  - Boot ROM implementing code signing of e-flash contents
+  - Boot ROM implementing code secure boot and chip configuration
   - Bare metal applications and validation tests
 
 ## Description
 
 The netlist `top_earlgrey` contains the features listed above, proving basic functionality of the Ibex RISC-V processor core on an FPGA development environment, with a suite of peripherals and memories.
-The functionality as specified at this point in time is an incomplete subset of the final functionality required to meet OpenTitan root of trust goals.
-This specification will continue to grow to add those features as the contents of the repository are updated.
 
-The center of the Earl Grey design is the Ibex RISC-V compliant processor.
 The code for Ibex is developed in its own [lowRISC repo](http://github.com/lowrisc/ibex), and is [*vendored in*]({{< relref "doc/ug/vendor_hw.md" >}}) to this repository.
 Surrounding Ibex is a suite of *Comportable* peripherals that follow the [Comportability Guidelines]({{< relref "doc/rm/comportability_specification" >}}) for lowRISC peripheral IP.
 Each of these IP has its own specification.
 See the table produced in the [hardware documentation page]({{< relref "hw" >}}) for links to those specifications.
 
-At this time, the top-level netlist for earlgrey is a combination of hand-written SystemVerilog RTL with auto-generated sections for wiring of comportability interfaces.
-There is a script for this auto-generation, centered around the top-level descriptor file `top_earlgrey.hjson` found in the repository.
-A full definition of this descriptor file, its features, and related scripting is forthcoming.
-This tooling generates the interconnecting crossbar (via `TLUL`) as well as the instantiations at the top level.
-It also feeds into this document generation to ensure that the chosen address locations are documented automatically using the data in the source files.
-
 # Theory of Operations
-
-This section discusses some operational details on `top_earlgrey`.
-It should first be **NOTED** that there is some subtlety on the notion of hierarchy within the top level.
-There is netlist automation to create the module `top_earlgrey` as indicated in sections of this specification that follow.
-**On top** of that module, hierarchically in the repo, are top level instantiation targets directed towards a particular use case.
-This includes `chip_earlgrey_nexsysvideo` for use in FPGA, and `chip_earlgrey_asic` for use (eventually) in a silicon implementation.
-These top level targets will include the actual pads as needed by the target platform.
-At the time of this writing the two are not in perfect synchronization, but the intention will be for them to be as identical as possible.
-Where appropriate, including the block diagram below, notes will be provided where the hierarchy subtleties are explained.
 
 ## Block Diagram
 
 The block diagram of `top_earlgrey` (the auto-generated module) is shown below.
 
+**TODO: This block diagram is outdated**
+
 ![Top Level Block Diagram](top_earlgrey_block_diagram.svg)
 
 In this diagram, the instantiation of the Ibex processor and all of the memories and comportable IPs are shown.
 The IO shown at this level are the internal signals between the IP and the pads instantiated at the target top level netlist.
-
-In the block diagram below, the target netlist `chip_earlgrey_nexsysvideo` is shown, including the FPGA pad names created.
-
-![Top Level Block Diagram](chip_earlgrey_nexsysvideo_block_diagram.svg)
-
-In this diagram, pads for clock and reset are shown, as well as pads for JTAG, SPI device, UART, and GPIO.
-In this platform, at the moment, the logic for the JTAG and the SPI device are multiplexed within `chip_earlgrey_nexsysvideo`.
-This is done for ease of programming by the external host.
-In addition, at the moment, the UART pins and GPIO pins are separated out from the multipurpose `MIO` pins.
-This will change as software and scripting matures and pin selection is defined more efficiently.
-
-## Hardware Interfaces
-
-Below are the expected hardware interfaces of the autogenerated `top_earlgrey` netlist.
-These are the internal signals between that module and the pads of the platform netlist.
-**Note** in the current design the UART pins bypass the `pinmux` module and its `MIO` related signals, and have their own direct signals to pads.
-
-| Signal Name | Direction | Description |
-| --- | --- | --- |
-| `clk_i` | input | Chip level functional clock |
-| `rst_ni` | input | Chip level reset, active low |
-| `jtag_tck_i` | input | JTAG Clock |
-| `jtag_tms_i` | input | JTAG Test Mode Select |
-| `jtag_td_i` | input | JTAG Test Data In |
-| `jtag_td_o` | output | JTAG Test Data Out |
-| `jtag_trst_ni` | input | JTAG Test Reset |
-| `dio_spi_device_sck_i` | input | SPI device clock |
-| `dio_spi_device_csb_i` | input | SPI device chip select |
-| `dio_spi_device_sdi_i` | input | SPI device input data |
-| `dio_spi_device_sdo_o` | output | SPI device output data |
-| `dio_spi_device_sdo_en_o` | output | SPI device output enable |
-| `dio_uart_rx_i` | input | UART input receive data |
-| `dio_uart_tx_o` | output | UART output transmit data |
-| `dio_uart_tx_en_o` | output | UART output transmit output enable |
-| `mio_in_i[31:0]` | input | Multiplexible input pins (currently only connected to GPIO) |
-| `mio_out_o[31:0]` | output | Multiplexible output pins (currently only connected to GPIO) |
-| `mio_oe_o[31:0]` | output | Multiplexible output enables (currently only connected to GPIO) |
-
-Below are the hardware interfaces of the FPGA target `chip_earlgrey_nexsysvideo` netlist.
-
-| Signal Name | Direction | Description |
-| --- | --- | --- |
-| `IO_CLK`    | input  | Chip level functional clock |
-| `IO_RST_N`  | input  | Chip level reset, active low |
-| `IO_DPS0`   | input  | Muxed functionality: JTAG `TCK` and `spi_device_sck_i` |
-| `IO_DPS1`   | input  | Muxed functionality: JTAG `TDI` and `spi_device_sdi_i` |
-| `IO_DPS2`   | output | Muxed functionality: JTAG `TDO` and `spi_device_sdo_o` |
-| `IO_DPS3`   | input  | Muxed functionality: JTAG `TMS` and `spi_device_csb_i` |
-| `IO_DPS4`   | input  | JTAG `TRST_N` |
-| `IO_DPS5`   | input  | JTAG `SRST_N` |
-| `IO_DPS6`   | input  | Muxed select: 0 = JTAG, 1 = `spi_device` |
-| `IO_DPS7`   | input  | Bootstrap pin for software |
-| `IO_URX`    | input  | UART RX |
-| `IO_UTX`    | output | UART TX |
-| `IO_GP0` .. `IO_GP15` | inout  | 16 GPIO pins connected to `MIO` pins |
 
 ## Design Details
 
@@ -224,7 +168,7 @@ CoreMark was compiled with GCC 9.2.0 with flags: `-march=rv32imc -mabi=ilp32 -mc
 
 The device contains three memory address spaces for instruction and data.
 
-Instruction ROM (16kB) is the target for the Ibex processor after release of external reset.
+Instruction ROM (32kB) is the target for the Ibex processor after release of external reset.
 The ROM contains hard-coded instructions whose purpose is to do a minimal subset of platform checking before checking the next stage of code.
 The next stage - a boot loader stored in embedded flash memory - is the first piece of code that is not hard-coded into the silicon of the device, and thus must be signature checked.
 The ROM executes this signature check by implementing a RSA-check algorithm on the full contents of the boot loader.
@@ -232,7 +176,7 @@ The details of this check will come at a later date.
 For verification execute-time reasons, this RSA check will be overridable in the FPGA and verification platforms (details TBD).
 This is part of the *Secure Boot Process* that will be detailed in a security section in the future.
 
-Earl Grey contains 512kB of emulated embedded-flash (e-flash) memory for code storage.
+Earl Grey contains 1024kB of embedded-flash (e-flash) memory for code storage.
 This is intended to house the boot loader mentioned above, as well as the operating system and application that layers on top.
 At this time there is no operating system provided; applications are simple proof of concept code to show that the chip can do with a bare-metal framework.
 
@@ -251,7 +195,7 @@ The SPI device peripheral is provided as a method to bulk-load e-flash memory.
 The processor debug port (via JTAG) is also available for code loading.
 See those specifications for more details.
 
-Also included is a 64kB scratch pad SRAM available for data storage (stack, heap, etc.) by the Ibex processor.
+Also included is a 128kB of SRAM available for data storage (stack, heap, etc.) by the Ibex processor.
 It is also available for code storage, though that is not its intended purpose.
 
 The base address of the ROM, Flash, and SRAM are given in the address map section later in this document.
@@ -259,16 +203,9 @@ The base address of the ROM, Flash, and SRAM are given in the address map sectio
 ### Peripherals
 
 Earl Grey contains a suite of "peripherals", or subservient execution units connected to the Ibex processor by means of a bus interconnect.
-Each of these peripherals follows an interface scheme dictated in the
-[Comportability Specification.]({{< relref "doc/rm/comportability_specification" >}})
+Each of these peripherals follows an interface scheme dictated in the [Comportability Specification.]({{< relref "doc/rm/comportability_specification" >}}).
 That specification details how the processor communicates with the peripheral (via TLUL interconnect); how the peripheral communicates with the chip IO (via fixed or multiplexable IO); how the peripheral communicates with the processor (interrupts); and how the peripheral communicates security events (via alerts).
 See that specification for generic details on this scheme.
-
-The peripherals included within Earl Grey for at this time give some basic outside-world communication, the beginnings of a security roadmap for the device, internal housekeeping, and processor control.
-These are described briefly for each peripheral below.
-Where available today, detailed specifications will be linked, or one can find an up-to-date list at the [hardware landing page]({{< relref "hw" >}}).
-In other cases, the details will come as the peripherals are fully specified.
-The address for each of the peripherals will be given at the end of this document in an auto-generate address map based upon the source configuration files for Earl Grey.
 
 #### Chip IO Peripherals
 
@@ -290,11 +227,9 @@ See the [pinmux specification]({{< relref "hw/ip/pinmux/doc" >}}) for how to con
 ##### UART
 
 The chip contains one UART peripheral that implement single-lane duplex UART functionality.
-The outputs and inputs can be configured to any chip IO via the pinmux.
-(Exception: in the current design the UART pins are directly connected to their own pin IO.)
-See the
-[UART specification]({{< relref "hw/ip/uart/doc" >}})
-for more details on this peripheral.
+The outputs and inputs can be configured to any chip IO via the [pinmux]({{< relref "hw/ip/pinmux/doc" >}}).
+
+See the [UART specification]({{< relref "hw/ip/uart/doc" >}}) for more details on this peripheral.
 
 ##### GPIO
 
@@ -305,8 +240,10 @@ See the [pinmux specification]({{< relref "hw/ip/pinmux/doc" >}}) for how to con
 
 ##### SPI device
 
+**TODO: this section has pending updates**
+
 The SPI device implements Firmware Mode, a feature that provides the ability for external drivers to send firmware upgrade code into a bank of embedded flash memory for in-field firmware updates.
-Firmware mode has no addressing, and at the moment no other addressing modes are provided, though future improvements will include the ability to address internal Earl Grey memory through SPI transactions.
+Firmware mode has no addressing, and at the moment no other addressing modes are provided.
 
 See the [SPI device specification]({{< relref "hw/ip/spi_device/doc" >}}) for more details on the Firmware Mode implementation.
 
@@ -320,50 +257,31 @@ More than one I2C host module might be instantiated in the top level.
 
 #### Security Peripherals
 
-The netlist contains a few functionality-only security peripherals and subsystems to head towards the full silicon security architecture required for the final OpenTitan device.
-A security section will follow later to show how these work together.
-
 ##### AES
 
-[AES](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.197.pdf)
-is the primary
-[symmetric encryption](https://en.wikipedia.org/wiki/Symmetric-key_algorithm)
-and decryption mechanism used in OpenTitan protocols.
+[AES](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.197.pdf) is the primary [symmetric encryption](https://en.wikipedia.org/wiki/Symmetric-key_algorithm) and decryption mechanism used in OpenTitan protocols.
 AES runs with key sizes of 128b, 192b, or 256b.
 The module can select encryption or decryption of data that arrives in 16 byte quantities to be encrypted or decrypted using different block cipher modes of operation.
 It supports [ECB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB), [CBC mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CBC), [CFB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CFB), [OFB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#OFB) and [CTR mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CTR).
-For this version, all data transfer is processor-available, i.e. key and data material is passed into the module via register writes.
-Future versions might have provisions for private transfer of key and data material to reduce exposure from potentially untrusted processor activity.
-This version does not attempt to add any side-channel or fault-injection resistance into the design.
 
-In short, this version of AES is a functional proof of concept of the algorithm that will be augmented to its final hardened state for silicon implementation purposes.
+The [GCM mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#GCM) is not implemented in hardware, but can be constructed using AES in counter mode.
+The integrity tag calculation can be implemented in Ibex and accelerated via bitmanip instructions.
 
 Details on how to write key and data material into the peripheral, how to initiate encryption and decryption, and how to read out results, are available in the [AES specification]({{< relref "hw/ip/aes/doc" >}}).
 
 ##### SHA-256/HMAC
 
 SHA-256 is the primary
-[hashing algorithm](https://en.wikipedia.org/wiki/Cryptographic_hash_function)
-used in OpenTitan protocols.
-SHA-256 is a member of the
-[SHA-2](https://en.wikipedia.org/wiki/SHA-2)
-family of hashing algorithms, where the digest (or hash output) is of 256b length, regardless of the data size of the input to be hashed.
+[hashing algorithm](https://en.wikipedia.org/wiki/Cryptographic_hash_function) used in OpenTitan protocols.
+SHA-256 is a member of the [SHA-2](https://en.wikipedia.org/wiki/SHA-2) family of hashing algorithms, where the digest (or hash output) is of 256b length, regardless of the data size of the input to be hashed.
 The data is sent into the SHA peripheral after declaring the beginning of a hash request (effectively zeroing out the internal state to initial conditions), 32b at a time.
 Once all data has been sent, the user can indicate the completion of the hash request (with optional partial-word final write).
 The peripheral produces the hash result available for register read by the user.
 All data transfer is processor-available, i.e. data is passed into the module via register writes.
-Future versions will have provisions for private transfer of data to reduce exposure from potentially untrusted processor activity.
-This version does not attempt to add any side-channel or fault-injection resistance into the design.
-Future versions will begin to add in such countermeasures.
 
-[HMAC](https://en.wikipedia.org/wiki/HMAC)
-is a message authentication protocol layered on top of a hashing function (in this case SHA-256), mixing in a secret key for cryptographic purposes.
+[HMAC](https://en.wikipedia.org/wiki/HMAC) is a message authentication protocol layered on top of a hashing function (in this case SHA-256), mixing in a secret key for cryptographic purposes.
 HMAC is a particular application of appending the secret key in a prescribed manner, twice, around the hashing (via SHA-256) of the message.
-It is a stretch goal to add HMAC functionality on top of the SHA-256 functionality for the Earl Grey SHA-256 peripheral.
-For this functionality, a 256b key must be programmed into the module before the message hash can begin.
-Otherwise the interface to the peripheral is as described above.
-The timing of authentication completion varies, being longer in latency than native SHA-256.
-The similar commentary about the security of data transfer on SHA-256 above applies to HMAC, especially as regards the secret key.
+
 Details on how to write key and data material into the peripheral, how to initiate hashing / authentication, and how to read out results, are available in the [SHA/HMAC specification]({{< relref "hw/ip/hmac/doc" >}}).
 
 ##### Alert Handler
@@ -377,9 +295,7 @@ Each peripheral has an option to present a list of individual alerts, representi
 These alerts are sent in a particular encoding method to the alert handler module, itself a peripheral on the system bus.
 See the details of the alert handler specification for more information.
 
-At this time, the alert handler module is not wired into the top level.
-
-##### TRNG entropy source (coming soon)
+##### TRNG entropy source
 
 Randomness is a critical part of any security chip.
 It provides variations in execution that can keep attackers from predicting when the best time is to attack.
@@ -387,22 +303,18 @@ It provides secret material used for identity and cryptographic purposes.
 It can be seeded into algorithmic computation to obscure sensitive data values.
 In short, it is a source of critical functionality that must be designed to be truly random, but also free from attack itself.
 
-Most
-[TRNG](https://en.wikipedia.org/wiki/Hardware_random_number_generator)s
-(True Random Number Generators) are analog designs, taking advantage of some physical event or process that is non-deterministic.
+Most [TRNG](https://en.wikipedia.org/wiki/Hardware_random_number_generator)s (True Random Number Generators) are analog designs, taking advantage of some physical event or process that is non-deterministic.
 Example designs rely on metastability, electronic noise, timing variations, thermal noise, quantum variation, etc.
 These are then filtered and sent into a pool of entropy that the device can sample at any time, for whatever purposes are needed.
 The creation, filtering, storage, protection, and dissemination of the randomness are all deep topics of intense research in their own right.
-Since the design is likely to be an analog design tied to the final chosen silicon technology process, our FPGA implementation can only approximate the results.
-We can however fully specify the software interface to the TRNG in a digital wrapper.
 
 The primary interface to the entropy pool is a read request of available random bits.
 The TRNG interface can indicate how many bits are available, and then software can read from this pool, if available.
 Reading of entropy that is not available should immediately trigger an interrupt or an alert.
-In FPGA we can emulate the randomness with something akin to a
-[PRBS](https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence).
 
-At this time, more details on the TRNG and its entropy source are not available.
+Since silicon is required to contain an analog design tied to the final chosen silicon technology process, our FPGA implementation can only approximate the results.
+We however fully specify the software interface to the TRNG in a digital wrapper.
+In FPGA we emulate the randomness with something akin to a [PRBS](https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence).
 
 #### Other peripherals
 
@@ -419,7 +331,7 @@ The specification for the timer can be found [here]({{< relref "hw/ip/rv_timer/d
 ##### Flash Controller
 
 The final peripheral discussed in this release of the netlist is an emulated flash controller.
-As mentioned in the memory section, up to 512kB of emulated embedded flash is available for code and data storage.
+As mentioned in the memory section, up to 1024kB of emulated embedded flash is available for code and data storage.
 The primary read path for this data is in the standard memory address space.
 Writes to that address space are ignored, however, since one can not write to flash in a standard way.
 Instead, to write to flash, software must interact with the flash controller.
@@ -465,10 +377,9 @@ Note that these values assume there is no bus contention.
 | Low speed  | 18-20 CPU cycles   |
 
 
-## Register Table
+## Memory Map
 
-The base and bound addresses of the memory and peripherals are given in this table below.
-This is cut/paste at the moment, and will be automated into this document in the future.
+The base addresses of the memory and peripherals are given in the table below.
 
 The choice of memory, or lack thereof at location 0x0 confers two exclusive benefits:
 - If there are no memories at location 0x0, then null pointers will immediately error and be noticed by software (the xbar will fail to decode and route)
@@ -476,20 +387,38 @@ The choice of memory, or lack thereof at location 0x0 confers two exclusive bene
 
 For the purpose of `top_earlgrey`, the first option has been chosen to benefit software development and testing
 
-| Item | base address | bound address |
-| --- | --- | --- |
-| `ROM`        | `0x00008000` | `0x0000bfff` |
-| `SRAM`       | `0x10000000` | `0x1000ffff` |
-| `Flash`      | `0x20000000` | `0x2007ffff` |
-| `uart`       | `0x40000000` | `0x4000ffff` |
-| `gpio`       | `0x40010000` | `0x4001ffff` |
-| `spi_device` | `0x40020000` | `0x4002ffff` |
-| `flash_ctrl` | `0x40030000` | `0x4003ffff` |
-| `rv_timer`   | `0x40040000` | `0x4004ffff` |
-| `rv_plic`    | `0x40090000` | `0x4009ffff` |
-| `aes`        | `0x40110000` | `0x4011ffff` |
-| `hmac`       | `0x40120000` | `0x4012ffff` |
-| `debug_ram`  | `0x1a110000` | `0x1a11ffff` |
+{{< topLevelDoc "earlgrey" "mmap" >}}
+
+## Hardware Interfaces
+
+### Pinout
+
+{{< topLevelDoc "earlgrey" "pinout" >}}
+
+# RTL Implementation Notes
+
+At this time, the top-level netlist for earlgrey is a combination of hand-written SystemVerilog RTL with auto-generated sections for wiring of comportability interfaces.
+There is a script for this auto-generation, centered around the top-level descriptor file `top_earlgrey.hjson` found in the repository.
+A full definition of this descriptor file, its features, and related scripting is forthcoming.
+This tooling generates the interconnecting crossbar (via `TLUL`) as well as the instantiations at the top level.
+It also feeds into this document generation to ensure that the chosen address locations are documented automatically using the data in the source files.
+
+## Top Level vs Chip Targets
+
+It should first be **NOTED** that there is some subtlety on the notion of hierarchy within the top level.
+There is netlist automation to create the module `top_earlgrey` as indicated in sections of this specification that follow.
+**On top** of that module, hierarchically in the repo, are chip level instantiation targets directed towards a particular use case.
+This includes `chip_earlgrey_cw310` for use in FPGA, and `chip_earlgrey_asic` for use (eventually) in a silicon implementation.
+These chip level targets will include the actual pads as needed by the target platform.
+At the time of this writing the two are not in perfect synchronization, but the intention will be for them to be as identical as possible.
+Where appropriate, including the block diagram below, notes will be provided where the hierarchy subtleties are explained.
+
+## FPGA Platform
+
+**TODO: This section needs to be updated once pin updates are complete.**
+
+In the FPGA platform, the logic for the JTAG and the SPI device are multiplexed within `chip_earlgrey_cw310`.
+This is done for ease of programming by the external host.
 
 ## References
 1. [Schiavone, Pasquale Davide, et al. "Slow and steady wins the race? A comparison of
