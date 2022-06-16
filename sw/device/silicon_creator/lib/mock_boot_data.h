@@ -27,23 +27,6 @@ class MockBootData : public global_mock::GlobalMock<MockBootData> {
 
 using MockBootData = testing::StrictMock<internal::MockBootData>;
 
-#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
-extern "C" {
-
-rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
-  return MockBootData::Instance().Read(lc_state, boot_data);
-}
-
-rom_error_t boot_data_write(const boot_data_t *boot_data) {
-  return MockBootData::Instance().Write(boot_data);
-}
-
-rom_error_t boot_data_digest_is_valid(const boot_data *boot_data) {
-  return MockBootData::Instance().Check(boot_data);
-}
-
-}  // extern "C"
-#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_BOOT_DATA_H_

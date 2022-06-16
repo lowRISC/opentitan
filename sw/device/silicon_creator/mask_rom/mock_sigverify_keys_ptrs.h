@@ -28,23 +28,6 @@ class MockSigverifyKeysPtrs
 using MockSigverifyKeysPtrs =
     testing::StrictMock<internal::MockSigverifyKeysPtrs>;
 
-#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
-extern "C" {
-
-const sigverify_mask_rom_key_t *sigverify_rsa_keys_ptr_get() {
-  return MockSigverifyKeysPtrs::Instance().RsaKeysPtrGet();
-}
-
-size_t sigverify_num_rsa_keys_get() {
-  return MockSigverifyKeysPtrs::Instance().NumRsaKeysGet();
-}
-
-size_t sigverify_rsa_keys_step_get() {
-  return MockSigverifyKeysPtrs::Instance().RsaKeysStepGet();
-}
-
-}  // extern "C"
-#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_MOCK_SIGVERIFY_KEYS_PTRS_H_

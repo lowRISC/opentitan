@@ -26,23 +26,6 @@ class MockShutdown : public global_mock::GlobalMock<MockShutdown> {
 
 using MockShutdown = testing::StrictMock<internal::MockShutdown>;
 
-#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
-extern "C" {
-
-shutdown_error_redact_t shutdown_redact_policy(void) {
-  return MockShutdown::Instance().RedactPolicy();
-}
-
-uint32_t shutdown_redact(rom_error_t reason, shutdown_error_redact_t severity) {
-  return MockShutdown::Instance().Redact(reason, severity);
-}
-
-void shutdown_finalize(rom_error_t reason) {
-  return MockShutdown::Instance().Finalize(reason);
-}
-
-}  // extern "C"
-#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_SHUTDOWN_H_

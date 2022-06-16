@@ -27,19 +27,6 @@ class MockRomExtBootPolicyPtrs
 using MockRomExtBootPolicyPtrs =
     testing::StrictMock<internal::MockRomExtBootPolicyPtrs>;
 
-#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
-extern "C" {
-
-const manifest_t *rom_ext_boot_policy_manifest_a_get() {
-  return MockRomExtBootPolicyPtrs::Instance().ManifestA();
-}
-
-const manifest_t *rom_ext_boot_policy_manifest_b_get() {
-  return MockRomExtBootPolicyPtrs::Instance().ManifestB();
-}
-
-}  // extern "C"
-#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_MOCK_ROM_EXT_BOOT_POLICY_PTRS_H_
