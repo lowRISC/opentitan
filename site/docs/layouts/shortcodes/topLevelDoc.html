@@ -1,0 +1,23 @@
+{{/*
+A Hugo shortcode to include the content generated from the top level description Hjson
+
+Usage: {{< topLevelDoc topLevel contentType >}}
+
+topLevel: Top level name (e.g. earlgrey)
+
+contentType: Type of generated content to include.
+  Valid options: mmap, pinout
+
+The actual content is rendered as Markdown by the util/build_docs.py script and only
+included by the shortcode here.
+
+Also see util/design/gen-top-docs.py for more details.
+*/}}
+{{ $top := .Get 0 }}
+{{ $type := .Get 1 }}
+{{ $basename := (print $type ".md") }}
+{{ $path := path.Join .Site.Params.generatedRoot "top" $top $basename }}
+{{ if not (fileExists $path) }}
+  {{ errorf "%s has not been generated" $path }}
+{{ end }}
+{{ readFile $path | markdownify }}

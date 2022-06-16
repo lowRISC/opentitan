@@ -147,6 +147,14 @@ config = {
     # DIF Docs
     "difs-directory": "sw/device/lib/dif",
 
+    # Top Level Docs
+    "top_docs_directory": "top",
+
+    # Pre-generate top level documentation from the following files.
+    "hw_top_definitions": [
+        "hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson",
+    ],
+
     # Output directory for documents
     "outdir":
     SRCTREE_TOP.joinpath('build', 'docs'),
@@ -343,6 +351,18 @@ def generate_dif_docs():
         logging.info("Generated DIF Listing for {}".format(dif_header))
 
 
+def generate_top_docs():
+    '''Generate top level documentation fragments.
+
+    The result is in Markdown format and is written to
+    outdir-generated/top_docs_directory/<top level name>/*.md.
+    '''
+    script = SRCTREE_TOP / 'util' / 'design' / 'gen-top-docs.py'
+    outdir = config['outdir-generated'] / config["top_docs_directory"]
+    for top in config["hw_top_definitions"]:
+        subprocess.run([str(script), "-t", top, "-o", outdir])
+
+
 def generate_otbn_isa():
     '''Generate the OTBN ISA documentation fragment
 
@@ -497,6 +517,7 @@ def main():
     generate_tool_versions()
     generate_dif_docs()
     generate_otbn_isa()
+    generate_top_docs()
 
     hugo_localinstall_dir = SRCTREE_TOP / 'build' / 'docs-hugo'
     os.environ["PATH"] += os.pathsep + str(hugo_localinstall_dir)
