@@ -30,21 +30,20 @@
 #define kIllegalAddr1 0x4041FFF0u
 #define kIllegalAddr2 0x40003618u
 #define kSkipComp 0x12345678u
-#define kCpuDumpSize 9
+#define kCpuDumpSize 8
 
 /**
  * Cpu dump struct index
  */
 enum {
   kCpuDumpIdxCurrentExceptionAddr = 0,
-  kCpuDumpIdxCurrentLastDataAddr = 1,
-  kCpuDumpIdxCurrentNextPc = 2,
-  kCpuDumpIdxCurrentPc = 3,
-  kCpuDumpIdxPreviousExceptionAddr = 4,
-  kCpuDumpIdxPreviousLastDataAddr = 5,
-  kCpuDumpIdxPreviousNextPc = 6,
-  kCpuDumpIdxPreviousPc = 7,
-  kCpuDumpIdxPreviousValid = 8,
+  kCpuDumpIdxCurrentExceptionPc = 1,
+  kCpuDumpIdxCurrentLastDataAddr = 2,
+  kCpuDumpIdxCurrentNextPc = 3,
+  kCpuDumpIdxCurrentPc = 4,
+  kCpuDumpIdxPreviousExceptionAddr = 5,
+  kCpuDumpIdxPreviousExceptionPc = 6,
+  kCpuDumpIdxPreviousValid = 7,
 };
 
 /**
@@ -52,31 +51,30 @@ enum {
  */
 __attribute__((section(".non_volatile_scratch")))
 const volatile dif_rstmgr_cpu_info_dump_segment_t exp_dump[kCpuDumpSize] = {
-    UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX,
+    UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX,
     UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX};
 
 /**
  *  Dump structure:
  *    0: current.exception_addr
- *    1: current.last_data_addr
- *   *2: current.next_pc
- *   *3: current.pc
- *    4: previous.exception_addr
- *    5: previous.last_data_addr
- *   *6: previous.next_pc
- *    7: previous.pc
- *    8: previous_valid
+ *    1: current.exception_pc
+ *    2: current.last_data_addr
+ *   *3: current.next_pc
+ *   *4: current.pc
+ *    5: previous.exception_addr
+ *    6: previous.exception_pc
+ *    7: previous_valid
  *
  * Observed cpu dump will be collected after watch dog bite,
  * exp cpu dump will be created at the 'ottf_exception_handler'.
  * Following fields are current code specific and
  * will be skipped comparison.
  *
- *  current.next_pc, current.pc, previous.next_pc
+ *  current.next_pc, current.pc, current.last_data_addr
  */
 static dif_rstmgr_cpu_info_dump_segment_t dump[kCpuDumpSize];
 static dif_rstmgr_cpu_info_dump_segment_t temp_dump[kCpuDumpSize] = {
-    kSkipComp, kSkipComp, kSkipComp, kSkipComp, kSkipComp,
+    kSkipComp, kSkipComp, kSkipComp, kSkipComp,
     kSkipComp, kSkipComp, kSkipComp, kSkipComp};
 
 static dif_flash_ctrl_state_t flash_ctrl;
@@ -108,16 +106,26 @@ static void read_error(void) {
 void ottf_exception_handler(void) {
   uint32_t addr = (uint32_t)exp_dump;
 
-  temp_dump[kCpuDumpIdxCurrentExceptionAddr] =
+  // The exception address ends up being the same since both are
+  // are referencing the same read function
+  temp_dump[kCpuDumpIdxCurrentExceptionPc] =
       (dif_rstmgr_cpu_info_dump_segment_t)ibex_mepc_read();
-  temp_dump[kCpuDumpIdxPreviousExceptionAddr] =
-      temp_dump[kCpuDumpIdxCurrentExceptionAddr];
-  temp_dump[kCpuDumpIdxCurrentLastDataAddr] = kIllegalAddr2;
-  temp_dump[kCpuDumpIdxPreviousLastDataAddr] = kIllegalAddr2;
+  temp_dump[kCpuDumpIdxCurrentExceptionAddr] = kIllegalAddr2;
+
+  temp_dump[kCpuDumpIdxPreviousExceptionPc] =
+      temp_dump[kCpuDumpIdxCurrentExceptionPc];
+  temp_dump[kCpuDumpIdxPreviousExceptionAddr] = kIllegalAddr1;
   temp_dump[kCpuDumpIdxPreviousValid] = 1;
 
   CHECK(flash_ctrl_testutils_write(&flash_ctrl, addr, 0, temp_dump,
-                                   kDifFlashCtrlPartitionTypeData, 9) == 0);
+                                   kDifFlashCtrlPartitionTypeData,
+                                   kCpuDumpSize) == 0);
+
+  for (int i = 0; i < kCpuDumpSize; ++i) {
+    dif_rstmgr_cpu_info_dump_segment_t rdata = abs_mmio_read32(addr);
+    LOG_INFO("Expected dump:%d: 0x%x", i, rdata);
+    addr += 4;
+  }
 
   read_error();
 }
@@ -154,8 +162,8 @@ bool test_main(void) {
     LOG_INFO("Booting for the first time, setting wdog");
 
     global_error_cnt = 0;
-    uint32_t bark_cycles = aon_timer_testutils_get_aon_cycles_from_us(200);
-    uint32_t bite_cycles = aon_timer_testutils_get_aon_cycles_from_us(200);
+    uint32_t bark_cycles = aon_timer_testutils_get_aon_cycles_from_us(100);
+    uint32_t bite_cycles = aon_timer_testutils_get_aon_cycles_from_us(100);
 
     // Set wdog as a reset source.
     CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,

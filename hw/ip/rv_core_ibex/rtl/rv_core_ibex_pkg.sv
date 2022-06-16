@@ -15,8 +15,9 @@ package rv_core_ibex_pkg;
 
   typedef struct packed {
     // previous valid is true only during double fault
-    logic previous_valid;
-    ibex_pkg::crash_dump_t previous;
+    logic prev_valid;
+    logic [31:0] prev_exception_pc;
+    logic [31:0] prev_exception_addr;
     ibex_pkg::crash_dump_t current;
   } cpu_crash_dump_t;
 
