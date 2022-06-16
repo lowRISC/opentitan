@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-import collections.abc
 import os
 import shlex
 import sys
@@ -19,112 +18,105 @@ class ConfigException(Exception):
     pass
 
 
-def _verify_config(name, config_dict):
-    """Checks a config_dict matches expectations.
+class Config:
+    '''An object representing an Ibex configuration'''
+    known_fields = [
+        ('RV32E', bool),
+        ('RV32M', str),
+        ('RV32B', str),
+        ('RegFile', str),
+        ('BranchTargetALU', bool),
+        ('WritebackStage', bool),
+        ('ICache', bool),
+        ('ICacheECC', bool),
+        ('ICacheScramble', bool),
+        ('BranchPredictor', bool),
+        ('DbgTriggerEn', bool),
+        ('SecureIbex', bool),
+        ('PMPEnable', bool),
+        ('PMPGranularity', int),
+        ('PMPNumRegions', int),
+        ('MHPMCounterNum', int),
+        ('MHPMCounterWidth', int)
+    ]
 
-    A config_dict is the dictionary mapping parameters to values for a
-    particular config, it must obey the following rules:
-        - It's a mapping object e.g. OrderedDict
-        - Its values can only be strings, integers or booleans
+    def __init__(self, yml):
+        if not isinstance(yml, dict):
+            raise ValueError('Configuration object is not a dict')
 
-    Args:
-        name: The name of the config being checked (used to form useful error
-        messages)
-        config_dict: The config_dict to check, must be a mapping object
+        yaml_keys = set(yml.keys())
+        known_keys = {fld for (fld, typ) in Config.known_fields}
 
-    Returns:
-        Nothing, an exception is thrown if an issue is found
+        extra_keys = yaml_keys - known_keys
+        if extra_keys:
+            raise ValueError(f'Configuration object has '
+                             f'unknown keys: {extra_keys}')
 
-    Raises:
-        ConfigException: An issue was found with config_dict
-    """
+        missing_keys = known_keys - yaml_keys
+        if missing_keys:
+            raise ValueError(f'Configuration object has '
+                             f'missing keys: {extra_keys}')
 
-    if not isinstance(config_dict, collections.abc.Mapping):
-        raise ConfigException('Config ' + name +
-                              ' must have dictionary giving parameters')
+        self.params = yml
 
-    for k, v in config_dict.items():
-        if isinstance(v, int):
-            continue
-        if isinstance(v, str):
-            continue
-        if isinstance(v, bool):
-            continue
+        self.rv32e = Config.read_bool('RV32E', yml)
+        self.rv32m = Config.read_str('RV32M', yml)
+        self.rv32b = Config.read_str('RV32B', yml)
+        self.reg_file = Config.read_str('RegFile', yml)
+        self.branch_target_alu = Config.read_bool('BranchTargetALU', yml)
+        self.writeback_stage = Config.read_bool('WritebackStage', yml)
+        self.icache = Config.read_bool('ICache', yml)
+        self.icache_ecc = Config.read_bool('ICacheECC', yml)
+        self.icache_scramble = Config.read_bool('ICacheScramble', yml)
+        self.branch_predictor = Config.read_bool('BranchPredictor', yml)
+        self.dbg_trigger_en = Config.read_bool('DbgTriggerEn', yml)
+        self.secure_ibex = Config.read_bool('SecureIbex', yml)
+        self.pmp_enable = Config.read_bool('PMPEnable', yml)
+        self.pmp_granularity = Config.read_int('PMPGranularity', yml)
+        self.pmp_num_regions = Config.read_int('PMPNumRegions', yml)
+        self.mhpm_counter_num = Config.read_int('MHPMCounterNum', yml)
+        self.mhpm_counter_width = Config.read_int('MHPMCounterWidth', yml)
 
-        raise ConfigException('Parameter ' + k + ' for config ' + name +
-                              ' must be string, int or bool got ' +
-                              str(type(v)))
+    @staticmethod
+    def read_bool(fld, yml):
+        val = yml[fld]
+        if isinstance(val, bool):
+            return val
+        if isinstance(val, int):
+            if 0 <= val <= 1:
+                return val != 0
 
+            raise ValueError(f'{fld} value is {val}, which is out of '
+                             'range for a boolean type.')
+        raise ValueError(f'{fld} value is {val!r}, but we expected a bool.')
 
-def _verify_config_parameters(config_dicts):
-    """Verifies all parameters across config_dicts match expectations.
+    @staticmethod
+    def read_int(fld, yml):
+        val = yml[fld]
+        if isinstance(val, int):
+            return val
+        raise ValueError(f'{fld} value is {val!r}, but we expected an int.')
 
-    Each configuration must obey the following fules:
-        - Each config has the same set of parameters specified
-
-    Args:
-        config_dicts: A dictionary of configurations, maps from configuration
-        name to a configuration (itself a dictionary)
-
-    Returns:
-        Nothing, an exception is thrown if an issue is found
-
-    Raises:
-        ConfigException: An issue was found with config_dicts
-    """
-
-    parameters = set()
-
-    first = True
-
-    for name, config_dict in config_dicts.items():
-        parameters_this_config = set()
-
-        for parameter, value in config_dict.items():
-            if first:
-                parameters.add(parameter)
-
-            parameters_this_config.add(parameter)
-
-        if first:
-            first = False
-        else:
-            parameter_difference = parameters ^ parameters_this_config
-            if parameter_difference:
-                raise ConfigException('Config ' + name +
-                                      ' has differing parameters ' +
-                                      ','.join(parameter_difference))
+    @staticmethod
+    def read_str(fld, yml):
+        val = yml[fld]
+        if isinstance(val, str):
+            return val
+        raise ValueError(f'{fld} value is {val!r}, but we expected a string.')
 
 
-def get_config_dicts(config_file):
-    """Extracts a dictionary of configuration dictionaries from a file object
+class Configs:
+    def __init__(self, yml):
+        if not isinstance(yml, dict):
+            raise ValueError('Configurations dictionary is not a dict')
 
-    Given a file object parses YAML from it to obtain a dictionary of
-    configurations
-
-    Args:
-        config_file: A file object for a file containing the YAML configuration
-        file
-
-    Returns:
-        A dictionary of configurations, maps from a configuration name to a
-        configuration (itself a dictionary mapping parameters to values)
-
-    Raises:
-        ConfigException: An issue was found with the configuration file
-    """
-
-    try:
-        config_yaml = yaml.load(config_file, Loader=yaml.SafeLoader)
-    except yaml.YAMLError as e:
-        raise ConfigException('Could not decode yaml:\n' + str(e))
-
-    for k, v in config_yaml.items():
-        _verify_config(k, v)
-
-    _verify_config_parameters(config_yaml)
-
-    return config_yaml
+        self.configs = {}
+        for cfg_name, cfg_yaml in yml.items():
+            try:
+                self.configs[cfg_name] = Config(cfg_yaml)
+            except ValueError as err:
+                raise ValueError(f'Error when reading '
+                                 f'{cfg_name!r} config: {err}') from None
 
 
 class FusesocOpts:
@@ -133,18 +125,11 @@ class FusesocOpts:
             'fusesoc_opts', help=('Outputs options for fusesoc'))
         output_argparser.set_defaults(output_fn=self.output)
 
-    def output(self, config_dict, args):
+    def output(self, config, args):
         fusesoc_cmd = []
-        for parameter, value in config_dict.items():
-            if isinstance(value, bool):
-                # For fusesoc boolean parameters are set to true if given on the
-                # command line otherwise false. It doesn't support an explicit
-                # --param=True style
-                if value:
-                    fusesoc_cmd.append(shlex.quote('--' + parameter))
-            else:
-                fusesoc_cmd.append(
-                    shlex.quote('--' + parameter + '=' + str(value)))
+        for fld, typ in Config.known_fields:
+            val = config.params[fld]
+            fusesoc_cmd.append(shlex.quote(f'--{fld}={val}'))
 
         return ' '.join(fusesoc_cmd)
 
@@ -175,7 +160,7 @@ class SimOpts:
             default='')
         output_argparser.set_defaults(output_fn=self.output)
 
-    def output(self, config_dict, args):
+    def output(self, config, args):
         if (args.ins_hier_path != ''):
             ins_hier_path = args.ins_hier_path + self.hierarchy_sep
         else:
@@ -183,19 +168,21 @@ class SimOpts:
 
         sim_opts = []
 
-        for parameter, value in config_dict.items():
-            if isinstance(value, str):
-                parameter_define = args.string_define_prefix + parameter
-                define_opts = self.define_set_fn(parameter_define, value)
+        for fld, typ in Config.known_fields:
+            val = config.params[fld]
+
+            if typ is str:
+                parameter_define = args.string_define_prefix + fld
+                define_opts = self.define_set_fn(parameter_define, val)
                 sim_opts += [shlex.quote(arg) for arg in define_opts]
             else:
-                if isinstance(value, bool):
-                    val_str = '1' if value else '0'
-                else:
-                    val_str = str(value)
+                assert typ in [bool, int]
 
-                full_param = ins_hier_path + parameter
-                param_opts = self.param_set_fn(full_param, val_str)
+                # Explicitly convert to 0/1 (handling genuine booleans)
+                val_as_int = int(val)
+
+                full_param = ins_hier_path + fld
+                param_opts = self.param_set_fn(full_param, str(val_as_int))
                 sim_opts += [shlex.quote(arg) for arg in param_opts]
 
         return ' '.join(sim_opts)
@@ -219,29 +206,29 @@ def parse_config(config_name, config_filename):
 
         config_filename: Name of the configuration filename to be parsed
 
-    Returns: the chosen Ibex config as a YAML object.
+    Returns: the chosen Ibex config as a Config object.
 
-    Raises a ConfigException if there are any error while parsing the YAML.
+    Raises an exception if there is an error loading or parsing the YAML, or if
+    the YAML doesn't define a configuration with the requested name.
 
-    Raises a FileNotFoundError if there are errors opening the chosen config file.
     """
-    try:
-        config_file = open(config_filename)
-        config_dicts = get_config_dicts(config_file)
+    with open(config_filename) as config_file:
+        try:
+            yml = yaml.load(config_file, Loader=yaml.SafeLoader)
+        except yaml.YAMLError as err:
+            raise ConfigException(f'Could not decode yaml: {err}')
 
-        if config_name not in config_dicts:
-            print('ERROR: configuration {!r} not found in {!r}.'.format(
-                  config_name, config_filename), file=sys.stderr)
-            sys.exit(1)
-        return config_dicts[config_name]
-    except ConfigException as ce:
-        print('ERROR: failure to process configuration from {!r} {!r}.'.format(
-              config_filename, ce), file=sys.stderr)
-        sys.exit(1)
-    except FileNotFoundError:
-        print('ERROR: could not find configuration file {!r}.'.format(
-              config_filename), file=sys.stderr)
-        sys.exit(1)
+    try:
+        configs = Configs(yml)
+    except ValueError as err:
+        raise ConfigException(f'{config_filename!r}: {err}') from None
+
+    config = configs.configs.get(config_name)
+    if config is None:
+        raise ValueError(f'Configuration {config_name!r} not found '
+                         'in YAML at {config_filename!r}.')
+
+    return config
 
 
 def main():

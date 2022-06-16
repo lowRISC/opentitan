@@ -400,8 +400,8 @@ class core_ibex_debug_intr_basic_test extends core_ibex_base_test;
       end
       begin : ret_timeout
         clk_vif.wait_clks(timeout);
-        `uvm_fatal(`gfn, $sformatf("No %0s detected, or incorrect privilege mode switch in \
-                                    timeout period of %0d cycles", ret, timeout))
+        `uvm_fatal(`gfn, $sformatf({"No %0s detected, or incorrect privilege mode switch in ",
+                                   "timeout period of %0d cycles"}, ret, timeout))
       end
     join_any
     // Will only get here if dret successfully detected within timeout period

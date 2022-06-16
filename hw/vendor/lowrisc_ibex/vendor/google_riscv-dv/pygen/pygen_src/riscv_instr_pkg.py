@@ -905,6 +905,8 @@ class privileged_reg_t(IntEnum):
     MCAUSE = 0x342  # Machine trap cause
     MTVAL = 0x343  # Machine bad address or instruction
     MIP = 0x344  # Machine interrupt pending
+    MSECCFG = 0x747 # Machine security configuration
+    MSECCFGH = 0x757 # Machine security configuration, RV32 only
     PMPCFG0 = 0x3A0  # Physical memory protection configuration
     PMPCFG1 = 0x3A1  # Physical memory protection configuration, RV32 only
     PMPCFG2 = 0x3A2  # Physical memory protection configuration
@@ -1174,6 +1176,13 @@ class store_lsu_hazard_e(IntEnum):
 class jalr_riscv_reg_t(IntEnum):
     RA = 0
     T1 = auto()
+
+
+# ePMP machine security configuration
+class mseccfg_reg_t(IntEnum):
+    rlb = 1b1
+    mmwp = 1b0
+    mml = 1b0
 
 
 # PMP address matching mode
@@ -1802,6 +1811,84 @@ def get_attr_list(instr_name):
         riscv_instr_name_t.FCVT_D_WU: [riscv_instr_format_t.I_FORMAT,
                                        riscv_instr_category_t.ARITHMETIC,
                                        riscv_instr_group_t.RV32D],
+
+        #RV64I
+        riscv_instr_name_t.LWU: [riscv_instr_format_t.I_FORMAT,
+                                 riscv_instr_category_t.LOAD,
+                                 riscv_instr_group_t.RV64I],
+        riscv_instr_name_t.LD: [riscv_instr_format_t.I_FORMAT,
+                                 riscv_instr_category_t.LOAD,
+                                 riscv_instr_group_t.RV64I],
+        riscv_instr_name_t.SD: [riscv_instr_format_t.S_FORMAT,
+                                 riscv_instr_category_t.STORE,
+                                 riscv_instr_group_t.RV64I],
+        riscv_instr_name_t.SLLW: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.SHIFT,
+                                 riscv_instr_group_t.RV64I],
+        riscv_instr_name_t.SLLIW: [riscv_instr_format_t.I_FORMAT,
+                                 riscv_instr_category_t.SHIFT,
+                                 riscv_instr_group_t.RV64I],
+        riscv_instr_name_t.SRLW: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.SHIFT,
+                                 riscv_instr_group_t.RV64I],
+        riscv_instr_name_t.SRLIW: [riscv_instr_format_t.I_FORMAT,
+                                 riscv_instr_category_t.SHIFT,
+                                 riscv_instr_group_t.RV64I],
+        riscv_instr_name_t.SRAW: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.SHIFT,
+                                 riscv_instr_group_t.RV64I],
+        riscv_instr_name_t.SRAIW: [riscv_instr_format_t.I_FORMAT,
+                                 riscv_instr_category_t.SHIFT,
+                                 riscv_instr_group_t.RV64I],
+        riscv_instr_name_t.ADDW: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.ARITHMETIC,
+                                 riscv_instr_group_t.RV64I],
+        riscv_instr_name_t.ADDIW: [riscv_instr_format_t.I_FORMAT,
+                                 riscv_instr_category_t.ARITHMETIC,
+                                 riscv_instr_group_t.RV64I],
+        riscv_instr_name_t.SUBW: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.ARITHMETIC,
+                                 riscv_instr_group_t.RV64I],
+
+        # RV64M
+        riscv_instr_name_t.MULW: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.ARITHMETIC,
+                                 riscv_instr_group_t.RV64M],
+        riscv_instr_name_t.DIVW: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.ARITHMETIC,
+                                 riscv_instr_group_t.RV64M],
+        riscv_instr_name_t.DIVUW: [riscv_instr_format_t.R_FORMAT,
+                                  riscv_instr_category_t.ARITHMETIC,
+                                  riscv_instr_group_t.RV64M],
+        riscv_instr_name_t.REMW: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.ARITHMETIC,
+                                 riscv_instr_group_t.RV64M],
+        riscv_instr_name_t.REMUW: [riscv_instr_format_t.R_FORMAT,
+                                  riscv_instr_category_t.ARITHMETIC,
+                                  riscv_instr_group_t.RV64M],
+
+        # RV64C
+        riscv_instr_name_t.C_ADDIW: [riscv_instr_format_t.CI_FORMAT,
+                                     riscv_instr_category_t.ARITHMETIC,
+                                     riscv_instr_group_t.RV64C],
+        riscv_instr_name_t.C_SUBW: [riscv_instr_format_t.CA_FORMAT,
+                                    riscv_instr_category_t.ARITHMETIC,
+                                    riscv_instr_group_t.RV64C],
+        riscv_instr_name_t.C_ADDW: [riscv_instr_format_t.CA_FORMAT,
+                                    riscv_instr_category_t.ARITHMETIC,
+                                    riscv_instr_group_t.RV64C],
+        riscv_instr_name_t.C_LD: [riscv_instr_format_t.CL_FORMAT,
+                                    riscv_instr_category_t.LOAD,
+                                    riscv_instr_group_t.RV64C, imm_t.UIMM],
+        riscv_instr_name_t.C_SD: [riscv_instr_format_t.CS_FORMAT,
+                                    riscv_instr_category_t.STORE,
+                                    riscv_instr_group_t.RV64C, imm_t.UIMM],
+        riscv_instr_name_t.C_LDSP: [riscv_instr_format_t.CI_FORMAT,
+                                    riscv_instr_category_t.LOAD,
+                                    riscv_instr_group_t.RV64C, imm_t.UIMM],
+        riscv_instr_name_t.C_SDSP: [riscv_instr_format_t.CSS_FORMAT,
+                                    riscv_instr_category_t.STORE,
+                                    riscv_instr_group_t.RV64C, imm_t.UIMM],
     }
     # if instruction is not present in the dictionary,second argument well
     # be assigned as default value of passed argument

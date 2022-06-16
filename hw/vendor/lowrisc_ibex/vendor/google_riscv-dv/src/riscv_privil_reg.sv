@@ -264,6 +264,20 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
         privil_level = M_LEVEL;
         add_field("VALUE",  XLEN,  WARL);
       end
+      // Machine security configuration
+      MSECCFG: begin
+        privil_level = M_LEVEL;
+        add_field("MML", 1, WARL); // RW1S
+        add_field("MMWP", 1, WARL); // RW1S
+        add_field("RLB", 1, WARL); // RW0C
+      end
+      // Machine security configuration, RV32 only
+      MSECCFGH: begin
+        privil_level = M_LEVEL;
+        if(XLEN!=32) begin
+          `uvm_fatal(`gfn, "CSR MSECCFGH only exists in RV32.")
+        end
+      end
       // Physical Memory Protection Configuration Register
       PMPCFG0: begin
         privil_level = M_LEVEL;

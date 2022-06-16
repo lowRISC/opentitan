@@ -57,9 +57,7 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
   endfunction : build_phase
 
   protected function void init_cosim();
-    if (cosim_handle) begin
-      spike_cosim_release(cosim_handle);
-    end
+    cleanup_cosim();
 
     // TODO: Ensure log file on reset gets append rather than overwrite?
     cosim_handle = spike_cosim_init(cfg.isa_string, cfg.start_pc, cfg.start_mtvec, cfg.log_file);
@@ -67,6 +65,13 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
     if (cosim_handle == null) begin
       `uvm_fatal(`gfn, "Could not initialise cosim")
     end
+  endfunction
+
+  protected function void cleanup_cosim();
+     if (cosim_handle) begin
+        spike_cosim_release(cosim_handle);
+     end
+     cosim_handle = null;
   endfunction
 
   virtual task run_phase(uvm_phase phase);
@@ -264,10 +269,14 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
     `uvm_info(`gfn, $sformatf("Co-simulation matched %d instructions",
                                 riscv_cosim_get_insn_cnt(cosim_handle)), UVM_LOW)
 
-    if (cosim_handle) begin
-      spike_cosim_release(cosim_handle);
-    end
+    cleanup_cosim();
   endfunction : final_phase
+
+  // If the UVM_EXIT action is triggered (such as by reaching max_quit_count), this callback is run.
+  // This ensures proper cleanup, such as commiting the logfile to disk.
+  function void pre_abort();
+    cleanup_cosim();
+  endfunction
 
   task handle_reset();
     init_cosim();

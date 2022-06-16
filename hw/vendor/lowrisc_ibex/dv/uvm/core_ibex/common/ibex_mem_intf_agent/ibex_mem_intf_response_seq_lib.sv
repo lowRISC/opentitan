@@ -30,6 +30,8 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
       bit [DATA_WIDTH-1:0] rand_data;
       bit [DATA_WIDTH-1:0] read_data;
       bit [INTG_WIDTH-1:0] read_intg;
+      bit                  data_was_uninitialized = 1'b0;
+
       p_sequencer.addr_ph_port.get(item);
       req = ibex_mem_intf_seq_item::type_id::create("req");
       error_synch = 1'b0;
@@ -71,12 +73,20 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
             end
             req.data = read_data;
           end else begin
-            req.data = m_mem.read(aligned_addr);
+            // Allow fetches from uninitialised IMEM: the core can run ahead of what's actually
+            // initialised and we don't want to kill the simulation. When this happens, we set the
+            // data_was_uninitialized flag and set req.data to zero.
+            req.data = read(.addr(aligned_addr), .not_set(data_was_uninitialized));
           end
         end
       end
-      // Add correct integrity bits
+      // Add integrity bits
       {req.intg, req.data} = prim_secded_pkg::prim_secded_inv_39_32_enc(req.data);
+
+      // If data_was_uninitialized is true then we want to force bad integrity bits: invert the
+      // correct ones, which we know will break things for the codes we use.
+      if (data_was_uninitialized) req.intg = ~req.intg;
+
       `uvm_info(get_full_name(), $sformatf("Response transfer:\n%0s", req.sprint()), UVM_HIGH)
       start_item(req);
       finish_item(req);
@@ -98,6 +108,21 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
 
   virtual function bit get_error_synch();
     return this.error_synch;
+  endfunction
+
+  // Read a word of DATA_WIDTH bits at addr.
+  //
+  // Return 0xabababab and write not_set = 1'b1 for addresses where there is no architectural value
+  // (rather than generating an error).
+  protected function logic [DATA_WIDTH-1:0] read(bit [ADDR_WIDTH-1:0] addr, output bit not_set);
+    for (int i = 0; i < DATA_WIDTH / 8; i++) begin
+      if (!m_mem.system_memory.exists(addr + i)) begin
+        not_set = 1'b1;
+        return {DATA_WIDTH/8{8'hab}};
+      end
+    end
+    not_set = 1'b0;
+    return m_mem.read(addr);
   endfunction
 
 endclass : ibex_mem_intf_response_seq

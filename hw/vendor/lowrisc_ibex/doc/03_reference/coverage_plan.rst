@@ -127,6 +127,7 @@ Ibex hazards all occur in the interaction between the ID and EX stage.
     Handled with data forwarding and no stall.
 
 * RAW Load/Store bytes - Load with bytes overlapping a store immediately before it.
+  Covered by ``cp_mem_raw_hz``
 
 State Specific Behaviour
 """"""""""""""""""""""""
@@ -157,6 +158,7 @@ Some instructions will behave differently depending upon the state of the proces
     * ``tdata3``
 
 * Loads/stores with ``mstatus.mprv`` set and unset.
+  Covered by ````mprv_effect_cross``
 * EBreak behaviour in U/M mode with different ``dcsr.ebreakm`` / ``dcsr.ebreaku`` settings.
   Covered by ``priv_mode_instr_cross``
 
@@ -198,16 +200,17 @@ Exceptions, interrupts and debug entry can all cause control flow changes combin
 Furthermore they can all occur together and must be appropriately prioritised (consider a instruction with hardware trigger point matching it, that causes some exception and an interrupt is raised the cycle it enters the ID/EX stage)
 
 * Exception from instruction fetch error (covered by the **FetchError** instruction category).
-* Exception from instruction PMP violation.
+* ``pmp_iside_mode_cross`` - Exception from instruction PMP violation.
 * Exception from illegal instruction (covered by the illegal instruction categories).
 * Exception from memory fetch error.
-* Exception from memory access PMP violation.
+* ``pmp_dside_mode_cross`` - Exception from memory access PMP violation.
 * Unaligned access cases (both accesses saw error, first or second only saw error, or neither saw error) for both kinds of memory exceptions.
 * Interrupt raised/taken.
 
-  * Interrupt raised/taken for each available interrupt line.
+  * ``cp_interrupt_taken`` - Interrupt raised/taken for each available interrupt line.
     For cross coverage, the precise interrupt that's raised/taken is not relevant and it only needs to be grouped by NMI vs non-NMI.
-  * Interrupt raised/taken the first cycle an instruction is in ID/EX or some other cycle the instruction is in ID/EX.
+    This is done by using ``cp_nmi_taken`` coverpoint in the crosses.
+  * ``interrupt_taken_instr_cross`` - Interrupt raised/taken the first cycle an instruction is in ID/EX or some other cycle the instruction is in ID/EX.
 
 * External debug request.
 * Instruction executed when debug single step enabled.
@@ -216,18 +219,19 @@ Furthermore they can all occur together and must be appropriately prioritised (c
   * Instruction matching trigger point causes exception
 
 * Ibex operating in debug mode.
-* Debug and Interrupt whilst sleeping with WFI
+* ``irq_wfi_cross``, ``debug_wfi_cross`` - Debug and Interrupt whilst sleeping with WFI
 
   * Cover with global interrupts enabled and disabled
   * Cover with specific interrupt enabled and disabled (Should exit sleep when
     interrupt is enabled but global interrupts set to disabled, should continue
     sleeping when both are disabled).
+    Continuing to sleep in the case explained above is covered by ``cp_irq_continue_sleep``
 
 * Debug and interrupt occurring whilst entering WFI
 
   * Covering period between WFI entering ID/EX stage and going into sleep
 
-* Double fault
+* ``cp_double_fault`` - Double fault
 
 PMP
 ^^^
@@ -244,9 +248,9 @@ PMP
 
 * Access fail & pass.
 
-  * All combinations of unaligned access split across a boundary, both halves pass, neither pass, just the first passes, just the second passes.
+  * ``misaligned_lsu_access_cross`` - All combinations of unaligned access split across a boundary, both halves pass, neither pass, just the first passes, just the second passes.
 
-    * Two possible boundary splits; across a 32-bit boundary within a region or a boundary between PMP regions.
+    * ``pmp_instr_edge_cross`` - Two possible boundary splits; across a 32-bit boundary within a region or a boundary between PMP regions.
 
   * ``cp_pmp_iside_region_override``, ``cp_pmp_iside2_region_override``, ``cp_pmp_dside_region_override`` - Higher priority entry allows access that lower priority entry prevents.
   * Compressed instruction access (16-bit) passes PMP but 32-bit access at same address crosses PMP region boundary.
@@ -255,17 +259,17 @@ PMP
 
   * RLB - rule locking bypass.
 
-    * Modify locked region with RLB set.
-    * Try to enable RLB when RLB is disabled and locked regions present.
+    * ``cp_edit_locked_pmpcfg``,``cp_edit_locked_pmpaddr`` - Modify locked region with RLB set.
+    * ``rlb_csr_cross`` - Try to enable RLB when RLB is disabled and locked regions present.
 
   * MMWP - machine mode whitelist policy.
 
-    * M-mode access fail due to not matching any PMP regions.
-    * Try to disable when enabled.
+    * ``pmp_dside/iside/iside2_nomatch_cross`` - M-mode access fail due to not matching any PMP regions.
+    * ``mmwp_csr_cross`` - Try to disable when enabled.
 
   * MML - machine mode lockdown policy.
 
-    * Try to disable when enabled.
+    * ``rlb_csr_cross`` - Try to disable when enabled.
 
 * Access close to PMP region modification that allows/disallows that access.
 
@@ -279,13 +283,13 @@ Basic read/write functionality must be tested on all implemented CSRs.
   * Write to read only CSR.
     Covered by ensuring ``cp_csr_write`` is seen for read-only CSRs
 
-* Write illegal/unsupported value to WARL field.
+* ``cp_warl_check_CSRNAME`` - Write illegal/unsupported value to WARL field for CSR named ``CSRNAME``.
 * ``csr_read_only_priv_cross``, ``csr_write_priv_cross``, ``csr_read_only_debug_cross``, ``csr_write_debug_cross`` - Crosses of reads and writes to CSRs from different privilege levels/debug mode.
 
   * Access to CSR disallowed due to privilege levels/debug mode
     Covered by ensuring within the crosses
 
-* Read and write from/to an unimplemented CSR
+* ``cp_ignored_csrs_ro``, ``cp_ignored_csrs_w`` - Read and write from/to an unimplemented CSR
 
 CSRs addresses do not need to be crossed with the variety of CSR instructions as these all use the same basic read & write interface into ``ibex_cs_registers``.
 Coverage of the above points will be sampled at the ``ibex_cs_registers`` interface (as opposed to sampling CSR instructions).
@@ -295,7 +299,7 @@ Miscellaneous
 Various points of interest do not fit into the categories above.
 
 * ``instr_unstalled`` - Instruction unstalled - Cover the cycle an instruction is unstalled having just been stalled.
-* Enabling/Disabling ICache.
+* ``cp_icache_enable`` - Enabling/Disabling ICache.
 
 Cross Coverage
 --------------
@@ -326,7 +330,7 @@ There must be a documented reason a particular bin is added to the illegal or ig
   * RAW hazard between load/store requires no cross coverage as it's only seen for load and store instructions so the single coverpoint suffices.
 
 * ``debug_instruction_cross`` - Instruction Categories x Debug Mode
-* Instruction Categories x Controller state transitions of interest
+* ``controller_instr_cross`` - Instruction Categories x Controller state transitions of interest
 * ``interrupt_taken_instr_cross``, ``debug_entry_if_instr_cross``, ``pipe_flush_instr_cross`` - Interrupt taken/Debug mode entry/Pipe flush x instruction unstalled x instruction category
 
   * Three separate cross coverage groups: one for interrupt, debug and pipe flush.

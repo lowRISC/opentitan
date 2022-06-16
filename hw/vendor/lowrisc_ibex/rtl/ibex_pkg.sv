@@ -16,6 +16,7 @@ package ibex_pkg;
     logic [31:0] current_pc;
     logic [31:0] next_pc;
     logic [31:0] last_data_addr;
+    logic [31:0] exception_pc;
     logic [31:0] exception_addr;
   } crash_dump_t;
 

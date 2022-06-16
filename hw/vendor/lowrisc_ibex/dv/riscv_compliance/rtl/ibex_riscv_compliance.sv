@@ -15,20 +15,23 @@ module ibex_riscv_compliance (
   input IO_RST_N
 );
 
-  parameter bit          PMPEnable      = 1'b0;
-  parameter int unsigned PMPGranularity = 0;
-  parameter int unsigned PMPNumRegions  = 4;
-  parameter bit RV32E                   = 1'b0;
-  parameter ibex_pkg::rv32m_e RV32M     = ibex_pkg::RV32MFast;
-  parameter ibex_pkg::rv32b_e RV32B     = ibex_pkg::RV32BNone;
-  parameter ibex_pkg::regfile_e RegFile = ibex_pkg::RegFileFF;
-  parameter bit BranchTargetALU         = 1'b0;
-  parameter bit WritebackStage          = 1'b0;
-  parameter bit ICache                  = 1'b0;
-  parameter bit ICacheECC               = 1'b0;
-  parameter bit BranchPredictor         = 1'b0;
-  parameter bit SecureIbex              = 1'b0;
-  parameter bit ICacheScramble          = 1'b0;
+  parameter bit          PMPEnable        = 1'b0;
+  parameter int unsigned PMPGranularity   = 0;
+  parameter int unsigned PMPNumRegions    = 4;
+  parameter int unsigned MHPMCounterNum   = 0;
+  parameter int unsigned MHPMCounterWidth = 40;
+  parameter bit RV32E                     = 1'b0;
+  parameter ibex_pkg::rv32m_e RV32M       = ibex_pkg::RV32MFast;
+  parameter ibex_pkg::rv32b_e RV32B       = ibex_pkg::RV32BNone;
+  parameter ibex_pkg::regfile_e RegFile   = ibex_pkg::RegFileFF;
+  parameter bit BranchTargetALU           = 1'b0;
+  parameter bit WritebackStage            = 1'b0;
+  parameter bit ICache                    = 1'b0;
+  parameter bit ICacheECC                 = 1'b0;
+  parameter bit BranchPredictor           = 1'b0;
+  parameter bit SecureIbex                = 1'b0;
+  parameter bit ICacheScramble            = 1'b0;
+  parameter bit DbgTriggerEn              = 1'b0;
 
   logic clk_sys, rst_sys_n;
 
@@ -135,22 +138,25 @@ module ibex_riscv_compliance (
   end
 
   ibex_top_tracing #(
-      .PMPEnable       (PMPEnable       ),
-      .PMPGranularity  (PMPGranularity  ),
-      .PMPNumRegions   (PMPNumRegions   ),
-      .RV32E           (RV32E           ),
-      .RV32M           (RV32M           ),
-      .RV32B           (RV32B           ),
-      .RegFile         (RegFile         ),
-      .BranchTargetALU (BranchTargetALU ),
-      .WritebackStage  (WritebackStage  ),
-      .ICache          (ICache          ),
-      .ICacheECC       (ICacheECC       ),
-      .BranchPredictor (BranchPredictor ),
-      .SecureIbex      (SecureIbex      ),
-      .ICacheScramble  (ICacheScramble  ),
-      .DmHaltAddr      (32'h00000000    ),
-      .DmExceptionAddr (32'h00000000    )
+      .PMPEnable        (PMPEnable         ),
+      .PMPGranularity   (PMPGranularity    ),
+      .PMPNumRegions    (PMPNumRegions     ),
+      .MHPMCounterNum   (MHPMCounterNum    ),
+      .MHPMCounterWidth (MHPMCounterWidth  ),
+      .RV32E            (RV32E             ),
+      .RV32M            (RV32M             ),
+      .RV32B            (RV32B             ),
+      .RegFile          (RegFile           ),
+      .BranchTargetALU  (BranchTargetALU   ),
+      .WritebackStage   (WritebackStage    ),
+      .ICache           (ICache            ),
+      .ICacheECC        (ICacheECC         ),
+      .BranchPredictor  (BranchPredictor   ),
+      .DbgTriggerEn     (DbgTriggerEn      ),
+      .SecureIbex       (SecureIbex        ),
+      .ICacheScramble   (ICacheScramble    ),
+      .DmHaltAddr       (32'h00000000      ),
+      .DmExceptionAddr  (32'h00000000      )
     ) u_top (
       .clk_i                  (clk_sys                ),
       .rst_ni                 (rst_sys_n              ),

@@ -276,6 +276,48 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
     end
   end
 
+  // Keep track of previous data addr of Store to catch RAW hazard caused by STORE->LOAD
+  logic [31:0]     prev_store_addr;
+  logic [31:0]     data_addr_incr;
+  logic [31:0]     curr_data_addr;
+  logic            raw_hz;
+
+  always @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      prev_store_addr <= 1'b0;
+    end else if (load_store_unit_i.data_we_o) begin
+      // It does not matter if the store we executed before load is misaligned or not. Because
+      // even if it is misaligned, we would catch the "corrected" version (2nd access) before
+      // doing the RAW hazard check.
+      prev_store_addr <= load_store_unit_i.data_addr_o;
+    end
+  end
+
+  // Calculate the corrected version of the new data addr at the same time while LOAD instruction
+  // gets decoded.
+  always_comb begin
+    if (load_store_unit_i.split_misaligned_access) begin
+      data_addr_incr = load_store_unit_i.data_addr + 4;
+      curr_data_addr = {data_addr_incr[2+:30],2'b00};
+    end else begin
+      curr_data_addr = load_store_unit_i.data_addr;
+    end
+  end
+
+  // If we have LOAD at ID/EX stage and STORE at WB stage, compare the calculated address for LOAD
+  // and the saved STORE address. If they are matching we would have RAW hazard.
+  assign raw_hz = id_stage_i.instr_type_wb_o == WB_INSTR_STORE &&
+                  id_instr_category == InstrCategoryLoad &&
+                  prev_store_addr == curr_data_addr;
+
+  // Collect all the interrupts for collecting them in different bins.
+  logic [5:0] fcov_irqs = {id_stage_i.controller_i.irq_nm_ext_i,
+                           id_stage_i.controller_i.irq_nm_int,
+                           (|id_stage_i.controller_i.irqs_i.irq_fast),
+                           id_stage_i.controller_i.irqs_i.irq_external,
+                           id_stage_i.controller_i.irqs_i.irq_software,
+                           id_stage_i.controller_i.irqs_i.irq_timer};
+
   logic            instr_unstalled;
   logic            instr_unstalled_last;
   logic            id_stall_type_last_valid;
@@ -326,6 +368,10 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
     cp_wb_reg_no_load_hz: coverpoint id_stage_i.fcov_rf_rd_wb_hz &&
                                      !wb_stage_i.outstanding_load_wb_o;
 
+    cp_mem_raw_hz: coverpoint raw_hz;
+
+    cp_mprv: coverpoint cs_registers_i.mstatus_q.mprv;
+
     cp_ls_error_exception: coverpoint load_store_unit_i.fcov_ls_error_exception;
     cp_ls_pmp_exception: coverpoint load_store_unit_i.fcov_ls_pmp_exception;
 
@@ -349,6 +395,45 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
     `DV_FCOV_EXPR_SEEN(mret_in_umode, id_stage_i.mret_insn_dec && priv_mode_id == PRIV_LVL_U)
     `DV_FCOV_EXPR_SEEN(wfi_in_umode, id_stage_i.wfi_insn_dec && priv_mode_id == PRIV_LVL_U)
 
+    // Unsupported writes to WARL type CSRs
+    `DV_FCOV_EXPR_SEEN(warl_check_mstatus,
+                       fcov_csr_write &&
+                       (cs_registers_i.u_mstatus_csr.wr_data_i !=
+                       cs_registers_i.csr_wdata_int))
+
+    `DV_FCOV_EXPR_SEEN(warl_check_mie,
+                       fcov_csr_write &&
+                       (cs_registers_i.u_mie_csr.wr_data_i !=
+                       cs_registers_i.csr_wdata_int))
+
+    `DV_FCOV_EXPR_SEEN(warl_check_mtvec,
+                       fcov_csr_write &&
+                       (cs_registers_i.u_mtvec_csr.wr_data_i !=
+                       cs_registers_i.csr_wdata_int))
+
+    `DV_FCOV_EXPR_SEEN(warl_check_mepc,
+                       fcov_csr_write &&
+                       (cs_registers_i.u_mepc_csr.wr_data_i !=
+                       cs_registers_i.csr_wdata_int))
+
+    `DV_FCOV_EXPR_SEEN(warl_check_mtval,
+                       fcov_csr_write &&
+                       (cs_registers_i.u_mtval_csr.wr_data_i !=
+                       cs_registers_i.csr_wdata_int))
+
+    `DV_FCOV_EXPR_SEEN(warl_check_dcsr,
+                       fcov_csr_write &&
+                       (cs_registers_i.u_dcsr_csr.wr_data_i !=
+                       cs_registers_i.csr_wdata_int))
+
+    `DV_FCOV_EXPR_SEEN(warl_check_cpuctrl,
+                       fcov_csr_write &&
+                       (cs_registers_i.u_cpuctrl_csr.wr_data_i !=
+                       cs_registers_i.csr_wdata_int))
+
+    `DV_FCOV_EXPR_SEEN(double_fault, cs_registers_i.cpuctrl_d.double_fault_seen)
+    `DV_FCOV_EXPR_SEEN(icache_enable, cs_registers_i.cpuctrl_d.icache_enable)
+
     cp_irq_pending: coverpoint id_stage_i.irq_pending_i | id_stage_i.irq_nm_i;
     cp_debug_req: coverpoint id_stage_i.controller_i.fcov_debug_req;
 
@@ -360,30 +445,108 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
       ignore_bins ignore = {`IGNORED_CSRS};
     }
 
+    // All CSR operations perform a read so we don't need to specify the CSR operation.
+    cp_ignored_csrs: coverpoint cs_registers_i.csr_addr_i iff (id_stage_i.csr_access_o) {
+      bins unimplemented_csrs_read = {`NOT_IMPLEMENTED_CSRS};
+    }
+
+    cp_ignored_csrs_w: coverpoint cs_registers_i.csr_addr_i iff (fcov_csr_write) {
+      bins unimplemented_csrs_written = {`NOT_IMPLEMENTED_CSRS};
+    }
+
     `DV_FCOV_EXPR_SEEN(csr_invalid_read_only, fcov_csr_read_only && cs_registers_i.illegal_csr)
     `DV_FCOV_EXPR_SEEN(csr_invalid_write, fcov_csr_write && cs_registers_i.illegal_csr)
 
     cp_debug_mode: coverpoint debug_mode;
 
-    `DV_FCOV_EXPR_SEEN(interrupt_taken, id_stage_i.controller_i.fcov_interrupt_taken)
+    `DV_FCOV_EXPR_SEEN(debug_wakeup, id_stage_i.controller_i.fcov_debug_wakeup)
     `DV_FCOV_EXPR_SEEN(debug_entry_if, id_stage_i.controller_i.fcov_debug_entry_if)
     `DV_FCOV_EXPR_SEEN(debug_entry_id, id_stage_i.controller_i.fcov_debug_entry_id)
     `DV_FCOV_EXPR_SEEN(pipe_flush, id_stage_i.controller_i.fcov_pipe_flush)
 
+    cp_nmi_taken: coverpoint (id_stage_i.controller_i.nmi_mode_d &
+                              (~id_stage_i.controller_i.nmi_mode_q)) iff
+                             (id_stage_i.controller_i.fcov_interrupt_taken);
+
+    cp_interrupt_taken: coverpoint fcov_irqs iff (id_stage_i.controller_i.fcov_interrupt_taken){
+      wildcard bins nmi_external  = {6'b1?????};
+      wildcard bins nmi_internal  = {6'b01????};
+      wildcard bins irq_fast      = {6'b001???};
+      wildcard bins irq_external  = {6'b0001??};
+      wildcard bins irq_software  = {6'b00001?};
+      wildcard bins irq_timer     = {6'b000001};
+    }
+
     cp_controller_fsm: coverpoint id_stage_i.controller_i.ctrl_fsm_cs {
       bins out_of_reset = (RESET => BOOT_SET);
       bins out_of_boot_set = (BOOT_SET => FIRST_FETCH);
-      bins out_of_first_fetch[] = (FIRST_FETCH => DECODE, IRQ_TAKEN, DBG_TAKEN_IF);
-      bins out_of_decode[] = (DECODE => FLUSH, DBG_TAKEN_IF, IRQ_TAKEN);
+      bins out_of_first_fetch0 = (FIRST_FETCH => DECODE);
+      bins out_of_first_fetch1 = (FIRST_FETCH => IRQ_TAKEN);
+      bins out_of_first_fetch2 = (FIRST_FETCH => DBG_TAKEN_IF);
+      bins out_of_decode0 = (DECODE => FLUSH);
+      bins out_of_decode1 = (DECODE => DBG_TAKEN_IF);
+      bins out_of_decode2 = (DECODE => IRQ_TAKEN);
       bins out_of_irq_taken = (IRQ_TAKEN => DECODE);
       bins out_of_debug_taken_if = (DBG_TAKEN_IF => DECODE);
       bins out_of_debug_taken_id = (DBG_TAKEN_ID => DECODE);
-      bins out_of_flush[] = (FLUSH => DECODE, DBG_TAKEN_ID, WAIT_SLEEP, IRQ_TAKEN, DBG_TAKEN_IF);
+      bins out_of_flush0 = (FLUSH => DECODE);
+      bins out_of_flush1 = (FLUSH => DBG_TAKEN_ID);
+      bins out_of_flush2 = (FLUSH => WAIT_SLEEP);
+      bins out_of_flush3 = (FLUSH => IRQ_TAKEN);
+      bins out_of_flush4 = (FLUSH => DBG_TAKEN_IF);
       bins out_of_wait_sleep = (WAIT_SLEEP => SLEEP);
       bins out_of_sleep = (SLEEP => FIRST_FETCH);
       // TODO: VCS does not implement default sequence so illegal_bins will be empty
       illegal_bins illegal_transitions = default sequence;
     }
+
+    cp_controller_fsm_sleep: coverpoint id_stage_i.controller_i.ctrl_fsm_cs {
+      bins out_of_sleep = (SLEEP => FIRST_FETCH);
+      bins enter_sleep = (WAIT_SLEEP => SLEEP);
+      // TODO: VCS does not implement default sequence so illegal_bins will be empty
+      illegal_bins illegal_transitions = default sequence;
+    }
+
+    // This will only be seen when specific interrupt is disabled by MIE CSR
+    `DV_FCOV_EXPR_SEEN(irq_continue_sleep, id_stage_i.controller_i.ctrl_fsm_cs == SLEEP &&
+                                           id_stage_i.controller_i.ctrl_fsm_ns == SLEEP &&
+                                           (|cs_registers_i.mip))
+
+    controller_instr_cross: cross cp_controller_fsm, cp_id_instr_category {
+    // Only expecting DECODE => FLUSH when we have the instruction categories constrained below.
+      bins decode_to_flush =
+        binsof(cp_controller_fsm.out_of_decode0) &&
+        binsof(cp_id_instr_category) intersect {InstrCategoryMRet, InstrCategoryDRet,
+                                                InstrCategoryEBreakDbg, InstrCategoryEBreakExc,
+                                                InstrCategoryECall, InstrCategoryFetchError,
+                                                InstrCategoryCSRAccess,
+                                                InstrCategoryCSRIllegal,
+                                                InstrCategoryUncompressedIllegal,
+                                                InstrCategoryCompressedIllegal,
+                                                InstrCategoryPrivIllegal,
+                                                InstrCategoryOtherIllegal};
+      bins decode_to_dbg = binsof(cp_controller_fsm.out_of_decode1);
+      bins decode_to_irq = binsof(cp_controller_fsm.out_of_decode2);
+    // Only expecting FLUSH => DECODE when we have the instruction categories constrained below.
+      bins flush_to_decode =
+        binsof(cp_controller_fsm.out_of_flush0) &&
+        !binsof(cp_id_instr_category) intersect {InstrCategoryEBreakDbg, InstrCategoryWFI};
+    // Only expecting FLUSH => IRQ_TAKEN when we have InstrCategoryCSRAccess in ID/EX
+      bins flush_to_irq_taken =
+        binsof(cp_controller_fsm.out_of_flush3) &&
+        binsof(cp_id_instr_category) intersect {InstrCategoryCSRAccess};
+    // Only expecting FLUSH => DEBUG_IF when we have InstrCategoryEBreakDbg in ID/EX
+      bins flush_to_dbg_if =
+        binsof(cp_controller_fsm.out_of_flush4) &&
+        !binsof(cp_id_instr_category) intersect {InstrCategoryEBreakDbg};
+    }
+
+    // Include both mstatus.mie enabled/disabled because it should not affect wakeup condition
+    irq_wfi_cross: cross cp_controller_fsm_sleep, cs_registers_i.mstatus_q.mie iff
+                         (id_stage_i.irq_pending_i | id_stage_i.irq_nm_i);
+
+    debug_wfi_cross: cross cp_controller_fsm_sleep, cp_debug_wakeup iff
+                           (id_stage_i.controller_i.fcov_debug_wakeup);
 
     priv_mode_instr_cross: cross cp_priv_mode_id, cp_id_instr_category;
 
@@ -418,8 +581,8 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
         binsof(cp_id_stage_state) intersect {PipeStageEmpty};
     }
 
-    interrupt_taken_instr_cross: cross cp_interrupt_taken, instr_unstalled_last,
-      cp_id_instr_category_last;
+    interrupt_taken_instr_cross: cross cp_nmi_taken, instr_unstalled_last,
+      cp_id_instr_category_last iff (id_stage_i.controller_i.fcov_interrupt_taken);
 
     debug_instruction_cross: cross cp_debug_mode, cp_id_instr_category;
 

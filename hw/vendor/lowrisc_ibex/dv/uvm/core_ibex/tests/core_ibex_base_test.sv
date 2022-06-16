@@ -39,6 +39,8 @@ class core_ibex_base_test extends uvm_test;
     irq_collected_port  = new("irq_collected_port_test", this);
   endfunction
 
+  // NOTE: This logic should match the code in the get_isas_for_config() function in
+  //       core_ibex/scripts/scripts_lib.py: keep them in sync!
   function string get_isa_string();
     bit     RV32E;
     rv32m_e RV32M;
@@ -57,10 +59,6 @@ class core_ibex_base_test extends uvm_test;
 
     // Construct the right ISA string for the cosimulator by looking at top-level testbench
     // parameters.
-    //
-    // Note that the bitmanip extensions from the v0.93 spec (Zbe, Zbf, Zbp, Zbr, Zbt) are all
-    // contained in "Xbitmanip" for Spike at the moment. The specific parts used are listed in
-    // comments below.
     isa = {"rv32", RV32E ? "e" : "i"};
     if (RV32M != RV32MNone) isa = {isa, "m"};
     isa = {isa, "c"};
@@ -68,11 +66,11 @@ class core_ibex_base_test extends uvm_test;
       RV32BNone:
         ;
       RV32BBalanced:
-        isa = {isa, "_Zba_Zbb_Zbs_Xbitmanip"}; // + Zbf, Zbt
+        isa = {isa, "_Zba_Zbb_Zbs_XZbf_XZbt"};
       RV32BOTEarlGrey:
-        isa = {isa, "_Zba_Zbb_Zbc_Zbs_Xbitmanip"}; // + Zbf, Zbp, Zbr, Zbt
+        isa = {isa, "_Zba_Zbb_Zbc_Zbs_XZbf_XZbp_XZbr_XZbt"};
       RV32BFull:
-        isa = {isa, "_Zba_Zbb_Zbc_Zbs_Xbitmanip"}; // + Zbe, Zbf, Zbp, Zbr, Zbt
+        isa = {isa, "_Zba_Zbb_Zbc_Zbs_XZbe_XZbf_XZbp_XZbr_XZbt"};
     endcase
 
     return isa;
@@ -104,8 +102,8 @@ class core_ibex_base_test extends uvm_test;
     cosim_cfg = core_ibex_cosim_cfg::type_id::create("cosim_cfg", this);
 
     cosim_cfg.isa_string = get_isa_string();
-    cosim_cfg.start_pc = {{32'h`BOOT_ADDR}[31:8], 8'h80};
-    cosim_cfg.start_mtvec = {{32'h`BOOT_ADDR}[31:8], 8'h1};
+    cosim_cfg.start_pc =    ((32'h`BOOT_ADDR & ~(32'h0000_00FF)) | 8'h80);
+    cosim_cfg.start_mtvec = ((32'h`BOOT_ADDR & ~(32'h0000_00FF)) | 8'h01);
     // TODO: Turn on when not using icache
     cosim_cfg.probe_imem_for_errs = 1'b0;
     void'($value$plusargs("cosim_log_file=%0s", cosim_log_file));

@@ -151,7 +151,7 @@ module ibex_core import ibex_pkg::*; #(
   output logic                         core_busy_o
 );
 
-  localparam int unsigned PMP_NUM_CHAN      = 3;
+  localparam int unsigned PMPNumChan      = 3;
   // SEC_CM: CORE.DATA_REG_SW.SCA
   localparam bit          DataIndTiming     = SecureIbex;
   localparam bit          PCIncrCheck       = SecureIbex;
@@ -309,7 +309,7 @@ module ibex_core import ibex_pkg::*; #(
   logic [33:0]  csr_pmp_addr [PMPNumRegions];
   pmp_cfg_t     csr_pmp_cfg  [PMPNumRegions];
   pmp_mseccfg_t csr_pmp_mseccfg;
-  logic         pmp_req_err  [PMP_NUM_CHAN];
+  logic         pmp_req_err  [PMPNumChan];
   logic         data_req_out;
 
   logic        csr_save_if;
@@ -859,10 +859,12 @@ module ibex_core import ibex_pkg::*; #(
   // Crash dump output //
   ///////////////////////
 
+  logic [31:0] crash_dump_mtval;
   assign crash_dump_o.current_pc     = pc_id;
   assign crash_dump_o.next_pc        = pc_if;
   assign crash_dump_o.last_data_addr = lsu_addr_last;
-  assign crash_dump_o.exception_addr = csr_mepc;
+  assign crash_dump_o.exception_pc   = csr_mepc;
+  assign crash_dump_o.exception_addr = crash_dump_mtval;
 
   ///////////////////
   // Alert outputs //
@@ -977,6 +979,7 @@ module ibex_core import ibex_pkg::*; #(
     .csr_mstatus_mie_o(csr_mstatus_mie),
     .csr_mstatus_tw_o (csr_mstatus_tw),
     .csr_mepc_o       (csr_mepc),
+    .csr_mtval_o      (crash_dump_mtval),
 
     // PMP
     .csr_pmp_cfg_o    (csr_pmp_cfg),
@@ -1043,9 +1046,9 @@ module ibex_core import ibex_pkg::*; #(
   `ASSERT_KNOWN_IF(IbexCsrWdataIntKnown, cs_registers_i.csr_wdata_int, csr_op_en)
 
   if (PMPEnable) begin : g_pmp
-    logic [33:0] pmp_req_addr [PMP_NUM_CHAN];
-    pmp_req_e    pmp_req_type [PMP_NUM_CHAN];
-    priv_lvl_e   pmp_priv_lvl [PMP_NUM_CHAN];
+    logic [33:0] pmp_req_addr [PMPNumChan];
+    pmp_req_e    pmp_req_type [PMPNumChan];
+    priv_lvl_e   pmp_priv_lvl [PMPNumChan];
 
     assign pmp_req_addr[PMP_I]  = {2'b00, pc_if};
     assign pmp_req_type[PMP_I]  = PMP_ACC_EXEC;
@@ -1059,11 +1062,9 @@ module ibex_core import ibex_pkg::*; #(
 
     ibex_pmp #(
       .PMPGranularity(PMPGranularity),
-      .PMPNumChan    (PMP_NUM_CHAN),
+      .PMPNumChan    (PMPNumChan),
       .PMPNumRegions (PMPNumRegions)
     ) pmp_i (
-      .clk_i            (clk_i),
-      .rst_ni           (rst_ni),
       // Interface to CSRs
       .csr_pmp_cfg_i    (csr_pmp_cfg),
       .csr_pmp_addr_i   (csr_pmp_addr),
@@ -1641,6 +1642,14 @@ module ibex_core import ibex_pkg::*; #(
           g_pmp.pmp_i.region_match_all[PMP_I2][i_region] & if_stage_i.if_id_pipe_reg_we)
       `DV_FCOV_SIGNAL(logic, pmp_region_dchan_access,
           g_pmp.pmp_i.region_match_all[PMP_D][i_region] & data_req_out)
+      // pmp_cfg[5:6] is reserved and because of that the width of it inside cs_registers module
+      // is 6-bit.
+      // TODO: Cover writes to the reserved bits
+      `DV_FCOV_SIGNAL(logic, warl_check_pmpcfg,
+          fcov_csr_write &&
+          (cs_registers_i.g_pmp_registers.g_pmp_csrs[i_region].u_pmp_cfg_csr.wr_data_i !=
+          {cs_registers_i.csr_wdata_int[(i_region%4)*PMP_CFG_W+:5],
+           cs_registers_i.csr_wdata_int[(i_region%4)*PMP_CFG_W+7]}))
 
       if (i_region > 0) begin : g_region_priority
         assign fcov_pmp_region_ichan_priority[i_region] =

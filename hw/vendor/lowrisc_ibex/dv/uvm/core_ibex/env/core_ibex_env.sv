@@ -34,6 +34,7 @@ class core_ibex_env extends uvm_env;
     if (!cfg.disable_cosim) begin
       cosim_agent = ibex_cosim_agent::type_id::create("cosim_agent", this);
     end else begin
+      `uvm_info(get_full_name(), "Cosim disabled by plusarg +disable_cosim=1", UVM_LOW)
       cosim_agent = null;
     end
 `endif

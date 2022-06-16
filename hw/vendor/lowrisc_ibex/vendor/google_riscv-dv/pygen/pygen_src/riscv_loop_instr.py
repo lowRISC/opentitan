@@ -104,7 +104,7 @@ class riscv_loop_instr(riscv_rand_instr_stream):
                                                                       riscv_instr_name_t.C_BEQZ))):
                 self.loop_limit_val[i] == 0
                 self.loop_limit_reg[i] == riscv_reg_t.ZERO
-                self.loop_cnt_reg[i].inside(vsc.rangelist(compressed_gpr))
+                self.loop_cnt_reg[i].inside(vsc.rangelist(list(compressed_gpr)))
             with vsc.else_then:
                 self.loop_limit_val[i].inside(vsc.rangelist((-20, 20)))
                 self.loop_limit_reg[i] != riscv_reg_t.ZERO

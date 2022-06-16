@@ -8,8 +8,8 @@ import junit_xml
 import os.path
 import sys
 import yaml
-from test_run_result import (TestRunResult, test_run_result_fields,
-                             check_test_run_result)
+from scripts.test_run_result import (TestRunResult, test_run_result_fields,
+                                     check_test_run_result)
 from typing import List, TextIO
 
 
@@ -85,6 +85,9 @@ def gen_test_run_result_text(test_run_result: TestRunResult) -> str:
 
     if (test_run_result.iss_trace):
         info_lines.append(f'ISS trace: {test_run_result.iss_trace}')
+
+    if (test_run_result.cosim_trace):
+        info_lines.append(f'cosim trace: {test_run_result.cosim_trace}')
 
     if (test_run_result.comparison_log):
         info_lines.append(f'Comparison log: {test_run_result.comparison_log}')

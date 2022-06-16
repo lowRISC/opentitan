@@ -43,6 +43,9 @@ class riscv_pmp_cfg extends uvm_object;
   // write accesses to all supported pmpaddr[i] CSRs.
   bit enable_write_pmp_csr;
 
+  // ePMP machine security configuration - RLB, MMWP, MML
+  rand mseccfg_reg_t mseccfg = '{1'b1, 1'b0, 1'b0};
+
   // pmp CSR configurations
   rand pmp_cfg_reg_t pmp_cfg[];
 
@@ -155,6 +158,9 @@ class riscv_pmp_cfg extends uvm_object;
 
   function void set_defaults();
     `uvm_info(`gfn, $sformatf("MAX OFFSET: 0x%0x", pmp_max_offset), UVM_LOW)
+    mseccfg.mml  = 1'b0;
+    mseccfg.mmwp = 1'b0;
+    mseccfg.rlb  = 1'b1;
     foreach(pmp_cfg[i]) begin
       pmp_cfg[i].l      = 1'b0;
       pmp_cfg[i].a      = TOR;
@@ -174,15 +180,47 @@ class riscv_pmp_cfg extends uvm_object;
 
   function void setup_pmp();
     string arg_name;
-    string pmp_region;
+    string arg_value;
+    if (inst.get_arg_value("+mseccfg=", arg_value)) begin
+      mseccfg = parse_mseccfg(arg_value, mseccfg);
+    end
     foreach (pmp_cfg[i]) begin
       arg_name = $sformatf("+pmp_region_%0d=", i);
-      if (inst.get_arg_value(arg_name, pmp_region)) begin
-        pmp_cfg[i] = parse_pmp_config(pmp_region, pmp_cfg[i]);
+      if (inst.get_arg_value(arg_name, arg_value)) begin
+        pmp_cfg[i] = parse_pmp_config(arg_value, pmp_cfg[i]);
         `uvm_info(`gfn, $sformatf("Configured pmp_cfg[%0d] from command line: %p",
                                   i, pmp_cfg[i]), UVM_LOW)
       end
     end
+  endfunction
+
+  function mseccfg_reg_t parse_mseccfg(string mseccfg, mseccfg_reg_t ref_mseccfg);
+    string fields[$];
+    string field_vals[$];
+    string field_type;
+    string field_val;
+    mseccfg_reg_t mseccfg_reg = ref_mseccfg;
+    uvm_split_string(mseccfg, ",", fields);
+    foreach (fields[i]) begin
+      uvm_split_string(fields[i], ":", field_vals);
+      field_type = field_vals.pop_front();
+      field_val = field_vals.pop_front();
+      case (field_type)
+        "MML": begin
+          mseccfg_reg.mml = field_val.atobin();
+        end
+        "MMWP": begin
+          mseccfg_reg.mmwp = field_val.atobin();
+        end
+        "RLB": begin
+          mseccfg_reg.rlb = field_val.atobin();
+        end
+        default: begin
+          `uvm_fatal(`gfn, $sformatf("%s, Invalid MSECCFG field name!", field_val))
+        end
+      endcase
+    end
+    return mseccfg_reg;
   endfunction
 
   function pmp_cfg_reg_t parse_pmp_config(string pmp_region, pmp_cfg_reg_t ref_pmp_cfg);
@@ -259,6 +297,12 @@ class riscv_pmp_cfg extends uvm_object;
     bit [XLEN - 1 : 0] cfg_bitmask;
     bit [7 : 0] cfg_byte;
     int pmp_id;
+    if (riscv_instr_pkg::support_epmp) begin
+      `uvm_info(`gfn, $sformatf("MSECCFG: MML %0x, MMWP %0x, RLB %0x", mseccfg.mml,
+          mseccfg.mmwp, mseccfg.rlb), UVM_LOW)
+      cfg_byte = {mseccfg.rlb, mseccfg.mmwp, mseccfg.mml};
+      instr.push_back($sformatf("csrwi 0x%0x, %0d", MSECCFG, cfg_byte));
+    end
     foreach (pmp_cfg[i]) begin
       // TODO(udinator) condense this calculations if possible
       pmp_id = i / cfg_per_csr;
