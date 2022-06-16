@@ -309,3 +309,55 @@ dif_result_t dif_rv_core_ibex_read_fpga_info(
                              RV_CORE_IBEX_FPGA_INFO_REG_OFFSET);
   return kDifOk;
 }
+
+dif_result_t dif_rv_core_ibex_get_sw_recov_err_alert(
+    const dif_rv_core_ibex_t *rv_core_ibex, bool *enabled) {
+  if (rv_core_ibex == NULL || enabled == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg = mmio_region_read32(rv_core_ibex->base_addr,
+                                    RV_CORE_IBEX_SW_RECOV_ERR_REG_OFFSET);
+  *enabled = reg != kMultiBitBool4False;
+  return kDifOk;
+}
+
+dif_result_t dif_rv_core_ibex_trigger_sw_recov_err_alert(
+    const dif_rv_core_ibex_t *rv_core_ibex) {
+  if (rv_core_ibex == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = 0;
+  reg = bitfield_field32_write(reg, RV_CORE_IBEX_SW_RECOV_ERR_VAL_FIELD,
+                               kMultiBitBool4True);
+
+  mmio_region_write32(rv_core_ibex->base_addr,
+                      RV_CORE_IBEX_SW_RECOV_ERR_REG_OFFSET, reg);
+  return kDifOk;
+}
+
+dif_result_t dif_rv_core_ibex_get_sw_fatal_err_alert(
+    const dif_rv_core_ibex_t *rv_core_ibex, bool *enabled) {
+  if (rv_core_ibex == NULL || enabled == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg = mmio_region_read32(rv_core_ibex->base_addr,
+                                    RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET);
+  *enabled = reg != kMultiBitBool4False;
+  return kDifOk;
+}
+
+dif_result_t dif_rv_core_ibex_trigger_sw_fatal_err_alert(
+    const dif_rv_core_ibex_t *rv_core_ibex) {
+  if (rv_core_ibex == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = 0;
+  reg = bitfield_field32_write(reg, RV_CORE_IBEX_SW_FATAL_ERR_VAL_FIELD,
+                               kMultiBitBool4True);
+
+  mmio_region_write32(rv_core_ibex->base_addr,
+                      RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, reg);
+  return kDifOk;
+}
