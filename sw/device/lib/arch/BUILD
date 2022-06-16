@@ -12,13 +12,21 @@ cc_library(
 cc_library(
     name = "fpga_nexysvideo",
     srcs = ["device_fpga_nexysvideo.c"],
-    deps = [":device"],
+    deps = [
+        ":device",
+        "//sw/device/silicon_creator/lib:rom_print",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+    ],
 )
 
 cc_library(
     name = "fpga_cw310",
     srcs = ["device_fpga_cw310.c"],
-    deps = [":device"],
+    deps = [
+        ":device",
+        "//sw/device/silicon_creator/lib:rom_print",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+    ],
 )
 
 cc_library(

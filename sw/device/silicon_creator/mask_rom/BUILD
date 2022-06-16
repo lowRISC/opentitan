@@ -112,7 +112,6 @@ opentitan_rom_binary(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:irq_asm",
         "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",

@@ -175,4 +175,11 @@ extern const bool kJitterEnabled;
  */
 uint64_t to_cpu_cycles(uint64_t usec);
 
+/**
+ * Prints the FPGA version.
+ *
+ * This function is a NOP unless we are building for an FPGA.
+ */
+void device_fpga_version_print(void);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_ARCH_DEVICE_H_
