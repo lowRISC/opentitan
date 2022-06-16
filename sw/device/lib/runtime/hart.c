@@ -12,14 +12,7 @@
 
 void busy_spin_micros(uint32_t usec) {
   uint64_t start = ibex_mcycle_read();
-  // uint64_t cycles = udiv64_slow(kClockFreqCpuHz * usec, 1000000, NULL);
-  //
-  // Some tests on Verilator are sufficiently time-sensitive that generalized
-  // slow division can cause tests to time out (e.g. uncessary watchdog bites.
-  //
-  // So, instead, we divide by 2^20 = 1048576 via a shift, which is
-  // conveniently almost a million.
-  uint64_t cycles = (kClockFreqCpuHz * usec) >> 20;
+  uint64_t cycles = to_cpu_cycles(usec);
   while ((ibex_mcycle_read() - start) < cycles) {
   }
 }
