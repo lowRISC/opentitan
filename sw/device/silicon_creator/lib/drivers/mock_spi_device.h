@@ -26,25 +26,6 @@ class MockSpiDevice : public global_mock::GlobalMock<MockSpiDevice> {
 
 using MockSpiDevice = testing::StrictMock<internal::MockSpiDevice>;
 
-#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
-extern "C" {
-
-void spi_device_init(void) { MockSpiDevice::Instance().Init(); }
-
-rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
-  return MockSpiDevice::Instance().CmdGet(cmd);
-}
-
-void spi_device_flash_status_clear(void) {
-  MockSpiDevice::Instance().FlashStatusClear();
-}
-
-uint32_t spi_device_flash_status_get(void) {
-  return MockSpiDevice::Instance().FlashStatusGet();
-}
-
-}  // extern "C"
-#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_SPI_DEVICE_H_

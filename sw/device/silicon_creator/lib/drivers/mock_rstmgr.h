@@ -26,21 +26,6 @@ class MockRstmgr : public global_mock::GlobalMock<MockRstmgr> {
 
 using MockRstmgr = testing::StrictMock<internal::MockRstmgr>;
 
-#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
-extern "C" {
-uint32_t rstmgr_reason_get(void) { return MockRstmgr::Instance().ReasonGet(); }
-
-void rstmgr_reason_clear(uint32_t reasons) {
-  MockRstmgr::Instance().ReasonClear(reasons);
-}
-
-void rstmgr_alert_info_enable(void) {
-  MockRstmgr::Instance().AlertInfoEnable();
-}
-
-void rstmgr_reset(void) { MockRstmgr::Instance().Reset(); }
-}  // extern "C"
-#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_RSTMGR_H_

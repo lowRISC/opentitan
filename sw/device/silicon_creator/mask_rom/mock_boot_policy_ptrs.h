@@ -25,19 +25,6 @@ class MockBootPolicyPtrs : public global_mock::GlobalMock<MockBootPolicyPtrs> {
 
 using MockBootPolicyPtrs = testing::StrictMock<internal::MockBootPolicyPtrs>;
 
-#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
-extern "C" {
-
-const manifest_t *boot_policy_manifest_a_get() {
-  return MockBootPolicyPtrs::Instance().ManifestA();
-}
-
-const manifest_t *boot_policy_manifest_b_get() {
-  return MockBootPolicyPtrs::Instance().ManifestB();
-}
-
-}  // extern "C"
-#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_MOCK_BOOT_POLICY_PTRS_H_

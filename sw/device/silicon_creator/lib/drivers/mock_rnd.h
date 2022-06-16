@@ -24,13 +24,6 @@ class MockRnd : public global_mock::GlobalMock<MockRnd> {
 
 using MockRnd = testing::StrictMock<internal::MockRnd>;
 
-#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
-extern "C" {
-
-uint32_t rnd_uint32(void) { return MockRnd::Instance().Uint32(); }
-
-}  // extern "C"
-#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_RND_H_
