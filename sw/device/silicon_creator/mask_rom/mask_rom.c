@@ -30,7 +30,6 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/rom_print.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/boot_policy.h"
@@ -149,14 +148,8 @@ static rom_error_t mask_rom_init(void) {
   retention_sram_get()->reset_reasons = reset_reasons;
   rstmgr_reason_clear(reset_reasons);
 
-  // If running on an FPGA, print the FPGA version-id.
-  // This value is guaranteed to be zero on all non-FPGA implementations.
-  uint32_t fpga = ibex_fpga_version();
-  if (fpga != 0) {
-    // The cast to unsigned int stops GCC from complaining about uint32_t
-    // being a `long unsigned int` while the %x specifier takes `unsigned int`.
-    rom_printf("MaskROM:%x\r\n", (unsigned int)fpga);
-  }
+  // This function is a NOP unless mask ROM is built for an fpga.
+  device_fpga_version_print();
 
   // Read boot data from flash
   HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
