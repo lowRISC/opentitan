@@ -213,6 +213,12 @@ impl CommandDispatch for DigestCommand {
 /// Sign the image.
 #[derive(Debug, StructOpt)]
 pub struct SignCommand {
+    #[structopt(
+        short,
+        long,
+        help = "Filename for an HJSON configuration specifying manifest fields"
+    )]
+    manifest: Option<PathBuf>,
     #[structopt(name = "IMAGE", help = "Filename for the image to sign")]
     image: PathBuf,
     #[structopt(
@@ -241,6 +247,20 @@ impl CommandDispatch for SignCommand {
         // Update the modulus first, then sign since the modulus resides in the signed region.
         image.update_modulus(modulus)?;
 
+        // Update the size field in the manifest to reflect the actual size of the image.
+        let size = image.size as u32;
+        let manifest = image.borrow_manifest_mut()?;
+        manifest.length = size;
+
+        // If the user gave us a manifest, update it.
+        // We do this last so the manifest can override the modulus and length fields.  Such
+        // overrides can be used to create invalid images for testing.
+        if let Some(manifest) = &self.manifest {
+            let def = ManifestSpec::read_from_file(&manifest)?;
+            image.overwrite_manifest(def)?;
+        }
+
+        // Compute the digest over the image, sign it and update it.
         image.update_signature(private_key.sign(&image.compute_digest())?)?;
         image.write_to_file(&self.output.as_ref().unwrap_or(&self.image))?;
         Ok(None)

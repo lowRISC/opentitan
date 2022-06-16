@@ -72,7 +72,6 @@ obj_transform = rv_rule(
 )
 
 def _sign_bin_impl(ctx):
-    outputs = []
     signed_image = ctx.actions.declare_file(
         "{0}.{1}.signed.bin".format(
             # Remove ".bin" from file basename.
@@ -80,14 +79,21 @@ def _sign_bin_impl(ctx):
             ctx.attr.key_name,
         ),
     )
-    outputs.append(signed_image)
+    outputs = [signed_image]
+
+    inputs = [
+        ctx.file.bin,
+        ctx.file.key,
+        ctx.file._tool,
+    ]
+    manifest = []
+    if ctx.file.manifest:
+        manifest = ["--manifest={}".format(ctx.file.manifest.path)]
+        inputs.append(ctx.file.manifest)
+
     ctx.actions.run(
-        outputs = [signed_image],
-        inputs = [
-            ctx.file.bin,
-            ctx.file.key,
-            ctx.file._tool,
-        ],
+        outputs = outputs,
+        inputs = inputs,
         arguments = [
             "image",
             "sign",
@@ -95,7 +101,7 @@ def _sign_bin_impl(ctx):
             ctx.file.key.path,
             "--output",
             signed_image.path,
-        ],
+        ] + manifest,
         executable = ctx.file._tool.path,
     )
     return [DefaultInfo(
@@ -112,6 +118,7 @@ sign_bin = rv_rule(
             allow_single_file = True,
         ),
         "key_name": attr.string(),
+        "manifest": attr.label(allow_single_file = True),
         # TODO(lowRISC/opentitan:#11199): explore other options to side-step the
         # need for this transition, in order to build the ROM_EXT signer tool.
         "platform": attr.string(default = "@local_config_platform//:host"),
@@ -564,6 +571,7 @@ def opentitan_flash_binary(
         per_device_deps = PER_DEVICE_DEPS,
         extract_sw_logs_db = True,
         output_signed = False,
+        manifest = None,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for flash.
 
@@ -626,6 +634,7 @@ def opentitan_flash_binary(
                     bin = bin_name,
                     key = key,
                     key_name = key_name,
+                    manifest = manifest,
                 )
 
                 # Generate a VMEM64 from the signed binary.
