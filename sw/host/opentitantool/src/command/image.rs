@@ -8,7 +8,7 @@ use std::any::Any;
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
@@ -97,7 +97,10 @@ pub struct ManifestUpdateCommand {
         long,
         help = "Filename for an HJSON configuration specifying manifest fields"
     )]
-    hjson_file: Option<PathBuf>,
+    manifest: Option<PathBuf>,
+
+    #[structopt(long, help = "Sign the image with the given key_file")]
+    sign: bool,
     #[structopt(short, long, help = "Filename for a signature file")]
     signature_file: Option<PathBuf>,
     #[structopt(
@@ -114,6 +117,16 @@ pub struct ManifestUpdateCommand {
     output: Option<PathBuf>,
 }
 
+fn load_key(key_file: &Path) -> Result<(RsaPublicKey, Option<RsaPrivateKey>)> {
+    match RsaPublicKey::from_pkcs1_der_file(key_file) {
+        Ok(key) => Ok((key, None)),
+        Err(_) => match RsaPrivateKey::from_pkcs8_der_file(key_file) {
+            Ok(key) => Ok((RsaPublicKey::from_private_key(&key), Some(key))),
+            Err(e) => Err(e),
+        },
+    }
+}
+
 impl CommandDispatch for ManifestUpdateCommand {
     fn run(
         &self,
@@ -122,20 +135,25 @@ impl CommandDispatch for ManifestUpdateCommand {
     ) -> Result<Option<Box<dyn Serialize>>> {
         let mut image = image::Image::read_from_file(&self.image)?;
 
-        if let Some(hjson) = &self.hjson_file {
-            let def = ManifestSpec::read_from_file(&hjson)?;
+        // Update the size field in the manifest to reflect the actual size of the image.
+        image.update_length()?;
+
+        // Apply the manifest values to the image.
+        if let Some(manifest) = &self.manifest {
+            let def = ManifestSpec::read_from_file(&manifest)?;
             image.overwrite_manifest(def)?;
         }
 
         if let Some(key_file) = &self.key_file {
-            let key = match RsaPublicKey::from_pkcs1_der_file(key_file) {
-                Ok(key) => Ok(key),
-                Err(_) => match RsaPrivateKey::from_pkcs8_der_file(key_file) {
-                    Ok(key) => Ok(RsaPublicKey::from_private_key(&key)),
-                    Err(e) => Err(e),
-                },
-            }?;
-            image.update_modulus(key.modulus())?;
+            let (keypub, keypriv) = load_key(key_file)?;
+            image.update_modulus(keypub.modulus())?;
+            if self.sign {
+                let private_key = keypriv.ok_or(anyhow!(
+                    "The supplied key_file does not contain a private key"
+                ))?;
+                // Compute the digest over the image, sign it and update it.
+                image.update_signature(private_key.sign(&image.compute_digest())?)?;
+            }
         }
 
         if let Some(signature_file) = &self.signature_file {
@@ -144,7 +162,6 @@ impl CommandDispatch for ManifestUpdateCommand {
         }
 
         image.write_to_file(&self.output.as_ref().unwrap_or(&self.image))?;
-
         Ok(None)
     }
 }
@@ -210,63 +227,6 @@ impl CommandDispatch for DigestCommand {
     }
 }
 
-/// Sign the image.
-#[derive(Debug, StructOpt)]
-pub struct SignCommand {
-    #[structopt(
-        short,
-        long,
-        help = "Filename for an HJSON configuration specifying manifest fields"
-    )]
-    manifest: Option<PathBuf>,
-    #[structopt(name = "IMAGE", help = "Filename for the image to sign")]
-    image: PathBuf,
-    #[structopt(
-        name = "PRIVATE_KEY",
-        help = "Filename for the PKCS8 encoded private key to sign with"
-    )]
-    private_key: PathBuf,
-    #[structopt(
-        short,
-        long,
-        help = "Filename to write the output to instead of updating the input file"
-    )]
-    output: Option<PathBuf>,
-}
-
-impl CommandDispatch for SignCommand {
-    fn run(
-        &self,
-        _context: &dyn Any,
-        _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
-        let mut image = image::Image::read_from_file(&self.image)?;
-        let private_key = RsaPrivateKey::from_pkcs8_der_file(&self.private_key)?;
-        let modulus = RsaPublicKey::from_private_key(&private_key).modulus();
-
-        // Update the modulus first, then sign since the modulus resides in the signed region.
-        image.update_modulus(modulus)?;
-
-        // Update the size field in the manifest to reflect the actual size of the image.
-        let size = image.size as u32;
-        let manifest = image.borrow_manifest_mut()?;
-        manifest.length = size;
-
-        // If the user gave us a manifest, update it.
-        // We do this last so the manifest can override the modulus and length fields.  Such
-        // overrides can be used to create invalid images for testing.
-        if let Some(manifest) = &self.manifest {
-            let def = ManifestSpec::read_from_file(&manifest)?;
-            image.overwrite_manifest(def)?;
-        }
-
-        // Compute the digest over the image, sign it and update it.
-        image.update_signature(private_key.sign(&image.compute_digest())?)?;
-        image.write_to_file(&self.output.as_ref().unwrap_or(&self.image))?;
-        Ok(None)
-    }
-}
-
 #[derive(Debug, StructOpt, CommandDispatch)]
 /// Manifest manipulation commands.
 pub enum ManifestCommand {
@@ -281,5 +241,4 @@ pub enum Image {
     Assemble(AssembleCommand),
     Manifest(ManifestCommand),
     Digest(DigestCommand),
-    Sign(SignCommand),
 }
