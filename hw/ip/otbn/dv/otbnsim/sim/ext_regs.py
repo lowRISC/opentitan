@@ -208,7 +208,10 @@ class RndReq(RGReg):
         self._client.poison()
 
     def forget(self) -> None:
+        # Clear any pending request in the RND EDN client
         self._client.forget()
+        # Also clear the request flag
+        self.write(0, True)
 
     def take_word(self, word: int) -> None:
         self._client.take_word(word)
@@ -220,7 +223,6 @@ class RndReq(RGReg):
         '''Clear the flag and return the data that we've read from EDN.
 
         Returns the same value as EdnClient.cdc_complete().'''
-        assert self.read(True) == 1
         (data, retry) = self._client.cdc_complete()
         if not retry:
             self.write(0, True)
