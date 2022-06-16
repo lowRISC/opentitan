@@ -9,7 +9,7 @@
  * @brief OS-facing API for the OpenTitan cryptography library.
  *
  * NOTE: This API is a work in progress, and the code here only records the
- * current state. It will continue to change until the API design is finalized.
+ * current state. It will continue to change until the API design is finalized. 
  */
 
 #ifdef __cplusplus
