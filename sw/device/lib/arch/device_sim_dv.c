@@ -15,7 +15,11 @@ const device_type_t kDeviceType = kDeviceSimDV;
 // TODO: DV testbench completely randomizes these. Need to add code to
 // retrieve these from a preloaded memory location set by the testbench.
 
-const uint64_t kClockFreqCpuHz = 100 * 1000 * 1000;  // 100MHz
+const uint64_t kClockFreqCpuMhz = 100;
+
+const uint64_t kClockFreqCpuHz = kClockFreqCpuMhz * 1000 * 1000;
+
+uint64_t to_cpu_cycles(uint64_t usec) { return usec * kClockFreqCpuMhz; }
 
 const uint64_t kClockFreqPeripheralHz = 24 * 1000 * 1000;  // 24MHz
 

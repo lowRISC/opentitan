@@ -167,4 +167,12 @@ extern const uintptr_t kDeviceLogBypassUartAddress;
  */
 extern const bool kJitterEnabled;
 
+/**
+ * A platform-specific function to convert microseconds to cpu cycles.
+ *
+ * This is primarily used for spin waits that use the cpu cycle counters.
+ * For platforms with clock periods slower than 1 us this will round up.
+ */
+uint64_t to_cpu_cycles(uint64_t usec);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_ARCH_DEVICE_H_
