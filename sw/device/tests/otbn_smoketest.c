@@ -13,8 +13,18 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTBN_DECLARE_APP_SYMBOLS(barrett384);
+OTBN_DECLARE_SYMBOL_ADDR(barrett384, inp_a);
+OTBN_DECLARE_SYMBOL_ADDR(barrett384, inp_b);
+OTBN_DECLARE_SYMBOL_ADDR(barrett384, inp_m);
+OTBN_DECLARE_SYMBOL_ADDR(barrett384, inp_u);
+OTBN_DECLARE_SYMBOL_ADDR(barrett384, oup_c);
 
 static const otbn_app_t kAppBarrett = OTBN_APP_T_INIT(barrett384);
+static const otbn_addr_t kInpA = OTBN_ADDR_T_INIT(barrett384, inp_a);
+static const otbn_addr_t kInpB = OTBN_ADDR_T_INIT(barrett384, inp_b);
+static const otbn_addr_t kInpM = OTBN_ADDR_T_INIT(barrett384, inp_m);
+static const otbn_addr_t kInpU = OTBN_ADDR_T_INIT(barrett384, inp_u);
+static const otbn_addr_t kOupC = OTBN_ADDR_T_INIT(barrett384, oup_c);
 
 OTBN_DECLARE_APP_SYMBOLS(err_test);
 
@@ -91,16 +101,10 @@ static void test_barrett384(otbn_t *otbn_ctx) {
   // c = (a * b) % m = (10 * 20) % m = 200
   static const uint8_t c_expected[kDataSizeBytes] = {200};
 
-  // TODO: Use symbols from the application to load these parameters once they
-  // are available (#3998).
-  CHECK_DIF_OK(
-      dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/0, &a, sizeof(a)));
-  CHECK_DIF_OK(
-      dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/64, &b, sizeof(b)));
-  CHECK_DIF_OK(
-      dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/256, &m, sizeof(m)));
-  CHECK_DIF_OK(
-      dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/320, &u, sizeof(u)));
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(a), &a, kInpA) == kOtbnOk);
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(b), &b, kInpB) == kOtbnOk);
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(m), &m, kInpM) == kOtbnOk);
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(u), &u, kInpU) == kOtbnOk);
 
   CHECK(dif_otbn_set_ctrl_software_errs_fatal(&otbn_ctx->dif, true) == kDifOk);
   CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
@@ -109,7 +113,7 @@ static void test_barrett384(otbn_t *otbn_ctx) {
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Reading back result (c).
-  dif_otbn_dmem_read(&otbn_ctx->dif, 512, &c, sizeof(c));
+  CHECK(otbn_copy_data_from_otbn(otbn_ctx, sizeof(c), kOupC, &c) == kOtbnOk);
 
   for (int i = 0; i < sizeof(c); ++i) {
     CHECK(c[i] == c_expected[i],
@@ -117,7 +121,7 @@ static void test_barrett384(otbn_t *otbn_ctx) {
           c[i], c_expected[i]);
   }
 
-  check_otbn_insn_cnt(otbn_ctx, 161);
+  check_otbn_insn_cnt(otbn_ctx, 171);
 }
 
 /**
