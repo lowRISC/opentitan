@@ -80,44 +80,7 @@ Now install additional Python dependencies:
 $ cd $REPO_TOP
 $ pip3 install --user -r python-requirements.txt
 ```
-
-## Step 3: Install the LowRISC RISC-V Toolchain
-
-*Skip this step if using the Docker container.*
-
-To build device software you need a baremetal RISC-V toolchain.
-Even if you already have one installed, we recommend using the prebuilt toolchain provided by lowRISC, because it is built with the specific patches and options that OpenTitan needs.
-You can install the toolchain using the `util/get-toolchain.py` script, which will download and install the toolchain to the default path, `/tools/riscv`.
-
-```console
-$ cd $REPO_TOP
-$ ./util/get-toolchain.py
-```
-
-If you did not encounter errors running the script, **you're done and can go to step 4**.
-If you did, read on.
-
-#### Troubleshooting
-
-If you need to install to a different path than `/tools/riscv` (for instance, if you do not have permission to write to the `/tools` directory), then you can specify a different location using the `--install-dir` option.
-Run `./util/get-toolchain.py --help` for details.
-You can alternatively download the tarball starting with `lowrisc-toolchain-rv32imcb-` from [GitHub releases](https://github.com/lowRISC/lowrisc-toolchains/releases/latest) and unpack it to the desired installation directory.
-
-Assuming one of the above worked and you have installed to a non-standard location, you will need to set the `TOOLCHAIN_PATH` environment variable to match whatever path you used.
-For example, if I wanted to install to `~/ot_tools/riscv`, then I would use:
-```console
-$ ./util/get-toolchain.py --install-dir=~/ot_tools/riscv
-$ export TOOLCHAIN_PATH=~/ot_tools/riscv
-```
-Add the `export` command to your `~/.bashrc` or equivalent to ensure that the `TOOLCHAIN_PATH` variable is set for future sessions.
-Check that it worked by opening a new terminal and running:
-```console
-$ ls $TOOLCHAIN_PATH/bin/riscv32-unknown-elf-as
-```
-If that prints out the file path without errors, then you've successfully installed the toolchain.
-Otherwise, try to find the `riscv32-unknown-elf-as` file in your file system and make sure `$TOOLCHAIN_PATH` is correctly set.
-
-## Step 4: Build OpenTitan Software
+## Step 3: Build OpenTitan Software
 
 Follow the [dedicated guide]({{< relref "build_sw" >}}) to build OpenTitan's software, and then return to this page.
 
