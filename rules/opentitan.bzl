@@ -96,11 +96,12 @@ def _sign_bin_impl(ctx):
         inputs = inputs,
         arguments = [
             "image",
-            "sign",
+            "manifest",
+            "update",
+            "--key-file={}".format(ctx.file.key.path),
+            "--sign",
+            "--output={}".format(signed_image.path),
             ctx.file.bin.path,
-            ctx.file.key.path,
-            "--output",
-            signed_image.path,
         ] + manifest,
         executable = ctx.file._tool.path,
     )

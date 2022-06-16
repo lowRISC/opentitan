@@ -47,7 +47,7 @@ impl Default for ImageData {
 #[derive(Debug, Default)]
 pub struct Image {
     data: Box<ImageData>,
-    pub size: usize,
+    size: usize,
 }
 
 #[derive(Debug)]
@@ -135,6 +135,14 @@ impl Image {
             LayoutVerified::new(&mut *manifest_slice).ok_or(ImageError::Parse)?;
         let manifest: &mut Manifest = manifest_layout.into_mut();
         Ok(manifest)
+    }
+
+    /// Updates the length field in the `Manifest` to the length of the image.
+    pub fn update_length(&mut self) -> Result<usize> {
+        let length = self.size as u32;
+        let m = self.borrow_manifest_mut()?;
+        m.length = length;
+        Ok(self.size)
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
