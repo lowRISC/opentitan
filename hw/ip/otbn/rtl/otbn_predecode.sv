@@ -38,6 +38,9 @@ module otbn_predecode
 
   logic rf_ren_a_base;
   logic rf_ren_b_base;
+  // Three seperate write enables as the indirect register accesses can write back to the a or
+  // b source registers. For all other instructions any base register write will be to the
+  // d destination register.
   logic rf_we_a_base;
   logic rf_we_b_base;
   logic rf_we_d_base;
