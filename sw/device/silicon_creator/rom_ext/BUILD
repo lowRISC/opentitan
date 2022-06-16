@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:manifest.bzl", "CONST", "manifest")
 load("//rules:opentitan.bzl", "opentitan_flash_binary")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
@@ -131,10 +132,22 @@ cc_library(
     ],
 )
 
+manifest(
+    name = "manifest_standard",
+    address_translation = CONST.FALSE,
+    identifier = CONST.ROM_EXT,
+)
+
+manifest(
+    name = "manifest_virtual",
+    address_translation = CONST.TRUE,
+    identifier = CONST.ROM_EXT,
+)
+
 opentitan_flash_binary(
     name = "slot_a",
     srcs = ["rom_ext_start.S"],
-    manifest = "manifest.hjson",
+    manifest = ":manifest_standard",
     output_signed = True,
     deps = [
         ":ld_slot_a",
@@ -147,7 +160,7 @@ opentitan_flash_binary(
 opentitan_flash_binary(
     name = "slot_b",
     srcs = ["rom_ext_start.S"],
-    manifest = "manifest.hjson",
+    manifest = ":manifest_standard",
     output_signed = True,
     deps = [
         ":ld_slot_b",
@@ -160,7 +173,7 @@ opentitan_flash_binary(
 opentitan_flash_binary(
     name = "virtual_addr",
     srcs = ["rom_ext_start.S"],
-    manifest = "manifest.hjson",
+    manifest = ":manifest_virtual",
     output_signed = True,
     deps = [
         ":ld_virtual_addr",
