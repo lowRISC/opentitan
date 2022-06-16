@@ -77,26 +77,41 @@ In general, when the CPU encounters an error, it is software's responsibility to
 However, there are situations where it may not be possible for software to collect any error logging.
 These situations include but are not limited to:
 * A hung transaction that causes watchdog to expire.
+* A double fault that causes the processor to stop execution.
 * An alert escalation that directly resets the system without any software intervention.
 
 Under these situations, the software has no hints as to where the error occurred.
 To mitigate this issue, Ibex provides crash dump information that can be directly captured in the `rstmgr` for last resort debug after the reset event.
 
-The Ibex crash dump state includes the following information:
-* The current PC
-* The next PC
-* The last data access address
-* The last exception address
+The Ibex crash dump state contains 5 words of debug data:
+* word 0: The last exception address (`mtval`)
+* word 1: The last exception PC (`mepc`)
+* word 2: The last data access address
+* word 3: The next PC
+* word 4: The current PC
 
-The crash dump information transmitted to the `rstmgr` is the following:
-* The current crash dump state
-* The previous crash dump state
-* A valid indication for whether the previous state is valid.
+The crash dump information transmitted to the `rstmgr` contains 7 words of debug data and a 1-bit valid indication:
+* words 0-4: The current crash dump state
+* word 5: The previous exception address (`mtval`)
+* word 6: The previous exception PC (`mepc`)
+* MSB: Previous state valid indication.
 
 Under normal circumstances, only the current crash dump state is valid.
 When the CPU encounters a double fault, the current crash dump is moved to previous, and the new crash dump is shown in current.
 
 This allows the software to see both fault locations and debug accordingly.
+
+In terms of how the crash state information can be used, the following are a few examples.
+
+### Hung Transaction
+
+Assuming the system has a watchdog counter setup, when a CPU transaction hangs the bus (accessing a device whose clock is not turned on or is under reset), the PC and bus access freeze in place until the watchdog resets the system.
+Upon reset release, software can check the last PC and data access address to get an idea of what transaction might have caused the bus to hang.
+
+### Double Exception
+
+If the software has some kind of error and encounters two exceptions in a row, the previous exception PC and address show the location of the first exception, while the current exception address and PC show the location of the most recent exception.
+
 
 ## Fetch Enable
 

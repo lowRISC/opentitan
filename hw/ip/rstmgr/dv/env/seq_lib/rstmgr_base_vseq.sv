@@ -167,23 +167,14 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   local task check_cpu_dump_info(cpu_crash_dump_t cpu_dump);
     `uvm_info(`gfn, "Checking cpu_info", UVM_MEDIUM)
-    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(10));
-    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.previous_valid),
-                 .err_msg("checking previous_valid"));
-    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(9));
-    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.previous.current_pc),
-                 .err_msg("checking previous current_pc"));
-    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(8));
-    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.previous.next_pc),
-                 .err_msg("checking previous next_pc"));
     csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(7));
-    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.previous.last_data_addr),
-                 .err_msg("checking previous last_data_addr"));
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.prev_valid),
+                 .err_msg("checking previous_valid"));
     csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(6));
-    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.previous.exception_pc),
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.prev_exception_pc),
                  .err_msg("checking previous exception_pc"));
     csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(5));
-    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.previous.exception_addr),
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.prev_exception_addr),
                  .err_msg("checking previous exception_addr"));
     csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(4));
     csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.current.current_pc),

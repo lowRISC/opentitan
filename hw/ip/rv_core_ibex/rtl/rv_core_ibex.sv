@@ -480,20 +480,24 @@ module rv_core_ibex
 
 
 
-  ibex_pkg::crash_dump_t crash_dump_previous;
-  logic previous_valid;
+  logic prev_valid;
+  logic [31:0] prev_exception_pc;
+  logic [31:0] prev_exception_addr;
 
   assign crash_dump_o.current = crash_dump;
-  assign crash_dump_o.previous = crash_dump_previous;
-  assign crash_dump_o.previous_valid = previous_valid;
+  assign crash_dump_o.prev_valid = prev_valid;
+  assign crash_dump_o.prev_exception_pc = prev_exception_pc;
+  assign crash_dump_o.prev_exception_addr = prev_exception_addr;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      previous_valid <= '0;
-      crash_dump_previous <= '0;
+      prev_valid <= '0;
+      prev_exception_pc <= '0;
+      prev_exception_addr <= '0;
     end else if (double_fault) begin
-      previous_valid <= '1;
-      crash_dump_previous <= crash_dump;
+      prev_valid <= 1'b1;
+      prev_exception_pc <= crash_dump.exception_pc;
+      prev_exception_addr <= crash_dump.exception_addr;
     end
   end
 
