@@ -22,15 +22,9 @@
 // TODO: make this toplevel agnostic.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-#ifdef FREERTOS_IS_BAZEL
 #include "external/freertos/include/FreeRTOS.h"
 #include "external/freertos/include/queue.h"
 #include "external/freertos/include/task.h"
-#else
-#include "sw/vendor/freertos_freertos_kernel/include/FreeRTOS.h"
-#include "sw/vendor/freertos_freertos_kernel/include/queue.h"
-#include "sw/vendor/freertos_freertos_kernel/include/task.h"
-#endif
 
 // Check layout of test configuration struct since OTTF ISR asm code requires a
 // specific layout.

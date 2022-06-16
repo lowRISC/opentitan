@@ -88,10 +88,6 @@ cc_library(
     name = "ottf_main",
     srcs = ["ottf_main.c"],
     hdrs = ["ottf_main.h"],
-    # FIXME: Temporary hack to allow us to #include the version in //third_party.
-    # To be removed once Meson is removed.
-    # https://github.com/lowRISC/opentitan/issues/11743
-    local_defines = ["FREERTOS_IS_BAZEL"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":check",
@@ -130,10 +126,6 @@ cc_library(
         "freertos_port.S",
         "freertos_port.c",
     ],
-    # FIXME: Temporary hack to allow us to #include the version in //third_party.
-    # To be removed once Meson is removed.
-    # https://github.com/lowRISC/opentitan/issues/11743
-    local_defines = ["FREERTOS_IS_BAZEL"],
     deps = [
         ":check",
         ":freertos_config",

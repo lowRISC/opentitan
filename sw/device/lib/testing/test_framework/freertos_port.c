@@ -11,15 +11,9 @@
 // TODO: make this toplevel agnostic.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-#ifdef FREERTOS_IS_BAZEL
 #include "external/freertos/include/FreeRTOS.h"
 #include "external/freertos/include/task.h"
 #include "external/freertos/portable/GCC/RISC-V/portmacro.h"
-#else
-#include "sw/vendor/freertos_freertos_kernel/include/FreeRTOS.h"
-#include "sw/vendor/freertos_freertos_kernel/include/task.h"
-#include "sw/vendor/freertos_freertos_kernel/portable/GCC/RISC-V/portmacro.h"
-#endif
 
 // NOTE: some of the function names below do NOT, and cannot, conform to the
 // style guide, since they are specific implementations of FreeRTOS defined
