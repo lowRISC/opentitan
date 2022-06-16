@@ -499,4 +499,79 @@ TEST_F(FpgaInfoTest, ReadBadArg) {
   EXPECT_DIF_BADARG(dif_rv_core_ibex_read_fpga_info(nullptr, &info));
   EXPECT_DIF_BADARG(dif_rv_core_ibex_read_fpga_info(&ibex_, nullptr));
 }
+
+class FatalErrorAlertTest : public RvCoreIbexTestInitialized {};
+
+TEST_F(FatalErrorAlertTest, ReadAlertEnabled) {
+  bool enabled;
+
+  EXPECT_READ32(RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, 0x01);
+  EXPECT_DIF_OK(dif_rv_core_ibex_get_sw_fatal_err_alert(&ibex_, &enabled));
+  EXPECT_TRUE(enabled);
+
+  EXPECT_READ32(RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_DIF_OK(dif_rv_core_ibex_get_sw_fatal_err_alert(&ibex_, &enabled));
+  EXPECT_TRUE(enabled);
+}
+
+TEST_F(FatalErrorAlertTest, ReadAlertDisabled) {
+  bool enabled;
+
+  EXPECT_READ32(RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_DIF_OK(dif_rv_core_ibex_get_sw_fatal_err_alert(&ibex_, &enabled));
+  EXPECT_FALSE(enabled);
+}
+
+TEST_F(FatalErrorAlertTest, TriggerSuccess) {
+  EXPECT_WRITE32(RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_DIF_OK(dif_rv_core_ibex_trigger_sw_fatal_err_alert(&ibex_));
+}
+
+TEST_F(FatalErrorAlertTest, ReadBadArg) {
+  bool enabled;
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_get_sw_fatal_err_alert(nullptr, &enabled));
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_get_sw_fatal_err_alert(&ibex_, nullptr));
+}
+
+TEST_F(FatalErrorAlertTest, TriggerBadArg) {
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_trigger_sw_fatal_err_alert(nullptr));
+}
+
+class RecoverableErrorAlertTest : public RvCoreIbexTestInitialized {};
+
+TEST_F(RecoverableErrorAlertTest, ReadAlertEnabled) {
+  bool enabled;
+
+  EXPECT_READ32(RV_CORE_IBEX_SW_RECOV_ERR_REG_OFFSET, 0x01);
+  EXPECT_DIF_OK(dif_rv_core_ibex_get_sw_recov_err_alert(&ibex_, &enabled));
+  EXPECT_TRUE(enabled);
+
+  EXPECT_READ32(RV_CORE_IBEX_SW_RECOV_ERR_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_DIF_OK(dif_rv_core_ibex_get_sw_recov_err_alert(&ibex_, &enabled));
+  EXPECT_TRUE(enabled);
+}
+
+TEST_F(RecoverableErrorAlertTest, ReadAlertDisabled) {
+  bool enabled;
+
+  EXPECT_READ32(RV_CORE_IBEX_SW_RECOV_ERR_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_DIF_OK(dif_rv_core_ibex_get_sw_recov_err_alert(&ibex_, &enabled));
+  EXPECT_FALSE(enabled);
+}
+
+TEST_F(RecoverableErrorAlertTest, TriggerSuccess) {
+  EXPECT_WRITE32(RV_CORE_IBEX_SW_RECOV_ERR_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_DIF_OK(dif_rv_core_ibex_trigger_sw_recov_err_alert(&ibex_));
+}
+
+TEST_F(RecoverableErrorAlertTest, ReadBadArg) {
+  bool enabled;
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_get_sw_recov_err_alert(nullptr, &enabled));
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_get_sw_recov_err_alert(&ibex_, nullptr));
+}
+
+TEST_F(RecoverableErrorAlertTest, TriggerBadArg) {
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_trigger_sw_recov_err_alert(nullptr));
+}
+
 }  // namespace dif_rv_core_ibex_test

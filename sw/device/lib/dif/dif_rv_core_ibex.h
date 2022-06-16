@@ -293,8 +293,57 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_core_ibex_read_fpga_info(
     const dif_rv_core_ibex_t *rv_core_ibex, dif_rv_core_ibex_fpga_info_t *info);
 
+/**
+ * Software fatal alert. When triggered,
+ * a fatal alert is sent. Note, this alert once cleared cannot be set and
+ * will continuously cause alert events.
+ */
+
+/**
+ * Get the software recoverable alert sate.
+ *
+ * @param rv_core_ibex Handle.
+ * @param[out] enabled Returns `true` if enabled.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT dif_result_t dif_rv_core_ibex_get_sw_recov_err_alert(
+    const dif_rv_core_ibex_t *rv_core_ibex, bool *enabled);
+
+/**
+ * Software recoverable alert. When triggered, a recoverable alert is sent. Once
+ * the alert is sent, the register is then reset to disabled.
+ *
+ * @param rv_core_ibex Handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_trigger_sw_recov_err_alert(
+    const dif_rv_core_ibex_t *rv_core_ibex);
+
+/**
+ * Get the software fatal alert trigger status.
+ *
+ * @param rv_core_ibex Handle.
+ * @param[out] enabled Returns `true` if enabled.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_get_sw_fatal_err_alert(
+    const dif_rv_core_ibex_t *rv_core_ibex, bool *enabled);
+
+/**
+ * Software fatal alert. When triggered, a fatal alert is sent. Note, once this
+ * alert is triggered it cannot be reset and will continuously cause alert
+ * events.
+ *
+ * @param rv_core_ibex Handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_trigger_sw_fatal_err_alert(
+    const dif_rv_core_ibex_t *rv_core_ibex);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
-
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RV_CORE_IBEX_H_
