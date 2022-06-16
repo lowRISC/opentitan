@@ -47,7 +47,7 @@ impl Default for ImageData {
 #[derive(Debug, Default)]
 pub struct Image {
     data: Box<ImageData>,
-    size: usize,
+    pub size: usize,
 }
 
 #[derive(Debug)]

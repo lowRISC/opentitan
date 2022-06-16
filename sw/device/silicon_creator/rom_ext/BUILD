@@ -134,6 +134,7 @@ cc_library(
 opentitan_flash_binary(
     name = "slot_a",
     srcs = ["rom_ext_start.S"],
+    manifest = "manifest.hjson",
     output_signed = True,
     deps = [
         ":ld_slot_a",
@@ -146,6 +147,7 @@ opentitan_flash_binary(
 opentitan_flash_binary(
     name = "slot_b",
     srcs = ["rom_ext_start.S"],
+    manifest = "manifest.hjson",
     output_signed = True,
     deps = [
         ":ld_slot_b",
@@ -158,6 +160,7 @@ opentitan_flash_binary(
 opentitan_flash_binary(
     name = "virtual_addr",
     srcs = ["rom_ext_start.S"],
+    manifest = "manifest.hjson",
     output_signed = True,
     deps = [
         ":ld_virtual_addr",
