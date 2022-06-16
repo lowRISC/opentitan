@@ -135,7 +135,7 @@ Parameters
 |                              |                     |            | ICache == 1)                                                          |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``ICacheScramble``           | bit                 | 0          | *EXPERIMENTAL* Enabling this parameter replaces tag and data RAMs of  |
-|                              |                     |            |  ICache with scrambling RAM primitives.                               |
+|                              |                     |            | ICache with scrambling RAM primitives.                                |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``BranchPrediction``         | bit                 | 0          | *EXPERIMENTAL* Enable Static branch prediction                        |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+

@@ -641,6 +641,7 @@
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
+    +set_mstatus_mprv=1
     +pmp_max_offset=00024000
     +enable_write_pmp_csr=1
   rtl_test: core_ibex_base_test
@@ -657,6 +658,7 @@
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
+    +set_mstatus_mprv=1
     +pmp_max_offset=00024000
     +pmp_region_1=X:0,W:0,R:0
     +pmp_region_2=X:0,W:0,R:0
@@ -687,6 +689,7 @@
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
+    +set_mstatus_mprv=1
     +pmp_max_offset=00024000
     +enable_write_pmp_csr=1
     +directed_instr_0=riscv_load_store_rand_addr_instr_stream,50

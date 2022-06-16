@@ -25,16 +25,15 @@ It is disabled by default in the UVM DV environment currently, however it is int
 Setup and Usage
 ---------------
 
-Clone the `lowRISC fork of Spike <https://github.com/lowRISC/riscv-isa-sim>`_ and check out the ``ibex-cosim-v0.2`` tag.
+Clone the `lowRISC fork of Spike <https://github.com/lowRISC/riscv-isa-sim>`_ and check out the ``ibex-cosim-v0.3`` tag.
 Other, later, versions called ``ibex-cosim-v*`` may also work but there's no guarantee of backwards compatibility.
 Follow the Spike build instructions to build and install Spike.
-The build will install multiple header files and libraries, it is recommended a custom install location (using ``--prefix=<path>`` with ``configure``) is used to avoid cluttering system directories.
 The ``--enable-commitlog`` and ``--enable-misaligned`` options must be passed to ``configure``.
+We recommend using a custom install location (using ``--prefix=<path>`` with ``configure``) to avoid cluttering system directories.
+Note that, if you do this, you will also need to add an entry to ``PKG_CONFIG_PATH`` so that ``pkg-config`` can tell us how to build against the installed Spike libraries.
 
-Once built, the ``IBEX_COSIM_ISS_ROOT`` environment variable must be set to the Spike root install directory (as given by ``--prefix=<path>`` to ``configure``) in order to build either the UVM DV environment or Simple System with co-simulation support.
-
-To build/run the UVM DV environment with the co-simulator add the ``COSIM=1`` argument to the make command.
-To build Simple System with the co-simulator build the ``lowrisc:ibex:ibex_simple_system_cosim`` core.
+To build/run the UVM DV environment with the co-simulator, add the ``COSIM=1`` argument to the make command.
+To build Simple System with the co-simulator, build the ``lowrisc:ibex:ibex_simple_system_cosim`` core.
 
 Quick Build and Run Instructions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -55,9 +54,6 @@ Build and install the co-simulator
   ../configure --enable-commitlog --enable-misaligned --prefix=/opt/spike-cosim
   sudo make -j8 install
 
-  # Setup IBEX_COSIM_ISS_ROOT so build flow can find the co-simulator
-  export IBEX_COSIM_ISS_ROOT=/opt/spike-cosim
-
 Run the UVM DV regression with co-simulation enabled
 
 .. code-block:: bash
@@ -77,9 +73,6 @@ Build and run Simple System with the co-simulation enabled
   # co-simulator system doesn't produce matching performance counters in spike so
   # any read of those CSRs results in a mismatch and a failure.
   make -C ./examples/sw/benchmarks/coremark SUPPRESS_PCOUNT_DUMP=1
-
-  # Spike's libsoftfloat.so needs to be accessible so add it to LD_LIBRARY_PATH
-  export LD_LIBRARY_PATH=/opt/spike-cosim/lib:$LD_LIBRARY_PATH
 
   # Run coremark binary with co-simulation checking
   build/lowrisc_ibex_ibex_simple_system_cosim_0/sim-verilator/Vibex_simple_system --meminit=ram,examples/sw/benchmarks/coremark/coremark.elf

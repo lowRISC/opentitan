@@ -16,12 +16,15 @@ small:
   WritebackStage           : 0
   ICache                   : 0
   ICacheECC                : 0
+  ICacheScramble           : 0
   BranchPredictor          : 0
+  DbgTriggerEn             : 0
+  SecureIbex               : 0
   PMPEnable                : 0
   PMPGranularity           : 0
   PMPNumRegions            : 4
-  SecureIbex               : 0
-  ICacheScramble           : 0
+  MHPMCounterNum           : 0
+  MHPMCounterWidth         : 40
 
 # Configuration to match that used in the OpenTitan project
 opentitan:
@@ -33,12 +36,15 @@ opentitan:
   WritebackStage           : 1
   ICache                   : 1
   ICacheECC                : 1
+  ICacheScramble           : 1
   BranchPredictor          : 0
+  DbgTriggerEn             : 1
+  SecureIbex               : 1
   PMPEnable                : 1
   PMPGranularity           : 0
   PMPNumRegions            : 16
-  SecureIbex               : 1
-  ICacheScramble           : 0
+  MHPMCounterNum           : 10
+  MHPMCounterWidth         : 32
 
 # ===============================
 # * EXPERIMENTAL CONFIGURATIONS *
@@ -56,12 +62,15 @@ experimental-maxperf:
   WritebackStage           : 1
   ICache                   : 0
   ICacheECC                : 0
+  ICacheScramble           : 0
   BranchPredictor          : 0
+  DbgTriggerEn             : 0
+  SecureIbex               : 0
   PMPEnable                : 0
   PMPGranularity           : 0
   PMPNumRegions            : 4
-  SecureIbex               : 0
-  ICacheScramble           : 0
+  MHPMCounterNum           : 0
+  MHPMCounterWidth         : 40
 
 # experimental-maxperf config above plus PMP enabled with 16 regions.
 experimental-maxperf-pmp:
@@ -73,12 +82,15 @@ experimental-maxperf-pmp:
   WritebackStage           : 1
   ICache                   : 0
   ICacheECC                : 0
+  ICacheScramble           : 0
   BranchPredictor          : 0
+  DbgTriggerEn             : 0
+  SecureIbex               : 0
   PMPEnable                : 1
   PMPGranularity           : 0
   PMPNumRegions            : 16
-  SecureIbex               : 0
-  ICacheScramble           : 0
+  MHPMCounterNum           : 0
+  MHPMCounterWidth         : 40
 
 # experimental-maxperf-pmp config above with balanced bitmanip extension
 experimental-maxperf-pmp-bmbalanced:
@@ -90,12 +102,15 @@ experimental-maxperf-pmp-bmbalanced:
   WritebackStage           : 1
   ICache                   : 0
   ICacheECC                : 0
+  ICacheScramble           : 0
   BranchPredictor          : 0
+  DbgTriggerEn             : 0
+  SecureIbex               : 0
   PMPEnable                : 1
   PMPGranularity           : 0
   PMPNumRegions            : 16
-  SecureIbex               : 0
-  ICacheScramble           : 0
+  MHPMCounterNum           : 0
+  MHPMCounterWidth         : 40
 
 # experimental-maxperf-pmp config above with full bitmanip extension
 experimental-maxperf-pmp-bmfull:
@@ -107,12 +122,15 @@ experimental-maxperf-pmp-bmfull:
   WritebackStage           : 1
   ICache                   : 0
   ICacheECC                : 0
+  ICacheScramble           : 0
   BranchPredictor          : 0
+  DbgTriggerEn             : 0
+  SecureIbex               : 0
   PMPEnable                : 1
   PMPGranularity           : 0
   PMPNumRegions            : 16
-  SecureIbex               : 0
-  ICacheScramble           : 0
+  MHPMCounterNum           : 0
+  MHPMCounterWidth         : 40
 
 # experimental-maxperf-pmp-bmfull config above with icache enabled
 experimental-maxperf-pmp-bmfull-icache:
@@ -124,12 +142,15 @@ experimental-maxperf-pmp-bmfull-icache:
   WritebackStage           : 1
   ICache                   : 1
   ICacheECC                : 1
+  ICacheScramble           : 0
   BranchPredictor          : 0
+  DbgTriggerEn             : 0
+  SecureIbex               : 0
   PMPEnable                : 1
   PMPGranularity           : 0
   PMPNumRegions            : 16
-  SecureIbex               : 0
-  ICacheScramble           : 0
+  MHPMCounterNum           : 0
+  MHPMCounterWidth         : 40
 
 # experimental-maxperf with branch predictor switched on. This exists to allow
 # easy use of Ibex with the branch predictor in particular for CI runs. The
@@ -144,10 +165,13 @@ experimental-branch-predictor:
   WritebackStage           : 1
   ICache                   : 0
   ICacheECC                : 0
+  ICacheScramble           : 0
   BranchPredictor          : 1
+  DbgTriggerEn             : 0
+  SecureIbex               : 0
   PMPEnable                : 0
   PMPGranularity           : 0
   PMPNumRegions            : 4
-  SecureIbex               : 0
-  ICacheScramble           : 0
+  MHPMCounterNum           : 0
+  MHPMCounterWidth         : 40
 

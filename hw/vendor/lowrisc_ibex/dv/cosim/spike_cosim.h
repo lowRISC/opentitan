@@ -19,6 +19,7 @@
 
 class SpikeCosim : public simif_t, public Cosim {
  private:
+  std::unique_ptr<isa_parser_t> isa_parser;
   std::unique_ptr<processor_t> processor;
   std::unique_ptr<log_file_t> log;
   bus_t bus;

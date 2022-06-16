@@ -17,10 +17,10 @@
 # As a result, passing -fno-extended-identifiers tells G++ to pretend that
 # everything is ASCII, preventing strange compilation errors.
 - tool: vcs
-  env_var: IBEX_COSIM_ISS_ROOT,IBEX_ROOT
+  env_var: IBEX_ROOT
   compile:
     cmd:
-      - "vcs -f ibex_dv.f  -full64
+      - "vcs -f <core_ibex>/ibex_dv.f  -full64
          -l <out>/compile.log
          -sverilog -ntb_opts uvm-1.2
          +define+UVM
@@ -39,18 +39,18 @@
       -cm_tgl structarr
       -cm_report noinitial
       -cm_seqnoconst
-      -cm_dir <out>/test.vdb
+      -cm_dir <shared_cov_dir>/test.vdb
       -cm_hier cover.cfg
     wave_opts: >
       -debug_access+all -ucli -do vcs.tcl
     cosim_opts: >
-      -f ibex_dv_cosim_dpi.f
+      -f <core_ibex>/ibex_dv_cosim_dpi.f
       +define+INC_IBEX_COSIM
-      -LDFLAGS '-L<IBEX_COSIM_ISS_ROOT>/lib/'
-      -CFLAGS '-I<IBEX_COSIM_ISS_ROOT>/include'
-      -CFLAGS '-I<IBEX_COSIM_ISS_ROOT>/include/softfloat'
+      -LDFLAGS '<ISS_LDFLAGS>'
+      -CFLAGS '<ISS_CFLAGS>'
       -CFLAGS '-I<IBEX_ROOT>/dv/cosim'
-      -lriscv -lsoftfloat -lfdt -ldl -ldisasm -lstdc++
+      <ISS_LIBS>
+      -lstdc++
   sim:
     cmd: >
       env SIM_DIR=<sim_dir>
@@ -61,10 +61,10 @@
           +cosim_log_file=<sim_dir>/spike_cosim.log
     cov_opts: >
       -cm line+tgl+assert+fsm+branch
-      -cm_dir <out>/test.vdb
+      -cm_dir <shared_cov_dir>/test.vdb
       -cm_log /dev/null
       -assert nopostproc
-      -cm_name test_<test_name>_<iteration>
+      -cm_name test_<test_name>_<seed>
       +enable_ibex_fcov=1
     wave_opts: >
       -ucli -do <cwd>/vcs.tcl
@@ -74,7 +74,7 @@
     cmd:
       - "vmap mtiUvm $QUESTA_HOME/questasim/uvm-1.2"
       - "vlog -64
-              -f ibex_dv.f
+              -f <core_ibex>/ibex_dv.f
               -sv
               -mfcu -cuname design_cuname
               +define+UVM_REGEX_NO_DPI
@@ -101,7 +101,7 @@
                 +define+UVM
                 +define+DSIM
                 +acc+rwb
-                -f ibex_dv.f
+                -f <core_ibex>/ibex_dv.f
                 -l <out>/dsim/compile.log
                 -suppress EnumMustBePositive"
   sim:
@@ -119,7 +119,7 @@
         <cmp_opts>
         -uvmver 1.2
         +define+UVM
-        -f ibex_dv.f"
+        -f <core_ibex>/ibex_dv.f"
   sim:
     cmd: >
       vsim -c <sim_opts> <cov_opts> -sv_seed <seed> -lib <out>/work +UVM_TESTNAME=<rtl_test> +UVM_VERBOSITY=UVM_LOW +bin=<binary> +ibex_tracer_file_base="<sim_dir>/trace_core" -l <sim_dir>/sim.log -do "run -all; endsim; quit -force"
@@ -129,7 +129,7 @@
 - tool: qrun
   compile:
     cmd:
-      - "qrun -f ibex_dv.f -uvmhome uvm-1.2
+      - "qrun -f <core_ibex>/ibex_dv.f -uvmhome uvm-1.2
               +define+UVM
               -svinputport=net
               -access=rw+/. -optimize
@@ -146,12 +146,12 @@
 
 
 - tool: xlm
-  env_var: dv_root, DUT_TOP
+  env_var: dv_root, DUT_TOP, IBEX_ROOT
   compile:
     cmd:
       - "xrun -64bit
               -q
-              -f ibex_dv.f
+              -f <core_ibex>/ibex_dv.f
               -sv
               -licqueue
               -uvm
@@ -160,14 +160,20 @@
               -elaborate
               -l <out>/compile.log
               -xmlibdirpath <out>
-              <cmp_opts>
-              <cov_opts>
-              <wave_opts>"
+              <cmp_opts> <cov_opts> <wave_opts> <cosim_opts>"
     cov_opts: >
       -coverage all
       -nowarn COVDEF
     wave_opts: >
       -access rwc -linedebug
+    cosim_opts: >
+      -f ibex_dv_cosim_dpi.f
+      -I<IBEX_ROOT>/dv/cosim
+      <ISS_LIBS>
+      <ISS_CFLAGS>
+      -Wld,<ISS_LDFLAGS>
+      +define+INC_IBEX_COSIM
+      -lstdc++
   sim:
     cmd: >
       xrun -64bit
@@ -180,14 +186,16 @@
            +UVM_VERBOSITY=UVM_LOW
            +bin=<binary>
            +ibex_tracer_file_base=<sim_dir>/trace_core
+           +cosim_log_file=<sim_dir>/spike_cosim.log
+           -l <sim_dir>/xrun.log
            -nokey
            <sim_opts>
            <cov_opts>
            <wave_opts>
     cov_opts: >
-      -covmodeldir <out>/coverage/default/<test_name>.<seed>
-      -covworkdir <out>/coverage
-      -covscope default
+      -covmodeldir <sim_dir>/coverage
+      -covworkdir <sim_dir>
+      -covscope coverage
       -covtest <test_name>.<seed>
       +enable_ibex_fcov=1
     wave_opts: >

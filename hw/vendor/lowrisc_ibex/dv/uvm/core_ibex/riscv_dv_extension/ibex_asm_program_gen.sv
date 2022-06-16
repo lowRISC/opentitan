@@ -12,8 +12,12 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
   `uvm_object_new
 
   virtual function void gen_program_header();
+    // Override the mstatus_mprv config because there is no current way to randomize writing to
+    // mstatus.mprv in riscv-dv (it's constrained by set_mstatus_mprv argument to have either
+    // 1 or 0 for the duration of the run)
+    if (cfg.set_mstatus_mprv)
+      cfg.mstatus_mprv = $urandom_range(1);
     // Override the cfg value, below fields are not supported by ibex
-    cfg.mstatus_mprv = 0;
     cfg.mstatus_mxr  = 0;
     cfg.mstatus_sum  = 0;
     cfg.mstatus_tvm  = 0;

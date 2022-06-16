@@ -756,9 +756,11 @@ package riscv_instr_pkg;
     UCAUSE          = 'h042,  // User trap cause
     UTVAL           = 'h043,  // User bad address or instruction
     UIP             = 'h044,  // User interrupt pending
+    // Unprivileged Floating-Point CSRs
     FFLAGS          = 'h001,  // Floating-Point Accrued Exceptions
     FRM             = 'h002,  // Floating-Point Dynamic Rounding Mode
     FCSR            = 'h003,  // Floating-Point Control/Status Register (FRM + FFLAGS)
+    // Unprivileged Counter/Timers
     CYCLE           = 'hC00,  // Cycle counter for RDCYCLE instruction
     TIME            = 'hC01,  // Timer for RDTIME instruction
     INSTRET         = 'hC02,  // Instructions-retired counter for RDINSTRET instruction
@@ -824,23 +826,66 @@ package riscv_instr_pkg;
     HPMCOUNTER30H   = 'hC9E,  // Upper 32 bits of HPMCOUNTER30, RV32I only
     HPMCOUNTER31H   = 'hC9F,  // Upper 32 bits of HPMCOUNTER31, RV32I only
     // Supervisor mode register
+    // Supervisor Trap Setup
     SSTATUS         = 'h100,  // Supervisor status
     SEDELEG         = 'h102,  // Supervisor exception delegation register
     SIDELEG         = 'h103,  // Supervisor interrupt delegation register
     SIE             = 'h104,  // Supervisor interrupt-enable register
     STVEC           = 'h105,  // Supervisor trap-handler base address
     SCOUNTEREN      = 'h106,  // Supervisor counter enable
+    // Supervisor Configuration
+    SENVCFG         = 'h10A,  // Supervisor environment configuration register
+    // Supervisor Trap Handling
     SSCRATCH        = 'h140,  // Scratch register for supervisor trap handlers
     SEPC            = 'h141,  // Supervisor exception program counter
     SCAUSE          = 'h142,  // Supervisor trap cause
     STVAL           = 'h143,  // Supervisor bad address or instruction
     SIP             = 'h144,  // Supervisor interrupt pending
+    // Supervisor Protection and Translation
     SATP            = 'h180,  // Supervisor address translation and protection
-    // Machine mode register
+    // Supervisor Debug/Trace Register
+    SCONTEXT        = 'h5A8,  // Supervisor environment configuration register.
+    // Hypervisor Trap Setup register
+    HSTATUS         = 'h600,  // Hypervisor status register
+    HEDELEG         = 'h602,  // Hypervisor exception delegation register
+    HIDELEG         = 'h603,  // Hypervisor interrupt delegation register
+    HIE             = 'h604,  // Hypervisor interrupt-enable register
+    HCOUNTEREN      = 'h606,  // Hypervisor counter enable
+    HGEIE           = 'h607,  // Hypervisor guest external interrupt-enable register
+    // Hypervisor Trap Handling
+    HTVAL           = 'h643,  // Hypervisor bad guest physical address
+    HIP             = 'h644,  // Hypervisor interrupt pending
+    HVIP            = 'h645,  // Hypervisor virtual interrupt pending
+    HTINST          = 'h64A,  // Hypervisor trap instruction (transformed)
+    HGEIP           = 'hE12,  // Hypervisor guest external interrupt pending
+    // Hypervisor configuration
+    HENVCFG         = 'h60A,  // Hypervisor environment configuration register
+    HENVCFGH        = 'h61A,  // Additional hypervisor env. conf. register, RV32 only
+    // Hypervisor guest address translation and protection
+    HGATP           = 'h680,  // Hypervisor guest address translation and protection
+    // Hypervisor Debug/Trace registers
+    HCONTEXT        = 'h6A8,  // Hypervisor-mode context register
+    // Hypervisor Counter/Timer Virtualization Registers
+    HTIMEDELTA      = 'h605,  // Delta for VS/VU-mode timer
+    HTIMEDELTAH     = 'h615,  // Upper 32 bits of htimedelta, HSXLEN=32 only
+    // Virtual Supervisor Registers
+    VSSTATUS        = 'h200,  // Virtual supervisor status register
+    VSIE            = 'h204,  // Virtual supervisor interrupt-enable register
+    VSTVEC          = 'h205,  // Virtual supervisor trap handler base address
+    VSSCRATCH       = 'h240,  // Virtual supervisor scratch register
+    VSEPC           = 'h241,  // Virtual supervisor exception program counter
+    VSCAUSE         = 'h242,  // Virtual supervisor trap cause
+    VSTVAL          = 'h243,  // Virtual supervisor bad address or instruction
+    VSIP            = 'h244,  // Virtual supervisor interrupt pending
+    VSATP           = 'h280,  // Virtual supervisor address translation and protection
+    // Machine mode registers
+    // Machine Information Registers
     MVENDORID       = 'hF11,  // Vendor ID
     MARCHID         = 'hF12,  // Architecture ID
     MIMPID          = 'hF13,  // Implementation ID
     MHARTID         = 'hF14,  // Hardware thread ID
+    MCONFIGPTR      = 'hF15,  // Pointer to configuration data structure
+    // Machine Trap Setup
     MSTATUS         = 'h300,  // Machine status
     MISA            = 'h301,  // ISA and extensions
     MEDELEG         = 'h302,  // Machine exception delegation register
@@ -848,15 +893,35 @@ package riscv_instr_pkg;
     MIE             = 'h304,  // Machine interrupt-enable register
     MTVEC           = 'h305,  // Machine trap-handler base address
     MCOUNTEREN      = 'h306,  // Machine counter enable
+    MSTATUSH        = 'h310,  // Additional machine status register, RV32 only
+    // Machine Trap Handling
     MSCRATCH        = 'h340,  // Scratch register for machine trap handlers
     MEPC            = 'h341,  // Machine exception program counter
     MCAUSE          = 'h342,  // Machine trap cause
     MTVAL           = 'h343,  // Machine bad address or instruction
     MIP             = 'h344,  // Machine interrupt pending
+    // Machine Configuration
+    MENVCFG         = 'h30A,  // Machine environment configuration register
+    MENVCFGH        = 'h31A,  // Additional machine env. conf. register, RV32 only
+    MSECCFG         = 'h747,  // Machine security configuration register
+    MSECCFGH        = 'h757,  // Additional machine security conf. register, RV32 only
+    // Machine Memory Protection
     PMPCFG0         = 'h3A0,  // Physical memory protection configuration
     PMPCFG1         = 'h3A1,  // Physical memory protection configuration, RV32 only
     PMPCFG2         = 'h3A2,  // Physical memory protection configuration
     PMPCFG3         = 'h3A3,  // Physical memory protection configuration, RV32 only
+    PMPCFG4         = 'h3A4,  // Physical memory protection configuration
+    PMPCFG5         = 'h3A5,  // Physical memory protection configuration, RV32 only
+    PMPCFG6         = 'h3A6,  // Physical memory protection configuration
+    PMPCFG7         = 'h3A7,  // Physical memory protection configuration, RV32 only
+    PMPCFG8         = 'h3A8,  // Physical memory protection configuration
+    PMPCFG9         = 'h3A9,  // Physical memory protection configuration, RV32 only
+    PMPCFG10        = 'h3AA,  // Physical memory protection configuration
+    PMPCFG11        = 'h3AB,  // Physical memory protection configuration, RV32 only
+    PMPCFG12        = 'h3AC,  // Physical memory protection configuration
+    PMPCFG13        = 'h3AD,  // Physical memory protection configuration, RV32 only
+    PMPCFG14        = 'h3AE,  // Physical memory protection configuration
+    PMPCFG15        = 'h3AF,  // Physical memory protection configuration, RV32 only
     PMPADDR0        = 'h3B0,  // Physical memory protection address register
     PMPADDR1        = 'h3B1,  // Physical memory protection address register
     PMPADDR2        = 'h3B2,  // Physical memory protection address register
@@ -873,6 +938,54 @@ package riscv_instr_pkg;
     PMPADDR13       = 'h3BD,  // Physical memory protection address register
     PMPADDR14       = 'h3BE,  // Physical memory protection address register
     PMPADDR15       = 'h3BF,  // Physical memory protection address register
+    PMPADDR16       = 'h4C0,  // Physical memory protection address register
+    PMPADDR17       = 'h3C1,  // Physical memory protection address register
+    PMPADDR18       = 'h3C2,  // Physical memory protection address register
+    PMPADDR19       = 'h3C3,  // Physical memory protection address register
+    PMPADDR20       = 'h3C4,  // Physical memory protection address register
+    PMPADDR21       = 'h3C5,  // Physical memory protection address register
+    PMPADDR22       = 'h3C6,  // Physical memory protection address register
+    PMPADDR23       = 'h3C7,  // Physical memory protection address register
+    PMPADDR24       = 'h3C8,  // Physical memory protection address register
+    PMPADDR25       = 'h3C9,  // Physical memory protection address register
+    PMPADDR26       = 'h3CA,  // Physical memory protection address register
+    PMPADDR27       = 'h3CB,  // Physical memory protection address register
+    PMPADDR28       = 'h3CC,  // Physical memory protection address register
+    PMPADDR29       = 'h3CD,  // Physical memory protection address register
+    PMPADDR30       = 'h3CE,  // Physical memory protection address register
+    PMPADDR31       = 'h3CF,  // Physical memory protection address register
+    PMPADDR32       = 'h4D0,  // Physical memory protection address register
+    PMPADDR33       = 'h3D1,  // Physical memory protection address register
+    PMPADDR34       = 'h3D2,  // Physical memory protection address register
+    PMPADDR35       = 'h3D3,  // Physical memory protection address register
+    PMPADDR36       = 'h3D4,  // Physical memory protection address register
+    PMPADDR37       = 'h3D5,  // Physical memory protection address register
+    PMPADDR38       = 'h3D6,  // Physical memory protection address register
+    PMPADDR39       = 'h3D7,  // Physical memory protection address register
+    PMPADDR40       = 'h3D8,  // Physical memory protection address register
+    PMPADDR41       = 'h3D9,  // Physical memory protection address register
+    PMPADDR42       = 'h3DA,  // Physical memory protection address register
+    PMPADDR43       = 'h3DB,  // Physical memory protection address register
+    PMPADDR44       = 'h3DC,  // Physical memory protection address register
+    PMPADDR45       = 'h3DD,  // Physical memory protection address register
+    PMPADDR46       = 'h3DE,  // Physical memory protection address register
+    PMPADDR47       = 'h3DF,  // Physical memory protection address register
+    PMPADDR48       = 'h4E0,  // Physical memory protection address register
+    PMPADDR49       = 'h3E1,  // Physical memory protection address register
+    PMPADDR50       = 'h3E2,  // Physical memory protection address register
+    PMPADDR51       = 'h3E3,  // Physical memory protection address register
+    PMPADDR52       = 'h3E4,  // Physical memory protection address register
+    PMPADDR53       = 'h3E5,  // Physical memory protection address register
+    PMPADDR54       = 'h3E6,  // Physical memory protection address register
+    PMPADDR55       = 'h3E7,  // Physical memory protection address register
+    PMPADDR56       = 'h3E8,  // Physical memory protection address register
+    PMPADDR57       = 'h3E9,  // Physical memory protection address register
+    PMPADDR58       = 'h3EA,  // Physical memory protection address register
+    PMPADDR59       = 'h3EB,  // Physical memory protection address register
+    PMPADDR60       = 'h3EC,  // Physical memory protection address register
+    PMPADDR61       = 'h3ED,  // Physical memory protection address register
+    PMPADDR62       = 'h3EE,  // Physical memory protection address register
+    PMPADDR63       = 'h3EF,  // Physical memory protection address register
     MCYCLE          = 'hB00,  // Machine cycle counter
     MINSTRET        = 'hB02,  // Machine instructions-retired counter
     MHPMCOUNTER3    = 'hB03,  // Machine performance-monitoring counter
@@ -965,6 +1078,7 @@ package riscv_instr_pkg;
     MHPMEVENT29     = 'h33D,  // Machine performance-monitoring event selector
     MHPMEVENT30     = 'h33E,  // Machine performance-monitoring event selector
     MHPMEVENT31     = 'h33F,  // Machine performance-monitoring event selector
+    // Debug/Trace Registers (shared with Debug Mode)
     TSELECT         = 'h7A0,  // Debug/Trace trigger register select
     TDATA1          = 'h7A1,  // First Debug/Trace trigger data register
     TDATA2          = 'h7A2,  // Second Debug/Trace trigger data register
@@ -972,7 +1086,8 @@ package riscv_instr_pkg;
     TINFO           = 'h7A4,  // Debug trigger info register
     TCONTROL        = 'h7A5,  // Debug trigger control register
     MCONTEXT        = 'h7A8,  // Machine mode trigger context register
-    SCONTEXT        = 'h7AA,  // Supervisor mode trigger context register
+    MSCONTEXT       = 'h7AA,  // Supervisor mode trigger context register
+    // Debug Mode Registers
     DCSR            = 'h7B0,  // Debug control and status register
     DPC             = 'h7B1,  // Debug PC
     DSCRATCH0       = 'h7B2,  // Debug scratch register
@@ -1094,6 +1209,13 @@ package riscv_instr_pkg;
   } hazard_e;
 
   `include "riscv_core_setting.sv"
+
+  // ePMP machine security configuration
+  typedef struct packed {
+    bit rlb;
+    bit mmwp;
+    bit mml;
+  } mseccfg_reg_t;
 
   // PMP address matching mode
   typedef enum bit [1:0] {

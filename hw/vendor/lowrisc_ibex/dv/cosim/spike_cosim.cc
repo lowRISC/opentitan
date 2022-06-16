@@ -14,6 +14,23 @@
 #include <iostream>
 #include <sstream>
 
+// For a short time, we're going to support building against version
+// ibex-cosim-v0.2 (20a886c) and also ibex-cosim-v0.3 (9af9730). Unfortunately,
+// they've got different APIs and spike doesn't expose a version string.
+//
+// However, a bit of digging around finds some defines that have been added
+// between the two versions.
+//
+// TODO: Once there's been a bit of a window to avoid a complete flag day,
+//       remove this ugly hack!
+#ifndef HGATP_MODE_SV57X4
+#define OLD_SPIKE
+#endif
+
+#ifndef OLD_SPIKE
+#include "riscv/isa_parser.h"
+#endif
+
 SpikeCosim::SpikeCosim(const std::string &isa_string, uint32_t start_pc,
                        uint32_t start_mtvec, const std::string &trace_log_path,
                        bool secure_ibex, bool icache_en)
@@ -24,9 +41,16 @@ SpikeCosim::SpikeCosim(const std::string &isa_string, uint32_t start_pc,
     log_file = log->get();
   }
 
+#ifdef OLD_SPIKE
   processor =
       std::make_unique<processor_t>(isa_string.c_str(), "MU", DEFAULT_VARCH,
                                     this, 0, false, log_file, std::cerr);
+#else
+  isa_parser = std::make_unique<isa_parser_t>(isa_string.c_str(), "MU");
+
+  processor = std::make_unique<processor_t>(
+      isa_parser.get(), DEFAULT_VARCH, this, 0, false, log_file, std::cerr);
+#endif
 
   processor->set_ibex_flags(secure_ibex, icache_en);
 
@@ -298,10 +322,17 @@ void SpikeCosim::leave_nmi_mode() {
   uint32_t mstatus = processor->get_csr(CSR_MSTATUS);
   mstatus = set_field(mstatus, MSTATUS_MPP, mstack.mpp);
   mstatus = set_field(mstatus, MSTATUS_MPIE, mstack.mpie);
+#ifdef OLD_SPIKE
   processor->set_csr(CSR_MSTATUS, mstatus);
 
   processor->set_csr(CSR_MEPC, mstack.epc);
   processor->set_csr(CSR_MCAUSE, mstack.cause);
+#else
+  processor->put_csr(CSR_MSTATUS, mstatus);
+
+  processor->put_csr(CSR_MEPC, mstack.epc);
+  processor->put_csr(CSR_MCAUSE, mstack.cause);
+#endif
 }
 
 void SpikeCosim::set_mip(uint32_t mip) {
@@ -362,7 +393,11 @@ void SpikeCosim::fixup_csr(int csr_num, uint32_t csr_val) {
           MSTATUS_MIE | MSTATUS_MPIE | MSTATUS_MPRV | MSTATUS_MPP | MSTATUS_TW;
 
       reg_t new_val = csr_val & mask;
+#ifdef OLD_SPIKE
       processor->set_csr(csr_num, new_val);
+#else
+      processor->put_csr(csr_num, new_val);
+#endif
       break;
   }
 }

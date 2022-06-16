@@ -63,6 +63,7 @@ module ibex_cs_registers #(
   output ibex_pkg::irqs_t      irqs_o,                 // interrupt requests qualified with mie
   output logic                 csr_mstatus_mie_o,
   output logic [31:0]          csr_mepc_o,
+  output logic [31:0]          csr_mtval_o,
 
   // PMP
   output ibex_pkg::pmp_cfg_t     csr_pmp_cfg_o  [PMPNumRegions],
@@ -788,6 +789,7 @@ module ibex_cs_registers #(
   assign csr_mepc_o  = mepc_q;
   assign csr_depc_o  = depc_q;
   assign csr_mtvec_o = mtvec_q;
+  assign csr_mtval_o = mtval_q;
 
   assign csr_mstatus_mie_o   = mstatus_q.mie;
   assign csr_mstatus_tw_o    = mstatus_q.tw;

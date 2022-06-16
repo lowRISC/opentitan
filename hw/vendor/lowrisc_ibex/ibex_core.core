@@ -118,11 +118,23 @@ parameters:
     default: 0
     description: "Enables static branch prediction (EXPERIMENTAL)"
 
+  DbgTriggerEn:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable support for debug triggers. "
+
   SecureIbex:
     datatype: int
     default: 0
     paramtype: vlogparam
     description: "Enables security hardening features (EXPERIMENTAL) [0/1]"
+
+  ICacheScramble:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enables ICache scrambling feature (EXPERIMENTAL) [0/1]"
 
   PMPEnable:
     datatype: int
@@ -141,6 +153,18 @@ parameters:
     default: 4
     paramtype: vlogparam
     description: "Number of PMP regions"
+
+  MHPMCounterNum:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: Number of performance monitor event counters [0/29]
+
+  MHPMCounterWidth:
+    datatype: int
+    paramtype: vlogparam
+    default: 40
+    description: Bit width of performance monitor event counters [32/64]
 
 targets:
   default: &default_target

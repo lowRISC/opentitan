@@ -7,64 +7,46 @@
 import argparse
 import os
 import sys
-import tempfile
 
-import construct_makefile
-from scripts_lib import start_riscv_dv_run_cmd, run_one
+from scripts_lib import get_config, get_isas_for_config, run_one
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--iss', required=True)
+    parser.add_argument('--input', required=True)
     parser.add_argument('--output', required=True)
-    parser.add_argument('--isa', required=True)
-
-    parser.add_argument('--test', required=True)
-    parser.add_argument('--start-seed', type=int, required=True)
-    parser.add_argument('--iterations', type=int, required=True)
-
-    parser.add_argument('--pmp-num-regions', type=int, required=True)
-    parser.add_argument('--pmp-granularity', type=int, required=True)
+    parser.add_argument('--ibex-config', required=True)
 
     args = parser.parse_args()
 
-    iss_opts = []
-    if args.iss == 'ovpsim':
-        iss_opts += ['--override',
-                     f'riscvOVPsim/cpu/PMP_registers={args.pmp_num_regions}',
-                     '--override',
-                     f'riscvOVPsim/cpu/PMP_grain={args.pmp_granularity}']
+    cfg = get_config(args.ibex_config)
+    isa, iss_isa = get_isas_for_config(cfg)
 
-    output_makefile = os.path.join(args.output, 'iss.mk')
+    # riscv-dv knows how to run an ISS simulation (see yaml/iss.yaml in the
+    # vendored directory), but it has definite (and inconvenient!) opinions
+    # about where files should end up. Rather than fight with it, let's just
+    # generate the simple ISS command ourselves.
+    #
+    # NOTE: This only supports Spike, mainly because it's the only simulator we
+    # care about at the moment and this whole script is going to go away anyway
+    # very soon once we've switched across to using cosimulation.
 
-    with tempfile.NamedTemporaryFile() as tf:
-        cmd = (start_riscv_dv_run_cmd(args.verbose) +
-               ['--steps=iss_sim',
-                '--output', args.output,
-                '--isa', args.isa,
-                '--iss', args.iss,
-                '--test', args.test,
-                '--start_seed', str(args.start_seed),
-                '--iterations', str(args.iterations),
-                '--debug', tf.name])
-        if iss_opts:
-            cmd += ['--iss_opts', ' '.join(iss_opts)]
+    if args.iss != 'spike':
+        raise RuntimeError(f'Unsupported ISS: {args.iss}')
 
-        # Run riscv-dv to generate a bunch of commands
-        gen_retcode = run_one(args.verbose, cmd)
-        if gen_retcode:
-            return gen_retcode
+    spike_dir = os.getenv('SPIKE_PATH')
+    if spike_dir is not None:
+        spike = os.path.join(spike_dir, 'spike')
+    else:
+        spike = 'spike'
 
-        # Now convert that command list to a Makefile
-        construct_makefile.transform(False, tf.name, output_makefile)
-
-    # Finally, run Make to run those commands
-    cmd = ['make', '-f', output_makefile, 'all']
-    if not args.verbose:
-        cmd.append('-s')
-
-    return run_one(args.verbose, cmd)
+    cmd = [spike, '--log-commits', '--isa', iss_isa, '-l', args.input]
+    return run_one(args.verbose,
+                   cmd,
+                   redirect_stdstreams=args.output,
+                   timeout_s=30)  # Spike can run indefinitely in some cases
 
 
 if __name__ == '__main__':

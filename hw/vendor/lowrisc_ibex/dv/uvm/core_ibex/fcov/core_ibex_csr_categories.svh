@@ -99,12 +99,7 @@
   CSR_MHPMCOUNTER28H, \
   CSR_MHPMCOUNTER29H, \
   CSR_MHPMCOUNTER30H, \
-  CSR_MHPMCOUNTER31H, \
-  // Must exist when implementing hardware triggers (breakpoints), but read as 0 and ignore \
-  // writes. Unused/Uneeded by debugger infrastructure. \
-  // TODO: Don't ignore these? \
-  CSR_MCONTEXT, \
-  CSR_SCONTEXT
+  CSR_MHPMCOUNTER31H
 
 // Debug related CSRs
 `define DEBUG_CSRS \
@@ -117,3 +112,9 @@
   CSR_TDATA2, \
   CSR_TDATA3
 
+// Must exist when implementing hardware triggers (breakpoints), but read as 0 and ignore \
+// writes. Unused/unneeded by debugger infrastructure. \
+`define NOT_IMPLEMENTED_CSRS \
+  CSR_MCONTEXT, \
+  CSR_SCONTEXT, \
+  CSR_TDATA3
