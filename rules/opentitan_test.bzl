@@ -293,13 +293,14 @@ def opentitan_functest(
         if "manual" not in params.get("tags"):
             all_tests.append(test_name)
 
+        sw_logs_db = []
+
         # Set flash image.
         if target in ["sim_dv", "sim_verilator"]:
             flash = "{}_prog_{}_scr_vmem64".format(name, target)
-            sw_logs_db = ["{}_prog_{}_logs_db".format(name, target)]
+            sw_logs_db.append("{}_prog_{}_logs_db".format(name, target))
         else:
             flash = "{}_prog_{}_bin".format(name, target)
-            sw_logs_db = []
         if signed:
             flash += "_signed_{}".format(key)
 
@@ -319,6 +320,8 @@ def opentitan_functest(
         rom = params.pop("rom")
         if test_in_rom:
             rom = "{}_rom_prog_{}_scr_vmem".format(name, target)
+        if target in ["sim_dv", "sim_verilator"]:
+            sw_logs_db.append(rom.replace("_scr_vmem", "_logs_db"))
 
         bitstream = params.pop("bitstream", None)
         rom_kind = params.pop("rom_kind", None)

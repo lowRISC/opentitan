@@ -1248,6 +1248,7 @@ opentitan_functest(
 opentitan_functest(
     name = "uart_smoketest",
     srcs = ["uart_smoketest.c"],
+    signed = True,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
