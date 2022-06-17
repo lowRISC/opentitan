@@ -23,14 +23,187 @@ extern "C" {
  */
 typedef enum crypto_status {
   // Status is OK; no errors.
-  kCryptoStatusOK = 0x7d3a,
-  // Invalid input arguments; Wrong length or invalid type.
-  kCryptoIncorrectInput = 0x6b7f,
-  // Inconsistencies when cross-checking results, witness, checksums.
-  kCryptoStatusInternalError = 0x4753,
+  kCryptoStatusOK = 0x4d39,
+  // Invalid input arguments; wrong length or invalid type.
+  kCryptoIncorrectInput = 0xbd57,
+  // Inconsistencies when cross-checking results, witness,checksum.
+  kCryptoStatusInternalError = 0x86ba,
   // An asynchronous operation is still in progress.
-  kCryptoStatusAsyncIncomplete = 0xe2b7,
+  kCryptoStatusAsyncIncomplete = 0xd30f,
 } crypto_status_t;
+
+/**
+ * Enum to denote the key type of the handled key.
+ *
+ * Values are hardened.
+ */
+typedef enum key_type {
+  // Key type AES.
+  kKeyTypeAes = 0xb51f,
+  // Key type HMAC.
+  kKeyTypeHmac = 0x196b,
+  // Key type KMAC.
+  kKeyTypeKmac = 0xe769,
+  // Key type RSA.
+  kKeyTypeRsa = 0x4fb4,
+  // Key type ECC.
+  kKeyTypeEcc = 0x3ad6,
+  // Key type KDF.
+  kKeyTypeKdf = 0xf981,
+} key_type_t;
+
+/**
+ * Enum to denote the AES key modes.
+ *
+ * Values are hardened.
+ */
+typedef enum aes_key_mode {
+  // Mode AES ECB.
+  kAesKeyModeEcb = 0xd9d7,
+  // Mode AES CBC.
+  kAesKeyModeCbc = 0xcf6c,
+  // Mode AES CFB.
+  kAesKeyModeCfb = 0x927a,
+  // Mode AES OFB.
+  kAesKeyModeOfb = 0x629f,
+  // Mode AES CTR.
+  kAesKeyModeCtr = 0xf4e1,
+  // Mode AES GCM.
+  kAesKeyModeGcm = 0x3d0e,
+  // Mode AES KWP.
+  kAesKeyModeKwp = 0x2bf1,
+} aes_key_mode_t;
+
+/**
+ * Enum to denote the HMAC key modes.
+ *
+ * Values are hardened.
+ */
+typedef enum hmac_key_mode {
+  // Mode HMAC SHA256.
+  kHmacKeyModeSha256 = 0x64f1,
+} hmac_key_mode_t;
+
+/**
+ * Enum to denote the KMAC key modes.
+ *
+ * Values are hardened.
+ */
+typedef enum kmac_key_mode {
+  // Mode KMAC128.
+  kKmacKeyModeKmac128 = 0xde4e,
+  // Mode KMAC256.
+  kKmacKeyModeKmac256 = 0x7863,
+} kmac_key_mode_t;
+
+/**
+ * Enum to denote the RSA key modes.
+ *
+ * Values are hardened.
+ */
+typedef enum rsa_key_mode {
+  // Mode RSA Sign, RSASSA-PKCS.
+  kRsaKeyModeSignPkcs = 0x473f,
+  // Mode RSA Sign, RSASSA-PSS.
+  kRsaKeyModeSignPss = 0x9cb3,
+} rsa_key_mode_t;
+
+/**
+ * Enum to denote the ECC key modes.
+ *
+ * Values are hardened.
+ */
+typedef enum ecc_key_mode {
+  // Mode ECDSA.
+  kEccKeyModeEcdsa = 0xca9a,
+  // Mode ECDH.
+  kEccKeyModeEcdh = 0xacfd,
+  // Mode Ed25519.
+  kEccKeyModeEd25519 = 0xf7eb,
+  // Mode X25519.
+  kEccKeyModeX25519 = 0x50d7,
+} ecc_key_mode_t;
+
+/**
+ * Enum to denote the KDF key modes.
+ *
+ * Values are hardened.
+ */
+typedef enum kdf_key_mode {
+  // Mode KDF with HMAC as PRF.
+  kKdfKeyModeHMAC = 0x4e6a,
+  // Mode KDF with KMAC as PRF.
+  kKdfKeyModeKMAC = 0x28af,
+} kdf_key_mode_t;
+
+/**
+ * Enum for opentitan crypto modes using a key.
+ *
+ * Used to denote the crypto mode for which the key is intended. This
+ * key_mode will be a parameter in the crypto_blinded_key_t struct.
+ *
+ * Values are hardened.
+ */
+typedef enum key_mode {
+  // Key is intended for AES ECB mode.
+  kKeyModeAesEcb = kKeyTypeAes << 16 | kAesKeyModeEcb,
+  // Key is intended for AES CBC mode.
+  kKeyModeAesCbc = kKeyTypeAes << 16 | kAesKeyModeCbc,
+  // Key is intended for AES CFB mode.
+  kKeyModeAesCfb = kKeyTypeAes << 16 | kAesKeyModeCfb,
+  // Key is intended for AES OFB mode.
+  kKeyModeAesOfb = kKeyTypeAes << 16 | kAesKeyModeOfb,
+  // Key is intended for AES CTR mode.
+  kKeyModeAesCtr = kKeyTypeAes << 16 | kAesKeyModeCtr,
+  // Key is intended for AES GCM mode.
+  kKeyModeAesGcm = kKeyTypeAes << 16 | kAesKeyModeGcm,
+  // Key is intended for AES KWP mode.
+  kKeyModeAesKwp = kKeyTypeAes << 16 | kAesKeyModeKwp,
+  // Key is intended for HMAC SHA256 mode.
+  kKeyModeHmacSha256 = kKeyTypeHmac << 16 | kHmacKeyModeSha256,
+  // Key is intended for KMAC128 mode.
+  kKeyModeKmac128 = kKeyTypeKmac << 16 | kKmacKeyModeKmac128,
+  // Key is intended for KMAC256 mode.
+  kKeyModeKmac256 = kKeyTypeKmac << 16 | kKmacKeyModeKmac256,
+  // Key is intended for RSA signature RSASSA-PKCS mode.
+  kKeyModeRsaSign = kKeyTypeRsa << 16 | kRsaKeyModeSignPkcs,
+  // Key is intended for RSA signature RSASSA-PSS mode.
+  kKeyModeRsaSign = kKeyTypeRsa << 16 | kRsaKeyModeSignPss,
+  // Key is intended for ECDSA mode.
+  kKeyModeEcdsa = kKeyTypeEcc << 16 | kEccKeyModeEcdsa,
+  // Key is intended for ECDH mode.
+  kKeyModeEcdh = kKeyTypeEcc << 16 | kEccKeyModeEcdh,
+  // Key is intended for Ed25519 mode.
+  kKeyModeEd25519 = kKeyTypeEcc << 16 | kEccKeyModeEd25519,
+  // Key is intended for X25519 mode.
+  kKeyModeX25519 = kKeyTypeEcc << 16 | kEccKeyModeX25519,
+  // Key is intended for KDF with HMAC as PRF.
+  kKeyModeKdfHmac = kKeyTypeKdf << 16 | kKdfKeyModeHMAC,
+  // Key is intended for KDF with KMAC as PRF.
+  kKeyModeKdfKmac = kKeyTypeKdf << 16 | kKdfKeyModeKMAC,
+} key_mode_t;
+
+/**
+ * Enum to denote the AES-GCM tag length.
+ *
+ * Values are hardened.
+ */
+typedef enum aead_gcm_tag_len {
+  // Tag length 128 bits.
+  kAeadGcmTagLen128 = 0xb9ab,
+  // Tag length 120 bits.
+  kAeadGcmTagLen120 = 0xae53,
+  // Tag length 112 bits.
+  kAeadGcmTagLen112 = 0x175d,
+  // Tag length 104 bits.
+  kAeadGcmTagLen104 = 0x68fc,
+  // Tag length 96 bits.
+  kAeadGcmTagLen96 = 0x7686,
+  // Tag length 64 bits.
+  kAeadGcmTagLen64 = 0xc6a9,
+  // Tag length 32 bits.
+  kAeadGcmTagLen32 = 0x4b37,
+} aead_gcm_tag_len_t;
 
 /**
  * Enum to handle return values of the verification APIs.
@@ -39,54 +212,10 @@ typedef enum crypto_status {
  */
 typedef enum verification_status {
   // Return value for successful verification.
-  kVerificationStatusPass = 0x2c89,
+  kVerificationStatusPass = 0x5e34,
   // Return value for unsuccessful verification.
-  kVerificationStatusFail = 0x49d3,
+  kVerificationStatusFail = 0x2f4c,
 } verification_status_t;
-
-/**
- * Enum for opentitan crypto modes using a key.
- *
- * Used to denote crypto mode for which key usage is intended. Values are
- * hardened.
- */
-typedef enum key_mode {
-  // AES ECB mode.
-  kKeyModeAesEcb = 0x0101,
-  // AES CBC mode.
-  kKeyModeAesCbc = 0x0102,
-  // AES CFB mode.
-  kKeyModeAesCfb = 0x0103,
-  // AES OFB mode.
-  kKeyModeAesOfb = 0x0104,
-  // AES CTR mode.
-  kKeyModeAesCtr = 0x0105,
-  // AES GCM mode.
-  kKeyModeAesGcm = 0x0106,
-  // AES KWP mode.
-  kKeyModeAesKwp = 0x0107,
-  // HMAC-SHA-256.
-  kKeyModeHmacSha256 = 0x0201,
-  // KMAC-256.
-  kKeyModeKmac256 = 0x0202,
-  // RSA key generation.
-  kKeyModeRsaKeygen = 0x0301,
-  // RSA digital signature.
-  kKeyModeRsaSign = 0x0302,
-  // Elliptic curve key generation.
-  kKeyModeEccKeygen = 0x0401,
-  // Elliptic curve digital signature.
-  kKeyModeEccSign = 0x0402,
-  // Elliptic curve Diffie–Hellman key exchange.
-  kKeyModeEccEcdh = 0x0403,
-} key_mode_t;
-
-/**
- * Type of blinded keys.
- *
- * This type is not exposed in the API because it should not be used directly.
- */
-typedef struct crypto_blinded_key crypto_blinded_key_t;
 
 /**
  * Struct to handle unmasked key type.
@@ -95,141 +224,196 @@ typedef struct crypto_unblinded_key {
   // Mode for which the key usage is intended.
   key_mode_t key_mode;
   // Key length.
-  uint16_t key_length;
+  size_t key_length;
   // Implementation specific, storage provided by caller.
   uint32_t *key;
-  // Checksum for this struct.
+  // Implementation specific, checksum for this struct.
   uint32_t checksum;
 } crypto_unblinded_key_t;
 
 /**
+ * Struct to handle crypto data buffer with pointer and length.
+ * Note: If the crypto_uint8_buf_t is used for output data, it is
+ * expected that the user (1) sets the length of the expected output
+ * in the `len` field, and (2) allocates the required space for buffer
+ * (`len` bytes). If the output length set by the user doesn’t match
+ * the generated output length, an error is thrown and code exits.
+ */
+typedef struct crypto_uint8_buf {
+  // Pointer to the data.
+  uint8_t *data;
+  // Length of the data in bytes.
+  size_t len;
+} crypto_uint8_buf_t;
+
+/**
+ * Struct to handle crypto const data buffer with pointer and length.
+ */
+typedef struct crypto_const_uint8_buf {
+  // Pointer to the data.
+  const uint8_t *data;
+  // Length of the data in bytes.
+  size_t len;
+} crypto_const_uint8_buf_t;
+
+/**
  * Enum to define AES mode of operation.
+ *
+ * Values are hardened.
  */
 typedef enum block_cipher_mode {
   // AES ECB mode (electronic codebook mode).
-  kBlockCipherModeEcb = 0,
+  kBlockCipherModeEcb = 0x7cae,
   // AES CBC mode (cipher block chaining mode).
-  kBlockCipherModeCbc = 1,
+  kBlockCipherModeCbc = 0x9736,
   // AES CFB mode (cipher feedback mode).
-  kBlockCipherModeCfb = 2,
+  kBlockCipherModeCfb = 0xe378,
   // AES OFB mode (output feedback mode).
-  kBlockCipherModeOfb = 3,
+  kBlockCipherModeOfb = 0x9cdd,
   // AES CTR mode (counter mode).
-  kBlockCipherModeCtr = 4,
+  kBlockCipherModeCtr = 0x4a1f,
 } block_cipher_mode_t;
 
 /**
  * Enum to define AES operation to be performed.
+ *
+ * Values are hardened.
  */
 typedef enum aes_operation {
   // AES operation mode encrypt.
-  kAesOperationEncrypt = 0,
+  kAesOperationEncrypt = 0xdea9,
   // AES operation mode decrypt.
-  kAesOperationDecrypt = 1,
+  kAesOperationDecrypt = 0x5d5a,
 } aes_operation_t;
 
 /**
  * Enum to define padding scheme for AES data.
+ *
+ * Values are hardened.
  */
 typedef enum aes_padding {
   // Pads with value same as the number of padding bytes.
-  kAesPaddingPkcs7 = 0,
+  kAesPaddingPkcs7 = 0xce99,
   // Pads with 0x80 (10000000), followed by zero bytes.
-  kAesPaddingIso9797M2 = 1,
+  kAesPaddingIso9797M2 = 0xb377,
   // Pads with 0x00 bytes.
-  kAesPaddingIso9797M1 = 2,
+  kAesPaddingIso9797M1 = 0x49eb,
   // Pads with random bytes, last byte is no. of padded bytes.
-  kAesPaddingRandom = 3,
+  kAesPaddingRandom = 0x746c,
   // Pads with 0x00 bytes, last byte is no. of padded bytes.
-  kAesPaddingX923 = 4,
+  kAesPaddingX923 = 0xed32,
   // Add no padding.
-  kAesPaddingNull = 5,
+  kAesPaddingNull = 0x259f,
 } aes_padding_t;
 
 /**
- * Enum to define hashing mode.
+ * Enum to define Hashing mode.
+ *
+ * Values are hardened.
  */
 typedef enum hash_mode {
   // SHA2-256 mode.
-  kHashModeSha256 = 0,
+  kHashModeSha256 = 0x6dc2,
   // SHA2-384 mode.
-  kHashModeSha384 = 1,
+  kHashModeSha384 = 0xdafb,
   // SHA2-512 mode.
-  kHashModeSha512 = 2,
+  kHashModeSha512 = 0xb626,
   // SHA3-224 mode.
-  kHashModeSha3_224 = 3,
+  kHashModeSha3_224 = 0xf51d,
   // SHA3-256 mode.
-  kHashModeSha3_256 = 4,
+  kHashModeSha3_256 = 0x196e,
   // SHA3-384 mode.
-  kHashModeSha3_384 = 5,
+  kHashModeSha3_384 = 0x14f5,
   // SHA3-512 mode.
-  kHashModeSha3_512 = 6,
+  kHashModeSha3_512 = 0x62cd,
   // SHA3-Shake128 mode.
-  kHashModeSha3Shake128 = 7,
+  kHashModeSha3Shake128 = 0x2bb4,
   // SHA3-Shake256 mode.
-  kHashModeSha3Shake256 = 8,
+  kHashModeSha3Shake256 = 0x4778,
   // SHA3-cShake128 mode.
-  kHashModeSha3Cshake128 = 9,
+  kHashModeSha3Cshake128 = 0x8f45,
   // SHA3-cShake256 mode.
-  kHashModeSha3Cshake256 = 10,
+  kHashModeSha3Cshake256 = 0x8c9e,
 } hash_mode_t;
 
 /**
  * Enum to define MAC mode.
+ *
+ * Values are hardened.
  */
 typedef enum mac_mode {
   // HMAC-SHA2-256 mode.
-  kMacModeHmacSha256 = 0,
-  // KMAC-128 mode.
-  kMacModeKmac128 = 1,
-  // KMAC-256 mode.
-  kMacModeKmac256 = 2,
+  kMacModeHmacSha256 = 0x953c,
+  // KMAC128 mode.
+  kMacModeKmac128 = 0x69b6,
+  // KMAC256 mode.
+  kMacModeKmac256 = 0xee62,
 } mac_mode_t;
 
 /**
  * Enum to define padding scheme for RSA data.
+ *
+ * Values are hardened.
  */
 typedef enum rsa_padding {
-  // Pads input data according to the PKCS#1-OAEP scheme.
-  kRsaPaddingOaep = 0,
   // Pads input data according to the PKCS#1 (v1.5) scheme.
-  kRsaPaddingPkcs = 1,
+  kRsaPaddingPkcs = 0x9f44,
   // Pads input data according to the PKCS#1-PSS scheme.
-  kRsaPaddingPss = 2,
-  // NULL padding.
-  kRsaPaddingNull = 3,
+  kRsaPaddingPss = 0x88cf,
 } rsa_padding_t;
 
 /**
- * Enum to define hash modes for RSA scheme
+ * Enum to define hash modes for RSA schemes.
  *
- * Aligning with existing HASH modes.
+ * Aligning with existing hash modes. Values are hardened.
  */
 typedef enum rsa_hash {
   // SHA2-256 hashing mode for RSA.
-  kRsaHashSha256 = 0,
+  kRsaHashSha256 = 0xed4b,
   // SHA2-384 hashing mode for RSA.
-  kRsaHashSha384 = 1,
+  kRsaHashSha384 = 0x5dd0,
   // SHA2-512 hashing mode for RSA.
-  kRsaHashSha512 = 2,
+  kRsaHashSha512 = 0x0bab,
   // SHA3-384 hashing mode for RSA.
-  kRsaHashSha3_384 = 3,
+  kRsaHashSha3_384 = 0x65b7,
 } rsa_hash_t;
 
 /**
- * Enum to define named elliptic curves.
+ * Struct to handle the RSA private exponent and modulus.
  */
-typedef enum ecc_named_curve {
-  // ECC named curve NIST P256.
-  kEccNamedCurveNistP256 = 0,
-  // ECC named curve NIST P384.
-  kEccNamedCurveNistP384 = 1,
-  // ECC named curve brainpool P256r1.
-  kEccNamedCurveBrainpoolP256R1 = 2,
-} ecc_named_curve_t;
+typedef struct rsa_private_key {
+  // Unblinded key struct with RSA modulus.
+  crypto_unblinded_key_t n;
+  // Blinded key struct with RSA private exponent.
+  crypto_blinded_key_t d;
+} rsa_private_key_t;
 
 /**
- * Struct to handle ECDSA or EdDSA signature.
+ * Enum to define possible lengths of RSA (public) keys.
+ *
+ * Values are hardened.
+ */
+typedef enum rsa_key_size {
+  // 2048-bit RSA key.
+  kRsaKeySize2048 = 0xa74d,
+  // 3072-bit RSA key.
+  kRsaKeySize3072 = 0x7fc6,
+  // 4096-bit RSA key.
+  kRsaKeySize4096 = 0xf07a,
+} rsa_key_size_t;
+
+/**
+ * Struct to handle the RSA public exponent and modulus.
+ */
+typedef struct rsa_public_key {
+  // Unblinded key struct with RSA modulus.
+  crypto_unblinded_key_t n;
+  // Blinded key struct with RSA public exponent.
+  crypto_unblinded_key_t e;
+} rsa_public_key_t;
+
+/**
+ * Struct to handle ECDSA or EdDSA signatures.
  */
 typedef struct ecc_signature {
   // Length of ECC signature R parameter, in bytes.
@@ -244,12 +428,14 @@ typedef struct ecc_signature {
 
 /**
  * Enum to define EdDSA mode for signature.
+ *
+ * Values are hardened.
  */
 typedef enum eddsa_sign_mode {
   // Signature mode EdDSA.
-  kEddsaSignModeEdDSA = 0,
+  kEddsaSignModeEdDSA = 0x4fd1,
   // Signature mode Hashed EdDSA.
-  kEddsaSignModeHashEdDSA = 1,
+  kEddsaSignModeHashEdDSA = 0x9bed,
 } eddsa_sign_mode_t;
 
 /**
@@ -259,45 +445,27 @@ typedef enum eddsa_sign_mode {
  */
 typedef struct ecc_public_key {
   // ECC public key x coordinate.
-  uint32_t *x;
+  crypto_unblinded_key_t x;
   // ECC public key y coordinate.
-  uint32_t *y;
+  crypto_unblinded_key_t y;
 } ecc_public_key_t;
 
 /**
- * Struct to handle Ed25519 public key type.
- *
- * Length of encoded public key for Ed25519 is 256 bits (32 bytes).
- */
-typedef struct ed25519_public_key {
-  // Public key for Ed25519.
-  uint32_t *pub_key;
-} eddsa_public_key_t;
-
-/**
- * Struct for domain parameters for a generic Weierstrass elliptic curve.
+ * Struct for domain parameters of a custom Weierstrass curve.
  */
 typedef struct ecc_domain {
-  // Length of p.
-  size_t len_p;
-  // Value of prime p (modulus of coordinate finite field).
-  uint32_t *p;
-  // Length of coefficient a.
-  size_t len_a;
-  // Value of coefficient a.
-  uint32_t *a;
-  // Length of coefficient b.
-  size_t len_b;
-  // Value of coefficient b.
-  uint32_t *b;
-  // Value of x coordinate of G (base point). Same length as p.
+  // Prime P (modulus of coordinate finite field)
+  crypto_uint8_buf_t p;
+  // Coefficient a.
+  crypto_uint8_buf_t a;
+  // Coefficient b.
+  crypto_uint8_buf_t b;
+  // q (order of G).
+  crypto_uint8_buf_t q;
+  // Value of x coordinate of G (basepoint). Same length as p.
   uint32_t *gx;
-  // Value of y coordinate of G (base point). Same length as p.
+  // Value of y coordinate of G (basepoint). Same length as p.
   uint32_t *gy;
-  // Length of q.
-  size_t len_q;
-  // Value of q (order of G).
-  uint32_t *q;
   // Cofactor of the curve.
   uint32_t cofactor;
   // Checksum value of the parameters.
@@ -305,14 +473,107 @@ typedef struct ecc_domain {
 } ecc_domain_t;
 
 /**
- * Struct to handle crypto data buffer with pointer and length.
+ * Enum to define the type of elliptic curve used for the operation.
+ *
+ * Values are hardened.
  */
-typedef struct crypto_uint8_buf {
-  // Pointer to the data.
-  uint8_t *data;
-  // Length of the data in bytes.
-  size_t len;
-} crypto_uint8_buf_t;
+typedef enum ecc_curve_type {
+  // Generic Weierstrass curve, with custom domain parameters.
+  kEccCurveTypeCustom = 0xf93c,
+  // Named Weierstrass curve - NIST P256.
+  kEccCurveTypeNistP256 = 0xe1e7,
+  // Named Weierstrass curve - NIST P384.
+  kEccCurveTypeNistP384 = 0x6a2b,
+  // Named Weierstrass curve - Brainpool P256r1.
+  kEccCurveTypeBrainpoolP256R1 = 0x5e96,
+} ecc_curve_type_t;
+
+/**
+ * Struct for ECC curve used for ECDSA / ECDH operation.
+ *
+ * Values are hardened.
+ */
+typedef struct ecc_curve {
+  // Type of the Weierstrass curve, custom curve or named curve.
+  ecc_curve_type_t curve_type;
+  // Domain parameters for a custom Weierstrass curve.
+  ecc_domain_t domain_parameter;
+} ecc_curve_t;
+
+/**
+ * Enum to define the supported DRBG mechanisms.
+ *
+ * Values are hardened.
+ */
+typedef enum drbg_type {
+  // DRBG mechanism based on CTR (CTR_DRBG).
+  kDrbgTypeCtr = 0x3af7,
+  // DRBG mechanism based on HMAC (HMAC_DRBG).
+  kDrbgTypeHmac = 0xd298,
+} drbg_type_t;
+
+/**
+ * Enum to define the supported KDF constructions.
+ *
+ * Values are hardened.
+ */
+typedef enum kdf_type {
+  // KDF construction with HMAC as a PRF.
+  kKdfTypeHmac = 0xfa3b,
+  // KDF construction with KMAC as a PRF.
+  kKdfTypeKmac = 0x0f47,
+} kdf_type_t;
+
+/**
+ * Struct to handle masked key type.
+ *
+ * Representation is internal to the implementation.
+ *
+ * Note: The crypto_blinded_key_t struct should include
+ * “size_t key_length” and “key_mode_t key_mode” as one of the
+ * parameters to check length of the keyblob and the mode intended.
+ * The struct should also include a “uint32_t checksum” parameter for
+ * integrity purposes. The way the checksum is computed is a
+ * implementation specific details.
+ */
+typedef struct crypto_blinded_key crypto_blinded_key_t;
+
+/**
+ * Generic hash context.
+ *
+ * Representation is internal to the hash implementation; initialize
+ * with #otcrypto_hash_init.
+ */
+typedef struct hash_context hash_context_t;
+
+/**
+ * Generic hmac context.
+ *
+ * Representation is internal to the hmac implementation; initialize
+ * with #otcrypto_hmac_init.
+ */
+typedef struct hmac_context hmac_context_t;
+
+/**
+ * DRBG state.
+ *
+ * Representation is internal to the drbg implementation; initialize
+ * with #otcrypto_drbg_instantiate or
+ * #otcrypto_drbg_manual_instantiate.
+ *
+ * Note: The drbg_state_t struct along with V and K, should include:
+ * drbg_entropy_mode: To indicate the entropy mode used. Also used to
+ * disallow mixing of auto entropy and manual entropy DRBG operations.
+ * reseed_counter: To indicate the number of requests for pseudorandom
+ * bits since instantiation or reseeding.
+ * security_strength: To indicate security strength of the DRBG
+ * instantiation.
+ * prediction_resistance_flag: To indicate if prediction resistance is
+ * required.
+ * drbg_mechanism: To indicate if CTR_DRBG or HMAC_DRBG is used for
+ * the DRBG instantiation.
+ */
+typedef struct drbg_state drbg_state_t;
 
 /**
  * Performs the AES initialization operation.
@@ -322,53 +583,66 @@ typedef struct crypto_uint8_buf {
  *
  * @param key Pointer to the blinded key struct with key shares
  * @param iv Initialization vector, used for CBC, CFB, OFB, CTR modes
- * @param aes_mode Required aes mode of operation
- * @param aes_operation Required aes operation
+ * @param aes_mode Required AES mode of operation
+ * @param aes_operation Required AES operation (encrypt or decrypt)
  * @return crypto_status_t The result of the init operation
  */
-crypto_status_t aes_init(const crypto_blinded_key_t *key, crypto_uint8_buf_t iv,
-                         block_cipher_mode_t aes_mode,
-                         aes_operation_t aes_operation);
+crypto_status_t otcrypto_aes_init(const crypto_blinded_key_t *key,
+                                  crypto_uint8_buf_t iv,
+                                  block_cipher_mode_t aes_mode,
+                                  aes_operation_t aes_operation);
 
 /**
  * Performs the AES cipher operation.
  *
- * The #aes_init function should be called before this, to initialize
- * the key, aes mode and aes cipher operation to be performed.
+ * The #otcrypto_aes_init should be called before this function,
+ * to initialize the key, AES mode and AES cipher operation.
  *
  * The input data in the `cipher_input` is first padded using the
- * aes_padding scheme, the output is placed in the `cipher_output`.
+ * `aes_padding` scheme and the output is copied to `cipher_output`.
+ *
+ * The caller should allocate space for the `cipher_output` buffer,
+ * (same length as input), and set the length of expected output in
+ * the `len` field of the output. If the user-set length and the
+ * output length does not match, an error message will be returned.
  *
  * @param cipher_input Input data to be ciphered
  * @param aes_padding Padding scheme to be used for the data
  * @param cipher_output Output data after cipher operation
  * @return crypto_status_t The result of the cipher operation
  */
-crypto_status_t aes_cipher(const crypto_uint8_buf_t cipher_input,
-                           aes_padding_t aes_padding,
-                           crypto_uint8_buf_t *cipher_output);
+crypto_status_t otcrypto_aes_cipher(crypto_const_uint8_buf_t cipher_input,
+                                    aes_padding_t aes_padding,
+                                    crypto_uint8_buf_t *cipher_output);
 
 /**
  * Performs the AES-GCM authenticated encryption operation.
  *
- * This function encrypts the input data `plaintext` to produce an
- * `ciphertext` output. Additionally it generates an authentication
- * tag `auth_tag` on both the (confidential) input data and any
- * additional non-confidential authenticated data `aad`.
+ * This function encrypts the input `plaintext` to produce an
+ * output `ciphertext`. Together it generates an authentication
+ * tag `auth_tag` on the ciphered data and any non-confidential
+ * additional authenticated data `aad`.
+ *
+ * The caller should allocate space for the `ciphertext` buffer,
+ * (same length as input), `auth_tag` buffer (same as tag_len), and
+ * set the length of expected outputs in the `len` field of
+ * `ciphertext` and `auth_tag`. If the user-set length and the output
+ * length does not match, an error message will be returned.
  *
  * @param key Pointer to the blinded gcm-key struct
  * @param plaintext Input data to be encrypted and authenticated
  * @param iv Initialization vector for the encryption function
  * @param aad Additional authenticated data
+ * @param tag_len Length of authentication tag to be generated
  * @param ciphertext Encrypted output data, same length as input data
- * @param auth_tag Authentication tag
- * @return crypto_status_t The result of the encryption operation
+ * @param auth_tag Generated authentication tag
+ * @return crypto_status_t Result of the authenticated encryption
+ * operation
  */
-crypto_status_t aes_encrypt_gcm(const crypto_blinded_key_t *key,
-                                const crypto_uint8_buf_t plaintext,
-                                crypto_uint8_buf_t iv, crypto_uint8_buf_t aad,
-                                crypto_uint8_buf_t *ciphertext,
-                                crypto_uint8_buf_t *auth_tag);
+crypto_status_t otcrypto_aes_encrypt_gcm(
+    const crypto_blinded_key_t *key, crypto_const_uint8_buf_t plaintext,
+    crypto_uint8_buf_t iv, crypto_uint8_buf_t aad, aead_gcm_tag_len_t tag_len,
+    crypto_uint8_buf_t *ciphertext, crypto_uint8_buf_t *auth_tag);
 
 /**
  * Performs the AES-GCM authenticated decryption operation.
@@ -377,186 +651,51 @@ crypto_status_t aes_encrypt_gcm(const crypto_blinded_key_t *key,
  * matches the internally generated tag. Upon verification, the
  * function decrypts the input `ciphertext` to get a `plaintext data.
  *
+ * The caller should allocate space for the `plaintext` buffer,
+ * (same length as ciphertext), and set the length of expected output
+ * in the `len` field of `plaintext`. If the user-set length and the
+ * output length does not match, an error message will be returned.
+ *
  * @param key Pointer to the blinded gcm-key struct
  * @param ciphertext Input data to be decrypted
  * @param iv Initialization vector for the decryption function
  * @param aad Additional authenticated data
  * @param auth_tag Authentication tag to be verified
  * @param plaintext Decrypted plaintext data, same len as input data
- * @return crypto_status_t The result of the encryption operation
+ * @return crypto_status_t Result of the authenticated decryption
+ * operation
  */
-crypto_status_t aes_decrypt_gcm(const crypto_blinded_key_t *key,
-                                const crypto_uint8_buf_t ciphertext,
-                                crypto_uint8_buf_t iv, crypto_uint8_buf_t aad,
-                                crypto_uint8_buf_t auth_tag,
-                                crypto_uint8_buf_t *plaintext);
+crypto_status_t otcrypto_aes_decrypt_gcm(const crypto_blinded_key_t *key,
+                                         crypto_const_uint8_buf_t ciphertext,
+                                         crypto_uint8_buf_t iv,
+                                         crypto_uint8_buf_t aad,
+                                         crypto_uint8_buf_t auth_tag,
+                                         crypto_uint8_buf_t *plaintext);
 
 /**
- * AES-GCM context.
+ * Performs the internal GHASH operation of Galois Counter Mode (GCM).
  *
- * Representation is internal to the AES implementation; initialize with
- * #aes_gcm_init.
+ * This function is an operation internal to GCM and can be used to
+ * create custom implementations that do not adhere to the AES-GCM
+ * encryption and decryption APIs provided here. However, custom GCM
+ * constructs can be dangerous; for most use cases, prefer the
+ * provided encryption and decryption operations.
+ *
+ * The length of the input bitstring must be a multiple of 128 bits,
+ * and must not be zero.
+ *
+ * The caller should allocate space for the `output` buffer, which
+ * must have a length of 16 bytes.
+ *
+ * @param hash_subkey Hash subkey (H), 16 bytes
+ * @param input Input bitstring (X)
+ * @param output buffer, 16 bytes
+ * @return crypto_status_t Result of the authenticated decryption
+ * operation
  */
-typedef struct aes_gcm_context aes_gcm_context_t;
-
-/**
- * Initializes the AES-GCM engine.
- *
- * Generates the GHASH subkey H and pre-counter block J0 from the
- * `key` and `iv`, and stores them in the `gcm_context` struct.
- *
- * @param gcm_context Pointer to the GCM context struct
- * @param key Pointer to the blinded GCM key struct
- * @param iv Initialization vector for the GCM function
- * @return crypto_status_t The result of the init operation
- */
-crypto_status_t aes_gcm_init(aes_gcm_context_t *gcm_context,
-                             const crypto_blinded_key_t *key,
-                             crypto_uint8_buf_t iv);
-
-/**
- * Updates the AAD value for the encryption/decryption function.
- *
- * After copying the aad, computes GHASH value and stores the result
- * in the `gcm_context` state parameter.
- *
- * #aes_gcm_init should be called before calling this function.
- *
- * @param gcm_context Pointer to the GCM context struct
- * @param aad Additional authenticated data
- * @return crypto_status_t The result of the aad update operation
- */
-crypto_status_t aes_gcm_aad_update(aes_gcm_context_t *gcm_context,
-                                   crypto_uint8_buf_t aad);
-
-/**
- * Performs the AES-GCM authenticated encryption update operation.
- *
- * This function encrypts the input data in `plaintext` and produces a
- * `ciphertext` data as output. The partial data bytes are stored back
- * in the `gcm_context` and combined with subsequent bytes or padded to
- * block length for the last block. The intermediate result is stored in
- * the `gcm_context` state parameter.
- *
- * #aes_gcm_init and if needed #aes_gcm_aad_update should be called
- * before calling this function.
- *
- * @param gcm_context Pointer to the GCM context struct
- * @param plaintext Input data to be encrypted and authenticated
- * @param ciphertext Encrypted output data, same length as input data
- * @return crypto_status_t The result of the init operation
- */
-crypto_status_t aes_gcm_encrypt_update(aes_gcm_context_t *gcm_context,
-                                       const crypto_uint8_buf_t plaintext,
-                                       crypto_uint8_buf_t *ciphertext);
-
-/**
- * Performs the AES-GCM authenticated encryption final operation.
- *
- * This function pads the remaining partial data and encrypts the
- * block. Computes GHASH of the updated state after and stores the
- * result back in `gcm_context` state parameter, for tag generation.
- *
- * #aes_gcm_encrypt_update should be called before calling this
- * function.
- *
- * @param gcm_context Pointer to the GCM context struct
- * @param ciphertext Encrypted output data, same length as input data
- * @return crypto_status_t The result of the init operation
- */
-crypto_status_t aes_gcm_encrypt_final(aes_gcm_context_t *gcm_context,
-                                      crypto_uint8_buf_t *ciphertext);
-
-/**
- * Performs the authentication tag generation operation.
- *
- * Performs GCTR on the final state value stored in the `gcm_context`
- * and returns the generated `auth_tag`.
- *
- * #aes_gcm_encrypt_final should be called before using this API.
- *
- * @param gcm_context Pointer to the GCM context struct
- * @param auth_tag Authentication tag
- * @return crypto_status_t The result of the tag generate operation
- */
-crypto_status_t aes_gcm_generate_tag(aes_gcm_context_t *gcm_context,
-                                     crypto_uint8_buf_t *auth_tag);
-
-/**
- * Performs the pre-step for AES-GCM tag verification operation.
- *
- * Note: Tag should be verified before decrypting ciphertext.
- *
- * This function computes the final state value from the `ciphertext`
- * and AAD data. The partial data bytes and intermediate result are
- * stored back in the `gcm_context`.
- *
- * #aes_gcm_init and aes_gcm_aad_update should be called before using
- * this function.
- *
- * @param gcm_context Pointer to the GCM context struct
- * @param ciphertext Encrypted input data for tag generation
- * @return crypto_status_t The return status of the verify update operation
- */
-crypto_status_t aes_gcm_verify_tag_update(aes_gcm_context_t *gcm_context,
-                                          const crypto_uint8_buf_t ciphertext);
-
-/**
- * Performs the AES-GCM tag verification operation.
- *
- * Note: Tag should be verified before decrypting ciphertext.
- *
- * This function pads the remaining partial data and after that
- * computes the authentication tag. The generated tag is verified
- * against the input `auth_tag` for correctness.
- *
- * #aes_gcm_verify_tag_update should be called before using this function.
- *
- * @param gcm_context Pointer to the GCM context struct
- * @param auth_tag Authentication tag
- * @param verification_result Result of the tag verification (Pass/Fail)
- * @return crypto_status_t The return status of the tag verify operation
- */
-crypto_status_t aes_gcm_verify_tag_final(
-    aes_gcm_context_t *gcm_context, crypto_uint8_buf_t auth_tag,
-    verification_status_t *verification_result);
-
-/**
- * Performs the AES-GCM decryption update operation.
- *
- * Note: Decrypt should only be used after tag verification.
- *
- * This function generates `plaintext` from the `ciphertext` data. The
- * partial data bytes and intermediate result are stored back in the
- * `gcm_context`.
- *
- * #aes_gcm_init and aes_gcm_aad_update should be called before using
- * this function.
- *
- * @param gcm_context Pointer to the GCM context struct
- * @param ciphertext Input data to be decrypted
- * @param plaintext Decrypted plaintext data, same len as input data
- * @return crypto_status_t The result of the decrypt update operation
- */
-crypto_status_t aes_gcm_decrypt_update(aes_gcm_context_t *gcm_context,
-                                       const crypto_uint8_buf_t ciphertext,
-                                       crypto_uint8_buf_t *plaintext);
-
-/**
- * Performs the AES-GCM authenticated decryption final operation.
- *
- * This function pads the remaining partial data and decrypts the
- * block to `plaintext`.
- *
- * #aes_gcm_decrypt_update should be called before using this function.
- *
- * @param gcm_context Pointer to the GCM context struct
- * @param ciphertext Input data to be decrypted
- * @param plaintext Decrypted plaintext data, same len as input data
- * @return crypto_status_t The result of the decrypt operation
- */
-crypto_status_t aes_gcm_decrypt_final(aes_gcm_context_t *gcm_context,
-                                      crypto_uint8_buf_t *plaintext);
+crypto_status_t otcrypto_gcm_ghash(const crypto_blinded_key_t *hash_subkey,
+                                   crypto_uint8_buf_t input,
+                                   crypto_uint8_buf_t *output);
 
 /**
  * Performs the AES-KWP authenticated encryption operation.
@@ -564,419 +703,281 @@ crypto_status_t aes_gcm_decrypt_final(aes_gcm_context_t *gcm_context,
  * This encrypt function takes an input key `key_to_wrap` and using
  * the encryption key `key_kek` outputs a wrapped key `wrapped_key`.
  *
+ * The caller should allocate space for the `wrapped_key` buffer,
+ * (same len as `key_to_wrap`), and set the length of expected output
+ * in the `len` field of `wrapped_key`. If the user-set length and the
+ * output length does not match, an error message will be returned.
+ *
  * @param key_to_wrap Pointer to the blinded key to be wrapped
  * @param key_kek Input Pointer to the blinded encryption key
  * @param wrapped_key Pointer to the output wrapped key
- * @return crypto_status_t The result of the aes-kwp encrypt operation
+ * @return crypto_status_t Result of the aes-kwp encrypt operation
  */
-crypto_status_t aes_kwp_encrypt(const crypto_blinded_key_t *key_to_wrap,
-                                const crypto_blinded_key_t *key_kek,
-                                crypto_uint8_buf_t *wrapped_key);
+crypto_status_t otcrypto_aes_kwp_encrypt(
+    const crypto_blinded_key_t *key_to_wrap,
+    const crypto_blinded_key_t *key_kek, crypto_uint8_buf_t *wrapped_key);
 
 /**
  * Performs the AES-KWP authenticated decryption operation.
  *
  * This decrypt function takes a wrapped key `wrapped_key` and using
- * encryption key `key_kek` outputs a unwrapped key `unwrapped_key`.
+ * encryption key `key_kek` outputs an unwrapped key `unwrapped_key`.
  *
  * @param wrapped_key Pointer to the input wrapped key
  * @param key_kek Input Pointer to the blinded encryption key
  * @param unwrapped_key Pointer to the output unwrapped key struct
- * @return crypto_status_t The result of the aes-kwp decrypt operation
+ * @return crypto_status_t Result of the aes-kwp decrypt operation
  */
-crypto_status_t aes_kwp_decrypt(const crypto_uint8_buf_t wrapped_key,
-                                const crypto_blinded_key_t *key_kek,
-                                crypto_blinded_key_t *unwrapped_key);
+crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_uint8_buf_t wrapped_key,
+                                         const crypto_blinded_key_t *key_kek,
+                                         crypto_blinded_key_t *unwrapped_key);
 
 /**
  * Performs the required hash function on the input data.
  *
- * This function hashes the `input_message` with the selected hash
- * function to return a `digest`. Supported hash modes are
- * kHashModeSha256,kHashModeSha384, kHashModeSha512,
- * kHashModeSha3_224, kHashModeSha3_256, kHashModeSha3_384 and
- * kHashModeSha3_512.
+ * The caller should allocate space for the `digest` buffer, (expected
+ * length depends on `hash_mode`, refer table-1), and set the length
+ * of expected output in the `len` field of `digest`. If the user-set
+ * length and the output length does not match, an error message will
+ * be returned.
+ *
+ * This function hashes the `input_message` using the `hash_mode_t`
+ * hash function and returns a `digest`.
  *
  * @param input_message Input message to be hashed
  * @param hash_mode Required hash mode for the digest
- * @param digest Output digest after hashing the input data
- * @return crypto_status_t The result of the hash operation
+ * @param digest Output digest after hashing the input message
+ * @return crypto_status_t Result of the hash operation
  */
-crypto_status_t hash(const crypto_uint8_buf_t input_message,
-                     hash_mode_t hash_mode, crypto_uint8_buf_t *digest);
+crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
+                              hash_mode_t hash_mode,
+                              crypto_uint8_buf_t *digest);
 
 /**
- * Performs the required hash xof function on the input data.
+ * Performs the required hash-xof function on the input data.
  *
- * This function hashes the `input_message` with the selected hash xof
- * function and returns a `digest`. Supported hash modes are
- * kHashModeSha3Shake128, kHashModeSha3Shake256,
- * kHashModeSha3Cshake128 and kHashModeSha3Cshake256.
- *
- * The customization string is passed through `customization_string`
- * parameter. If no customization is desired it can be empty.
- *
- * The function name is used to define functions based on cSHAKE. When
- * no function other than cSHAKE is desired; it can be empty.
- *
- * The `function_name_string` and `customization_string` are ignored
- * when the `hash_mode` is set to kHashModeSha3Shake128 or
+ * The `function_name_string` is used by NIST to define functions
+ * based on cSHAKE. When no function other than cSHAKE is desired; it
+ * can be empty. The `customization_string` is used to define a
+ * variant of the cSHAKE function. If no customization is desired it
+ * can be empty. The `function_name_string` and `customization_string`
+ * are ignored when the `hash_mode` is set to kHashModeSha3Shake128 or
  * kHashModeSha3Shake256.
+ *
+ * The caller should allocate space for the `digest` buffer,
+ * (expected length same as `required_output_len`), and set the length
+ * of expected output in the `len` field of `digest`. If the user-set
+ * length and the output length does not match, an error message will
+ * be returned.
  *
  * @param input_message Input message to be hashed
  * @param hash_mode Required hash mode for the digest
  * @param function_name_string NIST Function name string
- * @param customization_string Customization string for kmac
- * @param required_output_len Requested output length from kmac
+ * @param customization_string Customization string for cSHAKE
+ * @param required_output_len Requested digest length after hash
  * @param digest Output digest after hashing the input data
- * @return crypto_status_t The result of the cshake operation
+ * @return crypto_status_t Result of the hash-xof operation
  */
-crypto_status_t hash_xof(const crypto_uint8_buf_t input_message,
-                         hash_mode_t hash_mode,
-                         crypto_uint8_buf_t function_name_string,
-                         crypto_uint8_buf_t customization_string,
-                         size_t required_output_len,
-                         crypto_uint8_buf_t *digest);
+crypto_status_t otcrypto_hash_xof(crypto_const_uint8_buf_t input_message,
+                                  hash_mode_t hash_mode,
+                                  crypto_uint8_buf_t function_name_string,
+                                  crypto_uint8_buf_t customization_string,
+                                  size_t required_output_len,
+                                  crypto_uint8_buf_t *digest);
 
 /**
- * Generic hash context.
+ * Performs the INIT operation for a cryptographic hash function.
  *
- * Representation is internal to the hash implementations; initialize with
- * #hash_init.
- */
-typedef struct hash_context hash_context_t;
-
-/**
- * Performs the generic hash init operation.
+ * Initializes the generic hash context. The required hash mode is
+ * selected through the `hash_mode` parameter. Populates the hash
+ * context with the digest size, block size, hash update and hash
+ * final APIs to be called based on the hash mode.
  *
- * Initializes the generic hash function. Populates the init, update
- * and final function pointers, and digest, block sizes, by calling
- * the respective init function requested by `hash_mode` parameter.
+ * The structure of hash context and how it populates the required
+ * fields based on the hash mode are internal to the specific hash
+ * implementation.
  *
  * @param ctx Pointer to the generic hash context struct
  * @param hash_mode Required hash mode
- * @return crypto_status_t The result of the init operation
+ * @return crypto_status_t Result of the hash init operation
  */
-crypto_status_t hash_init(const hash_context_t *ctx, hash_mode_t hash_mode);
+crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
+                                   hash_mode_t hash_mode);
 
 /**
- * Performs the generic hash update operation.
+ * Performs the UPDATE operation for a cryptographic hash function.
  *
- * The update operation computes the required hash on `input_meaage`
- * blocks. The intermediate digest is stored in the context `ctx` in
- * the state parameter. Any partial data is stored back in the context
- * and combined with subsequent bytes.
+ * The update operation processes the `input_message` using the selected
+ * hash compression function. The intermediate digest is stored in the
+ * context `ctx`. Any partial data is stored back in the context and
+ * combined with the subsequent bytes.
  *
- * #hash_init should be called before calling this function.
+ * #otcrypto_hash_init should be called before this function.
  *
  * @param ctx Pointer to the generic hash context struct
  * @param input_message Input message to be hashed
- * @return crypto_status_t The result of the update operation
+ * @return crypto_status_t Result of the hash update operation
  */
-crypto_status_t hash_update(const hash_context_t *ctx,
-                            const crypto_uint8_buf_t input_message);
+crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
+                                     crypto_const_uint8_buf_t input_message);
 
 /**
- * Performs the generic hash final operation.
+ * Performs the FINAL operation for a cryptographic hash function.
  *
- * The final operation computes the required hash on the remaining
- * partial blocks if any, and then computes the final hash and stores
- * it in the `digest` parameter.
+ * The final operation processes the remaining partial blocks,
+ * computes the final hash and copies it to the `digest` parameter.
  *
- * #hash_update should be called before calling this function.
+ * #otcrypto_hash_update should be called before this function.
+ *
+ * The caller should allocate space for the `digest` buffer, (expected
+ * length depends on `hash_mode`, refer table-1), and set the length
+ * of expected output in the `len` field of `digest`. If the user-set
+ * length and the output length does not match, an error message will
+ * be returned.
  *
  * @param ctx Pointer to the generic hash context struct
  * @param digest Output digest after hashing the input blocks
- * @return crypto_status_t The result of the final operation
+ * @return crypto_status_t Result of the hash final operation
  */
-crypto_status_t hash_final(const hash_context_t *ctx,
-                           crypto_uint8_buf_t *digest);
+crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
+                                    crypto_uint8_buf_t *digest);
 
 /**
- * Performs the SHA2-256 init operation.
+ * Performs the HMAC / KMAC function on the input data.
  *
- * Initializes the SHA2-256 parameters in the `ctx` context, such as the
- * init, update, final functions to use and the digest, block sizes.
- *
- * @param ctx Pointer to the generic hash context struct
- * @return crypto_status_t The result of the init operation
- */
-crypto_status_t sha256_init(const hash_context_t *ctx);
-
-/**
- * Performs the SHA2-256 update operation.
- *
- * The update operation computes the SHA2-256 hash on the `input_message`
- * blocks. The intermediate digest is stored in the context `ctx` in
- * the state parameter. Any partial data is stored back in the context
- * and combined with subsequent bytes.
- *
- * @param ctx Pointer to the generic hash context struct
- * @param input_message Input message to be hashed
- * @return crypto_status_t The result of the update operation
- */
-crypto_status_t sha256_update(const hash_context_t *ctx,
-                              const crypto_uint8_buf_t input_message);
-
-/**
- * Performs the SHA2-256 final operation.
- *
- * The final operation computes the SHA2-256 hash on the remaining
- * partial blocks if any, and then computes the final hash and stores
- * it in the `digest` parameter.
- *
- * @param ctx Pointer to the generic hash context struct
- * @param digest Output digest after hashing the input blocks
- * @return crypto_status_t The result of the final operation
- */
-crypto_status_t sha256_final(const hash_context_t *ctx,
-                             crypto_uint8_buf_t *digest);
-
-/**
- * Performs the SHA2-384 init operation.
- *
- * Initializes the SHA2-384 parameters in the `ctx` context, such as the
- * init, update, final functions to use and the digest, block sizes.
- *
- * @param ctx Pointer to the generic hash context struct
- * @return crypto_status_t The result of the init operation
- */
-crypto_status_t sha384_init(const hash_context_t *ctx);
-
-/**
- * Performs the SHA2-384 update operation.
- *
- * The update operation computes the SHA2-384 hash on the `input_meaage`
- * blocks. The intermediate digest is stored in the context `ctx` in
- * the state parameter. Any partial data is stored back in the context
- * and combined with subsequent bytes.
- *
- * @param ctx Pointer to the generic hash context struct
- * @param input_message Input message to be hashed
- * @return crypto_status_t The result of the update operation
- */
-crypto_status_t sha384_update(const hash_context_t *ctx,
-                              const crypto_uint8_buf_t input_message);
-
-/**
- * Performs the SHA2-384 final operation.
- *
- * The final operation computes the SHA2-384 hash on the remaining
- * partial blocks if any, and then computes the final hash and stores
- * it in the `digest` parameter.
- *
- * @param ctx Pointer to the generic hash context struct
- * @param digest Output digest after hashing the input blocks
- * @return crypto_status_t The result of the final operation
- */
-crypto_status_t sha384_final(const hash_context_t *ctx,
-                             crypto_uint8_buf_t *digest);
-
-/**
- * Performs the SHA2-512 init operation.
- *
- * Initializes the SHA2-512 parameters in the `ctx` context, such as the
- * init, update, final functions to use and the digest, block sizes.
- *
- * @param ctx Pointer to the generic hash context struct
- * @return crypto_status_t The result of the init operation
- */
-crypto_status_t sha512_init(const hash_context_t *ctx);
-
-/**
- * Performs the SHA2-512 update operation.
- *
- * The update operation computes the SHA2-512 hash on the `input_meaage`
- * blocks. The intermediate digest is stored in the context `ctx` in
- * the state parameter. Any partial data is stored back in the context
- * and combined with subsequent bytes.
- *
- * @param ctx Pointer to the generic hash context struct
- * @param input_message Input message to be hashed
- * @return crypto_status_t The result of the update operation
- */
-crypto_status_t sha512_update(const hash_context_t *ctx,
-                              const crypto_uint8_buf_t input_message);
-
-/**
- * Performs the SHA2-512 final operation.
- *
- * The final operation computes the SHA2-512 hash on the remaining
- * partial blocks if any, and then computes the final hash and stores
- * it in the `digest` parameter.
- *
- * @param ctx Pointer to the generic hash context struct
- * @param digest Output digest after hashing the input blocks
- * @return crypto_status_t The result of the final operation
- */
-crypto_status_t sha512_final(const hash_context_t *ctx,
-                             crypto_uint8_buf_t *digest);
-
-/**
- * Performs the MAC (HMAC/KMAC) hash function on the input data.
- *
- * Supported MAC modes are kMacModeHmacSha256, kMacModeKmac128 and
- * kMacModeKmac256.
- *
- * HMAC: This function computes the required mac function on the
+ * HMAC: This function computes the required MAC function on the
  * `input_message` using the `key` and returns a `digest`.
  *
- * KMAC: This function computes the kmac on the `input_message` using
+ * KMAC: This function computes the KMAC on the `input_message` using
  * the `key` and returns a `digest` of `required_output_len`. The
  * customization string is passed through `customization_string`
- * parameter. If no customization is desired it can be empty.
+ * parameter. If no customization is desired it can be empty. The
+ * `customization_string` and `required_output_len` is only used for
+ * KMAC modes and is ignored for the HMAC mode.
  *
- * The `customization_string` and `required_output_len` is only used
- * for kmac modes kMacModeKmac128 and kMacModeKmac256, and is ignored
- * when the required mode is set to kMacModeHmacSha256.
+ * The caller should allocate space for the `digest` buffer, (expected
+ * length is 32 bytes for HMAC and `required_output_len`for KMAC), and
+ * set the length of expected output in the `len` field of `digest`.
+ * If the user-set length and the output length does not match, an
+ * error message will be returned.
  *
  * @param key Pointer to the blinded key struct with key shares
  * @param input_message Input message to be hashed
- * @param mac_mode Required MAC mode for the digest (HMAC/KMAC)
- * @param customization_string Customization string for kmac
- * @param required_output_len Requested output length from kmac
+ * @param mac_mode Required operation to be performed (HMAC/KMAC)
+ * @param customization_string Customization string for KMAC
+ * @param required_output_len Requested output length from KMAC
  * @param digest Output digest after hashing the input data
- * @return crypto_status_t The result of the kmac128 operation
+ * @return crypto_status_t The result of the KMAC128 operation
  */
-crypto_status_t mac(const crypto_blinded_key_t *key,
-                    const crypto_uint8_buf_t input_message, mac_mode_t mac_mode,
-                    crypto_uint8_buf_t customization_string,
-                    size_t required_output_len, crypto_uint8_buf_t *digest);
+crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
+                             crypto_const_uint8_buf_t input_message,
+                             mac_mode_t mac_mode,
+                             crypto_uint8_buf_t customization_string,
+                             size_t required_output_len,
+                             crypto_uint8_buf_t *digest);
 
 /**
- * Generic HMAC context.
+ * Performs the INIT operation for HMAC.
  *
- * Representation is internal to the HMAC implementations; initialize with
- * #hmac_init.
- */
-typedef struct hmac_context hmac_context_t;
-
-/**
- * Performs the generic HMAC init operation.
+ * Initializes the generic HMAC context. The required HMAC mode is
+ * selected through the `hmac_mode` parameter. Populates the HMAC
+ * context with the digest size, block size, HMAC update and HMAC
+ * final APIs to be called based on the mode.
  *
- * Initializes the generic HMAC function. Populates the init, update
- * and final function pointers, and digest, block sizes, by calling
- * the respective init function as requested by `hash_mode` parameter.
+ * The structure of HMAC context and how it populates the required
+ * fields based on the HMAC mode are internal to the specific HMAC
+ * implementation.
+ *
+ * The API supports only the `kMacModeHmacSha256`. Other modes are not
+ * supported and an error message  would be returned. The interface is
+ * designed to be generic to support other modes in the future.
  *
  * @param ctx Pointer to the generic HMAC context struct
  * @param key Pointer to the blinded HMAC key struct
- * @param hash_mode Required hash mode
- * @return crypto_status_t The result of the init operation
+ * @param hmac_mode Required HMAC mode
+ * @return crypto_status_t Result of the HMAC init operation
  */
-crypto_status_t hmac_init(const hash_context_t *ctx,
-                          const crypto_blinded_key_t *key,
-                          hash_mode_t hash_mode);
+crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
+                                   const crypto_blinded_key_t *key,
+                                   hmac_mode_t hmac_mode);
 
 /**
- * Performs the generic HMAC update operation.
+ * Performs the UPDATE operation for HMAC.
  *
- * The update operation computes the required hash on `input_meaage`
- * blocks. The intermediate digest is stored in the context `ctx`, in
- * the state parameter. Any partial data is stored back in the context
- * and combined with subsequent bytes after.
+ * The update operation processes the `input_message` using the selected
+ * compression function. The intermediate digest is stored in the HMAC
+ * context `ctx`. Any partial data is stored back in the context and
+ * combined with the subsequent bytes.
  *
- * #hmac_init should be called before calling this function.
+ * #otcrypto_hmac_init should be called before calling this function.
  *
  * @param ctx Pointer to the generic HMAC context struct
  * @param input_message Input message to be hashed
- * @return crypto_status_t The result of the init operation
+ * @return crypto_status_t Result of the HMAC update operation
  */
-crypto_status_t hmac_update(const hash_context_t *ctx,
-                            const crypto_uint8_buf_t input_message);
+crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
+                                     crypto_const_uint8_buf_t input_message);
 
 /**
- * Performs the generic HMAC final operation.
+ * Performs the FINAL operation for HMAC.
  *
- * The final operation computes the hash function on the remaining
- * partial blocks if any, and then computes the final hash, and stores
- * the result in the `digest` parameter.
+ * The final operation processes the remaining partial blocks,
+ * computes the final digest and copies it to the `digest` parameter.
  *
- * #hmac_update should be called before calling this function.
+ * #otcrypto_hmac_update should be called before calling this function.
+ *
+ * The caller should allocate space for the `digest` buffer, (expected
+ * length is 32 bytes for HMAC), and set the length of expected output
+ * in the `len` field of `digest`. If the user-set length and the
+ * output length does not match, an error message will be returned.
  *
  * @param ctx Pointer to the generic HMAC context struct
  * @param digest Output digest after hashing the input blocks
- * @return crypto_status_t The result of the final operation
+ * @return crypto_status_t Result of the HMAC final operation
  */
-crypto_status_t hmac_final(const hash_context_t *ctx,
-                           crypto_uint8_buf_t *digest);
-
-/**
- * Performs the HMAC SHA2-256 init operation.
- *
- * Initializes the HMAC SHA2-256 parameters in the `ctx` context, such
- * as the init, update, final functions to use and respective digest,
- * block sizes.
- *
- * @param ctx Pointer to the generic HMAC context struct
- * @param key Pointer to the blinded HMAC key struct
- * @return crypto_status_t The result of the init operation
- */
-crypto_status_t hmac_sha256_init(const hash_context_t *ctx,
-                                 const crypto_blinded_key_t *key);
-
-/**
- * Performs the hmac-SHA2-256 update operation.
- *
- * The update operation computes the required hash on `input_meaage`
- * blocks. The intermediate digest is stored in the context `ctx`, in
- * the state parameter. Any partial data is stored back in the context
- * and combined with subsequent bytes after.
- *
- * @param ctx Pointer to the generic HMAC context struct
- * @param input_message Input message to be hashed
- * @return crypto_status_t The result of the update operation
- */
-crypto_status_t hmac_sha256_update(const hash_context_t *ctx,
-                                   const crypto_uint8_buf_t input_message);
-
-/**
- * Performs the hmac-SHA2-256 final operation.
- *
- * The final operation computes the hash function on the remaining
- * partial blocks if any, and then computes the final hash, and stores
- * the result in the `digest` parameter.
- *
- * @param ctx Pointer to the generic HMAC context struct
- * @param digest Output digest after hashing the input blocks
- * @return crypto_status_t The result of the final operation
- */
-crypto_status_t hmac_sha256_final(const hash_context_t *ctx,
-                                  crypto_uint8_buf_t *digest);
+crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
+                                    crypto_uint8_buf_t *digest);
 
 /**
  * Performs the RSA key generation.
  *
  * Computes RSA private key (d) and RSA public key exponent (e) and
- * modulus (n). DRBG state is passed as an input parameter.
+ * modulus (n). The DRBG state is passed as an input parameter.
  *
  * @param drbg_state Pointer to the DRBG working state
  * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key length in bits
- * @param n Pointer to un-blinded key struct with modulus
- * @param e Pointer to un-blinded key struct with public exponent
- * @param d Pointer to blinded key struct with private exponent
- * @return crypto_status_t The result of the RSA key generation
+ * @param required_key_len Requested key length
+ * @param rsa_public_key Pointer to RSA public exponent struct
+ * @param rsa_private_key Pointer to RSA private exponent struct
+ * @return crypto_status_t Result of the RSA key generation
  */
-crypto_status_t rsa_keygen(drbg_state_t *drbg_state,
-                           crypto_uint8_buf_t additional_input,
-                           size_t required_key_len, crypto_unblinded_key_t *n,
-                           crypto_unblinded_key_t *e, crypto_blinded_key_t *d);
+crypto_status_t otcrypto_rsa_keygen(drbg_state_t *drbg_state,
+                                    crypto_uint8_buf_t additional_input,
+                                    rsa_key_size_t required_key_len,
+                                    rsa_public_key_t *rsa_public_key,
+                                    rsa_private_key_t *rsa_private_key);
 
 /**
  * Computes the digital signature on the input message data.
  *
- * @param n Pointer to un-blinded key struct with modulus (n)
- * @param d Pointer to blinded key struct with private exponent (d)
+ * The caller should allocate space for the `signature` buffer,
+ * (expected length same as modulus length from `rsa_private_key`),
+ * and set the length of expected output in the `len` field of
+ * `signature`. If the user-set length and the output length does not
+ * match, an error message will be returned.
+ *
+ * @param rsa_private_key Pointer to RSA private exponent struct
  * @param input_message Input message to be signed
  * @param padding_mode Padding scheme to be used for the data
  * @param hash_mode Hashing scheme to be used for the signature scheme
  * @param signature Pointer to generated signature struct
  * @return crypto_status_t The result of the RSA sign generation
  */
-crypto_status_t rsa_sign(crypto_unblinded_key_t *n, crypto_blinded_key_t *d,
-                         const crypto_uint8_buf_t input_message,
-                         rsa_padding_t padding_mode, rsa_hash_t hash_mode,
-                         crypto_uint8_buf_t *signature);
+crypto_status_t otcrypto_rsa_sign(rsa_private_key_t *rsa_private_key,
+                                  crypto_const_uint8_buf_t input_message,
+                                  rsa_padding_t padding_mode,
+                                  rsa_hash_t hash_mode,
+                                  crypto_uint8_buf_t *signature);
 
 /**
  * Verifies the authenticity of the input signature.
@@ -984,365 +985,706 @@ crypto_status_t rsa_sign(crypto_unblinded_key_t *n, crypto_blinded_key_t *d,
  * The generated signature is compared against the input signature and
  * PASS / FAIL is returned.
  *
- * @param n Pointer to un-blinded key struct with modulus (n)
- * @param e Pointer to un-blinded key struct with public exponent (e)
+ * @param rsa_public_key Pointer to RSA public exponent struct
  * @param input_message Input message to be signed for verification
  * @param padding_mode Padding scheme to be used for the data
  * @param hash_mode Hashing scheme to be used for the signature scheme
- * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification
- * (Pass/Fail)
- * @return crypto_status_t The return status of the RSA verify operation
+ * @param signature Pointer to the input signature to be verified
+ * @param verification_result Returns the result of signature
+ * verification (Pass/Fail)
+ * @return crypto_status_t The status of the RSA verify operation
  */
-crypto_status_t rsa_verify(crypto_unblinded_key_t *n, crypto_unblinded_key_t *e,
-                           const crypto_uint8_buf_t input_message,
-                           rsa_padding_t padding_mode, rsa_hash_t hash_mode,
-                           crypto_uint8_buf_t signature,
-                           verification_status_t *verification_result);
+crypto_status_t otcrypto_rsa_verify(rsa_public_key_t *rsa_public_key,
+                                    crypto_const_uint8_buf_t input_message,
+                                    rsa_padding_t padding_mode,
+                                    rsa_hash_t hash_mode,
+                                    crypto_const_uint8_buf_t signature,
+                                    verification_status_t *verification_result);
 
 /**
- * Performs the RSA key generation, asynchronously.
+ * Performs the key generation for ECDSA operation.
  *
- * Computes RSA private key (d) and RSA public key exponent (e) and
- * modulus (n). DRBG state is passed as an input parameter.
+ * Computes private key (d) and public key (Q) keys for ECDSA
+ * operation. DRBG state is passed as an input parameter.
+ *
+ * The domain_parameter field of the `elliptic_curve` is required
+ * only for a custom curve. For named curves this field is ignored
+ * and can be set to NULL.
  *
  * @param drbg_state Pointer to the DRBG working state
  * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key length in bits
- * @param n Pointer to un-blinded key struct with modulus (n)
- * @param e Pointer to un-blinded key struct with public exponent (e)
- * @param d Pointer to blinded key struct with private exponent (d)
- * @return crypto_status_t The result of the RSA key generation
- */
-crypto_status_t rsa_keygen_async(drbg_state_t *drbg_state,
-                                 crypto_uint8_buf_t additional_input,
-                                 size_t required_key_len,
-                                 crypto_unblinded_key_t *n,
-                                 crypto_unblinded_key_t *e,
-                                 crypto_blinded_key_t *d);
-
-/**
- * Computes the digital signature on the input message data, async.
- *
- * @param n Pointer to un-blinded key struct with modulus (n)
- * @param d Pointer to blinded key struct with private exponent (d)
- * @param input_message Input message to be signed
- * @param padding_mode Padding scheme to be used for the data
- * @param hash_mode Hashing scheme to be used for the signature scheme
- * @param signature Pointer to generated signature struct
- * @return crypto_status_t The result of the RSA sign generation
- */
-crypto_status_t rsa_sign_async(crypto_unblinded_key_t *n,
-                               crypto_blinded_key_t *d,
-                               const crypto_uint8_buf_t input_message,
-                               rsa_padding_t padding_mode, rsa_hash_t hash_mode,
-                               crypto_uint8_buf_t *signature);
-
-/**
- * Verifies the authenticity of the input signature, asynchronously.
- *
- * The generated signature is compared against the input signature and
- * PASS / FAIL is returned.
- *
- * @param n Pointer to un-blinded key struct with modulus (n)
- * @param e Pointer to un-blinded key struct with public exponent (e)
- * @param input_message Input message to be signed for verification
- * @param padding_mode Padding scheme to be used for the data
- * @param hash_mode Hashing scheme to be used for the signature scheme
- * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification
- * (Pass/Fail)
- * @return crypto_status_t The return status of the RSA verify operation
- */
-crypto_status_t rsa_verify_async(crypto_unblinded_key_t *n,
-                                 crypto_unblinded_key_t *e,
-                                 const crypto_uint8_buf_t input_message,
-                                 rsa_padding_t padding_mode,
-                                 rsa_hash_t hash_mode,
-                                 crypto_uint8_buf_t signature,
-                                 verification_status_t *verification_result);
-
-/**
- * Sets the domain parameters of a generic Weierstrass curve.
- *
- * @param domain_parameters Pointer to the ECC curve domain parameters
- * @return crypto_status_t The result of the ECC set domain operation
- */
-crypto_status_t ecc_set_domain(ecc_domain_t domain_parameters);
-
-/**
- * Sets the domain parameters of a named Weierstrass curve.
- *
- * @param named_curve Named curve to set domain parameters for
- * @return crypto_status_t The result of the ECC set domain operation
- */
-crypto_status_t ecc_set_domain_named(ecc_named_curve_t named_curve);
-
-/**
- * Performs ECDSA/ECDH key generation.
- *
- * Computes private key (d) and public key (Q). DRBG state is passed as an
- * input parameter.
- *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key length in bits
+ * @param required_key_len Requested key length, in bits
+ * @param elliptic_curve Pointer to the elliptic curve to be used
  * @param private_key Pointer to the blinded private key (d) struct
  * @param public_key Pointer to the unblinded public key (Q) struct
- * @return crypto_status_t The result of the key generation
+ * @return crypto_status_t Result of the ECDSA key generation
  */
-crypto_status_t ecc_keygen(drbg_state_t *drbg_state,
-                           crypto_uint8_buf_t additional_input,
-                           size_t required_key_len,
-                           crypto_blinded_key_t *private_key,
-                           ecc_public_key_t *public_key);
+crypto_status_t otcrypto_ecdsa_keygen(drbg_state_t *drbg_state,
+                                      crypto_uint8_buf_t additional_input,
+                                      size_t required_key_len,
+                                      ecc_curve_t *elliptic_curve,
+                                      crypto_blinded_key_t *private_key,
+                                      ecc_public_key_t *public_key);
 
 /**
- * Performs ECDSA digital signature generation.
+ * Performs the ECDSA digital signature generation.
+ *
+ * The domain_parameter field of the `elliptic_curve` is required
+ * only for a custom curve. For named curves this field is ignored
+ * and can be set to NULL.
  *
  * @param private_key Pointer to the blinded private key (d) struct
  * @param input_message Input message to be signed
+ * @param elliptic_curve Pointer to the elliptic curve to be used
  * @param signature Pointer to the signature struct with (r,s) values
- * @return crypto_status_t Result of the signature operation
+ * @return crypto_status_t Result of the ECDSA signature generation
  */
-crypto_status_t ecdsa_sign(crypto_blinded_key_t *private_key,
-                           const crypto_uint8_buf_t input_message,
-                           ecc_signature_t *signature);
+crypto_status_t otcrypto_ecdsa_sign(crypto_blinded_key_t *private_key,
+                                    crypto_const_uint8_buf_t input_message,
+                                    ecc_curve_t *elliptic_curve,
+                                    ecc_signature_t *signature);
 
 /**
- * Performs ECDSA digital signature verification.
+ * Performs the ECDSA digital signature verification.
+ *
+ * The domain_parameter field of the `elliptic_curve` is required
+ * only for a custom curve. For named curves this field is ignored
+ * and can be set to NULL.
  *
  * @param public_key Pointer to the unblinded public key (Q) struct
  * @param input_message Input message to be signed for verification
  * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification
- * (Pass/Fail)
- * @return crypto_status_t Return status of the verification operation
+ * @param elliptic_curve Pointer to the elliptic curve to be used
+ * @param verification_result Result of verification (Pass/Fail)
+ * @return crypto_status_t Result of the ECDSA verification operation
  */
-crypto_status_t ecdsa_verify(ecc_public_key_t *public_key,
-                             const crypto_uint8_buf_t input_message,
-                             ecc_signature_t *signature,
-                             verification_status_t *verification_result);
+crypto_status_t otcrypto_ecdsa_verify(
+    ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
+    ecc_signature_t *signature, ecc_curve_t *elliptic_curve,
+    verification_status_t *verification_result);
+
+/**
+ * Performs the key generation for ECDH key agreement.
+ *
+ * Computes private key (d) and public key (Q) keys for ECDSA
+ * operation. DRBG state is passed as an input parameter.
+ *
+ * The domain_parameter field of the `elliptic_curve` is required
+ * only for a custom curve. For named curves this field is ignored
+ * and can be set to NULL.
+ *
+ * @param drbg_state Pointer to the DRBG working state
+ * @param additional_input Pointer to the additional input for DRBG
+ * @param required_key_len Requested key length, in bits
+ * @param elliptic_curve Pointer to the elliptic curve to be used
+ * @param private_key Pointer to the blinded private key (d) struct
+ * @param public_key Pointer to the unblinded public key (Q) struct
+ * @return crypto_status_t Result of the ECDH key generation
+ */
+crypto_status_t otcrypto_ecdh_keygen(drbg_state_t *drbg_state,
+                                     crypto_uint8_buf_t additional_input,
+                                     size_t required_key_len,
+                                     ecc_curve_t *elliptic_curve,
+                                     crypto_blinded_key_t *private_key,
+                                     ecc_public_key_t *public_key);
 
 /**
  * Performs Elliptic Curve Diffie Hellman shared secret generation.
  *
+ * The domain_parameter field of the `elliptic_curve` is required
+ * only for a custom curve. For named curves this field is ignored
+ * and can be set to NULL.
+ *
  * @param private_key Pointer to the blinded private key (d) struct
  * @param public_key Pointer to the unblinded public key (Q) struct
+ * @param elliptic_curve Pointer to the elliptic curve to be used
  * @param shared_secret Pointer to generated blinded shared key struct
- * @return crypto_status_t Result of the ecdh operation
+ * @return crypto_status_t Result of ECDH shared secret generation
  */
-crypto_status_t ecdh(crypto_blinded_key_t *private_key,
-                     ecc_public_key_t *public_key,
-                     crypto_blinded_key_t *shared_secret);
+crypto_status_t otcrypto_ecdh(crypto_blinded_key_t *private_key,
+                              ecc_public_key_t *public_key,
+                              ecc_curve_t *elliptic_curve,
+                              crypto_blinded_key_t *shared_secret);
 
 /**
- * Performs the X25519 Diffie Hellman shared secret generation.
- *
- * @param private_key Pointer to the blinded private key (u-coordinate)
- * @param public_key Pointer to the public scalar from the sender
- * @param shared_secret Pointer to shared secret key (u-coordinate)
- * @return crypto_status_t Result of the ecdh operation
- */
-crypto_status_t x25519(crypto_blinded_key_t *private_key,
-                       crypto_uint8_buf_t *public_key,
-                       crypto_blinded_key_t *shared_secret);
-
-/**
- * Performs key generation for Ed25519.
+ * Generates a new Ed25519 key pair.
  *
  * Computes the private exponent (d) and public key (Q) based on
- * Curve25519. DRBG state is passed as an input parameter.
+ * Curve25519. The DRBG state is passed as an input parameter.
+ *
+ * No domain_parameter is needed and is automatically set for Ed25519.
  *
  * @param drbg_state Pointer to the DRBG working state
  * @param additional_input Pointer to the additional input for DRBG
  * @param required_key_len Requested key len in bits (256 for Ed25519)
  * @param private_key Pointer to the blinded private key struct
  * @param public_key Pointer to the unblinded public key struct
- * @return crypto_status_t The result of the ecdsa key generation
+ * @return crypto_status_t Result of the Ed25519 key generation
  */
-crypto_status_t ed25519_keygen(drbg_state_t *drbg_state,
-                               crypto_uint8_buf_t additional_input,
-                               size_t required_key_len,
-                               crypto_blinded_key_t *private_key,
-                               eddsa_public_key_t *public_key);
+crypto_status_t otcrypto_ed25519_keygen(drbg_state_t *drbg_state,
+                                        crypto_uint8_buf_t additional_input,
+                                        size_t required_key_len,
+                                        crypto_blinded_key_t *private_key,
+                                        crypto_unblinded_key_t *public_key);
 
 /**
- * Performs EdDSA digital signature generation for Ed25519.
+ * Generates an Ed25519 digital signature.
  *
  * @param private_key Pointer to the blinded private key struct
  * @param input_message Input message to be signed
  * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
  * @param signature Pointer to the EdDSA signature with (r,s) values
- * @return crypto_status_t Result of the EdDSA signature operation
+ * @return crypto_status_t Result of the EdDSA signature generation
  */
-crypto_status_t ed25519_sign(crypto_blinded_key_t *private_key,
-                             const crypto_uint8_buf_t input_message,
-                             eddsa_sign_mode_t sign_mode,
-                             ecc_signature_t *signature);
+crypto_status_t otcrypto_ed25519_sign(crypto_blinded_key_t *private_key,
+                                      crypto_const_uint8_buf_t input_message,
+                                      eddsa_sign_mode_t sign_mode,
+                                      ecc_signature_t *signature);
 
 /**
- * Performs EdDSA signature verification for Ed25519.
+ * Verifies an Ed25519 signature.
  *
  * @param public_key Pointer to the unblinded public key struct
  * @param input_message Input message to be signed for verification
  * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
  * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification
- * (Pass/Fail)
- * @return crypto_status_t Return status of the EdDSA verification operation
+ * @param verification_result Returns the result of signature
+ * verification (Pass/Fail)
+ * @return crypto_status_t Result of the EdDSA verification operation
  */
-crypto_status_t ed25519_verify(edd_public_key_t *public_key,
-                               const crypto_uint8_buf_t input_message,
-                               eddsa_sign_mode_t sign_mode,
-                               ecc_signature_t *signature,
-                               verification_status_t *verification_result);
-
-/**
- * Performs ECDSA/ECDH key generation, asynchronously.
- *
- * Computes private exponent (d) and public key (Q). DRBG state is
- * passed as an input parameter.
- *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key length in bits
- * @param private_key Pointer to the blinded private key (d) struct
- * @param public_key Pointer to the unblinded public key (Q) struct
- * @return crypto_status_t The result of the ECC key generation
- */
-crypto_status_t ecc_keygen_async(drbg_state_t *drbg_state,
-                                 crypto_uint8_buf_t additional_input,
-                                 size_t required_key_len,
-                                 crypto_blinded_key_t *private_key,
-                                 ecc_public_key_t *public_key);
-
-/**
- * Performs the key generation for EdDSA, asynchronously.
- *
- * Computes EdDSA private exponent (d) and public key (Q). DRBG
- * state is passed as an input parameter.
- *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key len in bits (256 for Ed25519)
- * @param private_key Pointer to the blinded private key struct
- * @param public_key Pointer to the unblinded public key struct
- * @return crypto_status_t The result of the ecdsa key generation
- */
-crypto_status_t eddsa_keygen_async(drbg_state_t *drbg_state,
-                                   crypto_uint8_buf_t additional_input,
-                                   size_t required_key_len,
-                                   crypto_blinded_key_t *private_key,
-                                   eddsa_public_key_t *public_key);
-
-/**
- * Performs ECDSA digital signature generation, asynchronously.
- *
- * @param private_key Pointer to the blinded private key (d) struct
- * @param input_message Input message to be signed
- * @param signature Pointer to the ECC sign struct with (r,s) values
- * @return crypto_status_t Result of the ECC signature operation
- */
-crypto_status_t ecdsa_sign_async(crypto_blinded_key_t *private_key,
-                                 const crypto_uint8_buf_t input_message,
-                                 ecc_signature_t *signature);
-
-/**
- * Performs ECDSA digital signature verification, asynchronously.
- *
- * @param public_key Pointer to the unblinded public key (Q) struct
- * @param input_message Input message to be signed for verification
- * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification
- * (Pass/Fail)
- * @return crypto_status_t Return status of the ECC verification operation
- */
-crypto_status_t ecdsa_verify_async(ecc_public_key_t *public_key,
-                                   const crypto_uint8_buf_t input_message,
-                                   ecc_signature_t *signature,
-                                   verification_status_t *verification_result);
-
-/**
- * Performs the EdDSA digital signature generation for Ed25519,
- * asynchronously.
- *
- * @param private_key Pointer to the blinded private key struct
- * @param input_message Input message to be signed
- * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
- * @param signature Pointer to the EdDSA signature with (r,s) values
- * @return crypto_status_t Result of the EdDSA signature operation
- */
-crypto_status_t ed25519_sign_async(crypto_blinded_key_t *private_key,
-                                   const crypto_uint8_buf_t input_message,
-                                   eddsa_sign_mode_t sign_mode,
-                                   ecc_signature_t *signature);
-
-/**
- * Performs the EdDSA signature verification for Ed25519,
- * asynchronously.
- *
- * @param public_key Pointer to the unblinded public key struct
- * @param input_message Input message to be signed for verification
- * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
- * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification
- * (Pass/Fail)
- * @return crypto_status_t Return status of the EdDSA verification operation
- */
-crypto_status_t ed25519_verify_async(
-    edd_public_key_t *public_key, const crypto_uint8_buf_t input_message,
+crypto_status_t otcrypto_ed25519_verify(
+    crypto_unblinded_key_t *public_key, crypto_const_uint8_buf_t input_message,
     eddsa_sign_mode_t sign_mode, ecc_signature_t *signature,
     verification_status_t *verification_result);
 
 /**
- * DRBG state.
+ * Generates a new key pair for X25519 key exchange.
+ *
+ * Computes the private scalar (d) and public key (Q) based on
+ * Curve25519. The DRBG state is passed as an input parameter.
+ *
+ * No domain_parameter is needed and is automatically set for X25519.
+ *
+ * @param drbg_state Pointer to the DRBG working state
+ * @param additional_input Pointer to the additional input for DRBG
+ * @param required_key_len Requested key len in bits (256 for Ed25519)
+ * @param private_key Pointer to the blinded private key struct
+ * @param public_key Pointer to the unblinded public key struct
+ * @return crypto_status_t Result of the X25519 key generation
  */
-typedef struct drbg_state drbg_state_t;
+crypto_status_t otcrypto_x25519_keygen(drbg_state_t *drbg_state,
+                                       crypto_uint8_buf_t additional_input,
+                                       size_t required_key_len,
+                                       crypto_blinded_key_t *private_key,
+                                       crypto_unblinded_key_t *public_key);
 
 /**
- * Initializes the DRBG.
+ * Performs the X25519 Diffie Hellman shared secret generation.
  *
- * Initializes DRBG and the context parameter for DRBG. Gets the
+ * @param private_key Pointer to blinded private key (u-coordinate)
+ * @param public_key Pointer to the public scalar from the sender
+ * @param shared_secret Pointer to shared secret key (u-coordinate)
+ * @return crypto_status_t Result of the X25519 operation
+ */
+crypto_status_t otcrypto_x25519(crypto_blinded_key_t *private_key,
+                                crypto_unblinded_key_t *public_key,
+                                crypto_blinded_key_t *shared_secret);
+
+/**
+ * Starts the asynchronous RSA key generation function.
+ *
+ * Initializes OTBN and starts the OTBN routine to compute the RSA
+ * private key (d), RSA public key exponent (e) and modulus (n). The
+ * DRBG state is passed as an input parameter.
+ *
+ * Returns `kCryptoStatusOK` if the operation was successfully
+ * started, or`kCryptoStatusInternalError` if the operation cannot be
+ * started.
+ *
+ * @param drbg_state Pointer to the DRBG working state
+ * @param additional_input Pointer to the additional input for DRBG
+ * @param required_key_len Requested key length in bits
+ * @return crypto_status_t Result of async RSA keygen start operation
+ */
+crypto_status_t otcrypto_rsa_keygen_async_start(
+    drbg_state_t *drbg_state, crypto_uint8_buf_t additional_input,
+    rsa_key_size_t required_key_len);
+
+/**
+ * Finalizes the asynchronous RSA key generation function.
+ *
+ * Returns `kCryptoStatusOK` and copies the RSA private key (d), RSA
+ * public key exponent (e) and modulus (n) if the OTBN status is done,
+ * or `kCryptoStatusAsyncIncomplete` if the OTBN is busy or
+ * `kCryptoStatusInternalError` if there is an error.
+ *
+ * @param rsa_public_key Pointer to RSA public exponent struct
+ * @param rsa_private_key Pointer to RSA private exponent struct
+ * @return crypto_status_t Result of asynchronous RSA keygen finalize
+ * operation
+ */
+crypto_status_t otcrypto_rsa_keygen_async_finalize(
+    rsa_public_key_t *rsa_public_key, rsa_private_key_t *rsa_private_key);
+
+/**
+ * Starts the asynchronous digital signature generation function.
+ *
+ * Initializes OTBN and starts the OTBN routine to compute the digital
+ * signature on the input message.
+ *
+ * Returns `kCryptoStatusOK` if the operation was successfully
+ * started, or`kCryptoStatusInternalError` if the operation cannot be
+ * started.
+ *
+ * @param rsa_private_key Pointer to RSA private exponent struct
+ * @param input_message Input message to be signed
+ * @param padding_mode Padding scheme to be used for the data
+ * @param hash_mode Hashing scheme to be used for the signature scheme
+ * @return crypto_status_t Result of async RSA sign start operation
+ */
+crypto_status_t otcrypto_rsa_sign_async_start(
+    rsa_private_key_t *rsa_private_key, crypto_const_uint8_buf_t input_message,
+    rsa_padding_t padding_mode, rsa_hash_t hash_mode);
+
+/**
+ * Finalizes the asynchronous digital signature generation function.
+ *
+ * Returns `kCryptoStatusOK` and copies the signature if the OTBN
+ * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN is
+ * busy or `kCryptoStatusInternalError` if there is an error.
+ *
+ * The caller should allocate space for the `signature` buffer,
+ * (expected length same as modulus length from `rsa_private_key`),
+ * and set the length of expected output in the `len` field of
+ * `signature`. If the user-set length and the output length does not
+ * match, an error message will be returned.
+ *
+ * @param signature Pointer to generated signature struct
+ * @return crypto_status_t Result of async RSA sign finalize operation
+ */
+crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_uint8_buf_t *signature);
+
+/**
+ * Starts the asynchronous signature verification function.
+ *
+ * Initializes OTBN and starts the OTBN routine to recover the message
+ * from the input signature.
+ *
+ * @param rsa_public_key Pointer to RSA public exponent struct
+ * @param signature Pointer to the input signature to be verified
+ * @return crypto_status_t Result of async RSA verify start operation
+ */
+crypto_status_t otcrypto_rsa_verify_async_start(
+    rsa_public_key_t *rsa_public_key, crypto_const_uint8_buf_t signature);
+
+/**
+ * Finalizes the asynchronous signature verification function.
+ *
+ * Returns `kCryptoStatusOK` and populates the `verification result`
+ * if the OTBN status is done, or `kCryptoStatusAsyncIncomplete` if
+ * OTBN is busy or `kCryptoStatusInternalError` if there is an error.
+ * The (hash of) recovered message is compared against the input
+ * message and a PASS or FAIL is returned.
+ *
+ * @param input_message Input message to be signed for verification
+ * @param padding_mode Padding scheme to be used for the data
+ * @param hash_mode Hashing scheme to be used for the signature scheme
+ * @param verification_result Returns the result of verification
+ * @return crypto_status_t Result of async RSA verify finalize
+ * operation
+ */
+crypto_status_t otcrypto_rsa_verify_async_finalize(
+    crypto_const_uint8_buf_t input_message, rsa_padding_t padding_mode,
+    rsa_hash_t hash_mode, verification_status_t *verification_result);
+
+/**
+ * Starts the asynchronous key generation for ECDSA operation.
+ *
+ * Initializes OTBN and starts the OTBN routine to compute the private
+ * key (d) and public key (Q) for ECDSA operation. DRBG state is
+ * passed as an input parameter.
+ *
+ * The domain_parameter field of the `elliptic_curve` is required
+ * only for a custom curve. For named curves this field is ignored
+ * and can be set to NULL.
+ *
+ * Returns `kCryptoStatusOK` if the operation was successfully
+ * started, or`kCryptoStatusInternalError` if the operation cannot be
+ * started.
+ *
+ * @param drbg_state Pointer to the DRBG working state
+ * @param additional_input Pointer to the additional input for DRBG
+ * @param required_key_len Requested key length, in bits
+ * @param elliptic_curve Pointer to the elliptic curve to be used
+ * @return crypto_status_t Result of asynchronous ECDSA keygen start
+ * operation.
+ */
+crypto_status_t otcrypto_ecdsa_keygen_async_start(
+    drbg_state_t *drbg_state, crypto_uint8_buf_t additional_input,
+    size_t required_key_len, ecc_curve_t *elliptic_curve);
+
+/**
+ * Finalizes the asynchronous key generation for ECDSA operation.
+ *
+ * Returns `kCryptoStatusOK` and copies the private key (d) and public
+ * key (Q), if the OTBN status is done, or
+ * `kCryptoStatusAsyncIncomplete` if the OTBN is busy or
+ * `kCryptoStatusInternalError` if there is an error.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct
+ * @param public_key Pointer to the unblinded public key (Q) struct
+ * @return crypto_status_t Result of asynchronous ECDSA keygen
+ * finalize operation
+ */
+crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
+    crypto_blinded_key_t *private_key, ecc_public_key_t *public_key);
+
+/**
+ * Starts the asynchronous ECDSA digital signature generation.
+ *
+ * Initializes OTBN and starts the OTBN routine to compute the digital
+ * signature on the input message. The domain_parameter field of the
+ * `elliptic_curve` is required only for a custom curve. For named
+ * curves this field is ignored and can be set to NULL.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct
+ * @param input_message Input message to be signed
+ * @param elliptic_curve Pointer to the elliptic curve to be used
+ * @return crypto_status_t Result of async ECDSA start operation
+ */
+crypto_status_t otcrypto_ecdsa_sign_async_start(
+    crypto_blinded_key_t *private_key, crypto_const_uint8_buf_t input_message,
+    ecc_curve_t *elliptic_curve);
+
+/**
+ * Finalizes the asynchronous ECDSA digital signature generation.
+ *
+ * Returns `kCryptoStatusOK` and copies the signature if the OTBN
+ * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN is
+ * busy or `kCryptoStatusInternalError` if there is an error.
+ *
+ * @param signature Pointer to the signature struct with (r,s) values
+ * @return crypto_status_t Result of async ECDSA finalize operation
+ */
+crypto_status_t otcrypto_ecdsa_sign_async_finalize(ecc_signature_t *signature);
+
+/**
+ * Starts the asynchronous ECDSA digital signature verification.
+ *
+ * Initializes OTBN and starts the OTBN routine to recover ‘r’ value
+ * from the input signature ‘s’ value. The domain_parameter field of
+ * `elliptic_curve` is required only for a custom curve. For named
+ * curves this field is ignored and can be set to NULL.
+ *
+ * @param public_key Pointer to the unblinded public key (Q) struct
+ * @param input_message Input message to be signed for verification
+ * @param signature Pointer to the signature to be verified
+ * @param elliptic_curve Pointer to the elliptic curve to be used
+ * @return crypto_status_t Result of async ECDSA verify start function
+ */
+crypto_status_t otcrypto_ecdsa_verify_async_start(
+    ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
+    ecc_signature_t *signature, ecc_curve_t *elliptic_curve);
+
+/**
+ * Finalizes the asynchronous ECDSA digital signature verification.
+ *
+ * Returns `kCryptoStatusOK` and populates the `verification result`
+ * if the OTBN status is done. `kCryptoStatusAsyncIncomplete` if the
+ * OTBN is busy or `kCryptoStatusInternalError` if there is an error.
+ * The computed signature is compared against the input signature
+ * and a PASS or FAIL is returned.
+ *
+ * @param verification_result Returns the result of verification
+ * @return crypto_status_t Result of async ECDSA verify finalize
+ * operation
+ */
+crypto_status_t otcrypto_ecdsa_verify_async_finalize(
+    verification_status_t *verification_result);
+
+/**
+ * Starts the asynchronous key generation for ECDH operation.
+ *
+ * Initializes OTBN and starts the OTBN routine to compute the private
+ * key (d) and public key (Q) for ECDH operation. DRBG state is
+ * passed as an input parameter.
+ *
+ * The domain_parameter field of the `elliptic_curve` is required
+ * only for a custom curve. For named curves this field is ignored
+ * and can be set to NULL.
+ *
+ * Returns `kCryptoStatusOK` if the operation was successfully
+ * started, or`kCryptoStatusInternalError` if the operation cannot be
+ * started.
+ *
+ * @param drbg_state Pointer to the DRBG working state
+ * @param additional_input Pointer to the additional input for DRBG
+ * @param required_key_len Requested key length, in bits
+ * @param elliptic_curve Pointer to the elliptic curve to be used
+ * @return crypto_status_t Result of asynchronous ECDH keygen start
+ * operation.
+ */
+crypto_status_t otcrypto_ecdh_keygen_async_start(
+    drbg_state_t *drbg_state, crypto_uint8_buf_t additional_input,
+    size_t required_key_len, ecc_curve_t *elliptic_curve);
+
+/**
+ * Finalizes the asynchronous key generation for ECDSA operation.
+ *
+ * Returns `kCryptoStatusOK` and copies the private key (d) and public
+ * key (Q), if the OTBN status is done, or
+ * `kCryptoStatusAsyncIncomplete` if the OTBN is busy or
+ * `kCryptoStatusInternalError` if there is an error.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct
+ * @param public_key Pointer to the unblinded public key (Q) struct
+ * @return crypto_status_t Result of asynchronous ECDH keygen
+ * finalize operation
+ */
+crypto_status_t otcrypto_ecdh_keygen_async_finalize(
+    crypto_blinded_key_t *private_key, ecc_public_key_t *public_key);
+
+/**
+ * Starts the asynchronous Elliptic Curve Diffie Hellman shared
+ * secret generation.
+ *
+ * The domain_parameter field of the `elliptic_curve` is required
+ * only for a custom curve. For named curves this field is ignored
+ * and can be set to NULL.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct
+ * @param public_key Pointer to the unblinded public key (Q) struct
+ * @param elliptic_curve Pointer to the elliptic curve to be used
+ * @return crypto_status_t Result of async ECDH start operation
+ */
+crypto_status_t otcrypto_ecdh_async_start(crypto_blinded_key_t *private_key,
+                                          ecc_public_key_t *public_key,
+                                          ecc_curve_t *elliptic_curve);
+
+/**
+ * Finalizes the asynchronous Elliptic Curve Diffie Hellman shared
+ * secret generation.
+ *
+ * Returns `kCryptoStatusOK` and copies `shared_secret` if the OTBN
+ * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN
+ * is busy or `kCryptoStatusInternalError` if there is an error.
+ *
+ * @param shared_secret Pointer to generated blinded shared key struct
+ * @return crypto_status_t Result of async ECDH finalize operation
+ */
+crypto_status_t otcrypto_ecdh_async_finalize(
+    crypto_blinded_key_t *shared_secret);
+
+/**
+ * Starts the asynchronous key generation for Ed25519.
+ *
+ * Initializes OTBN and starts the OTBN routine to compute the private
+ * exponent (d) and public key (Q) based on Curve25519. The DRBG state
+ * is passed as an input parameter.
+ *
+ * No domain_parameter is needed and is automatically set for X25519.
+ *
+ * @param drbg_state Pointer to the DRBG working state
+ * @param additional_input Pointer to the additional input for DRBG
+ * @param required_key_len Requested key len in bits (256 for Ed25519)
+ * @return crypto_status_t Result of asynchronous ed25519 keygen start
+ * operation.
+ */
+crypto_status_t otcrypto_ed25519_keygen_async_start(
+    drbg_state_t *drbg_state, crypto_uint8_buf_t additional_input,
+    size_t required_key_len);
+
+/**
+ * Finalizes the asynchronous key generation for Ed25519.
+ *
+ * Returns `kCryptoStatusOK` and copies private key (d) and public key
+ * (Q), if the OTBN status is done, or `kCryptoStatusAsyncIncomplete`
+ * if the OTBN is busy or `kCryptoStatusInternalError` if there is an
+ * error.
+ *
+ * @param private_key Pointer to the blinded private key struct
+ * @param public_key Pointer to the unblinded public key struct
+ * @return crypto_status_t Result of asynchronous ed25519 keygen
+ * finalize operation.
+ */
+crypto_status_t otcrypto_ed25519_keygen_async_finalize(
+    crypto_blinded_key_t *private_key, crypto_unblinded_key_t *public_key);
+
+/**
+ * Starts the asynchronous Ed25519 digital signature generation.
+ *
+ * Initializes OTBN and starts the OTBN routine to compute the digital
+ * signature on the input message. The domain_parameter field for
+ * Ed25519 is automatically set.
+ *
+ * @param private_key Pointer to the blinded private key struct
+ * @param input_message Input message to be signed
+ * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
+ * @param signature Pointer to the EdDSA signature to get (r) value
+ * @return crypto_status_t Result of async Ed25519 start operation
+ */
+crypto_status_t otcrypto_ed25519_sign_async_start(
+    crypto_blinded_key_t *private_key, crypto_const_uint8_buf_t input_message,
+    eddsa_sign_mode_t sign_mode, ecc_signature_t *signature);
+
+/**
+ * Finalizes the asynchronous Ed25519 digital signature generation.
+ *
+ * Returns `kCryptoStatusOK` and copies the signature if the OTBN
+ * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN is
+ * busy or `kCryptoStatusInternalError` if there is an error.
+ *
+ * @param signature Pointer to the EdDSA signature to get (s) value
+ * @return crypto_status_t Result of async Ed25519 finalize operation
+ */
+crypto_status_t otcrypto_ed25519_sign_async_finalize(
+    ecc_signature_t *signature);
+
+/**
+ * Starts the asynchronous Ed25519 digital signature verification.
+ *
+ * Initializes OTBN and starts the OTBN routine to verify the
+ * signature. The domain_parameter for Ed25519 is set automatically.
+ *
+ * @param public_key Pointer to the unblinded public key struct
+ * @param input_message Input message to be signed for verification
+ * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
+ * @param signature Pointer to the signature to be verified
+ * @param verification_result Returns the result of signature
+ * verification (Pass/Fail)
+ * @return crypto_status_t Result of async Ed25519 verification start
+ * function
+ */
+crypto_status_t otcrypto_ed25519_verify_async_start(
+    crypto_unblinded_key_t *public_key, crypto_const_uint8_buf_t input_message,
+    eddsa_sign_mode_t sign_mode, ecc_signature_t *signature);
+
+/**
+ * Finalizes the asynchronous Ed25519 digital signature verification.
+ *
+ * Returns `kCryptoStatusOK` and populates the `verification result`
+ * with a PASS or FAIL, if the OTBN status is done,
+ * `kCryptoStatusAsyncIncomplete` if the OTBN is busy or
+ * `kCryptoStatusInternalError` if there is an error.
+ *
+ * @param verification_result Returns the result of verification
+ * @return crypto_status_t Result of async Ed25519 verification
+ * finalize function
+ */
+crypto_status_t otcrypto_ed25519_verify_async_finalize(
+    verification_status_t *verification_result);
+
+/**
+ * Starts the asynchronous key generation for X25519.
+ *
+ * Initializes OTBN and starts the OTBN routine to compute the private
+ * exponent (d) and public key (Q) based on Curve25519. The DRBG state
+ * is passed as an input parameter.
+ *
+ * No domain_parameter is needed and is automatically set for X25519.
+ *
+ * @param drbg_state Pointer to the DRBG working state
+ * @param additional_input Pointer to the additional input for DRBG
+ * @param required_key_len Requested key len in bits (256 for Ed25519)
+ * @return crypto_status_t Result of asynchronous X25519 keygen start
+ * operation.
+ */
+crypto_status_t otcrypto_x25519_keygen_async_start(
+    drbg_state_t *drbg_state, crypto_uint8_buf_t additional_input,
+    size_t required_key_len);
+
+/**
+ * Finalizes the asynchronous key generation for X25519.
+ *
+ * Returns `kCryptoStatusOK` and copies private key (d) and public key
+ * (Q), if the OTBN status is done, or `kCryptoStatusAsyncIncomplete`
+ * if the OTBN is busy or `kCryptoStatusInternalError` if there is an
+ * error.
+ *
+ * @param private_key Pointer to the blinded private key struct
+ * @param public_key Pointer to the unblinded public key struct
+ * @return crypto_status_t Result of asynchronous X25519 keygen
+ * finalize operation.
+ */
+crypto_status_t otcrypto_x25519_keygen_async_finalize(
+    crypto_blinded_key_t *private_key, crypto_unblinded_key_t *public_key);
+
+/**
+ * Starts the asynchronous X25519 Diffie Hellman shared secret
+ * generation.
+ *
+ * Initializes OTBN and starts the OTBN routine to perform Diffie
+ * Hellman shared secret generation based on Curve25519. The
+ * domain parameter is automatically set for X25519 API.
+ *
+ * @param private_key Pointer to the blinded private key
+ * (u-coordinate)
+ * @param public_key Pointer to the public scalar from the sender
+ * @return crypto_status_t Result of the async X25519 start operation
+ */
+crypto_status_t otcrypto_x25519_async_start(crypto_blinded_key_t *private_key,
+                                            crypto_unblinded_key_t *public_key);
+
+/**
+ * Finalizes the asynchronous X25519 Diffie Hellman shared secret
+ * generation.
+ *
+ * Returns `kCryptoStatusOK` and copies `shared_secret` if the OTBN
+ * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN
+ * is busy or `kCryptoStatusInternalError` if there is an error.
+ *
+ * @param shared_secret Pointer to shared secret key (u-coordinate)
+ * @return crypto_status_t Result of async X25519 finalize operation
+ */
+crypto_status_t otcrypto_x25519_async_finalize(
+    crypto_blinded_key_t *shared_secret);
+
+/**
+ * Instantiates the DRBG system.
+ *
+ * Initializes the DRBG and the context for DRBG. Gets the required
  * entropy input automatically from the entropy source.
  *
  * @param drbg_state Pointer to the DRBG working state
+ * @param drbg_mode Required DRBG mechanism, CTR-DRBG or HMAC-DRBG
  * @param nonce Pointer to the nonce bit-string
- * @param personalization_string Pointer to personalization bitstring
+ * @param perso_string Pointer to personalization bitstring
  * @return crypto_status_t Result of the DRBG instantiate operation
  */
-crypto_status_t drbg_instantiate(drbg_state_t *drbg_state,
-                                 crypto_uint8_buf_t nonce,
-                                 crypto_uint8_buf_t personalization_string);
+crypto_status_t otcrypto_drbg_instantiate(drbg_state_t *drbg_state,
+                                          drbg_type_t drbg_mode,
+                                          crypto_uint8_buf_t nonce,
+                                          crypto_uint8_buf_t perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
  *
- * Reseeds the DRBG with fresh entropy automatically fetched from the
- * entropy source and updates the working state parameters.
+ * Reseeds the DRBG with fresh entropy that is automatically fetched
+ * from the entropy source and updates the working state parameters.
  *
  * @param drbg_state Pointer to the DRBG working state
  * @param additional_input Pointer to the additional input for DRBG
  * @return crypto_status_t Result of the DRBG reseed operation
  */
-crypto_status_t drbg_reseed(drbg_state_t *drbg_state,
-                            crypto_uint8_buf_t additional_input);
+crypto_status_t otcrypto_drbg_reseed(drbg_state_t *drbg_state,
+                                     crypto_uint8_buf_t additional_input);
 
 /**
- * Initializes the DRBG.
+ * Instantiates the DRBG system.
  *
- * Initializes DRBG and the context parameter for DRBG. Gets the
- * entropy input from the user through `entropy` parameter.
+ * Initializes DRBG and the DRBG context. Gets the required entropy
+ * input from the user through the `entropy` parameter.
  *
  * @param drbg_state Pointer to the DRBG working state
  * @param entropy Pointer to the user defined entropy value
+ * @param drbg_mode Required DRBG mechanism, CTR-DRBG or HMAC-DRBG
  * @param nonce Pointer to the nonce bit-string
  * @param personalization_string Pointer to personalization bitstring
- * @return crypto_status_t Result of the DRBG instantiate operation
+ * @return crypto_status_t Result of the DRBG manual instantiation
  */
-crypto_status_t drbg_manual_instantiate(
-    drbg_state_t *drbg_state, crypto_uint8_buf_t entropy,
-    crypto_uint8_buf_t nonce, crypto_uint8_buf_t personalization_string);
+crypto_status_t otcrypto_drbg_manual_instantiate(
+    drbg_state_t *drbg_state, crypto_uint8_buf_t entropy, drbg_type_t drbg_mode,
+    crypto_uint8_buf_t nonce, crypto_uint8_buf_t perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
@@ -1353,11 +1695,11 @@ crypto_status_t drbg_manual_instantiate(
  * @param drbg_state Pointer to the DRBG working state
  * @param entropy Pointer to the user defined entropy value
  * @param additional_input Pointer to the additional input for DRBG
- * @return crypto_status_t Result of the DRBG reseed operation
+ * @return crypto_status_t Result of the manual DRBG reseed operation
  */
-crypto_status_t drbg_manual_reseed(drbg_state_t *drbg_state,
-                                   crypto_uint8_buf_t entropy,
-                                   crypto_uint8_buf_t additional_input);
+crypto_status_t otcrypto_drbg_manual_reseed(
+    drbg_state_t *drbg_state, crypto_uint8_buf_t entropy,
+    crypto_uint8_buf_t additional_input);
 
 /**
  * DRBG function for generating random bits.
@@ -1365,14 +1707,22 @@ crypto_status_t drbg_manual_reseed(drbg_state_t *drbg_state,
  * Used to generate pseudo random bits after DRBG instantiation or
  * DRBG reseeding.
  *
+ * The caller should allocate space for the `drbg_output` buffer,
+ * (byte length as `required_bit_len`), and set the length of expected
+ * output in the `len` field of `drbg_output`. If the user-set length
+ * and the output length does not match, an error message will be
+ * returned.
+ *
  * @param drbg_state Pointer to the DRBG working state
  * @param additional_input Pointer to the additional data
+ * @param required_bit_len Required len of pseudorandom output in bits
  * @param drbg_output Pointer to the generated pseudo random bits
  * @return crypto_status_t Result of the DRBG generate operation
  */
-crypto_status_t drbg_generate(drbg_state_t *drbg_state,
-                              crypto_uint8_buf_t additional_input,
-                              crypto_uint8_buf_t *drbg_output);
+crypto_status_t otcrypto_drbg_generate(drbg_state_t *drbg_state,
+                                       crypto_uint8_buf_t additional_input,
+                                       size_t required_bit_len,
+                                       crypto_uint8_buf_t *drbg_output);
 
 /**
  * Uninstantiates DRBG and clears the context.
@@ -1380,7 +1730,77 @@ crypto_status_t drbg_generate(drbg_state_t *drbg_state,
  * @param drbg_state Pointer to the DRBG working state
  * @return crypto_status_t Result of the DRBG uninstantiate operation
  */
-crypto_status_t drbg_uninstantiate(drbg_state_t *drbg_state);
+crypto_status_t otcrypto_drbg_uninstantiate(drbg_state_t *drbg_state);
+
+/**
+ * Performs the key derivation function in counter mode.
+ *
+ * The required PRF engine for the KDF function is selected using the
+ * `kdf_mode` parameter.
+ *
+ * @param key_derivation_key Pointer to the blinded key derivation key
+ * @param kdf_mode Required KDF mode, with HMAC or KMAC as a PRF
+ * @param key_mode Crypto mode for which the derived key is intended
+ * @param required_bit_len Required length of the derived key in bits
+ * @param keying_material Pointer to the blinded keying material
+ * @return crypto_status_t Result of the key derivation operation
+ */
+crypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key,
+                                 kdf_type_t kdf_mode, key_mode_t key_mode,
+                                 size_t required_bit_len,
+                                 crypto_blinded_key_t keying_material);
+
+/**
+ * Builds an unblinded key struct from a user (plain) key.
+ *
+ * @param plain_key Pointer to the user defined plain key
+ * @param key_mode Crypto mode for which the key usage is intended
+ * @param unblinded_key Generated unblinded key struct
+ * @return crypto_status_t Result of the build unblinded key operation
+ */
+crypto_status_t otcrypto_build_unblinded_key(
+    crypto_const_uint8_buf_t plain_key, key_mode_t key_mode,
+    crypto_unblinded_key_t unblinded_key);
+
+/**
+ * Builds a blinded key struct from a plain key.
+ *
+ * This API takes as input a plain key from the user and masks
+ * it using an implantation specific masking with ‘n’ shares and
+ * generates a blinded key struct as output.
+ *
+ * @param plain_key Pointer to the user defined plain key
+ * @param key_mode Crypto mode for which the key usage is intended
+ * @param blinded_key Generated blinded key struct
+ * @return crypto_status_t Result of the build blinded key operation
+ */
+crypto_status_t otcrypto_build_blinded_key(crypto_const_uint8_buf_t plain_key,
+                                           key_mode_t key_mode,
+                                           crypto_blinded_key_t blinded_key);
+
+/**
+ * Exports the blinded key struct to an unblinded key struct.
+ *
+ * This API takes as input a blinded key masked with ‘n’ shares, and
+ * removes the masking and generates an unblinded key struct as output.
+ *
+ * @param blinded_key Blinded key struct to be unmasked
+ * @param unblinded_key Generated unblinded key struct
+ * @return crypto_status_t Result of the blinded key export operation
+ */
+crypto_status_t otcrypto_blinded_to_unblinded_key(
+    const crypto_blinded_key_t blinded_key,
+    crypto_unblinded_key_t unblinded_key);
+
+/**
+ * Build a blinded key struct from an unblinded key struct.
+ *
+ * @param unblinded_key Blinded key struct to be unmasked
+ * @param blinded_key Generated (unmasked) unblinded key struct
+ * @return crypto_status_t Result of unblinded key export operation
+ */
+crypto_status_t otcrypto_unblinded_to_blinded_key(
+    const crypto_unblinded_key unblinded_key, crypto_blinded_key_t blinded_key);
 
 #ifdef __cplusplus
 }  // extern "C"
