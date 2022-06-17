@@ -12,6 +12,7 @@ filesets:
       - lowrisc:dv:dv_lib
       - lowrisc:dv:cip_lib
       - lowrisc:dv:mem_bkdr_util
+      - lowrisc:dv:flash_phy_prim_agent
       - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:constants:top_pkg
     files:
@@ -20,11 +21,13 @@ filesets:
       - flash_ctrl_if.sv
       - flash_mem_bkdr_util.sv: {is_include_file: true}
       - flash_mem_addr_attrs.sv: {is_include_file: true}
+      - flash_otf_item.sv: {is_include_file: true}
       - flash_ctrl_seq_cfg.sv: {is_include_file: true}
       - flash_ctrl_env_cfg.sv: {is_include_file: true}
       - flash_ctrl_env_cov.sv: {is_include_file: true}
       - flash_ctrl_virtual_sequencer.sv: {is_include_file: true}
       - flash_ctrl_scoreboard.sv: {is_include_file: true}
+      - flash_ctrl_otf_scoreboard.sv: {is_include_file: true}
       - flash_ctrl_env.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_vseq_list.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_callback_vseq.sv: {is_include_file: true}
@@ -51,6 +54,7 @@ filesets:
       - seq_lib/flash_ctrl_invalid_op_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_mid_op_rst_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_otf_base_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

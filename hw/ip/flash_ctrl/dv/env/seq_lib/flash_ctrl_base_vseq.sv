@@ -297,7 +297,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         wait_flash_ctrl_prog_fifo_not_full();
       end
       mem_wr(.ptr(ral.prog_fifo), .offset(0), .data(data[i]));
-      `uvm_info(`gfn, $sformatf("flash_ctrl_write: 0x%0h", data[i]), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("flash_ctrl_write: 0x%0h", data[i]), UVM_HIGH)
     end
   endtask : flash_ctrl_write
 
@@ -311,7 +311,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         wait_flash_ctrl_rd_fifo_not_empty();
       end
       mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(data[i]));
-      `uvm_info(`gfn, $sformatf("flash_ctrl_read: 0x%0h", data[i]), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("flash_ctrl_read: 0x%0h", data[i]), UVM_HIGH)
     end
   endtask : flash_ctrl_read
 

@@ -27,7 +27,7 @@ package flash_phy_prim_agent_pkg;
 
   // functions
 
-  function void print_flash_data(fdata_q_t fq, string str = "fdata");
+  function automatic void print_flash_data(fdata_q_t fq, string str = "fdata");
     `dv_info($sformatf(" flash data size: %0d",fq.size()), UVM_MEDIUM, str)
     foreach(fq[i]) begin
         `dv_info($sformatf("%4d:%2x_%1x_%8x_%8x", i,

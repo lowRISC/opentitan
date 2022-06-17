@@ -49,4 +49,9 @@ class flash_ctrl_base_test #(
   // the base class also looks up UVM_TEST_SEQ plusarg to create and run that seq in
   // the run_phase; as such, nothing more needs to be done
 
+  // Add flash_ctrl only plusarg
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    void'($value$plusargs("scb_otf_en=%0b", cfg.scb_otf_en));
+  endfunction
 endclass : flash_ctrl_base_test

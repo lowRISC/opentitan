@@ -61,6 +61,15 @@ module tb;
     .rst_n(rst_n)
   );
   flash_ctrl_if flash_ctrl_if ();
+  flash_phy_prim_if fpp_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
+
+  `define FLASH_DEVICE_HIER tb.dut.u_eflash.u_flash
+  assign fpp_if.req = `FLASH_DEVICE_HIER.flash_req_i;
+  assign fpp_if.rsp = `FLASH_DEVICE_HIER.flash_rsp_o;
+  `undef  FLASH_DEVICE_HIER
 
   `DV_ALERT_IF_CONNECT
 
@@ -270,7 +279,8 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_eflash_reg_block*", "vif",
                                        eflash_tl_if);
     uvm_config_db#(virtual flash_ctrl_if)::set(null, "*.env", "flash_ctrl_vif", flash_ctrl_if);
-    $timeformat(-12, 0, " ps", 12);
+    uvm_config_db#(virtual flash_phy_prim_if)::set(null, "*.env.m_fpp_agent*", "vif", fpp_if);
+    $timeformat(-9, 1, " ns", 9);
     run_test();
   end
 
