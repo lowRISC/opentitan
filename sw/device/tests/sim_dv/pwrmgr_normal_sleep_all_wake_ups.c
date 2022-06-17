@@ -39,6 +39,8 @@
 
  */
 
+OTTF_DEFINE_TEST_CONFIG();
+
 static const uint32_t kPinmuxWkupDetector5 = 5;
 
 static dif_pwrmgr_t pwrmgr;

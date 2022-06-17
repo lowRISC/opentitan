@@ -11,10 +11,13 @@
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define LC_TOKEN_SIZE 16
+
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_lc_ctrl_t lc;
 static dif_otp_ctrl_t otp;

@@ -13,6 +13,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+OTTF_DEFINE_TEST_CONFIG();
+
 /**
  * AST CLK OUTPUTS TEST
  *

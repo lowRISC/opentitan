@@ -17,6 +17,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/usbdev.h"
+
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwrmgr_regs.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
@@ -39,6 +40,8 @@
  */
 
 #define PINMUX_WKUP_DETECTOR5 5
+
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_plic_t rv_plic;

@@ -18,6 +18,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+OTTF_DEFINE_TEST_CONFIG();
+
 /**
  * RSTMGR CPU INFO TEST
  *  This test creates a double fault by accessing a register with

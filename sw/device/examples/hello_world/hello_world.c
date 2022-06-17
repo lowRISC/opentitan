@@ -13,8 +13,11 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;

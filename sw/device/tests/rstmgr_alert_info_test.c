@@ -64,6 +64,8 @@
 
  */
 
+OTTF_DEFINE_TEST_CONFIG();
+
 enum {
   kWdogBarkMicros = 200,          // us
   kWdogBiteMicros = 200,          // us

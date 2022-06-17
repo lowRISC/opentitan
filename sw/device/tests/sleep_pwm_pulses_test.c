@@ -37,6 +37,8 @@
  * Fixed pwm configuration, mode and 0 phase delay are chosen.
  */
 
+OTTF_DEFINE_TEST_CONFIG();
+
 static const dif_pinmux_index_t kPinmuxOutsel[PWM_PARAM_N_OUTPUTS] = {
     kTopEarlgreyPinmuxOutselPwmAonPwm0, kTopEarlgreyPinmuxOutselPwmAonPwm1,
     kTopEarlgreyPinmuxOutselPwmAonPwm2, kTopEarlgreyPinmuxOutselPwmAonPwm3,

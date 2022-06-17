@@ -184,6 +184,7 @@ opentitan_functest(
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
     ],
 )
 

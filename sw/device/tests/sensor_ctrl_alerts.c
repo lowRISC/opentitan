@@ -20,6 +20,8 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sensor_ctrl_regs.h"  // Generated.
 
+OTTF_DEFINE_TEST_CONFIG();
+
 /**
  * This test checks that incoming ast events can be
  * configured as both recoverable and fatal.

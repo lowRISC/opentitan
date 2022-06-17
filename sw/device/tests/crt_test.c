@@ -13,9 +13,12 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+OTTF_DEFINE_TEST_CONFIG();
 
 // Symbols defined in `sw/device/lib/testing/test_framework/ottf.ld`,
 // which we use to check that the CRT did what it was supposed to.
