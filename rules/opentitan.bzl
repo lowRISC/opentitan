@@ -493,7 +493,6 @@ def opentitan_rom_binary(
         name,
         platform = OPENTITAN_PLATFORM,
         per_device_deps = PER_DEVICE_DEPS,
-        extract_sw_logs_db = True,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for ROM.
 
@@ -508,7 +507,6 @@ def opentitan_rom_binary(
       @param name: The name of this rule.
       @param platform: The target platform for the artifacts.
       @param per_device_deps: The deps for each of the hardware target.
-      @param extract_sw_logs_db: Whether to extract SW logs database for DV sim.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
     Emits rules:
       For each device in per_device_deps entry:
@@ -533,7 +531,7 @@ def opentitan_rom_binary(
         targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
-            extract_sw_logs_db = extract_sw_logs_db and device.startswith("sim_"),
+            extract_sw_logs_db = device in ["sim_dv", "sim_verilator"],
             **kwargs
         ))
         elf_name = "{}_{}".format(devname, "elf")
@@ -570,7 +568,6 @@ def opentitan_flash_binary(
             "test_key_0": "@//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
         },
         per_device_deps = PER_DEVICE_DEPS,
-        extract_sw_logs_db = True,
         output_signed = False,
         manifest = None,
         **kwargs):
@@ -589,7 +586,6 @@ def opentitan_flash_binary(
       @param platform: The target platform for the artifacts.
       @param signing_keys: The signing keys for to sign each BIN file with.
       @param per_device_deps: The deps for each of the hardware target.
-      @param extract_sw_logs_db: Whether to extract SW logs database for DV sim.
       @param output_signed: Whether or not to emit signed binary/VMEM files.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
     Emits rules:
@@ -619,7 +615,7 @@ def opentitan_flash_binary(
         targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
-            extract_sw_logs_db = extract_sw_logs_db and device.startswith("sim_"),
+            extract_sw_logs_db = device in ["sim_dv", "sim_verilator"],
             **kwargs
         ))
         bin_name = "{}_{}".format(devname, "bin")

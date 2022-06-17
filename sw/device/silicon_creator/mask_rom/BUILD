@@ -10,7 +10,7 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
-load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -78,9 +78,6 @@ opentitan_rom_binary(
         "mask_rom.h",
         "mask_rom_start.S",
     ],
-    # Mask ROM does not permit the DV simulation backdoor logging mechanism that
-    # test ROM does, for obvious security reasons.
-    extract_sw_logs_db = False,
     deps = [
         ":boot_policy",
         ":bootstrap",
@@ -313,10 +310,6 @@ opentitan_functest(
         tags = ["broken"],
     ),
     signed = True,
-    targets = [
-        "verilator",
-        "cw310",
-    ],
     verilator = verilator_params(
         rom = ":mask_rom_sim_verilator_scr_vmem",
         tags = [
@@ -343,10 +336,6 @@ opentitan_functest(
         bitstream = "//hw/bitstream:mask_rom",
     ),
     signed = False,
-    targets = [
-        "verilator",
-        "cw310",
-    ],
     verilator = verilator_params(
         rom = ":mask_rom_sim_verilator_scr_vmem",
     ),
