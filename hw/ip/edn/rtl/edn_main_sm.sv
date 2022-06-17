@@ -122,8 +122,12 @@ module edn_main_sm #(
         state_d = BootInsAckWait;
       end
       BootInsAckWait: begin
-        if (csrng_cmd_ack_i) begin
-          state_d = BootCaptGenCnt;
+        if (!edn_enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (csrng_cmd_ack_i) begin
+            state_d = BootCaptGenCnt;
+          end
         end
       end
       BootCaptGenCnt: begin
@@ -132,13 +136,21 @@ module edn_main_sm #(
       end
       BootSendGenCmd: begin
         boot_send_gencmd_o = 1'b1;
-        if (cmd_sent_i) begin
-          state_d = BootGenAckWait;
+        if (!edn_enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (cmd_sent_i) begin
+            state_d = BootGenAckWait;
+          end
         end
       end
       BootGenAckWait: begin
-        if (csrng_cmd_ack_i) begin
-          state_d = BootPulse;
+        if (!edn_enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (csrng_cmd_ack_i) begin
+            state_d = BootPulse;
+          end
         end
       end
       BootPulse: begin
@@ -154,33 +166,49 @@ module edn_main_sm #(
       AutoLoadIns: begin
         auto_set_intr_gate_o = 1'b1;
         auto_first_ack_wait_o = 1'b1;
-        if (sw_cmd_req_load_i) begin
-          state_d = AutoFirstAckWait;
+        if (!edn_enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (sw_cmd_req_load_i) begin
+            state_d = AutoFirstAckWait;
+          end
         end
       end
       AutoFirstAckWait: begin
         auto_first_ack_wait_o = 1'b1;
-        if (csrng_cmd_ack_i) begin
-          auto_clr_intr_gate_o = 1'b1;
-          state_d = AutoDispatch;
+        if (!edn_enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (csrng_cmd_ack_i) begin
+            auto_clr_intr_gate_o = 1'b1;
+            state_d = AutoDispatch;
+          end
         end
       end
       AutoAckWait: begin
         auto_req_mode_busy_o = 1'b1;
-        if (csrng_cmd_ack_i) begin
-          state_d = AutoDispatch;
+        if (!edn_enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (csrng_cmd_ack_i) begin
+            state_d = AutoDispatch;
+          end
         end
       end
       AutoDispatch: begin
         auto_req_mode_busy_o = 1'b1;
-        if (!auto_req_mode_i) begin
-          main_sm_done_pulse_o = 1'b1;
+        if (!edn_enable_i) begin
           state_d = Idle;
         end else begin
-          if (max_reqs_cnt_zero_i) begin
-            state_d = AutoCaptReseedCnt;
+          if (!auto_req_mode_i) begin
+            main_sm_done_pulse_o = 1'b1;
+            state_d = Idle;
           end else begin
-            state_d = AutoCaptGenCnt;
+            if (max_reqs_cnt_zero_i) begin
+              state_d = AutoCaptReseedCnt;
+            end else begin
+              state_d = AutoCaptGenCnt;
+            end
           end
         end
       end
@@ -192,8 +220,12 @@ module edn_main_sm #(
       AutoSendGenCmd: begin
         auto_req_mode_busy_o = 1'b1;
         send_gencmd_o = 1'b1;
-        if (cmd_sent_i) begin
-          state_d = AutoAckWait;
+        if (!edn_enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (cmd_sent_i) begin
+            state_d = AutoAckWait;
+          end
         end
       end
       AutoCaptReseedCnt: begin
@@ -204,8 +236,12 @@ module edn_main_sm #(
       AutoSendReseedCmd: begin
         auto_req_mode_busy_o = 1'b1;
         send_rescmd_o = 1'b1;
-        if (cmd_sent_i) begin
-          state_d = AutoAckWait;
+        if (!edn_enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (cmd_sent_i) begin
+            state_d = AutoAckWait;
+          end
         end
       end
       SWPortMode: begin
