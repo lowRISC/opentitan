@@ -376,9 +376,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     mem_access_err = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
                                                mem_ro_err, custom_err);
-    if (mem_access_err) begin
+    if (mem_access_err || cfg.tl_mem_access_gated) begin
       // Some memory implementations may not return an error response on invalid accesses.
-      exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | custom_err;
+      exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | custom_err |
+                     cfg.tl_mem_access_gated;
     end
 
     bus_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
@@ -423,9 +424,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       `DV_CHECK_EQ(item.d_error, exp_d_error,
           $sformatf({"On interface %0s, TL item: %0s, unmapped_err: %0d, mem_access_err: %0d, ",
                     "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",
-                    "write_w_instr_type_err: %0d"},
+                    "write_w_instr_type_err: %0d, ", "cfg.tl_mem_access_gated: %0d"},
                     ral_name, item.sprint(uvm_default_line_printer), unmapped_err, mem_access_err,
-                    bus_intg_err, byte_wr_err, csr_size_err, tl_item_err, write_w_instr_type_err))
+                    bus_intg_err, byte_wr_err, csr_size_err, tl_item_err, write_w_instr_type_err,
+                    cfg.tl_mem_access_gated))
 
       // In data read phase, check d_data when d_error = 1.
       if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
@@ -574,6 +576,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       is_fatal_alert[cfg.list_of_alerts[i]]        = 0;
       alert_chk_max_delay[cfg.list_of_alerts[i]]   = 0;
     end
+    cfg.tl_mem_access_gated = 0;
   endfunction
 
   virtual task sample_resets();

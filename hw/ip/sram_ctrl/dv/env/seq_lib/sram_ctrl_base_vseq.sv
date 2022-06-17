@@ -158,7 +158,8 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                            bit abort     = 0,
                            bit en_ifetch = 0,
                            bit wait_complete = 1,
-                           bit not_use_last_addr = 0);
+                           bit not_use_last_addr = 0,
+                           bit exp_err_rsp = 0);
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
     mubi4_t instr_type;
@@ -188,6 +189,7 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                         .write(write),
                         .blocking(blocking),
                         .check_rsp(!en_ifetch),
+                        .exp_err_rsp(exp_err_rsp),
                         .instr_type(instr_type),
                         .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]),
                         .req_abort_pct((abort) ? 100 : 0));

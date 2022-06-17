@@ -21,6 +21,9 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // Format: tl_intg_alert_fields[ral.a_reg.a_field] = value
   uvm_reg_data_t      tl_intg_alert_fields[dv_base_reg_field];
 
+  // flag to indicate tl mem acess are gated due to local or global escalation
+  bit                 tl_mem_access_gated;
+
   // Similar as the associative array above, if DUT has shadow registers, these two associative
   // arrays contains register fields related to shadow register's update and storage error status.
   uvm_reg_data_t      shadow_update_err_status_fields[dv_base_reg_field];
