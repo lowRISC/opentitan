@@ -67,7 +67,7 @@ Some tools in this repository are written in Python 3 and require Python depende
 We recommend installing the latest version of `pip` and `setuptools` (especially if on older systems such as Ubuntu 18.04) using:
 
 ```console
-python3 -m pip install --user -U pip setuptools
+$ python3 -m pip install --user -U pip setuptools
 ```
 
 The `pip` installation instructions use the `--user` flag to install without root permissions.
