@@ -1198,4 +1198,14 @@ module otbn
     u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.u_stack_wr_ptr,
     alert_tx_o[AlertFatal])
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
+      u_reg, alert_tx_o[AlertFatal])
+  // other onehot checks
+  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RfBaseOnehotCheck_A,
+      u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.u_prim_onehot_check,
+      alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RfBignumOnehotCheck_A,
+      u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.u_prim_onehot_check,
+      alert_tx_o[AlertFatal])
 endmodule

@@ -620,4 +620,6 @@ module pwrmgr
       pwr_ast_o.pwr_clamp && !pwr_ast_o.main_pd_n, 0, 2,
       clk_slow_i, !rst_slow_ni)
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule // pwrmgr

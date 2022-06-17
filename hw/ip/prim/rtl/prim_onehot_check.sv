@@ -28,7 +28,10 @@ module prim_onehot_check #(
   parameter bit          EnableCheck = 1,
   // If set to 1, the oh_i vector must always be one hot if en_i is set to 1.
   // If set to 0, the oh_i vector may be 0 if en_i is set to 1 (useful when oh_i can be masked).
-  parameter bit          StrictCheck = 1
+  parameter bit          StrictCheck = 1,
+  // This should only be disabled in special circumstances, for example
+  // in non-comportable IPs where an error does not trigger an alert.
+  parameter bit EnableAlertTriggerSVA = 1
 ) (
   // The module is combinational - the clock and reset are only used for assertions.
   input                          clk_i,
@@ -134,4 +137,19 @@ module prim_onehot_check #(
     assign addr_err = 1'b0;
   end
 
+  // This logic that will be assign to one, when user adds macro
+  // ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
+  // is used in design without adding this assertion check.
+  `ifdef INC_ASSERT
+  `ifndef PRIM_DEFAULT_IMPL
+    `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
+  `endif
+  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
+
+  logic unused_assert_connected;
+  // TODO, only check generic for now. The path of this prim in other Impl may differ
+  if (Impl == prim_pkg::ImplGeneric) begin : gen_generic
+    `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
+  end
+  `endif
 endmodule : prim_onehot_check

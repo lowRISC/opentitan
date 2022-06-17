@@ -326,4 +326,7 @@ module alert_handler
   `ASSERT_INIT(CheckNClasses,  N_CLASSES <= 8)
   `ASSERT_INIT(CheckNEscSev,   N_ESC_SEV <= 8)
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehotCheck_A,
+      u_reg_wrap.u_reg, loc_alert_trig[2])
 endmodule

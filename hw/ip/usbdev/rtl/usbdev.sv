@@ -1262,4 +1262,6 @@ module usbdev
   `ASSERT_KNOWN(USBIntrRxBitstuffErrKnown_A, intr_rx_bitstuff_err_o)
   `ASSERT_KNOWN(USBIntrFrameKnown_A, intr_frame_o)
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

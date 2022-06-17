@@ -525,4 +525,8 @@ module rom_ctrl
   `ASSERT(BusLocalEscChk_A,
           (gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid)
           |-> always(!bus_rom_rvalid))
+
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
+                                                 u_reg_regs, alert_tx_o[AlertFatal])
 endmodule

@@ -267,4 +267,6 @@ module aon_timer import aon_timer_reg_pkg::*;
   `ASSERT_KNOWN(WkupReqKnown_A, wkup_req_o, clk_aon_i, !rst_aon_ni)
   `ASSERT_KNOWN(RstReqKnown_A, aon_timer_rst_req_o, clk_aon_i, !rst_aon_ni)
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

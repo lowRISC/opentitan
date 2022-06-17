@@ -153,4 +153,6 @@ module i2c
   `ASSERT_KNOWN(IntrAckStopKnownO_A, intr_ack_stop_o)
   `ASSERT_KNOWN(IntrHostTimeoutKnownO_A, intr_host_timeout_o)
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

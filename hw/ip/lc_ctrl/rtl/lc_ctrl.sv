@@ -740,4 +740,7 @@ module lc_ctrl
       u_lc_ctrl_fsm.esc_scrap_state0_i ||
       u_lc_ctrl_fsm.esc_scrap_state1_i)
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[2])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(TapRegWeOnehotCheck_A, u_reg_tap, alert_tx_o[2], 0)
 endmodule : lc_ctrl

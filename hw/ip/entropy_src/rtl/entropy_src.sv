@@ -414,4 +414,6 @@ module entropy_src
     u_entropy_src_core.u_entropy_src_cntr_reg_extht_lo_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 endmodule
