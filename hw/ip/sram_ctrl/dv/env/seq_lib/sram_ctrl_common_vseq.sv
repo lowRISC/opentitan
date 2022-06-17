@@ -70,31 +70,19 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
   // Check internal key/nonce are reset to default
   // Check sram access is blocked after a fault injection
   virtual task check_sram_access_blocked_after_fi();
-    bit sram_access_pending;
     otp_ctrl_pkg::sram_key_t internal_key;
     otp_ctrl_pkg::sram_nonce_t internal_nonce;
 
+    // all mem accesses are gated after FI
+    cfg.tl_mem_access_gated = 1;
     `DV_CHECK(uvm_hdl_read(path_sram_key, internal_key))
     `DV_CHECK_EQ(internal_key, sram_ctrl_pkg::RndCnstSramKeyDefault)
     `DV_CHECK(uvm_hdl_read(path_sram_nonce, internal_nonce))
     `DV_CHECK_EQ(internal_nonce, sram_ctrl_pkg::RndCnstSramNonceDefault)
 
-    fork
-      begin
-        $assertoff(0, "tb.dut.u_tlul_adapter_sram.rvalidHighReqFifoEmpty");
-        sram_access_pending = 1;
+    do_rand_ops(.num_ops($urandom_range(5, 20)), .blocking(0), .exp_err_rsp(1));
+    csr_utils_pkg::wait_no_outstanding_access();
 
-        // this access will be blocked until reset occurs and TL agent clears the transaction
-        do_rand_ops(.num_ops(1), .blocking(1));
-
-        sram_access_pending = 0;
-        $asserton(0, "tb.dut.u_tlul_adapter_sram.rvalidHighReqFifoEmpty");
-      end
-      begin
-        cfg.clk_rst_vif.wait_clks($urandom_range(100, 2000));
-      end
-    join_any
-    `DV_CHECK_EQ(sram_access_pending, 1)
   endtask : check_sram_access_blocked_after_fi
 
   // Check alert and `status.init_error` is set.
