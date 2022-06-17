@@ -34,16 +34,15 @@ const test_config_t kTestConfig;
  * wdog is programed to bark.
  */
 enum {
-  kWdogBarkMicros = 3 * 1000,          // 3 ms
-  kWdogBiteMicros = 4 * 1000,          // 4 ms
-  kEscalationPhase0Micros = 1 * 1000,  // 1 ms
-  // The cpu value is slightly larger as the busy_spin_micros
-  // routine cycle count comes out slightly smaller due to the
-  // fact that it does not divide by exactly 1M
-  // see sw/device/lib/runtime/hart.c
-  kEscalationPhase0MicrosCpu = kEscalationPhase0Micros + 200,  // 1.2 ms
-  kEscalationPhase1Micros = 5 * 1000,                          // 5 ms
-  kEscalationPhase2Micros = 500,                               // 500 us
+  kWdogBarkMicros = 3 * 100,          // 300 us
+  kWdogBiteMicros = 4 * 100,          // 400 us
+  kEscalationPhase0Micros = 1 * 100,  // 100 us
+  // The cpu value is set slightly larger, since if they are the same it is
+  // possible busy_spin_micros in execute_test can complete before the
+  // interrupt.
+  kEscalationPhase0MicrosCpu = kEscalationPhase0Micros + 20,  // 120 us
+  kEscalationPhase1Micros = 5 * 100,                          // 500 us
+  kEscalationPhase2Micros = 100,                              // 100 us
 };
 
 static_assert(
@@ -71,40 +70,42 @@ static dif_alert_handler_t alert_handler;
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(void) {
-  top_earlgrey_plic_peripheral_t peripheral;
   dif_rv_plic_irq_id_t irq_id;
-  uint32_t irq = 0;
-  uint32_t alert = 0;
-
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
-  peripheral = (top_earlgrey_plic_peripheral_t)
+  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[irq_id];
 
   if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
-    irq = (dif_aon_timer_irq_t)(
-        irq_id -
-        (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+    uint32_t irq =
+        (irq_id - (dif_rv_plic_irq_id_t)
+                      kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
 
-    // Stops escalation process.
-    CHECK_DIF_OK(dif_alert_handler_escalation_clear(&alert_handler,
-                                                    kDifAlertHandlerClassA));
-    CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
-
-    CHECK(irq != kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark,
-          "AON Timer Wdog should not bark");
-
+    // We should not get aon timer interrupts since escalation suppresses them.
+    LOG_ERROR("Unexpected aon timer interrupt %0d", irq);
   } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
-    irq = (irq_id -
-           (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
-
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler, alert));
-
+    // Check the class.
     dif_alert_handler_class_state_t state;
     CHECK_DIF_OK(dif_alert_handler_get_class_state(
         &alert_handler, kDifAlertHandlerClassA, &state));
-
     CHECK(state == kDifAlertHandlerClassStatePhase0, "Wrong phase %d", state);
+
+    uint32_t irq =
+        (irq_id -
+         (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+
+    // Deals with the alert cause: we expect it to be from the pwrmgr.
+    dif_alert_handler_alert_t alert = kTopEarlgreyAlertIdPwrmgrAonFatalFault;
+    bool is_cause = false;
+    CHECK_DIF_OK(
+        dif_alert_handler_alert_is_cause(&alert_handler, alert, &is_cause));
+    CHECK(is_cause);
+
+    // Acknowledge the cause and irq; neither of them affect escalation.
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler, alert));
+    CHECK_DIF_OK(
+        dif_alert_handler_alert_is_cause(&alert_handler, alert, &is_cause));
+    CHECK(!is_cause);
 
     CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
   }
@@ -194,27 +195,26 @@ static void alert_handler_config(void) {
  * Execute the aon timer interrupt test.
  */
 static void execute_test(dif_aon_timer_t *aon_timer) {
-  uint64_t bark_cycles =
-      udiv64_slow(kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL);
-  uint64_t bite_cycles =
-      udiv64_slow(kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL);
-
-  CHECK(bite_cycles < UINT32_MAX,
-        "The value %u can't fit into the 32 bits timer counter.", bite_cycles);
+  uint32_t bark_cycles =
+      aon_timer_testutils_get_aon_cycles_from_us(kWdogBarkMicros);
+  uint32_t bite_cycles =
+      aon_timer_testutils_get_aon_cycles_from_us(kWdogBiteMicros);
 
   LOG_INFO(
       "Wdog will bark after %u/%u us/cycles and bite after %u/%u us/cycles",
-      (uint32_t)kWdogBarkMicros, (uint32_t)bark_cycles,
-      (uint32_t)kWdogBiteMicros, (uint32_t)bite_cycles);
+      (uint32_t)kWdogBarkMicros, bark_cycles, (uint32_t)kWdogBiteMicros,
+      bite_cycles);
 
   // Setup the wdog bark and bite timeouts.
   aon_timer_testutils_watchdog_config(aon_timer, bark_cycles, bite_cycles,
-                                      false);
+                                      /*pause_in_sleep=*/false);
 
   // Trigger the alert handler to escalate.
   dif_pwrmgr_alert_t alert = kDifPwrmgrAlertFatalFault;
   CHECK_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr, alert));
   busy_spin_micros(kEscalationPhase0MicrosCpu);
+
+  // This should never run since escalation turns the CPU off.
   CHECK(false, "The alert handler failed to escalate");
 }
 
@@ -241,12 +241,14 @@ bool test_main(void) {
             rst_info == kDifRstmgrResetInfoEscalation,
         "Wrong reset reason %02X", rst_info);
 
-  LOG_INFO("rst=0x%x", rst_info);
   if (rst_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Booting for the first time, starting test");
     execute_test(&aon_timer);
   } else if (rst_info == kDifRstmgrResetInfoEscalation) {
     LOG_INFO("Booting for the second time due to escalation reset");
+  } else {
+    LOG_ERROR("Unexpected rst_info=0x%x", rst_info);
+    return false;
   }
 
   return true;
