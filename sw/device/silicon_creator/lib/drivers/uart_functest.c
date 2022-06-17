@@ -13,9 +13,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig = {
-    .can_clobber_uart = true,
-};
+OTTF_DEFINE_TEST_CONFIG(.can_clobber_uart = true, );
 
 rom_error_t uart_test(void) {
   // Configure UART0 as stdout.

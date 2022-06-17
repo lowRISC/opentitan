@@ -24,28 +24,24 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 /**
- * The OTTF expects this symbol to present, as it contains configuration
- * settings for running the test implemented in this file. DO NOT delete this
- * struct. However, you may modify the member assignments below according to the
- * instructions above each configuration member.
+ * The OTTF expects the `kTestConfig` symbol to be present, as it contains
+ * configuration settings for running the test implemented in this file. DO NOT
+ * delete this macro. However, you may modify the member assignments below
+ * according to the instructions above each configuration member.
+ *
+ * Set `enable_concurrency` to true if this test should run as a FreeRTOS
+ * task (enabling the test to spawn additional concurrent FreeRTOS tasks).
+ * When `enable_concurrency` is set to false, this test will run as a
+ * bare-metal program. Note, for the majority of chip-level tests, this
+ * should be set to false.
+ *
+ * Set `can_clobber_uart` to true if this test will reconfigure the UART in
+ * any way, since the OTTF uses the UART to communicate test results on
+ * Verilator and FPGA platforms, it must be reconfigured by the OTTF before
+ * test results are printed.
  */
-const test_config_t kTestConfig = {
-    /**
-     * Set `enable_concurrency` to true if this test should run as a FreeRTOS
-     * task (enabling the test to spawn additional concurrent FreeRTOS tasks).
-     * When `enable_concurrency` is set to false, this test will run as a
-     * bare-metal program. Note, for the majority of chip-level tests, this
-     * should be set to false.
-     */
-    .enable_concurrency = false,
-    /**
-     * Set `can_clobber_uart` to true if this test will reconfigure the UART in
-     * any way, since the OTTF uses the UART to communicate test results on
-     * Verilator and FPGA platforms, it must be reconfigured by the OTTF before
-     * test results are printed.
-     */
-    .can_clobber_uart = false,
-};
+OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
+                        .can_clobber_uart = false, );
 
 /**
  * Override any of the default OTTF exception handlers (by uncommenting and
