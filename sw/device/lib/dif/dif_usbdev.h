@@ -476,8 +476,9 @@ dif_result_t dif_usbdev_buffer_request(const dif_usbdev_t *usbdev,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_buffer_write(const dif_usbdev_t *usbdev,
-                                     dif_usbdev_buffer_t *buffer, uint8_t *src,
-                                     size_t src_len, size_t *bytes_written);
+                                     dif_usbdev_buffer_t *buffer,
+                                     const uint8_t *src, size_t src_len,
+                                     size_t *bytes_written);
 
 /**
  * Mark a packet ready for transmission from an endpoint.

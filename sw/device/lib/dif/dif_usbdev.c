@@ -494,8 +494,9 @@ dif_result_t dif_usbdev_buffer_read(const dif_usbdev_t *usbdev,
 }
 
 dif_result_t dif_usbdev_buffer_write(const dif_usbdev_t *usbdev,
-                                     dif_usbdev_buffer_t *buffer, uint8_t *src,
-                                     size_t src_len, size_t *bytes_written) {
+                                     dif_usbdev_buffer_t *buffer,
+                                     const uint8_t *src, size_t src_len,
+                                     size_t *bytes_written) {
   if (usbdev == NULL || buffer == NULL ||
       buffer->type != kDifUsbdevBufferTypeWrite || src == NULL) {
     return kDifBadArg;
