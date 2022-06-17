@@ -61,7 +61,8 @@ logic srate_rng_val;
 logic [12-1:0] srate_cnt, srate_value;
 logic [EntropyStreams-1:0] rng_b;
 
-assign srate_value = 12'd120;
+//assign srate_value = 12'd120;
+assign srate_value = 12'd30;
 
 always_ff @( posedge clk_i, negedge rst_n ) begin
   if ( !rst_n ) begin

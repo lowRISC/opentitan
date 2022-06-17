@@ -209,6 +209,9 @@ bool test_main() {
 
   entropy_testutils_boot_mode_init();
 
+  // wait 1ms to ensure edn has collected enoguh to get going again
+  busy_spin_micros(1000);
+
   alert_handler_test(&alert_handler);
   aes_test(&aes);
   otbn_test(&otbn);
