@@ -182,4 +182,26 @@ TEST_F(HmacProcessTest, ProcessBadArg) {
   EXPECT_DIF_BADARG(dif_hmac_process(nullptr));
 }
 
+class HmacGetMessageLengthTest : public HmacTest {
+ protected:
+  HmacGetMessageLengthTest() {}
+};
+
+TEST_F(HmacGetMessageLengthTest, RunSuccess) {
+  EXPECT_READ32(HMAC_MSG_LENGTH_LOWER_REG_OFFSET, 0xfd257515);
+  EXPECT_READ32(HMAC_MSG_LENGTH_UPPER_REG_OFFSET, 0xaf3975bc);
+  uint64_t len = 0;
+  EXPECT_DIF_OK(dif_hmac_get_message_length(&hmac_, &len));
+  EXPECT_EQ(len, 0xaf3975bcfd257515);
+}
+
+TEST_F(HmacGetMessageLengthTest, BadArgHmac) {
+  uint64_t len = 0;
+  EXPECT_DIF_BADARG(dif_hmac_get_message_length(nullptr, &len));
+}
+
+TEST_F(HmacGetMessageLengthTest, BadArgLen) {
+  EXPECT_DIF_BADARG(dif_hmac_get_message_length(&hmac_, nullptr));
+}
+
 }  // namespace dif_hmac_unittest
