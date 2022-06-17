@@ -12,6 +12,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // seq cfg
   flash_ctrl_seq_cfg seq_cfg;
 
+  // Flash phy prim interface agent config
+  flash_phy_prim_agent_cfg m_fpp_agent_cfg;
   // interface
   virtual flash_ctrl_if flash_ctrl_vif;
   virtual clk_rst_if clk_rst_vif_flash_ctrl_eflash_reg_block;
@@ -45,9 +47,18 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   data_model_t scb_flash_info1 = '{default: 1};
   data_model_t scb_flash_info2 = '{default: 1};
 
+  // Knob to enable on the fly scoreboard.
+  bit scb_otf_en = 0;
+
+  // Transaction counters for otf
+  int otf_ctrl_wr_sent = 0;
+  int otf_ctrl_wr_rcvd = 0;
+
+  int otf_ctrl_rd_sent = 0;
+  int otf_ctrl_rd_rcvd = 0;
+
   // Max delay for alerts in clocks
   uint alert_max_delay;
-
   // read data by host if
   data_q_t flash_rd_data;
 
@@ -79,6 +90,10 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     // create the seq_cfg and call configure
     seq_cfg = flash_ctrl_seq_cfg::type_id::create("seq_cfg");
     seq_cfg.configure();
+
+    m_fpp_agent_cfg = flash_phy_prim_agent_cfg::type_id::create("m_fpp_agent_cfg");
+    m_fpp_agent_cfg.is_active = 0;
+    m_fpp_agent_cfg.en_cov = 0;
 
     // set num_interrupts & num_alerts
     begin
