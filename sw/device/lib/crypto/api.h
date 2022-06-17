@@ -601,8 +601,9 @@ crypto_status_t otcrypto_aes_init(const crypto_blinded_key_t *key,
  * `aes_padding` scheme and the output is copied to `cipher_output`.
  *
  * The caller should allocate space for the `cipher_output` buffer, 
- * (same length as input). The length of the generated output is
- * updated in the len field of the `cipher_output`.
+ * (same length as input), and set the length of expected output in 
+ * the `len` field of the output. If the user-set length and the 
+ * output length does not match, an error message will be returned. 
  *
  * @param cipher_input Input data to be ciphered 
  * @param aes_padding Padding scheme to be used for the data 
@@ -621,9 +622,11 @@ crypto_status_t otcrypto_aes_cipher(crypto_const_uint8_buf_t cipher_input,
  * tag `auth_tag` on the ciphered data and any non-confidential
  * additional authenticated data `aad`.
  *
- * The caller should allocate space for the `ciphertext` buffer,
- * (same length as input) and `auth_tag` (same as tag_len). The length
- * of the output is updated in the len field of the cipher_output`.
+ * The caller should allocate space for the `ciphertext` buffer, 
+ * (same length as input), `auth_tag` buffer (same as tag_len), and 
+ * set the length of expected outputs in the `len` field of 
+ * `ciphertext` and `auth_tag`. If the user-set length and the output 
+ * length does not match, an error message will be returned.
  * 
  * @param key Pointer to the blinded gcm-key struct
  * @param plaintext Input data to be encrypted and authenticated 
@@ -649,10 +652,11 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
  * This function first verifies if the authentication tag `auth_tag` 
  * matches the internally generated tag. Upon verification, the 
  * function decrypts the input `ciphertext` to get a `plaintext data. 
- *
- * The caller should allocate space for the `plaintext` buffer 
- * (same length as ciphertext). The length of the output is updated 
- * in the len field of the `plaintext`.
+ * 
+ * The caller should allocate space for the `plaintext` buffer, 
+ * (same length as ciphertext), and set the length of expected output 
+ * in the `len` field of `plaintext`. If the user-set length and the 
+ * output length does not match, an error message will be returned.
  * 
  * @param key Pointer to the blinded gcm-key struct
  * @param ciphertext Input data to be decrypted 
@@ -701,10 +705,11 @@ crypto_status_t otcrypto_gcm_ghash(
  *
  * This encrypt function takes an input key `key_to_wrap` and using 
  * the encryption key `key_kek` outputs a wrapped key `wrapped_key`.
- *
+ * 
  * The caller should allocate space for the `wrapped_key` buffer, 
- * (same length as `key_to_wrap`). The length of the output is 
- * updated after in the len field of the `wrapped_key`.
+ * (same len as `key_to_wrap`), and set the length of expected output 
+ * in the `len` field of `wrapped_key`. If the user-set length and the 
+ * output length does not match, an error message will be returned.
  * 
  * @param key_to_wrap Pointer to the blinded key to be wrapped
  * @param key_kek Input Pointer to the blinded encryption key
@@ -736,8 +741,10 @@ crypto_status_t otcrypto_aes_kwp_decrypt(
  * Performs the required hash function on the input data.
  *
  * The caller should allocate space for the `digest` buffer, (expected 
- * length depends on `hash_mode`, refer table-1). The length of the 
- * output is updated after in the len field of the `digest`.
+ * length depends on `hash_mode`, refer table-1), and set the length 
+ * of expected output in the `len` field of `digest`. If the user-set 
+ * length and the output length does not match, an error message will 
+ * be returned.
  * 
  * This function hashes the `input_message` using the `hash_mode_t`
  * hash function and returns a `digest`. 
@@ -761,10 +768,12 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
  * can be empty. The `function_name_string` and `customization_string` 
  * are ignored when the `hash_mode` is set to kHashModeSha3Shake128 or 
  * kHashModeSha3Shake256.
- *
+ * 
  * The caller should allocate space for the `digest` buffer, 
- * (expected length same as `required_output_len`). The length of  
- * the output is updated after in the len field of the `digest`.
+ * (expected length same as `required_output_len`), and set the length 
+ * of expected output in the `len` field of `digest`. If the user-set 
+ * length and the output length does not match, an error message will 
+ * be returned.
  * 
  * @param input_message Input message to be hashed 
  * @param hash_mode Required hash mode for the digest
@@ -827,8 +836,10 @@ crypto_status_t otcrypto_hash_update(
  * #otcrypto_hash_update should be called before this function
  * 
  * The caller should allocate space for the `digest` buffer, (expected 
- * length depends on `hash_mode`, refer table-1). The length of the 
- * output is updated after in the len field of the `digest`.
+ * length depends on `hash_mode`, refer table-1), and set the length 
+ * of expected output in the `len` field of `digest`. If the user-set 
+ * length and the output length does not match, an error message will 
+ * be returned.
  *  
  * @param ctx Pointer to the generic hash context struct
  * @param digest Output digest after hashing the input blocks
@@ -992,8 +1003,10 @@ crypto_status_t otcrypto_sha512_final(hash_context_t *const ctx,
  * KMAC modes and is ignored for the HMAC mode.
  * 
  * The caller should allocate space for the `digest` buffer, (expected 
- * length is 32 bytes for HMAC and `required_output_len`for KMAC). The
- * length of the output is updated in the len field of the `digest`.
+ * length is 32 bytes for HMAC and `required_output_len`for KMAC), and 
+ * set the length of expected output in the `len` field of `digest`. 
+ * If the user-set length and the output length does not match, an 
+ * error message will be returned.
  *   
  * @param key Pointer to the blinded key struct with key shares
  * @param input_message Input message to be hashed 
@@ -1062,8 +1075,9 @@ crypto_status_t otcrypto_hmac_update(
  * #otcrypto_hmac_update should be called before calling this function
  * 
  * The caller should allocate space for the `digest` buffer, (expected 
- * length is 32 bytes for HMAC. The length of the output is updated
- * after in the len field of the `digest`.
+ * length is 32 bytes for HMAC), and set the length of expected output 
+ * in the `len` field of `digest`. If the user-set length and the 
+ * output length does not match, an error message will be returned.
  * 
  * @param ctx Pointer to the generic HMAC context struct
  * @param digest Output digest after hashing the input blocks
@@ -1094,10 +1108,11 @@ crypto_status_t otcrypto_rsa_keygen(drbg_state_t *drbg_state,
 /**
  * Computes the digital signature on the input message data.
  *
- * The caller should allocate space for the `signature` buffer,
- * (expected length same as modulus length from `rsa_private_key`.
- * The length of the generated output is updated after in the len
- * field of the `signature`.
+ * The caller should allocate space for the `signature` buffer, 
+ * (expected length same as modulus length from `rsa_private_key`), 
+ * and set the length of expected output in the `len` field of 
+ * `signature`. If the user-set length and the output length does not 
+ * match, an error message will be returned.
  * 
  * @param rsa_private_key Pointer to RSA private exponent struct
  * @param input_message Input message to be signed
@@ -1393,10 +1408,11 @@ crypto_status_t otcrypto_rsa_sign_async_start(
  * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN is
  * busy or `kCryptoStatusInternalError` if there is an error.
  * 
- * The caller should allocate space for the `signature` buffer,
- * (expected length same as modulus length from `rsa_private_key`.
- * The length of the generated output is updated after in the len
- * field of the `signature`.
+ * The caller should allocate space for the `signature` buffer, 
+ * (expected length same as modulus length from `rsa_private_key`), 
+ * and set the length of expected output in the `len` field of 
+ * `signature`. If the user-set length and the output length does not 
+ * match, an error message will be returned.
  * 
  * @param signature Pointer to generated signature struct
  * @return crypto_status_t Result of async RSA sign finalize operation
@@ -1873,6 +1889,12 @@ crypto_status_t otcrypto_drbg_manual_reseed(
  * Used to generate pseudo random bits after DRBG instantiation or 
  * DRBG reseeding.
  *
+ * The caller should allocate space for the `drbg_output` buffer, 
+ * (byte length as `required_bit_len`), and set the length of expected 
+ * output in the `len` field of `drbg_output`. If the user-set length 
+ * and the output length does not match, an error message will be 
+ * returned.
+ * 
  * @param drbg_state Pointer to the DRBG working state 
  * @param additional_input Pointer to the additional data 
  * @param required_bit_len Required len of pseudorandom output in bits
