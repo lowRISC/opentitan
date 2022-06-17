@@ -407,4 +407,6 @@ module sysrst_ctrl
   `ASSERT(Z3WakeupOEnIsOne_A, cio_z3_wakeup_en_o === 1'b1)
   `ASSERT(FlashWpOEnIsOne_A, cio_flash_wp_l_en_o === 1'b1)
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

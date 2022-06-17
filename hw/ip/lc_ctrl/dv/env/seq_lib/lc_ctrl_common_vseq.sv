@@ -21,7 +21,7 @@ class lc_ctrl_common_vseq extends lc_ctrl_base_vseq;
         `DV_ASSERT_CTRL_REQ("KmacFsmStateRegs_A", enable)
         `DV_ASSERT_CTRL_REQ("SecCmCFILinear_A", enable)
       end
-      SecCmPrimCount: begin
+      SecCmPrimCount, SecCmPrimOnehot: begin
         // No need to disable any assertion
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
@@ -66,4 +66,17 @@ class lc_ctrl_common_vseq extends lc_ctrl_base_vseq;
 
   endtask : check_sec_cm_fi_resp
 
+  bit skip_check_tl_intg_error;
+  virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy);
+    super.sec_cm_inject_fault(if_proxy);
+    // The JTAG TAP does not support bus integrity.
+    if (!uvm_re_match("*u_reg_tap*", if_proxy.path)) skip_check_tl_intg_error = 1;
+    else                                             skip_check_tl_intg_error = 0;
+  endtask : sec_cm_inject_fault
+
+  virtual task check_tl_intg_error_response();
+    if (!skip_check_tl_intg_error) begin
+      super.check_tl_intg_error_response();
+    end
+  endtask : check_tl_intg_error_response
 endclass

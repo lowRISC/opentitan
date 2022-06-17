@@ -16,3 +16,7 @@ split_var -module "prim_onehot_check" -var "err_tree"
 // The clock and reset are only used for assertions in this module.
 lint_off -rule UNUSED -file "*/rtl/prim_onehot_check.sv" -match "Signal is not used: 'clk_i'"
 lint_off -rule UNUSED -file "*/rtl/prim_onehot_check.sv" -match "Signal is not used: 'rst_ni'"
+
+// The EnableAlertTriggerSVA parameter is only used by modules bound
+// in for DV testing. Waive the warning that we don't read it.
+lint_off -rule UNUSED -file "*/rtl/prim_onehot_check.sv" -match "*EnableAlertTriggerSVA*"

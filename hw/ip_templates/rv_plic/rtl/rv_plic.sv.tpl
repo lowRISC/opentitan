@@ -255,4 +255,6 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   // Assume
   `ASSUME(Irq0Tied_A, intr_src_i[0] == 1'b0)
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

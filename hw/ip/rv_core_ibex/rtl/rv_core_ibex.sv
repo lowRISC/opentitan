@@ -868,4 +868,9 @@ module rv_core_ibex
     .tl_h_i(tl_h2d_t'(tl_win_h2d_int)),
     .tl_h_o(tl_win_d2h_err_rsp)
   );
+
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_cfg, alert_tx_o[2])
+  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RvCoreRegWeOnehotCheck_A,
+      u_core.gen_regfile_ff.register_file_i.gen_wren_check.u_prim_onehot_check, alert_tx_o[2])
 endmodule

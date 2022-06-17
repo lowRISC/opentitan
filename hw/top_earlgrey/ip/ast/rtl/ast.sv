@@ -998,6 +998,9 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, ast_pwst_o.aon_pok)      // TODO
 `ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)  // TODO
 
+// Alert assertions for reg_we onehot check
+`ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehot_A,
+    u_reg, alert_req_o.alerts[ast_pkg::Ot0Sel].p, , , clk_ast_alert_i, rst_ast_alert_ni)
 
 /////////////////////
 // Unused Signals  //

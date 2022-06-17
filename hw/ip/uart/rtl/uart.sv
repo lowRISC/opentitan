@@ -115,4 +115,6 @@ module uart
   `ASSERT_KNOWN(RxTimeoutKnown_A, intr_rx_timeout_o)
   `ASSERT_KNOWN(RxParityErrKnown_A, intr_rx_parity_err_o)
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

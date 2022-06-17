@@ -51,6 +51,4 @@ module prim_reg_we_check #(
     .err_o
   );
 
-  // TODO(#12113): add SVAs and other DV code for error injection testing.
-
 endmodule : prim_reg_we_check

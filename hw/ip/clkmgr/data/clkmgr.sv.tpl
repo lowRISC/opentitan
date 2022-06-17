@@ -553,4 +553,6 @@ from topgen.lib import Name
   `ASSERT_KNOWN(ClocksKownO_A, clocks_o)
   `ASSERT_KNOWN(CgEnKnownO_A, cg_en_o)
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 endmodule // clkmgr

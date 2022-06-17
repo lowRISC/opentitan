@@ -103,4 +103,6 @@ module pattgen
   `ASSERT(Pcl1TxEnIsOne_A, cio_pcl1_tx_en_o === 1'b1)
   `ASSERT(Pda1TxEnIsOne_A, cio_pda1_tx_en_o === 1'b1)
 
+  // Alert assertions for reg_we onehot check
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule : pattgen
