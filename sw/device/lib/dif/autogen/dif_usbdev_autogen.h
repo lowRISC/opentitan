@@ -76,11 +76,16 @@ dif_result_t dif_usbdev_alert_force(const dif_usbdev_t *usbdev,
  */
 typedef enum dif_usbdev_irq {
   /**
-   * Raised if a packet was received using an OUT or SETUP transaction.
+   * Raised if a packet was received using an OUT or SETUP transaction. This
+   * interrupt is directly tied to whether the RX FIFO is empty, so it should be
+   * cleared only after handling the FIFO entry.
    */
   kDifUsbdevIrqPktReceived = 0,
   /**
-   * Raised if a packet was sent as part of an IN transaction.
+   * Raised if a packet was sent as part of an IN transaction. This interrupt is
+   * directly tied to whether a sent packet has not been acknowledged in the
+   * !!in_sent register. It should be cleared only after clearing all bits in
+   * the !!in_sent register.
    */
   kDifUsbdevIrqPktSent = 1,
   /**

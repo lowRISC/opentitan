@@ -150,11 +150,14 @@
     { name: "pkt_received"
       desc: '''
             Raised if a packet was received using an OUT or SETUP transaction.
+            This interrupt is directly tied to whether the RX FIFO is empty, so it should be cleared only after handling the FIFO entry.
             '''
     }
     { name: "pkt_sent"
       desc: '''
             Raised if a packet was sent as part of an IN transaction.
+            This interrupt is directly tied to whether a sent packet has not been acknowledged in the !!in_sent register.
+            It should be cleared only after clearing all bits in the !!in_sent register.
             '''
     }
     { name: "disconnected",
@@ -567,7 +570,7 @@
         cname: "Endpoint"
         desc: "IN Transaction Sent",
         swaccess: "rw1c",
-        hwaccess: "hwo",
+        hwaccess: "hrw",
         fields: [
           {
             bits: "0",

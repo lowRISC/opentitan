@@ -4004,7 +4004,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[0].q),
     .ds     (),
 
     // to register interface (read)
@@ -4030,7 +4030,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[1].q),
     .ds     (),
 
     // to register interface (read)
@@ -4056,7 +4056,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[2].q),
     .ds     (),
 
     // to register interface (read)
@@ -4082,7 +4082,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[3].q),
     .ds     (),
 
     // to register interface (read)
@@ -4108,7 +4108,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[4].q),
     .ds     (),
 
     // to register interface (read)
@@ -4134,7 +4134,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[5].q),
     .ds     (),
 
     // to register interface (read)
@@ -4160,7 +4160,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[6].q),
     .ds     (),
 
     // to register interface (read)
@@ -4186,7 +4186,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[7].q),
     .ds     (),
 
     // to register interface (read)
@@ -4212,7 +4212,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[8].q),
     .ds     (),
 
     // to register interface (read)
@@ -4238,7 +4238,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[9].q),
     .ds     (),
 
     // to register interface (read)
@@ -4264,7 +4264,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[10].q),
     .ds     (),
 
     // to register interface (read)
@@ -4290,7 +4290,7 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.in_sent[11].q),
     .ds     (),
 
     // to register interface (read)
