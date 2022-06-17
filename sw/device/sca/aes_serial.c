@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
@@ -27,6 +28,8 @@
  * implemented in the simple serial library. Encryption is done in AES-ECB-128
  * mode. See https://wiki.newae.com/SimpleSerial for details on the protocol.
  */
+
+OTTF_DEFINE_TEST_CONFIG();
 
 enum {
   kAesKeyLength = 16,

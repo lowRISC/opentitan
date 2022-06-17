@@ -21,6 +21,8 @@
 #include "spi_host_regs.h"
 #include "usbdev_regs.h"
 
+OTTF_DEFINE_TEST_CONFIG();
+
 /**
  *  RSTMGR SW_RST_CTRL Test
  *

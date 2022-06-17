@@ -15,6 +15,8 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_plic_regs.h"  // Generated.
 
+OTTF_DEFINE_TEST_CONFIG();
+
 static const dif_rv_plic_target_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
 static dif_rv_plic_t plic0;

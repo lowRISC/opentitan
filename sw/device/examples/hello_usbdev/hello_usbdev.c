@@ -16,6 +16,7 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/usb_controlep.h"
 #include "sw/device/lib/usb_simpleserial.h"
 #include "sw/device/lib/usbdev.h"
@@ -27,6 +28,8 @@
 #include "usbdev_regs.h"  // Generated.
 
 #define REG32(add) *((volatile uint32_t *)(add))
+
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * Configuration values for USB.
