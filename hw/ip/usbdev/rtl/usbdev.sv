@@ -429,6 +429,15 @@ module usbdev
     end
   end
 
+  // This must be held level for the interrupt, so no sent packets are missed.
+  logic sent_event_pending;
+  always_comb begin
+    sent_event_pending = 1'b0;
+    for (int i = 0; i < NEndpoints; i++) begin
+      sent_event_pending |= reg2hw.in_sent[i].q;
+    end
+  end
+
   // Clear of rxenable_out bit
   // If so configured, for every received transaction on a given endpoint, clear
   // the rxenable_out bit. In this configuration, hardware defaults to NAKing
@@ -870,7 +879,7 @@ module usbdev
   prim_intr_hw #(.Width(1)) intr_hw_pkt_sent (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (set_sent),
+    .event_intr_i           (sent_event_pending),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.pkt_sent.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.pkt_sent.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.pkt_sent.qe),

@@ -260,6 +260,10 @@ package usbdev_reg_pkg;
 
   typedef struct packed {
     logic        q;
+  } usbdev_reg2hw_in_sent_mreg_t;
+
+  typedef struct packed {
+    logic        q;
   } usbdev_reg2hw_out_stall_mreg_t;
 
   typedef struct packed {
@@ -554,18 +558,19 @@ package usbdev_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    usbdev_reg2hw_intr_state_reg_t intr_state; // [425:409]
-    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [408:392]
-    usbdev_reg2hw_intr_test_reg_t intr_test; // [391:358]
-    usbdev_reg2hw_alert_test_reg_t alert_test; // [357:356]
-    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [355:346]
-    usbdev_reg2hw_ep_out_enable_mreg_t [11:0] ep_out_enable; // [345:334]
-    usbdev_reg2hw_ep_in_enable_mreg_t [11:0] ep_in_enable; // [333:322]
-    usbdev_reg2hw_avbuffer_reg_t avbuffer; // [321:316]
-    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [315:295]
-    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [294:283]
-    usbdev_reg2hw_rxenable_out_mreg_t [11:0] rxenable_out; // [282:271]
-    usbdev_reg2hw_set_nak_out_mreg_t [11:0] set_nak_out; // [270:259]
+    usbdev_reg2hw_intr_state_reg_t intr_state; // [437:421]
+    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [420:404]
+    usbdev_reg2hw_intr_test_reg_t intr_test; // [403:370]
+    usbdev_reg2hw_alert_test_reg_t alert_test; // [369:368]
+    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [367:358]
+    usbdev_reg2hw_ep_out_enable_mreg_t [11:0] ep_out_enable; // [357:346]
+    usbdev_reg2hw_ep_in_enable_mreg_t [11:0] ep_in_enable; // [345:334]
+    usbdev_reg2hw_avbuffer_reg_t avbuffer; // [333:328]
+    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [327:307]
+    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [306:295]
+    usbdev_reg2hw_rxenable_out_mreg_t [11:0] rxenable_out; // [294:283]
+    usbdev_reg2hw_set_nak_out_mreg_t [11:0] set_nak_out; // [282:271]
+    usbdev_reg2hw_in_sent_mreg_t [11:0] in_sent; // [270:259]
     usbdev_reg2hw_out_stall_mreg_t [11:0] out_stall; // [258:247]
     usbdev_reg2hw_in_stall_mreg_t [11:0] in_stall; // [246:235]
     usbdev_reg2hw_configin_mreg_t [11:0] configin; // [234:67]
