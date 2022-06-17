@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Context, Result};
+use serialport::ClearBuffer;
 use serialport::SerialPort;
 use std::cell::RefCell;
 use std::io::ErrorKind;
@@ -85,5 +86,10 @@ impl Uart for SerialPortUart {
             buf = &buf[written..];
         }
         Ok(())
+    }
+
+    /// Clears the UART RX buffer.
+    fn clear_rx_buffer(&self) -> Result<()> {
+        Ok(self.port.borrow_mut().clear(ClearBuffer::Input)?)
     }
 }

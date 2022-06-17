@@ -8,6 +8,7 @@ use std::fs::File;
 use std::fs::OpenOptions;
 use std::io;
 use std::io::{ErrorKind, Read, Write};
+use std::io::{Seek, SeekFrom};
 use std::time::Duration;
 
 use crate::io::uart::Uart;
@@ -76,5 +77,10 @@ impl Uart for VerilatorUart {
             .borrow_mut()
             .write_all(buf)
             .context("UART write error")?)
+    }
+
+    fn clear_rx_buffer(&self) -> Result<()> {
+        self.file.borrow_mut().seek(SeekFrom::End(0))?;
+        Ok(())
     }
 }

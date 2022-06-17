@@ -89,4 +89,8 @@ impl Uart for UltradebugUart {
         }
         Ok(())
     }
+
+    // TODO(#13290): Ideally, we would like to call `purge_usb_rx_buffer()` to clear the UART RX
+    // buffer but our `libftdi` is too old:
+    // safe_ftdi::Device::purge_usb_rx_buffer: error: undefined reference to 'ftdi_tciflush'
 }

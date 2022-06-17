@@ -50,6 +50,16 @@ pub trait Uart {
 
     /// Writes data from `buf` to the UART.
     fn write(&self, buf: &[u8]) -> Result<()>;
+
+    /// Clears the UART RX buffer.
+    fn clear_rx_buffer(&self) -> Result<()> {
+        // Keep reading while until the RX buffer is empty.
+        // Note: This default implementation is overriden in backends where we can do better.
+        const TIMEOUT: Duration = Duration::from_millis(5);
+        let mut buf = [0u8; 256];
+        while self.read_timeout(&mut buf, TIMEOUT)? > 0 {}
+        Ok(())
+    }
 }
 
 /// Errors related to the UART interface.

@@ -109,4 +109,14 @@ impl Uart for Ti50Uart {
         self.get_socket()?.write(buf).context("UART read error")?;
         return Ok(());
     }
+
+    /// Clears the UART RX buffer.
+    fn clear_rx_buffer(&self) -> Result<()> {
+        // Iterators are lazy, consume using `count()`.
+        Read::by_ref(&mut *self.get_socket()?)
+            .bytes()
+            .take_while(Result::is_ok)
+            .count();
+        return Ok(());
+    }
 }
