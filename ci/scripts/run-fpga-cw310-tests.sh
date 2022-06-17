@@ -30,5 +30,6 @@ ci/bazelisk.sh test \
     --test_output=all \
     --build_tests_only \
     --define cw310=lowrisc \
+    --flaky_test_attempts=2 \
     $(./bazelisk.sh query 'rdeps(//...,@bitstreams//:bitstream_test_rom)') \
     $(./bazelisk.sh query 'rdeps(//...,@bitstreams//:bitstream_mask_rom)')
