@@ -61,7 +61,7 @@ For OpenTitan, we have the following agent pools available, which can also be se
   They are described in more detail in the [Azure Pipelines documentation](https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/hosted).
 * The *ci-public* pool has a lowRISC-specific setup with tools such as Xilinx Vivado installed, but has no access to tools with special license restrictions.
 * The *ci-eda* pool has proprietary EDA tools installed and access to the respective licenses.
-* The *FPGA* pool consists currently of a single machine with our FPGA boards connected to.
+* The *FPGA* pool currently consists of a single machine with our FPGA boards connected to it.
 
 All pools except for the *Azure Pipelines* pool are managed by lowRISC IT.
 
