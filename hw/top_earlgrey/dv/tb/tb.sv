@@ -353,7 +353,9 @@ module tb;
     // TODO: remove this assertion once pinmux is templatized
     $assertoff(0, dut.top_earlgrey.u_pinmux_aon.AonWkupReqKnownO_A);
 
-    $timeformat(-12, 0, " ps", 12);
+    // Format time in microseconds losing no precision. The added "." makes it easier to determine
+    // the order of magnitude without counting digits, as is needed if it was formatted as ps or ns.
+    $timeformat(-6, 6, " us", 13);
     run_test();
   end
 
