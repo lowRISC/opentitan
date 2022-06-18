@@ -18,9 +18,9 @@
  * tests; the "default" value of all fields should be zero (or NULL, or
  * equivalent).
  *
- * See `kTestConfig`.
+ * See `kOttfTestConfig`.
  */
-typedef struct test_config {
+typedef struct ottf_test_config {
   /**
    * If true, `test_main()` is run as a FreeRTOS task, enabling test writers to
    * to spawn additional (concurrent) FreeRTOS tasks within the `test_main()`
@@ -40,17 +40,17 @@ typedef struct test_config {
   bool can_clobber_uart;
 
   /**
-   * Name of the file in which `kTestConfig` is defined. Most of the time, this
-   * will be the file that defines `test_main()`.
+   * Name of the file in which `kOttfTestConfig` is defined. Most of the time,
+   * this will be the file that defines `test_main()`.
    */
   const char *file;
-} test_config_t;
+} ottf_test_config_t;
 
 /**
- * Helper macro for defining the `kTestConfig` symbol in test files.
+ * Helper macro for defining the `kOttfTestConfig` symbol in test files.
  *
- * While the `kTestConfig` struct can be defined directly, tests should prefer
- * this macro since it handles the definition of the `file` field.
+ * While the `kOttfTestConfig` struct can be defined directly, tests should
+ * prefer this macro since it handles the definition of the `file` field.
  *
  * A test with default options should use:
  *
@@ -63,7 +63,7 @@ typedef struct test_config {
  *
  */
 #define OTTF_DEFINE_TEST_CONFIG(...) \
-  const test_config_t kTestConfig = {.file = __FILE__, __VA_ARGS__}
+  const ottf_test_config_t kOttfTestConfig = {.file = __FILE__, __VA_ARGS__}
 
 /**
  * Global test configuration.
@@ -78,6 +78,6 @@ typedef struct test_config {
  * This value needs to be provided as a global so that the initialization code
  * that runs before `test_main()` is executed can take note of it.
  */
-extern const test_config_t kTestConfig;
+extern const ottf_test_config_t kOttfTestConfig;
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_TEST_CONFIG_H_

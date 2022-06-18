@@ -34,8 +34,8 @@
 
 // Check layout of test configuration struct since OTTF ISR asm code requires a
 // specific layout.
-OT_ASSERT_MEMBER_OFFSET(test_config_t, enable_concurrency, 0);
-OT_ASSERT_MEMBER_SIZE(test_config_t, enable_concurrency, 1);
+OT_ASSERT_MEMBER_OFFSET(ottf_test_config_t, enable_concurrency, 0);
+OT_ASSERT_MEMBER_SIZE(ottf_test_config_t, enable_concurrency, 1);
 
 // UART for communication with host.
 static dif_uart_t uart0;
@@ -56,10 +56,10 @@ static void init_uart(void) {
 static void report_test_status(bool result) {
   // Reinitialize UART before print any debug output if the test clobbered it.
   if (kDeviceType != kDeviceSimDV) {
-    if (kTestConfig.can_clobber_uart) {
+    if (kOttfTestConfig.can_clobber_uart) {
       init_uart();
     }
-    LOG_INFO("Finished %s", kTestConfig.file);
+    LOG_INFO("Finished %s", kOttfTestConfig.file);
     test_coverage_send_buffer();
   }
 
@@ -83,11 +83,11 @@ void _ottf_main(void) {
   // Initialize the UART to enable logging for non-DV simulation platforms.
   if (kDeviceType != kDeviceSimDV) {
     init_uart();
-    LOG_INFO("Running %s", kTestConfig.file);
+    LOG_INFO("Running %s", kOttfTestConfig.file);
   }
 
   // Run the test.
-  if (kTestConfig.enable_concurrency) {
+  if (kOttfTestConfig.enable_concurrency) {
     // Run `test_main()` in a FreeRTOS task, allowing other FreeRTOS tasks to
     // be spawned, if requested in the main test task.
     xTaskCreate(test_wrapper, "TestTask", configMINIMAL_STACK_SIZE, NULL,
