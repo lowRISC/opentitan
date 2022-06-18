@@ -1424,7 +1424,7 @@ static void peripheral_irqs_trigger(void) {
   }
 }
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   irq_global_ctrl(true);
