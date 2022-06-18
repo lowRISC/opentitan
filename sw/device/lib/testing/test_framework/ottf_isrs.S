@@ -47,13 +47,8 @@ compute_mepc_on_synchronous_irq:
   .balign 4
   .type save_current_sp_to_tcb, @function
 save_current_sp_to_tcb:
-  la t0, kTestConfig       // Load the pointer to the test configuration struct.
-  beqz t0, .L_skip_sp_save // If the kTestConfig pointer is NULL, we are using
-                           // these ISRs without the OTTF, so no need to check
-                           // if concurrency is enabled.
-  lb t1, 0(t0)             // Load the first byte of the test_config struct,
-                           // which contains the `enable_concurrency` field to
-                           // check.
+  la t0, kTestConfig
+  lb t1, 0(t0)
   beqz t1, .L_skip_sp_save
   lw t2, pxCurrentTCB
   sw sp, 0(t2)
@@ -375,13 +370,8 @@ ottf_isr_exit:
   // meaning a test is run as a FreeRTOS task, where each task maintains its own
   // stack. Otherwise, the test is run on bare-metal, and there is no TCB, and
   // only a single stack/stack pointer.
-  la t0, kTestConfig          // Load pointer to the test configuration struct.
-  beqz t0, .L_skip_sp_restore // If kTestConfig pointer is NULL, we are using
-                              // these ISRs without the OTTF, so no need to
-                              // check if concurrency is enabled.
-  lb t1, 0(t0)                // Load the first byte of the test_config struct,
-                              // which contains the `enable_concurrency` field
-                              // to check.
+  la t0, kTestConfig
+  lb t1, 0(t0)
   beqz t1, .L_skip_sp_restore
   lw  t2, pxCurrentTCB
   lw  sp, 0(t2)
