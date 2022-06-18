@@ -46,7 +46,7 @@ static hmac_isr_ctx_t hmac_ctx = {
     .is_only_irq = false,
 };
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 static const dif_hmac_transaction_t kHmacTransactionConfig = {
     .digest_endianness = kDifHmacEndiannessLittle,

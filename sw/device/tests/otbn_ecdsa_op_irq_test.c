@@ -74,7 +74,7 @@ static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p256_ecdsa, y);
 static const otbn_addr_t kOtbnVarD = OTBN_ADDR_T_INIT(p256_ecdsa, d);
 static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(p256_ecdsa, x_r);
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * The plic dif to access the hardware.

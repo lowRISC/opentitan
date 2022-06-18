@@ -7,7 +7,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/sim_dv/lc_ctrl_transition_impl.h"
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   return execute_lc_ctrl_transition_test(/*use_ext_clk=*/true);

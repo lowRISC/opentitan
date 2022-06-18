@@ -324,7 +324,7 @@ static bool execute_test(dif_spi_device_handle_t *spi_device) {
   return true;
 }
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   mmio_region_t spi_device_base_addr =

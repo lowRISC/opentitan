@@ -12,7 +12,7 @@
 
 static dif_rom_ctrl_t rom_ctrl;
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   dif_rom_ctrl_digest_t computed_digest;

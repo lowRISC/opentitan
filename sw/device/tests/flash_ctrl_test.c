@@ -229,7 +229,7 @@ static void test_memory_protection(void) {
   }
 }
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   flash_info = dif_flash_ctrl_get_device_info();

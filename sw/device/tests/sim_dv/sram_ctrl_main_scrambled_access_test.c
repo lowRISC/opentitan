@@ -44,7 +44,7 @@
 #define INTEGRITY_EXCEPTION_COUNT_OFFSET \
   ((RET_RAM_COPY_OFFSET * sizeof(uint32_t)) + BACKDOOR_TEST_BYTES)
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_sram_ctrl_t sram_ctrl;
 

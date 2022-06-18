@@ -25,7 +25,7 @@
  * bit 3: clk_io_peri: spi_host0
  */
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_aon_timer_t aon_timer;
 static dif_uart_t uart0;

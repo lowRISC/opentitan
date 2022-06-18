@@ -157,7 +157,7 @@ rom_error_t sigverify_test_negative(void) {
   return kErrorOk;
 }
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   rom_error_t result = kErrorOk;

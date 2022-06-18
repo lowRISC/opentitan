@@ -77,7 +77,7 @@ rom_error_t retention_sram_scramble_test(void) {
   return matches != 0 ? kErrorUnknown : kErrorOk;
 }
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   rom_error_t result = kErrorOk;

@@ -18,7 +18,7 @@
 #include "sensor_ctrl_regs.h"  // Generated.
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_plic_t plic;

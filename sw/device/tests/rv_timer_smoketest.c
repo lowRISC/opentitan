@@ -51,7 +51,7 @@ void ottf_timer_isr(void) {
   LOG_INFO("Exiting handler_irq_timer()");
 }
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   irq_global_ctrl(true);

@@ -12,7 +12,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 #define DIGEST_LEN_KMAC_MAX 100
 

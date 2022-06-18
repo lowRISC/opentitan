@@ -45,7 +45,7 @@ rom_error_t sigverify_mod_exp_otbn_test(void) {
   return kErrorOk;
 }
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   rom_error_t result = kErrorOk;

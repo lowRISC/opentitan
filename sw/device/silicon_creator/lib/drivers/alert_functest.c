@@ -81,7 +81,7 @@ rom_error_t alert_escalate_test(void) {
   return kErrorUnknown;
 }
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   rom_error_t result = kErrorOk;

@@ -14,7 +14,7 @@
 static dif_clkmgr_t clkmgr;
 static dif_kmac_t kmac;
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 const dif_clkmgr_hintable_clock_t kmac_clock =
     kTopEarlgreyHintableClocksMainKmac;

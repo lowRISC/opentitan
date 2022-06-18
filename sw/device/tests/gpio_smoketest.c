@@ -12,7 +12,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_gpio_t gpio;
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * A known pattern written to GPIOs.

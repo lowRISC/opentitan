@@ -20,7 +20,7 @@
 
 #define IDLE_TIME_US 10
 #define WKUP_TIME_US 2000
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   // Initialize pwrmgr.

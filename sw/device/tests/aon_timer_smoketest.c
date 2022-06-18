@@ -14,7 +14,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 static void aon_timer_test_wakeup_timer(dif_aon_timer_t *aon) {
   // Test the wake-up timer functionality by setting a single cycle counter.

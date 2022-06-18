@@ -25,7 +25,7 @@
 
 static dif_pwrmgr_t pwrmgr;
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 static bool compare_wakeup_reasons(dif_pwrmgr_wakeup_reason_t lhs,
                                    dif_pwrmgr_wakeup_reason_t rhs) {

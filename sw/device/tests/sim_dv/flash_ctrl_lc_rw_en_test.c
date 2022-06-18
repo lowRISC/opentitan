@@ -18,7 +18,7 @@
 
 static dif_flash_ctrl_state_t flash;
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 enum {
   kFlashInfoPageIdCreatorSecret = 1,

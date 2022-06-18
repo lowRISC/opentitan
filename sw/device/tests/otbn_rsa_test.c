@@ -88,7 +88,7 @@ enum {
   kRsa4096SizeBytes = 4096 / 8,
 };
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * Encrypts a message with RSA.
