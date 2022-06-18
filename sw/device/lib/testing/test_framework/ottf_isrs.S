@@ -47,7 +47,7 @@ compute_mepc_on_synchronous_irq:
   .balign 4
   .type save_current_sp_to_tcb, @function
 save_current_sp_to_tcb:
-  la t0, kTestConfig
+  la t0, kOttfTestConfig
   lb t1, 0(t0)
   beqz t1, .L_skip_sp_save
   lw t2, pxCurrentTCB
@@ -370,7 +370,7 @@ ottf_isr_exit:
   // meaning a test is run as a FreeRTOS task, where each task maintains its own
   // stack. Otherwise, the test is run on bare-metal, and there is no TCB, and
   // only a single stack/stack pointer.
-  la t0, kTestConfig
+  la t0, kOttfTestConfig
   lb t1, 0(t0)
   beqz t1, .L_skip_sp_restore
   lw  t2, pxCurrentTCB

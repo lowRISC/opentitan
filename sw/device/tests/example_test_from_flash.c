@@ -24,7 +24,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 /**
- * The OTTF expects the `kTestConfig` symbol to be present, as it contains
+ * The OTTF expects the `kOttfTestConfig` symbol to be present, as it contains
  * configuration settings for running the test implemented in this file. DO NOT
  * delete this macro. However, you may modify the member assignments below
  * according to the instructions above each configuration member.
