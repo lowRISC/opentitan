@@ -78,6 +78,13 @@ cc_library(
 )
 
 cc_library(
+    name = "ottf_test_config",
+    hdrs = [
+        "ottf_test_config.h",
+    ],
+)
+
+cc_library(
     name = "ottf_main",
     srcs = ["ottf_main.c"],
     hdrs = ["ottf_main.h"],
@@ -91,6 +98,7 @@ cc_library(
         ":coverage",
         ":freertos_port",
         ":ottf_start",
+        ":ottf_test_config",
         ":status",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
