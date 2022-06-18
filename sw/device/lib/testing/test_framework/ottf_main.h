@@ -42,12 +42,19 @@ typedef struct test_config {
    * not require concurrency, and seek to minimize simulation runtime.
    */
   bool enable_concurrency;
+
   /**
    * Indicates that `test_main()` does something non-trivial to the UART
    * device. Setting this to true will make `test_main()` guard against this
    * by resetting the UART device before printing debug information.
    */
   bool can_clobber_uart;
+
+  /**
+   * Name of the file in which `kTestConfig` is defined. Most of the time, this
+   * will be the file that defines `test_main()`.
+   */
+  const char *file;
 } test_config_t;
 
 /**
