@@ -91,6 +91,11 @@ pub struct BootstrapOptions {
         help = "Bootstrap protocol to use"
     )]
     pub protocol: BootstrapProtocol,
+    #[structopt(
+        long,
+        help = "Whether to reset target and clear UART RX buffer after bootstrap. For CW310 only."
+    )]
+    pub no_clear_uart_rx: Option<bool>,
     #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the reset delay")]
     pub reset_delay: Option<Duration>,
     #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the inter-frame delay")]
@@ -102,6 +107,7 @@ pub struct BootstrapOptions {
 /// Bootstrap wraps and drives the various bootstrap protocols.
 pub struct Bootstrap<'a> {
     pub protocol: BootstrapProtocol,
+    pub clear_uart_rx: bool,
     pub uart_params: &'a UartParams,
     pub spi_params: &'a SpiParams,
     reset_pin: Rc<dyn GpioPin>,
@@ -154,6 +160,7 @@ impl<'a> Bootstrap<'a> {
         };
         Bootstrap {
             protocol: options.protocol,
+            clear_uart_rx: !options.no_clear_uart_rx.unwrap_or(false),
             uart_params: &options.uart_params,
             spi_params: &options.spi_params,
             reset_pin: transport.gpio_pin("RESET")?,
@@ -175,13 +182,7 @@ impl<'a> Bootstrap<'a> {
         if perform_bootstrap_reset {
             log::info!("Asserting bootstrap pins...");
             transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
-
-            log::info!("Reseting the target...");
-            transport.apply_pin_strapping("RESET")?;
-            std::thread::sleep(self.reset_delay);
-            transport.remove_pin_strapping("RESET")?;
-            std::thread::sleep(self.reset_delay);
-
+            transport.reset_target(self.reset_delay, self.clear_uart_rx)?;
             log::info!("Performing bootstrap...");
         }
         let result = updater.update(&self, transport, payload, progress);
@@ -190,6 +191,9 @@ impl<'a> Bootstrap<'a> {
             log::info!("Releasing bootstrap pins...");
             transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
         }
+
+        // Don't clear the UART RX buffer after bootstrap to preserve the bootstrap output.
+        transport.reset_target(self.reset_delay, false)?;
         result
     }
 }
