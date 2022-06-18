@@ -55,8 +55,11 @@ static void init_uart(void) {
 
 static void report_test_status(bool result) {
   // Reinitialize UART before print any debug output if the test clobbered it.
-  if (kDeviceType != kDeviceSimDV && kTestConfig.can_clobber_uart) {
-    init_uart();
+  if (kDeviceType != kDeviceSimDV) {
+    if (kTestConfig.can_clobber_uart) {
+      init_uart();
+    }
+    LOG_INFO("Finished %s", kTestConfig.file);
     test_coverage_send_buffer();
   }
 
@@ -80,6 +83,7 @@ void _ottf_main(void) {
   // Initialize the UART to enable logging for non-DV simulation platforms.
   if (kDeviceType != kDeviceSimDV) {
     init_uart();
+    LOG_INFO("Running %s", kTestConfig.file);
   }
 
   // Run the test.
