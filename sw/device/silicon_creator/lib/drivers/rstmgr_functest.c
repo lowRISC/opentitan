@@ -12,7 +12,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * Test phases tracked in retention RAM.

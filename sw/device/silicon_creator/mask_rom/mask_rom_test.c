@@ -6,6 +6,6 @@
 
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) { return true; }

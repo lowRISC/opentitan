@@ -65,7 +65,7 @@ static void pmp_configure_load_tor(void) {
         "Load configuration failed, error code = %d", result);
 }
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   pmp_load_exception = false;

@@ -15,7 +15,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 static dif_aon_timer_t aon_timer;

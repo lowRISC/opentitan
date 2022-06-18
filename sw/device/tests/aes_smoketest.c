@@ -54,7 +54,7 @@ static const uint8_t kKeyShare1[KEY_LENGTH_IN_BYTES] = {
     0x6a, 0x7a, 0x8a, 0x9a, 0xaa, 0xba, 0xca, 0xda, 0xea, 0xfa,
 };
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   dif_aes_t aes;

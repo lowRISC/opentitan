@@ -16,7 +16,7 @@
 // for our purposes a small number will be sufficient.
 #define SRAM_CTRL_TEST_DATA_SIZE_WORDS 16
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 static const uint32_t kStatusRegMask = kDifSramCtrlStatusBusIntegErr |
                                        kDifSramCtrlStatusInitErr |

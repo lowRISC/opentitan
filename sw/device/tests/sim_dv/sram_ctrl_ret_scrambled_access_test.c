@@ -26,7 +26,7 @@
  */
 #define RET_OFFSET (TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / 8)
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_sram_ctrl_t sram_ctrl;
 static dif_rstmgr_t rstmgr;

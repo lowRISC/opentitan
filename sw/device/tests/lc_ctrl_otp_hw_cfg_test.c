@@ -20,7 +20,7 @@
 static dif_otp_ctrl_t otp;
 static dif_lc_ctrl_t lc;
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 static const uint8_t kNumDeviceId = 8;
 
 /**

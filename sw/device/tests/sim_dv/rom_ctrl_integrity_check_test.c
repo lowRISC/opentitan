@@ -16,7 +16,7 @@
 static dif_lc_ctrl_t lc;
 static dif_rom_ctrl_t rom_ctrl;
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 // The testbench will start in a non-production LC state.
 // It will use backdoor access to overwrite one of the expected

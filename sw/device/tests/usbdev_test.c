@@ -89,7 +89,7 @@ static void usb_receipt_callback(uint8_t c) {
   }
 }
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   CHECK(kDeviceType == kDeviceSimVerilator,

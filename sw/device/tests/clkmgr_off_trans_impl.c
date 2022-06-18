@@ -30,7 +30,7 @@
  * bit 3: OTBN
  */
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_aon_timer_t aon_timer;
 

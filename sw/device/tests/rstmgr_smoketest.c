@@ -10,7 +10,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 // The SV side will flip POR_N and cause some AON power glitches prior to the
 // start of test_main. Both of these cause a new POR, so all this has to do is

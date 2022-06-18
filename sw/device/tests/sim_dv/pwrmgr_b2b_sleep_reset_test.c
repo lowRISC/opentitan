@@ -33,7 +33,7 @@
    IOR13 PAD.
 
  */
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 static volatile const uint8_t kNumRound;
 

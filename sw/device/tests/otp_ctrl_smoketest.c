@@ -22,7 +22,7 @@ static const char kTestData[] = "abcdefghijklmno";
 static_assert(ARRAYSIZE(kTestData) % sizeof(uint32_t) == 0,
               "kTestData must be a word array");
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * Tests that the OTP can be programed in a particular spot, and that the

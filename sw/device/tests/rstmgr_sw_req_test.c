@@ -12,7 +12,7 @@
 
 static dif_rstmgr_t rstmgr;
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init(

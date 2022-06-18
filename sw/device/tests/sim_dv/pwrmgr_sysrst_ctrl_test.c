@@ -24,7 +24,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 static volatile const uint8_t RST_IDX[5] = {3, 30, 130, 5, 50};
 static dif_flash_ctrl_state_t flash_ctrl;
 

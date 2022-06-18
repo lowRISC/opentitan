@@ -19,7 +19,7 @@ extern const uint32_t kExpectedSignature[];
 // This symbol is defined in compliance_main.S
 extern void run_rvc_test(void);
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   run_rvc_test();
 

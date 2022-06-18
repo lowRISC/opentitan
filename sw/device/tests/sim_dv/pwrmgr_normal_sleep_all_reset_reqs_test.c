@@ -33,7 +33,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 static volatile const uint8_t RST_IDX[7] = {0, 1, 2, 3, 4, 5, 6};
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 

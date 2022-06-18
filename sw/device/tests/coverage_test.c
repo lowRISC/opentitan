@@ -24,7 +24,7 @@ static void spin_180(void) {
   }
 }
 
-const test_config_t kTestConfig;
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * A simple program for testing the coverage functionality.
