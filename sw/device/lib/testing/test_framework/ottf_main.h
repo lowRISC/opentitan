@@ -58,12 +58,31 @@ typedef struct test_config {
 } test_config_t;
 
 /**
+ * Helper macro for defining the `kTestConfig` symbol in test files.
+ *
+ * While the `kTestConfig` struct can be defined directly, tests should prefer
+ * this macro since it handles the definition of the `file` field.
+ *
+ * A test with default options should use:
+ *
+ *   OTTF_DEFINE_TEST_CONFIG();
+ *
+ * A test that wants to enable concurrency and can also clobber UART should use:
+ *
+ *   OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
+ *                           .can_clobber_uart = true, );
+ *
+ */
+#define OTTF_DEFINE_TEST_CONFIG(...) \
+  const test_config_t kTestConfig = {.file = __FILE__, __VA_ARGS__};
+
+/**
  * Global test configuration.
  *
  * This symbol should be defined externally in a standalone SW test. For most
  * tests, this will just look like the following:
  *
- *   const test_config_t kTestConfig;
+ *   OTTF_DEFINE_TEST_CONFIG();
  *
  * The zero values of all of the fields will behave like sane defaults.
  *
