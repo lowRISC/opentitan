@@ -5,8 +5,8 @@
 #include <stdint.h>
 
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/coverage.h"
-#include "sw/device/lib/uart.h"
 #include "sw/vendor/llvm_clang_rt_profile/compiler-rt/lib/profile/InstrProfiling.h"
 
 /**
@@ -73,5 +73,5 @@ void test_coverage_send_buffer(void) {
   }
   // Send `EOT` so that `cat` can exit. Note that this requires enabling
   // `icanon` using `stty`.
-  uart_send_char(4);
+  base_printf("\x4");
 }
