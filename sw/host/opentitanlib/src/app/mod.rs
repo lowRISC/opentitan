@@ -13,6 +13,7 @@ use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::{ProxyOps, Transport, TransportError};
 use anyhow::Result;
+use std::time::Duration;
 
 use erased_serde::Serialize;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -240,6 +241,20 @@ impl TransportWrapper {
             // TODO(#8769): Record baud / parity configration for later
             // use when opening uart.
         }
+        Ok(())
+    }
+
+    pub fn reset_target(&self, reset_delay: Duration, clear_uart_rx: bool) -> Result<()> {
+        log::info!("Asserting the reset signal");
+        self.apply_pin_strapping("RESET")?;
+        std::thread::sleep(reset_delay);
+        if clear_uart_rx {
+            log::info!("Clearing the UART RX buffer");
+            self.uart("0")?.clear_rx_buffer()?;
+        }
+        log::info!("Deasserting the reset signal");
+        self.remove_pin_strapping("RESET")?;
+        std::thread::sleep(reset_delay);
         Ok(())
     }
 }
