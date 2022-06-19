@@ -36,8 +36,10 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["pwm_bind", "sec_cm_prim_onehot_check_bind"]
+  sim_tops: ["pwm_bind", "pwm_cov_bind", "sec_cm_prim_onehot_check_bind"]
 
+  // PWM coverage exclusion
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/pwm/dv/cov/pwm_cov.vRefine"]
   // Default iterations for all tests - each test entry can override this.
     reseed: 50
 
