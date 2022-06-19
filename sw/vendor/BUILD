@@ -15,3 +15,14 @@ cc_library(
     ],
     strip_include_prefix = "cryptoc/include",
 )
+
+filegroup(
+  name = "llvm_clang_rt_profile",
+  srcs = glob(
+      ["llvm_clang_rt_profile/compiler-rt/**/*"],
+      exclude = [
+          "llvm_clang_rt_profile/compiler-rt/*.TXT",
+          "llvm_clang_rt_profile/compiler-rt/.gitignore",
+      ]
+  ),
+)
