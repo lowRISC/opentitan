@@ -220,7 +220,7 @@ impl Transport for CW310 {
                 fpga_program.progress.as_ref().map(Box::as_ref),
             )?;
             Ok(None)
-        } else if let Some(_set_pll) = action.downcast_ref::<SetPll>() {
+        } else if let Some(_) = action.downcast_ref::<SetPll>() {
             const TARGET_FREQ: u32 = 100_000_000;
             let usb = self.device.borrow();
             usb.pll_enable(true)?;
