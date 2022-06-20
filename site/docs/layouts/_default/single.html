@@ -13,7 +13,14 @@
         </aside>
         <main id="main" role="main" class="markdown">
           {{ if .Title }}<h1 class="title">{{ .Title }}</h1>{{ end }}
-          {{ .Content }}
+          <!-- The regex finds header tags and converts the content into a link
+            with a link icon appended.
+          -->
+          {{ .Content
+            | replaceRE "(<h[1-6] id=\"(.+)\".*>)(.*)(</h[1-6]>)"
+            `${1}<a class="header-link" href="#${2}">${3}</a>${4}`
+            | safeHTML
+          }}
         </main>
         {{ partial "toc.html" . }}
       </div>
