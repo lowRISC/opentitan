@@ -49,7 +49,7 @@ _manifest_entry_point = _start_boot - _slot_start_address;
 SECTIONS {
   .manifest _slot_start_address : {
     KEEP(*(.manifest))
-  } > eflash
+  } > owner_flash
 
   /**
    * Ibex interrupt vector.
@@ -60,14 +60,14 @@ SECTIONS {
   .vectors : ALIGN(256) {
     _text_start = .;
     KEEP(*(.vectors))
-  } > eflash
+  } > owner_flash
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > eflash
+  } > owner_flash
 
   /**
    * Standard text section, containing program code.
@@ -79,7 +79,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > eflash
+  } > owner_flash
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -92,7 +92,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > eflash
+  } > owner_flash
 
   /**
    * Mutable data section, at the bottom of ram_main. This will be initialized
@@ -136,7 +136,7 @@ SECTIONS {
      *
      * Using `AT>` means we don't have to keep track of the next free part of
      * flash, as we do in our other linker scripts. */
-  } > ram_main AT> eflash
+  } > ram_main AT> owner_flash
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.
