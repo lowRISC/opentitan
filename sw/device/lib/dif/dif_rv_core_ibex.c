@@ -361,3 +361,31 @@ dif_result_t dif_rv_core_ibex_trigger_sw_fatal_err_alert(
                       RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, reg);
   return kDifOk;
 }
+
+enum {
+  kIbexCrashDumpBytesCount = sizeof(dif_rv_core_ibex_crash_dump_info_t),
+  kIbexCrashDumpWordsCount = kIbexCrashDumpBytesCount / sizeof(uint32_t),
+  kIbexCrashDumpStateBytesCount = sizeof(dif_rv_core_ibex_crash_dump_state_t),
+  kIbexCrashDumpStateWordsCount =
+      kIbexCrashDumpStateBytesCount / sizeof(uint32_t),
+  kIbexCrashDumpPreviousStateBytesCount =
+      sizeof(dif_rv_core_ibex_previous_crash_dump_state_t),
+  kIbexCrashDumpPreviousStateWordsCount =
+      kIbexCrashDumpPreviousStateBytesCount / sizeof(uint32_t),
+};
+
+dif_result_t dif_rv_core_ibex_parse_crash_dump(
+    const dif_rv_core_ibex_t *rv_core_ibex, uint32_t *cpu_info,
+    uint32_t cpu_info_len,
+    dif_rv_core_ibex_crash_dump_info_t *crash_dump_info) {
+  if (rv_core_ibex == NULL || cpu_info == NULL || crash_dump_info == NULL ||
+      cpu_info_len < kIbexCrashDumpWordsCount) {
+    return kDifBadArg;
+  }
+
+  memcpy(crash_dump_info, cpu_info, kIbexCrashDumpBytesCount - 1);
+  crash_dump_info->double_fault =
+      dif_bool_to_toggle(cpu_info[kIbexCrashDumpWordsCount - 1] == 1);
+
+  return kDifOk;
+}
