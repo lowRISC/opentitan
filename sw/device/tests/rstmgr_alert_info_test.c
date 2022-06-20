@@ -86,14 +86,6 @@ static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
 static dif_i2c_t i2c0, i2c1, i2c2;
 
-static uint64_t merge32(uint32_t x, uint32_t y) {
-  uint64_t pow = 10;
-  while (y >= pow) {
-    pow *= 10;
-  }
-  return (uint64_t)(x * pow + y);
-}
-
 typedef struct node {
   const char *name;
   dif_alert_handler_alert_t alert;
@@ -129,8 +121,8 @@ typedef struct alert_info {
 
 static test_round_t global_test_round;
 static uint32_t global_alert_called;
-static dif_alert_handler_escalation_phase_t
-    esc_profiles[][ALERT_HANDLER_PARAM_N_CLASSES] = {
+static const dif_alert_handler_escalation_phase_t
+    kEscProfiles[][ALERT_HANDLER_PARAM_N_CLASSES] = {
         [kDifAlertHandlerClassA] = {{.phase = kDifAlertHandlerClassStatePhase0,
                                      .signal = 0,
                                      .duration_cycles = 5000},
@@ -155,14 +147,14 @@ static dif_alert_handler_escalation_phase_t
                                     {.phase = kDifAlertHandlerClassStatePhase2,
                                      .signal = 3,
                                      .duration_cycles = 2400}}};
-static dif_alert_handler_class_config_t
-    config_profiles[ALERT_HANDLER_PARAM_N_CLASSES] = {
+static const dif_alert_handler_class_config_t
+    kConfigProfiles[ALERT_HANDLER_PARAM_N_CLASSES] = {
         [kDifAlertHandlerClassA] =
             {
                 .auto_lock_accumulation_counter = kDifToggleDisabled,
                 .accumulator_threshold = 0,
                 .irq_deadline_cycles = 240,
-                .escalation_phases = esc_profiles[kDifAlertHandlerClassA],
+                .escalation_phases = kEscProfiles[kDifAlertHandlerClassA],
                 .escalation_phases_len = 2,
                 .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase1,
             },
@@ -171,7 +163,7 @@ static dif_alert_handler_class_config_t
                 .auto_lock_accumulation_counter = kDifToggleDisabled,
                 .accumulator_threshold = 0,
                 .irq_deadline_cycles = 240,
-                .escalation_phases = esc_profiles[kDifAlertHandlerClassB],
+                .escalation_phases = kEscProfiles[kDifAlertHandlerClassB],
                 .escalation_phases_len = 1,
                 .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase1,
             },
@@ -180,20 +172,22 @@ static dif_alert_handler_class_config_t
                 .auto_lock_accumulation_counter = kDifToggleDisabled,
                 .accumulator_threshold = 0,
                 .irq_deadline_cycles = 240,
-                .escalation_phases = esc_profiles[kDifAlertHandlerClassC],
+                .escalation_phases = kEscProfiles[kDifAlertHandlerClassC],
                 .escalation_phases_len = 2,
                 .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase1,
             },
-        [kDifAlertHandlerClassD] = {
-            .auto_lock_accumulation_counter = kDifToggleDisabled,
-            .accumulator_threshold = 0,
-            .irq_deadline_cycles = 1000,
-            .escalation_phases = esc_profiles[kDifAlertHandlerClassD],
-            .escalation_phases_len = 3,
-            .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
-        }};
+        [kDifAlertHandlerClassD] =
+            {
+                .auto_lock_accumulation_counter = kDifToggleDisabled,
+                .accumulator_threshold = 0,
+                .irq_deadline_cycles = 1000,
+                .escalation_phases = kEscProfiles[kDifAlertHandlerClassD],
+                .escalation_phases_len = 3,
+                .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
+            },
+};
 
-static alert_info_t expected_info[kRoundTotal] = {
+static const alert_info_t kExpectedInfo[kRoundTotal] = {
     [kRound1] =
         {
             .test_name = "Single class(ClassA)",
@@ -210,16 +204,18 @@ static alert_info_t expected_info[kRoundTotal] = {
             .class_esc_state = {kCstateIdle, kCstatePhase1, kCstatePhase0,
                                 kCstateIdle},
         },
-    [kRound3] = {
-        .test_name = "All classes",
-        .alert_cause = 0x40041,
-        .class_accum_cnt = {1, 1, 1, 2},
-        .class_esc_state = {kCstatePhase0, kCstatePhase1, kCstatePhase0,
-                            kCstatePhase0},
-    }};
+    [kRound3] =
+        {
+            .test_name = "All classes",
+            .alert_cause = 0x40041,
+            .class_accum_cnt = {1, 1, 1, 2},
+            .class_esc_state = {kCstatePhase0, kCstatePhase1, kCstatePhase0,
+                                kCstatePhase0},
+        },
+};
 
 static alert_info_t alert_info_dump2struct(
-    dif_rstmgr_alert_info_dump_segment_t *dump) {
+    const dif_rstmgr_alert_info_dump_segment_t *dump) {
   alert_info_t myinfo = {
       .class_esc_state = {(cstate_t)(dump[0] & 0x7),
                           (cstate_t)((dump[0] >> 3) & 0x7),
@@ -260,7 +256,7 @@ static alert_info_t alert_info_dump2struct(
 
   // dump[8] lower16 + dump[7] upper 16
   upper = upper + ((dump[8] & 0xffff) << 16);
-  myinfo.alert_cause = merge32(upper, lower);
+  myinfo.alert_cause = (uint64_t)upper << 32 | lower;
 
   return myinfo;
 }
@@ -365,7 +361,7 @@ static void prgm_alert_handler_round1(void) {
   }
 
   CHECK_DIF_OK(dif_alert_handler_configure_class(
-      &alert_handler, alert_class, config_profiles[alert_class],
+      &alert_handler, alert_class, kConfigProfiles[alert_class],
       /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
   CHECK_DIF_OK(dif_alert_handler_configure_ping_timer(
       &alert_handler, 0, /*enabled=*/kDifToggleEnabled,
@@ -388,8 +384,8 @@ static void prgm_alert_handler_round2(void) {
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassC,
                                                kDifAlertHandlerClassB};
   dif_alert_handler_class_config_t class_configs[] = {
-      config_profiles[kDifAlertHandlerClassC],
-      config_profiles[kDifAlertHandlerClassB]};
+      kConfigProfiles[kDifAlertHandlerClassC],
+      kConfigProfiles[kDifAlertHandlerClassB]};
 
   for (int i = kTopEarlgreyAlertPeripheralUart0;
        i < kTopEarlgreyAlertPeripheralUart3 + 1; ++i) {
@@ -448,10 +444,10 @@ static void prgm_alert_handler_round3(void) {
       kDifAlertHandlerClassD};
 
   dif_alert_handler_class_config_t class_configs[] = {
-      config_profiles[kDifAlertHandlerClassA],
-      config_profiles[kDifAlertHandlerClassB],
-      config_profiles[kDifAlertHandlerClassC],
-      config_profiles[kDifAlertHandlerClassD]};
+      kConfigProfiles[kDifAlertHandlerClassA],
+      kConfigProfiles[kDifAlertHandlerClassB],
+      kConfigProfiles[kDifAlertHandlerClassC],
+      kConfigProfiles[kDifAlertHandlerClassD]};
 
   CHECK_DIF_OK(dif_alert_handler_configure_local_alert(
       &alert_handler, kDifAlertHandlerLocalAlertAlertPingFail,
@@ -500,16 +496,15 @@ static void peripheral_init(void) {
                                               kDifToggleEnabled));
 }
 
-static dif_rstmgr_alert_info_dump_segment_t
-    dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
 static void collect_alert_dump_and_compare(test_round_t round) {
+  dif_rstmgr_alert_info_dump_segment_t dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
   size_t seg_size;
   alert_info_t actual_info;
 
   CHECK_DIF_OK(dif_rstmgr_alert_info_dump_read(
-      &rstmgr, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &seg_size));
+      &rstmgr, dump, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &seg_size));
 
-  LOG_INFO("Testname: %s  DUMP SIZE %d", expected_info[round].test_name,
+  LOG_INFO("Testname: %s  DUMP SIZE %d", kExpectedInfo[round].test_name,
            seg_size);
   for (int i = 0; i < seg_size; i++) {
     LOG_INFO("DUMP:%d: 0x%x", i, dump[i]);
@@ -517,25 +512,28 @@ static void collect_alert_dump_and_compare(test_round_t round) {
 
   actual_info = alert_info_dump2struct(dump);
 
-  LOG_INFO("alert_cause : 0x%x", actual_info.alert_cause);
+  LOG_INFO("alert_cause : 0x%!x", sizeof(actual_info.alert_cause),
+           (char *)&actual_info.alert_cause);
 
-  CHECK(expected_info[round].alert_cause == actual_info.alert_cause,
-        "alert_info.alert_cause mismatch exp:0x%x  obs:0x%x",
-        expected_info[round].alert_cause, actual_info.alert_cause);
+  CHECK(kExpectedInfo[round].alert_cause == actual_info.alert_cause,
+        "alert_info.alert_cause mismatch exp:0x%!x  obs:0x%!x",
+        sizeof(kExpectedInfo[round].alert_cause),
+        (char *)&kExpectedInfo[round].alert_cause,
+        sizeof(actual_info.alert_cause), (char *)&actual_info.alert_cause);
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
-    CHECK(expected_info[round].class_accum_cnt[i] ==
+    CHECK(kExpectedInfo[round].class_accum_cnt[i] ==
               actual_info.class_accum_cnt[i],
           "alert_info.class_accum_cnt[%d] mismatch exp:0x%x  obs:0x%x", i,
-          expected_info[round].class_accum_cnt[i],
+          kExpectedInfo[round].class_accum_cnt[i],
           actual_info.class_accum_cnt[i]);
   }
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
     // added '<' because expected state can be minimum phase but
     // depends on simulation, sometimes it captures higher phase.
-    CHECK(expected_info[round].class_esc_state[i] <=
+    CHECK(kExpectedInfo[round].class_esc_state[i] <=
               actual_info.class_esc_state[i],
           "alert_info.class_esc_state[%d] mismatch exp:0x%x  obs:0x%x", i,
-          expected_info[round].class_esc_state[i],
+          kExpectedInfo[round].class_esc_state[i],
           actual_info.class_esc_state[i]);
   }
 }
@@ -595,11 +593,13 @@ static node_t test_node[kTopEarlgreyAlertPeripheralLast] = {
             .alert = kTopEarlgreyAlertIdI2c1FatalFault,
             .class = kDifAlertHandlerClassA,
         },
-    [kTopEarlgreyAlertPeripheralI2c2] = {
-        .name = "I2C2",
-        .alert = kTopEarlgreyAlertIdI2c2FatalFault,
-        .class = kDifAlertHandlerClassA,
-    }};
+    [kTopEarlgreyAlertPeripheralI2c2] =
+        {
+            .name = "I2C2",
+            .alert = kTopEarlgreyAlertIdI2c2FatalFault,
+            .class = kDifAlertHandlerClassA,
+        },
+};
 
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.
@@ -635,7 +635,8 @@ bool test_main(void) {
   LOG_INFO("reset info = 0x%02X", rst_info);
   global_alert_called = 0;
 
-  if (rst_info == kDifRstmgrResetInfoPor) {
+  // TODO(#13098): Change to equality after #13277 is merged.
+  if (rst_info & kDifRstmgrResetInfoPor) {
     global_test_round = kRound1;
     prgm_alert_handler_round1();
 
@@ -647,8 +648,8 @@ bool test_main(void) {
         &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleEnabled));
 
     // Give an enough delay until sw rest happens.
-    LOG_INFO("wait round1 100us");
     busy_spin_micros(kRoundOneDelay);
+    CHECK(false, "Should have reset before this line");
 
   } else if (rst_info == kDifRstmgrResetInfoSw) {
     collect_alert_dump_and_compare(kRound1);
@@ -676,8 +677,8 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
         &alert_handler, kDifAlertHandlerIrqClassc, kDifToggleEnabled));
 
-    LOG_INFO("wait round2 100us");
     busy_spin_micros(kRoundTwoDelay);
+    CHECK(false, "Should have reset before this line");
   } else if (rst_info == kDifRstmgrResetInfoWatchdog) {
     collect_alert_dump_and_compare(kRound2);
 
@@ -686,13 +687,14 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
         &alert_handler, kDifAlertHandlerIrqClassd, kDifToggleEnabled));
 
-    LOG_INFO("wait round3 3ms");
     busy_spin_micros(kRoundThreeDelay);
+    CHECK(false, "Should have reset before this line");
   } else if (rst_info == kDifRstmgrResetInfoEscalation) {
     collect_alert_dump_and_compare(kRound3);
+    return true;
   } else {
     LOG_FATAL("unexpected reset info %d", rst_info);
   }
 
-  return true;
+  return false;
 }
