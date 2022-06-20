@@ -9,6 +9,9 @@ include_ccf ${dv_root}/tools/xcelium/common.ccf
 deselect_coverage -betfs -module ${DUT_TOP}...
 select_coverage -befs -module *_reg_top...
 
+// Black-box DV CDC module.
+deselect_coverage -betfs -module prim_cdc_rand_delay
+
 // csr_assert_fpv is an auto-generated csr read assertion module. So only assertion coverage is
 // meaningful to collect.
 deselect_coverage -betf -module *csr_assert_fpv...
