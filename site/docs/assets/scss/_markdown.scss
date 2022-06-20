@@ -44,6 +44,15 @@
     margin-bottom: 0.5em;
   }
 
+  .header-link {
+    text-decoration: none;
+  }
+
+  .header-link:hover,
+  .header-link:active {
+    text-decoration: underline;
+  }
+
   p {
     @extend .bodytext;
     font-size: inherit;
