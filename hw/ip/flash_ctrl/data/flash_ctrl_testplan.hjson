@@ -286,7 +286,7 @@
             pre-scramble ECC(integrity ESS, 4-bits) and post-scramble ECC(reliability ECC, 8-bits).
 	    Test status and control ECC bits.
             '''
-      milestone: V2S
+      milestone: V2
       tests: []
     }
     {
@@ -299,8 +299,8 @@
             the timing is correct (subsequent reads should be faster). When scrambling is not
             enabled, ensure that the raw data is written and read back.
             '''
-      milestone: V2S
-      tests: []
+      milestone: V2
+      tests: ["flash_ctrl_wo", "flash_ctrl_ro", "flash_ctrl_rw"]
     }
     {
       name: robustness

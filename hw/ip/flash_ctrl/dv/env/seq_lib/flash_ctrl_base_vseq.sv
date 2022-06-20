@@ -18,6 +18,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   logic [KeyWidth-1:0] otp_data_rand_key;
 
   // flash ctrl configuration settings.
+  bit [1:0]            otp_key_init_done;
 
   constraint num_trans_c {num_trans inside {[1 : cfg.seq_cfg.max_num_trans]};}
 
@@ -469,7 +470,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b0;
     cfg.flash_ctrl_vif.otp_rsp.key        = '0;
     cfg.flash_ctrl_vif.otp_rsp.rand_key   = '0;
-
+    otp_key_init_done = 'h0;
     // Note 'some values' appear in both branches of this fork, this is OK because the
     // branches never run together by design.
     // The order is always 'addr' followed by 'data'.
@@ -480,6 +481,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         @(posedge cfg.flash_ctrl_vif.otp_req.addr_req);
         otp_addr_key = {$urandom, $urandom, $urandom, $urandom};
         otp_addr_rand_key = {$urandom, $urandom, $urandom, $urandom};
+        otp_key_init_done[1] = 0;
         `uvm_info(`gfn, $sformatf("OTP Addr Key Applied to DUT : otp_addr_key : %0x",
           otp_addr_key), UVM_MEDIUM)
         `uvm_info(`gfn, $sformatf("OTP Addr Rand Key Applied to DUT : otp_addr_rand_key : %0x",
@@ -493,12 +495,14 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         #1ns;  // Positive Hold
         cfg.flash_ctrl_vif.otp_rsp.addr_ack = 1'b0;
         cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b0;
+        otp_key_init_done[1] = 1;
       end
       forever begin  // data
         @(posedge cfg.clk_rst_vif.rst_n);
         @(posedge cfg.flash_ctrl_vif.otp_req.data_req);
         otp_data_key = {$urandom, $urandom, $urandom, $urandom};
         otp_data_rand_key = {$urandom, $urandom, $urandom, $urandom};
+        otp_key_init_done[0] = 0;
         cfg.flash_ctrl_vif.otp_rsp.key = otp_data_key;
         cfg.flash_ctrl_vif.otp_rsp.rand_key = otp_data_rand_key;
         `uvm_info(`gfn, $sformatf("OTP Data Key Applied to DUT : otp_data_key : %0x",
@@ -512,6 +516,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         #1ns;  // Positive Hold
         cfg.flash_ctrl_vif.otp_rsp.data_ack = 1'b0;
         cfg.flash_ctrl_vif.otp_rsp.seed_valid = 1'b0;
+        otp_key_init_done[0] = 1;
       end
     join_none
 

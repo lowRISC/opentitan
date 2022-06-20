@@ -69,6 +69,10 @@ module tb;
   `define FLASH_DEVICE_HIER tb.dut.u_eflash.u_flash
   assign fpp_if.req = `FLASH_DEVICE_HIER.flash_req_i;
   assign fpp_if.rsp = `FLASH_DEVICE_HIER.flash_rsp_o;
+  assign fpp_if.rreq[0] = tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.req_i;
+  assign fpp_if.rreq[1] = tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.req_i;
+  assign fpp_if.rdy[0] = tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.rdy_o;
+  assign fpp_if.rdy[1] = tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.rdy_o;
   `undef  FLASH_DEVICE_HIER
 
   `DV_ALERT_IF_CONNECT

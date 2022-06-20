@@ -53,9 +53,10 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Transaction counters for otf
   int otf_ctrl_wr_sent = 0;
   int otf_ctrl_wr_rcvd = 0;
-
   int otf_ctrl_rd_sent = 0;
   int otf_ctrl_rd_rcvd = 0;
+  int otf_host_rd_sent = 0;
+  int otf_host_rd_rcvd = 0;
 
   // Max delay for alerts in clocks
   uint alert_max_delay;

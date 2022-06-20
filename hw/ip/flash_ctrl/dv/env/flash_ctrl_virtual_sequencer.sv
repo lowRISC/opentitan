@@ -8,12 +8,14 @@ class flash_ctrl_virtual_sequencer extends cip_base_virtual_sequencer #(
 );
   `uvm_component_utils(flash_ctrl_virtual_sequencer)
 
-  uvm_analysis_port #(flash_otf_item) eg_exp_port[flash_ctrl_pkg::NumBanks];
+  uvm_analysis_port #(flash_otf_item) eg_exp_ctrl_port[NumBanks];
+  uvm_analysis_port #(flash_otf_item) eg_exp_host_port[NumBanks];
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    foreach (eg_exp_port[i]) begin
-      eg_exp_port[i] = new($sformatf("eg_exp_port[%0d]", i), this);
+    foreach (eg_exp_ctrl_port[i]) begin
+      eg_exp_ctrl_port[i] = new($sformatf("eg_exp_ctrl_port[%0d]", i), this);
+      eg_exp_host_port[i] = new($sformatf("eg_exp_host_port[%0d]", i), this);
     end
   endfunction // new
 
