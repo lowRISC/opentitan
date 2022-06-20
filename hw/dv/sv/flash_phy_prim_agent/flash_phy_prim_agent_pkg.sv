@@ -7,12 +7,15 @@ package flash_phy_prim_agent_pkg;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
+  import flash_ctrl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // parameters
+  localparam int unsigned PhyAddrW = flash_phy_pkg::BankAddrW;
+  localparam int unsigned PhyDataW = flash_phy_pkg::FullDataWidth;
 
   // local types
   // forward declare classes to allow typedefs below

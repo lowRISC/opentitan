@@ -13,9 +13,10 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   // flash_phy_prim_agent_cfg: cfg
   // flash_phy_prim_agent_cov: cov
 
-  uvm_analysis_port #(flash_phy_prim_item) eg_rtl_port[flash_ctrl_pkg::NumBanks];
-  flash_phy_prim_item w_item[flash_ctrl_pkg::NumBanks];
-  logic [flash_phy_pkg::FullDataWidth-1:0] write_buffer[flash_ctrl_pkg::NumBanks][$];
+  uvm_analysis_port #(flash_phy_prim_item) eg_rtl_port[NumBanks];
+  flash_phy_prim_item w_item[NumBanks];
+  flash_phy_prim_item r_item[NumBanks];
+  logic [flash_phy_pkg::FullDataWidth-1:0] write_buffer[NumBanks][$];
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -27,32 +28,58 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   endfunction
 
   task run_phase(uvm_phase phase);
-    super.run_phase(phase);
+    `DV_SPINWAIT(wait(cfg.mon_start);,
+                 "timeout waiting for mon_start", 100_000)
+    fork
+      super.run_phase(phase);
+      monitor_core();
+    join_none
+  endtask
+
+  // Capture read request from flash_core
+  task monitor_core();
+    `DV_SPINWAIT(wait(cfg.vif.rst_n == 1);,
+                 "timeout waiting for reset deassert", 100_000)
+    if (cfg.scb_otf_en) begin
+      for (int i = 0; i < NumBanks; ++i) begin
+        automatic int j = i;
+        fork begin
+          // Assuming tb.dut.u_eflash.gen_flash_cores[bank].u_core.u_rd.req_i
+          // is one cycle per transaction.
+          forever begin
+            @cfg.vif.cb;
+            #0.1ns;
+            if (cfg.vif.rreq[j] & cfg.vif.rdy[j]) begin
+              r_item[j] = flash_phy_prim_item::type_id::create($sformatf("r_item[%0d]", j));
+              r_item[j].req = cfg.vif.req[j];
+              eg_rtl_port[j].write(r_item[j]);
+            end
+          end
+        end join_none
+      end
+    end
   endtask
 
   // collect transactions forever - already forked in dv_base_monitor::run_phase
   virtual protected task collect_trans(uvm_phase phase);
-    wait(cfg.vif.rst_n == 1);
-
+    `DV_SPINWAIT(wait(cfg.vif.rst_n == 1);,
+                 "timeout waiting for reset deassert", 100_000)
     `uvm_info(`gfn, $sformatf("flash_phy_prim_monitor %s", (cfg.scb_otf_en)? "enabled" :
                               "disabled"), UVM_MEDIUM)
 
     if (cfg.scb_otf_en) begin
       fork
-        for (int i = 0; i < flash_ctrl_pkg::NumBanks; ++i) begin
+        for (int i = 0; i < NumBanks; ++i) begin
           automatic int j = i;
           fork begin
             forever begin
               @cfg.vif.cb;
+              #0.1ns;
               if (cfg.vif.rsp[j].ack) begin
-                if (~cfg.vif.req[j].rd_req & ~cfg.vif.req[j].prog_req) begin
-                  // do nothing
-                end else if (cfg.vif.req[j].rd_req & ~cfg.vif.req[j].prog_req) begin
-                  // TBD collect read
+                if (cfg.vif.req[j].rd_req & cfg.vif.req[j].prog_req) begin
+                  `uvm_error(`gfn, $sformatf("Both prog and rd req are set"))
                 end else if (~cfg.vif.req[j].rd_req & cfg.vif.req[j].prog_req) begin
                   collect_wr_data(j);
-                end else begin
-                  `uvm_error(`gfn, $sformatf("Both prog and rd req is set"))
                 end
               end
             end
@@ -67,6 +94,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
       w_item[bank] = flash_phy_prim_item::type_id::create($sformatf("w_item[%0d]", bank));
       w_item[bank].req = cfg.vif.req[bank];
       w_item[bank].rsp = cfg.vif.rsp[bank];
+      `uvm_info(`gfn, $sformatf("MON%0d s_addr:%x",bank, w_item[bank].req.addr), UVM_HIGH)
     end
 
     write_buffer[bank].push_back(cfg.vif.req[bank].prog_full_data);
@@ -74,8 +102,9 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
     if (cfg.vif.req[bank].prog_last) begin
       w_item[bank].fq = write_buffer[bank];
       eg_rtl_port[bank].write(w_item[bank]);
+      `uvm_info(`gfn, $sformatf("MON%0d: wbuf:%0d    fq:%0d", bank,
+                                write_buffer[bank].size(), w_item[bank].fq.size()), UVM_HIGH)
       write_buffer[bank] = {};
     end
   endtask // collect_item
-
 endclass

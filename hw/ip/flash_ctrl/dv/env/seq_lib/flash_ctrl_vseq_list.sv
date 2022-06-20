@@ -27,3 +27,6 @@
 `include "flash_ctrl_mid_op_rst_vseq.sv"
 `include "flash_ctrl_stress_all_vseq.sv"
 `include "flash_ctrl_otf_base_vseq.sv"
+`include "flash_ctrl_wo_vseq.sv"
+`include "flash_ctrl_ro_vseq.sv"
+`include "flash_ctrl_rw_vseq.sv"

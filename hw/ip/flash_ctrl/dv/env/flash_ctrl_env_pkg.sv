@@ -71,8 +71,6 @@ package flash_ctrl_env_pkg;
                                             FlashPageWidth - 1;
   parameter uint FlashMemAddrBankMsbBit   = FlashDataByteWidth + FlashWordLineWidth +
                                             FlashPageWidth + FlashBankWidth - 1;
-  // Need to create a design parameter for this
-  parameter uint FlashFullDataWidth = flash_phy_pkg::FullDataWidth;
 
   // params for words
   parameter uint NUM_PAGE_WORDS = FlashNumBusWordsPerPage;
@@ -224,7 +222,8 @@ package flash_ctrl_env_pkg;
     flash_prog_sel_e prog_sel;    // program select
     uint             num_words;   // number of words to read or program (TL_DW)
     addr_t           addr;        // starting addr for the op
-    bit [flash_ctrl_pkg::BusAddrW-1:0] otf_addr; // addres for the ctrl interface
+    // addres for the ctrl interface per bank, 18:0
+    bit [flash_ctrl_pkg::BusAddrByteW-2:0] otf_addr;
   } flash_op_t;
 
   parameter uint ALL_ZEROS = 32'h0000_0000;
@@ -235,6 +234,11 @@ package flash_ctrl_env_pkg;
   // Taken from enum type lcmgr_state_e in flash_ctrl_lcmgr.sv
   parameter uint RMA_FSM_STATE_ST_RMA_RSP = 11'b10110001010;
 
+  // Indicate host read
+  parameter int unsigned OTFBankId = flash_ctrl_pkg::BusAddrByteW - 1; // bit19
+  parameter int unsigned OTFHostId = OTFBankId - 1; // bit 18
+  localparam int unsigned CTRL_TRANS_MIN = 1;
+  localparam int unsigned CTRL_TRANS_MAX = 32;
   // functions
   // Add below for the temporary until PR12492 is merged.
   // Will be removed after.
@@ -243,6 +247,8 @@ package flash_ctrl_env_pkg;
   localparam int unsigned FlashKeySize = flash_phy_pkg::KeySize;
   localparam int unsigned FlashNumRoundsHalf = crypto_dpi_prince_pkg::NumRoundsHalf;
   localparam int unsigned FlashAddrWidth = 16;
+  // remove bank select
+  localparam int unsigned FlashByteAddrWidth = flash_ctrl_pkg::BusAddrByteW - 1;
 
   localparam bit [FlashDataWidth-1:0] IPoly = FlashDataWidth'(1'b1) << 15 |
                                       FlashDataWidth'(1'b1) << 9  |
@@ -250,8 +256,6 @@ package flash_ctrl_env_pkg;
                                       FlashDataWidth'(1'b1) << 4  |
                                       FlashDataWidth'(1'b1) << 3  |
                                       FlashDataWidth'(1'b1) << 0;
-
-  static bit scramble_debug = 0;
 
   function automatic bit [FlashDataWidth-1:0] flash_gf_mult2(bit [FlashDataWidth-1:0] operand);
     bit [FlashDataWidth-1:0]          mult_out;
@@ -284,11 +288,9 @@ package flash_ctrl_env_pkg;
       flash_gen_matrix({addr_key[FlashKeySize-FlashAddrWidth-1:FlashKeySize-64], addr}, 1'b1);
     matrix[1] = flash_gen_matrix(matrix[0][FlashStagesPerCycle-1], 1'b0);
 
-    if (scramble_debug) begin
-      `uvm_info("SCR_DBG", $sformatf("waddr: %x   op_a_i : %x     vector: %x",addr,
-                                {addr_key[FlashKeySize-FlashAddrWidth-1:FlashKeySize-64], addr},
-                                matrix[0][FlashStagesPerCycle-1]), UVM_LOW)
-    end
+    `uvm_info("SCR_DBG", $sformatf("waddr: %x   op_a_i : %x     vector: %x",
+              addr,  {addr_key[FlashKeySize-FlashAddrWidth-1:FlashKeySize-64], addr},
+              matrix[0][FlashStagesPerCycle-1]), UVM_HIGH)
     // galois multiply.
     for (int j = 0; j < 2; j++) begin
       mult_out = '0;
@@ -299,14 +301,12 @@ package flash_ctrl_env_pkg;
       product[j] = mult_out;
     end
     product[1] = product[1] ^ product[0];
-    if (scramble_debug) begin
-      `uvm_info("SCR_DBG", $sformatf("prod1:%x   prod0:%x",product[1],product[0]), UVM_LOW)
-    end
+    `uvm_info("SCR_DBG", $sformatf("prod1:%x   prod0:%x",product[1],product[0]), UVM_HIGH)
     return product[1];
   endfunction
 
   function automatic bit[75:0] create_flash_data(
-           bit [FlashDataWidth-1:0] data, bit [FlashAddrWidth+2-1:0] byte_addr,
+           bit [FlashDataWidth-1:0] data, bit [FlashByteAddrWidth-1:0] byte_addr,
            bit [FlashKeySize-1:0]   flash_addr_key, bit [FlashKeySize-1:0] flash_data_key);
     bit [FlashAddrWidth-1:0]                                    word_addr;
     bit [FlashDataWidth-1:0]                                    mask;
@@ -320,12 +320,9 @@ package flash_ctrl_env_pkg;
 
     word_addr = byte_addr >> addr_lsb;
     mask = flash_galois_multiply(flash_addr_key, word_addr);
-
     masked_data = data ^ mask;
 
-    if (scramble_debug) begin
-      `uvm_info("SCR_DBG", $sformatf("addr:%x  mask:%x  data:%x", word_addr, mask, data), UVM_LOW)
-    end
+    `uvm_info("SCR_DBG", $sformatf("addr:%x  mask:%x  data:%x", word_addr, mask, data), UVM_HIGH)
     crypto_dpi_prince_pkg::sv_dpi_prince_encrypt(.plaintext(masked_data), .key(flash_data_key),
                                              .old_key_schedule(0), .ciphertext(scrambled_data));
 
@@ -336,8 +333,42 @@ package flash_ctrl_env_pkg;
     return ecc_76;
   endfunction
 
-  // Temp added functions end
+  function automatic bit[FlashDataWidth-1:0] create_raw_data(
+      input bit [flash_phy_pkg::FullDataWidth-1:0] data,
+      input bit [FlashAddrWidth-1:0]     bank_addr,
+      input bit [FlashKeySize-1:0]       flash_addr_key,
+      input bit [FlashKeySize-1:0]       flash_data_key,
+      output bit [1:0]                   ecc_72_err,
+      output bit [1:0]                   ecc_76_err);
+    bit [FlashDataWidth-1:0]                         mask;
+    bit [FlashDataWidth-1:0]                         masked_data;
+    bit [FlashDataWidth-1:0]                         plain_text;
+    prim_secded_pkg::secded_hamming_76_68_t          dec68;
+    bit [FlashNumRoundsHalf-1:0][FlashDataWidth-1:0] descrambled_data;
 
+    mask = flash_galois_multiply(flash_addr_key, bank_addr);
+
+    // TODO supprot ecc
+    //dec68 = prim_secded_pkg::prim_secded_hamming_76_68_dec(data);
+    dec68.data = data;
+    masked_data = dec68.data[FlashDataWidth-1:0] ^ mask;
+
+    plain_text = crypto_dpi_prince_pkg::c_dpi_prince_decrypt(masked_data,
+                                                             flash_data_key[127:64],
+                                                             flash_data_key[63:0],
+                                                             FlashNumRoundsHalf,
+                                                             0);
+
+    `uvm_info("SCR_DBG", $sformatf(
+              "addr:%x  mask:%x  indata:%x  masked_data:%x  cipher_o:%x  finaldata:%x",
+              bank_addr, mask, data, masked_data, plain_text, (plain_text^mask)),
+              UVM_HIGH)
+
+    ecc_76_err = dec68.err;
+    return (plain_text ^ mask);
+  endfunction // create_raw_data
+
+  // Temp add end
   // Print 16 byte per line
   function automatic void flash_otf_print_data64(data_q_t data, string str = "data");
     int size, tail, line, idx;
