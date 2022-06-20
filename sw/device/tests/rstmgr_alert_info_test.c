@@ -191,7 +191,9 @@ static const alert_info_t kExpectedInfo[kRoundTotal] = {
     [kRound1] =
         {
             .test_name = "Single class(ClassA)",
-            .alert_cause = 0x1c0,
+            .alert_cause = ((uint64_t)1 << kTopEarlgreyAlertIdI2c0FatalFault) |
+                           ((uint64_t)1 << kTopEarlgreyAlertIdI2c1FatalFault) |
+                           ((uint64_t)1 << kTopEarlgreyAlertIdI2c2FatalFault),
             .class_accum_cnt = {3, 0, 0, 0},
             .class_esc_state = {kCstatePhase0, kCstateIdle, kCstateIdle,
                                 kCstateIdle},
@@ -199,7 +201,12 @@ static const alert_info_t kExpectedInfo[kRoundTotal] = {
     [kRound2] =
         {
             .test_name = "Multi classes(ClassB,C)",
-            .alert_cause = 0x400f,
+            .alert_cause =
+                ((uint64_t)1 << kTopEarlgreyAlertIdUart0FatalFault) |
+                ((uint64_t)1 << kTopEarlgreyAlertIdUart1FatalFault) |
+                ((uint64_t)1 << kTopEarlgreyAlertIdUart2FatalFault) |
+                ((uint64_t)1 << kTopEarlgreyAlertIdUart3FatalFault) |
+                ((uint64_t)1 << kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError),
             .class_accum_cnt = {0, 1, 4, 0},
             .class_esc_state = {kCstateIdle, kCstatePhase1, kCstatePhase0,
                                 kCstateIdle},
@@ -207,9 +214,13 @@ static const alert_info_t kExpectedInfo[kRoundTotal] = {
     [kRound3] =
         {
             .test_name = "All classes",
-            .alert_cause = 0x40041,
-            .class_accum_cnt = {1, 1, 1, 2},
-            .class_esc_state = {kCstatePhase0, kCstatePhase1, kCstatePhase0,
+            .alert_cause =
+                ((uint64_t)1 << kTopEarlgreyAlertIdFlashCtrlRecovErr) |
+                ((uint64_t)1 << kTopEarlgreyAlertIdKmacFatalFaultErr) |
+                ((uint64_t)1 << kTopEarlgreyAlertIdKeymgrRecovOperationErr) |
+                ((uint64_t)1 << kTopEarlgreyAlertIdKeymgrFatalFaultErr),
+            .class_accum_cnt = {0, 1, 0, 0x1e02},
+            .class_esc_state = {kCstateIdle, kCstatePhase1, kCstateIdle,
                                 kCstatePhase0},
         },
 };
@@ -419,7 +430,7 @@ static void prgm_alert_handler_round2(void) {
 
 static void prgm_alert_handler_round3(void) {
   // Enable all incoming alerts. This will create ping timeout event
-  // for all possible alert and will see the timeout more often
+  // for all possible alerts and will see the timeout more often.
   dif_alert_handler_class_t alert_class;
 
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
