@@ -25,4 +25,6 @@ _stack_start = _stack_end - _stack_size;
  /* TODO(#9045): Move ROM_EXT size to a common location. */
 _slot_start_address = ORIGIN(eflash) + (LENGTH(eflash) / 2) + 0x10000;
 
+REGION_ALIAS("owner_flash", eflash);
+
 INCLUDE sw/device/silicon_owner/bare_metal/bare_metal_common.ld

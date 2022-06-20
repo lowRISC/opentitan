@@ -32,6 +32,15 @@ ld_library(
     ],
 )
 
+ld_library(
+    name = "ld_virtual_addr",
+    script = "bare_metal_virtual_addr.ld",
+    deps = [
+        ":ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+    ],
+)
+
 cc_library(
     name = "bare_metal_example",
     srcs = ["bare_metal_example.c"],
@@ -67,6 +76,17 @@ opentitan_flash_binary(
     deps = [
         ":bare_metal_example",
         ":ld_slot_b",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/lib:manifest_def",
+    ],
+)
+
+opentitan_flash_binary(
+    name = "bare_metal_example_virtual_addr",
+    srcs = ["bare_metal_start.S"],
+    deps = [
+        ":bare_metal_example",
+        ":ld_virtual_addr",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
     ],

@@ -11,7 +11,7 @@
 
 void rom_ext_epmp_unlock_owner_stage_rx(epmp_state_t *state,
                                         epmp_region_t image) {
-  const int kEntry = 1;
+  const int kEntry = 8;
   epmp_state_configure_tor(state, kEntry, image, kEpmpPermLockedReadExecute);
 
   // Update the hardware configuration (CSRs).
@@ -23,11 +23,34 @@ void rom_ext_epmp_unlock_owner_stage_rx(epmp_state_t *state,
   //
   //            32          24          16           8           0
   //             +-----------+-----------+-----------+-----------+
-  // `pmpcfg0` = | `pmp3cfg` | `pmp2cfg` | `pmp1cfg` | `pmp0cfg` |
+  // `pmpcfg2` = | `pmp11cfg` | `pmp10cfg` | `pmp9cfg` | `pmp8cfg` |
   //             +-----------+-----------+-----------+-----------+
-  CSR_WRITE(CSR_REG_PMPADDR0, ((uint32_t)image.start) >> 2);
-  CSR_WRITE(CSR_REG_PMPADDR1, ((uint32_t)image.end) >> 2);
-  CSR_CLEAR_BITS(CSR_REG_PMPCFG0, 0xff00);
-  CSR_SET_BITS(CSR_REG_PMPCFG0, (kEpmpModeTor | kEpmpPermLockedReadExecute)
-                                    << 8);
+  CSR_WRITE(CSR_REG_PMPADDR7, ((uint32_t)image.start) >> 2);
+  CSR_WRITE(CSR_REG_PMPADDR8, ((uint32_t)image.end) >> 2);
+  CSR_CLEAR_BITS(CSR_REG_PMPCFG2, 0xff);
+  CSR_SET_BITS(CSR_REG_PMPCFG2, (kEpmpModeTor | kEpmpPermLockedReadExecute));
+}
+
+void rom_ext_epmp_unlock_owner_stage_r(epmp_state_t *state,
+                                       epmp_region_t region) {
+  const int kEntry = 9;
+  epmp_state_configure_napot(state, kEntry, region, kEpmpPermLockedReadOnly);
+
+  // Update the hardware configuration (CSRs).
+  //
+  // Entry is hardcoded as 6. Make sure to modify hardcoded values if changing
+  // kEntry.
+  //
+  // The `pmp6cfg` configuration is the second field in `pmpcfg1`.
+  //
+  //            32          24          16           8           0
+  //             +-----------+-----------+-----------+-----------+
+  // `pmpcfg2` = | `pmp11cfg` | `pmp10cfg` | `pmp9cfg` | `pmp8cfg` |
+  //             +-----------+-----------+-----------+-----------+
+  CSR_WRITE(CSR_REG_PMPADDR9,
+            (uint32_t)region.start >> 2 |
+            ((uint32_t)region.end - (uint32_t)region.start - 1) >> 3);
+  CSR_CLEAR_BITS(CSR_REG_PMPCFG2, 0xff << 8);
+  CSR_SET_BITS(CSR_REG_PMPCFG2,
+               ((kEpmpModeNapot | kEpmpPermLockedReadOnly) << 8));
 }

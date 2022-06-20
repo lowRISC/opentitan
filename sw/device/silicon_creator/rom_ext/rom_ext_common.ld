@@ -17,6 +17,12 @@ OUTPUT_ARCH(riscv)
 __DYNAMIC = 0;
 
 /**
+ * Symbols to be used in the setup of the address translation for ROM_EXT.
+ */
+_owner_virtual_start_address = ORIGIN(rom_ext_virtual) + 64K;
+_owner_virtual_size = LENGTH(rom_ext_virtual) - 64K;
+
+/**
  * Marking the entry point correctly for the ELF file. The signer tool will
  * transfer this value to the `entry_point` field of the manifest, which will
  * then be used by `mask_rom_boot` to handover execution to ROM_EXT.
