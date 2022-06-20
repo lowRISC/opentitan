@@ -93,6 +93,10 @@ module pwm_chan #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       htbt_direction <= '0;
+    end else if (clr_blink_cntr_i) begin
+       // For proper initialization, set the initial htbt_direction whenever a register is updated,
+       // as indicated by clr_blink_cntr_i
+       htbt_direction <= !pos_htbt;
     end else if (pos_htbt && ((dc_htbt_q >= duty_cycle_b_i) || (dc_wrap && dc_htbt_end))) begin
       htbt_direction <= 1'b1; // duty cycle counts down
     end else if (pos_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end) begin
