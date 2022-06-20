@@ -159,6 +159,70 @@ typedef enum dif_rv_core_ibex_nmi_source {
   kDifRvCoreIbexNmiSourceAll = 0x3,
 } dif_rv_core_ibex_nmi_source_t;
 
+typedef struct dif_rv_core_ibex_crash_dump_state {
+  /**
+   * The last exception address.
+   */
+  uint32_t mtval;
+
+  /**
+   * The last exception PC.
+   */
+  uint32_t mpec;
+
+  /**
+   * The last data access address.
+   */
+  uint32_t mdaa;
+
+  /**
+   * The next PC.
+   */
+  uint32_t mnpc;
+
+  /**
+   * The current PC.
+   */
+  uint32_t mcpc;
+} dif_rv_core_ibex_crash_dump_state_t;
+
+typedef struct dif_rv_core_ibex_previous_crash_dump_state {
+  /**
+   * The exception address for the previous crash.
+   */
+  uint32_t mtval;
+
+  /**
+   * The last exception PC for the previous crash.
+   */
+  uint32_t mpec;
+} dif_rv_core_ibex_previous_crash_dump_state_t;
+
+/**
+ * Under normal circumstances, only the current crash dump state is valid. When
+ * the CPU encounters a double fault, the current crash dump is moved to
+ * previous, and the new crash dump is shown in current.
+ */
+typedef struct dif_rv_core_ibex_crash_dump_info {
+  /**
+   * The crash dump state for the current execution.
+   */
+  dif_rv_core_ibex_crash_dump_state_t fault_stage;
+
+  /**
+   * The crash dump state for the previous execution. It will only contain valid
+   * data in case of a double fault, which will be indicated by the
+   * `double_fault` member.
+   */
+  dif_rv_core_ibex_previous_crash_dump_state_t previous_fault_state;
+
+  /**
+   * `kDifToggleEnabled` if a double fault happened, otherwise
+   * `kDifToggleDisabled`
+   */
+  dif_toggle_t double_fault;
+} dif_rv_core_ibex_crash_dump_info_t;
+
 /**
  * Configure the instruction and data bus in the address translation `slot`.
  *
@@ -342,6 +406,20 @@ dif_result_t dif_rv_core_ibex_get_sw_fatal_err_alert(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_core_ibex_trigger_sw_fatal_err_alert(
     const dif_rv_core_ibex_t *rv_core_ibex);
+
+/**
+ * Parse the cpu info read from the rstmgr.
+ *
+ * @param rv_core_ibex Handle.
+ * @param cpu_info Buffer with the cpu info read from the rstmgr.
+ * @param cpu_info_len The amount of words in the `cpu_info` buffer.
+ * @param[out] crash_dump_info Parsed dump.
+ * @return  The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_parse_crash_dump(
+    const dif_rv_core_ibex_t *rv_core_ibex, uint32_t *cpu_info,
+    uint32_t cpu_info_len, dif_rv_core_ibex_crash_dump_info_t *crash_dump_info);
 
 #ifdef __cplusplus
 }  // extern "C"

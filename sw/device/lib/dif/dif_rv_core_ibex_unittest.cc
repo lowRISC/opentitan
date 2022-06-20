@@ -56,6 +56,28 @@ std::ostream &operator<<(std::ostream &os,
             << "}";
 }
 
+std::ostream &operator<<(std::ostream &os,
+                         const dif_rv_core_ibex_crash_dump_info_t &info) {
+  return os << "{\n"
+            << "fault_stage = {\n"
+            << "  .mtval = " << info.fault_stage.mtval << ",\n"
+            << "  .mpec = " << info.fault_stage.mpec << ",\n"
+            << "  .mdaa = " << info.fault_stage.mdaa << ",\n"
+            << "  .mnpc = " << info.fault_stage.mnpc << ",\n"
+            << "  .mcpc = " << info.fault_stage.mcpc << ",\n"
+            << "},\n"
+            << "previous_fault_state = {\n"
+            << "  .mtval = " << info.previous_fault_state.mtval << ",\n"
+            << "  .mpec = " << info.previous_fault_state.mpec << ",\n"
+            << "},\n"
+            << "double_fault = " << info.double_fault << ",\n"
+            << "}";
+}
+
+bool operator==(const dif_rv_core_ibex_crash_dump_info_t a,
+                const dif_rv_core_ibex_crash_dump_info_t b) {
+  return memcmp(&a, &b, sizeof(dif_rv_core_ibex_crash_dump_info_t)) == 0;
+}
 namespace dif_rv_core_ibex_test {
 using mock_mmio::MmioTest;
 using mock_mmio::MockDevice;
@@ -572,6 +594,59 @@ TEST_F(RecoverableErrorAlertTest, ReadBadArg) {
 
 TEST_F(RecoverableErrorAlertTest, TriggerBadArg) {
   EXPECT_DIF_BADARG(dif_rv_core_ibex_trigger_sw_recov_err_alert(nullptr));
+}
+
+class ParseCrashDumpTest : public RvCoreIbexTestInitialized {};
+
+TEST_F(ParseCrashDumpTest, DoubleFault) {
+  dif_rv_core_ibex_crash_dump_info_t ref = {
+      .fault_stage = {.mtval = 0x55555555,
+                      .mpec = 0x51555555,
+                      .mdaa = 0x55515555,
+                      .mnpc = 0x55555155,
+                      .mcpc = 0x55555551},
+      .previous_fault_state = {.mtval = 0x15555555, .mpec = 0x25555555},
+      .double_fault = kDifToggleEnabled,
+  };
+  dif_rv_core_ibex_crash_dump_info_t dump = {0};
+
+  uint32_t
+      cpu_info[sizeof(dif_rv_core_ibex_crash_dump_info_t) / sizeof(uint32_t)];
+  memcpy(cpu_info, &ref, sizeof(cpu_info));
+  EXPECT_DIF_OK(
+      dif_rv_core_ibex_parse_crash_dump(&ibex_, cpu_info, sizeof(ref), &dump));
+  EXPECT_EQ(dump, ref);
+}
+
+TEST_F(ParseCrashDumpTest, SingleFault) {
+  dif_rv_core_ibex_crash_dump_info_t ref = {
+      .fault_stage = {.mtval = 0x55555555,
+                      .mpec = 0x51555555,
+                      .mdaa = 0x55515555,
+                      .mnpc = 0x55555155,
+                      .mcpc = 0x55555551},
+      .previous_fault_state = {.mtval = 0x15555555, .mpec = 0x25555555},
+      .double_fault = kDifToggleDisabled,
+  };
+  dif_rv_core_ibex_crash_dump_info_t dump = {0};
+
+  uint32_t
+      cpu_info[sizeof(dif_rv_core_ibex_crash_dump_info_t) / sizeof(uint32_t)];
+  memcpy(cpu_info, &ref, sizeof(cpu_info));
+  EXPECT_DIF_OK(
+      dif_rv_core_ibex_parse_crash_dump(&ibex_, cpu_info, sizeof(ref), &dump));
+  EXPECT_EQ(dump, ref);
+}
+
+TEST_F(ParseCrashDumpTest, ReadBadArg) {
+  dif_rv_core_ibex_crash_dump_info_t out;
+  uint32_t info[9];
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_parse_crash_dump(nullptr, info, 9, &out));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_parse_crash_dump(&ibex_, nullptr, 9, &out));
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_parse_crash_dump(&ibex_, info, 7, &out));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_parse_crash_dump(&ibex_, info, 9, nullptr));
 }
 
 }  // namespace dif_rv_core_ibex_test
