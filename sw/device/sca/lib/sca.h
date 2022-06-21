@@ -160,6 +160,16 @@ typedef void (*sca_callee)(void);
 void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles);
 
 /**
+ * seed PRNG for masking key.
+ */
+void seed_lfsr(uint32_t seed);
+
+/**
+ * step PRNG for masking key.
+ */
+uint32_t next_lfsr(void);
+
+/**
  * Prints an error message over UART if the given DIF evaluates to anthing but
  * kDifOk.
  * TODO: Remove once there is a CHECK_DIF_OK version that does not require test

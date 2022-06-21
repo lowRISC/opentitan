@@ -219,14 +219,16 @@ static dif_result_t kmac_msg_start(dif_kmac_mode_kmac_t mode, size_t l,
   }
 
   // Set key length and shares.
+  // Uniform sharing is achieved by XORing a random number into both shares.
   mmio_region_write32(kmac.base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
   for (int i = 0; i < ARRAYSIZE(k->share0); ++i) {
+    const uint32_t a = next_lfsr();
     mmio_region_write32(kmac.base_addr,
                         KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t),
-                        k->share0[i]);
+                        k->share0[i] ^ a);
     mmio_region_write32(kmac.base_addr,
                         KMAC_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t),
-                        k->share1[i]);
+                        k->share1[i] ^ a);
   }
 
   // Configure cSHAKE mode with the given strength and enable KMAC mode.
@@ -555,6 +557,18 @@ static void sha3_serial_batch(const uint8_t *data, size_t data_len) {
 }
 
 /**
+ * Simple serial 'l' (seed lfsr) command handler.
+ *
+ * This function only supports 4-byte seeds.
+ *
+ * @param seed A buffer holding the seed.
+ */
+static void sha3_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
+  SS_CHECK(seed_len == sizeof(uint32_t));
+  seed_lfsr(read_32(seed));
+}
+
+/**
  * Main function.
  *
  * Initializes peripherals and processes simple serial packets received over
@@ -571,6 +585,7 @@ void _ottf_main(void) {
   simple_serial_register_handler('p', sha3_serial_single_absorb);
   simple_serial_register_handler('b', sha3_serial_batch);
   simple_serial_register_handler('t', sha3_serial_fixed_key_set);
+  simple_serial_register_handler('l', sha3_serial_seed_lfsr);
 
   LOG_INFO("Initializing the KMAC peripheral.");
   kmac_init();

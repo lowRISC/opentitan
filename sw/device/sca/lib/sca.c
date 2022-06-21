@@ -293,3 +293,26 @@ void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles) {
   OT_DISCARD(dif_clkmgr_gateable_clock_set_enabled(
       &clkmgr, CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT, kDifToggleEnabled));
 }
+
+/**
+ * PRNG for masking key.
+ */
+static uint32_t lfsr_state = 0xdeadbeef;
+
+/**
+ * seed PRNG for masking key.
+ */
+void seed_lfsr(uint32_t seed) { lfsr_state = seed; }
+
+/**
+ * step PRNG for masking key.
+ */
+uint32_t next_lfsr(void) {
+  const uint32_t lfsr_out = lfsr_state;
+  bool lfsr_bit = lfsr_state & 0x00000001;
+  lfsr_state = lfsr_state >> 1;
+  if (lfsr_bit) {
+    lfsr_state ^= 0x80000057;
+  }
+  return lfsr_out;
+}
