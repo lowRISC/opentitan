@@ -36,7 +36,7 @@ class GpioTestInitialized : public GpioTest {
 // Reset tests
 class ResetTest : public GpioTestInitialized {};
 
-TEST_F(ResetTest, NullArgs) { EXPECT_DIF_BADARG(dif_gpio_reset(nullptr)); }
+TEST_F(ResetTest, BadArgs) { EXPECT_DIF_BADARG(dif_gpio_reset(nullptr)); }
 
 TEST_F(ResetTest, Reset) {
   EXPECT_WRITE32(GPIO_INTR_ENABLE_REG_OFFSET, 0);
@@ -55,7 +55,7 @@ TEST_F(ResetTest, Reset) {
 // Read tests
 class ReadTest : public GpioTestInitialized {};
 
-TEST_F(ReadTest, NullArgs) {
+TEST_F(ReadTest, BadArgs) {
   dif_gpio_state_t out_arg_uint32_t;
   bool out_arg_bool;
 
@@ -66,6 +66,7 @@ TEST_F(ReadTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_gpio_read(nullptr, 0, &out_arg_bool));
   EXPECT_DIF_BADARG(dif_gpio_read(&gpio_, 0, nullptr));
   EXPECT_DIF_BADARG(dif_gpio_read(nullptr, 0, nullptr));
+  EXPECT_DIF_BADARG(dif_gpio_read(&gpio_, kDifGpioNumPins, &out_arg_bool));
 }
 
 TEST_F(ReadTest, AllPins) {
@@ -94,10 +95,11 @@ TEST_F(ReadTest, SinglePin) {
 // Write tests
 class WriteTest : public GpioTestInitialized {};
 
-TEST_F(WriteTest, NullArgs) {
+TEST_F(WriteTest, BadArgs) {
   EXPECT_DIF_BADARG(dif_gpio_write_all(nullptr, kAllOnes));
   EXPECT_DIF_BADARG(dif_gpio_write(nullptr, 0, true));
   EXPECT_DIF_BADARG(dif_gpio_write_masked(nullptr, kAllOnes, kAllOnes));
+  EXPECT_DIF_BADARG(dif_gpio_write(&gpio_, kDifGpioNumPins, true));
 }
 
 TEST_F(WriteTest, AllPins) {
@@ -156,9 +158,11 @@ TEST_F(WriteTest, Masked) {
 // Output mode tests
 class OutputModeTest : public GpioTestInitialized {};
 
-TEST_F(OutputModeTest, NullArgs) {
+TEST_F(OutputModeTest, BadArgs) {
   EXPECT_DIF_BADARG(dif_gpio_output_set_enabled_all(nullptr, kAllOnes));
   EXPECT_DIF_BADARG(dif_gpio_output_set_enabled(nullptr, 0, kDifToggleEnabled));
+  EXPECT_DIF_BADARG(
+      dif_gpio_output_set_enabled(&gpio_, kDifGpioNumPins, kDifToggleEnabled));
   EXPECT_DIF_BADARG(
       dif_gpio_output_set_enabled_masked(nullptr, kAllOnes, kAllOnes));
 }
@@ -202,7 +206,7 @@ TEST_F(OutputModeTest, Masked) {
 // Input noise filter tests
 class InputFilterTest : public GpioTestInitialized {};
 
-TEST_F(InputFilterTest, NullArgs) {
+TEST_F(InputFilterTest, BadArgs) {
   EXPECT_DIF_BADARG(dif_gpio_input_noise_filter_set_enabled(nullptr, kAllOnes,
                                                             kDifToggleEnabled));
   EXPECT_DIF_BADARG(dif_gpio_input_noise_filter_set_enabled(

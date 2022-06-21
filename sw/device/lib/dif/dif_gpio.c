@@ -6,6 +6,10 @@
 
 #include "gpio_regs.h"  // Generated.
 
+static_assert(kDifGpioNumPins <= 32,
+              "This implementation assumes that the number of pins is less "
+              "than or equal to 32");
+
 /**
  * Gives the mask that corresponds to the given bit index.
  *
@@ -83,7 +87,7 @@ static dif_result_t gpio_masked_bit_write(const dif_gpio_t *gpio,
                                           ptrdiff_t reg_lower_offset,
                                           ptrdiff_t reg_upper_offset,
                                           uint32_t index, bool val) {
-  if (gpio == NULL) {
+  if (gpio == NULL || index >= kDifGpioNumPins) {
     return kDifBadArg;
   }
 
@@ -192,7 +196,7 @@ dif_result_t dif_gpio_read_all(const dif_gpio_t *gpio,
 
 dif_result_t dif_gpio_read(const dif_gpio_t *gpio, dif_gpio_pin_t pin,
                            bool *state) {
-  if (gpio == NULL || state == NULL) {
+  if (gpio == NULL || state == NULL || pin >= kDifGpioNumPins) {
     return kDifBadArg;
   }
 
@@ -238,10 +242,6 @@ dif_result_t dif_gpio_output_set_enabled_all(const dif_gpio_t *gpio,
 dif_result_t dif_gpio_output_set_enabled(const dif_gpio_t *gpio,
                                          dif_gpio_pin_t pin,
                                          dif_toggle_t state) {
-  if (gpio == NULL) {
-    return kDifBadArg;
-  }
-
   return gpio_masked_bit_write(gpio, GPIO_MASKED_OE_LOWER_REG_OFFSET,
                                GPIO_MASKED_OE_UPPER_REG_OFFSET, pin, state);
 }
