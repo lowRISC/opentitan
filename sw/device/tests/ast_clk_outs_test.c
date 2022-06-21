@@ -32,6 +32,10 @@ OTTF_DEFINE_TEST_CONFIG();
  *
  * Then dut wakes up and repeat another 100 measurements before
  * test finish.
+ *
+ * Notice the test overrides the hardware behavior so it comes out with
+ * calibrated USB clock, otherwise the USB clock frequency will be incorrect.
+ * USB calibration should be a separate test, and may be vendor-specific.
  */
 enum {
   kWaitForCSRPolling = 1,  // 1us
@@ -43,48 +47,6 @@ enum {
 };
 static dif_clkmgr_t clkmgr;
 static dif_pwrmgr_t pwrmgr;
-
-typedef struct expected_count_info {
-  int count;
-  int variability;
-} expected_count_info_t;
-
-// Due to u_sync_ref and valid in each measurement block,
-// measurement cnt has 3 cycle offset.
-// So variability becomes 1(calculated from spec) + 3 = 4.
-
-static const expected_count_info_t kCountInfos[] = {
-    {.count = 479, .variability = 4}, {.count = 239, .variability = 4},
-    {.count = 119, .variability = 4}, {.count = 499, .variability = 4},
-    {.count = 239, .variability = 4},
-};
-
-static void enable_clk_measure(void) {
-  // Enable cycle count measurements to confirm the frequencies are correct.
-  for (size_t i = 0; i < ARRAYSIZE(kCountInfos); ++i) {
-    expected_count_info_t count_info = kCountInfos[i];
-    clkmgr_testutils_enable_clock_count_measurement(
-        &clkmgr, (dif_clkmgr_measure_clock_t)i,
-        count_info.count - count_info.variability,
-        count_info.count + count_info.variability);
-  }
-
-  // lock measurement controls
-  CHECK_DIF_OK(dif_clkmgr_measure_ctrl_disable(&clkmgr));
-}
-
-static void check_measurement_counts(const dif_clkmgr_t *clkmgr) {
-  dif_clkmgr_recov_err_codes_t err_codes;
-  CHECK_DIF_OK(dif_clkmgr_recov_err_code_get_codes(clkmgr, &err_codes));
-  if (err_codes != 0) {
-    LOG_ERROR("Unexpected recoverable error codes 0x%x", err_codes);
-  } else {
-    LOG_INFO("Clock measurements are okay");
-  }
-
-  // clear recoverable errors
-  CHECK_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(clkmgr, ~0u));
-}
 
 bool test_main(void) {
   dif_sensor_ctrl_t sensor_ctrl;
@@ -99,17 +61,6 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
-  // enable usb clock after low power wake up
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr,
-                                        kDifPwrmgrWakeupRequestSourceFive)) {
-    dif_pwrmgr_domain_config_t config =
-        (kDifPwrmgrDomainOptionUsbClockInActivePower +
-         kDifPwrmgrDomainOptionMainPowerInLowPower);
-
-    CHECK_DIF_OK(
-        dif_pwrmgr_set_domain_config(&pwrmgr, config, kDifToggleEnabled));
-  }
-
   LOG_INFO("TEST: wait for ast init");
   dif_toggle_t init_st = kDifToggleDisabled;
 
@@ -123,11 +74,15 @@ bool test_main(void) {
   LOG_INFO("TEST: done ast init");
 
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
-    // program 3 clock meausres
-    enable_clk_measure();
+    // At POR.
+    LOG_INFO("Run clock measurements right after POR");
+    clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+        &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
+        /*low_speed=*/false);
     busy_spin_micros(kMeasurementDelayMicros);
     // check results
-    check_measurement_counts(&clkmgr);
+    clkmgr_testutils_check_measurement_counts(&clkmgr);
+    clkmgr_testutils_disable_clock_counts(&clkmgr);
 
     // set wakeup timer to 500us to have enough down time
     // during the down time, all clock measurements are still enabled but
@@ -135,26 +90,37 @@ bool test_main(void) {
     uint32_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 1000 : 100;
     aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
     // go to low power
-    LOG_INFO("TEST: start low power mode");
-    pwrmgr_testutils_enable_low_power(&pwrmgr,
-                                      kDifPwrmgrWakeupRequestSourceFive, 0);
+
+    LOG_INFO("Start clock measurements right before deep sleep");
+    clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+        &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
+        /*low_speed=*/false);
+
+    LOG_INFO("TEST: start deep low power mode");
+    pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
+        kDifPwrmgrDomainOptionUsbClockInActivePower);
 
     // Enter low power mode.
-    LOG_INFO("TEST: Issue WFI to enter sleep");
+    LOG_INFO("TEST: Issue WFI to enter deep sleep");
     wait_for_interrupt();
 
   } else if (pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) {
+    // All clocks were inactive in low power, so wait some more so there are
+    // enough AON cycles for measurements.
+    busy_spin_micros(kMeasurementDelayMicros);
+    clkmgr_testutils_check_measurement_counts(&clkmgr);
     LOG_INFO("TEST: disable clock measures");
-    clkmgr_testutils_disable_clock_count_measurements(&clkmgr);
-    LOG_INFO("TEST: dummy measure");
-    check_measurement_counts(&clkmgr);
+    clkmgr_testutils_disable_clock_counts(&clkmgr);
+
+    LOG_INFO("TEST: one more measurement");
+    clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+        &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
+        /*low_speed=*/false);
     busy_spin_micros(kMeasurementDelayMicros);
-    LOG_INFO("TEST: re-enable");
-    enable_clk_measure();
-    busy_spin_micros(kMeasurementDelayMicros);
-    LOG_INFO("TEST: check");
-    check_measurement_counts(&clkmgr);
+    clkmgr_testutils_check_measurement_counts(&clkmgr);
+    clkmgr_testutils_disable_clock_counts(&clkmgr);
 
     LOG_INFO("TEST: done");
     return true;

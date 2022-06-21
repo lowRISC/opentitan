@@ -18,7 +18,7 @@
  * @return The transactional block's clock status.
  */
 inline bool clkmgr_testutils_get_trans_clock_status(
-    dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock) {
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock) {
   dif_toggle_t state;
   CHECK_DIF_OK(dif_clkmgr_hintable_clock_get_enabled(clkmgr, clock, &state));
   return state == kDifToggleEnabled;
@@ -38,7 +38,7 @@ inline bool clkmgr_testutils_get_trans_clock_status(
  * @param timeout_usec Timeout in microseconds.
  */
 inline void clkmgr_testutils_check_trans_clock_gating(
-    dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
     bool exp_clock_enabled, uint32_t timeout_usec) {
   CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, 0x0));
 
@@ -48,8 +48,6 @@ inline void clkmgr_testutils_check_trans_clock_gating(
 
   CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, 0x1));
 }
-
-extern const char *measure_clock_names[kDifClkmgrMeasureClockUsb + 1];
 
 /**
  * Enables clock measurements.
@@ -61,21 +59,41 @@ extern const char *measure_clock_names[kDifClkmgrMeasureClockUsb + 1];
  * @param lo_threshold Expected minimum cycle count.
  * @param hi_threshold Expected maximum cycle count.
  */
-inline void clkmgr_testutils_enable_clock_count_measurement(
-    dif_clkmgr_t *clkmgr, dif_clkmgr_measure_clock_t clock,
-    uint32_t lo_threshold, uint32_t hi_threshold) {
-  LOG_INFO("Enabling clock count measurement for %0s lo %0d hi %0d",
-           measure_clock_names[clock], lo_threshold, hi_threshold);
-  CHECK_DIF_OK(dif_clkmgr_enable_measure_counts(clkmgr, clock, lo_threshold,
-                                                hi_threshold));
-}
+void clkmgr_testutils_enable_clock_count(const dif_clkmgr_t *clkmgr,
+                                         dif_clkmgr_measure_clock_t clock,
+                                         uint32_t lo_threshold,
+                                         uint32_t hi_threshold);
+
+/**
+ * Enables all clock measurements with expected thresholds.
+ *
+ * If jitter is disabled the thresholds are configured tightly.
+ * If jitter is enabled the min threshold allows more variability.
+ *
+ * @param clkmgr A clkmgr DIF handle.
+ * @param jitter_enabled If true relax the min threshold.
+ * @param external_clk If true the external clock is enabled.
+ * @param low_speed If true and external clock is enabled, the external
+ *                  clock is running at 48 Mhz.
+ */
+void clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+    const dif_clkmgr_t *clkmgr, bool jitter_enabled, bool external_clk,
+    bool low_speed);
+
+/**
+ * Checks that there are no clock measurement errors.
+ *
+ * @param clkmgr A clkmgr DIF handle.
+ */
+void clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr);
 
 /**
  * Disable all clock measurements.
  *
  * @param clkmgr A clkmgr DIF handle.
  */
-void clkmgr_testutils_disable_clock_count_measurements(dif_clkmgr_t *clkmgr);
+void clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr);
+
 /**
  * Verifies the given clock state.
  *

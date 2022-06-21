@@ -936,6 +936,7 @@
       uvm_test_seq: chip_sw_ast_clk_outputs_vseq
       sw_images: ["sw/device/tests/ast_clk_outs_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+calibrate_usb_clk=1"]
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
