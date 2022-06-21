@@ -47,6 +47,10 @@
                     // See: https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-register-cpuctrl
                     value: "0x1",
                 },
+                {
+                    name:  "CREATOR_SW_CFG_JITTER_EN",
+                    value: "0x9",
+                },
             ],
         }
         {
