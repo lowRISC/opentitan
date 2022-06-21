@@ -22,6 +22,7 @@ opentitan_functest(
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

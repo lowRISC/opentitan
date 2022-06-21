@@ -74,5 +74,13 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
     end
   endtask
 
+  // When uart starts to send RX data, check if AST is using extclk if extclk is selected.
+  virtual task send_uart_rx_data(int size = -1, bit random = 0);
+    if (use_extclk) begin
+      cfg.ast_ext_clk_vif.check_ext_clk_in_use();
+    end
+    super.send_uart_rx_data(size, random);
+  endtask
+
 endclass : chip_sw_uart_rand_baudrate_vseq
 `undef CALC_NCO

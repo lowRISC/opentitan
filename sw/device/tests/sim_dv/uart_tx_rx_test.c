@@ -12,6 +12,7 @@
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
@@ -72,8 +73,8 @@ static volatile const uint8_t kUartIdx = 0x0;
  *
  * Similar to `kUartIdx`, this may be overridden in DV testbench
  */
-static volatile const uint8_t kUseExtClk = 0x0;
-static volatile const uint8_t kUseLowSpeedSel = 0x0;
+static volatile const bool kUseExtClk = false;
+static volatile const bool kUseLowSpeedSel = false;
 
 // A set of bytes to be send out of TX.
 static const uint8_t kUartTxData[UART_DATASET_SIZE] = {
@@ -409,7 +410,7 @@ static bool uart_transfer_ongoing_bytes(const dif_uart_t *uart,
   return result;
 }
 
-static bool execute_test(const dif_uart_t *uart) {
+static void execute_test(const dif_uart_t *uart) {
   bool uart_tx_done = false;
   size_t uart_tx_bytes_written = 0;
   exp_uart_irq_tx_watermark = true;
@@ -500,21 +501,13 @@ static bool execute_test(const dif_uart_t *uart) {
           "UART RX data[%0d] mismatched: {act: %x, exp: %x}", i,
           uart_rx_data[i], kExpUartRxData[i]);
   }
-
-  // If we reached here, then the test passed.
-  return true;
 }
 
-void config_external_clock(void) {
+void config_external_clock(const dif_clkmgr_t *clkmgr) {
   dif_lc_ctrl_t lc;
-  dif_clkmgr_t clkmgr;
   mmio_region_t lc_ctrl_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
-  mmio_region_t clkmgr_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
-
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_ctrl_base_addr, &lc));
-  CHECK_DIF_OK(dif_clkmgr_init(clkmgr_base_addr, &clkmgr));
 
   LOG_INFO("Read and check LC state.");
   dif_lc_ctrl_state_t curr_state;
@@ -522,15 +515,18 @@ void config_external_clock(void) {
   CHECK(curr_state == kDifLcCtrlStateRma,
         "LC State isn't in kDifLcCtrlStateRma!");
 
-  // Enable external clock and wait for clk switch to finish
-  LOG_INFO("Configure clkmgr to enable external clock");
-  CHECK_DIF_OK(dif_clkmgr_external_clock_set_enabled(&clkmgr, kUseLowSpeedSel));
-  CHECK_DIF_OK(dif_clkmgr_wait_for_ext_clk_switch(&clkmgr));
+  clkmgr_testutils_enable_external_clock_and_wait_for_completion(
+      clkmgr, kUseLowSpeedSel);
 }
 
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
+  dif_clkmgr_t clkmgr;
+  mmio_region_t clkmgr_base_addr =
+      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_clkmgr_init(clkmgr_base_addr, &clkmgr));
+
   update_uart_base_addr_and_irq_id();
 
   LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_base_addr);
@@ -550,8 +546,10 @@ bool test_main(void) {
       kTopEarlgreyPinmuxMioOutIor12, kTopEarlgreyPinmuxOutselUart3Tx);
 
   if (kUseExtClk) {
-    config_external_clock();
+    config_external_clock(&clkmgr);
   }
+  clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+      &clkmgr, /*jitter_enabled=*/false, kUseExtClk, kUseLowSpeedSel);
 
   // Initialize the UART.
   mmio_region_t chosen_uart_region = mmio_region_from_addr(uart_base_addr);
@@ -567,5 +565,9 @@ bool test_main(void) {
   irq_external_ctrl(true);
 
   // Execute the test.
-  return execute_test(&uart);
+  execute_test(&uart);
+
+  clkmgr_testutils_check_measurement_counts(&clkmgr);
+
+  return true;
 }
