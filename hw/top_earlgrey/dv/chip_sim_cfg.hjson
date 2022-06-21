@@ -717,14 +717,14 @@
     {
       name: chip_sw_keymgr_key_derivation
       uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
-      sw_images: ["sw/device/tests/keymgr_key_derivation_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/keymgr_key_derivation_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=20000000"]
     }
     {
       name: chip_sw_keymgr_key_derivation_jitter_en
       uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
-      sw_images: ["sw/device/tests/keymgr_key_derivation_test:1"]
+      sw_images: ["sw/device/tests/sim_dv/keymgr_key_derivation_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=20000000", "+en_jitter=1"]
     }
