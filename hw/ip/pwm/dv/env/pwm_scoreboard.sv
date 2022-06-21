@@ -27,6 +27,8 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   int                               blink_cnt[PWM_NUM_CHANNELS]   = '{default:0};
   int                               ignore_start_pulse[PWM_NUM_CHANNELS]   = '{default:2};
   int                               ignore_state_change[PWM_NUM_CHANNELS]   = '{default:0};
+  uint                              subcycle_cnt[PWM_NUM_CHANNELS]   = '{default:0};
+  uint                              int_dc[PWM_NUM_CHANNELS]   = '{default:0};
   param_reg_t                       channel_param[PWM_NUM_CHANNELS];
   dc_blink_t                        duty_cycle[PWM_NUM_CHANNELS];
   dc_blink_t                        blink[PWM_NUM_CHANNELS];
@@ -258,13 +260,11 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   endtask : compare_trans
 
   virtual task generate_exp_item(ref pwm_item item, input bit [PWM_NUM_CHANNELS-1:0] channel);
-    uint int_dc          = 0;
     uint beats_cycle     = 0;
     uint period          = 0;
     uint high_cycles     = 0;
     uint low_cycles      = 0;
     uint initial_dc      = 0;
-    uint subcycle_cnt    = 0;
     uint phase_count     = 0;
     dc_mod_e dc_mod;
 
@@ -282,54 +282,56 @@ class pwm_scoreboard extends cip_base_scoreboard #(
             if (blink_state[channel] == CycleB) begin
               blink_state[channel] = CycleA;
               blink_cnt[channel] = blink[channel].A;
-              int_dc = duty_cycle[channel].A;
+              int_dc[channel] = duty_cycle[channel].A;
             end else begin
               blink_state[channel] = CycleB;
               blink_cnt[channel]   = blink[channel].B;
-              int_dc = duty_cycle[channel].B;
+              int_dc[channel] = duty_cycle[channel].B;
             end
             ignore_state_change[channel] = 2 ;
           end else begin
-            int_dc = (blink_state[channel] == CycleA) ? duty_cycle[channel].A :
+            int_dc[channel] = (blink_state[channel] == CycleA) ? duty_cycle[channel].A :
               duty_cycle[channel].B;
             blink_cnt[channel] -= 1;
           end
         end
         1'b1: begin
           // When HTBT_EN is set, the duty cycle increases (or decreases) linearly from
-          // DUTY_CYCLE.A to DUTY_CYCLE.B and back, in steps of blink.A (BLINK_PARAM.Y+1) with an
-          // increment (decrement) once every blink.B (BLINK_PARAM.X+1) PWM cycles.
+          // DUTY_CYCLE.A to DUTY_CYCLE.B and back, in steps of blink.B (BLINK_PARAM.Y+1) with an
+          // increment (decrement) once every blink.A (BLINK_PARAM.X+1) PWM cycles.
           case (blink_state[channel])
             CycleA: begin
               // current duty cycle
-              int_dc = (initial_dc) ? int_dc : duty_cycle[channel].A;
+              int_dc[channel] = (initial_dc) ? int_dc[channel] : duty_cycle[channel].A;
               // when subcycle_cnt is equal to (BLINK_PARAM.X+1)
-              if (subcycle_cnt == (blink[channel].B + 1)) begin
+              if (subcycle_cnt[channel] == (blink[channel].A + 1)) begin
                 // increment (decrement) int_dc by (BLINK_PARAM.Y+1)
-                int_dc = (dc_mod == 1'b0) ?
-                  (int_dc - (blink[channel].A + 1)) :
-                  (int_dc + (blink[channel].A + 1));
+                int_dc[channel] = (dc_mod == 1'b0) ?
+                  (int_dc[channel] - (blink[channel].B + 1)) :
+                  (int_dc[channel] + (blink[channel].B + 1));
                 // reset subcycle_cnt after increment (decrement)
-                subcycle_cnt = 0;
+                subcycle_cnt[channel] = 0;
                 initial_dc++;
               end else begin
                 // else increment subcycle_cnt
-                subcycle_cnt++;
+                subcycle_cnt[channel]++;
                 initial_dc++;
               end
               // enter CycleB when duty cycle is reached
               case (dc_mod)
                 LargeA: begin
-                  if (int_dc <= duty_cycle[channel].B) begin
+                  if (int_dc[channel] <= duty_cycle[channel].B) begin
                     blink_state[channel] = CycleB;
-                    subcycle_cnt = 0;
+                    subcycle_cnt[channel] = 0;
+                    ignore_state_change[channel] = 1 ;
                     initial_dc = 0;
                   end
                 end
                 LargeB: begin
-                  if (int_dc >= duty_cycle[channel].B) begin
+                  if (int_dc[channel] >= duty_cycle[channel].B) begin
                     blink_state[channel] = CycleB;
-                    subcycle_cnt = 0;
+                    ignore_state_change[channel] = 1 ;
+                    subcycle_cnt[channel] = 0;
                     initial_dc = 0;
                   end
                 end
@@ -339,29 +341,30 @@ class pwm_scoreboard extends cip_base_scoreboard #(
               endcase
             end
             CycleB: begin
-              int_dc = (subcycle_cnt) ? int_dc : duty_cycle[channel].B;
-              if (subcycle_cnt == (blink[channel].B + 1'b1)) begin
-                int_dc = (dc_mod == 1'b1) ?
-                  (int_dc - (blink[channel].A + 1'b1)) :
-                  (int_dc + (blink[channel].A + 1'b1));
-                subcycle_cnt = 0;
+              if (subcycle_cnt[channel] == (blink[channel].A + 1'b1)) begin
+                int_dc[channel] = (dc_mod == 1'b1) ?
+                  (int_dc[channel] - (blink[channel].B + 1'b1)) :
+                  (int_dc[channel] + (blink[channel].B + 1'b1));
+                subcycle_cnt[channel] = 0;
                 initial_dc++;
               end else begin
-                subcycle_cnt++;
+                subcycle_cnt[channel]++;
                 initial_dc++;
               end
               case (dc_mod)
                 LargeB: begin
-                  if (int_dc <= duty_cycle[channel].A) begin
+                  if (int_dc[channel] <= duty_cycle[channel].A) begin
                     blink_state[channel] = CycleA;
-                    subcycle_cnt = 0;
+                    ignore_state_change[channel] = 1 ;
+                    subcycle_cnt[channel] = 0;
                     initial_dc = 0;
                   end
                 end
                 LargeA: begin
-                  if (int_dc >= duty_cycle[channel].A) begin
+                  if (int_dc[channel] >= duty_cycle[channel].A) begin
                     blink_state[channel] = CycleA;
-                    subcycle_cnt = 0;
+                    ignore_state_change[channel] = 1 ;
+                    subcycle_cnt[channel] = 0;
                     initial_dc = 0;
                   end
                 end
@@ -380,11 +383,11 @@ class pwm_scoreboard extends cip_base_scoreboard #(
             channel, channel_param[channel].HtbtEn), UVM_HIGH)
         end
       endcase
-    end else int_dc = duty_cycle[channel].A;
+    end else int_dc[channel] = duty_cycle[channel].A;
 
     beats_cycle = 2**(channel_cfg.DcResn + 1);
     period      = beats_cycle * (channel_cfg.ClkDiv + 1);
-    high_cycles = (int_dc >> (16 - (channel_cfg.DcResn + 1))) * (channel_cfg.ClkDiv + 1);
+    high_cycles = (int_dc[channel] >> (16 - (channel_cfg.DcResn + 1))) * (channel_cfg.ClkDiv + 1);
     low_cycles  = period - high_cycles;
     // Each PWM pulse cycle is divided into 2^DC_RESN+1 beats, per beat the 16-bit phase counter
     // increments by 2^(16-DC_RESN-1)(modulo 65536)
