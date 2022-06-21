@@ -279,7 +279,7 @@
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+uart_idx=0"]
+      run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1"]
       reseed: 5
     }
     {
@@ -287,7 +287,7 @@
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+uart_idx=1"]
+      run_opts: ["+uart_idx=1", "+calibrate_usb_clk=1"]
       reseed: 5
     }
     {
@@ -295,7 +295,7 @@
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+uart_idx=2"]
+      run_opts: ["+uart_idx=2", "+calibrate_usb_clk=1"]
       reseed: 5
     }
     {
@@ -303,7 +303,7 @@
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+uart_idx=3"]
+      run_opts: ["+uart_idx=3", "+calibrate_usb_clk=1"]
       reseed: 5
     }
     {
@@ -311,14 +311,14 @@
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+use_spi_load_bootstrap=1"]
+      run_opts: ["+use_spi_load_bootstrap=1", "+calibrate_usb_clk=1"]
     }
     {
       name: chip_sw_uart_rand_baudrate
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=80_000_000"]
+      run_opts: ["+sw_test_timeout_ns=80_000_000", "+calibrate_usb_clk=1"]
       reseed: 20
     }
     {
@@ -327,7 +327,7 @@
       sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=80_000_000",
-                 "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1"]
+                 "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1", "+calibrate_usb_clk=1"]
       reseed: 5
     }
     {
@@ -335,7 +335,7 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=80_000_000",
+      run_opts: ["+sw_test_timeout_ns=80_000_000", "+calibrate_usb_clk=1",
                  "+ext_clk_type=ExtClkLowSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
       reseed: 5
     }
@@ -349,7 +349,7 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/sim_dv/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=80_000_000",
+      run_opts: ["+sw_test_timeout_ns=80_000_000", "+calibrate_usb_clk=1",
                  "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
       reseed: 5
     }
