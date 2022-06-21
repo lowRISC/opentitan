@@ -146,8 +146,8 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "keymgr_key_derivation",
-    srcs = ["keymgr_key_derivation.c"],
+    name = "keymgr_key_derivation_test",
+    srcs = ["keymgr_key_derivation_test.c"],
     targets = ["dv"],
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
