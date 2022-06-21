@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ABSL_STATUS_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ABSL_STATUS_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_ABSL_STATUS_H_
+#define OPENTITAN_SW_DEVICE_LIB_BASE_ABSL_STATUS_H_
 
 #ifndef USING_ABSL_STATUS
 #error \
@@ -45,7 +45,7 @@ extern "C" {
  * Google by RPC servers, the advice about how to use them and how to
  * categorize errors is generally sound.
  */
-enum absl_status_code {
+typedef enum absl_status_code {
   // StatusCode::kOk
   //
   // kOK (gRPC code "OK") does not indicate an error; this value is returned on
@@ -225,10 +225,10 @@ enum absl_status_code {
   // values, but instead provide a "default:" case. Providing such a default
   // case ensures that code will compile when new codes are added.
   kDoNotUseReservedForFutureExpansionUseDefaultInSwitchInstead_ = 20
-};
+} absl_status_t;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ABSL_STATUS_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_ABSL_STATUS_H_

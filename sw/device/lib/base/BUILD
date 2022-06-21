@@ -13,6 +13,11 @@ cc_library(
 )
 
 cc_library(
+    name = "absl_status",
+    hdrs = ["absl_status.h"],
+)
+
+cc_library(
     name = "stdasm",
     hdrs = ["stdasm.h"],
 )
