@@ -65,65 +65,49 @@ typedef enum dif_clkmgr_measure_clock {
 
 typedef enum dif_clkmgr_recov_err_type {
   /**
+   * A recoverable update error for one of the clocks.
+   */
+  kDifClkmgrRecovErrTypeShadowUpdate = 1u << 0,
+  /**
    * A recoverable measurement error for IO clock.
    */
-  kDifClkmgrRecovErrTypeIoMeas = 1u << 0,
+  kDifClkmgrRecovErrTypeIoMeas = 1u << 1,
   /**
    * A recoverable measurement error for IO_DIV2 clock.
    */
-  kDifClkmgrRecovErrTypeIoDiv2Meas = 1u << 1,
+  kDifClkmgrRecovErrTypeIoDiv2Meas = 1u << 2,
   /**
    * A recoverable measurement error for IO_DIV4 clock.
    */
-  kDifClkmgrRecovErrTypeIoDiv4Meas = 1u << 2,
+  kDifClkmgrRecovErrTypeIoDiv4Meas = 1u << 3,
   /**
    * A recoverable measurement error for MAIN clock.
    */
-  kDifClkmgrRecovErrTypeMainMeas = 1u << 3,
+  kDifClkmgrRecovErrTypeMainMeas = 1u << 4,
   /**
    * A recoverable measurement error for USB clock.
    */
-  kDifClkmgrRecovErrTypeUsbMeas = 1u << 4,
+  kDifClkmgrRecovErrTypeUsbMeas = 1u << 5,
   /**
    * A recoverable timeout error for IO clock.
    */
-  kDifClkmgrRecovErrTypeIoTimeout = 1u << 5,
+  kDifClkmgrRecovErrTypeIoTimeout = 1u << 6,
   /**
    * A recoverable timeout error for IO_DIV2 clock.
    */
-  kDifClkmgrRecovErrTypeIoDiv2Timeout = 1u << 6,
+  kDifClkmgrRecovErrTypeIoDiv2Timeout = 1u << 7,
   /**
    * A recoverable timeout error for IO_DIV4 clock.
    */
-  kDifClkmgrRecovErrTypeIoDiv4Timeout = 1u << 7,
+  kDifClkmgrRecovErrTypeIoDiv4Timeout = 1u << 8,
   /**
    * A recoverable timeout error for MAIN clock.
    */
-  kDifClkmgrRecovErrTypeMainTimeout = 1u << 8,
+  kDifClkmgrRecovErrTypeMainTimeout = 1u << 9,
   /**
    * A recoverable timeout error for USB clock.
    */
-  kDifClkmgrRecovErrTypeUsbTimeout = 1u << 9,
-  /**
-   * A recoverable update error for IO clock.
-   */
-  kDifClkmgrRecovErrTypeIoUpdate = 1u << 10,
-  /**
-   * A recoverable update error for IO_DIV2 clock.
-   */
-  kDifClkmgrRecovErrTypeIoDiv2Update = 1u << 11,
-  /**
-   * A recoverable update error for IO_DIV4 clock.
-   */
-  kDifClkmgrRecovErrTypeIoDiv4Update = 1u << 12,
-  /**
-   * A recoverable update error for MAIN clock.
-   */
-  kDifClkmgrRecovErrTypeMainUpdate = 1u << 13,
-  /**
-   * A recoverable update error for USB clock.
-   */
-  kDifClkmgrRecovErrTypeUsbUpdate = 1u << 14,
+  kDifClkmgrRecovErrTypeUsbTimeout = 1u << 10,
 } dif_clkmgr_recov_err_type_t;
 
 /**

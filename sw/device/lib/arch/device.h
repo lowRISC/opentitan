@@ -28,7 +28,7 @@
  */
 typedef enum device_type {
   /**
-   * Represents "DV", i.e. running th test in a DV simulation testbench.
+   * Represents "DV", i.e. running the test in a DV simulation testbench.
    *
    * DISCLAIMER: it is important this value remains assigned to 0, as it is
    * implicitly checked in the `test_rom_start.S` assembly code to determine
