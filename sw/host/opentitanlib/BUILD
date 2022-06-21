@@ -132,7 +132,6 @@ rust_library(
         "//third_party/rust/crates:thiserror",
         "//third_party/rust/crates:typetag",
         "//third_party/rust/crates:zerocopy",
-        "@mundane",
         "@safe_ftdi",
     ],
 )
