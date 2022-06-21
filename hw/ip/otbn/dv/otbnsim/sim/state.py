@@ -344,9 +344,8 @@ class OTBNState:
             self.ext_regs.regs['WIPE_START'].commit()
 
             # Switch to a 'wiping' state
-            self._next_fsm_state = (FsmState.WIPING_BAD if should_lock
-                                    else FsmState.WIPING_GOOD)
-            self.wipe_cycles = _WIPE_CYCLES
+            self.set_fsm_state(FsmState.WIPING_BAD if should_lock
+                               else FsmState.WIPING_GOOD)
         elif self._fsm_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
             assert should_lock
             self._next_fsm_state = FsmState.WIPING_BAD
@@ -366,6 +365,8 @@ class OTBNState:
         return self._fsm_state
 
     def set_fsm_state(self, new_state: FsmState) -> None:
+        if new_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
+            self.wipe_cycles = _WIPE_CYCLES
         self._next_fsm_state = new_state
 
     def set_flags(self, fg: int, flags: FlagReg) -> None:
