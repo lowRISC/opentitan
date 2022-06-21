@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/hardened.h"
 
 #define USING_ABSL_STATUS
-#include "sw/device/silicon_creator/lib/absl_status.h"
+#include "sw/device/lib/base/absl_status.h"
 #undef USING_ABSL_STATUS
 
 #ifdef __cplusplus
