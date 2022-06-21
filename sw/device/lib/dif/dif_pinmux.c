@@ -172,7 +172,7 @@ dif_result_t dif_pinmux_output_select(const dif_pinmux_t *pinmux,
                                       dif_pinmux_index_t mio_pad_output,
                                       dif_pinmux_index_t outsel) {
   if (pinmux == NULL || mio_pad_output >= PINMUX_PARAM_N_MIO_PADS ||
-      outsel >= (2 + PINMUX_PARAM_N_MIO_PERIPH_OUT)) {
+      outsel >= (3 + PINMUX_PARAM_N_MIO_PERIPH_OUT)) {
     return kDifBadArg;
   }
   bool is_locked;
