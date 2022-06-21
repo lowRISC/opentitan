@@ -23,14 +23,22 @@
 extern "C" {
 #endif  // __cplusplus
 
+enum {
+  /**
+   * Number of pins.
+   *
+   * This constant is used to check that arguments of type `dif_gpio_pin_t` are
+   * within bounds.
+   */
+  kDifGpioNumPins = 32,
+};
+
 /**
  * A GPIO interrupt request trigger.
  *
  * Each GPIO pin has an associated interrupt that can be independently
- * configured
- * to be edge and/or level sensitive. This enum defines supported configurations
- * for
- * these interrupts.
+ * configured to be edge and/or level sensitive. This enum defines supported
+ * configurations for these interrupts.
  */
 typedef enum dif_gpio_irq_trigger {
   /**
@@ -64,9 +72,7 @@ typedef enum dif_gpio_irq_trigger {
 } dif_gpio_irq_trigger_t;
 
 /**
- * A GPIO pin index, ranging from 0 to 31.
- *
- * This type serves as the GPIO interrupt request type.
+ * A GPIO pin index, ranging from 0 to `kDifGpioNumPins - 1`.
  */
 typedef uint32_t dif_gpio_pin_t;
 
