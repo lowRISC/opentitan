@@ -57,6 +57,11 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   // when it isn't available).
   int unsigned allow_no_sideload_key_pct = 50;
 
+  // By default, FIPS field is always high when we request RND EDN word. This is because if it is
+  // low, OTBN generates a recoverable error. We want to control this knob whenever we want to see
+  // that behaviour but not anytime else.
+  int unsigned rnd_fips_pct = 100;
+
   // The hierarchical scope of the DUT instance in the testbench. This is used when constructing the
   // DPI wrapper (in otbn_env::build_phase) to tell it where to find the DUT for backdoor loading
   // memories. The default value matches the block-level testbench, but it can be overridden in a
@@ -111,6 +116,28 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     // possibility that it takes ages.
     m_edn_pull_agent_cfg[UrndEdnIdx].device_delay_min = 0;
     m_edn_pull_agent_cfg[UrndEdnIdx].device_delay_max = 2;
+  endfunction
+
+  // Constrain the randomness of FIPS for RND. This is needed because otherwise FIPS would have
+  // a fifty percent chance of being low. That would result with OTBN getting a recoverable error
+  // half the time.
+  // TODO (lowRISC/opentitan#11915): Model recoverable alert behaviour in ISS and add a test where
+  // we change the percentage of FIPS being high to check it.
+  function void gen_rnd_edn_rsp();
+    bit fips;
+    bit [cip_base_pkg::EDN_BUS_WIDTH-1:0] entropy;
+
+    `DV_CHECK_STD_RANDOMIZE_FATAL(entropy)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(fips, fips dist {1'b1 := rnd_fips_pct,
+                                                        1'b0 := 100-rnd_fips_pct};)
+    m_edn_pull_agent_cfg[RndEdnIdx].add_d_user_data({fips, entropy});
+  endfunction
+
+  function logic poll_rnd_edn_req();
+    logic rnd_req;
+    string rnd_req_hier = $sformatf("%s.u_otbn_core.u_otbn_rnd.edn_rnd_req_o", dut_instance_hier);
+    `DV_CHECK_FATAL(uvm_hdl_read(rnd_req_hier, rnd_req), "Failed to read RND EDN request from DUT")
+    return rnd_req;
   endfunction
 
   function logic [127:0] get_imem_key();
