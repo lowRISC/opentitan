@@ -353,6 +353,7 @@ class otbn_base_vseq extends cip_base_vseq #(
           _run_otbn_cmd(otbn_pkg::CmdExecute);
           _run_loop_warps();
           _run_sideload_sequence();
+          _run_rnd_edn_rsp();
         join_any
 
         // Consumed by _run_sideload_sequence()
@@ -506,6 +507,15 @@ class otbn_base_vseq extends cip_base_vseq #(
     // poll_despite_interrupts_pct percent of the time.
     return $urandom_range(100) > cfg.poll_despite_interrupts_pct;
   endfunction
+
+  // Poll RND EDN request to set some constrained randomness as a response from EDN agent.
+  protected task _run_rnd_edn_rsp();
+    forever begin
+      @(negedge cfg.clk_rst_vif.clk);
+      if (cfg.poll_rnd_edn_req())
+        cfg.gen_rnd_edn_rsp();
+    end
+  endtask
 
   // Monitor the bound-in loop controller interface to take action on loop warp events. Runs
   // forever, but is spawned by run_otbn(), which will kill it when the OTBN run completes or the
