@@ -20,14 +20,17 @@ class flash_ctrl_ro_vseq extends flash_ctrl_otf_base_vseq;
 
     fork
       begin
-        repeat(100) begin
-          host.otf_addr[OTFHostId-1:0] = $urandom();
-          host.otf_addr[1:0] = 'h0;
-          host_num = $urandom_range(1,128);
-          host_bank = $urandom_range(0,1);
-          otf_direct_read(host.otf_addr, host_bank, host_num);
-        end
-        csr_utils_pkg::wait_no_outstanding_access();
+         for (int i = 0; i < 5; ++i) begin
+            fork
+               host.otf_addr[OTFHostId-1:0] = $urandom();
+               host.otf_addr[1:0] = 'h0;
+               host_num = $urandom_range(1,128);
+               host_bank = $urandom_range(0,1);
+               otf_direct_read(host.otf_addr, host_bank, host_num);
+            join_none
+            #0;
+         end
+         csr_utils_pkg::wait_no_outstanding_access();
       end
       begin
         repeat(100) begin

@@ -106,6 +106,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
     alert_max_delay = 20000;
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
+
   endfunction : initialize
 
   // For a given partition returns its size in bytes in each of the banks.

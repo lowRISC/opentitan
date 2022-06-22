@@ -5,18 +5,12 @@
 // This is base class for on the fly mode test sequence.
 // On the fly mode test checks data integrity per transaction (program or read),
 // and doesn't rely on reference memory model in the test bench.
-class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
-  `uvm_object_utils(flash_ctrl_otf_base_vseq)
+class flash_ctrl_otf_vseq extends flash_ctrl_base_vseq;
+  `uvm_object_utils(flash_ctrl_otf_vseq)
   `uvm_object_new
 
   // Used for tracing programmed data
   bit[15:0] global_pat_cnt = 0;
-
-  // Number of controller transactions
-  // Min: 1 Max:32
-  rand int  ctrl_num;
-
-  constraint ctrl_num_c { ctrl_num dist { CTRL_TRANS_MIN :=2, [2:31] :/1, CTRL_TRANS_MAX :=2}; }
 
   virtual task pre_start();
     // Erased page doesn't go through descramble.
@@ -27,15 +21,19 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     configure_otf_mode();
     super.pre_start();
     if (cfg.seq_cfg.en_init_keys_seeds == 1) begin
-      `DV_SPINWAIT(while (otp_key_init_done != 2'b11) cfg.clk_rst_vif.wait_clks(1);,
-                   "timeout waiting  otp_key_init_done", 100_000)
+      while (otp_key_init_done != 2'b11) cfg.clk_rst_vif.wait_clks(1);
     end
-    flash_ctrl_default_region_cfg(,,,MuBi4True);
+
+    `JDBG(("flash init scheme: %s", flash_init.name()))
+//    flash_ctrl_default_region_cfg(,,,MuBi4True); // ,,,MuBi4True
+     flash_ctrl_default_region_cfg();
+
 
     // Polling init wip is done
     csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
 
     cfg.m_fpp_agent_cfg.mon_start = 1;
+
   endtask
 
   // On the fly scoreboard mode
@@ -50,6 +48,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     cfg.scb_check                               = 0;
     cfg.check_full_scb_mem_model                = 0;
     cfg.scb_otf_en = 1;
+
     foreach (cfg.m_tl_agent_cfgs[i]) begin
       cfg.m_tl_agent_cfgs[i].a_valid_delay_min = 0;
       cfg.m_tl_agent_cfgs[i].a_valid_delay_max = 0;
@@ -75,16 +74,13 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     bit poll_fifo_status = 1;
     bit [15:0] lcnt = 0;
     bit [flash_ctrl_pkg::BusAddrByteW-1:0] start_addr, end_addr;
-    data_4s_t tmp_data;
-    int                                    tail, is_odd;
-    int                                    unit_word;
-    tail = wd % 2;
+    // If program address is not aligned to 8byte,
+    bit is_odd;
 
     flash_op.op = flash_ctrl_pkg::FlashOpProgram;
     flash_op.num_words = wd;
     start_addr = flash_op.otf_addr;
-    end_addr = start_addr + (4 * (wd + tail)) * num;
-
+    end_addr = start_addr + (4 * wd) * num;
     // Check if end_addr overflows.
     // Roll over start address if this is the case.
     `uvm_info(`gfn, $sformatf("prog_flash: bank:%0d otf_addr:0x%0h, size:%0d x %0d x 4B",
@@ -92,53 +88,33 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
     if (end_addr[OTFBankId]) begin
       start_addr = num * 64;
+      flash_op.otf_addr = start_addr;
       `uvm_info(`gfn, $sformatf("prog_flash: overflow!, roll over start address to 0x%x",
                                 start_addr), UVM_MEDIUM)
     end
+    is_odd = start_addr[2];
 
-    end_addr = start_addr + (4 * (wd + tail)) * num;
-    // Check resolution error
-    // current resolution : 0x40.
-    // check if address[6] is same for start and end addr.
-    if (start_addr[6] != end_addr[6]) begin
-       `uvm_info(`gfn, $sformatf("prog_flash: prog_window violation, start_addr:0x%x  end_addr:0x%x", start_addr, end_addr), UVM_MEDIUM)
-       `uvm_info(`gfn, $sformatf("prog_flash: change start_addr to 0x%x", start_addr), UVM_MEDIUM)
-       // shift start addr window
-       start_addr[flash_ctrl_pkg::BusAddrByteW-1:6] = end_addr[flash_ctrl_pkg::BusAddrByteW-1:6];
-       start_addr[5:0] = 0;
-    end
-    flash_op.otf_addr = start_addr;
     for (int i = 0; i < num; i++) begin
-      is_odd = flash_op.otf_addr[2];
-      unit_word = wd;
       // Each flash_program_data[] entry : 4B
       // {global_cnt(16bits), lcnt(16bits)}
       for (int j = 0; j < wd; j++) begin
-        flash_program_data[j] = {global_pat_cnt, lcnt++};
+        if (j == 0 && is_odd == 1) flash_program_data[0] = {32{1'b1}};
+        else flash_program_data[j] = {global_pat_cnt, lcnt++};
         flash_data_chunk.push_back(flash_program_data[j]);
       end
-      if (i == 0 && is_odd == 1) begin
-        tmp_data = {32{1'b1}};
-        flash_data_chunk.push_front(tmp_data);
-        unit_word++;
-        tail = unit_word % 2;
-      end
-      if (i == (num - 1) && wd > 1 && tail == 1) begin
-        tmp_data = {32{1'b1}};
-        flash_data_chunk.push_back(tmp_data);
-        unit_word++;
-        tail = unit_word % 2;
-      end
+      if (wd > 1 && is_odd == 1) flash_program_data[wd] = {32{1'b1}};
+      flash_data_chunk.push_back(flash_program_data[wd]);
+
       flash_op.addr = flash_op.otf_addr;
       // Bank : bit[19]
       flash_op.addr[TL_AW-1:OTFBankId] = bank;
+      `JDBG(("full_addr:%x",flash_op.addr))
       flash_ctrl_start_op(flash_op);
       flash_ctrl_write(flash_program_data, poll_fifo_status);
       wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-      flash_op.otf_addr = flash_op.otf_addr + (4 * (wd + tail));
-      flash_otf_print_data64(flash_data_chunk, $sformatf("dbg%0d",i));
-    end // for (int i = 0; i < num; i++)
+      flash_op.otf_addr = flash_op.otf_addr + (4 * wd);
 
+    end // for (int i = 0; i < num; i++)
     flash_otf_print_data64(flash_data_chunk, "wdata");
     `uvm_create_obj(flash_otf_item, exp_item)
 
@@ -154,7 +130,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
     p_sequencer.eg_exp_ctrl_port[bank].write(exp_item);
     flash_phy_prim_agent_pkg::print_flash_data(exp_item.fq,
-          $sformatf("fdata_%0d bank%0d", cfg.otf_ctrl_wr_sent, bank));
+                                               $sformatf("fdata_%0d bank%0d", cfg.otf_ctrl_wr_sent, bank));
     global_pat_cnt++;
     cfg.otf_ctrl_wr_sent++;
   endtask // prog_flash
@@ -190,6 +166,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
                                 start_addr), UVM_MEDIUM)
     end
 
+
     for (int i = 0; i < num; i++) begin
       flash_op.addr = flash_op.otf_addr;
       flash_op.addr[TL_AW-1:OTFBankId] = bank;
@@ -201,7 +178,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       foreach(flash_read_data[i]) flash_data_chunk.push_back(flash_read_data[i]);
     end // for (int i = 0; i < num; i++)
 
+//    flash_otf_print_data64(flash_data_chunk, "rdata");
     `uvm_create_obj(flash_otf_item, exp_item)
+
     flash_op.addr = start_addr;
     exp_item.cmd = flash_op;
     exp_item.start_addr = start_addr;
@@ -237,8 +216,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     tl_addr[OTFBankId] = bank;
     tl_addr[OTFHostId] = 1;
 
-    `uvm_info("direct_read", $sformatf("bank:%0d addr:0x%0h, num: %0d",
-                                       bank, tl_addr, num), UVM_MEDIUM)
+    `uvm_info("direct_read", $sformatf("bank:%0d addr:0x%0h, num: %0d", bank, tl_addr, num), UVM_MEDIUM)
 
     for (int i = 0; i < num ; i++) begin
       do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata));
@@ -249,11 +227,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       exp_item.data_key=  otp_data_key;
       exp_item.dq.push_back(rdata);
       p_sequencer.eg_exp_host_port[bank].write(exp_item);
-      `uvm_info("direct_read", $sformatf("SEQ: rcvd:%0d    rdata:%x",cfg.otf_host_rd_rcvd, rdata),
-                UVM_MEDIUM)
+      `JDBG(("SEQ: rcvd:%0d    rdata:%x",cfg.otf_host_rd_rcvd, rdata))
       cfg.otf_host_rd_rcvd++;
       tl_addr += 4;
     end
   endtask // otf_direct_read
 
-endclass // flash_ctrl_otf_base_vseq
+endclass // flash_ctrl_otf_vseq

@@ -61,7 +61,7 @@ class flash_otf_item extends uvm_object;
     // So we need to exptra copy of mem interface address
     this.mem_addr = item.req.addr;
     fq = item.fq;
-  endfunction // get_from_phy
+  endfunction
 
   // Layout:
   // bit: 63..32, 31..0
@@ -107,7 +107,7 @@ class flash_otf_item extends uvm_object;
     end
     `uvm_info(`gfn, $sformatf("wr_scr:size:%0d addr:%x  akey:%x  dkey:%x",raw_fq.size(),
                               addr, addr_key, data_key), UVM_MEDIUM)
-    foreach (raw_fq[i]) begin
+    foreach(raw_fq[i]) begin
       fq.push_back(create_flash_data(raw_fq[i], addr, addr_key, data_key));
       addr += 8;
     end

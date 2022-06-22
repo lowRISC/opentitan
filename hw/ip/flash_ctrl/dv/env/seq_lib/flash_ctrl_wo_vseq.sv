@@ -8,14 +8,16 @@ class flash_ctrl_wo_vseq extends flash_ctrl_otf_base_vseq;
   `uvm_object_new
 
   virtual task body();
-    flash_op_t swcmd;
+    flash_op_t ctrl;
     int num, bank;
-    swcmd.partition = FlashPartData;
+    ctrl.partition  = FlashPartData;
 
-    repeat(100) begin
-      num = $urandom_range(1, 32);
-      bank = $urandom_range(0, 1);
-      prog_flash(swcmd, bank, num);
-    end
+//    repeat(100) begin
+      num = 1;//$urandom_range(1, 32);
+      bank = 0;//$urandom_range(0, 1);
+//      prog_flash(swcmd, bank, num, 2);
+    ctrl.otf_addr = 4;
+      prog_flash(ctrl, bank, num, 2);
+//    end
   endtask
 endclass // flash_ctrl_wo_vseq

@@ -121,6 +121,8 @@ module prim_gf_mult #(
     end
   end
 
+  logic [Width-1:0] mydbg;
+  assign mydbg = gf_mult(matrix, op_i_slice);
 
   assign matrix = first ? gen_matrix(operand_a_i, 1'b1) : gen_matrix(vector, 1'b0);
   assign prod_d = prod_q ^ gf_mult(matrix, op_i_slice);

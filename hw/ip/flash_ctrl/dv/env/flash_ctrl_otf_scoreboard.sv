@@ -139,7 +139,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     flash_otf_item obs;
     int col_sz = exp.fq.size;
     `uvm_info("process_read", $sformatf("bank:%0d colsz:%0d ffsz:%0d",
-                                        bank, col_sz, eg_rtl_fifo[bank].used()), UVM_HIGH)
+                                        bank, col_sz, eg_rtl_fifo[bank].used()), UVM_MEDIUM)
     exp.print("exp_read");
 
     eg_rtl_ctrl_fifo[bank].get(obs);
@@ -178,7 +178,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     // So each pop becomes 8 times of fqs.
     int col_sz = exp.fq.size / 8;
     `uvm_info("process_write", $sformatf("process_write:col&comp:bank:%0d colsz:%0d ffsz:%0d",
-                                         bank, col_sz, eg_rtl_ctrl_fifo[bank].used()), UVM_HIGH)
+                                         bank, col_sz, eg_rtl_ctrl_fifo[bank].used()), UVM_MEDIUM)
     eg_rtl_ctrl_fifo[bank].get(item);
     `uvm_create_obj(flash_otf_item, obs)
     obs = item;

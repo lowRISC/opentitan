@@ -16,7 +16,8 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   uvm_analysis_port #(flash_phy_prim_item) eg_rtl_port[NumBanks];
   flash_phy_prim_item w_item[NumBanks];
   flash_phy_prim_item r_item[NumBanks];
-  logic [flash_phy_pkg::FullDataWidth-1:0] write_buffer[NumBanks][$];
+  logic [PhyDataW-1:0] write_buffer[NumBanks][$];
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -24,7 +25,6 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
     foreach(eg_rtl_port[i]) begin
       eg_rtl_port[i] = new($sformatf("eg_rtl_port[%0d]", i), this);
     end
-
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -96,7 +96,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
       w_item[bank] = flash_phy_prim_item::type_id::create($sformatf("w_item[%0d]", bank));
       w_item[bank].req = cfg.vif.req[bank];
       w_item[bank].rsp = cfg.vif.rsp[bank];
-      `uvm_info(`gfn, $sformatf("MON%0d s_addr:%x",bank, w_item[bank].req.addr), UVM_HIGH)
+      `JDBG(("MON%0d s_addr:%x",bank, w_item[bank].req.addr))
     end
 
     write_buffer[bank].push_back(cfg.vif.req[bank].prog_full_data);
@@ -104,8 +104,8 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
     if (cfg.vif.req[bank].prog_last) begin
       w_item[bank].fq = write_buffer[bank];
       eg_rtl_port[bank].write(w_item[bank]);
-      `uvm_info(`gfn, $sformatf("MON%0d: wbuf:%0d    fq:%0d", bank,
-                                write_buffer[bank].size(), w_item[bank].fq.size()), UVM_HIGH)
+      `JDBG(("MON%0d: wbuf:%0d    fq:%0d", bank,
+             write_buffer[bank].size(), w_item[bank].fq.size()))
       write_buffer[bank] = {};
     end
   endtask // collect_item
