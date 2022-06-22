@@ -36,13 +36,15 @@ pr:
 
 jobs:
 - job: lint
-  displayName: Run code quality checks (quick lint)
+  displayName: Quality (quick lint)
+  # Run code quality checks (quick lint)
   pool:
     vmImage: ubuntu-18.04
   steps:
   - bash: |
       sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
-    displayName: Remove existing Clang installation
+    displayName: Uninstall Clang
+    # Remove existing Clang installation
   - template: ci/install-package-dependencies.yml
     ## !!!
     ##
@@ -51,37 +53,44 @@ jobs:
     ##
     ## !!!
   - bash: ci/scripts/show-env.sh
-    displayName: Display environment information
+    displayName: Environment Info
+    # Display environment information
   - bash: ci/scripts/lint-commits.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Check commit metadata
+    displayName: Commit metadata
   - bash: ci/scripts/check-licence-headers.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Check Licence Headers
+    displayName: Licence Headers
   - bash: ci/scripts/exec-check.sh
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Check executable bits
+    displayName: Executable Bits
   - bash: ci/scripts/check-ascii.sh
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Check for non-ASCII characters in source code
+    displayName: ASCII Chars
+    # Check for non-ASCII characters in source code
   - bash: ci/scripts/python-lint.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Run Python lint (flake8)
+    displayName: flake8 (Python lint)
+    # Run Python lint (flake8)
     continueOnError: true
   - bash: ci/scripts/mypy.sh
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Run Python lint (mypy)
+    displayName: mypy (Python lint)
+    # Run Python lint (mypy)
   - bash: ci/scripts/check-generated.sh
-    displayName: Ensure all generated files are clean and up-to-date
+    displayName: Check Generated
+    # Ensure all generated files are clean and up-to-date
   - bash: ci/scripts/clang-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Use clang-format to check C/C++ coding style
+    displayName: clang-format (C/C++ lint)
+    # Use clang-format to check C/C++ coding style
   - bash: ci/scripts/rust-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Use rustfmt to check Rust coding style
+    displayName: rustfmt
   - bash: ci/scripts/include-guard.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Check formatting on header guards
+    displayName: Header guards
+    # Check formatting on header guards
   - bash: ci/scripts/whitespace.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check trailing whitespace
@@ -90,11 +99,13 @@ jobs:
   - bash: ci/scripts/build-site.sh
     displayName: Render landing site
   - bash: ci/scripts/get-build-type.sh "$SYSTEM_PULLREQUEST_TARGETBRANCH" "$(Build.Reason)"
-    displayName: Check what kinds of changes the PR contains
+    displayName: Type of change
+    # Check what kinds of changes the PR contains
     name: DetermineBuildType
 
 - job: download_bazel_dependencies
-  displayName: Download Bazel fetched dependencies
+  displayName: Prefetch Bazel deps
+  # Download Bazel fetched dependencies
   continueOnError: True
   pool:
     vmImage: ubuntu-18.04
@@ -104,33 +115,35 @@ jobs:
       util/prep-bazel-airgapped-build.sh
       rm -rf bazel-airgapped/bitstreams-cache
       tar -cf bazel-airgapped.tar.gz bazel-airgapped
-    displayName: Download and package dependencies
+    displayName: Download & package dependencies
   - publish: $(System.DefaultWorkingDirectory)/bazel-airgapped.tar.gz
     artifact: bazel-dependencies
 
 - job: slow_lints
-  displayName: Run code quality checks (in-depth lint)
+  displayName: Quality (in-depth lint)
+  # Run code quality checks (in-depth lint)
   dependsOn: lint
   pool:
     vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: ci/bazelisk.sh run buildifier_check
-    displayName: Use buildifier to check Bazel coding style
+    displayName: Buildifier (Bazel lint)
   - bash: ci/scripts/check-vendoring.sh
-    displayName: Check vendored directories are up-to-date
+    displayName: Vendored directories
   - bash: ci/scripts/verible-lint.sh rtl
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint RTL Verilog source files with Verible
+    displayName: Verible RTL (Verilog lint)
   - bash: ci/scripts/verible-lint.sh dv
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint DV Verilog source files with Verible
+    displayName: Verible DV (Verilog lint)
   - bash: ci/scripts/verible-lint.sh fpv
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint FPV Verilog source files with Verible
+    displayName: Verible FPV (Verilog lint)
 
 - job: sw_build
-  displayName: Build and test Software for Earl Grey toplevel design
+  displayName: Earl Grey SW Build & Test
+  # Build and test Software for Earl Grey toplevel design
   timeoutInMinutes: 120
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
@@ -148,7 +161,8 @@ jobs:
       secureFile: "bazel_cache_gcp_key.json"
   - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
     condition: eq(variables['Build.SourceBranchName'], 'master')
-    displayName: Set the remote cache GCP key path
+    displayName: GCP key path
+    # Set the remote cache GCP key path
   - bash: |
       set -x -e
       # This command builds all software and runs all unit tests that run on
@@ -159,7 +173,7 @@ jobs:
       --define DISABLE_VERILATOR_BUILD=true \
       --test_tag_filters=-broken,-cw310,-verilator,-dv \
       //sw/...
-    displayName: Build and test software with bazel
+    displayName: Build & test SW
   - bash: |
       set -x -e
       . util/build_consts.sh
@@ -177,7 +191,8 @@ jobs:
         - "/sw/***"
 
 - job: cw310_sw_build
-  displayName: Build Software required for CW310 FPGA synthesis
+  displayName: CW310 Bitstream Software
+  # Build Earl Grey Software required for CW310 FPGA synthesis
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool:
@@ -206,7 +221,8 @@ jobs:
         - "/sw/***"
 
 - job: chip_englishbreakfast_verilator
-  displayName: Build Verilator simulation of the English Breakfast toplevel design
+  displayName: Verilated English Breakfast
+  # Build Verilator simulation of the English Breakfast toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool:
@@ -227,7 +243,8 @@ jobs:
         - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
 
 - job: execute_verilated_tests
-  displayName: Build and run fast tests on sim_verilator
+  displayName: Fast Verilated Earl Grey tests
+  # Build and run fast tests on sim_verilator
   pool: ci-public
   timeoutInMinutes: 120
   dependsOn: lint
@@ -240,12 +257,13 @@ jobs:
       secureFile: "bazel_cache_gcp_key.json"
   - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
     condition: eq(variables['Build.SourceBranchName'], 'master')
-    displayName: Set the remote cache GCP key path
+    displayName: GCP key path
+    # Set the remote cache GCP key path
   - bash: |
       set -x -e
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       ci/scripts/run-verilator-tests.sh
-    displayName: Build and execute tests
+    displayName: Build & execute tests
   # TODO: build and cache the verilator model to avoid building twice (#12574)
   - bash: |
       . util/build_consts.sh
@@ -265,7 +283,8 @@ jobs:
 # building more than one top-level design with different parametrizations.
 # Work towards this goal is tracked in issue #4669.
 - job: build_and_execute_verilated_tests_englishbreakfast
-  displayName: Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
+  displayName: Verilated English Breakfast
+  # Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
   pool:
     vmImage: ubuntu-18.04
   dependsOn: chip_englishbreakfast_verilator
@@ -320,10 +339,11 @@ jobs:
     displayName: OTBN Smoke Test
   - bash: |
       make -C hw/ip/otbn/util asm-check
-    displayName: Assemble and link code snippets
+    displayName: Assemble & link code snippets
 
 - job: chip_earlgrey_cw310
-  displayName: Build CW310 variant of the Earl Grey toplevel design using Vivado
+  displayName: CW310's Earl Grey Bitstream
+  # Build CW310 variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
     # The bootrom is built into the FPGA image at synthesis time.
@@ -350,18 +370,18 @@ jobs:
       echo Implementation log
       cat $OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/impl_1/runme.log || true
     condition: always()
-    displayName: Display synthesis and implementation logs
+    displayName: Display synthesis & implementation logs
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
         - "/hw/***"
   - publish: "$(Build.ArtifactStagingDirectory)"
     artifact: chip_earlgrey_cw310-build-out
-    displayName: Upload all Vivado artifacts for CW310
+    displayName: Upload artifacts for CW310
     condition: failed()
 
 - job: chip_earlgrey_cw310_splice_mask_rom
-  displayName: Splice mask ROM binary into CW310 bitstream using Vivado
+  displayName: Splice Mask ROM into CW310 bitstream
   dependsOn:
     - chip_earlgrey_cw310
     - sw_build
@@ -399,11 +419,12 @@ jobs:
         bucketURI: "gs://opentitan-bitstreams/master"
   - publish: "$(Build.ArtifactStagingDirectory)"
     artifact: chip_earlgrey_cw310-splice-mask-rom-build-out
-    displayName: Upload all Vivado artifacts for CW310
+    displayName: Upload artifacts for CW310
     condition: failed()
 
 - job: chip_englishbreakfast_cw305
-  displayName: Build CW305 variant of the English Breakfast toplevel design using Vivado
+  displayName: CW305's Bitstream
+  # Build CW305 variant of the English Breakfast toplevel design using Vivado
   dependsOn: build_and_execute_verilated_tests_englishbreakfast
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool: ci-public
@@ -418,14 +439,15 @@ jobs:
       set -e
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/scripts/build-bitstream-vivado.sh top_englishbreakfast cw305
-    displayName: Build bitstream with Vivado
+    displayName: Build bitstream
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
         - "/hw/top_englishbreakfast/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit"
 
 - job: execute_fpga_tests_cw310
-  displayName: Execute tests on ChipWhisperer CW310 FPGA board
+  displayName: CW310 Tests
+  # Execute tests on ChipWhisperer CW310 FPGA board
   pool: FPGA
   timeoutInMinutes: 30
   dependsOn:
@@ -445,7 +467,7 @@ jobs:
     displayName: Execute tests
 
 - job: deploy_release_artifacts
-  displayName: Package and deploy release distribution
+  displayName: Package & deploy release
   pool:
     vmImage: ubuntu-18.04
   dependsOn:
@@ -472,10 +494,10 @@ jobs:
       # Put the resulting tar file into a directory the |publish| step below can reference.
       mkdir "$BUILD_ROOT/dist-final"
       mv $BIN_DIR/opentitan-*.tar.xz "$BUILD_ROOT/dist-final"
-    displayName: Create final dist directory out of partial ones
+    displayName: Create final dist
   - publish: $(Build.ArtifactStagingDirectory)/dist-final
     artifact: opentitan-dist
-    displayName: Upload release artifacts as Azure artifact
+    displayName: Upload release
   - task: GithubRelease@0
     displayName: Upload to GitHub releases (only tags)
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
