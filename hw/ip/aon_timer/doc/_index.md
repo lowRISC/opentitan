@@ -48,9 +48,10 @@ The system reset also resets the always-on timer, so software is not required to
 To prevent the watchdog bark or bite, software is expected to periodically reset the count when operating normally.
 This is referred to as petting the watchdog, and is achieved by resetting the count to zero.
 
-Since this timer functions as a watchdog, it has two additional functions not present in the always-on wakeup timer:
+Since this timer functions as a watchdog, it has three additional functions not present in the always-on wakeup timer:
 * Watchdog configuration lock
 * Watchdog pause in sleep
+* Watchdog pause during system escalation
 
 Unlike the wakeup timer, the watchdog timer configuration can be locked by firmware until the next system reset.
 This allows the option of preventing firmware from accidentally or maliciously disabling the watchdog.
@@ -58,6 +59,9 @@ This allows the option of preventing firmware from accidentally or maliciously d
 The "pause in sleep" option controls whether the watchdog timer continues to count in low-power modes.
 This allows configurations where the watchdog timer can remain programmed and locked while the device is put to sleep for relatively long periods, controlled by the wakeup timer.
 Without this feature, the watchdog timer might wake up the core prematurely by triggering a watchdog bark.
+
+The "pause during escalation" feature ensures that watchdog bites and barks do not interfere with system escalation behavior.
+If during escalation software configures the system to hang instead of reset, the watchdog bite cannot supersede that decision.
 
 # Theory of Operations
 
