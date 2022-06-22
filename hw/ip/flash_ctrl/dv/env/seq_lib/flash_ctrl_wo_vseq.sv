@@ -10,8 +10,9 @@ class flash_ctrl_wo_vseq extends flash_ctrl_otf_base_vseq;
   virtual task body();
     flash_op_t ctrl;
     int num, bank;
-    ctrl.partition  = FlashPartData;
+    flash_ctrl_default_region_cfg(,,,MuBi4True,MuBi4True);
 
+    ctrl.partition  = FlashPartData;
     repeat(100) begin
       num = $urandom_range(1, 32);
       bank = $urandom_range(0, 1);

@@ -81,7 +81,6 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
     // bankdoor read from memory model
     `uvm_create_obj(flash_otf_item, obs)
-
     // TODO review when info region is added.
     obs.cmd.partition = FlashPartData;
     obs.cmd.op = FlashOpRead;
@@ -145,7 +144,6 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
                                         bank, col_sz, eg_rtl_fifo[bank].used()), UVM_MEDIUM)
     exp.print("obs_read");
     `uvm_create_obj(flash_otf_item, send)
-
     send.cmd = exp.cmd;
     send.cmd.addr[OTFBankId] = bank;
 
@@ -187,8 +185,8 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     // Write transactions coalesce upto 8 transactions.
     // So each pop becomes 8 times of fqs.
     int col_sz = exp.fq.size / 8;
-    `uvm_info("process_write", $sformatf("process_write:col&comp:bank:%0d colsz:%0d ffsz:%0d",
-                                         bank, col_sz, eg_rtl_ctrl_fifo[bank].used()), UVM_MEDIUM)
+    `uvm_info("process_write", $sformatf("process_write: addr:0x%x bank:%0d colsz:%0d ffsz:%0d",
+                       exp.start_addr, bank, col_sz, eg_rtl_ctrl_fifo[bank].used()), UVM_MEDIUM)
     eg_rtl_ctrl_fifo[bank].get(item);
     `uvm_create_obj(flash_otf_item, obs)
     obs = item;
@@ -201,20 +199,30 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     `dv_info($sformatf("WDATA size: %d x 8B bank:%0d rcvd_cnt:%0d",
                        obs.fq.size(), bank, cfg.otf_ctrl_wr_rcvd++), UVM_MEDIUM, "process_write")
 
-    compare_data(obs.fq, exp.fq, bank, "wdata");
+    compare_data(obs.fq, exp.fq, bank, $sformatf("wdata_page%0d", exp.page), exp.ecc_en);
   endtask // process_eg
 
   // Compare 64 bit for now
-  task compare_data(fdata_q_t obs, fdata_q_t exp, int bank, string rw);
+  task compare_data(fdata_q_t obs, fdata_q_t exp, int bank, string rw, bit is_ecc = 0);
     string str = $sformatf("%s_comp_bank%0d", rw, bank);
     bit    err = 0;
 
     foreach (obs[i]) begin
-      if (obs[i][63:0] != exp[i][63:0]) begin
-        err = 1;
-        `dv_error($sformatf("%4d: obs:exp    %8x_%8x:%8x_%8x  mismatch!!", i,
-                  obs[i][63:32], obs[i][31:0], exp[i][63:32], exp[i][31:0]),
-                  str)
+      if(is_ecc) begin
+        if (obs[i] != exp[i]) begin
+          err = 1;
+          `dv_error($sformatf("%4d: obs:exp    %2x_%1x_%8x_%8x:%2x_%1x_%8x_%8x  mismatch!!", i,
+                              obs[i][75:68], obs[i][67:64], obs[i][63:32], obs[i][31:0],
+                              exp[i][75:68], exp[i][67:64], exp[i][63:32], exp[i][31:0]),
+                    str)
+        end
+      end else begin
+        if (obs[i][63:0] != exp[i][63:0]) begin
+          err = 1;
+          `dv_error($sformatf("%4d: obs:exp    %8x_%8x:%8x_%8x  mismatch!!", i,
+                              obs[i][63:32], obs[i][31:0], exp[i][63:32], exp[i][31:0]),
+                    str)
+        end
       end
     end
     if (err == 0) begin

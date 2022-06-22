@@ -58,6 +58,12 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   int otf_host_rd_sent = 0;
   int otf_host_rd_rcvd = 0;
 
+  // Page to region map.
+  // This is used to validate transactions based on their page address
+  // and policy config associate with it.
+  // 8 : default region
+  int p2r_map[FlashNumPages] = '{default : 8};
+
   // Max delay for alerts in clocks
   uint alert_max_delay;
   // read data by host if
@@ -105,6 +111,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     end
     alert_max_delay = 20000;
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
+
   endfunction : initialize
 
   // For a given partition returns its size in bytes in each of the banks.
@@ -571,5 +578,4 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       wr_bkd_addr = wr_bkd_addr + 4;
     end
   endfunction : set_scb_mem
-
 endclass

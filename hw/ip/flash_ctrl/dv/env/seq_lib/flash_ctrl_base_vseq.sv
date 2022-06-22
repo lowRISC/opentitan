@@ -62,6 +62,18 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Vseq to do some initial post-reset actions. Can be overriden by extending envs.
   flash_ctrl_callback_vseq callback_vseq;
 
+  // 1page : 2048Byte
+  function int addr2page(bit[OTFBankId:0] addr);
+    return (int'(addr[OTFBankId:11]));
+  endfunction // addr2page
+
+  function flash_mp_region_cfg_t get_region(int page);
+    if (cfg.p2r_map[page] == 8) return default_region_cfg;
+    else begin
+      // TODO support memory protection
+    end
+  endfunction // get_region
+
   virtual task pre_start();
     `uvm_create_on(callback_vseq, p_sequencer);
     otp_model();  // Start OTP Model
@@ -149,6 +161,14 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                              mubi4_t ecc_en      = MuBi4False,
                                              mubi4_t he_en       = MuBi4False);
     uvm_reg_data_t data;
+
+    default_region_cfg.read_en = read_en;
+    default_region_cfg.program_en = program_en;
+    default_region_cfg.erase_en = erase_en;
+    default_region_cfg.scramble_en = scramble_en;
+    default_region_cfg.ecc_en = ecc_en;
+    default_region_cfg.he_en = he_en;
+
     data = get_csr_val_with_updated_field(ral.default_region.rd_en, data, read_en);
     data = data |
         get_csr_val_with_updated_field(ral.default_region.prog_en, data, program_en);
