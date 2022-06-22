@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_RND_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_RND_H_
 
-#include "sw/device/lib/base/testing/global_mock.h"
+#include "sw/device/lib/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 

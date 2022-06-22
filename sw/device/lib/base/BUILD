@@ -8,6 +8,11 @@ load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 
 cc_library(
+    name = "global_mock",
+    hdrs = ["global_mock.h"],
+)
+
+cc_library(
     name = "stdasm",
     hdrs = ["stdasm.h"],
 )
@@ -129,9 +134,6 @@ cc_test(
     ],
 )
 
-# TODO: Until Meson is removed, these files need to stay in a different
-# directory, but eventually they will be hoisted to live alongside the
-# targets they mock.
 dual_cc_library(
     name = "csr",
     srcs = dual_inputs(
@@ -148,7 +150,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         host = [
-            "//sw/device/lib/base/testing:global_mock",
+            "global_mock",
             "@googletest//:gtest",
         ],
         shared = [
@@ -175,20 +177,17 @@ cc_library(
     ],
 )
 
-# TODO: Until Meson is removed, these files need to stay in a different
-# directory, but eventually they will be hoisted to live alongside the
-# targets they mock.
 dual_cc_library(
     name = "mmio",
     srcs = dual_inputs(
-        host = ["//sw/device/lib/base/testing:mock_mmio.cc"],
+        host = ["mock_mmio.cc"],
         # NOTE: mmio.c is shared because it provides mmio_memcpy and friends.
         shared = ["mmio.c"],
     ),
     hdrs = dual_inputs(
         host = [
-            "//sw/device/lib/base/testing:mock_mmio.h",
-            "//sw/device/lib/base/testing:mock_mmio_test_utils.h",
+            "mock_mmio.h",
+            "mock_mmio_test_utils.h",
         ],
         shared = ["mmio.h"],
     ),
@@ -206,31 +205,28 @@ dual_cc_library(
 
 cc_test(
     name = "mmio_unittest",
-    srcs = ["//sw/device/lib/base/testing:mock_mmio_test.cc"],
+    srcs = ["mock_mmio_test.cc"],
     deps = [
         ":mmio",
         "@googletest//:gtest_main",
     ],
 )
 
-# TODO: Until Meson is removed, these files need to stay in a different
-# directory, but eventually they will be hoisted to live alongside the
-# targets they mock.
 dual_cc_library(
     name = "abs_mmio",
     srcs = dual_inputs(
         device = ["abs_mmio.c"],
-        host = ["//sw/device/lib/base/testing:mock_abs_mmio.cc"],
+        host = ["mock_abs_mmio.cc"],
     ),
     hdrs = dual_inputs(
         host = [
-            "//sw/device/lib/base/testing:mock_abs_mmio.h",
+            "mock_abs_mmio.h",
         ],
         shared = ["abs_mmio.h"],
     ),
     deps = dual_inputs(
         host = [
-            "//sw/device/lib/base/testing:global_mock",
+            "global_mock",
             "@googletest//:gtest",
         ],
         shared = [
