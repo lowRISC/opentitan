@@ -91,6 +91,17 @@ cc_library(
 )
 
 cc_library(
+    name = "csrng_testutils",
+    srcs = ["csrng_testutils.c"],
+    hdrs = ["csrng_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "entropy_testutils",
     srcs = ["entropy_testutils.c"],
     hdrs = ["entropy_testutils.h"],

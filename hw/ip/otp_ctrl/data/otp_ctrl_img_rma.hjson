@@ -268,16 +268,22 @@
                     value: "<random>",
                 },
                 {
+                    // Cryptolib and chip-level tests require access to the
+                    // CSRNG software interfaces.
                     name:  "EN_CSRNG_SW_APP_READ",
-                    value: false,
+                    value: true,
                 },
                 {
+                    // Cryptolib and chip-level tests require access to the
+                    // entropy_src FW data interface.
                     name:  "EN_ENTROPY_SRC_FW_READ",
                     value: true,
                 },
                 {
+                    // Cryptolib and chip-level tests require access to the
+                    // entropy_src FW override interface.
                     name: "EN_ENTROPY_SRC_FW_OVER",
-                    value: false,
+                    value: true,
                 }
             ],
         }

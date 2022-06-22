@@ -1970,13 +1970,15 @@
       name: chip_sw_csrng_known_answer_tests
       desc: '''Verify our ability to run known-answer tests in SW.
 
-            - Configure the software instance with the expected seed
-              (as per the NIST-specified test for CTR_DRBG operation)
-            - Perform several generate operations
+            - Configure the software instance with the expected seed (as per
+              the NIST-specified test for CTR_DRBG operation). Compare the
+              DRBG internal K and V state against the test vector expected
+              values.
+            - Perform generate operations as required by the test vector.
             - Compare the results to test expectations.
             '''
       milestone: V2
-      tests: []
+      tests: ["csrng_kat_test"]
     }
 
     // EDN (pre-verified IP) integration tests:
