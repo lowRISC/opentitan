@@ -14,6 +14,7 @@ package otp_ctrl_env_pkg;
   import csr_utils_pkg::*;
   import push_pull_agent_pkg::*;
   import otp_ctrl_core_ral_pkg::*;
+  import otp_ctrl_prim_ral_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;
@@ -38,8 +39,6 @@ package otp_ctrl_env_pkg;
   parameter uint DIGEST_SIZE             = 8;
   parameter uint SW_WINDOW_BASE_ADDR     = 'h1000;
   parameter uint SW_WINDOW_SIZE          = 512 * 4;
-  // Address size for prim_tl_i/o.
-  parameter uint PRIM_ADDR_SIZE          = 32 * 4;
 
   // convert byte into TLUL width size
   parameter uint VENDOR_TEST_START_ADDR  = VendorTestOffset / (TL_DW / 8);
@@ -76,6 +75,8 @@ package otp_ctrl_env_pkg;
                                    / (TL_DW / 8);
 
   parameter int OTP_ADDR_WIDTH = 11;
+
+  parameter uint NUM_PRIM_REG = 8;
 
   // Total num of valid dai address, secret partitions have a granularity of 8, the rest have
   // a granularity of 4. Subtract 8 for each digest.

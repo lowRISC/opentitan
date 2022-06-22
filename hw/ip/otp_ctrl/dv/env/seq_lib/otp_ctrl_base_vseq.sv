@@ -588,19 +588,20 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // This test access OTP_CTRL's test_access memory. The open-sourced code only test if the access
   // is valid. Please override this task in proprietary OTP.
   virtual task otp_test_access();
-    if (cfg.create_prim_tl_agent) begin
+    if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin
       repeat (10) begin
-        bit [TL_DW-1:0] wr_data, rd_data;
-        bit [TL_AW-1:0] rand_addr = $urandom_range(0, PRIM_ADDR_SIZE + 3);
+        bit [TL_DW-1:0] data;
         bit test_access_en = cfg.otp_ctrl_vif.lc_dft_en_i == lc_ctrl_pkg::On;
-        `DV_CHECK_STD_RANDOMIZE_FATAL(wr_data)
-        tl_access(.addr(rand_addr), .write(1), .data(wr_data), .exp_err_rsp(~test_access_en),
-                  .tl_sequencer_h(p_sequencer.prim_tl_sequencer_h));
-        tl_access(.addr(rand_addr), .write(0), .data(rd_data), .exp_data(wr_data),
-                  .exp_err_rsp(~test_access_en), .check_exp_data(test_access_en),
-                  .tl_sequencer_h(p_sequencer.prim_tl_sequencer_h));
-      end
-    end
+        bit [TL_AW-1:0] rand_addr = $urandom_range(0, NUM_PRIM_REG - 1) * 4;
+        bit [TL_AW-1:0] tlul_addr =
+            cfg.ral_models["otp_ctrl_prim_reg_block"].get_addr_from_offset(rand_addr);
+        `DV_CHECK_STD_RANDOMIZE_FATAL(data)
+        tl_access(.addr(tlul_addr), .write(1), .data(data), .exp_err_rsp(~test_access_en),
+                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs["otp_ctrl_prim_reg_block"]));
+        tl_access(.addr(tlul_addr), .write(0), .data(data), .exp_err_rsp(~test_access_en),
+                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs["otp_ctrl_prim_reg_block"]));
+       end
+     end
   endtask
 
 endclass : otp_ctrl_base_vseq

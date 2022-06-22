@@ -488,9 +488,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg     csr;
-    dv_base_reg dv_reg;
-    bit         do_read_check = 1;
     bit         write         = item.is_write();
     uvm_reg_addr_t csr_addr   = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
@@ -499,6 +496,39 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     bit addr_phase_write  = (write && channel == AddrChannel);
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
+
+    if (ral_name != "otp_ctrl_prim_reg_block") begin
+      process_core_tl_access(item, csr_addr, ral_name, addr_mask,
+                             addr_phase_read, addr_phase_write, data_phase_read, data_phase_write);
+    end else begin
+      process_prim_tl_access(item, csr_addr, ral_name, addr_phase_write, data_phase_read);
+    end
+  endtask
+
+  virtual function void process_prim_tl_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
+      string ral_name, bit addr_phase_write, bit data_phase_read);
+
+    uvm_reg     csr;
+    dv_base_reg dv_reg;
+    csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
+    `DV_CHECK_NE_FATAL(csr, null)
+    `downcast(dv_reg, csr)
+
+    if (addr_phase_write) begin
+      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+    end else if (data_phase_read) begin
+      `DV_CHECK_EQ((csr.get_mirrored_value() | status_mask), (item.d_data | status_mask),
+                   $sformatf("reg name: status, compare_mask %0h", status_mask))
+    end
+  endfunction
+
+  virtual function void process_core_tl_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
+      string ral_name, bit [TL_AW-1:0] addr_mask, bit addr_phase_read, bit addr_phase_write,
+      bit data_phase_read, bit data_phase_write);
+
+    bit         do_read_check = 1;
+    uvm_reg     csr;
+    dv_base_reg dv_reg;
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -792,7 +822,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         end else if (data_phase_read) begin
           if (cfg.en_cov) begin
             cov.collect_status_cov(item.d_data);
-            if (cfg.otp_ctrl_vif.alert_reqs) cov.csr_rd_after_alert_cg_wrap.sample(csr.get_offset());
+            if (cfg.otp_ctrl_vif.alert_reqs) begin
+              cov.csr_rd_after_alert_cg_wrap.sample(csr.get_offset());
+            end
           end
 
           if (item.d_data[OtpDaiIdleIdx]) begin
@@ -886,7 +918,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
-  endtask
+  endfunction
 
   // If reset or lc_escalate_en is issued during otp program, this function will backdoor update
   // otp memory write value because scb did not know how many cells haven been written.
@@ -1224,6 +1256,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                                                 output bit mem_wo_err,
                                                 output bit mem_ro_err,
                                                 output bit custom_err);
+
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     uvm_reg_addr_t csr_addr   = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
@@ -1231,6 +1264,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
     bit mem_access_allowed = super.is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err,
                                                             mem_wo_err, mem_ro_err, custom_err);
+
+    if (ral_name == "otp_ctrl_prim_reg_block") return mem_access_allowed;
 
     // Ensure the address is within the memory window range.
     // Also will skip checking if memory access is not allowed due to TLUL bus error.
@@ -1294,6 +1329,24 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     end
 
     return mem_access_allowed;
+  endfunction
+
+  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+    if (ral_name == "otp_ctrl_prim_reg_block" &&
+        cfg.otp_ctrl_vif.lc_dft_en_i != lc_ctrl_pkg::On) begin
+      if (channel == DataChannel) begin
+        `DV_CHECK_EQ(item.d_error, 1,
+            $sformatf({"On interface %0s, TL item: %0s, access gated by lc_dft_en_i"},
+            ral_name, item.sprint(uvm_default_line_printer)))
+
+        // In data read phase, check d_data when d_error = 1.
+        if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
+          check_tl_read_value_after_error(item, ral_name);
+        end
+      end
+      return 1;
+    end
+    return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
   virtual function void set_exp_alert(string alert_name, bit is_fatal = 0, int max_delay = 0);
