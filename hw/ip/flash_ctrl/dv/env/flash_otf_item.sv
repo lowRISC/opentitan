@@ -11,23 +11,21 @@ class flash_otf_item extends uvm_object;
   bit[flash_phy_pkg::KeySize-1:0]      addr_key, data_key;
   bit                                  is_direct = 0;
   bit [flash_ctrl_pkg::BusAddrByteW-2:0] mem_addr;
-
+  bit                                    head_pad, tail_pad;
   function new(string name = "flash_otf_item");
     super.new(name);
+    head_pad = 0;
+    tail_pad = 0;
   endfunction // new
 
   virtual function void print(string name = "flash_otf_item");
-    if (is_direct) begin
-      `dv_info($sformatf("host_addr : 0x%x", start_addr), UVM_MEDIUM, name)
-    end else begin
-      `dv_info($sformatf("partition : %s", cmd.partition.name()), UVM_MEDIUM, name)
-      `dv_info($sformatf("erase_type: %s", cmd.erase_type.name()), UVM_MEDIUM, name)
-      `dv_info($sformatf("op        : %s", cmd.op.name()), UVM_MEDIUM, name)
-      `dv_info($sformatf("prog_sel  : %s", cmd.prog_sel.name()), UVM_MEDIUM, name)
-      `dv_info($sformatf("num_words : %0d", cmd.num_words), UVM_MEDIUM, name)
-      `dv_info($sformatf("s_addr    : 0x%x", start_addr), UVM_MEDIUM, name)
-    end
-      `dv_info($sformatf("mem_addr  : 0x%x", mem_addr), UVM_MEDIUM, name)
+    `dv_info($sformatf("partition : %s", cmd.partition.name()), UVM_MEDIUM, name)
+    `dv_info($sformatf("erase_type: %s", cmd.erase_type.name()), UVM_MEDIUM, name)
+    `dv_info($sformatf("op        : %s", cmd.op.name()), UVM_MEDIUM, name)
+    `dv_info($sformatf("prog_sel  : %s", cmd.prog_sel.name()), UVM_MEDIUM, name)
+    `dv_info($sformatf("num_words : %0d", cmd.num_words), UVM_MEDIUM, name)
+    `dv_info($sformatf("s_addr    : 0x%x", start_addr), UVM_MEDIUM, name)
+    `dv_info($sformatf("mem_addr  : 0x%x", mem_addr), UVM_MEDIUM, name)
 
     if (dq.size() > 0) begin
       flash_otf_print_data64(dq, name);
@@ -119,11 +117,21 @@ class flash_otf_item extends uvm_object;
                            bit[flash_phy_pkg::KeySize-1:0] data_key);
     bit[1:0] err72, err76;
     bit[flash_ctrl_pkg::BusAddrByteW-2:0] addr = mem_addr;
+    data_q_t   tmp_dq;
     `uvm_info(`gfn, $sformatf("rd_scr:size:%0d addr:%x", fq.size(), addr), UVM_MEDIUM)
     foreach (fq[i]) begin
       raw_fq.push_back(create_raw_data(fq[i], addr, addr_key, data_key, err72, err76));
       addr ++;
     end
-    dq = fq2dq(raw_fq);
+
+    // collect upto cmd.num_words
+    tmp_dq = fq2dq(raw_fq);
+    dq = '{};
+    for (int i = 0; i < cmd.num_words; i++) begin
+      dq.push_back(tmp_dq[i]);
+    end
+    if (head_pad) dq = dq[1:$];
+    if (tail_pad) dq = dq[0:$-1];
+    raw_fq = dq2fq(dq);
   endfunction // descramble
 endclass // flash_otf_item

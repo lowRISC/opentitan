@@ -15,8 +15,11 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // Number of controller transactions
   // Min: 1 Max:32
   rand int  ctrl_num;
+  rand bit  is_addr_odd;
+  rand int  fractions;
 
-  constraint ctrl_num_c { ctrl_num dist { CTRL_TRANS_MIN :=2, [2:31] :/1, CTRL_TRANS_MAX :=2}; }
+  constraint ctrl_num_c { ctrl_num dist { CTRL_TRANS_MIN := 2, [2:31] :/ 1, CTRL_TRANS_MAX := 2}; }
+  constraint fractions_c { fractions dist { [1:4] := 4, [5:16] := 1}; }
 
   virtual task pre_start();
     // Erased page doesn't go through descramble.
@@ -30,7 +33,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       `DV_SPINWAIT(while (otp_key_init_done != 2'b11) cfg.clk_rst_vif.wait_clks(1);,
                    "timeout waiting  otp_key_init_done", 100_000)
     end
-
     flash_ctrl_default_region_cfg(,,,MuBi4True);
 
     // Polling init wip is done
@@ -51,7 +53,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     cfg.scb_check                               = 0;
     cfg.check_full_scb_mem_model                = 0;
     cfg.scb_otf_en = 1;
-
     foreach (cfg.m_tl_agent_cfgs[i]) begin
       cfg.m_tl_agent_cfgs[i].a_valid_delay_min = 0;
       cfg.m_tl_agent_cfgs[i].a_valid_delay_max = 0;
@@ -64,8 +65,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     end
   endfunction
 
-  // Program flash in the unit of minimum resolution (8 words).
-  // 1 word : 8Byte
+  // Program flash in the unit of minimum resolution (4Byte)
+  // If data is not aligned to 8Byte, rtl pads all F to
+  // upper or lower 4Byte.
   // @arg: flash_op_p : command struct return updated address after write
   // @arg: bank: bank index to access flash
   // @arg: num : number of 8 words range: [1 : 32]
@@ -76,57 +78,110 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     bit poll_fifo_status = 1;
     bit [15:0] lcnt = 0;
     bit [flash_ctrl_pkg::BusAddrByteW-1:0] start_addr, end_addr;
+    data_4s_t tmp_data;
+    int                                    tail, is_odd;
+    int                                    unit_word;
+    int                                    tot_wd;
 
-    flash_op.op = flash_ctrl_pkg::FlashOpProgram;
+    is_odd = flash_op.otf_addr[2];
+    tot_wd = wd * num + is_odd;
+
+    flash_op.op = FlashOpProgram;
     flash_op.num_words = wd;
     start_addr = flash_op.otf_addr;
-    end_addr = start_addr + (4 * wd) * num;
+    // last byte address in each program
+    end_addr = start_addr + (tot_wd * 4) - 1;
+
     // Check if end_addr overflows.
     // Roll over start address if this is the case.
-    `uvm_info(`gfn, $sformatf("prog_flash: bank:%0d otf_addr:0x%0h, size:%0d x %0d x 4B",
+    `uvm_info("prog_flash", $sformatf("bank:%0d otf_addr:0x%0h, size:%0d x %0d x 4B",
                               bank, flash_op.otf_addr, num, wd), UVM_MEDIUM)
 
     if (end_addr[OTFBankId]) begin
       start_addr = num * 64;
-      flash_op.otf_addr = start_addr;
-      `uvm_info(`gfn, $sformatf("prog_flash: overflow!, roll over start address to 0x%x",
+      `uvm_info("prog_flash", $sformatf("overflow!, roll over start address to 0x%x",
                                 start_addr), UVM_MEDIUM)
+
+      is_odd = flash_op.otf_addr[2];
+      tot_wd = wd * num + is_odd;
+      end_addr = start_addr + (tot_wd * 4) - 1;
     end
 
+    // Check resolution error
+    // current resolution : 0x40.
+    // check if address[6] is same for start and end addr.
+    if (start_addr[6] != end_addr[6]) begin
+      `uvm_info("prog_flash", $sformatf("prog_window violation, start_addr:0x%x  end_addr:0x%x",
+                                start_addr, end_addr), UVM_MEDIUM)
+      // shift start addr window
+      start_addr[flash_ctrl_pkg::BusAddrByteW-1:6] = end_addr[flash_ctrl_pkg::BusAddrByteW-1:6];
+      start_addr[5:0] = 0;
+      `uvm_info("prog_flash", $sformatf("change start_addr to 0x%x end_addr:0x%x", start_addr,
+                                start_addr + (4 * (wd + (wd % 2))) - 1), UVM_MEDIUM)
+
+      is_odd = 0;
+      tot_wd = wd * num;
+    end
+
+    tail = tot_wd % 2;
+    flash_op.otf_addr = start_addr;
     for (int i = 0; i < num; i++) begin
+      flash_program_data = '{};
+      is_odd = flash_op.otf_addr[2];
+      unit_word = wd;
       // Each flash_program_data[] entry : 4B
       // {global_cnt(16bits), lcnt(16bits)}
       for (int j = 0; j < wd; j++) begin
-        flash_program_data[j] = {global_pat_cnt, lcnt++};
-        flash_data_chunk.push_back(flash_program_data[j]);
+        flash_program_data.push_back({global_pat_cnt, lcnt++});
       end
-
       flash_op.addr = flash_op.otf_addr;
       // Bank : bit[19]
       flash_op.addr[TL_AW-1:OTFBankId] = bank;
       flash_ctrl_start_op(flash_op);
       flash_ctrl_write(flash_program_data, poll_fifo_status);
       wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+
+      `uvm_info("prog_flash",$sformatf("addr:%x num:%0d wd:%0d  odd:%0d tail:%0d",
+                                       flash_op.otf_addr,num,wd,is_odd,tail), UVM_MEDIUM)
+      if (is_odd == 1) begin
+        tmp_data = {32{1'b1}};
+        flash_program_data.push_front(tmp_data);
+        unit_word++;
+        tail = unit_word % 2;
+      end
+
+      if (wd > 1 && tail == 1) begin
+        tmp_data = {32{1'b1}};
+        flash_program_data.push_back(tmp_data);
+      end
+
+      if (wd == 1 && is_odd == 0) begin
+        tmp_data = {32{1'b1}};
+        flash_program_data.push_back(tmp_data);
+      end
+
+      flash_otf_print_data64(flash_program_data, "wdata");
+      `uvm_create_obj(flash_otf_item, exp_item)
+
+      // Set addr to start_addr before exp_time passes
+      // to scoreboard.
+      flash_op.addr = start_addr;
+      exp_item.cmd = flash_op;
+      exp_item.dq = flash_program_data;
+      exp_item.start_addr = start_addr;
+
+      // scramble data
+      exp_item.scramble(otp_addr_key, otp_data_key, flash_op.otf_addr);
+
+      p_sequencer.eg_exp_ctrl_port[bank].write(exp_item);
+      flash_phy_prim_agent_pkg::print_flash_data(exp_item.fq,
+            $sformatf("fdata_%0d bank%0d", cfg.otf_ctrl_wr_sent, bank));
       flash_op.otf_addr = flash_op.otf_addr + (4 * wd);
+      global_pat_cnt++;
+      cfg.otf_ctrl_wr_sent++;
+
     end // for (int i = 0; i < num; i++)
-    flash_otf_print_data64(flash_data_chunk, "wdata");
-    `uvm_create_obj(flash_otf_item, exp_item)
 
-    // Set addr to start_addr before exp_time passes
-    // to scoreboard.
-    flash_op.addr = start_addr;
-    exp_item.cmd = flash_op;
-    exp_item.dq = flash_data_chunk;
-    exp_item.start_addr = start_addr;
-
-    // scramble data
-    exp_item.scramble(otp_addr_key, otp_data_key, start_addr[flash_ctrl_pkg::BusAddrByteW-2:0]);
-
-    p_sequencer.eg_exp_ctrl_port[bank].write(exp_item);
-    flash_phy_prim_agent_pkg::print_flash_data(exp_item.fq,
-          $sformatf("fdata_%0d bank%0d", cfg.otf_ctrl_wr_sent, bank));
-    global_pat_cnt++;
-    cfg.otf_ctrl_wr_sent++;
   endtask // prog_flash
 
   // Read flash in the unit of minimum resolution (8 words).
@@ -142,13 +197,13 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     bit poll_fifo_status = 1;
     bit [flash_ctrl_pkg::BusAddrByteW-1:0] start_addr, end_addr;
 
-    flash_op.op = flash_ctrl_pkg::FlashOpRead;
+    flash_op.op = FlashOpRead;
     flash_op.num_words = wd;
     start_addr = flash_op.otf_addr;
-    end_addr = start_addr + (4 * wd) * num;
+    end_addr = start_addr + (wd * 4) - 1;
     // Check if end_addr overflows.
     // Roll over start address if this is the case.
-    `uvm_info(`gfn, $sformatf("read_flash: bank:%0d  otf_addr:0x%0h, size:%0d x %0d x 4B",
+    `uvm_info("read_flash", $sformatf("bank:%0d  otf_addr:0x%0h, size:%0d x %0d x 4B",
                               bank, flash_op.otf_addr, num, wd), UVM_MEDIUM)
 
     // Ctrl read takes lower half of each bank
@@ -156,7 +211,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     if (end_addr[OTFHostId]) begin
       start_addr = num * 64;
       flash_op.otf_addr = start_addr;
-      `uvm_info(`gfn, $sformatf("read_flash: overflow!, roll over start address to 0x%x",
+      `uvm_info("read_flash", $sformatf("overflow!, roll over start address to 0x%x",
                                 start_addr), UVM_MEDIUM)
     end
 
@@ -166,6 +221,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       flash_ctrl_start_op(flash_op);
       flash_ctrl_read(flash_op.num_words, flash_read_data, poll_fifo_status);
       wait_flash_op_done();
+
       flash_op.otf_addr = flash_op.otf_addr + (4 * wd);
       foreach(flash_read_data[i]) flash_data_chunk.push_back(flash_read_data[i]);
     end // for (int i = 0; i < num; i++)
@@ -199,7 +255,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     data_4s_t rdata;
     flash_otf_item exp_item;
 
-    end_addr = addr + num * 4;
+    end_addr = addr + num * 4 - 1;
     if (end_addr[OTFHostId]) addr = num * 4;
 
     tl_addr[OTFHostId-1:2] = addr[OTFHostId-1:2];

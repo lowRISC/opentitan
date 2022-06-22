@@ -300,7 +300,10 @@
             enabled, ensure that the raw data is written and read back.
             '''
       milestone: V2
-      tests: ["flash_ctrl_wo", "flash_ctrl_ro", "flash_ctrl_rw"]
+      tests: ["flash_ctrl_wo", "flash_ctrl_ro", "flash_ctrl_rw",
+              "flash_ctrl_write_word_sweep", "flash_ctrl_read_word_sweep",
+              "flash_ctrl_write_rand_word", "flash_ctrl_read_rand_word",
+              "flash_ctrl_rw_rand_word"]
     }
     {
       name: robustness

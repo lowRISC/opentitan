@@ -30,3 +30,8 @@
 `include "flash_ctrl_wo_vseq.sv"
 `include "flash_ctrl_ro_vseq.sv"
 `include "flash_ctrl_rw_vseq.sv"
+`include "flash_ctrl_write_word_sweep_vseq.sv"
+`include "flash_ctrl_write_rnd_wd_vseq.sv"
+`include "flash_ctrl_read_word_sweep_vseq.sv"
+`include "flash_ctrl_read_rnd_wd_vseq.sv"
+`include "flash_ctrl_rw_rnd_wd_vseq.sv"

@@ -16,7 +16,8 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   uvm_analysis_port #(flash_phy_prim_item) eg_rtl_port[NumBanks];
   flash_phy_prim_item w_item[NumBanks];
   flash_phy_prim_item r_item[NumBanks];
-  logic [flash_phy_pkg::FullDataWidth-1:0] write_buffer[NumBanks][$];
+  logic [PhyDataW-1:0] write_buffer[NumBanks][$];
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -24,7 +25,6 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
     foreach(eg_rtl_port[i]) begin
       eg_rtl_port[i] = new($sformatf("eg_rtl_port[%0d]", i), this);
     end
-
   endfunction
 
   task run_phase(uvm_phase phase);
