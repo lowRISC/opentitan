@@ -112,7 +112,7 @@ _mask_rom_shadow_stack:
   // is allocated executable space in ROM by the linker.
   .section .crt, "ax"
 
-  // Linker Relaxation is disabled until `__global_pointer$` is setup, below,
+  // Linker relaxations are disabled until `__global_pointer$` is setup below,
   // because otherwise some sequences may be turned into gp-relative sequences,
   // which is incorrect when `gp` is not initialized.
   .option push
@@ -142,6 +142,15 @@ _mask_rom_start_boot:
   j .L_halt_loop
 
 .L_exec_en:
+  // Set up the global pointer.
+  //
+  // This requires that we disable linker relaxations, or it will be relaxed to
+  // `mv gp, gp`, so we disabled relaxations at the start of `_mask_rom_start_boot`.
+  la gp, __global_pointer$
+
+  // Re-enable linker relaxations.
+  .option pop
+
   // Configure the power manager to enable resets.
   // Note: this enables all types of reset request for simplicity.
   li t0, TOP_EARLGREY_PWRMGR_AON_BASE_ADDR
@@ -232,10 +241,9 @@ _mask_rom_start_boot:
    * State").
    */
 
-  // Zero all writable registers.
+  // Zero all writable registers except for `gp` (`x3`) since it's already initialized.
   li x1,  0x0
   li x2,  0x0
-  li x3,  0x0
   li x4,  0x0
   li x5,  0x0
   li x6,  0x0
@@ -299,11 +307,6 @@ _mask_rom_start_boot:
   // The shadow stack, unlike the regular stack, grows upwards.
   la x18, _mask_rom_shadow_stack
 
-  // Set up global pointer.
-  //
-  // This requires that we disable linker relaxations, or it will be relaxed to
-  // `mv gp, gp`, so we disabled relaxations for all of `_mask_rom_start_boot`.
-  la gp, __global_pointer$
 
   // Set exception/interrupt handlers.
   //
@@ -320,6 +323,3 @@ _mask_rom_start_boot:
    */
   tail mask_rom_main
   .size _mask_rom_start_boot, .-_mask_rom_start_boot
-
-  // Re-enable linker relaxation.
-  .option pop
