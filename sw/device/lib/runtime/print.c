@@ -275,7 +275,7 @@ static size_t write_digits(buffer_sink_t out, uint32_t value, uint32_t width,
   return out.sink(out.data, buffer + (kWordBits - len), len);
 }
 
-static size_t write_status(buffer_sink_t out, status_t value) {
+static size_t write_status(buffer_sink_t out, status_t value, bool as_json) {
   // The module id is defined to be 3 chars long.
   char mod[] = {'"', 0, 0, 0, '"', ','};
   int32_t arg;
@@ -286,7 +286,11 @@ static size_t write_status(buffer_sink_t out, status_t value) {
   const char *end = start;
   while (*end)
     end++;
-  size_t len = out.sink(out.data, start, end - start);
+  size_t len = 0;
+
+  len += out.sink(out.data, "{\"", as_json ? 2 : 0);
+  len += out.sink(out.data, start, end - start);
+  len += out.sink(out.data, "\"", as_json ? 1 : 0);
 
   // print the module id and arg.
   len += out.sink(out.data, ":[", 2);
@@ -296,6 +300,7 @@ static size_t write_status(buffer_sink_t out, status_t value) {
   }
   len += write_digits(out, arg, 0, 0, 10, kDigitsLow);
   len += out.sink(out.data, "]", 1);
+  len += out.sink(out.data, "}", as_json ? 1 : 0);
   return len;
 }
 
@@ -511,7 +516,7 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
     }
     case kStatusResult: {
       status_t value = va_arg(*args, status_t);
-      *bytes_written += write_status(out, value);
+      *bytes_written += write_status(out, value, spec.is_nonstd);
       break;
     }
     bad_spec:  // Used with `goto` to bail out early.

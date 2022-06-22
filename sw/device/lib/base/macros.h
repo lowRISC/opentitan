@@ -7,7 +7,7 @@
 
 // This file may be used in .S files, in which case standard library includes
 // should be elided.
-#ifndef __ASSEMBLER__
+#if !defined(__ASSEMBLER__) && !defined(NOSTDINC)
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -53,6 +53,12 @@
  * It only needs to be used in headers; .c files can use `restrict` directly.
  */
 #define OT_RESTRICT __restrict__
+
+/**
+ * An argument stringification macro.
+ */
+#define OT_STRINGIFY(a) OT_STRINGIFY_(a)
+#define OT_STRINGIFY_(a) #a
 
 /**
  * A variable-argument macro that expands to the number of arguments passed into

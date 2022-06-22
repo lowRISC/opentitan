@@ -295,6 +295,13 @@ TEST_F(PrintfTest, StatusError) {
   EXPECT_EQ(buf_, absl::StrFormat("Hello, Unknown:[\"PRI\",%d]\n", line));
 }
 
+TEST_F(PrintfTest, StatusErrorAsJson) {
+  status_t value = UNKNOWN();
+  int line = __LINE__ - 1;
+  EXPECT_EQ(base_printf("Hello, %!r\n", value), 31);
+  EXPECT_EQ(buf_, absl::StrFormat("Hello, {\"Unknown\":[\"PRI\",%d]}\n", line));
+}
+
 TEST_F(PrintfTest, StatusErrorWithArg) {
   status_t value = INVALID_ARGUMENT(2);
   EXPECT_EQ(base_printf("Hello, %r\n", value), 33);
