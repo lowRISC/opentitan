@@ -5,10 +5,10 @@
 #include "sw/device/lib/dif/dif_spi_host.h"
 
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/global_mock.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/testing/global_mock.h"
-#include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
 #include "spi_host_regs.h"  // Generated.

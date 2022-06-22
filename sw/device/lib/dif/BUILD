@@ -986,7 +986,7 @@ cc_test(
     deps = [
         ":spi_host",
         ":test_base",
-        "//sw/device/lib/base/testing:global_mock",
+        "//sw/device/lib/base:global_mock",
         "@googletest//:gtest_main",
     ],
 )

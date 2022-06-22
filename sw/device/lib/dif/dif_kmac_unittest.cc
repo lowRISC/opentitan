@@ -13,7 +13,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
 #include "kmac_regs.h"  // Generated

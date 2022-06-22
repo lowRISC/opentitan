@@ -6,8 +6,8 @@
 #define OPENTITAN_SW_DEVICE_LIB_BASE_TESTING_MOCK_ABS_MMIO_H_
 
 #include "sw/device/lib/base/abs_mmio.h"
-#include "sw/device/lib/base/testing/global_mock.h"
-#include "sw/device/lib/base/testing/mock_mmio_test_utils.h"
+#include "sw/device/lib/base/global_mock.h"
+#include "sw/device/lib/base/mock_mmio_test_utils.h"
 
 namespace mask_rom_test {
 namespace internal {
