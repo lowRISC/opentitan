@@ -32,6 +32,13 @@ int otbn_stack_element_peek(int index, svBitVecVal *val);
 #define CMD_SECWIPE_DMEM 0xC3
 #define CMD_SECWIPE_IMEM 0x1E
 
+// Values of the `STATUS` register, as defined in `otbn.hjson`.
+#define STATUS_IDLE 0x00
+#define STATUS_BUSY_EXECUTE 0x01
+#define STATUS_BUSY_SEC_WIPE_DMEM 0x02
+#define STATUS_BUSY_SEC_WIPE_IMEM 0x03
+#define STATUS_LOCKED 0xFF
+
 // Read (the start of) the contents of a file at path as a vector of bytes.
 // Expects num_bytes bytes of data. On failure, throws a std::runtime_error.
 static Ecc32MemArea::EccWords read_words_from_file(const std::string &path,
@@ -876,26 +883,25 @@ unsigned otbn_model_step(OtbnModel *model, unsigned model_state,
   // negedge)
   model_state = model_state & ~CHECK_DUE_BIT;
 
-  int result;
-  unsigned new_state_bits;
+  int result = 0;
+  unsigned new_state_bits = 0;
 
-  switch (*cmd) {
-    case CMD_EXECUTE:
-      result = model->start_operation(OtbnModel::Execute);
-      new_state_bits = RUNNING_BIT;
-      break;
-    case CMD_SECWIPE_DMEM:
-      result = model->start_operation(OtbnModel::DmemWipe);
-      new_state_bits = RUNNING_BIT;
-      break;
-    case CMD_SECWIPE_IMEM:
-      result = model->start_operation(OtbnModel::ImemWipe);
-      new_state_bits = RUNNING_BIT;
-      break;
-    default:
-      result = 0;
-      new_state_bits = 0;
-      break;
+  if (*status == STATUS_IDLE) {
+    // OTBN only executes commands if STATUS is IDLE.
+    switch (*cmd) {
+      case CMD_EXECUTE:
+        result = model->start_operation(OtbnModel::Execute);
+        new_state_bits = RUNNING_BIT;
+        break;
+      case CMD_SECWIPE_DMEM:
+        result = model->start_operation(OtbnModel::DmemWipe);
+        new_state_bits = RUNNING_BIT;
+        break;
+      case CMD_SECWIPE_IMEM:
+        result = model->start_operation(OtbnModel::ImemWipe);
+        new_state_bits = RUNNING_BIT;
+        break;
+    }
   }
 
   switch (result) {
