@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # https://docs.opentitan.org/doc/rm/c_cpp_coding_style/#cxx-version specifies
-build --cxxopt='-std=c++14'
-build --conlyopt='-std=c11'
+build --cxxopt='-std=gnu++14'
+build --conlyopt='-std=gnu11'
 
 # Never strip debugging information so that we can produce annotated
 # disassemblies when compilation mode is fastbuild.

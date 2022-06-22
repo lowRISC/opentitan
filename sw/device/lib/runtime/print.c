@@ -11,6 +11,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/status.h"
 
 // This is declared as an enum to force the values to be
 // compile-time constants, but the type is otherwise not
@@ -36,6 +37,7 @@ enum {
   // Other non-standard specifiers.
   kHexLeLow = 'y',
   kHexLeHigh = 'Y',
+  kStatusResult = 'r',
 };
 
 // NOTE: all of the lengths of the strings below are given so that the NUL
@@ -273,6 +275,30 @@ static size_t write_digits(buffer_sink_t out, uint32_t value, uint32_t width,
   return out.sink(out.data, buffer + (kWordBits - len), len);
 }
 
+static size_t write_status(buffer_sink_t out, status_t value) {
+  // The module id is defined to be 3 chars long.
+  char mod[] = {'"', 0, 0, 0, '"', ','};
+  int32_t arg;
+  const char *start;
+  bool err = status_extract(value, &start, &arg, &mod[1]);
+
+  // strlen of the status code.
+  const char *end = start;
+  while (*end)
+    end++;
+  size_t len = out.sink(out.data, start, end - start);
+
+  // print the module id and arg.
+  len += out.sink(out.data, ":[", 2);
+  if (err) {
+    // All error codes include the module identifier.
+    len += out.sink(out.data, mod, sizeof(mod));
+  }
+  len += write_digits(out, arg, 0, 0, 10, kDigitsLow);
+  len += out.sink(out.data, "]", 1);
+  return len;
+}
+
 /**
  * Hexdumps `bytes` onto `out`.
  *
@@ -481,6 +507,11 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
       uint32_t value = va_arg(*args, uint32_t);
       *bytes_written +=
           write_digits(out, value, spec.width, spec.padding, 2, kDigitsLow);
+      break;
+    }
+    case kStatusResult: {
+      status_t value = va_arg(*args, status_t);
+      *bytes_written += write_status(out, value);
       break;
     }
     bad_spec:  // Used with `goto` to bail out early.

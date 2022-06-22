@@ -81,6 +81,116 @@
   n
 
 /**
+ * An argument concatenation macro.
+ *
+ * Because the `##` operator inhibits expansion, we use a level of indirection
+ * to create a macro which concatenates without inhibition.
+ */
+#define OT_CAT(a, ...) OT_PRIMITIVE_CAT(a, __VA_ARGS__)
+#define OT_PRIMITIVE_CAT(a, ...) a##__VA_ARGS__
+
+/**
+ * A macro which gets the nth arg from a __VA_LIST__
+ */
+#define OT_GET_ARG(n, ...) OT_CAT(OT_CAT(OT_GET_ARG_, n), _)(__VA_ARGS__)
+
+/**
+ * A macro which gets the last arg from a __VA_LIST__
+ *
+ * Note: we leave out the dummy argument because we want count to
+ * give us the number of args minus one so that the created
+ * OT_GET_ARG_n token will contain the correct integer.
+ */
+#define OT_GET_LAST_ARG(...) \
+  OT_GET_ARG(OT_VA_ARGS_COUNT(__VA_ARGS__), ##__VA_ARGS__)
+
+/**
+ * The following collection of `OT_GET_ARG` macros are used to construct the
+ * generic "get nth arg" macro.
+ */
+#define OT_GET_ARG_0_(x0, ...) x0
+#define OT_GET_ARG_1_(x1, x0, ...) x0
+#define OT_GET_ARG_2_(x2, x1, x0, ...) x0
+#define OT_GET_ARG_3_(x3, x2, x1, x0, ...) x0
+#define OT_GET_ARG_4_(x4, x3, x2, x1, x0, ...) x0
+#define OT_GET_ARG_5_(x5, x4, x3, x2, x1, x0, ...) x0
+#define OT_GET_ARG_6_(x6, x5, x4, x3, x2, x1, x0, ...) x0
+#define OT_GET_ARG_7_(x7, x6, x5, x4, x3, x2, x1, x0, ...) x0
+#define OT_GET_ARG_8_(x8, x7, x6, x5, x4, x3, x2, x1, x0, ...) x0
+#define OT_GET_ARG_9_(x9, x8, x7, x6, x5, x4, x3, x2, x1, x0, ...) x0
+#define OT_GET_ARG_10_(x10, x9, x8, x7, x6, x5, x4, x3, x2, x1, x0, ...) x0
+#define OT_GET_ARG_11_(x11, x10, x9, x8, x7, x6, x5, x4, x3, x2, x1, x0, ...) x0
+#define OT_GET_ARG_12_(x12, x11, x10, x9, x8, x7, x6, x5, x4, x3, x2, x1, x0, \
+                       ...)                                                   \
+  x0
+#define OT_GET_ARG_13_(x13, x12, x11, x10, x9, x8, x7, x6, x5, x4, x3, x2, x1, \
+                       x0, ...)                                                \
+  x0
+#define OT_GET_ARG_14_(x14, x13, x12, x11, x10, x9, x8, x7, x6, x5, x4, x3, \
+                       x2, x1, x0, ...)                                     \
+  x0
+#define OT_GET_ARG_15_(x15, x14, x13, x12, x11, x10, x9, x8, x7, x6, x5, x4, \
+                       x3, x2, x1, x0, ...)                                  \
+  x0
+#define OT_GET_ARG_16_(x16, x15, x14, x13, x12, x11, x10, x9, x8, x7, x6, x5, \
+                       x4, x3, x2, x1, x0, ...)                               \
+  x0
+#define OT_GET_ARG_17_(x17, x16, x15, x14, x13, x12, x11, x10, x9, x8, x7, x6, \
+                       x5, x4, x3, x2, x1, x0, ...)                            \
+  x0
+#define OT_GET_ARG_18_(x18, x17, x16, x15, x14, x13, x12, x11, x10, x9, x8, \
+                       x7, x6, x5, x4, x3, x2, x1, x0, ...)                 \
+  x0
+#define OT_GET_ARG_19_(x19, x18, x17, x16, x15, x14, x13, x12, x11, x10, x9, \
+                       x8, x7, x6, x5, x4, x3, x2, x1, x0, ...)              \
+  x0
+#define OT_GET_ARG_20_(x20, x19, x18, x17, x16, x15, x14, x13, x12, x11, x10, \
+                       x9, x8, x7, x6, x5, x4, x3, x2, x1, x0, ...)           \
+  x0
+#define OT_GET_ARG_21_(x21, x20, x19, x18, x17, x16, x15, x14, x13, x12, x11, \
+                       x10, x9, x8, x7, x6, x5, x4, x3, x2, x1, x0, ...)      \
+  x0
+#define OT_GET_ARG_22_(x22, x21, x20, x19, x18, x17, x16, x15, x14, x13, x12, \
+                       x11, x10, x9, x8, x7, x6, x5, x4, x3, x2, x1, x0, ...) \
+  x0
+#define OT_GET_ARG_23_(x23, x22, x21, x20, x19, x18, x17, x16, x15, x14, x13, \
+                       x12, x11, x10, x9, x8, x7, x6, x5, x4, x3, x2, x1, x0, \
+                       ...)                                                   \
+  x0
+#define OT_GET_ARG_24_(x24, x23, x22, x21, x20, x19, x18, x17, x16, x15, x14,  \
+                       x13, x12, x11, x10, x9, x8, x7, x6, x5, x4, x3, x2, x1, \
+                       x0, ...)                                                \
+  x0
+#define OT_GET_ARG_25_(x25, x24, x23, x22, x21, x20, x19, x18, x17, x16, x15, \
+                       x14, x13, x12, x11, x10, x9, x8, x7, x6, x5, x4, x3,   \
+                       x2, x1, x0, ...)                                       \
+  x0
+#define OT_GET_ARG_26_(x26, x25, x24, x23, x22, x21, x20, x19, x18, x17, x16, \
+                       x15, x14, x13, x12, x11, x10, x9, x8, x7, x6, x5, x4,  \
+                       x3, x2, x1, x0, ...)                                   \
+  x0
+#define OT_GET_ARG_27_(x27, x26, x25, x24, x23, x22, x21, x20, x19, x18, x17, \
+                       x16, x15, x14, x13, x12, x11, x10, x9, x8, x7, x6, x5, \
+                       x4, x3, x2, x1, x0, ...)                               \
+  x0
+#define OT_GET_ARG_28_(x28, x27, x26, x25, x24, x23, x22, x21, x20, x19, x18,  \
+                       x17, x16, x15, x14, x13, x12, x11, x10, x9, x8, x7, x6, \
+                       x5, x4, x3, x2, x1, x0, ...)                            \
+  x0
+#define OT_GET_ARG_29_(x29, x28, x27, x26, x25, x24, x23, x22, x21, x20, x19, \
+                       x18, x17, x16, x15, x14, x13, x12, x11, x10, x9, x8,   \
+                       x7, x6, x5, x4, x3, x2, x1, x0, ...)                   \
+  x0
+#define OT_GET_ARG_30_(x30, x29, x28, x27, x26, x25, x24, x23, x22, x21, x20, \
+                       x19, x18, x17, x16, x15, x14, x13, x12, x11, x10, x9,  \
+                       x8, x7, x6, x5, x4, x3, x2, x1, x0, ...)               \
+  x0
+#define OT_GET_ARG_31_(x31, x30, x29, x28, x27, x26, x25, x24, x23, x22, x21, \
+                       x20, x19, x18, x17, x16, x15, x14, x13, x12, x11, x10, \
+                       x9, x8, x7, x6, x5, x4, x3, x2, x1, x0, ...)           \
+  x0
+
+/**
  * A macro that expands to an assertion for the offset of a struct member.
  *
  * @param type A struct type.
