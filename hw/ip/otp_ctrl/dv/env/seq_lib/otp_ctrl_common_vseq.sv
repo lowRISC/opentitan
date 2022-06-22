@@ -33,7 +33,8 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     // drive dft_en pins to access the test_access memory
     cfg.otp_ctrl_vif.drive_lc_dft_en(lc_ctrl_pkg::On);
     // once turn on lc_dft_en regiser, will need some time to update the state register
-    // two clock cycles for lc_async mode, one clock cycle for driving dft_en
+    // two clock cycles for lc_async mode, one clock cycle for driving dft_en, one more clock cycle
+    // so there is no racing condition.
     cfg.clk_rst_vif.wait_clks(3);
   endtask
 
