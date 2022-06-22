@@ -73,24 +73,28 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     fdata_q_t fq;
     string str = $sformatf("host_read_comp_bank%0d", bank);
 
-    `uvm_info("EXPGET_HOST", $sformatf(" addr %x  data:%x   cnt:%0d  rtlff:%0d  xxx:%0d",
+    `uvm_info("EXPGET_HOST", $sformatf(" addr %x  data:%x   cnt:%0d  rtlff:%0d  ctrlff:%0d",
                                        exp.start_addr, exp.dq[0], eg_exp_cnt++,
                                        eg_rtl_host_fifo[bank].used(),
                                        eg_rtl_ctrl_fifo[bank].used()),
-              UVM_MEDIUM)
+                                       UVM_MEDIUM)
 
     // bankdoor read from memory model
-    eg_rtl_host_fifo[bank].get(obs);
+    `uvm_create_obj(flash_otf_item, obs)
+
+    // TODO review when info region is added.
+    obs.cmd.partition = FlashPartData;
+    obs.cmd.op = FlashOpRead;
     obs.cmd.addr = exp.start_addr; // tl_addr
     // descramble needs 2 buswords
     obs.cmd.addr[2] = 0;
     obs.cmd.num_words = 2;
+    obs.mem_addr = exp.start_addr >> 3;
 
     obs.print("RAW");
     cfg.flash_mem_bkdr_read(obs.cmd, obs.dq);
     obs.fq = obs.dq2fq(obs.dq);
 
-    obs.is_direct = 1;
     obs.print("rtl_host: before");
     obs.descramble(exp.addr_key, exp.data_key);
     obs.print("rtl_host: after");
@@ -102,11 +106,11 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
        rcvd_data = obs.dq[0];
     end
 
-     if (rcvd_data == exp.dq[0]) begin
-        `dv_info("data match!!", UVM_MEDIUM, str)
-     end else begin
-        `dv_error($sformatf(" : obs:exp    %8x:%8x mismatch!!", rcvd_data, exp.dq[0]), str)
-     end
+    if (rcvd_data == exp.dq[0]) begin
+      `dv_info("data match!!", UVM_MEDIUM, str)
+    end else begin
+      `dv_error($sformatf(" : obs:exp    %8x:%8x mismatch!!", rcvd_data, exp.dq[0]), str)
+    end
 
     cfg.otf_host_rd_sent++;
   endtask // process_eg_host
@@ -135,34 +139,40 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   //   - Transform rtl transactions to have the same data format as exp.
   //   - Compare read data.
   task process_read(flash_otf_item exp, int bank);
-    flash_otf_item item;
-    flash_otf_item obs;
+    flash_otf_item send;
     int col_sz = exp.fq.size;
     `uvm_info("process_read", $sformatf("bank:%0d colsz:%0d ffsz:%0d",
-                                        bank, col_sz, eg_rtl_fifo[bank].used()), UVM_HIGH)
-    exp.print("exp_read");
+                                        bank, col_sz, eg_rtl_fifo[bank].used()), UVM_MEDIUM)
+    exp.print("obs_read");
+    `uvm_create_obj(flash_otf_item, send)
 
-    eg_rtl_ctrl_fifo[bank].get(obs);
-    obs.cmd = exp.cmd;
-    obs.cmd.addr[OTFBankId] = bank;
-    obs.cmd.num_words = col_sz * 2;
+    send.cmd = exp.cmd;
+    send.cmd.addr[OTFBankId] = bank;
 
-    obs.print("RAW");
-    cfg.flash_mem_bkdr_read(obs.cmd, obs.dq);
-
-    repeat ((2 * col_sz) - 1) begin
-      eg_rtl_ctrl_fifo[bank].get(item);
+    if (exp.cmd.addr[2]) begin
+      send.cmd.addr[2] = 0;
+      send.head_pad = 1;
+      send.cmd.num_words++;
+      if (send.cmd.num_words % 2) begin
+        send.cmd.num_words++;
+        send.tail_pad = 1;
+      end
+    end else begin
+      send.cmd.num_words = col_sz * 2;
     end
+    send.mem_addr = exp.start_addr >> 3;
+    send.print("SEND");
+    cfg.flash_mem_bkdr_read(send.cmd, send.dq);
 
-    obs.print("rtl_read: enc_data");
-    obs.fq = obs.dq2fq(obs.dq);
-
-    obs.descramble(exp.addr_key, exp.data_key);
-    obs.print("rtl_read: raw_data");
+    send.print("exp_read: enc_data");
+    send.fq = send.dq2fq(send.dq);
+    send.cmd.num_words = exp.cmd.num_words;
+    send.descramble(exp.addr_key, exp.data_key);
+    send.print("exp_read: raw_data");
     `dv_info($sformatf("RDATA size: %d x 8B bank:%0d sent_cnt:%0d",
-                       obs.raw_fq.size(), bank, cfg.otf_ctrl_rd_sent++),
+                       send.raw_fq.size(), bank, cfg.otf_ctrl_rd_sent++),
              UVM_MEDIUM, "process_read")
-    compare_data(obs.raw_fq, exp.fq, bank, "rdata");
+    compare_data(send.raw_fq, exp.fq, bank, "rdata");
   endtask
 
   // Scoreboard process write in following order.
@@ -178,7 +188,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     // So each pop becomes 8 times of fqs.
     int col_sz = exp.fq.size / 8;
     `uvm_info("process_write", $sformatf("process_write:col&comp:bank:%0d colsz:%0d ffsz:%0d",
-                                         bank, col_sz, eg_rtl_ctrl_fifo[bank].used()), UVM_HIGH)
+                                         bank, col_sz, eg_rtl_ctrl_fifo[bank].used()), UVM_MEDIUM)
     eg_rtl_ctrl_fifo[bank].get(item);
     `uvm_create_obj(flash_otf_item, obs)
     obs = item;
@@ -222,12 +232,6 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
       eg_rtl_ctrl_fifo[bank].write(obs);
     end else begin // read request, guaranteed by monitor
       obs.get_from_phy(item, "r");
-      if (item.req.addr[flash_ctrl_pkg::BankAddrW-1]) begin // host read
-        obs.start_addr = obs.cmd.addr;
-        eg_rtl_host_fifo[bank].write(obs);
-      end else begin // ctrl read
-        eg_rtl_ctrl_fifo[bank].write(obs);
-      end
     end
   endtask // process_phy_item
 endclass

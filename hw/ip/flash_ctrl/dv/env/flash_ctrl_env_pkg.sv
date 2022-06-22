@@ -239,6 +239,7 @@ package flash_ctrl_env_pkg;
   parameter int unsigned OTFHostId = OTFBankId - 1; // bit 18
   localparam int unsigned CTRL_TRANS_MIN = 1;
   localparam int unsigned CTRL_TRANS_MAX = 32;
+
   // functions
   // Add below for the temporary until PR12492 is merged.
   // Will be removed after.
@@ -247,6 +248,7 @@ package flash_ctrl_env_pkg;
   localparam int unsigned FlashKeySize = flash_phy_pkg::KeySize;
   localparam int unsigned FlashNumRoundsHalf = crypto_dpi_prince_pkg::NumRoundsHalf;
   localparam int unsigned FlashAddrWidth = 16;
+
   // remove bank select
   localparam int unsigned FlashByteAddrWidth = flash_ctrl_pkg::BusAddrByteW - 1;
 
@@ -287,10 +289,10 @@ package flash_ctrl_env_pkg;
     matrix[0] =
       flash_gen_matrix({addr_key[FlashKeySize-FlashAddrWidth-1:FlashKeySize-64], addr}, 1'b1);
     matrix[1] = flash_gen_matrix(matrix[0][FlashStagesPerCycle-1], 1'b0);
-
     `uvm_info("SCR_DBG", $sformatf("waddr: %x   op_a_i : %x     vector: %x",
               addr,  {addr_key[FlashKeySize-FlashAddrWidth-1:FlashKeySize-64], addr},
               matrix[0][FlashStagesPerCycle-1]), UVM_HIGH)
+
     // galois multiply.
     for (int j = 0; j < 2; j++) begin
       mult_out = '0;
@@ -302,6 +304,7 @@ package flash_ctrl_env_pkg;
     end
     product[1] = product[1] ^ product[0];
     `uvm_info("SCR_DBG", $sformatf("prod1:%x   prod0:%x",product[1],product[0]), UVM_HIGH)
+
     return product[1];
   endfunction
 
@@ -321,7 +324,6 @@ package flash_ctrl_env_pkg;
     word_addr = byte_addr >> addr_lsb;
     mask = flash_galois_multiply(flash_addr_key, word_addr);
     masked_data = data ^ mask;
-
     `uvm_info("SCR_DBG", $sformatf("addr:%x  mask:%x  data:%x", word_addr, mask, data), UVM_HIGH)
     crypto_dpi_prince_pkg::sv_dpi_prince_encrypt(.plaintext(masked_data), .key(flash_data_key),
                                              .old_key_schedule(0), .ciphertext(scrambled_data));
@@ -378,32 +380,28 @@ package flash_ctrl_env_pkg;
     tail = size % 4;
     idx = 0;
     `dv_info($sformatf("size : %0d byte (%0d x 4B)", (size * 4),  size), UVM_MEDIUM, str)
-    if (tail == 0) begin
-      tail = 4;
-    end
 
-    if (line > 0) begin
-      for (int i = 0; i < (line - 1); ++i) begin
-        for (int j = 0; j < tail; ++j) begin
-          vec[127-(32*j) -:32] = data[idx];
-          idx++;
-        end
-        `dv_info($sformatf("%4d:%8x_%8x_%8x_%8x", i,
-                           vec[127:96], vec[95:64], vec[63:32], vec[31:0]),
-                 UVM_MEDIUM, str)
-        vec = 'h0;
+    for (int i = 0; i < line; ++i) begin
+      for (int j = 0; j < 4; ++j) begin
+        vec[127-(32*j) -:32] = data[idx];
+        idx++;
       end
+      `dv_info($sformatf("%4d:%8x_%8x_%8x_%8x", i,
+                         vec[127:96], vec[95:64], vec[63:32], vec[31:0]),
+               UVM_MEDIUM, str)
+      vec = 'h0;
     end
 
-    // print tail
-    for (int j = 0; j < tail; ++j) begin
-      vec[127-(32*j) -:32] = data[idx];
-      idx++;
+    if (tail > 0) begin
+      // print tail
+      for (int j = 0; j < tail; ++j) begin
+        vec[127-(32*j) -:32] = data[idx];
+        idx++;
+      end
+      `dv_info($sformatf("%4d:%8x_%8x_%8x_%8x", line,
+                         vec[127:96], vec[95:64], vec[63:32], vec[31:0]),
+               UVM_MEDIUM, str)
     end
-    `dv_info($sformatf("%4d:%8x_%8x_%8x_%8x", line,
-                       vec[127:96], vec[95:64], vec[63:32], vec[31:0]),
-             UVM_MEDIUM, str)
-
   endfunction // flash_otf_print_data64
 
   // package sources
