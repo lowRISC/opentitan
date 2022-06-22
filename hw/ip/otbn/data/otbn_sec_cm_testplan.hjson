@@ -115,9 +115,12 @@
     }
     {
       name: sec_cm_pc_ctrl_flow_redun
-      desc: "Verify the countermeasure(s) PC.CTRL_FLOW.REDUN."
+      desc: ''' Verify the countermeasure(s) PC.CTRL_FLOW.REDUN.
+                Wait for a read request and istrn fetch request valid.
+                Corrupt the insn_prefetch_addr.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["otbn_pc_ctrl_flow_redun"]
     }
     {
       name: sec_cm_rnd_bus_consistency
