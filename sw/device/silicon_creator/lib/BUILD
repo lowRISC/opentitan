@@ -27,7 +27,7 @@ dual_cc_library(
             "//sw/device/lib/base:memory",
         ],
         host = [
-            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:mask_rom_test",
             "@googletest//:gtest",
         ],
@@ -201,7 +201,7 @@ dual_cc_library(
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
-            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:mask_rom_test",
             "@googletest//:gtest",
         ],
@@ -274,7 +274,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         host = [
-            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:mask_rom_test",
             "@googletest//:gtest",
         ],

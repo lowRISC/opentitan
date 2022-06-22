@@ -15,7 +15,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/testing/mock_mmio_test_utils.h"
+#include "sw/device/lib/base/mock_mmio_test_utils.h"
 
 namespace mock_mmio {
 /**

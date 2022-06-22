@@ -30,7 +30,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         host = [
-            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:mask_rom_test",
             "@googletest//:gtest",
         ],
