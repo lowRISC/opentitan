@@ -43,9 +43,9 @@ class spi_host_event_vseq extends spi_host_tx_rx_vseq;
       csr_rd(.ptr(ral.status.txqd), .value(txqd));
       if (txqd < spi_host_ctrl_reg.tx_watermark) begin
         check_event(ral.status.txwm, 1);
+        read_rx_fifo();
       end
     end
-    read_rx_fifo();
     check_event(ral.status.txempty, 1);
 
     cfg.clk_rst_vif.wait_clks(100);
