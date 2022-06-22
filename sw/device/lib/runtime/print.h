@@ -74,6 +74,8 @@ typedef struct buffer_sink {
  *   with %x.
  * - %!b, which takes a bool and prints either true or false.
  * - %r, which takes a status_t and prints the status, argument and module ID.
+ * - %!r, which takes a status_t and prints the status, argument and module ID
+ *        as JSON.
  *
  * When compiled for a DV testbench, this function will not read any pointers,
  * and as such the specifiers %s, %!s, %!x, %!X, %!y, and %!Y will behave as if

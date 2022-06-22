@@ -62,6 +62,7 @@ rust_library(
         "src/test_utils/init.rs",
         "src/test_utils/load_bitstream.rs",
         "src/test_utils/mod.rs",
+        "src/test_utils/status.rs",
         "src/transport/common/mod.rs",
         "src/transport/common/uart.rs",
         "src/transport/cw310/gpio.rs",
