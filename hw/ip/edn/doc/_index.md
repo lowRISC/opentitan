@@ -238,7 +238,7 @@ The following code snippet demonstrates initializing the EDN block.
 
 ```cpp
 
-void csrng_init(unsigned int enable) {
+void edn_init(unsigned int enable) {
 
   // set the control register enable bit
   *CTRL_REG = enable; // should be 0x1 by default
