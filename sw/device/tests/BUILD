@@ -436,22 +436,27 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "csrng_smoketest",
-    srcs = ["csrng_smoketest.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
-    verilator = verilator_params(
-        tags = [
-            "broken",
-        ],
-    ),
+    name = "csrng_kat_test",
+    srcs = ["csrng_kat_test.c"],
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:csrng_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "csrng_smoketest",
+    srcs = ["csrng_smoketest.c"],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
