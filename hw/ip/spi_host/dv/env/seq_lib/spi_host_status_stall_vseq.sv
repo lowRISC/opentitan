@@ -16,6 +16,7 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
   virtual task body();
     spi_host_command_t command_snd;
     spi_segment_item segment_snd;
+    bit [7:0] read_q[$];
 
     begin : isolation_fork
       fork
@@ -38,7 +39,9 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
     end : isolation_fork
     csr_spinwait(.ptr(ral.status.rxfull), .exp_data(1'b1));
     csr_spinwait(.ptr(ral.status.rxstall), .exp_data(1'b1));
-    read_rx_fifo();
+    for (int i = 0; i < SPI_HOST_RX_DEPTH; i++) begin
+      access_data_fifo(read_q, RxFifo);
+    end
     // send transaction to check tx stall
     cfg.tx_stall_check = 1'b1;
     wr_trans();

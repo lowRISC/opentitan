@@ -73,4 +73,9 @@ class spi_host_idlecsbactive_vseq extends spi_host_tx_rx_vseq;
     end
   endtask
 
+  virtual task generate_transaction();
+    transaction_init();
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(transaction, num_segments == 4; cmd == ReadStd;)
+  endtask
+
 endclass : spi_host_idlecsbactive_vseq

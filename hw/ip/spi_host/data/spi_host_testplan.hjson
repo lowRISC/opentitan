@@ -6,6 +6,7 @@
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "spi_host_sec_cm_testplan.hjson"],
@@ -199,6 +200,35 @@
             '''
       milestone: V2
       tests: ["spi_host_stress_all"]
+    }
+    {
+      name: stall
+      desc: '''
+            Stimulus:
+              - Ongoing transaction has stalled due to lack of available space in the RX FIFO
+                and continues when RX fifo is cleared
+              - Ongoing transaction has stalled due to lack of data in the TX FIFO
+                and continues when data is provided in TX FIFO
+
+            Checking:
+              - Ensure Rxstall occurs and recovers
+              - Ensure Txstall occurs and recovers
+            '''
+      milestone: V2
+      tests: ["spi_host_status_stall"]
+    }
+    {
+      name: Idlecsbactive
+      desc: '''
+            Stimulus:
+              - Pause next segment availability and idly wait for next command
+
+            Checking:
+              - Ensure transactions goes through even with a segment pause and idle wait
+                in the state IdleCsbActive
+            '''
+      milestone: V2
+      tests: ["spi_host_idlecsbactive"]
     }
     {
       name: winbond
