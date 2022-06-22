@@ -27,43 +27,43 @@
       name: sec_cm_mem_scramble
       desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
       milestone: V2S
-      tests: []
+      tests: ["otbn_smoke"]
     }
     {
       name: sec_cm_data_mem_integrity
       desc: "Verify the countermeasure(s) DATA.MEM.INTEGRITY."
       milestone: V2S
-      tests: []
+      tests: ["otbn_imem_err", "otbn_dmem_err"]
     }
     {
       name: sec_cm_instruction_mem_integrity
       desc: "Verify the countermeasure(s) INSTRUCTION.MEM.INTEGRITY."
       milestone: V2S
-      tests: []
+      tests: ["otbn_imem_err", "otbn_dmem_err"]
     }
     {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       milestone: V2S
-      tests: []
+      tests: ["otbn_tl_intg_err"]
     }
     {
       name: sec_cm_controller_fsm_global_esc
       desc: "Verify the countermeasure(s) CONTROLLER.FSM.GLOBAL_ESC."
       milestone: V2S
-      tests: []
+      tests: ["otbn_escalate"]
     }
     {
       name: sec_cm_controller_fsm_local_esc
       desc: "Verify the countermeasure(s) CONTROLLER.FSM.LOCAL_ESC."
       milestone: V2S
-      tests: []
+      tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc"]
     }
     {
       name: sec_cm_controller_fsm_sparse
       desc: "Verify the countermeasure(s) CONTROLLER.FSM.SPARSE."
       milestone: V2S
-      tests: []
+      tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_scramble_key_sideload
@@ -75,31 +75,31 @@
       name: sec_cm_scramble_ctrl_fsm_local_esc
       desc: "Verify the countermeasure(s) SCRAMBLE_CTRL.FSM.LOCAL_ESC."
       milestone: V2S
-      tests: []
+      tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc"]
     }
     {
       name: sec_cm_scramble_ctrl_fsm_sparse
       desc: "Verify the countermeasure(s) SCRAMBLE_CTRL.FSM.SPARSE."
       milestone: V2S
-      tests: []
+      tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_start_stop_ctrl_fsm_global_esc
       desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.GLOBAL_ESC."
       milestone: V2S
-      tests: []
+      tests: ["otbn_escalate"]
     }
     {
       name: sec_cm_start_stop_ctrl_fsm_local_esc
       desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.LOCAL_ESC."
       milestone: V2S
-      tests: []
+      tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc"]
     }
     {
       name: sec_cm_start_stop_ctrl_fsm_sparse
       desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.SPARSE."
       milestone: V2S
-      tests: []
+      tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_data_reg_sw_sca
@@ -135,7 +135,7 @@
       name: sec_cm_rf_base_data_reg_sw_integrity
       desc: "Verify the countermeasure(s) RF_BASE.DATA_REG_SW.INTEGRITY."
       milestone: V2S
-      tests: []
+      tests: ["otbn_csr_rw"]
     }
     {
       name: sec_cm_rf_base_data_reg_sw_glitch_detect
@@ -159,7 +159,7 @@
       name: sec_cm_rf_bignum_data_reg_sw_integrity
       desc: "Verify the countermeasure(s) RF_BIGNUM.DATA_REG_SW.INTEGRITY."
       milestone: V2S
-      tests: []
+      tests: ["otbn_csr_rw"]
     }
     {
       name: sec_cm_rf_bignum_data_reg_sw_glitch_detect
