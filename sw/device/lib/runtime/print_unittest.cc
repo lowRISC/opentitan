@@ -11,8 +11,10 @@ extern "C" {
 #include <stdint.h>
 #include <string>
 
+#include "absl/strings/str_format.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_uart.h"
 
 // NOTE: This is only present so that print.c can link without pulling in
@@ -272,6 +274,31 @@ TEST_F(PrintfTest, Binary) {
 TEST_F(PrintfTest, BinaryWithWidth) {
   EXPECT_EQ(base_printf("Hello, %032b!\n", 0b1010'1010), 41);
   EXPECT_EQ(buf_, "Hello, 00000000000000000000000010101010!\n");
+}
+
+TEST_F(PrintfTest, StatusOk) {
+  status_t value = OK_STATUS();
+  EXPECT_EQ(base_printf("Hello, %r\n", value), 14);
+  EXPECT_EQ(buf_, "Hello, Ok:[0]\n");
+}
+
+TEST_F(PrintfTest, StatusOkWithArg) {
+  status_t value = OK_STATUS(12345);
+  EXPECT_EQ(base_printf("Hello, %r\n", value), 18);
+  EXPECT_EQ(buf_, "Hello, Ok:[12345]\n");
+}
+
+TEST_F(PrintfTest, StatusError) {
+  status_t value = UNKNOWN();
+  int line = __LINE__ - 1;
+  EXPECT_EQ(base_printf("Hello, %r\n", value), 27);
+  EXPECT_EQ(buf_, absl::StrFormat("Hello, Unknown:[\"PRI\",%d]\n", line));
+}
+
+TEST_F(PrintfTest, StatusErrorWithArg) {
+  status_t value = INVALID_ARGUMENT(2);
+  EXPECT_EQ(base_printf("Hello, %r\n", value), 33);
+  EXPECT_EQ(buf_, absl::StrFormat("Hello, InvalidArgument:[\"PRI\",%d]\n", 2));
 }
 
 TEST_F(PrintfTest, IncompleteSpec) {
