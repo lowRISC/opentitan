@@ -57,3 +57,11 @@ py_binary(
         "//util/reggen:version",
     ],
 )
+
+py_test(
+    name = "generate_compilation_db_test",
+    srcs = [
+        "generate_compilation_db.py",
+        "generate_compilation_db_test.py",
+    ],
+)
