@@ -19,7 +19,7 @@ class flash_ctrl_ro_vseq extends flash_ctrl_otf_base_vseq;
 
     fork
       begin
-        for (int i = 0; i < 1; ++i) begin
+        for (int i = 0; i < 10; ++i) begin
           fork
             host.otf_addr[OTFHostId-1:0] = $urandom();
             host.otf_addr[1:0] = 'h0;

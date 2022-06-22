@@ -308,15 +308,13 @@ package flash_ctrl_env_pkg;
     return product[1];
   endfunction
 
-  function automatic bit[75:0] create_flash_data(
+  function automatic bit[63:0] create_flash_data(
            bit [FlashDataWidth-1:0] data, bit [FlashByteAddrWidth-1:0] byte_addr,
            bit [FlashKeySize-1:0]   flash_addr_key, bit [FlashKeySize-1:0] flash_data_key);
     bit [FlashAddrWidth-1:0]                                    word_addr;
     bit [FlashDataWidth-1:0]                                    mask;
     bit [FlashDataWidth-1:0]                                    masked_data;
     bit [FlashNumRoundsHalf-1:0][FlashDataWidth-1:0]            scrambled_data;
-    bit [71:0]                                                  ecc_72;
-    bit [75:0]                                                  ecc_76;
 
     // These parameters will be removed once it is included in mem_bkdr_util.sv
     int                                                         addr_lsb = 3;
@@ -325,14 +323,12 @@ package flash_ctrl_env_pkg;
     mask = flash_galois_multiply(flash_addr_key, word_addr);
     masked_data = data ^ mask;
     `uvm_info("SCR_DBG", $sformatf("addr:%x  mask:%x  data:%x", word_addr, mask, data), UVM_HIGH)
+
     crypto_dpi_prince_pkg::sv_dpi_prince_encrypt(.plaintext(masked_data), .key(flash_data_key),
                                              .old_key_schedule(0), .ciphertext(scrambled_data));
 
     masked_data = scrambled_data[FlashNumRoundsHalf-1] ^ mask;
-    // ecc functions used are hardcoded to a fixed sized.
-    ecc_72 = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
-    ecc_76 = prim_secded_pkg::prim_secded_hamming_76_68_enc({ecc_72[67:64], masked_data[63:0]});
-    return ecc_76;
+    return masked_data;
   endfunction
 
   function automatic bit[FlashDataWidth-1:0] create_raw_data(

@@ -82,6 +82,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     int                                    tail, is_odd;
     int                                    unit_word;
     int                                    tot_wd;
+    int                                    page;
+    flash_mp_region_cfg_t                  my_region;
 
     is_odd = flash_op.otf_addr[2];
     tot_wd = wd * num + is_odd;
@@ -171,6 +173,11 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       exp_item.start_addr = start_addr;
 
       // scramble data
+      page = addr2page(flash_op.addr);
+      my_region = get_region(page);
+
+      exp_item.page = page;
+      exp_item.region = my_region;
       exp_item.scramble(otp_addr_key, otp_data_key, flash_op.otf_addr);
 
       p_sequencer.eg_exp_ctrl_port[bank].write(exp_item);

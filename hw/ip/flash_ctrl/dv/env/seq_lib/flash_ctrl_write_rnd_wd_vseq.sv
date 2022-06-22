@@ -12,7 +12,9 @@ class flash_ctrl_write_rnd_wd_vseq extends flash_ctrl_otf_base_vseq;
   virtual task body();
     flash_op_t ctrl;
     int num, bank;
-     int mywd = 1;
+    int mywd = 1;
+
+    flash_ctrl_default_region_cfg(,,,MuBi4True,MuBi4True);
 
     ctrl.partition  = FlashPartData;
     ctrl.otf_addr = is_addr_odd * 4;
