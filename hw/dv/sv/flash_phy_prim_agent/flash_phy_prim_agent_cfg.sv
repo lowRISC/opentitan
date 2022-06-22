@@ -12,5 +12,5 @@ class flash_phy_prim_agent_cfg extends dv_base_agent_cfg;
 
   `uvm_object_new
   bit scb_otf_en;
-
+  bit mon_start = 0;
 endclass

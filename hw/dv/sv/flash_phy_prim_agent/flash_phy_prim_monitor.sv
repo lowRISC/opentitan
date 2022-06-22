@@ -15,6 +15,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
 
   uvm_analysis_port #(flash_phy_prim_item) eg_rtl_port[flash_ctrl_pkg::NumBanks];
   flash_phy_prim_item w_item[flash_ctrl_pkg::NumBanks];
+  flash_phy_prim_item r_item[flash_ctrl_pkg::NumBanks];
   logic [flash_phy_pkg::FullDataWidth-1:0] write_buffer[flash_ctrl_pkg::NumBanks][$];
   `uvm_component_new
 
@@ -27,6 +28,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   endfunction
 
   task run_phase(uvm_phase phase);
+    wait(cfg.mon_start);
     super.run_phase(phase);
   endtask
 
@@ -48,7 +50,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
                 if (~cfg.vif.req[j].rd_req & ~cfg.vif.req[j].prog_req) begin
                   // do nothing
                 end else if (cfg.vif.req[j].rd_req & ~cfg.vif.req[j].prog_req) begin
-                  // TBD collect read
+                  collect_rd(j);
                 end else if (~cfg.vif.req[j].rd_req & cfg.vif.req[j].prog_req) begin
                   collect_wr_data(j);
                 end else begin
@@ -67,6 +69,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
       w_item[bank] = flash_phy_prim_item::type_id::create($sformatf("w_item[%0d]", bank));
       w_item[bank].req = cfg.vif.req[bank];
       w_item[bank].rsp = cfg.vif.rsp[bank];
+      `JDBG(("MON%0d s_addr:%x",bank, w_item[bank].req.addr))
     end
 
     write_buffer[bank].push_back(cfg.vif.req[bank].prog_full_data);
@@ -74,8 +77,22 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
     if (cfg.vif.req[bank].prog_last) begin
       w_item[bank].fq = write_buffer[bank];
       eg_rtl_port[bank].write(w_item[bank]);
+
+
+`JDBG(("MON%0d: wbuf:%0d    fq:%0d", bank,  write_buffer[bank].size(), w_item[bank].fq.size()))
+
       write_buffer[bank] = {};
     end
   endtask // collect_item
 
+  // Collect read command and wait for rsp.done to collect read data.
+  task collect_rd(int bank);
+    r_item[bank] = flash_phy_prim_item::type_id::create($sformatf("w_item[%0d]", bank));
+    r_item[bank].req = cfg.vif.req[bank];
+    wait(cfg.vif.rsp[bank].done);
+    r_item[bank].rsp = cfg.vif.rsp[bank];
+    r_item[bank].fq.push_back(cfg.vif.rsp[bank].rdata);
+//    `JDBG(("MON%0d: rdata: %x",bank, cfg.vif.rsp[bank].rdata))
+    eg_rtl_port[bank].write(r_item[bank]);
+  endtask
 endclass
