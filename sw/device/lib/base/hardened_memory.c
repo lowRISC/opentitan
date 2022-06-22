@@ -36,39 +36,40 @@ void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
 
   // We need to launder `count`, so that the SW.LOOP-COMPLETION check is not
   // deleted by the compiler.
+  size_t byte_len = word_len * sizeof(uint32_t);
   for (; launderw(count) < expected_count; count = launderw(count) + 1) {
-    // The order values themselves are in units of words, but we need `idx` to
-    // be in units of bytes.
+    // The order values themselves are in units of words, but we need `byte_idx`
+    // to be in units of bytes.
     //
     // The value obtained from `advance()` is laundered, to prevent
     // implementation details from leaking across procedures.
-    size_t idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
+    size_t byte_idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
 
     // Prevent the compiler from reordering the loop; this ensures a
     // happens-before among indices consistent with `order`.
-    barrierw(idx);
+    barrierw(byte_idx);
 
     // Compute putative offsets into `src`, `dest`, and `decoys`. Some of these
     // may go off the end of `src` and `dest`, but they will not be cast to
     // pointers in that case. (Note that casting out-of-range addresses to
     // pointers is UB.)
-    uintptr_t srcp = src_addr + idx;
-    uintptr_t destp = dest_addr + idx;
-    uintptr_t decoy1 = decoy_addr + (idx % sizeof(decoys));
+    uintptr_t srcp = src_addr + byte_idx;
+    uintptr_t destp = dest_addr + byte_idx;
+    uintptr_t decoy1 = decoy_addr + (byte_idx % sizeof(decoys));
     uintptr_t decoy2 =
-        decoy_addr + ((idx + sizeof(decoys) / 2) % sizeof(decoys));
+        decoy_addr + ((byte_idx + sizeof(decoys) / 2) % sizeof(decoys));
 
     // Branchlessly select whether to do a "real" copy or a decoy copy,
     // depending on whether we've gone off the end of the array or not.
     //
-    // Pretty much everything needs to be laundered: we need to launder `idx`
-    // for obvious reasons, and we need to launder the result of the select, so
-    // that the compiler cannot delete the resulting loads and stores. This is
-    // similar to having used `volatile uint32_t *`.
+    // Pretty much everything needs to be laundered: we need to launder
+    // `byte_idx` for obvious reasons, and we need to launder the result of the
+    // select, so that the compiler cannot delete the resulting loads and
+    // stores. This is similar to having used `volatile uint32_t *`.
     void *src = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(idx), word_len), srcp, decoy1));
+        ct_cmovw(ct_sltuw(launderw(byte_idx), byte_len), srcp, decoy1));
     void *dest = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(idx), word_len), destp, decoy2));
+        ct_cmovw(ct_sltuw(launderw(byte_idx), byte_len), destp, decoy2));
 
     // Perform the copy, without performing a typed dereference operation.
     write_32(read_32(src), dest);
@@ -93,15 +94,16 @@ void hardened_memshred(uint32_t *dest, size_t word_len) {
   uint32_t decoys[8];
   uintptr_t decoy_addr = (uintptr_t)&decoys;
 
+  size_t byte_len = word_len * sizeof(uint32_t);
   for (; count < expected_count; count = launderw(count) + 1) {
-    size_t idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
-    barrierw(idx);
+    size_t byte_idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
+    barrierw(byte_idx);
 
-    uintptr_t datap = data_addr + idx;
-    uintptr_t decoy = decoy_addr + (idx % sizeof(decoys));
+    uintptr_t datap = data_addr + byte_idx;
+    uintptr_t decoy = decoy_addr + (byte_idx % sizeof(decoys));
 
     void *data = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(idx), word_len), datap, decoy));
+        ct_cmovw(ct_sltuw(launderw(byte_idx), byte_len), datap, decoy));
 
     // Write a freshly-generated random word to `*data`.
     write_32(hardened_memshred_random_word(), data);
@@ -135,20 +137,21 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
 
   // The loop is almost token-for-token the one above, but the copy is
   // replaced with something else.
+  size_t byte_len = word_len * sizeof(uint32_t);
   for (; count < expected_count; count = launderw(count) + 1) {
-    size_t idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
-    barrierw(idx);
+    size_t byte_idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
+    barrierw(byte_idx);
 
-    uintptr_t ap = lhs_addr + idx;
-    uintptr_t bp = rhs_addr + idx;
-    uintptr_t decoy1 = decoy_addr + (idx % sizeof(decoys));
+    uintptr_t ap = lhs_addr + byte_idx;
+    uintptr_t bp = rhs_addr + byte_idx;
+    uintptr_t decoy1 = decoy_addr + (byte_idx % sizeof(decoys));
     uintptr_t decoy2 =
-        decoy_addr + ((idx + sizeof(decoys) / 2) % sizeof(decoys));
+        decoy_addr + ((byte_idx + sizeof(decoys) / 2) % sizeof(decoys));
 
     void *av = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(idx), word_len), ap, decoy1));
+        ct_cmovw(ct_sltuw(launderw(byte_idx), byte_len), ap, decoy1));
     void *bv = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(idx), word_len), bp, decoy2));
+        ct_cmovw(ct_sltuw(launderw(byte_idx), byte_len), bp, decoy2));
 
     uint32_t a = read_32(av);
     uint32_t b = read_32(bv);
