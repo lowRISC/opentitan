@@ -9,6 +9,7 @@
 
   fusesoc_core: lowrisc:systems:chip_earlgrey_asic:0.1
 
+  bbox_cmd: "-bbox_m [list aon_osc io_osc sys_osc usb_osc]"
   conn_csvs_dir: "{proj_root}/hw/top_earlgrey/formal/conn_csvs"
   conn_csvs: ["{conn_csvs_dir}/aon_timer_rst.csv",
               "{conn_csvs_dir}/ast_mem_cfg.csv",

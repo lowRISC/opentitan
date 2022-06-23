@@ -26,11 +26,8 @@ if {$conn_csvs eq ""} {
 # Blackbox ast related modules to avoid compile errors.
 analyze -sv09 \
   +define+SYNTHESIS+$env(FPV_DEFINES) \
-  -f [glob *.scr] \
-  -bbox_m aon_osc \
-  -bbox_m io_osc  \
-  -bbox_m sys_osc \
-  -bbox_m usb_osc
+  $env(BBOX_CMD) \
+  -f [glob *.scr]
 
 # Black-box assistant will blackbox the modules which are not needed by looking at
 # the connectivity csv.
