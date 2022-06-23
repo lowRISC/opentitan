@@ -577,7 +577,7 @@ module otbn_core
       mubi4_or_hi(escalate_en_i,
                   mubi4_bool_to_mubi(|{start_stop_fatal_error, urnd_all_zero, predec_error,
                                        rf_base_rf_err, lsu_rdata_err, insn_fetch_err,
-                                       non_controller_reg_intg_violation}));
+                                       non_controller_reg_intg_violation, insn_addr_err}));
 
   assign controller_recov_escalate_en =
       mubi4_bool_to_mubi(|{rnd_rep_err, rnd_fips_err});
@@ -587,7 +587,7 @@ module otbn_core
       mubi4_or_hi(escalate_en_i,
                   mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_rf_err, predec_error,
                                        lsu_rdata_err, insn_fetch_err, controller_fatal_err,
-                                       rnd_rep_err, rnd_fips_err}));
+                                       rnd_rep_err, rnd_fips_err, insn_addr_err}));
 
   assign insn_cnt_o = insn_cnt;
 
