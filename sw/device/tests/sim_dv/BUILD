@@ -602,3 +602,26 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_functest(
+    name = "sensor_ctrl_status_test",
+    srcs = ["sensor_ctrl_status.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib:irq",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:sensor_ctrl",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)

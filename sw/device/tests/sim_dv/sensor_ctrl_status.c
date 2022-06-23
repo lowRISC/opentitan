@@ -16,6 +16,8 @@
 #include "sensor_ctrl_regs.h"  // Generated.
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
+OTTF_DEFINE_TEST_CONFIG();
+
 /* In this test, the IO POK status is randomly change by an
  * an external source (user or dv).
  * Only 1 IO change is made at a time.
