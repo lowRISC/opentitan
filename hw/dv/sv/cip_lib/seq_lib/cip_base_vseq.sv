@@ -424,7 +424,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       "mem_partial_access":            run_mem_partial_access_vseq(num_times);
       "csr_mem_rw_with_rand_reset":    run_csr_mem_rw_with_rand_reset_vseq(num_times);
       "csr_mem_rw":                    run_csr_mem_rw_vseq(num_times);
-      "sec_cm_fi":                     run_sec_cm_fi_vseq(num_times);
+      // Increase iteration, otherwise each sec_cm is only tested 1-2 times
+      "sec_cm_fi":                     run_sec_cm_fi_vseq(10 * num_times);
       default:                         run_csr_vseq_wrapper(num_times);
     endcase
   endtask
