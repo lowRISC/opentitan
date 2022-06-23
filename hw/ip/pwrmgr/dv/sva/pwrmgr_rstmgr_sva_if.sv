@@ -41,13 +41,13 @@ interface pwrmgr_rstmgr_sva_if
   localparam int MAX_RST_CYCLES = 4;
   `define RST_CYCLES ##[MIN_RST_CYCLES:MAX_RST_CYCLES]
 
-  // output reset cycle with a clk enalbe disable
+  // output reset cycle with a clk enable disable
   localparam int MIN_MAIN_RST_CYCLES = 0;
   localparam int MAX_MAIN_RST_CYCLES = pwrmgr_clk_ctrl_common_pkg::MAIN_CLK_DELAY_MAX;
   `define MAIN_RST_CYCLES ##[MIN_MAIN_RST_CYCLES:MAX_MAIN_RST_CYCLES]
 
   localparam int MIN_ESC_RST_CYCLES = 0;
-  localparam int MAX_ESC_RST_CYCLES = pwrmgr_clk_ctrl_common_pkg::ESC_CLK_DELAY_MAX * 8;
+  localparam int MAX_ESC_RST_CYCLES = 4;
   `define ESC_RST_CYCLES ##[MIN_ESC_RST_CYCLES:MAX_ESC_RST_CYCLES]
 
   bit disable_sva;
@@ -137,12 +137,12 @@ interface pwrmgr_rstmgr_sva_if
   `ASSERT(EscRstOn_A,
           $rose(
               esc_rst_req_i
-          ) |-> `ESC_RST_CYCLES rstreqs[ResetEscIdx], clk_i,
+          ) |-> `ESC_RST_CYCLES rstreqs[ResetEscIdx], clk_slow_i,
           reset_or_disable || !check_rstreqs_en)
   `ASSERT(EscRstOff_A,
           $fell(
               esc_rst_req_i
-          ) |-> `ESC_RST_CYCLES !rstreqs[ResetEscIdx], clk_i,
+          ) |-> `ESC_RST_CYCLES !rstreqs[ResetEscIdx], clk_slow_i,
           reset_or_disable || !check_rstreqs_en)
   // Software initiated resets are not sent to rstmgr since they originated there.
   `undef RST_CYCLES
