@@ -870,11 +870,11 @@
       desc: '''Verify the frequency measurement through deep sleep.
 
             Enable clock cycle counts. Put the chip in deep sleep. Upon wakeup reset the
-            clock measurements should be off, and the recoverable fault status should be
-            all clear.
+            clock measurements should be off, but the recoverable fault status should not
+            be cleared.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_ast_clk_outputs"]
     }
     {
       name: chip_sw_clkmgr_sleep_frequency
@@ -888,12 +888,23 @@
       tests: []
     }
     {
-      name: chip_sw_clkmgr_escalation_reset
-      desc: '''Verify the clock manager resets to a clean state after an internal fault
-               (measurement error timeout) causes the system to escalate to reset.
+      name: chip_sw_clkmgr_reset_frequency
+      desc: '''Verify the frequency measurement through reset.
 
-               Upon alert escalation reset, the internal status should be clear and the
-               clkmgr should not attempt to send out more alerts.
+            Enable clock cycle counts, configured to cause errors. Trigger a chip reset via SW.
+            After reset the clock measurements should be off and the recoverable fault status
+            should be cleared.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sw_clkmgr_escalation_reset
+      desc: '''Verify the clock manager resets to a clean state after an escalation reset.
+
+            Trigger an internal fault (measurement error timeout) and let it escalate to reset.
+            Upon alert escalation reset, the internal status should be clear and clkmgr should
+            not attempt to send out more alerts.
             '''
       milestone: V2
       tests: []
@@ -2634,10 +2645,9 @@
       name: chip_sw_ast_clk_outputs
       desc: '''Verify that the AST generates the 4 clocks when requested by the clkmgr.
 
-            Verify the clock frequencies are reasonably accurate. Verify that when the clkmgr
-            deasserts the enable (on account of low power entry), the clocks are turned off. Verify
-            that when turned on (low power exit), the clocks are glitch free.
-
+            Verify the clock frequencies are reasonably accurate. Bring the chip to deep sleep,
+            and verify that upon wakeup reset the clock counters are turned off, measure ctrl
+            regwen is enabled, and errors are not cleared.
             '''
       milestone: V2
       tests: ["chip_sw_ast_clk_outputs"]

@@ -272,35 +272,96 @@ dif_result_t dif_clkmgr_disable_measure_counts(
   }
 
   uint32_t en_offset;
-  uint32_t reg_offset;
   switch (clock) {
     case kDifClkmgrMeasureClockIo:
       en_offset = CLKMGR_IO_MEAS_CTRL_EN_REG_OFFSET;
-      reg_offset = CLKMGR_IO_MEAS_CTRL_SHADOWED_REG_OFFSET;
       break;
     case kDifClkmgrMeasureClockIoDiv2:
       en_offset = CLKMGR_IO_DIV2_MEAS_CTRL_EN_REG_OFFSET;
-      reg_offset = CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_REG_OFFSET;
       break;
     case kDifClkmgrMeasureClockIoDiv4:
       en_offset = CLKMGR_IO_DIV4_MEAS_CTRL_EN_REG_OFFSET;
-      reg_offset = CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_REG_OFFSET;
       break;
     case kDifClkmgrMeasureClockMain:
       en_offset = CLKMGR_MAIN_MEAS_CTRL_EN_REG_OFFSET;
-      reg_offset = CLKMGR_MAIN_MEAS_CTRL_SHADOWED_REG_OFFSET;
       break;
     case kDifClkmgrMeasureClockUsb:
       en_offset = CLKMGR_USB_MEAS_CTRL_EN_REG_OFFSET;
-      reg_offset = CLKMGR_USB_MEAS_CTRL_SHADOWED_REG_OFFSET;
       break;
     default:
       return kDifBadArg;
   }
   mmio_region_write32(clkmgr->base_addr, en_offset, kMultiBitBool4False);
-  // Two writes, because these registers are shadowed.
-  mmio_region_write32(clkmgr->base_addr, reg_offset, 0);
-  mmio_region_write32(clkmgr->base_addr, reg_offset, 0);
+  return kDifOk;
+}
+
+dif_result_t dif_clkmgr_measure_counts_get_enable(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_measure_clock_t clock,
+    dif_toggle_t *state) {
+  if (clkmgr == NULL || state == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t en_offset;
+  switch (clock) {
+    case kDifClkmgrMeasureClockIo:
+      en_offset = CLKMGR_IO_MEAS_CTRL_EN_REG_OFFSET;
+      break;
+    case kDifClkmgrMeasureClockIoDiv2:
+      en_offset = CLKMGR_IO_DIV2_MEAS_CTRL_EN_REG_OFFSET;
+      break;
+    case kDifClkmgrMeasureClockIoDiv4:
+      en_offset = CLKMGR_IO_DIV4_MEAS_CTRL_EN_REG_OFFSET;
+      break;
+    case kDifClkmgrMeasureClockMain:
+      en_offset = CLKMGR_MAIN_MEAS_CTRL_EN_REG_OFFSET;
+      break;
+    case kDifClkmgrMeasureClockUsb:
+      en_offset = CLKMGR_USB_MEAS_CTRL_EN_REG_OFFSET;
+      break;
+    default:
+      return kDifBadArg;
+  }
+  multi_bit_bool_t en_val = mmio_region_read32(clkmgr->base_addr, en_offset);
+  *state = dif_multi_bit_bool_to_toggle(en_val);
+
+  return kDifOk;
+}
+
+dif_result_t dif_clkmgr_measure_counts_get_thresholds(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_measure_clock_t clock,
+    uint32_t *min_threshold, uint32_t *max_threshold) {
+  if (clkmgr == NULL || min_threshold == NULL || max_threshold == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg_offset;
+  bitfield_field32_t lo_field;
+  bitfield_field32_t hi_field;
+  switch (clock) {
+#define PICK_THRESHOLD_FIELDS(kind_)                           \
+  reg_offset = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_REG_OFFSET; \
+  lo_field = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_LO_FIELD;     \
+  hi_field = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_HI_FIELD;     \
+  break  // No semicolon to force semicolon below.
+    case kDifClkmgrMeasureClockIo:
+      PICK_THRESHOLD_FIELDS(IO);
+    case kDifClkmgrMeasureClockIoDiv2:
+      PICK_THRESHOLD_FIELDS(IO_DIV2);
+    case kDifClkmgrMeasureClockIoDiv4:
+      PICK_THRESHOLD_FIELDS(IO_DIV4);
+    case kDifClkmgrMeasureClockMain:
+      PICK_THRESHOLD_FIELDS(MAIN);
+    case kDifClkmgrMeasureClockUsb:
+      PICK_THRESHOLD_FIELDS(USB);
+    default:
+      return kDifBadArg;
+#undef PICK_THRESHOLD_FIELDS
+  }
+  uint32_t thresholds_val = mmio_region_read32(clkmgr->base_addr, reg_offset);
+  *min_threshold = bitfield_field32_read(thresholds_val, lo_field);
+  *max_threshold = bitfield_field32_read(thresholds_val, hi_field);
+
   return kDifOk;
 }
 
