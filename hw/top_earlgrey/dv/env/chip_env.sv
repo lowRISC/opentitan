@@ -66,6 +66,22 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get pwrb_in_vif from uvm_config_db")
     end
 
+    if (!uvm_config_db#(virtual pins_if #(1))::get(this, "", "ec_rst_vif", cfg.ec_rst_vif)) begin
+      `uvm_fatal(`gfn, "failed to get ec_rst_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(virtual pins_if #(1))::get(
+            this, "", "flash_wp_vif", cfg.flash_wp_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get flash_wp_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(virtual pins_if #(8))::get(
+            this, "", "sysrst_ctrl_vif", cfg.sysrst_ctrl_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get sysrst_ctrl_vif from uvm_config_db")
+    end
+
     for (chip_mem_e mem = mem.first(), int i = 0; i < mem.num(); mem = mem.next(), i++) begin
       string inst = $sformatf("mem_bkdr_util[%0s]", mem.name());
       bit is_invalid;
