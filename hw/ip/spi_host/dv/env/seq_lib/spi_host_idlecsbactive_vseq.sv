@@ -60,7 +60,7 @@ class spi_host_idlecsbactive_vseq extends spi_host_tx_rx_vseq;
       program_command_reg(segment.command_reg);
       spi_host_atomic.put(1);
     end
-  endtask : send_trans
+  endtask : send_trans_w_csaat
 
   virtual task start_spi_host_trans_w_csaat(int num_transactions, bit wait_ready = 1'b1,
                                          bit csaathold = 1'b1);
