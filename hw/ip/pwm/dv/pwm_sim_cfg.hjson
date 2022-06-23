@@ -36,11 +36,13 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["pwm_bind", "sec_cm_prim_onehot_check_bind"]
+  sim_tops: ["pwm_bind", "pwm_cov_bind", "sec_cm_prim_onehot_check_bind"]
+
+  // Coverage exclusion
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/pwm/dv/cov/pwm_unr_excl.vRefine"]
 
   // Default iterations for all tests - each test entry can override this.
-    reseed: 50
-
+  reseed: 50
 
   component_a: "uvm_test_top.env.scoreboard"
   id_a: _ALL_
