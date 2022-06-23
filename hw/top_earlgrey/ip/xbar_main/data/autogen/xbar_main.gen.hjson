@@ -32,17 +32,17 @@
     }
     rst_usb_ni:
     {
-      name: usb
+      name: sys_usb
       domain: "0"
     }
     rst_spi_host0_ni:
     {
-      name: spi_host0
+      name: sys_io
       domain: "0"
     }
     rst_spi_host1_ni:
     {
-      name: spi_host1
+      name: sys_io_div2
       domain: "0"
     }
   }
