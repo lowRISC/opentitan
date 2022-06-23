@@ -10,6 +10,7 @@
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
@@ -55,9 +56,9 @@
   - Read alert_info from rstmgr and compare with expected value.
 
   Round 3: All Classes profile with alert escalation
-  - Trigger local alert by alert handler ping timeout
+  - Trigger rv_core_ibex alert that leads to an interrupt.
   - Trigger other alerts for all classes.
-  - local alert will be escalated to phase2 then it will trigger
+  - rv_core_ibex alert will be escalated to phase2 then it will trigger
     reset.
   - Read alert_info from rstmgr and compare with expected value.
 
@@ -74,7 +75,7 @@ enum {
   kEscalationPhase2Micros = 100,  // us
   kRoundOneDelay = 100,           // us
   kRoundTwoDelay = 100,           // us
-  kRoundThreeDelay = 3000,        // us
+  kRoundThreeDelay = 1000,        // us
 };
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
@@ -84,6 +85,7 @@ static dif_uart_t uart0, uart1, uart2, uart3;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_spi_host_t spi_host;
 static dif_rv_plic_t plic;
+static dif_rv_core_ibex_t rv_core_ibex;
 static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
 static dif_i2c_t i2c0, i2c1, i2c2;
@@ -121,8 +123,8 @@ typedef struct alert_info {
   cstate_t class_esc_state[ALERT_HANDLER_PARAM_N_CLASSES];  // 4x3bit
 } alert_info_t;
 
-static test_round_t global_test_round;
-static uint32_t global_alert_called;
+static volatile test_round_t global_test_round;
+static volatile uint32_t global_alert_called;
 static const dif_alert_handler_escalation_phase_t
     kEscProfiles[][ALERT_HANDLER_PARAM_N_CLASSES] = {
         [kDifAlertHandlerClassA] = {{.phase = kDifAlertHandlerClassStatePhase0,
@@ -149,6 +151,7 @@ static const dif_alert_handler_escalation_phase_t
                                     {.phase = kDifAlertHandlerClassStatePhase2,
                                      .signal = 3,
                                      .duration_cycles = 2400}}};
+
 static const dif_alert_handler_class_config_t
     kConfigProfiles[ALERT_HANDLER_PARAM_N_CLASSES] = {
         [kDifAlertHandlerClassA] =
@@ -217,12 +220,12 @@ static const alert_info_t kExpectedInfo[kRoundTotal] = {
         {
             .test_name = "All classes",
             .alert_cause =
-                ((uint64_t)1 << kTopEarlgreyAlertIdFlashCtrlRecovErr) |
-                ((uint64_t)1 << kTopEarlgreyAlertIdKmacFatalFaultErr) |
-                ((uint64_t)1 << kTopEarlgreyAlertIdKeymgrRecovOperationErr) |
-                ((uint64_t)1 << kTopEarlgreyAlertIdKeymgrFatalFaultErr),
-            .class_accum_cnt = {0, 1, 0, 0x1e02},
-            .class_esc_state = {kCstateIdle, kCstatePhase1, kCstateIdle,
+                ((uint64_t)1 << kTopEarlgreyAlertIdRvCoreIbexRecovSwErr) |
+                ((uint64_t)1 << kTopEarlgreyAlertIdUart0FatalFault) |
+                ((uint64_t)1 << kTopEarlgreyAlertIdI2c0FatalFault) |
+                ((uint64_t)1 << kTopEarlgreyAlertIdSpiHost0FatalFault),
+            .class_accum_cnt = {1, 1, 1, 1},
+            .class_esc_state = {kCstatePhase0, kCstatePhase1, kCstatePhase0,
                                 kCstatePhase0},
         },
 };
@@ -254,29 +257,33 @@ static alert_info_t alert_info_dump2struct(
   myinfo.class_accum_cnt[3] = (uint16_t)(upper | lower);
   // loc_alert_cause
   myinfo.loc_alert_cause = (dump[6] >> 12) & 0x7f;
-  // alert_cause
-  lower = dump[7] & 0xffff;
-  upper = dump[7] >> 16;
 
+  // alert_cause
   // dump[6] layout:
   //  31                     19,
   // |--- alert_cause[12:0]---+
   // 18                    12,11 0
   // +--loc_alert_cause[6:0]--+--class_accum_cnt[3][15:4]--|
   //
-  // total 16 + 13 lower bits are valid
-  lower = (lower << 13) + (dump[6] >> 19);
 
-  // dump[8] lower16 + dump[7] upper 16
-  upper = upper + ((dump[8] & 0xffff) << 16);
+  // the lower 32-bit of the alert cause is made up of:
+  // upper 13 bits from dump[6]
+  // lower 19 bits from dump[7]
+  lower = dump[6] >> 19;
+  lower = lower | (dump[7] & ((1 << 20) - 1)) << 13;
+
+  // the upper 32-bit of the alert cause is made up of:
+  // upper 13 bits from dump[7]
+  // lower 16 bits from dump[8]
+  upper = dump[7] >> 19;
+  upper = upper | (dump[8] & 0xffff) << 13;
   myinfo.alert_cause = (uint64_t)upper << 32 | lower;
-
   return myinfo;
 }
 
 static node_t test_node[kTopEarlgreyAlertPeripheralLast];
 
-static void set_extra_alert(uint32_t *set) {
+static void set_extra_alert(volatile uint32_t *set) {
   CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault));
   CHECK_DIF_OK(dif_i2c_alert_force(&i2c0, kDifI2cAlertFatalFault));
   CHECK_DIF_OK(dif_spi_host_alert_force(&spi_host, kDifSpiHostAlertFatalFault));
@@ -300,9 +307,6 @@ void ottf_external_isr(void) {
   peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[irq_id];
 
-  LOG_INFO("round:%d  I GOT IRQ %d from peripheral:%d", global_test_round,
-           irq_id, peripheral);
-
   if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
     irq = (dif_aon_timer_irq_t)(
         irq_id -
@@ -313,10 +317,9 @@ void ottf_external_isr(void) {
     irq = (irq_id -
            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
 
-    LOG_INFO("IRQ2: %d", irq);
-
     switch (irq) {
       case 0:  // class a
+        LOG_INFO("IRQ: class A");
         CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
             &alert_handler, kDifI2cAlertFatalFault));
 
@@ -324,11 +327,9 @@ void ottf_external_isr(void) {
         dif_alert_handler_class_state_t state;
         CHECK_DIF_OK(dif_alert_handler_get_class_state(
             &alert_handler, kDifAlertHandlerClassA, &state));
-        LOG_INFO("IRQ: state :  %d", state);
 
         // sw reset for round 1
         if (global_test_round == kRound1) {
-          LOG_INFO("IRQ: kick off sw reset!!");
           CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
         }
         CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
@@ -341,10 +342,10 @@ void ottf_external_isr(void) {
         LOG_INFO("IRQ: class C");
         break;
       case 3:
-        LOG_INFO("IRQ: class D");
         if (global_alert_called == 0) {
-          LOG_INFO("IRQ: extra alert called");
           set_extra_alert(&global_alert_called);
+          LOG_INFO("IRQ: class D");
+          LOG_INFO("IRQ: extra alert called");
         }
         break;
       default:
@@ -355,6 +356,16 @@ void ottf_external_isr(void) {
   // register.
 
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
+}
+
+static const uint32_t num_prints =
+    sizeof(((alert_info_t *)0)->alert_cause) / sizeof(uint32_t);
+
+static void print_alert_cause(alert_info_t info) {
+  for (uint32_t i = 0; i < num_prints; ++i) {
+    LOG_INFO("alert_cause[%d]: 0x%x", i,
+             (uint32_t)(info.alert_cause >> (32 * i)));
+  }
 }
 
 /*
@@ -385,7 +396,6 @@ static void prgm_alert_handler_round1(void) {
  * Configure alert for uart0..3
  * .alert class = class C
  * .escalation phase0,1
- *
  * Configure alert from aon timer
  * .alert class = class B
  * .escalation phases 1
@@ -436,9 +446,7 @@ static void prgm_alert_handler_round3(void) {
   dif_alert_handler_class_t alert_class;
 
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
-    if (i == kTopEarlgreyAlertIdSpiHost0FatalFault ||
-        i == kTopEarlgreyAlertIdOtpCtrlFatalCheckError ||
-        i == kTopEarlgreyAlertIdKmacFatalFaultErr) {
+    if (i == kTopEarlgreyAlertIdSpiHost0FatalFault) {
       alert_class = kDifAlertHandlerClassB;
     } else if (i == kTopEarlgreyAlertIdUart0FatalFault) {
       alert_class = kDifAlertHandlerClassC;
@@ -456,16 +464,30 @@ static void prgm_alert_handler_round3(void) {
       kDifAlertHandlerClassA, kDifAlertHandlerClassB, kDifAlertHandlerClassC,
       kDifAlertHandlerClassD};
 
+  dif_alert_handler_class_config_t class_d_config =
+      kConfigProfiles[kDifAlertHandlerClassD];
+
+  dif_alert_handler_escalation_phase_t class_d_esc[3];
+
+  if (kDeviceType == kDeviceFpgaCw310) {
+    uint32_t cpu_freq = kClockFreqCpuHz;
+    uint32_t peri_freq = kClockFreqPeripheralHz;
+    uint32_t cycles = kUartTxFifoCpuCycles * (cpu_freq / peri_freq);
+    class_d_esc[0] = kEscProfiles[kDifAlertHandlerClassD][0];
+    class_d_esc[1] = kEscProfiles[kDifAlertHandlerClassD][1];
+    class_d_esc[2] = kEscProfiles[kDifAlertHandlerClassD][2];
+    // we must allow sufficient time for the device to complete uart
+    class_d_esc[0].duration_cycles = cycles;
+    class_d_config.escalation_phases = class_d_esc;
+  }
+
+  LOG_INFO("Escalation set to %d cycles",
+           class_d_config.escalation_phases[0].duration_cycles);
+
   dif_alert_handler_class_config_t class_configs[] = {
       kConfigProfiles[kDifAlertHandlerClassA],
       kConfigProfiles[kDifAlertHandlerClassB],
-      kConfigProfiles[kDifAlertHandlerClassC],
-      kConfigProfiles[kDifAlertHandlerClassD]};
-
-  CHECK_DIF_OK(dif_alert_handler_configure_local_alert(
-      &alert_handler, kDifAlertHandlerLocalAlertAlertPingFail,
-      kDifAlertHandlerClassD, /*enabled=*/kDifToggleEnabled,
-      /*locked=*/kDifToggleEnabled));
+      kConfigProfiles[kDifAlertHandlerClassC], class_d_config};
 
   for (int i = 0; i < ARRAYSIZE(alert_classes); ++i) {
     CHECK_DIF_OK(dif_alert_handler_configure_class(
@@ -475,8 +497,11 @@ static void prgm_alert_handler_round3(void) {
   }
 
   CHECK_DIF_OK(dif_alert_handler_configure_ping_timer(
-      &alert_handler, 2, /*enabled=*/kDifToggleEnabled,
+      &alert_handler, 1000, /*enabled=*/kDifToggleEnabled,
       /*locked=*/kDifToggleEnabled));
+
+  CHECK_DIF_OK(dif_rv_core_ibex_alert_force(&rv_core_ibex,
+                                            kDifRvCoreIbexAlertRecovSwErr));
 }
 
 static void peripheral_init(void) {
@@ -502,6 +527,9 @@ static void peripheral_init(void) {
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
 
   // Set pwrmgr reset_en
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
@@ -525,14 +553,12 @@ static void collect_alert_dump_and_compare(test_round_t round) {
 
   actual_info = alert_info_dump2struct(dump);
 
-  LOG_INFO("alert_cause : 0x%!x", sizeof(actual_info.alert_cause),
-           (char *)&actual_info.alert_cause);
+  LOG_INFO("observed alert cause:");
+  print_alert_cause(actual_info);
+  LOG_INFO("expected alert cause:");
+  print_alert_cause(kExpectedInfo[round]);
+  CHECK(kExpectedInfo[round].alert_cause == actual_info.alert_cause);
 
-  CHECK(kExpectedInfo[round].alert_cause == actual_info.alert_cause,
-        "alert_info.alert_cause mismatch exp:0x%!x  obs:0x%!x",
-        sizeof(kExpectedInfo[round].alert_cause),
-        (char *)&kExpectedInfo[round].alert_cause,
-        sizeof(actual_info.alert_cause), (char *)&actual_info.alert_cause);
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
     CHECK(kExpectedInfo[round].class_accum_cnt[i] ==
               actual_info.class_accum_cnt[i],
@@ -653,7 +679,6 @@ bool test_main(void) {
     global_test_round = kRound1;
     prgm_alert_handler_round1();
 
-    LOG_INFO("ALERT1");
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c0, kDifI2cAlertFatalFault));
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c1, kDifI2cAlertFatalFault));
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c2, kDifI2cAlertFatalFault));
@@ -670,7 +695,6 @@ bool test_main(void) {
 
     prgm_alert_handler_round2();
 
-    LOG_INFO("ALERT2");
     // Setup the aon_timer the wdog bark and bite timeouts.
     uint64_t bark_cycles =
         udiv64_slow(kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL);
@@ -695,6 +719,9 @@ bool test_main(void) {
   } else if (rst_info == kDifRstmgrResetInfoWatchdog) {
     collect_alert_dump_and_compare(kRound2);
 
+    // Do not remove this log statement, as it is used to synchronize with the
+    // DV environment
+    LOG_INFO("Disable ping timer alert check");
     global_test_round = kRound3;
     prgm_alert_handler_round3();
     CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
