@@ -140,7 +140,7 @@ All executed instructions in the loaded software into Verilator simulations are 
 By default this file is stored somewhere in `~/.cache/bazel`, you can find it using the following command:
 
 ```console
-$ find ~/.cache/bazel -name "trace_core_00000000.log"
+find ~/.cache/bazel -name "trace_core_00000000.log"
 ```
 
 The columns in this file are tab separated; change the tab width in your editor if the columns don't appear clearly, or open the file in a spreadsheet application.
