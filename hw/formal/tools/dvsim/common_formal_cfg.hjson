@@ -43,13 +43,15 @@
                         "^ERROR:.*$"]
 
   defines: ""
+  bbox_cmd: ""
 
   // Vars that need to exported to the env
   exports: [
-    { DUT_TOP:  "{dut}" },
-    { COV:      "{cov}" },
-    { sub_flow: "{sub_flow}"},
-    { FPV_DEFINES:  '{defines}'},
+    { DUT_TOP:     "{dut}" },
+    { COV:         "{cov}" },
+    { sub_flow:    "{sub_flow}"},
+    { FPV_DEFINES: "{defines}"},
+    { BBOX_CMD:    "'{bbox_cmd}'"},
   ]
 
   overrides: [
