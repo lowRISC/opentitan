@@ -669,6 +669,9 @@ module chip_earlgrey_cw310 #(
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
   otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
 
+  // otp alert
+  ast_pkg::ast_dif_t otp_alert;
+
   logic usb_ref_pulse;
   logic usb_ref_val;
 
@@ -694,6 +697,7 @@ module chip_earlgrey_cw310 #(
   prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
+  ast_pkg::ast_dif_t flash_alert;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -1015,6 +1019,7 @@ module chip_earlgrey_cw310 #(
     .flash_power_down_h_i         ( 1'b0                  ),
     .flash_power_ready_h_i        ( 1'b1                  ),
     .flash_obs_o                  ( flash_obs             ),
+    .flash_alert_o                ( flash_alert           ),
     .io_clk_byp_req_o             ( io_clk_byp_req        ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
     .all_clk_byp_req_o            ( all_clk_byp_req       ),
