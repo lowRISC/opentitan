@@ -410,7 +410,9 @@ package otbn_pkg;
 
   typedef struct packed {
     logic             adder_x_en;
+    logic             x_res_operand_a_sel;
     logic             adder_y_op_a_en;
+    logic             shift_mod_sel;
     logic             adder_y_op_shifter_en;
     logic             shifter_a_en;
     logic             shifter_b_en;

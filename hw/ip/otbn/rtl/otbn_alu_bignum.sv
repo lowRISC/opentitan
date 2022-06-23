@@ -40,15 +40,9 @@
  * get blanked. Note that Adder X is never used in isolation, it is always combined with Adder Y so
  * there is no need for blanking between Adder X and Adder Y.
  *
- *                     A 0
- *                     | |
- *                     b |
- *                     | |
- *                   \-----/
- *                    \---/
- *      A       B       |   B
+ *      A       B       A   B
  *      |       |       |   |
- *      b       b       |   b   shift_amt
+ *      b       b       b   b   shift_amt
  *      |       |       |   |   |
  *    +-----------+   +-----------+
  *    |  Adder X  |   |  Shifter  |
@@ -480,9 +474,7 @@ module otbn_alu_bignum
   logic [WLEN-1:0] adder_y_op_a_blanked;
   logic [WLEN-1:0] adder_y_op_shifter_res_blanked;
 
-  logic            shift_mod_sel;
   logic [WLEN-1:0] shift_mod_mux_out;
-  logic            x_res_operand_a_sel;
   logic [WLEN-1:0] x_res_operand_a_mux_out;
 
   // SEC_CM: DATA_REG_SW.SCA
@@ -511,7 +503,8 @@ module otbn_alu_bignum
     .out_o(adder_y_op_a_blanked)
   );
 
-  assign x_res_operand_a_mux_out = x_res_operand_a_sel ? adder_x_res[WLEN:1] : adder_y_op_a_blanked;
+  assign x_res_operand_a_mux_out =
+      alu_predec_bignum_i.x_res_operand_a_sel ? adder_x_res[WLEN:1] : adder_y_op_a_blanked;
 
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_adder_y_op_shifter_blanked (
@@ -520,7 +513,8 @@ module otbn_alu_bignum
     .out_o(adder_y_op_shifter_res_blanked)
   );
 
-  assign shift_mod_mux_out = shift_mod_sel ? adder_y_op_shifter_res_blanked : mod_no_intg_q;
+  assign shift_mod_mux_out =
+      alu_predec_bignum_i.shift_mod_sel ? adder_y_op_shifter_res_blanked : mod_no_intg_q;
 
   assign adder_y_op_a = {x_res_operand_a_mux_out, 1'b1};
   assign adder_y_op_b = {adder_y_op_b_invert ? ~shift_mod_mux_out : shift_mod_mux_out,
@@ -544,10 +538,12 @@ module otbn_alu_bignum
   // Shifter & Adders control //
   //////////////////////////////
   logic expected_adder_x_en;
+  logic expected_x_res_operand_a_sel;
   logic expected_adder_y_op_a_en;
   logic expected_adder_y_op_shifter_en;
   logic expected_shifter_a_en;
   logic expected_shifter_b_en;
+  logic expected_shift_mod_sel;
   logic expected_logic_a_en;
   logic expected_logic_shifter_en;
 
@@ -555,18 +551,18 @@ module otbn_alu_bignum
     shift_right               = 1'b0;
     adder_x_carry_in          = 1'b0;
     adder_x_op_b_invert       = 1'b0;
-    x_res_operand_a_sel       = 1'b0;
-    shift_mod_sel             = 1'b1;
     adder_y_carry_in          = 1'b0;
     adder_y_op_b_invert       = 1'b0;
     adder_update_flags_en_raw = 1'b0;
     logic_update_flags_en_raw = 1'b0;
 
     expected_adder_x_en             = 1'b0;
+    expected_x_res_operand_a_sel    = 1'b0;
     expected_adder_y_op_a_en        = 1'b0;
     expected_adder_y_op_shifter_en  = 1'b0;
     expected_shifter_a_en           = 1'b0;
     expected_shifter_b_en           = 1'b0;
+    expected_shift_mod_sel          = 1'b1;
     expected_logic_a_en             = 1'b0;
     expected_logic_shifter_en       = 1'b0;
 
@@ -576,8 +572,6 @@ module otbn_alu_bignum
         // Y computes A + shifter_res
         // X ignored
         shift_right                    = operation_i.shift_right;
-        x_res_operand_a_sel            = 1'b0;
-        shift_mod_sel                  = 1'b1;
         adder_y_carry_in               = 1'b0;
         adder_y_op_b_invert            = 1'b0;
         adder_update_flags_en_raw      = 1'b1;
@@ -591,8 +585,6 @@ module otbn_alu_bignum
         // Y computes A + shifter_res + flags.C
         // X ignored
         shift_right                    = operation_i.shift_right;
-        x_res_operand_a_sel            = 1'b0;
-        shift_mod_sel                  = 1'b1;
         adder_y_carry_in               = selected_flags.C;
         adder_y_op_b_invert            = 1'b0;
         adder_update_flags_en_raw      = 1'b1;
@@ -609,20 +601,18 @@ module otbn_alu_bignum
         // Y should be applied or not)
         adder_x_carry_in    = 1'b0;
         adder_x_op_b_invert = 1'b0;
-        x_res_operand_a_sel = 1'b1;
-        shift_mod_sel       = 1'b0;
         adder_y_carry_in    = 1'b1;
         adder_y_op_b_invert = 1'b1;
 
-        expected_adder_x_en = 1'b1;
+        expected_adder_x_en          = 1'b1;
+        expected_x_res_operand_a_sel = 1'b1;
+        expected_shift_mod_sel       = 1'b0;
       end
       AluOpBignumSub: begin
         // Shifter computes B [>>|<<] shift_amt
         // Y computes A - shifter_res = A + ~shifter_res + 1
         // X ignored
         shift_right                    = operation_i.shift_right;
-        x_res_operand_a_sel            = 1'b0;
-        shift_mod_sel                  = 1'b1;
         adder_y_carry_in               = 1'b1;
         adder_y_op_b_invert            = 1'b1;
         adder_update_flags_en_raw      = 1'b1;
@@ -636,8 +626,6 @@ module otbn_alu_bignum
         // Y computes A - shifter_res + ~flags.C = A + ~shifter_res + flags.C
         // X ignored
         shift_right                    = operation_i.shift_right;
-        x_res_operand_a_sel            = 1'b0;
-        shift_mod_sel                  = 1'b1;
         adder_y_carry_in               = ~selected_flags.C;
         adder_y_op_b_invert            = 1'b1;
         adder_update_flags_en_raw      = 1'b1;
@@ -654,12 +642,12 @@ module otbn_alu_bignum
         // be applied or not)
         adder_x_carry_in    = 1'b1;
         adder_x_op_b_invert = 1'b1;
-        x_res_operand_a_sel = 1'b1;
-        shift_mod_sel       = 1'b0;
         adder_y_carry_in    = 1'b0;
         adder_y_op_b_invert = 1'b0;
 
-        expected_adder_x_en = 1'b1;
+        expected_adder_x_en          = 1'b1;
+        expected_x_res_operand_a_sel = 1'b1;
+        expected_shift_mod_sel       = 1'b0;
       end
       AluOpBignumRshi: begin
         // Shifter computes {A, B} >> shift_amt
@@ -667,7 +655,6 @@ module otbn_alu_bignum
         // Feed blanked shifter output (adder_y_op_shifter_res_blanked) to Y to avoid undesired
         // leakage in the zero flag computation.
         shift_right   = 1'b1;
-        shift_mod_sel = 1'b1;
 
         expected_shifter_a_en = 1'b1;
         expected_shifter_b_en = 1'b1;
@@ -681,7 +668,6 @@ module otbn_alu_bignum
         // Feed blanked shifter output (adder_y_op_shifter_res_blanked) to Y to avoid undesired
         // leakage in the zero flag computation.
         shift_right               = operation_i.shift_right;
-        shift_mod_sel             = 1'b1;
         logic_update_flags_en_raw = 1'b1;
 
         expected_shifter_b_en     = 1'b1;
@@ -697,10 +683,12 @@ module otbn_alu_bignum
   // SEC_CM: CTRL.REDUN
   assign alu_predec_error_o =
     |{expected_adder_x_en != alu_predec_bignum_i.adder_x_en,
+      expected_x_res_operand_a_sel != alu_predec_bignum_i.x_res_operand_a_sel,
       expected_adder_y_op_a_en != alu_predec_bignum_i.adder_y_op_a_en,
       expected_adder_y_op_shifter_en != alu_predec_bignum_i.adder_y_op_shifter_en,
       expected_shifter_a_en != alu_predec_bignum_i.shifter_a_en,
       expected_shifter_b_en != alu_predec_bignum_i.shifter_b_en,
+      expected_shift_mod_sel != alu_predec_bignum_i.shift_mod_sel,
       expected_logic_a_en != alu_predec_bignum_i.logic_a_en,
       expected_logic_shifter_en != alu_predec_bignum_i.logic_shifter_en};
 
@@ -831,7 +819,7 @@ module otbn_alu_bignum
   // `operation_result_o`.
   logic mod_used;
   assign mod_used = operation_valid_i & (operation_i.op != AluOpBignumNone)
-                    & !shift_mod_sel & adder_y_res_used;
+                    & !alu_predec_bignum_i.shift_mod_sel & adder_y_res_used;
   `ASSERT_KNOWN(ModUsed_A, mod_used)
 
   // Raise a register integrity violation error iff `mod_intg_q` is used and (at least partially)
