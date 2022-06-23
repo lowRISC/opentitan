@@ -71,6 +71,7 @@ class chip_base_vseq #(
     cfg.mem_bkdr_util_h[Rom].randomize_mem();
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
+    alert_ping_en_shorten();
     callback_vseq.post_dut_init();
   endtask
 
@@ -129,6 +130,18 @@ class chip_base_vseq #(
       p_sequencer.uart_tx_fifos[uart_idx].get(item);
       `uvm_info(`gfn, $sformatf("Received UART data over TX:\n%0h", item.data), UVM_HIGH)
       uart_tx_data_q.push_back(item.data);
+    end
+  endtask
+
+  // shorten alert ping timer enable wait time
+  task alert_ping_en_shorten();
+    string mask_path = {`DV_STRINGIFY(`ALERT_HANDLER_HIER),
+                        ".u_ping_timer.wait_cyc_mask_i"};
+    bit shorten_ping_en;
+    `uvm_info(`gfn, $sformatf("ping enable path: %s", mask_path), UVM_HIGH)
+    void'($value$plusargs("shorten_ping_en=%0d", shorten_ping_en));
+    if (shorten_ping_en) begin
+       `DV_CHECK_FATAL(uvm_hdl_force(mask_path, 16'h3F))
     end
   endtask
 
