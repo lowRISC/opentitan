@@ -437,7 +437,11 @@ module otbn_top_sim (
     end
   end
   always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
-    if (IO_RST_N && u_otbn_core.u_otbn_controller.done_complete) begin
+    if (IO_RST_N && u_otbn_core.u_otbn_controller.start_secure_wipe_o) begin
+      // When OTBN starts a secure wipe this indicates the program has either terminated (executed
+      // 'ecall') or hit an error, either way the execution is done. The state must be dumped as the
+      // secure wipe is started so we can dump the final execution state not the all zeros state
+      // that will be present once a secure wipe is finished.
       OtbnTopDumpState();
     end
   end
