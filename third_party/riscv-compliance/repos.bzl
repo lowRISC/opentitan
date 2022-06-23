@@ -8,10 +8,10 @@ def riscv_compliance_repos():
     http_archive(
         name = "riscv-compliance",
         build_file = Label("//third_party/riscv-compliance:BUILD.riscv-compliance.bazel"),
-        sha256 = "d071d9e5ce07f1cc12fcd7fe6daa87194d0003ddb9cbb40967e98c2374809d07",
-        strip_prefix = "riscv-arch-test-5a978cfd444d5e640150d46703deda99057b2bbb",
+        sha256 = "e77d823189c145314e48d4c29bcecc844b9c1582826ff406ec499cad7e95d0e4",
+        strip_prefix = "riscv-arch-test-2636302c27557b42d99bed7e0537beffdf8e1ab4",
         urls = [
-            "https://github.com/riscv/riscv-compliance/archive/5a978cfd444d5e640150d46703deda99057b2bbb.tar.gz",
+            "https://github.com/riscv/riscv-compliance/archive/2636302c27557b42d99bed7e0537beffdf8e1ab4.tar.gz",
         ],
         patches = [
             Label("//third_party/riscv-compliance:0001-Add-configurable-trap-alignment-and-entry-point-to-p.patch"),
