@@ -28,6 +28,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   virtual pins_if#(1) pinmux_wkup_vif;
   virtual pins_if#(1) por_rstn_vif;
   virtual pins_if#(1) pwrb_in_vif;
+  virtual pins_if#(1) ec_rst_vif;
+  virtual pins_if#(1) flash_wp_vif;
+  virtual pins_if#(8) sysrst_ctrl_vif;
 
   // pwrmgr probe interface
   virtual pwrmgr_low_power_if   pwrmgr_low_power_vif;

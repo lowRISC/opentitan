@@ -1561,7 +1561,7 @@
               immediately reflect at the outputs, if not intercepted / debounced by sysrst_ctrl.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_sysrst_ctrl_outputs"]
     }
     {
       name: chip_sw_sysrst_ctrl_in_irq

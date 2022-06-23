@@ -101,6 +101,21 @@ module tb;
   pins_if #(1) pinmux_wkup_if(.pins(pinmux_wakeup));
   assign (weak0, weak1) pinmux_wakeup = 0;
 
+  // ec_rst if
+  wire ec_rst_l;
+  pins_if #(1) ec_rst_if(.pins(ec_rst_l));
+  assign (weak0, weak1) ec_rst_l = 1;
+
+  // flash_wp if
+  wire flash_wp_l;
+  pins_if #(1) flash_wp_if(.pins(flash_wp_l));
+  assign (weak0, weak1) flash_wp_l = 1;
+
+  // sysrst_ctrl_if
+  wire [7:0] sysrst_ctrl_pins;
+  pins_if #(8) sysrst_ctrl_if(.pins(sysrst_ctrl_pins));
+  assign (weak0, weak1) sysrst_ctrl_pins = '1;
+
   // TODO: Replace with correct interfaces once
   // pinmux/padring and pinout have been updated.
   wire [16:0] tie_off;
@@ -170,13 +185,13 @@ module tb;
     .IOB0(gpio_pins[9]),   // MIO 9
     .IOB1(gpio_pins[10]),  // MIO 10
     .IOB2(gpio_pins[11]),  // MIO 11
-    .IOB3(tie_off[0]),     // MIO 12
+    .IOB3(sysrst_ctrl_pins[0]), // MIO 12
     .IOB4(uart_rx[1]),     // MIO 13
     .IOB5(uart_tx[1]),     // MIO 14
-    .IOB6(tie_off[1]),     // MIO 15
-    .IOB7(pinmux_wakeup),  // MIO 16
-    .IOB8(tie_off[2]),     // MIO 17
-    .IOB9(tie_off[3]),     // MIO 18
+    .IOB6(sysrst_ctrl_pins[1]),     // MIO 15
+    .IOB7(pinmux_wakeup),           // MIO 16
+    .IOB8(sysrst_ctrl_pins[2]),     // MIO 17
+    .IOB9(sysrst_ctrl_pins[3]),     // MIO 18
     .IOB10(iob10),         // MIO 19
     .IOB11(iob11),         // MIO 20
     .IOB12(iob12),         // MIO 21
@@ -188,9 +203,9 @@ module tb;
     .IOC4(ioc4),           // MIO 26
     .IOC5(tap_straps[1]),  // MIO 27
     .IOC6(clk),            // MIO 28 - external clock fed in at a fixed position
-    .IOC7(tie_off[4]),     // MIO 29
-    .IOC8(tap_straps[0]),  // MIO 30
-    .IOC9(tie_off[5]),     // MIO 31
+    .IOC7(sysrst_ctrl_pins[4]),    // MIO 29
+    .IOC8(tap_straps[0]),          // MIO 30
+    .IOC9(sysrst_ctrl_pins[5]),    // MIO 31
     .IOC10(ioc10),         // MIO 32
     .IOC11(ioc11),         // MIO 33
     .IOC12(ioc12),         // MIO 34
@@ -200,15 +215,15 @@ module tb;
     .IOR2(jtag_tdi),       // MIO 37
     .IOR3(jtag_tck),       // MIO 38
     .IOR4(jtag_trst_n),    // MIO 39
-    .IOR5(tie_off[6]),     // MIO 40
-    .IOR6(tie_off[7]),     // MIO 41
-    .IOR7(uart_rx[2]),     // MIO 42
-    .IOR8(tie_off[8]),     // MIO 43, Dedicated sysrst_ctrl output (ec_rst_l)
-    .IOR9(tie_off[9]),     // MIO 44, Dedicated sysrst_ctrl output (pwrb_out)
-    .IOR10(uart_tx[2]),    // MIO 45
-    .IOR11(uart_rx[3]),    // MIO 46
-    .IOR12(uart_tx[3]),    // MIO 47
-    .IOR13(sysrst_ctrl_pwrb),  // MIO 48
+    .IOR5(sysrst_ctrl_pins[6]),     // MIO 40
+    .IOR6(sysrst_ctrl_pins[7]),     // MIO 41
+    .IOR7(uart_rx[2]),       // MIO 42
+    .IOR8(ec_rst_l),         // MIO 43, Dedicated sysrst_ctrl output (ec_rst_l)
+    .IOR9(flash_wp_l),       // MIO 44, Dedicated sysrst_ctrl output (flash_wp_l)
+    .IOR10(uart_tx[2]),      // MIO 45
+    .IOR11(uart_rx[3]),      // MIO 46
+    .IOR12(uart_tx[3]),      // MIO 47
+    .IOR13(sysrst_ctrl_pwrb), // MIO 48
     // DCD (VCC domain)
     .CC1(tie_off[10]),
     .CC2(tie_off[11]),
@@ -358,6 +373,17 @@ module tb;
 
     uvm_config_db#(virtual pins_if #(1))::set(
        null, "*.env", "pwrb_in_vif", pwrb_in_if);
+
+    uvm_config_db#(virtual pins_if #(1))::set(
+        null, "*.env", "ec_rst_vif", ec_rst_if);
+
+    uvm_config_db#(virtual pins_if #(1))::set(
+        null, "*.env", "flash_wp_vif", flash_wp_if);
+
+    uvm_config_db#(virtual pins_if #(8))::set(
+        null, "*.env", "sysrst_ctrl_vif", sysrst_ctrl_if);
+
+
 
     // temp disable pinmux assertion AonWkupReqKnownO_A because driving X in spi_device.sdi and
     // WkupPadSel choose IO_DPS1 in MIO will trigger this assertion
