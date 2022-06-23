@@ -349,7 +349,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     fork : isolation_fork
       begin
         fork
-          // Only _run_otbn will complete
+          // Only _run_otbn_cmd will complete
           _run_otbn_cmd(otbn_pkg::CmdExecute);
           _run_loop_warps();
           _run_sideload_sequence();
