@@ -119,6 +119,9 @@ class OtbnModel {
   // asserted
   bool is_at_start_of_wipe() const;
 
+  // Trigger initial secure wipe.
+  int initial_secure_wipe();
+
  private:
   // Constructs an ISS wrapper if necessary. If something goes wrong, this
   // function prints a message and then returns null. If ensure is true, it

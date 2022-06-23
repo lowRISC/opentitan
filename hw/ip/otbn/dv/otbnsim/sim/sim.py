@@ -64,6 +64,10 @@ class OTBNSim:
         self._next_insn = None
         self.state.start()
 
+    def initial_secure_wipe(self) -> None:
+        '''This is run at the start of a secure wipe after reset.'''
+        self.state.start_init_sec_wipe()
+
     def start_mem_wipe(self, is_imem: bool) -> None:
         if self.state.get_fsm_state() != FsmState.IDLE:
             return
@@ -170,6 +174,16 @@ class OTBNSim:
              self.state.cycles_in_this_state == 0)):
             self.state.ext_regs.write('INSN_CNT', 0, True)
 
+        if self.state.init_sec_wipe_is_running():
+            # Wait for the URND seed. Once that appears, switch to WIPING_GOOD
+            # unless the FSM state is already LOCKED, in which case we change it
+            # to WIPING_BAD.
+            if self.state.wsrs.URND.running:
+                if self.state.get_fsm_state() == FsmState.LOCKED:
+                    self.state.set_fsm_state(FsmState.WIPING_BAD)
+                else:
+                    self.state.set_fsm_state(FsmState.WIPING_GOOD)
+
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
         return (None, changes)
@@ -200,6 +214,10 @@ class OTBNSim:
 
     def _step_exec(self, verbose: bool) -> StepRes:
         '''Step the simulation when executing code'''
+
+        # The initial secure wipe *must* be done when executing code.
+        assert(self.state.init_sec_wipe_is_done())
+
         self.state.wsrs.URND.step()
 
         insn = self._next_insn
@@ -262,6 +280,14 @@ class OTBNSim:
         assert self.state.wipe_cycles > 0
         self.state.wipe_cycles -= 1
 
+        # If something bad happened asynchronously (because of an escalation),
+        # we want to finish the secure wipe but accept no further commands.  To
+        # this end, set `STATUS` to Locked and turn this into a "wipe because
+        # something bad happended".
+        if self.state.pending_halt:
+            self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+            self.state._fsm_state = FsmState.WIPING_BAD
+
         # Reflect wiping in STATUS register if it has not been updated yet.
         if self.state.ext_regs.read('STATUS', True) == Status.BUSY_EXECUTE:
             self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
@@ -285,9 +311,16 @@ class OTBNSim:
             self.state.ext_regs.write('STATUS', next_status, True)
             self.state.wipe()
 
-        # On the final cycle, set the next state to IDLE or LOCKED.
+        # On the final cycle, set the next state to IDLE or LOCKED. If an
+        # initial secure wipe was in progress, it is now done (if the wipe was
+        # good).
         if self.state.wipe_cycles == 0:
-            next_state = FsmState.IDLE if is_good else FsmState.LOCKED
+            if is_good:
+                next_state = FsmState.IDLE
+                if self.state.init_sec_wipe_is_running():
+                    self.state.complete_init_sec_wipe()
+            else:
+                next_state = FsmState.LOCKED
             self.state.set_fsm_state(next_state)
 
             # Also, set wipe_cycles to an invalid value to make really sure

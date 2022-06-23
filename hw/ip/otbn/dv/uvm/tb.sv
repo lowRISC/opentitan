@@ -248,6 +248,8 @@ module tb;
     .edn_urnd_o          (edn_urnd_req_model),
     .edn_urnd_cdc_done_i (edn_urnd_cdc_done),
 
+    .init_sec_wipe_done_i (dut.u_otbn_core.i_otbn_trace_if.initial_secure_wipe_done),
+
     .otp_key_cdc_done_i  (otp_key_cdc_done),
 
     .status_o     (model_if.status),

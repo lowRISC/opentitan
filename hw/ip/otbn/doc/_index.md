@@ -482,7 +482,7 @@ The full secure wipe mechanism is split into three parts:
 
 A secure wipe is performed automatically in certain situations, or can be requested manually by the host software.
 The full secure wipe is automatically initiated as a local reaction to a fatal error.
-A secure wipe of only the internal state is performed whenever an OTBN operation is complete and after a recoverable error.
+A secure wipe of only the internal state is performed after reset, whenever an OTBN operation is complete, and after a recoverable error.
 Finally, host software can manually trigger the data memory and instruction memory secure wipe operations by issuing an appropriate [command](#design-details-commands).
 
 Refer to the [Secure Wipe]({{<relref "#design-details-secure-wipe">}}) section for implementation details.
@@ -641,11 +641,12 @@ Download the SVG from Google Draw, open it in Inkscape once and save it without 
 ![OTBN operational states](otbn_operational_states.svg)
 
 OTBN can be in different operational states.
+After reset (*init*), OTBN performs a secure wipe of the internal state and then becomes *idle*.
 OTBN is *busy* for as long it is performing an operation.
 OTBN is *locked* if a fatal error was observed.
-Otherwise OTBN is *idle*.
 
 The current operational state is reflected in the {{< regref "STATUS" >}} register.
+- After reset, OTBN is busy with the internal secure wipe and the {{< regref "STATUS" >}} register is set to `BUSY_SEC_WIPE_INT`.
 - If OTBN is idle, the {{< regref "STATUS" >}} register is set to `IDLE`.
 - If OTBN is busy, the {{< regref "STATUS" >}} register is set to one of the values starting with `BUSY_`.
 - If OTBN is locked, the {{< regref "STATUS" >}} register is set to `LOCKED`.
@@ -1024,7 +1025,7 @@ A secure wipe of either the instruction or the data memory can be triggered from
 
 A secure wipe of instruction memory, data memory, and all internal state is performed automatically when handling a [fatal error](#design-details-fatal-errors).
 
-A secure wipe of the internal state only is triggered automatically when OTBN [ends the software execution](#design-details-software-execution), either successfully, or unsuccessfully due to a [recoverable error](#design-details-recoverable-errors).
+A secure wipe of the internal state only is triggered automatically after reset and when OTBN [ends the software execution](#design-details-software-execution), either successfully, or unsuccessfully due to a [recoverable error](#design-details-recoverable-errors).
 
 #### Data Memory (DMEM) Secure Wipe {#design-details-secure-wipe-dmem}
 
@@ -1066,7 +1067,7 @@ The wiping procedure is a two-step process:
 
 Loop and call stack pointers are reset.
 
-Host software cannot explicitly trigger an internal secure wipe; it is performed automatically at the end of an `EXECUTE` operation.
+Host software cannot explicitly trigger an internal secure wipe; it is performed automatically after reset and at the end of an `EXECUTE` operation.
 
 # Running applications on OTBN
 

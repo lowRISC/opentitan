@@ -27,6 +27,8 @@ class StandaloneSim(OTBNSim):
         # ISS will stall at start until URND data is valid; immediately set it
         # valid when in free running mode as nothing else will.
         self.state.wsrs.URND.set_seed(_TEST_URND_DATA)
+        # Similarly, set the initial secure wipe to complete.
+        self.state.complete_init_sec_wipe()
         while self.state.executing():
             # If there's a RND request, respond immediately
             if self.state.ext_regs.read('RND_REQ', True):

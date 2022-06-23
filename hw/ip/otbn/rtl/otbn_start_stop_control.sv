@@ -61,6 +61,7 @@ module otbn_start_stop_control
   import otbn_pkg::*;
 
   otbn_start_stop_state_e state_q, state_d;
+  logic init_sec_wipe_done_q, init_sec_wipe_done_d;
 
   logic addr_cnt_inc;
   logic [4:0] addr_cnt_q, addr_cnt_d;
@@ -95,7 +96,7 @@ module otbn_start_stop_control
 
   // SEC_CM: START_STOP_CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q,
-      otbn_start_stop_state_e, OtbnStartStopStateHalt)
+      otbn_start_stop_state_e, OtbnStartStopStateInitial)
 
   always_comb begin
     urnd_reseed_req_o       = 1'b0;
@@ -119,6 +120,14 @@ module otbn_start_stop_control
     spurious_urnd_ack_error = 1'b0;
 
     unique case (state_q)
+      OtbnStartStopStateInitial: begin
+        secure_wipe_running_o = 1'b1;
+        urnd_reseed_req_o     = 1'b1;
+        if (urnd_reseed_ack_i) begin
+          urnd_advance_o = 1'b1;
+          state_d = OtbnStartStopSecureWipeWdrUrnd;
+        end
+      end
       OtbnStartStopStateHalt: begin
         if (stop) begin
           state_d = OtbnStartStopStateLocked;
@@ -213,7 +222,8 @@ module otbn_start_stop_control
       end
     endcase
 
-    if (urnd_reseed_ack_i && (state_q != OtbnStartStopStateUrndRefresh)) begin
+    if (urnd_reseed_ack_i &&
+        !(state_q inside {OtbnStartStopStateInitial, OtbnStartStopStateUrndRefresh})) begin
       // We should never receive an ACK from URND when we're not refreshing the URND. Signal an
       // error if we see a stray ACK and lock the FSM.
       spurious_urnd_ack_error = 1'b1;
@@ -221,28 +231,37 @@ module otbn_start_stop_control
     end
   end
 
+  // Latch initial secure wipe done.
+  assign init_sec_wipe_done_d = (state_q == OtbnStartStopSecureWipeComplete) ? 1'b1 : // set
+                                init_sec_wipe_done_q; // keep
+
   // Logic separate from main FSM code to avoid false combinational loop warning from verilator
   assign controller_start_o = (state_q == OtbnStartStopStateUrndRefresh) & urnd_reseed_ack_i;
 
-  assign done_o = ((state_q == OtbnStartStopSecureWipeComplete) ||
+  assign done_o = ((state_q == OtbnStartStopSecureWipeComplete && init_sec_wipe_done_q) ||
                    (stop && (state_q == OtbnStartStopStateUrndRefresh)));
 
   assign addr_cnt_d = addr_cnt_inc ? (addr_cnt_q + 5'd1) : 5'd0;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      addr_cnt_q <= 5'd0;
-    end else
-      addr_cnt_q <= addr_cnt_d;
+      addr_cnt_q           <= 5'd0;
+      init_sec_wipe_done_q <= 1'b0;
+    end else begin
+      addr_cnt_q           <= addr_cnt_d;
+      init_sec_wipe_done_q <= init_sec_wipe_done_d;
+    end
   end
 
   assign sec_wipe_addr_o = addr_cnt_q;
 
-  // A check for spurious or dropped secure wipe requests. We only expect to start a secure wipe
-  // when running. Once we've started a secure wipe, the controller should not drop the request
-  // until we tell it we're done.
+  // A check for spurious or dropped secure wipe requests.
+  // We only expect to start a secure wipe when running.
   assign spurious_secure_wipe_req = secure_wipe_req_i & ~allow_secure_wipe;
-  assign dropped_secure_wipe_req  = expect_secure_wipe & ~secure_wipe_req_i;
+  // Once we've started a secure wipe, the controller should not drop the request until we tell it
+  // we're done. This does not apply for the *initial* secure wipe, though, which is controlled by
+  // this module rather than the controller.
+  assign dropped_secure_wipe_req  = expect_secure_wipe & init_sec_wipe_done_d & ~secure_wipe_req_i;
 
   // Delay the "glitch req/ack" error signal by a cycle. Otherwise, you end up with a combinatorial
   // loop through the escalation signal that our fatal_error_o causes otbn_core to pass to the
@@ -258,7 +277,8 @@ module otbn_start_stop_control
   assign fatal_error_o = spurious_urnd_ack_error | state_error | secure_wipe_error_q;
 
   `ASSERT(StartStopStateValid_A,
-      state_q inside {OtbnStartStopStateHalt,
+      state_q inside {OtbnStartStopStateInitial,
+                      OtbnStartStopStateHalt,
                       OtbnStartStopStateUrndRefresh,
                       OtbnStartStopStateRunning,
                       OtbnStartStopSecureWipeWdrUrnd,

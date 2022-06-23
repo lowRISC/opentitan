@@ -815,6 +815,16 @@ bool OtbnModel::check_call_stack(ISSWrapper &iss) const {
   return good;
 }
 
+int OtbnModel::initial_secure_wipe() {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  iss->initial_secure_wipe();
+
+  return 0;
+}
+
 OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope) {
   assert(mem_scope && design_scope);
   return new OtbnModel(mem_scope, design_scope);
@@ -1015,4 +1025,9 @@ int otbn_model_send_err_escalation(OtbnModel *model,
                                    svBitVecVal *err_val /* bit [31:0] */) {
   assert(model);
   return model->send_err_escalation(err_val);
+}
+
+int otbn_model_initial_secure_wipe(OtbnModel *model) {
+  assert(model);
+  return model->initial_secure_wipe();
 }

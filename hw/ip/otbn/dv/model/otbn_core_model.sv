@@ -44,6 +44,8 @@ module otbn_core_model
   output logic               edn_urnd_o, // EDN request interface for URND seed
   input  logic               edn_urnd_cdc_done_i, // URND seed from EDN is valid (DUT perspective)
 
+  input  logic           init_sec_wipe_done_i,
+
   input  logic           otp_key_cdc_done_i, // Scrambling key from OTP is valid (DUT perspective)
 
   output bit [7:0]       status_o,   // STATUS register
@@ -122,11 +124,14 @@ module otbn_core_model
   // EDN URND Seed Request Logic
   logic edn_urnd_req_q, edn_urnd_req_d, start_q, start_d;
   bit is_idle;
+  bit initial_urnd_reseed_done;
 
-  // URND Reseeding is only done when OTBN receives EXECUTE command.
+  // URND Reseeding is done before the initial secure wipe and when OTBN receives the EXECUTE
+  // command.
   assign start_d = (cmd == CmdExecute) & is_idle;
   assign is_idle = otbn_pkg::status_e'(status_o) == StatusIdle;
-  assign edn_urnd_req_d = ~edn_urnd_cdc_done_i & (edn_urnd_req_q | start_q);
+  assign edn_urnd_req_d = ~edn_urnd_cdc_done_i &
+                          (edn_urnd_req_q | start_q | ~initial_urnd_reseed_done);
 
   assign edn_urnd_o = edn_urnd_req_q;
 
@@ -190,7 +195,7 @@ module otbn_core_model
   end
 
   assign reset_busy_counter = |{running, cmd_en_i, check_due, new_escalation, edn_rnd_cdc_done_i,
-                                wakeup_iss};
+                                ~init_sec_wipe_done_i, wakeup_iss};
   assign step_iss = reset_busy_counter || (busy_counter_q != 0);
 
   always_comb begin
@@ -215,6 +220,7 @@ module otbn_core_model
   // initial block (see declaration of the variable above)
   bit failed_reset, failed_lc_escalate, failed_keymgr_value;
   bit failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc;
+  bit failed_initial_secure_wipe, initial_secure_wipe_started;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       failed_reset <= (otbn_model_reset(model_handle,
@@ -229,8 +235,15 @@ module otbn_core_model
       failed_urnd_cdc <= 0;
       failed_rnd_cdc <= 0;
       failed_otp_key_cdc <= 0;
+      failed_initial_secure_wipe <= 0;
+      initial_urnd_reseed_done <= 0;
+      initial_secure_wipe_started <= 0;
       model_state <= 0;
     end else begin
+      if (!initial_secure_wipe_started) begin
+        failed_initial_secure_wipe <= (otbn_model_initial_secure_wipe(model_handle) != 0);
+        initial_secure_wipe_started <= 1;
+      end
       if (new_escalation) begin
         // Setting LIFECYCLE_ESCALATION bit
         failed_lc_escalate <= (otbn_model_send_err_escalation(model_handle, 32'd1 << 22) != 0);
@@ -242,6 +255,7 @@ module otbn_core_model
                                                             keymgr_key_i.valid) != 0);
       end
       if (edn_urnd_cdc_done_i) begin
+        initial_urnd_reseed_done <= 1;
         failed_urnd_cdc <= (otbn_model_urnd_cdc_done(model_handle) != 0);
       end
       if (edn_rnd_cdc_done_i) begin
@@ -319,13 +333,14 @@ module otbn_core_model
   assign err_o = |{failed_step, failed_check, check_mismatch_q,
                    failed_reset, failed_lc_escalate, failed_keymgr_value,
                    failed_edn_flush, failed_rnd_step, failed_urnd_step,
-                   failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc};
+                   failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc,
+                   failed_initial_secure_wipe};
 
   // Derive a "done" signal. This should trigger for a single cycle when OTBN finishes its work.
   // It's analogous to the done_o signal on otbn_core, but this signal is delayed by a single cycle
   // (hence its name is done_r_o).
   bit otbn_model_busy, otbn_model_busy_r;
-  assign otbn_model_busy = (status_q != StatusIdle) && (status_q != StatusLocked);
+  assign otbn_model_busy = !(status_q inside {StatusIdle, StatusLocked}) & init_sec_wipe_done_i;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       otbn_model_busy_r <= 1'b0;

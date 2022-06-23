@@ -516,34 +516,36 @@ package otbn_pkg;
   // States for start_stop_controller
   // Encoding generated with:
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
-  //      -s 2798844836 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 9 -n 7 \
+  //      -s 573771984 --language=sv
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (57.14%)
-  //  4: ||||||||||||||| (42.86%)
-  //  5: --
-  //  6: --
+  //  3: |||||||||||||||||||| (44.44%)
+  //  4: |||||||||||||||||| (41.67%)
+  //  5: | (2.78%)
+  //  6: | (2.78%)
+  //  7: ||| (8.33%)
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
+  // Maximum Hamming distance: 7
   // Minimum Hamming weight: 1
-  // Maximum Hamming weight: 5
+  // Maximum Hamming weight: 6
   //
-  localparam int StateStartStopWidth = 6;
+  localparam int StateStartStopWidth = 7;
   typedef enum logic [StateStartStopWidth-1:0] {
-    OtbnStartStopStateHalt                = 6'b101000,
-    OtbnStartStopStateUrndRefresh         = 6'b010000,
-    OtbnStartStopStateRunning             = 6'b110011,
-    OtbnStartStopSecureWipeWdrUrnd        = 6'b011101,
-    OtbnStartStopSecureWipeAccModBaseUrnd = 6'b100101,
-    OtbnStartStopSecureWipeAllZero        = 6'b111110,
-    OtbnStartStopSecureWipeComplete       = 6'b001011,
-    OtbnStartStopStateLocked              = 6'b000110
+    OtbnStartStopStateInitial             = 7'b1010011,
+    OtbnStartStopStateHalt                = 7'b1111001,
+    OtbnStartStopStateUrndRefresh         = 7'b0000110,
+    OtbnStartStopStateRunning             = 7'b1001000,
+    OtbnStartStopSecureWipeWdrUrnd        = 7'b0101100,
+    OtbnStartStopSecureWipeAccModBaseUrnd = 7'b0010000,
+    OtbnStartStopSecureWipeAllZero        = 7'b0110101,
+    OtbnStartStopSecureWipeComplete       = 7'b0001011,
+    OtbnStartStopStateLocked              = 7'b1101111
   } otbn_start_stop_state_e;
 
 // Encoding generated with:

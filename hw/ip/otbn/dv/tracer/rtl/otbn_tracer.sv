@@ -205,7 +205,7 @@ module otbn_tracer (
 
     if (otbn_trace.secure_wipe_ack_r) begin
       output_trace(WipeCompletePrefix, "");
-    end else if (otbn_trace.secure_wipe_req) begin
+    end else if (otbn_trace.secure_wipe_req || !otbn_trace.initial_secure_wipe_done) begin
       output_trace(WipeInProgressPrefix, "");
     end
   endfunction
