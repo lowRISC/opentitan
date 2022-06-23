@@ -98,13 +98,7 @@ class chip_sw_random_sleep_all_reset_vseq extends chip_sw_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    set_sva_check_rstreqs(0);
   endtask
-
-  virtual function void set_sva_check_rstreqs(bit enable);
-    `uvm_info(`gfn, $sformatf("Remote setting check_rstreqs_en=%b", enable), UVM_MEDIUM)
-    uvm_config_db#(bit)::set(null, "pwrmgr_rstmgr_sva_if", "check_rstreqs_en", enable);
-  endfunction
 
   task execute_reset();
     `uvm_info(`gfn, "wait for low power entry", UVM_MEDIUM)
