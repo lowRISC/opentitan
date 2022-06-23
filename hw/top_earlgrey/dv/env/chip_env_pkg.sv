@@ -46,6 +46,7 @@ package chip_env_pkg;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+  `include "chip_hier_macros.svh"
 
   // include auto-generated alert related parameters
   `include "autogen/chip_env_pkg__params.sv"
