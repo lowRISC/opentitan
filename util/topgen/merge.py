@@ -764,6 +764,12 @@ def amend_resets(top, name_to_block):
             rsts = [rst for rst in module['reset_connections'].values()]
             exported_rsts[intf][module['name']] = rsts
 
+    # ensure xbar resets are also covered.
+    # unless otherwise stated, xbars always fall into the default power domain.
+    for xbar in top["xbar"]:
+        for reset in xbar['reset_connections'].values():
+            top_resets.add_reset_domain(reset['name'], top['power']['default'])
+
     # add entry to top level json
     top['exported_rsts'] = exported_rsts
 

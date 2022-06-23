@@ -359,6 +359,34 @@
         clock: main
       }
       {
+        name: sys_io
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_sys_io_n
+        parent: sys_src
+        clock: io
+      }
+      {
+        name: sys_io_div2
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_sys_io_div2_n
+        parent: sys_src
+        clock: io_div2
+      }
+      {
         name: sys_io_div4
         gen: true
         type: top
@@ -372,6 +400,20 @@
         path: rstmgr_aon_resets.rst_sys_io_div4_n
         parent: sys_src
         clock: io_div4
+      }
+      {
+        name: sys_usb
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_sys_usb_n
+        parent: sys_src
+        clock: usb
       }
       {
         name: sys_aon
@@ -8262,17 +8304,17 @@
         }
         rst_usb_ni:
         {
-          name: usb
+          name: sys_usb
           domain: "0"
         }
         rst_spi_host0_ni:
         {
-          name: spi_host0
+          name: sys_io
           domain: "0"
         }
         rst_spi_host1_ni:
         {
-          name: spi_host1
+          name: sys_io_div2
           domain: "0"
         }
       }

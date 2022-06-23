@@ -147,9 +147,12 @@
       { name: "lc_io",          gen: true,  type: "top", parent: "lc_src",  clk: "io"      }
       { name: "lc_io_div2",     gen: true,  type: "top", parent: "lc_src",  clk: "io_div2" }
       { name: "lc_io_div4",     gen: true,  type: "top", parent: "lc_src",  clk: "io_div4" }
-      { name: "lc_usb",         gen: true,  type: "top", parent: "lc_src",  clk: "usb"  }
+      { name: "lc_usb",         gen: true,  type: "top", parent: "lc_src",  clk: "usb"     }
       { name: "sys",            gen: true,  type: "top", parent: "sys_src", clk: "main"    }
+      { name: "sys_io",         gen: true,  type: "top", parent: "sys_src", clk: "io"      }
+      { name: "sys_io_div2",    gen: true,  type: "top", parent: "sys_src", clk: "io_div2" }
       { name: "sys_io_div4",    gen: true,  type: "top", parent: "sys_src", clk: "io_div4" }
+      { name: "sys_usb",        gen: true,  type: "top", parent: "sys_src", clk: "usb"     }
       { name: "sys_aon",        gen: true,  type: "top", parent: "sys_src", clk: "aon"     }
       { name: "spi_device",     gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true }
       { name: "spi_host0",      gen: true,  type: "top", parent: "sys_src", clk: "io",      sw: true }
@@ -1085,9 +1088,9 @@
       reset: "sys",
       reset_connections: {rst_main_ni: "sys",
                           rst_fixed_ni: "sys_io_div4",
-                          rst_usb_ni: "usb",
-                          rst_spi_host0_ni: "spi_host0",
-                          rst_spi_host1_ni: "spi_host1"}
+                          rst_usb_ni: "sys_usb",
+                          rst_spi_host0_ni: "sys_io",
+                          rst_spi_host1_ni: "sys_io_div2"}
     },
     { name: "peri",
       clock_srcs: {clk_peri_i: "io_div4", },
