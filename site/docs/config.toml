@@ -45,6 +45,7 @@ ignoreFiles = [
   ".*\\.xdc$",
   ".*\\.yml$",
   ".*\\.clang-format$",
+  ".*README.md",
   "/__pycache__/.*",
   "/bazel-.*/.*",
   "/build/.*",
