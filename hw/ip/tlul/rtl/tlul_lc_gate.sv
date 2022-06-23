@@ -107,7 +107,7 @@ module tlul_lc_gate
     StActive = 8'b11101010,
     StOutstanding = 8'b11010001,
     StError = 8'b00100111,
-    StErrorOustanding = 8'b00011100
+    StErrorOutstanding = 8'b00011100
   } state_e;
 
 
@@ -154,11 +154,11 @@ module tlul_lc_gate
       StError: begin
         err_en = On;
         if (lc_tx_test_true_strict(lc_en_i)) begin
-          state_d = StActive;
+          state_d = StErrorOutstanding;
         end
       end
 
-      StErrorOustanding: begin
+      StErrorOutstanding: begin
         err_en = On;
         block_cmd = 1'b1;
         if (outstanding_txn == '0) begin
