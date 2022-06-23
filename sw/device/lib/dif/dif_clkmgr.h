@@ -292,6 +292,8 @@ dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
 /**
  * Disable count measurements.
  *
+ * Does not modify the thresholds.
+ *
  * @param clkmgr Clock Manager Handle.
  * @param clock A clock to be measured.
  * @returns The result of the operation.
@@ -299,6 +301,31 @@ dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_disable_measure_counts(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_measure_clock_t clock);
+
+/**
+ * Get the count measurement enable.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @param clock A clock to be measured.
+ * @param[out] state The state of control enable.
+ * @returns The result of the operation.
+ */
+dif_result_t dif_clkmgr_measure_counts_get_enable(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_measure_clock_t clock,
+    dif_toggle_t *state);
+
+/**
+ * Get the count measurement thresholds.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @param clock A clock to be measured.
+ * @param[out] min_threshold The minumum threshold.
+ * @param[out] max_threshold The maximum threshold.
+ * @returns The result of the operation.
+ */
+dif_result_t dif_clkmgr_measure_counts_get_thresholds(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_measure_clock_t clock,
+    uint32_t *min_threshold, uint32_t *max_threshold);
 
 /**
  * Read the recoverable error codes.

@@ -48,6 +48,16 @@ enum {
 static dif_clkmgr_t clkmgr;
 static dif_pwrmgr_t pwrmgr;
 
+// Will flag a failure if any measurements are enabled.
+void check_all_measurements_are_disabled(const dif_clkmgr_t *clkmgr) {
+  dif_toggle_t status;
+  for (int i = kDifClkmgrMeasureClockIo; i <= kDifClkmgrMeasureClockUsb; ++i) {
+    dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
+    CHECK_DIF_OK(dif_clkmgr_measure_counts_get_enable(clkmgr, clock, &status));
+    CHECK(status == kDifToggleDisabled);
+  }
+}
+
 bool test_main(void) {
   dif_sensor_ctrl_t sensor_ctrl;
   dif_aon_timer_t aon_timer;
@@ -80,39 +90,54 @@ bool test_main(void) {
         &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
         /*low_speed=*/false);
     busy_spin_micros(kMeasurementDelayMicros);
+
     // check results
     clkmgr_testutils_check_measurement_counts(&clkmgr);
     clkmgr_testutils_disable_clock_counts(&clkmgr);
 
-    // set wakeup timer to 500us to have enough down time
-    // during the down time, all clock measurements are still enabled but
-    // not suppose to report any errors
+    // Set wakeup timer to 100 us to have enough down time, and also wait before
+    // entering deep sleep to have a chance to measure before sleeping.
+    // As a side-effect of deep sleep the clock measurements are disabled, but
+    // recoverable errors are not cleared.
+    //
+    // Set the counters so we should get an error unless they are cleared.
     uint32_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 1000 : 100;
     aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
-    // go to low power
 
-    LOG_INFO("Start clock measurements right before deep sleep");
+    LOG_INFO("Start clock measurements to cause an error for main clk.");
     clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
-        &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
+        &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/true,
         /*low_speed=*/false);
+    // Disable writes to measure ctrl registers.
+    CHECK_DIF_OK(dif_clkmgr_measure_ctrl_disable(&clkmgr));
 
-    LOG_INFO("TEST: start deep low power mode");
+    busy_spin_micros(kMeasurementDelayMicros);
+
     pwrmgr_testutils_enable_low_power(
         &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
         kDifPwrmgrDomainOptionUsbClockInActivePower);
 
-    // Enter low power mode.
     LOG_INFO("TEST: Issue WFI to enter deep sleep");
     wait_for_interrupt();
 
   } else if (pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) {
-    // All clocks were inactive in low power, so wait some more so there are
-    // enough AON cycles for measurements.
-    busy_spin_micros(kMeasurementDelayMicros);
-    clkmgr_testutils_check_measurement_counts(&clkmgr);
-    LOG_INFO("TEST: disable clock measures");
-    clkmgr_testutils_disable_clock_counts(&clkmgr);
+    // Fail if some measurements are enabled.
+    check_all_measurements_are_disabled(&clkmgr);
+    // Check measurement control regwen is enabled.
+    dif_toggle_t state;
+    CHECK_DIF_OK(dif_clkmgr_measure_ctrl_get_enable(&clkmgr, &state));
+    CHECK(state == kDifToggleEnabled);
+    LOG_INFO("Check for all clock measurements disabled done");
+
+    // Check we have a measurement error for the main clock.
+    dif_clkmgr_recov_err_codes_t err_codes;
+    CHECK_DIF_OK(dif_clkmgr_recov_err_code_get_codes(&clkmgr, &err_codes));
+    CHECK(err_codes == kDifClkmgrRecovErrTypeMainMeas,
+          "expected main clk measurement error, but got 0x%x", err_codes);
+
+    // Clear measurement errors.
+    CHECK_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(&clkmgr, UINT32_MAX));
 
     LOG_INFO("TEST: one more measurement");
     clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
