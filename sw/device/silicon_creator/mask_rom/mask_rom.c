@@ -106,6 +106,11 @@ static rom_error_t mask_rom_init(void) {
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
 
+  // There are no conditional checks before writing to this CSR because it is
+  // expected that if relevant Ibex countermeasures are disabled, this will
+  // result in a nop.
+  CSR_WRITE(CSR_REG_SECURESEED, rnd_uint32());
+
   // Write the OTP value to bits 0 to 5 of the cpuctrl CSR.
   uint32_t cpuctrl_csr;
   CSR_READ(CSR_REG_CPUCTRL, &cpuctrl_csr);
@@ -156,6 +161,7 @@ static rom_error_t mask_rom_init(void) {
 
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/1);
+
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomInit, 2);
   return kErrorOk;
 }
