@@ -112,13 +112,17 @@ typedef enum dif_usbdev_irq {
    */
   kDifUsbdevIrqLinkResume = 6,
   /**
-   * Raised when a transaction is NACKed because the Available Buffer FIFO for
-   * OUT or SETUP transactions is empty.
+   * Raised when the AV FIFO is empty and the device interface is enabled. This
+   * interrupt is directly tied to the FIFO status, so the AV FIFO must be
+   * provided a free buffer before the interrupt is cleared. If the condition is
+   * not cleared, the interrupt can re-assert.
    */
   kDifUsbdevIrqAvEmpty = 7,
   /**
-   * Raised when a transaction is NACKed because the Received Buffer FIFO for
-   * OUT or SETUP transactions is full.
+   * Raised when the RX FIFO is full and the device interface is enabled. This
+   * interrupt is directly tied to the FIFO status, so the RX FIFO must have an
+   * entry removed before the interrupt is cleared. If the condition is not
+   * cleared, the interrupt can re-assert.
    */
   kDifUsbdevIrqRxFull = 8,
   /**
