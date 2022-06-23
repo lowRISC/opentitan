@@ -48,10 +48,12 @@ module otbn_predecode
   logic rf_ren_b_bignum;
   logic rf_we_bignum;
   logic alu_bignum_adder_x_en;
+  logic alu_bignum_x_res_operand_a_sel;
   logic alu_bignum_adder_y_op_a_en;
   logic alu_bignum_adder_y_op_shifter_en;
   logic alu_bignum_shifter_a_en;
   logic alu_bignum_shifter_b_en;
+  logic alu_bignum_shift_mod_sel;
   logic alu_bignum_logic_a_en;
   logic alu_bignum_logic_shifter_en;
 
@@ -112,10 +114,12 @@ module otbn_predecode
     rf_we_bignum    = 1'b0;
 
     alu_bignum_adder_x_en            = 1'b0;
+    alu_bignum_x_res_operand_a_sel   = 1'b0;
     alu_bignum_adder_y_op_a_en       = 1'b0;
     alu_bignum_adder_y_op_shifter_en = 1'b0;
     alu_bignum_shifter_a_en          = 1'b0;
     alu_bignum_shifter_b_en          = 1'b0;
+    alu_bignum_shift_mod_sel         = 1'b1;
     alu_bignum_logic_a_en            = 1'b0;
     alu_bignum_logic_shifter_en      = 1'b0;
 
@@ -262,10 +266,12 @@ module otbn_predecode
             end
             3'b101: begin
               // BN.ADDM/BN.SUBM
-              rf_ren_a_bignum       = 1'b1;
-              rf_ren_b_bignum       = 1'b1;
-              rf_we_bignum          = 1'b1;
-              alu_bignum_adder_x_en = 1'b1;
+              rf_ren_a_bignum                = 1'b1;
+              rf_ren_b_bignum                = 1'b1;
+              rf_we_bignum                   = 1'b1;
+              alu_bignum_adder_x_en          = 1'b1;
+              alu_bignum_x_res_operand_a_sel = 1'b1;
+              alu_bignum_shift_mod_sel       = 1'b0;
             end
             default: ;
           endcase
@@ -424,10 +430,12 @@ module otbn_predecode
   end
 
   assign alu_predec_bignum_o.adder_x_en            = alu_bignum_adder_x_en;
+  assign alu_predec_bignum_o.x_res_operand_a_sel   = alu_bignum_x_res_operand_a_sel;
   assign alu_predec_bignum_o.adder_y_op_a_en       = alu_bignum_adder_y_op_a_en;
   assign alu_predec_bignum_o.adder_y_op_shifter_en = alu_bignum_adder_y_op_shifter_en;
   assign alu_predec_bignum_o.shifter_a_en          = alu_bignum_shifter_a_en;
   assign alu_predec_bignum_o.shifter_b_en          = alu_bignum_shifter_b_en;
+  assign alu_predec_bignum_o.shift_mod_sel         = alu_bignum_shift_mod_sel;
   assign alu_predec_bignum_o.logic_a_en            = alu_bignum_logic_a_en;
   assign alu_predec_bignum_o.logic_shifter_en      = alu_bignum_logic_shifter_en;
 
