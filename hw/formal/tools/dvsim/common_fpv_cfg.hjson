@@ -6,12 +6,10 @@
   import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_formal_cfg.hjson"]
   stopats: []
   task: ""
-  defines: ""
 
   // Optional vars that need to exported to the env
   exports: [
     {STOPATS: "'{stopats}'"},
     {TASK:    '{task}'},
-    {FPV_DEFINES:  '{defines}'},
   ]
 }
