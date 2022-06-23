@@ -43,12 +43,10 @@ module usbdev_usbif  #(
   input  logic                     av_rvalid_i,
   output logic                     av_rready_o,
   input  logic [AVFifoWidth - 1: 0]av_rdata_i,
-  output logic                     event_av_empty_o,
 
   output logic                     rx_wvalid_o,
   input  logic                     rx_wready_i,
   output logic [RXFifoWidth - 1:0] rx_wdata_o,
-  output logic                     event_rx_full_o,
   output logic                     setup_received_o,
   output logic [3:0]               out_endpoint_o,
   output logic                     out_endpoint_val_o,
@@ -58,7 +56,7 @@ module usbdev_usbif  #(
   input  logic [PktW:0]            in_size_i,
   input  logic [NEndpoints-1:0]    in_stall_i,
   input  logic [NEndpoints-1:0]    in_rdy_i,
-  output logic                     set_sent_o,
+  output logic                     in_ep_xact_end_o,
   output logic [3:0]               in_endpoint_o,
   output logic                     in_endpoint_val_o,
 
@@ -73,7 +71,7 @@ module usbdev_usbif  #(
   input  logic                     us_tick_i,
 
   // control
-  input  logic                     enable_i,
+  input  logic                     connect_i,
   input  logic [6:0]               devaddr_i,
   output logic                     clr_devaddr_o,
   input  logic [NEndpoints-1:0]    in_ep_enabled_i,
@@ -110,7 +108,7 @@ module usbdev_usbif  #(
 );
 
   // Enable pull-up resistor only if VBUS is active
-  assign usb_pullup_en_o = enable_i & usb_sense_i;
+  assign usb_pullup_en_o = connect_i & usb_sense_i;
 
   // OUT or SETUP direction
   logic [PktW:0]                     out_max_used_d, out_max_used_q;
@@ -119,7 +117,7 @@ module usbdev_usbif  #(
 
   logic [3:0]                        out_ep_current;
   logic                              out_ep_data_put, out_ep_acked, out_ep_rollback;
-  logic                              current_setup, all_out_blocked, out_ep_newpkt;
+  logic                              current_setup, all_out_blocked;
   logic [NEndpoints-1:0]             out_ep_setup, out_ep_full, out_ep_stall;
   logic [NEndpoints-1:0]             out_blocked;
   logic [31:0]                       wdata_q, wdata_d;
@@ -132,7 +130,7 @@ module usbdev_usbif  #(
   assign out_endpoint_o     = out_endpoint_val_o ? out_ep_current : '0;
 
   assign link_reset_o   = link_reset;
-  assign clr_devaddr_o  = ~enable_i | link_reset;
+  assign clr_devaddr_o  = ~connect_i | link_reset;
   assign link_out_err_o = out_ep_rollback;
 
   always_comb begin
@@ -221,9 +219,6 @@ module usbdev_usbif  #(
   assign out_blocked = ~out_ep_setup & ~rx_out_i;
   // full also covers being blocked because the hardware can't take any transaction
   assign all_out_blocked = (~rx_wready_i) | (~av_rvalid_i);
-  // These are used to raise appropriate interrupt
-  assign event_av_empty_o = out_ep_newpkt & (~av_rvalid_i);
-  assign event_rx_full_o = out_ep_newpkt & (~rx_wready_i);
 
   assign out_ep_full = {NEndpoints{all_out_blocked}} | out_blocked;
   assign out_ep_stall = rx_stall_i;
@@ -234,7 +229,7 @@ module usbdev_usbif  #(
   assign setup_received_o = current_setup & rx_wvalid_o;
 
   // IN (device to host) transactions
-  logic                  in_ep_xact_end, in_ep_data_get, in_data_done, in_ep_newpkt, pkt_start_rd;
+  logic                  in_ep_data_get, in_data_done, in_ep_newpkt, pkt_start_rd;
   logic [NEndpoints-1:0] in_ep_data_done;
   logic [PktW-1:0]       in_ep_get_addr;
   logic [7:0]            in_ep_data;
@@ -268,7 +263,6 @@ module usbdev_usbif  #(
   assign in_ep_data = in_ep_get_addr[1] ?
                       (in_ep_get_addr[0] ? mem_rdata_i[31:24] : mem_rdata_i[23:16]) :
                       (in_ep_get_addr[0] ? mem_rdata_i[15:8]  : mem_rdata_i[7:0]);
-  assign set_sent_o = in_ep_xact_end;
 
   logic [10:0]     frame_index_raw;
   logic            rx_idle_det;
@@ -304,7 +298,7 @@ module usbdev_usbif  #(
 
     // out endpoint interfaces
     .out_ep_current_o      (out_ep_current),
-    .out_ep_newpkt_o       (out_ep_newpkt),
+    .out_ep_newpkt_o       (),
     .out_ep_data_put_o     (out_ep_data_put),
     .out_ep_put_addr_o     (out_ep_put_addr),
     .out_ep_data_o         (out_ep_data),
@@ -320,7 +314,7 @@ module usbdev_usbif  #(
     // in endpoint interfaces
     .in_ep_current_o       (in_ep_current),
     .in_ep_rollback_o      (link_in_err_o),
-    .in_ep_xact_end_o      (in_ep_xact_end),
+    .in_ep_xact_end_o      (in_ep_xact_end_o),
     .in_ep_get_addr_o      (in_ep_get_addr),
     .in_ep_data_get_o      (in_ep_data_get),
     .in_ep_newpkt_o        (in_ep_newpkt),
@@ -378,7 +372,7 @@ module usbdev_usbif  #(
     .usb_dp_i              (usb_dp_i),
     .usb_dn_i              (usb_dn_i),
     .usb_oe_i              (usb_oe_o),
-    .usb_pullup_en_i       (enable_i),
+    .usb_pullup_en_i       (connect_i),
     .rx_idle_det_i         (rx_idle_det),
     .rx_j_det_i            (rx_j_det),
     .sof_valid_i           (sof_valid_o),

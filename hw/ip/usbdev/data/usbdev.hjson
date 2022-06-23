@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "usbdev",
   clocking: [
+    // clk_i must be 48 MHz
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {clock: "clk_aon_i", reset: "rst_aon_ni"},
-    {clock: "clk_usb_48mhz_i", reset: "rst_usb_48mhz_ni"}
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
@@ -187,12 +187,16 @@
     }
     { name: "av_empty",
       desc: '''
-            Raised when a transaction is NACKed because the Available Buffer FIFO for OUT or SETUP transactions is empty.
+            Raised when the AV FIFO is empty and the device interface is enabled.
+            This interrupt is directly tied to the FIFO status, so the AV FIFO must be provided a free buffer before the interrupt is cleared.
+            If the condition is not cleared, the interrupt can re-assert.
             '''
     }
     { name: "rx_full",
       desc: '''
-            Raised when a transaction is NACKed because the Received Buffer FIFO for OUT or SETUP transactions is full.
+            Raised when the RX FIFO is full and the device interface is enabled.
+            This interrupt is directly tied to the FIFO status, so the RX FIFO must have an entry removed before the interrupt is cleared.
+            If the condition is not cleared, the interrupt can re-assert.
             '''
     }
     { name: "av_overflow",
@@ -257,7 +261,6 @@
       desc: "USB Control",
       swaccess: "rw",
       hwaccess: "hro",
-      async: "clk_usb_48mhz_i",
       fields: [
         {
           bits: "0",
@@ -529,7 +532,6 @@
         desc: "Receive OUT transaction enable",
         swaccess: "rw",
         hwaccess: "hrw",
-        async: "clk_usb_48mhz_i"
         fields: [
           {
             bits: "0",

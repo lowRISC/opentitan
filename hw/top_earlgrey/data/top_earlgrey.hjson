@@ -335,9 +335,9 @@
     },
     { name: "usbdev",
       type: "usbdev",
-      clock_srcs: {clk_i: "usb", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
+      clock_srcs: {clk_i: "usb", clk_aon_i: "aon"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "usb", rst_aon_ni: "usb_aon", rst_usb_48mhz_ni: "usb"},
+      reset_connections: {rst_ni: "usb", rst_aon_ni: "usb_aon"},
       base_addr: "0x40320000",
       param_decl: {
         RcvrWakeTimeUs: "100"

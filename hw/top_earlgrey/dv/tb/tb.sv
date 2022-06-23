@@ -243,7 +243,7 @@ module tb;
   assign spi_if.sio[1]    = spi_device_sdo_o;
 
   // TODO: USB-related signals, hookup an interface.
-  assign usb_rst_n  = `USBDEV_HIER.rst_usb_48mhz_ni;
+  assign usb_rst_n  = `USBDEV_HIER.rst_ni;
   assign usb_dp0    = 1'b1;
   assign usb_dn0    = 1'b0;
   assign usb_sense0 = 1'b0;

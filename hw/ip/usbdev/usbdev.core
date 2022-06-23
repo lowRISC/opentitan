@@ -9,14 +9,14 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - lowrisc:prim:ram_2p_async_adv
+      - lowrisc:prim:edge_detector
+      - lowrisc:prim:ram_2p_adv
       - lowrisc:ip:usb_fs_nb_pe
       - lowrisc:ip:usbdev_pkg
     files:
       - rtl/usbdev_reg_pkg.sv
       - rtl/usbdev_reg_top.sv
       - rtl/usbdev_usbif.sv
-      - rtl/usbdev_flop_2syncpulse.sv
       - rtl/usbdev_linkstate.sv
       - rtl/usbdev_iomux.sv
       - rtl/usbdev_aon_wake.sv

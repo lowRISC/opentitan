@@ -9,8 +9,6 @@
 module usbdev_reg_top (
   input clk_i,
   input rst_ni,
-  input clk_usb_48mhz_i,
-  input rst_usb_48mhz_ni,
   input clk_aon_i,
   input rst_aon_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -270,8 +268,11 @@ module usbdev_reg_top (
   logic alert_test_we;
   logic alert_test_wd;
   logic usbctrl_we;
-  logic [22:0] usbctrl_qs;
-  logic usbctrl_busy;
+  logic usbctrl_enable_qs;
+  logic usbctrl_enable_wd;
+  logic usbctrl_resume_link_active_wd;
+  logic [6:0] usbctrl_device_address_qs;
+  logic [6:0] usbctrl_device_address_wd;
   logic ep_out_enable_we;
   logic ep_out_enable_enable_0_qs;
   logic ep_out_enable_enable_0_wd;
@@ -364,8 +365,30 @@ module usbdev_reg_top (
   logic rxenable_setup_setup_11_qs;
   logic rxenable_setup_setup_11_wd;
   logic rxenable_out_we;
-  logic [11:0] rxenable_out_qs;
-  logic rxenable_out_busy;
+  logic rxenable_out_out_0_qs;
+  logic rxenable_out_out_0_wd;
+  logic rxenable_out_out_1_qs;
+  logic rxenable_out_out_1_wd;
+  logic rxenable_out_out_2_qs;
+  logic rxenable_out_out_2_wd;
+  logic rxenable_out_out_3_qs;
+  logic rxenable_out_out_3_wd;
+  logic rxenable_out_out_4_qs;
+  logic rxenable_out_out_4_wd;
+  logic rxenable_out_out_5_qs;
+  logic rxenable_out_out_5_wd;
+  logic rxenable_out_out_6_qs;
+  logic rxenable_out_out_6_wd;
+  logic rxenable_out_out_7_qs;
+  logic rxenable_out_out_7_wd;
+  logic rxenable_out_out_8_qs;
+  logic rxenable_out_out_8_wd;
+  logic rxenable_out_out_9_qs;
+  logic rxenable_out_out_9_wd;
+  logic rxenable_out_out_10_qs;
+  logic rxenable_out_out_10_wd;
+  logic rxenable_out_out_11_qs;
+  logic rxenable_out_out_11_wd;
   logic set_nak_out_we;
   logic set_nak_out_enable_0_qs;
   logic set_nak_out_enable_0_wd;
@@ -686,141 +709,6 @@ module usbdev_reg_top (
   logic wake_events_busy;
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
-
-  logic  usb_48mhz_usbctrl_enable_ds_int;
-  logic  usb_48mhz_usbctrl_enable_qs_int;
-  logic  usb_48mhz_usbctrl_resume_link_active_ds_int;
-  logic [6:0]  usb_48mhz_usbctrl_device_address_ds_int;
-  logic [6:0]  usb_48mhz_usbctrl_device_address_qs_int;
-  logic [22:0] usb_48mhz_usbctrl_ds;
-  logic usb_48mhz_usbctrl_qe;
-  logic [22:0] usb_48mhz_usbctrl_qs;
-  logic [22:0] usb_48mhz_usbctrl_wdata;
-  logic usb_48mhz_usbctrl_we;
-  logic unused_usb_48mhz_usbctrl_wdata;
-
-  always_comb begin
-    usb_48mhz_usbctrl_qs = 23'h0;
-    usb_48mhz_usbctrl_ds = 23'h0;
-    usb_48mhz_usbctrl_ds[0] = usb_48mhz_usbctrl_enable_ds_int;
-    usb_48mhz_usbctrl_qs[0] = usb_48mhz_usbctrl_enable_qs_int;
-    usb_48mhz_usbctrl_ds[22:16] = usb_48mhz_usbctrl_device_address_ds_int;
-    usb_48mhz_usbctrl_qs[22:16] = usb_48mhz_usbctrl_device_address_qs_int;
-  end
-
-  prim_reg_cdc #(
-    .DataWidth(23),
-    .ResetVal(23'h0),
-    .BitMask(23'h7f0003),
-    .DstWrReq(1)
-  ) u_usbctrl_cdc (
-    .clk_src_i    (clk_i),
-    .rst_src_ni   (rst_ni),
-    .clk_dst_i    (clk_usb_48mhz_i),
-    .rst_dst_ni   (rst_usb_48mhz_ni),
-    .src_regwen_i ('0),
-    .src_we_i     (usbctrl_we),
-    .src_re_i     ('0),
-    .src_wd_i     (reg_wdata[22:0]),
-    .src_busy_o   (usbctrl_busy),
-    .src_qs_o     (usbctrl_qs), // for software read back
-    .dst_update_i (usb_48mhz_usbctrl_qe),
-    .dst_ds_i     (usb_48mhz_usbctrl_ds),
-    .dst_qs_i     (usb_48mhz_usbctrl_qs),
-    .dst_we_o     (usb_48mhz_usbctrl_we),
-    .dst_re_o     (),
-    .dst_regwen_o (),
-    .dst_wd_o     (usb_48mhz_usbctrl_wdata)
-  );
-  assign unused_usb_48mhz_usbctrl_wdata =
-      ^usb_48mhz_usbctrl_wdata;
-
-  logic  usb_48mhz_rxenable_out_out_0_ds_int;
-  logic  usb_48mhz_rxenable_out_out_0_qs_int;
-  logic  usb_48mhz_rxenable_out_out_1_ds_int;
-  logic  usb_48mhz_rxenable_out_out_1_qs_int;
-  logic  usb_48mhz_rxenable_out_out_2_ds_int;
-  logic  usb_48mhz_rxenable_out_out_2_qs_int;
-  logic  usb_48mhz_rxenable_out_out_3_ds_int;
-  logic  usb_48mhz_rxenable_out_out_3_qs_int;
-  logic  usb_48mhz_rxenable_out_out_4_ds_int;
-  logic  usb_48mhz_rxenable_out_out_4_qs_int;
-  logic  usb_48mhz_rxenable_out_out_5_ds_int;
-  logic  usb_48mhz_rxenable_out_out_5_qs_int;
-  logic  usb_48mhz_rxenable_out_out_6_ds_int;
-  logic  usb_48mhz_rxenable_out_out_6_qs_int;
-  logic  usb_48mhz_rxenable_out_out_7_ds_int;
-  logic  usb_48mhz_rxenable_out_out_7_qs_int;
-  logic  usb_48mhz_rxenable_out_out_8_ds_int;
-  logic  usb_48mhz_rxenable_out_out_8_qs_int;
-  logic  usb_48mhz_rxenable_out_out_9_ds_int;
-  logic  usb_48mhz_rxenable_out_out_9_qs_int;
-  logic  usb_48mhz_rxenable_out_out_10_ds_int;
-  logic  usb_48mhz_rxenable_out_out_10_qs_int;
-  logic  usb_48mhz_rxenable_out_out_11_ds_int;
-  logic  usb_48mhz_rxenable_out_out_11_qs_int;
-  logic [11:0] usb_48mhz_rxenable_out_ds;
-  logic usb_48mhz_rxenable_out_qe;
-  logic [11:0] usb_48mhz_rxenable_out_qs;
-  logic [11:0] usb_48mhz_rxenable_out_wdata;
-  logic usb_48mhz_rxenable_out_we;
-  logic unused_usb_48mhz_rxenable_out_wdata;
-
-  always_comb begin
-    usb_48mhz_rxenable_out_qs = 12'h0;
-    usb_48mhz_rxenable_out_ds = 12'h0;
-    usb_48mhz_rxenable_out_ds[0] = usb_48mhz_rxenable_out_out_0_ds_int;
-    usb_48mhz_rxenable_out_qs[0] = usb_48mhz_rxenable_out_out_0_qs_int;
-    usb_48mhz_rxenable_out_ds[1] = usb_48mhz_rxenable_out_out_1_ds_int;
-    usb_48mhz_rxenable_out_qs[1] = usb_48mhz_rxenable_out_out_1_qs_int;
-    usb_48mhz_rxenable_out_ds[2] = usb_48mhz_rxenable_out_out_2_ds_int;
-    usb_48mhz_rxenable_out_qs[2] = usb_48mhz_rxenable_out_out_2_qs_int;
-    usb_48mhz_rxenable_out_ds[3] = usb_48mhz_rxenable_out_out_3_ds_int;
-    usb_48mhz_rxenable_out_qs[3] = usb_48mhz_rxenable_out_out_3_qs_int;
-    usb_48mhz_rxenable_out_ds[4] = usb_48mhz_rxenable_out_out_4_ds_int;
-    usb_48mhz_rxenable_out_qs[4] = usb_48mhz_rxenable_out_out_4_qs_int;
-    usb_48mhz_rxenable_out_ds[5] = usb_48mhz_rxenable_out_out_5_ds_int;
-    usb_48mhz_rxenable_out_qs[5] = usb_48mhz_rxenable_out_out_5_qs_int;
-    usb_48mhz_rxenable_out_ds[6] = usb_48mhz_rxenable_out_out_6_ds_int;
-    usb_48mhz_rxenable_out_qs[6] = usb_48mhz_rxenable_out_out_6_qs_int;
-    usb_48mhz_rxenable_out_ds[7] = usb_48mhz_rxenable_out_out_7_ds_int;
-    usb_48mhz_rxenable_out_qs[7] = usb_48mhz_rxenable_out_out_7_qs_int;
-    usb_48mhz_rxenable_out_ds[8] = usb_48mhz_rxenable_out_out_8_ds_int;
-    usb_48mhz_rxenable_out_qs[8] = usb_48mhz_rxenable_out_out_8_qs_int;
-    usb_48mhz_rxenable_out_ds[9] = usb_48mhz_rxenable_out_out_9_ds_int;
-    usb_48mhz_rxenable_out_qs[9] = usb_48mhz_rxenable_out_out_9_qs_int;
-    usb_48mhz_rxenable_out_ds[10] = usb_48mhz_rxenable_out_out_10_ds_int;
-    usb_48mhz_rxenable_out_qs[10] = usb_48mhz_rxenable_out_out_10_qs_int;
-    usb_48mhz_rxenable_out_ds[11] = usb_48mhz_rxenable_out_out_11_ds_int;
-    usb_48mhz_rxenable_out_qs[11] = usb_48mhz_rxenable_out_out_11_qs_int;
-  end
-
-  prim_reg_cdc #(
-    .DataWidth(12),
-    .ResetVal(12'h0),
-    .BitMask(12'hfff),
-    .DstWrReq(1)
-  ) u_rxenable_out_cdc (
-    .clk_src_i    (clk_i),
-    .rst_src_ni   (rst_ni),
-    .clk_dst_i    (clk_usb_48mhz_i),
-    .rst_dst_ni   (rst_usb_48mhz_ni),
-    .src_regwen_i ('0),
-    .src_we_i     (rxenable_out_we),
-    .src_re_i     ('0),
-    .src_wd_i     (reg_wdata[11:0]),
-    .src_busy_o   (rxenable_out_busy),
-    .src_qs_o     (rxenable_out_qs), // for software read back
-    .dst_update_i (usb_48mhz_rxenable_out_qe),
-    .dst_ds_i     (usb_48mhz_rxenable_out_ds),
-    .dst_qs_i     (usb_48mhz_rxenable_out_qs),
-    .dst_we_o     (usb_48mhz_rxenable_out_we),
-    .dst_re_o     (),
-    .dst_regwen_o (),
-    .dst_wd_o     (usb_48mhz_rxenable_out_wdata)
-  );
-  assign unused_usb_48mhz_rxenable_out_wdata =
-      ^usb_48mhz_rxenable_out_wdata;
 
   logic [1:0] aon_wake_control_qs;
   logic [1:0] aon_wake_control_wdata;
@@ -2097,24 +1985,23 @@ module usbdev_reg_top (
     .Width(1),
     .ResetValue(0)
   ) u_usbctrl0_qe (
-    .clk_i(clk_usb_48mhz_i),
-    .rst_ni(rst_usb_48mhz_ni),
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
     .d_i(&usbctrl_flds_we),
     .q_o(usbctrl_qe)
   );
-  assign usb_48mhz_usbctrl_qe = |usbctrl_flds_we;
   //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_usbctrl_enable (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_usbctrl_we),
-    .wd     (usb_48mhz_usbctrl_wdata[0]),
+    .we     (usbctrl_we),
+    .wd     (usbctrl_enable_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2123,10 +2010,10 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (usbctrl_flds_we[0]),
     .q      (reg2hw.usbctrl.enable.q),
-    .ds     (usb_48mhz_usbctrl_enable_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_usbctrl_enable_qs_int)
+    .qs     (usbctrl_enable_qs)
   );
 
   //   F[resume_link_active]: 1:1
@@ -2135,12 +2022,12 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0)
   ) u_usbctrl_resume_link_active (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_usbctrl_we),
-    .wd     (usb_48mhz_usbctrl_wdata[1]),
+    .we     (usbctrl_we),
+    .wd     (usbctrl_resume_link_active_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2149,7 +2036,7 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (usbctrl_flds_we[1]),
     .q      (reg2hw.usbctrl.resume_link_active.q),
-    .ds     (usb_48mhz_usbctrl_resume_link_active_ds_int),
+    .ds     (),
 
     // to register interface (read)
     .qs     ()
@@ -2162,12 +2049,12 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0)
   ) u_usbctrl_device_address (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_usbctrl_we),
-    .wd     (usb_48mhz_usbctrl_wdata[22:16]),
+    .we     (usbctrl_we),
+    .wd     (usbctrl_device_address_wd),
 
     // from internal hardware
     .de     (hw2reg.usbctrl.device_address.de),
@@ -2176,10 +2063,10 @@ module usbdev_reg_top (
     // to internal hardware
     .qe     (usbctrl_flds_we[2]),
     .q      (reg2hw.usbctrl.device_address.q),
-    .ds     (usb_48mhz_usbctrl_device_address_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_usbctrl_device_address_qs_int)
+    .qs     (usbctrl_device_address_qs)
   );
 
 
@@ -3353,32 +3240,30 @@ module usbdev_reg_top (
 
   // Subregister 0 of Multireg rxenable_out
   // R[rxenable_out]: V(False)
-  logic [11:0] rxenable_out_flds_we;
-  assign usb_48mhz_rxenable_out_qe = |rxenable_out_flds_we;
   //   F[out_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_0 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[0]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_0_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[0].de),
     .d      (hw2reg.rxenable_out[0].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[0].q),
-    .ds     (usb_48mhz_rxenable_out_out_0_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_0_qs_int)
+    .qs     (rxenable_out_out_0_qs)
   );
 
   //   F[out_1]: 1:1
@@ -3387,24 +3272,24 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_1 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[1]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_1_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[1].de),
     .d      (hw2reg.rxenable_out[1].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[1]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[1].q),
-    .ds     (usb_48mhz_rxenable_out_out_1_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_1_qs_int)
+    .qs     (rxenable_out_out_1_qs)
   );
 
   //   F[out_2]: 2:2
@@ -3413,24 +3298,24 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_2 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[2]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_2_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[2].de),
     .d      (hw2reg.rxenable_out[2].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[2]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[2].q),
-    .ds     (usb_48mhz_rxenable_out_out_2_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_2_qs_int)
+    .qs     (rxenable_out_out_2_qs)
   );
 
   //   F[out_3]: 3:3
@@ -3439,24 +3324,24 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_3 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[3]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_3_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[3].de),
     .d      (hw2reg.rxenable_out[3].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[3]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[3].q),
-    .ds     (usb_48mhz_rxenable_out_out_3_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_3_qs_int)
+    .qs     (rxenable_out_out_3_qs)
   );
 
   //   F[out_4]: 4:4
@@ -3465,24 +3350,24 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_4 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[4]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_4_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[4].de),
     .d      (hw2reg.rxenable_out[4].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[4]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[4].q),
-    .ds     (usb_48mhz_rxenable_out_out_4_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_4_qs_int)
+    .qs     (rxenable_out_out_4_qs)
   );
 
   //   F[out_5]: 5:5
@@ -3491,24 +3376,24 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_5 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[5]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_5_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[5].de),
     .d      (hw2reg.rxenable_out[5].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[5]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[5].q),
-    .ds     (usb_48mhz_rxenable_out_out_5_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_5_qs_int)
+    .qs     (rxenable_out_out_5_qs)
   );
 
   //   F[out_6]: 6:6
@@ -3517,24 +3402,24 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_6 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[6]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_6_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[6].de),
     .d      (hw2reg.rxenable_out[6].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[6]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[6].q),
-    .ds     (usb_48mhz_rxenable_out_out_6_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_6_qs_int)
+    .qs     (rxenable_out_out_6_qs)
   );
 
   //   F[out_7]: 7:7
@@ -3543,24 +3428,24 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_7 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[7]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_7_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[7].de),
     .d      (hw2reg.rxenable_out[7].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[7]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[7].q),
-    .ds     (usb_48mhz_rxenable_out_out_7_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_7_qs_int)
+    .qs     (rxenable_out_out_7_qs)
   );
 
   //   F[out_8]: 8:8
@@ -3569,24 +3454,24 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_8 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[8]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_8_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[8].de),
     .d      (hw2reg.rxenable_out[8].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[8]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[8].q),
-    .ds     (usb_48mhz_rxenable_out_out_8_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_8_qs_int)
+    .qs     (rxenable_out_out_8_qs)
   );
 
   //   F[out_9]: 9:9
@@ -3595,24 +3480,24 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_9 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[9]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_9_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[9].de),
     .d      (hw2reg.rxenable_out[9].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[9]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[9].q),
-    .ds     (usb_48mhz_rxenable_out_out_9_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_9_qs_int)
+    .qs     (rxenable_out_out_9_qs)
   );
 
   //   F[out_10]: 10:10
@@ -3621,24 +3506,24 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_10 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[10]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_10_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[10].de),
     .d      (hw2reg.rxenable_out[10].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[10]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[10].q),
-    .ds     (usb_48mhz_rxenable_out_out_10_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_10_qs_int)
+    .qs     (rxenable_out_out_10_qs)
   );
 
   //   F[out_11]: 11:11
@@ -3647,24 +3532,24 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_rxenable_out_out_11 (
-    .clk_i   (clk_usb_48mhz_i),
-    .rst_ni  (rst_usb_48mhz_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (usb_48mhz_rxenable_out_we),
-    .wd     (usb_48mhz_rxenable_out_wdata[11]),
+    .we     (rxenable_out_we),
+    .wd     (rxenable_out_out_11_wd),
 
     // from internal hardware
     .de     (hw2reg.rxenable_out[11].de),
     .d      (hw2reg.rxenable_out[11].d),
 
     // to internal hardware
-    .qe     (rxenable_out_flds_we[11]),
+    .qe     (),
     .q      (reg2hw.rxenable_out[11].q),
-    .ds     (usb_48mhz_rxenable_out_out_11_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (usb_48mhz_rxenable_out_out_11_qs_int)
+    .qs     (rxenable_out_out_11_qs)
   );
 
 
@@ -8026,8 +7911,11 @@ module usbdev_reg_top (
   assign alert_test_wd = reg_wdata[0];
   assign usbctrl_we = addr_hit[4] & reg_we & !reg_error;
 
+  assign usbctrl_enable_wd = reg_wdata[0];
 
+  assign usbctrl_resume_link_active_wd = reg_wdata[1];
 
+  assign usbctrl_device_address_wd = reg_wdata[22:16];
   assign ep_out_enable_we = addr_hit[5] & reg_we & !reg_error;
 
   assign ep_out_enable_enable_0_wd = reg_wdata[0];
@@ -8110,17 +7998,29 @@ module usbdev_reg_top (
   assign rxenable_setup_setup_11_wd = reg_wdata[11];
   assign rxenable_out_we = addr_hit[11] & reg_we & !reg_error;
 
+  assign rxenable_out_out_0_wd = reg_wdata[0];
 
+  assign rxenable_out_out_1_wd = reg_wdata[1];
 
+  assign rxenable_out_out_2_wd = reg_wdata[2];
 
+  assign rxenable_out_out_3_wd = reg_wdata[3];
 
+  assign rxenable_out_out_4_wd = reg_wdata[4];
 
+  assign rxenable_out_out_5_wd = reg_wdata[5];
 
+  assign rxenable_out_out_6_wd = reg_wdata[6];
 
+  assign rxenable_out_out_7_wd = reg_wdata[7];
 
+  assign rxenable_out_out_8_wd = reg_wdata[8];
 
+  assign rxenable_out_out_9_wd = reg_wdata[9];
 
+  assign rxenable_out_out_10_wd = reg_wdata[10];
 
+  assign rxenable_out_out_11_wd = reg_wdata[11];
   assign set_nak_out_we = addr_hit[12] & reg_we & !reg_error;
 
   assign set_nak_out_enable_0_wd = reg_wdata[0];
@@ -8551,8 +8451,11 @@ module usbdev_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next = DW'(usbctrl_qs);
+        reg_rdata_next[0] = usbctrl_enable_qs;
+        reg_rdata_next[1] = '0;
+        reg_rdata_next[22:16] = usbctrl_device_address_qs;
       end
+
       addr_hit[5]: begin
         reg_rdata_next[0] = ep_out_enable_enable_0_qs;
         reg_rdata_next[1] = ep_out_enable_enable_1_qs;
@@ -8621,8 +8524,20 @@ module usbdev_reg_top (
       end
 
       addr_hit[11]: begin
-        reg_rdata_next = DW'(rxenable_out_qs);
+        reg_rdata_next[0] = rxenable_out_out_0_qs;
+        reg_rdata_next[1] = rxenable_out_out_1_qs;
+        reg_rdata_next[2] = rxenable_out_out_2_qs;
+        reg_rdata_next[3] = rxenable_out_out_3_qs;
+        reg_rdata_next[4] = rxenable_out_out_4_qs;
+        reg_rdata_next[5] = rxenable_out_out_5_qs;
+        reg_rdata_next[6] = rxenable_out_out_6_qs;
+        reg_rdata_next[7] = rxenable_out_out_7_qs;
+        reg_rdata_next[8] = rxenable_out_out_8_qs;
+        reg_rdata_next[9] = rxenable_out_out_9_qs;
+        reg_rdata_next[10] = rxenable_out_out_10_qs;
+        reg_rdata_next[11] = rxenable_out_out_11_qs;
       end
+
       addr_hit[12]: begin
         reg_rdata_next[0] = set_nak_out_enable_0_qs;
         reg_rdata_next[1] = set_nak_out_enable_1_qs;
@@ -8867,12 +8782,6 @@ module usbdev_reg_top (
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
-      addr_hit[4]: begin
-        reg_busy_sel = usbctrl_busy;
-      end
-      addr_hit[11]: begin
-        reg_busy_sel = rxenable_out_busy;
-      end
       addr_hit[34]: begin
         reg_busy_sel = wake_control_busy;
       end

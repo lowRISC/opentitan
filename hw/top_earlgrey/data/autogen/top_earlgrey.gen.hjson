@@ -2289,7 +2289,6 @@
       {
         clk_i: usb
         clk_aon_i: aon
-        clk_usb_48mhz_i: usb
       }
       clock_group: peri
       reset_connections:
@@ -2304,11 +2303,6 @@
           name: usb_aon
           domain: "0"
         }
-        rst_usb_48mhz_ni:
-        {
-          name: usb
-          domain: "0"
-        }
       }
       param_decl:
       {
@@ -2318,7 +2312,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_usb_peri
         clk_aon_i: clkmgr_aon_clocks.clk_aon_peri
-        clk_usb_48mhz_i: clkmgr_aon_clocks.clk_usb_peri
       }
       domain:
       [

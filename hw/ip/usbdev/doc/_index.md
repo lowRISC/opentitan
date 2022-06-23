@@ -76,10 +76,11 @@ In this mode, the device constantly transmits a J/K pattern but no longer receiv
 Consequently, it does not generate reference pulses for clock synchronization.
 The clock might drift off.
 
-Control transfers pass through asynchronous FIFOs or have a ready bit
-synchronized across the clock domain boundary. A dual-port
-asynchronous buffer SRAM is used for data transfers between the bus
-clock and USB clock domains.
+Control transfers pass through synchronous FIFOs or have a ready bit synchronized across the clock domain boundary.
+A dual-port synchronous buffer SRAM is used for data transfers, and the bus clock and USB clock come from the same 48 MHz input.
+The wake detection module is clocked by a separate clock, and a couple registers are used to interface with it.
+Any bus-related clock domain crossings must happen outside the core, except for the transition between the 48 MHz clock and the wake detection module's clock.
+The 48 MHz clock must be enabled to reach the registers in `usbdev`.
 
 
 ## USB Interface Pins

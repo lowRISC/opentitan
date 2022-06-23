@@ -165,12 +165,9 @@ if {$env(DUT_TOP) == "aes"} {
 } elseif {$env(DUT_TOP) == "usbdev"} {
   create_clock clk_i -period 100
   create_reset rst_ni -sense low
-  set_change_at -clock clk_i -posedge {usb_state_debug_i tl_i}
+  set_change_at -clock clk_i -posedge {usb_state_debug_i tl_i cio_d_i cio_dp_i cio_dn_i cio_sense_i}
   create_clock clk_aon_i -period 100
   create_reset rst_aon_ni -sense low
-  create_clock clk_usb_48mhz_i -period 100
-  create_reset rst_usb_48mhz_ni -sense low
-  set_change_at -clock clk_usb_48mhz_i -posedge {cio_d_i cio_dp_i cio_dn_i cio_sense_i}
 } elseif {$env(DUT_TOP) == "xbar_main"} {
   # TO CHECK WHEN MODULE IS ENABLED
   create_clock clk_main_i -period 100

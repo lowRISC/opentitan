@@ -41,19 +41,17 @@ module tb;
   clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  tl_if tl_if(.clk(usb_clk), .rst_n(usb_rst_n));
   usb20_if usb20_if();
 
  `DV_ALERT_IF_CONNECT
 
   // dut
   usbdev dut (
-    .clk_i                (clk        ),
-    .rst_ni               (rst_n      ),
+    .clk_i                (usb_clk    ),
+    .rst_ni               (usb_rst_n  ),
     .clk_aon_i            (clk        ),
     .rst_aon_ni           (rst_n      ),
-    .clk_usb_48mhz_i      (usb_clk    ),
-    .rst_usb_48mhz_ni     (usb_rst_n  ),
 
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  ),

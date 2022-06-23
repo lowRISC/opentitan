@@ -30,7 +30,6 @@ CONNECTION, CLKMGR_PERI_CLK_UART2_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_i
 CONNECTION, CLKMGR_PERI_CLK_UART3_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_uart3, clk_i
 
 CONNECTION, CLKMGR_PERI_CLK_USBDEV_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_usb_peri, top_earlgrey.u_usbdev, clk_i
-CONNECTION, CLKMGR_PERI_CLK_USBDEV_USB_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_usb_peri,     top_earlgrey.u_usbdev, clk_usb_48mhz_i
 
 # TODO: check with design - this is a questionable classification: an aon clock in the peri group seems wrong.
 CONNECTION, CLKMGR_PERI_CLK_ADC_CTRL_AON_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_peri, top_earlgrey.u_adc_ctrl_aon, clk_aon_i
