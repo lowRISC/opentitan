@@ -715,7 +715,10 @@ module otbn_alu_bignum
   );
 
   always_comb begin
-    logical_res = '0;
+    // Drive logical_res to zero unless it's actually used. When used,
+    // alu_predec_bignum_i.logic_shifter_en is set. Otherwise logical_op_shifter_res_blanked is
+    // blanked to zero.
+    logical_res = ~logical_op_shifter_res_blanked;
 
     unique case (operation_i.op)
       AluOpBignumXor: logical_res = logical_op_a_blanked ^ logical_op_shifter_res_blanked;
