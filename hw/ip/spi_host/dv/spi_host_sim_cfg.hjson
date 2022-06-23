@@ -41,6 +41,9 @@
   // Add additional tops for simulation.
   sim_tops: ["spi_host_bind", "sec_cm_prim_onehot_check_bind"]
 
+  // Coverage exclusion
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/spi_host/dv/cov/spi_host_unr_excl.vRefine"]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
