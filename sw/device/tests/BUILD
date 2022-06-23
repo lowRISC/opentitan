@@ -1294,6 +1294,7 @@ opentitan_functest(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/dif:spi_host",

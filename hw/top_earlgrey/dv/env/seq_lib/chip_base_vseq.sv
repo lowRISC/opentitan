@@ -135,7 +135,7 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
   // shorten alert ping timer enable wait time
   task alert_ping_en_shorten();
     string mask_path = {`DV_STRINGIFY(`ALERT_HANDLER_HIER),
-			".u_ping_timer.wait_cyc_mask_i"};
+                        ".u_ping_timer.wait_cyc_mask_i"};
     bit shorten_ping_en;
     `uvm_info(`gfn, $sformatf("ping enable path: %s", mask_path), UVM_HIGH)
     void'($value$plusargs("shorten_ping_en=%0d", shorten_ping_en));
