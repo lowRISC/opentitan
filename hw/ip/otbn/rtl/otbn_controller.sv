@@ -140,6 +140,7 @@ module otbn_controller
   output logic secure_wipe_req_o,
   input  logic secure_wipe_ack_i,
   input  logic sec_wipe_zero_i,
+  input  logic secure_wipe_running_i,
 
   input  logic        state_reset_i,
   output logic [31:0] insn_cnt_o,
@@ -319,8 +320,12 @@ module otbn_controller
   end
   assign secure_wipe_req_o = start_secure_wipe | secure_wipe_running_q;
 
-  // Spot spurious acks on the secure wipe interface
-  assign spurious_secure_wipe_ack = secure_wipe_ack_i & ~secure_wipe_running_q;
+  // Spot spurious acks on the secure wipe interface. There is a an ack at the end of the initial
+  // secure wipe, and as `secure_wipe_running_q` is only high during secure wipes triggered by this
+  // controller, we have to ignore acks before the initial secure wipe is done.
+  assign spurious_secure_wipe_ack = secure_wipe_ack_i &
+                                    ~secure_wipe_running_q &
+                                    ~secure_wipe_running_i;
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.

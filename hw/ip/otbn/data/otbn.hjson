@@ -371,6 +371,12 @@
           '''
         }
       ],
+      tags: [
+        // Don't write this register in the automated CSR tests, because those
+        // tests are not aware whether OTBN is idle or not. If OTBN is not idle,
+        // it ignores the write and the test would fail.
+        "excl:CsrAllTests:CsrExclWrite"
+      ]
     }
     { name: "STATUS",
       desc: "Status Register",
@@ -379,7 +385,7 @@
       fields: [
         { bits: "7:0",
           name: "status",
-          resval: 0,
+          resval: "0x04",
           // Note: Keep the list of status codes in sync with status_e in
           // otbn_pkg.sv.
           desc: '''
@@ -435,13 +441,10 @@
             </table>
           '''
           tags: [
-            // Don't write this field in the automated CSR tests. Despite this being RO for software
-            // (so you might think we couldn't write it), the csr_hw_reset test does write this by
-            // by default (using a backdoor access). The idea of that test is to write bogus values
-            // to registers, reset the block and then check that everything has its reset value.
-            // Doing this causes various assertions to fire and it isn't really necessary: we
-            // already have strong checks between this register and the output of the model.
-            "excl:CsrAllTests:CsrExclWrite"
+            // Exclude this field from the automated CSR tests. The register model does not know
+            // OTBN automatically transitions from the reset state to `IDLE` as it completes the
+            // initial secure wipe of the internal state.
+            "excl:CsrAllTests:CsrExclAll"
           ]
         }
       ]

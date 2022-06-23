@@ -501,9 +501,10 @@ module otbn_core
     .rnd_valid_i       (rnd_valid),
 
     // Secure wipe
-    .secure_wipe_req_o (secure_wipe_req),
-    .secure_wipe_ack_i (secure_wipe_ack),
-    .sec_wipe_zero_i   (sec_wipe_zero),
+    .secure_wipe_req_o     (secure_wipe_req),
+    .secure_wipe_ack_i     (secure_wipe_ack),
+    .sec_wipe_zero_i       (sec_wipe_zero),
+    .secure_wipe_running_i (secure_wipe_running_o),
 
     .state_reset_i(state_reset),
     .insn_cnt_o   (insn_cnt),

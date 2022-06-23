@@ -7,6 +7,9 @@ class otbn_sw_errs_fatal_chk_vseq extends otbn_single_vseq;
   `uvm_object_new
 
   task body();
+    // Wait for OTBN to complete its secure wipe after reset and become Idle.  Otherwise, OTBN will
+    // ignore writes of `CTRL.software_errs_fatal`.
+    wait(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle);
     // Set ctrl.software_errs_fatal.
     csr_utils_pkg::csr_wr(ral.ctrl, 'b1);
     // When set software errors produce fatal errors, rather than recoverable errors.

@@ -258,7 +258,7 @@ static bool read_ext_flag(const std::string &reg_name,
 }
 
 void MirroredRegs::reset() {
-  status = 0;
+  status = 0x04;
   insn_cnt = 0;
   err_bits = 0;
   stop_pc = 0;
@@ -497,6 +497,10 @@ void ISSWrapper::set_software_errs_fatal(bool new_val) {
   oss << "set_software_errs_fatal " << new_val << "\n";
 
   run_command(oss.str(), nullptr);
+}
+
+void ISSWrapper::initial_secure_wipe() {
+  run_command("initial_secure_wipe\n", nullptr);
 }
 
 uint32_t ISSWrapper::step_crc(const std::array<uint8_t, 6> &item,

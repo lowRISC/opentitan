@@ -376,6 +376,12 @@ def on_send_err_escalation(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
+def on_initial_secure_wipe(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('initial_secure_wipe', 0, args)
+    sim.initial_secure_wipe()
+    return None
+
+
 def on_otp_cdc_done(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('otp_key_cdc_done', 0, args)
 
@@ -406,6 +412,7 @@ _HANDLERS = {
     'set_keymgr_value': on_set_keymgr_value,
     'step_crc': on_step_crc,
     'send_err_escalation': on_send_err_escalation,
+    'initial_secure_wipe': on_initial_secure_wipe,
     'set_software_errs_fatal': on_set_software_errs_fatal
 }
 

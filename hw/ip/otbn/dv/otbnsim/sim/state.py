@@ -71,6 +71,12 @@ class FsmState(IntEnum):
     LOCKED = 2550
 
 
+class InitSecWipeState(IntEnum):
+    NOT_DONE = 0
+    IN_PROGRESS = 1
+    DONE = 2
+
+
 class OTBNState:
     def __init__(self) -> None:
         self.gprs = GPRs()
@@ -90,6 +96,8 @@ class OTBNState:
 
         self._fsm_state = FsmState.IDLE
         self._next_fsm_state = FsmState.IDLE
+
+        self._init_sec_wipe_state = InitSecWipeState.NOT_DONE
 
         self.loop_stack = LoopStack()
 
@@ -147,6 +155,10 @@ class OTBNState:
     def edn_flush(self) -> None:
         self.ext_regs.rnd_reset()
         self._urnd_client.edn_reset()
+        # If the initial secure wipe is running, OTBN will directly request a
+        # new URND value.
+        if self.init_sec_wipe_is_running():
+            self._urnd_client.request()
 
     def rnd_completed(self) -> None:
         '''Called when CDC completes for the EDN RND interface'''
@@ -167,6 +179,20 @@ class OTBNState:
         w64s = [(w256 >> (64 * i)) & ((1 << 64) - 1) for i in range(4)]
 
         self.wsrs.URND.set_seed(w64s)
+
+    def start_init_sec_wipe(self) -> None:
+        self._init_sec_wipe_state = InitSecWipeState.IN_PROGRESS
+        # OTBN will request a new URND value, so the model has to do the same.
+        self._urnd_client.request()
+
+    def init_sec_wipe_is_running(self) -> bool:
+        return self._init_sec_wipe_state == InitSecWipeState.IN_PROGRESS
+
+    def init_sec_wipe_is_done(self) -> bool:
+        return self._init_sec_wipe_state == InitSecWipeState.DONE
+
+    def complete_init_sec_wipe(self) -> None:
+        self._init_sec_wipe_state = InitSecWipeState.DONE
 
     def loop_start(self, iterations: int, bodysize: int) -> None:
         self.loop_stack.start_loop(self.pc + 4, iterations, bodysize)

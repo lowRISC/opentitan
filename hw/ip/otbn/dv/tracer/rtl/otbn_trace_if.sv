@@ -310,12 +310,17 @@ interface otbn_trace_if
     assign flags_read_data[i_fg] = u_otbn_alu_bignum.flags_q[i_fg];
   end
 
+  logic initial_secure_wipe_done;
   logic secure_wipe_ack_r;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      initial_secure_wipe_done <= 1'b0;
       secure_wipe_ack_r <= 1'b0;
     end else begin
       secure_wipe_ack_r <= secure_wipe_ack;
+      if (secure_wipe_ack) begin
+        initial_secure_wipe_done <= 1'b1;
+      end
     end
   end
 

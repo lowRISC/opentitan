@@ -405,7 +405,7 @@ module otbn_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (8'h0)
+    .RESVAL  (8'h4)
   ) u_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

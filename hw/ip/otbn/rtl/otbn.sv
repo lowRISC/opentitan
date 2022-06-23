@@ -93,6 +93,7 @@ module otbn
   logic busy_execute_d, busy_execute_q;
   logic done, done_core, locking, locking_q;
   logic busy_secure_wipe;
+  logic init_sec_wipe_done_d, init_sec_wipe_done_q;
   logic illegal_bus_access_d, illegal_bus_access_q;
   logic missed_gnt_error_d, missed_gnt_error_q;
   logic dmem_sec_wipe;
@@ -134,12 +135,15 @@ module otbn
   logic is_not_running_d, is_not_running_q;
   logic otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy;
 
-  assign is_not_running_d =
-    ~(busy_execute_d | otbn_dmem_scramble_key_req_busy | otbn_imem_scramble_key_req_busy);
+  assign is_not_running_d = ~|{busy_execute_d,
+                               otbn_dmem_scramble_key_req_busy,
+                               otbn_imem_scramble_key_req_busy,
+                               busy_secure_wipe};
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if(!rst_ni) begin
-      is_not_running_q  <= 1'b1;
+      // OTBN starts busy, performing the initial secure wipe.
+      is_not_running_q  <= 1'b0;
     end else begin
       is_not_running_q  <= is_not_running_d;
     end
@@ -173,7 +177,7 @@ module otbn
 
   // Interrupts ================================================================
 
-  assign done = is_busy_status(status_q) & ~is_busy_status(status_d);
+  assign done = is_busy_status(status_q) & ~is_busy_status(status_d) & init_sec_wipe_done_q;
 
   prim_intr_hw #(
     .Width(1)
@@ -801,7 +805,7 @@ module otbn
                                                       StatusIdle;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      status_q <= StatusIdle;
+      status_q <= StatusBusySecWipeInt;
     end else begin
       status_q <= status_d;
     end
@@ -1023,12 +1027,15 @@ module otbn
 
   always_ff @(posedge clk_i or negedge rst_n) begin
     if (!rst_n) begin
-      busy_execute_q <= 1'b0;
+      busy_execute_q       <= 1'b0;
+      init_sec_wipe_done_q <= 1'b0;
     end else begin
-      busy_execute_q <= busy_execute_d;
+      busy_execute_q       <= busy_execute_d;
+      init_sec_wipe_done_q <= init_sec_wipe_done_d;
     end
   end
   assign busy_execute_d = (busy_execute_q | start_d) & ~done_core;
+  assign init_sec_wipe_done_d = init_sec_wipe_done_q | ~busy_secure_wipe;
 
   otbn_core #(
     .RegFile(RegFile),

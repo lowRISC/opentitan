@@ -68,4 +68,6 @@ import "DPI-C" context function int otbn_model_reset(chandle          model,
 
 import "DPI-C" function int otbn_model_send_err_escalation(chandle model, bit [31:0] err_val);
 
+import "DPI-C" function int otbn_model_initial_secure_wipe(chandle model);
+
 `endif // SYNTHESIS

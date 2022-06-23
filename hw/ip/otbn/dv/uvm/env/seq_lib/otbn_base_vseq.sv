@@ -346,6 +346,27 @@ class otbn_base_vseq extends cip_base_vseq #(
     // immediately, causing all sorts of confusion. It's a testbench bug if we are.
     `DV_CHECK_FATAL(!cfg.under_reset)
 
+    // Wait for OTBN to be idle. After a reset, getting an URND value from EDN and performing an
+    // initial secure wipe can take up to 300 cycles if the EDN is held in reset for much longer
+    // than OTBN, so use that as timeout.  Stop waiting on a reset.
+    fork: wait_for_idle_fork
+      wait (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle);
+      repeat (300) @(cfg.clk_rst_vif.cbn);
+      wait (cfg.under_reset);
+    join_any
+
+    // Exit early if:
+    // - OTBN has been reset during the initial secure wipe; or
+    // - OTBN went from the initial secure wipe directly into the Locked state due to a fatal
+    //   internal error (e.g., on URND).
+    if (cfg.under_reset || cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked) begin
+      running_ = 1'b0;
+      return;
+    end
+
+    `DV_CHECK_FATAL(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle,
+                    "Timed out waiting for OTBN to be idle before execution");
+
     fork : isolation_fork
       begin
         fork
