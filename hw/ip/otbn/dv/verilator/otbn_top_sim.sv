@@ -119,7 +119,7 @@ module otbn_top_sim (
     .sideload_key_shares_valid_i ( 2'b11                      )
   );
 
-  localparam logic [WLEN-1:0] FixedEdnVal = {{(WLEN / 4){4'h9}}};
+  localparam logic [WLEN-1:0] FixedEdnVal = {{4{64'hAAAA_AAAA_9999_9999}}};
 
   edn_req_t rnd_req;
   edn_rsp_t rnd_rsp;

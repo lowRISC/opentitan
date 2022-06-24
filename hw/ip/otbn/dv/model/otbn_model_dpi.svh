@@ -19,7 +19,8 @@ import "DPI-C" function int otbn_has_loop_warps(chandle memutil);
 import "DPI-C" function int otbn_model_edn_flush(chandle model);
 
 import "DPI-C" function int otbn_model_edn_rnd_step(chandle model,
-                                                    logic [31:0] edn_rnd_data);
+                                                    logic [31:0] edn_rnd_data,
+                                                    bit fips_err);
 
 import "DPI-C" function int otbn_model_edn_urnd_step(chandle model,
                                                      logic [31:0] edn_urnd_data);

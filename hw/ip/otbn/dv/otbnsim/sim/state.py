@@ -139,10 +139,10 @@ class OTBNState:
         self._pc_next_override = next_pc
 
     def edn_urnd_step(self, urnd_data: int) -> None:
-        self._urnd_client.take_word(urnd_data)
+        self._urnd_client.take_word(urnd_data, False)
 
-    def edn_rnd_step(self, rnd_data: int) -> None:
-        self.ext_regs.rnd_take_word(rnd_data)
+    def edn_rnd_step(self, rnd_data: int, fips_err: bool) -> None:
+        self.ext_regs.rnd_take_word(rnd_data, fips_err)
 
     def edn_flush(self) -> None:
         self.ext_regs.rnd_reset()
@@ -153,12 +153,12 @@ class OTBNState:
         # Set the RND WSR with the value, assuming the cache hadn't been
         # poisoned. This will be committed at the end of the next step on the
         # main clock.
-        rnd_val = self.ext_regs.rnd_cdc_complete()
+        rnd_val, fips_err, rep_err = self.ext_regs.rnd_cdc_complete()
         if rnd_val is not None:
-            self.wsrs.RND.set_unsigned(rnd_val)
+            self.wsrs.RND.set_unsigned(rnd_val, fips_err, rep_err)
 
     def urnd_completed(self) -> None:
-        w256, retry = self._urnd_client.cdc_complete()
+        w256, retry, _, _ = self._urnd_client.cdc_complete()
         # The URND client should never be poisoned
         assert w256 is not None and retry is False
 

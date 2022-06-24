@@ -32,6 +32,11 @@ class EdnClient:
         # discard the next transaction that completes, we should re-try it.
         self._retry = False
 
+        self._fips_err = False
+        self._rep_err = False
+
+        self._last_word = None  # type: Optional[int]
+
     def request(self) -> None:
         '''Start a request if there isn't one pending'''
         if self._acc is None:
@@ -47,6 +52,8 @@ class EdnClient:
         if self._acc is not None:
             self._poisoned = True
             self._retry = False
+            self._fips_err = False
+            self._rep_err = False
 
     def forget(self) -> None:
         '''Clear the retry flag, if set.
@@ -61,22 +68,27 @@ class EdnClient:
         '''
         self._retry = False
 
-    def take_word(self, word: int) -> None:
-        '''
-        Take a 32-bit data word, which we requested.
-
-        If there is a reset in between an EDN transaction, request flag will
-        drop. In that case, incoming word will be ignored. Otherwise, append
-        it to the internal `_acc` list.
-        '''
+    def take_word(self, word: int, fips_err: bool) -> None:
+        '''Take a 32-bit data word that we've been waiting for'''
         assert 0 <= word < (1 << 32)
+        assert self._acc is not None
+        assert len(self._acc) < ACC_LEN
+        assert self._cdc_counter is None
 
         if self._acc is None:
             return
         else:
             assert len(self._acc) < ACC_LEN
             assert self._cdc_counter is None
+            # Set the FIPS error for each received word.
+            self._fips_err = fips_err | self._fips_err
+
+            # If the length of accumulated words is nonzero we check for
+            # repetition between accumulated and received
+            self._rep_err = (self._last_word == word) | self._rep_err
+
             self._acc.append(word)
+            self._last_word = word
             if len(self._acc) == ACC_LEN:
                 self._cdc_counter = 0
 
@@ -86,8 +98,11 @@ class EdnClient:
         self._cdc_counter = None
         self._poisoned = False
         self._retry = False
+        self._fips_err = False
+        self._rep_err = False
+        self._last_word = None
 
-    def cdc_complete(self) -> Tuple[Optional[int], bool]:
+    def cdc_complete(self) -> Tuple[Optional[int], bool, bool, bool]:
         '''Called when CDC completes for a transfer
 
         This returns a pair (data, retry). In normal operation (where the
@@ -108,23 +123,29 @@ class EdnClient:
 
         if poisoned:
             data = None
+            fips_err = False
+            rep_err = False
         else:
             # Assemble the ACC_LEN words into a single integer "little-endian"
             # (so the first word that came in is the bottom 32 bits).
             data = 0
             for word in reversed(self._acc):
                 data = (data << 32) | word
+            fips_err = self._fips_err
+            rep_err = self._rep_err
 
         self._acc = None
         self._cdc_counter = None
         self._poisoned = False
         self._retry = False
+        self._fips_err = False
+        self._rep_err = False
 
         if retry:
             assert poisoned
             self.request()
 
-        return (data, retry)
+        return (data, retry, fips_err, rep_err)
 
     def step(self) -> None:
         '''Called on each main clock cycle. Increment and check CDC counter'''
