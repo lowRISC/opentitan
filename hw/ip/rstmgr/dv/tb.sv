@@ -130,6 +130,8 @@ module tb;
 
     uvm_config_db#(virtual pwrmgr_rstmgr_sva_if)::set(null, "*.env", "pwrmgr_rstmgr_sva_vif",
                                                       dut.pwrmgr_rstmgr_sva_if);
+    uvm_config_db#(virtual rstmgr_cascading_sva_if)::set(null, "*.env", "rstmgr_cascading_sva_vif",
+                                                      dut.rstmgr_cascading_sva_if);
     uvm_config_db#(virtual rstmgr_if)::set(null, "*.env", "rstmgr_vif", rstmgr_if);
 
     $timeformat(-12, 0, " ps", 12);
