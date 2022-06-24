@@ -221,8 +221,15 @@ static void execute_test(int wakeup_source) {
   kTestWakeupSources[wakeup_source].config(
       kTestWakeupSources[wakeup_source].dif_handle);
   // Issuing deep sleep.
+  dif_pwrmgr_domain_config_t cfg;
+  CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
+  // Tun off core clock and main power
+  cfg = cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
+               kDifPwrmgrDomainOptionUsbClockInLowPower |
+               kDifPwrmgrDomainOptionUsbClockInActivePower);
+
   pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kTestWakeupSources[wakeup_source].wakeup_src, 0);
+      &pwrmgr, kTestWakeupSources[wakeup_source].wakeup_src, cfg);
   LOG_INFO("Issue WFI to enter sleep %d", wakeup_source);
   wait_for_interrupt();
 }
@@ -301,6 +308,8 @@ bool test_main(void) {
                  kTestWakeupSources[PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX]
                      .wakeup_src)) {
     LOG_INFO("Woke up by source %d", PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX);
+
+    // Turn off wake up.
     usbdev_set_wake_module_active(false);
     CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
     delay_n_clear(30);
