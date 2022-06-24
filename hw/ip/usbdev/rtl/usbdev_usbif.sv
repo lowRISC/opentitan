@@ -207,7 +207,7 @@ module usbdev_usbif  #(
       out_max_minus1,
       av_rdata_i
   };
-  assign rx_wvalid_o = out_ep_acked & ~all_out_blocked;
+  assign rx_wvalid_o = out_ep_acked;
   // Pop the available fifo after the write that used the previous value
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
