@@ -905,6 +905,17 @@ module spi_device
     .clk_o(rst_rxfifo_n)
   );
 
+  logic tpm_rst_n;
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_tpm_csb_rst_scan_mux (
+    .clk0_i (rst_ni & ~cio_tpm_csb_i),
+    .clk1_i (scan_rst_ni),
+    .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode[TpmRstSel])),
+    .clk_o  (tpm_rst_n)
+  );
+
   // SRAM clock
   // If FwMode, SRAM clock for B port uses peripheral clock (clk_i)
   // If FlashMode or PassThrough, SRAM clock for B port uses SPI_CLK
@@ -977,7 +988,6 @@ module spi_device
   ) u_csb_edge_sysclk (
     .clk_i,
     .rst_ni,
-
     .d_i      (sys_csb      ),
     .q_sync_o (sys_csb_syncd),
 
@@ -1002,6 +1012,51 @@ module spi_device
     .q_posedge_pulse_o (                      ),
     .q_negedge_pulse_o (sck_csb_asserted_pulse)
   );
+
+  /////////
+  // CDC //
+  /////////
+
+  logic csb_rst_pulse_spi_clk;
+  logic csb_rst_toggle_spi_clk;
+  logic clk_csb_pos_pulse_stretch;
+  logic clk_csb_combine_pulse;
+
+  // spi_clk csb_rst_asserted_pulse
+  prim_edge_detector #(
+    .Width      (1),
+    .ResetValue (1'b 1),
+    .EnSync     (1'b 1)
+  ) u_sck_csb_edge (
+    .clk_i             (clk_spi_in_buf),
+    .rst_ni            (tpm_rst_n),
+    .d_i               (1'b0), // tpm_rst_n has CSb assertion
+    .q_sync_o          (),
+    .q_posedge_pulse_o (),
+    .q_negedge_pulse_o (csb_rst_pulse_spi_clk)
+  );
+
+  always_ff @(posedge clk_spi_in_buf or negedge tpm_rst_n) begin
+    if (!tpm_rst_n) csb_rst_toggle_spi_clk <= 1'b0;
+    else if (csb_rst_pulse_spi_clk)
+      csb_rst_toggle_spi_clk <= !csb_rst_toggle_spi_clk;
+  end
+
+  // sys_clk csb_rst_asserted_pulse with pulse stretch
+  prim_edge_detector #(
+    .Width      (1),
+    .ResetValue (1'b 0),
+    .EnSync     (1'b 1)
+  ) u_clk_csb_edge_0 (
+    .clk_i             (clk_i),
+    .rst_ni            (rst_ni),
+    .d_i               (csb_rst_toggle_spi_clk), // tpm_rst_n has CSb assertion
+    .q_sync_o          (),
+    .q_posedge_pulse_o (clk_csb_pos_pulse_stretch),
+    .q_negedge_pulse_o ()
+  );
+
+  assign clk_csb_combine_pulse = csb_rst_toggle_spi_clk;
 
   //////////////////////////////
   // SPI_DEVICE mode selector //
@@ -1703,6 +1758,7 @@ module spi_device
 
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
+    .rst_n (tpm_rst_n),
 
     .scan_rst_ni,
     .scanmode_i  (scanmode[TpmRstSel]),
@@ -1713,7 +1769,8 @@ module spi_device
     .miso_en_o (tpm_miso_en  ),
 
     .tpm_cap_o (tpm_cap),
-
+    .csb_pulse_stretch          (clk_csb_pos_pulse_stretch),
+    .csb_pulse                  (clk_csb_combine_pulse   ),
     .cfg_tpm_en_i               (cfg_tpm_en              ),
     .cfg_tpm_mode_i             (cfg_tpm_mode            ),
     .cfg_tpm_hw_reg_dis_i       (cfg_tpm_hw_reg_dis      ),
