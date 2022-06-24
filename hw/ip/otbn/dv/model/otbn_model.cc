@@ -280,13 +280,15 @@ int OtbnModel::edn_flush() {
   return 0;
 }
 
-int OtbnModel::edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */) {
+int OtbnModel::edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */,
+                            unsigned char fips_err) {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
     return -1;
 
+  assert(fips_err == 0 || fips_err == 1);
   try {
-    iss->edn_rnd_step(edn_rnd_data->aval);
+    iss->edn_rnd_step(edn_rnd_data->aval, fips_err != 0);
   } catch (const std::runtime_error &err) {
     std::cerr << "Error when stepping EDN for RND: " << err.what() << "\n";
     return -1;
@@ -818,9 +820,10 @@ int otbn_model_edn_flush(OtbnModel *model) {
 }
 
 int otbn_model_edn_rnd_step(OtbnModel *model,
-                            svLogicVecVal *edn_rnd_data /* logic [31:0] */) {
+                            svLogicVecVal *edn_rnd_data /* logic [31:0] */,
+                            unsigned char fips_err) {
   assert(model && edn_rnd_data);
-  return model->edn_rnd_step(edn_rnd_data);
+  return model->edn_rnd_step(edn_rnd_data, fips_err);
 }
 
 int otbn_model_edn_urnd_step(OtbnModel *model,

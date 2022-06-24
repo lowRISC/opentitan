@@ -39,7 +39,8 @@ class OtbnModel {
   int edn_flush();
 
   // Send ISS some RND data from EDN. Returns 0 on success or -1 on error.
-  int edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+  int edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */,
+                   unsigned char fips_err);
 
   // Send ISS some URND data from EDN. Returns 0 on success or -1 on error.
   int edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */);

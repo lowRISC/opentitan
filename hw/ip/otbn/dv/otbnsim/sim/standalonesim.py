@@ -6,7 +6,7 @@ from typing import Optional, TextIO
 from .sim import OTBNSim
 
 _TEST_RND_DATA = \
-    0x99999999_99999999_99999999_99999999_99999999_99999999_99999999_99999999
+    0xAAAAAAAA_99999999_AAAAAAAA_99999999_AAAAAAAA_99999999_AAAAAAAA_99999999
 
 # This is the default seed for URND PRNG. Note that the actualy URND value will
 # be random since we are modelling PRNG inside the URND register model.
@@ -30,7 +30,7 @@ class StandaloneSim(OTBNSim):
         while self.state.executing():
             # If there's a RND request, respond immediately
             if self.state.ext_regs.read('RND_REQ', True):
-                self.state.wsrs.RND.set_unsigned(_TEST_RND_DATA)
+                self.state.wsrs.RND.set_unsigned(_TEST_RND_DATA, False, False)
 
             self.step(verbose)
             insn_count += 1

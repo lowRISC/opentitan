@@ -235,6 +235,11 @@ class OTBNSim:
             except StopIteration:
                 self._execute_generator = None
 
+        if (self.state.wsrs.RND.rep_err_escalate):
+            self.state.stop_at_end_of_cycle(ErrBits.RND_REP_CHK_FAIL)
+        if (self.state.wsrs.RND.fips_err_escalate):
+            self.state.stop_at_end_of_cycle(ErrBits.RND_FIPS_CHK_FAIL)
+
         # Handle any pending injected error. Note that this has to run after
         # we've executed any instruction, to ensure we get a trace entry for
         # that instruction before it gets shot down.

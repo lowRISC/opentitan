@@ -410,9 +410,10 @@ void ISSWrapper::edn_urnd_cdc_done() {
 
 void ISSWrapper::edn_flush() { run_command("edn_flush\n", nullptr); }
 
-void ISSWrapper::edn_rnd_step(uint32_t edn_rnd_data) {
+void ISSWrapper::edn_rnd_step(uint32_t edn_rnd_data, bool fips_err) {
   std::ostringstream oss;
-  oss << "edn_rnd_step " << std::hex << "0x" << edn_rnd_data << "\n";
+  oss << "edn_rnd_step " << std::hex << "0x" << edn_rnd_data;
+  oss << " " << fips_err << "\n";
   run_command(oss.str(), nullptr);
 }
 

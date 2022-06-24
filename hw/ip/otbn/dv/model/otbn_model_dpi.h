@@ -33,7 +33,8 @@ int otbn_model_edn_flush(OtbnModel *model);
 
 // Call edn_rnd_step function of OtbnModel. Returns 0 on success; -1 on error.
 int otbn_model_edn_rnd_step(OtbnModel *model,
-                            svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+                            svLogicVecVal *edn_rnd_data /* logic [31:0] */,
+                            unsigned char fips_err);
 
 // Call edn_urnd_step function of OtbnModel. Returns 0 on success; -1 on error.
 int otbn_model_edn_urnd_step(OtbnModel *model,

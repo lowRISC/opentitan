@@ -149,7 +149,8 @@ module otbn_core_model
       failed_edn_flush <= (otbn_model_edn_flush(model_handle) != 0);
     end else begin
       if (edn_rnd_i.edn_ack) begin
-        failed_rnd_step <= (otbn_model_edn_rnd_step(model_handle, edn_rnd_i.edn_bus) != 0);
+        failed_rnd_step <= (otbn_model_edn_rnd_step(model_handle, edn_rnd_i.edn_bus,
+                                                    ~edn_rnd_i.edn_fips) != 0);
       end
       if (edn_urnd_i.edn_ack) begin
         failed_urnd_step <= (otbn_model_edn_urnd_step(model_handle, edn_urnd_i.edn_bus) != 0);
@@ -287,7 +288,7 @@ module otbn_core_model
   // Assertion to ensure that keymgr key values are never unknown if valid is high.
   `ASSERT_KNOWN_IF(KeyIsKnownChk_A, {keymgr_key_i.key[0], keymgr_key_i.key[1]}, keymgr_key_i.valid)
   assign unused_raw_err_bits = ^raw_err_bits_q[31:$bits(err_bits_t)];
-  assign unused_edn_rsp_fips = edn_rnd_i.edn_fips & edn_urnd_i.edn_fips;
+  assign unused_edn_rsp_fips = edn_urnd_i.edn_fips;
 
   assign err_bits_o = raw_err_bits_q[$bits(err_bits_t)-1:0];
 

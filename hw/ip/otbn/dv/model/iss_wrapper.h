@@ -82,7 +82,7 @@ struct ISSWrapper {
   // Provide data for RND. ISS will stall when RND is read and RND data isn't
   // available. RND data is available only when 8 32b packages are sent and
   // also RTL signals CDC is done.
-  void edn_rnd_step(uint32_t edn_rnd_data);
+  void edn_rnd_step(uint32_t edn_rnd_data, bool fips_err);
 
   // Provide data for URND seed. ISS will stall until reseeding of URND is
   // complete. URND seed data is available only when 8 32b packages are sent and

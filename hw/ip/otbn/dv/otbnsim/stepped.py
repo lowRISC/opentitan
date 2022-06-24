@@ -290,9 +290,10 @@ def on_reset(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 
 def on_edn_rnd_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    check_arg_count('edn_rnd_step', 1, args)
+    check_arg_count('edn_rnd_step', 2, args)
     edn_rnd_data = read_word('edn_rnd_step', args[0], 32)
-    sim.state.edn_rnd_step(edn_rnd_data)
+    fips_err = read_word('fips_err', args[1], 1)
+    sim.state.edn_rnd_step(edn_rnd_data, bool(fips_err))
     return None
 
 

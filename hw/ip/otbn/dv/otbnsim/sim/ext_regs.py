@@ -213,20 +213,20 @@ class RndReq(RGReg):
         # Also clear the request flag
         self.write(0, True)
 
-    def take_word(self, word: int) -> None:
-        self._client.take_word(word)
+    def take_word(self, word: int, fips_err: bool) -> None:
+        self._client.take_word(word, fips_err)
 
     def edn_reset(self) -> None:
         self._client.edn_reset()
 
-    def cdc_complete(self) -> Tuple[Optional[int], bool]:
+    def cdc_complete(self) -> Tuple[Optional[int], bool, bool, bool]:
         '''Clear the flag and return the data that we've read from EDN.
 
         Returns the same value as EdnClient.cdc_complete().'''
-        (data, retry) = self._client.cdc_complete()
+        (data, retry, fips_err, rep_err) = self._client.cdc_complete()
         if not retry:
             self.write(0, True)
-        return (data, retry)
+        return (data, retry, fips_err, rep_err)
 
     def step(self) -> None:
         '''Called on each main clock cycle. Step the client'''
@@ -343,18 +343,18 @@ class OTBNExtRegs:
         if self._rnd_req.request():
             self._dirty = 2
 
-    def rnd_take_word(self, word: int) -> None:
-        self._rnd_req.take_word(word)
+    def rnd_take_word(self, word: int, fips_err: bool) -> None:
+        self._rnd_req.take_word(word, fips_err)
 
     def rnd_reset(self) -> None:
         self._rnd_req.edn_reset()
         self._dirty = 2
 
-    def rnd_cdc_complete(self) -> Optional[int]:
-        (data, retry) = self._rnd_req.cdc_complete()
+    def rnd_cdc_complete(self) -> Tuple[Optional[int], bool, bool]:
+        (data, retry, fips_err, rep_err) = self._rnd_req.cdc_complete()
         if not retry:
             self._dirty = 2
-        return data
+        return (data, fips_err, rep_err)
 
     def rnd_poison(self) -> None:
         self._rnd_req.poison()

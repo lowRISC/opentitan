@@ -125,13 +125,23 @@ class RandWSR(WSR):
         self._pending_request = False
         self._next_pending_request = False
 
+        self._fips_err = False
+        self.fips_err_escalate = False
+
+        self._rep_err = False
+        self.rep_err_escalate = False
+
     def read_unsigned(self) -> int:
         assert self._random_value is not None
         self._next_random_value = None
+        self.rep_err_escalate = self._rep_err
+        self.fips_err_escalate = self._fips_err
         return self._random_value
 
     def read_u32(self) -> int:
         '''Read a 32-bit unsigned result'''
+        self.rep_err_escalate = self._rep_err
+        self.fips_err_escalate = self._fips_err
         return self.read_unsigned() & ((1 << 32) - 1)
 
     def write_unsigned(self, value: int) -> None:
@@ -145,6 +155,8 @@ class RandWSR(WSR):
     def on_start(self) -> None:
         self._next_random_value = None
         self._next_pending_request = False
+        self.fips_err_escalate = False
+        self.rep_err_escalate = False
 
     def commit(self) -> None:
         self._random_value = self._next_random_value
@@ -159,7 +171,7 @@ class RandWSR(WSR):
             self._ext_regs.rnd_request()
         return False
 
-    def set_unsigned(self, value: int) -> None:
+    def set_unsigned(self, value: int, fips_err: bool, rep_err: bool) -> None:
         '''Sets a random value that can be read by a future `read_unsigned`
 
         This is different to `write_unsigned`, that is used by an executing
@@ -170,6 +182,10 @@ class RandWSR(WSR):
         one is seen on the EDN bus).
         '''
         assert 0 <= value < (1 << 256)
+        self._fips_err = fips_err
+        self._rep_err = rep_err
+        self.fips_err_escalate = False
+        self.rep_err_escalate = False
         self._next_random_value = value
         self._next_pending_request = False
 
