@@ -34,7 +34,7 @@ cc_test(
     deps = [
         ":bitfield",
         ":math_builtins",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -50,7 +50,7 @@ cc_test(
     srcs = ["math_unittest.cc"],
     deps = [
         ":math",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -96,7 +96,7 @@ cc_test(
     ],
     deps = [
         ":hardened",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -125,7 +125,7 @@ cc_test(
     deps = [
         ":hardened_memory",
         ":random_order",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -149,7 +149,7 @@ dual_cc_library(
     deps = dual_inputs(
         host = [
             "//sw/device/lib/base/testing:global_mock",
-            "@googletest//:gtest",
+            "@com_google_googletest//:gtest",
         ],
         shared = [
             ":macros",
@@ -163,7 +163,7 @@ cc_test(
     srcs = ["//sw/device/silicon_creator/lib/base:mock_csr_test.cc"],
     deps = [
         ":csr",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -194,7 +194,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         host = [
-            "@googletest//:gtest",
+            "@com_google_googletest//:gtest",
         ],
         shared = [
             ":bitfield",
@@ -209,7 +209,7 @@ cc_test(
     srcs = ["//sw/device/lib/base/testing:mock_mmio_test.cc"],
     deps = [
         ":mmio",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -231,7 +231,7 @@ dual_cc_library(
     deps = dual_inputs(
         host = [
             "//sw/device/lib/base/testing:global_mock",
-            "@googletest//:gtest",
+            "@com_google_googletest//:gtest",
         ],
         shared = [
             ":mmio",

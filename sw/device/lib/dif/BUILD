@@ -20,7 +20,7 @@ cc_library(
     hdrs = ["dif_test_base.h"],
     deps = [
         ":base",
-        "@googletest//:gtest",
+        "@com_google_googletest//:gtest",
     ],
 )
 
@@ -54,7 +54,7 @@ cc_test(
     deps = [
         ":adc_ctrl",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -88,7 +88,7 @@ cc_test(
     deps = [
         ":aes",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -122,7 +122,7 @@ cc_test(
     deps = [
         ":alert_handler",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -156,7 +156,7 @@ cc_test(
     deps = [
         ":aon_timer",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -188,7 +188,7 @@ cc_test(
     deps = [
         ":clkmgr",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -243,7 +243,7 @@ cc_test(
     deps = [
         ":csrng",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -278,7 +278,7 @@ cc_test(
     deps = [
         ":edn",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -312,7 +312,7 @@ cc_test(
     deps = [
         ":entropy_src",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -344,7 +344,7 @@ cc_test(
     deps = [
         ":flash_ctrl",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -378,7 +378,7 @@ cc_test(
     deps = [
         ":gpio",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -412,7 +412,7 @@ cc_test(
     deps = [
         ":hmac",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -446,7 +446,7 @@ cc_test(
     deps = [
         ":i2c",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -480,7 +480,7 @@ cc_test(
     deps = [
         ":keymgr",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -514,7 +514,7 @@ cc_test(
     deps = [
         ":kmac",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -548,7 +548,7 @@ cc_test(
     deps = [
         ":lc_ctrl",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -582,7 +582,7 @@ cc_test(
     deps = [
         ":otbn",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -616,7 +616,7 @@ cc_test(
     deps = [
         ":otp_ctrl",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -650,7 +650,7 @@ cc_test(
     deps = [
         ":pattgen",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -684,7 +684,7 @@ cc_test(
     deps = [
         ":pinmux",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -717,7 +717,7 @@ cc_test(
     deps = [
         ":pwm",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -751,7 +751,7 @@ cc_test(
     deps = [
         ":pwrmgr",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -784,7 +784,7 @@ cc_test(
     deps = [
         ":rom_ctrl",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -818,7 +818,7 @@ cc_test(
     deps = [
         ":rstmgr",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -849,7 +849,7 @@ cc_test(
     deps = [
         ":rv_core_ibex",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -883,7 +883,7 @@ cc_test(
     deps = [
         ":rv_plic",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -918,7 +918,7 @@ cc_test(
     deps = [
         ":rv_timer",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -952,7 +952,7 @@ cc_test(
     deps = [
         ":spi_device",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -987,7 +987,7 @@ cc_test(
         ":spi_host",
         ":test_base",
         "//sw/device/lib/base/testing:global_mock",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -1021,7 +1021,7 @@ cc_test(
     deps = [
         ":sram_ctrl",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -1053,7 +1053,7 @@ cc_test(
     deps = [
         ":sensor_ctrl",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -1087,7 +1087,7 @@ cc_test(
     deps = [
         ":sysrst_ctrl",
         ":test_base",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -1120,7 +1120,7 @@ cc_test(
     deps = [
         ":test_base",
         ":uart",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -1154,6 +1154,6 @@ cc_test(
     deps = [
         ":test_base",
         ":usbdev",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )

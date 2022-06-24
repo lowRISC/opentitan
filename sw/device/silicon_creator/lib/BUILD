@@ -29,7 +29,7 @@ dual_cc_library(
         host = [
             "//sw/device/lib/base/testing:global_mock",
             "//sw/device/silicon_creator/testing:mask_rom_test",
-            "@googletest//:gtest",
+            "@com_google_googletest//:gtest",
         ],
         shared = [
             ":error",
@@ -87,7 +87,7 @@ cc_test(
     deps = [
         ":epmp",
         "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -118,7 +118,7 @@ cc_test(
     srcs = ["error_unittest.cc"],
     deps = [
         ":error",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -174,7 +174,7 @@ cc_test(
         ":error",
         ":rom_print",
         "//sw/device/silicon_creator/lib/drivers:uart",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -200,7 +200,7 @@ dual_cc_library(
         host = [
             "//sw/device/lib/base/testing:global_mock",
             "//sw/device/silicon_creator/testing:mask_rom_test",
-            "@googletest//:gtest",
+            "@com_google_googletest//:gtest",
         ],
         shared = [
             ":epmp",
@@ -236,7 +236,7 @@ cc_test(
         dual_cc_device_library_of(":manifest"),
         "//sw/device/lib/base:csr",
         "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -273,7 +273,7 @@ dual_cc_library(
         host = [
             "//sw/device/lib/base/testing:global_mock",
             "//sw/device/silicon_creator/testing:mask_rom_test",
-            "@googletest//:gtest",
+            "@com_google_googletest//:gtest",
         ],
         shared = [
             ":error",
@@ -309,7 +309,7 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":shutdown"),
         "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 

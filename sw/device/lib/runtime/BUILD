@@ -98,6 +98,6 @@ cc_test(
     srcs = ["print_unittest.cc"],
     deps = [
         ":print",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )

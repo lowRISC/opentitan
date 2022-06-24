@@ -15,7 +15,7 @@ cc_test(
     srcs = ["prng_unittest.cc"],
     deps = [
         ":prng",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 

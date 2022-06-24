@@ -32,7 +32,7 @@ dual_cc_library(
         host = [
             "//sw/device/lib/base/testing:global_mock",
             "//sw/device/silicon_creator/testing:mask_rom_test",
-            "@googletest//:gtest",
+            "@com_google_googletest//:gtest",
         ],
         shared = [
             "//sw/device/lib/base:macros",
@@ -62,7 +62,7 @@ cc_test(
     deps = [
         ":rom_ext_boot_policy",
         "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 

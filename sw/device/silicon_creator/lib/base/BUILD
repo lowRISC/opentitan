@@ -28,7 +28,7 @@ dual_cc_library(
         host = [
             "//sw/device/lib/base/testing:global_mock",
             "//sw/device/silicon_creator/testing:mask_rom_test",
-            "@googletest//:gtest",
+            "@com_google_googletest//:gtest",
         ],
         shared = [
             "//sw/device/lib/base:mmio",
@@ -46,7 +46,7 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":sec_mmio"),
         "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
