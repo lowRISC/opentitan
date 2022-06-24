@@ -90,25 +90,6 @@ class BazelAqueryAction:
         self.arguments = action.get('arguments', None)
         self.input_dep_set_ids = action.get('inputDepSetIds', [])
 
-    def hackily_hardcode_googletest_includes(self):
-        """Add the include paths for googletest (gtest and gmock) to `self.arguments`."""
-        if not self.arguments[0].endswith('gcc'):
-            return
-
-        new_args = []
-        did_insert = False
-        for arg in self.arguments:
-            if arg.startswith('-iquote') and not did_insert:
-                new_args.extend([
-                    '-iquote',
-                    'bazel-opentitan/external/googletest/googletest/include',
-                    '-iquote',
-                    'bazel-opentitan/external/googletest/googlemock/include'
-                ])
-                did_insert = True
-            new_args.append(arg)
-        self.arguments = new_args
-
 
 def main(args):
     script_path = os.path.realpath(__file__)
@@ -132,14 +113,15 @@ def main(args):
         if action.mnemonic != 'CppCompile' or action.arguments == []:
             continue
 
-        action.hackily_hardcode_googletest_includes()
-
         for artifact in aquery_results.iter_artifacts_for_dep_sets(
                 action.input_dep_set_ids):
             compile_commands.append({
-                'directory': top_dir,
-                'arguments': action.arguments,
-                'file': artifact,
+                'directory':
+                os.path.join(top_dir, "bazel-opentitan"),
+                'arguments':
+                action.arguments,
+                'file':
+                artifact,
             })
 
     compile_commands_json = json.dumps(compile_commands,

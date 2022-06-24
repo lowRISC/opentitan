@@ -4,56 +4,40 @@
 
 import unittest
 
-from generate_compilation_db import BazelAqueryResults, BazelAqueryAction
+from generate_compilation_db import BazelAqueryAction, BazelAqueryResults
 
 
 class TestGenerateCompilationDb(unittest.TestCase):
+
     def test_bazel_aquery_results(self):
         results = BazelAqueryResults(BAZEL_AQUERY_RESULTS_SMALL)
 
         # There should be a single "CppCompile" action.
-        matching_actions = [a for a in results.actions if a.mnemonic == 'CppCompile']
+        matching_actions = [
+            a for a in results.actions if a.mnemonic == 'CppCompile'
+        ]
         self.assertEqual(len(matching_actions), 1)
         action = matching_actions[0]
 
-        self.assertEqual(action.arguments,
-                         ['/usr/bin/gcc', '-Wall', '-iquote', '.', '-isystem',
-                          'external/googletest/googlemock',
-                          '-fno-canonical-system-headers', '-c',
-                          'sw/device/lib/crypto/otbn_util.c', '-o',
-                          'bazel-out/k8-fastbuild/bin/sw/device/' +
-                          'lib/crypto/_objs/otbn_util/otbn_util.pic.o'])
+        self.assertEqual(action.arguments, [
+            '/usr/bin/gcc', '-Wall', '-iquote', '.', '-isystem',
+            'external/googletest/googlemock', '-fno-canonical-system-headers',
+            '-c', 'sw/device/lib/crypto/otbn_util.c', '-o',
+            'bazel-out/k8-fastbuild/bin/sw/device/' +
+            'lib/crypto/_objs/otbn_util/otbn_util.pic.o'
+        ])
         self.assertEqual(action.input_dep_set_ids, [2])
 
-        self.assertEqual(results.reconstruct_path(6), 'sw/device/lib/crypto/otbn_util.h')
+        self.assertEqual(results.reconstruct_path(6),
+                         'sw/device/lib/crypto/otbn_util.h')
 
         self.assertEqual(list(results.iter_artifacts_for_dep_sets([2])), [
             'bazel-out/k8-fastbuild/internal/_middlemen/' +
             '_S_Ssw_Sdevice_Slib_Scrypto_Cotbn_Uutil-BazelCppSemantics_build_arch_k8-fastbuild',
             'external/local_config_cc/builtin_include_directory_paths',
             'sw/device/lib/crypto/otbn_util.c',
-            'external/bazel_tools/tools/cpp/grep-includes.sh'])
-
-
-class TestBazelAqueryAction(unittest.TestCase):
-    args_after_compiler = ['-o', 'out', 'src.c', '-iquote', 'include-path',
-                           'some-other-arg']
-
-    def test_not_gcc(self):
-        args_not_gcc = ['cc'] + self.args_after_compiler
-        action = BazelAqueryAction({'arguments': args_not_gcc})
-        action.hackily_hardcode_googletest_includes()
-        self.assertEqual(action.arguments, args_not_gcc)
-
-    def test_simple(self):
-        args_with_gcc = ['gcc'] + self.args_after_compiler
-        action = BazelAqueryAction({'arguments': args_with_gcc})
-        action.hackily_hardcode_googletest_includes()
-        self.assertEqual(action.arguments,
-                         ['gcc', '-o', 'out', 'src.c',
-                          '-iquote', 'bazel-opentitan/external/googletest/googletest/include',
-                          '-iquote', 'bazel-opentitan/external/googletest/googlemock/include',
-                          '-iquote', 'include-path', 'some-other-arg'])
+            'external/bazel_tools/tools/cpp/grep-includes.sh'
+        ])
 
 
 # A pared-down example of Bazel aquery output. Generated with `./bazelisk.sh
