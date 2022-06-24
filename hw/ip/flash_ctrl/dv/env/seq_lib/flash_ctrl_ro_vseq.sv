@@ -10,16 +10,36 @@ class flash_ctrl_ro_vseq extends flash_ctrl_otf_vseq;
   `uvm_object_new
 
   virtual task body();
-    flash_op_t swcmd;
+    flash_op_t ctrl, host;
     int num, bank;
-    swcmd.partition  = FlashPartData;
+    int host_num, host_bank;
+    data_4s_t rdata;
+    bit [OTFHostId:0] end_addr;
+    ctrl.partition  = FlashPartData;
 
-    repeat(100) begin
-      num = $urandom_range(1, 32);
-       bank = $urandom_range(0, 2);
+    `JDBG(("TEST START"))
+     cfg.clk_rst_vif.wait_clks(5);
 
-      read_flash(swcmd, 0, num);
-    end
+    fork
+      begin
+        repeat(100) begin
+          host.otf_addr[OTFHostId-1:0] = $urandom();
+          host.otf_addr[1:0] = 'h0;
+          host_num = $urandom_range(1,128);
+          host_bank = 1;//$urandom_range(0,1);
+          otf_direct_read(host.otf_addr, host_bank, host_num);
+        end
+        csr_utils_pkg::wait_no_outstanding_access();
+      end
+      begin
+        repeat(1) begin // 14
+          num = $urandom_range(1, 32);
+          bank = $urandom_range(0, 1);
+          read_flash(ctrl, bank, num);
+        end
+      end
+    join
+
   endtask
 
 endclass // flash_ctrl_ro_vseq

@@ -7,20 +7,24 @@ class flash_otf_item extends uvm_object;
   flash_op_t cmd;
   data_q_t   dq;
   fdata_q_t  raw_fq, fq;
-   bit[flash_ctrl_pkg::BusAddrByteW-1:0] start_addr;
-
-  bit[flash_phy_pkg::KeySize-1:0] addr_key, data_key;
+  bit[flash_ctrl_pkg::BusAddrByteW-1:0] start_addr;
+  bit[flash_phy_pkg::KeySize-1:0]      addr_key, data_key;
+  bit                                  is_direct = 0;
   function new(string name = "flash_otf_item");
     super.new(name);
   endfunction // new
 
   virtual function void print(string name = "flash_otf_item");
-    `dv_info($sformatf("partition : %s", cmd.partition.name()), UVM_MEDIUM, name)
-    `dv_info($sformatf("erase_type: %s", cmd.erase_type.name()), UVM_MEDIUM, name)
-    `dv_info($sformatf("op        : %s", cmd.op.name()), UVM_MEDIUM, name)
-    `dv_info($sformatf("prog_sel  : %s", cmd.prog_sel.name()), UVM_MEDIUM, name)
-    `dv_info($sformatf("num_words : %0d", cmd.num_words), UVM_MEDIUM, name)
-    `dv_info($sformatf("s_addr    : 0x%x", start_addr), UVM_MEDIUM, name)
+    if (is_direct) begin
+      `dv_info($sformatf("host_addr : 0x%x", start_addr), UVM_MEDIUM, name)
+    end else begin
+      `dv_info($sformatf("partition : %s", cmd.partition.name()), UVM_MEDIUM, name)
+      `dv_info($sformatf("erase_type: %s", cmd.erase_type.name()), UVM_MEDIUM, name)
+      `dv_info($sformatf("op        : %s", cmd.op.name()), UVM_MEDIUM, name)
+      `dv_info($sformatf("prog_sel  : %s", cmd.prog_sel.name()), UVM_MEDIUM, name)
+      `dv_info($sformatf("num_words : %0d", cmd.num_words), UVM_MEDIUM, name)
+      `dv_info($sformatf("s_addr    : 0x%x", start_addr), UVM_MEDIUM, name)
+    end
     if (dq.size() > 0) begin
       flash_otf_print_data64(dq, name);
     end else begin // read

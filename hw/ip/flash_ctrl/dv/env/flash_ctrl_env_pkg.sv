@@ -233,6 +233,10 @@ package flash_ctrl_env_pkg;
   // Taken from enum type lcmgr_state_e in flash_ctrl_lcmgr.sv
   parameter uint RMA_FSM_STATE_ST_RMA_RSP = 11'b10110001010;
 
+  // Indicate host read
+  parameter int unsigned OTFBankId = flash_ctrl_pkg::BusAddrByteW - 1; // bit19
+  parameter int unsigned OTFHostId = OTFBankId - 1; // bit 18
+
   // functions
   // Add below for the temporary until PR12492 is merged.
   // Will be removed after.

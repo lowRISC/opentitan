@@ -46,6 +46,8 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
           fork begin
             forever begin
               @cfg.vif.cb;
+	       #0.1ns;
+	       
               if (cfg.vif.rsp[j].ack) begin
                 if (~cfg.vif.req[j].rd_req & ~cfg.vif.req[j].prog_req) begin
                   // do nothing
@@ -54,7 +56,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
                 end else if (~cfg.vif.req[j].rd_req & cfg.vif.req[j].prog_req) begin
                   collect_wr_data(j);
                 end else begin
-                  `uvm_error(`gfn, $sformatf("Both prog and rd req is set"))
+                  `uvm_error(`gfn, $sformatf("Both prog and rd req are set"))
                 end
               end
             end
@@ -78,7 +80,6 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
       w_item[bank].fq = write_buffer[bank];
       eg_rtl_port[bank].write(w_item[bank]);
 
-
 `JDBG(("MON%0d: wbuf:%0d    fq:%0d", bank,  write_buffer[bank].size(), w_item[bank].fq.size()))
 
       write_buffer[bank] = {};
@@ -87,12 +88,12 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
 
   // Collect read command and wait for rsp.done to collect read data.
   task collect_rd(int bank);
-    r_item[bank] = flash_phy_prim_item::type_id::create($sformatf("w_item[%0d]", bank));
+    r_item[bank] = flash_phy_prim_item::type_id::create($sformatf("r_item[%0d]", bank));
     r_item[bank].req = cfg.vif.req[bank];
     wait(cfg.vif.rsp[bank].done);
     r_item[bank].rsp = cfg.vif.rsp[bank];
     r_item[bank].fq.push_back(cfg.vif.rsp[bank].rdata);
-//    `JDBG(("MON%0d: rdata: %x",bank, cfg.vif.rsp[bank].rdata))
+    `JDBG(("MON%0d: rdata: %x",bank, cfg.vif.rsp[bank].rdata))
     eg_rtl_port[bank].write(r_item[bank]);
   endtask
 endclass
