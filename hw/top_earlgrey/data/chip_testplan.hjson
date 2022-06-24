@@ -1989,7 +1989,7 @@
             - Compare the results to test expectations.
             '''
       milestone: V2
-      tests: ["csrng_kat_test"]
+      tests: ["chip_sw_csrng_kat_test"]
     }
 
     // EDN (pre-verified IP) integration tests:
