@@ -791,14 +791,15 @@ This way, no alert is generated without setting an error code somewhere.
       <td><code>RND_REP_CHK_FAIL</code></td>
       <td>recoverable</td>
       <td>
-        The RND END interface returned identical random numbers on two subsequent entropy requests.
+        The random number obtained from the last read of the RND register failed the repetition check.
+        The RND EDN interface returned identical random numbers on two subsequent entropy requests.
       </td>
     </tr>
     <tr>
       <td><code>RND_FIPS_CHK_FAIL</code></td>
       <td>recoverable</td>
       <td>
-        The random numbers received via the RND EDN interface have been generated from entropy that at least partially failed the FIPS health checks in the entropy source.
+        The random number obtained from the last read of the RND register has been generated from entropy that at least partially failed the FIPS health checks in the entropy source.
       </td>
     </tr>
     <tr>
