@@ -147,17 +147,6 @@ static void prgm_pinmux_wakeup(void *dif) {
 }
 
 /**
- * Enable usb clock.
- * Whenever low power event start, usb clock needs to set
- * sw enable manually.
- */
-static void enable_usb_clock_in_active_power() {
-  dif_pwrmgr_domain_config_t cfg;
-  CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
-  cfg |= kDifPwrmgrDomainOptionUsbClockInActivePower;
-  CHECK_DIF_OK(dif_pwrmgr_set_domain_config(&pwrmgr, cfg, kDifToggleEnabled));
-}
-/**
  * usb config for test #4
  * . Fake low power entry through usb
  * . Force usb to output suspend indication
@@ -165,8 +154,6 @@ static void enable_usb_clock_in_active_power() {
  * to be called from execute_test
  */
 static void prgm_usb_wakeup(void *dif) {
-  enable_usb_clock_in_active_power();
-
   usbdev_set_wake_module_active(true);
   usbdev_force_dx_pullup(kDpSel, true);
   usbdev_force_dx_pullup(kDnSel, false);
@@ -251,9 +238,15 @@ static void execute_test(uint32_t wakeup_source) {
   kTestWakeupSources[wakeup_source].config(
       kTestWakeupSources[wakeup_source].dif_handle);
   // Normal sleep
+  dif_pwrmgr_domain_config_t cfg;
+  CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
+  cfg = cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
+               kDifPwrmgrDomainOptionUsbClockInLowPower |
+               kDifPwrmgrDomainOptionUsbClockInActivePower |
+               kDifPwrmgrDomainOptionMainPowerInLowPower);
+
   pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kTestWakeupSources[wakeup_source].wakeup_src,
-      kDifPwrmgrDomainOptionMainPowerInLowPower);
+      &pwrmgr, kTestWakeupSources[wakeup_source].wakeup_src, cfg);
   LOG_INFO("Issue WFI to enter sleep %d", wakeup_source);
   wait_for_interrupt();
 }
@@ -284,7 +277,6 @@ static void cleanup(uint32_t test_idx) {
       CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
       break;
     case PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX:
-      enable_usb_clock_in_active_power();
       usbdev_set_wake_module_active(false);
       CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
       break;

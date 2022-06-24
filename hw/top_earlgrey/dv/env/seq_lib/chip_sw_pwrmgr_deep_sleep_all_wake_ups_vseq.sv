@@ -13,21 +13,39 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task body();
+    uint                timeout_long = 10_000_000;
+    uint                timeout_short = 1_000_000;
     super.body();
 
     // Need to use hard coded string.
     // Loop with sformatf %d doesn't work
-      wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 0");
+     // Add sample number for the future reference.
+     // This is sampled from sv simulation and can be varied
+     // over test run as well as the version of design.
+     // Total run time was 21ms.
+     // @3.5ms
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 0");,
+                   "Timed out waiting for enter sleep 0", timeout_long)
       wakeup_action(0);
-      wait(cfg.sw_logger_vif.printed_log == "Woke up by source 0");
+     // @6.3ms
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Woke up by source 0");,
+                   "Timed out waiting for Woke up by source 0", timeout_long)
       release_action(0);
-      wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 1");
+     // @6.45ms
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 1");,
+                   "Timed out waiting for enter sleep 1", timeout_short)
       wakeup_action(1);
-      wait(cfg.sw_logger_vif.printed_log == "Woke up by source 1");
+     // @12.28ms
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Woke up by source 1");,
+                   "Timed out waiting for Woke up by source 1", timeout_long)
       release_action(1);
-      wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 2");
+     // @12.425
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 2");,
+                   "Timed out waiting for enter sleep 2", timeout_short)
       wakeup_action(2);
-      wait(cfg.sw_logger_vif.printed_log == "Woke up by source 2");
+     // @15.248
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Woke up by source 2");,
+                   "Timed out waiting for Woke up by source 2", timeout_long)
       release_action(2);
  endtask // body
 
