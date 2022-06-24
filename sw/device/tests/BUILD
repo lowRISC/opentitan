@@ -485,6 +485,24 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "entropy_src_kat_test",
+    srcs = ["entropy_src_kat_test.c"],
+    cw310 = cw310_params(
+        # FIXME(#13379): This test fails on the FPGA.
+        tags = ["broken"],
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "entropy_src_smoketest",
     srcs = ["entropy_src_smoketest.c"],
     cw310 = cw310_params(

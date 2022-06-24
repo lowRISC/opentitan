@@ -391,12 +391,43 @@ dif_result_t dif_entropy_src_fifo_read(const dif_entropy_src_t *entropy_src,
  *
  * @param entropy An entropy source handle.
  * @param buf A buffer to push words from into the pipeline.
- * @param len The number of words to read from `buf`.
+ * @param len The number of words to write from `buf`.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_fifo_write(const dif_entropy_src_t *entropy_src,
                                         const uint32_t *buf, size_t len);
+
+/**
+ * Starts conditioner operation.
+ *
+ * Initializes the conditioner. Use the `dif_entropy_src_fifo_write()` function
+ * to send data to the conditioner, and `dif_entropy_src_conditioner_end()` once
+ * ready to end the conditioner operation.
+ *
+ * This function is only available when firmware override mode is enabled. See
+ * `dif_entropy_src_fw_override_configure()` for more details.
+ *
+ * @param entropy_src An entropy source handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_conditioner_start(
+    const dif_entropy_src_t *entropy_src);
+
+/**
+ * Stops conditioner operation.
+ *
+ * The conditioner stops processing input data and deposits the result digest
+ * in the entropy source output buffer. This operation is only available in
+ * firmware override mode.
+ *
+ * @param entropy_src An entropy source handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_conditioner_end(
+    const dif_entropy_src_t *entropy_src);
 
 /**
  * Disables the entropy module
