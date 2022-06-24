@@ -22,10 +22,16 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
   endtask : body
 
   task leaf_rst_attack(string npath, string gpath);
-    wait(cfg.rstmgr_vif.resets_o.rst_sys_aon_n == 2'h3);
+    // Wait for any bit in rst_sys_aon_n to become inactive.
+    wait(|cfg.rstmgr_vif.resets_o.rst_sys_aon_n);
+    // Disable cascading reset assertions, since forcing related signals causes failures.
+    cfg.rstmgr_cascading_sva_vif.disable_sva = 1'b1;
+    `uvm_info(`gfn, $sformatf("Starting leaf attack between %s and %s", npath, gpath), UVM_MEDIUM)
     add_glitch(gpath);
     wait_and_check(npath);
     remove_glitch(gpath);
+    cfg.rstmgr_cascading_sva_vif.disable_sva = 1'b0;
+    `uvm_info(`gfn, "Ending leaf attack", UVM_MEDIUM)
 
     cfg.clk_rst_vif.wait_clks(10);
     apply_reset();
@@ -47,13 +53,16 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
     string epath = {path, ".rst_en_o"};
     string opath = {path, ".leaf_rst_o"};
 
-    cfg.clk_rst_vif.wait_clks(10);
+    // Wait enough cycles to allow the uvm_hdl_force to take effect, since it is not instantaneous,
+    // and for side-effects to propagate.
+    cfg.io_div4_clk_rst_vif.wait_clks(10);
 
+    `uvm_info(`gfn, $sformatf("Checking rst and en for %s", path), UVM_MEDIUM)
     `DV_CHECK(uvm_hdl_read(epath, rst_en), $sformatf("Path %0s has problem", epath))
     `DV_CHECK(uvm_hdl_read(opath, leaf_rst), $sformatf("Path %0s has problem", opath))
 
-    `DV_CHECK_EQ_FATAL(rst_en, prim_mubi_pkg::MuBi4False, $sformatf("%s value mismatch", epath))
-    `DV_CHECK_EQ_FATAL(leaf_rst, 1, $sformatf("%s value mismatch", opath))
+    `DV_CHECK_EQ(rst_en, prim_mubi_pkg::MuBi4False, $sformatf("%s value mismatch", epath))
+    `DV_CHECK_EQ(leaf_rst, 1, $sformatf("%s value mismatch", opath))
   endtask : wait_and_check
 
   function void remove_glitch(string path);
