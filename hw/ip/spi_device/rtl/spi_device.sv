@@ -9,6 +9,8 @@
 
 module spi_device
   import spi_device_reg_pkg::NumAlerts;
+  import spi_device_reg_pkg::NumLocality;
+  import spi_device_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -367,6 +369,57 @@ module spi_device
   logic [TpmFifoPtrW-1:0] tpm_status_wrfifo_depth;
 
   // TPM ---------------------------------------------------------------
+  typedef struct packed {
+    logic [AccessRegSize*NumLocality-1:0] access;
+    logic [IntEnRegSize-1:0]              int_enable;
+    logic [IntVectorRegSize-1:0]          int_vector;
+    logic [IntStsRegSize-1:0]             int_status;
+    logic [IntfCapRegSize-1:0]            intf_capacity;
+    logic [StatusRegSize-1:0]             status;
+    logic [IdRegSize-1:0]                 id;  // Device ID, Vendor ID
+    logic [RidRegSize-1:0]                rid; // Revision ID
+  } tpm_reg_t;
+
+  // Configuration structure
+  typedef struct packed {
+    logic tpm_en;
+    logic tpm_mode;
+    logic hw_reg_dis;
+    logic tpm_reg_chk_dis;
+    logic invalid_locality;
+  } tpm_cfg_t;
+  ///////////
+  // Signal//
+  ///////////
+
+  // CS# assertion pulse signal in SCK domain
+
+  tpm_cfg_t sys_tpm_cfg;
+  tpm_cfg_t sck_tpm_cfg;
+
+  assign sys_tpm_cfg = '{
+    tpm_en:           cfg_tpm_en,
+    tpm_mode:         cfg_tpm_mode,
+    hw_reg_dis:       cfg_tpm_hw_reg_dis,
+    invalid_locality: cfg_tpm_invalid_locality,
+    tpm_reg_chk_dis:  cfg_tpm_reg_chk_dis
+  };
+
+  tpm_reg_t sys_tpm_reg;
+  tpm_reg_t isck_tpm_reg;
+
+  logic [NumLocality-1:0] sck_active_locality; // TPM_ACCESS_x[5]
+
+  assign sys_tpm_reg = '{
+    access:        tpm_access,
+    int_enable:    tpm_int_enable,
+    int_vector:    tpm_int_vector,
+    int_status:    tpm_int_status,
+    intf_capacity: tpm_intf_capability,
+    status:        tpm_status,
+    id:            tpm_did_vid,
+    rid:           tpm_rid
+  };
 
   /////////////////
   // CSb Buffers //
@@ -905,6 +958,17 @@ module spi_device
     .clk_o(rst_rxfifo_n)
   );
 
+  logic tpm_rst_n;
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_tpm_csb_rst_scan_mux (
+    .clk0_i (rst_ni & ~cio_tpm_csb_i),
+    .clk1_i (scan_rst_ni),
+    .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode[TpmRstSel])),
+    .clk_o  (tpm_rst_n)
+  );
+
   // SRAM clock
   // If FwMode, SRAM clock for B port uses peripheral clock (clk_i)
   // If FlashMode or PassThrough, SRAM clock for B port uses SPI_CLK
@@ -977,7 +1041,6 @@ module spi_device
   ) u_csb_edge_sysclk (
     .clk_i,
     .rst_ni,
-
     .d_i      (sys_csb      ),
     .q_sync_o (sys_csb_syncd),
 
@@ -1002,6 +1065,41 @@ module spi_device
     .q_posedge_pulse_o (                      ),
     .q_negedge_pulse_o (sck_csb_asserted_pulse)
   );
+
+  /////////
+  // CDC //
+  /////////
+
+  logic sck_csb_rst_asserted_pulse;
+
+  // sys_clk csb_rst_asserted_pulse
+  prim_edge_detector_gp #(
+    .Width      (1),
+    .ResetValue (1'b 1),
+    .EnSync     (1'b 1)
+  ) u_sck_csb_edge (
+    .clk_i             (clk_i),
+    .rst_ni            (tpm_rst_n),
+    .d_i               (1'b 0), // tpm_rst_n has CSb assertion
+    .q_sync_o          (),
+    .q_posedge_pulse_o (),
+    .q_negedge_pulse_o (sck_csb_rst_asserted_pulse)
+  );
+
+  // Configuration latched into SCK
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      sck_tpm_cfg <= '{default: '0};
+      isck_tpm_reg <= '{default: '0};
+    end else if (sck_csb_rst_asserted_pulse) begin
+      sck_tpm_cfg <= sys_tpm_cfg;
+      isck_tpm_reg <= sys_tpm_reg;
+      for (int unsigned i = 0 ; i < NumLocality ; i++) begin
+        sck_active_locality[i] <=
+          sys_tpm_reg.access[AccessRegSize*i + ActiveLocalityBitPos];
+      end
+    end
+  end
 
   //////////////////////////////
   // SPI_DEVICE mode selector //
@@ -1703,6 +1801,7 @@ module spi_device
 
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
+    .rst_n (tpm_rst_n),
 
     .scan_rst_ni,
     .scanmode_i  (scanmode[TpmRstSel]),
@@ -1714,20 +1813,22 @@ module spi_device
 
     .tpm_cap_o (tpm_cap),
 
-    .cfg_tpm_en_i               (cfg_tpm_en              ),
-    .cfg_tpm_mode_i             (cfg_tpm_mode            ),
-    .cfg_tpm_hw_reg_dis_i       (cfg_tpm_hw_reg_dis      ),
-    .cfg_tpm_reg_chk_dis_i      (cfg_tpm_reg_chk_dis     ),
-    .cfg_tpm_invalid_locality_i (cfg_tpm_invalid_locality),
+    .cfg_tpm_en_i               (sck_tpm_cfg.tpm_en              ),
+    .cfg_tpm_mode_i             (sck_tpm_cfg.tpm_mode            ),
+    .cfg_tpm_hw_reg_dis_i       (sck_tpm_cfg.hw_reg_dis      ),
+    .cfg_tpm_reg_chk_dis_i      (sck_tpm_cfg.tpm_reg_chk_dis     ),
+    .cfg_tpm_invalid_locality_i (sck_tpm_cfg.invalid_locality),
 
-    .sys_access_reg_i          (tpm_access         ),
-    .sys_int_enable_reg_i      (tpm_int_enable     ),
-    .sys_int_vector_reg_i      (tpm_int_vector     ),
-    .sys_int_status_reg_i      (tpm_int_status     ),
-    .sys_intf_capability_reg_i (tpm_intf_capability),
-    .sys_status_reg_i          (tpm_status         ),
-    .sys_id_reg_i              (tpm_did_vid        ),
-    .sys_rid_reg_i             (tpm_rid            ),
+    .sys_access_reg_i          (isck_tpm_reg.access         ),
+    .sys_int_enable_reg_i      (isck_tpm_reg.int_enable     ),
+    .sys_int_vector_reg_i      (isck_tpm_reg.int_vector     ),
+    .sys_int_status_reg_i      (isck_tpm_reg.int_status     ),
+    .sys_intf_capability_reg_i (isck_tpm_reg.intf_capacity  ),
+    .sys_status_reg_i          (isck_tpm_reg.status         ),
+    .sys_id_reg_i              (isck_tpm_reg.id             ),
+    .sys_rid_reg_i             (isck_tpm_reg.rid            ),
+
+    .sck_active_locality  (sck_active_locality),
 
     .sys_cmdaddr_rvalid_o (tpm_cmdaddr_rvalid),
     .sys_cmdaddr_rdata_o  (tpm_cmdaddr_rdata ),

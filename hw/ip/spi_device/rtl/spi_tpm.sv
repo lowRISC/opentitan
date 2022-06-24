@@ -8,6 +8,7 @@
 
 module spi_tpm
   import spi_device_pkg::*;
+  import spi_device_reg_pkg::NumLocality;
 #(
   parameter int unsigned CmdAddrFifoDepth  = 2,
 
@@ -28,19 +29,6 @@ module spi_tpm
   localparam int unsigned WrFifoPtrW  = $clog2(WrFifoDepth+1),
   localparam int unsigned RdFifoPtrW  = $clog2(RdFifoDepth+1),
 
-  localparam int unsigned NumLocality = (EnLocality) ? 5 : 1,
-
-  localparam int unsigned AccessRegSize    = 8, // times Locality
-  localparam int unsigned IntEnRegSize     = 32,
-  localparam int unsigned IntVectorRegSize = 8,
-  localparam int unsigned IntStsRegSize    = 32,
-  localparam int unsigned IntfCapRegSize   = 32,
-  localparam int unsigned StatusRegSize    = 32,
-  localparam int unsigned IdRegSize        = 32, // {DID, VID}
-  localparam int unsigned RidRegSize       = 8,
-
-  localparam int unsigned ActiveLocalityBitPos = 5, // Access[5]
-
   localparam int unsigned CmdAddrSize  = 32, // Cmd 8bit + Addr 24bit
   localparam int unsigned FifoRegSize  = 12, // lower 12bit excluding locality
   localparam int unsigned DataFifoSize = $bits(spi_byte_t),
@@ -59,6 +47,7 @@ module spi_tpm
   input sys_clk_i,
 
   input sys_rst_ni,
+  input rst_n,
 
   input                      scan_rst_ni,
   input prim_mubi_pkg::mubi4_t scanmode_i, // scanmode[RstTpmSel]
@@ -101,6 +90,8 @@ module spi_tpm
   input [StatusRegSize-1:0]             sys_status_reg_i,
   input [IdRegSize-1:0]                 sys_id_reg_i,
   input [RidRegSize-1:0]                sys_rid_reg_i,
+
+  input [NumLocality-1:0]               sck_active_locality,
 
   // Buffer and FIFO status
   output logic                   sys_cmdaddr_rvalid_o,
@@ -162,22 +153,6 @@ module spi_tpm
     12'h F00, // F03:F00 DID_VID
     12'h F04  // F04:F04 RID
   };
-
-  ///////////////////
-  // Clock & Reset //
-  ///////////////////
-
-  logic rst_n;
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_tpm_csb_rst_scan_mux (
-    .clk0_i (sys_rst_ni & ~csb_i),
-    .clk1_i (scan_rst_ni),
-    .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode_i)),
-    .clk_o  (rst_n)
-  );
-
   // TODO: internal reset (sys_rst_ni & csb_i)
   // Do we really need the csb reset for TPM?
 
@@ -317,10 +292,8 @@ module spi_tpm
   ///////////
 
   // CS# assertion pulse signal in SCK domain
-  logic isck_csb_asserted_pulse, sck_csb_asserted_pulse;
 
   tpm_cfg_t sys_tpm_cfg;
-  tpm_cfg_t sck_tpm_cfg;
 
   assign sys_tpm_cfg = '{
     tpm_en:           cfg_tpm_en_i,
@@ -328,22 +301,6 @@ module spi_tpm
     hw_reg_dis:       cfg_tpm_hw_reg_dis_i,
     invalid_locality: cfg_tpm_invalid_locality_i,
     tpm_reg_chk_dis:  cfg_tpm_reg_chk_dis_i
-  };
-
-  tpm_reg_t sys_tpm_reg;
-  tpm_reg_t isck_tpm_reg;
-
-  logic [NumLocality-1:0] sck_active_locality; // TPM_ACCESS_x[5]
-
-  assign sys_tpm_reg = '{
-    access:        sys_access_reg_i,
-    int_enable:    sys_int_enable_reg_i,
-    int_vector:    sys_int_vector_reg_i,
-    int_status:    sys_int_status_reg_i,
-    intf_capacity: sys_intf_capability_reg_i,
-    status:        sys_status_reg_i,
-    id:            sys_id_reg_i,
-    rid:           sys_rid_reg_i
   };
 
   // FIFOs
@@ -455,70 +412,6 @@ module spi_tpm
 
   assign miso_en_o = isck_miso_en;
   assign miso_o    = isck_miso;
-
-  /////////
-  // CDC //
-  /////////
-
-  // clk_in csb_asserted_pulse
-  prim_edge_detector #(
-    .Width      (1),
-    .ResetValue (1'b 1),
-    .EnSync     (1'b 1)
-  ) u_sck_csb_edge (
-    .clk_i             (clk_in_i),
-    .rst_ni            (rst_n),
-    .d_i               (1'b 0), // rst_n has CSb assertion
-    .q_sync_o          (),
-    .q_posedge_pulse_o (),
-    .q_negedge_pulse_o (sck_csb_asserted_pulse)
-  );
-
-  // Latch configs
-
-  // clk_out csb_asserted pulse
-  prim_edge_detector #(
-    .Width      (1),
-    .ResetValue (1'b 1),
-    .EnSync     (1'b 1)
-  ) u_isck_csb_edge (
-    .clk_i             (clk_out_i),
-    .rst_ni            (rst_n),
-    .d_i               (1'b 0),
-    .q_sync_o          (),
-    .q_posedge_pulse_o (),
-    .q_negedge_pulse_o (isck_csb_asserted_pulse)
-  );
-
-  // Configuration latched into SCK
-  always_ff @(posedge clk_in_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) begin
-      sck_tpm_cfg <= '{default: '0};
-    end else if (sck_csb_asserted_pulse) begin
-      sck_tpm_cfg <= sys_tpm_cfg;
-    end
-  end
-
-  // SYS register latched into the SCK (or isck?)
-  always_ff @(posedge clk_in_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) begin
-      isck_tpm_reg <= '{default: '0};
-    end else if (isck_csb_asserted_pulse) begin
-      isck_tpm_reg <= sys_tpm_reg;
-    end
-  end
-
-  // Latch activeLocality in SCK to be used in the state machine
-  always_ff @(posedge clk_in_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) begin
-      sck_active_locality <= NumLocality'(0);
-    end else if (sck_csb_asserted_pulse) begin
-      for (int unsigned i = 0 ; i < NumLocality ; i++) begin
-        sck_active_locality[i] <=
-          sys_tpm_reg.access[AccessRegSize*i + ActiveLocalityBitPos];
-      end
-    end
-  end
 
   // data_sel (sck -> isck)
   always_ff @(posedge clk_out_i or negedge rst_n) begin
@@ -655,7 +548,7 @@ module spi_tpm
     if (!rst_n) begin
       is_tpm_reg <= 1'b 0;
     end else if (check_tpm_reg &&
-      (sck_tpm_cfg.tpm_reg_chk_dis || (addr[23:16] == TpmAddr))) begin
+      (sys_tpm_cfg.tpm_reg_chk_dis || (addr[23:16] == TpmAddr))) begin
       is_tpm_reg <= 1'b 1;
     end
   end
@@ -668,8 +561,8 @@ module spi_tpm
     if (!rst_n) begin
       is_hw_reg      <= 1'b 0;
       sck_hw_reg_idx <= RegAccess;
-    end else if (!sck_tpm_cfg.tpm_mode && check_hw_reg && (cmd_type == Read)
-      && is_tpm_reg && !invalid_locality && !sck_tpm_cfg.hw_reg_dis) begin
+    end else if (!sys_tpm_cfg.tpm_mode && check_hw_reg && (cmd_type == Read)
+      && is_tpm_reg && !invalid_locality && !sys_tpm_cfg.hw_reg_dis) begin
       // HW register is set only when the following conditions are met:
       //
       // 1. TPM is in FIFO mode
@@ -796,32 +689,32 @@ module spi_tpm
         for (int unsigned i = 0 ; i < NumLocality ; i++) begin
           if (!invalid_locality && (4'(i) == locality)) begin
             isck_hw_reg_word = { {(32-AccessRegSize){1'b1}},
-              isck_tpm_reg.access[AccessRegSize*i+:AccessRegSize]};
+              sys_access_reg_i[AccessRegSize*i+:AccessRegSize]};
           end
         end
       end
 
       RegIntEn: begin
-        isck_hw_reg_word = isck_tpm_reg.int_enable;
+        isck_hw_reg_word = sys_int_enable_reg_i;
       end
 
       RegIntVect: begin
-        isck_hw_reg_word = {24'h FFFFFF, isck_tpm_reg.int_vector};
+        isck_hw_reg_word = {24'h FFFFFF, sys_int_vector_reg_i};
       end
 
       RegIntSts: begin
-        isck_hw_reg_word = isck_tpm_reg.int_status;
+        isck_hw_reg_word = sys_int_status_reg_i;
       end
 
       RegIntfCap: begin
-        isck_hw_reg_word = isck_tpm_reg.intf_capacity;
+        isck_hw_reg_word = sys_intf_capability_reg_i;
       end
 
       RegSts: begin
         // Check locality to return FFh or correct value
         if (!invalid_locality && sck_active_locality[locality[2:0]]) begin
           // return data
-          isck_hw_reg_word = isck_tpm_reg.status;
+          isck_hw_reg_word = sys_status_reg_i;
         end else begin
           isck_hw_reg_word = 32'h FFFF_FFFF;
         end
@@ -832,11 +725,11 @@ module spi_tpm
       end
 
       RegId: begin
-        isck_hw_reg_word = isck_tpm_reg.id;
+        isck_hw_reg_word = sys_id_reg_i;
       end
 
       RegRid: begin
-        isck_hw_reg_word = {24'h FFFFFF, isck_tpm_reg.rid};
+        isck_hw_reg_word = {24'h FFFFFF, sys_rid_reg_i};
       end
 
       default: begin
@@ -953,13 +846,13 @@ module spi_tpm
         cmdaddr_shift_en = 1'b 1;
 
         if (cmdaddr_bitcnt == 5'h 7) begin
-          if (sck_tpm_cfg.tpm_en) begin
+          if (sys_tpm_cfg.tpm_en) begin
             sck_st_d = StAddr;
 
             latch_xfer_size = 1'b 1;
           end else begin
             // Stop processing and move to End state.
-            // sck_tpm_cfg.tpm_en cannot be compared right after reset.  Due
+            // sys_tpm_cfg.tpm_en cannot be compared right after reset.  Due
             // to the absent of the SCK, the configuration cannot be
             // synchronized into SCK domain at the first 3 clock cycle.
             // So, the enable signal is checked when the state is about to
@@ -986,7 +879,7 @@ module spi_tpm
 
         // Next state: if is_tpm_reg 1 && !cfg_hw_reg_dis
         if (cmdaddr_bitcnt == 5'h 1F && cmd_type == Read) begin
-          if (!is_tpm_reg || sck_tpm_cfg.tpm_mode) begin
+          if (!is_tpm_reg || sys_tpm_cfg.tpm_mode) begin
             // If out of TPM register (not staring with 0xD4_XXXX) or
             // TPM mode is CRB, always processed by SW
             sck_st_d = StWait;
@@ -994,7 +887,7 @@ module spi_tpm
             // If read command and HW REG, then return by HW
             // is_hw_reg contains (is_tpm_reg && (locality < NumLocality))
             sck_st_d = StStartByte;
-          end else if (invalid_locality && sck_tpm_cfg.invalid_locality) begin
+          end else if (invalid_locality && sys_tpm_cfg.invalid_locality) begin
             // The read request is out of supported Localities.
             // Return FFh
             sck_st_d = StInvalid;
@@ -1210,7 +1103,7 @@ module spi_tpm
   // If the command and the address have been shifted, the Locality, command
   // type should be matched with the shifted register.
   `ASSERT(CmdAddrInfo_A,
-          $fell(cmdaddr_shift_en) && !csb_i && sck_tpm_cfg.tpm_en |->
+          $fell(cmdaddr_shift_en) && !csb_i && sys_tpm_cfg.tpm_en |->
             (locality == sck_cmdaddr_wdata_q[15:12]) &&
             (cmd_type == sck_cmdaddr_wdata_q[31]),
           clk_in_i, !rst_n)
@@ -1233,7 +1126,7 @@ module spi_tpm
   // If is_hw_reg set, then it should be FIFO reg and within locality
   `ASSERT(HwRegCondition2_a,
           $rose(is_hw_reg) |->
-            is_tpm_reg && !invalid_locality && !sck_tpm_cfg.hw_reg_dis,
+            is_tpm_reg && !invalid_locality && !sys_tpm_cfg.hw_reg_dis,
           clk_in_i, !rst_n)
 
   // If module returns data in StAddr, the cmdaddr_bitcount should be the last

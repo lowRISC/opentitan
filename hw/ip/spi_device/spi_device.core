@@ -16,6 +16,7 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:prim:ram_2p_adv
       - lowrisc:prim:edge_detector
+      - lowrisc:prim:edge_detector_gp
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:prim:lc_sync
       - lowrisc:ip:spi_device_pkg
