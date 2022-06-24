@@ -28,10 +28,11 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   int                               ignore_start_pulse[PWM_NUM_CHANNELS]   = '{default:2};
   int                               ignore_state_change[PWM_NUM_CHANNELS]   = '{default:0};
   uint                              subcycle_cnt[PWM_NUM_CHANNELS]   = '{default:0};
-  uint                              int_dc[PWM_NUM_CHANNELS]   = '{default:0};
+  bit [15:0]                        int_dc[PWM_NUM_CHANNELS]   = '{default:0};
   param_reg_t                       channel_param[PWM_NUM_CHANNELS];
   dc_blink_t                        duty_cycle[PWM_NUM_CHANNELS];
   dc_blink_t                        blink[PWM_NUM_CHANNELS];
+  uint                              initial_dc[PWM_NUM_CHANNELS]   = '{default:0};
   string                            txt                      ="";
 
 
@@ -225,36 +226,35 @@ class pwm_scoreboard extends cip_base_scoreboard #(
     // The very first item will be when the monitor detects the first active edge
     // it will have no information
     // wait for the first expected item
-    wait(item_fifo[channel].used() > 0);
-      if((ignore_start_pulse[channel] == 2 ) || ( ignore_start_pulse[channel] == 1 )) begin
-        item_fifo[channel].get(input_item);
-        generate_exp_item(compare_item, channel);
-      end else begin
-        item_fifo[channel].get(input_item);
-        generate_exp_item(compare_item, channel);
-        // After the state has switched to different state, settings will change
-        // Comparision ignored till two pulses
-        if(!((ignore_state_change[channel] == 2 ) || (ignore_state_change[channel] == 1 ))) begin
-           // ignore items when resolution would round the duty cycle to 0 or 100
-           if((compare_item.active_cnt != 0) && (compare_item.inactive_cnt != 0)
-             && (input_item.period == compare_item.period)) begin
-               if(!input_item.compare(compare_item)) begin
-                 `uvm_error(`gfn, $sformatf("\n PWM :: Channel = [%0d] did not MATCH", channel))
-                 `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
-                   channel, compare_item.sprint()),UVM_HIGH)
-                 `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
-                   channel, input_item.sprint()),UVM_HIGH)
-               end else begin
-                 `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] MATCHED", channel),UVM_HIGH)
-                 `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
-                   channel, compare_item.sprint()),UVM_HIGH)
-                 `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
-                   channel, input_item.sprint()),UVM_HIGH)
-               end
-           end
-        end
-          ignore_state_change[channel] -= 1 ;
+    if((ignore_start_pulse[channel] == 2 ) || ( ignore_start_pulse[channel] == 1 )) begin
+      item_fifo[channel].get(input_item);
+      generate_exp_item(compare_item, channel);
+    end else begin
+      item_fifo[channel].get(input_item);
+      generate_exp_item(compare_item, channel);
+      // After the state has switched to different state, settings will change
+      // Comparision ignored till two pulses
+      if(!((ignore_state_change[channel] == 2 ) || (ignore_state_change[channel] == 1 ))) begin
+         // ignore items when resolution would round the duty cycle to 0 or 100
+         if((compare_item.active_cnt != 0) && (compare_item.inactive_cnt != 0)
+           && (input_item.period == compare_item.period)) begin
+             if(!input_item.compare(compare_item)) begin
+               `uvm_error(`gfn, $sformatf("\n PWM :: Channel = [%0d] did not MATCH", channel))
+               `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
+                 channel, compare_item.sprint()),UVM_HIGH)
+               `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
+                 channel, input_item.sprint()),UVM_HIGH)
+             end else begin
+               `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] MATCHED", channel),UVM_HIGH)
+               `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
+                 channel, compare_item.sprint()),UVM_HIGH)
+               `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
+                 channel, input_item.sprint()),UVM_HIGH)
+             end
+         end
       end
+        ignore_state_change[channel] -= 1 ;
+    end
       ignore_start_pulse[channel] -= 1 ;
     end
   endtask : compare_trans
@@ -264,7 +264,6 @@ class pwm_scoreboard extends cip_base_scoreboard #(
     uint period          = 0;
     uint high_cycles     = 0;
     uint low_cycles      = 0;
-    uint initial_dc      = 0;
     uint phase_count     = 0;
     dc_mod_e dc_mod;
 
@@ -302,7 +301,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
           case (blink_state[channel])
             CycleA: begin
               // current duty cycle
-              int_dc[channel] = (initial_dc) ? int_dc[channel] : duty_cycle[channel].A;
+              int_dc[channel] = (initial_dc[channel]) ? int_dc[channel] : duty_cycle[channel].A;
               // when subcycle_cnt is equal to (BLINK_PARAM.X+1)
               if (subcycle_cnt[channel] == (blink[channel].A + 1)) begin
                 // increment (decrement) int_dc by (BLINK_PARAM.Y+1)
@@ -311,11 +310,14 @@ class pwm_scoreboard extends cip_base_scoreboard #(
                   (int_dc[channel] + (blink[channel].B + 1));
                 // reset subcycle_cnt after increment (decrement)
                 subcycle_cnt[channel] = 0;
-                initial_dc++;
+                initial_dc[channel]++;
               end else begin
                 // else increment subcycle_cnt
                 subcycle_cnt[channel]++;
-                initial_dc++;
+                initial_dc[channel]++;
+                if ( subcycle_cnt[channel] == ( blink[channel].A + 1 )) begin
+                  ignore_state_change[channel] = 1 ;
+                end
               end
               // enter CycleB when duty cycle is reached
               case (dc_mod)
@@ -324,7 +326,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
                     blink_state[channel] = CycleB;
                     subcycle_cnt[channel] = 0;
                     ignore_state_change[channel] = 1 ;
-                    initial_dc = 0;
+                    initial_dc[channel] = 0;
                   end
                 end
                 LargeB: begin
@@ -332,7 +334,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
                     blink_state[channel] = CycleB;
                     ignore_state_change[channel] = 1 ;
                     subcycle_cnt[channel] = 0;
-                    initial_dc = 0;
+                    initial_dc[channel] = 0;
                   end
                 end
                 default: begin
@@ -346,10 +348,13 @@ class pwm_scoreboard extends cip_base_scoreboard #(
                   (int_dc[channel] - (blink[channel].B + 1'b1)) :
                   (int_dc[channel] + (blink[channel].B + 1'b1));
                 subcycle_cnt[channel] = 0;
-                initial_dc++;
+                initial_dc[channel]++;
               end else begin
                 subcycle_cnt[channel]++;
-                initial_dc++;
+                initial_dc[channel]++;
+                if ( subcycle_cnt[channel] == ( blink[channel].A + 1 )) begin
+                  ignore_state_change[channel] = 1 ;
+                end
               end
               case (dc_mod)
                 LargeB: begin
@@ -357,7 +362,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
                     blink_state[channel] = CycleA;
                     ignore_state_change[channel] = 1 ;
                     subcycle_cnt[channel] = 0;
-                    initial_dc = 0;
+                    initial_dc[channel] = 0;
                   end
                 end
                 LargeA: begin
@@ -365,7 +370,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
                     blink_state[channel] = CycleA;
                     ignore_state_change[channel] = 1 ;
                     subcycle_cnt[channel] = 0;
-                    initial_dc = 0;
+                    initial_dc[channel] = 0;
                   end
                 end
                 default: begin
