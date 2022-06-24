@@ -2675,7 +2675,7 @@
                  polling to check read when invalid doesn't block.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_rv_core_ibex_rnd"]
     }
     {
       name: chip_sw_rv_core_ibex_address_translation
