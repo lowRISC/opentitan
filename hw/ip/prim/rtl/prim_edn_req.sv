@@ -39,7 +39,7 @@ module prim_edn_req
   output logic                ack_o,
   output logic [OutWidth-1:0] data_o,
   output logic                fips_o,
-  output logic                err_o,  // incoming data failed repetition check
+  output logic                err_o,  // current data_o failed repetition check
   // EDN side
   input                       clk_edn_i,
   input                       rst_edn_ni,
@@ -90,9 +90,21 @@ module prim_edn_req
       end
     end
 
-    // whenever a new word is received, check if it is identical to the last
-    // word
-    assign err_o = chk_rep & word_ack & (word_data == word_data_q);
+    // Need to track if any of the packed words has failed the repetition check, i.e., is identical
+    // to the last packed word.
+    logic err_d, err_q;
+    assign err_d = (req_i && ack_o)                                  ? 1'b0 : // clear
+                   (chk_rep && word_ack && word_data == word_data_q) ? 1'b1 : // set
+                                                                       err_q; // keep
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        err_q <= 1'b0;
+      end else begin
+        err_q <= err_d;
+      end
+    end
+    assign err_o = err_q;
+
   end else begin : gen_no_rep_chk // block: gen_rep_chk
     assign err_o = '0;
   end
