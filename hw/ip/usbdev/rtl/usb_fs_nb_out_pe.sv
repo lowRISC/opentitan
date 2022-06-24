@@ -270,7 +270,7 @@ module usb_fs_nb_out_pe #(
 
         if (current_xact_setup_q) begin
           // SETUP transactions end here
-          if (nak_out_transaction) begin
+          if (nak_out_transaction | out_ep_full_i[out_ep_index]) begin
             // SETUP transactions that fail to be received are dropped without a response.
             tx_pkt_start_o = 1'b0;
             rollback_data = 1'b1;
@@ -283,7 +283,7 @@ module usb_fs_nb_out_pe #(
           // Non-isochronous OUT transactions end here
           if (out_ep_stall_i[out_ep_index]) begin
             tx_pid_o = {UsbPidStall}; // STALL
-          end else if (nak_out_transaction) begin
+          end else if (nak_out_transaction | out_ep_full_i[out_ep_index]) begin
             tx_pid_o = {UsbPidNak}; // NAK -- the endpoint could not accept the data at the moment
             rollback_data = 1'b1;
           end else begin
@@ -298,7 +298,7 @@ module usb_fs_nb_out_pe #(
         // Isochronous OUT transactions end here
         out_xact_state_next = StIdle;
 
-        if (nak_out_transaction) begin
+        if (nak_out_transaction | out_ep_full_i[out_ep_index]) begin
           // We got a valid packet, but can't store it (error that the software must resolve)
           rollback_data = 1'b1;
         end else begin
