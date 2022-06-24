@@ -341,7 +341,6 @@ opentitan_functest(
             "--exit-failure='PASS!'",
         ],
         bitstream = "//hw/bitstream:mask_rom",
-        tags = ["flaky"],
     ),
     signed = False,
     targets = [
