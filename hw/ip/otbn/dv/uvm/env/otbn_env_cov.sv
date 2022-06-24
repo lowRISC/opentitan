@@ -443,9 +443,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   `DEF_SEEN_IF_CP(err_bits_``NAME``_cp, value.NAME, access_type == AccessSoftwareRead)
 
     `DEF_ERR_BIT_CP(bad_insn_addr)
+    `DEF_ERR_BIT_CP(bad_data_addr)
     `DEF_ERR_BIT_CP(call_stack)
     `DEF_ERR_BIT_CP(illegal_insn)
     `DEF_ERR_BIT_CP(loop)
+    `DEF_ERR_BIT_CP(key_invalid)
+    `DEF_ERR_BIT_CP(rnd_rep_chk_fail)
+    `DEF_ERR_BIT_CP(rnd_fips_chk_fail)
     `DEF_ERR_BIT_CP(imem_intg_violation)
     `DEF_ERR_BIT_CP(dmem_intg_violation)
     `DEF_ERR_BIT_CP(reg_intg_violation)
@@ -453,6 +457,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_ERR_BIT_CP(bad_internal_state)
     `DEF_ERR_BIT_CP(illegal_bus_access)
     `DEF_ERR_BIT_CP(lifecycle_escalation)
+    `DEF_ERR_BIT_CP(fatal_software)
 
 `undef DEF_ERR_BIT_CP
 
