@@ -22,6 +22,22 @@ waive -rules NOT_READ -location {spi_tpm.sv} \
     -regexp {'wrdata_q\[7\]' is not read } \
     -comment "Make wrdata_q 8bits to match the spi_byte_t, but MSB not used"
 
+waive -rules NOT_READ -location {spi_tpm.sv} \
+    -regexp {'addr\[1:0\]' is not read from} \
+    -comment "lower 2 bits are not used. cmdaddr_wdata_q[1:0] is rather used"
+
+waive -rules NOT_READ -location {spi_tpm.sv} \
+    -regexp {'sys_clk_tpm_cfg.tpm_en' is not read from} \
+    -comment "Not used because we use different signal to sample in 8 cycles"
+
+waive -rules INPUT_NOT_READ -location {spi_tpm.sv} \
+    -regexp {'csb_i' is not read from} \
+    -comment "Required for assertion"
+
+waive -rules HIER_BRANCH_NOT_READ -location {spi_tpm.sv} \
+    -regexp {'csb_i' is not read from} \
+    -comment "Required for assertion"
+
 waive -rules PARAM_NOT_USED -location {spi_tpm.sv} \
     -regexp {'TpmRegisterSize' not used} \
     -comment "The parameter is used in the assertion"

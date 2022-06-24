@@ -110,6 +110,12 @@ waive -rules RESET_MUX    -location {spi_device.sv} \
 waive -rules RESET_MUX -location {spi_device.sv} \
       -regexp {'sram_rst_n.*' is driven by a multiplexer here} \
       -comment "Scan reset mux, but need to have asynchronous reset"
+waive -rules RESET_MUX -location {spi_device.sv} \
+      -regexp {'tpm_rst_n' is driven} \
+      -comment "Async reset generation is required here"
+waive -rules RESET_DRIVER -location {spi_device.sv} \
+      -regexp {'tpm_rst_n' is driven} \
+      -comment "Async reset generation is required here"
 
 # clock inverter and muxes
 waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'sck_n' is driven by a multiplexer here, used as a clock 'clk_(out|src)_i'} \
