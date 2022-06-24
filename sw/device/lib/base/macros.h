@@ -285,6 +285,13 @@
 #define OT_SECTION(name) __attribute__((section(name)))
 
 /**
+ * Attribute to suppress the inlining of a function at its call sites.
+ *
+ * See https://clang.llvm.org/docs/AttributeReference.html#noinline.
+ */
+#define OT_NOINLINE() __attribute__((noinline))
+
+/**
  * Returns the address of the current function stack frame.
  *
  * See https://gcc.gnu.org/onlinedocs/gcc/Return-Address.html.
