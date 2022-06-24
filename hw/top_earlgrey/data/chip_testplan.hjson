@@ -1938,7 +1938,7 @@
             - Read the entropy_data_fifo via SW; verify that it reads the expected values.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_entropy_src_kat_test"]
     }
 
     // CSRNG tests:

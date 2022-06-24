@@ -212,13 +212,44 @@ dif_result_t dif_entropy_src_fifo_write(const dif_entropy_src_t *entropy_src,
       bitfield_field32_read(
           reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_FIELD) !=
           kMultiBitBool4True) {
-    return kDifBadArg;
+    return kDifUnavailable;
   }
 
   for (size_t i = 0; i < len; ++i) {
     mmio_region_write32(entropy_src->base_addr,
                         ENTROPY_SRC_FW_OV_WR_DATA_REG_OFFSET, buf[i]);
   }
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_conditioner_start(
+    const dif_entropy_src_t *entropy_src) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  // Check if SHA3 conditioner operation has already started.
+  uint32_t current_val = mmio_region_read32(
+      entropy_src->base_addr, ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET);
+  if (current_val == kMultiBitBool4True) {
+    return kDifUnavailable;
+  }
+
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET,
+                      kMultiBitBool4True);
+
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_conditioner_end(
+    const dif_entropy_src_t *entropy_src) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET,
+                      kMultiBitBool4False);
   return kDifOk;
 }
 
