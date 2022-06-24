@@ -79,8 +79,20 @@ package spi_device_pkg;
   localparam int unsigned AddrCntW = $clog2(MaxAddrBit);
 
   // Dummy
+
   localparam int unsigned MaxDummyBit = 8;
   localparam int unsigned DummyCntW = $clog2(MaxDummyBit);
+
+  // TPM
+  localparam int unsigned AccessRegSize    = 8; // times Locality
+  localparam int unsigned IntEnRegSize     = 32;
+  localparam int unsigned IntVectorRegSize = 8;
+  localparam int unsigned IntStsRegSize    = 32;
+  localparam int unsigned IntfCapRegSize   = 32;
+  localparam int unsigned StatusRegSize    = 32;
+  localparam int unsigned IdRegSize        = 32; // {DID; VID}
+  localparam int unsigned RidRegSize       = 8;
+  localparam int unsigned ActiveLocalityBitPos = 5; // Access[5
 
   typedef enum logic {
     PayloadIn  = 1'b 0,
