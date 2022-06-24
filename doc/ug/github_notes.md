@@ -493,3 +493,17 @@ step-by-step with caution:
 
 These are all the steps needed. Once your pull request is reviewed and merged, you will
 be able to see that the commit is also visible in the original pull request.
+
+## Dealing with email notifications
+In your profile settings, under notifications, you can set up whether you get email notifications and what your default email address is.
+Under the "Custom routing" you can choose to get emails from lowRISC repositories to a different email address in case you're active in multiple organizations.
+You can also filter GitHub emails based on the To and CC fields.
+For example, notifications related to the OpenTitan repository will be sent to `opentitan@noreply.github.com`.
+The CC field can include any of the following depending on the type of notification:
+- `assign@noreply.github.com`
+- `author@noreply.github.com`
+- `ci-activity@noreply.github.com`
+- `comment@noreply.github.com`
+- `mention@noreply.github.com`
+- `subscribed@noreply.github.com`
+These can help you set up automatically sorting emails into specific folders.
