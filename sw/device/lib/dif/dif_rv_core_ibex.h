@@ -356,17 +356,6 @@ dif_result_t dif_rv_core_ibex_clear_nmi_state(
     const dif_rv_core_ibex_t *rv_core_ibex, dif_rv_core_ibex_nmi_source_t nmi);
 
 /**
- * Reads a random word from the RISC-V Ibex core wrapper.
- *
- * @param rv_core_ibex Handle.
- * @param[out] data Pointer to be filled with the random word.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_rv_core_ibex_read_rnd_data(
-    const dif_rv_core_ibex_t *rv_core_ibex, uint32_t *data);
-
-/**
  * Gets whether the rnd data is either valid or is FIPS compliant.
  *
  * @param rv_core_ibex Handle.
@@ -377,6 +366,17 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_core_ibex_get_rnd_status(
     const dif_rv_core_ibex_t *rv_core_ibex,
     dif_rv_core_ibex_rnd_status_t *status);
+
+/**
+ * Reads a random word from the RISC-V Ibex core wrapper.
+ *
+ * @param rv_core_ibex Handle.
+ * @param[out] data Pointer to be filled with the random word.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_read_rnd_data(
+    const dif_rv_core_ibex_t *rv_core_ibex, uint32_t *data);
 
 typedef uint32_t dif_rv_core_ibex_fpga_info_t;
 
