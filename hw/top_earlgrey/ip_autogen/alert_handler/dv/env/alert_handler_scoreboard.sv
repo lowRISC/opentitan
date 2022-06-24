@@ -41,7 +41,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   string class_name[] = {"a", "b", "c", "d"};
   bit [TL_DW-1:0] intr_state_val;
 
-  bit crashdump_triggered = 0;
+  bit [NUM_ALERT_CLASSES-1:0] crashdump_triggered = 0;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifo[NUM_ALERTS];
@@ -559,7 +559,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             uvm_reg crashdump_trigger_csr = ral.get_reg_by_name(
                     $sformatf("class%0s_crashdump_trigger_shadowed", class_name[i]));
             if (crashdump_val.class_esc_state[i] == (`gmv(crashdump_trigger_csr) + 3'b100)) begin
-              crashdump_triggered = 1;
+              crashdump_triggered[i] = 1;
               if (cfg.en_cov) cov.crashdump_trigger_cg.sample(`gmv(crashdump_trigger_csr));
               break;
              end
@@ -570,16 +570,6 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           end
           for (int i = 0; i < NUM_LOCAL_ALERTS; i++) begin
             `DV_CHECK_EQ(crashdump_val.loc_alert_cause[i], `gmv(ral.loc_alert_cause[i]))
-          end
-          for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
-            // TODO: check the remaining field of crashdump without using cycle accurate model.
-            if (crashdump_val.class_esc_state[i] != 0) begin
-              // When esc state is not Idle, that means there are alerts and at least entered
-              // timeout mode. Usually both `class_accum_cnt` and `class_esc_cnt` should be larger
-              // than 0, but there is a corner case - when the class counter is cleared but
-              // interrupt is still high. In that case only class_accum_cnt is larger than 0.
-              `DV_CHECK_GT(crashdump_val.class_esc_cnt[i], 0)
-            end
           end
         end
       end
@@ -721,6 +711,9 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       automatic int class_i = i;
       begin
         cfg.clk_rst_vif.wait_clks(1);
+        // TODO(#13026): Update `crashdump_triggered`.
+        // crashdump_triggered[class_i] = 0;
+        crashdump_triggered = 0;
         if (under_intr_classes[class_i]) begin
           if (cfg.en_cov) cov.clear_intr_cnt_cg.sample(class_i);
           clr_esc_under_intr[class_i] = 1;
