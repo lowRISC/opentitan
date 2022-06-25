@@ -23,11 +23,16 @@ if {$conn_csvs eq ""} {
 #-------------------------------------------------------------------------
 
 # only one scr file exists in this folder
-# Blackbox ast related modules to avoid compile errors.
-analyze -sv09 \
-  +define+SYNTHESIS+$env(FPV_DEFINES) \
-  $env(BBOX_CMD) \
-  -f [glob *.scr]
+if {$env(BBOX_CMD) eq "" } {
+  analyze -sv09 \
+    +define+SYNTHESIS+$env(FPV_DEFINES) \
+    -f [glob *.scr]
+} else {
+  analyze -sv09 \
+    +define+SYNTHESIS+$env(FPV_DEFINES) \
+    -bbox_m $env(BBOX_CMD) \
+    -f [glob *.scr]
+}
 
 # Black-box assistant will blackbox the modules which are not needed by looking at
 # the connectivity csv.
