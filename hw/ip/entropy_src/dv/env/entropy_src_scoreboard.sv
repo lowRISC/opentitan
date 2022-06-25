@@ -1151,8 +1151,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         end
       join : isolation_fork
       if (!dut_pipeline_enabled) begin
-        `uvm_info(`gfn, "Flushing data on disable", UVM_MEDIUM)
-        disable_detected = 1;
         break;
       end
       if (bit_sel_enable) begin
@@ -1161,6 +1159,32 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         val    = rng_item.h_data;
       end
     end : rng_loop
+    if (dut_pipeline_enabled && bit_sel_enable) begin
+      // Timing Detail:
+      // In bit select mode, the DUT won't process the data until an extra RNG sample is accepted.
+      // If a disable event happens before the following sample is received, everything is cleared.
+      // To mimic this behavior, this task maintains control until at least one more sample is
+      // present in the rng_fifo.
+      fork : isolation_fork
+        begin
+          fork
+            wait(!rng_fifo.is_empty());
+            begin
+              wait(!dut_pipeline_enabled);
+              `uvm_info(`gfn, "Disable detected", UVM_MEDIUM);
+            end
+          join_any
+          disable fork;
+        end
+      join : isolation_fork
+    end
+
+    // Cleanup:
+    if (!dut_pipeline_enabled) begin
+      `uvm_info(`gfn, "Flushing data on disable", UVM_MEDIUM)
+      disable_detected = 1;
+    end
+
   endtask
 
   task collect_entropy();
