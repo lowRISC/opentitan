@@ -147,18 +147,19 @@ module flash_phy_rd
 
   prim_arbiter_tree #(
     .N(NumBuf),
-    .DW(2)
-  ) i_valid_random (
+    .DW(2),
+    .EnDataPort(1'b0)
+  ) u_valid_random (
     .clk_i,
     .rst_ni,
     .req_chk_i(1'b0), // Valid is allowed to drop without ready.
-    .req_i(buf_valid),
+    .req_i(|buf_invalid_alloc ? '0 : {NumBuf{1'b1}}),
     .data_i(dummy_data),
     .gnt_o(buf_valid_alloc),
     .idx_o(),
     .valid_o(),
     .data_o(),
-    .ready_i(req_o)
+    .ready_i(req_o & no_match)
   );
 
   // which buffer to allocate upon a new transaction
