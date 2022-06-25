@@ -12,7 +12,7 @@ module flash_phy_core
   import flash_phy_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
-  parameter int unsigned ArbCnt = 4,
+  parameter int unsigned ArbCnt = 5,
   parameter bit SecScrambleEn = 1'b1
 ) (
   input                              clk_i,
