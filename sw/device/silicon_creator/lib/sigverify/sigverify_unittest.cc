@@ -186,7 +186,7 @@ TEST_P(SigverifyInNonTestStatesDeathTest, BadOtpValue) {
 }
 
 INSTANTIATE_TEST_SUITE_P(NonTestOperationalStatesDeathTest,
-                         SigverifyInNonTestStates,
+                         SigverifyInNonTestStatesDeathTest,
                          testing::ValuesIn(kLcStatesNonTestOperational));
 
 class SigverifyInTestStates : public SigverifyInLcState {};
