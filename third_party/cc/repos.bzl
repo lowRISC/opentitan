@@ -19,7 +19,9 @@ def cc_repos():
         url = "https://github.com/abseil/abseil-cpp/archive/e854df09dfcb35056c1d42420028648ee0ebebaf.tar.gz",
     )
 
-    native.local_repository(
+    http_archive(
         name = "googletest",
-        path = "sw/vendor/google_googletest",
+        sha256 = "7c7709af5d0c3c2514674261f9fc321b3f1099a2c57f13d0e56187d193c07e81",
+        url = "https://github.com/google/googletest/archive/10b1902d893ea8cc43c69541d70868f91af3646b.zip",
+        strip_prefix = "googletest-10b1902d893ea8cc43c69541d70868f91af3646b",
     )
