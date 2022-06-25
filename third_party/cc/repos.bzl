@@ -21,7 +21,7 @@ def cc_repos():
 
     http_archive(
         name = "googletest",
-        sha256 = "7c7709af5d0c3c2514674261f9fc321b3f1099a2c57f13d0e56187d193c07e81",
-        url = "https://github.com/google/googletest/archive/10b1902d893ea8cc43c69541d70868f91af3646b.zip",
-        strip_prefix = "googletest-10b1902d893ea8cc43c69541d70868f91af3646b",
+        sha256 = "353571c2440176ded91c2de6d6cd88ddd41401d14692ec1f99e35d013feda55a",
+        strip_prefix = "googletest-release-1.11.0",
+        url = "https://github.com/google/googletest/archive/refs/tags/release-1.11.0.zip",
     )
