@@ -113,39 +113,6 @@ INSTANTIATE_TEST_SUITE_P(
     });
 
 /**
- * Class for parameterizing bad argument tests for functions with three
- * arguments.
- */
-class BadArgsThree
-    : public DifKeymgrTest,
-      public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
- protected:
-  bool AllParamsGood() {
-    return std::get<0>(GetParam()) && std::get<1>(GetParam()) &&
-           std::get<2>(GetParam());
-  }
-
-  void SetUp() override {
-    if (AllParamsGood()) {
-      // Only test negative cases.
-      GTEST_SKIP();
-    }
-  }
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    BadArgsThree, BadArgsThree,
-    testing::Combine(testing::Bool(), testing::Bool(), testing::Bool()),
-    [&](testing::TestParamInfo<std::tuple<bool, bool, bool>> info) {
-      auto stringify = [](bool foo) { return foo ? "Good" : "Bad"; };
-      std::stringstream ss;
-      ss << stringify(std::get<0>(info.param))
-         << stringify(std::get<1>(info.param))
-         << stringify(std::get<2>(info.param));
-      return ss.str();
-    });
-
-/**
  * Base class for the rest of the tests in this file, provides a
  * `dif_keymgr_t` instance and some methods for common expectations.
  */
