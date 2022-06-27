@@ -187,8 +187,8 @@ module usbdev_usbif  #(
   end // always_ff @ (posedge clk_48mhz_i)
 
   // need extra write at end if packet not multiple of 4 bytes
-  assign mem_write_o = std_write_q |
-                       (~out_max_used_q[PktW] & (out_max_used_q[1:0] != 2'b11) & out_ep_acked);
+  assign mem_write_o = av_rvalid_i & (std_write_q |
+                       (~out_max_used_q[PktW] & (out_max_used_q[1:0] != 2'b11) & out_ep_acked));
   assign mem_waddr = {av_rdata_i, out_max_used_q[PktW-1:2]};
   assign mem_wdata_o = wdata_q;
   assign mem_addr_o = mem_write_o ? mem_waddr : mem_raddr;
