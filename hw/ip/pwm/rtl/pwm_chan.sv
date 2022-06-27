@@ -66,6 +66,7 @@ module pwm_chan #(
   logic [CntDw-1:0] dc_htbt_d;
   logic [CntDw-1:0] dc_htbt_q;
   logic dc_htbt_end;
+  logic dc_htbt_end_q;
 
   assign htbt_ctr_d = (!(blink_en_i && htbt_en_i) || clr_blink_cntr_i) ? '0 :
                       ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) ? '0 :
@@ -83,6 +84,13 @@ module pwm_chan #(
     end
   end
   assign dc_htbt_end = cycle_end_i & (htbt_ctr_q == blink_param_x_i);
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      dc_htbt_end_q <= '0;
+    end else begin
+      dc_htbt_end_q <= dc_htbt_end;
+    end
+  end
 
   logic htbt_direction;
   logic dc_wrap;
@@ -94,16 +102,16 @@ module pwm_chan #(
     if (!rst_ni) begin
       htbt_direction <= '0;
     end else if (clr_blink_cntr_i) begin
-       // For proper initialization, set the initial htbt_direction whenever a register is updated,
-       // as indicated by clr_blink_cntr_i
-       htbt_direction <= !pos_htbt;
-    end else if (pos_htbt && ((dc_htbt_q >= duty_cycle_b_i) || (dc_wrap && dc_htbt_end))) begin
+      // For proper initialization, set the initial htbt_direction whenever a register is updated,
+      // as indicated by clr_blink_cntr_i
+      htbt_direction <= !pos_htbt;
+    end else if (pos_htbt && ((dc_htbt_q >= duty_cycle_b_i) || (dc_wrap && dc_htbt_end_q))) begin
       htbt_direction <= 1'b1; // duty cycle counts down
-    end else if (pos_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end) begin
+    end else if (pos_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end_q) begin
       htbt_direction <= 1'b0; // duty cycle counts up
-    end else if (neg_htbt && ((dc_htbt_q <= duty_cycle_b_i) || (dc_wrap && dc_htbt_end))) begin
+    end else if (neg_htbt && ((dc_htbt_q <= duty_cycle_b_i) || (dc_wrap && dc_htbt_end_q))) begin
       htbt_direction <= 1'b0; // duty cycle counts up
-    end else if (neg_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end) begin
+    end else if (neg_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end_q) begin
       htbt_direction <= 1'b1; // duty cycle counts down
     end else begin
       htbt_direction <= htbt_direction;
@@ -111,8 +119,7 @@ module pwm_chan #(
   end
 
   logic pattern_repeat;
-  assign pattern_repeat = (pos_htbt & htbt_direction) | (neg_htbt & ~htbt_direction) |
-                          (~pos_htbt & ~neg_htbt);
+  assign pattern_repeat = (~pos_htbt & ~neg_htbt);
   localparam int CntExtDw = CntDw + 1;
   assign {dc_wrap, dc_htbt_d} = !(htbt_ctr_q == blink_param_x_i) ? (CntExtDw)'(dc_htbt_q) :
                                 ((dc_htbt_q == duty_cycle_a_i) && pattern_repeat) ?
