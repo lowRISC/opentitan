@@ -8,6 +8,7 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
   constraint num_trans_c {num_trans inside {[1 : 2]};}
   `uvm_object_new
 
+   parameter int STATE_TRANSITION_NS = 50000;
 
   virtual task pre_start();
     csr_excl_item csr_excl = ral.get_excl_item();
@@ -73,7 +74,7 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
           `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateInvalid &&
                             cfg.pwrmgr_vif.pwr_ast_req.pwr_clamp == 1 &&
                             cfg.pwrmgr_vif.pwr_ast_req.main_pd_n == 0);,
-                       msg, 50000)
+                       msg, STATE_TRANSITION_NS)
         end
         if (!uvm_re_match("*.u_fsm.*", if_proxy.path)) begin
           `uvm_info(`gfn, "detect unknown fast state", UVM_MEDIUM)
@@ -95,7 +96,7 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
         msg = $sformatf("rx clk loc esc chk timeout : fast_state %s",
                         cfg.pwrmgr_vif.fast_state.name);
         `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateResetPrep);,
-                     msg, 5000)
+                     msg, STATE_TRANSITION_NS)
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
     endcase // case (if_proxy.sec_cm_type)
