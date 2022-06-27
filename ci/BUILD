@@ -7,7 +7,7 @@ package(default_visibility = ["//visibility:public"])
 # Configure opentitantool for execution in the CI's CW310 container.
 #
 # Example:
-#   bazel test //sw/device/silicon_creator/lib/drivers:fpga_cw310_hmac_functest --define cw310=lowrisc
+#   bazel test //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 --define cw310=lowrisc
 config_setting(
     name = "lowrisc_fpga_cw310",
     define_values = {
