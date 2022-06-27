@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 # variable.  See //rules/bitstreams.bzl for more information.
 #
 # Example:
-#   bazel test //sw/device/silicon_creator/lib/drivers:fpga_cw310_hmac_functest --define bitstream=gcp
+#   bazel test //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 --define bitstream=gcp
 config_setting(
     name = "bitstream_gcp",
     define_values = {
@@ -22,7 +22,7 @@ config_setting(
 # manager to do anything unexpected.
 #
 # Example:
-#   bazel test //sw/device/silicon_creator/lib/drivers:fpga_cw310_hmac_functest --define bitstream=skip
+#   bazel test //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 --define bitstream=skip
 config_setting(
     name = "bitstream_skip",
     define_values = {
@@ -35,7 +35,7 @@ config_setting(
 # server.
 #
 # Example:
-#   bazel test //sw/device/silicon_creator/lib/drivers:fpga_cw310_hmac_functest --define bitstream=vivado
+#   bazel test //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 --define bitstream=vivado
 config_setting(
     name = "bitstream_vivado",
     define_values = {
