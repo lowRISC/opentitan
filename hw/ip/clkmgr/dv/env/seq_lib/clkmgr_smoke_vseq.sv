@@ -74,7 +74,10 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
         '{TransOtbn, ral.clk_hints.clk_main_otbn_hint, ral.clk_hints_status.clk_main_otbn_val}
     };
     idle = 0;
+    // Changes in idle take at least 10 cycles to stick.
     cfg.clkmgr_vif.update_idle(idle);
+    cfg.clk_rst_vif.wait_clks(IDLE_SYNC_CYCLES);
+
     trans = trans.first;
     csr_rd(.ptr(ral.clk_hints), .value(value));
     `uvm_info(`gfn, $sformatf("Starting hints at 0x%0x, idle at 0x%x", value, idle), UVM_MEDIUM)
@@ -93,7 +96,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
       cfg.clkmgr_vif.update_idle(idle);
       // Some cycles for the logic to settle.
       // TODO: Temporary update to account for idle counts
-      cfg.clk_rst_vif.wait_clks(IO_DIV4_SYNC_CYCLES * 2);
+      cfg.clk_rst_vif.wait_clks(IDLE_SYNC_CYCLES);
       csr_rd(.ptr(descriptor.value_bit), .value(bit_value));
       if (!cfg.under_reset) begin
         `DV_CHECK_EQ(bit_value, 1'b0, $sformatf(

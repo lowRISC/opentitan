@@ -49,8 +49,8 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
       `uvm_info(`gfn, $sformatf("Updating hints to 0x%0x", initial_hints), UVM_MEDIUM)
       csr_wr(.ptr(ral.clk_hints), .value(initial_hints));
 
-      // Extra wait because of clk_io_div4 synchronizers plus counters.
-      cfg.io_clk_rst_vif.wait_clks(IO_DIV4_SYNC_CYCLES);
+      // Extra wait because of synchronizers plus counters.
+      cfg.clk_rst_vif.wait_clks(IDLE_SYNC_CYCLES);
       // We expect the status to be determined by hints and idle, ignoring scanmode.
       csr_rd(.ptr(ral.clk_hints_status), .value(value));
 
@@ -61,14 +61,14 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
       // Setting all idle should make hint_status match hints.
       `uvm_info(`gfn, "Setting all units idle", UVM_MEDIUM)
       cfg.clkmgr_vif.update_idle({NUM_TRANS{MuBi4True}});
-      cfg.io_clk_rst_vif.wait_clks(IO_DIV4_SYNC_CYCLES);
+      cfg.clk_rst_vif.wait_clks(IDLE_SYNC_CYCLES);
 
       csr_rd(.ptr(ral.clk_hints_status), .value(value));
       `DV_CHECK_EQ(value, initial_hints, "All idle: expect status matches hints")
 
       // Now set all hints, and the status should also be all ones.
       csr_wr(.ptr(ral.clk_hints), .value('1));
-      cfg.io_clk_rst_vif.wait_clks(IO_DIV4_SYNC_CYCLES);
+      cfg.clk_rst_vif.wait_clks(IDLE_SYNC_CYCLES);
       csr_rd(.ptr(ral.clk_hints_status), .value(value));
       // We expect all units to be on.
       `DV_CHECK_EQ(value, '1, "All idle and all hints high: units status should be high")
