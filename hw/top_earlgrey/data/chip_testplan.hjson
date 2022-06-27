@@ -1027,9 +1027,14 @@
       name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
       desc: '''Verify the effect of a glitch in main power rail in deep sleep.
 
-            The vcmain_supp_i AST input is forced to drop after putting the chip in deep sleep. This
-            triggers a MainPwr reset request, which is checked reading the reset_info CSR when the
-            test restarts and the POR bit is not set.
+            The vcmain_supp_i AST input is forced to drop right after putting the chip in deep
+            sleep. This triggers a MainPwr reset request, which is checked reading the reset_info
+            CSR when the test restarts and the POR bit is not set.
+
+            Note: the glitch has to be sent in a very narrow window:
+            - If sent too early the chip won't have started to process deep sleep.
+            - If too late the hardware won't monitor main power okay so the glitch will have no
+              effect, and the test will timeout.
             '''
       milestone: V2
       tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]

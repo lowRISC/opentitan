@@ -53,9 +53,11 @@ bool test_main(void) {
     wait_for_interrupt();
   } else {
     LOG_INFO("Checking reset status.");
-    rstmgr_testutils_post_reset(&rstmgr, kDifRstmgrResetInfoPowerUnstable, 0, 0,
-                                0, 0);
-    LOG_INFO("Reset status indicates a main power glitch reset");
+    rstmgr_testutils_post_reset(
+        &rstmgr,
+        kDifRstmgrResetInfoPowerUnstable | kDifRstmgrResetInfoLowPowerExit, 0,
+        0, 0, 0);
+    LOG_INFO("Reset status indicates a power glitch and a deep sleep wakeup");
   }
   return true;
 }
