@@ -80,7 +80,8 @@ module tb;
 
   bind dut ast_supply_if ast_supply_if (
     .clk(top_earlgrey.clk_aon_i),
-    .trigger(top_earlgrey.rv_core_ibex_pwrmgr.core_sleeping)
+    .core_sleeping_trigger(top_earlgrey.rv_core_ibex_pwrmgr.core_sleeping),
+    .low_power_trigger(`PWRMGR_HIER.pwr_rst_o.reset_cause == pwrmgr_pkg::LowPwrEntry)
   );
 
   bind dut ast_ext_clk_if ast_ext_clk_if ();

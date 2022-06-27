@@ -12,7 +12,8 @@
 // We need to disable some pwrmgr design assertions when wiggling vcmain_supp_i.
 interface ast_supply_if (
   input logic clk,
-  input logic trigger
+  input logic core_sleeping_trigger,
+  input logic low_power_trigger
 );
   import uvm_pkg::*;
 
@@ -61,14 +62,25 @@ interface ast_supply_if (
     force u_ast.u_rglts_pdm_3p3v.vcmain_pok_h_o = value;
   endtask
 
-  // Create glitch in vcmain_pok_h_o some cycles after a trigger transitions high.
-  task automatic glitch_vcmain_pok_on_next_trigger(int cycles);
-    @(posedge trigger);
+`define GLITCH_VCMAIN_POK                 \
+    force_vcmain_pok(1'b0);               \
+    repeat (GlitchCycles) @(posedge clk); \
+    force_vcmain_pok(1'b1)
+
+  // Create glitch in vcmain_pok_h_o some cycles after core_sleeping trigger transitions high.
+  // This is useful for non-deep sleep-related triggers.
+  task automatic glitch_vcmain_pok_on_next_core_sleeping_trigger(int cycles);
+    @(posedge core_sleeping_trigger);
     repeat (cycles) @(posedge clk);
-    force_vcmain_pok(1'b0);
-    repeat (GlitchCycles) @(posedge clk);
-    force_vcmain_pok(1'b1);
-  endtask : glitch_vcmain_pok_on_next_trigger
+    `GLITCH_VCMAIN_POK;
+  endtask : glitch_vcmain_pok_on_next_core_sleeping_trigger
+
+  // Create glitch in vcmain_pok_h_o once the fast fsm sets the reset cause to LowPwrEntry.
+  task automatic glitch_vcmain_pok_on_next_low_power_trigger();
+    @(posedge low_power_trigger);
+    `GLITCH_VCMAIN_POK;
+  endtask : glitch_vcmain_pok_on_next_low_power_trigger
+`undef GLITCH_VCMAIN_POK
 
   // Create pulses in key0 after a trigger transitions high.
   // Since it's top input pin, GLS signal mismatch is not supposed to occur

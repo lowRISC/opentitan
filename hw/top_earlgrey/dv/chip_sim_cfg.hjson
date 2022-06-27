@@ -561,7 +561,7 @@
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
-      uvm_test_seq: chip_sw_main_power_glitch_vseq
+      uvm_test_seq: chip_sw_deep_power_glitch_vseq
       sw_images: ["sw/device/tests/sim_dv/pwrmgr_deep_sleep_power_glitch_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
