@@ -46,8 +46,13 @@ interface pwrmgr_rstmgr_sva_if
   localparam int MAX_MAIN_RST_CYCLES = pwrmgr_clk_ctrl_common_pkg::MAIN_CLK_DELAY_MAX;
   `define MAIN_RST_CYCLES ##[MIN_MAIN_RST_CYCLES:MAX_MAIN_RST_CYCLES]
 
+  // The timing of the escalation reset is determined by the slow clock, but will not propagate if
+  // the non-slow clock is off. We use the regular clock and multiply the clock cycles times the
+  // clock ratio.
+  localparam int FAST_TO_SLOW_FREQ_RATIO = 120;
+
   localparam int MIN_ESC_RST_CYCLES = 0;
-  localparam int MAX_ESC_RST_CYCLES = 4;
+  localparam int MAX_ESC_RST_CYCLES = 4 * FAST_TO_SLOW_FREQ_RATIO;
   `define ESC_RST_CYCLES ##[MIN_ESC_RST_CYCLES:MAX_ESC_RST_CYCLES]
 
   bit disable_sva;
@@ -130,19 +135,18 @@ interface pwrmgr_rstmgr_sva_if
           ) |-> `MAIN_RST_CYCLES !rstreqs[ResetMainPwrIdx], clk_slow_i,
           reset_or_disable || !check_rstreqs_en)
 
-   // Singals in EscRstOn_A and EscRstOff_A are sampled with slow and fast clock.
+   // Signals in EscRstOn_A and EscRstOff_A are sampled with slow and fast clock.
    // Since fast clock can be gated, use fast clock to evaluate cycle delay
    // to avoid spurious failure.
-
   `ASSERT(EscRstOn_A,
           $rose(
               esc_rst_req_i
-          ) |-> `ESC_RST_CYCLES rstreqs[ResetEscIdx], clk_slow_i,
+          ) |-> `ESC_RST_CYCLES rstreqs[ResetEscIdx], clk_i,
           reset_or_disable || !check_rstreqs_en)
   `ASSERT(EscRstOff_A,
           $fell(
               esc_rst_req_i
-          ) |-> `ESC_RST_CYCLES !rstreqs[ResetEscIdx], clk_slow_i,
+          ) |-> `ESC_RST_CYCLES !rstreqs[ResetEscIdx], clk_i,
           reset_or_disable || !check_rstreqs_en)
   // Software initiated resets are not sent to rstmgr since they originated there.
   `undef RST_CYCLES
