@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
     "@lowrisc_opentitan//rules:cc_side_outputs.bzl",
@@ -68,6 +69,151 @@ obj_transform = rv_rule(
         "format": attr.string(default = "binary"),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
+    toolchains = ["@rules_cc//cc:toolchain_type"],
+)
+
+# A provider for device-specific archive files that hold binaries of SRAM programs.
+ArchiveInfo = provider(fields = ["archive_infos"])
+
+def _bin_to_archive_impl(ctx):
+    cc_infos = []
+    cc_toolchain = find_cc_toolchain(ctx).cc
+    cc_info_dict = {}
+    num_devices = len(ctx.attr.devices)
+    num_binaries = len(ctx.attr.binaries)
+    if num_devices != num_binaries:
+        fail("Number of devices", num_devices, "must be equal to number of binaries", num_binaries)
+    for (device, binary_target) in zip(ctx.attr.devices, ctx.attr.binaries):
+        devname = "{}_{}".format(ctx.attr.name, device)
+        binary_file = binary_target.files.to_list()[0]
+        object_file = ctx.actions.declare_file("{}.o".format(devname))
+        renamed_object_file = ctx.actions.declare_file("{}.renamed.o".format(devname))
+        archive_file = ctx.actions.declare_file("{}.a".format(devname))
+
+        # Create a CcInfo to be able to use this rule as a dependency in other rules.
+        # See https://bazel.build/docs/integrating-with-rules-cc.
+        feature_configuration = cc_common.configure_features(
+            ctx = ctx,
+            cc_toolchain = cc_toolchain,
+            requested_features = ctx.features,
+            unsupported_features = ctx.disabled_features,
+        )
+        action_name = ACTION_NAMES.cpp_link_executable
+        c_linker_path = cc_common.get_tool_for_action(
+            feature_configuration = feature_configuration,
+            action_name = action_name,
+        )
+        c_link_variables = cc_common.create_link_variables(
+            feature_configuration = feature_configuration,
+            cc_toolchain = cc_toolchain,
+            output_file = object_file.path,
+        )
+        command_line = cc_common.get_memory_inefficient_command_line(
+            feature_configuration = feature_configuration,
+            action_name = action_name,
+            variables = c_link_variables,
+        )
+        env = cc_common.get_environment_variables(
+            feature_configuration = feature_configuration,
+            action_name = action_name,
+            variables = c_link_variables,
+        )
+        linker_path = cc_common.get_tool_for_action(
+            feature_configuration = feature_configuration,
+            action_name = action_name,
+        )
+
+        # Create an object file that contains the binary.
+        ctx.actions.run(
+            executable = cc_toolchain.ld_executable,
+            arguments = [
+                "-r",
+                "-b",
+                "binary",
+                "-o",
+                object_file.path,
+                binary_file.path,
+            ],
+            use_default_shell_env = False,
+            env = env,
+            inputs = depset(
+                direct = [binary_file],
+                transitive = [cc_toolchain.all_files],
+            ),
+            outputs = [object_file],
+            mnemonic = "CppLink",
+        )
+
+        # Rename symbols to make them more manageable.
+        sym_prefix = "_binary_" + binary_file.path.replace(".", "_").replace("/", "_").replace("-", "_")
+        suffixes = ["start", "end", "size"]
+        rename_args = []
+        for suffix in suffixes:
+            old_name = "{}_{}".format(sym_prefix, suffix)
+            new_name = "_{}_{}".format(ctx.attr.archive_symbol_prefix, suffix)
+            rename_args.extend(["--redefine-sym", "{}={}".format(old_name, new_name)])
+        rename_args.extend(["--rename-section", ".data=.data.sram_program"])
+        rename_args.extend([object_file.path, renamed_object_file.path])
+        ctx.actions.run(
+            executable = cc_toolchain.objcopy_executable,
+            arguments = rename_args,
+            use_default_shell_env = False,
+            env = env,
+            inputs = depset(
+                direct = [object_file],
+                transitive = [cc_toolchain.all_files],
+            ),
+            outputs = [renamed_object_file],
+            mnemonic = "RenameSymbols",
+        )
+
+        # Create an archive that contains the object file.
+        ctx.actions.run(
+            executable = cc_toolchain.ar_executable,
+            arguments = [
+                "r",
+                archive_file.path,
+                renamed_object_file.path,
+            ],
+            use_default_shell_env = False,
+            env = env,
+            inputs = depset(
+                direct = [renamed_object_file],
+                transitive = [cc_toolchain.all_files],
+            ),
+            outputs = [archive_file],
+            mnemonic = "Archive",
+        )
+
+        cc_info_dict[device] = CcInfo(
+            compilation_context = cc_common.create_compilation_context(
+                headers = depset(direct = ctx.attr.hdrs[0].files.to_list()),
+            ),
+            linking_context = cc_common.create_linking_context(
+                linker_inputs = depset([cc_common.create_linker_input(
+                    owner = ctx.label,
+                    libraries = depset([cc_common.create_library_to_link(
+                        actions = ctx.actions,
+                        feature_configuration = feature_configuration,
+                        cc_toolchain = cc_toolchain,
+                        static_library = archive_file,
+                    )]),
+                )]),
+            ),
+        )
+
+    return ArchiveInfo(archive_infos = cc_info_dict)
+
+bin_to_archive = rv_rule(
+    implementation = _bin_to_archive_impl,
+    attrs = {
+        "binaries": attr.label_list(allow_files = True),
+        "devices": attr.string_list(),
+        "hdrs": attr.label_list(allow_files = True),
+        "archive_symbol_prefix": attr.string(),
+        "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+    },
+    fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
 )
 
@@ -561,6 +707,28 @@ def opentitan_rom_binary(
         srcs = targets,
     )
 
+def _pick_correct_archive_for_device(ctx):
+    cc_infos = []
+    for dep in ctx.attr.deps:
+        if CcInfo in dep:
+            cc_info = dep[CcInfo]
+        elif ArchiveInfo in dep:
+            cc_info = dep[ArchiveInfo].archive_infos[ctx.attr.device]
+        else:
+            fail("Expected either a CcInfo or an ArchiveInfo")
+        cc_infos.append(cc_info)
+    return [cc_common.merge_cc_infos(cc_infos = cc_infos)]
+
+pick_correct_archive_for_device = rv_rule(
+    implementation = _pick_correct_archive_for_device,
+    attrs = {
+        "deps": attr.label_list(allow_files = True),
+        "device": attr.string(),
+    },
+    fragments = ["cpp"],
+    toolchains = ["@rules_cc//cc:toolchain_type"],
+)
+
 def opentitan_flash_binary(
         name,
         platform = OPENTITAN_PLATFORM,
@@ -611,10 +779,17 @@ def opentitan_flash_binary(
     for (device, dev_deps) in per_device_deps.items():
         devname = "{}_{}".format(name, device)
 
+        depname = "{}_deps".format(devname)
+        pick_correct_archive_for_device(
+            name = depname,
+            deps = deps + dev_deps,
+            device = device,
+        )
+
         # Generate ELF, Binary, Disassembly, and (maybe) sim_dv logs database
         targets.extend(opentitan_binary(
             name = devname,
-            deps = deps + dev_deps,
+            deps = [depname],
             extract_sw_logs_db = device in ["sim_dv", "sim_verilator"],
             **kwargs
         ))
@@ -677,6 +852,83 @@ def opentitan_flash_binary(
                 vmem = vmem_name,
                 platform = platform,
             )
+
+    native.filegroup(
+        name = name,
+        srcs = targets,
+    )
+
+def opentitan_ram_binary(
+        name,
+        platform = OPENTITAN_PLATFORM,
+        per_device_deps = PER_DEVICE_DEPS,
+        **kwargs):
+    """A helper macro for generating OpenTitan binary artifacts for RAM.
+
+    This macro is mostly a wrapper around the `opentitan_binary` macro, which
+    itself is a wrapper around `cc_binary`, but also creates artifacts for each
+    of the keys in `per_device_deps`. The actual artifacts created are an ELF
+    file, a BIN file, an archive file for embedding the program in functional
+    tests, disassembly, a sim_dv logs database, and a VMEM file. Each of these
+    output targets performs a bazel transition to the RV32I toolchain to build
+    the target under the correct compiler.
+    Args:
+      @param name: The name of this rule.
+      @param platform: The target platform for the artifacts.
+      @param per_device_deps: The deps for each of the hardware target.
+      @param extract_sw_logs_db: Whether to extract SW logs database for DV sim.
+      @param **kwargs: Arguments to forward to `opentitan_binary`.
+    Emits rules:
+      For each device in per_device_deps entry:
+        cc_binary                 named: <name>_<device>
+        obj_transform             named: <name>_<device>_bin
+        bin_to_archive            named: <name>_<device>_ar
+        elf_to_dissassembly       named: <name>_<device>_dis
+        bin_to_rom_vmem           named: <name>_<device>_vmem
+      For the sim_dv device:
+        gen_sim_dv_logs_db        named: <name>_sim_dv_logs
+      filegroup named: <name>
+          with all the generated rules
+    """
+
+    deps = kwargs.pop("deps", [])
+    hdrs = kwargs.pop("hdrs", [])
+    archive_symbol_prefix = kwargs.pop("archive_symbol_prefix")
+    targets = []
+    binaries = []
+    for (device, dev_deps) in per_device_deps.items():
+        devname = "{}_{}".format(name, device)
+
+        # Generate ELF, binary and disassembly.
+        targets.extend(opentitan_binary(
+            name = devname,
+            deps = deps + dev_deps,
+            extract_sw_logs_db = False,
+            **kwargs
+        ))
+        bin_name = "{}_{}".format(devname, "bin")
+        binaries.append(":" + bin_name)
+
+        # Generate the VMEM file.
+        vmem_name = "{}_{}".format(devname, "vmem")
+        targets.append(":" + vmem_name)
+        bin_to_vmem(
+            name = vmem_name,
+            bin = bin_name,
+            platform = platform,
+            word_size = 32,
+        )
+
+    # Generate the archive file.
+    archive_name = "{}_{}".format(name, "ar")
+    targets.append(":" + archive_name)
+    bin_to_archive(
+        name = archive_name,
+        hdrs = hdrs,
+        binaries = binaries,
+        devices = per_device_deps.keys(),
+        archive_symbol_prefix = archive_symbol_prefix,
+    )
 
     native.filegroup(
         name = name,
