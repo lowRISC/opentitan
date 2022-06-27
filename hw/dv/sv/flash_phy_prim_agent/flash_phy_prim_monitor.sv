@@ -28,12 +28,14 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   endfunction
 
   task run_phase(uvm_phase phase);
-    `DV_SPINWAIT(wait(cfg.mon_start);,
-                 "timeout waiting for mon_start", 100_000)
-    fork
-      super.run_phase(phase);
-      monitor_core();
-    join_none
+    if (cfg.scb_otf_en) begin
+      `DV_SPINWAIT(wait(cfg.mon_start);,
+                   "timeout waiting for mon_start", 100_000)
+      fork
+        super.run_phase(phase);
+        monitor_core();
+      join_none
+    end
   endtask
 
   // Capture read request from flash_core
