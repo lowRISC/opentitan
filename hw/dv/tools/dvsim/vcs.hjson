@@ -99,7 +99,9 @@
                // ENUMASSIGN issues can cause LEC warnings later down the road (see #10083
                // and #10952 for context). The warning is therefore promoted to an error
                // in simulations in order to catch this as early as possible.
-               "-error=ENUMASSIGN"
+               "-error=ENUMASSIGN",
+               // Tasks must not be enabled in functions. Other tools do not allow this.
+               "-error=TEIF"
                ]
 
   run_opts:   ["-licqueue",
