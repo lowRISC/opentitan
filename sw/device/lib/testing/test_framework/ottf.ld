@@ -159,6 +159,9 @@ SECTIONS {
     _data_start = .;
     __global_pointer$ = . + 2048;
 
+    /* SRAM programs embedded in functional tests must come first. */
+    *(.data.sram_program)
+
     /* Small data should come before larger data. This helps to ensure small
      * globals are within 2048 bytes of the value of `gp`, making their accesses
      * hopefully only take one instruction. */
