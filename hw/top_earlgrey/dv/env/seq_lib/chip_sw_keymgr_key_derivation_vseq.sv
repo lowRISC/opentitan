@@ -107,6 +107,9 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     keymgr_pkg::otbn_key_req_t otbn_key;
     bit [keymgr_pkg::KeyWidth-1:0] cur_unmasked_key;
     bit [keymgr_pkg::KeyWidth-1:0] new_unmasked_key;
+    bit [keymgr_pkg::AdvDataWidth-1:0] creator_data;
+    bit [keymgr_pkg::KeyWidth-1:0]     exp_digest;
+
     super.body();
 
     // wait and check Keymgr entered CreatorRootKey State
@@ -116,7 +119,8 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     `DV_CHECK_FATAL(uvm_hdl_read(path_internal_key, new_key))
     new_unmasked_key = get_unmasked_key(new_key);
 
-    check_internal_key(cur_unmasked_key, get_creator_data(), new_unmasked_key);
+    get_creator_data(creator_data);
+    check_internal_key(cur_unmasked_key, creator_data, new_unmasked_key);
 
     wait (cfg.sw_logger_vif.printed_log == "Keymgr generated identity at CreatorRootKey State");
     check_gen_id(new_unmasked_key, top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrCreatorIdentitySeed);
@@ -133,7 +137,8 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     check_gen_id(new_unmasked_key, top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrOwnerIntIdentitySeed);
 
     wait (cfg.sw_logger_vif.printed_log == "Keymgr generated SW output at OwnerIntKey State");
-    check_gen_out(new_unmasked_key, GenSWOutData);
+    get_sw_shares(exp_digest);
+    check_gen_out(new_unmasked_key, GenSWOutData, exp_digest);
 
     // check 3 sideload interfaces
     wait (cfg.sw_logger_vif.printed_log ==
@@ -182,7 +187,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   // HealthMeasurement: HW random constant - RndCnstLcCtrlLcKeymgrDivTestDevRma
   // RomDigest:  backdoor read CSRs at ral.rom_ctrl_regs.digest
   // DiversificationKey: program fixed value to flash in the C test
-  virtual function bit [keymgr_pkg::AdvDataWidth-1:0] get_creator_data();
+  virtual task get_creator_data(output bit [keymgr_pkg::AdvDataWidth-1:0] creator_data_out);
     adv_creator_data_t creator_data;
     creator_data.SoftwareBinding = CreatorSwBinding;
     creator_data.HardwareRevisionSecret = top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrRevisionSeed;
@@ -205,8 +210,8 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
               UVM_LOW)
 
     creator_data.DiversificationKey = CreatorFlashSeeds;
-    return keymgr_pkg::AdvDataWidth'(creator_data);
-  endfunction
+    creator_data_out = keymgr_pkg::AdvDataWidth'(creator_data);
+  endtask
 
   virtual function bit [keymgr_pkg::AdvDataWidth-1:0] get_owner_int_data();
     adv_owner_int_data_t owner_int_data;
@@ -282,30 +287,29 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
       bit [keymgr_pkg::KeyWidth-1:0]     act_digest);
     bit [7:0] data_arr[];
     {<< byte {data_arr}} = kmac_data;
-
     check_kmac_digest(kmac_key, data_arr, act_digest);
   endfunction
 
-  virtual function void check_gen_id(
+  virtual task check_gen_id(
       bit [keymgr_pkg::KeyWidth-1:0]     kmac_key,
       bit [keymgr_pkg::IdDataWidth-1:0]  kmac_data);
     bit [7:0] data_arr[];
+    bit [keymgr_pkg::KeyWidth-1:0] sw_shares;
     {<< byte {data_arr}} = kmac_data;
-
-    check_kmac_digest(kmac_key, data_arr, get_sw_shares());
-  endfunction
+    get_sw_shares(sw_shares);
+    check_kmac_digest(kmac_key, data_arr, sw_shares);
+  endtask
 
   virtual function void check_gen_out(
       bit [keymgr_pkg::KeyWidth-1:0]     kmac_key,
       bit [keymgr_pkg::GenDataWidth-1:0] kmac_data,
-      bit [keymgr_pkg::KeyWidth-1:0]     exp_digest = get_sw_shares());
+      bit [keymgr_pkg::KeyWidth-1:0]     exp_digest);
     bit [7:0] data_arr[];
     {<< byte {data_arr}} = kmac_data;
-
     check_kmac_digest(kmac_key, data_arr, exp_digest);
   endfunction
 
-  virtual function bit [keymgr_pkg::KeyWidth-1:0] get_sw_shares();
+  virtual task get_sw_shares(output bit [keymgr_pkg::KeyWidth-1:0] sw_shares);
     key_shares_t key_shares;
     for (int i = 0; i < keymgr_pkg::KeyWidth / TL_DW; i++) begin
       bit [TL_DW-1:0] rdata;
@@ -319,6 +323,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     end
     `uvm_info(`gfn, $sformatf("Read SW shares 0x%0h, 0x%0h", key_shares[0], key_shares[1]),
               UVM_LOW)
-    return get_unmasked_key(key_shares);
-  endfunction
+    sw_shares = get_unmasked_key(key_shares);
+  endtask
+
 endclass : chip_sw_keymgr_key_derivation_vseq

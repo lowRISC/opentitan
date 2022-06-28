@@ -200,7 +200,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Task to back-door check a selected partition memory model
   // This will be called in the scoreboard check_phase if the check_full_scb_mem_model will
   //  be set to 1 (enabled by default).
-  task check_partition_mem_model(flash_ctrl_env_pkg::flash_dv_part_e part);
+  function void check_partition_mem_model(flash_ctrl_env_pkg::flash_dv_part_e part);
     flash_mem_addr_attrs addr_attr;
     data_4s_t bkdr_rd_data;
     data_model_t scb_flash_model = get_partition_mem_model(part);
@@ -214,13 +214,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                               "(%0d)"}, part.name(), addr_attr.bank, addr_attr.bank_addr,
                               addr_attr.bank_addr))
     end
-  endtask : check_partition_mem_model
+  endfunction : check_partition_mem_model
 
   // Task to back-door check the full memory model
   // This will be called in the scoreboard check_phase & between calls to the inner rand_ops vseq
   //  (in partner_flash_ctrl_base_vseq post_tran task) if the check_full_scb_mem_model will
   //  be set to 1 (enabled by default).
-  task check_mem_model();
+  function void check_mem_model();
     flash_ctrl_env_pkg::flash_dv_part_e part = part.first();
     `uvm_info(`gfn, $sformatf("\nStart checking all memory model\n"), UVM_MEDIUM)
     do begin
@@ -228,7 +228,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       part = part.next();
     end while (part != part.first());
     `uvm_info(`gfn, $sformatf("\nFinished checking all memory model\n"), UVM_MEDIUM)
-  endtask : check_mem_model
+  endfunction : check_mem_model
 
   // Reads flash mem contents via backdoor.
   //
