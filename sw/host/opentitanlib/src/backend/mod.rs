@@ -64,17 +64,24 @@ pub enum Error {
 /// Creates the requested backend interface according to [`BackendOpts`].
 pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     let interface = args.interface.as_str();
-    let mut env = TransportWrapper::new(match interface {
-        "" => create_empty_transport(),
-        "proxy" => proxy::create(&args.proxy_opts),
-        "verilator" => verilator::create(&args.verilator_opts),
-        "ti50emulator" => ti50emulator::create(&args.ti50emulator_opts),
-        "ultradebug" => ultradebug::create(args),
-        "hyperdebug" => hyperdebug::create::<StandardFlavor>(args),
-        "c2d2" => hyperdebug::create::<C2d2Flavor>(args),
-        "cw310" => cw310::create(args),
-        _ => Err(Error::UnknownInterface(interface.to_string()).into()),
-    }?);
+    let mut env = TransportWrapper::new(
+        match interface {
+            "" => create_empty_transport(),
+            "proxy" => proxy::create(&args.proxy_opts),
+            "verilator" => verilator::create(&args.verilator_opts),
+            "ti50emulator" => ti50emulator::create(&args.ti50emulator_opts),
+            "ultradebug" => ultradebug::create(args),
+            "hyperdebug" => hyperdebug::create::<StandardFlavor>(args),
+            "c2d2" => hyperdebug::create::<C2d2Flavor>(args),
+            "cw310" => cw310::create(args),
+            _ => Err(Error::UnknownInterface(interface.to_string()))?,
+        }
+        .or_else(|e| {
+            log::error!("Could not create transport for {}: {}", interface, e);
+            log::warn!("Defaulting to empty transport");
+            create_empty_transport()
+        })?,
+    );
     for conf_file in &args.conf {
         process_config_file(&mut env, conf_file)?
     }
