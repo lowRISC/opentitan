@@ -249,7 +249,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                      data.size() == SPI_FRAME_BYTE_SIZE;
                                      foreach (data[i]) {data[i] == sw_byte_q[byte_cnt+i];})
       `uvm_send(m_spi_host_seq)
-      wait (cfg.sw_logger_vif.printed_log == $sformatf("Frame #%0d processed done", num_frame));
+      wait (string'(cfg.sw_logger_vif.printed_log) ==
+            $sformatf("Frame #%0d processed done", num_frame));
       num_frame++;
 
       byte_cnt += SPI_FRAME_BYTE_SIZE;
