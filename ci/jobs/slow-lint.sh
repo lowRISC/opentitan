@@ -25,3 +25,6 @@ ci/scripts/verible-lint.sh dv
 
 echo -e "\n### Style-Lint FPV Verilog source files with Verible"
 ci/scripts/verible-lint.sh fpv
+
+echo -e "\n### Ensure all generated files are clean and up-to-date"
+ci/scripts/check-generated.sh

@@ -71,8 +71,6 @@ jobs:
   - bash: ci/scripts/mypy.sh
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Run Python lint (mypy)
-  - bash: ci/scripts/check-generated.sh
-    displayName: Ensure all generated files are clean and up-to-date
   - bash: ci/scripts/clang-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Use clang-format to check C/C++ coding style
@@ -128,6 +126,8 @@ jobs:
   - bash: ci/scripts/verible-lint.sh fpv
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Style-Lint FPV Verilog source files with Verible
+  - bash: ci/scripts/check-generated.sh
+    displayName: Ensure all generated files are clean and up-to-date
 
 - job: sw_build
   displayName: Build Software for Earl Grey toplevel design
