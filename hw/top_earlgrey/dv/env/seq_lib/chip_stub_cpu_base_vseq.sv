@@ -90,7 +90,7 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
   function void predict_csr_wr(uvm_reg_map map, uvm_reg_addr_t addr, uvm_reg_data_t data);
     uvm_reg rg = map.get_reg_by_offset(addr);
     if (rg != null) begin
-      rg.predict(.value(data), .kind(UVM_PREDICT_WRITE));
+      void'(rg.predict(.value(data), .kind(UVM_PREDICT_WRITE)));
     end else begin
       `uvm_error(`gfn, $sformatf("No register found at address 0x%0h in %0s", addr, map.`gfn))
     end

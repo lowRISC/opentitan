@@ -86,16 +86,19 @@ module tb;
   bind dut ast_ext_clk_if ast_ext_clk_if ();
 
   // POR reset if
-  pins_if #(1) por_rstn_if();
-  assign (weak0, weak1) por_rstn_if.pins = 1;
+  wire por_rstn;
+  pins_if #(1) por_rstn_if(.pins(por_rstn));
+  assign (weak0, weak1) por_rstn = 1;
 
   // power button if
-  pins_if #(1) pwrb_in_if();
-  assign (weak0, weak1) pwrb_in_if.pins = 1;
+  wire sysrst_ctrl_pwrb;
+  pins_if #(1) pwrb_in_if(.pins(sysrst_ctrl_pwrb));
+  assign (weak0, weak1) sysrst_ctrl_pwrb = 1;
 
   // pinmux wakeup detector trigger
-  pins_if #(1) pinmux_wkup_if();
-  assign (weak0, weak1) pinmux_wkup_if.pins = 0;
+  wire pinmux_wakeup;
+  pins_if #(1) pinmux_wkup_if(.pins(pinmux_wakeup));
+  assign (weak0, weak1) pinmux_wakeup = 0;
 
   // TODO: Replace with correct interfaces once
   // pinmux/padring and pinout have been updated.
@@ -134,7 +137,7 @@ module tb;
   // TODO: the external clk is currently not connected.
   // We will need to feed this in via a muxed pin, once that function implemented.
 
-  wire por_n = rst_n & por_rstn_if.pins;
+  wire por_n = rst_n & por_rstn;
   chip_earlgrey_asic dut (
     // Clock and Reset (VCC domain)
     .POR_N(por_n),
@@ -170,7 +173,7 @@ module tb;
     .IOB4(uart_rx[1]),     // MIO 13
     .IOB5(uart_tx[1]),     // MIO 14
     .IOB6(tie_off[1]),     // MIO 15
-    .IOB7(pinmux_wkup_if.pins),  // MIO 16
+    .IOB7(pinmux_wakeup),  // MIO 16
     .IOB8(tie_off[2]),     // MIO 17
     .IOB9(tie_off[3]),     // MIO 18
     .IOB10(iob10),         // MIO 19
@@ -204,7 +207,7 @@ module tb;
     .IOR10(uart_tx[2]),    // MIO 45
     .IOR11(uart_rx[3]),    // MIO 46
     .IOR12(uart_tx[3]),    // MIO 47
-    .IOR13(pwrb_in_if.pins),   // MIO 48
+    .IOR13(sysrst_ctrl_pwrb),  // MIO 48
     // DCD (VCC domain)
     .CC1(tie_off[10]),
     .CC2(tie_off[11]),
