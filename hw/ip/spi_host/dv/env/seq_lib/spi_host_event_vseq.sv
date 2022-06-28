@@ -28,25 +28,30 @@ class spi_host_event_vseq extends spi_host_tx_rx_vseq;
     segms_words = 0;
     cfg.seq_cfg.host_spi_min_len = 4;
     cfg.seq_cfg.host_spi_max_len = 4;
+
     wait_ready_for_command();
     program_spi_host_regs();
-    check_event(ral.status.ready, 1);
+    check_event(ral.status.ready, 1, 1);
 
     while (segms_words <=  spi_host_ctrl_reg.tx_watermark)  begin
       gen_trans();
     end
-    check_event(ral.status.txwm,0);
+    check_event(ral.status.txwm, 0, 0);
     for (int i = 0; i < command.size(); i++) begin
       command_snd = command[i];
       snd_cmd(command_snd);
-      if(i == 0) check_event(ral.status.active, 1);
+      if(i == 0) check_event(ral.status.active, 1, 1);
       csr_rd(.ptr(ral.status.txqd), .value(txqd));
-      if (txqd < spi_host_ctrl_reg.tx_watermark) begin
-        check_event(ral.status.txwm, 1);
-        read_rx_fifo();
+      `DV_CHECK_EQ(txqd, spi_host_ctrl_reg.tx_watermark - i)
+      csr_spinwait(.ptr(ral.status.rxempty), .exp_data(0));
+      if (txqd == (spi_host_ctrl_reg.tx_watermark - 1)) begin
+        check_event(ral.status.txwm, 1, 1);
+      end else if (txqd < (spi_host_ctrl_reg.tx_watermark - 1)) begin
+        check_event(ral.status.txwm, 0, 1);
       end
+      read_rx_fifo();
     end
-    check_event(ral.status.txempty, 1);
+    check_event(ral.status.txempty, 1, 1);
 
     cfg.clk_rst_vif.wait_clks(100);
 
@@ -58,22 +63,28 @@ class spi_host_event_vseq extends spi_host_tx_rx_vseq;
 
         begin
           for (int i = 0; i < spi_host_ctrl_reg.rx_watermark; i++) begin
-            check_event(ral.status.rxwm, 0);
-            if (i < spi_host_ctrl_reg.rx_watermark -1) check_event(ral.status.rxwm, 0);
+            check_event(ral.status.rxwm, 0, 0);
+            if (i < spi_host_ctrl_reg.rx_watermark -1) begin
+              check_event(ral.status.rxwm, 0, 0);
+            end
             spi_send_trans(1);
             csr_spinwait(.ptr(ral.status.txqd), .exp_data(0));
             csr_spinwait(.ptr(ral.status.rxqd), .exp_data(i+1));
           end
-          check_event(ral.status.rxwm, 1);
+          check_event(ral.status.rxwm, 1, 1);
+          if (spi_host_ctrl_reg.rx_watermark < SPI_HOST_RX_DEPTH) begin
+            spi_send_trans(1);
+            csr_spinwait(.ptr(ral.status.txqd), .exp_data(0));
+          end
+          check_event(ral.status.rxwm, 0, 1);
           if (spi_host_ctrl_reg.rx_watermark > 0) read_rx_fifo();
           for (int i = 0; i < SPI_HOST_RX_DEPTH; i++) begin
-            check_event(ral.status.rxfull, 0);
-            if (i < SPI_HOST_RX_DEPTH - 1) check_event(ral.status.rxfull, 0);
+            check_event(ral.status.rxfull, 0, 0);
             spi_send_trans(1);
             csr_spinwait(.ptr(ral.status.txqd), .exp_data(0));
             csr_spinwait(.ptr(ral.status.rxqd), .exp_data(i+1));
           end
-          check_event(ral.status.rxfull, 1);
+          check_event(ral.status.rxfull, 1, 1);
           read_rx_fifo();
         end
 

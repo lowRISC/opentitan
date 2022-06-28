@@ -84,13 +84,13 @@ class spi_host_base_vseq extends cip_base_vseq #(
     spi_host_ctrl_reg.csid inside {[0 : SPI_HOST_NUM_CS-1]};
     // control reg
     spi_host_ctrl_reg.tx_watermark dist {
-      [0:7]   :/ 1,
+      [1:7]   :/ 1,
       [8:15]  :/ 1,
       [16:31] :/ 1,
       [32:cfg.seq_cfg.host_spi_max_txwm] :/ 1
       };
     spi_host_ctrl_reg.rx_watermark dist {
-      [0:7]   :/ 1,
+      [1:7]   :/ 1,
       [8:15]  :/ 1,
       [16:31] :/ 1,
       [32:cfg.seq_cfg.host_spi_max_rxwm] :/ 1

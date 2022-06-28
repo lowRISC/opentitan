@@ -89,7 +89,7 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     `DV_CHECK_RANDOMIZE_FATAL(transaction)
   endtask
 
-  task check_event(uvm_reg_field fld, bit value);
+  task check_event(uvm_reg_field fld, bit intr_value, bit state_value);
     spi_host_intr_state_t intr_state;
     uvm_reg_field enable_fld;
     if (fld == ral.status.active) begin
@@ -98,10 +98,10 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     else begin
       enable_fld = ral.event_enable.get_field_by_name(fld.get_name);
     end
-    csr_rd_check(.ptr(fld), .compare_value(value));
-    if (enable_fld != null) begin
+    csr_rd_check(.ptr(fld), .compare_value(state_value));
+    if ((enable_fld != null) && enable_fld.get()) begin
       bit enable = `gmv(enable_fld);
-      check_interrupts(1 << intr_state.spi_event, value & enable);
+      check_interrupts(1 << intr_state.spi_event, intr_value & enable);
     end else begin
       check_interrupts(1 << intr_state.spi_event, 0);
     end
