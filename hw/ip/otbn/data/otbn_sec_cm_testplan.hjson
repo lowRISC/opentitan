@@ -124,15 +124,22 @@
     }
     {
       name: sec_cm_rnd_bus_consistency
-      desc: "Verify the countermeasure(s) RND.BUS.CONSISTENCY."
+      desc: '''
+      RND.BUS.CONSISTENCY:
+      Expect to trigger RND_FIPS_CHK_FAIL recoverable error for FIPS bit being low in any word of the received RND data.
+      '''
       milestone: V2S
-      tests: []
+      tests: ["otbn_rnd_sec_cm"]
     }
     {
       name: sec_cm_rnd_rng_digest
-      desc: "Verify the countermeasure(s) RND.RNG.DIGEST."
+      desc: '''
+      RND.RNG.DIGEST:
+      Randomly send the same EDN word for incoming RND data.
+      Expect to trigger RND_REP_CHK_FAIL recoverable error for repeated EDN words.
+      '''
       milestone: V2S
-      tests: []
+      tests: ["otbn_rnd_sec_cm"]
     }
     {
       name: sec_cm_rf_base_data_reg_sw_integrity

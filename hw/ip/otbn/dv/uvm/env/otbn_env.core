@@ -47,6 +47,7 @@ filesets:
       - seq_lib/otbn_escalate_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_zero_state_err_urnd_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_illegal_mem_acc_vseq.sv: {is_include_file: true}
+      - seq_lib/otbn_rnd_sec_cm_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_sw_errs_fatal_chk_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_intg_err_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_alu_bignum_mod_err_vseq.sv: {is_include_file: true}

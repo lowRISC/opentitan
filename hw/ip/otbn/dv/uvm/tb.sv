@@ -333,6 +333,9 @@ module tb;
     uvm_config_db#(virtual otbn_rf_base_if)::set(
       null, "*.env", "rf_base_vif",
       dut.u_otbn_core.u_otbn_rf_base.i_otbn_rf_base_if);
+    uvm_config_db#(virtual otbn_rnd_if)::set(
+      null, "*.env", "rnd_vif",
+      dut.u_otbn_core.u_otbn_rnd.i_otbn_rnd_if);
 
     // Instantiate mem_bkdr_util objects to allow access to IMEM and DMEM
     //

@@ -509,7 +509,7 @@ class otbn_base_vseq extends cip_base_vseq #(
   endfunction
 
   // Poll RND EDN request to set some constrained randomness as a response from EDN agent.
-  protected task _run_rnd_edn_rsp();
+  virtual task _run_rnd_edn_rsp();
     forever begin
       @(negedge cfg.clk_rst_vif.clk);
       if (cfg.poll_rnd_edn_req())
