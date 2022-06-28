@@ -13,9 +13,8 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/autogen/dif_rom_ctrl_autogen.h"
-
 #include "rom_ctrl_regs.h"  // Generated.
+#include "sw/device/lib/dif/autogen/dif_rom_ctrl_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {

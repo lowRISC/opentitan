@@ -20,11 +20,11 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 
 // TODO: make this toplevel agnostic.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 #include "external/freertos/include/FreeRTOS.h"
 #include "external/freertos/include/queue.h"
 #include "external/freertos/include/task.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 // Check layout of test configuration struct since OTTF ISR asm code requires a
 // specific layout.

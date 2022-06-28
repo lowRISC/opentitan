@@ -39,7 +39,8 @@ typedef enum pmp_csr_access_type {
 } pmp_csr_access_type_t;
 
 static const bitfield_field32_t kPmpCfgModeField = {
-    .mask = PMP_CFG_CSR_MODE_MASK, .index = PMP_CFG_CSR_A,
+    .mask = PMP_CFG_CSR_MODE_MASK,
+    .index = PMP_CFG_CSR_A,
 };
 
 /**
@@ -191,7 +192,8 @@ static pmp_region_configure_result_t pmp_csr_cfg_field_read(
 
   size_t field_index = (region % PMP_CFG_FIELDS_PER_REG) * PMP_CFG_FIELD_WIDTH;
   bitfield_field32_t pmp_csr_cfg_field = {
-      .mask = PMP_CFG_FIELD_MASK, .index = field_index,
+      .mask = PMP_CFG_FIELD_MASK,
+      .index = field_index,
   };
 
   *field_value = bitfield_field32_read(cfg_csr_original, pmp_csr_cfg_field);
@@ -219,7 +221,8 @@ static pmp_region_configure_result_t pmp_csr_cfg_field_write(
   // Determine the pmpcfg field index based on the `region`.
   size_t field_index = (region % PMP_CFG_FIELDS_PER_REG) * PMP_CFG_FIELD_WIDTH;
   bitfield_field32_t pmp_csr_cfg_field = {
-      .mask = PMP_CFG_FIELD_MASK, .index = field_index,
+      .mask = PMP_CFG_FIELD_MASK,
+      .index = field_index,
   };
 
   uint32_t cfg_csr_new =

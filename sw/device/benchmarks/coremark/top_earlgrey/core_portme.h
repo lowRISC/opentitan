@@ -179,7 +179,9 @@ typedef ee_u32 CORE_TICKS;
 */
 extern ee_u32 default_num_contexts;
 
-typedef struct CORE_PORTABLE_S { ee_u8 portable_id; } core_portable;
+typedef struct CORE_PORTABLE_S {
+  ee_u8 portable_id;
+} core_portable;
 
 /* target specific init/fini */
 void portable_init(core_portable *p, int *argc, char *argv[]);

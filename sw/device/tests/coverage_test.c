@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/testing/test_framework/coverage.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -9,7 +11,6 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/test_framework/coverage.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 static void spin_45(uint8_t state) {

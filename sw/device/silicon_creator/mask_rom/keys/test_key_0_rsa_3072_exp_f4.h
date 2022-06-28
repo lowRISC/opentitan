@@ -30,11 +30,10 @@
             0xd8dc61f4, 0x9404e8bc, 0x0db76fe3, 0x3491d3b0, 0x6ca44e27, \
             0xcda63719,                                                 \
         }},                                                             \
-    .n0_inv =                                                           \
-        {                                                               \
-            0x9c9a176b, 0x44d6fa52, 0x71a63ec4, 0xadc94595,             \
-            0x3fd9bc73, 0xa83cdc95, 0xbe1bc819, 0x2b421fae,             \
-        },                                                              \
+    .n0_inv = {                                                         \
+        0x9c9a176b, 0x44d6fa52, 0x71a63ec4, 0xadc94595,                 \
+        0x3fd9bc73, 0xa83cdc95, 0xbe1bc819, 0x2b421fae,                 \
+    },                                                                  \
   }
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_KEYS_TEST_KEY_0_RSA_3072_EXP_F4_H_

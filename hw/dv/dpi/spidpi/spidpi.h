@@ -35,21 +35,21 @@ struct spidpi_ctx {
 };
 
 // SPI Host States
-#define SP_IDLE    0
-#define SP_CSFALL  1
-#define SP_DMOVE   2
+#define SP_IDLE 0
+#define SP_CSFALL 1
+#define SP_DMOVE 2
 #define SP_LASTBIT 3
-#define SP_CSRISE  4
-#define SP_FINISH  99
+#define SP_CSRISE 4
+#define SP_FINISH 99
 
 // Bits in data to C
-#define D2P_SDO    0x2
+#define D2P_SDO 0x2
 #define D2P_SDO_EN 0x1
 
 // Bits in char from C
-#define P2D_SCK    0x1
-#define P2D_CSB    0x2
-#define P2D_SDI    0x4
+#define P2D_SCK 0x1
+#define P2D_CSB 0x2
+#define P2D_SDI 0x4
 
 void *spidpi_create(const char *name, int mode, int loglevel);
 char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data);

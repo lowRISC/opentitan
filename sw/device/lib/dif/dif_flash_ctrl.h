@@ -13,6 +13,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
+
 #include "sw/device/lib/dif/autogen/dif_flash_ctrl_autogen.h"
 
 #ifdef __cplusplus
