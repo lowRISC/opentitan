@@ -13,7 +13,6 @@ import re
 from pathlib import Path
 
 import hjson
-
 from lib.common import wrapped_docstring
 from lib.OtpMemImg import OtpMemImg
 
