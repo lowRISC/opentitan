@@ -81,15 +81,15 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
           uvm_reg_data_t rwdata;
           rwdata = get_field_val(selected_dtm_csr.get_field_by_name("bypass"), item.dout);
           `DV_CHECK_EQ(rwdata, 0)
-          selected_dtm_csr.predict(.value(item.dr), .kind(UVM_PREDICT_WRITE));
+          void'(selected_dtm_csr.predict(.value(item.dr), .kind(UVM_PREDICT_WRITE)));
         end
         "idcode": begin
           `DV_CHECK_EQ(item.dout, selected_dtm_csr.get_mirrored_value())
-          selected_dtm_csr.predict(.value(item.dr), .kind(UVM_PREDICT_WRITE));
+          void'(selected_dtm_csr.predict(.value(item.dr), .kind(UVM_PREDICT_WRITE)));
         end
         "dtmcs": begin
           `DV_CHECK_EQ(item.dout, selected_dtm_csr.get_mirrored_value())
-          selected_dtm_csr.predict(.value(item.dr), .kind(UVM_PREDICT_WRITE));
+          void'(selected_dtm_csr.predict(.value(item.dr), .kind(UVM_PREDICT_WRITE)));
         end
         default: `uvm_fatal(`gfn, $sformatf("Unknown DTM CSR: %0s", selected_dtm_csr.get_name()))
       endcase
