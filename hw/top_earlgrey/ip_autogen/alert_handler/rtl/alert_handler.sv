@@ -131,6 +131,8 @@ module alert_handler
     .ping_timeout_cyc_i ( reg2hw_wrap.ping_timeout_cyc   ),
     // set this to the maximum width in the design.
     // can be overridden in DV and FPV to shorten the wait periods.
+    // note however that this needs to be a right-aligned mask.
+    // also, do not set this to a value lower than 0x7.
     .wait_cyc_mask_i    ( {PING_CNT_DW{1'b1}}            ),
     // SEC_CM: ALERT_RX.INTERSIG.BKGN_CHK
     .alert_ping_req_o   ( alert_ping_req                 ),
