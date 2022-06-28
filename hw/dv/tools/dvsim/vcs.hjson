@@ -6,6 +6,13 @@
   build_ex:   "{build_dir}/simv"
   run_cmd:    "{job_prefix} {build_ex}"
 
+  // This option enables the following: (needed for uvm_hdl_*)
+  //  - Read capability on registers, variables, and nets
+  //  - Write (deposit) capability on registers and variables
+  //  - Force capability on registers, variables, and nets
+  // TODO Trim this flag since +f hurts performance.
+  vcs_build_opt_debug_access: "-debug_access+f"
+
   build_opts: ["-sverilog -full64 -licqueue -ntb_opts uvm-1.2",
                "-timescale={timescale}",
                "-Mdir={build_ex}.csrc",
@@ -44,14 +51,9 @@
                // .../libvcsnew.so: undefined reference to `snpsCheckStrdupFunc'
                // .../libvcsnew.so: undefined reference to `snpsGetMemBytes'
                "-LDFLAGS -Wl,--no-as-needed",
-               // This option enables the following: (needed for uvm_hdl_*)
-               //  - Read capability on registers, variables, and nets
-               //  - Write (deposit) capability on registers and variables
-               //  - Force capability on registers, variables, and nets
-               // TODO Trim this flag since +f hurts performance.
-               "-debug_access+f",
                // This option is needed for uvm_hdl_*, when it accesses the array under `celldefine
                "-debug_region=cell+lib",
+               "{vcs_build_opt_debug_access}",
                // Use this to conditionally compile for VCS (example: LRM interpretations differ
                // across tools).
                "+define+VCS",
