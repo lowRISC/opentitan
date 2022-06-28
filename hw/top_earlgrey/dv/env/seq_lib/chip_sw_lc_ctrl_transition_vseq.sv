@@ -43,6 +43,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
     for (int trans_i = 1; trans_i <= num_trans; trans_i++) begin
       // sw_symbol_backdoor_overwrite takes an array as the input.
       bit [7:0] trans_i_array[] = {trans_i};
+      bit [TL_DW-1:0] ext_clock_en;
       sw_symbol_backdoor_overwrite("kTestIterationCount", trans_i_array);
 
       if (trans_i > 1) begin
@@ -68,24 +69,32 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       // Wait for SW to finish power on set up.
       wait (cfg.sw_logger_vif.printed_log == "Start LC_CTRL transition test.");
 
-      // Detect windows when the AST selects ext_clk to drive the io_clk, to verify the external
-      // clock, and not the io oscillator, is actually used for these lc_ctrl transitions.
-      fork
-        begin
+      fork begin : isolation_fork
+        // Detect windows when the AST selects ext_clk to drive the io_clk, to verify the external
+        // clock, and not the io oscillator, is actually used for these lc_ctrl transitions.
+        fork begin
           cfg.ast_ext_clk_vif.detect_io_active_window();
           io_ext_clk_done = 1'b1;
-        end
-      join_none
+        end join_none
 
-      // Wait for LC_CTRL state trasition finish from TLUL interface.
-      wait_lc_status(LcTransitionSuccessful);
+        // Wait for LC_CTRL state trasition finish from TLUL interface.
+        wait_lc_status(LcTransitionSuccessful);
 
-      // LC_CTRL state transition requires a chip reset.
-      apply_reset();
-      `uvm_info(`gfn, "Second apply_reset done", UVM_MEDIUM)
+        // JTAG read out if LC_CTRL is configured to use external clock.
+        jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.transition_ctrl.get_offset(),
+                                            p_sequencer.jtag_sequencer_h,
+                                            ext_clock_en);
 
-      `DV_CHECK(io_ext_clk_done, "Io osc blocker should be done");
-      io_ext_clk_done = 1'b0;
+        // LC_CTRL state transition requires a chip reset.
+        apply_reset();
+        `uvm_info(`gfn, "Second apply_reset done", UVM_MEDIUM)
+
+        `DV_CHECK(io_ext_clk_done == ext_clock_en,
+                  $sformatf("External clock should be %0s", ext_clock_en ? "on" : "off"));
+        io_ext_clk_done = 1'b0;
+
+        disable fork;
+      end join
 
       // Wait for SW test finishes with a pass/fail status.
       wait (cfg.sw_test_status_vif.sw_test_status inside {SwTestStatusPassed,
