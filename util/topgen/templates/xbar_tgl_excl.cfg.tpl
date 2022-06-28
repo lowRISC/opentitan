@@ -36,10 +36,16 @@
       end_addr = start_addr + int(addr["size_byte"], 0) - 1
       addr_ranges.append((start_addr, end_addr))
     excl_bits = lib.get_toggle_excl_bits(addr_ranges)
-    dev_name = device["name"].replace('.', '__')
+    dev_name = device["name"]
+    if_name = ""
+    try:
+        dev_name, if_name = device["name"].split(".")
+        if_name += "_"
+    except ValueError:
+        pass
 %>\
       % for bit_range in excl_bits:
--node tb.dut*.u_${dev_name} *tl_i.a_address[${bit_range[1]}:${bit_range[0]}]
+-node tb.dut*.u_${dev_name} ${if_name}tl_i.a_address[${bit_range[1]}:${bit_range[0]}]
       % endfor
     % endif
   % endfor
