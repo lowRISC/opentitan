@@ -14,7 +14,7 @@
 set_expr_coverable_operators -all -event_or
 
 // Enables expression coverage of operators in various conditions and assignments.
-set_expr_coverable_statements -all
+set_expr_coverable_statements -procassign -event_control -misc
 
 // Enables scoring of Verilog modules compiled with -v/-y or -libcell option but continues to
 // disable the scoring of Verilog modules defined with the 'celldefine compiler directive.
@@ -46,3 +46,6 @@ set_toggle_portsonly
 
 // Include X->1|0 for toggle coverage collection. #10332
 set_toggle_includex
+
+// For ternary operator in default SOP mode
+set_expr_scoring -vlog_short_circuit
