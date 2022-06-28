@@ -16,6 +16,13 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   // type definitions
   typedef enum bit { CycleA = 1'b0, CycleB = 1'b1} state_e;
   typedef enum bit { LargeA = 1'b0, LargeB = 1'b1} dc_mod_e;
+  localparam int Init = 0;
+  localparam int LocalCount = 1;
+  //Every time the state is changed either from A to B or B to A,
+  //the initial transaction checking is going out of sync between checker and DUT.
+  //So, ignore_state_change is changed to 2 (SettleTime). This gives checker two pulses buffer to sync to DUT pwm_o pulse accurately.
+  localparam int SettleTime = 2;
+
 
   // global settings
   bit                               regwen                   =  0;
@@ -27,7 +34,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   int                               blink_cnt[PWM_NUM_CHANNELS]   = '{default:0};
   int                               ignore_start_pulse[PWM_NUM_CHANNELS]   = '{default:2};
   int                               ignore_state_change[PWM_NUM_CHANNELS]   = '{default:0};
-  uint                              subcycle_cnt[PWM_NUM_CHANNELS]   = '{default:0};
+  uint                              subcycle_cnt[PWM_NUM_CHANNELS]   = '{default:1};
   bit [15:0]                        int_dc[PWM_NUM_CHANNELS]   = '{default:0};
   param_reg_t                       channel_param[PWM_NUM_CHANNELS];
   dc_blink_t                        duty_cycle[PWM_NUM_CHANNELS];
@@ -101,6 +108,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
         bit pwm_en = get_field_val(ral.pwm_en[0].en[ii],item.a_data);
           if (pwm_en)begin
             `uvm_info(`gfn, $sformatf("detected toggle of channel[%d]", ii), UVM_HIGH)
+            blink_state[ii] = CycleA;
           end
           txt = { txt, $sformatf("\n Channel[%d] : %0b",ii, channel_en[ii]) };
           if (cfg.en_cov) begin
@@ -287,7 +295,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
               blink_cnt[channel]   = blink[channel].B;
               int_dc[channel] = duty_cycle[channel].B;
             end
-            ignore_state_change[channel] = 2 ;
+            ignore_state_change[channel] = SettleTime ;
           end else begin
             int_dc[channel] = (blink_state[channel] == CycleA) ? duty_cycle[channel].A :
               duty_cycle[channel].B;
@@ -309,32 +317,30 @@ class pwm_scoreboard extends cip_base_scoreboard #(
                   (int_dc[channel] - (blink[channel].B + 1)) :
                   (int_dc[channel] + (blink[channel].B + 1));
                 // reset subcycle_cnt after increment (decrement)
-                subcycle_cnt[channel] = 0;
+                subcycle_cnt[channel] = LocalCount;
+                ignore_state_change[channel] = SettleTime ;
                 initial_dc[channel]++;
               end else begin
                 // else increment subcycle_cnt
                 subcycle_cnt[channel]++;
                 initial_dc[channel]++;
-                if ( subcycle_cnt[channel] == ( blink[channel].A + 1 )) begin
-                  ignore_state_change[channel] = 1 ;
-                end
               end
               // enter CycleB when duty cycle is reached
               case (dc_mod)
                 LargeA: begin
                   if (int_dc[channel] <= duty_cycle[channel].B) begin
                     blink_state[channel] = CycleB;
-                    subcycle_cnt[channel] = 0;
-                    ignore_state_change[channel] = 1 ;
-                    initial_dc[channel] = 0;
+                    subcycle_cnt[channel] = LocalCount;
+                    ignore_state_change[channel] = SettleTime ;
+                    initial_dc[channel] = Init;
                   end
                 end
                 LargeB: begin
                   if (int_dc[channel] >= duty_cycle[channel].B) begin
                     blink_state[channel] = CycleB;
-                    ignore_state_change[channel] = 1 ;
-                    subcycle_cnt[channel] = 0;
-                    initial_dc[channel] = 0;
+                    ignore_state_change[channel] = SettleTime ;
+                    subcycle_cnt[channel] = LocalCount;
+                    initial_dc[channel] = Init;
                   end
                 end
                 default: begin
@@ -347,30 +353,28 @@ class pwm_scoreboard extends cip_base_scoreboard #(
                 int_dc[channel] = (dc_mod == 1'b1) ?
                   (int_dc[channel] - (blink[channel].B + 1'b1)) :
                   (int_dc[channel] + (blink[channel].B + 1'b1));
-                subcycle_cnt[channel] = 0;
+                subcycle_cnt[channel] = LocalCount;
+                ignore_state_change[channel] = SettleTime ;
                 initial_dc[channel]++;
               end else begin
                 subcycle_cnt[channel]++;
                 initial_dc[channel]++;
-                if ( subcycle_cnt[channel] == ( blink[channel].A + 1 )) begin
-                  ignore_state_change[channel] = 1 ;
-                end
               end
               case (dc_mod)
                 LargeB: begin
                   if (int_dc[channel] <= duty_cycle[channel].A) begin
                     blink_state[channel] = CycleA;
-                    ignore_state_change[channel] = 1 ;
-                    subcycle_cnt[channel] = 0;
-                    initial_dc[channel] = 0;
+                    ignore_state_change[channel] = SettleTime ;
+                    subcycle_cnt[channel] = LocalCount;
+                    initial_dc[channel] = Init;
                   end
                 end
                 LargeA: begin
                   if (int_dc[channel] >= duty_cycle[channel].A) begin
                     blink_state[channel] = CycleA;
-                    ignore_state_change[channel] = 1 ;
-                    subcycle_cnt[channel] = 0;
-                    initial_dc[channel] = 0;
+                    ignore_state_change[channel] = SettleTime ;
+                    subcycle_cnt[channel] = LocalCount;
+                    initial_dc[channel] = Init;
                   end
                 end
                 default: begin
@@ -389,7 +393,9 @@ class pwm_scoreboard extends cip_base_scoreboard #(
         end
       endcase
     end else int_dc[channel] = duty_cycle[channel].A;
-
+    if ( subcycle_cnt[channel] == blink[channel].A + 1'b1 ) begin
+      ignore_state_change[channel] = SettleTime ;
+    end
     beats_cycle = 2**(channel_cfg.DcResn + 1);
     period      = beats_cycle * (channel_cfg.ClkDiv + 1);
     high_cycles = (int_dc[channel] >> (16 - (channel_cfg.DcResn + 1))) * (channel_cfg.ClkDiv + 1);
