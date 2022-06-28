@@ -328,5 +328,5 @@ module alert_handler
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehotCheck_A,
-      u_reg_wrap.u_reg, loc_alert_trig[2])
+      u_reg_wrap.u_reg, loc_alert_trig[4])
 endmodule
