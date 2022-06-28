@@ -66,12 +66,26 @@ assign rst_aon_n = scan_mode_i ? scan_reset_ni : vcaon_pok;
 // External Clocks Generation
 ////////////////////////////////////////
 // Enable External Clock for SW Bypass
-logic sw_clk_byp_en, sw_all_clk_byp, sw_io_clk_byp;
+logic rst_sw_clk_byp_en, sw_all_clk_byp, sw_io_clk_byp;
 
 always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
   if ( !rst_aon_n ) begin
-    sw_clk_byp_en <= 1'b0;
+    rst_sw_clk_byp_en <= 1'b0;
   end else if ( sw_all_clk_byp || sw_io_clk_byp ) begin
+    rst_sw_clk_byp_en <= 1'b1;
+  end
+end
+
+logic rst_sw_ckbpe_n, clk_ast_ext_scn, sw_clk_byp_en;
+
+assign rst_sw_ckbpe_n = scan_mode_i ? scan_reset_ni : rst_sw_clk_byp_en;
+assign clk_ast_ext_scn = scan_mode_i ? clk_osc_sys_i : clk_ast_ext_i;
+
+// De-assert with external clock input
+always_ff @( negedge clk_ast_ext_scn, negedge rst_sw_ckbpe_n ) begin
+  if ( !rst_sw_ckbpe_n ) begin
+    sw_clk_byp_en <= 1'b0;
+  end else begin
     sw_clk_byp_en <= 1'b1;
   end
 end
@@ -415,6 +429,26 @@ logic rst_clk_osc_n, rst_clk_ext_n;
 assign rst_clk_osc_n = vcaon_pok;
 assign rst_clk_ext_n = vcaon_pok;
 
+// DV Hooks for IO clocks
+logic io_clk_byp_select, io_clk_byp_sel_buf, io_clk_osc_en_buf, io_clk_byp_en_buf;
+
+assign io_clk_byp_select = io_clk_byp_sel;
+
+prim_buf u_io_clk_byp_sel (
+  .in_i ( io_clk_byp_select ),
+  .out_o ( io_clk_byp_sel_buf )
+);
+
+prim_buf u_io_clk_osc_en (
+  .in_i ( io_clk_osc_en ),
+  .out_o ( io_clk_osc_en_buf )
+);
+
+prim_buf u_io_clk_byp_en (
+  .in_i ( io_clk_byp_en ),
+  .out_o ( io_clk_byp_en_buf )
+);
+
 logic rst_clk_osc_sys_n, rst_clk_ext_sys_n, rst_clk_osc_io_n, rst_clk_ext_io_n;
 logic rst_clk_osc_usb_n, rst_clk_ext_usb_n, rst_clk_osc_aon_n, rst_clk_ext_aon_n;
 
@@ -640,7 +674,10 @@ prim_mubi4_sender #(
 /////////////////////
 logic unused_sigs;
 
-assign unused_sigs = ^{ sys_clk_osc_en,
+assign unused_sigs = ^{ io_clk_byp_sel_buf,
+                        io_clk_byp_en_buf,
+                        io_clk_osc_en_buf,
+                        sys_clk_osc_en,
                         io_clk_osc_en,
                         usb_clk_osc_en,
                         aon_clk_osc_en

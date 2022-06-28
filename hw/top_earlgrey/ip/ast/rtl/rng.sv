@@ -61,7 +61,19 @@ logic srate_rng_val;
 logic [12-1:0] srate_cnt, srate_value;
 logic [EntropyStreams-1:0] rng_b;
 
+`ifndef SYNTHESIS
+logic [12-1:0] dv_srate_value;
+
+initial begin
+  if ( !$value$plusargs("rng_srate_value=%0d", dv_srate_value) ) begin
+    dv_srate_value = 12'd120;
+  end
+end
+
+assign srate_value = dv_srate_value;
+`else
 assign srate_value = 12'd120;
+`endif
 
 always_ff @( posedge clk_i, negedge rst_n ) begin
   if ( !rst_n ) begin

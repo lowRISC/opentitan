@@ -11,15 +11,15 @@ interface ast_ext_clk_if ();
 
   task automatic detect_io_active_window();
     fork
-      wait(u_ast.u_ast_clks_byp.u_clk_src_io_sel.clk_ext_en_o == 1'b1);
+      wait(u_ast.u_ast_clks_byp.u_io_clk_byp_en.out_o == 1'b1);
       `uvm_info("ast_ext_clk_if", "External clk became active for io clk", UVM_MEDIUM)
-      wait(u_ast.u_ast_clks_byp.u_clk_src_io_sel.clk_osc_en_o == 1'b0);
+      wait(u_ast.u_ast_clks_byp.u_io_clk_osc_en.out_o == 1'b0);
       `uvm_info("ast_ext_clk_if", "External clk back to inactive for io clk", UVM_MEDIUM)
     join
   endtask
 
   function automatic void check_ext_clk_in_use();
-    `DV_CHECK_EQ(u_ast.u_ast_clks_byp.u_clk_src_io_sel.clk_osc_en_o, 0, , , msg_id)
+    `DV_CHECK_EQ(u_ast.u_ast_clks_byp.u_io_clk_osc_en.out_o, 0, , , msg_id)
   endfunction
 
 endinterface : ast_ext_clk_if

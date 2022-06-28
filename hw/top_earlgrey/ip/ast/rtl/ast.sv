@@ -220,8 +220,6 @@ assign vcc_pok_h = vcc_pok;     // "Level Shifter"
 logic rst_poks_n, rst_poks_por_n, por_sync_n;
 logic vcaon_pok_por_src, vcaon_pok_por_lat, poks_por_ack, rglssm_vcmon, rglssm_brout;
 
-// assign rst_poks_n = scan_mode ? scan_reset_n : vcc_pok_str && vcaon_pok;
-// assign rst_poks_por_n = scan_mode ? scan_reset_n : vcc_pok_str && vcaon_pok && por_ni;
 assign rst_poks_n = vcc_pok_str && vcaon_pok;
 assign rst_poks_por_n = vcc_pok_str && vcaon_pok && por_ni;
 
@@ -309,7 +307,7 @@ assign ast_pwst_o.io_pok[1] = vcaon_pok && viob_pok;
 logic deep_sleep;
 
 // For UPF level shifter generation
-logic [1:0] otp_power_seq;
+logic [2-1:0] otp_power_seq;
 
 prim_buf u_otp_power_seq[1:0] (
   .in_i ( otp_power_seq_i[1:0] ),
@@ -336,13 +334,13 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .vcaon_pok_h_o ( vcaon_pok_h ),
   .vcaon_pok_1p1_h_o ( vcaon_pok ),
   .vcaon_pok_por_h_o ( ast_pwst_h_o.aon_pok ),
-  .vio_pok_h_o ( ast_pwst_h_o.io_pok[1:0] ),
+  .vio_pok_h_o ( ast_pwst_h_o.io_pok[2-1:0] ),
   .vcc_pok_str_h_o ( ast_pwst_h_o.vcc_pok ),
   .vcc_pok_str_1p1_h_o ( vcc_pok_str ),
   .deep_sleep_h_o ( deep_sleep ),
-  .otp_power_seq_h_o ( otp_power_seq_h_o[1:0] ),
   .flash_power_down_h_o ( flash_power_down_h_o ),
-  .flash_power_ready_h_o ( flash_power_ready_h_o )
+  .flash_power_ready_h_o ( flash_power_ready_h_o ),
+  .otp_power_seq_h_o ( otp_power_seq_h_o[2-1:0] )
 );  // of u_rglts_pdm_3p3v
 
 assign ast_pwst_o.vcc_pok = vcc_pok_str;
@@ -681,12 +679,24 @@ ast_pkg::ast_dif_t ot3_alert_src;
 ast_pkg::ast_dif_t ot4_alert_src;
 ast_pkg::ast_dif_t ot5_alert_src;
 
+// Reset De-Assert Sync
+logic rst_ast_alert_da_n;
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_rst_ast_alert_da (
+  .clk_i ( clk_ast_alert_i ),
+  .rst_ni ( rst_ast_alert_ni ),
+  .d_i ( 1'b1 ),
+  .q_o ( rst_ast_alert_da_n )
+);
 
 // Active Shield (AS)
 ///////////////////////////////////////
 ast_alert u_alert_as (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
+  .rst_ni ( rst_ast_alert_da_n ),
   .alert_src_i ( as_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::AsSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::AsSel] ),
@@ -697,7 +707,7 @@ ast_alert u_alert_as (
 ///////////////////////////////////////
 ast_alert u_alert_cg (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
+  .rst_ni ( rst_ast_alert_da_n ),
   .alert_src_i ( cg_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::CgSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::CgSel] ),
@@ -708,7 +718,7 @@ ast_alert u_alert_cg (
 ///////////////////////////////////////
 ast_alert u_alert_gd (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
+  .rst_ni ( rst_ast_alert_da_n ),
   .alert_src_i ( gd_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::GdSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::GdSel] ),
@@ -719,7 +729,7 @@ ast_alert u_alert_gd (
 ///////////////////////////////////////
 ast_alert u_alert_ts_hi (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
+  .rst_ni ( rst_ast_alert_da_n ),
   .alert_src_i ( ts_alert_hi_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::TsHiSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::TsHiSel] ),
@@ -730,7 +740,7 @@ ast_alert u_alert_ts_hi (
 ///////////////////////////////////////
 ast_alert u_alert_ts_lo (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
+  .rst_ni ( rst_ast_alert_da_n ),
   .alert_src_i ( ts_alert_lo_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::TsLoSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::TsLoSel] ),
@@ -741,8 +751,8 @@ ast_alert u_alert_ts_lo (
 ///////////////////////////////////////
 ast_alert u_alert_fla (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
-  .alert_src_i ( fla_alert_src_i ),
+  .rst_ni ( rst_ast_alert_da_n ),
+  .alert_src_i ( fla_alert_src_i ),  //TODO: Add enable
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::FlaSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::FlaSel] ),
   .alert_req_o ( alert_req_o.alerts[ast_pkg::FlaSel] )
@@ -753,7 +763,7 @@ ast_alert u_alert_fla (
 ast_alert u_alert_otp (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_src_i ( otp_alert_src_i ),
+  .alert_src_i ( otp_alert_src_i ),  //TODO: Add enable
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::OtpSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::OtpSel] ),
   .alert_req_o ( alert_req_o.alerts[ast_pkg::OtpSel] )
@@ -763,7 +773,7 @@ ast_alert u_alert_otp (
 ///////////////////////////////////////
 ast_alert u_alert_ot0 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
+  .rst_ni ( rst_ast_alert_da_n ),
   .alert_src_i ( ot0_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot0Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot0Sel] ),
@@ -774,7 +784,7 @@ ast_alert u_alert_ot0 (
 ///////////////////////////////////////
 ast_alert u_alert_ot1 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
+  .rst_ni ( rst_ast_alert_da_n ),
   .alert_src_i ( ot1_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot1Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot1Sel] ),
@@ -785,7 +795,7 @@ ast_alert u_alert_ot1 (
 ///////////////////////////////////////
 ast_alert u_alert_ot2 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
+  .rst_ni ( rst_ast_alert_da_n ),
   .alert_src_i ( ot2_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[Ot2Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[Ot2Sel] ),
@@ -796,7 +806,7 @@ ast_alert u_alert_ot2 (
 ///////////////////////////////////////
 ast_alert u_alert_ot3 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
+  .rst_ni ( rst_ast_alert_da_n ),
   .alert_src_i ( ot3_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[Ot3Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[Ot3Sel] ),
@@ -807,7 +817,7 @@ ast_alert u_alert_ot3 (
 ///////////////////////////////////////
 ast_alert u_alert_ot4 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
+  .rst_ni ( rst_ast_alert_da_n ),
   .alert_src_i ( ot4_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot4Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot4Sel] ),
@@ -818,7 +828,7 @@ ast_alert u_alert_ot4 (
 ///////////////////////////////////////
 ast_alert u_alert_ot5 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
+  .rst_ni ( rst_ast_alert_da_n ),
   .alert_src_i ( ot5_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot5Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot5Sel] ),
@@ -983,7 +993,7 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(EntropyRateKnownO_A, entropy_rate_o, clk_ast_es_i, rst_ast_es_ni)          // TODO
 `ASSERT_KNOWN(EntropyReeqKnownO_A, entropy_req_o, clk_ast_es_i,rst_ast_es_ni)            // TODO
 // Alerts
-`ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)
+`ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_da_n)
 // DPRAM/SPRAM
 `ASSERT_KNOWN(DpramRmfKnownO_A, dpram_rmf_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(DpramRmlKnownO_A, dpram_rml_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
@@ -1000,7 +1010,8 @@ assign ast2pad_t1_ao = 1'bz;
 
 // Alert assertions for reg_we onehot check
 `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehot_A,
-    u_reg, alert_req_o.alerts[ast_pkg::Ot0Sel].p, , , clk_ast_alert_i, rst_ast_alert_ni)
+   u_reg, alert_req_o.alerts[ast_pkg::Ot0Sel].p, , , clk_ast_alert_i, rst_ast_alert_da_n)
+
 
 /////////////////////
 // Unused Signals  //
