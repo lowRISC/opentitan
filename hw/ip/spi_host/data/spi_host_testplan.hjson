@@ -156,7 +156,7 @@
               - Check that the data can be read one full cycle after the data was asserted
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_speed"]
     }
     {
       name: duplex

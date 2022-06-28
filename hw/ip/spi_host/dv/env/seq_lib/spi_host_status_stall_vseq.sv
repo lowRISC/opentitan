@@ -30,7 +30,7 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
           if (rxqd == SPI_HOST_RX_DEPTH) begin
             break;
           end else begin
-            check_event(ral.status.rxfull, 0);
+            check_event(ral.status.rxfull, 0, 0);
             csr_rd_check(.ptr(ral.status.rxstall), .compare_value(1'b0));
           end
         end
