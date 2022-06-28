@@ -22,6 +22,7 @@ cleanup() {
 
 # Run a command and then check the tree is still clean. Print a message if not.
 gen_and_check_clean() {
+    cleanup
     thing="$1"
     shift
     "$@" || {

@@ -452,4 +452,4 @@ git add your_modified_file.c
 git clang-format
 ```
 
-To reformat the whole tree the script `util/run-clang-format.sh` can be used.
+To reformat the whole tree the command `./bazelisk.sh run //:clang_format_fix` can be used.
