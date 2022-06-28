@@ -153,8 +153,12 @@ module rv_dm
     EnFetch,
     EnRom,
     EnSba,
+    // EnDebugReq[NrHarts], <= this unfortunately does not work - SV-LRM mandates the use of
+    // integral numbers. Parameters are not allowed in this context.
     EnDebugReq,
-    EnResetReq,
+    // The above literal accommodates NrHarts number of debug requests - so we number the next
+    // literal accordingly.
+    EnResetReq = 4 + NrHarts - 1,
     EnDmiReq,
     EnJtagIn,
     EnJtagOut,
@@ -272,10 +276,12 @@ module rv_dm
 
   assign device_addr_b = {device_addr_w, {$clog2(BusWidth/8){1'b0}}};
 
-  logic debug_req_en;
-  logic debug_req;
-  // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign debug_req_en = lc_tx_test_true_strict(lc_hw_debug_en[EnDebugReq]);
+  logic [NrHarts-1:0] debug_req_en;
+  logic [NrHarts-1:0] debug_req;
+  for (genvar i = 0; i < NrHarts; i++) begin : gen_debug_req_hart
+    // SEC_CM: DM_EN.CTRL.LC_GATED
+    assign debug_req_en[i] = lc_tx_test_true_strict(lc_hw_debug_en[EnDebugReq + i]);
+  end
   assign debug_req_o = debug_req & debug_req_en;
 
   // Gating of JTAG signals
