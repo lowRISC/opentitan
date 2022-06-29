@@ -77,11 +77,11 @@ def _present_64bit_digest(data_blocks, iv, const):
     return state
 
 
-def _to_hexfile_with_ecc(data, annotation, config,
+def _to_memfile_with_ecc(data, annotation, config,
                          data_perm) -> Tuple[str, int]:
-    '''Compute ECC and convert into memory hexfile'''
+    '''Compute ECC and convert into MEM file'''
 
-    log.info('Convert to HEX file.')
+    log.info('Convert to MEM file.')
 
     data_width = config['secded']['data_width']
     ecc_width = config['secded']['ecc_width']
@@ -98,25 +98,22 @@ def _to_hexfile_with_ecc(data, annotation, config,
     bin_format_str = '0' + str(data_width) + 'b'
     hex_format_str = '0' + str(bytes_per_word_ecc * 2) + 'x'
     bitness = bytes_per_word_ecc * 8
-    memory_words = '// OTP memory hexfile with {} x {}bit layout\n'.format(
-        num_words, bitness)
+    mem_lines = [
+        '// OTP MEM file with {} x {}bit layout'.format(num_words, bitness),
+    ]
+
     log.info('Memory layout is {} x {}bit (with ECC)'.format(
         num_words, bitness))
 
-    for k in range(num_words):
+    for i_word in range(num_words):
         # Assemble native OTP word and uniquify annotation for comments
+        word_address = i_word * bytes_per_word
         word = 0
-        word_ann = {}
-        for j in range(bytes_per_word):
-            idx = k * bytes_per_word + j
-            word += data[idx] << (j * 8)
-            if annotation[idx] not in word_ann:
-                word_ann.update({annotation[idx]: "1"})
-
-        # This prints the byte offset of the corresponding
-        # payload data in the memory map (excluding ECC bits)
-        annotation_str = ' // {:06x}: '.format(k * bytes_per_word) + ', '.join(
-            word_ann.keys())
+        word_annotations = set()
+        for i_byte in range(bytes_per_word):
+            byte_address = word_address + i_byte
+            word += data[byte_address] << (i_byte * 8)
+            word_annotations.add(annotation[byte_address])
 
         # ECC encode
         word_bin = format(word, bin_format_str)
@@ -125,11 +122,19 @@ def _to_hexfile_with_ecc(data, annotation, config,
         word_bin = ('0' * bit_padding) + word_bin
         word_bin = permute_bits(word_bin, data_perm)
         word_hex = format(int(word_bin, 2), hex_format_str)
-        memory_words += word_hex + annotation_str + '\n'
+
+        # Build a MEM line containing this word's address in the memory map and
+        # its value. Because this file will be read by Verilog's $readmemh, the
+        # address is a *word* offset, not a byte offset. The address does not
+        # count ECC bits. In a comment, we also include any annotations
+        # associated with the word.
+        line = '@{:06x} {} // {}'.format(i_word, word_hex,
+                                         ', '.join(word_annotations))
+        mem_lines.append(line)
 
     log.info('Done.')
 
-    return (memory_words, bitness)
+    return ('\n'.join(mem_lines), bitness)
 
 
 def _check_unused_keys(dict_to_check, msg_postfix=""):
@@ -142,12 +147,8 @@ def _check_unused_keys(dict_to_check, msg_postfix=""):
 
 class OtpMemImg(OtpMemMap):
 
-    # LC state object
-    lc_state = []
-
     def __init__(self, lc_state_config, otp_mmap_config, img_config,
                  data_perm):
-
         # Initialize memory map
         super().__init__(otp_mmap_config)
 
@@ -354,7 +355,7 @@ class OtpMemImg(OtpMemMap):
 
         # First chop up all items into individual bytes.
         data_bytes = [0] * part_size
-        # Annotation is propagated into the hexfile as comments
+        # Annotation is propagated into the MEM file as comments
         annotation = ['unallocated'] * part_size
         # Need to keep track of defined items for the scrambling.
         # Undefined regions are left blank (0x0) in the memory.
@@ -469,8 +470,8 @@ class OtpMemImg(OtpMemMap):
                 'Data permutation "{}" is not bijective,'
                 'since it contains duplicated indices.'.format(data_perm))
 
-    def streamout_hexfile(self) -> Tuple[str, int]:
-        '''Streamout of memory image in hex file format
+    def streamout_memfile(self) -> Tuple[str, int]:
+        '''Streamout of memory image in MEM file format
 
         Returns a tuple of the file contents and architecture bitness.
         '''
@@ -497,5 +498,5 @@ class OtpMemImg(OtpMemMap):
         assert len(annotation) <= otp_size, 'Annotation size mismatch'
         assert len(data) == len(annotation), 'Data/Annotation size mismatch'
 
-        return _to_hexfile_with_ecc(data, annotation, self.lc_state.config,
+        return _to_memfile_with_ecc(data, annotation, self.lc_state.config,
                                     self.data_perm)
