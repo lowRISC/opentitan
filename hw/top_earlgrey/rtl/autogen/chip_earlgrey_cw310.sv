@@ -30,7 +30,8 @@ module chip_earlgrey_cw310 #(
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
   inout IO_CLK, // Manual Pad
-  inout IO_JSRST_N, // Manual Pad
+  inout POR_BUTTON_N, // Manual Pad
+  inout JTAG_SRST_N, // Manual Pad
   inout IO_USB_CONNECT, // Manual Pad
   inout IO_USB_DP_TX, // Manual Pad
   inout IO_USB_DN_TX, // Manual Pad
@@ -71,6 +72,9 @@ module chip_earlgrey_cw310 #(
   inout IOC10, // MIO Pad 32
   inout IOC11, // MIO Pad 33
   inout IOR0, // MIO Pad 35
+  inout IOR1, // MIO Pad 36
+  inout IOR2, // MIO Pad 37
+  inout IOR3, // MIO Pad 38
   inout IOR4  // MIO Pad 39
 );
 
@@ -85,11 +89,11 @@ module chip_earlgrey_cw310 #(
   localparam int Tap1PadIdx = 27;
   localparam int Dft0PadIdx = 25;
   localparam int Dft1PadIdx = 26;
-  localparam int TckPadIdx = 59;
-  localparam int TmsPadIdx = 60;
+  localparam int TckPadIdx = 38;
+  localparam int TmsPadIdx = 35;
   localparam int TrstNPadIdx = 39;
-  localparam int TdiPadIdx = 53;
-  localparam int TdoPadIdx = 54;
+  localparam int TdiPadIdx = 37;
+  localparam int TdoPadIdx = 36;
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
@@ -197,7 +201,8 @@ module chip_earlgrey_cw310 #(
   // Manual pads
   logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
   logic manual_in_io_clk, manual_out_io_clk, manual_oe_io_clk;
-  logic manual_in_io_jsrst_n, manual_out_io_jsrst_n, manual_oe_io_jsrst_n;
+  logic manual_in_por_button_n, manual_out_por_button_n, manual_oe_por_button_n;
+  logic manual_in_jtag_srst_n, manual_out_jtag_srst_n, manual_oe_jtag_srst_n;
   logic manual_in_io_usb_connect, manual_out_io_usb_connect, manual_oe_io_usb_connect;
   logic manual_in_io_usb_dp_tx, manual_out_io_usb_dp_tx, manual_oe_io_usb_dp_tx;
   logic manual_in_io_usb_dn_tx, manual_out_io_usb_dn_tx, manual_oe_io_usb_dn_tx;
@@ -212,7 +217,8 @@ module chip_earlgrey_cw310 #(
 
   pad_attr_t manual_attr_por_n;
   pad_attr_t manual_attr_io_clk;
-  pad_attr_t manual_attr_io_jsrst_n;
+  pad_attr_t manual_attr_por_button_n;
+  pad_attr_t manual_attr_jtag_srst_n;
   pad_attr_t manual_attr_io_usb_connect;
   pad_attr_t manual_attr_io_usb_dp_tx;
   pad_attr_t manual_attr_io_usb_dn_tx;
@@ -262,15 +268,6 @@ module chip_earlgrey_cw310 #(
   assign mio_in[34] = 1'b0;
   assign mio_in_raw[34] = 1'b0;
   assign unused_sig[55] = mio_out[34] ^ mio_oe[34];
-  assign mio_in[36] = 1'b0;
-  assign mio_in_raw[36] = 1'b0;
-  assign unused_sig[57] = mio_out[36] ^ mio_oe[36];
-  assign mio_in[37] = 1'b0;
-  assign mio_in_raw[37] = 1'b0;
-  assign unused_sig[58] = mio_out[37] ^ mio_oe[37];
-  assign mio_in[38] = 1'b0;
-  assign mio_in_raw[38] = 1'b0;
-  assign unused_sig[59] = mio_out[38] ^ mio_oe[38];
   assign mio_in[40] = 1'b0;
   assign mio_in_raw[40] = 1'b0;
   assign unused_sig[61] = mio_out[40] ^ mio_oe[40];
@@ -307,8 +304,8 @@ module chip_earlgrey_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(24),
-    .NMioPads(28),
+    .NDioPads(25),
+    .NMioPads(31),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
       BidirStd, // IO_CLKOUT
@@ -321,7 +318,8 @@ module chip_earlgrey_cw310 #(
       BidirStd, // IO_USB_DN_TX
       BidirStd, // IO_USB_DP_TX
       BidirStd, // IO_USB_CONNECT
-      InputStd, // IO_JSRST_N
+      InputStd, // JTAG_SRST_N
+      InputStd, // POR_BUTTON_N
       InputStd, // IO_CLK
       InputStd, // SPI_DEV_CS_L
       InputStd, // SPI_DEV_CLK
@@ -337,6 +335,9 @@ module chip_earlgrey_cw310 #(
     }),
     .MioPadType ({
       BidirStd, // IOR4
+      BidirStd, // IOR3
+      BidirStd, // IOR2
+      BidirStd, // IOR1
       BidirStd, // IOR0
       BidirOd, // IOC11
       BidirOd, // IOC10
@@ -383,7 +384,8 @@ module chip_earlgrey_cw310 #(
       IO_USB_DN_TX,
       IO_USB_DP_TX,
       IO_USB_CONNECT,
-      IO_JSRST_N,
+      JTAG_SRST_N,
+      POR_BUTTON_N,
       IO_CLK,
       SPI_DEV_CS_L,
       SPI_DEV_CLK,
@@ -400,6 +402,9 @@ module chip_earlgrey_cw310 #(
 
     .mio_pad_io ({
       IOR4,
+      IOR3,
+      IOR2,
+      IOR1,
       IOR0,
       IOC11,
       IOC10,
@@ -442,7 +447,8 @@ module chip_earlgrey_cw310 #(
         manual_in_io_usb_dn_tx,
         manual_in_io_usb_dp_tx,
         manual_in_io_usb_connect,
-        manual_in_io_jsrst_n,
+        manual_in_jtag_srst_n,
+        manual_in_por_button_n,
         manual_in_io_clk,
         dio_in[DioSpiDeviceCsb],
         dio_in[DioSpiDeviceSck],
@@ -468,7 +474,8 @@ module chip_earlgrey_cw310 #(
         manual_out_io_usb_dn_tx,
         manual_out_io_usb_dp_tx,
         manual_out_io_usb_connect,
-        manual_out_io_jsrst_n,
+        manual_out_jtag_srst_n,
+        manual_out_por_button_n,
         manual_out_io_clk,
         dio_out[DioSpiDeviceCsb],
         dio_out[DioSpiDeviceSck],
@@ -494,7 +501,8 @@ module chip_earlgrey_cw310 #(
         manual_oe_io_usb_dn_tx,
         manual_oe_io_usb_dp_tx,
         manual_oe_io_usb_connect,
-        manual_oe_io_jsrst_n,
+        manual_oe_jtag_srst_n,
+        manual_oe_por_button_n,
         manual_oe_io_clk,
         dio_oe[DioSpiDeviceCsb],
         dio_oe[DioSpiDeviceSck],
@@ -520,7 +528,8 @@ module chip_earlgrey_cw310 #(
         manual_attr_io_usb_dn_tx,
         manual_attr_io_usb_dp_tx,
         manual_attr_io_usb_connect,
-        manual_attr_io_jsrst_n,
+        manual_attr_jtag_srst_n,
+        manual_attr_por_button_n,
         manual_attr_io_clk,
         dio_attr[DioSpiDeviceCsb],
         dio_attr[DioSpiDeviceSck],
@@ -536,36 +545,31 @@ module chip_earlgrey_cw310 #(
       }),
 
     .mio_in_o ({
-        mio_in[39],
-        mio_in[35],
+        mio_in[39:35],
         mio_in[33:22],
         mio_in[14:13],
         mio_in[11:0]
       }),
     .mio_out_i ({
-        mio_out[39],
-        mio_out[35],
+        mio_out[39:35],
         mio_out[33:22],
         mio_out[14:13],
         mio_out[11:0]
       }),
     .mio_oe_i ({
-        mio_oe[39],
-        mio_oe[35],
+        mio_oe[39:35],
         mio_oe[33:22],
         mio_oe[14:13],
         mio_oe[11:0]
       }),
     .mio_attr_i ({
-        mio_attr[39],
-        mio_attr[35],
+        mio_attr[39:35],
         mio_attr[33:22],
         mio_attr[14:13],
         mio_attr[11:0]
       }),
     .mio_in_raw_o ({
-        mio_in_raw[39],
-        mio_in_raw[35],
+        mio_in_raw[39:35],
         mio_in_raw[33:22],
         mio_in_raw[14:13],
         mio_in_raw[11:0]
@@ -608,10 +612,12 @@ module chip_earlgrey_cw310 #(
   assign manual_oe_io_usb_connect = 1'b1;
 
   // Set SPD to full-speed
+  assign manual_attr_io_usb_speed = '0;
   assign manual_out_io_usb_speed = 1'b1;
   assign manual_oe_io_usb_speed = 1'b1;
 
   // TUSB1106 low-power mode
+  assign manual_attr_io_usb_suspend = '0;
   assign manual_out_io_usb_suspend = !usb_rx_enable;
   assign manual_oe_io_usb_suspend = 1'b1;
 
@@ -783,13 +789,13 @@ module chip_earlgrey_cw310 #(
 
   assign ast_base_pwr.main_pok = base_ast_pwr.main_pd_n;
 
-  logic clk_main, clk_usb_48mhz, clk_aon, rst_n;
+  logic clk_main, clk_usb_48mhz, clk_aon, rst_n, srst_n;
   clkgen_xil7series # (
     .AddClkBuf(0)
   ) clkgen (
     .clk_i(manual_in_io_clk),
     .rst_ni(manual_in_por_n),
-    .jtag_srst_ni(manual_in_io_jsrst_n),
+    .srst_ni(srst_n),
     .clk_main_o(clk_main),
     .clk_48MHz_o(clk_usb_48mhz),
     .clk_aon_o(clk_aon),
@@ -950,12 +956,20 @@ module chip_earlgrey_cw310 #(
   // PLL for FPGA //
   //////////////////
 
+  assign manual_attr_io_clk = '0;
   assign manual_out_io_clk = 1'b0;
   assign manual_oe_io_clk = 1'b0;
+  assign manual_attr_por_n = '0;
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
-  assign manual_out_io_jsrst_n = 1'b0;
-  assign manual_oe_io_jsrst_n = 1'b0;
+  assign manual_attr_por_button_n = '0;
+  assign manual_out_por_button_n = 1'b0;
+  assign manual_oe_por_button_n = 1'b0;
+
+  assign srst_n = manual_in_por_button_n & manual_in_jtag_srst_n;
+  assign manual_attr_jtag_srst_n = '0;
+  assign manual_out_jtag_srst_n = 1'b0;
+  assign manual_oe_jtag_srst_n = 1'b0;
 
 
   //////////////////////
@@ -1132,6 +1146,7 @@ module chip_earlgrey_cw310 #(
   );
 
   // Generate the actual trigger signal.
+  assign manual_attr_io_trigger = '0;
   assign manual_oe_io_trigger  = manual_in_io_clk_trigger_oe;
   assign manual_out_io_trigger = manual_in_io_clk_trigger_en &
       prim_mubi_pkg::mubi4_test_false_strict(manual_in_io_clk_idle);

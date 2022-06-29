@@ -102,7 +102,7 @@ bool test_main(void) {
   pinmux_testutils_init(&pinmux);
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-      kTopEarlgreyPinmuxInselIor0));
+      kTopEarlgreyPinmuxInselIoc7));
 
   // Call `usbdev_init` here so that DPI will not start until the
   // simulation has finished all of the printing, which takes a while
