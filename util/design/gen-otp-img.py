@@ -22,8 +22,9 @@ MMAP_DEFINITION_FILE = 'hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson'
 LC_STATE_DEFINITION_FILE = 'hw/ip/lc_ctrl/data/lc_ctrl_state.hjson'
 # Default image file definition (can be overridden on the command line).
 IMAGE_DEFINITION_FILE = 'hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson'
-# Default output path (can be overridden on the command line).
-MEMORY_HEX_FILE = 'otp-img.vmem'
+# Default output path (can be overridden on the command line). Note that
+# "BITWIDTH" will be replaced with the architecture's bitness.
+MEMORY_HEX_FILE = 'otp-img.BITWIDTH.vmem'
 
 
 def _override_seed(args, name, config):
@@ -92,7 +93,6 @@ def main():
     lc_state_def_file = Path(proj_root).joinpath(LC_STATE_DEFINITION_FILE)
     mmap_def_file = Path(proj_root).joinpath(MMAP_DEFINITION_FILE)
     img_def_file = Path(proj_root).joinpath(IMAGE_DEFINITION_FILE)
-    hex_file = Path(MEMORY_HEX_FILE)
 
     parser = argparse.ArgumentParser(
         prog="gen-otp-img",
@@ -142,13 +142,13 @@ def main():
                         ''')
     parser.add_argument('-o',
                         '--out',
-                        type=Path,
+                        type=str,
                         metavar='<path>',
-                        default=hex_file,
+                        default=MEMORY_HEX_FILE,
                         help='''
                         Custom output path for generated hex file.
                         Defaults to {}
-                        '''.format(hex_file))
+                        '''.format(MEMORY_HEX_FILE))
     parser.add_argument('--lc-state-def',
                         type=Path,
                         metavar='<path>',
@@ -264,9 +264,13 @@ def main():
     memfile_header = '// Generated on {} with\n// $ gen-otp-img.py {}\n//\n'.format(
         dtstr, argstr)
 
-    hexfile_content = memfile_header + otp_mem_img.streamout_hexfile()
+    hexfile_content, bitness = otp_mem_img.streamout_hexfile()
+    hexfile_content = memfile_header + hexfile_content
 
-    with open(args.out, 'w') as outfile:
+    # If the out argument does not contain "BITWIDTH", it will not be changed.
+    hexfile_path = Path(args.out.replace('BITWIDTH', str(bitness)))
+
+    with open(hexfile_path, 'w') as outfile:
         outfile.write(hexfile_content)
 
 

@@ -105,7 +105,9 @@ autogen_chip_info = rule(
 )
 
 def _otp_image(ctx):
-    output = ctx.actions.declare_file(ctx.attr.name + ".vmem")
+    # TODO(dmcardle) I don't like hardcoding the width in the filename. Maybe we
+    # can write it into some metadata in the file instead.
+    output = ctx.actions.declare_file(ctx.attr.name + ".24.vmem")
     ctx.actions.run(
         outputs = [output],
         inputs = [
@@ -123,7 +125,7 @@ def _otp_image(ctx):
             "--img-cfg",
             ctx.file.src.path,
             "--out",
-            output.path,
+            "{}/{}.BITWIDTH.vmem".format(output.dirname, ctx.attr.name),
         ],
         executable = ctx.executable._tool,
     )
