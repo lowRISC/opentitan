@@ -36,6 +36,7 @@ filesets:
       - seq_lib/cip_tl_device_seq.sv: {is_include_file: true}
       - cip_base_test.sv: {is_include_file: true}
       - cip_mubi_cov_if.sv
+      - cip_mubi_cov_wrapper.sv
       - cip_lc_tx_cov_if.sv
     file_type: systemVerilogSource
 
