@@ -213,7 +213,12 @@ def main() -> int:
         if not src_file.exists():
             log.fatal("Source file %s not found." % src_file)
             return 1
-    obj_files = [out_dir / f.with_suffix('.o').name for f in src_files]
+    obj_files = []
+    for f in src_files:
+        if f.suffix == '.o':
+            obj_files.append(f)
+        else:
+            obj_files.append(out_dir / f.with_suffix('.o').name)
 
     app_name = args.app_name or str(src_files[0].stem)
     archive = args.archive
