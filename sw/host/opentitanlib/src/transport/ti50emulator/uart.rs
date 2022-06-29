@@ -50,25 +50,17 @@ impl Ti50Uart {
         Ok(())
     }
 
-    pub fn check_state(&self) -> Result<bool> {
+    pub fn get_state(&self) -> Result<EmuState> {
         let process = &mut self.inner.borrow_mut().process;
         process.update_status()?;
-        let valid = match process.get_state() {
-            EmuState::On | EmuState::Error => true,
-            _ => false,
-        };
-        return Ok(valid);
+        Ok(process.get_state())
     }
 
     pub fn get_socket(&self) -> Result<RefMut<UnixStream>> {
-        if self.check_state()? {
-            self.reconnect()?;
-            // Socket should be valid as long as the subprocess is running.
-            return Ok(RefMut::map(self.socket.borrow_mut(), |socket| {
-                socket.as_mut().unwrap()
-            }));
-        }
-        bail!(UartError::GenericError("Invalid socket".to_string()));
+        self.reconnect()?;
+        return Ok(RefMut::map(self.socket.borrow_mut(), |socket| {
+            socket.as_mut().unwrap()
+        }));
     }
 }
 
@@ -90,24 +82,53 @@ impl Uart for Ti50Uart {
     /// Reads UART receive data into `buf`, returning the number of bytes read.
     /// This function _may_ block.
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        let mut socket = self.get_socket()?;
-        socket.set_read_timeout(None)?;
-        return Ok(socket.read(buf)?);
+        match self.get_state()? {
+            EmuState::On => {
+                let mut socket = self.get_socket()?;
+                socket.set_read_timeout(None)?;
+                Ok(socket.read(buf)?)
+            }
+            EmuState::Off => Ok(0),
+            state => Err(UartError::GenericError(format!(
+                "Operation not supported in Emulator state: {}",
+                state
+            ))
+            .into()),
+        }
     }
 
     /// Reads UART receive data into `buf`, returning the number of bytes read.
     /// The `timeout` may be used to specify a duration to wait for data.
     /// If timeout expires without any data arriving `Ok(0)` will be returned, never `Err(_)`.
     fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
-        let mut socket = self.get_socket()?;
-        socket.set_read_timeout(Some(timeout))?;
-        return Ok(socket.read(buf).context("UART read error")?);
+        match self.get_state()? {
+            EmuState::On => {
+                let mut socket = self.get_socket()?;
+                socket.set_read_timeout(Some(timeout))?;
+                return Ok(socket.read(buf).context("UART read error")?);
+            }
+            EmuState::Off => Ok(0),
+            state => Err(UartError::GenericError(format!(
+                "Operation not supported in Emulator state: {}",
+                state
+            ))
+            .into()),
+        }
     }
 
     /// Writes data from `buf` to the UART.
     fn write(&self, buf: &[u8]) -> Result<()> {
-        self.get_socket()?.write(buf).context("UART read error")?;
-        return Ok(());
+        match self.get_state()? {
+            EmuState::On => {
+                self.get_socket()?.write(buf).context("UART read error")?;
+                Ok(())
+            }
+            state => Err(UartError::GenericError(format!(
+                "Operation not supported in Emulator state: {}",
+                state
+            ))
+            .into()),
+        }
     }
 
     /// Clears the UART RX buffer.
