@@ -11,8 +11,8 @@ import random
 from math import ceil, log2
 
 from lib.common import check_bool, check_int, random_or_hexvalue
-from tabulate import tabulate
 from mubi.prim_mubi import is_width_valid, mubi_value_as_int
+from tabulate import tabulate
 
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8
@@ -200,8 +200,8 @@ def _validate_item(item):
     # defaults are handled differently in case of mubi
     if item["ismubi"]:
         if not is_width_valid(item_width):
-            raise RuntimeError("Mubi value {} has invalid width"
-                               .format(item["name"]))
+            raise RuntimeError("Mubi value {} has invalid width".format(
+                item["name"]))
         # Convert default to correct mubi value
         item.setdefault("inv_default", "false")
         item["inv_default"] = check_bool(item["inv_default"])
@@ -244,8 +244,9 @@ def _validate_mmap(config):
 
         part['offset'] = offset
         if check_int(part['offset']) % SCRAMBLE_BLOCK_WIDTH:
-            raise RuntimeError("Partition {} offset must be 64bit aligned".format(
-                part['name']))
+            raise RuntimeError(
+                "Partition {} offset must be 64bit aligned".format(
+                    part['name']))
 
         log.info("Partition {} at offset {} size {}".format(
             part["name"], part["offset"], part["size"]))
@@ -277,9 +278,12 @@ def _validate_mmap(config):
                 "offset":
                 check_int(part["offset"]) + check_int(part["size"]) -
                 DIGEST_SIZE,
-                "ismubi": False,
-                "isdigest": True,
-                "inv_default": "<random>"
+                "ismubi":
+                False,
+                "isdigest":
+                True,
+                "inv_default":
+                "<random>"
             })
             # Randomize the digest default.
             random_or_hexvalue(part["items"][-1], "inv_default",
@@ -311,10 +315,7 @@ def _validate_mmap(config):
 
         offset = check_int(part["offset"]) + check_int(part["size"])
 
-        part_dict.setdefault(part['name'], {
-            'index': j,
-            'items': item_dict
-        })
+        part_dict.setdefault(part['name'], {'index': j, 'items': item_dict})
 
     if offset > config["otp"]["size"]:
         raise RuntimeError(
@@ -322,7 +323,8 @@ def _validate_mmap(config):
             "Bytes available {}, bytes required {}", config["otp"]["size"],
             offset)
 
-    log.info("Total number of partitions: {}".format(len(config["partitions"])))
+    log.info("Total number of partitions: {}".format(len(
+        config["partitions"])))
     log.info("Bytes available in OTP: {}".format(config["otp"]["size"]))
     log.info("Bytes required for partitions: {}".format(offset))
 
