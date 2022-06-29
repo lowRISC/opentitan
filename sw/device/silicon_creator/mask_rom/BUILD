@@ -338,6 +338,7 @@ opentitan_functest(
     signed = False,
     verilator = verilator_params(
         rom = ":mask_rom_sim_verilator_scr_vmem",
+        tags = ["broken"],
     ),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",

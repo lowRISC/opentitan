@@ -65,6 +65,9 @@ cc_test(
 opentitan_functest(
     name = "alert_functest",
     srcs = ["alert_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":alert",
         ":rstmgr",
@@ -261,6 +264,9 @@ cc_test(
 opentitan_functest(
     name = "keymgr_functest",
     srcs = ["keymgr_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":keymgr",
         ":lifecycle",
