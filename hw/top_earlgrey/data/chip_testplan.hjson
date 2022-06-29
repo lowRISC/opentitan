@@ -774,7 +774,9 @@
             '''
       milestone: V2
       tests: ["chip_sw_aes_idle",
-              "chip_sw_hmac_idle"]
+              "chip_sw_hmac_idle",
+              "chip_sw_kmac_idle",
+              "chip_sw_otbn_randomness"]
     }
     {
       name: chip_sw_clkmgr_off_trans
@@ -1817,9 +1819,11 @@
               (HMAC is enabled), before the HMAC operation is complete.
             - After the HMAC operation is complete, verify the digest for correctness.
               Verify that the HMAC clk hint status within clkmgr now reads 0 again (HMAC is disabled).
+            - This process is repeated for two hmac operations needed to verify the resulting hmac
+              digest.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_hmac_idle"]
     }
 
     // KMAC pre-verified IP) integration tests:
@@ -2161,12 +2165,14 @@
       desc: '''Verify the OTBN idle signal to clkmgr.
 
             - Write the OTBN clk hint to 0 within clkmgr to indicate OTBN clk can be gated
-              and verify that the OTBN clk hint status within clkmgr reads 0 (OTBN is idle).
+              and verify that the OTBN clk hint status within clkmgr reads 0 (OTBN is disabled).
             - Write the OTBN clk hint to 1 within clkmgr to indicate OTBN clk can be enabled.
+              Verify that the OTBN clk hint status within clkmgr reads 1 (OTBN is enabled).
             - Start an OTBN operation, write the OTBN clk hint to 0 within clkmgr and verify that
-              the OTBN clk hint status within clkmgr reads 1 (OTBN is not idle).
+              the OTBN clk hint status within clkmgr reads 1 (OTBN is enabled) before the
+              OTBN operation is complete.
             - After the OTBN operation is complete, verify that the OTBN clk hint status within
-              clkmgr now reads 0 again (OTBN is idle).
+              clkmgr now reads 0 again (OTBN is disabled).
             - Write the OTBN clk hint to 1, read and check the OTBN output for correctness.
             '''
       milestone: V2

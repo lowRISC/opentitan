@@ -653,6 +653,21 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "hmac_enc_idle_test",
+    srcs = ["hmac_enc_idle_test.c"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "hmac_smoketest",
     srcs = ["hmac_smoketest.c"],
     deps = [
