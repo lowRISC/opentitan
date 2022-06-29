@@ -103,4 +103,11 @@ class BadIspr(SnippetGen):
             assert imm_idx is not None
             prog_insn.operands[imm_idx] = bad_addr
 
+            # In the case of a randomly generated CSRRW, it is better to have
+            # UNIMP instead of a write to a random address since it is actually
+            # an instruction alias.
+            if  self.insns[idx].mnemonic == "csrrw" and random.random() < 0.8:
+                # UNIMP instruction is equivalent to CSRRW x0, 0xC00, x0
+                prog_insn.operands = [0, 0xC00, 0]
+
         return (prog_insn, model)
