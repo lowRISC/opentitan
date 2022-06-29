@@ -335,18 +335,18 @@ def find_and_substitute_wildcards(sub_dict,
 def md_results_to_html(title, css_file, md_text):
     '''Convert results in md format to html. Add a little bit of styling.
     '''
-    html_text = "<!DOCTYPE html>\n"
-    html_text += "<html lang=\"en\">\n"
-    html_text += "<head>\n"
-    if title != "":
-        html_text += "  <title>{}</title>\n".format(title)
-    html_text += "</head>\n"
-    html_text += "<body>\n"
-    html_text += "<div class=\"results\">\n"
-    html_text += mistletoe.markdown(md_text)
-    html_text += "</div>\n"
-    html_text += "</body>\n"
-    html_text += "</html>\n"
+    html_text = f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>{title}</title>
+</head>
+<body>
+    <div class="results">
+        {mistletoe.markdown(md_text)}
+    </div>
+</body>
+</html>
+"""
     html_text = htmc_color_pc_cells(html_text)
     # this function converts css style to inline html style
     html_text = transform(html_text,

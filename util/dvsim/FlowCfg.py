@@ -461,9 +461,8 @@ class FlowCfg():
         results_html = md_results_to_html(self.results_title, self.css_file,
                                           gen_results)
         results_html_file = self.scratch_root + "/email.html"
-        f = open(results_html_file, 'w')
-        f.write(results_html)
-        f.close()
+        with open(results_html_file, 'w') as f:
+            f.write(results_html)
         log.info("[results:email]: [%s]", results_html_file)
 
     def _publish_results(self):
