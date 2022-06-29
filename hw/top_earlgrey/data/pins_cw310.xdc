@@ -12,6 +12,9 @@ set_property -dict { PACKAGE_PIN N21 IOSTANDARD LVCMOS33 } [get_ports { IO_CLK }
 ## Clock constraints
 ## set via clocks.xdc
 
+## Reset
+set_property -dict { PACKAGE_PIN  U22  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { POR_N }]; #USB_A14 (SAM3X)
+
 ## Preserve prim_prince modules and setup multi-cycle paths
 ## These are no longer required, but kept here as a reference
 ## set_property KEEP_HIERARCHY TRUE [get_cells top_earlgrey/u_flash_eflash/gen_flash_banks[*].i_core/u_scramble/u_cipher]
@@ -19,6 +22,7 @@ set_property -dict { PACKAGE_PIN N21 IOSTANDARD LVCMOS33 } [get_ports { IO_CLK }
 ## set_multicycle_path -hold 1  -through [get_pins -of_objects [get_cells top_earlgrey/u_flash_eflash/gen_flash_banks[*].i_core/u_scramble/u_cipher]]
 
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets IO_SDCK_IBUF]; # SDCK clock to be ignored
+
 
 ## LEDs
 set_property -dict { PACKAGE_PIN M26  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports { IOA0 }]; #LED 0
@@ -31,7 +35,7 @@ set_property -dict { PACKAGE_PIN L24  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports {
 set_property -dict { PACKAGE_PIN K25  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports { IOA7 }]; #LED 7
 
 ## Buttons
-set_property -dict { PACKAGE_PIN Y7 IOSTANDARD LVCMOS18 } [get_ports { POR_N }]; #pushbutton SW2
+set_property -dict { PACKAGE_PIN Y7 IOSTANDARD LVCMOS18 } [get_ports { POR_BUTTON_N }]; #pushbutton SW2
 
 ## Switches
 set_property -dict { PACKAGE_PIN U9 IOSTANDARD LVCMOS18 }  [get_ports { IOA8 }]; #USRDIP0
@@ -43,22 +47,36 @@ set_property -dict { PACKAGE_PIN W9 IOSTANDARD LVCMOS18 }  [get_ports { IOB2 }];
 #set_property -dict { PACKAGE_PIN W10 IOSTANDARD LVCMOS18 } [get_ports {  }]; #USRDIP6
 #set_property -dict { PACKAGE_PIN V11 IOSTANDARD LVCMOS18 } [get_ports {  }]; #USRDIP7
 
-## SPI / JTAG (part of it, other JTAG signals further below)
+## SPI
 set_property -dict { PACKAGE_PIN D26 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_CLK }]; #SCK (SPI1_SCK)
 set_property -dict { PACKAGE_PIN A24 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_D0 }]; #SDI (SPI1_COPI)
 set_property -dict { PACKAGE_PIN A22 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_D1 }]; #SDO (SPI1_CIPO)
 set_property -dict { PACKAGE_PIN C26 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_CS_L }]; #CSB (SPI1_CS)
 
-# JTAG (second part)
-set_property -dict { PACKAGE_PIN  U24  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR4 }];       #USB_A13 (SAM3X)
-set_property -dict { PACKAGE_PIN  U22  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IO_JSRST_N }]; #USB_A14 (SAM3X)
-# SW Straps
+## JTAG
+set_property -dict { PACKAGE_PIN  T17  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { JTAG_SRST_N }]; #USR_DBG_nRST (nSRST)
+set_property -dict { PACKAGE_PIN  U19  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR4 }];       #USR_DBG_TDAT1 (nTRST)
+set_property -dict { PACKAGE_PIN  N18  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR3 }];       #USR_DBG_TCK
+set_property -dict { PACKAGE_PIN  R16  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR2 }];       #USR_DBG_TDI
+set_property -dict { PACKAGE_PIN  P16  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR1 }];       #USR_DBG_TDO
+set_property -dict { PACKAGE_PIN  N16  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR0 }];       #USR_DBG_TMS
+
+# TODO(#13552): Determine how and whether to use the SAM3X as a JTAG controller.
+# These pins could be selected to use the SAM3X for JTAG instead.
+#set_property -dict { PACKAGE_PIN  U24  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR4 }];       #USB_A13 (SAM3X), TRST_N
+#set_property -dict { PACKAGE_PIN  AB25 IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR3 }];       #USB_A9 (SAM3X), TCK
+#set_property -dict { PACKAGE_PIN  W23  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR2 }];       #USB_A10 (SAM3X), TDI
+#set_property -dict { PACKAGE_PIN  V23  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR1 }];       #USB_A11 (SAM3X), TDO
+#set_property -dict { PACKAGE_PIN  Y21  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR0 }];       #USB_A12 (SAM3X), TMS
+
+## TAP Straps
+set_property -dict { PACKAGE_PIN  W21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC8 }];       #USB_A18 (SAM3X)
+set_property -dict { PACKAGE_PIN  W20  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC5 }];       #USB_A19 (SAM3X)
+
+## SW Straps
 set_property -dict { PACKAGE_PIN  V22  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC0 }];       #USB_A15 (SAM3X)
 set_property -dict { PACKAGE_PIN  U21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC1 }];       #USB_A16 (SAM3X)
 set_property -dict { PACKAGE_PIN  V21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC2 }];       #USB_A17 (SAM3X)
-# TAP Straps
-set_property -dict { PACKAGE_PIN  W21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC8 }];       #USB_A18 (SAM3X)
-set_property -dict { PACKAGE_PIN  W20  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC5 }];       #USB_A19 (SAM3X)
 
 ## SPI HOST
 set_property -dict { PACKAGE_PIN AF8 IOSTANDARD LVCMOS18 } [get_ports { SPI_HOST_CLK }];   #SCK (USR_SPI0CLK)
@@ -72,7 +90,7 @@ set_property -dict { PACKAGE_PIN AE11 IOSTANDARD LVCMOS18 } [get_ports { SPI_HOS
 #set_property -dict { PACKAGE_PIN A8  IOSTANDARD LVCMOS33 } [get_ports { }]; #USERIOB-9
 #set_property -dict { PACKAGE_PIN E10 IOSTANDARD LVCMOS33 } [get_ports { }]; #USERIOB-14
 set_property -dict { PACKAGE_PIN D8  IOSTANDARD LVCMOS33 } [get_ports { IOC6 }]; #USERIOB-16
-set_property -dict { PACKAGE_PIN D9  IOSTANDARD LVCMOS33 } [get_ports { IOC7 }]; #USERIOB-18
+#set_property -dict { PACKAGE_PIN D9  IOSTANDARD LVCMOS33 } [get_ports { }]; #USERIOB-18
 #set_property -dict { PACKAGE_PIN C9  IOSTANDARD LVCMOS33 } [get_ports { }]; #USERIOB-24
 set_property -dict { PACKAGE_PIN D10 IOSTANDARD LVCMOS33 } [get_ports { IOC9 }]; #USERIOB-26
 set_property -dict { PACKAGE_PIN B9  IOSTANDARD LVCMOS33 } [get_ports { IOC10 }]; #USERIOB-11
@@ -90,7 +108,7 @@ set_property -dict { PACKAGE_PIN AF20  IOSTANDARD LVCMOS18 } [get_ports { IO_USB
 set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS18 } [get_ports { IO_USB_DP_RX }]; #USRUSB_VP
 set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS18 } [get_ports { IO_USB_DN_RX }]; #USRUSB_VM
 set_property -dict { PACKAGE_PIN AF14  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_CONNECT }]; #USRUSB_SOFTCONN
-set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports { IOR0 }]; #USRUSB_VBUS_DETECT
+set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports { IOC7 }]; #USRUSB_VBUS_DETECT
 set_property -dict { PACKAGE_PIN AE15  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_OE_N }]; #USRUSB_OE
 set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS18 } [get_ports { IO_USB_D_RX }]; #USRUSB_RCV
 set_property -dict { PACKAGE_PIN AE16  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_SPEED }]; #USRUSB_SPD

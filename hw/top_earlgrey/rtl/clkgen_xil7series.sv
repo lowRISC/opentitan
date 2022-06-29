@@ -8,7 +8,7 @@ module clkgen_xil7series # (
 ) (
   input  clk_i,
   input  rst_ni,
-  input  jtag_srst_ni,
+  input  srst_ni,
   output clk_main_o,
   output clk_48MHz_o,
   output clk_aon_o,
@@ -122,5 +122,5 @@ module clkgen_xil7series # (
   assign clk_aon_o = clk_aon_buf;
 
   // reset
-  assign rst_no = locked_pll & rst_ni & jtag_srst_ni;
+  assign rst_no = locked_pll & rst_ni & srst_ni;
 endmodule

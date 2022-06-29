@@ -172,7 +172,7 @@ void _ottf_main(void) {
   if (uphy) {
     CHECK_DIF_OK(dif_pinmux_input_select(
         &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-        kTopEarlgreyPinmuxInselIor0));
+        kTopEarlgreyPinmuxInselIoc7));
   } else {
     CHECK_DIF_OK(dif_pinmux_input_select(
         &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,

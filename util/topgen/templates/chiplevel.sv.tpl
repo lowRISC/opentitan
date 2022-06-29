@@ -421,10 +421,12 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_oe_io_usb_connect = 1'b1;
 
   // Set SPD to full-speed
+  assign manual_attr_io_usb_speed = '0;
   assign manual_out_io_usb_speed = 1'b1;
   assign manual_oe_io_usb_speed = 1'b1;
 
   // TUSB1106 low-power mode
+  assign manual_attr_io_usb_suspend = '0;
   assign manual_out_io_usb_suspend = !usb_rx_enable;
   assign manual_oe_io_usb_suspend = 1'b1;
 
@@ -635,13 +637,13 @@ module chip_${top["name"]}_${target["name"]} (
 
   assign ast_base_pwr.main_pok = base_ast_pwr.main_pd_n;
 
-  logic clk_main, clk_usb_48mhz, clk_aon, rst_n;
+  logic clk_main, clk_usb_48mhz, clk_aon, rst_n, srst_n;
   clkgen_xil7series # (
     .AddClkBuf(0)
   ) clkgen (
     .clk_i(manual_in_io_clk),
     .rst_ni(manual_in_por_n),
-    .jtag_srst_ni(manual_in_io_jsrst_n),
+    .srst_ni(srst_n),
     .clk_main_o(clk_main),
     .clk_48MHz_o(clk_usb_48mhz),
     .clk_aon_o(clk_aon),
@@ -1011,12 +1013,24 @@ module chip_${top["name"]}_${target["name"]} (
   // PLL for FPGA //
   //////////////////
 
+  assign manual_attr_io_clk = '0;
   assign manual_out_io_clk = 1'b0;
   assign manual_oe_io_clk = 1'b0;
+  assign manual_attr_por_n = '0;
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
-  assign manual_out_io_jsrst_n = 1'b0;
-  assign manual_oe_io_jsrst_n = 1'b0;
+  assign manual_attr_por_button_n = '0;
+  assign manual_out_por_button_n = 1'b0;
+  assign manual_oe_por_button_n = 1'b0;
+
+  % if target["name"] == "cw305":
+  assign srst_n = manual_in_por_button_n;
+  % elif target["name"] == "cw310":
+  assign srst_n = manual_in_por_button_n & manual_in_jtag_srst_n;
+  assign manual_attr_jtag_srst_n = '0;
+  assign manual_out_jtag_srst_n = 1'b0;
+  assign manual_oe_jtag_srst_n = 1'b0;
+  % endif
 
   % if target["name"] == "cw305":
   // TODO: follow-up later and hardwire all ast connects that do not
@@ -1235,6 +1249,7 @@ module chip_${top["name"]}_${target["name"]} (
   );
 
   // Generate the actual trigger signal.
+  assign manual_attr_io_trigger = '0;
   assign manual_oe_io_trigger  = manual_in_io_clk_trigger_oe;
   assign manual_out_io_trigger = manual_in_io_clk_trigger_en &
       prim_mubi_pkg::mubi4_test_false_strict(manual_in_io_clk_idle);

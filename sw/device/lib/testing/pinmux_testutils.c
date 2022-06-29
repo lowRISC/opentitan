@@ -65,9 +65,7 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
                                         kTopEarlgreyPinmuxOutselUart1Tx));
 #endif
 
-  // Configure USBDEV SENSE outputs to be high-Z (IOR0, IOR1)
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor0,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor1,
+  // Configure USBDEV SENSE outputs to be high-Z (IOC7)
+  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc7,
                                         kTopEarlgreyPinmuxOutselConstantHighZ));
 }
