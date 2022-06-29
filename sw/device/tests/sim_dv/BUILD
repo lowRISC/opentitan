@@ -92,6 +92,9 @@ opentitan_functest(
     # loading the default test ROM, or any other ROM that may be specified via
     # Verilator or CW310 params).
     test_in_rom = True,
+    verilator = verilator_params(
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",

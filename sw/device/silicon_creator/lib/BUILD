@@ -139,6 +139,9 @@ cc_library(
 opentitan_functest(
     name = "irq_asm_functest",
     srcs = ["irq_asm_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":error",
         ":irq_asm",
