@@ -389,15 +389,13 @@ module usbdev
       clear_rdybit = {NEndpoints{1'b1}};
       update_pend  = {NEndpoints{1'b1}};
     end else begin
-      if (out_endpoint_val) begin
+      if (setup_received & out_endpoint_val) begin
         // Clear pending when a SETUP is received
-        clear_rdybit[out_endpoint] = setup_received;
-        update_pend[out_endpoint]  = setup_received;
-      end
-
-      if (in_endpoint_val) begin
+        clear_rdybit[out_endpoint] = 1'b1;
+        update_pend[out_endpoint]  = 1'b1;
+      end else if (in_ep_xact_end & in_endpoint_val) begin
         // Clear when a IN transmission was sucessful
-        clear_rdybit[in_endpoint] = in_ep_xact_end;
+        clear_rdybit[in_endpoint] = 1'b1;
       end
     end
   end
