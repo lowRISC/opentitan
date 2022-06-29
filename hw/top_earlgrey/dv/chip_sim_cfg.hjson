@@ -736,6 +736,12 @@
       run_opts: ["+en_jitter=1"]
     }
     {
+      name: chip_sw_hmac_enc_idle
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/hmac_enc_idle_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_keymgr_key_derivation
       uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
       sw_images: ["sw/device/tests/sim_dv/keymgr_key_derivation_test:1"]
