@@ -53,5 +53,6 @@ class flash_ctrl_base_test #(
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     void'($value$plusargs("scb_otf_en=%0b", cfg.scb_otf_en));
+    void'($value$plusargs("multi_alert=%0b", cfg.multi_alert_en));
   endfunction
 endclass : flash_ctrl_base_test

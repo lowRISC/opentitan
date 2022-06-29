@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+typedef class flash_ctrl_scoreboard;
 
 class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   .RAL_T(flash_ctrl_core_reg_block)
@@ -8,6 +9,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
   // Memory backdoor util instances for each partition in each bank.
   mem_bkdr_util mem_bkdr_util_h[flash_dv_part_e][flash_ctrl_pkg::NumBanks];
+
+  // Pass scoreboard handle to address multiple exp_alert issue.
+  flash_ctrl_scoreboard scb_h;
 
   // seq cfg
   flash_ctrl_seq_cfg seq_cfg;
@@ -63,6 +67,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // and policy config associate with it.
   // 8 : default region
   int p2r_map[FlashNumPages] = '{default : 8};
+
+  // Allow multiple expected allert in a single test
+  bit multi_alert_en = 0;
 
   // Max delay for alerts in clocks
   uint alert_max_delay;
@@ -281,11 +288,11 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     for (int i = 0; i < flash_op.num_words; i++) begin
       data[i] = mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].read32(addr_attrs.bank_addr);
       `uvm_info(`gfn, $sformatf(
-                "flash_mem_bkdr_read: partition = %s , {%s} = 0x%0h",
-                flash_op.partition.name(),
-                addr_attrs.sprint(),
-                data[i]
-                ), UVM_MEDIUM)
+                                "flash_mem_bkdr_read: partition = %s , {%s} = 0x%0h",
+                                flash_op.partition.name(),
+                                addr_attrs.sprint(),
+                                data[i]
+                                ), UVM_HIGH)
       addr_attrs.incr(TL_DBW);
     end
   endfunction : flash_mem_bkdr_read
@@ -330,11 +337,11 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
       _flash_full_write(flash_op.partition, addr_attrs.bank, addr_attrs.bank_addr, loc_data);
       `uvm_info(`gfn, $sformatf(
-                "flash_mem_bkdr_write: partition = %s, {%s} = 0x%0h",
-                flash_op.partition.name(),
-                addr_attrs.sprint(),
-                loc_data
-                ), UVM_MEDIUM)
+                                "flash_mem_bkdr_write: partition = %s, {%s} = 0x%0h",
+                                flash_op.partition.name(),
+                                addr_attrs.sprint(),
+                                loc_data
+                                ), UVM_HIGH)
 
       // update the scoreboard on backdoor-programs as well
       mem_data[0] = loc_data;
@@ -492,7 +499,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                 erase_page_num_msg,
                 erase_check_addr,
                 data
-                ), UVM_MEDIUM)
+                ), UVM_HIGH)
       // If the expected data is not empty then it should be taken is expected. If it is empty the
       //  default expected value is checked - which for successful erase is all 1s.
       if (exp_data.size() <= i) begin
