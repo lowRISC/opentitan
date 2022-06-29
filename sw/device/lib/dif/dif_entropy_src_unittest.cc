@@ -214,5 +214,23 @@ TEST_F(ReadTest, ReadOk) {
   EXPECT_EQ(got_word, expected_word);
 }
 
+class ReadFifoDepthTest : public EntropySrcTest {};
+
+TEST_F(ReadFifoDepthTest, EntropyBadArg) {
+  uint32_t depth;
+  EXPECT_DIF_BADARG(dif_entropy_src_get_fifo_depth(nullptr, &depth));
+}
+
+TEST_F(ReadFifoDepthTest, DepthBadArg) {
+  EXPECT_DIF_BADARG(dif_entropy_src_get_fifo_depth(&entropy_src_, nullptr));
+}
+
+TEST_F(ReadFifoDepthTest, ReadSuccess) {
+  EXPECT_READ32(ENTROPY_SRC_OBSERVE_FIFO_DEPTH_REG_OFFSET, 6);
+  uint32_t depth;
+  EXPECT_DIF_OK(dif_entropy_src_get_fifo_depth(&entropy_src_, &depth));
+  EXPECT_EQ(depth, 6);
+}
+
 }  // namespace
 }  // namespace dif_entropy_src_unittest
