@@ -38,6 +38,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       scramble_en: MuBi4False,
       ecc_en: MuBi4False,
       he_en: MuBi4False,
+      // below two won't be programmed
+      // rtl uses hardcoded values
+      // start:0
+      // size : 2 * 256 (0x200)
       num_pages: 1,
       start_page: 0
   };
@@ -58,6 +62,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       FlashMemInitRandomize :/ 100 - cfg.seq_cfg.flash_init_set_pc
     };
   }
+
+  // Page to region map.
+  // This is used to validate transactions based on their page address
+  // and policy config associate with it.
+  // 8 : default region
+  int p2r_map[FlashNumPages] = '{default : 8};
 
   // Vseq to do some initial post-reset actions. Can be overriden by extending envs.
   flash_ctrl_callback_vseq callback_vseq;
@@ -1062,5 +1072,80 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.op_status), .value(reg_data));
 
   endtask : check_exp_alert_status
+
+  // Refill table with all default value.
+  function void init_p2r_map();
+    foreach (p2r_map[i]) p2r_map[i] = 8;
+  endfunction
+
+  // p2r_map needs to be in sync with rtl config.
+  // Same as RTL, lower index has priority when
+  // regions are content.
+  function void update_p2r_map(flash_mp_region_cfg_t mp[]);
+    int num = mp.size() - 1;
+    int base, size;
+    // Lower region has priority.
+    `uvm_info("update_p2r_map", $sformatf("default     : %p", default_region_cfg), UVM_MEDIUM)
+    for (int i = num; i >= 0; --i) begin
+      `uvm_info("update_p2r_map", $sformatf("region %0d  : %p", i, mp[i]), UVM_MEDIUM)
+      base = mp[i].start_page;
+      size = mp[i].num_pages;
+      for (int j = base; j < (base + size); ++j) begin
+        if (p2r_map[j] > i) p2r_map[j] = i;
+      end
+    end
+
+    `uvm_info("update_p2r_map", $sformatf("after p2r_map update, %p", p2r_map), UVM_HIGH)
+  endfunction // update_p2r_map
+
+  // Takes flash_op and region profile and check if the flash_op is legal or not.
+  // return 1 : illegal transaction
+  // return 0 : legal transaction
+  function bit validate_flash_op(flash_op_t flash_op, flash_mp_region_cfg_t my_region);
+    case(flash_op.op)
+      FlashOpRead:begin
+        return (my_region.read_en != MuBi4True);
+      end
+      FlashOpProgram:begin
+        return (my_region.program_en != MuBi4True);
+      end
+      FlashOpErase:begin
+        return (my_region.erase_en != MuBi4True);
+      end
+      FlashOpInvalid:begin
+        return 1;
+      end
+      default:begin
+        `uvm_error("update_flash_op", $sformatf("got %s command", flash_op.op.name()))
+        return 1;
+      end
+    endcase
+  endfunction // validate_flash_op
+
+  // Takes flash_op and info profile and check if the flash_op is legal or not.
+  // return 1 : illegal transaction
+  // return 0 : legal transaction
+  // Bank erase doesn't follow rules in this function.
+  function bit validate_flash_info(flash_op_t flash_op, flash_bank_mp_info_page_cfg_t my_info);
+    if(my_info.en != MuBi4True) return 1;
+    case(flash_op.op)
+      FlashOpRead:begin
+        return (my_info.read_en != MuBi4True);
+      end
+      FlashOpProgram:begin
+        return (my_info.program_en != MuBi4True);
+      end
+      FlashOpErase:begin
+        return (my_info.erase_en != MuBi4True);
+      end
+      FlashOpInvalid:begin
+        return 1;
+      end
+      default:begin
+        `uvm_error("update_flash_op", $sformatf("got %s command", flash_op.op.name()))
+        return 1;
+      end
+    endcase
+  endfunction // validate_flash_info
 
 endclass : flash_ctrl_base_vseq

@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+import alert_esc_agent_pkg::*;
 
 class flash_ctrl_scoreboard #(
   type CFG_T = flash_ctrl_env_cfg
@@ -34,6 +35,7 @@ class flash_ctrl_scoreboard #(
   bit              [1:0] curr_op;
   tl_seq_item            eflash_addr_phase_queue[$];
   int                    num_erase_words;
+  int                    exp_alert_contd[string];
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_a_chan_fifo;
@@ -52,6 +54,7 @@ class flash_ctrl_scoreboard #(
 
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+    cfg.scb_h = this;
   endfunction
 
   virtual task run_phase(uvm_phase phase);
@@ -322,6 +325,9 @@ class flash_ctrl_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
+    foreach(cfg.list_of_alerts[i]) begin
+      exp_alert_contd[i] = 0;
+    end
     // reset local fifos queues and variables
     eflash_tl_a_chan_fifo.flush();
     eflash_tl_d_chan_fifo.flush();
@@ -708,4 +714,26 @@ class flash_ctrl_scoreboard #(
 
   endfunction : get_flash_instr_type_err
 
+  function void process_alert(string alert_name, alert_esc_seq_item item);
+    if (!(alert_name inside {cfg.list_of_alerts})) begin
+      `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
+    end
+
+    `uvm_info(`gfn, $sformatf("alert %0s detected, alert_status is %s contd:%0d", alert_name,
+                              item.alert_handshake_sta, exp_alert_contd[alert_name]), UVM_MEDIUM)
+    if (item.alert_handshake_sta == AlertReceived) begin
+      under_alert_handshake[alert_name] = 1;
+      on_alert(alert_name, item);
+      ++alert_count[alert_name];
+    end else begin
+      if (!cfg.under_reset && under_alert_handshake[alert_name] == 0) begin
+        `uvm_error(`gfn, $sformatf("alert %0s is not received!", alert_name))
+      end
+      under_alert_handshake[alert_name] = 0;
+      if (exp_alert_contd[alert_name] > 0) begin
+        exp_alert[alert_name] = 1;
+        exp_alert_contd[alert_name]--;
+      end
+    end
+  endfunction
 endclass : flash_ctrl_scoreboard

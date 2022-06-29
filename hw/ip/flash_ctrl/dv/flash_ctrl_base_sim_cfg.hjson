@@ -122,7 +122,7 @@
     {
       name: flash_ctrl_mp_regions
       uvm_test_seq: flash_ctrl_mp_regions_vseq
-      run_opts: ["+test_timeout_ns=300000000000"]
+      run_opts: ["+multi_alert=1", "+test_timeout_ns=300000000000"]
       reseed: 8
     }
     {
