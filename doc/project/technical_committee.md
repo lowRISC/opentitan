@@ -30,3 +30,5 @@ The OpenTitan Technical Committee membership is:
 * Michael Tempelmeier
 * Neeraj Upasani
 * Nir Tasher
+* Arnon Sharlin
+* Sivakumar
