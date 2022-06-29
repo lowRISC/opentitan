@@ -1644,6 +1644,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     csr_cross: cross csr_cp, grd_cp;
 
+    `DEF_SEEN_CP(uimp_cp, insn_data == 32'hC0001073)
+
     // Underflow the call stack while accessing an invalid CSR. The RTL squashes the GPR reads in
     // this case, so we have to figure out a call stack underflow by hand (true if the call stack
     // was empty and grs1 is x1)
