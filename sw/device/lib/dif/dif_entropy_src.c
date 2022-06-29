@@ -265,3 +265,15 @@ dif_result_t dif_entropy_src_disable(const dif_entropy_src_t *entropy_src) {
 
   return kDifOk;
 }
+
+dif_result_t dif_entropy_src_get_fifo_depth(
+    const dif_entropy_src_t *entropy_src, uint32_t *fifo_depth) {
+  if (entropy_src == NULL || fifo_depth == NULL) {
+    return kDifBadArg;
+  }
+
+  *fifo_depth = mmio_region_read32(entropy_src->base_addr,
+                                   ENTROPY_SRC_OBSERVE_FIFO_DEPTH_REG_OFFSET);
+
+  return kDifOk;
+}

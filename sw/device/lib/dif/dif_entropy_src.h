@@ -432,7 +432,7 @@ dif_result_t dif_entropy_src_conditioner_end(
 /**
  * Disables the entropy module
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -441,11 +441,22 @@ dif_result_t dif_entropy_src_disable(const dif_entropy_src_t *entropy_src);
 /**
  * Get main entropy fsm idle status
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_get_idle(const dif_entropy_src_t *entropy_src);
+
+/**
+ * Read the fifo depth.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param[out] fifo_depth The fifo depth.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_get_fifo_depth(
+    const dif_entropy_src_t *entropy_src, uint32_t *fifo_depth);
 
 #ifdef __cplusplus
 }  // extern "C"
