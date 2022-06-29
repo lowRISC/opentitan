@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:alert_handler_cov"
+description: "ALERT_HANDLER cov bind files"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:ip:alert_handler_component  # import alert_pkg
+      - lowrisc:dv:dv_utils
+    files:
+      - alert_handler_cov_bind.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
