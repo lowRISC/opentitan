@@ -9,6 +9,7 @@ memory for simulations and FPGA emulation.
 import copy
 import logging as log
 import random
+from typing import Tuple
 
 from lib.common import (check_bool, check_int, ecc_encode, permute_bits,
                         random_or_hexvalue)
@@ -76,7 +77,8 @@ def _present_64bit_digest(data_blocks, iv, const):
     return state
 
 
-def _to_hexfile_with_ecc(data, annotation, config, data_perm):
+def _to_hexfile_with_ecc(data, annotation, config,
+                         data_perm) -> Tuple[str, int]:
     '''Compute ECC and convert into memory hexfile'''
 
     log.info('Convert to HEX file.')
@@ -95,10 +97,11 @@ def _to_hexfile_with_ecc(data, annotation, config, data_perm):
     bit_padding = bytes_per_word_ecc * 8 - data_width - ecc_width
     bin_format_str = '0' + str(data_width) + 'b'
     hex_format_str = '0' + str(bytes_per_word_ecc * 2) + 'x'
+    bitness = bytes_per_word_ecc * 8
     memory_words = '// OTP memory hexfile with {} x {}bit layout\n'.format(
-        num_words, bytes_per_word_ecc * 8)
+        num_words, bitness)
     log.info('Memory layout is {} x {}bit (with ECC)'.format(
-        num_words, bytes_per_word_ecc * 8))
+        num_words, bitness))
 
     for k in range(num_words):
         # Assemble native OTP word and uniquify annotation for comments
@@ -126,7 +129,7 @@ def _to_hexfile_with_ecc(data, annotation, config, data_perm):
 
     log.info('Done.')
 
-    return memory_words
+    return (memory_words, bitness)
 
 
 def _check_unused_keys(dict_to_check, msg_postfix=""):
@@ -466,8 +469,11 @@ class OtpMemImg(OtpMemMap):
                 'Data permutation "{}" is not bijective,'
                 'since it contains duplicated indices.'.format(data_perm))
 
-    def streamout_hexfile(self):
-        '''Streamout of memory image in hex file format'''
+    def streamout_hexfile(self) -> Tuple[str, int]:
+        '''Streamout of memory image in hex file format
+
+        Returns a tuple of the file contents and architecture bitness.
+        '''
 
         log.info('Scramble and stream out partitions.')
         log.info('')
