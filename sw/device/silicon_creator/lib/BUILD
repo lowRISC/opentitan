@@ -342,3 +342,13 @@ cc_library(
     srcs = ["crc32.c"],
     hdrs = ["crc32.h"],
 )
+
+cc_test(
+    name = "crc32_unittest",
+    srcs = ["crc32_unittest.cc"],
+    deps = [
+        ":crc32",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
