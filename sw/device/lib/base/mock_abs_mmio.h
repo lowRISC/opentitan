@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_TESTING_MOCK_ABS_MMIO_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_TESTING_MOCK_ABS_MMIO_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MOCK_ABS_MMIO_H_
+#define OPENTITAN_SW_DEVICE_LIB_BASE_MOCK_ABS_MMIO_H_
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/global_mock.h"
@@ -99,4 +99,4 @@ using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
 
 }  // namespace mask_rom_test
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_TESTING_MOCK_ABS_MMIO_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MOCK_ABS_MMIO_H_
