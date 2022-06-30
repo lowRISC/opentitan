@@ -28,6 +28,23 @@ void crc32_init(uint32_t *ctx);
 void crc32_add8(uint32_t *ctx, uint8_t byte);
 
 /**
+ * Adds a word to a CRC32.
+ *
+ * @param[in, out] ctx Context variable.
+ * @param word Word to be added.
+ */
+void crc32_add32(uint32_t *ctx, uint32_t word);
+
+/**
+ * Adds a buffer to a CRC32.
+ *
+ * @param[in, out] ctx Context variable.
+ * @param buf A buffer, little-endian.
+ * @param len Size of the buffer.
+ */
+void crc32_add(uint32_t *ctx, const void *buf, size_t len);
+
+/**
  * Finishes a CRC32 computation.
  *
  * This function does not modify the context variable `ctx`.
