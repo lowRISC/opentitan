@@ -22,18 +22,8 @@ merge_base="$(git merge-base origin/$tgt_branch HEAD)" || {
 }
 echo "Running C/C++ lint checks on files changed since $merge_base"
 
-TMPFILE="$(mktemp)" || {
-    echo >&2 "Failed to create temporary file"
-    exit 1
-}
-trap 'rm -f "$TMPFILE"' EXIT
+trap 'echo "code failed clang_format_check fix with ./bazelisk.sh run //:clang_format_fix"' ERR
 
 set -o pipefail
-git diff -U0 "$merge_base" -- "*.cpp" "*.cc" "*.c" "*.h" ':!*/vendor/*' | \
-    clang-format-diff -p1 | \
-    tee "$TMPFILE"
-if [ -s "$TMPFILE" ]; then
-    echo -n "##vso[task.logissue type=error]"
-    echo "C/C++ lint failed. Use 'git clang-format' with appropriate options to reformat the changed code."
-    exit 1
-fi
+git diff --name-only "$merge_base" -- "*.cpp" "*.cc" "*.c" "*.h" ':!*/vendor/*' | \
+    xargs ./bazelisk.sh run //:clang_format_check --
