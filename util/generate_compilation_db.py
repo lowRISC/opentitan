@@ -27,9 +27,10 @@ import argparse
 import json
 import os
 import subprocess
+from typing import Dict, List
 
 
-def build_id_lookup_dict(dicts: list[dict]):
+def build_id_lookup_dict(dicts: List[Dict]):
     """Create a dict from `dicts` indexed by the "id" key."""
     lookup = {}
     for d in dicts:
@@ -63,7 +64,7 @@ class BazelAqueryResults:
 
         return os.path.join(*reversed(labels))
 
-    def iter_artifacts_for_dep_sets(self, dep_set_ids: list[int]):
+    def iter_artifacts_for_dep_sets(self, dep_set_ids: List[int]):
         """Iterate the reconstructed paths of all artifacts related to `dep_set_ids`."""
 
         dep_set_id_stack = dep_set_ids
@@ -85,7 +86,7 @@ class BazelAqueryResults:
 class BazelAqueryAction:
     """Corresponds to Bazel's analysis.Action protobuf."""
 
-    def __init__(self, action: dict):
+    def __init__(self, action: Dict):
         self.mnemonic = action.get('mnemonic', None)
         self.arguments = action.get('arguments', None)
         self.input_dep_set_ids = action.get('inputDepSetIds', [])
@@ -103,9 +104,9 @@ def main(args):
         args.target,
     ]
     completed_process = subprocess.run(bazel_aquery_command,
-                                       capture_output=True,
-                                       check=True,
-                                       text=True)
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE,
+                                       check=True)
     aquery_results = BazelAqueryResults(completed_process.stdout)
 
     compile_commands = []
