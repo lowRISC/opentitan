@@ -14,11 +14,11 @@ class chip_sw_deep_sleep_all_reset_vseq extends chip_sw_base_vseq;
   // ordered using a random variable assa. The last reset does not have to set the next reset type.
 
   // (key rst + pad rst)
+  parameter int NumSleepType = 1;
   parameter int NumPadRstEvent = 2 * NumSleepType;
   // (sw_req + escalation rst + normal watchdog)
   parameter int NumWdogRstEvent = 3 * NumSleepType;
   parameter int NumNormalMode = 1;
-  parameter int NumSleepType = 1;
   parameter int NumRound = NumPadRstEvent + NumWdogRstEvent + NumNormalMode + 1;
 
   rand int cycles_after_trigger;

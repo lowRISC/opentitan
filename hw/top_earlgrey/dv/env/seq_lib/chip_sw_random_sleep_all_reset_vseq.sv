@@ -13,12 +13,12 @@ class chip_sw_random_sleep_all_reset_vseq extends chip_sw_base_vseq;
   // 12 (NumRound) reset elements where 11 (NumRound-1) random reset sequence is
   // ordered using a random variable assa. The last reset does not have to set the next reset type.
 
+  parameter int NumSleepType = 2;
   // (key rst + pad rst) x 2 (normal sleep/deep sleep)
   parameter int NumPadRstEvent = 2 * NumSleepType;
   // (sw_req + escalation rst + normal watchdog) x 2
   parameter int NumWdogRstEvent = 3 * NumSleepType;
   parameter int NumNormalMode = 1;
-  parameter int NumSleepType = 2;
   parameter int NumRound = NumPadRstEvent + NumWdogRstEvent + NumNormalMode + 1;
 
   rand int cycles_after_trigger;
@@ -65,16 +65,18 @@ class chip_sw_random_sleep_all_reset_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, "SW test ready", UVM_MEDIUM)
 
     repeat (loop_num) begin
-      wait (cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by hw por" |
-            cfg.sw_logger_vif.printed_log == "Booting and setting normal sleep followed by hw por" |
-            cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by sysrst" |
-            cfg.sw_logger_vif.printed_log == "Booting and setting normal sleep followed by sysrst" |
-            cfg.sw_logger_vif.printed_log == "Last Booting" |
+      wait (cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by hw por" ||
+            cfg.sw_logger_vif.printed_log ==
+                "Booting and setting normal sleep followed by hw por" ||
+            cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by sysrst" ||
+            cfg.sw_logger_vif.printed_log ==
+                "Booting and setting normal sleep followed by sysrst" ||
+            cfg.sw_logger_vif.printed_log == "Last Booting" ||
             cfg.sw_logger_vif.printed_log == "Test finish");
 
-       if (cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by sysrst" |
-                cfg.sw_logger_vif.printed_log ==
-                                    "Booting and setting normal sleep followed by sysrst") begin
+       if (cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by sysrst" ||
+           cfg.sw_logger_vif.printed_log == "Booting and setting normal sleep followed by sysrst")
+           begin
          `uvm_info(`gfn, "SW message delivered to TB", UVM_MEDIUM)
          repeat (10) @cfg.pwrmgr_low_power_vif.cb;  //
          repeat (cycles_till_reset) @cfg.pwrmgr_low_power_vif.cb;

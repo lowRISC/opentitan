@@ -71,7 +71,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // as early portions of mask ROM will initialize it to the correct value.
     // The randomization here is just to ensure we do not have x's in the memory.
     for (int ram_idx = 0; ram_idx < cfg.num_ram_ret_tiles; ram_idx++) begin
-       cfg.mem_bkdr_util_h[RamRet0 + ram_idx].randomize_mem();
+      cfg.mem_bkdr_util_h[int'(RamRet0) + ram_idx].randomize_mem();
     end
 
     `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)

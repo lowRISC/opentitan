@@ -55,9 +55,9 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
 
       `uvm_info(`gfn, $sformatf("Current state %0s", curr_state.name), UVM_LOW)
       wait_lc_ready(.allow_err(1));
-      jtag_lc_state_transition(curr_state, curr_state + 1, {<<8{lc_unlock_token}});
+      jtag_lc_state_transition(curr_state, dec_lc_state_e'(curr_state + 1), {<<8{lc_unlock_token}});
       apply_reset();
-      curr_state = curr_state + 2;
+      curr_state = dec_lc_state_e'(curr_state + 2);
     end
   endtask
 
