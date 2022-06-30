@@ -30,14 +30,14 @@ BUILD.bazel         @cfrantz @drewmacrae
 /.bazelrc           @cfrantz @drewmacrae
 
 # Utils: reggen, topgen, tlgen
-util/*gen/          @msfschaffner @tjaychen
-util/uvmdvgen*      @sriyerg
-util/regtool.py     @Jacob-Levy
-util/reggen/        @Jacob-Levy
-util/tlgen.py       @eunchan @msfschaffner @tjaychen
-util/tlgen/         @eunchan @msfschaffner @tjaychen
-util/topgen.py      @msfschaffner @tjaychen @Jacob-Levy
-util/topgen/        @msfschaffner @tjaychen @Jacob-Levy
+/util/*gen/          @msfschaffner @tjaychen
+/util/uvmdvgen/      @sriyerg
+/util/regtool.py     @Jacob-Levy
+/util/reggen/        @Jacob-Levy
+/util/tlgen.py       @eunchan @msfschaffner @tjaychen
+/util/tlgen/         @eunchan @msfschaffner @tjaychen
+/util/topgen.py      @msfschaffner @tjaychen @Jacob-Levy
+/util/topgen/        @msfschaffner @tjaychen @Jacob-Levy
 
 # RTL related
 /hw/ip/aes/             @vogelpi
@@ -58,10 +58,10 @@ util/topgen/        @msfschaffner @tjaychen @Jacob-Levy
 
 
 # DV related common files
-dv/                 @lowRISC/ot-dv-reviewers
-fpv/                @lowRISC/ot-dv-reviewers
-formal/             @lowRISC/ot-dv-reviewers
-# lint/             # TBD
+/hw/**/dv/              @lowRISC/ot-dv-reviewers
+/hw/**/fpv/             @lowRISC/ot-dv-reviewers
+/hw/**/formal           @lowRISC/ot-dv-reviewers
+# /hw/**/lint/                 # TBD
 
 # Common docs
 /doc/               @mundaym
@@ -72,6 +72,6 @@ COPYING*            @mundaym
 /util/licence-checker.hjson  @mundaym
 
 # CI and testing
-/ci/                @milesdai @rswarbrick
-# /test/            # TBD
-azure-pipelines.yml @milesdai @rswarbrick
+/ci/                 @milesdai @rswarbrick
+# /test/             # TBD
+/azure-pipelines.yml @milesdai @rswarbrick
