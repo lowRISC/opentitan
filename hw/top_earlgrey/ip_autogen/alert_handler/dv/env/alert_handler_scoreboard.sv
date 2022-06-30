@@ -70,6 +70,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     fork
       process_alert_fifo();
       process_esc_fifo();
+      process_edn_fifos();
       check_crashdump();
       check_intr_timeout_trigger_esc();
       esc_phase_signal_cnter();
@@ -150,6 +151,31 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       join_none
     end
   endtask : process_esc_fifo
+
+  // Alert_handler ping timer design should automatically fetch EDN entropy every 500k clock
+  // cycles. We set the threshold to 600k clock cycles.
+  virtual task process_edn_fifos();
+    fork begin: isolation_fork
+      int num_edn_reqs;
+      forever begin
+        wait (cfg.under_reset == 0);
+        fork
+          begin
+            push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH)) edn_item;
+            `DV_SPINWAIT(edn_fifos[0].get(edn_item);,
+                         "Expect to send out EDN request!", cfg.clk_rst_vif.clk_period_ps * 600);
+             num_edn_reqs++;
+            if (cfg.en_cov) cov.num_edn_reqs_cg.sample(num_edn_reqs);
+          end
+          begin
+            wait (cfg.under_reset == 1);
+            num_edn_reqs = 0;
+          end
+        join_any
+        disable fork;
+      end
+    end join
+  endtask
 
   // this task process alert signal by checking if intergrity fail, then classify it to the
   // mapping classes, then check if escalation is triggered by accumulation
