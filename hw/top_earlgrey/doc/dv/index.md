@@ -35,7 +35,7 @@ It instantiates the `top_earlgrey` DUT module `hw/top_earlgrey/rtl/autogen/chip_
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
   * Main clock as well as USB clock
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
   * This is connected to the CPU's data port.
 * [JTAG interface]()
 * SPI interface
@@ -50,8 +50,8 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in the `chip_env_pkg`.
@@ -61,7 +61,7 @@ Some of them in use are:
 ```
 
 ### TL_agent
-The full chip testbench instantiates (already handled in CIP base env) the [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into CHIP device.
+The full chip testbench instantiates (already handled in CIP base env) the [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into CHIP device.
 
 ###  UART Agent
 [Describe here or add link to its README]
@@ -79,7 +79,7 @@ The full chip testbench instantiates (already handled in CIP base env) the [tl_a
 [Describe here or add link to its README]
 
 ### UVM RAL Model
-The CHIP RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The CHIP RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually (separately) by running `make` in the the `hw/` area.
 

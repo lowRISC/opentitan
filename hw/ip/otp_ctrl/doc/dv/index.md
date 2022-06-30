@@ -27,16 +27,16 @@ OTP_CTRL testbench has been constructed based on the [CIP testbench architecture
 Top level testbench is located at `hw/ip/otp_ctrl/dv/tb.sv`. It instantiates the OTP_CTRL DUT module `hw/ip/otp_ctrl/rtl/otp_ctrl.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * OTP_CTRL IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
-* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}))
+* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -59,10 +59,10 @@ All common types and methods defined at the package level can be found in
 ```
 
 ### TL_agent
-OTP_CTRL testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}), which provides the ability to drive and independently monitor random traffic via TL host interface into OTP_CTRL device.
+OTP_CTRL testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}), which provides the ability to drive and independently monitor random traffic via TL host interface into OTP_CTRL device.
 
 ### Alert_agents
-OTP_CTRL testbench instantiates (already handled in CIP base env) two [alert_agents]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}):
+OTP_CTRL testbench instantiates (already handled in CIP base env) two [alert_agents]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}):
 fatal_check_alert and fatal_macro_alert.
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in OTP_CTRL device.
 
@@ -71,12 +71,12 @@ OTP_CTRL design has specific inputs and outputs to communicate with other IPs in
 This interface is created to initialize, use simple task to drive, and use assertions to monitor these signals.
 
 ### Memory backdoor interface
-OTP_CTRL testbench binds design's non-volatile OTP memory with a [`mem_bkdr_util`]({{< relref "hw/dv/sv/mem_bkdr_util/README.md" >}}), which supports read, write, and injection of ECC errors to design's OTP memory.
+OTP_CTRL testbench binds design's non-volatile OTP memory with a [`mem_bkdr_util`]({{< relref "hw/dv/sv/mem_bkdr_util/doc" >}}), which supports read, write, and injection of ECC errors to design's OTP memory.
 
 ### UVM RAL model
-The OTP_CTRL RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The OTP_CTRL RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}).
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}).
 
 ### Reference models
 The OTP_CTRL's utilizes [PRESENT]({{< relref "hw/ip/prim/doc/prim_present.md" >}} as the cipher to scramble and protect secrets.
@@ -138,7 +138,7 @@ To avoid mismatches, scoreboard utilizes flags `dai_wr_ip` and `dai_digest_ip` t
 * OTP_CTRL_IF assertions: This interface has assertions to ensure certain OTP_CTRL's outputs (such as: otp_hw_cfg_o, keymgr_key_o) are stable after OTP initialization.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

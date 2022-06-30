@@ -3,7 +3,7 @@ title: "JTAG DV UVM Agent"
 ---
 
 JTAG UVM Agent is extended from the
-[DV library agent]({{<relref "hw/dv/sv/dv_lib/README.md" >}}) classes, which
+[DV library agent]({{<relref "hw/dv/sv/dv_lib/doc" >}}) classes, which
 provide common knobs and verification logic that help ease the effort of
 writing interface agents.
 
@@ -26,7 +26,7 @@ chapter 6. It mirrors the registers in the design, which is useful to predict
 what we thought we wrote to these registers and compare what we expect the
 design to return on reads. This RAL model is hand-written, given that it is
 only a few set of registers. It can be used to drive reads and writes using
-our standard [CSR routines]({{<relref "hw/dv/sv/csr_utils/README.md">}}). It
+our standard [CSR routines]({{<relref "hw/dv/sv/csr_utils/doc">}}). It
 can also be used in higher level testbench components to develop the predicted
 verification logic.
 

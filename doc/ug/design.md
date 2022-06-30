@@ -74,7 +74,7 @@ Running lint is faster than running a simulation.
 
 The Verilator tool is open source, thus enabling all project contributors to conveniently download, install and run the tool locally as described [in the installation instructions]({{< relref "doc/getting_started/setup_verilator" >}}), without the need for buying a lint tool license.
 
-For developers of design IP, the recommendation is thus to set up the Verilator lint flow for their IP as described in the [Lint Flow README]({{< relref "hw/lint/doc/README.md" >}}).
+For developers of design IP, the recommendation is thus to set up the Verilator lint flow for their IP as described in the [Lint Flow README]({{< relref "hw/lint/doc" >}}).
 Developers should run their code through the Verilator lint tool before creating a design pull request.
 Linting errors and warnings can be closed by fixing the code in question (preferred), or waiving the error.
 These waivers have to be reviewed as part of the pull request review process.
@@ -86,7 +86,7 @@ Note that a pull request cannot be merged if it is not lint-clean, since the con
 To complement the Verilator lint explained above, we also leverage the Verible style linter, which captures different aspects of the code and detects style elements that are in violation of our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
 
 The tool is open source and freely available on the [Verible GitHub page](https://github.com/google/verible/).
-Hence, we recommend IP designers install the tool as described [here]({{< relref "doc/getting_started#step-6a-install-verible-optional" >}}) and in the [Lint Flow README]({{< relref "hw/lint/doc/README.md" >}}), and use the flow locally to close the errors and warnings.
+Hence, we recommend IP designers install the tool as described [here]({{< relref "doc/getting_started#step-6a-install-verible-optional" >}}) and in the [Lint Flow README]({{< relref "hw/lint/doc" >}}), and use the flow locally to close the errors and warnings.
 
 Developers should run their code through the Verible style lint tool before creating a design pull request.
 Linting errors and warnings can be closed by fixing the code in question (preferred), or waiving the error.
@@ -105,7 +105,7 @@ The lint flow run scripts and waiver files are available in the GitHub repositor
 However, the _"lowRISC Lint Rules"_ are available as part of the default policies in AscentLint release 2019.A.p3 or newer (as `LRLR-v1.0.policy`).
 This allows designers with access to this tool to run the lint flow locally on their premises.
 
-If developers of design IP have access to AscentLint, we recommend to set up the AscentLint flow for their IP as described in the [Lint Flow README]({{< relref "hw/lint/doc/README.md" >}}), and use the flow locally to close the errors and warnings.
+If developers of design IP have access to AscentLint, we recommend to set up the AscentLint flow for their IP as described in the [Lint Flow README]({{< relref "hw/lint/doc" >}}), and use the flow locally to close the errors and warnings.
 Linting errors and warnings can be closed by fixing the code in question (preferred), or waiving the error.
 These waivers have to be reviewed as part of the pull request review process.
 
@@ -125,7 +125,7 @@ Often these will eventually result in a downstream error (incorrect data, bus co
 
 Within OpenTitan we attempt to maintain uniformity in assertion style and syntax using SystemVerilog Assertions and a list of common macros.
 An overview of the included macros and how to use them is given in this
-[Design Assertion README file]({{< relref "hw/formal/README.md" >}}).
+[Design Assertion README file]({{< relref "hw/formal/doc" >}}).
 This document also describes how to formally verify assertions using
 [JasperGold](https://www.cadence.com/content/cadence-www/global/en_US/home/tools/system-design-and-verification/formal-and-static-verification/jasper-gold-verification-platform/formal-property-verification-app.html)
 from the company Cadence.

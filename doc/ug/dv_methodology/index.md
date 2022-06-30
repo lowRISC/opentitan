@@ -65,7 +65,7 @@ The testplan is parsed into a data structure that serves the following purposes:
 *  Annotate the nightly regression results to allow us to track our progress towards executing the testplan and coverage collection
 
 The [testplanner]({{< relref "util/dvsim/doc/testplanner.md" >}}) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
-The [build_docs]({{< relref "README.md#documentation" >}}) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV document as a table.
+The [build_docs]({{< relref "doc/ug/documentation" >}}) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV document as a table.
 
 ### DV document
 
@@ -89,14 +89,14 @@ These are described below.
 
 As is the case with design, we strive for conformity in our verification efforts as well.
 The motivation for this is not just aesthetics, but also to reap the advantages of [code reuse](#code-reuse), which we rely heavily on.
-To help achieve this, we provide a verification starter tool-kit called [uvmdvgen]({{< relref "util/uvmdvgen/README.md" >}}).
+To help achieve this, we provide a verification starter tool-kit called [uvmdvgen]({{< relref "util/uvmdvgen/doc" >}}).
 It can be used to completely auto-generate the complete initial DV enviroment for a new DUT, including the [documentation](#documentation) pieces (testplan as well as DV document), the complete UVM environment including the testbench, to the collaterals for building and running tests along with some common tests.
 This significantly helps reduce the development time.
 It can also be used to auto-generate the initial skeleton source code for building a new reusable verification component for an interface (a complete UVM agent).
 
 ### UVM Register Abstraction Layer (RAL) Model
 
-The UVM RAL model for DUTs containing CSRs is auto-generated using the [reggen]({{< relref "util/reggen/README.md" >}}) tool.
+The UVM RAL model for DUTs containing CSRs is auto-generated using the [reggen]({{< relref "util/reggen/doc" >}}) tool.
 The specification for capturing the CSRs in the Hjson format can be found in the [Register Tool]({{< relref "doc/rm/register_tool" >}}) documentation.
 We currently check-in the auto-generated UVM RAL model along with our UVM testbench code and rely on CI checks for consistency.
 In the future we may move to a flow where it is not checked into the repository, but auto-generated on-the-fly as a part of the simulation.
@@ -115,7 +115,7 @@ To that end, several commonly used verification infrastructure pieces are provid
 
 ### DV Base Library
 
-We provide an elementary scaffolding / base layer for constructing UVM testbenches via a [DV base library]({{< relref "hw/dv/sv/dv_lib/README" >}}) of classes to help us get off the ground quickly.
+We provide an elementary scaffolding / base layer for constructing UVM testbenches via a [DV base library]({{< relref "hw/dv/sv/dv_lib/doc" >}}) of classes to help us get off the ground quickly.
 Most, if not all, testbenches in OpenTitan (whether developed for a comportable IP or not) extend from this library, which provides a common set of features.
 A UVM testbench feature (stimulus / sequence, checking logic or functional coverage element) that is generic enough to be applicable for use in all testbenches is a valid candidate to be added to the DV base library.
 By doing so, we improve synergies across our testbenches and reduce the overall development effort & time to market.
@@ -135,12 +135,12 @@ In addition to the above library of classes, there are several common plug-and-p
 A few examples of these are as follows:
 
 *  [Common interfaces]({{< relref "hw/dv/sv/common_ifs" >}})
-*  [DV utilities]({{< relref "hw/dv/sv/dv_utils/README" >}})
-*  [CSR utilities]({{< relref "hw/dv/sv/csr_utils/README" >}})
-*  [Device memory model]({{< relref "hw/dv/sv/mem_model/README" >}})
+*  [DV utilities]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+*  [CSR utilities]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+*  [Device memory model]({{< relref "hw/dv/sv/mem_model/doc" >}})
 *  Interface agents
-  *  [TileLink agent]({{< relref "hw/dv/sv/tl_agent/README" >}})
-  *  [UART agent]({{< relref "hw/dv/sv/uart_agent/README" >}})
+  *  [TileLink agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+  *  [UART agent]({{< relref "hw/dv/sv/usb20_agent/doc" >}})
 
 This is not an exhaustive list since we are still actively developing and adding more such components as we speak.
 Please navigate to the above code location to find more sure UVCs.

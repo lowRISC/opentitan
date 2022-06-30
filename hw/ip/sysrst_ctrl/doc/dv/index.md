@@ -37,16 +37,16 @@ The top level testbench is located at `hw/ip/sysrst_ctrl/dv/tb.sv`.
 It instantiates the SYSRST_CTRL DUT module `hw/ip/sysrst_ctrl/rtl/sysrst_ctrl.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * SYSRST_CTRL IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
-* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}))
+* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### Compile-time configurations
 [list compile time configurations, if any and what are they used for]
@@ -56,18 +56,18 @@ All common types and methods defined at the package level can be found in
 `sysrst_ctrl_env_pkg`.
 
 ### TL_agent
-The SYSRST_CTRL testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}).
+The SYSRST_CTRL testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}).
 This provides the ability to drive and independently monitor random traffic via the TL host interface into the SYSRST_CTRL device.
 
 ### Alert_agents
-SYSRST_CTRL testbench instantiates (already handled in CIP base env) [alert_agents]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}):
+SYSRST_CTRL testbench instantiates (already handled in CIP base env) [alert_agents]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}):
 [list alert names].
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in SYSRST_CTRL device.
 
 ### UVM RAL Model
-The SYSRST_CTRL RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The SYSRST_CTRL RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
 
 ### Stimulus strategy
 #### Test sequences
@@ -110,7 +110,7 @@ The `sysrst_ctrl_scoreboard` is primarily used for end to end checking.
 * CheckEcPwrOnRst: Checks ec_rst_l_o is asserted active low when it is in reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

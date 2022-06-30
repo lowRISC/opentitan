@@ -28,16 +28,16 @@ Top level testbench is located at [`hw/ip/pwrmgr/dv/tb.sv`](https://github.com/l
 It instantiates the PWRMGR DUT module [`hw/ip/pwrmgr/rtl/pwrmgr.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/pwrmgr/rtl/pwrmgr.sv).
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * PWRMGR interface [`hw/ip/pwrmgr/dv/env/pwrmgr_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/pwrmgr/dv/env/pwrmgr_if.sv).
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
-* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}))
+* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -68,12 +68,12 @@ Some of them in use are:
   typedef bit [pwrmgr_pkg::HwResetWidth-1:0] resets_out_t;
 ```
 ### TL_agent
-PWRMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into PWRMGR device.
+PWRMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into PWRMGR device.
 
 ### UVM RAL Model
-The PWRMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The PWRMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}).
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}).
 
 ### Stimulus strategy
 The sequences are closely related to the testplan's testpoints.
@@ -247,7 +247,7 @@ The [`hw/ip/pwrmgr/dv/sva/pwrmgr_bind.sv`](https://github.com/lowRISC/opentitan/
 In addition, the RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

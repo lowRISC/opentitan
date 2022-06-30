@@ -35,11 +35,11 @@ The top level testbench is located at `hw/ip/rv_dm/dv/tb.sv`.
 It instantiates the RV_DM DUT module `hw/ip/rv_dm/rtl/rv_dm.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}}) for the config space (which only contains the alert register).
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}}) for the debug memory space (which only contains the alert register).
-* [TileLink device interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}}) for the SBA interface that is used by the JTAG debugger to access the whole chip.
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}}) for the config space (which only contains the alert register).
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}}) for the debug memory space (which only contains the alert register).
+* [TileLink device interface]({{< relref "hw/dv/sv/tl_agent/doc" >}}) for the SBA interface that is used by the JTAG debugger to access the whole chip.
 * [JTAG interface]({{< relref "hw/dv/sv/jtag_agent/doc" >}}) to act as an external JTAG host.
-* [Alert and escalation interface]({{<relref "hw/dv/sv/alert_esc_agent/README.md" >}}) for the alert interface.
+* [Alert and escalation interface]({{<relref "hw/dv/sv/alert_esc_agent/doc" >}}) for the alert interface.
   * The instantiation and hookup of this interface is done using the standardized common macro `` `DV_ALERT_IF_CONNECT`` defined in `hw/dv/sv/dv_utils/dv_macros.svh`.
 * RV_DM interface for driving / sampling the remaining DUT IOs
   * Inputs driven / sampled: `lc_hw_debug_en_i`, `scanmode_i`, `scan_rst_ni`, `unavailable_i`
@@ -48,20 +48,20 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 ### Common DV utility components
 
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [dv_lib_pkg]({{< relref "hw/dv/sv/dv_lib/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [dv_lib_pkg]({{< relref "hw/dv/sv/dv_lib/doc" >}})
 * [cip_lib_pkg]({{< relref "hw/dv/sv/cip_lib/doc" >}})
 * dv_base_reg_pkg
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### TL_agent
 
-The RV_DM testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}).
+The RV_DM testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}).
 This provides the ability to drive and independently monitor random traffic via the TL host interface into the RV_DM device.
 
 ### Alert_agent
 
-RV_DM testbench instantiates an [alert_agent]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}).
+RV_DM testbench instantiates an [alert_agent]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}).
 This is already done in the CIP base environment.
 It uses a string array of alert names to associate each instance of an alert signal. RV_DM exposes only a single alert signal, so this array is set to ["fatal_fault"].
 This alert is wired from the bus integrity logic.
@@ -78,7 +78,7 @@ The RV_DM testbench instantiates the sub-components of [jtag_dmi_agent]({{<relre
 
 ### UVM RAL Model
 
-On OpenTitan, the DV RAL models are typically generated with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulations are run.
+On OpenTitan, the DV RAL models are typically generated with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulations are run.
 `ralgen` invokes the `reggen` tool underneath, which takes the design specification `hjson` file as input, which contains the register descriptions.
 This generator is invoked by FuseSoC when it processes the RV_DM environment
 core file located at `hw/ip/rv_dm/dv/env/rv_dm_env.core`.
@@ -155,7 +155,7 @@ All transactions made to or coming from the DUT flow into the scoreboard, which 
 
 ## Building and running tests
 
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

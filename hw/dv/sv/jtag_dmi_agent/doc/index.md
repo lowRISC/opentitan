@@ -50,7 +50,7 @@ testbench environment that seeks to consume the captured JTAG DMI transactions.
 This class represents the JTAG DMI register space, as indicated in the [RISCV
 debug specification 0.13.2](https://github.com/riscv/riscv-debug-spec/raw/4e0bb0fc2d843473db2356623792c6b7603b94d4/riscv-debug-release.pdf).
 The registers were specified in the adjoining `jtag_dmi.hjson` file and
-converted to the model using our [reggen]({{< relref "util/reggen/README">}})
+converted to the model using our [reggen]({{< relref "util/reggen/doc">}})
 tool. It has been hand-edited after generation to remove the comportability
 assumptions. See the notes in the file for details.
 

@@ -22,7 +22,7 @@ For detailed information on RV_PLIC design features, please see the
 
 ## Testbench architecture
 RV_PLIC FPV testbench has been constructed based on the [formal
-architecture]({{< relref "/hw/formal/README.md" >}}).
+architecture]({{< relref "/hw/formal/doc" >}}).
 
 ### Block diagram
 ![Block diagram](fpv.svg)
@@ -44,7 +44,7 @@ is used to reduce the number of repeated assertions code. In RV_PLIC, we
 declared two symbolic variables `src_sel` and `tgt_sel` to represent the index for
 interrupt source and interrupt target.
 Detailed explanation is listed in the
-[Symbolic Variables]({{< relref "/hw/formal/README.md#symbolic-variables" >}}) section.
+[Symbolic Variables]({{< relref "/hw/formal/doc#symbolic-variables" >}}) section.
 
 ## Testplan
 {{< incGenFromIpDesc "../../data/rv_plic_fpv_testplan.hjson" "testplan" >}}

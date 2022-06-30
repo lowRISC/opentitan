@@ -28,14 +28,14 @@ Top level testbench is located at `hw/ip/aes/dv/tb/tb.sv`.
 It instantiates the AES DUT module `hw/ip/aes/rtl/aes.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
 * [common_ifs]({{< relref "hw/dv/sv/common_ifs" >}})
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in `aes_env_pkg`.
@@ -45,7 +45,7 @@ parameter uint NUM_ALERTS = 2;
 ```
 
 ### TL_agent
-AES instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+AES instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into AES device.
 
@@ -55,9 +55,9 @@ AES instantiates (already handles in the CIP base env) [edn_agent]({{< relref "h
 which provides the ability to drive and monitor edn traffic via the edn interface.
 
 ### UVM RAL model
-The AES RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The AES RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
 
 ### Stimulus strategy
 #### Test sequences
@@ -78,7 +78,7 @@ Simple tasks include:
 
 More complex tasks include:
 These are the ones used by the higher level sequences and the ones that should be used to create new tests from:
-* **generate_message_queue**: Generate a queue of randomized message items. 
+* **generate_message_queue**: Generate a queue of randomized message items.
 Each item will describe the parameters of a message but not hold any data, the data will be added later.
 This function does not call any sub-functions.
 * **send_msg_queue**: Take the queue of messages items and process them one by one.
@@ -136,7 +136,7 @@ This setting is only available when using the C-model as reference and is contro
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for both building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for both building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

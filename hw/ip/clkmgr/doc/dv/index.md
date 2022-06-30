@@ -30,7 +30,7 @@ It instantiates the CLKMGR DUT module `hw/top_earlgrey/ip/clkmgr/rtl/autogen/clk
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * CLKMGR IOs: `hw/ip/clkmgr/dv/env/clkmgr_if.sv`
 
 The Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})) interface should be connected once the RTL adds support for it.
@@ -38,8 +38,8 @@ The Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})) interface should
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
 
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -60,12 +60,12 @@ All common types and methods defined at the package level can be found in
 ```
 
 ### TL_agent
-CLKMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into CLKMGR device.
+CLKMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into CLKMGR device.
 
 ### UVM RAL Model
-The CLKMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The CLKMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
 
 ### Stimulus strategy
 This module is rather simple: the stimulus is just the external pins and the CSR updates.
@@ -151,7 +151,7 @@ The `jitter_en_o` output is checked to match the `jitter_enable` CSR.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 

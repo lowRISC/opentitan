@@ -24,11 +24,11 @@ applicable. Once done, remove this comment before making a PR. -->
 * [Simulation results](https://reports.opentitan.org/hw/ip/pwm/dv/latest/results.html)
 
 ## Design features
-For detailed information on PWM design features, please see the 
+For detailed information on PWM design features, please see the
 [PWM HWIP technical specification]({{< relref "hw/ip/pwm/doc" >}}).
 
 ## Testbench architecture
-PWM testbench has been constructed based on the 
+PWM testbench has been constructed based on the
 [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
 
 ### Block diagram
@@ -38,17 +38,17 @@ PWM testbench has been constructed based on the
 Top level testbench is located at `hw/ip/pwm/dv/tb/tb.sv`. It instantiates the PWM DUT module `hw/ip/pwm/rtl/pwm.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * PWM IOs
 * Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
 ### Common DV utility components
-The following utilities provide generic helper tasks and functions to perform activities 
+The following utilities provide generic helper tasks and functions to perform activities
 that are common across the project:
 * [common_ifs]({{< relref "hw/dv/sv/common_ifs" >}})
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -96,7 +96,7 @@ parameter uint NUM_PWM_CHANNELS = 6;
   endfunction : get_pwm_mode
 ```
 ### TL_agent
-PWM instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+PWM instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into PWM device.
 
@@ -111,10 +111,10 @@ For each pulse a number of features are captured such as:
 * relative delay to be used for phase calculation
 
 ### UVM RAL Model
-The PWM RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) 
+The PWM RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}})
 FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}})
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}})
 
 ### Stimulus strategy
 #### Test sequences
@@ -141,7 +141,7 @@ The functional coverage plan can be found here: [coverageplan](#testplan)
 The `pwm_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
 * item_fifo[NUM_PWM_CHANNELS]: the FIFO w.r.t channels receives the dut items sent by the pwm_monitor
-* exp_item_q[PWM_NUM_CHANNELS]: the queues  w.r.t channels are used to store the expected/referenced items 
+* exp_item_q[PWM_NUM_CHANNELS]: the queues  w.r.t channels are used to store the expected/referenced items
 which are constructed from tl address and data channels
 
 when a channel is configured to start sending pulses the first expected item is generated and put in the exp_item_q.
@@ -160,7 +160,7 @@ If an error is found the scoreboard will throw a fatal error.
 
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

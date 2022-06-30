@@ -27,7 +27,7 @@ ENTROPY_SRC testbench has been constructed based on the [CIP testbench architect
 Top level testbench is located at `hw/ip/entropy_src/dv/tb/tb.sv`. It instantiates the ENTROPY_SRC DUT module `hw/ip/entropy_src/rtl/entropy_src.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * ENTROPY_SRC IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 * Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
@@ -36,8 +36,8 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
 * [common_ifs]({{< relref "hw/dv/sv/common_ifs" >}})
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 <!--### Compile-time configurations
 TODO-->
@@ -58,18 +58,18 @@ function automatic entropy_phase_e convert_seed_idx_to_phase(int seed_idx,
 ```
 
 ### TL_agent
-ENTROPY_SRC testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+ENTROPY_SRC testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into ENTROPY_SRC device.
 
 ###  Rng_agent
-Entropy_src testbench instantiates this PUSH_pull_agent({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) which models the rng source.
+Entropy_src testbench instantiates this PUSH_pull_agent({{< relref "hw/dv/sv/push_pull_agent/doc" >}}) which models the rng source.
 
 ###  Csrng_agent
-Entropy_src testbench instantiates this push_PULL_agent({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) which models the csrng module.
+Entropy_src testbench instantiates this push_PULL_agent({{< relref "hw/dv/sv/push_pull_agent/doc" >}}) which models the csrng module.
 
 ### UVM RAL Model
-The ENTROPY_SRC RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The ENTROPY_SRC RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually (separately) by running `make` in the `hw/` area.
 
@@ -99,7 +99,7 @@ It creates the following analysis ports to retrieve the data monitored by corres
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

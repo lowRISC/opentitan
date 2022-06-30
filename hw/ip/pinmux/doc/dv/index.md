@@ -20,7 +20,7 @@ For detailed information on PINMUX design features, please see the
 [PINMUX design specification]({{< relref ".." >}}).
 
 ## Testbench architecture
-PINMUX FPV testbench has been constructed based on the [formal architecture]({{< relref "hw/formal/README.md" >}}).
+PINMUX FPV testbench has been constructed based on the [formal architecture]({{< relref "hw/formal/doc" >}}).
 
 ### Block diagram
 ![Block diagram](fpv.svg)
@@ -40,7 +40,7 @@ All functional checks will be implemented in the usbdev testbench.
 ##### Symbolic variables
 Due to the large number of peripheral, muxed, dedicated IOs, and wakeup causes, symbolic variables are used to reduce the number of repeated assertions code.
 In the pinmux_assert_fpv module, we declared four symbolic variables (`mio_sel_i`, `periph_sel_i`, `dio_sel_i`, `wkup_sel_i`) to represent the index for muxed IOs, peripheral IOs, dedicated IOs, and wakeup causes.
-Detailed explanation is listed in the [Symbolic Variables]({{< relref "hw/formal/README.md#symbolic-variables" >}}) section.
+Detailed explanation is listed in the [Symbolic Variables]({{< relref "hw/formal/doc#symbolic-variables" >}}) section.
 
 ## Testplan
 {{< incGenFromIpDesc "../../data/pinmux_fpv_testplan.hjson" "testplan" >}}

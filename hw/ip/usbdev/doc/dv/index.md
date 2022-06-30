@@ -30,14 +30,14 @@ Top level testbench is located at `hw/ip/usbdev/dv/tb/tb.sv`.
 It instantiates the USBDEV DUT module `hw/ip/usbdev/rtl/usbdev.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface for the TL and USB domains]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * USBDEV IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### Compile-time configurations
 None for now.
@@ -50,16 +50,16 @@ Some of them in use are:
 ```
 
 ### TL_agent
-USBDEV testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into USBDEV device.
+USBDEV testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into USBDEV device.
 
 ###  USB20 Agent
-The [usb20_agent]({{< relref "hw/dv/sv/usb20_agent/README.md" >}}) is currently a skeleton implementation.
+The [usb20_agent]({{< relref "hw/dv/sv/usb20_agent/doc" >}}) is currently a skeleton implementation.
 It does not offer any functionality yet.
 
 ### UVM RAL Model
-The USBDEV RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The USBDEV RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
 
 ### Reference models
 There are no reference models in use currently.
@@ -90,7 +90,7 @@ It creates the following analysis ports to retrieve the data monitored by corres
 * TBD
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

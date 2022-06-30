@@ -55,7 +55,7 @@ The proprietary IP on the other hand translates a common access interface to the
 
 This split implies that every proprietary OTP IP must implement a translation layer from a standardized OpenTitan interface to the module underneath.
 It also implies that no matter how the OTP storage or word size may change underneath, the open-source controller must present a consistent and coherent software and hardware interface.
-This standardized interface is defined further below, and the wrapper leverages the same [technology primitive mechanism]({{< relref "hw/ip/prim/README.md" >}}) that is employed in other parts of OpenTitan in order to wrap and abstract technology-specific macros (such as memories and clocking cells) that are potentially closed-source.
+This standardized interface is defined further below, and the wrapper leverages the same [technology primitive mechanism]({{< relref "hw/ip/prim/doc" >}}) that is employed in other parts of OpenTitan in order to wrap and abstract technology-specific macros (such as memories and clocking cells) that are potentially closed-source.
 
 In order to enable simulation and FPGA emulation of the OTP controller even without access to the proprietary OTP IP, a generalized and synthesizable model of the OTP IP is provided in the form of a [generic technology primitive](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim_generic/rtl/prim_generic_otp.sv).
 

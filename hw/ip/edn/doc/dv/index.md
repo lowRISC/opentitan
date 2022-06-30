@@ -27,7 +27,7 @@ EDN testbench has been constructed based on the [CIP testbench architecture]({{<
 Top level testbench is located at `hw/ip/edn/dv/tb.sv`. It instantiates the EDN DUT module `hw/ip/edn/rtl/edn.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * EDN IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 * Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
@@ -36,8 +36,8 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
 * [common_ifs]({{< relref "hw/dv/sv/common_ifs" >}})
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -48,20 +48,20 @@ parameter uint MAX_NUM_ENDPOINTS = 7;
 ```
 
 ### TL_agent
-EDN testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+EDN testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into EDN device.
 
 ###  Endpoint_agent
-EDN testbench instantiates this push_pull_agent({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) which models an endpoint module.
+EDN testbench instantiates this push_pull_agent({{< relref "hw/dv/sv/push_pull_agent/doc" >}}) which models an endpoint module.
 
 ###  Csrng_agent
-EDN testbench instantiates this agent({{< relref "hw/dv/sv/csrng_agent/README.md" >}}) which models the csrng module.
+EDN testbench instantiates this agent({{< relref "hw/dv/sv/csrng_agent/doc" >}}) which models the csrng module.
 
 ### UVM RAL Model
-The EDN RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The EDN RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
 
 ### Stimulus strategy
 #### Test sequences
@@ -91,7 +91,7 @@ explain inputs monitored, flow of data and outputs checked -->
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
