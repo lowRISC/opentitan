@@ -123,7 +123,7 @@ from topgen.lib import Name
     .clk_i(clk_${src_name}_i),
     .rst_ni(rst_${src_name}_ni),
     .mubi_i(div_step_down_req_i),
-    .mubi_o(${src_name}_step_down_req)
+    .mubi_o({${src_name}_step_down_req})
   );
 
 % endfor
@@ -152,7 +152,7 @@ from topgen.lib import Name
     .clk_i,
     .rst_ni,
     .mubi_i(scanmode_i),
-    .mubi_o(${src.name}_div_scanmode)
+    .mubi_o({${src.name}_div_scanmode})
   );
 
   prim_clock_div #(

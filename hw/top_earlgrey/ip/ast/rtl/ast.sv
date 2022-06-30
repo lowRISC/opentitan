@@ -614,7 +614,7 @@ prim_mubi4_sync #(
   .clk_i ( clk_sys ),
   .rst_ni ( rst_src_sys_n ),
   .mubi_i ( clk_src_sys_jen_i ),
-  .mubi_o ( clk_src_sys_jen )
+  .mubi_o ( {clk_src_sys_jen} )
 );
 
 // Reset De-Assert Sync

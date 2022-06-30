@@ -625,7 +625,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i,
     .rst_ni,
     .mubi_i(otp_en_entropy_src_fw_over_i),
-    .mubi_o(en_entropy_src_fw_over)
+    .mubi_o({en_entropy_src_fw_over})
   );
 
   assign entropy_src_rng_o.rng_enable = es_enable_q_fo[0];
@@ -2507,7 +2507,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i,
     .rst_ni,
     .mubi_i(otp_en_entropy_src_fw_read_i),
-    .mubi_o(en_entropy_src_fw_read)
+    .mubi_o({en_entropy_src_fw_read})
   );
 
   //--------------------------------------------

@@ -36,7 +36,7 @@ module rstmgr_leaf_rst
     .clk_i,
     .rst_ni,
     .mubi_i(scanmode_i),
-    .mubi_o(scanmode)
+    .mubi_o({scanmode})
  );
 
   logic leaf_rst_sync;

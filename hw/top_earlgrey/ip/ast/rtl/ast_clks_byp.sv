@@ -263,7 +263,7 @@ prim_mubi4_sync #(
   .clk_i ( clk_aon ),
   .rst_ni ( rst_aon_n ),
   .mubi_i ( io_clk_byp_req_i ),
-  .mubi_o ( ot_io_clk_byp_req )
+  .mubi_o ( {ot_io_clk_byp_req} )
 );
 
 prim_mubi4_sync #(
@@ -273,7 +273,7 @@ prim_mubi4_sync #(
   .clk_i ( clk_aon ),
   .rst_ni ( rst_aon_n ),
   .mubi_i ( all_clk_byp_req_i ),
-  .mubi_o ( ot_all_clk_byp_req )
+  .mubi_o ( {ot_all_clk_byp_req} )
 );
 
 prim_mubi4_sync #(
@@ -283,7 +283,7 @@ prim_mubi4_sync #(
   .clk_i ( clk_aon ),
   .rst_ni ( rst_aon_n ),
   .mubi_i ( ext_freq_is_96m_i ),
-  .mubi_o ( ot_ext_freq_is_96m )
+  .mubi_o ( {ot_ext_freq_is_96m} )
 );
 
 // Decode logic
