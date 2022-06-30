@@ -13,7 +13,6 @@ package alert_handler_env_pkg;
   import alert_handler_ral_pkg::*;
   import dv_base_reg_pkg::*;
   import cip_base_pkg::*;
-  import sec_cm_pkg::*;
   import push_pull_agent_pkg::*;
   import sec_cm_pkg::*;
 
@@ -46,6 +45,8 @@ package alert_handler_env_pkg;
   parameter uint NUM_CRASHDUMP             = NUM_ALERT_CLASSES * (alert_handler_reg_pkg::AccuCntDw
                                              + alert_handler_reg_pkg::EscCntDw + 3) +
                                              NUM_ALERTS + NUM_LOCAL_ALERTS;
+  parameter bit[15:0] MAX_PING_WAIT_CYCLES = '1;
+
   // types
   typedef enum {
     EscPhase0,

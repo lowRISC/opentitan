@@ -43,6 +43,7 @@ class esc_monitor extends alert_esc_base_monitor;
           int ping_cnter = 1;
           under_esc_ping = 1;
           req.alert_esc_type = AlertEscPingTrans;
+          alert_esc_port.write(req);
           check_esc_resp(.req(req), .is_ping(1));
           while (req.esc_handshake_sta != EscRespComplete &&
                  ping_cnter < cfg.ping_timeout_cycle &&

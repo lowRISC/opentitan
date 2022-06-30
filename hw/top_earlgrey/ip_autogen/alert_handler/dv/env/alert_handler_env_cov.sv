@@ -114,8 +114,28 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
   // Covergroup to make sure simulation is long enough to fetch more than five EDN requests.
   covergroup num_edn_reqs_cg with function sample(int num_edn_reqs);
     num_edn_reqs_cp: coverpoint num_edn_reqs {
-      bins less_then_five_reqs = {[1:4]};
+      bins less_than_five_reqs = {[1:4]};
       bins five_or_more_reqs   = {[5:$]};
+    }
+  endgroup
+
+  covergroup num_checked_pings_cg with function sample (int num_pings);
+    num_pings_cp: coverpoint num_pings {
+      bins less_than_ten_pings = {[1:9]};
+      bins ten_to_twenty_pings = {[10:19]};
+      bins more_than_twenty_pings = {[20:$]};
+    }
+  endgroup
+
+  covergroup cycles_between_pings_cg with function sample (int num_cycles_between_pings);
+    num_cycles_cp: coverpoint num_cycles_between_pings{
+      bins less_than_5000_cycs = {[1:4_999]};
+      bins less_than_100k_cycs = {[5_000:99_999]};
+      bins less_than_200k_cycs = {[100_000:199_999]};
+      bins less_than_300k_cycs = {[200_000:299_999]};
+      bins less_than_400k_cycs = {[300_000:399_999]};
+      bins less_than_500k_cycs = {[400_000:499_999]};
+      bins more_than_500k_cycs = {[500_000:'hFFFF]};
     }
   endgroup
 
@@ -132,6 +152,8 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
     crashdump_trigger_cg = new();
 
     num_edn_reqs_cg = new();
+    num_checked_pings_cg = new();
+    cycles_between_pings_cg = new();
 
   endfunction : new
 
