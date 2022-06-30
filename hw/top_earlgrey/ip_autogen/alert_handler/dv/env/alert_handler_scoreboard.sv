@@ -43,6 +43,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   bit [NUM_ALERT_CLASSES-1:0] crashdump_triggered = 0;
 
+  bit ping_triggered, ping_timer_en;
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifo[NUM_ALERTS];
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_fifo[NUM_ESCS];
@@ -71,6 +73,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       process_alert_fifo();
       process_esc_fifo();
       process_edn_fifos();
+      check_ping_timer();
       check_crashdump();
       check_intr_timeout_trigger_esc();
       esc_phase_signal_cnter();
@@ -93,9 +96,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
           // Check that ping mechanism will only ping alerts that have been enabled and locked.
           if (act_item.alert_esc_type == AlertEscPingTrans) begin
-            `DV_CHECK(alert_en, $sformatf("alert %0s triggered but not enabled", index))
+            `DV_CHECK(alert_en, $sformatf("alert %0s ping triggered but not enabled", index))
             `DV_CHECK((`gmv(ral.alert_regwen[index]) == 0),
-                      $sformatf("alert %0s triggered but not locked", index))
+                      $sformatf("alert %0s ping triggered but not locked", index))
+            ping_triggered = 1;
           end
 
           if (alert_en) begin
@@ -139,12 +143,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscIntFail].get_mirrored_value();
             if (loc_alert_en) process_alert_sig(index, 1, LocalEscIntFail);
           // escalation ping timeout
-          end else if (act_item.alert_esc_type == AlertEscPingTrans && act_item.ping_timeout) begin
-            bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscPingFail].get_mirrored_value();
-            if (loc_alert_en) begin
-              process_alert_sig(index, 1, LocalEscPingFail);
-              `uvm_info(`gfn, $sformatf("esc %0d ping timeout, timeout_cyc reg is %0d",
-                        index, ral.ping_timeout_cyc_shadowed.get_mirrored_value()), UVM_LOW);
+          end else if (act_item.alert_esc_type == AlertEscPingTrans) begin
+            ping_triggered = 1;
+            if (act_item.ping_timeout) begin
+              bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscPingFail].get_mirrored_value();
+              if (loc_alert_en) begin
+                process_alert_sig(index, 1, LocalEscPingFail);
+                `uvm_info(`gfn, $sformatf("esc %0d ping timeout, timeout_cyc reg is %0d",
+                          index, ral.ping_timeout_cyc_shadowed.get_mirrored_value()), UVM_LOW);
+              end
             end
           end
         end
@@ -406,6 +413,13 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           "classd_clr_shadowed": begin
             if (ral.classd_clr_regwen.get_mirrored_value()) clr_reset_esc_class(3);
           end
+          "ping_timer_en_shadowed": begin
+            if (shadowed_reg_wr_completed(dv_base_csr) &&
+                item.a_data &&
+                `gmv(ral.ping_timer_regwen)) begin
+              ping_timer_en = 1;
+            end
+          end
           default: begin
             // TODO: align all names with shadow post_fix and re-enable this check.
             //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
@@ -458,6 +472,56 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         if (csr.get_name() == "intr_state") intr_state_val = csr.get_mirrored_value();
       end
     end
+  endtask
+
+  virtual task check_ping_timer();
+    int num_checked_pings;
+    fork begin : isolation_fork
+      forever begin
+        wait (ping_timer_en == 1);
+        fork
+          begin
+            wait (cfg.under_reset == 1);
+            ping_timer_en = 0;
+            num_checked_pings = 0;
+          end
+          begin
+            check_ping_triggered_cycles();
+            num_checked_pings++;
+            ping_triggered = 0;
+            if (cfg.en_cov) cov.num_checked_pings_cg.sample(num_checked_pings);
+          end
+        join_any
+        disable fork;
+      end
+    end join
+  endtask
+
+  // This task checks if pings are triggered within the expected time.
+  //
+  // The ping timer is 16 bits so ideally we should see alert_ping -> esc_ping ->  alert_ping ...
+  // with the max length of 16'hFFFF clock cycle. However alert_ping is randomly selected so we
+  // can not guarantee the random alert index is valid (exists), enabld, and locked.
+  // However, esc ping timer should are always expected to trigger.
+  // So the max wait time is 'hFFFF*2.
+  virtual task check_ping_triggered_cycles();
+    int ping_wait_cycs;
+    fork begin : isolation_fork
+      fork
+        begin
+          while (ping_wait_cycs <= MAX_PING_WAIT_CYCLES * 2) begin
+            cfg.clk_rst_vif.wait_clks(1);
+            ping_wait_cycs++;
+          end
+          `uvm_error(`gfn, "Timeout occured waiting for a ping.");
+        end
+        begin
+          wait(ping_triggered);
+        end
+      join_any
+      disable fork;
+    end join
+    if (cfg.en_cov) cov.cycles_between_pings_cg.sample(ping_wait_cycs);
   endtask
 
   virtual task check_crashdump();
@@ -624,6 +688,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     state_per_class       = '{default:EscStateIdle};
     clr_esc_under_intr    = 0;
     crashdump_triggered   = 0;
+    ping_timer_en         = 0;
     last_triggered_alert_per_class = '{default:$realtime};
   endfunction
 
