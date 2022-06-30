@@ -33,7 +33,7 @@ It instantiates the `aon_timer` DUT module, defined at `hw/ip/aon_timer/rtl/aon_
 In addition, it instantiates the following interfaces, connects them to the DUT and registers their handles in `uvm_config_db`:
 * A [clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}}) for the fast clock
 * A [clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}}) for the AON clock
-* A [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* A [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
   The AON timer exposes a TL device.
   Here, the testbench is acting as the host CPU; in the OpenTitan SoC, this will be the Ibex core.
 * Two interrupts (wakeup timer; watchdog bark) in the fast clock domain
@@ -56,13 +56,13 @@ This *core interface* is bound into the design as `u_core_if` and is used to pas
 
 ### TileLink agent
 
-In order to communicate through the register interface, the testbench uses the [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}) that is instantiated in the CIP base environment.
+In order to communicate through the register interface, the testbench uses the [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) that is instantiated in the CIP base environment.
 This is also used by generic test sequences to exercise the register interface.
 
 ### UVM RAL Model
-The `aon_timer` RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The `aon_timer` RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}).
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}).
 Running
 ```
 util/regtool.py -s -t . hw/ip/aon_timer/data/aon_timer.hjson
@@ -139,7 +139,7 @@ Outputs are also checked for `'X` values by assertions in the design RTL.
 
 ## Building and running tests
 
-Tests can be run with [`dvsim.py`]({{< relref "hw/dv/tools/README.md" >}}).
+Tests can be run with [`dvsim.py`]({{< relref "hw/dv/tools/doc" >}}).
 The link gives details of the tool's features and command line arguments.
 To run a basic smoke test, go to the top of the repository and run:
 ```console

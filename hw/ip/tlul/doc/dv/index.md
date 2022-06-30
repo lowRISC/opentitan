@@ -38,12 +38,12 @@ XBAR testbench has been constructed based on the `hw/dv/sv/dv_lib`
 Top level testbench is located at `hw/ip/tlul/dv/tb/tb.sv`. It instantiates the XBAR DUT module `hw/top_earlgrey/ip/xbar/rtl/autogen/xbar_main.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
 * [common_ifs]({{< relref "hw/dv/sv/common_ifs" >}})
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -56,7 +56,7 @@ parameter int VALID_HOST_ID_WIDTH = 6
 ```
 
 ### TL agent
-XBAR env instantiates [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}) for each xbar host and device,
+XBAR env instantiates [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) for each xbar host and device,
 which provides the ability to drive and independently monitor random traffic via
 TL host/device interface.
 * For host, source ID MSB 2 bits are tied to 0 and maximum number of outstanding request is 64
@@ -114,7 +114,7 @@ We set the source of expected item to 0 before put it into scoreboard queue and 
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

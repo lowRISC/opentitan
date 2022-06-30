@@ -285,11 +285,11 @@ TLM port connections have been made from UVC monitors to the scoreboard.
 
 ### SIM_RAL_MODEL_GEN_AUTOMATED
 
-A RAL model is generated using [regtool]({{< relref "/util/reggen/README.md" >}}) and instantiated in the UVM environment.
+A RAL model is generated using [regtool]({{< relref "/util/reggen/doc" >}}) and instantiated in the UVM environment.
 
 ### CSR_CHECK_GEN_AUTOMATED
 
-A CSR check is generated using [regtool]({{< relref "/util/reggen/README.md" >}}) and bound in the TB environment.
+A CSR check is generated using [regtool]({{< relref "/util/reggen/doc" >}}) and bound in the TB environment.
 
 ### TB_GEN_AUTOMATED
 
@@ -351,7 +351,7 @@ A functional coverage shell object has been created - this may not contain cover
 
 ### TB_LINT_SETUP
 
-[VeribleLint](https://google.github.io/verible/verilog_lint.html) for the testbench is [set up]({{< relref "hw/lint/doc/README.md" >}}) to run in nightly regression, with appropriate waivers.
+[VeribleLint](https://google.github.io/verible/verilog_lint.html) for the testbench is [set up]({{< relref "hw/lint/doc" >}}) to run in nightly regression, with appropriate waivers.
 * For a constrained random testbench, an entry has been added to `hw/<top-level-design>/lint/<top-level-design>_dv_lint_cfgs.hjson`
 * For an FPV testbench, an entry has been added to `hw/<top-level-design>/lint/<top-level-design>_fpv_lint_cfgs.hjson`
 

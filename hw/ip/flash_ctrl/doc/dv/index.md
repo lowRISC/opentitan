@@ -32,10 +32,10 @@ Top level testbench is located at `hw/ip/flash_ctrl/dv/tb/tb.sv`.
 It instantiates the `flash_ctrl_wrapper`.
 In addition, the testbench instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface for the flash controller]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
-* [TileLink host interface for the eflash]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface for the flash controller]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* [TileLink host interface for the eflash]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* [Memory backdoor utility]({{< relref "hw/dv/sv/mem_bkdr_util/README.md" >}})
+* [Memory backdoor utility]({{< relref "hw/dv/sv/mem_bkdr_util/doc" >}})
 
 In future, as the design (and DV) matures, the following interfaces will be
 instantiated and hooked up to the DUT:
@@ -45,19 +45,19 @@ instantiated and hooked up to the DUT:
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### TL_agent
-`flash_ctrl` UVM environment instantiates a (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into `flash_ctrl` device.
+`flash_ctrl` UVM environment instantiates a (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into `flash_ctrl` device.
 There is an additional instance of the `tl_agent` for the host interface to the `flash_phy`, to directly fetch the contents of the flash memory, bypassing the `flash_ctrl`.
 
 The `tl_agent` monitor supplies partial TileLink request packets as well as completed TileLink response packets over the TLM analysis port for further processing within the `flash_ctrl` scoreboard.
 
 ### UVM RAL Model
-The `flash_ctrl` RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The `flash_ctrl` RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
 
 #### Sequence cfg
 An efficient way to develop test sequences is by providing some random varibles that are used to configure the DUT / drive stimulus.
@@ -119,7 +119,7 @@ All common types and methods defined at the package level can be found in
 ```
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

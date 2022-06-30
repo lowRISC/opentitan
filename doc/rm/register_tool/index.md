@@ -190,7 +190,7 @@ For example:
 Current `tags` supports:
 * CSR tests exclusions:
   Simulation based verification will run four CSR tests (if applicable to the module) through automation.
-  Detailed description of this methodology is documented in [CSR utilities]({{< relref "hw/dv/sv/csr_utils/README.md" >}}).
+  Detailed description of this methodology is documented in [CSR utilities]({{< relref "hw/dv/sv/csr_utils/doc" >}}).
   The tag name is `excl`, and items are enum values for what CSR tests to exclude from, and what type of exclusions.
   The enum types for exclusion test are:
   ```systemverilog

@@ -28,15 +28,15 @@ The top level testbench is located at [`hw/ip/rstmgr/dv/tb.sv`](https://github.c
 It instantiates the RSTMGR DUT module [`hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr.sv).
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * RSTMGR interface [`hw/ip/rstmgr/dv/env/rstmgr_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/env/rstmgr_if.sv)
-* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}))
+* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -47,18 +47,18 @@ All common types and methods defined at the package level can be found in
   typedef virtual pwrmgr_rstmgr_sva_if #(.CHECK_RSTREQS(0)) parameterized_pwrmgr_rstmgr_sva_vif;
 ```
 ### TL_agent
-The RSTMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}).
+The RSTMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}).
 This provides the ability to drive and independently monitor random traffic via the TL host interface into the RSTMGR device.
 
 ### Alert_agents
-RSTMGR testbench instantiates (already handled in CIP base env) [alert_agents]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}):
+RSTMGR testbench instantiates (already handled in CIP base env) [alert_agents]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}):
 [list alert names].
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in RSTMGR device.
 
 ### UVM RAL Model
-The RSTMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The RSTMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}).
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}).
 
 ### Stimulus strategy
 The following test sequences and covergroups are described in more detail in the testplan at `hw/ip/pwrmgr/data/rstmgr_testplan.hjson`, and also included [below](#testplan).
@@ -132,7 +132,7 @@ It has its own separate dv environment and tests at `hw/ip/rstmgr/dv/rstmgr_cnst
 It is excluded from coverage for the rstmgr dv tests.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

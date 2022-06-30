@@ -37,7 +37,7 @@ FOO testbench has been constructed based on the [CIP testbench architecture]({{<
 Top level testbench is located at `hw/ip/foo/dv/tb/tb.sv`. It instantiates the FOO DUT module `hw/ip/foo/rtl/foo.sv`.
 In addition, it instantiates the following interfaces and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * FOO IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 * Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
@@ -45,8 +45,8 @@ In addition, it instantiates the following interfaces and sets their handle into
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
 
 ### Compile-time configurations
 [list compile time configurations, if any and what are they used for]
@@ -58,7 +58,7 @@ All common types and methods defined at the package level can be found in
 [list a few parameters, types & methods; no need to mention all]
 ```
 ### TL_agent
-FOO testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
+FOO testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into FOO device.
 
@@ -69,7 +69,7 @@ TL host interface into FOO device.
 [Describe here or add link to its README]
 
 ### UVM RAL Model
-The FOO RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The FOO RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually (separately) by running `make` in the the `hw/` area.
 
@@ -107,9 +107,11 @@ It creates the following analysis ports to retrieve the data monitored by corres
 * assert prop 2:
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
+
 Here's how to run a smoke test:
+
 ```console
 $ cd hw/ip/foo/dv
 $ make TEST_NAME=foo_smoke

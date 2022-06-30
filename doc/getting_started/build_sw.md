@@ -254,7 +254,7 @@ There are two ways to run an OTBN program:
 1. Run a standalone binary (`.elf`) on the specialized OTBN simulator.
 1. Include a `.rv32embed` artifact in a C program that runs on Ibex, and create an on-device target as described in the previous section.
 
-You can run `.elf` artifacts directly using the simulator as described in [the OTBN README]({{< relref "/hw/ip/otbn/README/index.html#run-the-python-simulator">}}).
+You can run `.elf` artifacts directly using the simulator as described in [the OTBN README](https://github.com/lowRISC/opentitan/blob/master/hw/ip/otbn/README.md#run-the-python-simulator).
 The `otbn_sim_test` rule is a thin wrapper around `otbn_binary`.
 If you use it, `bazel test` will run the OTBN simulator for you and check the test result.
 

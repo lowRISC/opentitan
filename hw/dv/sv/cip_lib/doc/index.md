@@ -384,7 +384,7 @@ from this CIP library claaes, please follow the steps below:
 Note that if the testbench is generated from `uvmdvgen.py`, using the `-hr` switch
 will automatically generate the skeleton code listed above for alert device agent.
 Details on how to use `uvmdvgen.py` please refer to the
-[uvmdvgen document]({{< relref "util/uvmdvgen/README" >}}).
+[uvmdvgen document]({{< relref "util/uvmdvgen/doc" >}}).
 
 ## CIP Testbench
 ![CIP testbench diagram](tb.svg)
@@ -602,4 +602,4 @@ class keymgr_common_vseq extends keymgr_base_vseq;
 ```
 
 #### Formal Verification
-Please refer to [formal document]({{< relref "hw/formal/README" >}}) on how to create a FPV environment for common countermeasures.
+Please refer to [formal document]({{< relref "hw/formal/doc" >}}) on how to create a FPV environment for common countermeasures.

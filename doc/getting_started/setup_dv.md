@@ -23,7 +23,7 @@ The design specification, once available, is used as a starting point.
 
 The very first thing to do in any DV effort is to [document the plan]({{< relref "doc/ug/dv_methodology#documentation" >}}) detailing the overall effort.
 This is done in conjunction with developing the initial testbench.
-It is recommended to use the [uvmdvgen]({{< relref "util/uvmdvgen/README.md" >}}) tool, which serves both needs.
+It is recommended to use the [uvmdvgen]({{< relref "util/uvmdvgen/doc" >}}) tool, which serves both needs.
 
 The `uvmdvgen` tool provides the ability to generate the outputs in a specific directory.
 This should be set to the root of the DUT directory where the `rtl` directory exists.
@@ -46,9 +46,9 @@ Once done, these documents are to be reviewed with the designer(s) and other pro
 ## UVM RAL Model
 
 Before running any test, the [UVM RAL model]({{< relref "doc/ug/dv_methodology#uvm-register-abstraction-layer-ral-model" >}}) needs to exist (if the design contains CSRs).
-The [DV simulation flow]({{< relref "hw/dv/tools/README.md" >}}) has been updated to generate the RAL model automatically at the start of the simulation.
+The [DV simulation flow]({{< relref "hw/dv/tools/doc" >}}) has been updated to generate the RAL model automatically at the start of the simulation.
 As such, nothing extra needs to be done.
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
 ```console
 $ util/regtool.py -s -t /path-to-dv /path-to-module/data/<dut>.hjson
 ```
@@ -57,8 +57,8 @@ The generated file is placed in the simulation build scratch area instead of bei
 
 ## Supported Simulators
 
-The use of advanced verification constructs such as SystemVerilog classes (on which UVM is based) requires commercial simulators.
-The [DV simulation flow]({{< relref "hw/dv/tools/README.md" >}}) fully supports Synopsys VCS.
+The use of advanced verification constructs such as SystemVerilog classes (on which UVM is based on) requires commercial simulators.
+The [DV simulation flow]({{< relref "hw/dv/tools/doc" >}}) fully supports Synopsys VCS.
 There is support for Cadence Xcelium as well, which is being slowly ramped up.
 
 ## Building and Running Tests
@@ -76,14 +76,14 @@ Once the testbench compiles and elaborates without any errors or warnings, the s
 VCS is used as the default simulator.
 It can be switched to Xcelium by setting `--tool xcelium` on the command line.
 To dump waves from the simulation, pass the `--waves` argument to `dvsim.py`.
-Please refer to the [DV simulation flow]({{< relref "hw/dv/tools/README.md" >}}) for additional details.
+Please refer to the [DV simulation flow]({{< relref "hw/dv/tools/doc" >}}) for additional details.
 
 The `uvmdvgen` script also enables the user to run the full suite of CSR tests, if the DUT does have CSRs in it.
 The most basic CSR power-on-reset check test can be run by invoking:
 ```console
 $ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson -i <dut>_csr_hw_reset [--waves] [--tool xcelium]
 ```
-Please refer to [CSR utilities]({{< relref "hw/dv/sv/csr_utils/README" >}}) for more information on how to add exclusions for the CSR tests.
+Please refer to [CSR utilities]({{< relref "hw/dv/sv/csr_utils/doc" >}}) for more information on how to add exclusions for the CSR tests.
 
 ## Full DV
 

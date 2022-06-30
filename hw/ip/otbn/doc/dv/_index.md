@@ -23,7 +23,7 @@ For detailed information on OTBN design features, see the [OTBN HWIP technical s
 ## Testbench architecture
 
 The OTBN testbench is based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
-It builds on the [dv_utils]({{< relref "hw/dv/sv/dv_utils/README.md" >}}) and [csr_utils]({{< relref "hw/dv/sv/csr_utils/README.md" >}}) packages.
+It builds on the [dv_utils]({{< relref "hw/dv/sv/dv_utils/doc" >}}) and [csr_utils]({{< relref "hw/dv/sv/csr_utils/doc" >}}) packages.
 
 ### Block diagram
 
@@ -40,12 +40,12 @@ This instantiates the OTBN DUT module `hw/ip/otbn/rtl/otbn.sv`.
 
 OTBN has the following interfaces:
 - A [Clock and reset interface]({{< relref "/hw/dv/sv/common_ifs#clk_rst_if" >}})
-- A [TileLink interface]({{< relref "/hw/dv/sv/tl_agent/README.md" >}}).
+- A [TileLink interface]({{< relref "/hw/dv/sv/tl_agent/doc.md" >}}).
   OTBN is a TL-UL device, which expects to communicate with a TL-UL host.
   In the OpenTitan SoC, this will be the Ibex core.
 - Idle signals in each clock domain, `idle_o`, and `idle_otp_o`
 - One interrupt
-- An [alert interface]({{< relref "/hw/dv/sv/alert_esc_agent/README" >}})
+- An [alert interface]({{< relref "/hw/dv/sv/alert_esc_agent/doc" >}})
 - A life cycle escalation interface
 - An [OTP]({{< relref "/hw/ip/otp_ctrl/doc" >}}) connection
 - Two [EDN]({{< relref "/hw/ip/edn/doc" >}}) connections
@@ -124,7 +124,7 @@ Finally, the `otbn_idle_checker` checks that the `idle_o` output correctly match
 
 ## Building and running tests
 
-Tests can be run with [`dvsim.py`]({{< relref "hw/dv/tools/README.md" >}}).
+Tests can be run with [`dvsim.py`]({{< relref "hw/dv/tools/doc" >}}).
 The link gives details of the tool's features and command line arguments.
 To run a basic smoke test, go to the top of the repository and run:
 ```console
