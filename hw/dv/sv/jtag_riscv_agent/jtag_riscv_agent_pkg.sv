@@ -102,4 +102,40 @@ package jtag_riscv_agent_pkg;
     jtag_csr_seq.start(seqr);
   endtask
 
+  // spin on a jtag csr read until expected value is matched
+  task automatic jtag_csr_spinwait(bit [bus_params_pkg::BUS_AW-1:0] csr_addr,
+    jtag_riscv_sequencer seqr,
+    bit [bus_params_pkg::BUS_DW-1:0] exp_data,
+    uint timeout_ns = 1000);
+
+    `uvm_info(msg_id, $sformatf("timeout is %d ns", timeout_ns), UVM_MEDIUM)
+
+    fork
+      begin : isolation_fork
+        bit [bus_params_pkg::BUS_DW-1:0] prev_read_data = 0;
+        bit [bus_params_pkg::BUS_DW-1:0] read_data = ~exp_data;
+
+        fork
+          while (read_data != exp_data) begin
+            jtag_read_csr(csr_addr,
+            seqr,
+            read_data);
+
+            if (prev_read_data != read_data) begin
+              `uvm_info(msg_id, $sformatf("addr: 0x%0h, data: 0x%0h",
+                                             csr_addr, read_data), UVM_LOW)
+              prev_read_data = read_data;
+            end
+          end
+          begin
+            wait_timeout(timeout_ns, msg_id, $sformatf("timeout (addr=0x%0h) == 0x%0h",
+                csr_addr, exp_data));
+          end
+        join_any
+        disable fork;
+      end : isolation_fork
+    join
+  endtask
+
+
 endpackage: jtag_riscv_agent_pkg

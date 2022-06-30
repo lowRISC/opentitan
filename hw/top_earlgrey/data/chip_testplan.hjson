@@ -1241,9 +1241,8 @@
 
             Verify all escalation paths triggered by an alert.
             - Verify the first escalation results in NMI interrupt serviced by the CPU.
-            - Verify the second results in device secrets to be wiped - read via SW to confirm.
-            - Verify the third results in device being put in scrap state, via the LC JTAG TAP.
-            - Verify the fourth results in chip reset.
+            - Verify the second results in device being put in scrap state, via the LC JTAG TAP.
+            - Verify the third results in chip reset.
             - Ensure that all escalation handshakes complete without errors.
             '''
       milestone: V2
