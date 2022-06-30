@@ -288,9 +288,9 @@ module sensor_ctrl
   // be used to trigger wake from low power.
   // Fatal alerts are not used here because they do not ever ack, meaning
   // the originating event can never disappear.
-  assign async_wake = |async_alert_event_p  |
-                      ~&async_alert_event_n |
-                      |reg2hw.recov_alert;
+  assign async_wake = (|async_alert_event_p)  |
+                      (~&async_alert_event_n) |
+                      (|reg2hw.recov_alert);
 
   prim_flop_2sync #(
     .Width(1),

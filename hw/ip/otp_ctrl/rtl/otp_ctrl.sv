@@ -470,7 +470,7 @@ module otp_ctrl
     fatal_check_error_d |= chk_timeout       |
                            lfsr_fsm_err      |
                            scrmbl_fsm_err    |
-                           |part_fsm_err;
+                           (|part_fsm_err);
   end
 
   // Assign these to the status register.
