@@ -6,6 +6,7 @@
 // util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_usbdev_autogen.h"
+
 #include <stdint.h>
 
 #include "usbdev_regs.h"  // Generated.

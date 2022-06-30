@@ -49,8 +49,9 @@ void isr_testutils_adc_ctrl_isr(
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_adc_ctrl_irq_t irq = (dif_adc_ctrl_irq_t)(
-      plic_irq_id - adc_ctrl_ctx.plic_adc_ctrl_start_irq_id);
+  dif_adc_ctrl_irq_t irq =
+      (dif_adc_ctrl_irq_t)(plic_irq_id -
+                           adc_ctrl_ctx.plic_adc_ctrl_start_irq_id);
   *irq_serviced = irq;
 
   // Check if it is supposed to be the only IRQ fired.
@@ -90,8 +91,10 @@ void isr_testutils_alert_handler_isr(
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_alert_handler_irq_t irq = (dif_alert_handler_irq_t)(
-      plic_irq_id - alert_handler_ctx.plic_alert_handler_start_irq_id);
+  dif_alert_handler_irq_t irq =
+      (dif_alert_handler_irq_t)(plic_irq_id -
+                                alert_handler_ctx
+                                    .plic_alert_handler_start_irq_id);
   *irq_serviced = irq;
 
   // Check if it is supposed to be the only IRQ fired.
@@ -127,8 +130,9 @@ void isr_testutils_aon_timer_isr(
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_aon_timer_irq_t irq = (dif_aon_timer_irq_t)(
-      plic_irq_id - aon_timer_ctx.plic_aon_timer_start_irq_id);
+  dif_aon_timer_irq_t irq =
+      (dif_aon_timer_irq_t)(plic_irq_id -
+                            aon_timer_ctx.plic_aon_timer_start_irq_id);
   *irq_serviced = irq;
 
   // Check if it is supposed to be the only IRQ fired.
@@ -232,8 +236,9 @@ void isr_testutils_entropy_src_isr(
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_entropy_src_irq_t irq = (dif_entropy_src_irq_t)(
-      plic_irq_id - entropy_src_ctx.plic_entropy_src_start_irq_id);
+  dif_entropy_src_irq_t irq =
+      (dif_entropy_src_irq_t)(plic_irq_id -
+                              entropy_src_ctx.plic_entropy_src_start_irq_id);
   *irq_serviced = irq;
 
   // Check if it is supposed to be the only IRQ fired.
@@ -269,8 +274,9 @@ void isr_testutils_flash_ctrl_isr(
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_flash_ctrl_irq_t irq = (dif_flash_ctrl_irq_t)(
-      plic_irq_id - flash_ctrl_ctx.plic_flash_ctrl_start_irq_id);
+  dif_flash_ctrl_irq_t irq =
+      (dif_flash_ctrl_irq_t)(plic_irq_id -
+                             flash_ctrl_ctx.plic_flash_ctrl_start_irq_id);
   *irq_serviced = irq;
 
   // Check if it is supposed to be the only IRQ fired.
@@ -510,8 +516,9 @@ void isr_testutils_otp_ctrl_isr(
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_otp_ctrl_irq_t irq = (dif_otp_ctrl_irq_t)(
-      plic_irq_id - otp_ctrl_ctx.plic_otp_ctrl_start_irq_id);
+  dif_otp_ctrl_irq_t irq =
+      (dif_otp_ctrl_irq_t)(plic_irq_id -
+                           otp_ctrl_ctx.plic_otp_ctrl_start_irq_id);
   *irq_serviced = irq;
 
   // Check if it is supposed to be the only IRQ fired.
@@ -615,8 +622,9 @@ void isr_testutils_rv_timer_isr(
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_rv_timer_irq_t irq = (dif_rv_timer_irq_t)(
-      plic_irq_id - rv_timer_ctx.plic_rv_timer_start_irq_id);
+  dif_rv_timer_irq_t irq =
+      (dif_rv_timer_irq_t)(plic_irq_id -
+                           rv_timer_ctx.plic_rv_timer_start_irq_id);
   *irq_serviced = irq;
 
   // Check if it is supposed to be the only IRQ fired.
@@ -651,8 +659,9 @@ void isr_testutils_sensor_ctrl_isr(
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_sensor_ctrl_irq_t irq = (dif_sensor_ctrl_irq_t)(
-      plic_irq_id - sensor_ctrl_ctx.plic_sensor_ctrl_start_irq_id);
+  dif_sensor_ctrl_irq_t irq =
+      (dif_sensor_ctrl_irq_t)(plic_irq_id -
+                              sensor_ctrl_ctx.plic_sensor_ctrl_start_irq_id);
   *irq_serviced = irq;
 
   // Check if it is supposed to be the only IRQ fired.
@@ -688,8 +697,9 @@ void isr_testutils_spi_device_isr(
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_spi_device_irq_t irq = (dif_spi_device_irq_t)(
-      plic_irq_id - spi_device_ctx.plic_spi_device_start_irq_id);
+  dif_spi_device_irq_t irq =
+      (dif_spi_device_irq_t)(plic_irq_id -
+                             spi_device_ctx.plic_spi_device_start_irq_id);
   *irq_serviced = irq;
 
   // Check if it is supposed to be the only IRQ fired.
@@ -724,8 +734,9 @@ void isr_testutils_spi_host_isr(
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_spi_host_irq_t irq = (dif_spi_host_irq_t)(
-      plic_irq_id - spi_host_ctx.plic_spi_host_start_irq_id);
+  dif_spi_host_irq_t irq =
+      (dif_spi_host_irq_t)(plic_irq_id -
+                           spi_host_ctx.plic_spi_host_start_irq_id);
   *irq_serviced = irq;
 
   // Check if it is supposed to be the only IRQ fired.
@@ -759,8 +770,9 @@ void isr_testutils_sysrst_ctrl_isr(
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_sysrst_ctrl_irq_t irq = (dif_sysrst_ctrl_irq_t)(
-      plic_irq_id - sysrst_ctrl_ctx.plic_sysrst_ctrl_start_irq_id);
+  dif_sysrst_ctrl_irq_t irq =
+      (dif_sysrst_ctrl_irq_t)(plic_irq_id -
+                              sysrst_ctrl_ctx.plic_sysrst_ctrl_start_irq_id);
   *irq_serviced = irq;
 
   // Check if it is supposed to be the only IRQ fired.
