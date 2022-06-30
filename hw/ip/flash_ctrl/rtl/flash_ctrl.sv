@@ -301,7 +301,7 @@ module flash_ctrl
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_seed_hw_rd_en_i),
-    .lc_en_o(lc_seed_hw_rd_en)
+    .lc_en_o({lc_seed_hw_rd_en})
   );
 
   prim_lfsr #(
@@ -935,7 +935,7 @@ module flash_ctrl
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_escalate_en_i),
-    .lc_en_o(lc_escalate_en)
+    .lc_en_o({lc_escalate_en})
   );
 
   lc_ctrl_pkg::lc_tx_t escalate_en;

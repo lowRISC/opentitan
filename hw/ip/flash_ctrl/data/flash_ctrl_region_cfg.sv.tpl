@@ -51,7 +51,7 @@ module flash_ctrl_region_cfg
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_creator_seed_sw_rw_en_i),
-    .lc_en_o(lc_creator_seed_sw_rw_en)
+    .lc_en_o({lc_creator_seed_sw_rw_en})
   );
 
   prim_lc_sync #(
@@ -60,7 +60,7 @@ module flash_ctrl_region_cfg
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_owner_seed_sw_rw_en_i),
-    .lc_en_o(lc_owner_seed_sw_rw_en)
+    .lc_en_o({lc_owner_seed_sw_rw_en})
   );
 
   prim_lc_sync #(
@@ -69,7 +69,7 @@ module flash_ctrl_region_cfg
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_iso_part_sw_rd_en_i),
-    .lc_en_o(lc_iso_part_sw_rd_en)
+    .lc_en_o({lc_iso_part_sw_rd_en})
   );
 
   prim_lc_sync #(
@@ -78,7 +78,7 @@ module flash_ctrl_region_cfg
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_iso_part_sw_wr_en_i),
-    .lc_en_o(lc_iso_part_sw_wr_en)
+    .lc_en_o({lc_iso_part_sw_wr_en})
   );
 
   //////////////////////////////////////

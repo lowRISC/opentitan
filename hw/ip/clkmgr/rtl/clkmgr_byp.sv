@@ -47,7 +47,7 @@ module clkmgr_byp
     .clk_i,
     .rst_ni,
     .lc_en_i(en_i),
-    .lc_en_o(en)
+    .lc_en_o({en})
   );
 
   typedef enum logic [1:0] {
@@ -145,7 +145,7 @@ module clkmgr_byp
     .clk_i,
     .rst_ni,
     .mubi_i(all_clk_byp_ack_i),
-    .mubi_o(byp_ack_o)
+    .mubi_o({byp_ack_o})
   );
 
   // the software high speed select is valid only when software requests clock

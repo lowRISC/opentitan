@@ -163,7 +163,7 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_creator_seed_sw_rw_en_i),
-    .lc_en_o(lc_creator_seed_sw_rw_en)
+    .lc_en_o({lc_creator_seed_sw_rw_en})
   );
 
   prim_lc_sync #(
@@ -172,7 +172,7 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_seed_hw_rd_en_i),
-    .lc_en_o(lc_seed_hw_rd_en)
+    .lc_en_o({lc_seed_hw_rd_en})
   );
 
   prim_lc_sync #(
@@ -190,7 +190,7 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_check_byp_en_i),
-    .lc_en_o(lc_check_byp_en)
+    .lc_en_o({lc_check_byp_en})
   );
 
   /////////////////////////////////////

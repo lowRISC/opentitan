@@ -123,7 +123,7 @@
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
     .mubi_i(div_step_down_req_i),
-    .mubi_o(io_step_down_req)
+    .mubi_o({io_step_down_req})
   );
 
 
@@ -149,7 +149,7 @@
     .clk_i,
     .rst_ni,
     .mubi_i(scanmode_i),
-    .mubi_o(io_div2_div_scanmode)
+    .mubi_o({io_div2_div_scanmode})
   );
 
   prim_clock_div #(
@@ -172,7 +172,7 @@
     .clk_i,
     .rst_ni,
     .mubi_i(scanmode_i),
-    .mubi_o(io_div4_div_scanmode)
+    .mubi_o({io_div4_div_scanmode})
   );
 
   prim_clock_div #(
