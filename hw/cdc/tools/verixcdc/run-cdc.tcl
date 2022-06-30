@@ -69,12 +69,14 @@ if {$DEFINE != ""} {
   analyze -sverilog  +define+AST_BYPASS_CLK -f ${SV_FLIST}
 }
 
+# TODO(#13197): two flops are accessing the same memory cells
+# prim_generic_ram_2p is not recognized as a CDC module by the tool
+# So, it's black-boxed while waiting for a tool patch
 if {$PARAMS != ""} {
-  elaborate -params "$PARAMS" $DUT
+  elaborate -params "$PARAMS" $DUT -black_box prim_generic_ram_2p
 } else {
-  elaborate $DUT
+  elaborate $DUT -black_box prim_generic_ram_2p
 }
-
 #################################
 ## Define Common Synchronizers ##
 #################################
@@ -117,6 +119,9 @@ set_ignore_cdc_paths -name async_fifo_to_ibex_ecc_err -through_signal $async_fif
 set_ignore_cdc_paths -name async_fifo_to_ibex_ivalid -through_signal $async_fifo_data -through_signal [get_pins top_earlgrey/u_rv_core_ibex/u_core/instr_rvalid_i]
 set_ignore_cdc_paths -name async_fifo_to_ibex_dvalid -through_signal $async_fifo_data -through_signal [get_pins top_earlgrey/u_rv_core_ibex/u_core/data_rvalid_i]
 
+# CDC between tlul_fifo_async and regs : ignored
+set tlul_async_data [get_pins -of_objects [get_cells -hier * -filter {ref_name == tlul_fifo_async}] -filter {name =~ tl_d_o*}]
+set_ignore_cdc_paths -name tlul_async_fifo_err -through_signal $tlul_async_data -through_signal [get_pins {top_earlgrey/*/u_reg/u_io_*meas_ctrl_shadowed_cdc/src_we_i}]
 #########################
 ## Apply Constraints   ##
 #########################
