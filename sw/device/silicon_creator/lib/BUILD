@@ -336,3 +336,9 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+cc_library(
+    name = "crc32",
+    srcs = ["crc32.c"],
+    hdrs = ["crc32.h"],
+)
