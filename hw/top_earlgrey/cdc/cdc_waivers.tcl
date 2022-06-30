@@ -92,3 +92,7 @@ set_rule_status -rule {W_CNTL} -status {Waived} \
 set_rule_status -rule {W_DATA} -status {Waived} \
   -expression {(Signal=~"*u_pinmux_aon.dio_pad_attr_*")} \
   -comment {PAD Attributes are static signals.}
+
+set_rule_status -rule {S_GENCLK} -status {Waived} \
+  -expression {(ClockTreeSignal=~"u_ast.u_ast_clks_byp.*") && (DrivenFlop =~ "u_ast.u_ast_clks_byp.*")} \
+  -comment {ast clks are assumed to be checked by the partner as standalone.}
