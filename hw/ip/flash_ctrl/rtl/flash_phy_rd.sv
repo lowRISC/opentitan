@@ -627,7 +627,7 @@ module flash_phy_rd
   );
 
   // whenever the response is coming from the buffer, the error is never set
-  assign data_valid_o = flash_rsp_match | |buf_rsp_match;
+  assign data_valid_o = flash_rsp_match | (|buf_rsp_match);
 
   // integrity and reliability ECC errors always cause in band errors
   assign data_err_o   = muxed_err | intg_err;

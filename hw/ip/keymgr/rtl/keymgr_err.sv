@@ -71,7 +71,7 @@ module keymgr_err
   assign sync_err_d[SyncErrInvalidOp] = err_vld & (invalid_op_i |
                                                    disabled_i |
                                                    invalid_i |
-                                                   |fault_o);
+                                                   (|fault_o));
   assign sync_err_d[SyncErrInvalidIn] = err_vld & kmac_input_invalid_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
