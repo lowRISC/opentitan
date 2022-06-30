@@ -14,6 +14,21 @@ cc_library(
 )
 
 cc_library(
+    name = "coverage_llvm",
+    srcs = [
+        "coverage_llvm.c",
+        "//sw/vendor:llvm_clang_rt_profile",
+    ],
+    hdrs = ["coverage.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/silicon_creator/lib:crc32",
+    ],
+)
+
+cc_library(
     name = "status",
     srcs = ["status.c"],
     hdrs = ["status.h"],
