@@ -94,6 +94,7 @@ module pwm_chan #(
 
   logic htbt_direction;
   logic dc_wrap;
+  logic dc_wrap_q;
   logic pos_htbt;
   logic neg_htbt;
   assign pos_htbt = (duty_cycle_a_i < duty_cycle_b_i);
@@ -105,11 +106,11 @@ module pwm_chan #(
       // For proper initialization, set the initial htbt_direction whenever a register is updated,
       // as indicated by clr_blink_cntr_i
       htbt_direction <= !pos_htbt;
-    end else if (pos_htbt && ((dc_htbt_q >= duty_cycle_b_i) || (dc_wrap && dc_htbt_end_q))) begin
+    end else if (pos_htbt && ((dc_htbt_q >= duty_cycle_b_i) || (dc_wrap && dc_htbt_end))) begin
       htbt_direction <= 1'b1; // duty cycle counts down
     end else if (pos_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end_q) begin
       htbt_direction <= 1'b0; // duty cycle counts up
-    end else if (neg_htbt && ((dc_htbt_q <= duty_cycle_b_i) || (dc_wrap && dc_htbt_end_q))) begin
+    end else if (neg_htbt && ((dc_htbt_q <= duty_cycle_b_i) || (dc_wrap && dc_htbt_end))) begin
       htbt_direction <= 1'b0; // duty cycle counts up
     end else if (neg_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end_q) begin
       htbt_direction <= 1'b1; // duty cycle counts down
@@ -128,6 +129,17 @@ module pwm_chan #(
                                 (CntExtDw)'(dc_htbt_q) + (CntExtDw)'(blink_param_y_i) + 1'b1;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      dc_wrap_q <= 1'b0;
+    end else if ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) begin
+      // To pick the first dc_wrap pulse during the transition and set the correct duration of
+      // dc_wrap_q, pos_htbt and htbt_direction signals are involved
+      dc_wrap_q <= pos_htbt ? dc_wrap & ~htbt_direction : dc_wrap & htbt_direction;
+    end else begin
+      dc_wrap_q <= dc_wrap_q;
+    end
+  end
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       dc_htbt_q <= '0;
     end else if (!htbt_en_i && dc_htbt_q != duty_cycle_a_i) begin
       // the heart beat duty cycle is only changed when the heartbeat is not currently
@@ -137,7 +149,8 @@ module pwm_chan #(
       dc_htbt_q <= ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) ? dc_htbt_d : dc_htbt_q;
     end
   end
-  assign duty_cycle_htbt = dc_htbt_q;
+
+  assign duty_cycle_htbt = !dc_wrap_q ? dc_htbt_q : pos_htbt ? 16'hffff : '0;
 
   assign duty_cycle_actual = (blink_en_i && !htbt_en_i) ? duty_cycle_blink :
                              (blink_en_i && htbt_en_i) ? duty_cycle_htbt : duty_cycle_a_i;
