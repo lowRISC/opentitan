@@ -1,5 +1,5 @@
-# OpenTitan CI is using clang-format 6.0. The documentation for this
-# configuration is here:
+# OpenTitan CI is using clang-format from the bazel workspace
+# Documentation for this configuration is here:
 #   https://releases.llvm.org/6.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 BasedOnStyle: Google
