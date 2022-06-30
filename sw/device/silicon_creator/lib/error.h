@@ -87,6 +87,7 @@ enum module_ {
   X(kErrorAlertBadClass,              ERROR_(2, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadEnable,             ERROR_(3, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadEscalation,         ERROR_(4, kModuleAlertHandler, kInvalidArgument)), \
+  X(kErrorAlertBadCrc32,              ERROR_(5, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorMaskRomBootFailed,          ERROR_(1, kModuleMaskRom, kFailedPrecondition)), \
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
