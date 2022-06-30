@@ -32,6 +32,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//hw/top_earlgrey:alert_handler_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
@@ -41,12 +42,15 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            ":lifecycle",
+            ":otp",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:memory",
             "//sw/device/lib/base:mmio",
-            "//sw/device/silicon_creator/lib:error",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
+            "//sw/device/silicon_creator/lib:crc32",
+            "//sw/device/silicon_creator/lib:error",
         ],
     ),
 )

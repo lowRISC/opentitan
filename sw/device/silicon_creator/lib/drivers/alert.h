@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
@@ -143,6 +144,25 @@ rom_error_t alert_class_configure(alert_class_t cls,
  * Enable the ping timer mechanism.
  */
 rom_error_t alert_ping_enable(void);
+
+/**
+ * Compute the CRC32 of the configuration registers.
+ *
+ * @return CRC32 of the configuration registers.
+ */
+uint32_t alert_config_crc32(void);
+
+/**
+ * Compare the CRC32 of the configuration registers with the value in OTP.
+ *
+ * This function does not check the CRC32 in TEST_UNLOCKED* life cycle states to
+ * allow a test program to configure the alert handler before transitioning to
+ * other life cycle states.
+ *
+ * @param lc_state Life cycle state of the device.
+ * @return result of the operation.
+ */
+rom_error_t alert_config_check(lifecycle_state_t lc_state);
 
 #ifdef __cplusplus
 }

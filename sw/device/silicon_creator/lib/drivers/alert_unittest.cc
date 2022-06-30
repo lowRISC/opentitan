@@ -6,19 +6,29 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
+#include "sw/device/silicon_creator/lib/mock_crc32.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
-#include "alert_handler_regs.h"  // Generated.
+#include "alert_handler_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 namespace alert_unittest {
 namespace {
+using ::testing::NotNull;
+using ::testing::Return;
 
 class AlertTest : public mask_rom_test::MaskRomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR;
   mask_rom_test::MockSecMmio mmio_;
+  mask_rom_test::MockCrc32 crc32_;
+  mask_rom_test::MockAbsMmio abs_mmio_;
+  mask_rom_test::MockOtp otp_;
 };
 
 class InitTest : public AlertTest {};
@@ -301,7 +311,7 @@ TEST_F(InitTest, AlertConfigureClassD) {
   EXPECT_EQ(alert_class_configure(kAlertClassD, &config), kErrorOk);
 }
 
-class AlertPingTest : public InitTest {};
+class AlertPingTest : public AlertTest {};
 
 TEST_F(AlertPingTest, EnableSucess) {
   EXPECT_SEC_WRITE32_SHADOWED(
@@ -311,6 +321,128 @@ TEST_F(AlertPingTest, EnableSucess) {
 
   EXPECT_EQ(alert_ping_enable(), kErrorOk);
 }
+
+/**
+ * Functor for incrementing an offset by four.
+ */
+class WordStepper {
+ public:
+  WordStepper(uint32_t offset) : offset_(offset - sizeof(uint32_t)) {}
+
+  uint32_t operator()() { return offset_ += sizeof(uint32_t); }
+
+ private:
+  uint32_t offset_;
+};
+
+class AlertConfigCheckTest : public AlertTest {
+ protected:
+  void ExpectConfigCrc32(uint32_t exp_crc32) {
+    std::vector<uint32_t> reg_offsets;
+    auto iter = std::back_inserter(reg_offsets);
+    std::generate_n(iter, ALERT_HANDLER_ALERT_EN_SHADOWED_MULTIREG_COUNT,
+                    WordStepper(ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET));
+    std::generate_n(
+        iter, ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT,
+        WordStepper(ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET));
+    std::generate_n(iter, ALERT_HANDLER_LOC_ALERT_REGWEN_MULTIREG_COUNT,
+                    WordStepper(ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET));
+    std::generate_n(
+        iter, ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_MULTIREG_COUNT,
+        WordStepper(ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET));
+    std::generate_n(
+        iter, ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT,
+        WordStepper(ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET));
+    for (size_t klass = 0; klass < ALERT_HANDLER_PARAM_N_CLASSES; ++klass) {
+      enum {
+        kClassStep = ALERT_HANDLER_CLASSB_REGWEN_REG_OFFSET -
+                     ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET,
+      };
+      iter = ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET + kClassStep * klass;
+      iter = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_REG_OFFSET + kClassStep * klass;
+      iter = ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET +
+             kClassStep * klass;
+      iter = ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_REG_OFFSET +
+             kClassStep * klass;
+      std::generate_n(
+          iter, ALERT_HANDLER_PARAM_N_PHASES,
+          WordStepper(ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_REG_OFFSET +
+                      kClassStep * klass));
+    }
+
+    EXPECT_CALL(crc32_, Init(NotNull()));
+    for (uint32_t offset : reg_offsets) {
+      EXPECT_ABS_READ32(base_ + offset, offset);
+      EXPECT_CALL(crc32_, Add32(NotNull(), offset));
+    }
+    EXPECT_CALL(crc32_, Finish(NotNull())).WillOnce(Return(exp_crc32));
+  }
+};
+
+TEST_F(AlertConfigCheckTest, ConfigCrc32) {
+  constexpr uint32_t kExpCrc32 = 0xa5a5a5a5;
+  ExpectConfigCrc32(kExpCrc32);
+
+  EXPECT_EQ(alert_config_crc32(), kExpCrc32);
+}
+
+TEST_F(AlertConfigCheckTest, CheckInTestLcState) {
+  constexpr uint32_t kExpCrc32 = 0xa5a5a5a5;
+  ExpectConfigCrc32(kExpCrc32);
+
+  EXPECT_EQ(alert_config_check(kLcStateTest), kErrorOk);
+}
+
+struct ConfigCheckTestCase {
+  lifecycle_state_t lc_state;
+  uint32_t otp_offset;
+};
+
+class AlertConfigCheckNonTestLcStateTest
+    : public AlertConfigCheckTest,
+      public testing::WithParamInterface<ConfigCheckTestCase> {};
+
+TEST_P(AlertConfigCheckNonTestLcStateTest, ConfigCheckGood) {
+  constexpr uint32_t kExpCrc32 = 0xa5a5a5a5;
+  ExpectConfigCrc32(kExpCrc32);
+  EXPECT_CALL(otp_, read32(GetParam().otp_offset))
+      .WillOnce(Return(kExpCrc32 ^ GetParam().lc_state ^ kErrorOk));
+
+  EXPECT_EQ(alert_config_check(GetParam().lc_state), kErrorOk);
+}
+
+TEST_P(AlertConfigCheckNonTestLcStateTest, ConfigCheckBad) {
+  constexpr uint32_t kExpCrc32 = 0xa5a5a5a5;
+  ExpectConfigCrc32(kExpCrc32);
+  EXPECT_CALL(otp_, read32(GetParam().otp_offset))
+      .WillOnce(Return((kExpCrc32 ^ 1) ^ GetParam().lc_state ^ kErrorOk));
+
+  EXPECT_EQ(alert_config_check(GetParam().lc_state), kErrorAlertBadCrc32);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    NonTestLcStates, AlertConfigCheckNonTestLcStateTest,
+    testing::Values(
+        ConfigCheckTestCase{
+            .lc_state = kLcStateDev,
+            .otp_offset =
+                OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV_OFFSET,
+        },
+        ConfigCheckTestCase{
+            .lc_state = kLcStateProd,
+            .otp_offset =
+                OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_OFFSET,
+        },
+        ConfigCheckTestCase{
+            .lc_state = kLcStateProdEnd,
+            .otp_offset =
+                OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END_OFFSET,
+        },
+        ConfigCheckTestCase{
+            .lc_state = kLcStateRma,
+            .otp_offset =
+                OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA_OFFSET,
+        }));
 
 }  // namespace
 }  // namespace alert_unittest

@@ -4,12 +4,16 @@
 
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/crc32.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "alert_handler_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 enum {
   kBase = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR,
@@ -252,4 +256,108 @@ rom_error_t alert_ping_enable(void) {
   sec_mmio_write32(kBase + ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
   SEC_MMIO_WRITE_INCREMENT(/*value=*/2);
   return kErrorOk;
+}
+
+/**
+ * Adds an alert handler register to a CRC32.
+ *
+ * @param[in, out] ctx Context variable.
+ * @param offset Register offset relative to `kBase`.
+ */
+static void crc32_add_reg(uint32_t *ctx, uint32_t offset) {
+  crc32_add32(ctx, abs_mmio_read32(kBase + offset));
+}
+
+/**
+ * Adds a range of alert handler registers to a CRC32.
+ *
+ * @param[in, out] ctx Context variable.
+ * @param offset Register offset relative to `kBase`.
+ * @param num_regs Number of registers.
+ */
+static void crc32_add_regs(uint32_t *ctx, uint32_t offset, size_t num_regs) {
+  for (size_t i = 0; i < num_regs; ++i, offset += sizeof(uint32_t)) {
+    crc32_add_reg(ctx, offset);
+  }
+}
+
+uint32_t alert_config_crc32(void) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+
+  crc32_add_regs(&ctx, ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET,
+                 ALERT_HANDLER_ALERT_EN_SHADOWED_MULTIREG_COUNT);
+  crc32_add_regs(&ctx, ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET,
+                 ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT);
+  crc32_add_regs(&ctx, ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET,
+                 ALERT_HANDLER_LOC_ALERT_REGWEN_MULTIREG_COUNT);
+  crc32_add_regs(&ctx, ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET,
+                 ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_MULTIREG_COUNT);
+  crc32_add_regs(&ctx, ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET,
+                 ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT);
+
+  for (size_t class = 0; class < ALERT_HANDLER_PARAM_N_CLASSES; ++class) {
+    enum {
+      kClassStep = ALERT_HANDLER_CLASSB_REGWEN_REG_OFFSET -
+                   ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET,
+    };
+    uint32_t classOffset = kClassStep * class;
+
+    crc32_add_reg(&ctx, classOffset + ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET);
+    crc32_add_reg(&ctx,
+                  classOffset + ALERT_HANDLER_CLASSA_CTRL_SHADOWED_REG_OFFSET);
+    crc32_add_reg(
+        &ctx,
+        classOffset + ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET);
+    crc32_add_reg(
+        &ctx,
+        classOffset + ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_REG_OFFSET);
+
+    crc32_add_regs(
+        &ctx, classOffset + ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_REG_OFFSET,
+        ALERT_HANDLER_PARAM_N_PHASES);
+  }
+
+  return crc32_finish(&ctx);
+}
+
+rom_error_t alert_config_check(lifecycle_state_t lc_state) {
+  uint32_t crc32 = alert_config_crc32();
+  rom_error_t res = lc_state ^ crc32;
+  switch (launder32(lc_state)) {
+    case kLcStateTest:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTest);
+      enum {
+        kMask = kLcStateTest ^ kErrorOk,
+      };
+      res ^= crc32 ^ kMask;
+      break;
+    case kLcStateProd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProd);
+      res ^=
+          otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_OFFSET);
+      break;
+    case kLcStateProdEnd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
+      res ^= otp_read32(
+          OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END_OFFSET);
+      break;
+    case kLcStateDev:
+      HARDENED_CHECK_EQ(lc_state, kLcStateDev);
+      res ^=
+          otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV_OFFSET);
+      break;
+    case kLcStateRma:
+      HARDENED_CHECK_EQ(lc_state, kLcStateRma);
+      res ^=
+          otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA_OFFSET);
+      break;
+    default:
+      HARDENED_UNREACHABLE();
+  }
+  if (launder32(res) != kErrorOk) {
+    return kErrorAlertBadCrc32;
+  }
+  HARDENED_CHECK_EQ(res, kErrorOk);
+  return res;
 }
