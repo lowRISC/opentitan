@@ -7,6 +7,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/coverage.h"
+#include "sw/device/silicon_creator/lib/crc32.h"
 #include "sw/vendor/llvm_clang_rt_profile/compiler-rt/lib/profile/InstrProfiling.h"
 
 /**
@@ -16,33 +17,6 @@
  * for more information.
  */
 int __llvm_profile_runtime;
-
-/**
- * Computes the CRC32 of a buffer as expected by Python's `zlib.crc32()`. The
- * implementation below is basically a simplified, i.e. byte-by-byte and without
- * a lookup table, version of zlib's crc32. See
- * https://github.com/madler/zlib/blob/2fa463bacfff79181df1a5270fb67cc679a53e71/crc32.c,
- * lines 111-112 and 276-279.
- */
-static uint32_t crc32(uint8_t *buf, size_t len) {
-  // CRC32 polynomial.
-  static const uint32_t kPoly = 0xEDB88320;
-  // Since we use a contiguous buffer, we don't need to call this function
-  // multiple times. That's why `crc` is not a parameter and is initialized to
-  // `UINT32_MAX`, i.e. `~0`.
-  uint32_t crc = UINT32_MAX;
-  for (size_t i = 0; i < len; ++i) {
-    crc ^= buf[i];
-    for (uint8_t j = 0; j < 8; ++j) {
-      bool lsb = crc & 1;
-      crc >>= 1;
-      if (lsb) {
-        crc ^= kPoly;
-      }
-    }
-  }
-  return ~crc;
-}
 
 /**
  * Sends the given buffer as a hex string over UART.
