@@ -106,18 +106,22 @@ jobs:
 - job: download_bazel_dependencies
   displayName: Prefetch Bazel deps
   # Download Bazel fetched dependencies
-  continueOnError: True
   pool:
     vmImage: ubuntu-18.04
   steps:
   - bash: |
       set -x -e
-      util/prep-bazel-airgapped-build.sh
+      util/prep-bazel-airgapped-build.sh || {
+        echo -n "##vso[task.logissue type=warning]Failed to prefetch Bazel dependencies";
+        exit 1;
+      }
       rm -rf bazel-airgapped/bitstreams-cache
       tar -cf bazel-airgapped.tar.gz bazel-airgapped
-    displayName: Download & package dependencies
+    displayName: Pre-fetch and package Bazel dependencies
+    continueOnError: True # This step is flaky on the ubuntu-18.04 image
   - publish: $(System.DefaultWorkingDirectory)/bazel-airgapped.tar.gz
     artifact: bazel-dependencies
+    condition: eq(variables['Agent.JobStatus'], 'Succeeded')
 
 - job: slow_lints
   displayName: Quality (in-depth lint)
