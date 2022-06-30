@@ -774,7 +774,7 @@
             '''
       milestone: V2
       tests: ["chip_sw_aes_idle",
-              "chip_sw_hmac_idle",
+              "chip_sw_hmac_enc_idle",
               "chip_sw_kmac_idle",
               "chip_sw_otbn_randomness"]
     }
