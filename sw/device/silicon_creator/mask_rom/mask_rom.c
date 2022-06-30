@@ -17,6 +17,7 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/cfi.h"
+#include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
@@ -256,13 +257,17 @@ static inline uintptr_t rom_ext_vma_get(const manifest_t *manifest,
 static void mask_rom_pre_boot_check(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 1);
 
+  // Check the alert_handler configuration.
+  SHUTDOWN_IF_ERROR(alert_config_check(lc_state));
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 2);
+
   // Check cached life cycle state against the value reported by hardware.
   lifecycle_state_t lc_state_check = lifecycle_state_get();
   if (launder32(lc_state_check) != lc_state) {
     HARDENED_UNREACHABLE();
   }
   HARDENED_CHECK_EQ(lc_state_check, lc_state);
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 2);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 3);
 
   // Check cached boot data.
   rom_error_t boot_data_ok = boot_data_check(&boot_data);
@@ -270,7 +275,7 @@ static void mask_rom_pre_boot_check(void) {
     HARDENED_UNREACHABLE();
   }
   HARDENED_CHECK_EQ(boot_data_ok, kErrorOk);
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 3);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 4);
 
   // Check the cpuctrl CSR.
   // Note: We don't mask the CSR value here to include exception flags
@@ -283,10 +288,10 @@ static void mask_rom_pre_boot_check(void) {
     HARDENED_UNREACHABLE();
   }
   HARDENED_CHECK_EQ(cpuctrl_csr, cpuctrl_otp);
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 4);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 5);
 
   sec_mmio_check_counters(/*expected_check_count=*/3);
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 5);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 6);
 }
 
 /**
@@ -363,7 +368,7 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest,
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomBoot, 2, kCfiRomPreBootCheck);
   mask_rom_pre_boot_check();
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 4);
-  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 6);
+  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 7);
 
   // Enable execution of code from flash if signature is verified.
   flash_ctrl_exec_set(flash_exec);

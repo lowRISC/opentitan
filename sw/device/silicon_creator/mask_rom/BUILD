@@ -115,6 +115,7 @@ opentitan_rom_binary(
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
         "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
+        "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:ast",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:ibex",
