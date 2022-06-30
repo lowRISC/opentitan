@@ -18,6 +18,8 @@ pub enum Error {
     TryFromIntError(#[from] std::num::TryFromIntError),
     #[error("the range {0}..{1} is out of bounds")]
     SliceRange(usize, usize),
+    #[error("SFDP header contains incorrect signature: {0:#010x}")]
+    WrongHeaderSignature(u32),
 
     // This is only needed to meet the error conversion requirements for the most
     // general case in the field! macro below.
@@ -38,14 +40,20 @@ pub struct SfdpHeader {
 impl TryFrom<&[u8]> for SfdpHeader {
     type Error = Error;
     fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
+        const SFDP_HEADER_SIGNATURE: u32 = 0x50444653;
+
         let mut reader = std::io::Cursor::new(buf);
-        Ok(SfdpHeader {
+        let header = SfdpHeader {
             signature: reader.read_u32::<LittleEndian>()?,
             minor: reader.read_u8()?,
             major: reader.read_u8()?,
             nph: reader.read_u8()?,
             reserved: reader.read_u8()?,
-        })
+        };
+        match header.signature {
+            SFDP_HEADER_SIGNATURE => Ok(header),
+            v => Err(Error::WrongHeaderSignature(v)),
+        }
     }
 }
 
@@ -500,6 +508,20 @@ mod test {
         assert_eq!(sfdp.jedec.support_fast_read_112, true);
         assert_eq!(sfdp.jedec.address_modes, SupportedAddressModes::Mode3b4b);
         assert_eq!(sfdp.jedec.density, 128 * 1024 * 1024);
+        Ok(())
+    }
+
+    // Regression test for https://github.com/lowRISC/opentitan/issues/13477
+    #[test]
+    fn test_bad_header_signature() -> Result<()> {
+        let buf = &[255u8; 256];
+        let sfdp = Sfdp::try_from(&buf[..]);
+        assert!(sfdp.is_err());
+        let err = sfdp.unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "SFDP header contains incorrect signature: 0xffffffff"
+        );
         Ok(())
     }
 }
