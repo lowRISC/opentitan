@@ -13,28 +13,20 @@ extern "C" {
 #include "rv_core_ibex_regs.h"  // Generated.
 }  // extern "C"
 
-// We define global namespace == and << to make `dif_i2c_timing_params_t` work
-// nicely with EXPECT_EQ.
-bool operator==(const dif_rv_core_ibex_addr_translation_region_t a,
-                const dif_rv_core_ibex_addr_translation_region_t b) {
-  return memcmp(&a, &b, sizeof(dif_rv_core_ibex_addr_translation_region_t)) ==
-         0;
+// We define global namespace == and << to make
+// `dif_rv_core_ibex_addr_translation_mapping_t` work nicely with EXPECT_EQ.
+bool operator==(const dif_rv_core_ibex_addr_translation_mapping_t a,
+                const dif_rv_core_ibex_addr_translation_mapping_t b) {
+  return !memcmp(&a, &b, sizeof(dif_rv_core_ibex_addr_translation_mapping_t));
 }
 
 std::ostream &operator<<(
     std::ostream &os,
-    const dif_rv_core_ibex_addr_translation_region_t &region) {
+    const dif_rv_core_ibex_addr_translation_mapping_t &mapping) {
   return os << "{\n"
-            << "ibus = {\n"
-            << "  .matching_addr = " << region.ibus.matching_addr << ",\n"
-            << "  .remap_addr = " << region.ibus.remap_addr << ",\n"
-            << "  .size = " << region.ibus.size << ",\n"
-            << "},\n"
-            << "dbus = {\n"
-            << "  .matching_addr = " << region.dbus.matching_addr << ",\n"
-            << "  .remap_addr = " << region.dbus.remap_addr << ",\n"
-            << "  .size = " << region.dbus.size << ",\n"
-            << "},\n"
+            << "  .matching_addr = " << mapping.matching_addr << ",\n"
+            << "  .remap_addr = " << mapping.remap_addr << ",\n"
+            << "  .size = " << mapping.size << ",\n"
             << "}";
 }
 
@@ -97,209 +89,228 @@ class RvCoreIbexTestInitialized : public RvCoreIbexTest {
   }
 };
 
-class AddressTranslationTest : public RvCoreIbexTestInitialized {
+class AddressTranslationTest
+    : public RvCoreIbexTestInitialized,
+      public testing::WithParamInterface<
+          std::tuple<dif_rv_core_ibex_addr_translation_slot_t,
+                     dif_rv_core_ibex_addr_translation_bus_t, uint32_t,
+                     uint32_t, uint32_t, uint32_t>> {
  protected:
-  static constexpr dif_rv_core_ibex_addr_translation_region_t kRegion = {
-      .ibus =
-          {
-              .matching_addr = 0x9000000,
-              .remap_addr = 0x2000000,
-              .size = 0x8000,
-          },
-      .dbus =
-          {
-              .matching_addr = 0x9000000,
-              .remap_addr = 0x2000000,
-              .size = 0x8000,
-          },
+  static constexpr dif_rv_core_ibex_addr_translation_mapping_t kMapping = {
+      .matching_addr = 0x9000000,
+      .remap_addr = 0x2000000,
+      .size = 0x8000,
   };
 
   uint32_t Napot(uint32_t addr, size_t size) { return addr | (size - 1) >> 1; }
 };
-constexpr dif_rv_core_ibex_addr_translation_region_t
-    AddressTranslationTest::kRegion;
+constexpr dif_rv_core_ibex_addr_translation_mapping_t
+    AddressTranslationTest::kMapping;
 
-TEST_F(AddressTranslationTest, Slot0Success) {
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET, 1);
-  EXPECT_READ32(RV_CORE_IBEX_IBUS_REGWEN_0_REG_OFFSET, 1);
+INSTANTIATE_TEST_SUITE_P(
+    AddressTranslationTest, AddressTranslationTest,
+    testing::ValuesIn(std::vector<
+                      std::tuple<dif_rv_core_ibex_addr_translation_slot_t,
+                                 dif_rv_core_ibex_addr_translation_bus_t,
+                                 uint32_t, uint32_t, uint32_t, uint32_t>>{{
+        {kDifRvCoreIbexAddrTranslationSlot_0, kDifRvCoreIbexAddrTranslationDBus,
+         RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_REG_OFFSET,
+         RV_CORE_IBEX_DBUS_REMAP_ADDR_0_REG_OFFSET,
+         RV_CORE_IBEX_DBUS_ADDR_EN_0_REG_OFFSET,
+         RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET},
 
-  EXPECT_WRITE32(RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET, 0x9003fff);
-  EXPECT_WRITE32(RV_CORE_IBEX_IBUS_REMAP_ADDR_0_REG_OFFSET,
-                 kRegion.ibus.remap_addr);
-  EXPECT_WRITE32(RV_CORE_IBEX_IBUS_ADDR_EN_0_REG_OFFSET, 1);
+        {kDifRvCoreIbexAddrTranslationSlot_0, kDifRvCoreIbexAddrTranslationIBus,
+         RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET,
+         RV_CORE_IBEX_IBUS_REMAP_ADDR_0_REG_OFFSET,
+         RV_CORE_IBEX_IBUS_ADDR_EN_0_REG_OFFSET,
+         RV_CORE_IBEX_IBUS_REGWEN_0_REG_OFFSET},
 
-  EXPECT_WRITE32(RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_REG_OFFSET, 0x9003fff);
-  EXPECT_WRITE32(RV_CORE_IBEX_DBUS_REMAP_ADDR_0_REG_OFFSET,
-                 kRegion.dbus.remap_addr);
-  EXPECT_WRITE32(RV_CORE_IBEX_DBUS_ADDR_EN_0_REG_OFFSET, 1);
+        {kDifRvCoreIbexAddrTranslationSlot_1, kDifRvCoreIbexAddrTranslationDBus,
+         RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_REG_OFFSET,
+         RV_CORE_IBEX_DBUS_REMAP_ADDR_1_REG_OFFSET,
+         RV_CORE_IBEX_DBUS_ADDR_EN_1_REG_OFFSET,
+         RV_CORE_IBEX_DBUS_REGWEN_1_REG_OFFSET},
 
-  EXPECT_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlot_0, kRegion));
+        {kDifRvCoreIbexAddrTranslationSlot_1, kDifRvCoreIbexAddrTranslationIBus,
+         RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_REG_OFFSET,
+         RV_CORE_IBEX_IBUS_REMAP_ADDR_1_REG_OFFSET,
+         RV_CORE_IBEX_IBUS_ADDR_EN_1_REG_OFFSET,
+         RV_CORE_IBEX_IBUS_REGWEN_1_REG_OFFSET},
+    }}),
+    [](const ::testing::TestParamInfo<AddressTranslationTest::ParamType>
+           &info) {
+      const auto slot = std::get<0>(info.param);
+      const auto bus = std::get<1>(info.param);
+      std::string name = "";
+      name += bus == kDifRvCoreIbexAddrTranslationDBus ? "DBus" : "IBus";
+      name += slot == kDifRvCoreIbexAddrTranslationSlot_0 ? "Slot0" : "Slot1";
+      return name;
+    });
+
+TEST_P(AddressTranslationTest, DisableSuccess) {
+  const auto slot = std::get<0>(GetParam());
+  const auto bus = std::get<1>(GetParam());
+  const auto en_reg = std::get<4>(GetParam());
+  const auto r_regwen = std::get<5>(GetParam());
+
+  EXPECT_READ32(r_regwen, 1);
+  EXPECT_WRITE32(en_reg, 0);
+  EXPECT_DIF_OK(dif_rv_core_ibex_disable_addr_translation(&ibex_, slot, bus));
 }
 
-TEST_F(AddressTranslationTest, Slot1Success) {
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_REGWEN_1_REG_OFFSET, 1);
-  EXPECT_READ32(RV_CORE_IBEX_IBUS_REGWEN_1_REG_OFFSET, 1);
-  EXPECT_WRITE32(RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_REG_OFFSET, 0x9003fff);
-  EXPECT_WRITE32(RV_CORE_IBEX_IBUS_REMAP_ADDR_1_REG_OFFSET,
-                 kRegion.ibus.remap_addr);
-  EXPECT_WRITE32(RV_CORE_IBEX_IBUS_ADDR_EN_1_REG_OFFSET, 1);
+TEST_P(AddressTranslationTest, EnableSuccess) {
+  const auto slot = std::get<0>(GetParam());
+  const auto bus = std::get<1>(GetParam());
+  const auto en_reg = std::get<4>(GetParam());
+  const auto r_regwen = std::get<5>(GetParam());
 
-  EXPECT_WRITE32(RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_REG_OFFSET, 0x9003fff);
-  EXPECT_WRITE32(RV_CORE_IBEX_DBUS_REMAP_ADDR_1_REG_OFFSET,
-                 kRegion.dbus.remap_addr);
-  EXPECT_WRITE32(RV_CORE_IBEX_DBUS_ADDR_EN_1_REG_OFFSET, 1);
-
-  EXPECT_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlot_1, kRegion));
+  EXPECT_READ32(r_regwen, 1);
+  EXPECT_WRITE32(en_reg, 1);
+  EXPECT_DIF_OK(dif_rv_core_ibex_enable_addr_translation(&ibex_, slot, bus));
 }
 
-TEST_F(AddressTranslationTest, PowerOfTwoAlignmentSuccess) {
-  dif_rv_core_ibex_addr_translation_region_t region = kRegion;
+TEST_P(AddressTranslationTest, ConfigureSuccess) {
+  const auto slot = std::get<0>(GetParam());
+  const auto bus = std::get<1>(GetParam());
+  const auto r_matching = std::get<2>(GetParam());
+  const auto r_remap = std::get<3>(GetParam());
+  const auto r_regwen = std::get<5>(GetParam());
 
-  region.ibus.matching_addr = 0x8000000;
-  region.dbus.matching_addr = 0x8000000;
+  EXPECT_READ32(r_regwen, 1);
+
+  EXPECT_WRITE32(r_matching, 0x9003fff);
+  EXPECT_WRITE32(r_remap, kMapping.remap_addr);
+
+  EXPECT_DIF_OK(
+      dif_rv_core_ibex_configure_addr_translation(&ibex_, slot, bus, kMapping));
+}
+
+TEST_P(AddressTranslationTest, PowerOfTwoAlignmentSuccess) {
+  const auto slot = std::get<0>(GetParam());
+  const auto bus = std::get<1>(GetParam());
+  const auto r_matching = std::get<2>(GetParam());
+  const auto r_remap = std::get<3>(GetParam());
+  const auto r_regwen = std::get<5>(GetParam());
+
+  dif_rv_core_ibex_addr_translation_mapping_t mapping = kMapping;
+  mapping.matching_addr = 0x8000000;
 
   for (size_t i = 0; i < (sizeof(uint32_t) * 8) - 1; ++i) {
-    region.ibus.size = 1u << i;
-    region.dbus.size = 1u << i;
+    mapping.size = 1u << i;
 
-    EXPECT_READ32(RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET, 1);
-    EXPECT_READ32(RV_CORE_IBEX_IBUS_REGWEN_0_REG_OFFSET, 1);
+    EXPECT_READ32(r_regwen, 1);
 
-    EXPECT_WRITE32(RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET,
-                   Napot(region.ibus.matching_addr, region.ibus.size));
-    EXPECT_WRITE32(RV_CORE_IBEX_IBUS_REMAP_ADDR_0_REG_OFFSET,
-                   region.ibus.remap_addr);
-    EXPECT_WRITE32(RV_CORE_IBEX_IBUS_ADDR_EN_0_REG_OFFSET, 1);
+    EXPECT_WRITE32(r_matching, Napot(mapping.matching_addr, mapping.size));
+    EXPECT_WRITE32(r_remap, mapping.remap_addr);
 
-    EXPECT_WRITE32(RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_REG_OFFSET,
-                   Napot(region.dbus.matching_addr, region.dbus.size));
-    EXPECT_WRITE32(RV_CORE_IBEX_DBUS_REMAP_ADDR_0_REG_OFFSET,
-                   region.dbus.remap_addr);
-    EXPECT_WRITE32(RV_CORE_IBEX_DBUS_ADDR_EN_0_REG_OFFSET, 1);
-
-    EXPECT_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
-        &ibex_, kDifRvCoreIbexAddrTranslationSlot_0, region));
+    EXPECT_DIF_OK(dif_rv_core_ibex_configure_addr_translation(&ibex_, slot, bus,
+                                                              mapping));
   }
 }
 
-TEST_F(AddressTranslationTest, ReadSlot0Success) {
-  EXPECT_READ32(RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET, 0x9003fff);
-  EXPECT_READ32(RV_CORE_IBEX_IBUS_REMAP_ADDR_0_REG_OFFSET,
-                kRegion.ibus.remap_addr);
+TEST_P(AddressTranslationTest, NotPowerOfTwo) {
+  const auto slot = std::get<0>(GetParam());
+  const auto bus = std::get<1>(GetParam());
 
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_REG_OFFSET, 0x9003fff);
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_REMAP_ADDR_0_REG_OFFSET,
-                kRegion.dbus.remap_addr);
-
-  dif_rv_core_ibex_addr_translation_region_t region;
-  EXPECT_DIF_OK(dif_rv_core_ibex_read_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlot_0, &region));
-
-  EXPECT_EQ(region, kRegion);
+  dif_rv_core_ibex_addr_translation_mapping_t mapping = kMapping;
+  mapping.size += 0x20;
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_configure_addr_translation(&ibex_, slot, bus, mapping));
 }
 
-TEST_F(AddressTranslationTest, LockSlot0Success) {
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET, 1);
-  EXPECT_WRITE32(RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET, 0);
-  EXPECT_READ32(RV_CORE_IBEX_IBUS_REGWEN_0_REG_OFFSET, 1);
-  EXPECT_WRITE32(RV_CORE_IBEX_IBUS_REGWEN_0_REG_OFFSET, 0);
+TEST_P(AddressTranslationTest, ReadSuccess) {
+  const auto slot = std::get<0>(GetParam());
+  const auto bus = std::get<1>(GetParam());
+  const auto r_matching = std::get<2>(GetParam());
+  const auto r_remap = std::get<3>(GetParam());
 
-  EXPECT_DIF_OK(dif_rv_core_ibex_lock_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlot_0));
+  EXPECT_READ32(r_matching, 0x9003fff);
+  EXPECT_READ32(r_remap, kMapping.remap_addr);
+
+  dif_rv_core_ibex_addr_translation_mapping_t mapping;
+  EXPECT_DIF_OK(
+      dif_rv_core_ibex_read_addr_translation(&ibex_, slot, bus, &mapping));
+
+  EXPECT_EQ(mapping, kMapping);
 }
 
-TEST_F(AddressTranslationTest, LockSlot0LockedSuccess) {
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET, 0);
-  EXPECT_READ32(RV_CORE_IBEX_IBUS_REGWEN_0_REG_OFFSET, 0);
+TEST_P(AddressTranslationTest, LockSuccess) {
+  const auto slot = std::get<0>(GetParam());
+  const auto bus = std::get<1>(GetParam());
+  const auto r_regwen = std::get<5>(GetParam());
 
-  EXPECT_DIF_OK(dif_rv_core_ibex_lock_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlot_0));
+  EXPECT_READ32(r_regwen, 1);
+  EXPECT_WRITE32(r_regwen, 0);
+
+  EXPECT_DIF_OK(dif_rv_core_ibex_lock_addr_translation(&ibex_, slot, bus));
 }
 
-TEST_F(AddressTranslationTest, LockSlot1Success) {
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_REGWEN_1_REG_OFFSET, 1);
-  EXPECT_WRITE32(RV_CORE_IBEX_DBUS_REGWEN_1_REG_OFFSET, 0);
-  EXPECT_READ32(RV_CORE_IBEX_IBUS_REGWEN_1_REG_OFFSET, 1);
-  EXPECT_WRITE32(RV_CORE_IBEX_IBUS_REGWEN_1_REG_OFFSET, 0);
+TEST_P(AddressTranslationTest, Locked) {
+  const auto slot = std::get<0>(GetParam());
+  const auto bus = std::get<1>(GetParam());
+  const auto r_regwen = std::get<5>(GetParam());
 
-  EXPECT_DIF_OK(dif_rv_core_ibex_lock_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlot_1));
-}
+  EXPECT_READ32(r_regwen, 0);
+  EXPECT_EQ(
+      dif_rv_core_ibex_configure_addr_translation(&ibex_, slot, bus, kMapping),
+      kDifLocked);
 
-TEST_F(AddressTranslationTest, LockSlot1LockedSuccess) {
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_REGWEN_1_REG_OFFSET, 0);
-  EXPECT_READ32(RV_CORE_IBEX_IBUS_REGWEN_1_REG_OFFSET, 0);
+  EXPECT_READ32(r_regwen, 0);
+  EXPECT_EQ(dif_rv_core_ibex_enable_addr_translation(&ibex_, slot, bus),
+            kDifLocked);
 
-  EXPECT_DIF_OK(dif_rv_core_ibex_lock_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlot_1));
+  EXPECT_READ32(r_regwen, 0);
+  EXPECT_EQ(dif_rv_core_ibex_disable_addr_translation(&ibex_, slot, bus),
+            kDifLocked);
+
+  // The lock function should quietly do nothing,
+  // if address translation is already locked.
+  EXPECT_READ32(r_regwen, 0);
+  EXPECT_DIF_OK(dif_rv_core_ibex_lock_addr_translation(&ibex_, slot, bus));
 }
 
 TEST_F(AddressTranslationTest, BadArg) {
-  dif_rv_core_ibex_addr_translation_region_t region;
+  const auto slot = kDifRvCoreIbexAddrTranslationSlot_0;
+  const auto bus = kDifRvCoreIbexAddrTranslationDBus;
+  const auto bad_slot = kDifRvCoreIbexAddrTranslationSlotCount;
+  const auto bad_bus = kDifRvCoreIbexAddrTranslationBusCount;
+
+  dif_rv_core_ibex_addr_translation_mapping_t mapping;
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_configure_addr_translation(nullptr, slot, bus, mapping));
   EXPECT_DIF_BADARG(dif_rv_core_ibex_configure_addr_translation(
-      nullptr, kDifRvCoreIbexAddrTranslationSlot_1, region));
+      &ibex_, slot, bad_bus, mapping));
   EXPECT_DIF_BADARG(dif_rv_core_ibex_configure_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlotCount, region));
+      &ibex_, bad_slot, bus, mapping));
 
-  EXPECT_DIF_BADARG(dif_rv_core_ibex_read_addr_translation(
-      nullptr, kDifRvCoreIbexAddrTranslationSlot_1, &region));
-  EXPECT_DIF_BADARG(dif_rv_core_ibex_read_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlotCount, &region));
-  EXPECT_DIF_BADARG(dif_rv_core_ibex_read_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlot_1, nullptr));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_read_addr_translation(nullptr, slot, bus, &mapping));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_read_addr_translation(&ibex_, bad_slot, bus, &mapping));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_read_addr_translation(&ibex_, slot, bad_bus, &mapping));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_read_addr_translation(&ibex_, slot, bus, nullptr));
 
-  EXPECT_DIF_BADARG(dif_rv_core_ibex_lock_addr_translation(
-      nullptr, kDifRvCoreIbexAddrTranslationSlot_1));
-  EXPECT_DIF_BADARG(dif_rv_core_ibex_lock_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlotCount));
-}
+  EXPECT_DIF_BADARG(dif_rv_core_ibex_lock_addr_translation(nullptr, slot, bus));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_lock_addr_translation(&ibex_, bad_slot, bus));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_lock_addr_translation(&ibex_, slot, bad_bus));
 
-TEST_F(AddressTranslationTest, Slot0DbusLocked) {
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET, 0);
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_enable_addr_translation(nullptr, slot, bus));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_enable_addr_translation(&ibex_, bad_slot, bus));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_enable_addr_translation(&ibex_, slot, bad_bus));
 
-  EXPECT_EQ(dif_rv_core_ibex_configure_addr_translation(
-                &ibex_, kDifRvCoreIbexAddrTranslationSlot_0, kRegion),
-            kDifLocked);
-}
-
-TEST_F(AddressTranslationTest, Slot0IbusLocked) {
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET, 1);
-  EXPECT_READ32(RV_CORE_IBEX_IBUS_REGWEN_0_REG_OFFSET, 0);
-
-  EXPECT_EQ(dif_rv_core_ibex_configure_addr_translation(
-                &ibex_, kDifRvCoreIbexAddrTranslationSlot_0, kRegion),
-            kDifLocked);
-}
-
-TEST_F(AddressTranslationTest, Slot1DbusLocked) {
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_REGWEN_1_REG_OFFSET, 0);
-
-  EXPECT_EQ(dif_rv_core_ibex_configure_addr_translation(
-                &ibex_, kDifRvCoreIbexAddrTranslationSlot_1, kRegion),
-            kDifLocked);
-}
-
-TEST_F(AddressTranslationTest, Slot1IbusLocked) {
-  EXPECT_READ32(RV_CORE_IBEX_DBUS_REGWEN_1_REG_OFFSET, 1);
-  EXPECT_READ32(RV_CORE_IBEX_IBUS_REGWEN_1_REG_OFFSET, 0);
-
-  EXPECT_EQ(dif_rv_core_ibex_configure_addr_translation(
-                &ibex_, kDifRvCoreIbexAddrTranslationSlot_1, kRegion),
-            kDifLocked);
-}
-
-TEST_F(AddressTranslationTest, NotPowerOfTwo) {
-  dif_rv_core_ibex_addr_translation_region_t region = kRegion;
-  region.dbus.size += 0x20;
-  EXPECT_DIF_BADARG(dif_rv_core_ibex_configure_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlot_1, region));
-
-  region.dbus.size -= 0x20;
-  region.ibus.size += 0x20;
-  EXPECT_DIF_BADARG(dif_rv_core_ibex_configure_addr_translation(
-      &ibex_, kDifRvCoreIbexAddrTranslationSlot_0, region));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_disable_addr_translation(nullptr, slot, bus));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_disable_addr_translation(&ibex_, bad_slot, bus));
+  EXPECT_DIF_BADARG(
+      dif_rv_core_ibex_disable_addr_translation(&ibex_, slot, bad_bus));
 }
 
 class ErrorStatusTest

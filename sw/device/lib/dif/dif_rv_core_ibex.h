@@ -18,7 +18,7 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Address translation slot.
+ * Address translation slot selection.
  */
 typedef enum dif_rv_core_ibex_addr_translation_slot {
   kDifRvCoreIbexAddrTranslationSlot_0,
@@ -27,7 +27,16 @@ typedef enum dif_rv_core_ibex_addr_translation_slot {
 } dif_rv_core_ibex_addr_translation_slot_t;
 
 /**
- * Address tranlation matching region.
+ * Address translation bus selection.
+ */
+typedef enum dif_rv_core_ibex_addr_translation_bus {
+  kDifRvCoreIbexAddrTranslationDBus,
+  kDifRvCoreIbexAddrTranslationIBus,
+  kDifRvCoreIbexAddrTranslationBusCount,
+} dif_rv_core_ibex_addr_translation_bus_t;
+
+/**
+ * Address translation matching region.
  *
  * The value programmed is done at power-of-2 alignment. For example, if the
  * intended matching region is 0x8000_0000 to 0x8000_FFFF, the value
@@ -39,7 +48,7 @@ typedef enum dif_rv_core_ibex_addr_translation_slot {
  * shift by one to obtain 0x7FFF. This value is then logically OR'd with the
  * upper address bits that would select which 64KB to translate.
  */
-typedef struct dif_rv_core_ibex_addr_translation_pair {
+typedef struct dif_rv_core_ibex_addr_translation_mapping {
   /**
    * Matching address (Virtual address).
    * When an incoming transaction matches the matching
@@ -59,22 +68,7 @@ typedef struct dif_rv_core_ibex_addr_translation_pair {
    * Address region size.
    */
   size_t size;
-} dif_rv_core_ibex_addr_translation_pair_t;
-
-/**
- * Addresses translation region.
- */
-typedef struct dif_rv_core_ibex_addr_translation_region {
-  /**
-   * Region representing the instruction bus.
-   */
-  dif_rv_core_ibex_addr_translation_pair_t ibus;
-
-  /**
-   * Region representing the data bus.
-   */
-  dif_rv_core_ibex_addr_translation_pair_t dbus;
-} dif_rv_core_ibex_addr_translation_region_t;
+} dif_rv_core_ibex_addr_translation_mapping_t;
 
 /**
  * Ibex error status detected by `rv_core_ibex` peripheral.
@@ -224,44 +218,84 @@ typedef struct dif_rv_core_ibex_crash_dump_info {
 } dif_rv_core_ibex_crash_dump_info_t;
 
 /**
- * Configure the instruction and data bus in the address translation `slot`.
+ * Configure address translation for
+ * the given `bus` (either instruction or data) in the `slot`.
  *
  * @param rv_core_ibex Handle.
  * @param slot   Slot to be used.
- * @param region Dbus and Ibus addresses.
+ * @param bus    Bus to be translated.
+ * @param addr_map Address mapping description.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_core_ibex_configure_addr_translation(
     const dif_rv_core_ibex_t *rv_core_ibex,
     dif_rv_core_ibex_addr_translation_slot_t slot,
-    dif_rv_core_ibex_addr_translation_region_t region);
+    dif_rv_core_ibex_addr_translation_bus_t bus,
+    dif_rv_core_ibex_addr_translation_mapping_t addr_map);
 
 /**
+ * Enable address translation for
+ * the given `bus` (either instruction or data) in the `slot`.
  *
  * @param rv_core_ibex Handle.
- * @param slot Slot to be read.
- * @param[out] region Pointer to receive the Dbus and Ibus addresses.
+ * @param slot   Slot to be used.
+ * @param bus    Bus to be translated.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_enable_addr_translation(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_addr_translation_slot_t slot,
+    dif_rv_core_ibex_addr_translation_bus_t bus);
+
+/**
+ * Disable address translation for
+ * the given `bus` (either instruction or data) in the `slot`.
+ *
+ * @param rv_core_ibex Handle.
+ * @param slot   Slot to be used.
+ * @param bus    Bus to be translated.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_disable_addr_translation(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_addr_translation_slot_t slot,
+    dif_rv_core_ibex_addr_translation_bus_t bus);
+
+/**
+ * Read a discription of the address mapping configured on a given `slot`
+ * for a given `bus`.
+ *
+ * @param rv_core_ibex Handle.
+ * @param slot Slot of interest.
+ * @param bus Bus of interest.
+ * @param[out] addr_map Description of address mapping.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_core_ibex_read_addr_translation(
     const dif_rv_core_ibex_t *rv_core_ibex,
     dif_rv_core_ibex_addr_translation_slot_t slot,
-    dif_rv_core_ibex_addr_translation_region_t *region);
+    dif_rv_core_ibex_addr_translation_bus_t bus,
+    dif_rv_core_ibex_addr_translation_mapping_t *addr_map);
 
 /**
- * Lock the `slot` registers. Once locked it can no longer be unlocked until the
- * next system reset.
+ * Lock the address translation settings for a given `slot` and `bus` registers.
+ * Once locked it can no longer be unlocked until the next system reset. This
+ * function will quietly do nothing if the settings are already locked.
  *
  * @param rv_core_ibex Handle.
  * @param slot Slot to be locked.
+ * @param bus Translated bus to be locked.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_core_ibex_lock_addr_translation(
     const dif_rv_core_ibex_t *rv_core_ibex,
-    dif_rv_core_ibex_addr_translation_slot_t slot);
+    dif_rv_core_ibex_addr_translation_slot_t slot,
+    dif_rv_core_ibex_addr_translation_bus_t bus);
 
 /**
  * Read the ibex error status.

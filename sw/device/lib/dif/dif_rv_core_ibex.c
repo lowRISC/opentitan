@@ -32,40 +32,47 @@ static_assert(kDifRvCoreIbexErrorStatusRecoverableInternal ==
               "Layout of RV_CORE_IBEX_ERR_STATUS_REG register changed.");
 
 typedef struct ibex_addr_translation_regs {
-  uint32_t ibus_maching;
-  uint32_t ibus_remap;
-  uint32_t ibus_en;
-  uint32_t ibus_lock;
-  uint32_t dbus_maching;
-  uint32_t dbus_remap;
-  uint32_t dbus_en;
-  uint32_t dbus_lock;
+  uint32_t maching;
+  uint32_t remap;
+  uint32_t en;
+  uint32_t lock;
 } ibex_addr_translation_regs_t;
 
-static const ibex_addr_translation_regs_t
-    kRegsMap[kDifRvCoreIbexAddrTranslationSlotCount] = {
-        [kDifRvCoreIbexAddrTranslationSlot_0] =
-            {
-                .ibus_maching = RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET,
-                .ibus_remap = RV_CORE_IBEX_IBUS_REMAP_ADDR_0_REG_OFFSET,
-                .ibus_en = RV_CORE_IBEX_IBUS_ADDR_EN_0_REG_OFFSET,
-                .ibus_lock = RV_CORE_IBEX_IBUS_REGWEN_0_REG_OFFSET,
-                .dbus_maching = RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_REG_OFFSET,
-                .dbus_remap = RV_CORE_IBEX_DBUS_REMAP_ADDR_0_REG_OFFSET,
-                .dbus_en = RV_CORE_IBEX_DBUS_ADDR_EN_0_REG_OFFSET,
-                .dbus_lock = RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET,
-            },
-        [kDifRvCoreIbexAddrTranslationSlot_1] =
-            {
-                .ibus_maching = RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_REG_OFFSET,
-                .ibus_remap = RV_CORE_IBEX_IBUS_REMAP_ADDR_1_REG_OFFSET,
-                .ibus_en = RV_CORE_IBEX_IBUS_ADDR_EN_1_REG_OFFSET,
-                .ibus_lock = RV_CORE_IBEX_IBUS_REGWEN_1_REG_OFFSET,
-                .dbus_maching = RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_REG_OFFSET,
-                .dbus_remap = RV_CORE_IBEX_DBUS_REMAP_ADDR_1_REG_OFFSET,
-                .dbus_en = RV_CORE_IBEX_DBUS_ADDR_EN_1_REG_OFFSET,
-                .dbus_lock = RV_CORE_IBEX_DBUS_REGWEN_1_REG_OFFSET,
-            },
+static const ibex_addr_translation_regs_t kRegsMap
+    [kDifRvCoreIbexAddrTranslationSlotCount]
+    [kDifRvCoreIbexAddrTranslationSlotCount] = {
+        [kDifRvCoreIbexAddrTranslationSlot_0]
+            [kDifRvCoreIbexAddrTranslationDBus] =
+                {
+                    .maching = RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_REG_OFFSET,
+                    .remap = RV_CORE_IBEX_DBUS_REMAP_ADDR_0_REG_OFFSET,
+                    .en = RV_CORE_IBEX_DBUS_ADDR_EN_0_REG_OFFSET,
+                    .lock = RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET,
+                },
+        [kDifRvCoreIbexAddrTranslationSlot_0]
+            [kDifRvCoreIbexAddrTranslationIBus] =
+                {
+                    .maching = RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET,
+                    .remap = RV_CORE_IBEX_IBUS_REMAP_ADDR_0_REG_OFFSET,
+                    .en = RV_CORE_IBEX_IBUS_ADDR_EN_0_REG_OFFSET,
+                    .lock = RV_CORE_IBEX_IBUS_REGWEN_0_REG_OFFSET,
+                },
+        [kDifRvCoreIbexAddrTranslationSlot_1]
+            [kDifRvCoreIbexAddrTranslationDBus] =
+                {
+                    .maching = RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_REG_OFFSET,
+                    .remap = RV_CORE_IBEX_DBUS_REMAP_ADDR_1_REG_OFFSET,
+                    .en = RV_CORE_IBEX_DBUS_ADDR_EN_1_REG_OFFSET,
+                    .lock = RV_CORE_IBEX_DBUS_REGWEN_1_REG_OFFSET,
+                },
+        [kDifRvCoreIbexAddrTranslationSlot_1]
+            [kDifRvCoreIbexAddrTranslationIBus] =
+                {
+                    .maching = RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_REG_OFFSET,
+                    .remap = RV_CORE_IBEX_IBUS_REMAP_ADDR_1_REG_OFFSET,
+                    .en = RV_CORE_IBEX_IBUS_ADDR_EN_1_REG_OFFSET,
+                    .lock = RV_CORE_IBEX_IBUS_REGWEN_1_REG_OFFSET,
+                },
 };
 
 /**
@@ -100,80 +107,95 @@ static uint32_t from_napot(uint32_t napot, size_t *size) {
 dif_result_t dif_rv_core_ibex_configure_addr_translation(
     const dif_rv_core_ibex_t *rv_core_ibex,
     dif_rv_core_ibex_addr_translation_slot_t slot,
-    dif_rv_core_ibex_addr_translation_region_t region) {
-  if (rv_core_ibex == NULL || slot >= kDifRvCoreIbexAddrTranslationSlotCount) {
+    dif_rv_core_ibex_addr_translation_bus_t bus,
+    dif_rv_core_ibex_addr_translation_mapping_t addr_map) {
+  if (rv_core_ibex == NULL || slot >= kDifRvCoreIbexAddrTranslationSlotCount ||
+      bus >= kDifRvCoreIbexAddrTranslationBusCount ||
+      !bitfield_is_power_of_two32(addr_map.size)) {
     return kDifBadArg;
   }
 
-  if (!bitfield_is_power_of_two32(region.dbus.size) ||
-      !bitfield_is_power_of_two32(region.ibus.size)) {
-    return kDifBadArg;
-  }
+  const ibex_addr_translation_regs_t regs = kRegsMap[slot][bus];
 
-  const ibex_addr_translation_regs_t regs = kRegsMap[slot];
-
-  if (mmio_region_read32(rv_core_ibex->base_addr, regs.dbus_lock) == 0 ||
-      mmio_region_read32(rv_core_ibex->base_addr, regs.ibus_lock) == 0) {
+  if (mmio_region_read32(rv_core_ibex->base_addr, regs.lock) == 0) {
     return kDifLocked;
   }
 
-  uint32_t mask = to_napot(region.ibus.matching_addr, region.ibus.size);
-  mmio_region_write32(rv_core_ibex->base_addr, regs.ibus_maching, mask);
-  mmio_region_write32(rv_core_ibex->base_addr, regs.ibus_remap,
-                      region.ibus.remap_addr);
-  mmio_region_write32(rv_core_ibex->base_addr, regs.ibus_en, 1);
+  uint32_t mask = to_napot(addr_map.matching_addr, addr_map.size);
+  mmio_region_write32(rv_core_ibex->base_addr, regs.maching, mask);
+  mmio_region_write32(rv_core_ibex->base_addr, regs.remap, addr_map.remap_addr);
 
-  mask = to_napot(region.dbus.matching_addr, region.dbus.size);
-  mmio_region_write32(rv_core_ibex->base_addr, regs.dbus_maching, mask);
-  mmio_region_write32(rv_core_ibex->base_addr, regs.dbus_remap,
-                      region.dbus.remap_addr);
-  mmio_region_write32(rv_core_ibex->base_addr, regs.dbus_en, 1);
+  return kDifOk;
+}
 
+dif_result_t dif_rv_core_ibex_enable_addr_translation(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_addr_translation_slot_t slot,
+    dif_rv_core_ibex_addr_translation_bus_t bus) {
+  if (rv_core_ibex == NULL || slot >= kDifRvCoreIbexAddrTranslationSlotCount ||
+      bus >= kDifRvCoreIbexAddrTranslationBusCount) {
+    return kDifBadArg;
+  }
+  const ibex_addr_translation_regs_t regs = kRegsMap[slot][bus];
+  if (mmio_region_read32(rv_core_ibex->base_addr, regs.lock) == 0) {
+    return kDifLocked;
+  }
+  mmio_region_write32(rv_core_ibex->base_addr, regs.en, 1);
+  return kDifOk;
+}
+
+dif_result_t dif_rv_core_ibex_disable_addr_translation(
+    const dif_rv_core_ibex_t *rv_core_ibex,
+    dif_rv_core_ibex_addr_translation_slot_t slot,
+    dif_rv_core_ibex_addr_translation_bus_t bus) {
+  if (rv_core_ibex == NULL || slot >= kDifRvCoreIbexAddrTranslationSlotCount ||
+      bus >= kDifRvCoreIbexAddrTranslationBusCount) {
+    return kDifBadArg;
+  }
+  const ibex_addr_translation_regs_t regs = kRegsMap[slot][bus];
+  if (mmio_region_read32(rv_core_ibex->base_addr, regs.lock) == 0) {
+    return kDifLocked;
+  }
+  mmio_region_write32(rv_core_ibex->base_addr, regs.en, 0);
   return kDifOk;
 }
 
 dif_result_t dif_rv_core_ibex_read_addr_translation(
     const dif_rv_core_ibex_t *rv_core_ibex,
     dif_rv_core_ibex_addr_translation_slot_t slot,
-    dif_rv_core_ibex_addr_translation_region_t *region) {
-  if (rv_core_ibex == NULL || region == NULL ||
-      slot >= kDifRvCoreIbexAddrTranslationSlotCount) {
+    dif_rv_core_ibex_addr_translation_bus_t bus,
+    dif_rv_core_ibex_addr_translation_mapping_t *addr_map) {
+  if (rv_core_ibex == NULL || addr_map == NULL ||
+      slot >= kDifRvCoreIbexAddrTranslationSlotCount ||
+      bus >= kDifRvCoreIbexAddrTranslationBusCount) {
     return kDifBadArg;
   }
 
-  const ibex_addr_translation_regs_t regs = kRegsMap[slot];
+  const ibex_addr_translation_regs_t regs = kRegsMap[slot][bus];
 
-  uint32_t reg = mmio_region_read32(rv_core_ibex->base_addr, regs.ibus_maching);
-  region->ibus.matching_addr = from_napot(reg, &region->ibus.size);
+  const uint32_t reg =
+      mmio_region_read32(rv_core_ibex->base_addr, regs.maching);
+  addr_map->matching_addr = from_napot(reg, &addr_map->size);
 
-  region->ibus.remap_addr =
-      mmio_region_read32(rv_core_ibex->base_addr, regs.ibus_remap);
-
-  reg = mmio_region_read32(rv_core_ibex->base_addr, regs.dbus_maching);
-  region->dbus.matching_addr = from_napot(reg, &region->dbus.size);
-
-  region->dbus.remap_addr =
-      mmio_region_read32(rv_core_ibex->base_addr, regs.dbus_remap);
+  addr_map->remap_addr =
+      mmio_region_read32(rv_core_ibex->base_addr, regs.remap);
 
   return kDifOk;
 }
 
 dif_result_t dif_rv_core_ibex_lock_addr_translation(
     const dif_rv_core_ibex_t *rv_core_ibex,
-    dif_rv_core_ibex_addr_translation_slot_t slot) {
-  if (rv_core_ibex == NULL || slot >= kDifRvCoreIbexAddrTranslationSlotCount) {
+    dif_rv_core_ibex_addr_translation_slot_t slot,
+    dif_rv_core_ibex_addr_translation_bus_t bus) {
+  if (rv_core_ibex == NULL || slot >= kDifRvCoreIbexAddrTranslationSlotCount ||
+      bus >= kDifRvCoreIbexAddrTranslationBusCount) {
     return kDifBadArg;
   }
-
-  const ibex_addr_translation_regs_t regs = kRegsMap[slot];
+  const ibex_addr_translation_regs_t regs = kRegsMap[slot][bus];
 
   // Only locks in case it is not locked already.
-  if (mmio_region_read32(rv_core_ibex->base_addr, regs.dbus_lock) == 1) {
-    mmio_region_write32(rv_core_ibex->base_addr, regs.dbus_lock, 0);
-  }
-
-  if (mmio_region_read32(rv_core_ibex->base_addr, regs.ibus_lock) == 1) {
-    mmio_region_write32(rv_core_ibex->base_addr, regs.ibus_lock, 0);
+  if (mmio_region_read32(rv_core_ibex->base_addr, regs.lock) == 1) {
+    mmio_region_write32(rv_core_ibex->base_addr, regs.lock, 0);
   }
 
   return kDifOk;
