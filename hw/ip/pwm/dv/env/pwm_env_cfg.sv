@@ -34,6 +34,9 @@ class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
               create($sformatf("m_pwm_monitor_%0d_cfg", i));
       m_pwm_monitor_cfg[i].if_mode = Device;
     end
+
+    // only support 1 outstanding TL items in tlul_adapter
+    m_tl_agent_cfg.max_outstanding_req = 1;
   endfunction
 
   // clk_core_freq_mhz is assigned by
