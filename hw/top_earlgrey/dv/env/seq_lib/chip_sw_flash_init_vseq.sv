@@ -212,7 +212,7 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     bit [SEED_WIDTH-1:0] last_creator_seed;
     bit [(SEED_WIDTH*2)-1:0] expected_owner_seed;
     bit [(SEED_WIDTH*2)-1:0] expected_creator_seed;
-    lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en;
+    uvm_hdl_data_t lc_seed_hw_rd_en;
     forever begin
       @(init_done_event);
       if (do_keymgr_check == 1) begin

@@ -34,7 +34,7 @@ class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
     super.body();
 
     for (int i = 0; i < num_round; ++i) begin
-      randomize();
+      `DV_CHECK_RANDOMIZE_FATAL(this)
 
       // Wait until we reach the SW test state.
       wait(cfg.sw_logger_vif.printed_log == "ready for power down");

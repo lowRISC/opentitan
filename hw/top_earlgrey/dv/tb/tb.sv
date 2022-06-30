@@ -407,16 +407,15 @@ module tb;
     end
   end
 
-
-
   `undef SIM_SRAM_IF
 
   // Instantitate the memory backdoor util instances.
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
     initial begin
+      chip_mem_e    mem;
       mem_bkdr_util m_mem_bkdr_util[chip_mem_e];
 
-      `uvm_info("tb.sv", "Backdoor init flash 0 data", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 0 data", UVM_MEDIUM)
       m_mem_bkdr_util[FlashBank0Data] = new(
           .name  ("mem_bkdr_util[FlashBank0Data]"),
           .path  (`DV_STRINGIFY(`FLASH0_DATA_MEM_HIER)),
@@ -425,7 +424,7 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Data], `FLASH0_DATA_MEM_HIER)
 
-      `uvm_info("tb.sv", "Backdoor init flash 0 info", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 0 info", UVM_MEDIUM)
       m_mem_bkdr_util[FlashBank0Info] = new(
           .name  ("mem_bkdr_util[FlashBank0Info]"),
           .path  (`DV_STRINGIFY(`FLASH0_INFO_MEM_HIER)),
@@ -434,7 +433,7 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
 
-      `uvm_info("tb.sv", "Backdoor init flash 1 data", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 1 data", UVM_MEDIUM)
       m_mem_bkdr_util[FlashBank1Data] = new(
           .name  ("mem_bkdr_util[FlashBank1Data]"),
           .path  (`DV_STRINGIFY(`FLASH1_DATA_MEM_HIER)),
@@ -443,7 +442,7 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH0_DATA_MEM_HIER)
 
-      `uvm_info("tb.sv", "Backdoor init flash 0 info", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 0 info", UVM_MEDIUM)
       m_mem_bkdr_util[FlashBank1Info] = new(
           .name  ("mem_bkdr_util[FlashBank1Info]"),
           .path  (`DV_STRINGIFY(`FLASH1_INFO_MEM_HIER)),
@@ -452,7 +451,7 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Info], `FLASH1_INFO_MEM_HIER)
 
-      `uvm_info("tb.sv", "Backdoor init OTP", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTP", UVM_MEDIUM)
       m_mem_bkdr_util[Otp] = new(.name  ("mem_bkdr_util[Otp]"),
                                  .path  (`DV_STRINGIFY(`OTP_MEM_HIER)),
                                  .depth ($size(`OTP_MEM_HIER)),
@@ -460,7 +459,7 @@ module tb;
                                  .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_22_16));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Otp], `OTP_MEM_HIER)
 
-      `uvm_info("tb.sv", "Backdoor init RAM", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM", UVM_MEDIUM)
       m_mem_bkdr_util[RamMain0] = new(.name  ("mem_bkdr_util[RamMain0]"),
                                       .path  (`DV_STRINGIFY(`RAM_MAIN_MEM_HIER)),
                                       .depth ($size(`RAM_MAIN_MEM_HIER)),
@@ -468,7 +467,7 @@ module tb;
                                       .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMain0], `RAM_MAIN_MEM_HIER)
 
-      `uvm_info("tb.sv", "Backdoor init RAM RET", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM RET", UVM_MEDIUM)
       m_mem_bkdr_util[RamRet0] = new(.name  ("mem_bkdr_util[RamRet0]"),
                                      .path  (`DV_STRINGIFY(`RAM_RET_MEM_HIER)),
                                      .depth ($size(`RAM_RET_MEM_HIER)),
@@ -476,7 +475,7 @@ module tb;
                                      .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet0], `RAM_RET_MEM_HIER)
 
-      `uvm_info("tb.sv", "Backdoor init ROM", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ROM", UVM_MEDIUM)
       m_mem_bkdr_util[Rom] = new(.name  ("mem_bkdr_util[Rom]"),
                                  .path  (`DV_STRINGIFY(`ROM_MEM_HIER)),
                                  .depth ($size(`ROM_MEM_HIER)),
@@ -484,15 +483,18 @@ module tb;
                                  .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
 
-      for (chip_mem_e mem = mem.first(), int i = 0; i < mem.num(); mem = mem.next(), i++) begin
-        if (mem inside {[RamMain1:RamMain15]}) continue;
-        if (mem inside {[RamRet1:RamRet15]}) continue;
+      mem = mem.first();
+      do begin
+        if (mem inside {[RamMain1:RamMain15]} || mem inside {[RamRet1:RamRet15]}) begin
+          mem = mem.next();
+          continue;
+        end
         uvm_config_db#(mem_bkdr_util)::set(
             null, "*.env", m_mem_bkdr_util[mem].get_name(), m_mem_bkdr_util[mem]);
-      end
-
+        mem = mem.next();
+      end while (mem != mem.first());
     end
-  end
+  end : gen_generic
 
   // stub cpu environment
   // if enabled, clock to cpu is forced to 0

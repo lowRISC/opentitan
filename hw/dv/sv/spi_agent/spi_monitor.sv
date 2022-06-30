@@ -150,7 +150,7 @@ class spi_monitor extends dv_base_monitor#(
               if (host_item.data.size == cfg.num_bytes_per_trans_in_mon &&
                   device_item.data.size == cfg.num_bytes_per_trans_in_mon) begin
               if (host_item.first_byte == 1 && cfg.decode_commands == 1)  begin
-                 cmdtmp = host_byte;
+                cmdtmp = spi_cmd_e'(host_byte);
                 `uvm_info(`gfn, $sformatf("spi_monitor: cmdtmp \n%0h", cmdtmp), UVM_DEBUG)
                  end
                  cmd_byte++;

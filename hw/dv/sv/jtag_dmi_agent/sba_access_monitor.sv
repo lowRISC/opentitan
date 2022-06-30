@@ -224,7 +224,7 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
   virtual protected function bit predict_sba_req(input bus_op_e bus_op);
     uvm_reg_addr_t addr = jtag_dmi_ral.sbaddress0.get_mirrored_value();
     uvm_reg_data_t data = jtag_dmi_ral.sbdata0.get_mirrored_value();
-    sba_access_size_e size = jtag_dmi_ral.sbcs.sbaccess.get_mirrored_value();
+    sba_access_size_e size = sba_access_size_e'(jtag_dmi_ral.sbcs.sbaccess.get_mirrored_value());
     sba_access_item item;
 
     // Is the address aligned?
@@ -266,7 +266,7 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
   // previous transfer.
   virtual function void predict_autoincr_sba_addr();
     if (jtag_dmi_ral.sbcs.sbautoincrement.get_mirrored_value()) begin
-      sba_access_size_e size = jtag_dmi_ral.sbcs.sbaccess.get_mirrored_value();
+      sba_access_size_e size = sba_access_size_e'(jtag_dmi_ral.sbcs.sbaccess.get_mirrored_value());
       uvm_reg_data_t addr = jtag_dmi_ral.sbaddress0.get_mirrored_value();
       void'(jtag_dmi_ral.sbaddress0.predict(.value(addr + (1 << size)),
                                             .kind(UVM_PREDICT_DIRECT)));

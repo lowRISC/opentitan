@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`define DUT_HIER              tb.dut
+`ifndef DUT_HIER
+  `define DUT_HIER            tb.dut
+`endif
 `define CHIP_HIER             `DUT_HIER.top_earlgrey
 
 `define ALERT_HANDLER_HIER    `CHIP_HIER.u_alert_handler

@@ -23,12 +23,12 @@ class chip_sw_flash_ctrl_lc_rw_en_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual function lc_ctrl_pkg::lc_tx_t get_rw_en_signals(int rw_en_index);
-    lc_ctrl_pkg::lc_tx_t read_value;
+    uvm_hdl_data_t read_value;
     `DV_CHECK_EQ_FATAL(uvm_hdl_check_path(RW_EN_PATHS[rw_en_index]), 1, $sformatf(
                        "Hierarchical path %0s appears to be invalid.", RW_EN_PATHS[rw_en_index]))
     `DV_CHECK_EQ_FATAL(uvm_hdl_read(RW_EN_PATHS[rw_en_index], read_value), 1, $sformatf(
                        "uvm_hdl_read failed for %0s", RW_EN_PATHS[rw_en_index]))
-    return read_value;
+    return lc_ctrl_pkg::lc_tx_t'(read_value);
   endfunction
 
   virtual task body();
