@@ -233,5 +233,9 @@
       name: class_phase_cyc_regwen_cg
       desc: '''Covers if regwen is locked for class_phase_cyc registers.'''
     }
- ]
+    {
+      name: num_edn_reqs_cg
+      desc: '''Covers if simulation runs long enough to capture more than five EDN requests.'''
+    }
+  ]
 }

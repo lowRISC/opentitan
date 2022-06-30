@@ -278,6 +278,14 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
     ping_timer_en_regwen_cp: coverpoint regwen;
   endgroup
 
+  // Covergroup to make sure simulation is long enough to fetch more than five EDN requests.
+  covergroup num_edn_reqs_cg with function sample(int num_edn_reqs);
+    num_edn_reqs_cp: coverpoint num_edn_reqs {
+      bins less_then_five_reqs = {[1:4]};
+      bins five_or_more_reqs   = {[5:$]};
+    }
+  endgroup
+
   alert_handler_alert_en_regwen_cg_wrap        alert_en_regwen_cg_wrap[NUM_ALERTS];
   alert_handler_alert_class_regwen_cg_wrap     alert_class_regwen_cg_wrap[NUM_ALERTS];
   alert_handler_loc_alert_en_regwen_cg_wrap    loc_alert_en_regwen_cg_wrap[NUM_LOCAL_ALERTS];
@@ -306,6 +314,8 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
 
     ping_timeout_cyc_regwen_cg = new();
     ping_timer_en_regwen_cg = new();
+
+    num_edn_reqs_cg = new();
 
     for (int i = 0; i < NUM_ALERTS; i++) begin
       alert_en_regwen_cg_wrap[i] = new($sformatf("alert_en_regwen_cg_wrap[%0d]", i));
