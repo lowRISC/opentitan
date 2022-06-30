@@ -6,11 +6,11 @@
 // util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_aon_timer_autogen.h"
+
+#include <assert.h>
 #include <stdint.h>
 
 #include "aon_timer_regs.h"  // Generated.
-
-#include <assert.h>
 
 static_assert(AON_TIMER_INTR_STATE_WKUP_TIMER_EXPIRED_BIT ==
                   AON_TIMER_INTR_TEST_WKUP_TIMER_EXPIRED_BIT,

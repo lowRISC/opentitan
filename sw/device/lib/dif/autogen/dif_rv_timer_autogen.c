@@ -6,11 +6,11 @@
 // util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_rv_timer_autogen.h"
+
+#include <assert.h>
 #include <stdint.h>
 
 #include "rv_timer_regs.h"  // Generated.
-
-#include <assert.h>
 
 static_assert(RV_TIMER_INTR_STATE0_IS_0_BIT == RV_TIMER_INTR_ENABLE0_IE_0_BIT,
               "Expected IRQ bit offsets to match across STATE/ENABLE regs.");

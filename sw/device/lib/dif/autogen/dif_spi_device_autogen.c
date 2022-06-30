@@ -6,6 +6,7 @@
 // util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_spi_device_autogen.h"
+
 #include <stdint.h>
 
 #include "spi_device_regs.h"  // Generated.
