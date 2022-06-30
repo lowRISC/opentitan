@@ -29,7 +29,7 @@ typedef enum ottf_exc_id {
  */
 typedef enum ottf_internal_irq_id {
   kInternalIrqLoadInteg = 0xffffffe0,
-  kInternalIrqNmi = 0x0000001f
+  kInternalIrqNmi = 0x8000001f
 } ottf_internal_irq_id_t;
 
 /**
