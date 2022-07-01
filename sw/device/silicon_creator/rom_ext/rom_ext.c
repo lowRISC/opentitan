@@ -99,10 +99,10 @@ extern char _owner_virtual_size[];
  * @param lma_addr Load address or physical address.
  * @return the computed virtual address.
  */
-static uintptr_t rom_ext_vma_get(const manifest_t *manifest,
-                                 uintptr_t lma_addr) {
+static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
   return (lma_addr - (uintptr_t)manifest +
-          (uintptr_t)_owner_virtual_start_address);
+          (uintptr_t)_owner_virtual_start_address +
+          MANIFEST_LENGTH_FIELD_ROM_EXT_MAX);
 }
 
 static rom_error_t rom_ext_boot(const manifest_t *manifest) {
@@ -123,7 +123,8 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
     case kHardenedBoolTrue:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
       ibex_addr_remap_1_set((uintptr_t)_owner_virtual_start_address,
-                            (uintptr_t)manifest, (size_t)_owner_virtual_size);
+                            (uintptr_t)TOP_EARLGREY_EFLASH_BASE_ADDR,
+                            (size_t)_owner_virtual_size);
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
       // Unlock read-only for the whole rom_ext virtual memory.
@@ -136,9 +137,10 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
 
       // Move the ROM_EXT execution section from the load address to the virtual
       // address.
-      text_region.start = rom_ext_vma_get(manifest, text_region.start);
-      text_region.end = rom_ext_vma_get(manifest, text_region.end);
-      entry_point = rom_ext_vma_get(manifest, entry_point);
+      // TODO(#13513): Harden these calculations.
+      text_region.start = owner_vma_get(manifest, text_region.start);
+      text_region.end = owner_vma_get(manifest, text_region.end);
+      entry_point = owner_vma_get(manifest, entry_point);
       break;
     case kHardenedBoolFalse:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
@@ -177,7 +179,7 @@ static rom_error_t rom_ext_try_boot(void) {
 
 void rom_ext_main(void) {
   rom_ext_init();
-  rom_printf("starting rom_ext\r\n");
+  rom_printf("Starting ROM_EXT\r\n");
   shutdown_finalize(rom_ext_try_boot());
 }
 
