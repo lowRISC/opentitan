@@ -350,3 +350,27 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_functest(
+    name = "e2e_bootup_bad_rom_ext_signature",
+    srcs = ["mask_rom_test.c"],
+    args = [],
+    cw310 = cw310_params(
+        args = [
+            "--rom-ext=\"$(location {flash})\"",
+            "--rom-kind=maskrom",
+            "--bitstream=\"$(location //hw/bitstream:mask_rom)\"",
+        ],
+        data = [
+            "//hw/bitstream:mask_rom",
+            "//sw/host/tests/mask_rom/e2e_bootup_bad_rom_ext_signature:test_resources",
+        ],
+        test_runner = "//util:opentitan_functest_runner.sh",
+    ),
+    signed = True,
+    targets = ["cw310"],
+    test_harness = "//sw/host/tests/mask_rom/e2e_bootup_bad_rom_ext_signature:bad_rom_ext_signature",
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
