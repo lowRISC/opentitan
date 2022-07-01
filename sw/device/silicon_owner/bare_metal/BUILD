@@ -46,16 +46,8 @@ cc_library(
     srcs = ["bare_metal_example.c"],
     hdrs = ["bare_metal_example.h"],
     deps = [
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:stdasm",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib/drivers:pinmux",
-        "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/device/silicon_creator/lib:rom_print",
     ],
 )
 
