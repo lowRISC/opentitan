@@ -15,7 +15,7 @@ _BASE_PARAMS = {
     "otp": "@//hw/ip/otp_ctrl/data:img_rma",
     "rom": "@//sw/device/lib/testing/test_rom:test_rom_{}_scr_vmem",
     "tags": [],
-    "test_runner": "@//util:opentitantool_test_runner.sh",
+    "test_runner": "@//util:opentitan_functest_runner.sh",
     "timeout": "moderate",  # 5 minutes
     "exit_success": _EXIT_SUCCESS,
     "exit_failure": _EXIT_FAILURE,
@@ -232,6 +232,7 @@ def opentitan_functest(
         data = [],
         test_in_rom = False,
         signed = False,
+        test_harness = "//sw/host/opentitantool",
         key = "test_key_0",
         dv = None,
         verilator = None,
@@ -257,6 +258,7 @@ def opentitan_functest(
       @param test_in_rom: Whether to run the test from ROM, runs from flash by
                           default.
       @param signed: Whether to sign the test image. Unsigned by default.
+      @param test_harness: The binary on the host side that runs the test.
       @param key: Which signed test image (by key) to use.
       @param dv: DV test parameters.
       @param verilator: Verilator test parameters.
@@ -394,6 +396,13 @@ def opentitan_functest(
             bitstream = bitstream,
         )
 
+        # Environment variables to pass into sh_test
+        env = {}
+
+        # Specify the test harness
+        env["TEST_HARNESS"] = "$(location {})".format(test_harness)
+        concat_data += [test_harness]
+
         native.sh_test(
             name = test_name,
             srcs = [test_runner],
@@ -403,6 +412,7 @@ def opentitan_functest(
                 rom,
                 otp,
             ] + concat_data + sw_logs_db,
+            env = env,
             **params
         )
 
