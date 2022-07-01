@@ -69,7 +69,7 @@ See the table produced in the [hardware documentation page]({{< relref "hw" >}})
 
 The block diagram of `top_earlgrey` (the auto-generated module) is shown below.
 
-**TODO: This block diagram is outdated**
+**TODO: Top level diagram has pending updates.**
 
 ![Top Level Block Diagram](top_earlgrey_block_diagram.svg)
 
