@@ -898,15 +898,15 @@
             should be cleared.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_clkmgr_reset_frequency"]
     }
     {
       name: chip_sw_clkmgr_escalation_reset
       desc: '''Verify the clock manager resets to a clean state after an escalation reset.
 
-            Trigger an internal fault (measurement error timeout) and let it escalate to reset.
-            Upon alert escalation reset, the internal status should be clear and clkmgr should
-            not attempt to send out more alerts.
+            Trigger an internal fatal fault (like an idle counter mismatch) and let it escalate to
+            reset. Upon alert escalation reset, the internal status should be clear and clkmgr
+            should not attempt to send out more alerts.
             '''
       milestone: V2
       tests: []
