@@ -24,6 +24,22 @@ _stack_start = _stack_end - _stack_size;
  */
 _dv_log_offset = 0x10000;
 
+/*
+ * The start of the .text section relative to the beginning of the associated
+ * slot for use in the manifest.
+ */
+_manifest_code_start = _text_start - ORIGIN(eflash);
+/*
+ * The end of the .text section relative to the beginning of the associated slot
+ * for use in the manifest.
+ */
+_manifest_code_end = _text_end - ORIGIN(eflash);
+/*
+ * The location of the entry point relative to the beginning of the associated
+ * slot for use in the manifest.
+ */
+_manifest_entry_point = _ottf_start - ORIGIN(eflash);
+
 OUTPUT_ARCH(riscv)
 
 /**
@@ -66,6 +82,7 @@ SECTIONS {
    * Ibex.
    */
   .vectors : ALIGN (256){
+    _text_start = .;
     *(.vectors)
   } > eflash
 
@@ -105,6 +122,7 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
+    _text_end = .;
   } > eflash
 
   /**

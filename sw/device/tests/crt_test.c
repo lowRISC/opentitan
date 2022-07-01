@@ -15,6 +15,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/device/silicon_creator/lib/manifest_def.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

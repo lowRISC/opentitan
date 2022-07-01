@@ -7,6 +7,9 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "external/freertos/include/FreeRTOS.h"
+#include "external/freertos/include/queue.h"
+#include "external/freertos/include/task.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -18,13 +21,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/coverage.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/device/silicon_creator/lib/manifest_def.h"
 
 // TODO: make this toplevel agnostic.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-#include "external/freertos/include/FreeRTOS.h"
-#include "external/freertos/include/queue.h"
-#include "external/freertos/include/task.h"
 
 // Check layout of test configuration struct since OTTF ISR asm code requires a
 // specific layout.

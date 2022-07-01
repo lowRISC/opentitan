@@ -2,28 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/manifest_size.h"
-
-  /**
-   * Manifest for boot stages stored in flash.
-   *
-   * Note, we set the default entry point field (which is the last field in the
-   * manifest struct) to `_ottf_start`. We do this to enable running unsigned test
-   * images with the test ROM, since these images will not be processed by our
-   * signing tool which would otherwise populate this entry point field.
-   */
-  .section .manifest, "a"
-  .global kManifest
-  .type kManifest, @object
-kManifest:
-  .rept MANIFEST_SIZE - 4
-  .byte 0x0
-  .endr
-  .4byte _ottf_start
-  .size kManifest, .-kManifest
-
-// -----------------------------------------------------------------------------
-
 /**
  * OTTF Interrupt Vector.
  */
