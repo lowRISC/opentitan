@@ -311,7 +311,6 @@ opentitan_functest(
         bitstream = "//hw/bitstream:mask_rom",
         exit_failure = BOOT_FAILURE_MSG,
         exit_success = BOOT_SUCCESS_MSG,
-        tags = ["broken"],
     ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
@@ -319,6 +318,8 @@ opentitan_functest(
         exit_failure = BOOT_FAILURE_MSG,
         exit_success = BOOT_SUCCESS_MSG,
         rom = ":mask_rom_sim_verilator_scr_vmem",
+        # Note: Leaving as broken since this test takes a long time and
+        # we don't really need it as long as the CI runs the FPGA version.
         tags = [
             "broken",
         ],
@@ -341,7 +342,6 @@ opentitan_functest(
         exit_failure = BOOT_SUCCESS_MSG,
         exit_success = BOOT_FAILURE_MSG,
         rom = ":mask_rom_sim_verilator_scr_vmem",
-        tags = ["broken"],
     ),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
