@@ -1,4 +1,3 @@
-
 # Freestanding C Headers
 
 This subtree defines headers required for a C freestanding implementation, as
