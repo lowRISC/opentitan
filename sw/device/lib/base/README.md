@@ -1,6 +1,4 @@
----
-title: "libbase: The OpenTitan Standard Library"
----
+# libbase: The OpenTitan Standard Library
 
 This subtree provides headers and libraries known collectively as `libbase`, which serve as OpenTitan's ersatz `libc`.
 

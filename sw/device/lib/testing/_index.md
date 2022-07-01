@@ -29,6 +29,6 @@ code will live in: `sw/device/lib/testing/test\_framework`.
 - Pass-through `sw/device/lib/dif_base.h` types where appropriate.
   This allows testutils functions to easily mix with DIFs within chip-level tests.
 - Avoid defining testutils that call a single DIF, and use the DIF directly.
-  If a DIF does not exist for your needs, create one by following the [DIF developement guide]({{< relref "sw/device/lib/dif/README.md" >}}).
+  If a DIF does not exist for your needs, create one by following the [DIF developement guide]({{< relref "sw/device/lib/dif" >}}).
 
 {{% sectionContent %}}

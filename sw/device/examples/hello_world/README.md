@@ -1,6 +1,4 @@
----
-title: "Hello World"
----
+# Hello World Example
 
 ## Overview
 

@@ -661,7 +661,7 @@ The HW IP Programmer's guide references specific DIF APIs that can be used for o
 
 ### DIF_CODE_STYLE
 
-The DIF follows DIF-specific guidelines in [`sw/device/lib/dif/README.md`]({{< relref "sw/device/lib/dif/README.md" >}}) and the OpenTitan C style guidelines.
+The DIF follows DIF-specific guidelines in [`sw/device/lib/dif`]({{< relref "sw/device/lib/dif" >}}) and the OpenTitan C style guidelines.
 
 ### DIF_TEST_UNIT
 

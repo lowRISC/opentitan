@@ -1,7 +1,5 @@
 
----
-title: "Freestanding C Headers"
----
+# Freestanding C Headers
 
 This subtree defines headers required for a C freestanding implementation, as
 specified in S4p6 of the C11 standard. Said headers are implemented *to the
