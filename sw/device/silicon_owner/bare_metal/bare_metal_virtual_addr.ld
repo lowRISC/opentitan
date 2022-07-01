@@ -22,9 +22,9 @@ _stack_start = _stack_end - _stack_size;
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
-_slot_start_address = ORIGIN(rom_ext_virtual) + 64K;
-_slot_size = LENGTH(rom_ext_virtual) - 64K;
+_slot_start_address = ORIGIN(owner_virtual) + 64K;
+_slot_size = LENGTH(owner_virtual) - 64K;
 
-REGION_ALIAS("owner_flash", rom_ext_virtual);
+REGION_ALIAS("owner_flash", owner_virtual);
 
 INCLUDE sw/device/silicon_owner/bare_metal/bare_metal_common.ld
