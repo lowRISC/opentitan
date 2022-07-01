@@ -50,6 +50,11 @@ inline void clkmgr_testutils_check_trans_clock_gating(
 }
 
 /**
+ * Returns the name of a measured clock.
+ */
+const char *clkmgr_testutils_measurement_name(dif_clkmgr_measure_clock_t clock);
+
+/**
  * Enables clock measurements.
  *
  * This enables measurements with lo and hi count bounds for a given clock.

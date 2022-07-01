@@ -18,16 +18,15 @@ OTTF_DEFINE_TEST_CONFIG();
 /**
  * AST CLK OUTPUTS TEST
  *
- * This test measure 3 clock outputs from ast (sys, io and usb) by clkmgr
- * frequency measurements, performing 100 measurements per round.  If
- * measurement detects error (fast, slow), it will be stored as recoverable
- * error in clkmgr.
+ * This test measure clock counts with clkmgr frequency measurements, performing
+ * 100 measurements per round. Measurement errors (fast or slow clocks) are
+ * recorded as recoverable error in clkmgr.
  *
  * After 100 measurements, test kicks in low-power mode, where
  * 3 clocks are off and measurement should not report spurious errors.
  *
- * Then dut wakes up and repeat another 100 measurements before
- * test finish.
+ * When the dut wakes up, another 100 measurements are done before the
+ * test finishes.
  *
  * Notice the test overrides the hardware behavior so it comes out with
  * calibrated USB clock, otherwise the USB clock frequency will be incorrect.
@@ -55,7 +54,7 @@ bool test_main(void) {
   dif_sensor_ctrl_t sensor_ctrl;
   dif_aon_timer_t aon_timer;
 
-  uint32_t kMeasurementDelayMicros =
+  const uint32_t kMeasurementDelayMicros =
       aon_timer_testutils_get_us_from_aon_cycles(kMeasurementsPerRound);
 
   CHECK_DIF_OK(dif_clkmgr_init(
@@ -67,6 +66,8 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
+  // TODO(#13611) Uncomment when fixed
+  /*
   LOG_INFO("TEST: wait for ast init");
   dif_toggle_t init_st = kDifToggleDisabled;
 
@@ -78,7 +79,7 @@ bool test_main(void) {
   }
 
   LOG_INFO("TEST: done ast init");
-
+  */
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
     // At POR.
     LOG_INFO("Run clock measurements right after POR");

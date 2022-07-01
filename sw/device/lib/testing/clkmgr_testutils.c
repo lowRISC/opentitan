@@ -88,11 +88,30 @@ static void initialize_expected_counts() {
                               .variability = kDeviceUsbCount / 10};
 }
 
+const char *clkmgr_testutils_measurement_name(
+    dif_clkmgr_measure_clock_t clock) {
+  switch (clock) {
+  kDifClkmgrMeasureClockIo:
+    return "io";
+  kDifClkmgrMeasureClockIoDiv2:
+    return "io_div2";
+  kDifClkmgrMeasureClockIoDiv4:
+    return "io_div4";
+  kDifClkmgrMeasureClockMain:
+    return "main";
+  kDifClkmgrMeasureClockUsb:
+    return "usb";
+    default:
+      LOG_ERROR("Unexpected clock measurement %d", clock);
+  }
+  return "unexpected clock";
+}
+
 void clkmgr_testutils_enable_clock_count(const dif_clkmgr_t *clkmgr,
                                          dif_clkmgr_measure_clock_t clock,
                                          uint32_t lo_threshold,
                                          uint32_t hi_threshold) {
-  LOG_INFO("Enabling clock count measurement for %s(%d) lo %0d hi %0d",
+  LOG_INFO("Enabling clock count measurement for %s(%d) lo %d hi %d",
            measure_clock_names[clock], clock, lo_threshold, hi_threshold);
   CHECK_DIF_OK(dif_clkmgr_enable_measure_counts(clkmgr, clock, lo_threshold,
                                                 hi_threshold));

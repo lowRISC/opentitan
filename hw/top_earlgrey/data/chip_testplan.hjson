@@ -883,11 +883,11 @@
       desc: '''Verify the frequency measurement through shallow sleep.
 
             Enable clock cycle counts. Put the chip in shallow sleep with pwrmgr's CONTROL CSR
-            randomly enabling clocks. Upon wakeup interrupt the clock measurements should be on,
-            and the recoverable fault status may have faults for only the disabled clocks.
+            keeping some clocks disabled. Upon wakeup the clock measurements should be on, and the
+            recoverable fault status should show no errors for the disabled clocks.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_clkmgr_sleep_frequency"]
     }
     {
       name: chip_sw_clkmgr_reset_frequency
