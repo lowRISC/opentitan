@@ -20,7 +20,7 @@
 CONNECTION, AST_DFT_SPI_DEVICE_RAM_2P_CFG, u_ast.u_ast_dft, "{dpram_rmf_o, dpram_rml_o}", top_earlgrey.u_spi_device.u_memory_2p.u_mem.gen_generic.u_impl_generic, cfg_i
 
 # To usbdev.
-CONNECTION, AST_DFT_USBDEV_RAM_2P_CFG, u_ast.u_ast_dft, "{dpram_rmf_o, dpram_rml_o}", top_earlgrey.u_usbdev.u_memory_2p.u_mem.gen_generic.u_impl_generic, cfg_i
+CONNECTION, AST_DFT_USBDEV_RAM_2P_CFG, u_ast.u_ast_dft, "{dpram_rmf_o, dpram_rml_o}", top_earlgrey.u_usbdev.u_memory_2p.i_prim_ram_2p_async_adv.u_mem.gen_generic.u_impl_generic, cfg_i
 
 # Single port RAMs.
 # To otbn.
