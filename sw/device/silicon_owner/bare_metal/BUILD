@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:manifest.bzl", "CONST", "manifest")
 load("//rules:opentitan.bzl", "opentitan_flash_binary")
 load("//rules:linker.bzl", "ld_library")
 
@@ -51,9 +52,23 @@ cc_library(
     ],
 )
 
+manifest(
+    name = "manifest_standard",
+    address_translation = CONST.FALSE,
+    identifier = CONST.OWNER,
+)
+
+manifest(
+    name = "manifest_virtual",
+    address_translation = CONST.TRUE,
+    identifier = CONST.OWNER,
+)
+
 opentitan_flash_binary(
     name = "bare_metal_example_slot_a",
     srcs = ["bare_metal_start.S"],
+    manifest = ":manifest_standard",
+    output_signed = True,
     deps = [
         ":bare_metal_example",
         ":ld_slot_a",
@@ -65,6 +80,8 @@ opentitan_flash_binary(
 opentitan_flash_binary(
     name = "bare_metal_example_slot_b",
     srcs = ["bare_metal_start.S"],
+    manifest = ":manifest_standard",
+    output_signed = True,
     deps = [
         ":bare_metal_example",
         ":ld_slot_b",
@@ -76,6 +93,8 @@ opentitan_flash_binary(
 opentitan_flash_binary(
     name = "bare_metal_example_virtual_addr",
     srcs = ["bare_metal_start.S"],
+    manifest = ":manifest_virtual",
+    output_signed = True,
     deps = [
         ":bare_metal_example",
         ":ld_virtual_addr",
