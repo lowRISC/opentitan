@@ -22,16 +22,13 @@ merge_base="$(git merge-base origin/$tgt_branch HEAD)" || {
 }
 echo "Checking licence headers on files changed since $merge_base"
 
-lc_script=util/lowrisc_misc-linters/licence-checker/licence-checker.py
-lc_cmd="$lc_script --config util/licence-checker.hjson"
-
 # Ask git for a list of null-separated names of changed files and pipe
 # those through to the licence checker using xargs. Setting pipefail
 # ensures that we'll see an error if the git diff command fails for
 # some reason.
 set -o pipefail
 git diff -z --name-only --diff-filter=ACMRTUXB "$merge_base" | \
-    xargs -r -0 $lc_cmd || {
+    xargs -r -0 ./bazelisk.sh run //:license_check -- || {
 
     echo >&2 -n "##vso[task.logissue type=error]"
     echo >&2 "Licence header check failed."
