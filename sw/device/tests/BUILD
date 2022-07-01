@@ -383,6 +383,31 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "clkmgr_reset_frequency_test",
+    srcs = ["clkmgr_reset_frequency_test.c"],
+    cw310 = cw310_params(
+        # FIXME #13611
+        tags = ["broken"],
+    ),
+    verilator = verilator_params(
+        # FIXME #13611
+        tags = ["broken"],
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:sensor_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "clkmgr_sleep_frequency_test",
     srcs = ["clkmgr_sleep_frequency_test.c"],
     cw310 = cw310_params(
@@ -1348,9 +1373,11 @@ opentitan_functest(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
     cw310 = cw310_params(
+        # FIXME #13611
         tags = ["broken"],
     ),
     verilator = verilator_params(
+        # FIXME #13611
         timeout = "eternal",
         tags = ["broken"],
     ),
