@@ -17,6 +17,8 @@ _BASE_PARAMS = {
     "tags": [],
     "test_runner": "@//util:opentitantool_test_runner.sh",
     "timeout": "moderate",  # 5 minutes
+    "exit_success": _EXIT_SUCCESS,
+    "exit_failure": _EXIT_FAILURE,
 }
 
 def dv_params(
@@ -81,11 +83,13 @@ def verilator_params(
         # Base Parameters
         args = _BASE_PARAMS["args"] + [
             "console",
-            "--exit-failure=" + shell.quote(_EXIT_FAILURE),
-            "--exit-success=" + shell.quote(_EXIT_SUCCESS),
+            "--exit-success={exit_success}",
+            "--exit-failure={exit_failure}",
             "--timeout=3600s",
         ],
         data = _BASE_PARAMS["data"],
+        exit_success = _BASE_PARAMS["exit_success"],
+        exit_failure = _BASE_PARAMS["exit_failure"],
         local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
         rom = _BASE_PARAMS["rom"].format("sim_verilator"),
@@ -128,6 +132,8 @@ def verilator_params(
     kwargs.update(
         args = required_args + args,
         data = required_data + data,
+        exit_success = exit_success,
+        exit_failure = exit_failure,
         local = local,
         otp = otp,
         rom = rom,
@@ -143,11 +149,13 @@ def cw310_params(
             "--exec=\"load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
             "--exec=\"bootstrap $(location {flash})\"",
             "console",
-            "--exit-failure=" + shell.quote(_EXIT_FAILURE),
-            "--exit-success=" + shell.quote(_EXIT_SUCCESS),
+            "--exit-success={exit_success}",
+            "--exit-failure={exit_failure}",
             "--timeout=3600s",
         ],
         data = _BASE_PARAMS["data"] + ["{bitstream}"],
+        exit_success = _BASE_PARAMS["exit_success"],
+        exit_failure = _BASE_PARAMS["exit_failure"],
         local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
         rom = _BASE_PARAMS["rom"].format("fpga_cw310"),
@@ -189,6 +197,8 @@ def cw310_params(
     kwargs.update(
         args = required_args + args,
         data = required_data + data,
+        exit_success = exit_success,
+        exit_failure = exit_failure,
         local = local,
         otp = otp,
         rom = rom,
@@ -336,6 +346,14 @@ def opentitan_functest(
         # Set OTP image.
         otp = params.pop("otp")
 
+        # Success and failure strings.
+        exit_strings_kwargs = {}
+        if target in ["fpga_cw310", "sim_verilator"]:
+            exit_strings_kwargs = {
+                "exit_success": shell.quote(params.pop("exit_success")),
+                "exit_failure": shell.quote(params.pop("exit_failure")),
+            }
+
         # Retrieve remaining device-agnostic params.
         test_runner = params.pop("test_runner")
 
@@ -358,6 +376,7 @@ def opentitan_functest(
             rom = rom,
             rom_kind = rom_kind,
             bitstream = bitstream,
+            **exit_strings_kwargs
         )
         if target == "fpga_cw310":
             # We attach the uarts configuration to the front of the command
