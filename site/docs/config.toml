@@ -45,7 +45,11 @@ ignoreFiles = [
   ".*\\.xdc$",
   ".*\\.yml$",
   ".*\\.clang-format$",
+
+  # DO NOT remove README.md from this list. See issue #13345 for more details.
   ".*README.md",
+  ".*CONTRIBUTING.md",
+
   "/__pycache__/.*",
   "/bazel-.*/.*",
   "/build/.*",
