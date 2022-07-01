@@ -1040,4 +1040,3 @@ Note some properties are worded with "SHALL" and others with "SHOULD".
   - As error correction mechanisms are technology dependent, that information should not be exposed to the open-source controller, instead the controller should simply receive information on whether a read / program was successful.
 - The IP should have self-test functionality to assess the health of the storage and analog structures.
 - The IP may contain native PUF-like functionality.
-

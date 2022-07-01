@@ -164,4 +164,3 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rv_dm/dv/rv_dm_sim_cfg.hjson -i 
 
 ## Testplan
 {{< incGenFromIpDesc "../../data/rv_dm_testplan.hjson" "testplan" >}}
-
