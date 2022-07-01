@@ -23,16 +23,17 @@ class StatusPrinter:
     computations of how the jobs are progressing need to be handled externally.
 
     The following are the 'fields' accepted by this class:
-      hms:    Elapsed time in hh:mm:ss.
-      target: The tool flow step.
-      msg:    The completion status message (set externally).
-      perc:   Percentage of completion.
+      hms:      Elapsed time in hh:mm:ss.
+      target:   The tool flow step.
+      msg:      The completion status message (set externally).
+      perc:     Percentage of completion.
+      running:  What jobs are currently still running.
     '''
 
     # Print elapsed time in bold.
     hms_fmt = ''.join(['\033[1m', u'{hms:9s}', '\033[0m'])
     header_fmt = hms_fmt + u' [{target:^13s}]: [{msg}]'
-    status_fmt = header_fmt + u' {perc:3.0f}%'
+    status_fmt = header_fmt + u' {perc:3.0f}%  {running}'
 
     def __init__(self):
         # Once a target is complete, we no longer need to update it - we can
@@ -54,14 +55,22 @@ class StatusPrinter:
 
         self.target_done[target] = False
 
-    def update_target(self, target, hms, msg, perc):
+    def _trunc_running(self, running: str) -> str:
+        """Truncates the list of running items to 30 character string."""
+        return running[:28] + (running[28:] and "..")
+
+    def update_target(self, target, hms, msg, perc, running):
         '''Periodically update the status bar for each target.'''
 
         if self.target_done[target]:
             return
 
         log.info(
-            self.status_fmt.format(hms=hms, target=target, msg=msg, perc=perc))
+            self.status_fmt.format(hms=hms,
+                                   target=target,
+                                   msg=msg,
+                                   perc=perc,
+                                   running=self._trunc_running(running)))
         if perc == 100:
             self.target_done[target] = True
 
@@ -86,6 +95,7 @@ class EnlightenStatusPrinter(StatusPrinter):
     Enlighten does not work if the output of dvsim is redirected to a file, for
     example - it needs to be attached to a TTY enabled stream.
     '''
+
     def __init__(self):
         super().__init__()
 
@@ -110,13 +120,17 @@ class EnlightenStatusPrinter(StatusPrinter):
             hms="",
             target=target,
             msg=msg,
-            perc=0.0)
+            perc=0.0,
+            running="")
 
-    def update_target(self, target, hms, msg, perc):
+    def update_target(self, target, hms, msg, perc, running):
         if self.target_done[target]:
             return
 
-        self.status_target[target].update(hms=hms, msg=msg, perc=perc)
+        self.status_target[target].update(hms=hms,
+                                          msg=msg,
+                                          perc=perc,
+                                          running=self._trunc_running(running))
         if perc == 100:
             self.target_done[target] = True
 

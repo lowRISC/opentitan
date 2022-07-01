@@ -47,6 +47,7 @@ def get_next_item(arr, index):
 
 class Scheduler:
     '''An object that runs one or more Deploy items'''
+
     def __init__(self, items, launcher_cls):
         self.items = items
 
@@ -501,6 +502,8 @@ class Scheduler:
 
             perc = done_cnt / self._total[target] * 100
 
+            running = ", ".join(
+                [f"{item.full_name}" for item in self._running[target]])
             msg = self.msg_fmt.format(len(self._queued[target]),
                                       len(self._running[target]),
                                       len(self._passed[target]),
@@ -510,7 +513,8 @@ class Scheduler:
             self.status_printer.update_target(target=target,
                                               msg=msg,
                                               hms=hms,
-                                              perc=perc)
+                                              perc=perc,
+                                              running=running)
         return done
 
     def _cancel_item(self, item, cancel_successors=True):
