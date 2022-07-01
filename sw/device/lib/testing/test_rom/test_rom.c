@@ -32,7 +32,7 @@
  * by the flash binary: see `sw/device/lib/testing/test_framework/ottf.ld`
  * for that.
  */
-extern manifest_t _manifest;
+extern const char _manifest[];
 
 /**
  * Type alias for the OTTF entry point.
@@ -114,9 +114,10 @@ bool rom_test_main(void) {
 
   // Jump to the OTTF in flash. Within the flash binary, it is the responsibily
   // of the OTTF to set up its own stack, and to never return.
-  uintptr_t manifest_entry_point = _manifest.entry_point;
+  uintptr_t entry_point =
+      manifest_entry_point_get((const manifest_t *)_manifest);
   LOG_INFO("Test ROM complete, jumping to flash!");
-  ((ottf_entry *)manifest_entry_point)();
+  ((ottf_entry *)entry_point)();
 
   // If the flash image returns, we should abort anyway.
   abort();

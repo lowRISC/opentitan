@@ -95,7 +95,6 @@ alias(
         "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_manifest",
         "//conditions:default": "//sw/device/silicon_creator/lib:manifest",
     }),
-    visibility = ["//visibility:private"],
 )
 
 cc_library(

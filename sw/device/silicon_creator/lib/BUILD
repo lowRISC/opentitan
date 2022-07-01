@@ -231,6 +231,14 @@ dual_cc_library(
     alwayslink = True,
 )
 
+filegroup(
+    name = "english_breakfast_test_framework_manifest_def_srcs",
+    srcs = [
+        "manifest_def.c",
+        "manifest_def.h",
+    ],
+)
+
 cc_test(
     name = "manifest_unittest",
     srcs = ["manifest_unittest.cc"],
