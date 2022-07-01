@@ -383,6 +383,35 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "clkmgr_sleep_frequency_test",
+    srcs = ["clkmgr_sleep_frequency_test.c"],
+    cw310 = cw310_params(
+        # FIXME #13611
+        tags = ["broken"],
+    ),
+    verilator = verilator_params(
+        # FIXME #13611
+        tags = ["broken"],
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib:irq",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:sensor_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "clkmgr_smoketest",
     srcs = ["clkmgr_smoketest.c"],
     deps = [
