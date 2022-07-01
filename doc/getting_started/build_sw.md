@@ -89,7 +89,7 @@ There are two categories of OpenTitan tests Bazel can build and run:
 On-host tests are compiled and run on the host machine, while on-device tests are compiled and run on (simulated/emulated) OpenTitan hardware.
 
 Examples of on-host tests are:
-* unit tests for device software, such as [DIF]({{< relref "/sw/device/lib/dif/README.md" >}}) and [mask ROM]({{< relref "/sw/device/silicon_creator/mask_rom/docs/" >}}) unit tests.
+* unit tests for device software, such as [DIF]({{< relref "/sw/device/lib/dif" >}}) and [mask ROM]({{< relref "/sw/device/silicon_creator/mask_rom/docs/" >}}) unit tests.
 * any test for host software, such as `opentitan{lib,tool}`.
 
 Examples of on-device tests are:
@@ -101,7 +101,7 @@ To learn about running **on-device** tests with Bazel, please continue back to t
 
 ### Running on-host DIF Tests
 
-The Device Interface Function or [DIF]({{< relref "/sw/device/lib/dif/README.md" >}}) libraries contain unit tests that run on the host and are built and run with Bazel.
+The Device Interface Function or [DIF]({{< relref "/sw/device/lib/dif" >}}) libraries contain unit tests that run on the host and are built and run with Bazel.
 As shown below, you may use Bazel to query which tests are available, build and run all tests, or build and run only one test.
 
 #### Querying which tests are available

@@ -44,7 +44,7 @@ $ export REPO_TOP=$PWD/opentitan
 ## Step 1: Check System Requirements
 
 **OpenTitan installation requires Linux.**
-If you do not have Linux, please stop right here and use the (experimental) [Docker container]({{< relref "/util/container/README.md" >}}).
+If you do not have Linux, please stop right here and use the (experimental) [Docker container](https://github.com/lowRISC/opentitan/tree/master/util/container).
 You can then **skip to step 4** (building software).
 
 If you do have Linux, you are still welcome to try the Docker container.

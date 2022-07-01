@@ -19,11 +19,11 @@ DIFs provide extensively reviewed APIs for actuating hardware for three separate
 #### Language
 
 DIFs **must** be written in C, specifically [C11 (with a few allowed extensions)]({{< relref "doc/rm/c_cpp_coding_style.md#c-style-guide" >}}).
-DIFs **must** conform to the style guide in [`sw/device/lib/dif/README.md`]({{< relref "sw/device/lib/dif/README.md" >}}).
+DIFs **must** conform to the style guide in [`sw/device/lib/dif`]({{< relref "sw/device/lib/dif" >}}).
 
 DIFs **must** only depend on:
 
-*   the [freestanding C library headers]({{< relref "sw/device/lib/base/freestanding/README.md" >}}),
+*   the [freestanding C library headers](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/base/freestanding),
 *   compiler runtime libraries (e.g. libgcc and compiler-rt),
 *   the bitfield library for manipulating bits in binary values (`sw/device/lib/base/bitfield.h`),
 *   the mmio library for interacting with memory-mapped registers (`sw/device/lib/base/mmio.h`),

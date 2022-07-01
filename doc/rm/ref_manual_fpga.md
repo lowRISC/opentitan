@@ -73,4 +73,4 @@ I00004 hello_world.c:75] or type anything into the console window.
 I00005 hello_world.c:76] The LEDs show the ASCII code of the last character.
 ```
 
-For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme]({{< relref "sw/device/lib/testing/test_rom/README.md" >}}).
+For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/testing/test_rom).
