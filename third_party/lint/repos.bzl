@@ -19,7 +19,7 @@ def lint_repos():
 
     http_archive(
         name = "lowrisc_lint",
-        sha256 = "da0a3c8cdf9db4c8f48fc398c7fb9bc25ac1037497e61ab2fa77beb81e67bee2",
-        strip_prefix = "misc-linters-3c21d91af6115f3e0fb6584a9d62d4a0b27b6ccf",
-        url = "https://github.com/lowRISC/misc-linters/archive/3c21d91af6115f3e0fb6584a9d62d4a0b27b6ccf.tar.gz",
+        sha256 = "cb4eeef665f99dea13b1202eb04c1889f412f248c9ea7547b40d300e01dea7d2",
+        strip_prefix = "misc-linters-b5a926d6cce8d6e78291f91999c3cd2025ba1d5b",
+        url = "https://github.com/lowRISC/misc-linters/archive/b5a926d6cce8d6e78291f91999c3cd2025ba1d5b.tar.gz",
     )
