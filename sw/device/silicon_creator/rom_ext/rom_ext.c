@@ -127,7 +127,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
       // Unlock read-only for the whole rom_ext virtual memory.
-      HARDENED_RETURN_IF_ERROR(epmp_state_check(&epmp));
+      // TODO(#13507): Add ePMP state checks.
       rom_ext_epmp_unlock_owner_stage_r(
           &epmp,
           (epmp_region_t){.start = (uintptr_t)_owner_virtual_start_address,
