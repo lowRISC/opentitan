@@ -136,6 +136,7 @@ manifest(
     name = "manifest_standard",
     address_translation = CONST.FALSE,
     identifier = CONST.ROM_EXT,
+    visibility = ["//visibility:public"],
 )
 
 manifest(

@@ -309,6 +309,7 @@ opentitan_functest(
         bitstream = "//hw/bitstream:mask_rom",
         tags = ["broken"],
     ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
     verilator = verilator_params(
         rom = ":mask_rom_sim_verilator_scr_vmem",
