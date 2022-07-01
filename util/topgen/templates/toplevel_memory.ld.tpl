@@ -37,8 +37,8 @@ def flags(mem):
 
 /**
  * Partial linker script for chip memory configuration.
- * eflash virtual is a fixed address that does not physically exist but is used as the
- * translation base
+ * rom_ext_virtual and owner_virtual are address windows that provide a fixed translation
+ * address for whichever half of the flash contains the corresponding boot stage.
  */
 MEMORY {
 % for m in top["module"]:
@@ -52,4 +52,5 @@ MEMORY {
   ${m["name"]}(${memory_to_flags(m)}) : ORIGIN = ${m["base_addr"]}, LENGTH = ${m["size"]}
 % endfor
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = 0x80000
+  owner_virtual(rx): ORIGIN = 0xa0000000, LENGTH = 0x80000
 }
