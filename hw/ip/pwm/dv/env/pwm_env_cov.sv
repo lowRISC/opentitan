@@ -22,7 +22,7 @@ class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
     clkdiv_cp: coverpoint clkdiv {
       bins minimum_value  = {0};
       bins valid_range[4] = {[0:$]};
-      bins maximum_value  = {MAX_27};
+      bins maximum_value  = {MAX_CLK_DIV};
     }
     dcresn_cp: coverpoint dcresn {
       bins minimum_value  = {0};
@@ -39,12 +39,10 @@ class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
     en_chan_cp: coverpoint en_chan {
       bins en_single_chan[6] = {'h1, 'h2, 'h4, 'h8, 'h10, 'h20};
       bins en_all_chan       = {'h3F};
-      bins valid_range[8]    = {['h3:$]};
     }
     inv_chan_cp: coverpoint inv_chan {
       bins en_single_chan[6] = {'h1, 'h2, 'h4, 'h8, 'h10, 'h20};
       bins en_all_chan       = {'h3F};
-      bins valid_range[8]    = {['h3:$]};
     }
     en_inv_cross_cp: cross en_chan_cp, inv_chan_cp {
       bins inverted_enabled = en_inv_cross_cp with (en_chan_cp == inv_chan_cp);
@@ -66,12 +64,12 @@ class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
 
     // sampled channel
     channels_cp: coverpoint en_chan {
-      bins channel_1 = {'h1};
-      bins channel_2 = {'h2};
-      bins channel_3 = {'h3};
-      bins channel_4 = {'h4};
-      bins channel_5 = {'h5};
-      bins channel_6 = {'h6};
+      bins channel_0 = {['h1:'h3F]};
+      bins channel_1 = {['h2:'h3F]};
+      bins channel_2 = {['h4:'h3F]};
+      bins channel_3 = {['h8:'h3F]};
+      bins channel_4 = {['h10:'h3F]};
+      bins channel_5 = {['h20:'h3F]};
     }
 
     // pwm_params

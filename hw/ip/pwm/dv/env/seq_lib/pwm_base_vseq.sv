@@ -12,11 +12,23 @@ class pwm_base_vseq extends cip_base_vseq #(
   `uvm_object_new
 
   rand uint duration_cycles;
+  rand uint clkdiv;
+  rand uint dcresn;
+  rand uint duty_cycle_a;
+  rand uint duty_cycle_b;
+  uint range = MAX_16/3;
 
   constraint duration_cycles_c {
     duration_cycles == {NUM_CYCLES};
   }
-
+  constraint clkdiv_dcresn_c{
+     clkdiv dist { 0:= 20, [0:$] :=70, MAX_CLK_DIV:=10};
+     dcresn dist { 0:= 20, [0:$] :=70, 4'hF:=10};
+  }
+  constraint duty_cycle_c{
+     duty_cycle_a dist { 0:= 10, [0:range] :=20,[range:$]:= 40, MAX_16:=10};
+     duty_cycle_b dist { 0:= 10, [0:range] :=20,[range:$]:= 40, MAX_16:=10};
+  }
   virtual task set_reg_en(pwm_status_e state);
     if (ral.regwen.regwen.get_mirrored_value() != state) begin
       ral.regwen.regwen.set(1'b1);
@@ -35,8 +47,8 @@ class pwm_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task automatic rand_pwm_cfg_reg();
-    cfg.pwm_cfg.ClkDiv = $urandom_range(0, MAX_CLK_DIV);
-    cfg.pwm_cfg.DcResn = $urandom_range(4'h0, 4'hE);
+    cfg.pwm_cfg.ClkDiv = clkdiv;
+    cfg.pwm_cfg.DcResn = dcresn;
     cfg.pwm_cfg.CntrEn = 1;
     set_cfg_reg(cfg.pwm_cfg);
   endtask
@@ -61,8 +73,8 @@ class pwm_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task automatic rand_pwm_duty_cycle(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel);
-    cfg.duty_cycle[channel].A = $urandom_range(16'h1, MAX_16);
-    cfg.duty_cycle[channel].B = $urandom_range(16'h1, MAX_16);
+    cfg.duty_cycle[channel].A = duty_cycle_a;
+    cfg.duty_cycle[channel].B = duty_cycle_b;
     set_duty_cycle(channel, cfg.duty_cycle[channel]);
   endtask
 

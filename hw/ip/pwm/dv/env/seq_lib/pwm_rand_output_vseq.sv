@@ -18,7 +18,6 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
   constraint rand_reg_param_c {
    rand_reg_param.HtbtEn == 1'b1 -> rand_reg_param.BlinkEn == 1'b1;
    rand_reg_param.RsvParam == 0;
-   rand_reg_param.PhaseDelay inside {[0:MAX_16]};
   }
 
   constraint duration_cycles_c {
@@ -29,7 +28,9 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
     // 1 in 10, in low power mode
     low_power dist {1'b1:/1, 1'b0:/9};
   }
-
+  constraint phase_delay_c {
+    rand_reg_param.PhaseDelay dist { 0 := 10,[0:range]:=20,[range:$]:=60, MAX_16:=10};
+  }
   virtual task body();
 
     set_reg_en(Enable);
