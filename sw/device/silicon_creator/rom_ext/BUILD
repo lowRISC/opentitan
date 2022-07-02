@@ -6,6 +6,7 @@ load("//rules:manifest.bzl", "CONST", "manifest")
 load("//rules:opentitan.bzl", "opentitan_flash_binary")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest")
 
 cc_library(
     name = "rom_ext_epmp",
@@ -183,4 +184,34 @@ opentitan_flash_binary(
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
     ],
+)
+
+BOOT_SUCCESS_MSG = "Starting ROM_EXT"
+
+BOOT_FAILURE_MSG = "BFV:[0-9a-f]{8}"
+
+opentitan_functest(
+    name = "e2e_rom_ext_slot_a",
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:mask_rom",
+        exit_failure = BOOT_FAILURE_MSG,
+        exit_success = BOOT_SUCCESS_MSG,
+    ),
+    signed = True,
+    targets = ["cw310"],
+    test_binary = ":slot_a",
+)
+
+# TODO(#13511): Add a positive test for slot_b.
+
+opentitan_functest(
+    name = "e2e_rom_ext_virtual_addr",
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:mask_rom",
+        exit_failure = BOOT_FAILURE_MSG,
+        exit_success = BOOT_SUCCESS_MSG,
+    ),
+    signed = True,
+    targets = ["cw310"],
+    test_binary = ":virtual_addr",
 )

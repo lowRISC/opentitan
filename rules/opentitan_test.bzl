@@ -237,6 +237,7 @@ def opentitan_functest(
         dv = None,
         verilator = None,
         cw310 = None,
+        test_binary = None,
         **kwargs):
     """A helper macro for generating OpenTitan functional tests.
 
@@ -263,6 +264,7 @@ def opentitan_functest(
       @param dv: DV test parameters.
       @param verilator: Verilator test parameters.
       @param cw310: CW310 test parameters.
+      @param test_binary: Use the named binary as the test program rather than building one from srcs/deps.
       @param **kwargs: Arguments to forward to `opentitan_flash_binary`.
 
     This macro emits the following rules:
@@ -281,12 +283,14 @@ def opentitan_functest(
             deps = deps,
             **kwargs
         )
-    opentitan_flash_binary(
-        name = name + "_prog",
-        output_signed = signed,
-        deps = deps,
-        **kwargs
-    )
+    if not test_binary:
+        test_binary = name + "_prog"
+        opentitan_flash_binary(
+            name = test_binary,
+            output_signed = signed,
+            deps = deps,
+            **kwargs
+        )
 
     all_tests = []
 
@@ -309,10 +313,10 @@ def opentitan_functest(
 
         # Set flash image.
         if target in ["sim_dv", "sim_verilator"]:
-            flash = "{}_prog_{}_scr_vmem64".format(name, target)
-            sw_logs_db.append("{}_prog_{}_logs_db".format(name, target))
+            flash = "{}_{}_scr_vmem64".format(test_binary, target)
+            sw_logs_db.append("{}_{}_logs_db".format(test_binary, target))
         else:
-            flash = "{}_prog_{}_bin".format(name, target)
+            flash = "{}_{}_bin".format(test_binary, target)
         if signed:
             flash += "_signed_{}".format(key)
 
@@ -326,7 +330,7 @@ def opentitan_functest(
                 fail("Tests that run in ROM cannot be bootstrapped.")
             if signed:
                 fail("A signed test cannot be bootstrapped in DV sim.")
-            flash = "{}_prog_{target}_frames_vmem".format(name, target)
+            flash = "{}_{target}_frames_vmem".format(test_binary, target)
 
         # Set ROM image.
         rom = params.pop("rom")
