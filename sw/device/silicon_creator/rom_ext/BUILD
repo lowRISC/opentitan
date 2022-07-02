@@ -8,6 +8,8 @@ load("//rules:linker.bzl", "ld_library")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest")
 
+package(default_visibility = ["//visibility:public"])
+
 cc_library(
     name = "rom_ext_epmp",
     srcs = ["rom_ext_epmp.c"],
