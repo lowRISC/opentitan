@@ -44,7 +44,7 @@ def main() -> int:
     sim = StandaloneSim()
     exp_end_addr = load_elf(sim, args.elf)
     key0 = int((str("deadbeef") * 12), 16)
-    key1 = int((str("badf00d") * 12), 16)
+    key1 = int((str("baadf00d") * 12), 16)
     sim.state.wsrs.set_sideload_keys(key0, key1)
 
     sim.state.ext_regs.commit()
