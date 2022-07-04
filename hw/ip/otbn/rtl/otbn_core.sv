@@ -587,7 +587,7 @@ module otbn_core
       mubi4_or_hi(escalate_en_i,
                   mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_rf_err, predec_error,
                                        lsu_rdata_err, insn_fetch_err, controller_fatal_err,
-                                       rnd_rep_err, rnd_fips_err, insn_addr_err}));
+                                       insn_addr_err}));
 
   assign insn_cnt_o = insn_cnt;
 
