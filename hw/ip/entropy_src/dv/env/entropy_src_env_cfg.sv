@@ -183,11 +183,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     return str;
   endfunction
 
-  function post_randomize();
+  function void post_randomize();
     dut_cfg.randomize();
-    if (dut_cfg.use_invalid_mubi) begin
-      entropy_src_assert_if.assert_off_alert();
-    end
   endfunction
 
 endclass

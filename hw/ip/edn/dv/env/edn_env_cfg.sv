@@ -67,8 +67,6 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     if (use_invalid_mubi) begin
       prim_mubi_pkg::mubi4_t invalid_mubi_val;
       invalid_mubi_val = get_rand_mubi4_val(.t_weight(0), .f_weight(0), .other_weight(1));
-      // Turn off assertions
-      edn_assert_vif.assert_off_alert();
       case (which_invalid_mubi)
         invalid_edn_enable: enable = invalid_mubi_val;
         invalid_boot_req_mode: boot_req_mode = invalid_mubi_val;

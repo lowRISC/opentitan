@@ -96,6 +96,12 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // setup basic entropy_src features
   virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg);
 
+    // If the new configuration is intentionally trying to force bad mubi
+    // configurations, disable the alerts before applying the bad configs
+    if (newcfg.use_invalid_mubi) begin
+      cfg.entropy_src_assert_if.assert_off_alert();
+    end
+
     #50us;
 
     // Controls
@@ -134,7 +140,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.sw_regupd), .value(newcfg.sw_regupd));
 
     #50us;
-
 
     // Module_enables (should be done last)
     ral.module_enable.set(newcfg.module_enable);
