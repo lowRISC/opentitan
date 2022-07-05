@@ -93,7 +93,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
       prim_mubi_pkg::mubi4_t invalid_mubi_val;
       invalid_mubi_val = get_rand_mubi4_val(.t_weight(0), .f_weight(0), .other_weight(1));
 
-      csrng_assert_vif.assert_off_alert();
       case (which_invalid_mubi)
         invalid_enable: enable = invalid_mubi_val;
         invalid_sw_app_enable: sw_app_enable = invalid_mubi_val;

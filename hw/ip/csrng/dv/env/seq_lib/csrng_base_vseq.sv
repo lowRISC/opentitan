@@ -46,6 +46,12 @@ class csrng_base_vseq extends cip_base_vseq #(
   // setup basic csrng features
   virtual task csrng_init();
 
+    // In cases where we are testing alert scenarios using invalid register configurations
+    // we must first disable the DUT assertions to allow the environment to catch the alerts
+    if (cfg.use_invalid_mubi) begin
+      cfg.csrng_assert_vif.assert_off_alert();
+    end
+
     // Enables
     csr_wr(.ptr(ral.regwen), .value(cfg.regwen));
     ral.ctrl.enable.set(cfg.enable);

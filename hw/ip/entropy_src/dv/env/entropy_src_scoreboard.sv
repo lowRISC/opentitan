@@ -1168,7 +1168,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       fork : isolation_fork
         begin
           fork
-            wait(!rng_fifo.is_empty());
+            // Exploit the fact that peek is a blocking task to check the rng_fifo depth without
+            // modifying it.
+            // Note that the alternate approach: wait(!rng_fifo.is_empty()) does not work with VCS
+            rng_fifo.peek(rng_item);
             begin
               wait(!dut_pipeline_enabled);
               `uvm_info(`gfn, "Disable detected", UVM_MEDIUM);
