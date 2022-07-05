@@ -35,7 +35,8 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   int                               ignore_start_pulse[PWM_NUM_CHANNELS]   = '{default:2};
   int                               ignore_state_change[PWM_NUM_CHANNELS]   = '{default:0};
   uint                              subcycle_cnt[PWM_NUM_CHANNELS]   = '{default:1};
-  bit [15:0]                        int_dc[PWM_NUM_CHANNELS]   = '{default:0};
+  // bit 16 is added for overflow
+  bit [16:0]                        int_dc[PWM_NUM_CHANNELS]   = '{default:0};
   param_reg_t                       channel_param[PWM_NUM_CHANNELS];
   dc_blink_t                        duty_cycle[PWM_NUM_CHANNELS];
   dc_blink_t                        blink[PWM_NUM_CHANNELS];
@@ -194,10 +195,10 @@ class pwm_scoreboard extends cip_base_scoreboard #(
       cov.clock_cg.sample(cfg.get_clk_core_freq(), cfg.clk_rst_vif.clk_freq_mhz);
       cov.cfg_cg.sample(channel_cfg.ClkDiv, channel_cfg.DcResn, channel_cfg.CntrEn);
       foreach (channel_en[ii]) begin
-       cov.pwm_chan_en_inv_cg.sample(channel_en[ii], invert[ii]);
+       cov.pwm_chan_en_inv_cg.sample(channel_en, invert);
        cov.pwm_per_channel_cg.sample(
-         channel_en[ii],
-         invert[ii],
+         channel_en,
+         invert,
          channel_param[ii].PhaseDelay,
          channel_param[ii].BlinkEn,
          channel_param[ii].HtbtEn,
@@ -396,9 +397,39 @@ class pwm_scoreboard extends cip_base_scoreboard #(
     if ( subcycle_cnt[channel] == blink[channel].A + 1'b1 ) begin
       ignore_state_change[channel] = SettleTime ;
     end
+
+    // Overflow condition  check
+    if ((int_dc[channel][16] == 1) && (duty_cycle[channel].B > duty_cycle[channel].A)) begin
+        if (cfg.en_cov) begin
+          cov.dc_uf_ovf_tb_cg.sample(channel, int_dc[channel][16]);
+        end
+        int_dc[channel][15:0] = 16'hFFFF;
+        initial_dc[channel] = LocalCount;
+        if (subcycle_cnt[channel] == (blink[channel].A + 1'b1)) begin
+            // This calculation is done to bring back previous state of DC before overflow occurs
+            // Instead of int_dc[channel] = int_dc[channel] - blink[channel].B + 1'b1 ;
+            int_dc[channel][15:0] = duty_cycle[channel].A + 1 +
+              (((16'hFFFF - duty_cycle[channel].A )/(blink[channel].B + 1'b1)))*blink[channel].B;
+            int_dc[channel][16]   = 0 ;
+            subcycle_cnt[channel] = LocalCount;
+        end
+        blink_state[channel] = CycleA;
+    end
+    // Underflow condition check
+    if ((int_dc[channel][16] == 1) && (duty_cycle[channel].B < duty_cycle[channel].A)) begin
+        if (cfg.en_cov) begin
+          cov.dc_uf_ovf_tb_cg.sample(channel, ~int_dc[channel][16]);
+        end
+        int_dc[channel] = int_dc[channel] + blink[channel].B + 1'b1 ;
+        int_dc[channel][16] = 0 ;
+        subcycle_cnt[channel] = LocalCount;
+        blink_state[channel] = CycleB;
+    end
+
     beats_cycle = 2**(channel_cfg.DcResn + 1);
     period      = beats_cycle * (channel_cfg.ClkDiv + 1);
-    high_cycles = (int_dc[channel] >> (16 - (channel_cfg.DcResn + 1))) * (channel_cfg.ClkDiv + 1);
+    high_cycles = (int_dc[channel][15:0] >> (16 - (channel_cfg.DcResn + 1)))
+                  * (channel_cfg.ClkDiv + 1);
     low_cycles  = period - high_cycles;
     // Each PWM pulse cycle is divided into 2^DC_RESN+1 beats, per beat the 16-bit phase counter
     // increments by 2^(16-DC_RESN-1)(modulo 65536)

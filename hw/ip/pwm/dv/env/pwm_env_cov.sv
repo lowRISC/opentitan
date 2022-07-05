@@ -22,7 +22,7 @@ class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
     clkdiv_cp: coverpoint clkdiv {
       bins minimum_value  = {0};
       bins valid_range[4] = {[0:$]};
-      bins maximum_value  = {MAX_27};
+      bins maximum_value  = {MAX_CLK_DIV};
     }
     dcresn_cp: coverpoint dcresn {
       bins minimum_value  = {0};
@@ -39,12 +39,10 @@ class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
     en_chan_cp: coverpoint en_chan {
       bins en_single_chan[6] = {'h1, 'h2, 'h4, 'h8, 'h10, 'h20};
       bins en_all_chan       = {'h3F};
-      bins valid_range[8]    = {['h3:$]};
     }
     inv_chan_cp: coverpoint inv_chan {
       bins en_single_chan[6] = {'h1, 'h2, 'h4, 'h8, 'h10, 'h20};
       bins en_all_chan       = {'h3F};
-      bins valid_range[8]    = {['h3:$]};
     }
     en_inv_cross_cp: cross en_chan_cp, inv_chan_cp {
       bins inverted_enabled = en_inv_cross_cp with (en_chan_cp == inv_chan_cp);
@@ -66,21 +64,21 @@ class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
 
     // sampled channel
     channels_cp: coverpoint en_chan {
-      bins channel_1 = {'h1};
-      bins channel_2 = {'h2};
-      bins channel_3 = {'h3};
-      bins channel_4 = {'h4};
-      bins channel_5 = {'h5};
-      bins channel_6 = {'h6};
+      wildcard bins channel_0 = {6'b?????1};
+      wildcard bins channel_1 = {6'b????1?};
+      wildcard bins channel_2 = {6'b???1??};
+      wildcard bins channel_3 = {6'b??1???};
+      wildcard bins channel_4 = {6'b?1????};
+      wildcard bins channel_5 = {6'b1?????};
     }
 
     // pwm_params
+    // phase_delay will not go as large as MAX_16/3,
+    // since it is computed  and derived from MAX_16 value
+    // phase delay of the PWM rising edge, in units of 2^(-16) PWM cycles
     phase_delay_cp: coverpoint phase_delay {
       bins minimum_value = {0};
-      bins low_range     = {[0:(MAX_16/3)]};
-      bins mid_range     = {[(MAX_16/3):((2*MAX_16)/3)]};
-      bins high_range    = {[((2*MAX_16)/3):$]};
-      bins maximum_value = {MAX_16};
+      bins high_range     = {[0:(MAX_16/3)]};
     }
     phase_delay_per_channel_cross_cp: cross phase_delay_cp, channels_cp;
 
@@ -185,6 +183,26 @@ class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
     tl_core_eq_cross_cp: cross core_clk_cp, tl_clk_cp;
   endgroup : clock_cg
 
+// Since DUT doesnt have a status register or a output signal to monitor underflow / overflow.
+// passing the coverage from TB calculated values
+  covergroup dc_uf_ovf_tb_cg with function sample(bit [PWM_NUM_CHANNELS-1:0] channel, bit uf_ovf);
+     // sampled channel
+    channels_cp: coverpoint channel {
+      wildcard bins channel_0 = {6'b?????1};
+      wildcard bins channel_1 = {6'b????1?};
+      wildcard bins channel_2 = {6'b???1??};
+      wildcard bins channel_3 = {6'b??1???};
+      wildcard bins channel_4 = {6'b?1????};
+      wildcard bins channel_5 = {6'b1?????};
+    }
+
+    dc_uf_ovf_cp: coverpoint uf_ovf {
+      bins dc_overflow  = {1};
+      bins dc_underflow = {0};
+    }
+    pwm_uf_ovf_cross_cp: cross channels_cp, dc_uf_ovf_cp;
+  endgroup : dc_uf_ovf_tb_cg
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
     //regwen_cg = new(); // TODO stage V2S
@@ -193,6 +211,7 @@ class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
     pwm_per_channel_cg = new();
     lowpower_cg = new();
     clock_cg = new();
+    dc_uf_ovf_tb_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);
