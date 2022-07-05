@@ -1804,7 +1804,7 @@
             - Verify that output is not equal to the plain text.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_aes_sideload"]
     }
 
     // HMAC (pre-verified IP) integration tests:

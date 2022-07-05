@@ -19,10 +19,9 @@ void keymgr_testutils_check_state(const dif_keymgr_t *keymgr,
                                   const dif_keymgr_state_t exp_state) {
   dif_keymgr_state_t act_state;
   CHECK_DIF_OK(dif_keymgr_get_state(keymgr, &act_state));
-  if (act_state != exp_state) {
-    LOG_INFO("Keymgr in unexpected state: %0x, expected to be %0x", act_state,
-             exp_state);
-  }
+  CHECK(act_state == exp_state,
+        "Keymgr in unexpected state: %x, expected to be %x", act_state,
+        exp_state);
 }
 
 void keymgr_testutils_generate_identity(const dif_keymgr_t *keymgr) {
@@ -48,6 +47,6 @@ void keymgr_testutils_wait_for_operation_done(const dif_keymgr_t *keymgr) {
     CHECK_DIF_OK(dif_keymgr_get_status_codes(keymgr, &status));
   } while (status == 0);
   if (status != kDifKeymgrStatusCodeIdle) {
-    LOG_ERROR("Unexpected status: %0x", status);
+    LOG_ERROR("Unexpected status: %x", status);
   }
 }
