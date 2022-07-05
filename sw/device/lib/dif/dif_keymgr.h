@@ -264,12 +264,12 @@ typedef enum dif_keymgr_status_code {
  *
  * The following snippet can be used to check if key manager is idle:
  *
- *   bool is_idle = (status_codes & kDifKeymgrStatusCodeIdle);
+ *   `bool is_idle = (status_codes & kDifKeymgrStatusCodeIdle);`
  *
  * The following snippet can be used to check if key manager is idle and
  * error-free:
  *
- *   bool is_idle_and_ok = (status_codes == kDifKeymgrStatusCodeIdle);
+ *   `bool is_idle_and_ok = (status_codes == kDifKeymgrStatusCodeIdle);`
  *
  * See also: `dif_keymgr_status_code_t`.
  */
