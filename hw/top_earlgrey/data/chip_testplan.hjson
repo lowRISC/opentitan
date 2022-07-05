@@ -1792,7 +1792,16 @@
       name: chip_sw_aes_sideload
       desc: '''Verify the AES sideload mechanism.
 
-            Details TBD, design updates pending.
+            - Configure the keymgr to generate an aes key.
+            - Configure the AES to use the sideloaded key.
+            - Load the plaintext into the AES.
+            - Trigger the AES encryption and wait for it to complete.
+            - Verify that the ciphertext is different from the plaintext.
+            - Load the ciphertext into the AES.
+            - Trigger the AES decryption and wait for it to complete.
+            - Verify that the output is equal to the plain text.
+            - Clear the key in the keymgr and decrypt the ciphertext again.
+            - Verify that output is not equal to the plain text.
             '''
       milestone: V2
       tests: []
