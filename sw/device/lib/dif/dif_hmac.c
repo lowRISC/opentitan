@@ -234,11 +234,15 @@ dif_result_t dif_hmac_finish(const dif_hmac_t *hmac,
   bool done = mmio_region_get_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
                                     HMAC_INTR_STATE_HMAC_DONE_BIT);
 
+  // Check if fifo_empty is asserted.
+  bool fifo_empty = mmio_region_get_bit32(
+      hmac->base_addr, HMAC_STATUS_REG_OFFSET, HMAC_STATUS_FIFO_EMPTY_BIT);
+
   if (done) {
     // Clear hmac_done.
     mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
                                     HMAC_INTR_STATE_HMAC_DONE_BIT);
-  } else {
+  } else if (!fifo_empty) {
     return kDifUnavailable;
   }
 
