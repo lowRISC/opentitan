@@ -2668,7 +2668,7 @@
                - Enable entropy complex so `RND_DATA` can get entropy.
                - Perform multiple reads from `RND_DATA` polling `RND_STATUS` in
                  between to only read valid data. Check different random bits
-                 are provided each time.
+                 are provided each time and that the random data is never zero or all ones.
                - Ensure `RND_STATUS` indicate invalid data immediately after
                  `RND_DATA` read.
                - Perform repeated reads from `RND_DATA` without `RND_STATUS`
