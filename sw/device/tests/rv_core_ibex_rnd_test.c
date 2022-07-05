@@ -46,13 +46,16 @@ bool test_main(void) {
       &rv_core_ibex));
 
   // Perform multiple reads from `RND_DATA` polling `RND_STATUS` in between to
-  // only read valid data. Check different random bits are provided each time.
+  // only read valid data. Check different random bits are provided each time
+  // and that the random data is never zero or all ones.
   uint32_t rnd_data;
   uint32_t previous_rnd_data = 0;
   for (int i = 0; i < RANDOM_DATA_READS; i++) {
     IBEX_SPIN_FOR(get_rnd_status(&rv_core_ibex), MAX_STATUS_CHECKS);
     CHECK_DIF_OK(dif_rv_core_ibex_read_rnd_data(&rv_core_ibex, &rnd_data));
     CHECK(rnd_data != previous_rnd_data);
+    CHECK(rnd_data != 0);
+    CHECK(rnd_data != UINT32_MAX);
     previous_rnd_data = rnd_data;
   }
 
