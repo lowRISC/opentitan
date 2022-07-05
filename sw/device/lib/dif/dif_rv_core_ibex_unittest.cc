@@ -464,8 +464,6 @@ TEST_F(NMITest, ClearBadArg) {
 class RndTest : public RvCoreIbexTestInitialized {};
 
 TEST_F(RndTest, ReadSuccess) {
-  EXPECT_READ32(RV_CORE_IBEX_RND_STATUS_REG_OFFSET,
-                {{RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT, true}});
   EXPECT_READ32(RV_CORE_IBEX_RND_DATA_REG_OFFSET, 0xf55ef65e);
 
   uint32_t data;
@@ -477,13 +475,6 @@ TEST_F(RndTest, ReadBadArg) {
   uint32_t data;
   EXPECT_DIF_BADARG(dif_rv_core_ibex_read_rnd_data(nullptr, &data));
   EXPECT_DIF_BADARG(dif_rv_core_ibex_read_rnd_data(&ibex_, nullptr));
-}
-
-TEST_F(RndTest, ReadNotValid) {
-  EXPECT_READ32(RV_CORE_IBEX_RND_STATUS_REG_OFFSET,
-                {{RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT, false}});
-  uint32_t data;
-  EXPECT_EQ(dif_rv_core_ibex_read_rnd_data(&ibex_, &data), kDifError);
 }
 
 TEST_F(RndTest, StatusValid) {

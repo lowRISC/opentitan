@@ -310,11 +310,6 @@ dif_result_t dif_rv_core_ibex_read_rnd_data(
   if (rv_core_ibex == NULL || data == NULL) {
     return kDifBadArg;
   }
-  uint32_t reg = mmio_region_read32(rv_core_ibex->base_addr,
-                                    RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
-  if (!bitfield_bit32_read(reg, RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT)) {
-    return kDifError;
-  }
 
   *data = mmio_region_read32(rv_core_ibex->base_addr,
                              RV_CORE_IBEX_RND_DATA_REG_OFFSET);
