@@ -1429,6 +1429,24 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "rv_core_ibex_address_translation_test",
+    srcs = [
+        "rv_core_ibex_address_translation_test.S",
+        "rv_core_ibex_address_translation_test.c",
+    ],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
     cw310 = cw310_params(

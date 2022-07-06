@@ -158,6 +158,27 @@
   } while (false)
 
 /**
+ * Checks the characters of two strings are the same,
+ * up to and including the first null character.
+ * The CHECK macro is called on each character pair.
+ *
+ * @param actual_ The first string in the comparison.
+ * @param expected_ The second string in the comparison.
+ */
+#define CHECK_STR_EQ(actual_, expected_)                                  \
+  do {                                                                    \
+    size_t i = 0;                                                         \
+    const char *expected = (expected_);                                   \
+    const char *actual = (actual_);                                       \
+    do {                                                                  \
+      CHECK(actual[i] == expected[i],                                     \
+            "Strings differ at char %d, so \"%s\" != \"%s\".", i, actual, \
+            expected);                                                    \
+      ++i;                                                                \
+    } while (actual[i] != '\0' || expected[i] != '\0');                   \
+  } while (false)
+
+/**
  * Checks that the given DIF call returns kDifOk. If the DIF call returns a
  * different dif_result_t value (defined in sw/device/lib/dif/dif_base.h), this
  * function logs and then aborts.
