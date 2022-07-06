@@ -180,25 +180,25 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
-Documentation | [DV_DOC_COMPLETED][]                    | Not Started |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
-Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |
-Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | Not Started |
-Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | Not Started |
-Tests         | [SIM_FW_SIMULATED][]                    | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Not Started |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
-Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
-Coverage      | [FPV_COI_COVERAGE_V2][]                 | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
-Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | DONE        | [SPI_HOST DV document]({{<relref "dv" >}})
+Documentation | [DV_DOC_COMPLETED][]                    | DONE        | [SPI_HOST Testplan]({{<relref "dv/index.md#testplan" >}})
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | DONE        |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | DONE        |
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | DONE        |
+Testbench     | [SIM_TB_ENV_COMPLETED][]                | DONE        |
+Tests         | [SIM_ALL_TESTS_PASSING][]               | DONE        |
+Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
+Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
+Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
+Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | DONE        |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | DONE        |  FSM coverage (69.57) to be improved in V3 as those uncovered transitions all require to reset during the transaction (active states -> idle state)
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | DONE        |
+Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
+Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
+Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | DONE        |
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | DONE        |
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | DONE        |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design_deltas_captured_v2" >}}
