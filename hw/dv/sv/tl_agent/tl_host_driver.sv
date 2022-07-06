@@ -61,7 +61,9 @@ class tl_host_driver extends tl_base_driver;
       `DV_CHECK_EQ(pending_a_req.size(), 0)
       `DV_CHECK_EQ(seq_item_port.has_do_available(), 0)
       // Check if the a_source_pend_q maintained in the cfg is empty.
-      `DV_CHECK_EQ(cfg.a_source_pend_q.size(), 0)
+      if (cfg.check_tl_errs) begin
+        `DV_CHECK_EQ(cfg.a_source_pend_q.size(), 0)
+      end
     end
   endtask
 

@@ -126,7 +126,7 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
           disable fork;
         end : isolation_fork_prog
       join
-      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+      wait_cfg_prog_rd();
     end
     // erase interrupt
     for (int i = 0; i < NUM_TRANS; i++) begin
@@ -145,7 +145,7 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
           disable fork;
         end : isolation_fork_erase
       join
-      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
+      wait_cfg_prog_rd();
     end
     // erase suspend interrupt
     fork
@@ -164,6 +164,7 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
         disable fork;
       end : isolation_fork_erase_suspend
     join
+    wait_cfg_prog_rd();
     // cleaning before full memory check
     for (int i = 0; i < NUM_TRANS; i++) begin
       do_erase(flash_op_q[i]);
@@ -189,9 +190,50 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
         disable fork;
       end : isolation_fork_read
     join
-    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.read_timeout_ns));
+    wait_cfg_prog_rd();
 
   endtask : body
+
+  // Task to wait and then do random program and read transactions and check that they complete
+  //  successfully (and by this making sure the flash recovered from the power-loss)
+  task wait_cfg_prog_rd();
+    data_q_t exp_data;
+    // Wait some time to make sure flash is stable again.
+    cfg.clk_rst_vif.wait_clks(1_000);
+    // Make sure that flash initialization is complete.
+    csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
+    // Make sure to clear the op_status register's done.
+    clear_outstanding_done();
+    // Configure memry protection.
+    do_cfg();
+    // Do random program transaction, then check it completed successfully.
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(this, flash_op.op == FlashOpProgram;
+                                         flash_op.partition == FlashPartData;)
+    do_prog(flash_op);
+    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+    exp_data = cfg.calculate_expected_data(flash_op, flash_op_data);
+    cfg.flash_mem_bkdr_read_check(flash_op, exp_data);
+    cfg.clk_rst_vif.wait_clks(100);
+    // Do random read transaction, then check it completed successfully.
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(this, flash_op.op == FlashOpRead;
+                                         flash_op.partition == FlashPartData;
+                                         flash_op.num_words == 1;)
+    do_read(flash_op);
+    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.read_timeout_ns));
+    cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+  endtask : wait_cfg_prog_rd
+
+  // Task to clear the op_status register's done before starting the next transaction.
+  task clear_outstanding_done();
+    uvm_reg_data_t data;
+    bit done;
+    csr_rd(.ptr(ral.op_status), .value(data));
+    done = get_field_val(ral.op_status.done, data);
+    if (done) begin
+      data = get_csr_val_with_updated_field(ral.op_status.done, data, 0);
+      csr_wr(.ptr(ral.op_status), .value(data));
+    end
+  endtask : clear_outstanding_done
 
   virtual task do_cfg();
 

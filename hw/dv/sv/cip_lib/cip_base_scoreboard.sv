@@ -406,7 +406,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       void'(item.is_d_chan_intg_ok(
             .en_data_intg_chk(!is_data_intg_passthru_mem(item, ral_name) ||
                               !cfg.disable_d_user_data_intg_check_for_passthru_mem),
-            .throw_error(1)));
+            .throw_error(cfg.m_tl_agent_cfgs[ral_name].check_tl_errs)));
 
       // sample covergroup
       tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
