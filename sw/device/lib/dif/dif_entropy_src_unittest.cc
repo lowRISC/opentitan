@@ -101,8 +101,10 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
           {ENTROPY_SRC_CONF_RNG_BIT_SEL_OFFSET, rng_bit_sel},
       });
 
-  EXPECT_WRITE32(ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
-                 test_param.health_test_window_size);
+  if (config_.health_test_threshold_scope) {
+    EXPECT_WRITE32(ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
+                   test_param.health_test_window_size);
+  }
 
   EXPECT_WRITE32(ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
                  {

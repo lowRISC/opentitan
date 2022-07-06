@@ -79,13 +79,15 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
   mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_CONF_REG_OFFSET,
                       entropy_conf_reg);
 
-  // Configure health test window.
-  // Conditioning bypass is hardcoded to disabled (see above). If we want to
-  // expose the ES_TYPE field in the future, we need to also configure the
-  // health test window size for bypass mode.
-  mmio_region_write32(entropy_src->base_addr,
-                      ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
-                      config.health_test_window_size);
+  if (config.health_test_threshold_scope) {
+    // Configure health test window.
+    // Conditioning bypass is hardcoded to disabled (see above). If we want to
+    // expose the ES_TYPE field in the future, we need to also configure the
+    // health test window size for bypass mode.
+    mmio_region_write32(entropy_src->base_addr,
+                        ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
+                        config.health_test_window_size);
+  }
 
   // MODULE_ENABLE register configuration.
   mmio_region_write32(entropy_src->base_addr,
