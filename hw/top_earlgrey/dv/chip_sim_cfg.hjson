@@ -258,6 +258,13 @@
   // For example, if the Bazel label for a test is:
   // `//sw/device/tests:example_test_from_flash`, then you would specify this as
   // `//sw/device/tests:example_test_from_flash:1`.
+  //
+  // To calculate the value of `+sw_test_timeout_ns` run dvsim by:
+  // $ util/dvsim/dvsim.py hw/top_earlgrey/dv/top_earlgrey_sim_cfgs.hjson \
+  //       -i TEST_NAME --fixed-seed=1
+  // Run this a few times and take the worst case runtime, then  increase this
+  // value by 20% and use the relationship that 5 minutes of runtime is roughly
+  // 4 milliseconds of timeout.
   tests: [
     {
       // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
