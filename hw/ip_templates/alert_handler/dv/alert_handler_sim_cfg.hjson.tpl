@@ -33,7 +33,6 @@
 
   // Add additional tops for simulation.
   sim_tops: ["alert_handler_bind",
-             "alert_handler_cov_bind",
              "sec_cm_prim_sparse_fsm_flop_bind",
              "sec_cm_prim_count_bind",
              "sec_cm_prim_double_lfsr_bind",
@@ -84,17 +83,19 @@
     {
       name: alert_handler_entropy
       uvm_test_seq: alert_handler_entropy_vseq
-      run_opts: ["+test_timeout_ns=10_000_000_000"]
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
     }
 
     {
       name: alert_handler_ping_timeout
       uvm_test_seq: alert_handler_ping_timeout_vseq
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
     }
 
     {
       name: alert_handler_lpg
       uvm_test_seq: alert_handler_lpg_vseq
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
     }
 
     {
