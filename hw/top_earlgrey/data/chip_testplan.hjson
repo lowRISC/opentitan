@@ -2705,7 +2705,7 @@
                  being remapped.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_rv_core_ibex_address_translation"]
    }
 
    {
