@@ -66,7 +66,7 @@ inline ptrdiff_t misalignment32_of(uintptr_t addr) {
  * well-defined.
  *
  * Of course, `ptr` must point to word-aligned memory that is at least one word
- * wide. To do otherwise is Undefined Behavior. It goes eithout saying that the
+ * wide. To do otherwise is Undefined Behavior. It goes without saying that the
  * memory this function intents to read must be initialized.
  *
  * This function has reordering properties as weak as a normal, non-atomic,
@@ -81,7 +81,7 @@ inline uint32_t read_32(const void *ptr) {
   // the pointer points to four bytes of four-byte-aligned memory.
   //
   // Failing to get that particular codegen in either GCC or Clang with -O2 or
-  // -Os set shall be considred a bug in this function. The same applies to
+  // -Os set shall be considered a bug in this function. The same applies to
   // `write32()`.
   ptr = __builtin_assume_aligned(ptr, alignof(uint32_t));
   uint32_t val;
@@ -98,7 +98,7 @@ inline uint32_t read_32(const void *ptr) {
  * is well-defined.
  *
  * Of course, `ptr` must point to word-aligned memory that is at least one
- * 64-bit word wide. To do otherwise is Undefined Behavior. It goes eithout
+ * 64-bit word wide. To do otherwise is Undefined Behavior. It goes without
  * saying that the memory this function intents to read must be initialized.
  *
  * This function has reordering properties as weak as a normal, non-atomic,
@@ -241,7 +241,8 @@ int OT_PREFIX_IF_NOT_RV32(memcmp)(const void *lhs, const void *rhs, size_t len);
 int memrcmp(const void *lhs, const void *rhs, size_t len);
 
 /**
- * Search a region of memory for the first occurence of a particular byte value.
+ * Search a region of memory for the first occurrence of a particular byte
+ * value.
  *
  * This function conforms to the semantics defined in ISO C11 S7.24.5.1.
  *
@@ -259,7 +260,7 @@ int memrcmp(const void *lhs, const void *rhs, size_t len);
 void *OT_PREFIX_IF_NOT_RV32(memchr)(const void *ptr, int value, size_t len);
 
 /**
- * Search a region of memory for the last occurence of a particular byte value.
+ * Search a region of memory for the last occurrence of a particular byte value.
  *
  * This function is not specified by C11, but is named for a well-known glibc
  * extension.

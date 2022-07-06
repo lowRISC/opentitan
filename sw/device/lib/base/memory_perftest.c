@@ -148,70 +148,70 @@ static const perf_test_t kPerfTests[] = {
         .setup_buf1 = &fill_buf_deterministic_values,
         .setup_buf2 = &fill_buf_deterministic_values,
         .func = &test_memcpy,
-        .expected_num_cycles = 210280,
+        .expected_num_cycles = 33270,
     },
     {
         .label = "memcpy_zeroes",
         .setup_buf1 = &fill_buf_deterministic_values,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memcpy,
-        .expected_num_cycles = 210280,
+        .expected_num_cycles = 33270,
     },
     {
         .label = "memset",
         .setup_buf1 = &fill_buf_zeroes,
         .setup_buf2 = &fill_buf_deterministic_values,
         .func = &test_memset,
-        .expected_num_cycles = 130310,
+        .expected_num_cycles = 23200,
     },
     {
         .label = "memset_zeroes",
         .setup_buf1 = &fill_buf_zeroes,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memset,
-        .expected_num_cycles = 130310,
+        .expected_num_cycles = 23200,
     },
     {
         .label = "memcmp_pathological",
         .setup_buf1 = &fill_buf_zeroes_then_one,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memcmp,
-        .expected_num_cycles = 210310,
+        .expected_num_cycles = 110740,
     },
     {
         .label = "memcmp_zeroes",
         .setup_buf1 = &fill_buf_zeroes,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memcmp,
-        .expected_num_cycles = 210280,
+        .expected_num_cycles = 110740,
     },
     {
         .label = "memrcmp_pathological",
         .setup_buf1 = &fill_buf_zeroes,
         .setup_buf2 = &fill_buf_one_then_zeroes,
         .func = &test_memrcmp,
-        .expected_num_cycles = 200330,
+        .expected_num_cycles = 50740,
     },
     {
         .label = "memrcmp_zeroes",
         .setup_buf1 = &fill_buf_zeroes,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memrcmp,
-        .expected_num_cycles = 200300,
+        .expected_num_cycles = 50850,
     },
     {
         .label = "memchr_pathological",
         .setup_buf1 = &fill_buf_deterministic_values,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memchr,
-        .expected_num_cycles = 12820,
+        .expected_num_cycles = 7250,
     },
     {
         .label = "memrchr_pathological",
         .setup_buf1 = &fill_buf_deterministic_values,
         .setup_buf2 = &fill_buf_deterministic_values,
         .func = &test_memrchr,
-        .expected_num_cycles = 47890,
+        .expected_num_cycles = 23850,
     },
 };
 
@@ -230,9 +230,20 @@ bool test_main(void) {
       // cannot print `uint64_t`.
       CHECK(test->expected_num_cycles < UINT32_MAX);
       CHECK(num_cycles < UINT32_MAX);
-      LOG_WARNING("Expected %s to run in %d cycles. Actually took %d cycles.",
-                  test->label, (uint32_t)test->expected_num_cycles,
-                  (uint32_t)num_cycles);
+      const uint32_t expected_num_cycles_u32 =
+          (uint32_t)test->expected_num_cycles;
+      const uint32_t num_cycles_u32 = (uint32_t)num_cycles;
+
+      CHECK(num_cycles < UINT32_MAX / 100);
+      const uint32_t percent_change =
+          (100 * num_cycles_u32) / expected_num_cycles_u32;
+
+      LOG_WARNING(
+          "%s:\n"
+          "  Expected:        %10d cycles\n"
+          "  Actual:          %10d cycles\n"
+          "  Actual/Expected: %10d%%\n",
+          test->label, expected_num_cycles_u32, num_cycles_u32, percent_change);
     }
   }
   return all_expectations_match;
