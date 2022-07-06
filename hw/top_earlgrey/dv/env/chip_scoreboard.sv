@@ -19,11 +19,13 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
   uart_item       uart_rx_q[$];
   jtag_riscv_item jtag_q[$];
 
+  bit             stub_cpu;
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     jtag_fifo = new("jtag_fifo", this);
+    void'($value$plusargs("stub_cpu=%0b", stub_cpu));
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -70,7 +72,12 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
     uvm_mem mem = cfg.ral_models[ral_name].default_map.get_mem_by_offset(addr);
 
     // any access to dv_sim_window returns d_error since this is a DV mem
-    if (mem != null && mem.get_name() == "dv_sim_window") return 1;
+    // if stub_cpu is off, we force connect this DV mem with a sim_sram, accessing the DV mem is to
+    // passing info from C to SV, which won't set d_error
+    if (mem != null && mem.get_name() == "dv_sim_window" && stub_cpu) begin
+      if (channel == DataChannel) `DV_CHECK_EQ(item.d_error, 1)
+      return 1;
+    end
     return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
