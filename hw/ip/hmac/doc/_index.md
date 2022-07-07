@@ -227,9 +227,6 @@ This is different from a conventional memory-mapped FIFO.
 
 By having wide address range pointing to a single entry point, the FIFO can free software from the fixed address restriction.
 For instance, the core can use "store multiple" commands to feed the message fifo efficiently.
-If the FIFO has fixed word-size address, the core must maintain the strict order of the write sequence which may cause a stall in the pipeline in high pipelined processor.
-This can affect the performance significantly.
-
 Also, a DMA engine which might not have the ability to be configured to the fixed write and incremental read may benefit from this behavior.
 
 # Programmer's Guide
