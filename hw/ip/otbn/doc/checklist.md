@@ -33,43 +33,45 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 ### D2
 
-Type          | Item                    | Resolution  | Note/Collaterals
---------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | Done        | New features are [Key Sideload](https://www.github.com/lowrisc/opentitan/pull/8650), [Private OTBN DMem](https://www.github.com/lowrisc/opentitan/pull/8890), [XoShiRo PRNG](https://www.github.com/lowrisc/opentitan/pull/7944) and [Prefetch Stage](https://www.github.com/lowrisc/opentitan/issues/8898)
-Documentation | [BLOCK_DIAGRAM][]       | Done        |
-Documentation | [DOC_INTERFACE][]       | Done        |
-Documentation | [MISSING_FUNC][]        | Done        | All non security features are documented
-Documentation | [FEATURE_FROZEN][]      | Done        |
-RTL           | [FEATURE_COMPLETE][]    | Done        | Excluding security hardening features
-RTL           | [AREA_CHECK][]          | Done        |
-RTL           | [PORT_FROZEN][]         | Done        |
-RTL           | [ARCHITECTURE_FROZEN][] | Done        |
-RTL           | [REVIEW_TODO][]         | Done        | Remaining TODOs are all security related and will be dealt with for D2S
-RTL           | [STYLE_X][]             | Done        |
-Code Quality  | [LINT_PASS][]           | Done        |
-Code Quality  | [CDC_SETUP][]           | Done        |
-Code Quality  | [FPGA_TIMING][]         | Done        |
-Code Quality  | [CDC_SYNCMACRO][]       | Done        |
-Security      | [SEC_CM_DOCUMENTED][]   | Done        | Two things are not yet documented, this will be done as part of D2S: Blanking, specifying exactly what is blanked. Loop stack hardening, there are a couple of options to discuss.
-Security      | [SEC_RND_CNST][]        | Done        |
+Type          | Item                      | Resolution  | Note/Collaterals
+--------------|---------------------------|-------------|------------------
+Documentation | [NEW_FEATURES][]          | Done        | New features are [Key Sideload](https://www.github.com/lowrisc/opentitan/pull/8650), [Private OTBN DMem](https://www.github.com/lowrisc/opentitan/pull/8890), [XoShiRo PRNG](https://www.github.com/lowrisc/opentitan/pull/7944) and [Prefetch Stage](https://www.github.com/lowrisc/opentitan/issues/8898)
+Documentation | [BLOCK_DIAGRAM][]         | Done        |
+Documentation | [DOC_INTERFACE][]         | Done        |
+Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.
+Documentation | [MISSING_FUNC][]          | Done        | All non security features are documented
+Documentation | [FEATURE_FROZEN][]        | Done        |
+RTL           | [FEATURE_COMPLETE][]      | Done        | Excluding security hardening features
+RTL           | [PORT_FROZEN][]           | Done        |
+RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
+RTL           | [REVIEW_TODO][]           | Done        |
+RTL           | [STYLE_X][]               | Done        |
+RTL           | [CDC_SYNCMACRO][]         | Done        |
+Code Quality  | [LINT_PASS][]             | Done        |
+Code Quality  | [CDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [AREA_CHECK][]            | Done        |
+Code Quality  | [TIMING_CHECK][]          | Done        |
+Security      | [SEC_CM_DOCUMENTED][]     | Done        | Two things are not yet documented, this will be done as part of D2S: Blanking, specifying exactly what is blanked. Loop stack hardening, there are a couple of options to discuss.
 
-[NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
-[BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block_diagram" >}}
-[DOC_INTERFACE]:       {{<relref "/doc/project/checklist.md#doc_interface" >}}
-[MISSING_FUNC]:        {{<relref "/doc/project/checklist.md#missing_func" >}}
-[FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature_frozen" >}}
-[FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature_complete" >}}
-[AREA_CHECK]:          {{<relref "/doc/project/checklist.md#area_check" >}}
-[PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port_frozen" >}}
-[ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture_frozen" >}}
-[REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review_todo" >}}
-[STYLE_X]:             {{<relref "/doc/project/checklist.md#style_x" >}}
-[LINT_PASS]:           {{<relref "/doc/project/checklist.md#lint_pass" >}}
-[CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc_setup" >}}
-[FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga_timing" >}}
-[CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc_syncmacro" >}}
-[SEC_CM_DOCUMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_documented" >}}
-[SEC_RND_CNST]:        {{<relref "/doc/project/checklist.md#sec_rnd_cnst" >}}
+[NEW_FEATURES]:          {{<relref "/doc/project/checklist.md#new_features" >}}
+[BLOCK_DIAGRAM]:         {{<relref "/doc/project/checklist.md#block_diagram" >}}
+[DOC_INTERFACE]:         {{<relref "/doc/project/checklist.md#doc_interface" >}}
+[DOC_INTEGRATION_GUIDE]: {{<relref "/doc/project/checklist.md#doc_integration_guide" >}}
+[MISSING_FUNC]:          {{<relref "/doc/project/checklist.md#missing_func" >}}
+[FEATURE_FROZEN]:        {{<relref "/doc/project/checklist.md#feature_frozen" >}}
+[FEATURE_COMPLETE]:      {{<relref "/doc/project/checklist.md#feature_complete" >}}
+[PORT_FROZEN]:           {{<relref "/doc/project/checklist.md#port_frozen" >}}
+[ARCHITECTURE_FROZEN]:   {{<relref "/doc/project/checklist.md#architecture_frozen" >}}
+[REVIEW_TODO]:           {{<relref "/doc/project/checklist.md#review_todo" >}}
+[STYLE_X]:               {{<relref "/doc/project/checklist.md#style_x" >}}
+[CDC_SYNCMACRO]:         {{<relref "/doc/project/checklist.md#cdc_syncmacro" >}}
+[LINT_PASS]:             {{<relref "/doc/project/checklist.md#lint_pass" >}}
+[CDC_SETUP]:             {{<relref "/doc/project/checklist.md#cdc_setup" >}}
+[RDC_SETUP]:             {{<relref "/doc/project/checklist.md#rdc_setup" >}}
+[AREA_CHECK]:            {{<relref "/doc/project/checklist.md#area_check" >}}
+[TIMING_CHECK]:          {{<relref "/doc/project/checklist.md#timing_check" >}}
+[SEC_CM_DOCUMENTED]:     {{<relref "/doc/project/checklist.md#sec_cm_documented" >}}
 
 ### D2S
 
@@ -77,11 +79,17 @@ Security      | [SEC_RND_CNST][]        | Done        |
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
 Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
+Security      | [SEC_CM_RND_CNST][]          | Not Started |
+Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
+Security      | [SEC_CM_SHADOW_REGS][]       | Not Started |
 Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
 
 [SEC_CM_ASSETS_LISTED]:    {{<relref "/doc/project/checklist.md#sec_cm_assets_listed" >}}
 [SEC_CM_IMPLEMENTED]:      {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+[SEC_CM_RND_CNST]:         {{<relref "/doc/project/checklist.md#sec_cm_rnd_cnst" >}}
+[SEC_CM_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_cm_non_reset_flops" >}}
+[SEC_CM_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_cm_shadow_regs" >}}
 [SEC_CM_RTL_REVIEWED]:     {{<relref "/doc/project/checklist.md#sec_cm_rtl_reviewed" >}}
 [SEC_CM_COUNCIL_REVIEWED]: {{<relref "/doc/project/checklist.md#sec_cm_council_reviewed" >}}
 
