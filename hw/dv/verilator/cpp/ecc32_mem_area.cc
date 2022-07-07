@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ecc32_mem_area.h"
-#include "secded_enc.h"
 
 #include <cassert>
 #include <cstring>
 #include <stdexcept>
+
+#include "secded_enc.h"
 
 Ecc32MemArea::Ecc32MemArea(const std::string &scope, uint32_t size,
                            uint32_t width_32)

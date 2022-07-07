@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "dmidpi.h"
-#include "tcp_server.h"
 
 #include <assert.h>
 #include <pthread.h>
@@ -11,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "tcp_server.h"
 
 // IDCODE register
 // [31:28] 0x0,    - Version

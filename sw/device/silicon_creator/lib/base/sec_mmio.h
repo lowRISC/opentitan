@@ -202,7 +202,6 @@ void sec_mmio_write32(uint32_t addr, uint32_t value);
  */
 void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value);
 
-
 /**
  * Checks the expected list of register values.
  *

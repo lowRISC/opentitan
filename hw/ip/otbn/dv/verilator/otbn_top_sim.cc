@@ -203,8 +203,8 @@ void set_up_down_prim_count(PrimCountT *prim_count, uint32_t new_cnt) {
 
 template <typename LoopControllerT>
 auto get_loop_counter(LoopControllerT *loop_controller, uint32_t counter_idx)
-    -> decltype(
-        loop_controller->g_loop_counters__BRA__0__KET____DOT__u_loop_count) {
+    -> decltype(loop_controller
+                    ->g_loop_counters__BRA__0__KET____DOT__u_loop_count) {
   assert(counter_idx < 8);
 
   switch (counter_idx) {
