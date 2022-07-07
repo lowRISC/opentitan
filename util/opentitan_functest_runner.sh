@@ -13,6 +13,5 @@ if [ -z "$TEST_HARNESS" ]; then
     exit 1
 fi
 
-readonly REPO_TOP="$TEST_SRCDIR/$TEST_WORKSPACE"
 echo Invoking test: "${TEST_HARNESS}" "$@"
 RUST_BACKTRACE=1 ${TEST_HARNESS} "$@"

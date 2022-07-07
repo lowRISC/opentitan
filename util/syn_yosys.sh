@@ -29,7 +29,7 @@ cp \
   build/*/src/*/*/*.sv* \
   build/*/src/*/*/*/*.sv* \
   syn_out
-cd syn_out
+cd syn_out || exit
 
 # copy file list, remove incdir and pins_if, and flatten pathnames
 grep -Ev 'incdir|pins_if' ../build/*/*/*.scr | sed 's!.*/!!' > flist_gold
