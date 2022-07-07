@@ -14,6 +14,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -117,8 +118,8 @@ bool test_main(void) {
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
-  CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &rst_info));
-  CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
+  rst_info = rstmgr_testutils_reason_get();
+  rstmgr_testutils_reason_clear();
 
   if (rst_info & kDifRstmgrResetInfoPor) {
     // set the alert we care about to class A

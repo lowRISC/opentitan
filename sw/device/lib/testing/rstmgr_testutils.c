@@ -15,14 +15,14 @@
 bool rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
                                     dif_rstmgr_reset_info_bitfield_t info) {
   dif_rstmgr_reset_info_bitfield_t actual_info;
-  CHECK_DIF_OK(dif_rstmgr_reset_info_get(rstmgr, &actual_info));
+  rstmgr_testutils_reset_reason(rstmgr, &actual_info);
   return actual_info == info;
 }
 
 bool rstmgr_testutils_reset_info_any(const dif_rstmgr_t *rstmgr,
                                      dif_rstmgr_reset_info_bitfield_t info) {
   dif_rstmgr_reset_info_bitfield_t actual_info;
-  CHECK_DIF_OK(dif_rstmgr_reset_info_get(rstmgr, &actual_info));
+  rstmgr_testutils_reset_reason(rstmgr, &actual_info);
   return (actual_info & info) != 0;
 }
 
@@ -53,7 +53,7 @@ void rstmgr_testutils_compare_cpu_info(
 
 void rstmgr_testutils_pre_reset(const dif_rstmgr_t *rstmgr) {
   // Clear reset_info.
-  CHECK_DIF_OK(dif_rstmgr_reset_info_clear(rstmgr));
+  rstmgr_testutils_reset_reason_clear(rstmgr);
 
   // Enable alert and cpu dump capture, even if the test doesn't read it.
   CHECK_DIF_OK(dif_rstmgr_alert_info_set_enabled(rstmgr, kDifToggleEnabled));
@@ -69,7 +69,7 @@ void rstmgr_testutils_post_reset(
     size_t cpu_dump_size) {
   // Read and compare reset_info.
   dif_rstmgr_reset_info_bitfield_t actual_reset_info;
-  CHECK_DIF_OK(dif_rstmgr_reset_info_get(rstmgr, &actual_reset_info));
+  rstmgr_testutils_reset_reason(rstmgr, &actual_reset_info);
   CHECK(expected_reset_info == actual_reset_info,
         "Unexpected reset_info CSR mismatch, expected 0x%x, got 0x%x",
         expected_reset_info, actual_reset_info);

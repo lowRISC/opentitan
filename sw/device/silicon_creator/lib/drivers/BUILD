@@ -279,6 +279,7 @@ opentitan_functest(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
@@ -560,6 +561,19 @@ cc_test(
         dual_cc_device_library_of(":rstmgr"),
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_functest(
+    name = "rstmgr_functest",
+    srcs = ["rstmgr_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":rstmgr",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 

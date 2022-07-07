@@ -14,6 +14,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -109,8 +110,8 @@ bool test_main(void) {
 
   // Check if there was a HW reset caused by the wdog bite.
   dif_rstmgr_reset_info_bitfield_t rst_info;
-  CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &rst_info));
-  CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
+  rstmgr_testutils_reset_reason(&rstmgr, &rst_info);
+  rstmgr_testutils_reset_reason_clear(&rstmgr);
 
   CHECK(rst_info == kDifRstmgrResetInfoPor ||
             rst_info == kDifRstmgrResetInfoWatchdog ||

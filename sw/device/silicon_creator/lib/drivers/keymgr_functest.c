@@ -17,6 +17,7 @@
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -226,7 +227,7 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &info));
+  rstmgr_testutils_reset_reason(&rstmgr, &info);
 
   dif_otp_ctrl_t otp;
   CHECK_DIF_OK(dif_otp_ctrl_init(
@@ -241,7 +242,7 @@ bool test_main(void) {
     check_lock_otp_partition(&otp);
 
     // Issue and wait for reset.
-    CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
+    rstmgr_testutils_reset_reason_clear(&rstmgr);
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
     wait_for_interrupt();
   } else if (info == kDifRstmgrResetInfoSw) {
