@@ -199,6 +199,13 @@ package otbn_pkg;
     AluOpBignumNone
   } alu_op_bignum_e;
 
+  typedef enum logic [1:0] {
+    AluOpLogicXor = 2'h0,
+    AluOpLogicOr  = 2'h1,
+    AluOpLogicAnd = 2'h2,
+    AluOpLogicNot = 2'h3
+  } alu_op_logic_e;
+
   typedef enum logic {
     ComparisonOpBaseEq,
     ComparisonOpBaseNeq
@@ -420,6 +427,7 @@ package otbn_pkg;
     logic [$clog2(WLEN)-1:0] shift_amt;
     logic                    logic_a_en;
     logic                    logic_shifter_en;
+    logic [3:0]              logic_res_sel;
   } alu_predec_bignum_t;
 
   typedef struct packed {
