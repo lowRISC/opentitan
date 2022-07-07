@@ -45,10 +45,7 @@ opentitan_functest(
     name = "aes_sideload_test",
     srcs = ["aes_sideload_test.c"],
     verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
+        timeout = "long",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -66,6 +63,7 @@ opentitan_functest(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -185,6 +183,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -202,6 +201,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -209,6 +209,9 @@ opentitan_functest(
 opentitan_functest(
     name = "aon_timer_wdog_lc_escalate_test",
     srcs = ["aon_timer_wdog_lc_escalate_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
@@ -223,6 +226,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -513,11 +517,6 @@ opentitan_functest(
 opentitan_functest(
     name = "entropy_src_ast_rng_req_test",
     srcs = ["entropy_src_ast_rng_req_test.c"],
-    verilator = verilator_params(
-        tags = [
-            "cpu:4",
-        ],
-    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -585,6 +584,7 @@ opentitan_functest(
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -888,6 +888,9 @@ opentitan_functest(
 opentitan_functest(
     name = "otbn_smoketest",
     srcs = ["otbn_smoketest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:otbn",
@@ -1050,6 +1053,9 @@ opentitan_functest(
 opentitan_functest(
     name = "rstmgr_sw_rst_ctrl_test",
     srcs = ["rstmgr_sw_rst_ctrl_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/ip/i2c/data:i2c_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
@@ -1303,6 +1309,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],

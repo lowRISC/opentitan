@@ -19,6 +19,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -669,8 +670,8 @@ bool test_main(void) {
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
-  CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &rst_info));
-  CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
+  rstmgr_testutils_reset_reason(&rstmgr, &rst_info);
+  rstmgr_testutils_reset_reason_clear(&rstmgr);
 
   LOG_INFO("reset info = 0x%02X", rst_info);
   global_alert_called = 0;

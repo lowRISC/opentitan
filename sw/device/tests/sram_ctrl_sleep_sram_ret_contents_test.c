@@ -53,7 +53,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
-  CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &rstmgr_reset_info));
+  rstmgr_testutils_reset_reason(&rstmgr, &rstmgr_reset_info);
 
   LOG_INFO("Reset info = %0x", rstmgr_reset_info);
 

@@ -16,6 +16,7 @@
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -253,7 +254,7 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &info));
+  rstmgr_testutils_reset_reason(&rstmgr, &info);
 
   init_flash();
 
@@ -268,7 +269,7 @@ bool test_main(void) {
     otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2, 0);
 
     // Reboot device.
-    CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
+    rstmgr_testutils_reset_reason_clear(&rstmgr);
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
 
     // Wait here until device reset.

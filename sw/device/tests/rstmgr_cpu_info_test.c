@@ -158,7 +158,7 @@ bool test_main(void) {
                                              /*he_en*/ false);
 
   dif_rstmgr_reset_info_bitfield_t rst_info;
-  CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &rst_info));
+  rstmgr_testutils_reset_reason(&rstmgr, &rst_info);
 
   if (rst_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Booting for the first time, setting wdog");
