@@ -249,7 +249,7 @@ void hmac_init(unsigned int endianess, unsigned int digest_endian) {
   HMAC_CFG(0) = HMAC_CFG_SHA_EN
               | HMAC_CFG_HMAC_EN
               | (endianess << HMAC_CFG_ENDIAN_SWAP_LSB)
-              | (digest_endian << HMAC_CFG_DIGEST__SWAP_LSB);
+              | (digest_endian << HMAC_CFG_DIGEST_SWAP_LSB);
 
   // Enable interrupts if needed.
 
@@ -308,7 +308,20 @@ Such attempts are discarded.
 The {{< regref "KEY" >}} register ignores any attempt to access the secret key in the middle of the process.
 If the software tries to update the KEY, the IP reports an error through the Error FIFO. The error code is `SwUpdateSecretKeyInProcess`, `0x0003`.
 
-## Interrupt Handling
+## Errors
+
+When HMAC sees errors, the IP reports the error via {{<regref "INTR_STATUS.hmac_err" >}}.
+The details of the error type is stored in {{<regref "ERR_CODE">}}.
+
+Error                        | Value | Description
+-----------------------------|-------|---------------
+`SwPushMsgWhenShaDisabled`   | `0x1` | The error is reported when SW writes data into MSG_FIFO when SHA is disabled. It may be due to SW routine error, or FI attacks.
+`SwHashStartWhenShaDisabled` | `0x2` | When HMAC detects the CMD.start when SHA is disabled, it reports this error code.
+`SwUpdateSecretKeyInProcess` | `0x3` | Secret Key CSRs should not be modified during the hashing. This error is reported when those CSRs are revised in active.
+`SwHashStartWhenActive`      | `0x4` | The error is reported when CMD.start is received while HMAC is running.
+`SwPushMsgWhenDisallowed`    | `0x5` | After CMD.process is received, the MSG_FIFO should not by updated by SW. This error is reported in that case.
+
+
 
 ### FIFO_EMPTY
 
