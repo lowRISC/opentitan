@@ -5,9 +5,9 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_ROM_EXT_BOOT_POLICY_PTRS_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_ROM_EXT_BOOT_POLICY_PTRS_H_
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 
-#include "sw/device/lib/base/macros.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #ifdef __cplusplus

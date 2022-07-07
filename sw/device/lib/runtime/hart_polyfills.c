@@ -4,10 +4,10 @@
 
 #define _DEFAULT_SOURCE  // Make sure we get usleep() from unistd.h.
 
-#include "sw/device/lib/runtime/hart.h"
-
 #include <stddef.h>
 #include <unistd.h>
+
+#include "sw/device/lib/runtime/hart.h"
 
 void busy_spin_micros(uint32_t usec) { usleep(usec); }
 

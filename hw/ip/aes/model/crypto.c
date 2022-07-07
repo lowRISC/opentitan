@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "crypto.h"
+
 #include <openssl/conf.h>
 #include <openssl/evp.h>
-
-#include "crypto.h"
 
 /**
  * Get EVP_CIPHER type pointer defined by key_len and mode.
