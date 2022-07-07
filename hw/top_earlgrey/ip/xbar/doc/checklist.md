@@ -20,63 +20,63 @@ RTL           | [PHYSICAL_MACROS_DEFINED_80][] | N/A         |
 RTL           | [FUNC_IMPLEMENTED][]           | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
 Code Quality  | [LINT_SETUP][]                 | Done        |
-Review        | Reviewer(s)                    | Done        | @weicaiyang @aytong @martin-lueker
-Review        | Signoff date                   | Done        | 2019-11-04
 
 [TL-UL Spec]:         {{<relref "/hw/ip/tlul/doc">}}
 [crossbar_tool]:      {{<relref "/doc/rm/crossbar_tool">}}
 
-[SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec-complete" >}}
-[CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr-defined" >}}
-[CLKRST_CONNECTED]:           {{<relref "/doc/project/checklist.md#clkrst-connected" >}}
-[IP_TOP]:                     {{<relref "/doc/project/checklist.md#ip-top" >}}
-[IP_INSTANTIABLE]:            {{<relref "/doc/project/checklist.md#ip-instantiable" >}}
-[PHYSICAL_MACROS_DEFINED_80]: {{<relref "/doc/project/checklist.md#physical_macros_defined-80" >}}
-[FUNC_IMPLEMENTED]:           {{<relref "/doc/project/checklist.md#func-implemented" >}}
-[ASSERT_KNOWN_ADDED]:         {{<relref "/doc/project/checklist.md#assert-known-added" >}}
-[LINT_SETUP]:                 {{<relref "/doc/project/checklist.md#lint-setup" >}}
+[SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
+[CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr_defined" >}}
+[CLKRST_CONNECTED]:           {{<relref "/doc/project/checklist.md#clkrst_connected" >}}
+[IP_TOP]:                     {{<relref "/doc/project/checklist.md#ip_top" >}}
+[IP_INSTANTIABLE]:            {{<relref "/doc/project/checklist.md#ip_instantiable" >}}
+[PHYSICAL_MACROS_DEFINED_80]: {{<relref "/doc/project/checklist.md#physical_macros_defined_80" >}}
+[FUNC_IMPLEMENTED]:           {{<relref "/doc/project/checklist.md#func_implemented" >}}
+[ASSERT_KNOWN_ADDED]:         {{<relref "/doc/project/checklist.md#assert_known_added" >}}
+[LINT_SETUP]:                 {{<relref "/doc/project/checklist.md#lint_setup" >}}
 
 ### D2
 
-Type          | Item                    | Resolution  | Note/Collaterals
---------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | N/A         |
-Documentation | [BLOCK_DIAGRAM][]       | Done        |
-Documentation | [DOC_INTERFACE][]       | N/A         |
-Documentation | [MISSING_FUNC][]        | N/A         |
-Documentation | [FEATURE_FROZEN][]      | Done        |
-RTL           | [FEATURE_COMPLETE][]    | Done        |
-RTL           | [AREA_CHECK][]          | Done        |
-RTL           | [PORT_FROZEN][]         | Done        | Targetting for current top_earlgrey( Port can be changed later based on top_earlgrey config)
-RTL           | [ARCHITECTURE_FROZEN][] | Done        |
-RTL           | [REVIEW_TODO][]         | Done        | PR [#837][] is pending
-RTL           | [STYLE_X][]             | Done        |
-Code Quality  | [LINT_PASS][]           | Done        |
-Code Quality  | [CDC_SETUP][]           | N/A         | top_earlgrey uses single clock at this moment. (new PR by Tim is pending )
-Code Quality  | [FPGA_TIMING][]         | Done        | Pipeline inserted in front of Core IBEX. meet timing @ 50MHz on NexysVideo
-Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
-Security      | [SEC_CM_DOCUMENTED][]   | N/A         |
-Review        | Reviewer(s)             | Done        | @sjgitty @weicaiyang
-Review        | Signoff date            | Done        | 2019-11-04
+Type          | Item                      | Resolution  | Note/Collaterals
+--------------|---------------------------|-------------|------------------
+Documentation | [NEW_FEATURES][]          | N/A         |
+Documentation | [BLOCK_DIAGRAM][]         | Done        |
+Documentation | [DOC_INTERFACE][]         | N/A         |
+Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.
+Documentation | [MISSING_FUNC][]          | N/A         |
+Documentation | [FEATURE_FROZEN][]        | Done        |
+RTL           | [FEATURE_COMPLETE][]      | Done        |
+RTL           | [PORT_FROZEN][]           | Done        | Targetting for current top_earlgrey( Port can be changed later based on top_earlgrey config)
+RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
+RTL           | [REVIEW_TODO][]           | Done        | PR [#837][] is pending
+RTL           | [STYLE_X][]               | Done        |
+RTL           | [CDC_SYNCMACRO][]         | N/A         |
+Code Quality  | [LINT_PASS][]             | Done        |
+Code Quality  | [CDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [AREA_CHECK][]            | Done        |
+Code Quality  | [TIMING_CHECK][]          | Done        | Pipeline inserted in front of Core IBEX. meet timing @ 50MHz on NexysVideo
+Security      | [SEC_CM_DOCUMENTED][]     | N/A         |
 
 [#837]: https://github.com/lowRISC/opentitan/pull/837
 
-[NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new-features" >}}
-[BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block-diagram" >}}
-[DOC_INTERFACE]:       {{<relref "/doc/project/checklist.md#doc-interface" >}}
-[MISSING_FUNC]:        {{<relref "/doc/project/checklist.md#missing-func" >}}
-[FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature-frozen" >}}
-[FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature-complete" >}}
-[AREA_CHECK]:          {{<relref "/doc/project/checklist.md#area-check" >}}
-[PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port-frozen" >}}
-[ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture-frozen" >}}
-[REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review-todo" >}}
-[STYLE_X]:             {{<relref "/doc/project/checklist.md#style-x" >}}
-[LINT_PASS]:           {{<relref "/doc/project/checklist.md#lint-pass" >}}
-[CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc-setup" >}}
-[CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc-syncmacro" >}}
-[FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga-timing" >}}
-[SEC_CM_DOCUMENTED]:   {{<relref "/doc/project/checklist.md#sec-cm-implemented" >}}
+[NEW_FEATURES]:          {{<relref "/doc/project/checklist.md#new_features" >}}
+[BLOCK_DIAGRAM]:         {{<relref "/doc/project/checklist.md#block_diagram" >}}
+[DOC_INTERFACE]:         {{<relref "/doc/project/checklist.md#doc_interface" >}}
+[DOC_INTEGRATION_GUIDE]: {{<relref "/doc/project/checklist.md#doc_integration_guide" >}}
+[MISSING_FUNC]:          {{<relref "/doc/project/checklist.md#missing_func" >}}
+[FEATURE_FROZEN]:        {{<relref "/doc/project/checklist.md#feature_frozen" >}}
+[FEATURE_COMPLETE]:      {{<relref "/doc/project/checklist.md#feature_complete" >}}
+[PORT_FROZEN]:           {{<relref "/doc/project/checklist.md#port_frozen" >}}
+[ARCHITECTURE_FROZEN]:   {{<relref "/doc/project/checklist.md#architecture_frozen" >}}
+[REVIEW_TODO]:           {{<relref "/doc/project/checklist.md#review_todo" >}}
+[STYLE_X]:               {{<relref "/doc/project/checklist.md#style_x" >}}
+[CDC_SYNCMACRO]:         {{<relref "/doc/project/checklist.md#cdc_syncmacro" >}}
+[LINT_PASS]:             {{<relref "/doc/project/checklist.md#lint_pass" >}}
+[CDC_SETUP]:             {{<relref "/doc/project/checklist.md#cdc_setup" >}}
+[RDC_SETUP]:             {{<relref "/doc/project/checklist.md#rdc_setup" >}}
+[AREA_CHECK]:            {{<relref "/doc/project/checklist.md#area_check" >}}
+[TIMING_CHECK]:          {{<relref "/doc/project/checklist.md#timing_check" >}}
+[SEC_CM_DOCUMENTED]:     {{<relref "/doc/project/checklist.md#sec_cm_documented" >}}
 
 ### D2S
 
@@ -84,11 +84,17 @@ Review        | Signoff date            | Done        | 2019-11-04
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
 Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
+Security      | [SEC_CM_RND_CNST][]          | Not Started |
+Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
+Security      | [SEC_CM_SHADOW_REGS][]       | Not Started |
 Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
 
 [SEC_CM_ASSETS_LISTED]:    {{<relref "/doc/project/checklist.md#sec_cm_assets_listed" >}}
 [SEC_CM_IMPLEMENTED]:      {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+[SEC_CM_RND_CNST]:         {{<relref "/doc/project/checklist.md#sec_cm_rnd_cnst" >}}
+[SEC_CM_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_cm_non_reset_flops" >}}
+[SEC_CM_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_cm_shadow_regs" >}}
 [SEC_CM_RTL_REVIEWED]:     {{<relref "/doc/project/checklist.md#sec_cm_rtl_reviewed" >}}
 [SEC_CM_COUNCIL_REVIEWED]: {{<relref "/doc/project/checklist.md#sec_cm_council_reviewed" >}}
 
@@ -143,8 +149,6 @@ Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
 Review        | [TESTPLAN_REVIEWED][]                 | Done        |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | Exception (Security, Power, Debug, Performance)
 Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
-Review        | Reviewer(s)                           | Done        | @eunchan @sjgitty @sriyerg
-Review        | Signoff date                          | Done        | 2019-11-04
 
 [XBAR DV document]:                   {{<relref "/hw/ip/tlul/doc/dv">}}
 [XBAR Testplan]:                      {{<relref "/hw/ip/tlul/doc/dv/index.md#testplan">}}
@@ -193,8 +197,6 @@ Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
 Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
-Review        | Reviewer(s)                             | Done        | @eunchan @sjgitty @sriyerg
-Review        | Signoff date                            | Done        | 2019-11-04
 
 [DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design_deltas_captured_v2" >}}
 [DV_DOC_COMPLETED]:                   {{<relref "/doc/project/checklist.md#dv_doc_completed" >}}
