@@ -409,15 +409,17 @@ package otbn_pkg;
   } rf_predec_bignum_t;
 
   typedef struct packed {
-    logic             adder_x_en;
-    logic             x_res_operand_a_sel;
-    logic             adder_y_op_a_en;
-    logic             shift_mod_sel;
-    logic             adder_y_op_shifter_en;
-    logic             shifter_a_en;
-    logic             shifter_b_en;
-    logic             logic_a_en;
-    logic             logic_shifter_en;
+    logic                    adder_x_en;
+    logic                    x_res_operand_a_sel;
+    logic                    adder_y_op_a_en;
+    logic                    shift_mod_sel;
+    logic                    adder_y_op_shifter_en;
+    logic                    shifter_a_en;
+    logic                    shifter_b_en;
+    logic                    shift_right;
+    logic [$clog2(WLEN)-1:0] shift_amt;
+    logic                    logic_a_en;
+    logic                    logic_shifter_en;
   } alu_predec_bignum_t;
 
   typedef struct packed {
