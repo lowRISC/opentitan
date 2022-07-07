@@ -112,7 +112,6 @@ cc_library(
         "//hw/ip/csrng/data:csrng_regs",
         "//hw/ip/edn/data:edn_regs",
         "//hw/ip/entropy_src/data:entropy_src_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
@@ -134,6 +133,7 @@ cc_library(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
 
