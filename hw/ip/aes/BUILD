@@ -10,3 +10,10 @@ filegroup(
         "//hw/ip/aes/data:all_files",
     ],
 )
+
+cc_library(
+    name = "model",
+    hdrs = [
+        "model/aes_modes.h",
+    ],
+)
