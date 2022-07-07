@@ -20,9 +20,12 @@ else
 fi
 
 # Set environment variables for the RV32 linker and assembler.
-export RV32_TOOL_LD=$(${BAZEL_CMD} query \
+RV32_TOOL_LD=$(${BAZEL_CMD} query \
   'deps(@com_lowrisc_toolchain_rv32imc_compiler//:bin/riscv32-unknown-elf-ld)' \
   --output location | cut -f1 -d:)
-export RV32_TOOL_AS=$(${BAZEL_CMD} query \
+export RV32_TOOL_LD
+
+RV32_TOOL_AS=$(${BAZEL_CMD} query \
   'deps(@com_lowrisc_toolchain_rv32imc_compiler//:bin/riscv32-unknown-elf-as)' \
   --output location | cut -f1 -d:)
+export RV32_TOOL_AS

@@ -4,4 +4,4 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # this is needed for the terminal to respond correctly within DC
-TERM="dtterm" dc_shell-xg-t $@
+TERM="dtterm" dc_shell-xg-t "$@"

@@ -89,7 +89,7 @@ OT_DEP_PACKAGES=(
 )
 
 # Convert OpenTitan dependency sources.
-for file in ${OT_DEP_SOURCES[@]}; do
+for file in "${OT_DEP_SOURCES[@]}"; do
     module=`basename -s .sv $file`
 
     # Skip packages
