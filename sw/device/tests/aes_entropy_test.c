@@ -60,9 +60,6 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   dif_aes_t aes;
 
-  // First of all, we need to get the entropy complex up and running.
-  entropy_testutils_boot_mode_init();
-
   // Initialise AES.
   CHECK_DIF_OK(
       dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
