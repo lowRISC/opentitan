@@ -26,4 +26,4 @@ trap 'echo "code failed clang_format_check fix with ./bazelisk.sh run //:clang_f
 
 set -o pipefail
 git diff --name-only "$merge_base" -- "*.cpp" "*.cc" "*.c" "*.h" ':!*/vendor/*' | \
-    xargs ./bazelisk.sh run //:clang_format_check --
+    xargs -r ./bazelisk.sh run //:clang_format_check --
