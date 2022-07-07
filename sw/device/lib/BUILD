@@ -7,20 +7,6 @@ package(default_visibility = ["//visibility:public"])
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 
 cc_library(
-    name = "flash_ctrl",
-    srcs = ["flash_ctrl.c"],
-    hdrs = ["flash_ctrl.h"],
-    deprecation = "Deprecated pre-DIF code. We prefer you use the DIFs.",
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/base:multibits",
-    ],
-)
-
-cc_library(
     name = "ibex_peri",
     srcs = ["ibex_peri.c"],
     hdrs = ["ibex_peri.h"],
