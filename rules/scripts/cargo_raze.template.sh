@@ -13,6 +13,6 @@ if ! cd "$BUILD_WORKSPACE_DIRECTORY"; then
     exit 1
 fi
 
-for F in ${FILES[@]}; do
+for F in "${FILES[@]}"; do
     bazel run @@CARGO_RAZE@@ -- --manifest-path="$BUILD_WORKSPACE_DIRECTORY/$F"
 done

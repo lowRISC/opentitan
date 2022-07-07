@@ -31,20 +31,23 @@ declare -A architectures=(
 )
 
 function os_arch() {
-    local arch="$(uname -m -o)"
+    local arch
+    arch="$(uname -m -o)"
     echo "${architectures[$arch]:-${arch}}"
 }
 
 function check_hash() {
-    local file="$1"
-    local target="$(os_arch)"
-    local value="$(sha256sum "${file}" | cut -f1 -d' ')"
+    local file target value
+    file="$1"
+    target="$(os_arch)"
+    value="$(sha256sum "${file}" | cut -f1 -d' ')"
     local expect="${hashes[$target]}"
-    return $(test "$value" == "$expect")
+    test "$value" == "$expect"
 }
 
 function prepare() {
-    local target="$(os_arch)"
+    local target
+    target="$(os_arch)"
     local bindir="${REPO_TOP}/${BINDIR}"
     local file="${bindir}/bazelisk"
     local url="https://github.com/bazelbuild/bazelisk/releases/download/${release}/bazelisk-${target}"

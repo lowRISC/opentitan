@@ -15,7 +15,7 @@ if ! cd "$BUILD_WORKSPACE_DIRECTORY"; then
 fi
 
 if [[ $# != 0 ]]; then
-    FILES="$@"
+    FILES="$*"
 else
     FILES=$(find . \
         -type f \

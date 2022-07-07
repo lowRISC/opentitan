@@ -9,7 +9,7 @@ set -e
 if [[ $# == 0 ]]; then
     ARGS=("//...")
 else
-    ARGS="$@"
+    ARGS=("$@")
 fi
 
 if ! cd "$BUILD_WORKSPACE_DIRECTORY"; then
