@@ -99,6 +99,12 @@
     }
 
     {
+      name: alert_handler_lpg_stub_clk
+      uvm_test_seq: alert_handler_lpg_stub_clk_vseq
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
+    }
+
+    {
       name: alert_handler_stress_all
       run_opts: ["+test_timeout_ns=15_000_000_000"]
     }
