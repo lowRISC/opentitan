@@ -23,15 +23,17 @@
 
 # Since this file is intended to be sourced, we can't use |$0| to get our
 # bearings. However, the bash-specific $BASH_SOURCE works perfectly fine.
-if [[ -n "$BASH_SOURCE" ]]; then
-  readonly REPO_TOP="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ -n "${BASH_SOURCE[0]}" ]]; then
+  REPO_TOP="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  readonly REPO_TOP
   export REPO_TOP
 else
   echo "Non-bash shells are currently not supported." >&2
   exit 1
 fi
 
-export OT_GIT_VERSION="$(git describe --always 2>/dev/null)"
+OT_GIT_VERSION="$(git describe --always 2>/dev/null)"
+export OT_GIT_VERSION
 if [[ -n "$OT_GIT_VERSION" ]]; then
   readonly OT_VERSION="opentitan-$OT_GIT_VERSION"
 else
