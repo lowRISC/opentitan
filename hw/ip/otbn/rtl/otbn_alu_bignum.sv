@@ -414,7 +414,6 @@ module otbn_alu_bignum
   // Shifter //
   /////////////
 
-  logic              shift_right;
   logic [WLEN-1:0]   shifter_in_upper, shifter_in_lower, shifter_in_lower_reverse;
   logic [WLEN*2-1:0] shifter_in;
   logic [WLEN*2-1:0] shifter_out;
@@ -445,15 +444,17 @@ module otbn_alu_bignum
     assign shifter_in_lower_reverse[i] = shifter_in_lower[WLEN-i-1];
   end
 
-  assign shifter_in = {shifter_in_upper, shift_right ? shifter_in_lower : shifter_in_lower_reverse};
+  assign shifter_in = {shifter_in_upper,
+      alu_predec_bignum_i.shift_right ? shifter_in_lower : shifter_in_lower_reverse};
 
-  assign shifter_out = shifter_in >> operation_i.shift_amt;
+  assign shifter_out = shifter_in >> alu_predec_bignum_i.shift_amt;
 
   for (genvar i = 0; i < WLEN; i++) begin : g_shifter_out_lower_reverse
     assign shifter_out_lower_reverse[i] = shifter_out[WLEN-i-1];
   end
 
-  assign shifter_res = shift_right ? shifter_out[WLEN-1:0] : shifter_out_lower_reverse;
+  assign shifter_res =
+      alu_predec_bignum_i.shift_right ? shifter_out[WLEN-1:0] : shifter_out_lower_reverse;
 
   // Only the lower WLEN bits of the shift result are returned.
   assign unused_shifter_out_upper = shifter_out[WLEN*2-1:WLEN];
@@ -543,12 +544,12 @@ module otbn_alu_bignum
   logic expected_adder_y_op_shifter_en;
   logic expected_shifter_a_en;
   logic expected_shifter_b_en;
+  logic expected_shift_right;
   logic expected_shift_mod_sel;
   logic expected_logic_a_en;
   logic expected_logic_shifter_en;
 
   always_comb begin
-    shift_right               = 1'b0;
     adder_x_carry_in          = 1'b0;
     adder_x_op_b_invert       = 1'b0;
     adder_y_carry_in          = 1'b0;
@@ -562,6 +563,7 @@ module otbn_alu_bignum
     expected_adder_y_op_shifter_en  = 1'b0;
     expected_shifter_a_en           = 1'b0;
     expected_shifter_b_en           = 1'b0;
+    expected_shift_right            = 1'b0;
     expected_shift_mod_sel          = 1'b1;
     expected_logic_a_en             = 1'b0;
     expected_logic_shifter_en       = 1'b0;
@@ -571,7 +573,6 @@ module otbn_alu_bignum
         // Shifter computes B [>>|<<] shift_amt
         // Y computes A + shifter_res
         // X ignored
-        shift_right                    = operation_i.shift_right;
         adder_y_carry_in               = 1'b0;
         adder_y_op_b_invert            = 1'b0;
         adder_update_flags_en_raw      = 1'b1;
@@ -579,12 +580,12 @@ module otbn_alu_bignum
 
         expected_adder_y_op_a_en = 1'b1;
         expected_shifter_b_en    = 1'b1;
+        expected_shift_right     = operation_i.shift_right;
       end
       AluOpBignumAddc: begin
         // Shifter computes B [>>|<<] shift_amt
         // Y computes A + shifter_res + flags.C
         // X ignored
-        shift_right                    = operation_i.shift_right;
         adder_y_carry_in               = selected_flags.C;
         adder_y_op_b_invert            = 1'b0;
         adder_update_flags_en_raw      = 1'b1;
@@ -592,6 +593,7 @@ module otbn_alu_bignum
 
         expected_adder_y_op_a_en = 1'b1;
         expected_shifter_b_en    = 1'b1;
+        expected_shift_right     = operation_i.shift_right;
       end
       AluOpBignumAddm: begin
         // X computes A + B
@@ -612,7 +614,6 @@ module otbn_alu_bignum
         // Shifter computes B [>>|<<] shift_amt
         // Y computes A - shifter_res = A + ~shifter_res + 1
         // X ignored
-        shift_right                    = operation_i.shift_right;
         adder_y_carry_in               = 1'b1;
         adder_y_op_b_invert            = 1'b1;
         adder_update_flags_en_raw      = 1'b1;
@@ -620,12 +621,12 @@ module otbn_alu_bignum
 
         expected_adder_y_op_a_en = 1'b1;
         expected_shifter_b_en    = 1'b1;
+        expected_shift_right     = operation_i.shift_right;
       end
       AluOpBignumSubb: begin
         // Shifter computes B [>>|<<] shift_amt
         // Y computes A - shifter_res + ~flags.C = A + ~shifter_res + flags.C
         // X ignored
-        shift_right                    = operation_i.shift_right;
         adder_y_carry_in               = ~selected_flags.C;
         adder_y_op_b_invert            = 1'b1;
         adder_update_flags_en_raw      = 1'b1;
@@ -633,6 +634,7 @@ module otbn_alu_bignum
 
         expected_adder_y_op_a_en = 1'b1;
         expected_shifter_b_en    = 1'b1;
+        expected_shift_right     = operation_i.shift_right;
       end
       AluOpBignumSubm: begin
         // X computes A - B = A + ~B + 1
@@ -654,10 +656,10 @@ module otbn_alu_bignum
         // X, Y ignored
         // Feed blanked shifter output (adder_y_op_shifter_res_blanked) to Y to avoid undesired
         // leakage in the zero flag computation.
-        shift_right   = 1'b1;
 
         expected_shifter_a_en = 1'b1;
         expected_shifter_b_en = 1'b1;
+        expected_shift_right  = 1'b1;
       end
       AluOpBignumXor,
       AluOpBignumOr,
@@ -667,10 +669,10 @@ module otbn_alu_bignum
         // X & Y ignored
         // Feed blanked shifter output (adder_y_op_shifter_res_blanked) to Y to avoid undesired
         // leakage in the zero flag computation.
-        shift_right               = operation_i.shift_right;
         logic_update_flags_en_raw = 1'b1;
 
         expected_shifter_b_en     = 1'b1;
+        expected_shift_right      = operation_i.shift_right;
         expected_logic_a_en       = operation_i.op != AluOpBignumNot;
         expected_logic_shifter_en = 1'b1;
       end
@@ -680,6 +682,9 @@ module otbn_alu_bignum
     endcase
   end
 
+  logic [$clog2(WLEN)-1:0] expected_shift_amt;
+  assign expected_shift_amt = operation_i.shift_amt;
+
   // SEC_CM: CTRL.REDUN
   assign alu_predec_error_o =
     |{expected_adder_x_en != alu_predec_bignum_i.adder_x_en,
@@ -688,6 +693,8 @@ module otbn_alu_bignum
       expected_adder_y_op_shifter_en != alu_predec_bignum_i.adder_y_op_shifter_en,
       expected_shifter_a_en != alu_predec_bignum_i.shifter_a_en,
       expected_shifter_b_en != alu_predec_bignum_i.shifter_b_en,
+      expected_shift_right != alu_predec_bignum_i.shift_right,
+      expected_shift_amt != alu_predec_bignum_i.shift_amt,
       expected_shift_mod_sel != alu_predec_bignum_i.shift_mod_sel,
       expected_logic_a_en != alu_predec_bignum_i.logic_a_en,
       expected_logic_shifter_en != alu_predec_bignum_i.logic_shifter_en};
