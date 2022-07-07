@@ -321,6 +321,7 @@ def raze_fetch_remote_crates():
         name = "raze__base64ct__1_1_1",
         url = "https://crates.io/api/v1/crates/base64ct/1.1.1/download",
         type = "tar.gz",
+        sha256 = "e6b4d9b1225d28d360ec6a231d65af1fd99a2a095154c8040689617290569c5c",
         strip_prefix = "base64ct-1.1.1",
         build_file = Label("//third_party/rust/crates/remote:BUILD.base64ct-1.1.1.bazel"),
     )
@@ -410,6 +411,7 @@ def raze_fetch_remote_crates():
         name = "raze__const_oid__0_6_2",
         url = "https://crates.io/api/v1/crates/const-oid/0.6.2/download",
         type = "tar.gz",
+        sha256 = "9d6f2aa4d0537bcc1c74df8755072bd31c1ef1a3a1b85a68e8404a8c353b7b8b",
         strip_prefix = "const-oid-0.6.2",
         build_file = Label("//third_party/rust/crates/remote:BUILD.const-oid-0.6.2.bazel"),
     )
@@ -439,6 +441,7 @@ def raze_fetch_remote_crates():
         name = "raze__crypto_bigint__0_2_11",
         url = "https://crates.io/api/v1/crates/crypto-bigint/0.2.11/download",
         type = "tar.gz",
+        sha256 = "f83bd3bb4314701c568e340cd8cf78c975aa0ca79e03d3f6d1677d5b0c9c0c03",
         strip_prefix = "crypto-bigint-0.2.11",
         build_file = Label("//third_party/rust/crates/remote:BUILD.crypto-bigint-0.2.11.bazel"),
     )
@@ -468,6 +471,7 @@ def raze_fetch_remote_crates():
         name = "raze__der__0_4_5",
         url = "https://crates.io/api/v1/crates/der/0.4.5/download",
         type = "tar.gz",
+        sha256 = "79b71cca7d95d7681a4b3b9cdf63c8dbc3730d0584c2c74e31416d64a90493f4",
         strip_prefix = "der-0.4.5",
         build_file = Label("//third_party/rust/crates/remote:BUILD.der-0.4.5.bazel"),
     )
@@ -507,6 +511,7 @@ def raze_fetch_remote_crates():
         name = "raze__digest__0_9_0",
         url = "https://crates.io/api/v1/crates/digest/0.9.0/download",
         type = "tar.gz",
+        sha256 = "d3dd60d1080a57a05ab032377049e0591415d2b31afd7028356dbf3cc6dcb066",
         strip_prefix = "digest-0.9.0",
         build_file = Label("//third_party/rust/crates/remote:BUILD.digest-0.9.0.bazel"),
     )
@@ -972,6 +977,7 @@ def raze_fetch_remote_crates():
         name = "raze__pem_rfc7468__0_2_4",
         url = "https://crates.io/api/v1/crates/pem-rfc7468/0.2.4/download",
         type = "tar.gz",
+        sha256 = "84e93a3b1cc0510b03020f33f21e62acdde3dcaef432edc95bea377fbd4c2cd4",
         strip_prefix = "pem-rfc7468-0.2.4",
         build_file = Label("//third_party/rust/crates/remote:BUILD.pem-rfc7468-0.2.4.bazel"),
     )
@@ -981,6 +987,7 @@ def raze_fetch_remote_crates():
         name = "raze__pkcs1__0_2_4",
         url = "https://crates.io/api/v1/crates/pkcs1/0.2.4/download",
         type = "tar.gz",
+        sha256 = "116bee8279d783c0cf370efa1a94632f2108e5ef0bb32df31f051647810a4e2c",
         strip_prefix = "pkcs1-0.2.4",
         build_file = Label("//third_party/rust/crates/remote:BUILD.pkcs1-0.2.4.bazel"),
     )
@@ -990,6 +997,7 @@ def raze_fetch_remote_crates():
         name = "raze__pkcs8__0_7_6",
         url = "https://crates.io/api/v1/crates/pkcs8/0.7.6/download",
         type = "tar.gz",
+        sha256 = "ee3ef9b64d26bad0536099c816c6734379e45bbd5f14798def6809e5cc350447",
         strip_prefix = "pkcs8-0.7.6",
         build_file = Label("//third_party/rust/crates/remote:BUILD.pkcs8-0.7.6.bazel"),
     )
@@ -1169,6 +1177,7 @@ def raze_fetch_remote_crates():
         name = "raze__rsa__0_5_0",
         url = "https://crates.io/api/v1/crates/rsa/0.5.0/download",
         type = "tar.gz",
+        sha256 = "e05c2603e2823634ab331437001b411b9ed11660fbc4066f3908c84a9439260d",
         strip_prefix = "rsa-0.5.0",
         build_file = Label("//third_party/rust/crates/remote:BUILD.rsa-0.5.0.bazel"),
     )
@@ -1318,6 +1327,7 @@ def raze_fetch_remote_crates():
         name = "raze__spki__0_4_1",
         url = "https://crates.io/api/v1/crates/spki/0.4.1/download",
         type = "tar.gz",
+        sha256 = "5c01a0c15da1b0b0e1494112e7af814a678fec9bd157881b49beac661e9b6f32",
         strip_prefix = "spki-0.4.1",
         build_file = Label("//third_party/rust/crates/remote:BUILD.spki-0.4.1.bazel"),
     )
@@ -1357,6 +1367,7 @@ def raze_fetch_remote_crates():
         name = "raze__subtle__2_4_1",
         url = "https://crates.io/api/v1/crates/subtle/2.4.1/download",
         type = "tar.gz",
+        sha256 = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601",
         strip_prefix = "subtle-2.4.1",
         build_file = Label("//third_party/rust/crates/remote:BUILD.subtle-2.4.1.bazel"),
     )
@@ -1636,6 +1647,7 @@ def raze_fetch_remote_crates():
         name = "raze__zeroize__1_4_3",
         url = "https://crates.io/api/v1/crates/zeroize/1.4.3/download",
         type = "tar.gz",
+        sha256 = "d68d9dcec5f9b43a30d38c49f91dfedfaac384cb8f085faca366c26207dd1619",
         strip_prefix = "zeroize-1.4.3",
         build_file = Label("//third_party/rust/crates/remote:BUILD.zeroize-1.4.3.bazel"),
     )
@@ -1645,6 +1657,7 @@ def raze_fetch_remote_crates():
         name = "raze__zeroize_derive__1_3_2",
         url = "https://crates.io/api/v1/crates/zeroize_derive/1.3.2/download",
         type = "tar.gz",
+        sha256 = "3f8f187641dad4f680d25c4bfc4225b418165984179f26ca76ec4fb6441d3a17",
         strip_prefix = "zeroize_derive-1.3.2",
         build_file = Label("//third_party/rust/crates/remote:BUILD.zeroize_derive-1.3.2.bazel"),
     )
