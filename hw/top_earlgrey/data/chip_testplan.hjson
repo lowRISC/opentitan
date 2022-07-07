@@ -918,7 +918,8 @@
       desc: '''Verify the cold boot sequence by wiggling of chip's `POR_N`.
 
             This ensures that both FSMs are properly reset on the POR signal. The check  is that
-            the processor ends up running. Also verify, the rstmgr records POR in `reset_info` CSR.
+            the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
+            by checking retention SRAM for reset_reason.
             '''
       milestone: V2
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
@@ -946,7 +947,8 @@
             This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
             working correctly as expected. X-ref'ed with all individual IP tests. For each reset
             source, enable the source and bring the chip to low power, issue a reset, and verify the
-            rstmgr's `reset_info` indicates the expected reset.
+            rstmgr's `reset_info` indicated the expected reset by checking retention SRAM for
+            reset_reason.
             '''
       milestone: V2
       tests: ["chip_sw_aon_timer_wdog_bite_reset"]
@@ -1007,7 +1009,8 @@
 
             Pulsing the AST vcaon_supp_i input causes an AON power glitch which becomes a POR.
             This ensures that both FSMs are properly reset on the POR signal. The check is that
-            the processor ends up running. Also verify, the rstmgr records POR in `reset_info` CSR.
+            the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
+            by checking retention SRAM for reset_reason.
             '''
       milestone: V2
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
@@ -1017,8 +1020,8 @@
       desc: '''Verify the effect of a glitch in main power rail.
 
             The vcmain_supp_i AST input is forced to drop once the test is running. This triggers
-            a MainPwr reset request, which is checked reading the reset_info CSR when the test
-            restarts and the POR bit is not set.
+            a MainPwr reset request, which is checked by reading retention SRAM's reset_reason to
+            see that the reset_info CSR's POR bit is not set when the test restarts.
             '''
       milestone: V2
       tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
@@ -1028,8 +1031,9 @@
       desc: '''Verify the effect of a glitch in main power rail in deep sleep.
 
             The vcmain_supp_i AST input is forced to drop right after putting the chip in deep
-            sleep. This triggers a MainPwr reset request, which is checked reading the reset_info
-            CSR when the test restarts and the POR bit is not set.
+            sleep. This triggers a MainPwr reset request, which is checked by reading retention
+            SRAM's reset_reason to show that the reset_info CSR's POR bit is not set when the test
+            restarts.
 
             Note: the glitch has to be sent in a very narrow window:
             - If sent too early the chip won't have started to process deep sleep.
@@ -1043,9 +1047,10 @@
       name: chip_sw_pwrmgr_sleep_power_glitch_reset
       desc: '''Verify the effect of a glitch in main power rail in shallow sleep.
 
-            The vcmain_supp_i AST input is forced to drop after putting the chip in shallow sleep. This
-            triggers a MainPwr reset request, which is checked reading the reset_info CSR when the
-            test restarts and the POR bit is not set.
+            The vcmain_supp_i AST input is forced to drop after putting the chip in shallow sleep.
+            This triggers a MainPwr reset request, which is checked by reading the retention SRAM's
+            reset_reason shows that the reset_info CSR's POR bit is not set when the
+            test restarts.
             '''
       milestone: V2
       tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
@@ -1125,11 +1130,11 @@
       name: chip_sw_rstmgr_non_sys_reset_info
       desc: '''Verify the `reset_info` CSR register for lc or higher resets.
 
-            Generate the 5 types of reset at `lc` level or higher, and check the `reset_info` CSR
-            is as expected. This and other rstmgr testpoints that require different resets
-            cross-reference the individual IP tests that generate those resets, and this testpoint
-            merely adds reset checks in them. Those IP blocks are `pwrmgr`, `alert_handler`,
-            `aon_timer`, and `sysrst_ctrl`.
+            Generate the 5 types of reset at `lc` level or higher, and check the retention SRAM's
+            reset_reason to show that `reset_info` CSR is as expected. This and other rstmgr
+            testpoints that require different resets cross-reference the individual IP tests that
+            generate those resets, and this testpoint merely adds reset checks in them. Those IP
+            blocks are `pwrmgr`, `alert_handler`, `aon_timer`, and `sysrst_ctrl`.
 
             This should also check the reset's destination IP to make sure some reset side-effect
             is present. Setting some `intr_enable` CSR bit when the test starts and checking it
@@ -1145,8 +1150,9 @@
       desc: '''Verify the `reset_info` CSR register for sys reset.
 
             Generate reset triggered by `rv_dm`, which results in a sys level reset, and check the
-            `reset_info` CSR is as expected. This testpoint cross-reference the `rv_dm` tests that
-            generate this reset, and this testpoint merely adds reset checks in them.
+            retention SRAM's reset_reason to show that the `reset_info` CSR is as expected. This
+            testpoint cross-reference the `rv_dm` tests that generate this reset, and this
+            testpoint merely adds reset checks in them.
 
             This should also check the reset's destination IP to make sure some reset side-effect
             is present. Setting some `intr_enable` CSR bit when the test starts and checking it
@@ -1175,8 +1181,8 @@
 
             Generate a reset request by directly writing the `reset_req` CSR.
             The reset created should be identical to those caused by hardware sources.
-            After reset, the `reset_info` CSR should reflect that a software request was
-            the reset cause.
+            After reset, the retention SRAM's reset_reason should show that the `reset_info` CSR
+            reflects that a software request was the reset cause.
             '''
       milestone: V2
       tests: ["chip_sw_rstmgr_sw_req"]
