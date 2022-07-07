@@ -8,7 +8,7 @@
 # command-line specified .bazelrc (that is applied alongside //.bazelrc).
 
 if [[ -n "$PWD_OVERRIDE" ]]; then
-    cd "$PWD_OVERRIDE"
+    cd "$PWD_OVERRIDE" || exit
 fi
 
 echo "Running bazelisk in $(pwd)."
@@ -16,7 +16,7 @@ echo "Running bazelisk in $(pwd)."
 # An additional bazelrc must be synthesized to specify precisely how to use the
 # GCP bazel cache.
 GCP_BAZELRC="$(mktemp /tmp/XXXXXX.bazelrc)"
-trap "rm $GCP_BAZELRC" EXIT
+trap 'rm $GCP_BAZELRC' EXIT
 
 if [[ -n "$GCP_BAZEL_CACHE_KEY" && -f "$GCP_BAZEL_CACHE_KEY" ]]; then
     echo "Applying GCP cache key; will upload to the cache."
@@ -29,4 +29,4 @@ fi
 "$(dirname $0)"/../bazelisk.sh \
   --bazelrc="$GCP_BAZELRC" \
   --bazelrc="$(dirname $0)"/.bazelrc \
-  $@
+  "$@"

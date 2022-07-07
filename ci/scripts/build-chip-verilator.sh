@@ -38,7 +38,7 @@ case "$tl" in
 esac
 
 # Move to project root
-cd $(git rev-parse --show-toplevel)
+cd "$(git rev-parse --show-toplevel)"
 
 . util/build_consts.sh
 

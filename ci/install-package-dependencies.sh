@@ -49,7 +49,7 @@ test -n "$RUST_VERSION"      || error "Missing --rust-version"
 # Check that there aren't any positional arguments
 test $# = 0 || error "Unexpected positional arguments"
 
-CI_DIR="$(dirname "$(readlink -e "$BASH_SOURCE")")"
+CI_DIR="$(dirname "$(readlink -e "${BASH_SOURCE[0]}")")"
 REPO_TOP="$(readlink -e "$CI_DIR/..")"
 
 cd "$REPO_TOP"

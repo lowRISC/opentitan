@@ -6,7 +6,8 @@
 # Use Bazel to query for the location of targets instead of searching
 
 set -e
-readonly REPO_TOP=$(git rev-parse --show-toplevel)
+REPO_TOP=$(git rev-parse --show-toplevel)
+readonly REPO_TOP
 
 verbose='false'
 print_usage() {
@@ -29,5 +30,6 @@ then
   REDIR='/dev/null'
 fi
 
-readonly REL_PATH=$(${REPO_TOP}/bazelisk.sh outquery "$@" 2>$REDIR)
+REL_PATH=$(${REPO_TOP}/bazelisk.sh outquery "$@" 2>$REDIR)
+readonly REL_PATH
 echo "${REPO_TOP}/${REL_PATH}"
