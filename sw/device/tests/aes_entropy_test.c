@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/ip/aes/model/aes_modes.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aes.h"
@@ -13,38 +14,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// The following plaintext, key and ciphertext are extracted from Appendix C of
-// the Advanced Encryption Standard (AES) FIPS Publication 197 available at
-// https://www.nist.gov/publications/advanced-encryption-standard-aes
-
 #define TIMEOUT (1000 * 1000)
-
-static const uint32_t kPlainText[] = {
-    0x33221100,
-    0x77665544,
-    0xbbaa9988,
-    0xffeeddcc,
-};
-
-static const uint8_t kKey[] = {
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a,
-    0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
-    0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
-};
-
-static const uint32_t kCipherTextGold[] = {
-    0x493350e6,
-    0x4a0a5568,
-    0x9d4d4aa1,
-    0xd256e2e0,
-};
-
-static const uint32_t kIv[] = {
-    0x01020304,
-    0x0c0d0e0f,
-    0x1718191a,
-    0x1c1d1e1f,
-};
 
 // The mask share, used to mask kKey. Note that the masking should not be done
 // manually. Software is expected to get the key in two shares right from the
@@ -67,19 +37,19 @@ bool test_main(void) {
 
   // Mask the key. Note that this should not be done manually. Software is
   // expected to get the key in two shares right from the beginning.
-  uint8_t key_share0[ARRAYSIZE(kKey)];
-  for (int i = 0; i < ARRAYSIZE(kKey); ++i) {
-    key_share0[i] = kKey[i] ^ kKeyShare1[i];
+  uint8_t key_share0[sizeof(kAesModesKey256)];
+  for (int i = 0; i < sizeof(kAesModesKey256); ++i) {
+    key_share0[i] = kAesModesKey256[i] ^ kKeyShare1[i];
   }
 
   // "Convert" key share byte arrays to `dif_aes_key_share_t`.
   dif_aes_key_share_t key;
-  memcpy(key.share0, key_share0, ARRAYSIZE(kKey));
-  memcpy(key.share1, kKeyShare1, ARRAYSIZE(kKey));
+  memcpy(key.share0, key_share0, sizeof(key.share0));
+  memcpy(key.share1, kKeyShare1, sizeof(key.share1));
 
   // "Convert" iv byte arrays to `dif_aes_iv_t`.
   dif_aes_iv_t iv;
-  memcpy(iv.iv, kIv, ARRAYSIZE(kIv));
+  memcpy(iv.iv, kAesModesIvCbc, sizeof(iv.iv));
 
   // Setup CBC encryption transaction.
   dif_aes_transaction_t transaction = {
@@ -92,7 +62,7 @@ bool test_main(void) {
   // Write the initial key share, IV and data in CSRs (known combinations).
   CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, &iv));
   dif_aes_data_t in_data_plain;
-  memcpy(in_data_plain.data, kPlainText, ARRAYSIZE(kPlainText));
+  memcpy(in_data_plain.data, kAesModesPlainText, sizeof(in_data_plain.data));
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true, TIMEOUT);
   CHECK_DIF_OK(dif_aes_load_data(&aes, in_data_plain));
 
@@ -106,7 +76,8 @@ bool test_main(void) {
   // Check the ciphertext against the expected value.
   dif_aes_data_t out_data;
   CHECK_DIF_OK(dif_aes_read_output(&aes, &out_data));
-  CHECK_ARRAYS_EQ(out_data.data, kCipherTextGold, ARRAYSIZE(kCipherTextGold));
+  CHECK_ARRAYS_EQ((uint8_t *)out_data.data, kAesModesCipherTextCbc256,
+                  sizeof(out_data.data));
 
   // Write the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR trigger bits to 1 and
   // wait for it to complete by polling the status idle bit.
@@ -121,7 +92,7 @@ bool test_main(void) {
   // Assertion check verifies that the internal states (data_in, key share and
   // IV are also garbage, i.e. different from the originally written values.
   CHECK_DIF_OK(dif_aes_read_iv(&aes, &iv));
-  CHECK_ARRAYS_NE(iv.iv, kIv, ARRAYSIZE(kIv));
+  CHECK_ARRAYS_NE((uint8_t *)iv.iv, kAesModesIvCbc, sizeof(kAesModesIvCbc));
 
   CHECK_DIF_OK(dif_aes_end(&aes));
   return true;
