@@ -74,7 +74,7 @@ module alert_handler
     .tl_i,
     .tl_o,
     .irq_o ( irq ),
-    .latch_crashdump_i ( |latch_crashdump ),
+    .latch_crashdump_i ( latch_crashdump ),
     .crashdump_o,
     .hw2reg_wrap,
     .reg2hw_wrap,
