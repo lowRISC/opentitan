@@ -152,8 +152,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     end
   endtask : process_esc_fifo
 
-  // Alert_handler ping timer design should automatically fetch EDN entropy every 500k clock
-  // cycles. We set the threshold to 600k clock cycles.
+  // Alert_handler ping timer is designed to fetch EDN value periodically.
   virtual task process_edn_fifos();
     fork begin: isolation_fork
       int num_edn_reqs;
@@ -161,9 +160,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         wait (cfg.under_reset == 0);
         fork
           begin
-            push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH)) edn_item;
-            `DV_SPINWAIT(edn_fifos[0].get(edn_item);,
-                         "Expect to send out EDN request!", cfg.clk_rst_vif.clk_period_ps * 600);
+             check_edn_request_cycles();
              num_edn_reqs++;
             if (cfg.en_cov) cov.num_edn_reqs_cg.sample(num_edn_reqs);
           end
@@ -175,6 +172,28 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         disable fork;
       end
     end join
+  endtask
+
+  virtual task check_edn_request_cycles();
+    int edn_wait_cycles;
+    fork
+      begin : isolation_fork
+        fork
+          begin
+            while (edn_wait_cycles < MAX_EDN_REQ_WAIT_CYCLES) begin
+              cfg.clk_rst_vif.wait_clks(1);
+              edn_wait_cycles++;
+            end
+            `uvm_error(`gfn, "Timeout occured waiting for an EDN request!");
+          end
+          begin
+            push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH)) edn_item;
+            edn_fifos[0].get(edn_item);
+          end
+        join_any
+        disable fork;
+      end
+    join
   endtask
 
   // this task process alert signal by checking if intergrity fail, then classify it to the
