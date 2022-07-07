@@ -214,6 +214,16 @@ attacks, see [[12](#ref-12)] and [[13](#ref-13)])
     faulty inputs can have catastrophic consequences. These guidelines cannot
     recommend a default-safe posture, but each decision about handling detected
     faults should be carefully considered.
+16. For request-acknowledge interfaces, monitor the acknowledge line for
+    spurious pulses at all times (not only when pending request) and use this
+    as a glitch/fault detector to escalate locally and/or generate alerts.
+17. When arbitrating between two or more transaction sources with different
+    privilege/access levels, consider how to protect a request from one source
+    being glitched/forged to masquerade as being sourced from another
+    higher-privilege source (for example, to return side-loaded
+    hardware-visible-only data via a software read path). At a minimum,
+    redundant arbitration and multiple-bit encoding of the arbitration "winner"
+    can help to mitigate this type of attack.
 
 ### **Recommendation 4**: Handling of secrets
 
