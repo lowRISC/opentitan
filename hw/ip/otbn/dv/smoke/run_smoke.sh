@@ -7,14 +7,14 @@
 # and checks expected output)
 
 fail() {
-    echo >&2 "OTBN SMOKE FAILURE: $@"
+    echo >&2 "OTBN SMOKE FAILURE: $*"
     exit 1
 }
 
 set -o pipefail
 set -e
 
-SCRIPT_DIR="$(dirname "$(readlink -e "$BASH_SOURCE")")"
+SCRIPT_DIR="$(dirname "$(readlink -e "${BASH_SOURCE[0]}")")"
 UTIL_DIR="$(readlink -e "$SCRIPT_DIR/../../../../../util")" || \
   fail "Can't find OpenTitan util dir"
 
@@ -37,6 +37,8 @@ $OTBN_UTIL/otbn_ld.py -o $SMOKE_BIN_DIR/smoke.elf $SMOKE_BIN_DIR/smoke_test.o ||
          lowrisc:ip:otbn_top_sim || fail "HW Sim build failed")
 
 RUN_LOG=`mktemp`
+readonly RUN_LOG
+# shellcheck disable=SC2064 # The RUN_LOG tempfile path should not change
 trap "rm -rf $RUN_LOG" EXIT
 
 timeout 5s \

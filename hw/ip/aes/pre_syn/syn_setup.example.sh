@@ -43,7 +43,8 @@ if [ $# -eq 1 ]; then
     export LR_SYNTH_OUT_DIR=$1
 elif [ $# -eq 0 ]; then
     export LR_SYNTH_OUT_DIR_PREFIX="syn_out/${LR_SYNTH_TOP_MODULE}"
-    export LR_SYNTH_OUT_DIR=$(date +"${LR_SYNTH_OUT_DIR_PREFIX}_%Y_%m_%d_%H_%M_%S")
+    LR_SYNTH_OUT_DIR=$(date +"${LR_SYNTH_OUT_DIR_PREFIX}_%Y_%m_%d_%H_%M_%S")
+    export LR_SYNTH_OUT_DIR
 else
     echo "Usage $0 [synth_out_dir]"
     exit 1
