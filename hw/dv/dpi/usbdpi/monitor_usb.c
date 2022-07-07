@@ -185,14 +185,15 @@ void monitor_usb(void *mon_void, FILE *mon_file, int loglevel, int tick,
                   mon->sopAt, tick, mon->driver == M_HOST ? 'H' : 'D',
                   decode_pid[mon->lastpid & 0xf]);
         }
-        fprintf(mon_file, "mon:     %s: ",
-                mon->driver == M_HOST ? "h->d" : "d->h");
+        fprintf(mon_file,
+                "mon:     %s: ", mon->driver == M_HOST ? "h->d" : "d->h");
         comp_crc16 = CRC16(mon->bytes, mon->byte - 2);
         pkt_crc16 = mon->bytes[mon->byte - 2] | mon->bytes[mon->byte - 1] << 8;
         for (i = 0; i < mon->byte; i++) {
           fprintf(mon_file, "%02x%s", mon->bytes[i],
-                  ((i & 0xf) == 0xf) ? "\nmon:           "
-                                     : ((i + 1) == mon->byte) ? "" : ", ");
+                  ((i & 0xf) == 0xf)       ? "\nmon:           "
+                  : ((i + 1) == mon->byte) ? ""
+                                           : ", ");
           if ((mon->bytes[i] == 0x0d) || (mon->bytes[i] == 0x0a)) {
             mon->bytes[i] = '_';
           }
