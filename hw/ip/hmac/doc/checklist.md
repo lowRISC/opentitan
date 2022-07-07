@@ -35,25 +35,26 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 ### D2
 
-Type          | Item                    | Resolution  | Note/Collaterals
---------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | N/A         | Livestream was added
-Documentation | [BLOCK_DIAGRAM][]       | Done        |
-Documentation | [DOC_INTERFACE][]       | Done        |
-Documentation | [MISSING_FUNC][]        | N/A         |
-Documentation | [FEATURE_FROZEN][]      | Done        |
-RTL           | [FEATURE_COMPLETE][]    | Done        |
-RTL           | [AREA_CHECK][]          | Done        |
-RTL           | [PORT_FROZEN][]         | Done        | Interrupt port was revised.
-RTL           | [ARCHITECTURE_FROZEN][] | Done        | Livestream was added
-RTL           | [REVIEW_TODO][]         | Done        | Removed irrelevant TODOs and create [#761][]
-RTL           | [STYLE_X][]             | Done        |
-Code Quality  | [LINT_PASS][]           | Done        |
-Code Quality  | [CDC_SETUP][]           | N/A         |
-Code Quality  | [FPGA_TIMING][]         | Done        | Fmax @ 50MHz on NexysVideo
-Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
-Security      | [SEC_CM_DOCUMENTED][]   | N/A         |
-Security      | [SEC_RND_CNST][]        | N/A         |
+Type          | Item                      | Resolution  | Note/Collaterals
+--------------|---------------------------|-------------|------------------
+Documentation | [NEW_FEATURES][]          | Done        | Livestream was added
+Documentation | [BLOCK_DIAGRAM][]         | Done        |
+Documentation | [DOC_INTERFACE][]         | Done        |
+Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.
+Documentation | [MISSING_FUNC][]          | N/A         |
+Documentation | [FEATURE_FROZEN][]        | Done        |
+RTL           | [FEATURE_COMPLETE][]      | Done        |
+RTL           | [PORT_FROZEN][]           | Done        | Interrupt port was revised.
+RTL           | [ARCHITECTURE_FROZEN][]   | Done        | Livestream was added
+RTL           | [REVIEW_TODO][]           | Done        | Removed irrelevant TODOs and create [#761][]
+RTL           | [STYLE_X][]               | Done        |
+RTL           | [CDC_SYNCMACRO][]         | N/A         |
+Code Quality  | [LINT_PASS][]             | Done        |
+Code Quality  | [CDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [AREA_CHECK][]            | Done        |
+Code Quality  | [TIMING_CHECK][]          | Done        | Fmax @ 50MHz on NexysVideo
+Security      | [SEC_CM_DOCUMENTED][]     | N/A         |
 
 [#761]: https://github.com/loWRISC/opentitan/issues/761
 
@@ -81,6 +82,7 @@ Security      | [SEC_RND_CNST][]        | N/A         |
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
 Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
+Security      | [SEC_CM_RND_CNST][]          | N/A         |
 Security      | [SEC_CM_NON_RESET_FLOPS][]   | N/A         |
 Security      | [SEC_CM_SHADOW_REGS][]       | N/A         |
 Security      | [SEC_CM_RTL_REVIEWED][]      | N/A         |
@@ -88,6 +90,7 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only con
 
 [SEC_CM_ASSETS_LISTED]:    {{<relref "/doc/project/checklist.md#sec_cm_assets_listed" >}}
 [SEC_CM_IMPLEMENTED]:      {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+[SEC_CM_RND_CNST]:         {{<relref "/doc/project/checklist.md#sec_cm_rnd_cnst" >}}
 [SEC_CM_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_cm_non_reset_flops" >}}
 [SEC_CM_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_cm_shadow_regs" >}}
 [SEC_CM_RTL_REVIEWED]:     {{<relref "/doc/project/checklist.md#sec_cm_rtl_reviewed" >}}
