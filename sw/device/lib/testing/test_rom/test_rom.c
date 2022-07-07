@@ -19,6 +19,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_rom/chip_info.h"  // Generated.
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/mask_rom/bootstrap.h"
 
@@ -79,6 +81,13 @@ bool rom_test_main(void) {
 
   // Print the chip version information
   LOG_INFO("%s", chip_info);
+
+  // Skip sram_init for test_rom
+  uint32_t reset_reasons = rstmgr_reason_get();
+
+  // Store the reset reason in retention RAM and clear the register.
+  retention_sram_get()->reset_reasons = reset_reasons;
+  rstmgr_reason_clear(reset_reasons);
 
   // Print the FPGA version-id.
   // This is guaranteed to be zero on all non-FPGA implementations.

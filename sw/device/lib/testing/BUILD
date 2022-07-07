@@ -226,6 +226,7 @@ cc_library(
     deps = [
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
 

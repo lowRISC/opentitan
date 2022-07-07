@@ -1042,6 +1042,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

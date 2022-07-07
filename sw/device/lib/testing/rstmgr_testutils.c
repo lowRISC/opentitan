@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 bool rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
                                     dif_rstmgr_reset_info_bitfield_t info) {
@@ -80,4 +81,13 @@ void rstmgr_testutils_post_reset(
   if (expected_cpu_dump != NULL && cpu_dump_size != 0) {
     rstmgr_testutils_compare_cpu_info(rstmgr, expected_cpu_dump, cpu_dump_size);
   }
+}
+
+void rstmgr_testutils_reset_reason(const dif_rstmgr_t *rstmgr,
+                                   dif_rstmgr_reset_info_bitfield_t *reason) {
+  *reason = retention_sram_get()->reset_reasons;
+}
+
+void rstmgr_testutils_reset_reason_clear(const dif_rstmgr_t *rstmgr) {
+  retention_sram_get()->reset_reasons = 0;
 }
