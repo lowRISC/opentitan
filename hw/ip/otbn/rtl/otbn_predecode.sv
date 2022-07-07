@@ -58,6 +58,7 @@ module otbn_predecode
   logic alu_bignum_shift_mod_sel;
   logic alu_bignum_logic_a_en;
   logic alu_bignum_logic_shifter_en;
+  logic [3:0] alu_bignum_logic_res_sel;
 
   logic mac_bignum_op_en;
   logic mac_bignum_acc_rd_en;
@@ -134,6 +135,7 @@ module otbn_predecode
     alu_bignum_shift_mod_sel         = 1'b1;
     alu_bignum_logic_a_en            = 1'b0;
     alu_bignum_logic_shifter_en      = 1'b0;
+    alu_bignum_logic_res_sel         = '0;
 
     mac_bignum_op_en     = 1'b0;
     mac_bignum_acc_rd_en = 1'b0;
@@ -306,14 +308,17 @@ module otbn_predecode
               ctrl_flow_target_predec_o = loop_end_addr[ImemAddrWidth-1:0];
             end
             3'b010, 3'b100, 3'b110:  begin  // BN.AND/BN.OR/BN.XOR
-              rf_we_bignum                = 1'b1;
-              rf_ren_a_bignum             = 1'b1;
-              rf_ren_b_bignum             = 1'b1;
-              alu_bignum_shifter_b_en     = 1'b1;
-              alu_bignum_shift_right      = imem_rdata_i[30];
-              alu_bignum_shift_amt        = shift_amt_a_type_bignum;
-              alu_bignum_logic_a_en       = 1'b1;
-              alu_bignum_logic_shifter_en = 1'b1;
+              rf_we_bignum                            = 1'b1;
+              rf_ren_a_bignum                         = 1'b1;
+              rf_ren_b_bignum                         = 1'b1;
+              alu_bignum_shifter_b_en                 = 1'b1;
+              alu_bignum_shift_right                  = imem_rdata_i[30];
+              alu_bignum_shift_amt                    = shift_amt_a_type_bignum;
+              alu_bignum_logic_a_en                   = 1'b1;
+              alu_bignum_logic_shifter_en             = 1'b1;
+              alu_bignum_logic_res_sel[AluOpLogicXor] = imem_rdata_i[14:12] == 3'b110;
+              alu_bignum_logic_res_sel[AluOpLogicOr]  = imem_rdata_i[14:12] == 3'b100;
+              alu_bignum_logic_res_sel[AluOpLogicAnd] = imem_rdata_i[14:12] == 3'b010;
             end
             3'b111, 3'b011: begin // BN.RSHI
               rf_we_bignum            = 1'b1;
@@ -325,12 +330,13 @@ module otbn_predecode
               alu_bignum_shift_amt    = shift_amt_s_type_bignum;
             end
             3'b101: begin // BN.NOT
-              rf_we_bignum                = 1'b1;
-              rf_ren_b_bignum             = 1'b1;
-              alu_bignum_shifter_b_en     = 1'b1;
-              alu_bignum_shift_right      = imem_rdata_i[30];
-              alu_bignum_shift_amt        = shift_amt_a_type_bignum;
-              alu_bignum_logic_shifter_en = 1'b1;
+              rf_we_bignum                            = 1'b1;
+              rf_ren_b_bignum                         = 1'b1;
+              alu_bignum_shifter_b_en                 = 1'b1;
+              alu_bignum_shift_right                  = imem_rdata_i[30];
+              alu_bignum_shift_amt                    = shift_amt_a_type_bignum;
+              alu_bignum_logic_shifter_en             = 1'b1;
+              alu_bignum_logic_res_sel[AluOpLogicNot] = 1'b1;
             end
             default: ;
           endcase
@@ -465,6 +471,7 @@ module otbn_predecode
   assign alu_predec_bignum_o.shift_mod_sel         = alu_bignum_shift_mod_sel;
   assign alu_predec_bignum_o.logic_a_en            = alu_bignum_logic_a_en;
   assign alu_predec_bignum_o.logic_shifter_en      = alu_bignum_logic_shifter_en;
+  assign alu_predec_bignum_o.logic_res_sel         = alu_bignum_logic_res_sel;
 
   assign mac_predec_bignum_o.op_en     = mac_bignum_op_en;
   assign mac_predec_bignum_o.acc_rd_en = mac_bignum_acc_rd_en;

@@ -548,6 +548,7 @@ module otbn_alu_bignum
   logic expected_shift_mod_sel;
   logic expected_logic_a_en;
   logic expected_logic_shifter_en;
+  logic [3:0] expected_logic_res_sel;
 
   always_comb begin
     adder_x_carry_in          = 1'b0;
@@ -567,6 +568,7 @@ module otbn_alu_bignum
     expected_shift_mod_sel          = 1'b1;
     expected_logic_a_en             = 1'b0;
     expected_logic_shifter_en       = 1'b0;
+    expected_logic_res_sel          = '0;
 
     unique case (operation_i.op)
       AluOpBignumAdd: begin
@@ -669,12 +671,16 @@ module otbn_alu_bignum
         // X & Y ignored
         // Feed blanked shifter output (adder_y_op_shifter_res_blanked) to Y to avoid undesired
         // leakage in the zero flag computation.
-        logic_update_flags_en_raw = 1'b1;
+        logic_update_flags_en_raw             = 1'b1;
 
-        expected_shifter_b_en     = 1'b1;
-        expected_shift_right      = operation_i.shift_right;
-        expected_logic_a_en       = operation_i.op != AluOpBignumNot;
-        expected_logic_shifter_en = 1'b1;
+        expected_shifter_b_en                 = 1'b1;
+        expected_shift_right                  = operation_i.shift_right;
+        expected_logic_a_en                   = operation_i.op != AluOpBignumNot;
+        expected_logic_shifter_en             = 1'b1;
+        expected_logic_res_sel[AluOpLogicXor] = operation_i.op == AluOpBignumXor;
+        expected_logic_res_sel[AluOpLogicOr]  = operation_i.op == AluOpBignumOr;
+        expected_logic_res_sel[AluOpLogicAnd] = operation_i.op == AluOpBignumAnd;
+        expected_logic_res_sel[AluOpLogicNot] = operation_i.op == AluOpBignumNot;
       end
       // No operation, do nothing.
       AluOpBignumNone: ;
@@ -697,12 +703,14 @@ module otbn_alu_bignum
       expected_shift_amt != alu_predec_bignum_i.shift_amt,
       expected_shift_mod_sel != alu_predec_bignum_i.shift_mod_sel,
       expected_logic_a_en != alu_predec_bignum_i.logic_a_en,
-      expected_logic_shifter_en != alu_predec_bignum_i.logic_shifter_en};
+      expected_logic_shifter_en != alu_predec_bignum_i.logic_shifter_en,
+      expected_logic_res_sel != alu_predec_bignum_i.logic_res_sel};
 
   ////////////////////////
   // Logical operations //
   ////////////////////////
 
+  logic [WLEN-1:0] logical_res_mux_in [4];
   logic [WLEN-1:0] logical_res;
   logic [WLEN-1:0] logical_op_a_blanked;
   logic [WLEN-1:0] logical_op_shifter_res_blanked;
@@ -721,20 +729,22 @@ module otbn_alu_bignum
     .out_o(logical_op_shifter_res_blanked)
   );
 
-  always_comb begin
-    // Drive logical_res to zero unless it's actually used. When used,
-    // alu_predec_bignum_i.logic_shifter_en is set. Otherwise logical_op_shifter_res_blanked is
-    // blanked to zero.
-    logical_res = ~logical_op_shifter_res_blanked;
+  assign logical_res_mux_in[AluOpLogicXor] = logical_op_a_blanked ^ logical_op_shifter_res_blanked;
+  assign logical_res_mux_in[AluOpLogicOr]  = logical_op_a_blanked | logical_op_shifter_res_blanked;
+  assign logical_res_mux_in[AluOpLogicAnd] = logical_op_a_blanked & logical_op_shifter_res_blanked;
+  assign logical_res_mux_in[AluOpLogicNot] = ~logical_op_shifter_res_blanked;
 
-    unique case (operation_i.op)
-      AluOpBignumXor: logical_res = logical_op_a_blanked ^ logical_op_shifter_res_blanked;
-      AluOpBignumOr:  logical_res = logical_op_a_blanked | logical_op_shifter_res_blanked;
-      AluOpBignumAnd: logical_res = logical_op_a_blanked & logical_op_shifter_res_blanked;
-      AluOpBignumNot: logical_res = ~logical_op_shifter_res_blanked;
-      default: ;
-    endcase
-  end
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_onehot_mux #(
+    .Width (WLEN),
+    .Inputs(4)
+  ) u_logical_res_mux (
+    .clk_i,
+    .rst_ni,
+    .in_i  (logical_res_mux_in),
+    .sel_i (alu_predec_bignum_i.logic_res_sel),
+    .out_o (logical_res)
+  );
 
   // Logical operations only update M, L and Z; C must remain at its old value.
   assign logic_update_flags.C = selected_flags.C;
