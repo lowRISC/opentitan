@@ -107,15 +107,16 @@
             Stimulus:
             - Randomly enabled alert_receivers' `alert_en` but disable their ping response.
             - Turn on their low-power control by either set `lpg_cg_en_i` or `lpg_rst_en_i`.
+              Or pause the alert_handler's clk input for a random period of time.
             - Enable alert ping timeout local alert.
             - Run alert_handler_entropy_vseq.
 
             Checks:
             - Expect no ping timeout error because the alert_receivers are disabled via low-power
-              group.
+              group, or because alert_handler's clk input is paused due to sleep mode.
             '''
       milestone: V2
-      tests: ["alert_handler_lpg"]
+      tests: ["alert_handler_lpg", "alert_handler_lpg_stub_clk"]
     }
     {
       name: stress_all
