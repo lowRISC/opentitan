@@ -37,6 +37,11 @@ cp LICENSE "$DIST_DIR"
 for pat in "${DIST_ARTIFACTS[@]}"; do
   echo "Searching for $pat." >&2
   found_file=false
+  # Looping over find output is a problem if our file paths have glob
+  # characters or spaces.  However, we do not have filenames like that in CI,
+  # and the alternative formulations of this for loop are less intuitive.
+
+  # shellcheck disable=SC2044
   for file in $(find "$BIN_DIR" -type f -path "$BIN_DIR/$pat"); do
     found_file=true
     relative_file="${file#"$BIN_DIR/"}"
