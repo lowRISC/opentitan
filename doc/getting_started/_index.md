@@ -63,6 +63,36 @@ On Ubuntu 18.04, the required packages can be installed with the following comma
 
 {{< pkgmgr_cmd "apt" >}}
 
+On Ubuntu 18.04 the package `build-essential` includes the compilers `gcc-7` and `g++-7`.
+But for the OpenTitan project `gcc-9`/`g++-9` or higher is required, which has to be installed manually.
+Check that you have version 9 or higher of `gcc` installed by:
+
+```console
+$ gcc --version
+```
+
+If your version is lower, you have to upgrade it manually.
+For this, first, add `ubuntu-toolchain-r/test` PPA to your system using the following commands:
+
+```console
+$ sudo apt install software-properties-common
+$ sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+```
+
+Next, install the necessary GCC and G++ version by:
+
+```console
+$ sudo apt update
+$ sudo apt install gcc-9 g++-9
+```
+
+Finally, update the symbolic links for `gcc` and `g++` using these commands:
+
+```console
+$ sudo ln -sf /usr/bin/gcc-9 /usr/bin/gcc
+$ sudo ln -sf /usr/bin/g++-9 /usr/bin/g++
+```
+
 Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
 We recommend installing the latest version of `pip` and `setuptools` (especially if on older systems such as Ubuntu 18.04) using:
 
