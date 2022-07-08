@@ -11,6 +11,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
@@ -79,13 +80,13 @@ typedef enum TestPhase {
 
 bool test_main(void) {
   rom_error_t result = kErrorOk;
-  uint32_t reason = rstmgr_reason_get();
+  uint32_t reason = rstmgr_testutils_reason_get();
   rstmgr_alert_info_enable();
   LOG_INFO("reset_info = %08x", reason);
 
   // Clear the existing reset reason(s) so that they do not appear after the
   // next reset.
-  rstmgr_reason_clear(reason);
+  rstmgr_testutils_reason_clear();
 
   // Use the part of the retention SRAM reserved for the silicon owner to
   // store the test phase.
