@@ -1577,7 +1577,7 @@
             - Verify separately, eack key combination sufccessfully generates an interrupt.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_sysrst_ctrl_in_irq"]
     }
     {
       name: chip_sw_sysrst_ctrl_sleep_wakeup

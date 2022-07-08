@@ -19,6 +19,7 @@
 `include "chip_sw_deep_sleep_all_reset_vseq.sv"
 `include "chip_sw_uart_tx_rx_vseq.sv"
 `include "chip_sw_uart_rand_baudrate_vseq.sv"
+`include "chip_sw_sysrst_ctrl_in_irq_vseq.sv"
 `include "chip_sw_sysrst_ctrl_inputs_vseq.sv"
 `include "chip_sw_sysrst_ctrl_reset_vseq.sv"
 `include "chip_sw_sysrst_ctrl_outputs_vseq.sv"
