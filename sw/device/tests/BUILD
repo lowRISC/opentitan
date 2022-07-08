@@ -663,33 +663,6 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "hmac_enc_irq_test",
-    srcs = ["hmac_enc_irq_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
-    verilator = verilator_params(
-        tags = [
-            "broken",
-        ],
-    ),
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib:irq",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:hmac",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:hmac_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_functest(
     name = "hmac_enc_test",
     srcs = ["hmac_enc_test.c"],
     deps = [
@@ -698,6 +671,8 @@ opentitan_functest(
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

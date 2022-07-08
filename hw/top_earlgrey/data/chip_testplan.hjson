@@ -1812,7 +1812,7 @@
             the HMAC done and FIFO empty interrupts as a part of this test.
             '''
       milestone: V2
-      tests: ["chip_sw_hmac_enc_irq", "chip_sw_hmac_enc",
+      tests: ["chip_sw_hmac_enc",
               "chip_sw_hmac_enc_jitter_en"]
     }
     {
