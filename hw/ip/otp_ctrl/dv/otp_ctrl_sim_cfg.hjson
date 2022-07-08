@@ -154,7 +154,7 @@
     }
 
     {
-      name: otp_ctrl_stress_all_with_rand_reset
+      name: "{name}_stress_all_with_rand_reset"
       reseed: 100
     }
   ]

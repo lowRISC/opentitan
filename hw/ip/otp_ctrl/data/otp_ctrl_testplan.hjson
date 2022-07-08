@@ -218,7 +218,7 @@
             - randomly add reset between each sequence
             '''
       milestone: V2
-      tests: ["otp_ctrl_stress_all"]
+      tests: ["{name}_stress_all"]
     }
     {
       name: sec_cm_additional_check
