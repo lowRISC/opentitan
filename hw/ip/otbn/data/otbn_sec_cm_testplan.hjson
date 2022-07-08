@@ -139,9 +139,12 @@
     }
     {
       name: sec_cm_rf_base_data_reg_sw_glitch_detect
-      desc: "Verify the countermeasure(s) RF_BASE.DATA_REG_SW.GLITCH_DETECT."
+      desc: ''' Verify the countermeasure(s) RF_BASE.DATA_REG_SW.GLITCH_DETECT.
+                Wait for a write request to one of the otbn_rf_base registers.
+                Corrupt the we_onehot signal.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["otbn_rf_base_glitch_detect"]
     }
     {
       name: sec_cm_stack_wr_ptr_ctr_redun
