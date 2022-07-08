@@ -177,8 +177,9 @@ This can be useful for extracting more information about possible failures or bu
 It is recommended for the top level to store this information in an always-on location.
 
 Note that the crashdump state is continuously output via `crashdump_o` until the latching trigger condition is true for the first time (see {{< regref CLASSA_CRASHDUMP_TRIGGER_SHADOWED >}}).
-After that, the `crashdump_o` is held constant and the alert handler has to be reset in order to re-arm the crashdump latching mechanism.
+After that, the `crashdump_o` is held constant until all classes that have escalated are cleared.
 This is done so that it is possible to capture the true alert cause before spurious alert events start to pop up due to escalation countermeasures with excessive side effects (like life cycle scrapping for example).
+If classes that have escalated are not configured as clearable, then it is not possible to re-arm the crashdump latching mechanism at runtime and the alert handler has to be reset.
 
 ## Design Details
 
@@ -756,7 +757,7 @@ With the assumptions above, the following two problematic scenarios can occur.
 ##### Alert Handler in Reset
 
 It may happen that the alert handler is reset while some alert senders (e.g. those located in the AON domain) are not.
-In general, if the associated alert channels are idle during an alert handler reset cycle, no problems arise. 
+In general, if the associated alert channels are idle during an alert handler reset cycle, no problems arise.
 
 However, if an alert channel is reset while it is handling a ping request or an alert event, the sender / receiver FSMs may end up in an inconsistent state upon deassertion of the alert handler reset.
 This can either lead to spurious alert or ping events, or a completely locked up alert channel which will be flagged eventually by the ping mechanism.
