@@ -659,7 +659,6 @@
     }
     { name: "TRANSITION_CTRL",
       desc: "Control register for state transition requests.",
-      swaccess: "rw",
       hwaccess: "hrw",
       hwqe:     "true",
       hwext:    "true",
@@ -670,9 +669,10 @@
       fields: [
         { bits: "0",
           name: "EXT_CLOCK_EN",
+          swaccess: "rw1s",
           desc: '''
-          When set to 1, the OTP clock will be switched to an externally supplied clock when initiating a life cycle state transition.
-          The clock mux will remain switched until the next system reset.
+          When set to 1, the OTP clock will be switched to an externally supplied clock right away when the
+          device is in a non-PROD life cycle state. The clock mux will remain switched until the next system reset.
           '''
         }
       ]

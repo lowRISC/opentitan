@@ -374,7 +374,7 @@ module lc_ctrl
                          tap_reg2hw.transition_cmd.qe;
 
         if (tap_reg2hw.transition_ctrl.qe) begin
-          use_ext_clock_d     = tap_reg2hw.transition_ctrl.q;
+          use_ext_clock_d |= tap_reg2hw.transition_ctrl.q;
         end
 
         for (int k = 0; k < LcTokenWidth/32; k++) begin
@@ -398,7 +398,7 @@ module lc_ctrl
                          reg2hw.transition_cmd.qe;
 
         if (reg2hw.transition_ctrl.qe) begin
-          use_ext_clock_d     = reg2hw.transition_ctrl.q;
+          use_ext_clock_d |= reg2hw.transition_ctrl.q;
         end
 
         for (int k = 0; k < LcTokenWidth/32; k++) begin
@@ -437,7 +437,7 @@ module lc_ctrl
       otp_part_error_q          <= 1'b0;
       fatal_bus_integ_error_q   <= 1'b0;
       otp_vendor_test_ctrl_q    <= '0;
-      use_ext_clock_q           <= '0;
+      use_ext_clock_q           <= 1'b0;
     end else begin
       // All status and error bits are terminal and require a reset cycle.
       trans_success_q           <= trans_success_d         | trans_success_q;

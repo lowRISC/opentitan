@@ -217,6 +217,31 @@ module lc_ctrl_fsm
         end else if (trans_cmd_i) begin
           fsm_state_d = ClkMuxSt;
         end
+        // If we are in a non-PROD life cycle state, steer the clock mux if requested. This
+        // action is available in IdleSt so that the mux can be steered without having to initiate
+        // a life cycle transition. If a transition is initiated however, the life cycle controller
+        // will wait for the clock mux acknowledgement in the ClkMuxSt state before proceeding.
+        if (lc_state_q inside {LcStRaw,
+                               LcStTestLocked0,
+                               LcStTestLocked1,
+                               LcStTestLocked2,
+                               LcStTestLocked3,
+                               LcStTestLocked4,
+                               LcStTestLocked5,
+                               LcStTestLocked6,
+                               LcStTestUnlocked0,
+                               LcStTestUnlocked1,
+                               LcStTestUnlocked2,
+                               LcStTestUnlocked3,
+                               LcStTestUnlocked4,
+                               LcStTestUnlocked5,
+                               LcStTestUnlocked6,
+                               LcStTestUnlocked7,
+                               LcStRma}) begin
+          if (use_ext_clock_i) begin
+            lc_clk_byp_req = On;
+          end
+        end
       end
       ///////////////////////////////////////////////////////////////////
       // Clock mux state. If we are in RAW, TEST* or RMA, it is permissible
