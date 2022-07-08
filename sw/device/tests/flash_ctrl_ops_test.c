@@ -164,7 +164,7 @@ static void do_info_partition_test(uint32_t partition_number,
   uint32_t address = flash_ctrl_testutils_info_region_setup(
       &flash_state, partition_number, kFlashInfoBank, kPartitionId);
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_prog_fifo_watermark(&flash_state, 1));
+  CHECK_DIF_OK(dif_flash_ctrl_set_prog_fifo_watermark(&flash_state, 0));
   CHECK_DIF_OK(dif_flash_ctrl_set_read_fifo_watermark(&flash_state, 8));
 
   clear_irq_variables();
@@ -235,7 +235,7 @@ static void do_bank0_data_partition_test(void) {
 static void do_bank1_data_partition_test(void) {
   uint32_t address;
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_prog_fifo_watermark(&flash_state, 1));
+  CHECK_DIF_OK(dif_flash_ctrl_set_prog_fifo_watermark(&flash_state, 0));
   CHECK_DIF_OK(dif_flash_ctrl_set_read_fifo_watermark(&flash_state, 8));
 
   // Loop for low and high page erase, write and read.
