@@ -33,6 +33,7 @@ if {$env(TASK) == "FpvSecCm"} {
     +define+FPV_SEC_CM_ON+FPV_ALERT_NO_SIGINT_ERR+$env(FPV_DEFINES) \
     -bbox_m prim_count \
     -bbox_m prim_double_lfsr \
+    -bbox_m prim_onehot_check \
     -f [glob *.scr]
 } elseif {$env(DUT_TOP) == "pinmux_tb"} {
   analyze -sv09 \
