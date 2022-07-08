@@ -191,7 +191,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
 
   if (rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)) {
-    rstmgr_testutils_reset_reason_clear(&rstmgr);
+    rstmgr_testutils_reason_clear();
 
     // Write arbitrary value to each test register.
     write_test_reg();

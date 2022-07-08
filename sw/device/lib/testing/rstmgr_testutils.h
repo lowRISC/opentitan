@@ -96,17 +96,13 @@ void rstmgr_testutils_post_reset(
 /**
  * Gets the reason for a reset in retention SRAM.
  *
- * @param rstmgr A reset manager handle
- * @param reason pointer to write the reset_reason
+ * @returns reset reason
  */
-void rstmgr_testutils_reset_reason(const dif_rstmgr_t *handle,
-                                   dif_rstmgr_reset_info_bitfield_t *reason);
+dif_rstmgr_reset_info_bitfield_t rstmgr_testutils_reason_get(void);
 
 /**
  * Clears the reset information in Retention SRAM
- *
- * @param handle A Reset Manager handle.
  */
-void rstmgr_testutils_reset_reason_clear(const dif_rstmgr_t *handle);
+void rstmgr_testutils_reason_clear(void);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_RSTMGR_TESTUTILS_H_

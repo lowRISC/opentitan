@@ -154,7 +154,7 @@ bool test_main(void) {
   // Initialize pwrmgr
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  rstmgr_testutils_reset_reason(&rstmgr, &info);
+  info = rstmgr_testutils_reason_get();
 
   // POR reset
   if (info == kDifRstmgrResetInfoPor) {
@@ -170,7 +170,7 @@ bool test_main(void) {
     otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2, 0);
 
     // reboot device
-    rstmgr_testutils_reset_reason_clear(&rstmgr);
+    rstmgr_testutils_reason_clear();
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
 
     // wait here until device reset

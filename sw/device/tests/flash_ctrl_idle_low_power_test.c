@@ -96,7 +96,7 @@ bool test_main(void) {
                                               kDifToggleEnabled));
 
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
-  rstmgr_testutils_reset_reason(&rstmgr, &rstmgr_reset_info);
+  rstmgr_reset_info = rstmgr_testutils_reason_get();
 
   uint32_t address = flash_ctrl_testutils_data_region_setup(
       &flash, kRegionBasePageIndex, kFlashDataRegion, kRegionSize);
@@ -144,7 +144,7 @@ bool test_main(void) {
     // Check the erase operation completed successfully.
     CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon));
 
-    rstmgr_testutils_reset_reason(&rstmgr, &rstmgr_reset_info);
+    rstmgr_reset_info = rstmgr_testutils_reason_get();
     CHECK(rstmgr_reset_info == kDifRstmgrResetInfoPor);
     CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralAonTimerAon);
     CHECK(irq_serviced == kDifAonTimerIrqWdogTimerBark);
@@ -158,7 +158,7 @@ bool test_main(void) {
     memset(expected_data, 0xff, sizeof(expected_data));
     CHECK_ARRAYS_EQ(readback_data, expected_data, kNumWords);
 
-    rstmgr_testutils_reset_reason_clear(&rstmgr);
+    rstmgr_testutils_reason_clear();
   } else {
     LOG_ERROR("Unexepected reset type detected. Reset info = %0x",
               rstmgr_reset_info);

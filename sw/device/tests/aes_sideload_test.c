@@ -254,7 +254,7 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  rstmgr_testutils_reset_reason(&rstmgr, &info);
+  info = rstmgr_testutils_reason_get();
 
   init_flash();
 
@@ -269,7 +269,7 @@ bool test_main(void) {
     otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2, 0);
 
     // Reboot device.
-    rstmgr_testutils_reset_reason_clear(&rstmgr);
+    rstmgr_testutils_reason_clear();
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
 
     // Wait here until device reset.
