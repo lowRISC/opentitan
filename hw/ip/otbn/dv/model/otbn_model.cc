@@ -459,11 +459,13 @@ int OtbnModel::check() const {
     }
   }
 
-  try {
-    good &= check_regs(*iss);
-  } catch (const std::exception &err) {
-    std::cerr << "Failed to check registers: " << err.what() << "\n";
-    return -1;
+  if (!dont_check_regs) {
+    try {
+      good &= check_regs(*iss);
+    } catch (const std::exception &err) {
+      std::cerr << "Failed to check registers: " << err.what() << "\n";
+      return -1;
+    }
   }
 
   try {
@@ -546,6 +548,11 @@ int OtbnModel::set_software_errs_fatal(unsigned char new_val) {
 
 int OtbnModel::set_no_sec_wipe_chk() {
   OtbnTraceChecker::get().set_no_sec_wipe_chk();
+  return 0;
+}
+
+int OtbnModel::disable_reg_checks() {
+  dont_check_regs = true;
   return 0;
 }
 
@@ -991,4 +998,9 @@ int otbn_model_send_err_escalation(OtbnModel *model,
                                    svBitVecVal *err_val /* bit [31:0] */) {
   assert(model);
   return model->send_err_escalation(err_val);
+}
+
+int otbn_disable_reg_checks(OtbnModel *model) {
+  assert(model);
+  return model->disable_reg_checks();
 }

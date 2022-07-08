@@ -17,6 +17,7 @@ struct ISSWrapper;
 class OtbnModel {
  public:
   enum command_t { Execute, DmemWipe, ImemWipe };
+  bool dont_check_regs;
 
   OtbnModel(const std::string &mem_scope, const std::string &design_scope);
   ~OtbnModel();
@@ -113,6 +114,9 @@ class OtbnModel {
   // Returns true if we have an ISS wrapper and it has the START_WIPE flag
   // asserted
   bool is_at_start_of_wipe() const;
+
+  // Tell the model not to execute register integrity checks
+  int disable_reg_checks();
 
  private:
   // Constructs an ISS wrapper if necessary. If something goes wrong, this

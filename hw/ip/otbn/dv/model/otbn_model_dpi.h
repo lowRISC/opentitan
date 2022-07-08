@@ -129,6 +129,9 @@ int otbn_model_reset(OtbnModel *model);
 // React to an error escalation. Returns 0 on success or -1 on failure.
 int otbn_model_send_err_escalation(OtbnModel *model,
                                    svBitVecVal *err_val /* bit [31:0] */);
+
+// Tell the model not to execute register integrity checks
+int otbn_disable_reg_checks(OtbnModel *model);
 }
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_DPI_H_
