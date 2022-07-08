@@ -10,7 +10,6 @@ from typing import Any, Dict, Optional, Union
 import logging
 
 import reggen.gen_rtl
-import reggen.gen_sec_cm_testplan
 from mako import exceptions as mako_exceptions  # type: ignore
 from mako.lookup import TemplateLookup as MakoTemplateLookup  # type: ignore
 from reggen.ip_block import IpBlock
@@ -296,8 +295,6 @@ class IpBlockRenderer(IpTemplateRendererBase):
             # TODO: Pass on template parameters to reggen? Or enable the user
             # to set a different set of parameters in the renderer?
             reggen.gen_rtl.gen_rtl(obj, str(rtl_path))
-            reggen.gen_sec_cm_testplan.gen_sec_cm_testplan(
-                obj, output_dir_staging / 'data')
 
             # Write IP configuration (to reproduce the generation process).
             # TODO: Should the ipconfig file be written to the instance name,
