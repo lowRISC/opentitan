@@ -12,6 +12,60 @@
 #include "entropy_src_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+void entropy_testutils_auto_mode_init(void) {
+  const dif_csrng_t csrng = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+  const dif_edn_t edn0 = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+  const dif_edn_t edn1 = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+
+  // Disable CSRNG.  This is required to abort the generate command of boot
+  // mode, which is likely still running.
+  CHECK_DIF_OK(dif_csrng_stop(&csrng));
+
+  // Stop both EDNs.
+  CHECK_DIF_OK(dif_edn_stop(&edn0));
+  CHECK_DIF_OK(dif_edn_stop(&edn1));
+
+  // Re-enable the CSRNG.
+  CHECK_DIF_OK(dif_csrng_configure(&csrng));
+
+  // Re-enable EDN0 in auto mode.
+  const dif_edn_auto_params_t edn0_params = {
+      // EDN0 provides lower-quality entropy.  Let one generate command return 8
+      // blocks, and reseed every 32 generates.
+      .reseed_material =
+          {
+              .len = 1,
+              .data = {0x00000002},  // Reseed from entropy source only.
+          },
+      .generate_material =
+          {
+              .len = 1, .data = {0x00008003},  // One generate returns 8 blocks.
+          },
+      .reseed_interval = 32,  // Reseed every 32 generates.
+  };
+  CHECK_DIF_OK(dif_edn_set_auto_mode(&edn0, edn0_params));
+
+  // Re-enable EDN1 in auto mode.
+  const dif_edn_auto_params_t edn1_params = {
+      // EDN1 provides highest-quality entropy.  Let one generate command
+      // return 1 block, and reseed after every generate.
+      .reseed_material =
+          {
+              .len = 1,
+              .data = {0x00000002},  // Reseed from entropy source only.
+          },
+      .generate_material =
+          {
+              .len = 1, .data = {0x00001003},  // One generate returns 1 block.
+          },
+      .reseed_interval = 1,  // Reseed after every generate.
+  };
+  CHECK_DIF_OK(dif_edn_set_auto_mode(&edn1, edn1_params));
+}
+
 static void setup_entropy_src(void) {
   dif_entropy_src_t entropy_src;
   CHECK_DIF_OK(dif_entropy_src_init(
@@ -116,12 +170,6 @@ void entropy_testutils_boot_mode_init(void) {
   setup_entropy_src();
   setup_csrng();
   setup_edn(false);
-}
-
-void entropy_testutils_auto_mode_init(void) {
-  setup_entropy_src();
-  setup_csrng();
-  setup_edn(true);
 }
 
 void entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
