@@ -159,8 +159,8 @@ bool test_main(void) {
 
   // Read reset info  before check
   dif_rstmgr_reset_info_bitfield_t rst_info;
-  rstmgr_testutils_reset_reason(&rstmgr, &rst_info);
-  rstmgr_testutils_reset_reason_clear(&rstmgr);
+  rst_info = rstmgr_testutils_reason_get();
+  rstmgr_testutils_reason_clear();
   LOG_INFO("reset info = 0x%02X", rst_info);
 
   if (rst_info != kDifRstmgrResetInfoPor &&

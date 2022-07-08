@@ -188,7 +188,7 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
     return true;
   } else {
     dif_rstmgr_reset_info_bitfield_t reset_info;
-    rstmgr_testutils_reset_reason(&rstmgr, &reset_info);
+    reset_info = rstmgr_testutils_reason_get();
     LOG_ERROR("Unexpected reset_info 0x%x", reset_info);
   }
   return false;

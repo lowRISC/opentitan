@@ -133,7 +133,7 @@ bool test_main(void) {
       &sysrst_ctrl));
 
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
-  rstmgr_testutils_reset_reason(&rstmgr, &rstmgr_reset_info);
+  rstmgr_reset_info = rstmgr_testutils_reason_get();
 
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(

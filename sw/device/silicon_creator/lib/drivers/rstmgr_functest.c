@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
@@ -25,8 +26,8 @@ enum {
 
 bool test_main(void) {
   // Read and clear reset reason.
-  uint32_t reason = rstmgr_reason_get();
-  rstmgr_reason_clear(reason);
+  uint32_t reason = rstmgr_testutils_reason_get();
+  rstmgr_testutils_reason_clear();
   LOG_INFO("Reset reason: 0x%08x", reason);
   // This test assumes that reset reason is unique.
   CHECK(bitfield_popcount32(reason) == 1, "Expected exactly 1 reset reason.");

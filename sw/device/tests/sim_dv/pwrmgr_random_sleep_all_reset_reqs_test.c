@@ -520,8 +520,8 @@ bool test_main(void) {
 
   // Check if there was a HW reset caused by expected cases
   dif_rstmgr_reset_info_bitfield_t rst_info;
-  rstmgr_testutils_reset_reason(&rstmgr, &rst_info);
-  rstmgr_testutils_reset_reason_clear(&rstmgr);
+  rst_info = rstmgr_testutils_reason_get();
+  rstmgr_testutils_reason_clear();
 
   CHECK(rst_info == kDifRstmgrResetInfoPor ||
             rst_info == kDifRstmgrResetInfoSysRstCtrl ||
