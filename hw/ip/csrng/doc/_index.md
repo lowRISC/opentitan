@@ -72,7 +72,7 @@ These include:
 ## Note on the term "Entropy"
 
 Every DRNG requires some initial seed material, and the requirements for the generation of that seed material varies greatly between standards, and potentially between CC security targets.
-In all standards considered, DRNG's require some "entropy" from an external source to create the initial seed.
+In all standards considered, DRNGs require some "entropy" from an external source to create the initial seed.
 However, the rules for obtaining said entropy differ.
 Furthermore the required delivery mechanisms differ.
 For this reason we must make a clear distinction between "Physical" (or "Live" or "True") entropy and "Factory Entropy".
@@ -234,7 +234,7 @@ This section describes the application interface, which is required for performi
 Each CSRNG instance corresponds to a unique application interface port, which implements the application interface described here.
 Any hardware peripherals which require complete control of an instance may connect directly to a dedicated interface port.
 Meanwhile peripherals without any special requirements (i.e. personalization strings or non-FIPS-approved, fully-deterministic number sequences) may share access to an instance via the entropy distribution network (EDN) IP.
-The EDN's manage the instantiation and reseeding of CSRNG instances for general use-cases, providing either on-demand or timed-delivery entropy streams to hardware peripherals.
+The EDNs manage the instantiation and reseeding of CSRNG instances for general use-cases, providing either on-demand or timed-delivery entropy streams to hardware peripherals.
 Firmware applications can obtain access to random bit sequences directly through application interface port 0, which is directly mapped to a set of TL-UL registers.
 
 The total number of application interface ports (for TL-UL, directly attached peripherals or EDN instances) is determined by the `NHwApp` parameter.
@@ -243,7 +243,7 @@ The command bus operates like a FIFO, in which a command is pushed into the inte
 An optional stream of additional data may follow, such as seed material for an `instantiate` application command.
 For the `generate` application command, the obfuscated entropy will be returned on the `genbits` bus.
 This bus also operates like a FIFO, and the receiving module can provide back pressure to the `genbits` bus.
-There is one instance of a firmware application interface, and uses the TL-UL registers.
+There is one instance of a firmware application interface, and it uses the TL-UL registers.
 For more details on how the application interface works, see the Theory of Operations section above.
 
 In general, users of the application interface are either firmware or some hardware module entity.
@@ -404,12 +404,12 @@ The actions performed by each command, as well as which flags are supported, are
 #### Command Response
 
 Once a command has been completed, successfully or unsuccessfully, the CSRNG responds with a single cycle pulse on the `csrng_rsp_ack` signal associated with the same application interface port.
-If the command is successful the `csrng_rsp_sts` signal will indicate the value 0 (`CSRNG_OK`) in the same cycle.
+If the command is successful, the `csrng_rsp_sts` signal will indicate the value 0 (`CSRNG_OK`) in the same cycle.
 Otherwise the application will receive the value 1 (`CSRNG_ERROR`) on the `csrng_rsp_sts` signal.
 A number of exception cases to be considered are enumerated in NIST SP 800-90A, and may include events such as:
 * Failure of the entropy source
 * Attempts to use an instance which has not been properly instantiated, or
-* Attempts to generate data when an instance has exceeded its maximum seed.life.
+* Attempts to generate data when an instance has exceeded its maximum seed life.
 In such cases, a 32-bit exception message will be propagated to firmware via the `hw_exc_sts` register, and a `cs_hw_inst_exc` interrupt will be raised.
 
 #### Generated Bits (`genbits`) Interface
@@ -426,7 +426,7 @@ Such a seed will be created only using factory-entropy and will lack the physica
 #### Handshaking signals
 
 The application command signal `csrng_req_bus` is accompanied by a `csrng_valid_signal`, which is asserted by the requester when the command is valid.
-CSRNG may stall incoming commands by desserting the `csrng_req_ready` signal.
+CSRNG may stall incoming commands by deasserting the `csrng_req_ready` signal.
 A command is considered received whenever both `csrng_req_valid` and `csrng_req_ready` are asserted in the same clock cycle.
 
 Likewise a requester must only consider data on the `genbits` bus to be valid when the `genbits_valid` signal is asserted, and should assert `genbits_ready` whenever it is ready to accept the `genbits` data.
