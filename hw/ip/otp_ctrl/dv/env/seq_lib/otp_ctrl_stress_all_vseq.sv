@@ -12,19 +12,25 @@
 class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
   `uvm_object_utils(otp_ctrl_stress_all_vseq)
 
+  string seq_names[];
+
   `uvm_object_new
 
+  virtual function void assign_seq_names();
+    seq_names = {"otp_ctrl_common_vseq",
+                 "otp_ctrl_dai_lock_vseq",
+                 "otp_ctrl_smoke_vseq",
+                 "otp_ctrl_test_access_vseq",
+                 "otp_ctrl_background_chks_vseq",
+                 "otp_ctrl_parallel_lc_esc_vseq",
+                 "otp_ctrl_parallel_lc_req_vseq",
+                 "otp_ctrl_parallel_key_req_vseq",
+                 "otp_ctrl_dai_errs_vseq",
+                 "otp_ctrl_low_freq_read_vseq"};
+  endfunction
+
   task body();
-    string seq_names[] = {"otp_ctrl_common_vseq",
-                          "otp_ctrl_dai_lock_vseq",
-                          "otp_ctrl_smoke_vseq",
-                          "otp_ctrl_test_access_vseq",
-                          "otp_ctrl_background_chks_vseq",
-                          "otp_ctrl_parallel_lc_esc_vseq",
-                          "otp_ctrl_parallel_lc_req_vseq",
-                          "otp_ctrl_parallel_key_req_vseq",
-                          "otp_ctrl_dai_errs_vseq",
-                          "otp_ctrl_low_freq_read_vseq"};
+    assign_seq_names();
 
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence       seq;
@@ -72,4 +78,3 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
   endtask : body
 
 endclass
-
