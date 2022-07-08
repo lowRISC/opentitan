@@ -93,9 +93,15 @@ TEST_F(SetModeTest, Auto) {
                      {EDN_CTRL_EDN_ENABLE_OFFSET, kMultiBitBool4False},
                      {EDN_CTRL_BOOT_REQ_MODE_OFFSET, kMultiBitBool4False},
                      {EDN_CTRL_AUTO_REQ_MODE_OFFSET, kMultiBitBool4False},
+                     {EDN_CTRL_CMD_FIFO_RST_OFFSET, kMultiBitBool4False},
+                 });
+  EXPECT_WRITE32(EDN_CTRL_REG_OFFSET,
+                 {
+                     {EDN_CTRL_EDN_ENABLE_OFFSET, kMultiBitBool4False},
+                     {EDN_CTRL_BOOT_REQ_MODE_OFFSET, kMultiBitBool4False},
+                     {EDN_CTRL_AUTO_REQ_MODE_OFFSET, kMultiBitBool4False},
                      {EDN_CTRL_CMD_FIFO_RST_OFFSET, kMultiBitBool4True},
                  });
-
   EXPECT_WRITE32(EDN_CTRL_REG_OFFSET,
                  {
                      {EDN_CTRL_EDN_ENABLE_OFFSET, kMultiBitBool4False},
@@ -130,11 +136,19 @@ TEST_F(SetModeTest, Auto) {
 
   EXPECT_WRITE32(EDN_CTRL_REG_OFFSET,
                  {
-                     {EDN_CTRL_EDN_ENABLE_OFFSET, kMultiBitBool4False},
+                     {EDN_CTRL_EDN_ENABLE_OFFSET, kMultiBitBool4True},
                      {EDN_CTRL_BOOT_REQ_MODE_OFFSET, kMultiBitBool4False},
                      {EDN_CTRL_AUTO_REQ_MODE_OFFSET, kMultiBitBool4True},
                      {EDN_CTRL_CMD_FIFO_RST_OFFSET, kMultiBitBool4False},
                  });
+
+  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, 1);
+
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 1);
+
+  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, 1);
+
+  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, 1);
 
   EXPECT_DIF_OK(dif_edn_set_auto_mode(&edn_, params));
 }
