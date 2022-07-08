@@ -6,3 +6,6 @@
 
 waive -rules {HIER_BRANCH_NOT_READ INPUT_NOT_READ} -location {prim_onehot_check.sv} -regexp {.*'(clk_i|rst_ni)' is not read from in module 'prim_onehot_check'.*} \
       -comment "clk_ and rst_ni are only used for assertions in this module."
+
+waive -rules {PARAM_NOT_USED} -location {prim_onehot_check.sv} -regexp {.*EnableAlertTriggerSVA.*} \
+      -comment "The disable parameter is used only during DV / FPV."
