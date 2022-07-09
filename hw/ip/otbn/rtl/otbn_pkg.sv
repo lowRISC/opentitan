@@ -443,9 +443,9 @@ package otbn_pkg;
   typedef struct packed {
     logic call_stack_pop;
     logic call_stack_push;
-    logic branch;
-    logic jump;
-    logic loop;
+    logic branch_insn;
+    logic jump_insn;
+    logic loop_insn;
   } ctrl_flow_predec_t;
 
   typedef struct packed {

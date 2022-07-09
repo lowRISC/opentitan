@@ -71,7 +71,7 @@ module usbdev_usbif  #(
   input  logic                     us_tick_i,
 
   // control
-  input  logic                     link_connect_i,
+  input  logic                     connect_en_i,
   input  logic [6:0]               devaddr_i,
   output logic                     clr_devaddr_o,
   input  logic [NEndpoints-1:0]    in_ep_enabled_i,
@@ -108,7 +108,7 @@ module usbdev_usbif  #(
 );
 
   // Enable pull-up resistor only if VBUS is active
-  assign usb_pullup_en_o = link_connect_i & usb_sense_i;
+  assign usb_pullup_en_o = connect_en_i & usb_sense_i;
 
   // OUT or SETUP direction
   logic [PktW:0]                     out_max_used_d, out_max_used_q;
@@ -130,7 +130,7 @@ module usbdev_usbif  #(
   assign out_endpoint_o     = out_endpoint_val_o ? out_ep_current : '0;
 
   assign link_reset_o   = link_reset;
-  assign clr_devaddr_o  = ~link_connect_i | link_reset;
+  assign clr_devaddr_o  = ~connect_en_i | link_reset;
   assign link_out_err_o = out_ep_rollback;
 
   always_comb begin
@@ -372,7 +372,7 @@ module usbdev_usbif  #(
     .usb_dp_i              (usb_dp_i),
     .usb_dn_i              (usb_dn_i),
     .usb_oe_i              (usb_oe_o),
-    .usb_pullup_en_i       (link_connect_i),
+    .usb_pullup_en_i       (connect_en_i),
     .rx_idle_det_i         (rx_idle_det),
     .rx_j_det_i            (rx_j_det),
     .sof_valid_i           (sof_valid_o),

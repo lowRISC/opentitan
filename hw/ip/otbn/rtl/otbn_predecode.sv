@@ -527,9 +527,9 @@ module otbn_predecode
                                               (rf_we_b_base & insn_rs2 == 5'd1) |
                                               (rf_we_d_base & insn_rd  == 5'd1);
 
-  assign ctrl_flow_predec_o.branch = branch_insn;
-  assign ctrl_flow_predec_o.jump   = jump_insn;
-  assign ctrl_flow_predec_o.loop   = loop_insn;
+  assign ctrl_flow_predec_o.branch_insn = branch_insn;
+  assign ctrl_flow_predec_o.jump_insn   = jump_insn;
+  assign ctrl_flow_predec_o.loop_insn   = loop_insn;
 
   logic unused_clk, unused_rst;
 

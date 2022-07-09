@@ -1370,9 +1370,9 @@ module otbn_controller
     (ctrl_flow_target_predec_i != branch_target);
 
   assign ctrl_predec_error =
-    |{ctrl_flow_predec_i.jump            != (insn_dec_shared_i.jump_insn   & insn_valid_i),
-      ctrl_flow_predec_i.loop            != (insn_dec_shared_i.loop_insn   & insn_valid_i),
-      ctrl_flow_predec_i.branch          != (insn_dec_shared_i.branch_insn & insn_valid_i),
+    |{ctrl_flow_predec_i.jump_insn       != (insn_dec_shared_i.jump_insn   & insn_valid_i),
+      ctrl_flow_predec_i.loop_insn       != (insn_dec_shared_i.loop_insn   & insn_valid_i),
+      ctrl_flow_predec_i.branch_insn     != (insn_dec_shared_i.branch_insn & insn_valid_i),
       ctrl_flow_predec_i.call_stack_push != expected_call_stack_push,
       ctrl_flow_predec_i.call_stack_pop  != expected_call_stack_pop,
       branch_target_predec_error,
