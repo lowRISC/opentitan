@@ -71,7 +71,7 @@ module alert_handler_lpg_ctrl import alert_pkg::*; (
     );
   end
 
-  // explicitly read all unused lpg groups to avoid lint errors.
+  // explicitly read all unused lpg triggers to avoid lint errors.
   logic [NLpg-1:0] lpg_used;
   logic unused_lpg_init_trig;
   always_comb begin

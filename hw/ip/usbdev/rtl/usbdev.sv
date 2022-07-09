@@ -143,7 +143,7 @@ module usbdev
 
   logic [10:0]       frame;
   logic [2:0]        link_state;
-  logic              link_connect;
+  logic              connect_en;
   logic              resume_link_active;
 
   logic [NEndpoints-1:0] data_toggle_clear;
@@ -208,9 +208,9 @@ module usbdev
 
   logic [NEndpoints-1:0] clear_rxenable_out;
 
-  assign event_av_empty = link_connect & ~av_rvalid;
+  assign event_av_empty = connect_en & ~av_rvalid;
   assign event_av_overflow = reg2hw.avbuffer.qe & (~av_fifo_wready);
-  assign hw2reg.usbstat.rx_empty.d = link_connect & ~rx_fifo_rvalid;
+  assign hw2reg.usbstat.rx_empty.d = connect_en & ~rx_fifo_rvalid;
 
   prim_fifo_sync #(
     .Width(AVFifoWidth),
@@ -483,7 +483,7 @@ module usbdev
     .us_tick_i            (us_tick),
 
     // control
-    .link_connect_i       (link_connect),
+    .connect_en_i       (connect_en),
     .devaddr_i            (reg2hw.usbctrl.device_address.q),
     .clr_devaddr_o        (clr_devaddr),
     .in_ep_enabled_i      (ep_in_enable),
@@ -524,7 +524,7 @@ module usbdev
   assign hw2reg.usbstat.link_state.d = link_state;
   assign hw2reg.usbstat.frame.d = frame;
 
-  assign link_connect = reg2hw.usbctrl.enable.q;
+  assign connect_en = reg2hw.usbctrl.enable.q;
   assign resume_link_active = reg2hw.usbctrl.resume_link_active.qe &
                               reg2hw.usbctrl.resume_link_active.q;
 
