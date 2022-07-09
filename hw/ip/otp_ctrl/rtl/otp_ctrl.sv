@@ -1454,7 +1454,6 @@ module otp_ctrl
   `ifndef PRIM_DEFAULT_IMPL
     `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
   `endif
-  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
     `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
         u_otp.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[1])
