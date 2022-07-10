@@ -54,6 +54,14 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Knob to enable on the fly scoreboard.
   bit scb_otf_en = 0;
 
+  // TB ecc support enable
+  // With ecc enabled, read path requires pre encoded data patterns.
+  // 0 : no ecc
+  // 1 : ecc enable
+  // 2 : 1 bit error test mode
+  // 3 : 2 bit error test mode
+  int ecc_mode = 0;
+
   // Transaction counters for otf
   int otf_ctrl_wr_sent = 0;
   int otf_ctrl_wr_rcvd = 0;
@@ -80,9 +88,18 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // read data by host if
   data_q_t flash_rd_data;
 
-  `uvm_object_utils_begin(flash_ctrl_env_cfg)
+  // 2bit of target prefix. Use with cfg.ecc_mode > 0
+  // When cfg.ecc_mode > 0, this will be randomized
+  // before sequence starts.
+  // tgt_pre[0]: rd
+  // tgt_pre[1]: direct_rd
+  // tgt_pre[2]: wr
+  // tgt_pre[3]: rsvd
+  // then assigned to bit 18:17
+  bit [1:0] tgt_pre[NumTgt];
 
-  `uvm_object_utils_end
+
+  `uvm_object_utils(flash_ctrl_env_cfg)
 
   `uvm_object_new
 
@@ -122,7 +139,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     end
     alert_max_delay = 20000;
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
-
+    foreach (tgt_pre[i]) tgt_pre[i] = i;
   endfunction : initialize
 
   // For a given partition returns its size in bytes in each of the banks.
@@ -176,12 +193,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   endtask : update_partition_mem_model
 
   // Backdoor initialize flash memory elements.
-  //
   // Applies the initialization scheme to the given flash partition in all banks.
-  // part is the type of flash partition.
-  // scheme is the type of initialization to be done.
+  // @part is the type of flash partition.
+  // @scheme is the type of initialization to be done.
   virtual task flash_mem_bkdr_init(flash_dv_part_e part = FlashPartData,
-                                            flash_mem_init_e scheme);
+                                   flash_mem_init_e scheme);
+
+    `uvm_info("flash_mem_bkdr_init", $sformatf("scheme: %s", scheme.name), UVM_MEDIUM)
     case (scheme)
       FlashMemInitSet: begin
         foreach (mem_bkdr_util_h[part][i]) mem_bkdr_util_h[part][i].set_mem();
@@ -194,6 +212,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       end
       FlashMemInitInvalidate: begin
         foreach (mem_bkdr_util_h[part][i]) mem_bkdr_util_h[part][i].invalidate_mem();
+      end
+      FlashMemInitEccMode: begin
+        foreach (mem_bkdr_util_h[part][i]) mem_bkdr_util_h[part][i].set_mem();
       end
       default: begin
         `uvm_error(`gfn, $sformatf("Undefined initialization scheme - %s", scheme.name()))
@@ -246,6 +267,40 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     end while (part != part.first());
     `uvm_info(`gfn, $sformatf("\nFinished checking all memory model\n"), UVM_MEDIUM)
   endfunction : check_mem_model
+
+  // Read full word from the memory. (76bits per word line)
+  // flash_op.op should be FlashOpRead
+  function void flash_mem_otf_read(flash_op_t flash_op, ref fdata_q_t data);
+    flash_dv_part_e partition;
+    int bank;
+    bit [75:0] rdata;
+    int        size, is_odd, tail;
+    addr_t aligned_addr = flash_op.addr;
+    // QW (8byte) align
+    aligned_addr[2:0] = 'h0;
+    bank = flash_op.addr[OTFBankId];
+    partition = flash_op.partition;
+    // If address is not 8byte aligned, full 76bit has to be read.
+    // This exception is identified using 4Byte address bit, (addr[2])
+    // and size of 4byte word.
+    is_odd = flash_op.addr[2];
+    size = (flash_op.num_words + is_odd) / 2;
+    tail = (flash_op.num_words + is_odd) % 2;
+
+    `uvm_info("flash_mem_otf_read", $sformatf("is_odd:%0d size:%0d tail:%0d wd:%0d",
+                                            is_odd, size, tail, flash_op.num_words), UVM_MEDIUM)
+    // Use per bank address.
+    aligned_addr[31:OTFBankId] = 'h0;
+    for (int i = 0; i < size; i++) begin
+      rdata = mem_bkdr_util_h[partition][bank].read(aligned_addr);
+      data.push_back(rdata);
+      aligned_addr += 8;
+    end
+    if (tail) begin
+      rdata = mem_bkdr_util_h[partition][bank].read(aligned_addr);
+      data.push_back(rdata);
+    end
+  endfunction // flash_mem_otf_read
 
   // Reads flash mem contents via backdoor.
   //
@@ -312,7 +367,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     data_4s_t wr_data;
     data_b_t mem_data;
 
-
     // Randomize the lower half-word (if Xs) if the first half-word written in the below loop is
     // corresponding upper half-word.
     if (addr_attrs.bank_addr[flash_ctrl_pkg::DataByteWidth-1]) begin
@@ -337,7 +391,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
     for (int i = 0; i < flash_op.num_words; i++) begin
       data_4s_t loc_data = (scheme == FlashMemInitCustom) ? data[i] :
-          (scheme == FlashMemInitRandomize) ? $urandom() : wr_data;
+                 (scheme == FlashMemInitRandomize) ? $urandom() : wr_data;
 
       _flash_full_write(flash_op.partition, addr_attrs.bank, addr_attrs.bank_addr, loc_data);
       `uvm_info(`gfn, $sformatf(
@@ -395,6 +449,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     {intg_data, data} = prim_secded_pkg::prim_secded_hamming_72_64_enc(data);
 
     // program fully via backdoor
+    // TODO: review this later.
+    // it has to be write(aligned_addr, instead of write64(aligned_addr
     mem_bkdr_util_h[partition][bank].write64(aligned_addr, {intg_data[3:0], data});
 
     // Update scoreboard memory model with this back-door write

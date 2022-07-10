@@ -85,16 +85,18 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     obs.cmd.partition = FlashPartData;
     obs.cmd.op = FlashOpRead;
     obs.cmd.addr = exp.start_addr; // tl_addr
+    // for debug print
+    obs.start_addr = exp.start_addr;
     // descramble needs 2 buswords
-    obs.cmd.addr[2] = 0;
     obs.cmd.num_words = 2;
+
     obs.mem_addr = exp.start_addr >> 3;
 
     obs.print("RAW");
-    cfg.flash_mem_bkdr_read(obs.cmd, obs.dq);
-    obs.fq = obs.dq2fq(obs.dq);
+    cfg.flash_mem_otf_read(obs.cmd, obs.fq);
 
     obs.print("rtl_host: before");
+    obs.region = exp.region;
     obs.descramble(exp.addr_key, exp.data_key);
     obs.print("rtl_host: after");
     `uvm_info("process_eg_host", $sformatf(" rcvd:%0d",cfg.otf_host_rd_sent), UVM_MEDIUM)
@@ -142,34 +144,32 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     int col_sz = exp.fq.size;
     `uvm_info("process_read", $sformatf("bank:%0d colsz:%0d ffsz:%0d",
                                         bank, col_sz, eg_rtl_fifo[bank].used()), UVM_MEDIUM)
+
     exp.print("obs_read");
     `uvm_create_obj(flash_otf_item, send)
     send.cmd = exp.cmd;
     send.cmd.addr[OTFBankId] = bank;
+    // print purpose
+    send.start_addr = exp.start_addr;
+    cfg.flash_mem_otf_read(send.cmd, send.fq);
+    send.print("exp_read: enc_data");
 
     if (exp.cmd.addr[2]) begin
-      send.cmd.addr[2] = 0;
       send.head_pad = 1;
       send.cmd.num_words++;
-      if (send.cmd.num_words % 2) begin
-        send.cmd.num_words++;
-        send.tail_pad = 1;
-      end
-    end else begin
-      send.cmd.num_words = col_sz * 2;
+    end
+    if (send.cmd.num_words % 2) begin
+      send.cmd.num_words++;
+      send.tail_pad = 1;
     end
     send.mem_addr = exp.start_addr >> 3;
-    send.print("SEND");
-    cfg.flash_mem_bkdr_read(send.cmd, send.dq);
-
-    send.print("exp_read: enc_data");
-    send.fq = send.dq2fq(send.dq);
-    send.cmd.num_words = exp.cmd.num_words;
+    send.region = exp.region;
     send.descramble(exp.addr_key, exp.data_key);
     send.print("exp_read: raw_data");
     `dv_info($sformatf("RDATA size: %d x 8B bank:%0d sent_cnt:%0d",
                        send.raw_fq.size(), bank, cfg.otf_ctrl_rd_sent++),
              UVM_MEDIUM, "process_read")
+
     compare_data(send.raw_fq, exp.fq, bank, "rdata");
   endtask
 
