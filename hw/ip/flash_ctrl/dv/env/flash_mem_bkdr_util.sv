@@ -22,7 +22,7 @@ class flash_mem_bkdr_util extends mem_bkdr_util;
 
   // Randomize the memory with correct ECC.
   virtual function void randomize_mem();
-    `uvm_info(`gfn, "Randomizing mem contents", UVM_LOW)
+    `uvm_info(`gfn, "Randomizing flash mem contents", UVM_LOW)
     for (int i = 0; i < depth; i++) begin
       uvm_hdl_data_t data;
       `DV_CHECK_STD_RANDOMIZE_FATAL(data, "Randomization failed!", path)

@@ -9,7 +9,6 @@ class flash_otf_item extends uvm_object;
   fdata_q_t  raw_fq, fq;
   bit[flash_ctrl_pkg::BusAddrByteW-1:0] start_addr;
   bit[flash_phy_pkg::KeySize-1:0]      addr_key, data_key;
-  bit                                  is_direct = 0;
   bit [flash_ctrl_pkg::BusAddrByteW-2:0] mem_addr;
   bit                                    head_pad, tail_pad;
   bit                                    scr_en, ecc_en;
@@ -101,9 +100,10 @@ class flash_otf_item extends uvm_object;
   // Use 'create_flash_data' function from package
   function void scramble(bit [flash_phy_pkg::KeySize-1:0] addr_key,
                          bit [flash_phy_pkg::KeySize-1:0] data_key,
-                         bit [flash_ctrl_pkg::BusAddrByteW-2:0] addr);
+                         bit [flash_ctrl_pkg::BusAddrByteW-2:0] addr,
+                         bit dis = 1);
     bit [FlashDataWidth-1:0] data;
-    bit [71:0]               ecc_72;
+    bit [71:0]               data_with_icv;
     bit [75:0]               ecc_76;
 
     if (region == null) begin
@@ -118,19 +118,20 @@ class flash_otf_item extends uvm_object;
       `uvm_error(`gfn, "raw_fq is empty")
       return;
     end
+    if (dis) begin
     `uvm_info("wr_scr", $sformatf("size:%0d addr:%x  akey:%x  dkey:%x scr_en:%0d ecc_en:%0d",
                               raw_fq.size(), addr, addr_key, data_key, scr_en, ecc_en), UVM_MEDIUM)
+    end
     foreach(raw_fq[i]) begin
       data = raw_fq[i][FlashDataWidth-1:0];
-      if (ecc_en) begin
-        ecc_72 = prim_secded_pkg::prim_secded_hamming_72_64_enc(raw_fq[i][63:0]);
-      end
+      data_with_icv = prim_secded_pkg::prim_secded_hamming_72_64_enc(raw_fq[i][63:0]);
+
       if (scr_en) begin
-        //fq.push_back(create_flash_data(raw_fq[i], addr, addr_key, data_key));
-        data = create_flash_data(raw_fq[i], addr, addr_key, data_key);
+        data = create_flash_data(raw_fq[i], addr, addr_key, data_key, dis);
       end
       if (ecc_en) begin
-        fq.push_back(prim_secded_pkg::prim_secded_hamming_76_68_enc({ecc_72[67:64], data[63:0]}));
+        fq.push_back(
+           prim_secded_pkg::prim_secded_hamming_76_68_enc({data_with_icv[67:64], data[63:0]}));
       end else begin
         fq.push_back({12'h0, data});
       end
@@ -142,13 +143,30 @@ class flash_otf_item extends uvm_object;
   // Use 'create_raw_data' function from package
   function void descramble(bit[flash_phy_pkg::KeySize-1:0] addr_key,
                            bit[flash_phy_pkg::KeySize-1:0] data_key);
-    bit[1:0] err72, err76;
+    bit[1:0] err76, ecc_err;
     bit[flash_ctrl_pkg::BusAddrByteW-2:0] addr = mem_addr;
     data_q_t   tmp_dq;
-    `uvm_info("rd_scr", $sformatf("size:%0d addr:%x", fq.size(), addr), UVM_MEDIUM)
+    ecc_err = 'h0;
+    if (region == null) begin
+      `uvm_fatal("scramble", "region should be assigned before calling this function")
+    end else begin
+      scr_en = (region.scramble_en == MuBi4True);
+      ecc_en = (region.ecc_en == MuBi4True);
+    end
+
+    `uvm_info("rd_scr", $sformatf("size:%0d addr:%x scr_en:%0d ecc_en:%0d",
+                                  fq.size(), addr, scr_en, ecc_en), UVM_MEDIUM)
     foreach (fq[i]) begin
-      raw_fq.push_back(create_raw_data(fq[i], addr, addr_key, data_key, err72, err76));
-      addr ++;
+      if (scr_en) begin
+        raw_fq.push_back(create_raw_data(fq[i], addr, addr_key, data_key, err76));
+        ecc_err |= err76;
+      end else begin
+        raw_fq.push_back(fq[i]);
+      end
+      if (ecc_err != 0) begin
+        `uvm_error("rd_scr", "ecc error is detected")
+      end
+      addr++;
     end
 
     // collect upto cmd.num_words
@@ -161,4 +179,10 @@ class flash_otf_item extends uvm_object;
     if (tail_pad) dq = dq[0:$-1];
     raw_fq = dq2fq(dq);
   endfunction // descramble
+
+  function void clear_qs();
+    this.dq = '{};
+    this.raw_fq = '{};
+    this.fq = '{};
+  endfunction // clear_qs
 endclass // flash_otf_item

@@ -54,5 +54,6 @@ class flash_ctrl_base_test #(
     super.build_phase(phase);
     void'($value$plusargs("scb_otf_en=%0b", cfg.scb_otf_en));
     void'($value$plusargs("multi_alert=%0b", cfg.multi_alert_en));
+    void'($value$plusargs("ecc_mode=%0d", cfg.ecc_mode));
   endfunction
 endclass : flash_ctrl_base_test
