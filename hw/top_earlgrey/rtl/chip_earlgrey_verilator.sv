@@ -95,8 +95,7 @@ module chip_earlgrey_verilator (
     mio_in = '0;
     mio_in[31:0] = cio_gpio_p2d_i;
     mio_in[25] = cio_uart_rx_p2d_i;
-    mio_in[35] = cio_usbdev_sense_p2d_i;
-    mio_in[36] = cio_usbdev_sense_p2d_i;
+    mio_in[29] = cio_usbdev_sense_p2d_i;
   end
 
   assign cio_gpio_d2p_o[25:0]       = mio_out[25:0];

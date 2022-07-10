@@ -49,6 +49,7 @@ gen_hw_and_check_clean() {
 # Check generated files are up to date
 
 bad=0
+cleanup
 
 gen_hw_and_check_clean "Register headers" regs         || bad=1
 gen_hw_and_check_clean "tops"             top          || bad=1

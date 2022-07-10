@@ -8,4 +8,3 @@
 // corresponding header a link location.
 
 extern bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t flag);
-

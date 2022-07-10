@@ -13,7 +13,7 @@ set_property -dict { PACKAGE_PIN T3  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports { 
 set_property -dict { PACKAGE_PIN T4  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports { IOB1 }];
 
 ## Buttons
-set_property -dict { PACKAGE_PIN R1 IOSTANDARD LVCMOS33 } [get_ports { POR_N }]; #pushbutton
+set_property -dict { PACKAGE_PIN R1 IOSTANDARD LVCMOS33 } [get_ports { POR_BUTTON_N }]; #pushbutton
 
 ## Switches
 set_property -dict { PACKAGE_PIN J16 IOSTANDARD LVCMOS33 } [get_ports { IOA0 }]; #sw1
@@ -29,7 +29,7 @@ set_property -dict { PACKAGE_PIN K3 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_C
 
 # JTAG (second part)
 set_property -dict { PACKAGE_PIN L2 IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR4 }];       #USB_A13 (SAM3X)
-set_property -dict { PACKAGE_PIN J3 IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IO_JSRST_N }]; #USB_A14 (SAM3X)
+set_property -dict { PACKAGE_PIN J3 IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { POR_N }]; #USB_A14 (SAM3X)
 # SW Straps
 set_property -dict { PACKAGE_PIN B2 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC0 }]; #USB_A15 (SAM3X)
 set_property -dict { PACKAGE_PIN C7 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC1 }]; #USB_A16 (SAM3X)

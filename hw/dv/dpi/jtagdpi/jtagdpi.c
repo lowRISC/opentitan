@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "jtagdpi.h"
-#include "tcp_server.h"
 
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "tcp_server.h"
 
 struct jtagdpi_ctx {
   // Server context

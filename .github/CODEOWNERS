@@ -1,12 +1,16 @@
 # This file specifies default reviewers for new pull requests. This is used as a
 # convenience - the OpenTitan project doesn't currently have a formalised notion
 # of "code owners".
-#
+
 # Note: The default reviewers aren't required to give a review prior to merging.
 # You are encouraged to add non-default reviewers where you know someone else
 # may have useful insight or has been recently working in the area touched by
 # your PR. Anyone is able to contribute to pull request review, and is
 # encouraged to do so
+
+# For now, ignore GitHub's error annotations of the form "Unknown owner: make
+# sure $username exists and has write access to the repository". See
+# https://github.com/lowRISC/opentitan/issues/13469 for discussion.
 
 # Order: last matching pattern takes the most precedence.
 #   Please refer the link for the detail

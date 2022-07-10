@@ -13,7 +13,6 @@ import re
 from pathlib import Path
 
 import hjson
-
 from lib.common import wrapped_docstring
 from lib.OtpMemImg import OtpMemImg
 
@@ -23,8 +22,9 @@ MMAP_DEFINITION_FILE = 'hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson'
 LC_STATE_DEFINITION_FILE = 'hw/ip/lc_ctrl/data/lc_ctrl_state.hjson'
 # Default image file definition (can be overridden on the command line).
 IMAGE_DEFINITION_FILE = 'hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson'
-# Default output path (can be overridden on the command line).
-MEMORY_HEX_FILE = 'otp-img.vmem'
+# Default output path (can be overridden on the command line). Note that
+# "BITWIDTH" will be replaced with the architecture's bitness.
+MEMORY_MEM_FILE = 'otp-img.BITWIDTH.vmem'
 
 
 def _override_seed(args, name, config):
@@ -93,7 +93,6 @@ def main():
     lc_state_def_file = Path(proj_root).joinpath(LC_STATE_DEFINITION_FILE)
     mmap_def_file = Path(proj_root).joinpath(MMAP_DEFINITION_FILE)
     img_def_file = Path(proj_root).joinpath(IMAGE_DEFINITION_FILE)
-    hex_file = Path(MEMORY_HEX_FILE)
 
     parser = argparse.ArgumentParser(
         prog="gen-otp-img",
@@ -143,13 +142,13 @@ def main():
                         ''')
     parser.add_argument('-o',
                         '--out',
-                        type=Path,
+                        type=str,
                         metavar='<path>',
-                        default=hex_file,
+                        default=MEMORY_MEM_FILE,
                         help='''
-                        Custom output path for generated hex file.
+                        Custom output path for generated MEM file.
                         Defaults to {}
-                        '''.format(hex_file))
+                        '''.format(MEMORY_MEM_FILE))
     parser.add_argument('--lc-state-def',
                         type=Path,
                         metavar='<path>',
@@ -196,7 +195,7 @@ def main():
                         default='',
                         help='''
                         This is a post-processing option and allows permuting
-                        the bit positions before writing the hexfile.
+                        the bit positions before writing the memfile.
                         The bit mapping needs to be supplied as a comma separated list
                         of bit slices, where the numbers refer to the bit positions in
                         the original data word before remapping, for example:
@@ -248,7 +247,7 @@ def main():
         log.error(err)
         exit(1)
 
-    # Print all defined args into header comment for referqence
+    # Print all defined args into header comment for reference
     argstr = ''
     for arg, argval in sorted(vars(args).items()):
         if argval:
@@ -265,10 +264,14 @@ def main():
     memfile_header = '// Generated on {} with\n// $ gen-otp-img.py {}\n//\n'.format(
         dtstr, argstr)
 
-    hexfile_content = memfile_header + otp_mem_img.streamout_hexfile()
+    memfile_body, bitness = otp_mem_img.streamout_memfile()
 
-    with open(args.out, 'w') as outfile:
-        outfile.write(hexfile_content)
+    # If the out argument does not contain "BITWIDTH", it will not be changed.
+    memfile_path = Path(args.out.replace('BITWIDTH', str(bitness)))
+
+    with open(memfile_path, 'w') as outfile:
+        outfile.write(memfile_header)
+        outfile.write(memfile_body)
 
 
 if __name__ == "__main__":

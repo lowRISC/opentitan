@@ -12338,9 +12338,6 @@
           IOB11
           IOB12
           IOC12
-          IOR1
-          IOR2
-          IOR3
           IOR5
           IOR6
           IOR7
@@ -12363,11 +12360,18 @@
             desc: Extra clock input for FPGA target
           }
           {
-            name: IO_JSRST_N
+            name: POR_BUTTON_N
             type: InputStd
             bank: VCC
             connection: manual
-            desc: Dedicated JTAG system reset input
+            desc: Power-on reset button input
+          }
+          {
+            name: JTAG_SRST_N
+            type: InputStd
+            bank: VCC
+            connection: manual
+            desc: JTAG header SRST, triggers POR
           }
           {
             name: IO_USB_CONNECT
@@ -12478,15 +12482,15 @@
           }
           {
             name: tck
-            pad: SPI_DEV_CLK
-            desc: JTAG tck signal, overlaid on SPI_DEV.
-            idx: 59
+            pad: IOR3
+            desc: JTAG tck signal.
+            idx: 38
           }
           {
             name: tms
-            pad: SPI_DEV_CS_L
-            desc: JTAG tms signal, overlaid on SPI_DEV.
-            idx: 60
+            pad: IOR0
+            desc: JTAG tms signal.
+            idx: 35
           }
           {
             name: trst_n
@@ -12496,15 +12500,15 @@
           }
           {
             name: tdi
-            pad: SPI_DEV_D0
-            desc: JTAG tdi signal, overlaid on SPI_DEV.
-            idx: 53
+            pad: IOR2
+            desc: JTAG tdi signal.
+            idx: 37
           }
           {
             name: tdo
-            pad: SPI_DEV_D1
-            desc: JTAG tdo signal, overlaid on SPI_DEV.
-            idx: 54
+            pad: IOR1
+            desc: JTAG tdo signal.
+            idx: 36
           }
         ]
       }

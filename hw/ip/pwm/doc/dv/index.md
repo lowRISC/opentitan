@@ -2,15 +2,6 @@
 title: "PWM DV document"
 ---
 
-<!-- Copy this file to hw/ip/pwm/doc/dv/index.md and make changes as needed.
-For convenience 'pwm' in the document can be searched and replaced easily with the
-desired IP (with case sensitivity!). Also, use the testbench block diagram
-located at OpenTitan team drive / 'design verification'
-as a starting point and modify it to reflect your pwm testbench and save it
-to hw/ip/pwm/doc/dv/tb.svg. It should get linked and rendered under the block
-diagram section below. Please update / modify / remove sections below as
-applicable. Once done, remove this comment before making a PR. -->
-
 ## Goals
 * **DV**
   * Verify all PWM IP features by running dynamic simulations with a SV/UVM based testbench
@@ -138,13 +129,12 @@ The functional coverage plan can be found here: [coverageplan](#testplan)
 
 ### Self-checking strategy
 #### Scoreboard
-The `pwm_scoreboard` is primarily used for end to end checking.
+The `pwm_scoreboard` is primarily used for transaction-by-transaction checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
 * item_fifo[NUM_PWM_CHANNELS]: the FIFO w.r.t channels receives the dut items sent by the pwm_monitor
-* exp_item_q[PWM_NUM_CHANNELS]: the queues  w.r.t channels are used to store the expected/referenced items
-which are constructed from tl address and data channels
+* exp_item                   : It is used to store the expected item constructed from tl address and data channels.
 
-when a channel is configured to start sending pulses the first expected item is generated and put in the exp_item_q.
+when a channel is configured to start sending pulses the first expected item is generated.
 Because of the way the PWM IP is design the first and the last pulse might not match the configuration settings.
 Therefore the scoreboard will wait until a channel is disabled before checking the output.
 Once a channel is disabled it will first discard the first two items received from the monitor.
@@ -152,7 +142,7 @@ The is send because the channel was enabled and has no valid information.
 The second is the one that cannot be expected to match configuration.
 For pulse mode it will get the expected pulse item and match all incoming item to this one.
 For blink and heart beat mode after an item is compared successfully the scoreboard will generate the next expected item based on the previous item and the settings of the blink parameters.
-If an error is found the scoreboard will throw a fatal error.
+If an error is found the scoreboard will throw an error.
 
 #### Assertions
 * TLUL assertions: The `tb/pwm_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.

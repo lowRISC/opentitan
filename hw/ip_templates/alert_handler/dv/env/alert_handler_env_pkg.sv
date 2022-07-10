@@ -39,6 +39,10 @@ package alert_handler_env_pkg;
   // set the max ping timeout cycle to constrain the simulation run time
   parameter uint MAX_PING_TIMEOUT_CYCLE    = 300;
 
+  // Alert_handler ping timer design should automatically fetch EDN entropy every 500k clock
+  // cycles. We set the threshold to 600k clock cycles.
+  parameter uint MAX_EDN_REQ_WAIT_CYCLES   = 600_000;
+
   parameter uint NUM_CRASHDUMP             = NUM_ALERT_CLASSES * (alert_handler_reg_pkg::AccuCntDw
                                              + alert_handler_reg_pkg::EscCntDw + 3) +
                                              NUM_ALERTS + NUM_LOCAL_ALERTS;

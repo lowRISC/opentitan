@@ -24,11 +24,11 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // alert checking related parameters
   bit do_alert_check = 1;
   bit check_alert_sig_int_err = 1;
-  local bit under_alert_handshake[string];
-  local bit exp_alert[string];
-  local bit is_fatal_alert[string];
-  local int alert_chk_max_delay[string];
-  local int alert_count[string];
+  bit under_alert_handshake[string];
+  bit exp_alert[string];
+  bit is_fatal_alert[string];
+  int alert_chk_max_delay[string];
+  int alert_count[string];
 
   // intg check
   bit en_d_user_intg_chk = 1;
@@ -265,7 +265,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       cfg.clk_rst_vif.wait_n_clks(1);
       if (under_alert_handshake[alert_name] || cfg.under_reset) return;
     end
-    `uvm_error(`gfn, $sformatf("alert %0s did not trigger", alert_name))
+    `uvm_error(`gfn, $sformatf("alert %0s did not trigger max_delay:%0d",
+                               alert_name, alert_chk_max_delay[alert_name]))
   endtask
 
   // This function is used for individual IPs to set when they expect certain alert to trigger
@@ -290,7 +291,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                     exp_alert=%0b, request ignored", alert_name, under_alert_handshake[alert_name],
                     exp_alert[alert_name]), UVM_MEDIUM)
         end else begin
-          `uvm_info(`gfn, $sformatf("alert %0s is expected to trigger", alert_name), UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf("alert %0s is expected to trigger", alert_name), UVM_HIGH)
           is_fatal_alert[alert_name] = is_fatal;
           exp_alert[alert_name] = 1;
           alert_chk_max_delay[alert_name] = max_delay;
@@ -406,7 +407,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       void'(item.is_d_chan_intg_ok(
             .en_data_intg_chk(!is_data_intg_passthru_mem(item, ral_name) ||
                               !cfg.disable_d_user_data_intg_check_for_passthru_mem),
-            .throw_error(1)));
+            .throw_error(cfg.m_tl_agent_cfgs[ral_name].check_tl_errs)));
 
       // sample covergroup
       tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,

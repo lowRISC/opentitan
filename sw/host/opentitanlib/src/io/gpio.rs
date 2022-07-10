@@ -26,6 +26,14 @@ pub enum GpioError {
     /// The hardware does not support the requested mode (open drain, pull down input, etc.)
     #[error("Unsupported pull mode {0} requested")]
     UnsupportedPullMode(PullMode),
+    #[error("Conflicting pin configurations for pin {0}: host:{1}, target:{2}")]
+    PinModeConflict(String, String, String),
+    #[error("Conflicting pin logic values for pin {0}: host:{1}, target:{2}")]
+    PinValueConflict(String, String, String),
+    #[error("Undefined pin logic value for pin {0}")]
+    PinValueUndefined(String),
+    #[error("Generic error: {0}")]
+    Generic(String),
 }
 impl_serializable_error!(GpioError);
 

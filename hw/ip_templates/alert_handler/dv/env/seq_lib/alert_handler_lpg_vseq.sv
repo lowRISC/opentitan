@@ -37,10 +37,12 @@ class alert_handler_lpg_vseq extends alert_handler_entropy_vseq;
     fork
       begin : isolation_fork
         trigger_non_blocking_seqs();
-        enable_lpg_group(alert_en);
-        run_smoke_seq();
+        fork
+          enable_lpg_group(alert_en);
+          run_smoke_seq();
+        join
         disable fork; // disable non-blocking seqs for stress_all tests
-      end // end fork
+      end // end isolation_fork
     join
   endtask : body
 endclass : alert_handler_lpg_vseq

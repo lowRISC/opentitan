@@ -128,9 +128,10 @@ void ottf_external_isr(void) {
       top_earlgrey_plic_interrupt_for_peripheral[irq_id];
 
   if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
-    irq = (dif_aon_timer_irq_t)(
-        irq_id -
-        (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+    irq =
+        (dif_aon_timer_irq_t)(irq_id -
+                              (dif_rv_plic_irq_id_t)
+                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
 
     // Stops escalation process.
     CHECK_DIF_OK(dif_alert_handler_escalation_clear(&alert_handler,

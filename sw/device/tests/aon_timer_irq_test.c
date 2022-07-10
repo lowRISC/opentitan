@@ -170,9 +170,10 @@ void ottf_external_isr(void) {
       top_earlgrey_plic_interrupt_for_peripheral[irq_id];
 
   if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
-    irq = (dif_aon_timer_irq_t)(
-        irq_id -
-        (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+    irq =
+        (dif_aon_timer_irq_t)(irq_id -
+                              (dif_rv_plic_irq_id_t)
+                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
 
     if (irq_id == kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired) {
       CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));

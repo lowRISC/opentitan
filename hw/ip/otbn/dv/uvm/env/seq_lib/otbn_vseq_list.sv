@@ -20,3 +20,4 @@
 `include "otbn_alu_bignum_mod_err_vseq.sv"
 `include "otbn_controller_ispr_rdata_err_vseq.sv"
 `include "otbn_mac_bignum_acc_err_vseq.sv"
+`include "otbn_pc_ctrl_flow_redun_vseq.sv"

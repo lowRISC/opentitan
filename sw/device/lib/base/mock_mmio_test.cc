@@ -66,7 +66,8 @@ TEST_F(MockMmioTest, ExpectWithBits) {
 
 TEST_F(MockMmioTest, ExpectMask) {
   EXPECT_MASK32(0x8, {
-                         {0x0, 0xfff, 0xabc}, {0x10, 0x1, 0x0},
+                         {0x0, 0xfff, 0xabc},
+                         {0x10, 0x1, 0x0},
                      });
 
   auto value = mmio_region_read32(dev().region(), 0x8);

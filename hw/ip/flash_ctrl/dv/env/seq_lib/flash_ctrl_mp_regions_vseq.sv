@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Memory protect test. Overlapping regions with randomization.
-// Flash is first programmed and than read back.
+// Send one op among program, read and erase (page) in each trans round.
 class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   `uvm_object_utils(flash_ctrl_mp_regions_vseq)
 
@@ -29,8 +29,21 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
 
   data_b_t set_val;
 
-  bit poll_fifo_status;
+  bit     poll_fifo_status;
+  bit     illegal_trans = 0;
+  int     trans_cnt = 0;
+  int     exp_alert_cnt = 0;
 
+  // Memory protection regions settings.
+  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
+  // Information partitions memory protection pages settings.
+  rand
+  flash_bank_mp_info_page_cfg_t
+  mp_info_pages[NumBanks][flash_ctrl_pkg::InfoTypes][$];
+
+  constraint solv_order_c {
+    solve mp_regions, mp_info_pages before flash_op;
+  }
   // Constraint address to be in relevant range for the selected partition.
   constraint addr_c {
     if (flash_op.partition != FlashPartData) {
@@ -43,6 +56,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   constraint flash_op_c {
     flash_op.op inside {FlashOpRead, FlashOpProgram, FlashOpErase};
     flash_op.addr inside {[0 : FlashSizeBytes - 1]};
+
     // Bank erase is supported only for data & 1st info partitions
     flash_op.partition != FlashPartData && flash_op.partition != FlashPartInfo ->
     flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
@@ -56,11 +70,6 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     flash_op.num_words <= cfg.seq_cfg.op_max_words;
     flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth];
   }
-
-  // Memory protection regions settings.
-  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
-
-  rand flash_mp_region_cfg_t mp_regions_bank[flash_ctrl_pkg::MpRegions];
 
   constraint mp_regions_c {
 
@@ -85,11 +94,6 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     }
   }
 
-  // Information partitions memory protection pages settings.
-  rand
-  flash_bank_mp_info_page_cfg_t
-  mp_info_pages[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
-
   constraint mp_info_pages_c {
 
     foreach (mp_info_pages[i]) {
@@ -111,6 +115,10 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
       mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
 
       foreach (mp_info_pages[i][j][k]) {
+       mp_info_pages[i][j][k].en dist {
+                               MuBi4True := 4,
+                               MuBi4False := 1
+                               };
 
         mp_info_pages[i][j][k].scramble_en == MuBi4False;
 
@@ -153,29 +161,162 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
     cfg.scb_check                               = 1;
-    cfg.scb_set_exp_alert                       = 1;
-    cfg.alert_max_delay                         = 100_000_000;
+
     repeat (num_trans) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      default_region_cfg.read_en = default_region_read_en;
+      default_region_cfg.program_en = default_region_program_en;
+      default_region_cfg.erase_en = default_region_erase_en;
+      default_region_cfg.he_en = default_region_he_en;
+      init_p2r_map();
+      update_p2r_map(mp_regions);
+
       do_mp_reg();
+      if (illegal_trans) begin
+        exp_alert_cnt++;
+      end
+      illegal_trans = 0;
+
+      // This 'wait' will be terminated by alert_chk_max_delay from scoreboard
+      `uvm_info("seq", $sformatf("wait for recov_err alert  exp:%0d   obs:%0d max_delay:%0d",
+                                 exp_alert_cnt, cfg.scb_h.alert_count["recov_err"],
+                                 cfg.scb_h.alert_chk_max_delay["recov_err"]), UVM_MEDIUM)
+
+      wait(cfg.scb_h.alert_count["recov_err"] == exp_alert_cnt);
+      cfg.scb_h.exp_alert["recov_err"] = 0;
     end
 
-    if (cfg.bank_erase_enable) begin
+    // Send info region access and bank erase
+    exp_alert_cnt = 0;
+    cfg.scb_h.alert_count["recov_err"] = 0;
+
+    `DV_CHECK_RANDOMIZE_FATAL(this)
+
+    configure_flash_protection();
+    repeat(50) begin
+      `uvm_info("seq", $sformatf("info / bank op start... "), UVM_MEDIUM)
       //clean scb mem
       cfg.reset_scb_mem();
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(this,
-                                     flash_op.partition inside {FlashPartData, FlashPartInfo};)
+      `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(flash_op,
+                                            flash_op.partition inside {!(FlashPartData)};)
       `uvm_info(`gfn, $sformatf("BANK ERASE PART %0p", flash_op), UVM_LOW)
-      do_bank_erase();
-    end
+      do_info_bank();
+      illegal_trans = 0;
+      `uvm_info("do_info_bank", $sformatf("done: alert_cnt  exp:%0d  obs:%0d",
+                                exp_alert_cnt, cfg.scb_h.alert_count["recov_err"]),
+                                UVM_MEDIUM)
+      cfg.scb_h.exp_alert["recov_err"] = 0;
+     end
   endtask : body
 
   virtual task do_mp_reg();
+    int page;
+    flash_mp_region_cfg_t my_region;
     poll_fifo_status           = 1;
     // Default region settings
     default_region_ecc_en      = MuBi4False;
     default_region_scramble_en = MuBi4False;
 
+    configure_flash_protection();
+    // Randomize Write Data
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(flash_op_data,
+                                          flash_op_data.size == flash_op.num_words;)
+    `uvm_info("do_mp_reg", $sformatf("flash_op: %p", flash_op), UVM_MEDIUM)
+    if (flash_op.partition == FlashPartData) begin
+      page = flash_op.addr >> 11;
+      if (p2r_map[page] == 8) begin
+        // default region
+        my_region = default_region_cfg;
+      end else begin
+        my_region = mp_regions[p2r_map[page]];
+        if (my_region.en != MuBi4True) my_region = default_region_cfg;
+      end
+      illegal_trans = validate_flash_op(flash_op, my_region);
+    end
+
+    if(illegal_trans) begin
+      cfg.scb_h.exp_alert["recov_err"] = 1;
+      cfg.scb_h.alert_chk_max_delay["recov_err"] = 2000; // cycles
+    end
+
+    `uvm_info("do_mp_reg", $sformatf("trans:%0d page:%x region:%0d illegal_trans:%0d",
+                                     ++trans_cnt, page, p2r_map[page], illegal_trans),
+                                     UVM_MEDIUM)
+
+    if (flash_op.op == FlashOpProgram) begin
+      //prepare for program op
+      cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
+      flash_ctrl_start_op(flash_op);
+      flash_ctrl_write(flash_op_data, poll_fifo_status);
+      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+    end else if (flash_op.op == FlashOpRead) begin
+      flash_ctrl_start_op(flash_op);
+      flash_ctrl_read(flash_op.num_words, flash_op_data, poll_fifo_status);
+      wait_flash_op_done();
+    end else begin
+      flash_op.addr[10:0] = 'h0;
+      flash_ctrl_start_op(flash_op);
+      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
+    end
+  endtask : do_mp_reg
+
+  virtual task do_info_bank();
+    int info_page_addr, num_info_pages;
+    int info_sel, bank;
+
+    flash_bank_mp_info_page_cfg_t my_info;
+
+    poll_fifo_status           = 1;
+
+    flash_op.erase_type = flash_ctrl_pkg::FlashEraseBank;
+    flash_op.num_words  = 16;
+    info_sel = flash_op.partition >> 1;
+    bank = flash_op.addr[19];
+    num_info_pages = InfoTypeSize[info_sel];
+    info_page_addr = $urandom_range(1, num_info_pages) - 1;
+    flash_op.addr[18:0] = 'h0;
+    flash_op.addr += (BytesPerPage * info_page_addr);
+    my_info = mp_info_pages[flash_op.addr[19]][info_sel][info_page_addr];
+
+    // Bank erase
+    if (flash_op.op == FlashOpErase) begin
+      illegal_trans = (bank_erase_en[bank] == 0);
+    end else begin
+      illegal_trans = validate_flash_info(flash_op, my_info);
+    end
+
+    if(illegal_trans) begin
+      if (flash_op.op != FlashOpErase) begin
+        cfg.scb_h.exp_alert["recov_err"] = 1;
+        cfg.scb_h.exp_alert_contd["recov_err"] = 31;
+        exp_alert_cnt += 32;
+      end else begin
+        cfg.scb_h.exp_alert["recov_err"] = 1;
+        exp_alert_cnt +=1;
+      end
+      cfg.scb_h.alert_chk_max_delay["recov_err"] = 2000; // cycles
+    end
+    `uvm_info("do_info_bank", $sformatf("flash_op: %p", flash_op), UVM_MEDIUM)
+    `uvm_info("do_info_bank", $sformatf("INFO_TBL[%0d][%0d][%0d] = %p", flash_op.addr[19],
+                                         info_sel, info_page_addr, my_info), UVM_MEDIUM)
+    `uvm_info("do_info_bank", $sformatf("trans:%0d  illegal_trans:%0d exp_alert:%0d op:%s",
+                                        ++trans_cnt, illegal_trans,
+                                        cfg.scb_h.exp_alert["recov_err"], flash_op.op.name),
+                                        UVM_MEDIUM)
+
+    if (flash_op.op == FlashOpProgram) begin
+      controller_program_page(flash_op);
+    end else if (flash_op.op == FlashOpRead) begin // if (flash_op.op == FlashOpProgram)
+      controller_read_page(flash_op);
+    end else begin // if (flash_op.op == FlashOpRead)
+      `uvm_info("do_info_bank", $sformatf("bank_erase_en[%0d]=%0d",
+                                          bank,bank_erase_en[bank]), UVM_MEDIUM)
+      flash_ctrl_start_op(flash_op);
+      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
+    end
+  endtask : do_info_bank
+
+  task configure_flash_protection();
     // Configure the flash with scramble disable.
     foreach (mp_regions[k]) begin
       mp_regions[k].scramble_en = MuBi4False;
@@ -194,149 +335,5 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     end
     //Enable Bank erase
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
-
-    // Randomize Write Data
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(flash_op_data, flash_op_data.size == flash_op.num_words;)
-
-    if (flash_op.op != flash_ctrl_pkg::FlashOpErase) begin
-      //prepare for program op
-      cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
-      // FLASH Program Operation
-      flash_op.op = flash_ctrl_pkg::FlashOpProgram;
-      flash_ctrl_start_op(flash_op);
-      flash_ctrl_write(flash_op_data, poll_fifo_status);
-      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-
-      // FLASH Read Operation of previous programmed data
-      flash_op.op = flash_ctrl_pkg::FlashOpRead;
-      flash_ctrl_start_op(flash_op);
-      flash_ctrl_read(flash_op.num_words, flash_op_data, poll_fifo_status);
-      wait_flash_op_done();
-    end
-
-    if ((flash_op.op == flash_ctrl_pkg::FlashOpErase) &&
-        (flash_op.erase_type == flash_ctrl_pkg::FlashErasePage)) begin
-      flash_op_pg_erase.partition  = flash_op.partition;
-      flash_op_pg_erase.erase_type = flash_ctrl_pkg::FlashErasePage;
-      flash_op_pg_erase.op         = flash_ctrl_pkg::FlashOpProgram;
-      flash_op_pg_erase.num_words  = 16;
-      flash_op_pg_erase.addr       = {flash_op.addr[19:11], {11{1'b0}}};
-      // FLASH Erase Page Operation of previous programmed data
-      `uvm_info(`gfn, $sformatf("PROGRAM OP %p", flash_op_pg_erase), UVM_HIGH)
-      for (int i = 0; i < 32; i++) begin
-        cfg.set_scb_mem(flash_op_pg_erase.num_words, flash_op_pg_erase.partition,
-                        flash_op_pg_erase.addr, AllOnes, set_val);
-        flash_op_pg_erase.addr = flash_op_pg_erase.addr + 64;  //64B was written, 16 words
-      end
-      flash_op_pg_erase.addr = {flash_op.addr[19:11], {11{1'b0}}};
-      controller_program_page(flash_op_pg_erase);
-      flash_op_pg_erase.op   = flash_ctrl_pkg::FlashOpErase;
-      flash_op_pg_erase.addr = {flash_op.addr[19:11], {11{1'b0}}};
-      `uvm_info(`gfn, $sformatf("ERASE OP %p", flash_op_pg_erase), UVM_HIGH)
-      flash_ctrl_start_op(flash_op_pg_erase);
-      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
-      `uvm_info(`gfn, $sformatf("READ OP %p", flash_op_pg_erase), UVM_HIGH)
-      flash_op_pg_erase.addr = {flash_op.addr[19:11], {11{1'b0}}};
-      controller_read_page(flash_op_pg_erase);
-    end
-
-  endtask : do_mp_reg
-
-  virtual task do_bank_erase();
-    poll_fifo_status           = 1;
-    // Default region settings
-    default_region_read_en     = MuBi4True;
-    default_region_program_en  = MuBi4True;
-    default_region_ecc_en      = MuBi4False;
-    default_region_scramble_en = MuBi4False;
-
-    // No Protection due to sw wr/rd
-    foreach (mp_regions[i]) begin
-      mp_regions[i].en = MuBi4True;
-      mp_regions[i].read_en = MuBi4True;
-      mp_regions[i].program_en = MuBi4True;
-      mp_regions[i].scramble_en = MuBi4False;
-      mp_regions[i].ecc_en = MuBi4False;
-    end
-
-    foreach (mp_info_pages[0][0][k]) begin
-      mp_info_pages[0][0][k].en          = MuBi4True;
-      mp_info_pages[0][0][k].read_en     = MuBi4True;
-      mp_info_pages[0][0][k].program_en  = MuBi4True;
-      mp_info_pages[0][0][k].scramble_en = MuBi4False;
-      mp_info_pages[0][0][k].ecc_en      = MuBi4False;
-      mp_info_pages[1][0][k].en          = MuBi4True;
-      mp_info_pages[1][0][k].read_en     = MuBi4True;
-      mp_info_pages[1][0][k].program_en  = MuBi4True;
-      mp_info_pages[1][0][k].scramble_en = MuBi4False;
-      mp_info_pages[1][0][k].ecc_en      = MuBi4False;
-    end
-
-    // Configure the flash with scramble disable.
-    foreach (mp_regions[k]) begin
-      mp_regions[k].scramble_en = MuBi4False;
-      flash_ctrl_mp_region_cfg(k, mp_regions[k]);
-      `uvm_info(`gfn, $sformatf("MP regions values %p", mp_regions[k]), UVM_HIGH)
-    end
-
-    flash_ctrl_default_region_cfg(
-        .read_en(default_region_read_en), .program_en(default_region_program_en),
-        .erase_en(default_region_erase_en), .scramble_en(default_region_scramble_en),
-        .ecc_en(default_region_ecc_en), .he_en(default_region_he_en));
-
-    foreach (mp_info_pages[i, j, k]) begin
-      flash_ctrl_mp_info_page_cfg(i, j, k, mp_info_pages[i][j][k]);
-      `uvm_info(`gfn, $sformatf("MP INFO regions values %p", mp_info_pages[i][j][k]), UVM_LOW)
-    end
-
-    `uvm_info(`gfn, $sformatf("BANK ERASE values 0x%0h", bank_erase_en), UVM_LOW)
-    flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
-
-    flash_op_bk_erase.partition  = FlashPartData;
-    flash_op_bk_erase.erase_type = flash_ctrl_pkg::FlashEraseBank;
-    flash_op_bk_erase.op         = flash_ctrl_pkg::FlashOpProgram;
-    flash_op_bk_erase.num_words  = 16;
-    flash_op_bk_erase.addr       = {flash_op.addr[19], {19{1'b0}}};
-
-    `uvm_info(`gfn, $sformatf("PROGRAM OP %p", flash_op_bk_erase), UVM_LOW)
-    for (int i = 0; i < NUM_PAGE_PART_DATA; i++) begin
-      controller_program_page(flash_op_bk_erase);
-      flash_op_bk_erase.addr = flash_op_bk_erase.addr + BytesPerPage;
-    end
-
-    if (flash_op.partition == FlashPartInfo) begin
-      flash_op_bk_erase.partition = FlashPartInfo;
-      flash_op_bk_erase.addr = {flash_op.addr[19], {19{1'b0}}};
-      `uvm_info(`gfn, $sformatf("PROGRAM OP %p", flash_op_bk_erase), UVM_LOW)
-      for (int i = 0; i < NUM_PAGE_PART_INFO0; i++) begin
-        controller_program_page(flash_op_bk_erase);
-        flash_op_bk_erase.addr = flash_op_bk_erase.addr + BytesPerPage;
-      end
-    end
-
-    flash_op_bk_erase.op   = flash_ctrl_pkg::FlashOpErase;
-    flash_op_bk_erase.addr = flash_op.addr;
-    `uvm_info(`gfn, $sformatf("ERASE OP %p", flash_op_bk_erase), UVM_LOW)
-    flash_ctrl_start_op(flash_op_bk_erase);
-    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
-
-    flash_op_bk_erase.partition = FlashPartData;
-    flash_op_bk_erase.addr = {flash_op.addr[19], {19{1'b0}}};
-    `uvm_info(`gfn, $sformatf("READ OP %p", flash_op_bk_erase), UVM_LOW)
-    for (int i = 0; i < NUM_PAGE_PART_DATA; i++) begin
-      controller_read_page(flash_op_bk_erase);
-      flash_op_bk_erase.addr = flash_op_bk_erase.addr + BytesPerPage;
-    end
-
-    if (flash_op.partition == FlashPartInfo) begin
-      flash_op_bk_erase.partition = FlashPartInfo;
-      flash_op_bk_erase.addr = {flash_op.addr[19], {19{1'b0}}};
-      `uvm_info(`gfn, $sformatf("READ OP %p", flash_op_bk_erase), UVM_LOW)
-      for (int i = 0; i < NUM_PAGE_PART_INFO0; i++) begin
-        controller_read_page(flash_op_bk_erase);
-        flash_op_bk_erase.addr = flash_op_bk_erase.addr + BytesPerPage;
-      end
-    end
-  endtask : do_bank_erase
-
+  endtask // configure_flash_protection
 endclass : flash_ctrl_mp_regions_vseq

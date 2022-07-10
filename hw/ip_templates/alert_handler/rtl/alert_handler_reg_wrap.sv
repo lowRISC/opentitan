@@ -14,7 +14,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   // interrupt
   output logic [N_CLASSES-1:0] irq_o,
   // State information for HW crashdump
-  input                        latch_crashdump_i,
+  input  [N_CLASSES-1:0]       latch_crashdump_i,
   output alert_crashdump_t     crashdump_o,
   // hw2reg
   input  hw2reg_wrap_t         hw2reg_wrap,
@@ -313,7 +313,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   // crashdump output //
   //////////////////////
 
-  logic crashump_latched_q;
+  logic [N_CLASSES-1:0] crashdump_latched_q;
   alert_crashdump_t crashdump_d, crashdump_q;
 
   // alert cause output
@@ -330,29 +330,32 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   assign crashdump_d.class_esc_cnt   = hw2reg_wrap.class_esc_cnt;
   assign crashdump_d.class_esc_state = hw2reg_wrap.class_esc_state;
 
+  // We latch the crashdump upon triggering any of the escalation protocols. The reason for this is
+  // that during escalation, certain alert senders may start to trigger due to FSMs being moved
+  // into escalation mode - thereby masking the actual alert reasons exposed in the cause
+  // registers.
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_crashdump
     if (!rst_ni) begin
-      crashump_latched_q <= 1'b0;
+      crashdump_latched_q <= '0;
       crashdump_q <= '0;
     end else begin
-      // We latch the crashdump upon triggering any of the escalation protocols. The reason for this
-      // is that during escalation, certain alert senders may start to trigger due to FSMs being
-      // moved into escalation mode - thereby masking the actual alert reasons exposed in the cause
-      // registers. Note that the alert handler only captures the crashdump once upon first
-      // assertion of this signal, and needs to be cleared or reset to re-arm the crashdump latching
-      // mechanism.
-      if (|reg2hw_wrap.class_clr) begin
-        crashump_latched_q <= 1'b0;
-        crashdump_q <= '0;
-      end else if (latch_crashdump_i && !crashump_latched_q) begin
-        crashump_latched_q <= 1'b1;
+      // We track which class has been escalated so that the crashdump latching mechanism cannot be
+      // re-armed by clearing another class that has not escalated yet. This also implies that if
+      // an unclearable class has escalated, the crashdump latching mechanism cannot be re-armed.
+      crashdump_latched_q <= (crashdump_latched_q & ~reg2hw_wrap.class_clr) | latch_crashdump_i;
+
+      // The alert handler only captures the first escalation event that asserts a latch_crashdump_i
+      // signal, unless all classes are cleared, in which case the crashdump latching mechanism is
+      // re-armed. In other words, we latch the crashdump if any of the latch_crashdump_i bits is
+      // asserted, and no crashdump has been latched yet.
+      if (|latch_crashdump_i && !(|crashdump_latched_q)) begin
         crashdump_q <= crashdump_d;
       end
     end
   end
 
   // As long as the crashdump has not been latched yet, we output the current alert handler state.
-  // Once it has been latched, we switch to the latched snapshot.
-  assign crashdump_o = (crashump_latched_q) ? crashdump_q : crashdump_d;
+  // Once any of the classes has triggered the latching, we switch to the latched snapshot.
+  assign crashdump_o = (|crashdump_latched_q) ? crashdump_q : crashdump_d;
 
 endmodule : alert_handler_reg_wrap
