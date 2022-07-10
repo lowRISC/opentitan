@@ -43,8 +43,10 @@ package entropy_src_env_pkg;
     invalid_rng_bit_enable          = 4,
     invalid_fw_ov_mode              = 5,
     invalid_fw_ov_entropy_insert    = 6,
-    invalid_es_route                = 7,
-    invalid_es_type                 = 8
+    invalid_fw_ov_insert_start      = 7,
+    invalid_es_route                = 8,
+    invalid_es_type                 = 9,
+    invalid_alert_threshold         = 10
   } invalid_mubi_e;
 
   typedef enum int {
@@ -123,6 +125,19 @@ package entropy_src_env_pkg;
     low_test  = 1
   } which_ht_e;
 
+  typedef enum bit [4:0] {
+    sfifo_esrng_err_code   = 0,
+    sfifo_observe_err_code = 1,
+    sfifo_esfinal_err_code = 2,
+    es_ack_sm_err_code     = 20,
+    es_main_sm_err_code    = 21,
+    es_cntr_err_code       = 22,
+    fifo_write_err_code    = 28,
+    fifo_read_err_code     = 29,
+    fifo_state_err_code    = 30
+  } err_code_test_val_e;
+
+
   typedef enum { BOOT, STARTUP, CONTINUOUS, HALTED } entropy_phase_e;
   typedef bit [RNG_BUS_WIDTH-1:0] rng_val_t;
   typedef bit [TL_DW-1:0]         tl_val_t;
@@ -191,6 +206,7 @@ package entropy_src_env_pkg;
   //
   // For more information about the exponential distribution see (for example):
   // https://en.wikipedia.org/wiki/Exponential_distribution
+  //
 
   function automatic realtime randomize_failure_time(realtime mtbf);
     // Random non-zero integer
@@ -198,6 +214,7 @@ package entropy_src_env_pkg;
     // Uniformly distributed random float in range (0, 1].
     // 0 is not included in this range, but 1 is.
     real     rand_r;
+
     realtime now, random_fail_time;
 
     if (!std::randomize(rand_i) with {rand_i > 0;}) begin

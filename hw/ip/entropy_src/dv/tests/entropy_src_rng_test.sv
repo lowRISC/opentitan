@@ -19,6 +19,7 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.sim_duration                = 20ms;
     cfg.hard_mtbf                   = 100s;
     cfg.mean_rand_reconfig_time     = 1ms;
+    cfg.mean_rand_csr_alert_time    = 1ms;
 
     cfg.soft_mtbf                   = 7500us;
     // Apply standards ranging from strict to relaxed

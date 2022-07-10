@@ -102,12 +102,12 @@
 
   component_a: "uvm_test_top.env.scoreboard"
   id_a : _ALL_
-  verbosity_a: UVM_FULL
+  verbosity_a: UVM_MEDIUM
   phase_a: run
 
   component_b: "uvm_test_top.env.virtual_sequencer"
   id_b : _ALL_
-  verbosity_b: UVM_FULL
+  verbosity_b: UVM_MEDIUM
   phase_b: run
 
   run_modes: [
@@ -121,7 +121,7 @@
     }
     {
       name: short_run
-      run_opts: ["+test_timeout_ns=10000000"]
+      run_opts: ["+test_timeout_ns=40_000_000"]
     }
   ]
 }

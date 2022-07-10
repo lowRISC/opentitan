@@ -29,6 +29,68 @@ interface entropy_src_cov_if
 
   assign en_intg_cov_loc = en_full_cov | en_intg_cov;
 
+  covergroup entropy_src_err_test_cg with function sample(bit[4:0] bit_num);
+    option.name         = "entropy_src_err_test_cg";
+    option.per_instance = 1;
+
+     cp_test_bit: coverpoint bit_num {
+       bins valid[] = {0, 1, 2, 20, 21, 22, 28, 29, 30};
+     }
+
+  endgroup : entropy_src_err_test_cg
+
+  covergroup entropy_src_mubi_err_cg with function sample(invalid_mubi_e which_mubi);
+    option.name         = "entropy_src_mubi_err_cg";
+    option.per_instance = 1;
+
+    cp_which_mubi: coverpoint which_mubi;
+
+  endgroup : entropy_src_mubi_err_cg
+
+  covergroup entropy_src_sm_err_cg with function sample(bit ack_sm_err,
+                                                        bit main_sm_err);
+    option.name         = "entropy_src_sm_err_cg";
+    option.per_instance = 1;
+
+    cp_ack_sm: coverpoint ack_sm_err {
+      bins ack_sm = {1};
+    }
+
+    cp_main_sm: coverpoint main_sm_err {
+      bins main_sm = {1};
+    }
+
+  endgroup : entropy_src_sm_err_cg
+
+  covergroup entropy_src_fifo_err_cg with function sample(which_fifo_err_e which_fifo_err,
+                                                          which_fifo_e which_fifo);
+    option.name         = "entropy_src_fifo_err_cg";
+    option.per_instance = 1;
+
+    cp_which_fifo: coverpoint which_fifo;
+
+    cp_which_err: coverpoint which_fifo_err;
+
+    cr_fifo_err: cross cp_which_fifo, cp_which_err;
+
+  endgroup : entropy_src_fifo_err_cg
+
+  covergroup entropy_src_cntr_err_cg with function sample(cntr_e which_cntr,
+                                                          int which_line,
+                                                          int which_bucket);
+    option.name         = "entropy_src_cntr_err_cg";
+    option.per_instance = 1;
+
+    cp_which_cntr: coverpoint which_cntr;
+
+    cp_which_line: coverpoint which_line iff(which_cntr inside {repcnt_ht_cntr,
+                                                                adaptp_ht_cntr,
+                                                                markov_ht_cntr});
+
+    cp_which_bucket: coverpoint which_bucket iff(which_cntr == bucket_ht_cntr);
+
+  endgroup : entropy_src_cntr_err_cg
+
   // Covergroup to confirm that the entropy_data CSR interface works
   // for all configurations
   covergroup entropy_src_seed_output_csr_cg with function sample(mubi4_t   fips_enable,
@@ -442,6 +504,11 @@ interface entropy_src_cov_if
 
   // TODO: Covergroup for non-windowed tests.
 
+  `DV_FCOV_INSTANTIATE_CG(entropy_src_err_test_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(entropy_src_mubi_err_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(entropy_src_sm_err_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(entropy_src_fifo_err_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(entropy_src_cntr_err_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(entropy_src_seed_output_csr_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(entropy_src_csrng_hw_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(entropy_src_observe_fifo_cg, en_full_cov)
@@ -450,6 +517,31 @@ interface entropy_src_cov_if
   `DV_FCOV_INSTANTIATE_CG(entropy_src_win_ht_deep_threshold_cg, en_full_cov)
 
   // Sample functions needed for xcelium
+  function automatic void cg_err_test_sample(bit [4:0] err_code);
+    entropy_src_err_test_cg_inst.sample(err_code);
+  endfunction
+
+  function automatic void cg_mubi_err_sample(invalid_mubi_e which_mubi);
+    entropy_src_mubi_err_cg_inst.sample(which_mubi);
+  endfunction
+
+  function automatic void cg_sm_err_sample(bit ack_sm_err, bit main_sm_err);
+    entropy_src_sm_err_cg_inst.sample(ack_sm_err, main_sm_err);
+  endfunction
+
+  function automatic void cg_fifo_err_sample(which_fifo_err_e which_fifo_err,
+                                             which_fifo_e which_fifo);
+    entropy_src_fifo_err_cg_inst.sample(which_fifo_err, which_fifo);
+  endfunction
+
+  function automatic void cg_cntr_err_sample(cntr_e which_cntr,
+                                             int which_line,
+                                             int which_bucket);
+    entropy_src_cntr_err_cg_inst.sample(which_cntr, which_line, which_bucket);
+  endfunction
+
+
+
   function automatic void cg_seed_output_csr_sample(mubi4_t   fips_enable,
                                                     mubi4_t   threshold_scope,
                                                     mubi4_t   rng_bit_enable,

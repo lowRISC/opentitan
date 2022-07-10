@@ -40,8 +40,13 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Mean time before "soft" RNG failure (still functions but less entropy per bit)
   realtime soft_mtbf;
 
-  // Mean time between an unexpected configuration update events
-  realtime mean_rand_reconfig_time;
+  // Mean time between unexpected configuration update events
+  // Default: Negative, meaning no random reconfigs
+  realtime mean_rand_reconfig_time = -1;
+
+  // Mean time ERR_CODE_TEST CSR-driven alert events
+  // Default: Negative, meaning no random reconfigs
+  realtime mean_rand_csr_alert_time = -1;
 
   int      seed_cnt;
 
