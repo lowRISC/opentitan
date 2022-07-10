@@ -119,24 +119,58 @@
     {
       name: err_test_cg
       desc: '''
-            Covers that all health test failures, fatal errors, all counter errors and
-            all error codes of entropy_src have been tested.
-            Individual config settings that will be covered include:
-            - which_ht_fail (0 to 3), 4 possible health test fails, repcnt, adaptp, bucket and
-              markov test fails
-            - which_ht (0 to 1), adaptp and markov health tests have low and high tests
-            - which_fatal_err (0 to 5), 6 fatal errors, esrng, observe, esfinal fifo errors,
-              main state machine, ack state machine errors, and counter error
-            - which_fifo_err (0 to 2), fifo has write, read and state errors
-            - which_fifo (0 to 2), esrng, observe and esfinal fifos
+            Covers that the ERR_CODE_TEST register has been tested for all 9 valid test values:
+            - 0: SFIFO_ESRNG_ERR
+            - 1: SFIFO_OBSERVE_ERR
+            - 2: SFIFO_ESFINAL_ERR
+            - 20: ES_ACK_SM_ERR
+            - 21: ES_MAIN_SM_ERR
+            - 22: ES_CNTR_ERR
+            - 28: FIFO_WRITE_ERR
+            - 29: FIFO_READ_ERR
+            - 30: FIFO_STATE_ERR
+            Each test bit should then trigger the corresponding alerts and error status bits.
+            '''
+    }
+    {
+      name: mubi_err_cg
+      desc: '''
+            Covers that all 11 register fields with built in redundancy (All multi-bit encoded
+            except for ALERT_THRESHOLD) have been programmed with at least one one invalid mubi
+            value, and that the corresponding recoverable alert has been registered.  This
+            includes the 10 boolean register fields which are MultiBit encoded as well as the
+            ALERT_THRESHOLD register, which is a pair of numeric values which must be inverses
+            of each other.
+            '''
+    }
+    {
+       name: sm_err_cg
+       desc: '''
+             Covers that both the MAIN_SM and ACK_SM have been forced into an invalid state,
+             and this state error has been successfully detected, the appropriate alerts have
+             been signalled, and the error has been sucessfully reported in the error CSRs.
+             '''
+    }
+    {
+       name: fifo_err_cg
+       desc: '''
+             Covers that all three fifos (the esrng fifo, the observe fifo, and the esfinal fifo)
+             have all been forced into the three error states (write overflow, read underflow,
+             and invalid state), and the error has sucessfully generated an alert and that
+             the alert is successfully reported in the the ERR_CODE register.
+             '''
+    }
+    {
+      name: cntr_err_cg
+      desc: '''
+            Covers that all counter-related fatal errors have been tested by forcing the
+            respective redundant counters to be mismatched from each other.
             - which_cntr (0 to 5), 6 possible counter errors, window counter, repcnt ht counter,
               repcnts ht counter, adaptive proportion ht counter, bucket ht counter and
               markov ht counter
-            - which_err_code (0 to 17), ERR_CODE has 9 fields, plus 9 ERR_CODE_TEST bits test
-            - which_invalid_mubi (0 to 8), 9 possible invalid mubi value fields
             - which_cntr_replicate (0 to RNG_BUS_WIDTH-1), reptcnt, adaptp, markov health tests
               have RNG_BUS_WIDTH copies of counters
-            - which_bin (0 to 2<sup>RNG_BUS_WIDTH-1</sup>), bucket health test has
+            - which_bin (0 to 2<sup>RNG_BUS_WIDTH</sup>-1), bucket health test has
               2<sup>RNG_BUS_WIDTH</sup> copies of counters
             '''
     }

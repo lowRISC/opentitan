@@ -924,7 +924,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
       "err_code": begin
       end
-      "err_code_check": begin
+      "err_code_test": begin
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
@@ -1036,6 +1036,17 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   package_and_release_entropy();
                 end
               end
+            end
+            "err_code_test": begin
+              uvm_reg_field err_code_test = csr.get_field_by_name("err_code_test");
+              bit [TL_DW - 1:0] err_code = ral.err_code.get_mirrored_value();
+              bit[4:0] bit_num = err_code_test.get_mirrored_value();
+              bit [TL_DW - 1:0] mask = (32'h1 << bit_num);
+              err_code = err_code | mask;
+              `uvm_info(`gfn, "Received write to ERR_CODE_TEST", UVM_LOW)
+              `DV_CHECK_FATAL(ral.err_code.predict(.value(err_code), .kind(UVM_PREDICT_READ)));
+              cov_vif.cg_err_test_sample(bit_num);
+              set_exp_alert(.alert_name("fatal_alert"), .is_fatal(1));
             end
             default: begin
             end

@@ -25,9 +25,16 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   int do_background_procs;
 
   // Scheduled time for next unexpected reconfig event;
-  // This time is exponentially distributed to yeild an average period between
+  // This time is exponentially distributed to yield an average period between
   // reconfig events of cfg.mean_unexpected_reconfig_period
   realtime sched_reconfig_time;
+
+  // Scheduled time for randomized alert event;
+  // This time is exponentially distributed to yield an average period between
+  // reconfig events of cfg.mean_random_alert_period
+  realtime sched_csr_alert_time;
+
+  rand err_code_test_val_e csr_alert_value;
 
   // Signal to start and stop the RNG when it becomes halted in boot/bypass modes
   int do_reenable = 0;
@@ -288,6 +295,19 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       end
     end
 
+    if (intr_status[FatalErr]) begin
+      `uvm_info(`gfn, "starting shutdown", UVM_MEDIUM)
+      // Gracefully stop the indefinite push and pull sequences, which
+      // tend to raise endless objections after a hard reset.
+      shutdown_indefinite_seqs();
+      `uvm_info(`gfn, "SEQs SHUTDOWN applying hard reset", UVM_MEDIUM)
+      apply_reset(.kind("HARD"));
+      // Relaunch the push and pull sequences
+      start_indefinite_seqs();
+      // Restart the DUT with a new configuration
+      random_reconfig();
+    end
+
     `uvm_info(`gfn, "Interrupt handler complete", UVM_FULL)
 
   endtask
@@ -307,9 +327,26 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   endtask
 
   function void randomize_unexpected_config_time();
-    //sched_reconfig_time = randomize_failure_time(cfg.mean_rand_reconfig_time);
-    sched_reconfig_time = 15ms;
-    `DV_CHECK_FATAL(sched_reconfig_time >= 0, "Failed to schedule reconfig event")
+    if (cfg.mean_rand_reconfig_time > 0) begin
+      sched_reconfig_time = randomize_failure_time(cfg.mean_rand_reconfig_time);
+      // randomize_failure_time uses negative values to communicate errors
+      `DV_CHECK_FATAL(sched_reconfig_time >= 0, "Failed to schedule reconfig event")
+    end else begin
+      // Use a negative value here to communicate no scheduled events
+      sched_reconfig_time = -1;
+    end
+  endfunction
+
+  function void randomize_csr_alert_time();
+    if (cfg.mean_rand_csr_alert_time > 0) begin
+      sched_csr_alert_time = randomize_failure_time(cfg.mean_rand_csr_alert_time);
+      // randomize_failure_time uses negative values to communicate errors
+      `uvm_info(`gfn, $sformatf("sched_csr_alert_time: %g", sched_csr_alert_time), UVM_LOW)
+      `DV_CHECK_FATAL(sched_csr_alert_time >= 0, "Failed to schedule CSR alert event")
+    end else begin
+      // Use a negative value here to communicate no scheduled events
+      sched_csr_alert_time = -1;
+    end
   endfunction
 
   // A task to test the regupd and auto-lock regwen features.
@@ -343,13 +380,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     end
   endtask
 
-  task body();
-    bit [TL_DW - 1:0] fw_ov_value;
-    super.body();
-    randomize_unexpected_config_time();
-    // Start sequences
+  task start_indefinite_seqs();
     fork
+      // Thread 1 of 2: run the RNG push sequencer
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
+      // Thread 2 or 2: run the CSRNG pull sequencer
+      // If the DUT is supposed to start in BOOT mode,
+      // send a signal to reenable the DUT in continuous mode
+      // after receiving one CSRNG seed.
       begin
         if (cfg.dut_cfg.route_software == MuBi4False &&
             cfg.dut_cfg.fips_enable == MuBi4False) begin
@@ -357,11 +395,23 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
           m_csrng_pull_seq_single.start(p_sequencer.csrng_sequencer_h);
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut);
           cfg.clk_rst_vif.wait_clks(dly_to_reenable_dut);
+          // restart the DUT in continuous mode
           do_reenable = 1;
         end
         // Collect all post boot mode seeds in indefinite mode
         m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
       end
+    join_none
+  endtask
+
+  task body();
+    bit [TL_DW - 1:0] fw_ov_value;
+    super.body();
+    randomize_unexpected_config_time();
+    randomize_csr_alert_time();
+    // Start sequences in the background
+    start_indefinite_seqs();
+    fork
       begin
         `uvm_info(`gfn, "Starting interrupt loop", UVM_HIGH)
         while (do_background_procs) begin
@@ -377,10 +427,22 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
             reinit_dut(1);
           end
           // Check if it is time to attempt another random reconfig event
-          if ($realtime() > sched_reconfig_time) begin
+          if (sched_reconfig_time > 0 && $realtime() > sched_reconfig_time) begin
             random_reconfig();
             randomize_unexpected_config_time();
             check_reconfig();
+          end
+          // Check if it is time for a randomized csr-driven alert
+          // (generated via the ERR_CODE_TEST register)
+          // Note: these alerts are only checked when enabled.
+          if (sched_csr_alert_time > 0 && $realtime() > sched_csr_alert_time &&
+              ral.module_enable.module_enable.get_mirrored_value() == MuBi4True) begin
+            string msg;
+            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_alert_value);
+            msg = $sformatf("Generating alert via ERR_CODE_TEST with err_code %d", csr_alert_value);
+            `uvm_info(`gfn, msg, UVM_LOW)
+            csr_wr(.ptr(ral.err_code_test.err_code_test), .value(csr_alert_value));
+            randomize_csr_alert_time();
           end
         end
         `uvm_info(`gfn, "Exiting interrupt loop", UVM_HIGH)
