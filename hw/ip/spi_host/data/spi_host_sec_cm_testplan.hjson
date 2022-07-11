@@ -27,7 +27,7 @@
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       milestone: V2S
-      tests: []
+      tests: ["spi_host_tl_intg_err"]
     }
   ]
 }
