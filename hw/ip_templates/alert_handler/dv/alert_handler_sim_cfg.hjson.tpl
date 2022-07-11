@@ -33,6 +33,7 @@
 
   // Add additional tops for simulation.
   sim_tops: ["alert_handler_bind",
+             "alert_handler_cov_bind",
              "sec_cm_prim_sparse_fsm_flop_bind",
              "sec_cm_prim_count_bind",
              "sec_cm_prim_double_lfsr_bind",
