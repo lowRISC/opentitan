@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Use the gen-otp-img.py script to convert this configuration into
-// a hex file for preloading the OTP in FPGA synthesis or simulation.
+// a MEM file for preloading the OTP in FPGA synthesis or simulation.
 //
 
 {
