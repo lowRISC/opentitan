@@ -19,11 +19,22 @@
    * b11 (0x3), which means that the trapped instruction is not compressed,
    * i.e., the trapped instruction is 32bits = 4bytes. Otherwise, the trapped
    * instruction is 16bits = 2bytes.
+   *
+   * Before loading the instruction pointed to by the `mepc` we should check
+   * whether the `mepc` address is invalid by checking the `mcause` register for
+   * the `Instruction access fault` code (1u). If it is invalid, return the
+   * unmodified `mpec`, as attempting to load an instruction at an invalid address
+   * below will cause another exception.
    */
   .balign 4
   .type compute_mepc_on_synchronous_irq, @function
 compute_mepc_on_synchronous_irq:
   csrr t0, mepc
+  csrr t1, mcause
+  li t2, 0x01
+  bne t1, t2, .L_load_mepc
+  ret
+.L_load_mepc:
   lh t2, 0(t0)
   li t1, 0x3
   and t3, t2, t1
