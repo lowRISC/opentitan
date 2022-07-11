@@ -298,7 +298,6 @@ interface aes_cov_if
   // will be covered by Assertion
 
 
-
   ///////////////////////////////////
   // Instantiation Macros          //
   ///////////////////////////////////

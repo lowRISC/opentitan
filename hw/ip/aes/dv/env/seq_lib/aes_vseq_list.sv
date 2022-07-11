@@ -12,3 +12,4 @@
 `include "aes_manual_config_err_vseq.sv"
 `include "aes_reseed_vseq.sv"
 `include "aes_fi_vseq.sv"
+`include "aes_control_fi_vseq.sv"

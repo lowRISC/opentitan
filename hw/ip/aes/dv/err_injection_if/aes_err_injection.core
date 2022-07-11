@@ -14,6 +14,8 @@ filesets:
       - aes_err_injection_bind.sv
       - signal_force.sv
       - force_if.sv
+      - fi_control_fsm_wrapper.sv
+      - fi_control_if.sv
     file_type: systemVerilogSource
 
 targets:

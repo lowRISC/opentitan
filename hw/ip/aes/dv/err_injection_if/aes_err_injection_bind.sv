@@ -38,4 +38,13 @@ module aes_err_injection_bind;
      .clk          (clk_i),
      .rst_ni       (rst_ni)
     );
+
+  bind aes_control_fsm fi_control_fsm_wrapper
+    #(.IfName("aes_control_fi_vif")
+     )
+  u_fi_ctrl_fsm
+    (
+     .clk          (clk_i),
+     .rst_ni       (rst_ni)
+    );
 endmodule

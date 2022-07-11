@@ -22,6 +22,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
                     .SignalWidth(aes_env_pkg::StateWidth)
                    ) aes_ctr_fi_vif[Sp2VWidth];
 
+  virtual fi_control_if aes_control_fi_vif[Sp2VWidth];
+
   rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
   // test environment constraints //
   typedef enum { VerySlow, Slow, Fast, VeryFast } tl_ul_access_e;
@@ -256,5 +258,15 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
         `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO ROUND COUNTER INJECT INTERFACE %d",nn))
       end
     end
+
+
+    foreach (aes_control_fi_vif[nn]) begin
+      if (!uvm_config_db#(virtual fi_control_if)::get(null, "*.env",
+                           $sformatf("aes_control_fi_vif_%0d",  nn), aes_control_fi_vif[nn])) begin
+        `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO ROUND COUNTER INJECT INTERFACE %d",nn))
+      end
+    end
+
+
   endfunction
 endclass
