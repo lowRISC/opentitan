@@ -286,7 +286,7 @@ Below is a description of the fields of this header:
     <td>clen</td>
     <td> Command Length: Number of 32-bit words that can optionally be appended to the command.
          A value of zero will only transfer the command header.
-         A value of 4'hc will transfer the header plus an additional twelve 32-bit words of data.
+         A value of <tt>4'hc</tt> will transfer the header plus an additional twelve 32-bit words of data.
     </td>
   </tr>
   <tr>
@@ -333,7 +333,7 @@ The actions performed by each command, as well as which flags are supported, are
     <td>Instantiate</td>
     <td>0x1</td>
     <td> Initializes an instance in CSRNG.
-         When seeding, the following table describes how the seed is determined based on flag0 and the clen field.
+         When seeding, the following table describes how the seed is determined based on <tt>flag0</tt> and the <tt>clen</tt> field.
          Note that the last table entry (<tt>flag0</tt> is set and <tt>clen</tt> is set to non-zero) is intended for known answer testing (KAT).
         WARNING: Though <tt>flag0</tt> may be useful for generating fully-determininistic bit sequences, the use of this flag will render the instance non-FIPS compliant until it is re-instantiated.
          When the <tt>Instantiate</tt> command is completed, the active bit in the CSRNG working state will be set.
@@ -354,10 +354,10 @@ The actions performed by each command, as well as which flags are supported, are
     <td>Reseed</td>
     <td>0x2</td>
     <td> Reseeds an existing instance in CSRNG.
-         The flag0 and clen table in the <tt>Instance</tt> command description above also applies to the <tt>Reseed</tt> command.
+         The <tt>flag0</tt> and <tt>clen</tt> table in the <tt>Instance</tt> command description above also applies to the <tt>Reseed</tt> command.
          Note that the last table entry (<tt>flag0</tt> is set and <tt>clen</tt> is set to non-zero) is intended for known answer testing (KAT).
-         The reseed command only takes in one group (a maximum of twelve 32 bit words) of generic additional data.
-         In that case that both a seed and additional data must be provided to the reseed call, the seed and additional data must be xor'ed first.
+         The <tt>Reseed</tt> command only takes in one group (a maximum of twelve 32 bit words) of generic additional data.
+         In that case that both a seed and additional data must be provided to the <tt>Reseed</tt> call, the seed and additional data must be xor'ed first.
          This scenario will then pass the NIST vector test requiring both a provided seed and additional data.
     </td>
   </tr>
@@ -368,20 +368,20 @@ The actions performed by each command, as well as which flags are supported, are
          The <tt>glen</tt> field represents how many 128-bit words are to be returned to the application interface.
          The <tt>glen</tt> field needs to be a minimum value of one.
          The NIST reference to the <tt>prediction_resistance_flag</tt> is not directly supported as a flag.
-         It is the resposibility of the calling application to reseed as needed before the generate command to properly support prediction resistance.
-         Note that additional data is also supported when the  <tt>clen</tt> field is set to non-zero.
+         It is the resposibility of the calling application to reseed as needed before the <tt>Generate</tt> command to properly support prediction resistance.
+         Note that additional data is also supported when the <tt>clen</tt> field is set to non-zero.
     </td>
   </tr>
   <tr>
     <td>Update</td>
     <td>0x4</td>
     <td> Updates an existing instance in CSRNG.
-         This command does the same function as the <tt>reseed</tt> command, except that:
+         This command does the same function as the <tt>Reseed</tt> command, except that:
          <ol>
          <li>only the additional data provided will be used in the update function (i.e. no physical entropy is gathered), and
-         <li>the <tt>update</tt> command does not reset the reseed counter.
+         <li>the <tt>Update</tt> command does not reset the reseed counter.
          </ol>
-         When the <tt>update</tt> command is completed, the results will be reflected in the CSRNG working state.
+         When the <tt>Update</tt> command is completed, the results will be reflected in the CSRNG working state.
     </td>
   </tr>
   <tr>
@@ -389,9 +389,9 @@ The actions performed by each command, as well as which flags are supported, are
     <td>0x5</td>
     <td> Resets an instance in CSRNG.
          Values in the instance are zeroed out.
-         When the <tt>uninstantiate</tt> comand is completed, the <tt>active</tt> bit in the CSRNG working state will be cleared.
+         When the <tt>Uninstantiate</tt> comand is completed, the <tt>active</tt> bit in the CSRNG working state will be cleared.
          Uninstantiating an instance effectively resets it, clearing any errors that it may have encountered due to bad command syntax or entropy source failures.
-         Only a value of zero should be used for clen, since any additional data will be ignored.
+         Only a value of zero should be used for <tt>clen</tt>, since any additional data will be ignored.
     </td>
   </tr>
   <tr>
