@@ -41,7 +41,7 @@ This IP block is attached to the chip interconnect bus as a peripheral module co
 - Also supports the optional use of personalization strings or other application inputs (e.g. OTP memory values) during instantiation.
 - Assuming a continuously-live entropy source, each instance can also optionally be used as a non-determinstic TRNG (true random number generator, also called a non-deterministic random bit generator or NRBG in SP 800-90C).
     - In this mode, an instance also meets the requirements laid out for a PTG.3 class RNG, the strongest class laid out in AIS31.
-    - Implementation follows the NRBG "Oversampling Construction" approved by SP 800-90C, to meet both CC and FIPS TRNG constructions.
+    - Implementation follows the NRBG "Oversampling Construction" approved by SP 800-90C, to meet both [Common Criteria (CC, ISO/IEC 15408)](https://www.iso.org/standard/50341.html) and FIPS TRNG constructions.
 - In addition to the approved DRNG mode, any instance can also operate in "Fully Deterministic mode", meaning the seed depends entirely on application inputs or personalization strings.
     - This provides an approved means of seed construction in FIPS 140-2 as described in the [FIPS 140-2 Implementation Guidance](https://csrc.nist.gov/csrc/media/projects/cryptographic-module-validation-program/documents/fips140-2/fips1402ig.pdf), section 7.14, resolution point 2(a).
 
