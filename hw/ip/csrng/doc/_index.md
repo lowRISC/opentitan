@@ -357,7 +357,7 @@ The actions performed by each command, as well as which flags are supported, are
          The <tt>flag0</tt> and <tt>clen</tt> table in the <tt>Instance</tt> command description above also applies to the <tt>Reseed</tt> command.
          Note that the last table entry (<tt>flag0</tt> is set and <tt>clen</tt> is set to non-zero) is intended for known answer testing (KAT).
          The <tt>Reseed</tt> command only takes in one group (a maximum of twelve 32 bit words) of generic additional data.
-         In that case that both a seed and additional data must be provided to the <tt>Reseed</tt> call, the seed and additional data must be xor'ed first.
+         If both a seed and additional data must be provided to the <tt>Reseed</tt> command, the seed and additional data must be xor'ed first.
          This scenario will then pass the NIST vector test requiring both a provided seed and additional data.
     </td>
   </tr>
@@ -365,7 +365,7 @@ The actions performed by each command, as well as which flags are supported, are
     <td>Generate</td>
     <td>0x3</td>
     <td> Starts a request to CSRNG to generate crytographic entropy bits.
-         The <tt>glen</tt> field represents how many 128-bit words are to be returned to the application interface.
+         The <tt>glen</tt> field defines how many 128-bit words are to be returned to the application interface.
          The <tt>glen</tt> field needs to be a minimum value of one.
          The NIST reference to the <tt>prediction_resistance_flag</tt> is not directly supported as a flag.
          It is the resposibility of the calling application to reseed as needed before the <tt>Generate</tt> command to properly support prediction resistance.
@@ -415,7 +415,7 @@ In such cases, a 32-bit exception message will be propagated to firmware via the
 
 #### Generated Bits (`genbits`) Interface
 
-In addition to the command response signals there is all the bus for returning the generated bits.
+In addition to the command response signals there is a bus for returning the generated bits.
 This 129-bit bus consists of 128-bits, `genbits_bus`, for the random bit sequence itself, along with a single bit flag, `genbits_fips`, indicating whether the bits were considered fully in accordance with FIPS standards.
 
 There are two cases when the sequence will not be FIPS compliant:
@@ -427,7 +427,7 @@ Such a seed will be created only using factory-entropy and will lack the physica
 #### Handshaking signals
 
 The application command signal `csrng_req_bus` is accompanied by a `csrng_valid_signal`, which is asserted by the requester when the command is valid.
-CSRNG may stall incoming commands by deasserting the `csrng_req_ready` signal.
+CSRNG may stall incoming commands by de-asserting the `csrng_req_ready` signal.
 A command is considered received whenever both `csrng_req_valid` and `csrng_req_ready` are asserted in the same clock cycle.
 
 Likewise a requester must only consider data on the `genbits` bus to be valid when the `genbits_valid` signal is asserted, and should assert `genbits_ready` whenever it is ready to accept the `genbits` data.
@@ -525,13 +525,13 @@ The following waveform shows an example of how the entropy source hardware inter
 
 ### Interrupts
 
-The `cs_cmd_req_done` interrupt will assert when a csrng command has been completed.
+The `cs_cmd_req_done` interrupt will assert when a CSRNG command has been completed.
 
-The `cs_entropy_req` interrupt will assert when csrng requests for entropy from ENTROPY_SRC.
+The `cs_entropy_req` interrupt will assert when CSRNG requests entropy from ENTROPY_SRC.
 
 The `cs_hw_inst_exc` interrupt will assert when any of the hardware-controlled CSRNG instances encounters an exception while executing a command, either due to errors on the command sequencing, or an exception within the `ENTROPY_SRC` IP.
 
-The `cs_fifo_err` interrupt will assert when any of the csrng FIFOs has a malfunction.
+The `cs_fifo_err` interrupt will assert when any of the CSRNG FIFOs has a malfunction.
 The conditions that cause this to happen are either when there is a push to a full FIFO or a pull from an empty FIFO.
 
 # Programmers Guide
