@@ -48,7 +48,7 @@ This IP block is attached to the chip interconnect bus as a peripheral module co
 ## Description
 
 Though the recommendations in AIS31 are based around broad functional requirements, the recommendations in SP 800-90 are very prescriptive in nature, outlining the exact constructs needed for approval.
-Thus the interface and implementation are largely driven by these explicit constructs, particularly the CTR_DBRG construct.
+Thus the interface and implementation are largely driven by these explicit constructs, particularly the CTR_DRBG construct.
 
 The CSRNG IP consists of four main components:
 1. An AES primitive
