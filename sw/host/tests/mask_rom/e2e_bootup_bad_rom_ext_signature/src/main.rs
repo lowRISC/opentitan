@@ -22,8 +22,8 @@ struct Opts {
 
     #[structopt(
         long, parse(try_from_str=humantime::parse_duration),
-        default_value = "60s",
-        help = "Duration of ROM detection timeout",
+        default_value = "5s",
+        help = "ROM_EXT boot detection timeout",
     )]
     timeout: Duration,
 

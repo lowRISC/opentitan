@@ -38,13 +38,13 @@ load(
 )
 
 cargo_build_script(
-    name = "proc_macro2_build_script",
+    name = "backtrace_build_script",
     srcs = glob(["**/*.rs"]),
     build_script_env = {
     },
     crate_features = [
         "default",
-        "proc-macro",
+        "std",
     ],
     crate_root = "build.rs",
     data = glob(["**"]),
@@ -56,18 +56,25 @@ cargo_build_script(
         "cargo-raze",
         "manual",
     ],
-    version = "1.0.38",
+    version = "0.3.66",
     visibility = ["//visibility:private"],
     deps = [
+        "@raze__cc__1_0_73//:cc",
     ],
 )
 
+# Unsupported target "benchmarks" with type "bench" omitted
+
+# Unsupported target "backtrace" with type "example" omitted
+
+# Unsupported target "raw" with type "example" omitted
+
 rust_library(
-    name = "proc_macro2",
+    name = "backtrace",
     srcs = glob(["**/*.rs"]),
     crate_features = [
         "default",
-        "proc-macro",
+        "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -77,23 +84,28 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=proc-macro2",
+        "crate-name=backtrace",
         "manual",
     ],
-    version = "1.0.38",
+    version = "0.3.66",
     # buildifier: leave-alone
     deps = [
-        ":proc_macro2_build_script",
-        "@raze__unicode_xid__0_2_3//:unicode_xid",
+        ":backtrace_build_script",
+        "@raze__addr2line__0_17_0//:addr2line",
+        "@raze__cfg_if__1_0_0//:cfg_if",
+        "@raze__libc__0_2_126//:libc",
+        "@raze__miniz_oxide__0_5_3//:miniz_oxide",
+        "@raze__object__0_29_0//:object",
+        "@raze__rustc_demangle__0_1_21//:rustc_demangle",
     ],
 )
 
-# Unsupported target "comments" with type "test" omitted
+# Unsupported target "accuracy" with type "test" omitted
 
-# Unsupported target "features" with type "test" omitted
+# Unsupported target "concurrent-panics" with type "test" omitted
 
-# Unsupported target "marker" with type "test" omitted
+# Unsupported target "long_fn_name" with type "test" omitted
 
-# Unsupported target "test" with type "test" omitted
+# Unsupported target "skip_inner_frames" with type "test" omitted
 
-# Unsupported target "test_fmt" with type "test" omitted
+# Unsupported target "smoke" with type "test" omitted

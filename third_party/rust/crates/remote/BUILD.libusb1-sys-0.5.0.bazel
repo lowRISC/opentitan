@@ -83,7 +83,7 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":libusb1_sys_build_script",
-        "@raze__libc__0_2_125//:libc",
+        "@raze__libc__0_2_126//:libc",
     ],
 )
 

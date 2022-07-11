@@ -26,16 +26,21 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # MIT from expression "MIT"
 ])
 
 # Generated Targets
 
 rust_library(
-    name = "crypto_common",
+    name = "nix",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "std",
+        "fs",
+        "ioctl",
+        "poll",
+        "process",
+        "signal",
+        "term",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -45,13 +50,26 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=crypto-common",
+        "crate-name=nix",
         "manual",
     ],
-    version = "0.1.3",
+    version = "0.24.1",
     # buildifier: leave-alone
     deps = [
-        "@raze__generic_array__0_14_5//:generic_array",
-        "@raze__typenum__1_15_0//:typenum",
+        "@raze__bitflags__1_3_2//:bitflags",
+        "@raze__cfg_if__1_0_0//:cfg_if",
+        "@raze__libc__0_2_126//:libc",
     ],
 )
+
+# Unsupported target "test" with type "test" omitted
+
+# Unsupported target "test-aio-drop" with type "test" omitted
+
+# Unsupported target "test-clearenv" with type "test" omitted
+
+# Unsupported target "test-lio-listio-resubmit" with type "test" omitted
+
+# Unsupported target "test-mount" with type "test" omitted
+
+# Unsupported target "test-ptymaster-drop" with type "test" omitted

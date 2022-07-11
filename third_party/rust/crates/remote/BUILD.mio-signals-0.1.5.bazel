@@ -50,7 +50,7 @@ rust_library(
     version = "0.1.5",
     # buildifier: leave-alone
     deps = [
-        "@raze__libc__0_2_125//:libc",
+        "@raze__libc__0_2_126//:libc",
         "@raze__log__0_4_17//:log",
         "@raze__mio__0_7_14//:mio",
     ],
