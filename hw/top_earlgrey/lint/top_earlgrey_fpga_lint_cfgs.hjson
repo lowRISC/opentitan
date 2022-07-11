@@ -1,0 +1,35 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+
+  // This is the fpga cfg hjson for RTL linting.
+  name: top_earlgrey_fpga_batch
+
+  flow: lint
+
+  import_cfgs:      [// common server configuration for results upload
+                     "{proj_root}/hw/data/common_project_cfg.hjson"
+                     // tool-specific configuration
+                     "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
+
+  // Different dashboard output path for each tool
+  rel_path: "hw/top_earlgrey/lint/{tool}"
+
+  // Severities to be printed in the summary report
+  report_severities: ["warning", "error"]
+
+  use_cfgs: [{    name: chip_earlgrey_cw310
+                  fusesoc_core: lowrisc:systems:chip_earlgrey_cw310
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/chip_earlgrey_asic/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
+            ]
+
+}
