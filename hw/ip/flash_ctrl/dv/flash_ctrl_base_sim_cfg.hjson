@@ -87,6 +87,7 @@
     {
       name: flash_ctrl_rd_buff_evict
       uvm_test_seq: flash_ctrl_rd_buff_evict_vseq
+      run_opts: ["+en_cov=1"]
       reseed: 5
     }
     {
