@@ -58,17 +58,12 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   localparam int unsigned ReseedLfsrExtraBits = 3;
   localparam int unsigned ReseedLfsrWidth = PING_CNT_DW + ReseedLfsrExtraBits;
 
-  // TODO: formal tool has compile error on ASSERT WaitCycMaskIsRightAlignedMask_A,
-  // temp only run this assertion during simulation.
-  `ifdef SIMULATION
   // A few smoke checks for the DV mask:
   // 1) make sure the value is a right-aligned mask.
   //    this can be done by checking that mask+1 is a power of 2.
   // 2) also make sure that the value is always >= 0x7.
   `ASSERT(WaitCycMaskMin_A, wait_cyc_mask_i >= 'h7)
-  `ASSERT(WaitCycMaskIsRightAlignedMask_A,
-      2**$clog2(32'(wait_cyc_mask_i) + 1) == 32'(wait_cyc_mask_i) + 1)
-  `endif
+  `ASSERT(WaitCycMaskIsRightAlignedMask_A, $onehot(32'(wait_cyc_mask_i) + 1))
 
   ////////////////////
   // Reseed counter //
