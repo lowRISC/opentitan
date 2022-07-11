@@ -12,6 +12,7 @@ Starting with the language, the strategy is to use the SystemVerilog language, r
 All IP should be developed and delivered under the feature set described by this style guide.
 Inconsistencies or lack of clarity within the style guide should be solved by filing and helping close an issue on the style guide in the
 [lowrisc/style-guides GitHub repo](https://github.com/lowRISC/style-guides).
+Note that when developing OpenTitan security IP, designers should additionally follow the [Secure Hardware Design Guidelines]({{< relref "doc/security/implementation_guidelines/hardware" >}}).
 
 For professional tooling, the team has chosen several industry-grade tools for its design signoff process.
 Wherever possible we attempt to remain tool-agnostic, but we must choose a selection of tools as our ground truth for our own confidence of signoff-level assurances.

@@ -44,6 +44,7 @@ The content and the status of the proposal can be shared with the team.
 An example of a canonical detailed specification is the pinmux specification which can be found in the TeamDrive under TechnicalSpecifications --> deprecated, for those that have access to that resource.
 (Google Docs that have been converted into Markdown on GitHub are archived here).
 
+Note that when developing OpenTitan security IP, designers should follow the [Secure Hardware Design Guidelines]({{< relref "doc/security/implementation_guidelines/hardware" >}}).
 
 ## Specification Publication
 
