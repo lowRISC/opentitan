@@ -12,6 +12,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
@@ -19,8 +20,8 @@
 
 // Switching to external clocks causes the clocks to be unstable for some time.
 // This is used to delay further action when the switch happens.
-static const int kSettleDelayMicros = 35;
-static const int kMeasurementDelayMicros = 100;
+static const int kSettleDelayMicros = 200;
+static const int kMeasurementsPerRound = 100;
 
 // For passing into `IBEX_SPIN_FOR`.
 static bool did_extclk_settle(const dif_clkmgr_t *clkmgr) {
@@ -32,6 +33,9 @@ static bool did_extclk_settle(const dif_clkmgr_t *clkmgr) {
 void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
   dif_clkmgr_t clkmgr;
   dif_clkmgr_recov_err_codes_t err_codes;
+
+  uint32_t kMeasurementDelayMicros =
+      aon_timer_testutils_get_us_from_aon_cycles(kMeasurementsPerRound);
 
   CHECK_DIF_OK(dif_clkmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));

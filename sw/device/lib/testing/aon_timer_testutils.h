@@ -15,6 +15,11 @@
 uint32_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds);
 
 /**
+ * Returns the number of microseconds corresponding to the given AON cycles.
+ */
+uint32_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles);
+
+/**
  * Configure wakeup counter for a number of AON clock cycles.
  * @param cycles The number of AON clock cycles.
  */
