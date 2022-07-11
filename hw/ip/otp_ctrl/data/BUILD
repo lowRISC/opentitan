@@ -18,6 +18,11 @@ otp_image(
     src = ":otp_ctrl_img_rma.hjson",
 )
 
+otp_image(
+    name = "img_dev",
+    src = ":otp_ctrl_img_dev.hjson",
+)
+
 filegroup(
     name = "all_files",
     srcs = glob(["**"]),

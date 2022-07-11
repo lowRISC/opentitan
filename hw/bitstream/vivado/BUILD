@@ -42,7 +42,8 @@ fusesoc_build(
     ],
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"],
-        "mmi": ["synth-vivado/rom.mmi"],
+        "rom_mmi": ["synth-vivado/rom.mmi"],
+        "otp_mmi": ["synth-vivado/otp.mmi"],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw310"],
     tags = ["manual"],
@@ -59,7 +60,14 @@ filegroup(
 filegroup(
     name = "rom_mmi",
     srcs = [":fpga_cw310"],
-    output_group = "mmi",
+    output_group = "rom_mmi",
+    tags = ["manual"],
+)
+
+filegroup(
+    name = "otp_mmi",
+    srcs = [":fpga_cw310"],
+    output_group = "otp_mmi",
     tags = ["manual"],
 )
 
@@ -68,5 +76,14 @@ bitstream_splice(
     src = ":fpga_cw310_test_rom",
     data = "//sw/device/silicon_creator/mask_rom:mask_rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
+    tags = ["manual"],
+)
+
+# Splice in the dev OTP image, replacing the RMA image.
+bitstream_splice(
+    name = "fpga_cw310_mask_rom_otp_dev",
+    src = ":fpga_cw310_mask_rom",
+    data = "//hw/ip/otp_ctrl/data:img_dev",
+    meminfo = ":otp_mmi",
     tags = ["manual"],
 )
