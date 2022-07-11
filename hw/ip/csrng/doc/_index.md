@@ -202,7 +202,7 @@ The state_db has the follow attributes shown in the following table:
   <tr>
     <td>415:160</td>
     <td>Key</td>
-    <td> Value required by NIST to be held in the state instance, and is of size <tt>SeedLen</tt>.
+    <td> Value required by NIST to be held in the state instance, and is of size <tt>KeyLen</tt>.
     </td>
   </tr>
   <tr>
