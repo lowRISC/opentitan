@@ -25,6 +25,11 @@ enumerating the range of logical entities supported by the architecture, and
 their mapping into software stages. Runtime isolation properties and baseline
 identity concepts are introduced in this document.
 
+## [Secure Hardware Design Guidelines][implementation_guidelines]
+
+Silicon designs for security devices require special guidelines to protect the designs against myriad attacks.
+To that end, the team established [Secure Hardware Design Guidelines][implementation_guidelines] which are followed when developing OpenTitan security IP.
+
 ## Functional Guarantees
 
 At the functional level OpenTitan aims to provide the following guarantees:
@@ -113,6 +118,7 @@ the assigned severity.
 [hmac]: {{< relref "hw/ip/hmac/doc" >}}
 [keymgr]: {{< relref "hw/ip/keymgr/doc" >}}
 [logical_security_model]: {{< relref "doc/security/logical_security_model" >}}
+[implementation_guidelines]: {{< relref "doc/security/implementation_guidelines/hardware" >}}
 [otbn]: {{< relref "hw/ip/otbn/doc" >}}
 [security_model]: {{< relref "doc/security/specs" >}}
 [use_cases]: {{< relref "doc/security/use_cases" >}}
