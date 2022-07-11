@@ -152,6 +152,9 @@ opentitan_functest(
         "mask_rom_epmp_test.c",
         "mask_rom_start.S",
     ],
+    linkopts = [
+        "-Wl,--defsym=mask_rom_test=1",
+    ],
     # This test doesn't use the OTTF.
     targets = ["verilator"],  # Can only run in verilator right now.
     # This test is designed to run and complete entirely in the ROM boot stage.
