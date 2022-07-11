@@ -18,17 +18,13 @@ OTTF_DEFINE_TEST_CONFIG();
 /**
  * AST CLK OUTPUTS TEST
  *
- * This test measure 3 clock outputs from ast (sys, io and usb)
- * by clkmgr frequency measurements.
- * Frequency meaasurement assumes aon_clk frequency 200KHz.
- * Given that, measurement is done for 500 us which is equivalent
- * to 100 measurements.
- * If measurement detects error (fast, slow), it will be stored
- * as recoverable error in clkmgr.
+ * This test measure 3 clock outputs from ast (sys, io and usb) by clkmgr
+ * frequency measurements, performing 100 measurements per round.  If
+ * measurement detects error (fast, slow), it will be stored as recoverable
+ * error in clkmgr.
  *
  * After 100 measurements, test kicks in low-power mode, where
  * 3 clocks are off and measurement should not report spurious errors.
- * Wake up timer is set 500us which gives about 500us deep sleep.
  *
  * Then dut wakes up and repeat another 100 measurements before
  * test finish.
@@ -38,13 +34,10 @@ OTTF_DEFINE_TEST_CONFIG();
  * USB calibration should be a separate test, and may be vendor-specific.
  */
 enum {
-  kWaitForCSRPolling = 1,  // 1us
-  // aon period : 5us
-  // meaure for 100 of period
-  kMeasurementDelayMicros = 500,
-  // at lowpower mode, main/io/usb clocks are off after 40us
-  kClockCoolDownTime = 40,
+  kWaitForCSRPollingUs = 1,  // 1us
+  kMeasurementsPerRound = 100,
 };
+
 static dif_clkmgr_t clkmgr;
 static dif_pwrmgr_t pwrmgr;
 
@@ -62,6 +55,9 @@ bool test_main(void) {
   dif_sensor_ctrl_t sensor_ctrl;
   dif_aon_timer_t aon_timer;
 
+  uint32_t kMeasurementDelayMicros =
+      aon_timer_testutils_get_us_from_aon_cycles(kMeasurementsPerRound);
+
   CHECK_DIF_OK(dif_clkmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
   CHECK_DIF_OK(dif_sensor_ctrl_init(
@@ -78,7 +74,7 @@ bool test_main(void) {
     CHECK_DIF_OK(
         dif_sensor_ctrl_get_ast_init_done_status(&sensor_ctrl, &init_st));
 
-    busy_spin_micros(kWaitForCSRPolling);
+    busy_spin_micros(kWaitForCSRPollingUs);
   }
 
   LOG_INFO("TEST: done ast init");
