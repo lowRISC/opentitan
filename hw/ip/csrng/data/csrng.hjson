@@ -364,7 +364,7 @@
                 encountered an exception.  Each bit corresponds to a particular hardware
                 instance, with bit 0 corresponding to instance HW0, bit 1 corresponding
                 to instance HW1, and so forth. (To monitor the status of requests made
-                to the SW instance, check the CMD_STS register). Writing a zero to this register
+                to the SW instance, check the !!SW_CMD_STS register). Writing a zero to this register
                 resets the status bits.
                 '''
         }
