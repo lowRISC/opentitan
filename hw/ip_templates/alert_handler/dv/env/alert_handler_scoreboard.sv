@@ -439,10 +439,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               end
             end
           end
-           (!uvm_re_match("class*_phase_cyc*_shadowed", csr_name)): begin
+           (!uvm_re_match("class*_phase*_cyc_shadowed", csr_name)): begin
             if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
               for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
-                for (int j = 0; j <NUM_ESC_PHASES; j++) begin
+                for (int j = 0; j < NUM_ESC_PHASES; j++) begin
                   if (csr_name == $sformatf("class%0s_phase%0d_cyc_shadowed", class_name[i], j))
                     begin
                     uvm_reg regwen = ral.get_reg_by_name($sformatf("class%s_regwen",
