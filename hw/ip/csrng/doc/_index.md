@@ -248,8 +248,8 @@ There is one instance of a firmware application interface, and it uses the TL-UL
 For more details on how the application interface works, see the Theory of Operations section above.
 
 In general, users of the application interface are either firmware or some hardware module entity.
-For hardware, a module can either directly control the application interface, or it can connect to an `entropy distribution network`module (EDN).
-Attaching to an EDN block allows for a simpler interface connection to a more layout-friendly distributed-chip network.
+For hardware, a module can either directly control the application interface, or it can connect to an EDN module.
+Attaching to an EDN module allows for a simpler interface connection to a more layout-friendly distributed-chip network.
 
 #### General Command Format
 
