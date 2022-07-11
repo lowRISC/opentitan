@@ -33,6 +33,15 @@ filesets:
       - util/vivado_hook_write_bitstream_pre.tcl: { file_type: user, copyto: vivado_hook_write_bitstream_pre.tcl }
       - util/vivado_hook_opt_design_post.tcl: { file_type: user, copyto: vivado_hook_opt_design_post.tcl }
 
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/chip_earlgrey_cw310.waiver
+    file_type: waiver
+
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
   # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
@@ -67,6 +76,7 @@ targets:
   default: &default_target
     filesets:
       - files_rtl_cw310
+      - files_ascentlint_waiver
     toplevel: chip_earlgrey_cw310
     parameters:
       - IBEX_CUSTOM_PMP_RESET_VALUES
@@ -92,6 +102,9 @@ targets:
   lint:
     <<: *default_target
     default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+      - AST_BYPASS_CLK=true
     tools:
       verilator:
         mode: lint-only
