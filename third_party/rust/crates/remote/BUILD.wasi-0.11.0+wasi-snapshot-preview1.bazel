@@ -26,15 +26,17 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR (Zlib OR Apache-2.0)"
+    "notice",  # Apache-2.0 from expression "Apache-2.0 OR (Apache-2.0 OR MIT)"
 ])
 
 # Generated Targets
 
 rust_library(
-    name = "miniz_oxide",
+    name = "wasi",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "default",
+        "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -44,12 +46,11 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=miniz_oxide",
+        "crate-name=wasi",
         "manual",
     ],
-    version = "0.5.1",
+    version = "0.11.0+wasi-snapshot-preview1",
     # buildifier: leave-alone
     deps = [
-        "@raze__adler__1_0_2//:adler",
     ],
 )

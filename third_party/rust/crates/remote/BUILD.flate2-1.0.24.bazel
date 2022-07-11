@@ -94,13 +94,11 @@ rust_library(
         "crate-name=flate2",
         "manual",
     ],
-    version = "1.0.23",
+    version = "1.0.24",
     # buildifier: leave-alone
     deps = [
-        "@raze__cfg_if__1_0_0//:cfg_if",
         "@raze__crc32fast__1_3_2//:crc32fast",
-        "@raze__libc__0_2_125//:libc",
-        "@raze__miniz_oxide__0_5_1//:miniz_oxide",
+        "@raze__miniz_oxide__0_5_3//:miniz_oxide",
     ],
 )
 

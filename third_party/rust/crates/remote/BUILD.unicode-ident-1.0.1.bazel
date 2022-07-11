@@ -26,16 +26,16 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT"
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
 ])
 
 # Generated Targets
 
+# Unsupported target "xid" with type "bench" omitted
+
 rust_library(
-    name = "nix",
+    name = "unicode_ident",
     srcs = glob(["**/*.rs"]),
-    aliases = {
-    },
     crate_features = [
     ],
     crate_root = "src/lib.rs",
@@ -46,34 +46,15 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=nix",
+        "crate-name=unicode-ident",
         "manual",
     ],
-    version = "0.23.1",
+    version = "1.0.1",
     # buildifier: leave-alone
     deps = [
-        "@raze__bitflags__1_3_2//:bitflags",
-        "@raze__cfg_if__1_0_0//:cfg_if",
-        "@raze__libc__0_2_125//:libc",
-    ] + selects.with_or({
-        # cfg(not(target_os = "redox"))
-        (
-            "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
-        ): [
-            "@raze__memoffset__0_6_5//:memoffset",
-        ],
-        "//conditions:default": [],
-    }),
+    ],
 )
 
-# Unsupported target "test" with type "test" omitted
+# Unsupported target "compare" with type "test" omitted
 
-# Unsupported target "test-aio-drop" with type "test" omitted
-
-# Unsupported target "test-clearenv" with type "test" omitted
-
-# Unsupported target "test-lio-listio-resubmit" with type "test" omitted
-
-# Unsupported target "test-mount" with type "test" omitted
-
-# Unsupported target "test-ptymaster-drop" with type "test" omitted
+# Unsupported target "static_size" with type "test" omitted

@@ -56,7 +56,7 @@ cargo_build_script(
         "cargo-raze",
         "manual",
     ],
-    version = "1.0.81",
+    version = "1.0.82",
     visibility = ["//visibility:private"],
     deps = [
     ],
@@ -80,13 +80,13 @@ rust_library(
         "crate-name=serde_json",
         "manual",
     ],
-    version = "1.0.81",
+    version = "1.0.82",
     # buildifier: leave-alone
     deps = [
         ":serde_json_build_script",
-        "@raze__itoa__1_0_1//:itoa",
-        "@raze__ryu__1_0_9//:ryu",
-        "@raze__serde__1_0_137//:serde",
+        "@raze__itoa__1_0_2//:itoa",
+        "@raze__ryu__1_0_10//:ryu",
+        "@raze__serde__1_0_139//:serde",
     ],
 )
 

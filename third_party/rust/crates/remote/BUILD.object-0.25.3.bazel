@@ -76,7 +76,7 @@ rust_library(
     version = "0.25.3",
     # buildifier: leave-alone
     deps = [
-        "@raze__flate2__1_0_23//:flate2",
+        "@raze__flate2__1_0_24//:flate2",
         "@raze__memchr__2_5_0//:memchr",
     ],
 )

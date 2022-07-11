@@ -365,7 +365,6 @@ opentitan_functest(
             "//hw/bitstream:mask_rom",
             "//sw/host/tests/mask_rom/e2e_bootup_bad_rom_ext_signature:test_resources",
         ],
-        test_runner = "//util:opentitan_functest_runner.sh",
     ),
     signed = True,
     targets = ["cw310"],

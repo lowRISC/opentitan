@@ -31,13 +31,11 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "bench" with type "bench" omitted
-
 rust_library(
-    name = "smallvec",
+    name = "crypto_common",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "write",
+        "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -47,13 +45,13 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=smallvec",
+        "crate-name=crypto-common",
         "manual",
     ],
-    version = "1.8.0",
+    version = "0.1.5",
     # buildifier: leave-alone
     deps = [
+        "@raze__generic_array__0_14_5//:generic_array",
+        "@raze__typenum__1_15_0//:typenum",
     ],
 )
-
-# Unsupported target "macro" with type "test" omitted

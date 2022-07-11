@@ -31,10 +31,21 @@ licenses([
 
 # Generated Targets
 
-rust_proc_macro(
-    name = "ghost",
+# Unsupported target "bench" with type "bench" omitted
+
+rust_library(
+    name = "regex_syntax",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "default",
+        "unicode",
+        "unicode-age",
+        "unicode-bool",
+        "unicode-case",
+        "unicode-gencat",
+        "unicode-perl",
+        "unicode-script",
+        "unicode-segment",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -44,18 +55,11 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=ghost",
+        "crate-name=regex-syntax",
         "manual",
     ],
-    version = "0.1.4",
+    version = "0.6.27",
     # buildifier: leave-alone
     deps = [
-        "@raze__proc_macro2__1_0_38//:proc_macro2",
-        "@raze__quote__1_0_18//:quote",
-        "@raze__syn__1_0_92//:syn",
     ],
 )
-
-# Unsupported target "compiletest" with type "test" omitted
-
-# Unsupported target "readme" with type "test" omitted

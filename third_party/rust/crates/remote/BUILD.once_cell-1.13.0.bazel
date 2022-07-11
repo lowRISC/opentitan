@@ -26,15 +26,33 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT"
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
 ])
 
 # Generated Targets
 
+# Unsupported target "bench" with type "example" omitted
+
+# Unsupported target "bench_acquire" with type "example" omitted
+
+# Unsupported target "bench_vs_lazy_static" with type "example" omitted
+
+# Unsupported target "lazy_static" with type "example" omitted
+
+# Unsupported target "reentrant_init_deadlocks" with type "example" omitted
+
+# Unsupported target "regex" with type "example" omitted
+
+# Unsupported target "test_synchronization" with type "example" omitted
+
 rust_library(
-    name = "redox_users",
+    name = "once_cell",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "alloc",
+        "default",
+        "race",
+        "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -44,14 +62,13 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=redox_users",
+        "crate-name=once_cell",
         "manual",
     ],
-    version = "0.4.3",
+    version = "1.13.0",
     # buildifier: leave-alone
     deps = [
-        "@raze__getrandom__0_2_7//:getrandom",
-        "@raze__redox_syscall__0_2_13//:redox_syscall",
-        "@raze__thiserror__1_0_31//:thiserror",
     ],
 )
+
+# Unsupported target "it" with type "test" omitted

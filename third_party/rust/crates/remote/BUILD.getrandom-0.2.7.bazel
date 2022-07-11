@@ -31,21 +31,15 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "bench" with type "bench" omitted
+# Unsupported target "mod" with type "bench" omitted
 
 rust_library(
-    name = "regex_syntax",
+    name = "getrandom",
     srcs = glob(["**/*.rs"]),
+    aliases = {
+    },
     crate_features = [
-        "default",
-        "unicode",
-        "unicode-age",
-        "unicode-bool",
-        "unicode-case",
-        "unicode-gencat",
-        "unicode-perl",
-        "unicode-script",
-        "unicode-segment",
+        "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -55,11 +49,26 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=regex-syntax",
+        "crate-name=getrandom",
         "manual",
     ],
-    version = "0.6.25",
+    version = "0.2.7",
     # buildifier: leave-alone
     deps = [
-    ],
+        "@raze__cfg_if__1_0_0//:cfg_if",
+    ] + selects.with_or({
+        # cfg(unix)
+        (
+            "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
+        ): [
+            "@raze__libc__0_2_126//:libc",
+        ],
+        "//conditions:default": [],
+    }),
 )
+
+# Unsupported target "custom" with type "test" omitted
+
+# Unsupported target "normal" with type "test" omitted
+
+# Unsupported target "rdrand" with type "test" omitted
