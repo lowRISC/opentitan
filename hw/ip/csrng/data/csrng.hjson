@@ -582,7 +582,7 @@
           name: "DRBG_GEN_SM_ERR",
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
-                ctr_dbrg gen state machine. This error will signal a fatal alert, and also
+                ctr_drbg gen state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
                 This bit will stay set until the next reset.
                 '''
@@ -591,7 +591,7 @@
           name: "DRBG_UPDBE_SM_ERR",
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
-                ctr_dbrg update block encode state machine. This error will signal a fatal alert, and also
+                ctr_drbg update block encode state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
                 This bit will stay set until the next reset.
                 '''
@@ -600,7 +600,7 @@
           name: "DRBG_UPDOB_SM_ERR",
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
-                ctr_dbrg update out block state machine. This error will signal a fatal alert, and also
+                ctr_drbg update out block state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
                 This bit will stay set until the next reset.
                 '''
