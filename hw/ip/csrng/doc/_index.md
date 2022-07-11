@@ -175,10 +175,11 @@ Because each request is pipelined, requests from other `cmd_stage` blocks can be
 This provides some interleaving of commands since a generate command can be programmed to take a very long time.
 
 #### Working State Values
-The state_db has the follow attributes shown in the following table:
+The CSRNG working state data base (`state_db`) contains the current working state for a given DRBG instance.
+It holds the following values:
 
 <table>
-<caption>State Instance Description</caption>
+<caption>Values stored by <tt>state_db</tt></caption>
 <thead>
   <tr>
     <th>Bits</th>
