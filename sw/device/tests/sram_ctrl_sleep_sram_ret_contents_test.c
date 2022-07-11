@@ -12,6 +12,7 @@
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -29,14 +30,16 @@ const uint32_t kTestData[NUM_TEST_WORDS] = {
 static void retention_sram_check(bool do_write) {
   mmio_region_t sram_region_ret_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR);
-  for (int i = 0; i < NUM_TEST_WORDS; ++i) {
-    if (do_write) {
-      mmio_region_write32(sram_region_ret_base_addr, i * sizeof(uint32_t),
-                          kTestData[i]);
+  for (int i = 0; i < NUM_TEST_WORDS * sizeof(uint32_t);
+       i += sizeof(uint32_t)) {
+    // Don't write or check reset_reasons because this test uses them to reboot
+    if (i != offsetof(struct retention_sram, reset_reasons)) {
+      if (do_write) {
+        mmio_region_write32(sram_region_ret_base_addr, i, kTestData[i]);
+      }
+      uint32_t read_data = mmio_region_read32(sram_region_ret_base_addr, i);
+      CHECK(read_data == kTestData[i]);
     }
-    uint32_t read_data =
-        mmio_region_read32(sram_region_ret_base_addr, i * sizeof(uint32_t));
-    CHECK(read_data == kTestData[i]);
   }
 }
 
