@@ -20,7 +20,6 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
     // enable high endurance
     cfg.seq_cfg.mp_region_he_en_pc      = 50;
     cfg.seq_cfg.default_region_he_en_pc = 50;
-
   endfunction
 
   // Randomized flash ctrl operation.
@@ -387,7 +386,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
 
     // checking coverpoints for state transitions
     if (cfg.en_cov) begin
-      func_cov_op = cov.control_cg.op_evict_cp.get_inst_coverage();
+      func_cov_op = cov.control_cg.op_evict_cp.get_coverage();
       if (func_cov_op == 100) begin
         `uvm_info(`gfn, $sformatf("Coverage READ/PROGRAM(ERASE)/READ reached!"), UVM_LOW)
       end else begin
