@@ -131,21 +131,21 @@ Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
 Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | waived      | Revisit later. Tool setup in progress.
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
 Testbench     | [TB_GEN_AUTOMATED][]                  | N/A         |
 Tests         | [SIM_SMOKE_TEST_PASSING][]            | Done        |
 Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
-Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | waived      | Revisit in V2S.
+Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N/A         |
 Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done        |
 Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Done        |
 Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        |
-Regression    | [FPV_REGRESSION_SETUP][]              | waived      | Revisit in V2S.
+Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Done        | prim_alert_receiver and prim_esc_sender.
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
 Review        | [TESTPLAN_REVIEWED][]                 | Done        |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Waived      | Exception: security will review in V2S.
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        |
 Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
 [DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
@@ -182,14 +182,14 @@ Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
 Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
 Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
-Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | waived      | Revisit in V2S.
-Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | waived      | Revisit in V2S.
+Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
+Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
 Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
 Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
 Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        |
 Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
-Coverage      | [FPV_CODE_COVERAGE_V2][]                | waived      | Revisit in V2S.
-Coverage      | [FPV_COI_COVERAGE_V2][]                 | waived      | Revisit in V2S.
+Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
+Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Done        | prim_alert_receiver and prim_esc_sender.
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
@@ -221,11 +221,11 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Not Started |
-Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
-Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
-Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
+Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        |
+Tests         | [FPV_SEC_CM_VERIFIED][]                 | Done        |
+Tests         | [SIM_SEC_CM_VERIFIED][]                 | Done        |
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        |
+Review        | [SEC_CM_DV_REVIEWED][]                  | Done        |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          {{<relref "/doc/project/checklist.md#sec_cm_testplan_completed" >}}
 [FPV_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#fpv_sec_cm_verified" >}}
