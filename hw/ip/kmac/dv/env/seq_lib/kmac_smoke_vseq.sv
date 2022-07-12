@@ -112,7 +112,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
 
-      kmac_init();
+      kmac_init(.keymgr_app_intf(en_app && (app_mode == AppKeymgr)));
       `uvm_info(`gfn, "kmac_init done", UVM_HIGH)
 
       if (cfg.enable_masking && kmac_err_type == kmac_pkg::ErrWaitTimerExpired &&

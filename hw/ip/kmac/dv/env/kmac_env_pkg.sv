@@ -185,7 +185,7 @@ package kmac_env_pkg;
       Key256: return 32;
       Key384: return 48;
       Key512: return 64;
-      default: `uvm_fatal("kmac_env_pkg", $sformatf("%0s is an invalid key length", len.name()))
+      default: `uvm_fatal("kmac_env_pkg", $sformatf("%0d is an invalid key length", len))
     endcase
   endfunction
 
