@@ -184,6 +184,47 @@ TEST_F(FwOverrideConfigTest, Success) {
                                                       kDifToggleDisabled));
 }
 
+class HealthTestConfigTest : public EntropySrcTest {
+ protected:
+  dif_entropy_src_health_test_config_t config_ = {
+      .test_type = kDifEntropySrcTestRepetitionCount,
+      .high_threshold = 0xFFFF,
+      .low_threshold = 0,
+  };
+};
+
+TEST_F(HealthTestConfigTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_entropy_src_health_test_configure(nullptr, config_));
+}
+
+TEST_F(HealthTestConfigTest, BadTestType) {
+  config_.test_type = kDifEntropySrcTestNumVariants;
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_health_test_configure(&entropy_src_, config_));
+}
+
+TEST_F(HealthTestConfigTest, BadLowThreshold) {
+  config_.low_threshold = 0x1;
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_health_test_configure(&entropy_src_, config_));
+}
+
+TEST_F(HealthTestConfigTest, SuccessOneThreshold) {
+  EXPECT_WRITE32(ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET,
+                 config_.high_threshold);
+  EXPECT_DIF_OK(dif_entropy_src_health_test_configure(&entropy_src_, config_));
+}
+
+TEST_F(HealthTestConfigTest, SuccessTwoThresholds) {
+  config_.test_type = kDifEntropySrcTestMarkov;
+  config_.low_threshold = 0xABAB;
+  EXPECT_WRITE32(ENTROPY_SRC_MARKOV_HI_THRESHOLDS_REG_OFFSET,
+                 config_.high_threshold);
+  EXPECT_WRITE32(ENTROPY_SRC_MARKOV_LO_THRESHOLDS_REG_OFFSET,
+                 config_.low_threshold);
+  EXPECT_DIF_OK(dif_entropy_src_health_test_configure(&entropy_src_, config_));
+}
+
 class ReadTest : public EntropySrcTest {};
 
 TEST_F(ReadTest, EntropyBadArg) {
