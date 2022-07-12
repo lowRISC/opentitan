@@ -52,7 +52,7 @@ Bus primitives are provided in the lowRISC IP library. These are
 described later in this document. These primitives can be combined to form
 a flexible crossbar of any M hosts to any N devices. As of this writing,
 these crossbars are generated programmatically through usage of configuration files.
-See the [tlgen reference manual]({{< relref "doc/rm/crossbar_tool" >}} for more details.
+See the [tlgen reference manual]({{< relref "doc/rm/crossbar_tool" >}}) for more details.
 
 ## Compatibility
 
