@@ -22,6 +22,17 @@ class chip_sw_full_aon_reset_vseq extends chip_sw_base_vseq;
   rand int cycles_before_trigger;
   constraint cycles_before_trigger_c {cycles_before_trigger inside {[10 : 50]};}
 
+  local task trigger_por_reset();
+    if (reset_cause == ResetCausePin) begin
+      `uvm_info(`gfn, "Applying external reset", UVM_MEDIUM)
+      apply_reset();
+    end else begin
+      `uvm_info(`gfn, "Applying AON power glitch", UVM_MEDIUM)
+      cfg.ast_supply_vif.glitch_vcaon_pok(0);
+    end
+    cfg.sw_test_status_vif.sw_test_status = SwTestStatusUnderReset;
+  endtask
+
   virtual task body();
     super.body();
 
@@ -30,13 +41,13 @@ class chip_sw_full_aon_reset_vseq extends chip_sw_base_vseq;
 
     repeat (NumberOfResets) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      if (reset_cause == ResetCausePin) begin
-        apply_reset();
-      end else begin
-        cfg.ast_supply_vif.glitch_vcaon_pok(0);
-      end
-      cfg.sw_test_status_vif.sw_test_status = SwTestStatusUnderReset;
+      trigger_por_reset();
       repeat (cycles_before_trigger) @(posedge cfg.ast_supply_vif.clk);
     end
+    // Now let the processor finish booting and send another one.
+    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
+    `uvm_info(`gfn, "Triggering an AON power glitch reset once boot is done", UVM_LOW)
+    reset_cause = ResetCauseGlitch;
+    trigger_por_reset();
   endtask
 endclass
