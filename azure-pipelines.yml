@@ -77,9 +77,6 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: mypy (Python lint)
     # Run Python lint (mypy)
-  - bash: ci/scripts/check-generated.sh
-    displayName: Check Generated
-    # Ensure all generated files are clean and up-to-date
   - bash: ci/scripts/clang-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: clang-format (C/C++ lint)
@@ -131,6 +128,9 @@ jobs:
     vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
+  - bash: ci/scripts/check-generated.sh
+    displayName: Check Generated
+    # Ensure all generated files are clean and up-to-date
   - bash: ci/bazelisk.sh run buildifier_check
     displayName: Buildifier (Bazel lint)
   - bash: ci/scripts/check-vendoring.sh

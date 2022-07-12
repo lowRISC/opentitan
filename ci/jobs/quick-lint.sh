@@ -49,9 +49,6 @@ ci/scripts/python-lint.sh $tgt_branch || {
 echo -e "\n### Run Python lint (mypy)"
 ci/scripts/mypy.sh $tgt_branch
 
-echo -e "\n### Ensure all generated files are clean and up-to-date"
-ci/scripts/check-generated.sh
-
 echo -e "\n### Use clang-format to check C/C++ coding style"
 ci/scripts/clang-format.sh $tgt_branch
 
