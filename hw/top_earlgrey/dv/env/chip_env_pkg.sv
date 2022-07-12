@@ -117,9 +117,10 @@ package chip_env_pkg;
   } chip_tap_type_e;
 
   // Two status for LC JTAG to identify if LC state transition is successful.
-  typedef enum {
+  typedef enum int {
     LcReady,
-    LcTransitionSuccessful
+    LcTransitionSuccessful,
+    LcTransitionCntError
   } lc_ctrl_status_e;
 
   // enumeration for lc_ctrl broadcasts

@@ -2399,7 +2399,7 @@
               program error.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_otp_ctrl_program_error"]
     }
     {
       name: chip_sw_otp_ctrl_hw_cfg
