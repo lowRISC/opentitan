@@ -452,13 +452,21 @@ module kmac_core
   // Assume configuration is stable during the operation
   `ASSUME(KmacEnStable_M, $changed(kmac_en_i) |-> st inside {StKmacIdle, StTerminalError})
   `ASSUME(ModeStable_M, $changed(mode_i) |-> st inside {StKmacIdle, StTerminalError})
-  `ASSUME(StrengthStable_M, $changed(strength_i) |-> st inside {StKmacIdle, StTerminalError})
-  `ASSUME(KeyLengthStable_M, $changed(key_len_i) |-> st inside {StKmacIdle, StTerminalError})
-  `ASSUME(KeyDataStable_M, $changed(key_data_i) |-> st inside {StKmacIdle, StTerminalError})
+  `ASSUME(StrengthStable_M,
+          $changed(strength_i) |->
+          (st inside {StKmacIdle, StTerminalError}) ||
+          ($past(st) == StKmacIdle))
+  `ASSUME(KeyLengthStable_M,
+          $changed(key_len_i) |->
+          (st inside {StKmacIdle, StTerminalError}) ||
+          ($past(st) == StKmacIdle))
+  `ASSUME(KeyDataStable_M,
+          $changed(key_data_i) |->
+          (st inside {StKmacIdle, StTerminalError}) ||
+          ($past(st) == StKmacIdle))
 
   // no acked to MsgFIFO in StKmacMsg
   `ASSERT(AckOnlyInMessageState_A,
           fifo_valid_i && fifo_ready_o && kmac_en_i |-> st == StKmacMsg)
 
 endmodule : kmac_core
-
