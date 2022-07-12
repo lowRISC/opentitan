@@ -332,6 +332,27 @@ opentitan_functest(
     ],
 )
 
+# Same as `:e2e_bootup_success`, but the Dev OTP image is spliced into the
+# bitstream before it's sent to the CW310 FPGA.
+opentitan_functest(
+    name = "e2e_bootup_success_otp_dev",
+    srcs = ["mask_rom_test.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:mask_rom_otp_dev",
+        exit_failure = BOOT_FAILURE_MSG,
+        exit_success = BOOT_SUCCESS_MSG,
+        # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
+        # bitstream target can fetch pre-spliced bitstream from GCP.
+        tags = ["manual"],
+    ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    signed = True,
+    targets = ["cw310"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 opentitan_functest(
     name = "e2e_bootup_no_rom_ext_signature",
     srcs = ["mask_rom_test.c"],
