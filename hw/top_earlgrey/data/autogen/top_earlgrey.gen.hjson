@@ -6499,8 +6499,8 @@
           width: 8
           default: "'0"
           inst_name: edn0
-          end_idx: -1
-          top_type: one-to-N
+          end_idx: 7
+          top_type: partial-one-to-N
           top_signame: edn0_edn
           index: -1
         }
@@ -6581,7 +6581,7 @@
           width: 8
           default: "'0"
           inst_name: edn1
-          end_idx: 1
+          end_idx: 2
           top_type: partial-one-to-N
           top_signame: edn1_edn
           index: -1
@@ -7458,8 +7458,8 @@
           width: 1
           inst_name: rv_core_ibex
           default: ""
-          top_signame: edn0_edn
-          index: 7
+          top_signame: edn1_edn
+          index: 1
         }
         {
           name: icache_otp_key
@@ -7797,11 +7797,11 @@
         alert_handler.edn
         aes.edn
         otbn.edn_urnd
-        rv_core_ibex.edn
       ]
       edn1.edn:
       [
         otbn.edn_rnd
+        rv_core_ibex.edn
       ]
       otp_ctrl.otbn_otp_key:
       [
@@ -17887,8 +17887,8 @@
         width: 8
         default: "'0"
         inst_name: edn0
-        end_idx: -1
-        top_type: one-to-N
+        end_idx: 7
+        top_type: partial-one-to-N
         top_signame: edn0_edn
         index: -1
       }
@@ -17935,7 +17935,7 @@
         width: 8
         default: "'0"
         inst_name: edn1
-        end_idx: 1
+        end_idx: 2
         top_type: partial-one-to-N
         top_signame: edn1_edn
         index: -1
@@ -18307,8 +18307,8 @@
         width: 1
         inst_name: rv_core_ibex
         default: ""
-        top_signame: edn0_edn
-        index: 7
+        top_signame: edn1_edn
+        index: 1
       }
       {
         name: icache_otp_key
@@ -20276,7 +20276,7 @@
         signame: edn0_edn_req
         width: 8
         type: req_rsp
-        end_idx: -1
+        end_idx: 7
         act: rsp
         suffix: req
         default: "'0"
@@ -20287,7 +20287,7 @@
         signame: edn0_edn_rsp
         width: 8
         type: req_rsp
-        end_idx: -1
+        end_idx: 7
         act: rsp
         suffix: rsp
         default: ""
@@ -20298,7 +20298,7 @@
         signame: edn1_edn_req
         width: 8
         type: req_rsp
-        end_idx: 1
+        end_idx: 2
         act: rsp
         suffix: req
         default: "'0"
@@ -20309,7 +20309,7 @@
         signame: edn1_edn_rsp
         width: 8
         type: req_rsp
-        end_idx: 1
+        end_idx: 2
         act: rsp
         suffix: rsp
         default: ""

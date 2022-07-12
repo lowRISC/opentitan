@@ -882,9 +882,8 @@
 
       // Edn connections
       'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast.edn', 'kmac.entropy',
-                                 'alert_handler.edn', 'aes.edn', 'otbn.edn_urnd',
-                                 'rv_core_ibex.edn'],
-      'edn1.edn'              : ['otbn.edn_rnd'],
+                                 'alert_handler.edn', 'aes.edn', 'otbn.edn_urnd'],
+      'edn1.edn'              : ['otbn.edn_rnd', 'rv_core_ibex.edn'],
 
       // OTBN OTP scramble key
       'otp_ctrl.otbn_otp_key' : ['otbn.otbn_otp_key'],

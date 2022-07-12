@@ -748,7 +748,7 @@ module top_earlgrey #(
   assign ast_rom_cfg = rom_cfg_i;
 
   // define partial inter-module tie-off
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
+  edn_pkg::edn_rsp_t unused_edn0_edn_rsp7;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp2;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp3;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp4;
@@ -757,14 +757,14 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp7;
 
   // assign partial inter-module tie-off
-  assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
+  assign unused_edn0_edn_rsp7 = edn0_edn_rsp[7];
   assign unused_edn1_edn_rsp2 = edn1_edn_rsp[2];
   assign unused_edn1_edn_rsp3 = edn1_edn_rsp[3];
   assign unused_edn1_edn_rsp4 = edn1_edn_rsp[4];
   assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
   assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
   assign unused_edn1_edn_rsp7 = edn1_edn_rsp[7];
-  assign edn1_edn_req[1] = '0;
+  assign edn0_edn_req[7] = '0;
   assign edn1_edn_req[2] = '0;
   assign edn1_edn_req[3] = '0;
   assign edn1_edn_req[4] = '0;
@@ -2566,8 +2566,8 @@ module top_earlgrey #(
       .pwrmgr_cpu_en_i(pwrmgr_aon_fetch_en),
       .pwrmgr_o(rv_core_ibex_pwrmgr),
       .nmi_wdog_i(aon_timer_aon_nmi_wdog_timer_bark),
-      .edn_o(edn0_edn_req[7]),
-      .edn_i(edn0_edn_rsp[7]),
+      .edn_o(edn1_edn_req[1]),
+      .edn_i(edn1_edn_rsp[1]),
       .icache_otp_key_o(otp_ctrl_sram_otp_key_req[2]),
       .icache_otp_key_i(otp_ctrl_sram_otp_key_rsp[2]),
       .fpga_info_i(fpga_info_i),
