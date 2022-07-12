@@ -123,6 +123,63 @@ dif_result_t dif_entropy_src_fw_override_configure(
   return kDifOk;
 }
 
+dif_result_t dif_entropy_src_health_test_configure(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_health_test_config_t config) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  ptrdiff_t high_thresholds_reg_offset = -1;
+  ptrdiff_t low_thresholds_reg_offset = -1;
+  switch (config.test_type) {
+    case kDifEntropySrcTestRepetitionCount:
+      high_thresholds_reg_offset = ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET;
+      // Ensure low threshold is zero. There is no low threshold for this test.
+      if (config.low_threshold) {
+        return kDifBadArg;
+      }
+      break;
+    case kDifEntropySrcTestRepetitionCountSymbol:
+      high_thresholds_reg_offset = ENTROPY_SRC_REPCNTS_THRESHOLDS_REG_OFFSET;
+      // Ensure low threshold is zero. There is no low threshold for this test.
+      if (config.low_threshold) {
+        return kDifBadArg;
+      }
+      break;
+    case kDifEntropySrcTestAdaptiveProportion:
+      high_thresholds_reg_offset = ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_REG_OFFSET;
+      low_thresholds_reg_offset = ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_REG_OFFSET;
+      break;
+    case kDifEntropySrcTestBucket:
+      high_thresholds_reg_offset = ENTROPY_SRC_BUCKET_THRESHOLDS_REG_OFFSET;
+      // Ensure low threshold is zero. There is no low threshold for this test.
+      if (config.low_threshold) {
+        return kDifBadArg;
+      }
+      break;
+    case kDifEntropySrcTestMarkov:
+      high_thresholds_reg_offset = ENTROPY_SRC_MARKOV_HI_THRESHOLDS_REG_OFFSET;
+      low_thresholds_reg_offset = ENTROPY_SRC_MARKOV_LO_THRESHOLDS_REG_OFFSET;
+      break;
+    case kDifEntropySrcTestMailbox:
+      high_thresholds_reg_offset = ENTROPY_SRC_EXTHT_HI_THRESHOLDS_REG_OFFSET;
+      low_thresholds_reg_offset = ENTROPY_SRC_EXTHT_LO_THRESHOLDS_REG_OFFSET;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  mmio_region_write32(entropy_src->base_addr, high_thresholds_reg_offset,
+                      config.high_threshold);
+  if (low_thresholds_reg_offset != -1) {
+    mmio_region_write32(entropy_src->base_addr, low_thresholds_reg_offset,
+                        config.low_threshold);
+  }
+
+  return kDifOk;
+}
+
 static bool get_entropy_avail(const dif_entropy_src_t *entropy_src) {
   return mmio_region_get_bit32(entropy_src->base_addr,
                                ENTROPY_SRC_INTR_STATE_REG_OFFSET,

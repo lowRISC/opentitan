@@ -137,19 +137,27 @@ typedef enum dif_entropy_src_test {
   kDifEntropySrcTestRepetitionCount = 0,
 
   /**
+   * An SP 800-90B symbol repetition count test.
+   *
+   * This is similar to the above, test but is performed on a symbol, instead of
+   * bit, basis.
+   */
+  kDifEntropySrcTestRepetitionCountSymbol = 1,
+
+  /**
    * An SP 800-90B adaptive proportion test.
    *
    * This test screens for statistical bias in the number of ones or zeros
    * output by the noise source.
    */
-  kDifEntropySrcTestAdaptiveProportion = 1,
+  kDifEntropySrcTestAdaptiveProportion = 2,
 
   /**
    * A bucket test.
    *
    * This test looks for correlations between individual noise channels.
    */
-  kDifEntropySrcTestBucket = 2,
+  kDifEntropySrcTestBucket = 3,
 
   /**
    * A "Markov" test.
@@ -157,7 +165,7 @@ typedef enum dif_entropy_src_test {
    * This test looks for unexpected first-order temporal correlations
    * between individual noise channels.
    */
-  kDifEntropySrcTestMarkov = 3,
+  kDifEntropySrcTestMarkov = 4,
 
   /**
    * A firmware-driven "mailbox" test.
@@ -165,12 +173,7 @@ typedef enum dif_entropy_src_test {
    * This test allows firmware to inspect 2kbit blocks of entropy, and signal
    * potential concerns to the hardware.
    */
-  kDifEntropySrcTestMailbox = 4,
-
-  /**
-   * A vendor-specific test implemented externally to the IP.
-   */
-  kDifEntropySrcTestVendorSpecific = 5,
+  kDifEntropySrcTestMailbox = 5,
 
   /** \internal */
   kDifEntropySrcTestNumVariants = 6,
