@@ -154,6 +154,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   uvm_reg_data_t data;
   // number of randomized transactions
   int num_trans = 100;
+  int iter = 0;
 
   virtual task body();
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
@@ -182,7 +183,12 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
                                  exp_alert_cnt, cfg.scb_h.alert_count["recov_err"],
                                  cfg.scb_h.alert_chk_max_delay["recov_err"]), UVM_MEDIUM)
 
-      wait(cfg.scb_h.alert_count["recov_err"] == exp_alert_cnt);
+      `DV_SPINWAIT(wait(cfg.scb_h.alert_count["recov_err"] == exp_alert_cnt);,
+                   $sformatf({"wait timeout for alert_count == exp_alertcnt after do_mp_reg() ",
+                              "alert_cnt:%0d  exp_alert_cnt:%0d"},
+                             cfg.scb_h.alert_count["recov_err"], exp_alert_cnt),
+                   cfg.alert_max_delay_in_ns)
+
       cfg.scb_h.exp_alert["recov_err"] = 0;
     end
 
@@ -193,18 +199,33 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     `DV_CHECK_RANDOMIZE_FATAL(this)
 
     configure_flash_protection();
+    `uvm_info("seq", $sformatf("info / bank op start... "), UVM_MEDIUM)
     repeat(50) begin
-      `uvm_info("seq", $sformatf("info / bank op start... "), UVM_MEDIUM)
+      `uvm_info("seq", $sformatf("iter : %0d", iter++), UVM_MEDIUM)
       //clean scb mem
       cfg.reset_scb_mem();
+
+      // TODO Add FlashPartInfo1,FlashPartInfo2 support and change to
+      // !(flash_op.partition inside {FlashPartData});)
       `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(flash_op,
-                                            flash_op.partition inside {!(FlashPartData)};)
+                                            flash_op.partition == FlashPartInfo;)
       `uvm_info(`gfn, $sformatf("BANK ERASE PART %0p", flash_op), UVM_LOW)
       do_info_bank();
       illegal_trans = 0;
       `uvm_info("do_info_bank", $sformatf("done: alert_cnt  exp:%0d  obs:%0d",
                                 exp_alert_cnt, cfg.scb_h.alert_count["recov_err"]),
                                 UVM_MEDIUM)
+
+      `DV_SPINWAIT(wait(cfg.scb_h.alert_count["recov_err"] == exp_alert_cnt);,
+                   $sformatf({"wait timeout for alert_count == exp_alertcnt after do_info_bank() ",
+                              "alert_cnt:%0d  exp_alert_cnt:%0d"},
+                             cfg.scb_h.alert_count["recov_err"], exp_alert_cnt),
+                   cfg.alert_max_delay_in_ns)
+
+      `DV_SPINWAIT(wait(cfg.scb_h.hs_state == AlertAckComplete);,
+                   "wait timeout for hs_state == AlertAckComplete",
+                   cfg.alert_max_delay_in_ns)
+
       cfg.scb_h.exp_alert["recov_err"] = 0;
      end
   endtask : body
