@@ -38,10 +38,6 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
   flash_bank_mp_info_page_cfg_t
     mp_info_regions[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
 
-  // Test Iteration Limits (Max, Min)
-  localparam uint ITER_MIN = 256;
-  localparam uint ITER_MAX = 512;
-
   // Constraint for Bank.
   constraint bank_c {bank inside {[0 : flash_ctrl_pkg::NumBanks - 1]};}
 
@@ -106,8 +102,20 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
     foreach (mp_regions[i]) {
 
       mp_regions[i].en dist {
-        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_en_pc),
-        MuBi4True  :/ cfg.seq_cfg.mp_region_en_pc
+        MuBi4False := 1,
+        MuBi4True  := 4
+      };
+      mp_regions[i].program_en dist {
+        MuBi4False := 4,
+        MuBi4True  := 1
+      };
+      mp_regions[i].erase_en dist {
+        MuBi4False := 4,
+        MuBi4True  := 1
+      };
+      mp_regions[i].read_en dist {
+        MuBi4False := 4,
+        MuBi4True  := 1
       };
       mp_regions[i].scramble_en == MuBi4False;
       mp_regions[i].ecc_en      == MuBi4False;
@@ -199,9 +207,6 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
     // Scoreboard knob for blocking host reads
     cfg.block_host_rd = 1;
 
-    // MAX Delay for an Expected Alert
-    cfg.alert_max_delay = cfg.seq_cfg.erase_timeout_ns;
-
   endfunction : configure_vseq
 
   // Body
@@ -217,7 +222,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
     init_flash_regions();
 
     // Iteration Loop
-    num_iter = $urandom_range(ITER_MIN, ITER_MAX);
+    num_iter = 200;
     for (int iter = 0; iter < num_iter; iter++)
     begin
 
@@ -229,9 +234,6 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
       // Model Expected Response
       exp_alert = predict_expected_mp_err_rsp(flash_op);
 
-      // Configure Scoreboard for predicted Alert
-      cfg.scb_set_exp_alert = exp_alert;
-
       // Control HW Access to Info Partitions if Selected
       control_hw_access(flash_op);
 
@@ -242,6 +244,10 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
       end else begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
       end
+
+      // Model Expected Response (Error Expected / Pass)
+      cfg.scb_h.exp_alert["recov_err"] = exp_alert;
+      cfg.scb_h.alert_chk_max_delay["recov_err"] = 1000; // cycles
 
       // Do FLASH Operation
       unique case (flash_op.op)
@@ -287,11 +293,12 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
       endcase
 
-     // Predict Status (for RAL)
-     ral.err_code.mp_err.predict(exp_alert);
+      // Predict Status (for RAL)
+      ral.err_code.mp_err.predict(exp_alert);
 
-     // Check Alert Status
-     check_exp_alert_status(exp_alert, "mp_err", flash_op, flash_op_data);
+      // Check Alert Status
+      check_exp_alert_status(exp_alert, "mp_err", flash_op, flash_op_data);
+      cfg.scb_h.exp_alert["recov_err"] = 0;
 
     end
 

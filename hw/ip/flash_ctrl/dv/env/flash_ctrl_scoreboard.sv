@@ -155,9 +155,7 @@ class flash_ctrl_scoreboard #(
             item, ral_name
         ) || (csr_addr inside {cfg.ral_models[ral_name].csr_addrs})) &&
             !cfg.dir_rd_in_progress) begin
-      if (cfg.scb_set_exp_alert) begin
-        set_exp_alert(.alert_name("recov_err"), .is_fatal(1), .max_delay(cfg.alert_max_delay));
-      end
+
       // if incoming access is a write to a valid csr, then make updates right away.
       if (addr_phase_write) begin
         if (is_mem_addr(item, ral_name) && cfg.scb_check) begin  // prog fifo

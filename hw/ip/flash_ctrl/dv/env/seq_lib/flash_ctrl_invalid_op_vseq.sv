@@ -150,13 +150,14 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     wait_flash_op_done(.clear_op_status(0), .timeout_ns(cfg.seq_cfg.prog_timeout_ns));
 
     expect_alert          = 1;
-    cfg.scb_set_exp_alert = 1;
+    cfg.scb_h.exp_alert["recov_err"] = 1;
+    cfg.scb_h.alert_chk_max_delay["recov_err"] = 1000;
     flash_op_inv.op       = FlashOpInvalid;
     flash_ctrl_start_op(flash_op_inv);
     wait_flash_op_done();
     ral.err_code.op_err.predict(expect_alert);
     check_exp_alert_status(expect_alert, "op_err", flash_op_inv, flash_op_data);
-    cfg.scb_set_exp_alert = 0;
+    cfg.scb_h.exp_alert["recov_err"] = 0;
 
     flash_op_rd.op = FlashOpRead;
     flash_op_data = {};
@@ -169,11 +170,12 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
 
     flash_op_inv.op = FlashOpInvalid;
+    cfg.scb_h.exp_alert["recov_err"] = 1;
     flash_ctrl_start_op(flash_op_inv);
     wait_flash_op_done();
     ral.err_code.op_err.predict(expect_alert);
     check_exp_alert_status(expect_alert, "op_err", flash_op_inv, flash_op_data);
-    cfg.scb_set_exp_alert = 0;
+    cfg.scb_h.exp_alert["recov_err"] = 0;
 
     flash_op_rd.op = FlashOpRead;
     flash_op_data = {};
