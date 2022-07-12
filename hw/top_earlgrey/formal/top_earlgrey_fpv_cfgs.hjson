@@ -65,8 +65,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                build_opts: ["-define OutSelDnCnt 0", "-define CntStyle DupCnt"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               // TODO: turn on coverage once design finalizes on issue #8343.
-               cov: false
+               cov: true
              }
              {
                name: prim_cross_up_count_fpv
@@ -75,8 +74,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                build_opts: ["-define OutSelDnCnt 0",  "-define CntStyle CrossCnt"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               // TODO: turn on coverage once design finalizes on issue #8343.
-               cov: false
+               cov: true
              }
              {
                name: prim_cross_down_count_fpv
@@ -85,8 +83,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                build_opts: ["-define OutSelDnCnt 1", "-define CntStyle CrossCnt"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               // TODO: turn on coverage once design finalizes on issue #8343.
-               cov: false
+               cov: true
              }
              {
                name: prim_dup_up_count_stopat_cnt0_fpv
@@ -95,7 +92,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                build_opts: ["-define OutSelDnCnt 0", "-define CntStyle DupCnt"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               cov: false
+               cov: true
                stopats: ["*.up_cnt_q[0]"]
              }
              {
