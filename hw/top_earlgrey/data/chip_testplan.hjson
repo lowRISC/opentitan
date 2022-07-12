@@ -2383,13 +2383,12 @@
       name: chip_sw_otp_ctrl_program_error
       desc: '''Verify the otp program error.
 
-            - Initiate an illegal program request from LC ctrl to OTP ctrl (example: issue program
-            request when the lc_cnt is at max value).
+            - Initiate an illegal program request from LC ctrl to OTP ctrl.
             - Verify that the LC ctrl triggers an alert when the OTP ctrl responds back with a
               program error.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_lc_ctrl_program_error"]
     }
     {
       name: chip_sw_otp_ctrl_hw_cfg
