@@ -23,11 +23,6 @@ opentitan_functest(
         # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
         tags = ["broken"],
     ),
-    verilator = verilator_params(
-        tags = [
-            "broken",
-        ],
-    ),
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -649,10 +644,6 @@ opentitan_functest(
     name = "flash_ctrl_ops_test",
     srcs = ["flash_ctrl_ops_test.c"],
     cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
-    verilator = verilator_params(
         # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
         tags = ["broken"],
     ),
