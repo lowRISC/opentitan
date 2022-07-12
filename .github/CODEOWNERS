@@ -31,6 +31,7 @@ BUILD.bazel         @cfrantz @drewmacrae
 
 # Utils: reggen, topgen, tlgen
 /util/*gen/          @msfschaffner @tjaychen
+/util/dvsim/         @sriyerg
 /util/uvmdvgen/      @sriyerg
 /util/regtool.py     @Jacob-Levy
 /util/reggen/        @Jacob-Levy
