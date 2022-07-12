@@ -84,6 +84,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // CFG fields
   bit kmac_en;
+  bit sideload_en;
   sha3_pkg::sha3_mode_e hash_mode;
   sha3_pkg::keccak_strength_e strength;
   entropy_mode_e entropy_mode = EntropyModeNone;
@@ -344,6 +345,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   `KMAC_APP_VALID_TRANS(AppLc) ||
                   `KMAC_APP_VALID_TRANS(AppRom)));
             in_kmac_app = 1;
+
             `uvm_info(`gfn, "raised in_kmac_app", UVM_HIGH)
 
             // we need to choose the correct application interface
@@ -2025,6 +2027,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           kmac_en              = item.a_data[KmacEn];
           entropy_fast_process = item.a_data[KmacFastEntropy];
           entropy_ready        = item.a_data[KmacEntropyReady];
+          sideload_en          = item.a_data[KmacSideload];
 
           hash_mode = sha3_pkg::sha3_mode_e'(item.a_data[KmacModeMSB:KmacModeLSB]);
 
@@ -2034,7 +2037,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
           // sample sideload-related coverage
           if (cfg.en_cov) begin
-            cov.sideload_cg.sample(item.a_data[KmacSideload], kmac_en, 0);
+            cov.sideload_cg.sample(sideload_en, kmac_en, 0);
           end
 
           // Entropy mode configuration error
@@ -2557,6 +2560,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     if (cfg.en_scb == 0) return;
 
+    if (sideload_en || (in_kmac_app && app_mode == AppKeymgr)) key_len = key_len_e'(Key256);
     key_word_len = get_key_size_words(key_len);
     key_byte_len = get_key_size_bytes(key_len);
 
@@ -2685,7 +2689,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
         if (kmac_en) begin
           // Calculate the unmasked key
-          exp_keys = `gmv(ral.cfg_shadowed.sideload) ? keymgr_keys : keys;
+          exp_keys = (sideload_en || (in_kmac_app && app_mode == AppKeymgr)) ?
+                     keymgr_keys : keys;
           for (int i = 0; i < key_word_len; i++) begin
             if (cfg.enable_masking) begin
               unmasked_key.push_back(exp_keys[0][i] ^ exp_keys[1][i]);

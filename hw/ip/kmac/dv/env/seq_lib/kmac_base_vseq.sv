@@ -277,7 +277,7 @@ class kmac_base_vseq extends cip_base_vseq #(
   endtask
 
   // setup basic kmac features
-  virtual task kmac_init(bit wait_init = 1);
+  virtual task kmac_init(bit wait_init = 1, bit keymgr_app_intf = 0);
     // Wait for KMAC to reach idle state
     if (wait_init) begin
       wait (cfg.kmac_vif.idle_o == prim_mubi_pkg::MuBi4True);
@@ -310,16 +310,22 @@ class kmac_base_vseq extends cip_base_vseq #(
     ral.cfg_shadowed.mode.set(hash_mode);
     ral.cfg_shadowed.msg_endianness.set(msg_endian);
     ral.cfg_shadowed.state_endianness.set(state_endian);
-    ral.cfg_shadowed.sideload.set(en_sideload);
     ral.cfg_shadowed.entropy_mode.set(entropy_mode);
     ral.cfg_shadowed.entropy_fast_process.set(entropy_fast_process);
     ral.cfg_shadowed.entropy_ready.set(entropy_ready);
     ral.cfg_shadowed.msg_mask.set(msg_mask);
     ral.cfg_shadowed.err_processed.set(1'b0);
+    // It is not required to set up sideload bit when keymgr app interface is requesting a hash
+    // operation, because it will always use sideload key regardless of the cfg settings.
+    if (keymgr_app_intf) ral.cfg_shadowed.sideload.set($urandom_range(0, 1));
+    else                 ral.cfg_shadowed.sideload.set(en_sideload);
+
     csr_update(.csr(ral.cfg_shadowed));
 
     // setup KEY_LEN csr
-    csr_wr(.ptr(ral.key_len), .value(key_len));
+    // The key length will be override to 256 bits if design uses keymgr app interface or the
+    // sideload is enabled.
+    if (!en_sideload || $urandom_range(0, 1)) csr_wr(.ptr(ral.key_len), .value(key_len));
 
     // print debug info
     `uvm_info(`gfn, $sformatf("KMAC INITIALIZATION INFO:\n%0s", convert2string()), UVM_HIGH)
