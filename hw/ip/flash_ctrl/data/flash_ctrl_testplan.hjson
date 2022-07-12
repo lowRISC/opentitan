@@ -140,7 +140,7 @@
             Perform READ/ PROGRAM/ ERASE operations over protected regions and pages of data and
             info partitions. Use set and reset values of corresponding read, program and erase
             enable bits. Test boundary values of regions. Test overlap of regions in which lower
-            region wins arbitration. Covergroup is region_range_cg.
+            region wins arbitration.
             '''
       milestone: V2
       tests: ["flash_ctrl_mp_regions"]

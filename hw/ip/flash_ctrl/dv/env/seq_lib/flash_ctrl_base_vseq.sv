@@ -88,6 +88,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_create_on(callback_vseq, p_sequencer);
     otp_model();  // Start OTP Model
     super.pre_start();
+    cfg.alert_max_delay_in_ns = cfg.alert_max_delay * (cfg.clk_rst_vif.clk_period_ps / 1000.0);
   endtask : pre_start
 
   virtual task dut_shutdown();
@@ -129,7 +130,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     // Do some additional required actions
     callback_vseq.apply_reset_callback();
-
   endtask : apply_reset
 
   // Configure the memory protection regions.
@@ -1087,11 +1087,14 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     // Lower region has priority.
     `uvm_info("update_p2r_map", $sformatf("default     : %p", default_region_cfg), UVM_MEDIUM)
     for (int i = num; i >= 0; --i) begin
-      `uvm_info("update_p2r_map", $sformatf("region %0d  : %p", i, mp[i]), UVM_MEDIUM)
-      base = mp[i].start_page;
-      size = mp[i].num_pages;
-      for (int j = base; j < (base + size); ++j) begin
-        if (p2r_map[j] > i) p2r_map[j] = i;
+      // Check the region is enabled.
+      if (mp[i].en == MuBi4True) begin
+        `uvm_info("update_p2r_map", $sformatf("region %0d  : %p", i, mp[i]), UVM_MEDIUM)
+        base = mp[i].start_page;
+        size = mp[i].num_pages;
+        for (int j = base; j < (base + size); ++j) begin
+          if (p2r_map[j] > i) p2r_map[j] = i;
+        end
       end
     end
 

@@ -36,6 +36,7 @@ class flash_ctrl_scoreboard #(
   tl_seq_item            eflash_addr_phase_queue[$];
   int                    num_erase_words;
   int                    exp_alert_contd[string];
+  alert_handshake_e      hs_state;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_a_chan_fifo;
@@ -50,6 +51,7 @@ class flash_ctrl_scoreboard #(
     super.build_phase(phase);
     eflash_tl_a_chan_fifo = new("eflash_tl_a_chan_fifo", this);
     eflash_tl_d_chan_fifo = new("eflash_tl_d_chan_fifo", this);
+    hs_state = AlertComplete;
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
@@ -718,13 +720,14 @@ class flash_ctrl_scoreboard #(
     if (!(alert_name inside {cfg.list_of_alerts})) begin
       `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
     end
+    hs_state = item.alert_handshake_sta;
 
     `uvm_info(`gfn, $sformatf("alert %0s detected, alert_status is %s contd:%0d", alert_name,
                               item.alert_handshake_sta, exp_alert_contd[alert_name]), UVM_MEDIUM)
     if (item.alert_handshake_sta == AlertReceived) begin
       under_alert_handshake[alert_name] = 1;
       on_alert(alert_name, item);
-      ++alert_count[alert_name];
+      alert_count[alert_name]++;
     end else begin
       if (!cfg.under_reset && under_alert_handshake[alert_name] == 0) begin
         `uvm_error(`gfn, $sformatf("alert %0s is not received!", alert_name))
