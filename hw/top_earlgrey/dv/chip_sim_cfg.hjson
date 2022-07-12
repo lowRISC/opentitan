@@ -987,6 +987,13 @@
       run_opts: ["+calibrate_usb_clk=1"]
     }
     {
+      name: chip_sw_lc_ctrl_program_error
+      uvm_test_seq: chip_sw_lc_ctrl_program_error_vseq
+      sw_images: ["sw/device/tests/sim_dv/lc_ctrl_program_error:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+en_scb=0", "+bypass_alert_ready_to_end_check=1"]
+    }
+    {
       name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
       uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
       sw_images: ["sw/device/tests/sim_dv/pwrmgr_normal_sleep_all_wake_ups:1"]

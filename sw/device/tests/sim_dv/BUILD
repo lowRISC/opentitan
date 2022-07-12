@@ -710,3 +710,24 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_functest(
+    name = "lc_ctrl_program_error",
+    srcs = ["lc_ctrl_program_error.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:lc_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
