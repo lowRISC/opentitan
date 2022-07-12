@@ -143,7 +143,27 @@ class chip_base_vseq #(
     if (shorten_ping_en) begin
        `DV_CHECK_FATAL(uvm_hdl_force(mask_path, 16'h3F))
     end
-  endtask
+  endtask : alert_ping_en_shorten
+
+  // shorten alert ping timer enable wait time
+  virtual task check_lc_ctrl_broadcast(bit [LcBroadcastLast-1:0] bool_vector);
+    string path;
+    lc_ctrl_pkg::lc_tx_t curr_val;
+
+    foreach (lc_broadcast_paths[i]) begin
+      path = {`DV_STRINGIFY(`LC_CTRL_HIER),
+      ".", lc_broadcast_paths[i]};
+      uvm_hdl_read(path, curr_val);
+
+      // if bool vector bit is 1, the probed value should be ON
+      // if bool vector bit is 0, the probed value should be OFF
+      if (bool_vector[i] ~^ (curr_val == lc_ctrl_pkg::On)) begin
+        `uvm_info(`gfn, $sformatf("%s: 0x%h matched", lc_broadcast_paths[i], curr_val), UVM_HIGH)
+      end else begin
+        `uvm_error(`gfn, $sformatf("%s: 0x%h mismatched", lc_broadcast_paths[i], curr_val))
+      end
+    end
+  endtask : check_lc_ctrl_broadcast
 
   // Initialize the OTP creator SW cfg region to use otbn for signature verification.
   virtual function void initialize_otp_sig_verify();

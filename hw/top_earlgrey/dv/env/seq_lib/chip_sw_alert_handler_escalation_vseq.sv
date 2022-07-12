@@ -20,6 +20,10 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
     string keymgr_path = {`DV_STRINGIFY(`KEYMGR_HIER),
                         ".u_ctrl.key_state_q"};
     logic [1023:0] curr_key, prev_key;
+    logic [TL_DW-1:0] init_state;
+    logic [TL_DW-1:0] reg_val;
+    bit [LcBroadcastLast-1:0] bool_vector;
+
     super.body();
 
     // ensure we see NMI handler trigger from C side
@@ -31,11 +35,31 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
        `uvm_fatal(`gfn, $sformatf("uvm_hdl_read failed for %0s", keymgr_path))
     end
 
+    // Read current lc state to establish baseline
+    jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
+      p_sequencer.jtag_sequencer_h,
+      init_state
+    );
+    `uvm_info(`gfn, $sformatf("Initial state is 0x%h", init_state), UVM_LOW)
 
     // ensure we see NMI handler trigger from C side
     `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "You are experiencing an NMI");,
              "timeout waiting for C side NMI acknowledgement",
              cfg.sw_test_timeout_ns)
+
+    // Read lc state to ensure that we are still in normal operating mode
+    jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
+      p_sequencer.jtag_sequencer_h,
+      reg_val
+    );
+
+    if (reg_val != init_state) begin
+      `uvm_fatal(`gfn, $sformatf("Unexpected LC state change from 0x%h to 0x%h",
+                 init_state, reg_val))
+    end else begin
+    `uvm_info(`gfn, $sformatf("Initial state is 0x%h, current state is 0x%h", init_state, reg_val),
+              UVM_LOW)
+    end
 
     // poll for state to transition into scrap
     jtag_csr_spinwait(ral.lc_ctrl.lc_state.get_offset(),
@@ -48,6 +72,12 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
     if (curr_key == prev_key) begin
       `uvm_fatal(`gfn, $sformatf("something is very wrong"))
     end
+
+    // once in scrap, probe and check for broadcasts
+    bool_vector = '0;
+    bool_vector[EscEn] = 1;
+    check_lc_ctrl_broadcast(bool_vector);
+
 
 
   endtask

@@ -51,13 +51,13 @@ typedef struct node {
 
 static volatile uint32_t global_alert_called;
 static const dif_alert_handler_escalation_phase_t kEscProfiles[] = {
-    {.phase = kDifAlertHandlerClassStatePhase0,
-     .signal = 0,
-     .duration_cycles = 5000},
     // TODO:
-    // this second duration must be long enough to
+    // this first/second duration must be long enough to
     // accommodate a jtag transaction
     // how can this be done in a non-hardcoded way?
+    {.phase = kDifAlertHandlerClassStatePhase0,
+     .signal = 0,
+     .duration_cycles = 10000},
     {.phase = kDifAlertHandlerClassStatePhase1,
      .signal = 1,
      .duration_cycles = 10000},
