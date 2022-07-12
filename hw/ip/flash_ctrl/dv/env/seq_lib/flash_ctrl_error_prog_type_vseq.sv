@@ -200,12 +200,13 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
 
         // Model Expected Response (Violation Expected / Pass)
         exp_alert = predict_expected_err_rsp(prog_type_en, flash_op.prog_sel);
-        cfg.scb_set_exp_alert = exp_alert;
 
         // Initialise Flash Content
         cfg.flash_mem_bkdr_init(flash_op.partition, FlashMemInitInvalidate);
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
 
+        cfg.scb_h.exp_alert["recov_err"] = exp_alert;
+        cfg.scb_h.alert_chk_max_delay["recov_err"] = 1000; // cycles
         // FLASH PROGRAM
         flash_ctrl_start_op(flash_op);
         flash_ctrl_write(flash_op_data, poll_fifo_status);
@@ -217,7 +218,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
 
         // Check Status
         check_exp_alert_status(exp_alert, "prog_type_err", flash_op, flash_op_data);
-
+        cfg.scb_h.exp_alert["recov_err"] = 0;
       end
 
       // RESET DUT

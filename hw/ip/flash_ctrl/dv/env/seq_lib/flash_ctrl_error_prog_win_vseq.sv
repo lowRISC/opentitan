@@ -171,9 +171,6 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
     cfg.seq_cfg.mp_region_he_en_pc = 50;
     cfg.seq_cfg.default_region_he_en_pc = 50;
 
-    // MAX Delay for an Expected Alert
-    cfg.alert_max_delay = cfg.seq_cfg.prog_timeout_ns;
-
   endfunction : configure_vseq
 
   // Body
@@ -213,12 +210,13 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
           flash_op_data_prog_win), UVM_MEDIUM)
       end
 
-      // Model Expected Response (Error Expected / Pass)
-      cfg.scb_set_exp_alert = exp_alert;
-
       // Initialise Flash Content
       cfg.flash_mem_bkdr_init(flash_op_prog_win.partition, FlashMemInitInvalidate);
       cfg.flash_mem_bkdr_write(.flash_op(flash_op_prog_win), .scheme(FlashMemInitSet));
+
+      // Model Expected Response (Error Expected / Pass)
+      cfg.scb_h.exp_alert["recov_err"] = exp_alert;
+      cfg.scb_h.alert_chk_max_delay["recov_err"] = 1000; // cycles
 
       // FLASH PROGRAM
       flash_ctrl_start_op(flash_op_prog_win);
@@ -231,6 +229,7 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
 
       // Check Alert Status
       check_exp_alert_status(exp_alert, "prog_win_err", flash_op, flash_op_data);
+      cfg.scb_h.exp_alert["recov_err"] = 0;
 
     end
 
