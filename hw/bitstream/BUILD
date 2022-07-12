@@ -62,3 +62,12 @@ filegroup(
         "//conditions:default": ["@bitstreams//:bitstream_mask_rom"],
     }),
 )
+
+# TODO(lowRISC/opentitan#13603): Use `select` once we're uploading these
+# artifacts to GCP.
+filegroup(
+    name = "mask_rom_otp_dev",
+    srcs = [
+        "//hw/bitstream/vivado:fpga_cw310_mask_rom_otp_dev",
+    ],
+)
