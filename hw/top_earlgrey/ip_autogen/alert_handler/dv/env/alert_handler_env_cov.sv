@@ -2,164 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class alert_handler_alert_en_regwen_cg_wrap;
-  covergroup alert_en_regwen_cg(string name) with function sample(bit regwen);
-    option.name = name;
-    alert_en_regwen_cp: coverpoint regwen;
-  endgroup
-
-  function new(string name);
-    alert_en_regwen_cg = new(name);
-  endfunction
-
-  function void sample(bit regwen);
-    alert_en_regwen_cg.sample(regwen);
-  endfunction
-endclass
-
-class alert_handler_alert_class_regwen_cg_wrap;
-  covergroup alert_class_regwen_cg(string name) with function sample(bit regwen);
-    option.name = name;
-    alert_class_regwen_cp: coverpoint regwen;
-  endgroup
-
-  function new(string name);
-    alert_class_regwen_cg = new(name);
-  endfunction
-
-  function void sample(bit regwen);
-    alert_class_regwen_cg.sample(regwen);
-  endfunction
-endclass
-
-class alert_handler_loc_alert_en_regwen_cg_wrap;
-  covergroup loc_alert_en_regwen_cg(string name) with function sample(bit regwen);
-    option.name = name;
-    loc_alert_en_regwen_cp: coverpoint regwen;
-  endgroup
-
-  function new(string name);
-    loc_alert_en_regwen_cg = new(name);
-  endfunction
-
-  function void sample(bit regwen);
-    loc_alert_en_regwen_cg.sample(regwen);
-  endfunction
-endclass
-
-class alert_handler_loc_alert_class_regwen_cg_wrap;
-  covergroup loc_alert_class_regwen_cg(string name) with function sample(bit regwen);
-    option.name = name;
-    loc_alert_class_regwen_cp: coverpoint regwen;
-  endgroup
-
-  function new(string name);
-    loc_alert_class_regwen_cg = new(name);
-  endfunction
-
-  function void sample(bit regwen);
-    loc_alert_class_regwen_cg.sample(regwen);
-  endfunction
-endclass
-
-class alert_handler_class_ctrl_regwen_cg_wrap;
-  covergroup class_ctrl_regwen_cg(string name) with function sample(bit regwen);
-    option.name = name;
-    class_ctrl_regwen_cp: coverpoint regwen;
-  endgroup
-
-  function new(string name);
-    class_ctrl_regwen_cg = new(name);
-  endfunction
-
-  function void sample(bit regwen);
-    class_ctrl_regwen_cg.sample(regwen);
-  endfunction
-endclass
-
-class alert_handler_class_clr_regwen_cg_wrap;
-  covergroup class_clr_regwen_cg(string name) with function sample(bit regwen);
-    option.name = name;
-    class_clr_regwen_cp: coverpoint regwen;
-  endgroup
-
-  function new(string name);
-    class_clr_regwen_cg = new(name);
-  endfunction
-
-  function void sample(bit regwen);
-    class_clr_regwen_cg.sample(regwen);
-  endfunction
-endclass
-
-class alert_handler_class_accum_thresh_regwen_cg_wrap;
-  covergroup class_accum_thresh_regwen_cg(string name) with function sample(bit regwen);
-    option.name = name;
-    class_accum_thresh_regwen_cp: coverpoint regwen;
-  endgroup
-
-  function new(string name);
-    class_accum_thresh_regwen_cg = new(name);
-  endfunction
-
-  function void sample(bit regwen);
-    class_accum_thresh_regwen_cg.sample(regwen);
-  endfunction
-endclass
-
-class alert_handler_class_timeout_cyc_regwen_cg_wrap;
-  covergroup class_timeout_cyc_regwen_cg(string name) with function sample(bit regwen);
-    option.name = name;
-    class_timeout_cyc_regwen_cp: coverpoint regwen;
-  endgroup
-
-  function new(string name);
-    class_timeout_cyc_regwen_cg = new(name);
-  endfunction
-
-  function void sample(bit regwen);
-    class_timeout_cyc_regwen_cg.sample(regwen);
-  endfunction
-endclass
-
-class alert_handler_class_crashdump_trigger_regwen_cg_wrap;
-  covergroup class_crashdump_trigger_regwen_cg(string name) with function sample(bit regwen);
-    option.name = name;
-    class_crashdump_trigger_regwen_cp: coverpoint regwen;
-  endgroup
-
-  function new(string name);
-    class_crashdump_trigger_regwen_cg = new(name);
-  endfunction
-
-  function void sample(bit regwen);
-    class_crashdump_trigger_regwen_cg.sample(regwen);
-  endfunction
-endclass
-
-class alert_handler_class_phase_cyc_regwen_cg_wrap;
-  covergroup class_phase_cyc_regwen_cg(string name) with function sample(bit regwen,
-                                                                         int phase_index);
-    option.name = name;
-    class_phase_cyc_regwen_cp: coverpoint regwen;
-    phase_index_cp: coverpoint phase_index {
-      bins phase_0 = {0};
-      bins phase_1 = {1};
-      bins phase_2 = {2};
-      bins phase_3 = {3};
-    }
-    regwen_cross_phase: cross class_phase_cyc_regwen_cp, phase_index_cp;
-  endgroup
-
-  function new(string name);
-    class_phase_cyc_regwen_cg = new(name);
-  endfunction
-
-  function void sample(bit regwen, int phase_index);
-    class_phase_cyc_regwen_cg.sample(regwen, phase_index);
-  endfunction
-endclass
-
 class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_cfg));
   `uvm_component_utils(alert_handler_env_cov)
 
@@ -269,15 +111,6 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
     }
   endgroup
 
-  // Regwen related covergroups
-  covergroup ping_timeout_cyc_regwen_cg with function sample(bit regwen);
-    ping_timeout_cyc_regwen_cp: coverpoint regwen;
-  endgroup
-
-  covergroup ping_timer_en_regwen_cg with function sample(bit regwen);
-    ping_timer_en_regwen_cp: coverpoint regwen;
-  endgroup
-
   // Covergroup to make sure simulation is long enough to fetch more than five EDN requests.
   covergroup num_edn_reqs_cg with function sample(int num_edn_reqs);
     num_edn_reqs_cp: coverpoint num_edn_reqs {
@@ -285,20 +118,6 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
       bins five_or_more_reqs   = {[5:$]};
     }
   endgroup
-
-  alert_handler_alert_en_regwen_cg_wrap        alert_en_regwen_cg_wrap[NUM_ALERTS];
-  alert_handler_alert_class_regwen_cg_wrap     alert_class_regwen_cg_wrap[NUM_ALERTS];
-  alert_handler_loc_alert_en_regwen_cg_wrap    loc_alert_en_regwen_cg_wrap[NUM_LOCAL_ALERTS];
-  alert_handler_loc_alert_class_regwen_cg_wrap loc_alert_class_regwen_cg_wrap[NUM_LOCAL_ALERTS];
-  alert_handler_class_ctrl_regwen_cg_wrap      class_ctrl_regwen_cg_wrap[NUM_ALERT_CLASSES];
-  alert_handler_class_clr_regwen_cg_wrap       class_clr_regwen_cg_wrap[NUM_ALERT_CLASSES];
-  alert_handler_class_accum_thresh_regwen_cg_wrap
-      class_accum_thresh_regwen_cg_wrap[NUM_ALERT_CLASSES];
-  alert_handler_class_timeout_cyc_regwen_cg_wrap
-      class_timeout_cyc_regwen_cg_wrap[NUM_ALERT_CLASSES];
-  alert_handler_class_crashdump_trigger_regwen_cg_wrap
-      class_crashdump_trigger_regwen_cg_wrap[NUM_ALERT_CLASSES];
-  alert_handler_class_phase_cyc_regwen_cg_wrap class_phase_cyc_regwen_cg_wrap[NUM_ALERT_CLASSES];
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
@@ -312,30 +131,8 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
     esc_loc_alert_cause_cg = new();
     crashdump_trigger_cg = new();
 
-    ping_timeout_cyc_regwen_cg = new();
-    ping_timer_en_regwen_cg = new();
-
     num_edn_reqs_cg = new();
 
-    for (int i = 0; i < NUM_ALERTS; i++) begin
-      alert_en_regwen_cg_wrap[i] = new($sformatf("alert_en_regwen_cg_wrap[%0d]", i));
-      alert_class_regwen_cg_wrap[i] = new($sformatf("alert_class_regwen_cg_wrap[%0d]", i));
-    end
-    for (int i = 0; i < NUM_LOCAL_ALERTS; i++) begin
-      loc_alert_en_regwen_cg_wrap[i] = new($sformatf("loc_alert_en_regwen_cg_wrap[%0d]", i));
-      loc_alert_class_regwen_cg_wrap[i] = new($sformatf("loc_alert_class_regwen_cg_wrap[%0d]", i));
-    end
-    for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
-      class_ctrl_regwen_cg_wrap[i] = new($sformatf("class_ctrl_regwen_cg_wrap[%0d]", i));
-      class_clr_regwen_cg_wrap[i] = new($sformatf("class_clr_regwen_cg_wrap[%0d]", i));
-      class_accum_thresh_regwen_cg_wrap[i] =
-          new($sformatf("class_accum_thresh_regwen_cg_wrap[%0d]", i));
-      class_timeout_cyc_regwen_cg_wrap[i] =
-          new($sformatf("class_timeout_cyc_regwen_cg_wrap[%0d]", i));
-      class_crashdump_trigger_regwen_cg_wrap[i] =
-          new($sformatf("class_crashdump_trigger_regwen_cg_wrap[%0d]", i));
-      class_phase_cyc_regwen_cg_wrap[i] = new($sformatf("class_phase_cyc_regwen_cg_wrap[%0d]", i));
-    end
   endfunction : new
 
 endclass
