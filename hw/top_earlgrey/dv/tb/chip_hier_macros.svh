@@ -15,6 +15,7 @@
 `define EFLASH_HIER           `CHIP_HIER.u_flash_ctrl.u_eflash.u_flash
 `define GPIO_HIER             `CHIP_HIER.u_gpio
 `define KEYMGR_HIER           `CHIP_HIER.u_keymgr
+`define LC_CTRL_HIER          `CHIP_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER         `CHIP_HIER.u_otp_ctrl
 `define RAM_MAIN_HIER         `CHIP_HIER.u_sram_ctrl_main.u_prim_ram_1p_scr
 `define RAM_RET_HIER          `CHIP_HIER.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr

@@ -1246,7 +1246,7 @@
             - Ensure that all escalation handshakes complete without errors.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_alert_handler_escalation"]
     }
     {
       name: chip_sw_alert_handler_irqs
@@ -1367,23 +1367,19 @@
 
             - Trigger an alert to initiate the escalations.
             - Check that the escalation signals are connected to the LC ctrl:
-              - First escalation has no effect on the LC ctrl
-              - Second escalation should cause the `lc_escalation_en` output to be asserted. Read
-                the LC_STATE CSR to confirm that it is in the escalate state.
-                - Verify that the escalate_en and check_bypass_en signals are asserted. X-ref'ed
-                  with the respective IP tests that consume these signals.
-              - Third escalation should cause the LC ctrl to transition to the virtual scrap state.
-                At this stage, the CPU is not operational. Read the LC_STATE CSR via backdoor and
-                confirm that it is is in the scrap state.
-                - Verify that all decoded outputs except for escalate_en and check_bypass_en are
-                  disabled. X-ref'ed with the respective IP tests that consume these signals.
+              - First escalation has no effect on the LC ctrl.  Read LC_STATE CSR to confirm
+                this is the case.
+              - Second escalation should cause the `lc_escalation_en` output to be asserted and for
+                the LC_STATE to transition to scrap state.  Confirm by reading the LC_STATE CSR
+              - Verify that all decoded outputs except for escalate_en are
+                disabled. X-ref'ed with the respective IP tests that consume these signals.
 
             X-ref'ed with chip_lc_ctrl_broadcast test, which verifies the connectivity of the LC
             decoded outputs to other IPs.
             X-ref'ed with alert_handler's escalation test.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_alert_handler_escalation"]
     }
     {
       name: chip_sw_lc_ctrl_jtag_access
