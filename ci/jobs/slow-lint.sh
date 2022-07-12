@@ -11,6 +11,9 @@
 
 set -e
 
+echo -e "\n### Ensure all generated files are clean and up-to-date"
+ci/scripts/check-generated.sh
+
 echo -e "\n### Use buiildifier to check Bazel coding style"
 bazel run buildifier_check
 
