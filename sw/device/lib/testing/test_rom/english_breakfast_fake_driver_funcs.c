@@ -7,8 +7,8 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 
 // TODO(#12905): This file includes fake definitions for the functions that are
-// used by the silicon_creator bootstrap implementation but missing in the
-// english breakfast top level due to hardware limitations.
+// used by the silicon_creator bootstrap implementation and to set reset_reason
+// but missing in the english breakfast top level due to hardware limitations.
 
 #if !OT_IS_ENGLISH_BREAKFAST
 #error "This file should be compiled only for the english breakfast top level"
@@ -22,6 +22,10 @@ void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
 }
 
 uint32_t otp_read32(uint32_t address) { return kHardenedBoolTrue; }
+
+uint32_t rstmgr_reason_get(void) { return 1 << kRstmgrReasonPowerOn; }
+
+void rstmgr_reason_clear(uint32_t reasons) {}
 
 void rstmgr_reset(void) {
   while (true) {
