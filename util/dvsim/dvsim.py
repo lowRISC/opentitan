@@ -295,7 +295,8 @@ def parse_args():
               "optional for running simulations (where it can "
               "be set in an .hjson file), but is required for "
               "other flows. Possible tools include: vcs, questa,"
-              "xcelium, ascentlint, verixcdc, veriblelint, verilator, dc."))
+              "xcelium, ascentlint, verixcdc, mrdc, veriblelint,"
+              "verilator, dc."))
 
     parser.add_argument("--list",
                         "-l",

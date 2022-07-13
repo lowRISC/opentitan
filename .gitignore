@@ -25,6 +25,8 @@ jgproject/
 idebugcfg.db
 idebugcfg.db-journal
 ivision.ws
+meridian_project/
+mrdc.his
 
 # FPGA splice intermediate files
 *.jou
