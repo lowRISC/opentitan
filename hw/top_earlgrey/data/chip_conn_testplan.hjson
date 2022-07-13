@@ -510,6 +510,15 @@
       tests: ["rstmgr_rst_sys_src_n"]
       tags: ["conn"]
     }
+    /////////////////////////
+    // TODO: EDN           //
+    /////////////////////////
+    {
+      name: edn_clk_rst_
+      desc: "Check EDN's clock and reset connects correctly to other IPs."
+      milestone: V2
+      tests: []
+      tags: ["conn"]
+    }
   ]
 }
-

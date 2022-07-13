@@ -2364,16 +2364,6 @@
       tests: []
     }
     {
-      name: chip_sw_otp_ctrl_edn_reset
-      desc: '''Verify the effect of putting the EDN domain in reset on OTP ctrl.
-
-            Verify that the computed nonce for SRAM is reset?
-            Verify all entropy data used for various things are reset.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
       name: chip_sw_otp_ctrl_program
       desc: '''Verify the program request from lc_ctrl.
 
