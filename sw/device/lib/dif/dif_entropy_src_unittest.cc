@@ -280,6 +280,47 @@ TEST_F(HealthTestStatsGetTest, Success) {
   }
 }
 
+class GetAlertFailCountsTest : public EntropySrcTest {};
+
+TEST_F(GetAlertFailCountsTest, NullArgs) {
+  dif_entropy_src_alert_fail_counts_t counts;
+  EXPECT_DIF_BADARG(dif_entropy_src_get_alert_fail_counts(nullptr, &counts));
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_get_alert_fail_counts(&entropy_src_, nullptr));
+  EXPECT_DIF_BADARG(dif_entropy_src_get_alert_fail_counts(nullptr, nullptr));
+}
+
+TEST_F(GetAlertFailCountsTest, Success) {
+  dif_entropy_src_alert_fail_counts_t counts;
+
+  EXPECT_READ32(ENTROPY_SRC_ALERT_SUMMARY_FAIL_COUNTS_REG_OFFSET, 128);
+  EXPECT_READ32(
+      ENTROPY_SRC_ALERT_FAIL_COUNTS_REG_OFFSET,
+      {{ENTROPY_SRC_ALERT_FAIL_COUNTS_REPCNT_FAIL_COUNT_OFFSET, 0xA},
+       {ENTROPY_SRC_ALERT_FAIL_COUNTS_ADAPTP_HI_FAIL_COUNT_OFFSET, 0xC},
+       {ENTROPY_SRC_ALERT_FAIL_COUNTS_ADAPTP_LO_FAIL_COUNT_OFFSET, 0xC},
+       {ENTROPY_SRC_ALERT_FAIL_COUNTS_BUCKET_FAIL_COUNT_OFFSET, 0xD},
+       {ENTROPY_SRC_ALERT_FAIL_COUNTS_MARKOV_HI_FAIL_COUNT_OFFSET, 0xE},
+       {ENTROPY_SRC_ALERT_FAIL_COUNTS_MARKOV_LO_FAIL_COUNT_OFFSET, 0xE},
+       {ENTROPY_SRC_ALERT_FAIL_COUNTS_REPCNTS_FAIL_COUNT_OFFSET, 0xB}});
+  EXPECT_READ32(
+      ENTROPY_SRC_EXTHT_FAIL_COUNTS_REG_OFFSET,
+      {{ENTROPY_SRC_EXTHT_FAIL_COUNTS_EXTHT_HI_FAIL_COUNT_OFFSET, 0xF},
+       {ENTROPY_SRC_EXTHT_FAIL_COUNTS_EXTHT_LO_FAIL_COUNT_OFFSET, 0xF}});
+  EXPECT_DIF_OK(dif_entropy_src_get_alert_fail_counts(&entropy_src_, &counts));
+
+  uint8_t num_fails = 0xA;
+  for (uint32_t i = 0; i < kDifEntropySrcTestNumVariants; ++i) {
+    EXPECT_EQ(counts.high_fails[i], num_fails);
+    if (i == 2 || i == 4 || i == 5) {
+      EXPECT_EQ(counts.low_fails[i], num_fails);
+    } else {
+      EXPECT_EQ(counts.low_fails[i], 0);
+    }
+    num_fails++;
+  }
+}
+
 class ReadTest : public EntropySrcTest {};
 
 TEST_F(ReadTest, EntropyBadArg) {
