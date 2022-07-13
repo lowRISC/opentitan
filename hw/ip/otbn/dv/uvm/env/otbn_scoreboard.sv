@@ -193,7 +193,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
             fork begin
               repeat (2) @(cfg.clk_rst_vif.cb);
               `DV_CHECK_FATAL(!cfg.clk_rst_vif.rst_n || !pending_start_tl_trans,
-                              "Model ignored a write of EXECUTE to the CMD register.")
+                              "Model ignored a write to the CMD register.")
             end
             join_none;
           end
