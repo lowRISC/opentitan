@@ -1,0 +1,21 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Environment variables that are needed in the RDC script
+  exports: [
+    { CONSTRAINT:         "{sdc_file}" },
+    { FOUNDRY_CONSTRAINT: "{foundry_sdc_file}" },
+    { RDC_WAIVER_FILE:    "{rdc_waiver_file}" }
+    { ENV_FILE:           "{env_file}" }
+  ]
+
+  // Tool invocation
+  build_cmd:  "{job_prefix} mrdc "
+  build_opts: ["-i {rdc_root}/tools/{tool}/run-rdc.tcl"]
+
+  // CDC-specific results parsing script that is called after running the tool
+  report_cmd: "{proj_root}/util/dvsim/{tool}-report-parser.py"
+  report_opts: ["--repdir {build_dir} ",
+                "--outfile {build_dir}/results.hjson"]
+}

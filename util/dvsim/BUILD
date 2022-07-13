@@ -154,6 +154,14 @@ py_library(
 )
 
 py_library(
+    name = "rdc_cfg",
+    srcs = ["RdcCfg.py"],
+    deps = [
+        ":cdc_cfg",
+    ],
+)
+
+py_library(
     name = "testplan",
     srcs = ["Testplan.py"],
     deps = [
