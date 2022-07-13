@@ -87,11 +87,11 @@ module otbn_core_model
   logic [7:0]  cmd;
 
   assign cmd = cmd_en_i ? cmd_i : 8'h0;
-  bit [7:0]  status_d, status_q;
-  bit [31:0] insn_cnt_d, insn_cnt_q;
-  bit [31:0] raw_err_bits_d, raw_err_bits_q;
-  bit [31:0] stop_pc_d, stop_pc_q;
-  bit        rnd_req_start_d, rnd_req_start_q;
+  bit [7:0]  status_q;
+  bit [31:0] insn_cnt_q;
+  bit [31:0] raw_err_bits_q;
+  bit [31:0] stop_pc_q;
+  bit        rnd_req_start_q;
 
   bit unused_raw_err_bits;
   logic unused_edn_rsp_fips;
@@ -217,18 +217,19 @@ module otbn_core_model
   bit failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      failed_reset <= (otbn_model_reset(model_handle) != 0);
+      failed_reset <= (otbn_model_reset(model_handle,
+                                        status_q,
+                                        insn_cnt_q,
+                                        rnd_req_start_q,
+                                        raw_err_bits_q,
+                                        stop_pc_q)
+                       != 0);
       failed_lc_escalate <= 0;
       failed_keymgr_value <= 0;
       failed_urnd_cdc <= 0;
       failed_rnd_cdc <= 0;
       failed_otp_key_cdc <= 0;
       model_state <= 0;
-      status_q <= 0;
-      insn_cnt_q <= 0;
-      rnd_req_start_q <= 0;
-      raw_err_bits_q <= 0;
-      stop_pc_q <= 0;
     end else begin
       if (new_escalation) begin
         // Setting LIFECYCLE_ESCALATION bit
@@ -253,16 +254,11 @@ module otbn_core_model
         model_state <= otbn_model_step(model_handle,
                                        model_state,
                                        cmd,
-                                       status_d,
-                                       insn_cnt_d,
-                                       rnd_req_start_d,
-                                       raw_err_bits_d,
-                                       stop_pc_d);
-        status_q <= status_d;
-        insn_cnt_q <= insn_cnt_d;
-        rnd_req_start_q <= rnd_req_start_d;
-        raw_err_bits_q <= raw_err_bits_d;
-        stop_pc_q <= stop_pc_d;
+                                       status_q,
+                                       insn_cnt_q,
+                                       rnd_req_start_q,
+                                       raw_err_bits_q,
+                                       stop_pc_q);
       end
     end
   end
