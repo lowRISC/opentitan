@@ -469,7 +469,17 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
 
     if (cfg.clk_rst_vif.rst_n) begin
-      `uvm_info(`gfn, "\n\t ----| OTBN finished", UVM_MEDIUM)
+      if (exp_data_status == otbn_pkg::StatusBusyExecute) begin
+        `uvm_info(`gfn, "\n\t ----| OTBN completed execution", UVM_MEDIUM)
+        // After execution, OTBN securely wipes its internal state, so wait until that is complete.
+        exp_data_status = otbn_pkg::StatusBusySecWipeInt;
+        csr_utils_pkg::csr_spinwait(.ptr(ral.status),
+                                    .exp_data(exp_data_status),
+                                    .compare_op(CompareOpNe));
+        `uvm_info(`gfn, "\n\t ----| OTBN completed secure wipe", UVM_MEDIUM)
+      end else begin
+        `uvm_info(`gfn, "\n\t ----| OTBN finished", UVM_MEDIUM)
+      end
     end else begin
       `uvm_info(`gfn, "\n\t ----| OTBN reset", UVM_MEDIUM)
     end
@@ -719,7 +729,8 @@ class otbn_base_vseq extends cip_base_vseq #(
         // from the model (which is also in sync with the RTL). Because we wait on the negedge
         // when updating cycle_counter above, we know we've got the "new version" of the status at
         // this point.
-        if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusBusyExecute) begin
+        if (cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
+                                                   otbn_pkg::StatusBusySecWipeInt}) begin
           timed_out = 1'b1;
         end else begin
           timed_out = 1'b0;
@@ -820,7 +831,8 @@ class otbn_base_vseq extends cip_base_vseq #(
   // asserted and reset the dut.
   virtual task reset_if_locked();
     uvm_reg_data_t act_val;
-    wait (cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute);
+    wait (!(cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
+                                                   otbn_pkg::StatusBusySecWipeInt}));
 
     // At this point, our status has changed. We're probably actually seeing the alert now, but make
     // sure that it has gone out in at most 100 cycles.

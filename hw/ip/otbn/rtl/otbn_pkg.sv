@@ -71,11 +71,15 @@ package otbn_pkg;
     StatusBusyExecute     = 8'h01,
     StatusBusySecWipeDmem = 8'h02,
     StatusBusySecWipeImem = 8'h03,
+    StatusBusySecWipeInt  = 8'h04,
     StatusLocked          = 8'hFF
   } status_e;
 
   function automatic logic is_busy_status(status_e status);
-    return status inside {StatusBusyExecute, StatusBusySecWipeDmem, StatusBusySecWipeImem};
+    return status inside {StatusBusyExecute,
+                          StatusBusySecWipeDmem,
+                          StatusBusySecWipeImem,
+                          StatusBusySecWipeInt};
   endfunction
 
   // Error bits

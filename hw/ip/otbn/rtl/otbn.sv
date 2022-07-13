@@ -92,6 +92,7 @@ module otbn
   logic start_d, start_q;
   logic busy_execute_d, busy_execute_q;
   logic done, done_core, locking, locking_q;
+  logic busy_secure_wipe;
   logic illegal_bus_access_d, illegal_bus_access_q;
   logic missed_gnt_error_d, missed_gnt_error_q;
   logic dmem_sec_wipe;
@@ -791,6 +792,7 @@ module otbn
   // combinatorially on the cycle that an error is injected. The STATUS register change, done
   // interrupt and any change to the idle signal will be delayed by 2 cycles.
   assign status_d = locking                         ? StatusLocked          :
+                    busy_secure_wipe                ? StatusBusySecWipeInt  :
                     busy_execute_d                  ? StatusBusyExecute     :
                     otbn_dmem_scramble_key_req_busy ? StatusBusySecWipeDmem :
                     otbn_imem_scramble_key_req_busy ? StatusBusySecWipeImem :
@@ -1038,6 +1040,7 @@ module otbn
     .start_i                     (start_q),
     .done_o                      (done_core),
     .locking_o                   (locking),
+    .secure_wipe_running_o       (busy_secure_wipe),
 
     .err_bits_o                  (core_err_bits),
     .recoverable_err_o           (core_recoverable_err),

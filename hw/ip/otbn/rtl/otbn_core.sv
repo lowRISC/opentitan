@@ -32,6 +32,7 @@ module otbn_core
   input  logic start_i,   // start the operation
   output logic done_o,    // operation done
   output logic locking_o, // The core is in or is entering the locked state
+  output logic secure_wipe_running_o, // the core is securely wiping its internal state
 
   output core_err_bits_t err_bits_o,  // valid when done_o is asserted
   output logic           recoverable_err_o,
@@ -272,6 +273,7 @@ module otbn_core
 
     .secure_wipe_req_i (secure_wipe_req),
     .secure_wipe_ack_o (secure_wipe_ack),
+    .secure_wipe_running_o,
     .done_o,
 
     .sec_wipe_wdr_o      (sec_wipe_wdr_d),

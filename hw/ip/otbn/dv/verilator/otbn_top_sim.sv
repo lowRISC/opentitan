@@ -74,6 +74,7 @@ module otbn_top_sim (
     .start_i                     ( otbn_start                 ),
     .done_o                      ( otbn_done                  ),
     .locking_o                   (                            ),
+    .secure_wipe_running_o       (                            ),
 
     .err_bits_o                  ( core_err_bits              ),
     .recoverable_err_o           (                            ),

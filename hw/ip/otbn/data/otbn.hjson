@@ -383,6 +383,11 @@
                   <td>OTBN is busy securely wiping the instruction memory.</td>
                 </tr>
                 <tr>
+                  <td>0x04</td>
+                  <td>BUSY_SEC_WIPE_INT</td>
+                  <td>OTBN is busy securely wiping the internal state.</td>
+                </tr>
+                <tr>
                   <td>0xFF</td>
                   <td>LOCKED</td>
                   <td>

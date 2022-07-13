@@ -43,7 +43,8 @@ class otbn_dmem_err_vseq extends otbn_base_vseq;
 
     cfg.model_agent_cfg.vif.invalidate_dmem();
 
-    wait (cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute);
+    wait (!(cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
+                                                   otbn_pkg::StatusBusySecWipeInt}));
 
     // At this point, our status has changed. We're probably actually seeing the alert now, but make
     // sure that it has gone out in at most 100 cycles.
