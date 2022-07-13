@@ -190,7 +190,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                   cmd_stage_sm_err_sum;
   logic                   main_sm_err_sum;
   logic                   cs_main_sm_err;
-  logic [7:0]             cs_main_sm_state;
+  logic [StateWidth-1:0]  cs_main_sm_state;
   logic                   drbg_gen_sm_err_sum;
   logic                   drbg_gen_sm_err;
   logic                   drbg_updbe_sm_err_sum;
@@ -1056,7 +1056,7 @@ module csrng_core import csrng_pkg::*; #(
   // sm to process all instantiation requests
   // SEC_CM: MAIN_SM.CTR.LOCAL_ESC
   // SEC_CM: MAIN_SM.FSM.SPARSE
-  csrng_main_sm u_csrng_main_sm (
+  csrng_main_sm#(StateWidth) u_csrng_main_sm (
     .clk_i                  (clk_i),
     .rst_ni                 (rst_ni),
     .enable_i               (cs_enable_fo[36]),

@@ -13,6 +13,7 @@ package csrng_pkg;
   parameter int unsigned   CSRNG_CMD_WIDTH = 32;
   parameter int unsigned   FIPS_GENBITS_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH +
                            GENBITS_BUS_WIDTH;
+  parameter int unsigned   StateWidth = 8;
 
   // instantiation interface
   typedef struct packed {
@@ -43,6 +44,45 @@ package csrng_pkg;
     GENB = 3'h6,
     GENU = 3'h7
   } acmd_e;
+
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \
+//      -s 1300573258 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||| (32.38%)
+//  4: |||||||||||||||||||| (35.24%)
+//  5: |||||||| (15.24%)
+//  6: |||||| (11.43%)
+//  7: ||| (5.71%)
+//  8: --
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 7
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 7
+//
+  typedef    enum logic [StateWidth-1:0] {
+    Idle          = 8'b01001110, // idle
+    ParseCmd      = 8'b10111011, // parse the cmd
+    InstantPrep   = 8'b11000001, // instantiate prep
+    InstantReq    = 8'b01010100, // instantiate request (takes adata or entropy)
+    ReseedPrep    = 8'b11011101, // reseed prep
+    ReseedReq     = 8'b01011011, // reseed request (takes adata and entropy and Key,V,RC)
+    GeneratePrep  = 8'b11101111, // generate request (takes adata? and Key,V,RC)
+    GenerateReq   = 8'b00100100, // generate request (takes adata? and Key,V,RC)
+    UpdatePrep    = 8'b00110001, // update prep
+    UpdateReq     = 8'b10010000, // update request (takes adata and Key,V,RC)
+    UninstantPrep = 8'b11110110, // uninstantiate prep
+    UninstantReq  = 8'b01100011, // uninstantiate request
+    ClrAData      = 8'b00000010, // clear out the additional data packer fifo
+    CmdCompWait   = 8'b10111100, // wait for command to complete
+    Error         = 8'b01111000  // error state, results in fatal alert
+  } state_e;
 
   parameter int CsKeymgrDivWidth = 384;
   typedef logic [CsKeymgrDivWidth-1:0] cs_keymgr_div_t;

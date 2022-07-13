@@ -10,7 +10,8 @@ class csrng_smoke_test extends csrng_base_test;
   function void configure_env();
     super.configure_env();
 
-    cfg.use_invalid_mubi          = 0;
+    cfg.use_invalid_mubi = 0;
+    cfg.force_state_pct  = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
 

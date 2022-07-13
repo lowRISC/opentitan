@@ -15,6 +15,7 @@ class csrng_cmds_test extends csrng_base_test;
     cfg.aes_halt_pct      = 80;
     cfg.min_aes_halt_clks = 400;
     cfg.max_aes_halt_clks = 600;
+    cfg.force_state_pct   = 100;
 
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       cfg.m_edn_agent_cfg[i].min_genbits_rdy_dly = 0;
