@@ -31,8 +31,13 @@ class otbn_model_monitor extends dv_base_monitor #(
     otbn_model_item trans;
 
     forever begin
+      trans = otbn_model_item::type_id::create("trans");
+
       // Wait until vif signals a change in status (or we are in reset)
       cfg.vif.wait_status();
+
+      // Store value of reset before we wait for it to be released (if it is not already).
+      trans.rst_n = cfg.vif.rst_ni;
 
       if (cfg.vif.rst_ni !== 1'b1) begin
         // We are in reset. Wait until we aren't (we need to do this because wait_status() returns
@@ -40,7 +45,6 @@ class otbn_model_monitor extends dv_base_monitor #(
         wait(cfg.vif.rst_ni);
       end
 
-      trans = otbn_model_item::type_id::create("trans");
       trans.item_type = OtbnModelStatus;
       trans.status    = cfg.vif.status;
       trans.err       = cfg.vif.err;

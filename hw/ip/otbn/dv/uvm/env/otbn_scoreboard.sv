@@ -55,7 +55,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   bit pending_start_tl_trans = 1'b0;
 
   // The mirrored STATUS register from the ISS.
-  bit [7:0] model_status = 8'd0;
+  bit [7:0] model_status;
 
   // The "locked" field is used to track whether OTBN is "locked". For most operational state
   // tracking, we go through the ISS, but OTBN can become locked without actually starting an
@@ -377,6 +377,9 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           bit was_executing = model_status inside {otbn_pkg::StatusBusyExecute,
                                                    otbn_pkg::StatusBusySecWipeInt};
           bit is_busy = otbn_pkg::is_busy_status(item.status);
+
+          // Did the status change happen due to a reset? If so, reset the model status as well.
+          if (item.rst_n !== 1'b1) model_status = item.status;
 
           // Has the status changed from idle to busy? If so, we should have seen a write to the
           // command register on the previous posedge. See comment above pending_start_tl_trans for
