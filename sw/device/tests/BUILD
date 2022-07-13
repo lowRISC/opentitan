@@ -98,7 +98,7 @@ opentitan_functest(
     name = "aes_smoketest",
     srcs = ["aes_smoketest.c"],
     deps = [
-        ":aes_smoketest_entropy_testutils",
+        "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
