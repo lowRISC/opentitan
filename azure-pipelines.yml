@@ -7,8 +7,9 @@
 
 variables:
   #
-  # If updating VERILATOR_VERSION, OPENOCD_VERSION, TOOLCHAIN_VERSION or RUST_VERSION
-  # update the definitions in util/container/Dockerfile as well.
+  # If updating VERILATOR_VERSION, OPENOCD_VERSION, TOOLCHAIN_VERSION or
+  # RUST_VERSION update the definitions in util/container/Dockerfile as well.
+  # These also must be kept in sync with .github/workflows/kythe.yml.
   #
   VERILATOR_VERSION: 4.210
   OPENOCD_VERSION: 0.11.0
