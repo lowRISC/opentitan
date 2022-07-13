@@ -257,6 +257,15 @@ static bool read_ext_flag(const std::string &reg_name,
   return true;
 }
 
+void MirroredRegs::reset() {
+  status = 0;
+  insn_cnt = 0;
+  err_bits = 0;
+  stop_pc = 0;
+  rnd_req = false;
+  wipe_start = false;
+}
+
 ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
   std::string model_path(find_otbn_model());
 
@@ -512,16 +521,8 @@ void ISSWrapper::reset(bool gen_trace) {
 
   run_command("reset\n", nullptr);
 
-  // Zero our mirror of INSN_CNT. We'll get the corresponding zero value from
-  // the ISS one cycle *after* start, but clearing it here avoids a glitch
-  // before that.
-  mirrored_.insn_cnt = 0;
-
-  mirrored_.rnd_req = 0;
-
-  // Zero our mirror of STATUS: the initial zero value for the next run doesn't
-  // get reported by the ISS.
-  mirrored_.status = 0;
+  // Reset all mirrored registers.
+  mirrored_.reset();
 }
 
 void ISSWrapper::send_err_escalation(uint32_t err_val) {

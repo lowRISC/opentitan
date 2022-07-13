@@ -20,13 +20,7 @@ struct TmpDir;
 // versions of these registers in this structure.
 class MirroredRegs {
  public:
-  MirroredRegs()
-      : status(0),
-        insn_cnt(0),
-        err_bits(0),
-        stop_pc(0),
-        rnd_req(false),
-        wipe_start(false) {}
+  MirroredRegs() { reset(); }
 
   uint32_t status;
   uint32_t insn_cnt;
@@ -42,6 +36,9 @@ class MirroredRegs {
   // (and can be used as a trigger to check internal state before it gets
   // trashed)
   bool wipe_start;
+
+  // Reset the mirrored registers.
+  void reset();
 
   // Execution is stopped if status is either 0 (IDLE) or 0xff (LOCKED)
   bool stopped() const { return status == 0 || status == 0xff; }
