@@ -2121,7 +2121,7 @@
                Same as `chip_keymgr_sideload_kmac`, except, sideload to AES.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_aes_sideload"]
     }
     {
       name: chip_sw_keymgr_sideload_otbn
