@@ -374,7 +374,8 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
       case (item.item_type)
         OtbnModelStatus: begin
-          bit was_executing = model_status inside {otbn_pkg::StatusBusyExecute};
+          bit was_executing = model_status inside {otbn_pkg::StatusBusyExecute,
+                                                   otbn_pkg::StatusBusySecWipeInt};
           bit is_busy = otbn_pkg::is_busy_status(item.status);
 
           // Has the status changed from idle to busy? If so, we should have seen a write to the

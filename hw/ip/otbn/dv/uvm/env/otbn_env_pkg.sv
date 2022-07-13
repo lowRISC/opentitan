@@ -117,7 +117,8 @@ package otbn_env_pkg;
     unique case (status)
       otbn_pkg::StatusBusyExecute,
       otbn_pkg::StatusBusySecWipeDmem,
-      otbn_pkg::StatusBusySecWipeImem:
+      otbn_pkg::StatusBusySecWipeImem,
+      otbn_pkg::StatusBusySecWipeInt:
         return OperationalStateBusy;
 
       otbn_pkg::StatusLocked:

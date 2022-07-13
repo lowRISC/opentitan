@@ -40,6 +40,7 @@ typedef enum otbn_status {
   kOtbnStatusBusyExecute = 0x01,
   kOtbnStatusBusySecWipeDmem = 0x02,
   kOtbnStatusBusySecWipeImem = 0x03,
+  kOtbnStatusBusySecWipeInt = 0x04,
   kOtbnStatusLocked = 0xFF,
 } otbn_status_t;
 
