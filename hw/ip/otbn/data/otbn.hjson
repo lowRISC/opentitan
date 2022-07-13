@@ -427,7 +427,7 @@
                   <td>LOCKED</td>
                   <td>
                     OTBN is locked as reaction to a fatal error, and must be
-                    reset to unlock it again. See also the the section
+                    reset to unlock it again. See also the section
                     "Reaction to Fatal Errors".
                   </td>
                 </tr>
