@@ -32,7 +32,7 @@ class spi_device_tpm_write_vseq extends spi_device_tpm_base_vseq;
     address_command = {tpm_addr, tpm_cmd};
     `uvm_info(`gfn, $sformatf("Address Command = 0x%0h", address_command), UVM_LOW)
     // send payload
-    cfg.m_spi_agent_cfg.csb_consecutive = 1;
+    cfg.spi_host_agent_cfg.csb_consecutive = 1;
     spi_host_xfer_word(address_command, device_word_rsp);
     while (pay_num < 5) begin
       spi_host_xfer_byte(data_bytes[pay_num], device_byte_rsp);
@@ -40,7 +40,7 @@ class spi_device_tpm_write_vseq extends spi_device_tpm_base_vseq;
       device_byte_rsp = {<<1{device_byte_rsp}};
       if (pay_num > 0) pay_num++;
       if (pay_num == 0  && device_byte_rsp == TPM_START) pay_num++;
-      if (pay_num == 4) cfg.m_spi_agent_cfg.csb_consecutive = 0;
+      if (pay_num == 4) cfg.spi_host_agent_cfg.csb_consecutive = 0;
     end
 
     chk_fifo_contents(address_command, data_bytes);

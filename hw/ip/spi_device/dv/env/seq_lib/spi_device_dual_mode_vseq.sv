@@ -32,7 +32,7 @@ class spi_device_dual_mode_vseq extends spi_device_pass_base_vseq;
     /*
     repeat (num_trans) begin
 
-      addr_size = cfg.m_spi_agent_cfg.cmd_infos[READ_DUAL].addr_bytes;
+      addr_size = cfg.spi_host_agent_cfg.cmd_infos[READ_DUAL].addr_bytes;
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(read_size, read_size > 0;)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cmd_slot, cmd_slot >= 5 && cmd_slot <= 10;)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(pld, pld.size() == 0;)

@@ -88,7 +88,7 @@ The following covergroups have been developed to prove that the test intent has 
 The `spi_device_scoreboard` is primarily used for end to end checking.
 It creates the following analysis fifos to retrieve the data monitored by corresponding interface agents:
 * tl_a_chan_fifo, tl_d_chan_fifo:           These 2 fifos provide transaction items at the end of address channel and data channel respectively
-* host_spi_data_fifo, device_spi_data_fifo: These 2 fifos provides TX/RX words of data from spi_monitor
+* upstream_spi_host_fifo, upstream_spi_device_fifo: These 2 fifos provides TX/RX words of data from spi_monitor
 
 #### Assertions
 * TLUL assertions: The `tb/spi_device_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.

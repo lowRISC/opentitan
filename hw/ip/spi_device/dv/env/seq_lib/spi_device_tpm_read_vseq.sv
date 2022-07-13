@@ -38,7 +38,7 @@ class spi_device_tpm_read_vseq extends spi_device_tpm_base_vseq;
       tpm_addr = {<<1{tpm_addr}};
       address_command = {tpm_addr, tpm_cmd};
       `uvm_info(`gfn, $sformatf("Address Command = 0x%0h", address_command), UVM_LOW)
-      cfg.m_spi_agent_cfg.csb_consecutive = 1;
+      cfg.spi_host_agent_cfg.csb_consecutive = 1;
       spi_host_xfer_word(address_command, device_word_rsp);
       fork
         begin

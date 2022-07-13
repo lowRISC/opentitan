@@ -105,8 +105,8 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   }
   virtual task spi_device_init();
     super.spi_device_init();
-    cfg.m_spi_agent_cfg.en_extra_dly_btw_sck  = en_extra_dly;
-    cfg.m_spi_agent_cfg.en_extra_dly_btw_word = en_extra_dly;
+    cfg.spi_host_agent_cfg.en_extra_dly_btw_sck  = en_extra_dly;
+    cfg.spi_host_agent_cfg.en_extra_dly_btw_word = en_extra_dly;
   endtask
 
   virtual task body();

@@ -14,7 +14,7 @@ class spi_device_pass_cmd_filtering_vseq extends spi_device_pass_base_vseq;
     spi_device_flash_pass_init(PassthroughMode);
 
     // cmd_infos index is the opcode, get all opcode
-    opcode_q = cfg.m_spi_agent_cfg.cmd_infos.find_index() with ('1);
+    opcode_q = cfg.spi_host_agent_cfg.cmd_infos.find_index() with ('1);
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, $sformatf("running iteration %0d", i), UVM_LOW)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(op,
@@ -30,7 +30,7 @@ class spi_device_pass_cmd_filtering_vseq extends spi_device_pass_base_vseq;
         // Make sure filter is not blocking command opcode
         cfg_cmd_filter(cmd_filter, op);
         // Prepare data for transfer
-        spi_host_xfer_flash_item(op, cfg.m_spi_agent_cfg.cmd_infos[op].addr_bytes, payload_size);
+        spi_host_xfer_flash_item(op, cfg.spi_host_agent_cfg.cmd_infos[op].addr_bytes, payload_size);
       end
     end
 

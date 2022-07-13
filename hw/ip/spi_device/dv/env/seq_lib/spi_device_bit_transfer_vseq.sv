@@ -30,15 +30,15 @@ class spi_device_bit_transfer_vseq extends spi_device_base_vseq;
         write_device_words_to_send({device_data});
         `uvm_info(`gfn, $sformatf("Device Data = 0x%0h", device_data), UVM_LOW)
         cfg.clk_rst_vif.wait_clks(16);
-        cfg.m_spi_agent_cfg.partial_byte = 1;
+        cfg.spi_host_agent_cfg.partial_byte = 1;
         // Randomize number of bits to send before CSN deassert
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bits_num, bits_num > 0;)
-        cfg.m_spi_agent_cfg.bits_to_transfer = bits_num;
+        cfg.spi_host_agent_cfg.bits_to_transfer = bits_num;
         `uvm_info(`gfn, $sformatf("Bits_num = 0x%0h", bits_num), UVM_LOW)
         spi_host_xfer_byte(host_data[7:0], device_data_exp[0]);
         `uvm_info(`gfn, $sformatf("new device data 0 = 0x%0h", device_data_exp[0]), UVM_LOW)
         cfg.clk_rst_vif.wait_clks(4);
-        cfg.m_spi_agent_cfg.partial_byte = 0;
+        cfg.spi_host_agent_cfg.partial_byte = 0;
         spi_host_xfer_byte(host_data[15:8], device_data_exp[1]);
         `uvm_info(`gfn, $sformatf("new device data 1 = 0x%0h", device_data_exp[1]), UVM_LOW)
         spi_host_xfer_byte(host_data[23:16], device_data_exp[2]);
@@ -54,7 +54,7 @@ class spi_device_bit_transfer_vseq extends spi_device_base_vseq;
           `DV_CHECK_CASE_EQ(device_data,
               {device_data_exp[4],device_data_exp[3], device_data_exp[2], device_data_exp[1]})
         end else begin
-          if (cfg.m_spi_agent_cfg.device_bit_dir == 1)  begin
+          if (cfg.spi_host_agent_cfg.device_bit_dir == 1)  begin
             device_data[7] = 0;
           end else begin
             device_data[0] = 0;
