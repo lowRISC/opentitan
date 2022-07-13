@@ -31,6 +31,8 @@ static void setup_csrng(void) {
   dif_csrng_t csrng;
   CHECK_DIF_OK(dif_csrng_init(
       mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
+
+  CHECK_DIF_OK(dif_csrng_stop(&csrng));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 }
 
@@ -38,7 +40,20 @@ static void setup_edn(void) {
   // Temporary solution to configure/enable the EDN and CSRNG to allow OTBN to
   // run before a DIF is available,
   // https://github.com/lowRISC/opentitan/issues/6082
-  uint32_t reg =
+  // disable edn.
+  uint32_t reg = 0;
+  reg =
+      bitfield_field32_write(0, EDN_CTRL_EDN_ENABLE_FIELD, kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, EDN_CTRL_BOOT_REQ_MODE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, EDN_CTRL_AUTO_REQ_MODE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
+                               kMultiBitBool4False);
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
+                      EDN_CTRL_REG_OFFSET, reg);
+
+  reg =
       bitfield_field32_write(0, EDN_CTRL_EDN_ENABLE_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(reg, EDN_CTRL_BOOT_REQ_MODE_FIELD,
                                kMultiBitBool4True);
