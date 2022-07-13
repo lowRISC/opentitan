@@ -59,7 +59,12 @@ import "DPI-C" function int otbn_model_step_crc(chandle          model,
                                                 bit [47:0]       item,
                                                 inout bit [31:0] state);
 
-import "DPI-C" function int otbn_model_reset(chandle model);
+import "DPI-C" context function int otbn_model_reset(chandle          model,
+                                                     inout bit [7:0]  status,
+                                                     inout bit [31:0] insn_cnt,
+                                                     inout bit        rnd_req,
+                                                     inout bit [31:0] err_bits,
+                                                     inout bit [31:0] stop_pc);
 
 import "DPI-C" function int otbn_model_send_err_escalation(chandle model, bit [31:0] err_val);
 

@@ -106,7 +106,11 @@ class OtbnModel {
                svBitVecVal *state /* bit [31:0] */);
 
   // Flush any information in the model. Returns 0 on success or -1 on error.
-  int reset();
+  int reset(svBitVecVal *status /* bit [7:0] */,
+            svBitVecVal *insn_cnt /* bit [31:0] */,
+            svBitVecVal *rnd_req /* bit [0:0] */,
+            svBitVecVal *err_bits /* bit [31:0] */,
+            svBitVecVal *stop_pc /* bit [31:0] */);
 
   // Escalate errors. Returns 0 on success; -1 on failure.
   int send_err_escalation(svBitVecVal *err_val /* bit [31:0] */);

@@ -125,7 +125,11 @@ int otbn_model_step_crc(OtbnModel *model, svBitVecVal *item /* bit [47:0] */,
                         svBitVecVal *state /* inout bit [31:0] */);
 
 // Flush any information in the model. Returns 0 on success; -1 on error.
-int otbn_model_reset(OtbnModel *model);
+int otbn_model_reset(OtbnModel *model, svBitVecVal *status /* bit [7:0] */,
+                     svBitVecVal *insn_cnt /* bit [31:0] */,
+                     svBitVecVal *rnd_req /* bit [0:0] */,
+                     svBitVecVal *err_bits /* bit [31:0] */,
+                     svBitVecVal *stop_pc /* bit [31:0] */);
 
 // React to an error escalation. Returns 0 on success or -1 on failure.
 int otbn_model_send_err_escalation(OtbnModel *model,
