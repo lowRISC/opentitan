@@ -55,8 +55,10 @@ esac
 
 . util/build_consts.sh
 
+TOPLEVEL_BIN_DIR="$BIN_DIR/hw/$TOPLEVEL"
+
 mkdir -p "$OBJ_DIR/hw"
-mkdir -p "$BIN_DIR/hw/$TOPLEVEL"
+mkdir -p "$TOPLEVEL_BIN_DIR"
 
 if [ $HAS_SCRAMBLED_ROM == 1 ]; then
     BOOTROM_SUFFIX=.scr.39.vmem
@@ -102,6 +104,9 @@ fusesoc --verbose --cores-root=. \
 
 BITSTREAM_FNAME="lowrisc_systems_chip_${FLAVOUR}_${TARGET}_0.1.bit"
 BITSTREAM_PATH="$OBJ_DIR/hw/synth-vivado/$BITSTREAM_FNAME"
-cp "$BITSTREAM_PATH" "$BIN_DIR/hw/top_$FLAVOUR"
+cp "$BITSTREAM_PATH" "$TOPLEVEL_BIN_DIR"
 
-cp "$OBJ_DIR/hw/synth-vivado/rom.mmi" "$BIN_DIR/hw/top_$FLAVOUR"
+cp "$OBJ_DIR/hw/synth-vivado/rom.mmi" "$TOPLEVEL_BIN_DIR"
+if [ $HAS_OTP == 1 ]; then
+    cp "$OBJ_DIR/hw/synth-vivado/otp.mmi" "$TOPLEVEL_BIN_DIR"
+fi

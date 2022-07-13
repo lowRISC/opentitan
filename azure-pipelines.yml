@@ -419,6 +419,8 @@ jobs:
         includeFiles:
           - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
           - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
+          - "rom.mmi"
+          - "otp.mmi"
         gcpKeyFile: "gcpkey.json"
         bucketURI: "gs://opentitan-bitstreams/master"
   - publish: "$(Build.ArtifactStagingDirectory)"
