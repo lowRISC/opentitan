@@ -1935,7 +1935,7 @@
             - Read the internal state via SW; verify that the entropy valid bit is zero.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_entropy_src_fuse_en_fw_read_test"]
     }
     {
       name: chip_sw_entropy_src_known_answer_tests
