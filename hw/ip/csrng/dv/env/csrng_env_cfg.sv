@@ -24,13 +24,14 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   // Knobs & Weights
   uint   otp_en_cs_sw_app_read_pct, lc_hw_debug_en_pct, regwen_pct,
-         enable_pct, sw_app_enable_pct, read_int_state_pct,
+         enable_pct, sw_app_enable_pct, read_int_state_pct, force_state_pct,
          check_int_state_pct, num_cmds_min, num_cmds_max, aes_halt_pct,
          min_aes_halt_clks, max_aes_halt_clks;
 
   bit    use_invalid_mubi;
 
-  rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS], sw_app, aes_halt;
+  rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS],
+                 sw_app, aes_halt, force_state;
   rand mubi4_t   enable, sw_app_enable, read_int_state;
   rand lc_tx_t   lc_hw_debug_en;
   rand mubi8_t   otp_en_cs_sw_app_read;
@@ -86,6 +87,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   constraint aes_halt_c { aes_halt dist {
                           1 :/ aes_halt_pct,
                           0 :/ (100 - aes_halt_pct) };}
+
+  constraint force_state_c { force_state dist {
+                             1 :/ force_state_pct,
+                             0 :/ (100 - force_state_pct) };}
 
   // Functions
   function void post_randomize();
@@ -208,6 +213,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
            regwen)};
     str = {str,  $sformatf("\n\t |***** check_int_state           : %10d *****| \t",
            check_int_state)};
+    str = {str,  $sformatf("\n\t |***** force_state               : %10d *****| \t",
+           force_state)};
     str = {str,  $sformatf("\n\t |---------------- knobs ---------------------------| \t")};
     str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_pct : %10d *****| \t",
            otp_en_cs_sw_app_read_pct) };
@@ -223,6 +230,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
            regwen_pct)};
     str = {str,  $sformatf("\n\t |***** check_int_state_pct       : %10d *****| \t",
            check_int_state_pct)};
+    str = {str,  $sformatf("\n\t |***** force_state_pct           : %10d *****| \t",
+           force_state_pct)};
     str = {str,  $sformatf("\n\t |***** num_cmds_min              : %10d *****| \t",
            num_cmds_min)};
     str = {str,  $sformatf("\n\t |***** num_cmds_max              : %10d *****| \t",

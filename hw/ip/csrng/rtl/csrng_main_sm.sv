@@ -7,7 +7,7 @@
 //  - handles all app cmd requests from all requesting interfaces
 
 module csrng_main_sm import csrng_pkg::*; #(
-  localparam int StateWidth = 8
+  parameter int StateWidth = 8
 ) (
   input logic                   clk_i,
   input logic                   rst_ni,
@@ -32,45 +32,6 @@ module csrng_main_sm import csrng_pkg::*; #(
   output logic [StateWidth-1:0] main_sm_state_o,
   output logic                  main_sm_err_o
 );
-// Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \
-//      -s 1300573258 --language=sv
-//
-// Hamming distance histogram:
-//
-//  0: --
-//  1: --
-//  2: --
-//  3: |||||||||||||||||| (32.38%)
-//  4: |||||||||||||||||||| (35.24%)
-//  5: |||||||| (15.24%)
-//  6: |||||| (11.43%)
-//  7: ||| (5.71%)
-//  8: --
-//
-// Minimum Hamming distance: 3
-// Maximum Hamming distance: 7
-// Minimum Hamming weight: 1
-// Maximum Hamming weight: 7
-//
-
-  typedef    enum logic [StateWidth-1:0] {
-    Idle          = 8'b01001110, // idle
-    ParseCmd      = 8'b10111011, // parse the cmd
-    InstantPrep   = 8'b11000001, // instantiate prep
-    InstantReq    = 8'b01010100, // instantiate request (takes adata or entropy)
-    ReseedPrep    = 8'b11011101, // reseed prep
-    ReseedReq     = 8'b01011011, // reseed request (takes adata and entropy and Key,V,RC)
-    GeneratePrep  = 8'b11101111, // generate request (takes adata? and Key,V,RC)
-    GenerateReq   = 8'b00100100, // generate request (takes adata? and Key,V,RC)
-    UpdatePrep    = 8'b00110001, // update prep
-    UpdateReq     = 8'b10010000, // update request (takes adata and Key,V,RC)
-    UninstantPrep = 8'b11110110, // uninstantiate prep
-    UninstantReq  = 8'b01100011, // uninstantiate request
-    ClrAData      = 8'b00000010, // clear out the additional data packer fifo
-    CmdCompWait   = 8'b10111100, // wait for command to complete
-    Error         = 8'b01111000  // error state, results in fatal alert
-  } state_e;
 
   state_e state_d, state_q;
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Idle)
@@ -101,7 +62,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       ParseCmd: begin
-        if (enable_i) begin
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
           if (ctr_drbg_cmd_req_rdy_i) begin
             if (acmd_i == INS) begin
               if (acmd_eop_i) begin

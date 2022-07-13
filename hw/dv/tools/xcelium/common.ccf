@@ -29,7 +29,6 @@ set_branch_scoring
 // Scores statements within a block.
 set_statement_scoring
 
-
 // Enables Toggle scoring and reporting of SystemVerilog enumerations and multidimensional static
 // arrays , vectors, packed union, modport and generate blocks.
 set_toggle_scoring -sv_enum enable_mda -sv_struct_with_enum -sv_modport -sv_mda 16 -sv_mda_of_struct -sv_generate -sv_packed_union
