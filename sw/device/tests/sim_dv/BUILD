@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
+load("//rules:opentitan_test.bzl", "opentitan_functest")
 
 opentitan_functest(
     name = "uart_tx_rx_test",
@@ -50,17 +50,11 @@ opentitan_functest(
     name = "flash_rma_unlocked_test",
     srcs = ["flash_rma_unlocked_test.c"],
     # This test doesn't use the OTTF.
-    targets = ["verilator"],  # Can only run in verilator right now.
+    targets = ["dv"],
     # This test is designed to run and complete entirely in the ROM boot stage.
     # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
-    # of this, and instructs it to load the test image into ROM (rather than
-    # loading the default test ROM, or any other ROM that may be specified via
-    # Verilator or CW310 params).
+    # of this, and instructs it to load the test image into ROM.
     test_in_rom = True,
-    # This test currently fails in Verilator when run by Bazel (#12486)
-    verilator = verilator_params(
-        tags = ["broken"],
-    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -85,16 +79,12 @@ opentitan_functest(
     name = "flash_init_test",
     srcs = ["flash_init_test.c"],
     # This test doesn't use the OTTF.
-    targets = ["verilator"],  # Can only run in verilator right now.
+    targets = ["dv"],
     # This test is designed to run and complete entirely in the ROM boot stage.
     # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
     # of this, and instructs it to load the test image into ROM (rather than
-    # loading the default test ROM, or any other ROM that may be specified via
-    # Verilator or CW310 params).
+    # loading the default test ROM, or any other ROM that may be specified).
     test_in_rom = True,
-    verilator = verilator_params(
-        tags = ["broken"],
-    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -692,6 +682,7 @@ opentitan_functest(
 opentitan_functest(
     name = "alert_handler_escalation_test",
     srcs = ["alert_handler_escalation.c"],
+    targets = ["dv"],
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
