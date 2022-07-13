@@ -217,39 +217,30 @@ typedef struct dif_entropy_src_revision {
 /**
  * Statistics on entropy source health tests.
  */
-typedef struct dif_entropy_src_test_stats {
+typedef struct dif_entropy_src_health_test_stats {
   /**
-   * Watermarks indicating where the value emitted by a particular test has
-   * ranged through; the low watermark is the lowest observed value, while the
-   * high watermark is the highest.
-   *
-   * Each pair of watermarks is presented as a range from lowest to highest.
+   * High watermark indicating the highest value emitted by a particular test.
    */
-  // TODO: Document behavior for repcnt and bucket tests.
-  uint16_t watermarks[2][kDifEntropySrcTestNumVariants];
-
+  uint16_t high_watermark[kDifEntropySrcTestNumVariants];
   /**
-   * The number of times a particular test has failed.
+   * Low watermark indicating the lowest value emitted by a particular test.
    *
-   * For tests that ensure the value lies in a range (such as the "Markov"
-   * test), the array will contain the number of underflows and overflows of
-   * this range, respectively; for tests that only have an upper range, the
-   * first array element will be zeroed, and the second will be the number
-   * of fails.
-   *
-   * For `dif_entropy_src_test.kDifEntropySrcTestRepCount` and
-   * `dif_entropy_src_test.kDifEntropySrcTestBucket` the first array element
-   * will be the number of fails, and the second will be zeroed.
+   * Note, some health tests do not emit a low watermark as there is no low
+   * threshold. For these tests, this value will always be UINT16_MAX.
    */
-  uint32_t fails[2][kDifEntropySrcTestNumVariants];
-
+  uint16_t low_watermark[kDifEntropySrcTestNumVariants];
   /**
-   * The number of alerts emitted by a particular test.
-   *
-   * This has the same layout as `fails`.
+   * The number of times a particular test has failed above the high threshold.
    */
-  uint8_t alerts[2][kDifEntropySrcTestNumVariants];
-} dif_entropy_src_test_stats_t;
+  uint32_t high_fails[kDifEntropySrcTestNumVariants];
+  /**
+   * The number of times a particular test has failed below the low threshold.
+   *
+   * Note, some health tests do not have a low threshold. For these tests, this
+   * value will always be 0.
+   */
+  uint32_t low_fails[kDifEntropySrcTestNumVariants];
+} dif_entropy_src_health_test_stats_t;
 
 /**
  * Configures entropy source with runtime information.
@@ -310,19 +301,18 @@ dif_result_t dif_entropy_src_get_revision(const dif_entropy_src_t *entropy_src,
                                           dif_entropy_src_revision_t *revision);
 
 /**
- * Queries the entropy source for health statistics.
+ * Queries the entropy source for health test statistics.
  *
  * Calling this function also clears the relevant status registers.
  *
  * @param entropy An entropy source handle.
- * @param fips_mode The test mode to query statistics for.
  * @param[out] stats Out-param for stats data.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_get_stats(const dif_entropy_src_t *entropy_src,
-                                       bool fips_mode,
-                                       dif_entropy_src_test_stats_t *stats);
+dif_result_t dif_entropy_src_get_health_test_stats(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_health_test_stats_t *stats);
 
 /**
  * Locks out entropy source functionality.
