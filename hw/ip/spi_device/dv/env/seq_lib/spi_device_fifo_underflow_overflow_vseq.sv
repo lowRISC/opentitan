@@ -18,9 +18,9 @@ class spi_device_fifo_underflow_overflow_vseq extends spi_device_txrx_vseq;
 
     allow_underflow_overflow = 1;
     // when underflow, sio may be unknown, disable checking it
-    cfg.m_spi_agent_cfg.en_monitor_checks = 0;
+    cfg.spi_host_agent_cfg.en_monitor_checks = 0;
     super.body();
-    cfg.m_spi_agent_cfg.en_monitor_checks = 1;
+    cfg.spi_host_agent_cfg.en_monitor_checks = 1;
 
     $asserton(0, "tb.dut.u_s2p.BitcountOverflow_A");
   endtask

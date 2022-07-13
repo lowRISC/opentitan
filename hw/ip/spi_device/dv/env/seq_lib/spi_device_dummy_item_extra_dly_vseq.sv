@@ -20,17 +20,17 @@ class spi_device_dummy_item_extra_dly_vseq extends spi_device_txrx_vseq;
     // use more aggressive delay, but if higher than below values, timeout may happen
     randcase
       1: begin
-        cfg.m_spi_agent_cfg.max_extra_dly_ns_btw_sck    = 100;
-        cfg.m_spi_agent_cfg.extra_dly_chance_pc_btw_sck = 20;
+        cfg.spi_host_agent_cfg.max_extra_dly_ns_btw_sck    = 100;
+        cfg.spi_host_agent_cfg.extra_dly_chance_pc_btw_sck = 20;
       end
       1: begin
-        cfg.m_spi_agent_cfg.max_extra_dly_ns_btw_sck    = 50;
-        cfg.m_spi_agent_cfg.extra_dly_chance_pc_btw_sck = 50;
+        cfg.spi_host_agent_cfg.max_extra_dly_ns_btw_sck    = 50;
+        cfg.spi_host_agent_cfg.extra_dly_chance_pc_btw_sck = 50;
       end
     endcase
     // no timeout concern for delay between word
-    cfg.m_spi_agent_cfg.max_extra_dly_ns_btw_word = 10000;
-    cfg.m_spi_agent_cfg.extra_dly_chance_pc_btw_word = 20;
+    cfg.spi_host_agent_cfg.max_extra_dly_ns_btw_word = 10000;
+    cfg.spi_host_agent_cfg.extra_dly_chance_pc_btw_word = 20;
   endtask
 
 endclass : spi_device_dummy_item_extra_dly_vseq

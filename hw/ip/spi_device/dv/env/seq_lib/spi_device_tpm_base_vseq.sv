@@ -21,10 +21,10 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
 
   // Configure clocks and tpm, generate a word.
   virtual task tpm_init();
-    cfg.m_spi_agent_cfg.sck_polarity[0] = 0;
-    cfg.m_spi_agent_cfg.sck_phase[0] = 0;
-    cfg.m_spi_agent_cfg.host_bit_dir = 1;
-    cfg.m_spi_agent_cfg.device_bit_dir = 1;
+    cfg.spi_host_agent_cfg.sck_polarity[0] = 0;
+    cfg.spi_host_agent_cfg.sck_phase[0] = 0;
+    cfg.spi_host_agent_cfg.host_bit_dir = 1;
+    cfg.spi_host_agent_cfg.device_bit_dir = 1;
     ral.cfg.tx_order.set(1);
     ral.cfg.rx_order.set(1);
     ral.cfg.cpol.set(1'b0);
@@ -37,7 +37,7 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     csr_update(.csr(ral.tpm_cfg));
 
     //Csb select for TPM
-    cfg.m_spi_agent_cfg.csb_sel = 1;
+    cfg.spi_host_agent_cfg.csb_sel = 1;
 
   endtask : tpm_init
 
@@ -94,7 +94,7 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
         pay_num++;
       end
       if ((pay_num == 0  && device_byte_rsp == TPM_START)) pay_num++;
-      if (pay_num == 4) cfg.m_spi_agent_cfg.csb_consecutive = 0;
+      if (pay_num == 4) cfg.spi_host_agent_cfg.csb_consecutive = 0;
     end
   endtask : poll_start_collect_data
 

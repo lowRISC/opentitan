@@ -47,7 +47,7 @@ class spi_device_tpm_locality_vseq extends spi_device_tpm_base_vseq;
       address_command = {tpm_addr, tpm_cmd};
       `uvm_info(`gfn, $sformatf("Address Command = 0x%0h", address_command), UVM_LOW)
       // send payload
-      cfg.m_spi_agent_cfg.csb_consecutive = 1;
+      cfg.spi_host_agent_cfg.csb_consecutive = 1;
       spi_host_xfer_word(address_command, device_word_rsp);
       // poll START and collect data
       poll_start_collect_data(data_bytes, returned_bytes);

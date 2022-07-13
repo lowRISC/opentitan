@@ -8,9 +8,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   `uvm_component_utils(spi_device_scoreboard)
 
   // TLM fifos to pick up the packets
-  uvm_tlm_analysis_fifo #(spi_item) host_spi_data_fifo;
-  uvm_tlm_analysis_fifo #(spi_item) device_spi_data_fifo;
-  uvm_tlm_analysis_fifo #(spi_item) pass_spi_data_fifo;
+  uvm_tlm_analysis_fifo #(spi_item) upstream_spi_host_fifo;
+  uvm_tlm_analysis_fifo #(spi_item) upstream_spi_device_fifo;
+  uvm_tlm_analysis_fifo #(spi_item) downstream_spi_host_fifo;
 
   // mem model to save expected value
   local mem_model tx_mem;
@@ -29,9 +29,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    host_spi_data_fifo = new("host_spi_data_fifo", this);
-    device_spi_data_fifo = new("device_spi_data_fifo", this);
-    pass_spi_data_fifo = new("pass_spi_data_fifo", this);
+    upstream_spi_host_fifo = new("upstream_spi_host_fifo", this);
+    upstream_spi_device_fifo = new("upstream_spi_device_fifo", this);
+    downstream_spi_host_fifo = new("downstream_spi_host_fifo", this);
     tx_mem = mem_model#()::type_id::create("tx_mem", this);
     rx_mem = mem_model#()::type_id::create("rx_mem", this);
   endfunction
@@ -39,36 +39,36 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      process_host_spi_fifo();
-      process_device_spi_fifo();
-      process_pass_spi_fifo();
+      process_upstream_spi_host_fifo();
+      process_upstream_spi_device_fifo();
+      process_downstream_spi_fifo();
     join_none
   endtask
 
   // extract spi items sent from host
-  virtual task process_host_spi_fifo();
+  virtual task process_upstream_spi_host_fifo();
     spi_item item;
     forever begin
-      host_spi_data_fifo.get(item);
+      upstream_spi_host_fifo.get(item);
       receive_spi_rx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
       `uvm_info(`gfn, $sformatf("received host spi item:\n%0s", item.sprint()), UVM_HIGH)
     end
   endtask
 
   // extract spi items sent from device
-  virtual task process_device_spi_fifo();
+  virtual task process_upstream_spi_device_fifo();
     spi_item item;
     forever begin
-      device_spi_data_fifo.get(item);
+      upstream_spi_device_fifo.get(item);
       sendout_spi_tx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
       `uvm_info(`gfn, $sformatf("received device spi item:\n%0s", item.sprint()), UVM_HIGH)
     end
   endtask
 
-  virtual task process_pass_spi_fifo();
+  virtual task process_downstream_spi_fifo();
     spi_item item;
     forever begin
-      pass_spi_data_fifo.get(item);
+      downstream_spi_host_fifo.get(item);
       `uvm_info(`gfn, $sformatf("received pass spi item:\n%0s", item.sprint()), UVM_MEDIUM)
       `DV_CHECK_EQ(`gmv(ral.control.mode), PassthroughMode)
       // TODO, check downstream items
@@ -177,8 +177,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     if (tx_word_q.size > 0) begin
       bit [31:0] data_exp     = tx_word_q.pop_front();
-      if (cfg.m_spi_agent_cfg.bits_to_transfer == 7) begin
-        if (cfg.m_spi_agent_cfg.device_bit_dir == 1)  begin
+      if (cfg.spi_host_agent_cfg.bits_to_transfer == 7) begin
+        if (cfg.spi_host_agent_cfg.device_bit_dir == 1)  begin
           data_exp[7] = 0;
         end else begin
           data_exp[0] = 0;
@@ -287,8 +287,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, host_spi_data_fifo)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, device_spi_data_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, upstream_spi_host_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, upstream_spi_device_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, downstream_spi_host_fifo)
     `DV_CHECK_EQ(tx_word_q.size, 0)
     `DV_CHECK_EQ(rx_word_q.size, 0)
   endfunction

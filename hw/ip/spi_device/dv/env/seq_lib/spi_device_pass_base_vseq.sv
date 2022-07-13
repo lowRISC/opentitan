@@ -90,7 +90,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     for (int i = 11; i < 24; i++) begin
       info = spi_flash_cmd_info::type_id::create("info");
       `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-        foreach (cfg.m_spi_agent_cfg.cmd_infos[j]) {info.op_code != j;})
+        foreach (cfg.spi_host_agent_cfg.cmd_infos[j]) {info.op_code != j;})
       add_cmd_info(info, i);
     end
   endtask : config_all_cmd_infos
@@ -102,20 +102,20 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     `uvm_info(`gfn, "Initialize flash/passthrough mode", UVM_MEDIUM)
     `DV_CHECK_STD_RANDOMIZE_FATAL(use_addr_4b_enable)
     // TODO, fixed config for now
-    cfg.m_spi_agent_cfg.sck_polarity[0] = 0;
-    cfg.m_spi_agent_cfg.sck_phase[0] = 0;
+    cfg.spi_host_agent_cfg.sck_polarity[0] = 0;
+    cfg.spi_host_agent_cfg.sck_phase[0] = 0;
     cfg.spi_device_agent_cfg.sck_polarity[0] = 0;
     cfg.spi_device_agent_cfg.sck_phase[0] = 0;
 
     // bit dir is only supported in fw mode. Need to be 0 for other modes
-    cfg.m_spi_agent_cfg.host_bit_dir = 0;
-    cfg.m_spi_agent_cfg.device_bit_dir = 0;
+    cfg.spi_host_agent_cfg.host_bit_dir = 0;
+    cfg.spi_host_agent_cfg.device_bit_dir = 0;
     cfg.spi_device_agent_cfg.host_bit_dir = 0;
     cfg.spi_device_agent_cfg.device_bit_dir = 0;
 
-    cfg.m_spi_agent_cfg.num_bytes_per_trans_in_mon = 1;
+    cfg.spi_host_agent_cfg.num_bytes_per_trans_in_mon = 1;
     cfg.spi_device_agent_cfg.num_bytes_per_trans_in_mon = 1;
-    cfg.m_spi_agent_cfg.is_flash_mode = 1;
+    cfg.spi_host_agent_cfg.is_flash_mode = 1;
     cfg.spi_device_agent_cfg.is_flash_mode = 1;
     // since tx/rx order are not used in flash mode, randomize them
     `DV_CHECK_RANDOMIZE_FATAL(ral.cfg.tx_order)
@@ -177,7 +177,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   virtual task add_cmd_info(spi_flash_cmd_info info, bit [4:0] idx);
     bit [3:0] lanes_en;
     addr_mode_e addr_size;
-    cfg.m_spi_agent_cfg.add_cmd_info(info);
+    cfg.spi_host_agent_cfg.add_cmd_info(info);
     cfg.spi_device_agent_cfg.add_cmd_info(info);
 
     `uvm_info(`gfn, $sformatf("Add this cmd_info \n%s", info.sprint()), UVM_MEDIUM)

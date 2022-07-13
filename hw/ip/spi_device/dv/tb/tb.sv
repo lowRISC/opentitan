@@ -137,7 +137,7 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
+    uvm_config_db#(virtual spi_if)::set(null, "*.env.spi_host_agent*", "vif", spi_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.spi_device*", "vif", spi_if_pass);
     $timeformat(-12, 0, " ps", 12);
     run_test();
