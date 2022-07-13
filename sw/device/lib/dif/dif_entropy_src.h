@@ -243,6 +243,30 @@ typedef struct dif_entropy_src_health_test_stats {
 } dif_entropy_src_health_test_stats_t;
 
 /**
+ * Statistics on entropy source health tests failures that triggered alerts.
+ */
+typedef struct dif_entropy_src_alert_fail_counts {
+  /**
+   * The total number of test failures, across all test types, that contributed
+   * to the alerts fired.
+   */
+  uint16_t total_fails;
+  /**
+   * The number of test failures, due to the specific test execeeding the high
+   * threshold, that cause alerts to be fired.
+   */
+  uint8_t high_fails[kDifEntropySrcTestNumVariants];
+  /**
+   * The number of test failures, due to the specific test execeeding the low
+   * threshold, that cause alerts to be fired.
+   *
+   * Note, some health tests do not have a low threshold. For these tests, this
+   * value will always be 0.
+   */
+  uint8_t low_fails[kDifEntropySrcTestNumVariants];
+} dif_entropy_src_alert_fail_counts_t;
+
+/**
  * Configures entropy source with runtime information.
  *
  * This function should only need to be called once for the lifetime of the
@@ -253,10 +277,9 @@ typedef struct dif_entropy_src_health_test_stats {
  * @param enabled The enablement state of the entropy source.
  * @return The result of the operation.
  */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
-                                       dif_entropy_src_config_t config,
-                                       dif_toggle_t enabled);
+OT_WARN_UNUSED_RESULT dif_result_t dif_entropy_src_configure(
+    const dif_entropy_src_t *entropy_src, dif_entropy_src_config_t config,
+    dif_toggle_t enabled);
 
 /**
  * Configures entropy source firmware override feature with runtime information.
@@ -303,8 +326,6 @@ dif_result_t dif_entropy_src_get_revision(const dif_entropy_src_t *entropy_src,
 /**
  * Queries the entropy source for health test statistics.
  *
- * Calling this function also clears the relevant status registers.
- *
  * @param entropy An entropy source handle.
  * @param[out] stats Out-param for stats data.
  * @return The result of the operation.
@@ -313,6 +334,18 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_get_health_test_stats(
     const dif_entropy_src_t *entropy_src,
     dif_entropy_src_health_test_stats_t *stats);
+
+/**
+ * Queries the entropy source for health test failure statistics.
+ *
+ * @param entropy An entropy source handle.
+ * @param[out] counts Out-param for test failure data that triggers alerts.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_get_alert_fail_counts(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_alert_fail_counts_t *counts);
 
 /**
  * Locks out entropy source functionality.
