@@ -245,11 +245,11 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     `uvm_info("do_mp_reg", $sformatf("flash_op: %p", flash_op), UVM_MEDIUM)
     if (flash_op.partition == FlashPartData) begin
       page = flash_op.addr >> 11;
-      if (p2r_map[page] == 8) begin
+      if (cfg.p2r_map[page] == 8) begin
         // default region
         my_region = default_region_cfg;
       end else begin
-        my_region = mp_regions[p2r_map[page]];
+        my_region = mp_regions[cfg.p2r_map[page]];
         if (my_region.en != MuBi4True) my_region = default_region_cfg;
       end
       illegal_trans = validate_flash_op(flash_op, my_region);
@@ -261,7 +261,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     end
 
     `uvm_info("do_mp_reg", $sformatf("trans:%0d page:%x region:%0d illegal_trans:%0d",
-                                     ++trans_cnt, page, p2r_map[page], illegal_trans),
+                                     ++trans_cnt, page, cfg.p2r_map[page], illegal_trans),
                                      UVM_MEDIUM)
 
     if (flash_op.op == FlashOpProgram) begin

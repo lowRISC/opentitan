@@ -13,11 +13,8 @@ class flash_ctrl_write_word_sweep_vseq extends flash_ctrl_otf_base_vseq;
     int num, bank;
     int mywd;
 
-    flash_ctrl_default_region_cfg(,,,MuBi4True,MuBi4True);
-
-    ctrl.partition  = FlashPartData;
-    ctrl.otf_addr = is_addr_odd * 4;
-    bank = $urandom_range(0,1);
+    ctrl = rand_op;
+    bank = rand_op.addr[OTFBankId];
     num = 1;
     mywd = 1;
     repeat(20) begin

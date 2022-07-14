@@ -6,8 +6,8 @@
 // Each round test insert one single bit error and capture the address from tb.
 // At the end of each round, compare the captured value with
 // csr read (flash_ctrl.single_err_addr) value.
-class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
-  `uvm_object_utils(flash_ctrl_derr_detect_vseq)
+class flash_ctrl_integrity_vseq extends flash_ctrl_otf_base_vseq;
+  `uvm_object_utils(flash_ctrl_integrity_vseq)
   `uvm_object_new
 
   constraint ctrl_num_c { ctrl_num dist { CTRL_TRANS_MIN := 7, [2:31] :/ 1, CTRL_TRANS_MAX := 2}; }
@@ -27,24 +27,17 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
   virtual task body();
     flash_op_t ctrl;
     int bank;
-    int fatal_cnt = 0;
-    uvm_reg_data_t addr0, addr1;
-    cfg.derr_once = 1;
-    cfg.scb_h.do_alert_check = 1;
-    cfg.m_tl_agent_cfg.check_tl_errs = 0;
-    cfg.m_tl_agent_cfgs["flash_ctrl_eflash_reg_block"].check_tl_errs = 0;
 
     ctrl.partition = FlashPartData;
-    otf_tb_clean_up();
     cfg.clk_rst_vif.wait_clks(5);
 
     fork
       begin
-        repeat(20) begin
+        repeat(100) begin
           `DV_CHECK_RANDOMIZE_FATAL(this)
           bank = $urandom_range(0, 1);
           ctrl.partition  = FlashPartData;
-          ctrl.otf_addr += (is_addr_odd * 4);
+          ctrl.otf_addr = is_addr_odd * 4;
           randcase
             1:prog_flash(ctrl, bank, ctrl_num, fractions);
             1:read_flash(ctrl, bank, ctrl_num, fractions);
@@ -52,7 +45,7 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
         end
       end
       begin
-        for (int i = 0; i < 3; ++i) begin
+        for (int i = 0; i < 10; ++i) begin
           fork
             send_rand_host_rd();
           join_none
@@ -60,19 +53,6 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
         end
         csr_utils_pkg::wait_no_outstanding_access();
       end
-      begin
-        while (cfg.scb_h.alert_count["fatal_err"] == 0) begin
-          cfg.clk_rst_vif.wait_clks(1);
-        end
-        dut_init();
-      end
-    join_any
-    disable fork;
-    if (cfg.derr_created[0] + cfg.derr_created[1] > 0) begin
-      fatal_cnt = cfg.scb_h.alert_count["fatal_err"];
-      `DV_CHECK_NE(fatal_cnt, 0, "fatal alert is not detected",
-                   error, "SEQ")
-    end
-    `uvm_info("SEQ", $sformatf("seqend derr_created: %p", cfg.derr_created), UVM_LOW)
+    join
   endtask // body
-endclass // flash_ctrl_serr_address_vseq
+endclass // flash_ctrl_integrity_vseq

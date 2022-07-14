@@ -110,6 +110,15 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // 8 : default region
   int p2r_map[FlashNumPages] = '{default : 8};
 
+  flash_mp_region_cfg_t mp_regions[MpRegions];
+  flash_bank_mp_info_page_cfg_t mp_info[NumBanks][InfoTypes][];
+
+  // Permission to access special partition
+  // 0: secret / creator
+  // 1: secret / owner
+  // 2: isolated
+  bit [2:0] allow_spec_info_acc = 3'h0;
+
   // Allow multiple expected allert in a single test
   bit multi_alert_en = 0;
 
@@ -130,7 +139,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // tgt_pre[2]: wr
   // tgt_pre[3]: rsvd
   // then assigned to bit 18:17
-  bit [1:0] tgt_pre[NumTgt];
+  bit [1:0] tgt_pre[flash_dv_part_e][NumTgt];
 
 
   `uvm_object_utils(flash_ctrl_env_cfg)
@@ -173,8 +182,15 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     end
     alert_max_delay = 20000;
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
-    foreach (tgt_pre[i]) tgt_pre[i] = i;
+
+    foreach (tgt_pre[FlashPartData][i]) tgt_pre[FlashPartData][i] = i;
+    foreach (tgt_pre[FlashPartInfo][i]) tgt_pre[FlashPartInfo][i] = i;
+    foreach (tgt_pre[FlashPartInfo1][i]) tgt_pre[FlashPartInfo1][i] = i;
+    foreach (tgt_pre[FlashPartInfo2][i]) tgt_pre[FlashPartInfo2][i] = i;
+
     foreach (derr_idx[i]) derr_idx[i] = i;
+    foreach (mp_info[i, j]) mp_info[i][j] = new[InfoTypeSize[j]];
+
   endfunction : initialize
 
   // For a given partition returns its size in bytes in each of the banks.
@@ -760,12 +776,15 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     for (int i = 0; i < size; i++) begin
       if (ecc_mode == FlashSerrTestMode) begin
         err_idx = get_serr_idx();
-        if (!serr_addr_tbl.exists(addr_cp)) begin
-          serr_addr_tbl[addr_cp] = 1;
-          `uvm_info(name,
-                    $sformatf("single bit error is inserted at line:%0d the databit[%0d]",
-                              i, err_idx), UVM_MEDIUM)
-          flash_bit_flip(mem_bkdr_util_h[partition][bank], aligned_addr, err_idx);
+        if (err_idx >= 0) begin
+          // Make sure only assert error only once per address
+          if (!serr_addr_tbl.exists(addr_cp)) begin
+            serr_addr_tbl[addr_cp] = 1;
+            `uvm_info(name,
+                      $sformatf("single bit error is inserted at line:%0d the databit[%0d]",
+                                i, err_idx), UVM_MEDIUM)
+            flash_bit_flip(mem_bkdr_util_h[partition][bank], aligned_addr, err_idx);
+          end
         end
       end else if (ecc_mode == FlashIerrTestMode) begin
         randcase
@@ -820,14 +839,15 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     if (tail) begin
       if (ecc_mode == FlashSerrTestMode) begin
         err_idx = get_serr_idx();
-        if (!serr_addr_tbl.exists(addr_cp)) begin
-          serr_addr_tbl[addr_cp] = 1;
-          `uvm_info(name,
-                    $sformatf("single bit error is inserted at line:%0d the databit[%0d]",
-                              size, err_idx), UVM_MEDIUM)
-          flash_bit_flip(mem_bkdr_util_h[partition][bank], aligned_addr, err_idx);
+        if (err_idx >= 0) begin
+          if (!serr_addr_tbl.exists(addr_cp)) begin
+            serr_addr_tbl[addr_cp] = 1;
+            `uvm_info(name,
+                      $sformatf("single bit error is inserted at line:%0d the databit[%0d]",
+                                size, err_idx), UVM_MEDIUM)
+            flash_bit_flip(mem_bkdr_util_h[partition][bank], aligned_addr, err_idx);
+          end
         end
-        ierr_created[caller] = 1;
       end else if (ecc_mode == FlashIerrTestMode) begin
         randcase
           ierr_pct: begin

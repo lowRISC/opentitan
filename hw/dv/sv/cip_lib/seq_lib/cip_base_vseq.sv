@@ -213,7 +213,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       input int               req_abort_pct = 0);
 
     cip_tl_seq_item rsp;
-    bit                       use_rsp_ff = 0; //fixme
+
     if (blocking) begin
       tl_access_sub(addr, write, data, completed, saw_err, rsp, tl_access_timeout_ns, mask,
                     check_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data, req_abort_pct,
@@ -245,9 +245,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              input int               req_abort_pct = 0,
                              input                   mubi4_t instr_type = MuBi4False,
                                                      tl_sequencer tl_sequencer_h = p_sequencer.tl_sequencer_h,
-                             input                   tl_intg_err_e tl_intg_err_type = TlIntgErrNone,
-                             input bit               use_rsp_ff = 1'b0);
-    bit [BUS_AW:0]                                   ff_data;
+                             input                   tl_intg_err_e tl_intg_err_type = TlIntgErrNone);
     `DV_SPINWAIT(
         // thread to read/write tlul
         cip_tl_host_single_seq tl_seq;

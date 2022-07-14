@@ -258,6 +258,8 @@ package flash_ctrl_env_pkg;
   // Indicate host read
   parameter int unsigned OTFBankId = flash_ctrl_pkg::BusAddrByteW - 1; // bit19
   parameter int unsigned OTFHostId = OTFBankId - 1; // bit 18
+  parameter int unsigned DVPageMSB = 18;
+  parameter int unsigned DVPageLSB = 11;
   localparam int unsigned CTRL_TRANS_MIN = 1;
   localparam int unsigned CTRL_TRANS_MAX = 32;
 
