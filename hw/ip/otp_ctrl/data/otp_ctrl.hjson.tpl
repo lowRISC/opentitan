@@ -1157,6 +1157,36 @@
             swaccess: "rw1c",
             resval: "0x0",
          }
+         { bits: "18",
+            name: "field4",
+            desc: "",
+            swaccess: "rw1c",
+            resval: "0x0",
+         }
+         { bits: "19",
+            name: "field5",
+            desc: "",
+            swaccess: "rw1c",
+            resval: "0x0",
+         }
+         { bits: "20",
+            name: "field6",
+            desc: "",
+            swaccess: "rw1c",
+            resval: "0x0",
+         }
+         { bits: "21",
+            name: "field7",
+            desc: "",
+            swaccess: "rw1c",
+            resval: "0x0",
+         }
+         { bits: "22",
+            name: "field8",
+            desc: "",
+            swaccess: "rw1c",
+            resval: "0x0",
+         }
         ]
       },
       { name: "CSR4",
