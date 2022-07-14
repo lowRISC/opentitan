@@ -172,8 +172,8 @@ module csrng_reg_top (
   logic int_state_val_re;
   logic [31:0] int_state_val_qs;
   logic hw_exc_sts_we;
-  logic [14:0] hw_exc_sts_qs;
-  logic [14:0] hw_exc_sts_wd;
+  logic [15:0] hw_exc_sts_qs;
+  logic [15:0] hw_exc_sts_wd;
   logic recov_alert_sts_we;
   logic recov_alert_sts_enable_field_alert_qs;
   logic recov_alert_sts_enable_field_alert_wd;
@@ -841,9 +841,9 @@ module csrng_reg_top (
 
   // R[hw_exc_sts]: V(False)
   prim_subreg #(
-    .DW      (15),
+    .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (15'h0)
+    .RESVAL  (16'h0)
   ) u_hw_exc_sts (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1820,7 +1820,7 @@ module csrng_reg_top (
   assign int_state_val_re = addr_hit[11] & reg_re & !reg_error;
   assign hw_exc_sts_we = addr_hit[12] & reg_we & !reg_error;
 
-  assign hw_exc_sts_wd = reg_wdata[14:0];
+  assign hw_exc_sts_wd = reg_wdata[15:0];
   assign recov_alert_sts_we = addr_hit[13] & reg_we & !reg_error;
 
   assign recov_alert_sts_enable_field_alert_wd = reg_wdata[0];
@@ -1923,7 +1923,7 @@ module csrng_reg_top (
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[14:0] = hw_exc_sts_qs;
+        reg_rdata_next[15:0] = hw_exc_sts_qs;
       end
 
       addr_hit[13]: begin

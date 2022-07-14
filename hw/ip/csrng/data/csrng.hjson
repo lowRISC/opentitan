@@ -357,7 +357,7 @@
       swaccess: "rw0c",
       hwaccess: "hwo",
       fields: [
-        { bits: "14:0",
+        { bits: "15:0",
           name: "HW_EXC_STS",
           desc: '''
                 Reading this register indicates whether one of the CSRNG HW instances has
