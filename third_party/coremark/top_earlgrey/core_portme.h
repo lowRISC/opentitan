@@ -1,20 +1,27 @@
-/* File : core_portme.h */
-
-#ifndef OPENTITAN_SW_DEVICE_BENCHMARKS_COREMARK_TOP_EARLGREY_CORE_PORTME_H_
-#define OPENTITAN_SW_DEVICE_BENCHMARKS_COREMARK_TOP_EARLGREY_CORE_PORTME_H_
-
+#ifndef OPENTITAN_THIRD_PARTY_COREMARK_TOP_EARLGREY_CORE_PORTME_H_
+#define OPENTITAN_THIRD_PARTY_COREMARK_TOP_EARLGREY_CORE_PORTME_H_
 /*
-        Author : Shay Gal-On, EEMBC
-        Legal : TODO!
+Copyright 2018 Embedded Microprocessor Benchmark Consortium (EEMBC)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Original Author: Shay Gal-on
 */
 /* Topic : Description
         This file contains configuration constants required to execute on
    different platforms
 */
-
 #include <stddef.h>
-
-extern unsigned int _stack_start;
 
 /************************/
 /* Data types and settings */
@@ -30,14 +37,14 @@ extern unsigned int _stack_start;
         and implementation of functions thereof.
 */
 #ifndef HAS_TIME_H
-#define HAS_TIME_H 1
+#define HAS_TIME_H 0
 #endif
 /* Configuration : USE_CLOCK
         Define to 1 if platform has the time.h header file,
         and implementation of functions thereof.
 */
 #ifndef USE_CLOCK
-#define USE_CLOCK 1
+#define USE_CLOCK 0
 #endif
 /* Configuration : HAS_STDIO
         Define to 1 if the platform has stdio.h.
@@ -58,38 +65,40 @@ extern unsigned int _stack_start;
 */
 #ifndef COMPILER_VERSION
 #ifdef __GNUC__
-#define COMPILER_VERSION "GCC "__VERSION__
+#define COMPILER_VERSION "GCC"__VERSION__
 #else
-#define COMPILER_VERSION "unknown"
+#define COMPILER_VERSION "Please put compiler version here (e.g. gcc 4.1)"
 #endif
 #endif
 #ifndef COMPILER_FLAGS
-#define COMPILER_FLAGS "" /* "Please put compiler flags here (e.g. -o3)" */
+#define COMPILER_FLAGS \
+     "Please put compiler flags here (e.g. -o3)"
 #endif
 #ifndef MEM_LOCATION
 #define MEM_LOCATION "STACK"
 #endif
 
 /* Data Types :
-        To avoid compiler issues, define the data types that need to be used for
+        To avoid compiler issues, define the data types that need ot be used for
    8b, 16b and 32b in <core_portme.h>.
 
         *Imprtant* :
         ee_ptr_int needs to be the data type used to hold pointers, otherwise
    coremark may fail!!!
 */
-typedef signed short ee_s16;
+typedef signed short   ee_s16;
 typedef unsigned short ee_u16;
-typedef signed int ee_s32;
-typedef double ee_f32;
-typedef unsigned char ee_u8;
-typedef unsigned int ee_u32;
-typedef ee_u32 ee_ptr_int;
-typedef size_t ee_size_t;
-#if 0
-// Provided by stddef.h
+typedef signed int     ee_s32;
+typedef double         ee_f32;
+typedef unsigned char  ee_u8;
+typedef unsigned int   ee_u32;
+typedef ee_u32         ee_ptr_int;
+typedef size_t         ee_size_t;
+
+#ifndef NULL
 #define NULL ((void *)0)
 #endif
+
 /* align_mem :
         This macro is used to align an offset to point to a 32b value. It is
    used in the Matrix algorithm to initialize the input memory blocks.
@@ -147,8 +156,8 @@ typedef ee_u32 CORE_TICKS;
 #ifndef MULTITHREAD
 #define MULTITHREAD 1
 #define USE_PTHREAD 0
-#define USE_FORK 0
-#define USE_SOCKET 0
+#define USE_FORK    0
+#define USE_SOCKET  0
 #endif
 
 /* Configuration : MAIN_HAS_NOARGC
@@ -178,18 +187,21 @@ typedef ee_u32 CORE_TICKS;
 #endif
 
 /* Variable : default_num_contexts
-        Not used for this simple port, must cintain the value 1.
+        Not used for this simple port, must contain the value 1.
 */
 extern ee_u32 default_num_contexts;
 
-typedef struct CORE_PORTABLE_S { ee_u8 portable_id; } core_portable;
+typedef struct CORE_PORTABLE_S
+{
+    ee_u8 portable_id;
+} core_portable;
 
 /* target specific init/fini */
 void portable_init(core_portable *p, int *argc, char *argv[]);
 void portable_fini(core_portable *p);
 
-#if !defined(PROFILE_RUN) && !defined(PERFORMANCE_RUN) && \
-    !defined(VALIDATION_RUN)
+#if !defined(PROFILE_RUN) && !defined(PERFORMANCE_RUN) \
+    && !defined(VALIDATION_RUN)
 #if (TOTAL_DATA_SIZE == 1200)
 #define PROFILE_RUN 1
 #elif (TOTAL_DATA_SIZE == 2000)
@@ -201,4 +213,4 @@ void portable_fini(core_portable *p);
 
 int ee_printf(const char *fmt, ...);
 
-#endif  // OPENTITAN_SW_DEVICE_BENCHMARKS_COREMARK_TOP_EARLGREY_CORE_PORTME_H_
+#endif  // OPENTITAN_THIRD_PARTY_COREMARK_TOP_EARLGREY_CORE_PORTME_H_

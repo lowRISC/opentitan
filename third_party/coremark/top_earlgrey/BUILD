@@ -22,7 +22,7 @@ opentitan_functest(
     copts = [
         "-Wno-implicit-fallthrough",
         "-Wno-strict-prototypes",
-        "-DITERATIONS=1", #TODO: Should be 100 if CW310
+        "-DITERATIONS=1",
         "-DPERFORMANCE_RUN=1",
         "-DTOTAL_DATA_SIZE=2000",
         "-DMAIN_HAS_NOARGC=1",
@@ -35,6 +35,7 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_start",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
         "@coremark//:coremark_lib",
     ],
