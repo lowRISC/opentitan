@@ -31,9 +31,9 @@ opentitan_rom_binary(
 )
 
 # TODO(#12905): Use a slightly hollowed out version of the silicon_creator bootstrap
-# implemention when building the test_rom for the english breakfast top level.
+# and other functions necessary to build the test_rom for the english breakfast top level.
 cc_library(
-    name = "english_breakfast_test_rom_bootstrap",
+    name = "english_breakfast_test_rom_lib",
     srcs = [
         "english_breakfast_fake_driver_funcs.c",
         "//sw/device/silicon_creator/lib/drivers:english_breakfast_test_rom_driver_srcs",
@@ -49,15 +49,24 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/device/lib/dif:rstmgr_intf",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
 
+cc_library(
+    name = "earl_grey_test_rom_lib",
+    deps = [
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/silicon_creator/mask_rom:bootstrap",
+    ],
+)
+
 alias(
-    name = "test_rom_bootstrap",
+    name = "target_test_rom_lib",
     actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_bootstrap",
-        "//conditions:default": "//sw/device/silicon_creator/mask_rom:bootstrap",
+        "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_lib",
+        "//conditions:default": ":earl_grey_test_rom_lib",
     }),
     visibility = ["//visibility:private"],
 )
@@ -106,7 +115,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":chip_info",
-        ":test_rom_bootstrap",
+        ":target_test_rom_lib",
         ":test_rom_manifest",
         "//hw/ip/clkmgr/data:clkmgr_regs",
         "//hw/ip/csrng/data:csrng_regs",

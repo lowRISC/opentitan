@@ -9,6 +9,7 @@
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/ibex_peri.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -20,7 +21,6 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_rom/chip_info.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
-#include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/mask_rom/bootstrap.h"
 
@@ -47,6 +47,7 @@ typedef void ottf_entry(void);
 static dif_clkmgr_t clkmgr;
 static dif_flash_ctrl_state_t flash_ctrl;
 static dif_pinmux_t pinmux;
+static dif_rstmgr_t rstmgr;
 static dif_uart_t uart0;
 
 // `test_in_rom = True` tests can override this symbol to provide their own
@@ -57,6 +58,9 @@ bool rom_test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
+
+  CHECK_DIF_OK(dif_rstmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   // Initialize the flash.
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
@@ -83,11 +87,12 @@ bool rom_test_main(void) {
   LOG_INFO("%s", chip_info);
 
   // Skip sram_init for test_rom
-  uint32_t reset_reasons = rstmgr_reason_get();
+  dif_rstmgr_reset_info_bitfield_t reset_reasons;
+  CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &reset_reasons));
 
   // Store the reset reason in retention RAM and clear the register.
   retention_sram_get()->reset_reasons = reset_reasons;
-  rstmgr_reason_clear(reset_reasons);
+  CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
 
   // Print the FPGA version-id.
   // This is guaranteed to be zero on all non-FPGA implementations.
