@@ -169,6 +169,11 @@
       uvm_test: aes_fi_test
       uvm_test_seq: aes_control_fi_vseq
     }
+    {
+      name: aes_cipher_fi
+      uvm_test: aes_fi_test
+      uvm_test_seq: aes_cipher_fi_vseq
+    }
   ]
 
   // List of regressions.

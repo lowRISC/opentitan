@@ -6,7 +6,7 @@
 //wrapper module to avoid having to know/write out the path from tb to bind
 
 
-module fi_control_fsm_wrapper
+module fi_cipher_fsm_wrapper
   import uvm_pkg::*;
   import aes_env_pkg::*;
   #( parameter string IfName = "vif"
@@ -16,9 +16,10 @@ module fi_control_fsm_wrapper
     );
 
   // declare interface
-  fi_control_if  fi_if (.clk_i  (clk), .rst_ni (rst_ni));
+  fi_cipher_if  fi_if (.clk_i  (clk), .rst_ni (rst_ni));
   initial begin
-    uvm_config_db#(virtual fi_control_if)::set(null, "*",
+    uvm_config_db#(virtual fi_cipher_if)::set(null, "*",
       pick_if_name(IfName, $sformatf("%m")), fi_if);
   end
+
 endmodule
