@@ -35,3 +35,5 @@
 `include "flash_ctrl_read_word_sweep_vseq.sv"
 `include "flash_ctrl_read_rnd_wd_vseq.sv"
 `include "flash_ctrl_rw_rnd_wd_vseq.sv"
+`include "flash_ctrl_serr_counter_vseq.sv"
+`include "flash_ctrl_serr_address_vseq.sv"
