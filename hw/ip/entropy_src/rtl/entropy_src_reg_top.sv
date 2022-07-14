@@ -3004,9 +3004,6 @@ module entropy_src_reg_top (
     .d_i(&err_code_test_flds_we),
     .q_o(err_code_test_qe)
   );
-  // Create REGWEN-gated WE signal
-  logic err_code_test_gated_we;
-  assign err_code_test_gated_we = err_code_test_we & regwen_qs;
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3016,7 +3013,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (err_code_test_gated_we),
+    .we     (err_code_test_we),
     .wd     (err_code_test_wd),
 
     // from internal hardware
@@ -3442,7 +3439,7 @@ module entropy_src_reg_top (
     reg_we_check[52] = 1'b0;
     reg_we_check[53] = recov_alert_sts_we;
     reg_we_check[54] = 1'b0;
-    reg_we_check[55] = err_code_test_gated_we;
+    reg_we_check[55] = err_code_test_we;
     reg_we_check[56] = 1'b0;
   end
 
