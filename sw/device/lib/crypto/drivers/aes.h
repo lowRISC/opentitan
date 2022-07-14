@@ -95,7 +95,7 @@ typedef struct aes_params_t {
    * the two pointers should be pointed to an array of zero-valued words
    * of sufficient length.
    */
-  uint32_t *key[2];
+  const uint32_t *key[2];
 
   /**
    * The IV to use with the CBC or CTR modes.

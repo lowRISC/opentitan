@@ -16,6 +16,35 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * AES-GCM authenticated encryption as defined in NIST SP800-38D, algorithm 4.
+ *
+ * The key is represented as two shares which are XORed together to get the
+ * real key value. The IV must be either 96 or 128 bits.
+ *
+ * The byte-lengths of the plaintext and AAD must each be < 2^32. This is a
+ * tighter constraint than the length limits in section 5.2.1.1.
+ *
+ * This implementation does not support short tags.
+ *
+ * @param key_len length of key
+ * @param key_shares key, expressed in two shares
+ * @param iv_len length of IV in bytes
+ * @param iv IV value (may be NULL if iv_len is 0)
+ * @param plaintext_len length of plaintext in bytes
+ * @param plaintext plaintext value (may be NULL if plaintext_len is 0)
+ * @param aad_len length of AAD in bytes
+ * @param aad AAD value (may be NULL if aad_len is 0)
+ * @param ciphertext Output buffer for ciphertext (same length as plaintext)
+ * @param[out] tag Output buffer for tag (128 bits)
+ */
+OT_WARN_UNUSED_RESULT
+aes_error_t aes_gcm_encrypt(const aes_key_len_t key_len,
+                            const uint32_t *key_shares[2], const size_t iv_len,
+                            const uint8_t *iv, const size_t plaintext_len,
+                            const uint8_t *plaintext, const size_t aad_len,
+                            const uint8_t *aad, uint8_t *ciphertext,
+                            uint8_t *tag);
+/**
  * GHASH operation as defined in NIST SP800-38D, algorithm 2.
  *
  * The input size must be a multiple of the block size.
@@ -28,7 +57,7 @@ extern "C" {
  * @param hash_subkey The hash subkey (a 128-bit cipher block).
  * @param input_len Number of bytes in the input.
  * @param input Pointer to input buffer.
- * @param output Block in which to store the output.
+ * @param[out] output Block in which to store the output.
  */
 OT_WARN_UNUSED_RESULT
 aes_error_t aes_gcm_ghash(const aes_block_t *hash_subkey,

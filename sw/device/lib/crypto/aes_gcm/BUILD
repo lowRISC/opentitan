@@ -9,6 +9,7 @@ cc_library(
     srcs = ["aes_gcm.c"],
     hdrs = ["aes_gcm.h"],
     deps = [
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
     ],
