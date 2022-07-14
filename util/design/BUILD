@@ -24,6 +24,10 @@ py_binary(
     name = "gen-otp-img",
     srcs = ["gen-otp-img.py"],
     imports = ["."],
+    data = [
+        "//hw/ip/lc_ctrl/data:all_files",
+        "//hw/ip/otp_ctrl/data:all_files",
+    ],
     deps = [
         "//util/design/lib:common",
         "//util/design/lib:otp_mem_img",
