@@ -190,16 +190,19 @@ class spi_monitor extends dv_base_monitor#(
       begin: isolation_thread
         spi_item item = spi_item::type_id::create("host_item", this);
         bit [7:0] opcode;
+        bit opcode_received;
         fork
           begin: csb_deassert_thread
             wait(cfg.vif.csb[cfg.csb_sel] == 1'b1);
           end
           begin: sample_thread
+            opcode_received = 0;
             // for mode 1 and 3, get the leading edges out of the way
             cfg.wait_sck_edge(LeadingEdge);
 
             // first byte is opcode. opcode or address is always sent on single mode
             sample_flash_one_byte_data(.num_lanes(1), .is_device_rsp(0), .data(opcode));
+            opcode_received = 1;
             extract_flash_cmd_info_via_opcode(item, opcode);
             `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", opcode), UVM_MEDIUM)
 
@@ -216,7 +219,10 @@ class spi_monitor extends dv_base_monitor#(
           end: sample_thread
         join_any
         disable fork;
-        host_analysis_port.write(item);
+
+        // only send out the item when opcode is fully received, otherwise,
+        // it's consider dropped
+        if (opcode_received) host_analysis_port.write(item);
       end
     join
   endtask : collect_flash_trans

@@ -25,6 +25,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   local bit [31:0] tx_word_q[$];
   local bit [31:0] rx_word_q[$];
 
+  // for passthrough
+  spi_item spi_passthrough_upstream_q[$];
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -50,10 +53,32 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     spi_item item;
     forever begin
       upstream_spi_host_fifo.get(item);
-      receive_spi_rx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
-      `uvm_info(`gfn, $sformatf("received host spi item:\n%0s", item.sprint()), UVM_HIGH)
+      case (`gmv(ral.control.mode))
+        GenericMode: begin
+          `DV_CHECK_EQ(item.item_type, SpiTransNormal)
+          receive_spi_rx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
+        end
+        FlashMode: begin
+          `DV_CHECK_EQ(item.item_type, SpiFlashTrans)
+          // TODO, handle this later
+        end
+        PassthroughMode: begin
+          `DV_CHECK_EQ(item.item_type, SpiFlashTrans)
+          if (is_opcode_passthrough(item.opcode)) begin
+            spi_passthrough_upstream_q.push_back(item);
+          end
+        end
+        default: `uvm_fatal(`gfn, $sformatf("Unexpected mode: %d", `gmv(ral.control.mode)))
+      endcase
+      `uvm_info(`gfn, $sformatf("upstream received host spi item:\n%0s", item.sprint()), UVM_MEDIUM)
     end
   endtask
+
+  function bit is_opcode_passthrough(bit[7:0] opcode);
+    int cmd_index = get_cmd_filter_index(opcode);
+    int cmd_offset = get_cmd_filter_offset(opcode);
+    return !(`gmv(ral.cmd_filter[cmd_index].filter[cmd_offset]));
+  endfunction
 
   // extract spi items sent from device
   virtual task process_upstream_spi_device_fifo();
@@ -61,17 +86,25 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     forever begin
       upstream_spi_device_fifo.get(item);
       sendout_spi_tx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
-      `uvm_info(`gfn, $sformatf("received device spi item:\n%0s", item.sprint()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("upstream received device spi item:\n%0s", item.sprint()), UVM_HIGH)
     end
   endtask
 
   virtual task process_downstream_spi_fifo();
-    spi_item item;
+    spi_item downstream_item;
+    spi_item upstream_item;
     forever begin
-      downstream_spi_host_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received pass spi item:\n%0s", item.sprint()), UVM_MEDIUM)
+      downstream_spi_host_fifo.get(downstream_item);
+      `uvm_info(`gfn, $sformatf("downstream received spi item:\n%0s", downstream_item.sprint()),
+                UVM_MEDIUM)
       `DV_CHECK_EQ(`gmv(ral.control.mode), PassthroughMode)
-      // TODO, check downstream items
+
+      // upstream item should be in the queue at the same time, add small delay
+      #1ps;
+      `DV_CHECK_EQ(spi_passthrough_upstream_q.size, 1)
+
+      upstream_item = spi_passthrough_upstream_q.pop_front();
+      `DV_CHECK_EQ(downstream_item.compare(upstream_item), 1)
     end
   endtask
 
@@ -226,12 +259,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     bit enabled;
     bit [4:0] en_idx;
     bit [7:0] opcode = data_act[7:0];
-    bit [4:0] cmd_position = opcode / 32;
+    bit [4:0] cmd_index = opcode / 32;
     bit [4:0] cmd_offset = opcode % 32;
     bit [31:0] mask_swap = `gmv(ral.addr_swap_mask.mask);
     bit [31:0] data_swap = `gmv(ral.addr_swap_data.data);
     check_opcode_enable(opcode, enabled, en_idx);
-    if (enabled && (`gmv(ral.cmd_filter[cmd_position].filter[cmd_offset]) == 0)) begin
+    if (enabled && (`gmv(ral.cmd_filter[cmd_index].filter[cmd_offset]) == 0)) begin
       bit [31:0] data_exp     = rx_word_q.pop_front();
       if (`gmv(ral.cmd_info[en_idx].addr_swap_en) == 1) begin // Addr Swap enable
         for (int i = 0; i < 24; i++) begin // TODO add 4B Address Support
@@ -292,6 +325,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, downstream_spi_host_fifo)
     `DV_CHECK_EQ(tx_word_q.size, 0)
     `DV_CHECK_EQ(rx_word_q.size, 0)
+    `DV_CHECK_EQ(spi_passthrough_upstream_q.size, 0)
   endfunction
 
 endclass

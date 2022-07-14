@@ -102,7 +102,7 @@ class spi_host_driver extends spi_driver;
         which_bit = cfg.device_bit_dir ? j : 7 - j;
         device_byte[which_bit] = cfg.vif.sio[1];
         // wait for driving edge to complete 1 cycle
-        if (i != req.data.size() - 1 || j != (num_bits - 1)) cfg.wait_sck_edge(DrivingEdge);
+        if (i != transfer_data.size() - 1 || j != (num_bits - 1)) cfg.wait_sck_edge(DrivingEdge);
       end
       rsp.data[i] = device_byte;
     end

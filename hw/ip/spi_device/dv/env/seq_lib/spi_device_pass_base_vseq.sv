@@ -117,9 +117,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     cfg.spi_device_agent_cfg.num_bytes_per_trans_in_mon = 1;
     cfg.spi_host_agent_cfg.is_flash_mode = 1;
     cfg.spi_device_agent_cfg.is_flash_mode = 1;
-    // since tx/rx order are not used in flash mode, randomize them
-    `DV_CHECK_RANDOMIZE_FATAL(ral.cfg.tx_order)
-    `DV_CHECK_RANDOMIZE_FATAL(ral.cfg.rx_order)
+    ral.cfg.tx_order.set(cfg.spi_host_agent_cfg.host_bit_dir);
+    ral.cfg.rx_order.set(cfg.spi_host_agent_cfg.device_bit_dir);
     ral.cfg.addr_4b_en.set(use_addr_4b_enable);
     ral.cfg.cpol.set(1'b0);
     ral.cfg.cpha.set(1'b0);
@@ -141,13 +140,13 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
   // Task for configuring enable/disable of command opcode
   virtual task cfg_cmd_filter(bit not_enable, bit [7:0] cmd);
-    bit [7:0] cmd_position;
+    bit [7:0] cmd_index;
     bit [7:0] cmd_offset;
     // Calculate filter bit position
-    cmd_position = cmd / 32;
-    cmd_offset = cmd % 32;
-    ral.cmd_filter[cmd_position].filter[cmd_offset].set(not_enable);
-    csr_update(.csr(ral.cmd_filter[cmd_position]));
+    cmd_index = get_cmd_filter_index(cmd);
+    cmd_offset = get_cmd_filter_offset(cmd);
+    ral.cmd_filter[cmd_index].filter[cmd_offset].set(not_enable);
+    csr_update(.csr(ral.cmd_filter[cmd_index]));
   endtask : cfg_cmd_filter
 
   // Task for keeping opcode integrity regardless of rx_order config
@@ -182,7 +181,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
     `uvm_info(`gfn, $sformatf("Add this cmd_info \n%s", info.sprint()), UVM_MEDIUM)
     case (info.num_lanes)
-      1 : lanes_en = 4'h2;
+      1 : lanes_en = info.write_command ? 4'h1 : 4'h2;
       2 : lanes_en = 4'h3;
       4 : lanes_en = 4'hF;
       default : `uvm_fatal(`gfn, $sformatf("Unsupported lanes num 0x%0h", info.num_lanes))
@@ -205,7 +204,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     ral.cmd_info[idx].opcode.set(info.op_code);// Read Dual
     ral.cmd_info[idx].payload_en.set(lanes_en);
     ral.cmd_info[idx].payload_dir.set(!info.write_command);
-    ral.cmd_info[idx].mbyte_en.set(info.num_lanes > 1);
     ral.cmd_info[idx].addr_swap_en.set(info.addr_swap);
     ral.cmd_info[idx].payload_swap_en.set(info.data_swap);
     csr_update(.csr(ral.cmd_info[idx]));

@@ -152,6 +152,16 @@ package spi_device_env_pkg;
     return TPM_BASE_ADDR | (locality << 12) | TPM_HW_STS_OFFSET;
   endfunction
 
+  // return the index the cmd_filter for the input opcode
+  function automatic int get_cmd_filter_index(bit[7:0]  opcode);
+    return opcode / 32;
+  endfunction
+
+  // return the field offset of the cmd_filter for the input opcode
+  function automatic int get_cmd_filter_offset(bit[7:0]  opcode);
+    return opcode % 32;
+  endfunction
+
   // macros
   `define GET_TX_ALLOCATED_SRAM_SIZE_BYTES \
     get_allocated_sram_size_bytes(ral.txf_addr.base.get_mirrored_value(), \
