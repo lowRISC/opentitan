@@ -645,6 +645,21 @@ package otp_ctrl_reg_pkg;
     struct packed {
       logic        q;
     } field3;
+    struct packed {
+      logic        q;
+    } field4;
+    struct packed {
+      logic        q;
+    } field5;
+    struct packed {
+      logic        q;
+    } field6;
+    struct packed {
+      logic        q;
+    } field7;
+    struct packed {
+      logic        q;
+    } field8;
   } otp_ctrl_reg2hw_csr3_reg_t;
 
   typedef struct packed {
@@ -733,6 +748,26 @@ package otp_ctrl_reg_pkg;
       logic        d;
       logic        de;
     } field3;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field4;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field5;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field6;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field7;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field8;
   } otp_ctrl_hw2reg_csr3_reg_t;
 
   typedef struct packed {
@@ -787,10 +822,10 @@ package otp_ctrl_reg_pkg;
 
   // Register -> HW type for prim interface
   typedef struct packed {
-    otp_ctrl_reg2hw_csr0_reg_t csr0; // [153:130]
-    otp_ctrl_reg2hw_csr1_reg_t csr1; // [129:98]
-    otp_ctrl_reg2hw_csr2_reg_t csr2; // [97:97]
-    otp_ctrl_reg2hw_csr3_reg_t csr3; // [96:82]
+    otp_ctrl_reg2hw_csr0_reg_t csr0; // [158:135]
+    otp_ctrl_reg2hw_csr1_reg_t csr1; // [134:103]
+    otp_ctrl_reg2hw_csr2_reg_t csr2; // [102:102]
+    otp_ctrl_reg2hw_csr3_reg_t csr3; // [101:82]
     otp_ctrl_reg2hw_csr4_reg_t csr4; // [81:69]
     otp_ctrl_reg2hw_csr5_reg_t csr5; // [68:39]
     otp_ctrl_reg2hw_csr6_reg_t csr6; // [38:11]
@@ -799,7 +834,7 @@ package otp_ctrl_reg_pkg;
 
   // HW -> register type for prim interface
   typedef struct packed {
-    otp_ctrl_hw2reg_csr3_reg_t csr3; // [70:52]
+    otp_ctrl_hw2reg_csr3_reg_t csr3; // [80:52]
     otp_ctrl_hw2reg_csr5_reg_t csr5; // [51:15]
     otp_ctrl_hw2reg_csr7_reg_t csr7; // [14:0]
   } otp_ctrl_prim_hw2reg_t;

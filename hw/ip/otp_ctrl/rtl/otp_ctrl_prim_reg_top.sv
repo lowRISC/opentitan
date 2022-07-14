@@ -155,6 +155,16 @@ module otp_ctrl_prim_reg_top (
   logic csr3_field2_wd;
   logic csr3_field3_qs;
   logic csr3_field3_wd;
+  logic csr3_field4_qs;
+  logic csr3_field4_wd;
+  logic csr3_field5_qs;
+  logic csr3_field5_wd;
+  logic csr3_field6_qs;
+  logic csr3_field6_wd;
+  logic csr3_field7_qs;
+  logic csr3_field7_wd;
+  logic csr3_field8_qs;
+  logic csr3_field8_wd;
   logic csr4_we;
   logic [9:0] csr4_field0_qs;
   logic [9:0] csr4_field0_wd;
@@ -584,6 +594,136 @@ module otp_ctrl_prim_reg_top (
 
     // to register interface (read)
     .qs     (csr3_field3_qs)
+  );
+
+  //   F[field4]: 18:18
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_csr3_field4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (csr3_we),
+    .wd     (csr3_field4_wd),
+
+    // from internal hardware
+    .de     (hw2reg.csr3.field4.de),
+    .d      (hw2reg.csr3.field4.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.csr3.field4.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (csr3_field4_qs)
+  );
+
+  //   F[field5]: 19:19
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_csr3_field5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (csr3_we),
+    .wd     (csr3_field5_wd),
+
+    // from internal hardware
+    .de     (hw2reg.csr3.field5.de),
+    .d      (hw2reg.csr3.field5.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.csr3.field5.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (csr3_field5_qs)
+  );
+
+  //   F[field6]: 20:20
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_csr3_field6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (csr3_we),
+    .wd     (csr3_field6_wd),
+
+    // from internal hardware
+    .de     (hw2reg.csr3.field6.de),
+    .d      (hw2reg.csr3.field6.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.csr3.field6.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (csr3_field6_qs)
+  );
+
+  //   F[field7]: 21:21
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_csr3_field7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (csr3_we),
+    .wd     (csr3_field7_wd),
+
+    // from internal hardware
+    .de     (hw2reg.csr3.field7.de),
+    .d      (hw2reg.csr3.field7.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.csr3.field7.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (csr3_field7_qs)
+  );
+
+  //   F[field8]: 22:22
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_csr3_field8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (csr3_we),
+    .wd     (csr3_field8_wd),
+
+    // from internal hardware
+    .de     (hw2reg.csr3.field8.de),
+    .d      (hw2reg.csr3.field8.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.csr3.field8.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (csr3_field8_qs)
   );
 
 
@@ -1153,6 +1293,16 @@ module otp_ctrl_prim_reg_top (
   assign csr3_field2_wd = reg_wdata[16];
 
   assign csr3_field3_wd = reg_wdata[17];
+
+  assign csr3_field4_wd = reg_wdata[18];
+
+  assign csr3_field5_wd = reg_wdata[19];
+
+  assign csr3_field6_wd = reg_wdata[20];
+
+  assign csr3_field7_wd = reg_wdata[21];
+
+  assign csr3_field8_wd = reg_wdata[22];
   assign csr4_we = addr_hit[4] & reg_we & !reg_error;
 
   assign csr4_field0_wd = reg_wdata[9:0];
@@ -1221,6 +1371,11 @@ module otp_ctrl_prim_reg_top (
         reg_rdata_next[13:4] = csr3_field1_qs;
         reg_rdata_next[16] = csr3_field2_qs;
         reg_rdata_next[17] = csr3_field3_qs;
+        reg_rdata_next[18] = csr3_field4_qs;
+        reg_rdata_next[19] = csr3_field5_qs;
+        reg_rdata_next[20] = csr3_field6_qs;
+        reg_rdata_next[21] = csr3_field7_qs;
+        reg_rdata_next[22] = csr3_field8_qs;
       end
 
       addr_hit[4]: begin
