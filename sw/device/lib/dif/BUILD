@@ -789,17 +789,21 @@ cc_test(
 )
 
 cc_library(
+    name = "rstmgr_intf",
+    srcs = ["autogen/dif_rstmgr_autogen.h"],
+    hdrs = ["dif_rstmgr.h"],
+    deps = [":base"],
+)
+
+cc_library(
     name = "rstmgr",
     srcs = [
         "autogen/dif_rstmgr_autogen.c",
-        "autogen/dif_rstmgr_autogen.h",
         "dif_rstmgr.c",
-    ],
-    hdrs = [
-        "dif_rstmgr.h",
     ],
     deps = [
         ":base",
+        ":rstmgr_intf",
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",

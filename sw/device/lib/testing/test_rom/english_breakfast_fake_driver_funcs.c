@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
@@ -23,9 +24,19 @@ void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
 
 uint32_t otp_read32(uint32_t address) { return kHardenedBoolTrue; }
 
-uint32_t rstmgr_reason_get(void) { return 1 << kRstmgrReasonPowerOn; }
+dif_result_t dif_rstmgr_init(mmio_region_t base_addr, dif_rstmgr_t *rstmgr) {
+  return kDifOk;
+}
 
-void rstmgr_reason_clear(uint32_t reasons) {}
+dif_result_t dif_rstmgr_reset_info_get(const dif_rstmgr_t *handle,
+                                       dif_rstmgr_reset_info_bitfield_t *info) {
+  *info = 1 << kRstmgrReasonPowerOn;
+  return kDifOk;
+}
+
+dif_result_t dif_rstmgr_reset_info_clear(const dif_rstmgr_t *handle) {
+  return kDifOk;
+}
 
 void rstmgr_reset(void) {
   while (true) {
