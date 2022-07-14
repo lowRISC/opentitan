@@ -95,7 +95,7 @@ pub struct BootstrapOptions {
         long,
         help = "Whether to reset target and clear UART RX buffer after bootstrap. For CW310 only."
     )]
-    pub no_clear_uart_rx: Option<bool>,
+    pub clear_uart: Option<bool>,
     #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the reset delay")]
     pub reset_delay: Option<Duration>,
     #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the inter-frame delay")]
@@ -160,7 +160,7 @@ impl<'a> Bootstrap<'a> {
         };
         Bootstrap {
             protocol: options.protocol,
-            clear_uart_rx: !options.no_clear_uart_rx.unwrap_or(false),
+            clear_uart_rx: options.clear_uart.unwrap_or(false),
             uart_params: &options.uart_params,
             spi_params: &options.spi_params,
             reset_pin: transport.gpio_pin("RESET")?,
