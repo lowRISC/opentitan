@@ -84,10 +84,15 @@ interface fi_control_if
 
 
   function automatic void force_multi_bit(int target, bit [31:0] value);
+    bit  read;
     $assertoff(0, "tb.dut");
     if (!uvm_hdl_check_path(intf_mul_array[target])) begin
       `uvm_fatal("fi_control_if", $sformatf("PATH NOT EXISTING %m"))
     end
+    // read the value currently of bit 0
+    uvm_hdl_read(intf_mul_array[target], read);
+    // flip bit to make sure we don't force the value currently on bus
+    value[0] = !read;
     if (!uvm_hdl_force(intf_mul_array[target], value)) begin
       `uvm_error("fi_control_if", $sformatf("Was not able to force %s", intf_mul_array[target]))
     end
