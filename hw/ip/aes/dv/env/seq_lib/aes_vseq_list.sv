@@ -13,3 +13,4 @@
 `include "aes_reseed_vseq.sv"
 `include "aes_fi_vseq.sv"
 `include "aes_control_fi_vseq.sv"
+`include "aes_cipher_fi_vseq.sv"

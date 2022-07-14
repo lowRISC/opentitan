@@ -16,6 +16,8 @@ filesets:
       - force_if.sv
       - fi_control_fsm_wrapper.sv
       - fi_control_if.sv
+      - fi_cipher_fsm_wrapper.sv
+      - fi_cipher_if.sv
     file_type: systemVerilogSource
 
 targets:

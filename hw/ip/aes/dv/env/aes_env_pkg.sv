@@ -54,6 +54,43 @@ package aes_env_pkg;
   localparam int StateWidth = 6;
 
 
+  // Pick a name for this interface, under which it will be registered with the UVM DB. This is
+  // based on IfName but also appends the index under the deepest generate block if necessary. For
+  // example, if IfName is "foo" and we're bound into a module that is instantiated with indices 0,
+  // 1 and 2 and then this should return "foo_0", "foo_1" and "foo_2", respectively.
+  function automatic string pick_if_name(string IfName, string str);
+    // find the interface index
+    string suffix = "";
+    int    closing_bracket = -1;
+    int    opening_bracket  = -1;
+
+    // Walk from the back, searching for something of the form "[123]".
+    for (int i = str.len() - 1; i >= 0; i--) begin
+      if (str[i] == "]") begin
+        closing_bracket = i;
+        break;
+      end
+    end
+    for (int i = str.len() - 1; i >= 0; i--) begin
+      if (str[i] == "[") begin
+        opening_bracket = i;
+        break;
+      end
+    end
+    if (str[opening_bracket] == "[") begin
+      // we do not expect to see "[]"
+      if (!(closing_bracket > opening_bracket + 1)) begin
+        // we cannot use macro as module is not a part of hierarchy
+        // will fail the get_full_name() lookup
+        `uvm_fatal($sformatf("%m"), $sformatf("Found unexpected empty bracket"))
+      end
+      // Put the stuff in the brackets in suffix
+      suffix = str.substr(opening_bracket + 1, closing_bracket - 1);
+    end
+
+    return $sformatf("%s_%s", IfName, suffix);
+  endfunction
+
   // package sources
  `include "aes_env_cfg.sv"
  `include "aes_seq_item.sv"
