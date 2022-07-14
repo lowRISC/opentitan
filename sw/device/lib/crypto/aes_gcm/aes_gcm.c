@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/aes_gcm/aes_gcm.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -71,6 +73,8 @@ static inline void block_xor(const aes_block_t *x, const aes_block_t *y,
  * @return byte with lower 4 bits reversed and upper 4 unmodified.
  */
 static uint8_t reverse_bits(uint8_t byte) {
+  /* TODO: replace with rev.n (from 0.93 draft of bitmanip) once bitmanip
+   * extension is enabled. */
   uint8_t out = 0;
   for (size_t i = 0; i < 4; ++i) {
     out <<= 1;
@@ -90,6 +94,7 @@ static uint8_t reverse_bits(uint8_t byte) {
  * @return Word with bytes reversed.
  */
 static uint32_t reverse_bytes(uint32_t word) {
+  /* TODO: replace with rev8 once bitmanip extension is enabled. */
   uint32_t out = 0;
   for (size_t i = 0; i < sizeof(uint32_t); ++i) {
     out <<= 8;
@@ -138,14 +143,13 @@ static inline uint8_t block_byte_get(const aes_block_t *block, size_t index) {
 /**
  * Get the number of bytes past the last full block of the buffer.
  *
- * Equivalent to `sz % kAesBlockNumBytes`. Assumes that `kAesBlockNumBytes` is
- * a power of 2.
+ * Equivalent to `sz % kAesBlockNumBytes`.
  *
  * @param sz Number of bytes to represent
  * @return Offset of end of buffer from last full block
  */
 static inline size_t get_block_offset(size_t sz) {
-  return sz & (kAesBlockNumBytes - 1);
+  return sz & ((1 << kAesBlockLog2NumBytes) - 1);
 }
 
 /**
@@ -163,6 +167,22 @@ static inline size_t get_nblocks(size_t sz) {
     out += 1;
   }
   return out;
+}
+
+/**
+ * Increment a 32-bit big-endian word.
+ *
+ * This operation theoretically increments the "rightmost" (last) 32 bits of
+ * the input modulo 2^32. However, NIST treats all bitvectors as big-endian and
+ * the processor is little-endian. In order to increment we first need to
+ * reverse the bytes of the 32-bit word, then increment, then reverse it back.
+ *
+ * @param word Input word in big-endian form.
+ * @returns (word + 1) mod 2^32 in big-endian form.
+ */
+static inline uint32_t word_inc32(const uint32_t word) {
+  // Reverse the bytes, increment, and reverse back.
+  return reverse_bytes(reverse_bytes(word) + 1);
 }
 
 /**
@@ -229,14 +249,14 @@ static void make_product_table(const aes_block_t *H,
  * operand is always the hash subkey H, we can speed things up significantly
  * with a little precomputation.
  *
- * The `H_table` input should be a precomputed table with the products of H and
+ * The `tbl` input should be a precomputed table with the products of H and
  * 256 all possible byte values (see `make_product_table`).
  *
  * This operation corresponds to multiplication in the Galois field with order
  * 2^128, modulo the polynomial x^128 +  x^8 + x^2 + x + 1
  *
  * @param p Polynomial to multiply
- * @param H_table Precomputed product table for the hash subkey
+ * @param tbl Precomputed product table for the hash subkey
  * @param result Block in which to store output
  */
 static void galois_mul(const aes_block_t *p, const aes_gcm_product_table_t *tbl,
@@ -300,7 +320,7 @@ static void galois_mul(const aes_block_t *p, const aes_gcm_product_table_t *tbl,
  *
  * The product table should match the format from `make_product_table`.
  *
- * @param H_table Precomputed product table
+ * @param tbl Precomputed product table
  * @param input_len Length of input in bytes
  * @param input Input buffer
  * @param state GHASH state, updated in place
@@ -351,6 +371,109 @@ aes_error_t aes_gcm_ghash(const aes_block_t *hash_subkey,
 
   // Update the GHASH state with the input.
   aes_gcm_ghash_update(&tbl, input_len, input, output);
+
+  return kAesOk;
+}
+
+/**
+ * One-shot version of the AES API for a single block, for convenience.
+ */
+static aes_error_t aes_single_block(const aes_params_t params,
+                                    const aes_block_t *input,
+                                    aes_block_t *output) {
+  aes_error_t err = aes_begin(params);
+  if (err != kAesOk) {
+    return err;
+  }
+  err = aes_update(output, input);
+  if (err != kAesOk) {
+    return err;
+  }
+  err = aes_end();
+  if (err != kAesOk) {
+    return err;
+  }
+  return kAesOk;
+}
+
+/**
+ * Implements the GCTR function as specified in SP800-38D, section 6.5.
+ *
+ * The block cipher is fixed to AES. Note that the GCTR function is a modified
+ * version of the AES-CTR mode of encryption.
+ *
+ * Input must be less than 2^32 blocks long; that is, `len` < 2^36, since each
+ * block is 16 bytes.
+ *
+ * @param key_len length of the AES key
+ * @param key_shares key, expressed in two shares
+ * @param icb Initial counter block, 128 bits
+ * @param len Number of bytes for input and output
+ * @param input Pointer to input buffer (may be NULL if `len` is 0)
+ * @param output Pointer to output buffer (same size as input, may be the same
+ * buffer)
+ */
+aes_error_t aes_gcm_gctr(const aes_key_len_t key_len, uint32_t *key_shares[2],
+                         const aes_block_t *icb, const size_t len,
+                         const uint8_t *input, uint8_t *output) {
+  // If the input is empty, the output must be as well. Since the output length
+  // is 0, simply return.
+  if (len == 0) {
+    return kAesOk;
+  }
+
+  // NULL pointers are not allowed for nonzero input length.
+  if (input == NULL || output == NULL) {
+    return kAesInternalError;
+  }
+
+  // Prepare AES parameters for AES-CTR encryption. Encrypting a single block B
+  // with these parameters will return AES_K(IV) ^ B, where AES_K is the core
+  // AES block cipher encryption operation using key K.
+  aes_params_t aes_ctr_params = {
+      .encrypt = true,
+      .mode = kAesCipherModeCtr,
+      .key_len = key_len,
+      .key = {key_shares[0], key_shares[1]},
+      .iv = {0},
+  };
+  memcpy(aes_ctr_params.iv, icb->data, kAesBlockNumBytes);
+
+  // Calculate the number of blocks needed to represent the input. Since we
+  // checked for empty input above, nblocks must be at least 1.
+  size_t nblocks = get_nblocks(len);
+  for (size_t i = 0; i < nblocks; ++i) {
+    // Retrieve the next block of input. All blocks are full-size except for
+    // the last block, which may be partial. If the block is partial, the input
+    // data will be padded with zeroes.
+    aes_block_t block_in = {.data = {0}};
+    size_t nbytes = kAesBlockNumBytes;
+    if ((i == nblocks - 1) && (get_block_offset(len) != 0)) {
+      // Last block is partial; copy over only the bytes that exist.
+      nbytes = get_block_offset(len);
+      memcpy(block_in.data, &input[i * kAesBlockNumBytes], nbytes);
+    } else {
+      // This block is a full block.
+      memcpy(block_in.data, &input[i * kAesBlockNumBytes], kAesBlockNumBytes);
+    }
+
+    // Allocate a buffer for the cipher output.
+    aes_block_t block_out = {.data = {0}};
+
+    // Run the AES-CTR encryption operation on the next block of input.
+    aes_error_t err = aes_single_block(aes_ctr_params, &block_in, &block_out);
+    if (err != kAesOk) {
+      return err;
+    }
+
+    // Copy the result block into the output buffer, truncating some bytes if
+    // the input block was partial.
+    memcpy(&output[i * kAesBlockNumBytes], block_out.data, nbytes);
+
+    // Update the counter block.
+    aes_ctr_params.iv[kAesBlockNumWords - 1] =
+        word_inc32(aes_ctr_params.iv[kAesBlockNumWords - 1]);
+  }
 
   return kAesOk;
 }
