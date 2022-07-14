@@ -223,6 +223,10 @@ class BitstreamCache(object):
             files = self._GetFromLocal(key)
         return {os.path.splitext(f)[1][1:]: f for f in files}
 
+    @staticmethod
+    def _GetDateTimeStr():
+        return datetime.datetime.now().isoformat()
+
     def WriteBuildFile(self, build, key):
         """Write a BUILD file for the requested bitstream files.
 
@@ -231,7 +235,7 @@ class BitstreamCache(object):
             key: str; A git hash or the string 'latest'.
         """
         param = self.GetFromCache(key)
-        param['datetime'] = datetime.datetime.now().isoformat()
+        param['datetime'] = BitstreamCache._GetDateTimeStr()
         param['key'] = key
 
         if 'orig' not in param or 'splice' not in param:
