@@ -35,9 +35,10 @@ class TestBitstreamCache(unittest.TestCase):
         os.walk.assert_called_once_with('cache/abcd')
 
         self.assertEqual(
-            cached_files, {
-                'orig': os.path.join('cache', 'abcd', BITSTREAM_ORIG),
-                'splice': os.path.join('cache', 'abcd', BITSTREAM_SPLICE),
+            dict(cached_files), {
+                'orig': set([os.path.join('cache', 'abcd', BITSTREAM_ORIG)]),
+                'splice': set(
+                    [os.path.join('cache', 'abcd', BITSTREAM_SPLICE)]),
             })
 
         os.walk.assert_called_once_with('cache/abcd')
