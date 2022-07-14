@@ -147,7 +147,7 @@ def cw310_params(
         # Base Parameters
         args = _BASE_PARAMS["args"] + [
             "--exec=\"load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
-            "--exec=\"bootstrap $(location {flash})\"",
+            "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
             "console",
             "--exit-success={exit_success}",
             "--exit-failure={exit_failure}",
