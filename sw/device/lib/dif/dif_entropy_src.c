@@ -22,6 +22,11 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
     return kDifBadArg;
   }
 
+  if (!mmio_region_read32(entropy_src->base_addr,
+                          ENTROPY_SRC_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
   // ENTROPY_CONTROL register configuration.
 
   // Conditioning bypass is hardcoded to disabled. Conditioning bypass is not
@@ -107,6 +112,11 @@ dif_result_t dif_entropy_src_fw_override_configure(
     return kDifBadArg;
   }
 
+  if (!mmio_region_read32(entropy_src->base_addr,
+                          ENTROPY_SRC_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
   mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET,
                       config.buffer_threshold);
@@ -128,6 +138,11 @@ dif_result_t dif_entropy_src_health_test_configure(
     dif_entropy_src_health_test_config_t config) {
   if (entropy_src == NULL) {
     return kDifBadArg;
+  }
+
+  if (!mmio_region_read32(entropy_src->base_addr,
+                          ENTROPY_SRC_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
   }
 
   ptrdiff_t high_thresholds_reg_offset = -1;
