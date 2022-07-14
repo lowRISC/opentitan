@@ -1,0 +1,4 @@
+# This disables clang-format on all files in the sw/autogen directory.
+# This is needed so that git-clang-format and similar scripts work.
+DisableFormat: true
+SortIncludes: false

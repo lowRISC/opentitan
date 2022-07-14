@@ -8,10 +8,10 @@ def coremark_repos():
     http_archive(
         name = "coremark",
         build_file = Label("//third_party/coremark:BUILD.coremark.bazel"),
-        sha256 = "7a88428bd0777e70d9fef7dad0d61faf52a53bd642b82fd029c8a63934ff6de4",
-        strip_prefix = "coremark-21d473aae1f11d52ea592a8685734be2209aa66f",
+        sha256 = "a5964bf215786d65d08941b6f9a9a4f4e50524f5391fa3826db2994c47d5e7f3",
+        strip_prefix = "coremark-eefc986ebd3452d6adde22eafaff3e5c859f29e4",
         urls = [
-            "https://github.com/eembc/coremark/archive/21d473aae1f11d52ea592a8685734be2209aa66f.tar.gz",
+            "https://github.com/eembc/coremark/archive/eefc986ebd3452d6adde22eafaff3e5c859f29e4.tar.gz",
         ],
         patches = [
             Label("//third_party/coremark:use_ottf_main.patch"),

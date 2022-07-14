@@ -1,18 +1,20 @@
 diff --git a/core_main.c b/core_main.c
-index 285abec56..61f55853e 100644
+index a4beeb6..4072eaf 100644
 --- a/core_main.c
 +++ b/core_main.c
-@@ -86,11 +86,11 @@ char *mem_name[3] = {"Static","Heap","Stack"};
- */
+@@ -106,13 +106,13 @@ char *mem_name[3] = { "Static", "Heap", "Stack" };
  
  #if MAIN_HAS_NOARGC
--MAIN_RETURN_TYPE main(void) {
-+MAIN_RETURN_TYPE _ottf_main(void) {
- 	int argc=0;
- 	char *argv[1];
+ MAIN_RETURN_TYPE
+-main(void)
++_ottf_main(void)
+ {
+     int   argc = 0;
+     char *argv[1];
  #else
--MAIN_RETURN_TYPE main(int argc, char *argv[]) {
-+MAIN_RETURN_TYPE _ottf_main(int argc, char *argv[]) {
+ MAIN_RETURN_TYPE
+-main(int argc, char *argv[])
++_ottf_main(int argc, char *argv[])
+ {
  #endif
- 	ee_u16 i,j=0,num_algorithms=0;
- 	ee_s16 known_id=-1,total_errors=0;
+     ee_u16       i, j = 0, num_algorithms = 0;
