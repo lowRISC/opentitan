@@ -69,6 +69,8 @@ class flash_ctrl_env #(
                 m_otf_scb.eg_exp_host_fifo[i].analysis_export);
         m_fpp_agent.monitor.eg_rtl_port[i].connect(
                 m_otf_scb.eg_rtl_fifo[i].analysis_export);
+        m_fpp_agent.monitor.rd_cmd_port[i].connect(
+                m_otf_scb.rd_cmd_fifo[i].analysis_export);
      end
     end
 

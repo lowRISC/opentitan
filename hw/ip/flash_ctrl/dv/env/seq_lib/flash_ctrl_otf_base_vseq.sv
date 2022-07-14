@@ -258,6 +258,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       exp_item.addr_key = otp_addr_key;
       exp_item.data_key=  otp_data_key;
 
+      if (cfg.ecc_mode > 1) begin
+        if (exp_item.region.ecc_en == MuBi4True) cfg.add_serr(flash_op);
+      end
       flash_ctrl_start_op(flash_op);
       flash_ctrl_read(flash_op.num_words, flash_read_data, poll_fifo_status);
       wait_flash_op_done();
@@ -287,6 +290,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     data_4s_t rdata;
     flash_otf_item exp_item;
     int                                    page;
+    flash_op_t flash_op;
     bit               overflow = 0;
 
     if (cfg.ecc_mode > 0) begin
@@ -312,7 +316,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     for (int i = 0; i < num ; i++) begin
       // force address wrap around
       if (cfg.ecc_mode > 0) tl_addr[18:17] = cfg.tgt_pre[TgtDr];
-      do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata));
+
       `uvm_create_obj(flash_otf_item, exp_item)
       page = addr2page(tl_addr[OTFBankId-1:0]);
       exp_item.page = page;
@@ -320,6 +324,18 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       exp_item.start_addr = tl_addr;
       exp_item.addr_key = otp_addr_key;
       exp_item.data_key=  otp_data_key;
+
+      if (cfg.ecc_mode > 1) begin
+        if (exp_item.region.ecc_en == MuBi4True) begin
+          flash_op.addr = tl_addr;
+          // host can only access data partitions.
+          flash_op.partition = FlashPartData;
+          flash_op.num_words = 1;
+          cfg.add_serr(flash_op);
+        end
+      end
+
+      do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata));
       exp_item.dq.push_back(rdata);
 
       p_sequencer.eg_exp_host_port[bank].write(exp_item);
