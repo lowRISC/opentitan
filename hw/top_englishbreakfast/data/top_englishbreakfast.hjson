@@ -288,7 +288,12 @@
                           rst_io_div4_ni: "por_io_div4",
                           rst_main_ni: "por",
                           rst_usb_ni: "por_usb",
-                          rst_por_io_ni: "por_io"
+                          rst_root_ni: "por_io_div4",
+                          rst_root_io_ni: "por_io",
+                          rst_root_io_div2_ni: "por_io_div2",
+                          rst_root_io_div4_ni: "por_io_div4",
+                          rst_root_main_ni: "por",
+                          rst_root_usb_ni: "por_usb",
                          },
       domain: ["Aon"],
       base_addr: "0x40420000",

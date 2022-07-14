@@ -141,7 +141,9 @@
       { name: "sys_src",        gen: false, type: "int",                    clk: "io_div4" }
       { name: "por",            gen: true,  type: "top", parent: "por_aon", clk: "main"    }
       { name: "por_io",         gen: true,  type: "top", parent: "por_aon", clk: "io"      }
+      { name: "por_io_div2",    gen: true , type: "top", parent: "por_aon", clk: "io_div2" }
       { name: "por_io_div4",    gen: true , type: "top", parent: "por_aon", clk: "io_div4" }
+      { name: "por_usb",        gen: true , type: "top", parent: "por_aon", clk: "usb" }
       { name: "lc",             gen: true,  type: "top", parent: "lc_src",  clk: "main"    }
       { name: "lc_aon",         gen: true,  type: "top", parent: "lc_src",  clk: "aon"     }
       { name: "lc_io",          gen: true,  type: "top", parent: "lc_src",  clk: "io"      }
@@ -416,7 +418,12 @@
                           rst_io_div4_ni: "lc_io_div4",
                           rst_main_ni: "lc",
                           rst_usb_ni: "lc_usb",
-                          rst_por_io_ni: "por_io",
+                          rst_root_ni: "por_io_div4",
+                          rst_root_io_ni: "por_io",
+                          rst_root_io_div2_ni: "por_io_div2",
+                          rst_root_io_div4_ni: "por_io_div4",
+                          rst_root_main_ni: "por",
+                          rst_root_usb_ni: "por_usb",
                          },
       domain: ["Aon"],
       base_addr: "0x40420000",

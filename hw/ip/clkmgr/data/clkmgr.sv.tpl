@@ -37,12 +37,12 @@ from topgen.lib import Name
   input rst_${src_name}_ni,
 % endfor
 
-  // Sources for derived clocks need both a functional reset (above) and a
-  // por reset. The por reset allows the block to begin
-  // generating the derived clocks immediately, even if other
-  // downstream resets are not yet released
-% for src_name in clocks.all_derived_srcs():
-  input rst_por_${src_name}_ni,
+  // Resets for derived clock generation, root clock gating and related status
+  input rst_root_ni,
+% for root, clk_family in typed_clocks.parent_child_clks.items():
+  % for src in clk_family:
+  input rst_root_${src}_ni,
+  % endfor
 % endfor
 
   // Bus Interface
@@ -159,7 +159,7 @@ from topgen.lib import Name
     .Divisor(${src.div})
   ) u_no_scan_${src.name}_div (
     .clk_i(clk_${src.src.name}_i),
-    .rst_ni(rst_por_${src.src.name}_ni),
+    .rst_ni(rst_root_${src.src.name}_ni),
     .step_down_req_i(mubi4_test_true_strict(${src.src.name}_step_down_req)),
     .step_down_ack_o(step_down_acks[${loop.index}]),
     .test_en_i(mubi4_test_true_strict(${src.name}_div_scanmode[0])),
@@ -298,7 +298,6 @@ from topgen.lib import Name
   % for clk in clk_family:
   assign pwrmgr_${clk}_en = pwr_i.${root}_ip_clk_en;
   % endfor
-
 % endfor
 
   ////////////////////////////////////////////////////
@@ -314,7 +313,7 @@ from topgen.lib import Name
   logic clk_${src}_root;
   clkmgr_root_ctrl u_${src}_root_ctrl (
     .clk_i(clk_${src}_i),
-    .rst_ni(rst_${src}_ni),
+    .rst_ni(rst_root_${src}_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_${src}_en),
     .en_o(clk_${src}_en),
@@ -328,7 +327,7 @@ from topgen.lib import Name
     .NumClocks(${len(clk_family)})
   ) u_${root}_status (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_root_ni),
     .ens_i(${root}_ens),
     .status_o(pwr_o.${root}_status)
   );

@@ -43,11 +43,13 @@
   input rst_io_div2_ni,
   input rst_io_div4_ni,
 
-  // Sources for derived clocks need both a functional reset (above) and a
-  // por reset. The por reset allows the block to begin
-  // generating the derived clocks immediately, even if other
-  // downstream resets are not yet released
-  input rst_por_io_ni,
+  // Resets for derived clock generation, root clock gating and related status
+  input rst_root_ni,
+  input rst_root_main_ni,
+  input rst_root_io_ni,
+  input rst_root_io_div2_ni,
+  input rst_root_io_div4_ni,
+  input rst_root_usb_ni,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -156,7 +158,7 @@
     .Divisor(2)
   ) u_no_scan_io_div2_div (
     .clk_i(clk_io_i),
-    .rst_ni(rst_por_io_ni),
+    .rst_ni(rst_root_io_ni),
     .step_down_req_i(mubi4_test_true_strict(io_step_down_req)),
     .step_down_ack_o(step_down_acks[0]),
     .test_en_i(mubi4_test_true_strict(io_div2_div_scanmode[0])),
@@ -179,7 +181,7 @@
     .Divisor(4)
   ) u_no_scan_io_div4_div (
     .clk_i(clk_io_i),
-    .rst_ni(rst_por_io_ni),
+    .rst_ni(rst_root_io_ni),
     .step_down_req_i(mubi4_test_true_strict(io_step_down_req)),
     .step_down_ack_o(step_down_acks[1]),
     .test_en_i(mubi4_test_true_strict(io_div4_div_scanmode[0])),
@@ -385,7 +387,6 @@
   // clk_main family
   logic pwrmgr_main_en;
   assign pwrmgr_main_en = pwr_i.main_ip_clk_en;
-
   // clk_io family
   logic pwrmgr_io_en;
   logic pwrmgr_io_div2_en;
@@ -393,11 +394,9 @@
   assign pwrmgr_io_en = pwr_i.io_ip_clk_en;
   assign pwrmgr_io_div2_en = pwr_i.io_ip_clk_en;
   assign pwrmgr_io_div4_en = pwr_i.io_ip_clk_en;
-
   // clk_usb family
   logic pwrmgr_usb_en;
   assign pwrmgr_usb_en = pwr_i.usb_ip_clk_en;
-
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -410,7 +409,7 @@
   logic clk_main_root;
   clkmgr_root_ctrl u_main_root_ctrl (
     .clk_i(clk_main_i),
-    .rst_ni(rst_main_ni),
+    .rst_ni(rst_root_main_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_main_en),
     .en_o(clk_main_en),
@@ -423,7 +422,7 @@
     .NumClocks(1)
   ) u_main_status (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_root_ni),
     .ens_i(main_ens),
     .status_o(pwr_o.main_status)
   );
@@ -435,7 +434,7 @@
   logic clk_io_root;
   clkmgr_root_ctrl u_io_root_ctrl (
     .clk_i(clk_io_i),
-    .rst_ni(rst_io_ni),
+    .rst_ni(rst_root_io_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_io_en),
     .en_o(clk_io_en),
@@ -447,7 +446,7 @@
   logic clk_io_div2_root;
   clkmgr_root_ctrl u_io_div2_root_ctrl (
     .clk_i(clk_io_div2_i),
-    .rst_ni(rst_io_div2_ni),
+    .rst_ni(rst_root_io_div2_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_io_div2_en),
     .en_o(clk_io_div2_en),
@@ -459,7 +458,7 @@
   logic clk_io_div4_root;
   clkmgr_root_ctrl u_io_div4_root_ctrl (
     .clk_i(clk_io_div4_i),
-    .rst_ni(rst_io_div4_ni),
+    .rst_ni(rst_root_io_div4_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_io_div4_en),
     .en_o(clk_io_div4_en),
@@ -472,7 +471,7 @@
     .NumClocks(3)
   ) u_io_status (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_root_ni),
     .ens_i(io_ens),
     .status_o(pwr_o.io_status)
   );
@@ -484,7 +483,7 @@
   logic clk_usb_root;
   clkmgr_root_ctrl u_usb_root_ctrl (
     .clk_i(clk_usb_i),
-    .rst_ni(rst_usb_ni),
+    .rst_ni(rst_root_usb_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_usb_en),
     .en_o(clk_usb_en),
@@ -497,7 +496,7 @@
     .NumClocks(1)
   ) u_usb_status (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_root_ni),
     .ens_i(usb_ens),
     .status_o(pwr_o.usb_status)
   );

@@ -9,14 +9,17 @@
   scan: "true",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
+    {reset: "rst_root_ni"},
 % for src in clocks.srcs.values():
     {clock: "clk_${src.name}_i", reset: "rst_${src.name}_ni"},
 % endfor
 % for src in clocks.derived_srcs.values():
     {clock: "clk_${src.name}_i", reset: "rst_${src.name}_ni", internal: true},
 % endfor
-% for src in clocks.all_derived_srcs():
-    {reset: "rst_por_${src}_ni"},
+% for root, clk_family in typed_clocks.parent_child_clks.items():
+  % for clk in clk_family:
+    {reset: "rst_root_${clk}_ni"},
+  % endfor
 % endfor
   ]
   bus_interfaces: [
