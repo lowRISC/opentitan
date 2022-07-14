@@ -20,18 +20,30 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   // counters.
   localparam int IDLE_SYNC_CYCLES = 20;
 
+  // This is the timeout for the various clk status outputs to react to their inputs.
+  localparam int CLK_STATUS_TIMEOUT_NS = 100_000;
+
   rand bit              io_ip_clk_en;
   rand bit              main_ip_clk_en;
   rand bit              usb_ip_clk_en;
 
   rand mubi_hintables_t idle;
 
-  mubi4_t               scanmode;
-  int                   scanmode_on_weight          = 8;
+  // Override this from cip_base_vseq, since clkmgr tests are relatively short.
+  constraint rand_reset_delay_c {
+    rand_reset_delay dist {
+      [1 : 1000]            :/ 1,
+      [1001 : 100_000]      :/ 2,
+      [100_001 : 1_000_000] :/ 6
+    };
+  }
 
-  mubi4_t               extclk_ctrl_high_speed_sel;
-  mubi4_t               extclk_ctrl_sel;
-  clkmgr_mubi_e         mubi_mode;
+  mubi4_t       scanmode;
+  int           scanmode_on_weight          = 8;
+
+  mubi4_t       extclk_ctrl_high_speed_sel;
+  mubi4_t       extclk_ctrl_sel;
+  clkmgr_mubi_e mubi_mode;
 
   virtual function void set_scanmode_on_low_weight();
     scanmode_on_weight = 2;
@@ -58,7 +70,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     io_ip_clk_en   = 1'b1;
     main_ip_clk_en = 1'b1;
     usb_ip_clk_en  = 1'b1;
-    control_ip_clocks();
+    start_ip_clocks();
   endtask
 
   // Converts to bool with strict true.
@@ -83,9 +95,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     $assertoff(0, "prim_mubi4_sync");
     $assertoff(0, "prim_lc_sync");
     cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode), .lc_debug_en(Off));
-    cfg.clkmgr_vif.update_io_ip_clk_en(1'b0);
-    cfg.clkmgr_vif.update_main_ip_clk_en(1'b0);
-    cfg.clkmgr_vif.update_usb_ip_clk_en(1'b0);
+    cfg.clkmgr_vif.update_io_ip_clk_en(1'b1);
+    cfg.clkmgr_vif.update_main_ip_clk_en(1'b1);
+    cfg.clkmgr_vif.update_usb_ip_clk_en(1'b1);
     cfg.clkmgr_vif.update_all_clk_byp_ack(MuBi4False);
     cfg.clkmgr_vif.update_div_step_down_req(MuBi4False);
     cfg.clkmgr_vif.update_io_clk_byp_ack(MuBi4False);
@@ -114,6 +126,48 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.aon_clk_rst_vif.drive_rst_pin(1'b0);
   endtask
 
+  // This turns on the actual input clocks, as the pwrmgr would.
+  task start_ip_clocks();
+    fork
+      start_io_ip_clock();
+      start_main_ip_clock();
+      start_usb_ip_clock();
+    join
+  endtask
+
+  task start_io_ip_clock();
+    `uvm_info(`gfn, $sformatf(
+              "starting io clk_en with current status %b", cfg.clkmgr_vif.pwr_o.io_status),
+              UVM_MEDIUM)
+    cfg.io_clk_rst_vif.start_clk();
+    cfg.clkmgr_vif.pwr_i.io_ip_clk_en = io_ip_clk_en;
+    `DV_SPINWAIT(wait(cfg.clkmgr_vif.pwr_o.io_status == 1'b1);,
+                 "timeout waiting for io_status to raise", CLK_STATUS_TIMEOUT_NS)
+    `uvm_info(`gfn, "starting io clock done", UVM_MEDIUM)
+  endtask
+
+  task start_main_ip_clock();
+    `uvm_info(`gfn, $sformatf(
+              "starting main clk_en with current status %b", cfg.clkmgr_vif.pwr_o.main_status),
+              UVM_MEDIUM)
+    cfg.main_clk_rst_vif.start_clk();
+    cfg.clkmgr_vif.pwr_i.main_ip_clk_en = main_ip_clk_en;
+    `DV_SPINWAIT(wait(cfg.clkmgr_vif.pwr_o.main_status == 1'b1);,
+                 "timeout waiting for main_status to raise", CLK_STATUS_TIMEOUT_NS)
+    `uvm_info(`gfn, "starting main clock done", UVM_MEDIUM)
+  endtask
+
+  task start_usb_ip_clock();
+    `uvm_info(`gfn, $sformatf(
+              "starting usb clk_en with current status %b", cfg.clkmgr_vif.pwr_o.usb_status),
+              UVM_MEDIUM)
+    cfg.usb_clk_rst_vif.start_clk();
+    cfg.clkmgr_vif.pwr_i.usb_ip_clk_en = usb_ip_clk_en;
+    `DV_SPINWAIT(wait(cfg.clkmgr_vif.pwr_o.usb_status == 1'b1);,
+                 "timeout waiting for usb_status to raise", CLK_STATUS_TIMEOUT_NS)
+    `uvm_info(`gfn, "starting usb clock done", UVM_MEDIUM)
+  endtask
+
   // This turns on or off the actual input clocks, as the pwrmgr would.
   task control_ip_clocks();
     fork
@@ -127,19 +181,21 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     // Do nothing if nothing interesting changed.
     if (cfg.clkmgr_vif.pwr_i.io_ip_clk_en == io_ip_clk_en) return;
     `uvm_info(`gfn, $sformatf(
-              "controlling usb clk_en from %b to %b with current status %b",
+              "controlling io clk_en from %b to %b with current status %b",
               cfg.clkmgr_vif.pwr_i.io_ip_clk_en,
               io_ip_clk_en,
               cfg.clkmgr_vif.pwr_o.io_status
               ), UVM_MEDIUM)
     if (!io_ip_clk_en) begin
       cfg.clkmgr_vif.pwr_i.io_ip_clk_en = io_ip_clk_en;
-      wait(cfg.clkmgr_vif.pwr_o.io_status == 1'b0);
+      `DV_SPINWAIT(wait(cfg.clkmgr_vif.pwr_o.io_status == 1'b0);,
+                   "timeout waiting for io_status to fall", CLK_STATUS_TIMEOUT_NS)
       cfg.io_clk_rst_vif.stop_clk();
     end else begin
       cfg.io_clk_rst_vif.start_clk();
       cfg.clkmgr_vif.pwr_i.io_ip_clk_en = io_ip_clk_en;
-      wait(cfg.clkmgr_vif.pwr_o.io_status == 1'b1);
+      `DV_SPINWAIT(wait(cfg.clkmgr_vif.pwr_o.io_status == 1'b1);,
+                   "timeout waiting for io_status to raise", CLK_STATUS_TIMEOUT_NS)
     end
     `uvm_info(`gfn, "controlling io clock done", UVM_MEDIUM)
   endtask
@@ -155,12 +211,14 @@ class clkmgr_base_vseq extends cip_base_vseq #(
               ), UVM_MEDIUM)
     if (!main_ip_clk_en) begin
       cfg.clkmgr_vif.pwr_i.main_ip_clk_en = main_ip_clk_en;
-      wait(cfg.clkmgr_vif.pwr_o.main_status == 1'b0);
+      `DV_SPINWAIT(wait(cfg.clkmgr_vif.pwr_o.main_status == 1'b0);,
+                   "timeout waiting for main_status to fall", CLK_STATUS_TIMEOUT_NS)
       cfg.main_clk_rst_vif.stop_clk();
     end else begin
       cfg.main_clk_rst_vif.start_clk();
       cfg.clkmgr_vif.pwr_i.main_ip_clk_en = main_ip_clk_en;
-      wait(cfg.clkmgr_vif.pwr_o.main_status == 1'b1);
+      `DV_SPINWAIT(wait(cfg.clkmgr_vif.pwr_o.main_status == 1'b1);,
+                   "timeout waiting for main_status to raise", CLK_STATUS_TIMEOUT_NS)
     end
     `uvm_info(`gfn, "controlling main clock done", UVM_MEDIUM)
   endtask
@@ -176,12 +234,14 @@ class clkmgr_base_vseq extends cip_base_vseq #(
               ), UVM_MEDIUM)
     if (!usb_ip_clk_en) begin
       cfg.clkmgr_vif.pwr_i.usb_ip_clk_en = usb_ip_clk_en;
-      wait(cfg.clkmgr_vif.pwr_o.usb_status == 1'b0);
+      `DV_SPINWAIT(wait(cfg.clkmgr_vif.pwr_o.usb_status == 1'b0);,
+                   "timeout waiting for usb_status to fall", CLK_STATUS_TIMEOUT_NS)
       cfg.usb_clk_rst_vif.stop_clk();
     end else begin
       cfg.usb_clk_rst_vif.start_clk();
       cfg.clkmgr_vif.pwr_i.usb_ip_clk_en = usb_ip_clk_en;
-      wait(cfg.clkmgr_vif.pwr_o.usb_status == 1'b1);
+      `DV_SPINWAIT(wait(cfg.clkmgr_vif.pwr_o.usb_status == 1'b1);,
+                   "timeout waiting for usb_status to raise", CLK_STATUS_TIMEOUT_NS)
     end
     `uvm_info(`gfn, "controlling usb clock done", UVM_MEDIUM)
   endtask
@@ -267,7 +327,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
         else $assertoff(0, "tb.dut.u_io_div2_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
       end
       ClkMesrIoDiv4: begin
-        if (enable) $asserton(0, "tb.dut.u_io_div4_meas.u_meas.u_sync_ref.SrcPulseCheck_m");
+        if (enable) $asserton(0, "tb.dut.u_io_div4_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
         else $assertoff(0, "tb.dut.u_io_div4_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
       end
       ClkMesrMain: begin
@@ -362,6 +422,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.main_clk_rst_vif.drive_rst_pin(1);
     cfg.io_clk_rst_vif.drive_rst_pin(1);
     cfg.usb_clk_rst_vif.drive_rst_pin(1);
+    initialize_on_start();
   endtask
 
   task post_apply_reset(string reset_kind = "HARD");
