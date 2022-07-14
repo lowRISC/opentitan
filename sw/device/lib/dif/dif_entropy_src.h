@@ -325,6 +325,29 @@ dif_result_t dif_entropy_src_set_enabled(const dif_entropy_src_t *entropy_src,
                                          dif_toggle_t enabled);
 
 /**
+ * Locks out entropy source functionality.
+ *
+ * This function is reentrant: calling it while functionality is locked will
+ * have no effect and return `kDifEntropySrcOk`.
+ *
+ * @param entropy An entropy source handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_lock(const dif_entropy_src_t *entropy_src);
+
+/**
+ * Checks whether this entropy source is locked.
+ *
+ * @param entropy An entropy source handle.
+ * @param[out] is_locked Out-param for the locked state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_is_locked(const dif_entropy_src_t *entropy_src,
+                                       bool *is_locked);
+
+/**
  * Queries the entropy source IP for its revision information.
  *
  * @param entropy An entropy source handle.
@@ -358,29 +381,6 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_get_alert_fail_counts(
     const dif_entropy_src_t *entropy_src,
     dif_entropy_src_alert_fail_counts_t *counts);
-
-/**
- * Locks out entropy source functionality.
- *
- * This function is reentrant: calling it while functionality is locked will
- * have no effect and return `kDifEntropySrcOk`.
- *
- * @param entropy An entropy source handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_lock(const dif_entropy_src_t *entropy_src);
-
-/**
- * Checks whether this entropy source is locked.
- *
- * @param entropy An entropy source handle.
- * @param[out] is_locked Out-param for the locked state.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_is_locked(const dif_entropy_src_t *entropy_src,
-                                       bool *is_locked);
 
 /**
  * Checks to see if entropy is available for software consumption
