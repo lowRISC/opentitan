@@ -90,7 +90,8 @@
       desc: '''
             Same as the smoke test, except we set cfg.sideload and provide a
             valid sideloaded key as well as a valid SW-provided key.
-            KMAC should operate on the sideloaded key.
+            KMAC should operate on the sideloaded key regardless of the cfg_shadowed.sideload field
+            value.
             '''
       milestone: V2
       tests: ["{variant}_sideload"]
@@ -316,8 +317,8 @@
       name: sideload_cg
       desc: '''
             Covers that the KMAC sees scenarios where the sideloaded key is provided and should be
-            used (`en_sideload==1`, `app_mode==AppKeymgr`), and scenarios where the sideloaded key is
-            provided but should not be used.
+            used (`en_sideload==1`, `app_mode==AppKeymgr`), and scenarios where the sideloaded key
+            is provided but should not be used.
             '''
     }
     {
