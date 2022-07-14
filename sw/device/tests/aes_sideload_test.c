@@ -237,17 +237,6 @@ void aes_test(void) {
   CHECK_DIF_OK(dif_aes_end(&aes));
 }
 
-static void init_kmac_for_keymgr(void) {
-  dif_kmac_t kmac;
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
-
-  // Configure KMAC hardware using software entropy.
-  CHECK_DIF_OK(dif_kmac_configure(&kmac, (dif_kmac_config_t){
-                                             .sideload = true,
-                                         }));
-}
-
 bool test_main(void) {
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
@@ -279,13 +268,12 @@ bool test_main(void) {
     LOG_INFO(
         "Powered up for the second time, actuate keymgr and perform aes test.");
 
-    init_kmac_for_keymgr();
-
     // Configure the keymgr to generate an aes key.
     keymgr_initialize();
 
     aes_test();
+    return true;
   }
 
-  return true;
+  return false;
 }
