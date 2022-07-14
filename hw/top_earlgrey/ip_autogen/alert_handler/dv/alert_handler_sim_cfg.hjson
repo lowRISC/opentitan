@@ -90,7 +90,7 @@
     {
       name: alert_handler_ping_timeout
       uvm_test_seq: alert_handler_ping_timeout_vseq
-      run_opts: ["+test_timeout_ns=10_000_000_000"]
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
     }
 
     {

@@ -14,7 +14,7 @@ class alert_handler_ping_timeout_vseq extends alert_handler_entropy_vseq;
   `uvm_object_new
 
   constraint num_trans_c {
-    num_trans inside {[1:10]};
+    num_trans inside {[5:30]};
   }
 
   constraint alert_trigger_c {
@@ -32,7 +32,8 @@ class alert_handler_ping_timeout_vseq extends alert_handler_entropy_vseq;
   }
 
   constraint loc_alert_en_c {
-    local_alert_en[LocalEscPingFail:LocalAlertPingFail] > 0;
+    local_alert_en[LocalEscPingFail] == 1;
+    local_alert_en[LocalAlertPingFail] == 1;
   }
 
   constraint ping_fail_c {
@@ -40,9 +41,13 @@ class alert_handler_ping_timeout_vseq extends alert_handler_entropy_vseq;
     esc_ping_timeout   == '1;
   }
 
-  // At least enable `NUM_ALERTS-4` alerts to avoid this sequence running too long.
+  // At least enable and lock `NUM_ALERTS-4` alerts to avoid this sequence running too long.
+  // This constraint also ensures at least one alert is locked and enabled so that we can ensure at
+  // least one alert ping will fire.
   constraint enable_one_alert_c {
-    $countones(alert_en) dist {NUM_ALERTS :/ 8, [NUM_ALERTS-4 : NUM_ALERTS-1] :/ 2};
+    $countones(alert_en)      dist {NUM_ALERTS :/ 8, [NUM_ALERTS-4 : NUM_ALERTS-1] :/ 2};
+    $countones(~alert_regwen) dist {NUM_ALERTS :/ 5, [NUM_ALERTS-4 : NUM_ALERTS-1] :/ 5};
+    (~alert_regwen) & alert_en > 0;
   }
 
   constraint ping_timeout_cyc_c {
