@@ -61,6 +61,7 @@ class flash_ctrl_base_test #(
   endfunction
 
   task run_phase(uvm_phase phase);
+    int dbg_run_cnt = 0;
     if ($value$plusargs("rerun=%0d", run_cnt)) begin
       `uvm_info("TEST", $sformatf("run_cnt is set to %0d", run_cnt), UVM_LOW)
     end
@@ -71,6 +72,8 @@ class flash_ctrl_base_test #(
     repeat(run_cnt) begin
       run_seq(test_seq_s, phase);
       env.virtual_sequencer.stop_sequences();
+      `uvm_info("Test", $sformatf("TESTEND %0d",++dbg_run_cnt), UVM_MEDIUM)
+      foreach (env.m_tl_agents[i]) env.m_tl_agents[i].monitor.pending_a_req.delete();
     end
     phase.drop_objection(this);
 

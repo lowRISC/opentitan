@@ -38,11 +38,11 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       scramble_en: MuBi4False,
       ecc_en: MuBi4False,
       he_en: MuBi4False,
-      // below two won't be programmed
+      // Below two values won't be programmed
       // rtl uses hardcoded values
       // start:0
       // size : 2 * 256 (0x200)
-      num_pages: 1,
+      num_pages: 512,
       start_page: 0
   };
 
@@ -67,21 +67,27 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // This is used to validate transactions based on their page address
   // and policy config associate with it.
   // 8 : default region
-  int p2r_map[FlashNumPages] = '{default : 8};
 
   // Vseq to do some initial post-reset actions. Can be overriden by extending envs.
   flash_ctrl_callback_vseq callback_vseq;
 
   // 1page : 2048Byte
+  // returns 9 bit (max 512) pages
   function int addr2page(bit[OTFBankId:0] addr);
     return (int'(addr[OTFBankId:11]));
   endfunction // addr2page
 
   function flash_mp_region_cfg_t get_region(int page);
-    if (cfg.p2r_map[page] == 8) return default_region_cfg;
-    else begin
-      // TODO support memory protection
+    flash_mp_region_cfg_t my_region;
+    if (cfg.p2r_map[page] == 8) begin
+      my_region = default_region_cfg;
+    end else begin
+      my_region = cfg.mp_regions[cfg.p2r_map[page]];
+      if (my_region.en != MuBi4True) my_region = default_region_cfg;
     end
+    `uvm_info("get_region", $sformatf("page:%0d --> region:%0d",
+                                      page, cfg.p2r_map[page]), UVM_MEDIUM)
+    return my_region;
   endfunction // get_region
 
   virtual task pre_start();
@@ -98,9 +104,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Reset the Flash Device
   virtual task reset_flash();
-
     // Set all flash partitions to 1s.
     flash_dv_part_e part = part.first();
+
     do begin
       cfg.flash_mem_bkdr_init(part, flash_init);
       part = part.next();
@@ -1080,7 +1086,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Refill table with all default value.
   function void init_p2r_map();
-    foreach (p2r_map[i]) p2r_map[i] = 8;
+    foreach (cfg.p2r_map[i]) cfg.p2r_map[i] = 8;
   endfunction
 
   // p2r_map needs to be in sync with rtl config.
@@ -1098,12 +1104,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         base = mp[i].start_page;
         size = mp[i].num_pages;
         for (int j = base; j < (base + size); ++j) begin
-          if (p2r_map[j] > i) p2r_map[j] = i;
+          if (cfg.p2r_map[j] > i) cfg.p2r_map[j] = i;
         end
       end
     end
 
-    `uvm_info("update_p2r_map", $sformatf("after p2r_map update, %p", p2r_map), UVM_HIGH)
+    `uvm_info("update_p2r_map", $sformatf("after p2r_map update, %p", cfg.p2r_map), UVM_HIGH)
   endfunction // update_p2r_map
 
   // Takes flash_op and region profile and check if the flash_op is legal or not.

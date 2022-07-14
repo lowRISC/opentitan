@@ -12,7 +12,7 @@ class flash_ctrl_ro_vseq extends flash_ctrl_otf_base_vseq;
     flash_op_t ctrl;
     int num, bank;
 
-    ctrl.partition  = FlashPartData;
+    flash_program_data_c.constraint_mode(0);
     cfg.clk_rst_vif.wait_clks(5);
 
     fork
@@ -27,8 +27,14 @@ class flash_ctrl_ro_vseq extends flash_ctrl_otf_base_vseq;
       end
       begin
         repeat(100) begin
-          num = $urandom_range(CTRL_TRANS_MIN, CTRL_TRANS_MAX);
-          bank = $urandom_range(0, 1);
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rand_op)
+          ctrl = rand_op;
+          if (ctrl.partition == FlashPartData) begin
+            num = $urandom_range(1, 32);
+          end else begin
+            num = $urandom_range(1, InfoTypeSize[rand_op.partition >> 1]);
+          end
+          bank = rand_op.addr[OTFBankId];
           read_flash(ctrl, bank, num);
         end
       end

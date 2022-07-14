@@ -10,12 +10,18 @@ class flash_ctrl_wo_vseq extends flash_ctrl_otf_base_vseq;
   virtual task body();
     flash_op_t ctrl;
     int num, bank;
-    flash_ctrl_default_region_cfg(,,,MuBi4True,MuBi4True);
 
-    ctrl.partition  = FlashPartData;
+    flash_program_data_c.constraint_mode(0);
+
     repeat(100) begin
-      num = $urandom_range(1, 32);
-      bank = $urandom_range(0, 1);
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rand_op)
+      ctrl = rand_op;
+      if (ctrl.partition == FlashPartData) begin
+        num = $urandom_range(1, 32);
+      end else begin
+        num = $urandom_range(1, InfoTypeSize[rand_op.partition >> 1]);
+      end
+      bank = rand_op.addr[OTFBankId];
       prog_flash(ctrl, bank, num);
     end
   endtask

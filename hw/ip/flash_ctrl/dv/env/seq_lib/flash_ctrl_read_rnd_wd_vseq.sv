@@ -12,13 +12,14 @@ class flash_ctrl_read_rnd_wd_vseq extends flash_ctrl_otf_base_vseq;
   virtual task body();
     flash_op_t ctrl;
     int num, bank;
-     int mywd = 1;
+    int mywd;
 
-    ctrl.partition  = FlashPartData;
-    ctrl.otf_addr = is_addr_odd * 4;
-    bank = $urandom_range(0,1);
     num = 1;
+    flash_program_data_c.constraint_mode(0);
     repeat(100) begin
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rand_op)
+      ctrl = rand_op;
+      bank = rand_op.addr[OTFBankId];
       mywd = fractions;
       read_flash(ctrl, bank, num, mywd);
     end

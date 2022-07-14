@@ -8,19 +8,24 @@ class flash_ctrl_rw_vseq extends flash_ctrl_otf_base_vseq;
 
   virtual task body();
     flash_op_t ctrl;
-    int bank;
+    int num, bank;
 
-    ctrl.partition = FlashPartData;
     cfg.clk_rst_vif.wait_clks(5);
 
     fork
       begin
         repeat(250) begin
           `DV_CHECK_RANDOMIZE_FATAL(this)
-          bank = $urandom_range(0, 1);
+          ctrl = rand_op;
+          bank = rand_op.addr[OTFBankId];
+          if (ctrl.partition == FlashPartData) begin
+            num = $urandom_range(1, 32);
+          end else begin
+            num = $urandom_range(1, InfoTypeSize[rand_op.partition >> 1]);
+          end
           randcase
-            1:prog_flash(ctrl, bank, ctrl_num);
-            1:read_flash(ctrl, bank, ctrl_num);
+            1:prog_flash(ctrl, bank, num);
+            1:read_flash(ctrl, bank, num);
           endcase
         end
       end

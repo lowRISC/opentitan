@@ -193,6 +193,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     end
     send.mem_addr = exp.start_addr >> 3;
     send.region = exp.region;
+
     if (cfg.ecc_mode > FlashSerrTestMode) send.skip_err_chk = 1;
     send.descramble(exp.addr_key, exp.data_key);
     send.print("exp_read: raw_data");
@@ -232,7 +233,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     // So each pop becomes 8 times of fqs.
     int col_sz = exp.fq.size / 8;
     `uvm_info("process_write", $sformatf("process_write: addr:0x%x bank:%0d colsz:%0d ffsz:%0d",
-                       exp.start_addr, bank, col_sz, eg_rtl_ctrl_fifo[bank].used()), UVM_MEDIUM)
+                       exp.cmd.otf_addr, bank, col_sz, eg_rtl_ctrl_fifo[bank].used()), UVM_MEDIUM)
     eg_rtl_ctrl_fifo[bank].get(item);
     `uvm_create_obj(flash_otf_item, obs)
     obs = item;
