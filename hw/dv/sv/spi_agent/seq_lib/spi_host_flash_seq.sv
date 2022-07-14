@@ -38,7 +38,9 @@ class spi_host_flash_seq extends spi_base_seq;
                                    } else { // read
                                      read_size == local::read_size;
                                      payload_q.size() == 0;
-                                   })
+                                   }
+                                  // TODO, consolidate data and payload later
+                                  data.size == 1;)
     finish_item(req);
     get_response(rsp);
   endtask
