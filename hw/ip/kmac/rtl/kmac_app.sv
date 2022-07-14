@@ -43,8 +43,8 @@ module kmac_app
   output app_rsp_t [NumAppIntf-1:0] app_o,
 
   // to KMAC Core: Secret key
-  output [MaxKeyLen-1:0] key_data_o [Share],
-  output key_len_e       key_len_o,
+  output logic [MaxKeyLen-1:0] key_data_o [Share],
+  output key_len_e             key_len_o,
 
   // to MSG_FIFO
   output logic                kmac_valid_o,
@@ -703,20 +703,33 @@ module kmac_app
     end
   end
 
-  // Sideloaded key is used when KeyMgr KDF is active or !!CFG.sideload is set
+  // Sideloaded key manage: Keep use sideloaded key for KMAC AppIntf until the
+  // hashing operation is finished.
   always_comb begin
-    if (keymgr_key_en_i || (mux_sel_buf_key == SelApp)) begin
-      // KeyLen is fixed to the $bits(sideloaded_key)
-      key_len_o = SideloadedKey;
-    end else begin
-      key_len_o = reg_key_len_i;
+    key_len_o  = reg_key_len_i;
+    for (int i = 0 ; i < Share; i++) begin
+      key_data_o[i] = reg_key_data_i[i];
     end
-  end
 
-  for (genvar i = 0 ; i < Share ; i++) begin : g_key_assign
-    assign key_data_o[i] = (keymgr_key_en_i || (mux_sel_buf_key == SelApp))
-                         ? keymgr_key[i]
-                         : reg_key_data_i[i] ;
+    unique case (st)
+      StAppCfg, StAppMsg, StAppOutLen, StAppProcess, StAppWait: begin
+        key_len_o = SideloadedKey;
+        for (int i = 0 ; i < Share; i++) begin
+          key_data_o[i] = keymgr_key[i];
+        end
+      end
+
+      StSw: begin
+        if (keymgr_key_en_i) begin
+          key_len_o = SideloadedKey;
+          for (int i = 0 ; i < Share; i++) begin
+            key_data_o[i] = keymgr_key[i];
+          end
+        end
+      end
+
+      default: ;
+    endcase
   end
 
   // Prefix Demux
@@ -793,6 +806,11 @@ module kmac_app
   // KeyMgr sideload key and the digest should be in the Key Length value
   `ASSERT_INIT(SideloadKeySameToDigest_A, KeyMgrKeyW <= AppDigestW)
   `ASSERT_INIT(AppIntfInRange_A, AppDigestW inside {128, 192, 256, 384, 512})
+
+  // Issue(#13655): Having a coverage that sideload keylen and CSR keylen are
+  // different.
+  `COVER(AppIntfUseDifferentSizeKey_C,
+    (st == StAppCfg && kmac_en_o) |-> reg_key_len_i != SideloadedKey)
 
 
 endmodule
