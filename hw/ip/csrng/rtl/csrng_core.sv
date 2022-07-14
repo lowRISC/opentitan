@@ -324,7 +324,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [31:0]             genbits_stage_bus_sw;
   logic                    genbits_stage_fips_sw;
 
-  logic [14:0]             hw_exception_sts;
+  logic [15:0]             hw_exception_sts;
   logic [LcHwDebugCopies-1:0] lc_hw_debug_on_fo;
   logic                    state_db_is_dump_en;
   logic                    state_db_reg_rd_sel;
@@ -953,12 +953,12 @@ module csrng_core import csrng_pkg::*; #(
   end : gen_app_if
 
   // set ack status for configured instances
-  for (genvar i = 0; i < NHwApps; i = i+1) begin : gen_app_if_sts
-    assign hw_exception_sts[i] = cmd_stage_ack[i] && !cmd_stage_ack_sts[i];
+  for (genvar i = 0; i < NApps; i = i+1) begin : gen_app_if_sts
+    assign hw_exception_sts[i] = cmd_stage_ack[i] && cmd_stage_ack_sts[i];
   end : gen_app_if_sts
 
   // set ack status to zero for un-configured instances
-  for (genvar i = NHwApps; i < 15; i = i+1) begin : gen_app_if_zero_sts
+  for (genvar i = NApps; i < 16; i = i+1) begin : gen_app_if_zero_sts
     assign hw_exception_sts[i] = 1'b0;
   end : gen_app_if_zero_sts
 
