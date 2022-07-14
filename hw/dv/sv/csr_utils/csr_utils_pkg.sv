@@ -39,6 +39,10 @@ package csr_utils_pkg;
     outstanding_accesses = 0;
   endfunction
 
+  function automatic bit has_outstanding_access();
+    return outstanding_accesses > 0;
+  endfunction
+
   // timeout may happen if we issue too many non-blocking accesses at once
   // limit the nonblocking items to be up to max outstanding
   task automatic wait_if_max_outstanding_accesses_reached(int max = max_outstanding_accesses);
