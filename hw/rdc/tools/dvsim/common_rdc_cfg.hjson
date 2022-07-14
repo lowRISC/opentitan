@@ -36,7 +36,7 @@
   // Determines which message severities to print into report summaries.
   report_severities: ["review", "warning", "error"]
   // Determines which message severities lead to a pass/fail.
-  fail_severities: ["review", "warning", "error"]
+  fail_severities: ["warning", "error"]
   // Define message bucket categories and severities.
   message_buckets: [
     {category: "flow",  severity: "info",     label: ""},
