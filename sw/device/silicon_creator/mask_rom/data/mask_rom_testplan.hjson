@@ -55,7 +55,7 @@
             '''
       tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
-      tests: []
+      tests: ["mask_rom_e2e_bootup_success"]
     }
     // TODO(lowrisc/opentitan#10929): test both A/B partitions
     // TODO(lowrisc/opentitan#10930): consider testing with both SW and OTBN sigverify

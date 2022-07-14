@@ -1106,7 +1106,7 @@
             and fails if the pwrmgr ISR is called.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_pwrmgr_sleep_disabled"]
     }
     {
       name: chip_sw_pwrmgr_escalation_reset
