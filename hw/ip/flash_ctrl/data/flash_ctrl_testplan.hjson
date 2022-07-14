@@ -283,11 +283,44 @@
             bit should be fixed. Corrupt randomly either the data or the ECC bits. Randomly corrupt
             2 bits in the same word and ensure that the read results in error. Ensure that pages
             with ECC not enabled reads back corrupted data without any errors. Verify both types,
-            pre-scramble ECC(integrity ESS, 4-bits) and post-scramble ECC(reliability ECC, 8-bits).
+            pre-scramble ECC(integrity ECC, 4-bits) and post-scramble ECC(reliability ECC, 8-bits).
 	    Test status and control ECC bits.
             '''
       milestone: V2
       tests: []
+    }
+    {
+      name: single_bit_err
+      desc: '''
+            Run read only or read write test with randomly injected single bit error.
+            All single bit error should be corrected and all read data should be
+            matched with expected written value.
+            '''
+      milestone: V2
+      tests: ["flash_ctrl_read_word_sweep_serr", "flash_ctrl_read_rand_word_serr",
+              "flash_ctrl_ro_serr", "flash_ctrl_rw_serr", "flash_ctrl_rw_rand_word_serr"]
+    }
+    {
+      name: singlebit_err_counter
+      desc: '''
+            Run read / write test and inject single bit error randomly for read transactions. -
+            both direct and controller read - Adjust error injection ratio s.t. counter is not
+            saturated.
+            Compare counter values for both bank with expected counter values.
+            '''
+      milestone: V2
+      tests: ["flash_ctrl_serr_counter"]
+    }
+    {
+      name: singlebit_err_address
+      desc: '''
+            Run read / write test and inject a single bit error randomly either direct
+            or controller read. Once error is injected a certain transaction, wait for the
+            transaction to be completed and compare ecc_single_err_addr register with the
+            expected value. Do this for multiple rounds for both banks.
+            '''
+      milestone: V2
+      tests: ["flash_ctrl_serr_address"]
     }
     {
       name: scramble

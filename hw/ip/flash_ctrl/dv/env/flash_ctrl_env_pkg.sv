@@ -342,44 +342,31 @@ package flash_ctrl_env_pkg;
     return masked_data;
   endfunction
 
+  // 64bit in out
   function automatic bit[FlashDataWidth-1:0] create_raw_data(
-      input bit [flash_phy_pkg::FullDataWidth-1:0] data,
+      input bit [FlashDataWidth-1:0]               data,
       input bit [FlashAddrWidth-1:0]               bank_addr,
       input bit [FlashKeySize-1:0]                 flash_addr_key,
       input bit [FlashKeySize-1:0]                 flash_data_key,
-      output bit [1:0]                             ecc_76_err,
-      input bit                                    ecc_en,
       input bit                                    dis = 1);
     bit [FlashDataWidth-1:0]                         mask;
     bit [FlashDataWidth-1:0]                         masked_data;
     bit [FlashDataWidth-1:0]                         plain_text;
-    prim_secded_pkg::secded_hamming_76_68_t          dec68;
     bit [FlashNumRoundsHalf-1:0][FlashDataWidth-1:0] descrambled_data;
 
     mask = flash_galois_multiply(flash_addr_key, bank_addr);
-
-    if (ecc_en) begin
-      dec68 = prim_secded_pkg::prim_secded_hamming_76_68_dec(data);
-    end else begin
-      dec68.data = data;
-      dec68.err = 'h0;
-    end
-
-    masked_data = dec68.data[FlashDataWidth-1:0] ^ mask;
-
+    masked_data = data ^ mask;
     plain_text = crypto_dpi_prince_pkg::c_dpi_prince_decrypt(masked_data,
                                                              flash_data_key[127:64],
                                                              flash_data_key[63:0],
                                                              FlashNumRoundsHalf,
                                                              0);
-    ecc_76_err = dec68.err;
-
     if (dis) begin
       `uvm_info("DCR_DBG", $sformatf("datakey:%x", flash_data_key), UVM_HIGH)
       `uvm_info("DCR_DBG", $sformatf("masked_data:%x cout:%x", masked_data, plain_text), UVM_HIGH)
       `uvm_info("DCR_DBG", $sformatf(
-                "addr:%x  mask:%x  din:%x  dout:%x  ecc_err:%2b synd:%x",
-                bank_addr, mask, data, (plain_text^mask), ecc_76_err, dec68.syndrome),
+                "addr:%x  mask:%x  din:%x  dout:%x ",
+                bank_addr, mask, data, (plain_text^mask)),
                 UVM_MEDIUM)
     end
 

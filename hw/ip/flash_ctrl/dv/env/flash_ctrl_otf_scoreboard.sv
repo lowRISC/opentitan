@@ -13,6 +13,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   uvm_tlm_analysis_fifo #(flash_otf_item) eg_rtl_ctrl_fifo[NumBanks];
   uvm_tlm_analysis_fifo #(flash_otf_item) eg_rtl_host_fifo[NumBanks];
   uvm_tlm_analysis_fifo #(flash_phy_prim_item) eg_rtl_fifo[NumBanks];
+  uvm_tlm_analysis_fifo #(flash_phy_prim_item) rd_cmd_fifo[NumBanks];
 
   flash_ctrl_env_cfg cfg;
 
@@ -26,6 +27,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
       eg_rtl_ctrl_fifo[i] = new($sformatf("eg_rtl_ctrl_fifo[%0d]", i), this);
       eg_rtl_host_fifo[i] = new($sformatf("eg_rtl_host_fifo[%0d]", i), this);
       eg_rtl_fifo[i] = new($sformatf("eg_rtl_fifo[%0d]", i), this);
+      rd_cmd_fifo[i] = new($sformatf("rd_cmd_fifo[%0d]", i), this);
     end
   endfunction
 
@@ -38,6 +40,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     flash_otf_item       exp_ctrl_item[NumBanks];
     flash_otf_item       exp_host_item[NumBanks];
     flash_phy_prim_item  phy_item[NumBanks];
+    flash_phy_prim_item  rcmd[NumBanks];
 
     fork
       forever begin
@@ -64,6 +67,14 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
         eg_rtl_fifo[1].get(phy_item[1]);
         process_phy_item(phy_item[1], 1);
       end
+      forever begin
+        rd_cmd_fifo[0].get(rcmd[0]);
+        process_rcmd(rcmd[0], 0);
+      end
+      forever begin
+        rd_cmd_fifo[1].get(rcmd[1]);
+        process_rcmd(rcmd[1], 1);
+      end
     join_none
   endtask // run_phase
 
@@ -81,7 +92,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
     // bankdoor read from memory model
     `uvm_create_obj(flash_otf_item, obs)
-    // TODO review when info region is added.
+    // Host can only access data partitions.
     obs.cmd.partition = FlashPartData;
     obs.cmd.op = FlashOpRead;
     obs.cmd.addr = exp.start_addr; // tl_addr
@@ -234,6 +245,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   // classify to host or ctrl transaction
   task process_phy_item(flash_phy_prim_item item, int bank);
     flash_otf_item       obs;
+
     `uvm_create_obj(flash_otf_item, obs);
     if (item.req.prog_req) begin
       obs.get_from_phy(item, "w");
@@ -242,4 +254,16 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
       obs.get_from_phy(item, "r");
     end
   endtask // process_phy_item
+
+  task process_rcmd(flash_phy_prim_item item, int bank);
+    addr_t serr_addr;
+    if (cfg.ecc_mode == 2) begin
+      serr_addr = item.req.addr << 3;
+      serr_addr[OTFBankId] = bank;
+      if (cfg.serr_addr_tbl.exists(serr_addr)) begin
+        cfg.inc_serr_cnt(bank);
+        cfg.serr_addr[bank] = serr_addr;
+      end
+    end
+  endtask
 endclass

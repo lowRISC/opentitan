@@ -59,9 +59,23 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // 0 : no ecc
   // 1 : ecc enable
   // 2 : 1 bit error test mode
+  //     Based on serr_pct, single bit error is injected in 'flash_mem_otf_read'
   // 3 : 2 bit error test mode
   int ecc_mode = 0;
 
+  // single bit error rate scale of 0~10. 10: 100%.
+  int serr_pct = 0;
+  // Store single bit errored line to hash.
+  // If address exists, skip extra error injection to avoid
+  // creating multi bit errors
+  bit serr_addr_tbl[addr_t];
+  int serr_cnt[NumBanks] = '{default : 0};
+  // latest single bit error address
+  bit [OTFBankId:0] serr_addr[NumBanks];
+
+  // Create serr only once. Used in directed test case.
+  bit serr_once = 0;
+  bit serr_created = 0;
   // Transaction counters for otf
   int otf_ctrl_wr_sent = 0;
   int otf_ctrl_wr_rcvd = 0;
@@ -275,7 +289,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     int bank;
     bit [75:0] rdata;
     int        size, is_odd, tail;
-    addr_t aligned_addr = flash_op.addr;
+    addr_t aligned_addr;
+
+    aligned_addr = flash_op.addr;
     // QW (8byte) align
     aligned_addr[2:0] = 'h0;
     bank = flash_op.addr[OTFBankId];
@@ -645,4 +661,84 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       wr_bkd_addr = wr_bkd_addr + 4;
     end
   endfunction : set_scb_mem
+
+  function int get_err_idx();
+    int rnd_odds;
+    int idx = -1;
+    if (serr_once == 1 && serr_created == 1) return -1;
+    if (ecc_mode == 2) begin
+      rnd_odds = $urandom_range(0,9);
+      if (rnd_odds < serr_pct) begin
+        idx = $urandom_range(0, 75);
+        serr_created = 1;
+      end
+    end
+
+    return idx;
+  endfunction // get_err_idx
+
+  function void inc_serr_cnt(int bank, bit dis = 0);
+    if (serr_cnt[bank] < 255) serr_cnt[bank]++;
+    if (dis) begin
+      `uvm_info("inc_serr_cnt", $sformatf("serr_cnt[%0d]=%0d", bank, serr_cnt[bank]), UVM_MEDIUM)
+    end
+  endfunction
+
+  function void add_serr(flash_op_t flash_op);
+    flash_dv_part_e partition;
+    int bank;
+    bit [75:0] rdata;
+    int        size, is_odd, tail;
+    int        err_idx;
+    addr_t aligned_addr, addr_cp;
+
+    err_idx = -1;
+    aligned_addr = flash_op.addr;
+    // QW (8byte) align
+    aligned_addr[2:0] = 'h0;
+    bank = flash_op.addr[OTFBankId];
+    partition = flash_op.partition;
+    // If address is not 8byte aligned, full 76bit has to be read.
+    // This exception is identified using 4Byte address bit, (addr[2])
+    // and size of 4byte word.
+    is_odd = flash_op.addr[2];
+    size = (flash_op.num_words + is_odd) / 2;
+    tail = (flash_op.num_words + is_odd) % 2;
+
+    addr_cp = aligned_addr;
+    // Use per bank address.
+    aligned_addr[31:OTFBankId] = 'h0;
+    for (int i = 0; i < size; i++) begin
+      err_idx = get_err_idx();
+      if (err_idx >= 0) begin
+        if (!serr_addr_tbl.exists(addr_cp)) begin
+          serr_addr_tbl[addr_cp] = 1;
+          rdata = mem_bkdr_util_h[partition][bank].read(aligned_addr);
+          `uvm_info("add_serr",
+                    $sformatf("single bit error is inserted at line:%0d the databit[%0d]",
+                    i, err_idx), UVM_MEDIUM)
+          rdata[err_idx] = ~rdata[err_idx];
+
+          mem_bkdr_util_h[partition][bank].write(aligned_addr, rdata);
+        end
+      end
+      aligned_addr += 8;
+      addr_cp[OTFBankId-1:0] = aligned_addr[OTFBankId-1:0];
+    end
+    if (tail) begin
+      err_idx = get_err_idx();
+      if (err_idx >= 0) begin
+        if (!serr_addr_tbl.exists(addr_cp)) begin
+          serr_addr_tbl[addr_cp] = 1;
+          rdata = mem_bkdr_util_h[partition][bank].read(aligned_addr);
+          `uvm_info("add_serr",
+                    $sformatf("single bit error is inserted at line:%0d the databit[%0d]",
+                    size, err_idx), UVM_MEDIUM)
+          rdata[err_idx] = ~rdata[err_idx];
+          mem_bkdr_util_h[partition][bank].write(aligned_addr, rdata);
+        end
+      end
+    end
+
+  endfunction // add_serr
 endclass
