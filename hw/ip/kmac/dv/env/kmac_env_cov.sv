@@ -289,11 +289,9 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
 
     sideload_cross: cross sideload, kmac_mode, in_app_keymgr {
       bins sw_kmac_valid_sideload   = binsof(sideload) intersect {1} && binsof(kmac_mode);
-      bins sw_kmac_invalid_sideload = binsof(sideload) intersect {1} && binsof(kmac_mode);
+      bins sw_kmac_invalid_sideload = binsof(sideload) intersect {0} && binsof(kmac_mode);
       bins app_valid_sideload       = binsof(sideload) intersect {1} && binsof(in_app_keymgr);
-      bins app_invalid_sideload     = binsof(sideload) intersect {1} && binsof(in_app_keymgr);
-
-      ignore_bins invalid = !binsof(sideload) intersect {1};
+      bins app_invalid_sideload     = binsof(sideload) intersect {0} && binsof(in_app_keymgr);
     }
   endgroup
 
