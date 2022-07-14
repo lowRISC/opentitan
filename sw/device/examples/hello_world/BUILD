@@ -18,6 +18,7 @@ opentitan_flash_binary(
     deps = [
         ":hello_world_lib",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/testing/test_framework:test_framework_manifest_def",
     ],
 )
 
