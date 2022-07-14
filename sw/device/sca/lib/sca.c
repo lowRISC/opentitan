@@ -190,7 +190,7 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
     dif_entropy_src_t entropy;
     OT_DISCARD(dif_entropy_src_init(
         mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy));
-    OT_DISCARD(dif_entropy_src_disable(&entropy));
+    OT_DISCARD(dif_entropy_src_set_enabled(&entropy, kDifToggleDisabled));
   }
 #endif
 

@@ -33,7 +33,7 @@ bool test_main() {
   CHECK_DIF_OK(dif_entropy_src_init(
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
 
-  CHECK_DIF_OK(dif_entropy_src_disable(&entropy_src));
+  CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
 
   const dif_entropy_src_fw_override_config_t fw_override_config = {
       .entropy_insert_enable = true,

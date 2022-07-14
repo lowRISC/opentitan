@@ -182,6 +182,24 @@ dif_result_t dif_entropy_src_health_test_configure(
   return kDifOk;
 }
 
+dif_result_t dif_entropy_src_set_enabled(const dif_entropy_src_t *entropy_src,
+                                         dif_toggle_t enabled) {
+  if (entropy_src == NULL || !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+
+  if (!mmio_region_read32(entropy_src->base_addr,
+                          ENTROPY_SRC_ME_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
+                      dif_toggle_to_multi_bit_bool4(enabled));
+
+  return kDifOk;
+}
+
 dif_result_t dif_entropy_src_get_health_test_stats(
     const dif_entropy_src_t *entropy_src,
     dif_entropy_src_health_test_stats_t *stats) {
@@ -443,19 +461,6 @@ dif_result_t dif_entropy_src_conditioner_end(
   mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET,
                       kMultiBitBool4False);
-  return kDifOk;
-}
-
-dif_result_t dif_entropy_src_disable(const dif_entropy_src_t *entropy_src) {
-  if (entropy_src == NULL) {
-    return kDifBadArg;
-  }
-
-  // TODO: should first check if entropy is locked and return error if it is.
-  mmio_region_write32(entropy_src->base_addr,
-                      ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
-                      kMultiBitBool4False);
-
   return kDifOk;
 }
 

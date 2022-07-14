@@ -277,9 +277,10 @@ typedef struct dif_entropy_src_alert_fail_counts {
  * @param enabled The enablement state of the entropy source.
  * @return The result of the operation.
  */
-OT_WARN_UNUSED_RESULT dif_result_t dif_entropy_src_configure(
-    const dif_entropy_src_t *entropy_src, dif_entropy_src_config_t config,
-    dif_toggle_t enabled);
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
+                                       dif_entropy_src_config_t config,
+                                       dif_toggle_t enabled);
 
 /**
  * Configures entropy source firmware override feature with runtime information.
@@ -311,6 +312,17 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_health_test_configure(
     const dif_entropy_src_t *entropy_src,
     dif_entropy_src_health_test_config_t config);
+
+/**
+ * Enables/Disables the entropy source.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param enabled The enablement state to configure the entropy source in.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_set_enabled(const dif_entropy_src_t *entropy_src,
+                                         dif_toggle_t enabled);
 
 /**
  * Queries the entropy source IP for its revision information.
@@ -454,15 +466,6 @@ dif_result_t dif_entropy_src_conditioner_start(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_conditioner_end(
     const dif_entropy_src_t *entropy_src);
-
-/**
- * Disables the entropy module
- *
- * @param entropy_src An entropy source handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_disable(const dif_entropy_src_t *entropy_src);
 
 /**
  * Get main entropy fsm idle status

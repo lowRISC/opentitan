@@ -48,7 +48,7 @@ static void entropy_with_fw_override_enable(dif_entropy_src_t *entropy_src) {
 }
 
 /**
- * Runds known answer test for the entropy_src SHA-3 conditioner.
+ * Runs known answer test for the entropy_src SHA-3 conditioner.
  *
  * This test uses the following SHA3 CAVP test vector:
  *
@@ -59,7 +59,7 @@ static void entropy_with_fw_override_enable(dif_entropy_src_t *entropy_src) {
  * https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/secure-hashing
  */
 void test_sha384_kat(dif_entropy_src_t *entropy) {
-  CHECK_DIF_OK(dif_entropy_src_disable(entropy));
+  CHECK_DIF_OK(dif_entropy_src_set_enabled(entropy, kDifToggleDisabled));
   entropy_with_fw_override_enable(entropy);
   CHECK_DIF_OK(dif_entropy_src_conditioner_start(entropy));
 

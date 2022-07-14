@@ -225,6 +225,35 @@ TEST_F(HealthTestConfigTest, SuccessTwoThresholds) {
   EXPECT_DIF_OK(dif_entropy_src_health_test_configure(&entropy_src_, config_));
 }
 
+class SetEnabledTest : public EntropySrcTest {};
+
+TEST_F(SetEnabledTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_entropy_src_set_enabled(nullptr, kDifToggleEnabled));
+}
+
+TEST_F(SetEnabledTest, BadToggle) {
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_set_enabled(nullptr, static_cast<dif_toggle_t>(1)));
+}
+
+TEST_F(SetEnabledTest, Locked) {
+  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(dif_entropy_src_set_enabled(&entropy_src_, kDifToggleEnabled),
+            kDifLocked);
+}
+
+TEST_F(SetEnabledTest, Success) {
+  // Enable.
+  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_DIF_OK(dif_entropy_src_set_enabled(&entropy_src_, kDifToggleEnabled));
+
+  // Disable.
+  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_DIF_OK(dif_entropy_src_set_enabled(&entropy_src_, kDifToggleDisabled));
+}
+
 class HealthTestStatsGetTest : public EntropySrcTest {};
 
 TEST_F(HealthTestStatsGetTest, NullArgs) {

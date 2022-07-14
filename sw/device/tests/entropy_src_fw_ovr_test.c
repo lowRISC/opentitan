@@ -58,6 +58,12 @@ static void entropy_data_flush(dif_entropy_src_t *entropy_src) {
  * @param entropy An entropy source instance.
  */
 static void entropy_with_fw_override_enable(dif_entropy_src_t *entropy_src) {
+  const dif_entropy_src_fw_override_config_t fw_override_config = {
+      .entropy_insert_enable = true,
+      .buffer_threshold = kEntropyFifoBufferSize,
+  };
+  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
+      entropy_src, fw_override_config, kDifToggleEnabled));
   const dif_entropy_src_config_t config = {
       .fips_enable = true,
       .route_to_firmware = true,
@@ -65,12 +71,6 @@ static void entropy_with_fw_override_enable(dif_entropy_src_t *entropy_src) {
   };
   CHECK_DIF_OK(
       dif_entropy_src_configure(entropy_src, config, kDifToggleEnabled));
-  const dif_entropy_src_fw_override_config_t fw_override_config = {
-      .entropy_insert_enable = true,
-      .buffer_threshold = kEntropyFifoBufferSize,
-  };
-  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
-      entropy_src, fw_override_config, kDifToggleEnabled));
 }
 
 /**
@@ -84,7 +84,7 @@ static void entropy_with_fw_override_enable(dif_entropy_src_t *entropy_src) {
  * @param entropy An Entropy handle.
  */
 void test_firmware_override(dif_entropy_src_t *entropy) {
-  CHECK_DIF_OK(dif_entropy_src_disable(entropy));
+  CHECK_DIF_OK(dif_entropy_src_set_enabled(entropy, kDifToggleDisabled));
   entropy_with_fw_override_enable(entropy);
   entropy_data_flush(entropy);
 
