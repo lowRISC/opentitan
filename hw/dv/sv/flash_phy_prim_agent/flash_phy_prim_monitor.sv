@@ -14,6 +14,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   // flash_phy_prim_agent_cov: cov
 
   uvm_analysis_port #(flash_phy_prim_item) eg_rtl_port[NumBanks];
+  uvm_analysis_port #(flash_phy_prim_item) rd_cmd_port[NumBanks];
   flash_phy_prim_item w_item[NumBanks];
   flash_phy_prim_item r_item[NumBanks];
   logic [PhyDataW-1:0] write_buffer[NumBanks][$];
@@ -24,6 +25,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
     super.build_phase(phase);
     foreach(eg_rtl_port[i]) begin
       eg_rtl_port[i] = new($sformatf("eg_rtl_port[%0d]", i), this);
+      rd_cmd_port[i] = new($sformatf("rd_cmd_port[%0d]", i), this);
     end
   endfunction
 
@@ -82,6 +84,8 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
                   `uvm_error(`gfn, $sformatf("Both prog and rd req are set"))
                 end else if (~cfg.vif.req[j].rd_req & cfg.vif.req[j].prog_req) begin
                   collect_wr_data(j);
+                end else if (cfg.vif.req[j].rd_req) begin
+                  collect_rd_cmd(j);
                 end
               end
             end
@@ -90,6 +94,14 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
       join_none
     end
   endtask // collect_trans
+
+  task collect_rd_cmd(int bank);
+    flash_phy_prim_item rcmd;
+    rcmd = flash_phy_prim_item::type_id::create("rcmd");
+    rcmd.req = cfg.vif.req[bank];
+
+    rd_cmd_port[bank].write(rcmd);
+  endtask // collect_rd_cmd
 
   task collect_wr_data(int bank);
     if (write_buffer[bank].size() == 0) begin
