@@ -15,13 +15,18 @@
   scan: "true",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
+    {reset: "rst_root_ni"},
     {clock: "clk_main_i", reset: "rst_main_ni"},
     {clock: "clk_io_i", reset: "rst_io_ni"},
     {clock: "clk_usb_i", reset: "rst_usb_ni"},
     {clock: "clk_aon_i", reset: "rst_aon_ni"},
     {clock: "clk_io_div2_i", reset: "rst_io_div2_ni", internal: true},
     {clock: "clk_io_div4_i", reset: "rst_io_div4_ni", internal: true},
-    {reset: "rst_por_io_ni"},
+    {reset: "rst_root_main_ni"},
+    {reset: "rst_root_io_ni"},
+    {reset: "rst_root_io_div2_ni"},
+    {reset: "rst_root_io_div4_ni"},
+    {reset: "rst_root_usb_ni"},
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
