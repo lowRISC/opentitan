@@ -367,6 +367,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     sfifo_esrng_err_sum;
   logic                     sfifo_observe_err_sum;
   logic                     sfifo_esfinal_err_sum;
+  // For fifo errors that are generated through the
+  // ERR_CODE_TEST register, but are not associated
+  // with any errors:
+  logic                     sfifo_test_err_sum;
   logic                     es_ack_sm_err_sum;
   logic                     es_ack_sm_err;
   logic                     es_main_sm_err_sum;
@@ -713,6 +717,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                              sfifo_esrng_err_sum ||
                                              sfifo_observe_err_sum ||
                                              sfifo_esfinal_err_sum ||
+                                             sfifo_test_err_sum ||
                                              es_ack_sm_err_sum ||
                                              es_main_sm_err_sum)) ||
                                              es_cntr_err_sum || // prim_count err is always active
@@ -725,6 +730,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
          err_code_test_bit[1];
   assign sfifo_esfinal_err_sum = (|sfifo_esfinal_err) ||
          err_code_test_bit[2];
+
+  // The following test bits help normally diagnose the _type_ of
+  // error when they are triggred by the fifo. However when
+  // they are triggered by softwre they are not linked to a
+  // particular sfifo and do not trigger an alert, unless
+  // we capture them here.
+  assign sfifo_test_err_sum = err_code_test_bit[28] ||
+                              err_code_test_bit[29] ||
+                              err_code_test_bit[30];
+
   assign es_ack_sm_err_sum = es_ack_sm_err ||
          err_code_test_bit[20];
   assign es_main_sm_err_sum = es_main_sm_err ||
@@ -2514,7 +2529,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // unused signals
   //--------------------------------------------
 
-  assign unused_err_code_test_bit = (|{err_code_test_bit[27:22],err_code_test_bit[19:3]});
+  assign unused_err_code_test_bit = (|{err_code_test_bit[27:23],err_code_test_bit[19:3]});
   assign unused_sha3_state = (|sha3_state[0][sha3_pkg::StateW-1:SeedLen]);
   assign unused_entropy_data = (|reg2hw.entropy_data.q);
   assign unused_fw_ov_rd_data = (|reg2hw.fw_ov_rd_data.q);
