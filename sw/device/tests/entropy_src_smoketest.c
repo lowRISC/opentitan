@@ -32,7 +32,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
 
   // Disable entropy for test purpose, as it has been turned on by ROM
-  CHECK_DIF_OK(dif_entropy_src_disable(&entropy_src));
+  CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
 
   const dif_entropy_src_config_t config = {
       .fips_enable = true,
