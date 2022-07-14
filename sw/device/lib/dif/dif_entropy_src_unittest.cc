@@ -282,6 +282,51 @@ TEST_F(SetEnabledTest, Success) {
   EXPECT_DIF_OK(dif_entropy_src_set_enabled(&entropy_src_, kDifToggleDisabled));
 }
 
+class LockTest : public EntropySrcTest {};
+
+TEST_F(LockTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_entropy_src_lock(nullptr));
+}
+
+TEST_F(LockTest, Success) {
+  EXPECT_WRITE32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 0);
+  EXPECT_WRITE32(ENTROPY_SRC_SW_REGUPD_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_entropy_src_lock(&entropy_src_));
+}
+
+class IsLockedTest : public EntropySrcTest {};
+
+TEST_F(IsLockedTest, NullArgs) {
+  bool is_locked;
+  EXPECT_DIF_BADARG(dif_entropy_src_is_locked(nullptr, &is_locked));
+  EXPECT_DIF_BADARG(dif_entropy_src_is_locked(&entropy_src_, nullptr));
+  EXPECT_DIF_BADARG(dif_entropy_src_is_locked(nullptr, nullptr));
+}
+
+TEST_F(IsLockedTest, BadState) {
+  bool is_locked;
+  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 1);
+  EXPECT_READ32(ENTROPY_SRC_SW_REGUPD_REG_OFFSET, 0);
+  EXPECT_EQ(dif_entropy_src_is_locked(&entropy_src_, &is_locked), kDifError);
+
+  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 0);
+  EXPECT_READ32(ENTROPY_SRC_SW_REGUPD_REG_OFFSET, 1);
+  EXPECT_EQ(dif_entropy_src_is_locked(&entropy_src_, &is_locked), kDifError);
+}
+
+TEST_F(IsLockedTest, Success) {
+  bool is_locked;
+  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 0);
+  EXPECT_READ32(ENTROPY_SRC_SW_REGUPD_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_entropy_src_is_locked(&entropy_src_, &is_locked));
+  EXPECT_TRUE(is_locked);
+
+  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 1);
+  EXPECT_READ32(ENTROPY_SRC_SW_REGUPD_REG_OFFSET, 1);
+  EXPECT_DIF_OK(dif_entropy_src_is_locked(&entropy_src_, &is_locked));
+  EXPECT_FALSE(is_locked);
+}
+
 class HealthTestStatsGetTest : public EntropySrcTest {};
 
 TEST_F(HealthTestStatsGetTest, NullArgs) {

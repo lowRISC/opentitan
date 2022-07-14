@@ -215,6 +215,41 @@ dif_result_t dif_entropy_src_set_enabled(const dif_entropy_src_t *entropy_src,
   return kDifOk;
 }
 
+dif_result_t dif_entropy_src_lock(const dif_entropy_src_t *entropy_src) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_ME_REGWEN_REG_OFFSET,
+                      0);
+  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_SW_REGUPD_REG_OFFSET,
+                      0);
+
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_is_locked(const dif_entropy_src_t *entropy_src,
+                                       bool *is_locked) {
+  if (entropy_src == NULL || is_locked == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t module_enable_regwen = mmio_region_read32(
+      entropy_src->base_addr, ENTROPY_SRC_ME_REGWEN_REG_OFFSET);
+  uint32_t sw_regupd = mmio_region_read32(entropy_src->base_addr,
+                                          ENTROPY_SRC_SW_REGUPD_REG_OFFSET);
+  if (module_enable_regwen == sw_regupd) {
+    *is_locked = sw_regupd == 0;
+  } else {
+    // Since we actuate these together, either both should be 0 (locked), or
+    // both should be 1 (unlocked). If only one is locked, then we have
+    // gotten into a bad state.
+    return kDifError;
+  }
+
+  return kDifOk;
+}
+
 dif_result_t dif_entropy_src_get_health_test_stats(
     const dif_entropy_src_t *entropy_src,
     dif_entropy_src_health_test_stats_t *stats) {
