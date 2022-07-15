@@ -47,6 +47,8 @@ opentitan_functest(
     srcs = ["boot_data_functest.c"],
     verilator = verilator_params(
         timeout = "eternal",
+        tags = ["flaky"],
+        # test sometimes times out when run in batches in 3600s
     ),
     deps = [
         ":boot_data",
