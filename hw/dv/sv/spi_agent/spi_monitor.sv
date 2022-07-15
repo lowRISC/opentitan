@@ -189,24 +189,31 @@ class spi_monitor extends dv_base_monitor#(
     fork
       begin: isolation_thread
         spi_item item = spi_item::type_id::create("host_item", this);
-        bit [7:0] opcode;
         bit opcode_received;
         fork
           begin: csb_deassert_thread
             wait(cfg.vif.csb[cfg.csb_sel] == 1'b1);
           end
           begin: sample_thread
+            int addr_bytes;
             opcode_received = 0;
+            item.item_type = SpiFlashTrans;
             // for mode 1 and 3, get the leading edges out of the way
             cfg.wait_sck_edge(LeadingEdge);
 
             // first byte is opcode. opcode or address is always sent on single mode
-            sample_flash_one_byte_data(.num_lanes(1), .is_device_rsp(0), .data(opcode));
+            sample_flash_one_byte_data(.num_lanes(1), .is_device_rsp(0), .data(item.opcode));
             opcode_received = 1;
-            extract_flash_cmd_info_via_opcode(item, opcode);
-            `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", opcode), UVM_MEDIUM)
+            cfg.extract_cmd_info_from_opcode(item.opcode,
+                // output
+                addr_bytes, item.write_command, item.num_lanes, item.dummy_cycles);
+            `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", item.opcode), UVM_MEDIUM)
 
-            sample_flash_address(cfg.cmd_infos[opcode].addr_bytes, item.address_q);
+            sample_flash_address(addr_bytes, item.address_q);
+
+            repeat (item.dummy_cycles) begin
+              cfg.wait_sck_edge(SamplingEdge);
+            end
             req_analysis_port.write(item);
 
             forever begin
@@ -227,36 +234,28 @@ class spi_monitor extends dv_base_monitor#(
     join
   endtask : collect_flash_trans
 
-  virtual function void extract_flash_cmd_info_via_opcode(spi_item item, bit[7:0] opcode);
-    `DV_CHECK_FATAL(cfg.cmd_infos.exists(opcode))
-    item.item_type = SpiFlashTrans;
-    item.opcode = opcode;
-    item.num_lanes = cfg.cmd_infos[opcode].num_lanes;
-    item.write_command = cfg.cmd_infos[opcode].write_command;
-  endfunction : extract_flash_cmd_info_via_opcode
-
   virtual task sample_flash_one_byte_data(input int num_lanes, input bit is_device_rsp,
-                                          output byte data);
+                                          output bit[7:0] data);
+    int which_bit = 8;
     for (int i = 0; i < 8; i += num_lanes) begin
-      int which_bit = cfg.host_bit_dir ? i : 7 - i;
       cfg.wait_sck_edge(SamplingEdge);
-      data[which_bit] = cfg.vif.sio[0];
       case(num_lanes)
-        1: data[which_bit] = is_device_rsp ? cfg.vif.sio[1] : cfg.vif.sio[0];
+        1: data[--which_bit] = is_device_rsp ? cfg.vif.sio[1] : cfg.vif.sio[0];
         2: begin
-          data[which_bit]     = cfg.vif.sio[0];
-          data[which_bit + 1] = cfg.vif.sio[1];
+          data[--which_bit] = cfg.vif.sio[1];
+          data[--which_bit] = cfg.vif.sio[0];
         end
         4: begin
-          data[which_bit]     = cfg.vif.sio[0];
-          data[which_bit + 1] = cfg.vif.sio[1];
-          data[which_bit + 2] = cfg.vif.sio[2];
-          data[which_bit + 3] = cfg.vif.sio[3];
+          data[--which_bit] = cfg.vif.sio[3];
+          data[--which_bit] = cfg.vif.sio[2];
+          data[--which_bit] = cfg.vif.sio[1];
+          data[--which_bit] = cfg.vif.sio[0];
         end
         default: `uvm_fatal(`gfn, $sformatf("Unsupported lanes num 0x%0h", num_lanes))
       endcase
     end
-    `uvm_info(`gfn, $sformatf("sampled one byte data for flash: 0x%0h", data), UVM_HIGH)
+    `DV_CHECK_EQ(which_bit, 0)
+    `uvm_info(`gfn, $sformatf("sampled one byte data for flash: 0x%0h", data), UVM_MEDIUM)
   endtask : sample_flash_one_byte_data
 
   // address is 3 or 4 bytes

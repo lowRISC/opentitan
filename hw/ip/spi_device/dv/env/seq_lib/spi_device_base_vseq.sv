@@ -223,13 +223,12 @@ class spi_device_base_vseq extends cip_base_vseq #(
   endtask
 
   // transfer in command including opcode, address and payload
-  virtual task spi_host_xfer_flash_item(bit [7:0] op, bit [7:0] addr_size,
-                                        uint payload_size);
+  virtual task spi_host_xfer_flash_item(bit [7:0] op, uint payload_size);
     spi_host_flash_seq m_spi_host_seq;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
-                                   op_code == op;
-                                   address_q.size() == addr_size;
+                                   opcode == op;
+                                   address_q.size() == 0;
                                    payload_q.size() == payload_size;
                                    read_size == payload_size;)
     `uvm_send(m_spi_host_seq)

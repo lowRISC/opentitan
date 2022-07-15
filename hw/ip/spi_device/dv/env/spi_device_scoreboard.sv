@@ -77,7 +77,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   function bit is_opcode_passthrough(bit[7:0] opcode);
     int cmd_index = get_cmd_filter_index(opcode);
     int cmd_offset = get_cmd_filter_offset(opcode);
-    return !(`gmv(ral.cmd_filter[cmd_index].filter[cmd_offset]));
+    bit filter = `gmv(ral.cmd_filter[cmd_index].filter[cmd_offset]);
+    bit valid_cmd = cfg.spi_host_agent_cfg.is_opcode_supported(opcode);
+
+    `uvm_info(`gfn, $sformatf("opcode filter: %0d, valid: %0d", filter, valid_cmd), UVM_MEDIUM)
+    return !filter && valid_cmd;
   endfunction
 
   // extract spi items sent from device
@@ -104,7 +108,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       `DV_CHECK_EQ(spi_passthrough_upstream_q.size, 1)
 
       upstream_item = spi_passthrough_upstream_q.pop_front();
-      `DV_CHECK_EQ(downstream_item.compare(upstream_item), 1)
+      if (!downstream_item.compare(upstream_item)) begin
+        `uvm_error(`gfn, $sformatf("Compare item failed\ndownstream item:\n%s, upstream item:\n%s",
+              downstream_item.sprint(), upstream_item.sprint()))
+      end
     end
   endtask
 

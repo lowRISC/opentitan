@@ -136,9 +136,32 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   endfunction : get_sio_size
 
   virtual function void add_cmd_info(spi_flash_cmd_info info);
-    // op_code must be unique
-    `DV_CHECK_EQ(cmd_infos.exists(info.op_code), 0)
-    cmd_infos[info.op_code] = info;
+    // opcode must be unique
+    `DV_CHECK_EQ(is_opcode_supported(info.opcode), 0)
+    cmd_infos[info.opcode] = info;
   endfunction  : add_cmd_info
 
+  virtual function bit is_opcode_supported(bit [7:0] opcode);
+    return cmd_infos.exists(opcode);
+  endfunction  : is_opcode_supported
+
+  virtual function void extract_cmd_info_from_opcode(input bit [7:0] opcode,
+      output bit [2:0] addr_bytes,
+      output bit write_command,
+      output bit [2:0] num_lanes,
+      output int dummy_cycles);
+    if (cmd_infos.exists(opcode)) begin
+      addr_bytes    = cmd_infos[opcode].addr_bytes;
+      write_command = cmd_infos[opcode].write_command;
+      num_lanes     = cmd_infos[opcode].num_lanes;
+      dummy_cycles  = cmd_infos[opcode].dummy_cycles;
+    end else begin
+      // if it's invalid opcode, here is the default setting
+      `uvm_info(`gfn, $sformatf("extract invalid opcode: 0x%0h", opcode), UVM_MEDIUM)
+      write_command = 1;
+      addr_bytes    = 0;
+      num_lanes     = 1;
+      dummy_cycles  = 0;
+    end
+  endfunction  : extract_cmd_info_from_opcode
 endclass : spi_agent_cfg
