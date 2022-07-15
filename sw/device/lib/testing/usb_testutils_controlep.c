@@ -313,7 +313,10 @@ static void ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
     TRC_I(bp[i], 8);
     TRC_C(' ');
   }
-  CHECK_DIF_OK(dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
+  if (buffer.type != kDifUsbdevBufferTypeStale) {
+    // Return the unused buffer.
+    CHECK_DIF_OK(dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
+  }
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
 }
 
