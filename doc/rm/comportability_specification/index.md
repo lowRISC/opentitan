@@ -310,6 +310,7 @@ The following standardised countermeasures are defined:
 | GLOBAL_ESC     | A global escalation event is triggered when an attack is detected |
 | UNPREDICTABLE  | Behaviour is unpredictable to frustrate repeatable FI attacks |
 | TERMINAL       | The asset goes into a terminal statet that no longer responds to any stimulus |
+| COUNT          | The number of operations or items processed is counted which can be checked by software to ensure the correct number have occurred |
 | CM             | Catch-all for countermeasures that cannot be further specified. This is a very broad category: avoid if possible and give an instance or net name if not. |
 
 ## Register Handling
