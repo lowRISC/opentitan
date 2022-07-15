@@ -52,22 +52,6 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
 
 static volatile bool isr_entered;
 
-// Will flag a failure if any measurements are disabled.
-static void check_all_measurements_are_enabled(const dif_clkmgr_t *clkmgr) {
-  dif_toggle_t status;
-  bool success = true;
-  for (int i = kDifClkmgrMeasureClockIo; i <= kDifClkmgrMeasureClockUsb; ++i) {
-    dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
-    CHECK_DIF_OK(dif_clkmgr_measure_counts_get_enable(clkmgr, clock, &status));
-    if (status != kDifToggleEnabled) {
-      LOG_INFO("Expected measurement enabled for clock %s(%d)",
-               clkmgr_testutils_measurement_name(clock), i);
-      success = false;
-    }
-  }
-  CHECK(success);
-}
-
 /**
  * External interrupt handler.
  */
@@ -126,7 +110,7 @@ bool test_main(void) {
   busy_spin_micros(kMeasurementDelayMicros);
 
   // check results
-  clkmgr_testutils_check_measurement_counts(&clkmgr);
+  CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
   clkmgr_testutils_disable_clock_counts(&clkmgr);
 
   // Start new round of measurements.
@@ -163,8 +147,8 @@ bool test_main(void) {
   CHECK(isr_entered);
 
   // Interrupt happened. Check the measurement state.
-  clkmgr_testutils_check_measurement_counts(&clkmgr);
-  check_all_measurements_are_enabled(&clkmgr);
+  CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
+  CHECK(clkmgr_testutils_check_measurement_enables(&clkmgr, kDifToggleEnabled));
 
   return true;
 }

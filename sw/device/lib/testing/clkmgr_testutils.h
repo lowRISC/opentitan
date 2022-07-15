@@ -89,8 +89,21 @@ void clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
  * Checks that there are no clock measurement errors.
  *
  * @param clkmgr A clkmgr DIF handle.
+ * @return False if any measurement has errors.
  */
-void clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr);
+OT_WARN_UNUSED_RESULT
+bool clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr);
+
+/**
+ * Check all measurement enables.
+ *
+ * @param clkmgr A clkmgr DIF handle.
+ * @param expected_status The expected status of the enables.
+ * @return False if any enable status is unexpected.
+ */
+OT_WARN_UNUSED_RESULT
+bool clkmgr_testutils_check_measurement_enables(const dif_clkmgr_t *clkmgr,
+                                                dif_toggle_t expected_status);
 
 /**
  * Disable all clock measurements.

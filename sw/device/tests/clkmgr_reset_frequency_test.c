@@ -34,16 +34,6 @@ enum {
   kMeasurementsPerRound = 100,
 };
 
-// Will flag a failure if any measurements are enabled.
-void check_all_measurements_are_disabled(const dif_clkmgr_t *clkmgr) {
-  dif_toggle_t status;
-  for (int i = kDifClkmgrMeasureClockIo; i <= kDifClkmgrMeasureClockUsb; ++i) {
-    dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
-    CHECK_DIF_OK(dif_clkmgr_measure_counts_get_enable(clkmgr, clock, &status));
-    CHECK(status == kDifToggleDisabled);
-  }
-}
-
 bool test_main(void) {
   dif_clkmgr_t clkmgr;
   dif_rstmgr_t rstmgr;
@@ -90,8 +80,9 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
   } else if (rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoSw)) {
     LOG_INFO("Back from rstmgr SW reset");
-    check_all_measurements_are_disabled(&clkmgr);
-    clkmgr_testutils_check_measurement_counts(&clkmgr);
+    CHECK(clkmgr_testutils_check_measurement_enables(&clkmgr,
+                                                     kDifToggleDisabled));
+    CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
     return true;
   } else {
     dif_rstmgr_reset_info_bitfield_t rst_info;

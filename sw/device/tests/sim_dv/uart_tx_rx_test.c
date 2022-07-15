@@ -567,7 +567,7 @@ bool test_main(void) {
   // Execute the test.
   execute_test(&uart);
 
-  clkmgr_testutils_check_measurement_counts(&clkmgr);
+  CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
 
   return true;
 }

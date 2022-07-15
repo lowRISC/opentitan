@@ -40,16 +40,6 @@ enum {
 static dif_clkmgr_t clkmgr;
 static dif_pwrmgr_t pwrmgr;
 
-// Will flag a failure if any measurements are enabled.
-void check_all_measurements_are_disabled(const dif_clkmgr_t *clkmgr) {
-  dif_toggle_t status;
-  for (int i = kDifClkmgrMeasureClockIo; i <= kDifClkmgrMeasureClockUsb; ++i) {
-    dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
-    CHECK_DIF_OK(dif_clkmgr_measure_counts_get_enable(clkmgr, clock, &status));
-    CHECK(status == kDifToggleDisabled);
-  }
-}
-
 bool test_main(void) {
   dif_sensor_ctrl_t sensor_ctrl;
   dif_aon_timer_t aon_timer;
@@ -89,7 +79,7 @@ bool test_main(void) {
     busy_spin_micros(kMeasurementDelayMicros);
 
     // check results
-    clkmgr_testutils_check_measurement_counts(&clkmgr);
+    CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
     clkmgr_testutils_disable_clock_counts(&clkmgr);
 
     // Set wakeup timer to 100 us to have enough down time, and also wait before
@@ -120,7 +110,8 @@ bool test_main(void) {
   } else if (pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) {
     // Fail if some measurements are enabled.
-    check_all_measurements_are_disabled(&clkmgr);
+    CHECK(clkmgr_testutils_check_measurement_enables(&clkmgr,
+                                                     kDifToggleDisabled));
     // Check measurement control regwen is enabled.
     dif_toggle_t state;
     CHECK_DIF_OK(dif_clkmgr_measure_ctrl_get_enable(&clkmgr, &state));
@@ -141,7 +132,7 @@ bool test_main(void) {
         &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
         /*low_speed=*/false);
     busy_spin_micros(kMeasurementDelayMicros);
-    clkmgr_testutils_check_measurement_counts(&clkmgr);
+    CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
     clkmgr_testutils_disable_clock_counts(&clkmgr);
 
     LOG_INFO("TEST: done");
