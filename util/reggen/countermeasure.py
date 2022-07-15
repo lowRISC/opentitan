@@ -60,6 +60,7 @@ CM_TYPES = [
     'GLOBAL_ESC',
     'UNPREDICTABLE',
     'TERMINAL',
+    'COUNT',
     'CM'
 ]
 
