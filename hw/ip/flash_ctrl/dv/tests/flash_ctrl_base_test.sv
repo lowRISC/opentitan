@@ -56,5 +56,6 @@ class flash_ctrl_base_test #(
     void'($value$plusargs("multi_alert=%0b", cfg.multi_alert_en));
     void'($value$plusargs("ecc_mode=%0d", cfg.ecc_mode));
     void'($value$plusargs("serr_pct=%0d", cfg.serr_pct));
+    void'($value$plusargs("derr_pct=%0d", cfg.derr_pct));
   endfunction
 endclass : flash_ctrl_base_test

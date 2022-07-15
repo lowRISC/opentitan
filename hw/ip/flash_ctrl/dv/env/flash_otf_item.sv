@@ -14,11 +14,14 @@ class flash_otf_item extends uvm_object;
   bit                                    scr_en, ecc_en;
   int                                    page;
   flash_mp_region_cfg_t region;
-
+  bit                                    derr;
+  bit                                    skip_err_chk;
   function new(string name = "flash_otf_item");
     super.new(name);
     head_pad = 0;
     tail_pad = 0;
+    derr = 0;
+    skip_err_chk = 0;
   endfunction // new
 
   virtual function void print(string name = "flash_otf_item");
@@ -198,7 +201,7 @@ class flash_otf_item extends uvm_object;
 
       raw_fq.push_back(data);
 
-      if (ecc_err != 0) begin
+      if (skip_err_chk == 0 && ecc_err != 0) begin
         `uvm_error("rd_scr", "ecc error is detected")
       end
       addr++;
@@ -213,6 +216,7 @@ class flash_otf_item extends uvm_object;
     if (head_pad) dq = dq[1:$];
     if (tail_pad) dq = dq[0:$-1];
     raw_fq = dq2fq(dq);
+    derr = ecc_err;
   endfunction // descramble
 
   function void clear_qs();

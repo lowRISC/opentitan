@@ -17,7 +17,7 @@ class flash_ctrl_ro_vseq extends flash_ctrl_otf_base_vseq;
 
     fork
       begin
-        for (int i = 0; i < 10; ++i) begin
+        for (int i = 0; i < 4; ++i) begin
           fork
             send_rand_host_rd();
           join_none
@@ -26,7 +26,7 @@ class flash_ctrl_ro_vseq extends flash_ctrl_otf_base_vseq;
         csr_utils_pkg::wait_no_outstanding_access();
       end
       begin
-        repeat(100) begin
+        repeat(0) begin
           num = $urandom_range(CTRL_TRANS_MIN, CTRL_TRANS_MAX);
           bank = $urandom_range(0, 1);
           read_flash(ctrl, bank, num);

@@ -108,22 +108,31 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
     obs.print("rtl_host: before");
     obs.region = exp.region;
+    if (cfg.ecc_mode == 3) obs.skip_err_chk = 1;
     obs.descramble(exp.addr_key, exp.data_key);
     obs.print("rtl_host: after");
     `uvm_info("process_eg_host", $sformatf(" rcvd:%0d",cfg.otf_host_rd_sent), UVM_MEDIUM)
 
-    if (exp.start_addr[2]) begin
-       rcvd_data = obs.dq[1];
+    if (cfg.ecc_mode == 3 && obs.derr == 1) begin
+      // check expected derr
+      if (cfg.derr_addr_tbl.exists({obs.cmd.addr[31:3],3'h0})) begin
+        `uvm_info("process_eg_host", "expected double bit error", UVM_MEDIUM)
+      end else begin
+        `uvm_error("process_eg_host", "unexpected double bit error")
+      end
     end else begin
-       rcvd_data = obs.dq[0];
-    end
+      if (exp.start_addr[2]) begin
+        rcvd_data = obs.dq[1];
+      end else begin
+        rcvd_data = obs.dq[0];
+      end
 
-    if (rcvd_data == exp.dq[0]) begin
-      `dv_info("data match!!", UVM_MEDIUM, str)
-    end else begin
-      `dv_error($sformatf(" : obs:exp    %8x:%8x mismatch!!", rcvd_data, exp.dq[0]), str)
+      if (rcvd_data == exp.dq[0]) begin
+        `dv_info("data match!!", UVM_MEDIUM, str)
+      end else begin
+        `dv_error($sformatf(" : obs:exp    %8x:%8x mismatch!!", rcvd_data, exp.dq[0]), str)
+      end
     end
-
     cfg.otf_host_rd_sent++;
   endtask // process_eg_host
 
@@ -175,13 +184,23 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     end
     send.mem_addr = exp.start_addr >> 3;
     send.region = exp.region;
+    if (cfg.ecc_mode == 3) send.skip_err_chk = 1;
     send.descramble(exp.addr_key, exp.data_key);
     send.print("exp_read: raw_data");
     `dv_info($sformatf("RDATA size: %d x 8B bank:%0d sent_cnt:%0d",
                        send.raw_fq.size(), bank, cfg.otf_ctrl_rd_sent++),
              UVM_MEDIUM, "process_read")
 
-    compare_data(send.raw_fq, exp.fq, bank, "rdata");
+    if (cfg.ecc_mode == 3 && send.derr == 1) begin
+      // check expected derr
+      if (cfg.derr_addr_tbl.exists({send.cmd.addr[31:3],3'h0})) begin
+        `uvm_info("process_read", "expected double bit error", UVM_MEDIUM)
+      end else begin
+        `uvm_error("process_read", "unexpected double bit error")
+      end
+    end else begin
+      compare_data(send.raw_fq, exp.fq, bank, "rdata");
+    end
   endtask
 
   // Scoreboard process write in following order.
