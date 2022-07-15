@@ -621,6 +621,9 @@ opentitan_functest(
         # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
         tags = ["broken"],
     ),
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
@@ -636,6 +639,9 @@ opentitan_functest(
 opentitan_functest(
     name = "flash_ctrl_test",
     srcs = ["flash_ctrl_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
@@ -734,6 +740,9 @@ opentitan_functest(
 opentitan_functest(
     name = "kmac_mode_cshake_test",
     srcs = ["kmac_mode_cshake_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
