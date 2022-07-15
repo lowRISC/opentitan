@@ -214,7 +214,7 @@ foreach mod $modules {
 }
 
 # Report waived in a separate file
-report_policy -verbose -skip_empty_summary_status -compat -output ../REPORT/vcdc.rpt {NEW TO_BE_FIXED DEFERRED}
+report_policy -verbose -skip_empty_summary_status -compat -output ../REPORT/vcdc.new.rpt {NEW}
 report_policy -verbose -skip_empty_summary_status -compat -output ../REPORT/vcdc.waived.rpt {WAIVED}
 
 # report_messages -output verix_cdc.rpt
