@@ -155,6 +155,23 @@ void clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
   }
 }
 
+bool clkmgr_testutils_check_measurement_enables(const dif_clkmgr_t *clkmgr,
+                                                dif_toggle_t expected_status) {
+  bool success = true;
+  for (int i = kDifClkmgrMeasureClockIo; i <= kDifClkmgrMeasureClockUsb; ++i) {
+    dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
+    dif_toggle_t actual_status;
+    CHECK_DIF_OK(
+        dif_clkmgr_measure_counts_get_enable(clkmgr, clock, &actual_status));
+    if (actual_status != expected_status) {
+      LOG_INFO("Unexpected enable for clock %d: expected %s", i,
+               (expected_status == kDifToggleEnabled ? "enabled" : "disabled"));
+      success = false;
+    }
+  }
+  return success;
+}
+
 void clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr) {
   LOG_INFO("Disabling all clock count measurements");
   for (int i = 0; i <= kDifClkmgrMeasureClockUsb; ++i) {
@@ -163,16 +180,19 @@ void clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr) {
   }
 }
 
-void clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr) {
+bool clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr) {
+  bool success = true;
   dif_clkmgr_recov_err_codes_t err_codes;
   CHECK_DIF_OK(dif_clkmgr_recov_err_code_get_codes(clkmgr, &err_codes));
   if (err_codes != 0) {
     LOG_ERROR("Unexpected recoverable error codes 0x%x", err_codes);
+    success = false;
   } else {
     LOG_INFO("Clock measurements are okay");
   }
-  // clear recoverable errors
+  // Clear recoverable errors.
   CHECK_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(clkmgr, ~0u));
+  return success;
 }
 
 void clkmgr_testutils_enable_external_clock_and_wait_for_completion(

@@ -49,7 +49,7 @@ void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
       /*low_speed=*/false);
   busy_spin_micros(kMeasurementDelayMicros);
-  clkmgr_testutils_check_measurement_counts(&clkmgr);
+  CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
   clkmgr_testutils_disable_clock_counts(&clkmgr);
 
   // Configure external clock:
@@ -70,6 +70,6 @@ void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/true,
       /*low_speed=*/!fast_ext_clk);
   busy_spin_micros(kMeasurementDelayMicros);
-  clkmgr_testutils_check_measurement_counts(&clkmgr);
+  CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
   clkmgr_testutils_disable_clock_counts(&clkmgr);
 }
