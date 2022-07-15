@@ -50,7 +50,7 @@ if {$FOUNDRY_ROOT != ""} {
 }
 
 ########################
-## Configure CDC Tool ##
+## Configure RDC Tool ##
 ########################
 
 # TODO: potentially more settings are needed.
@@ -64,7 +64,6 @@ set ri_max_total_range_bits 100000
 ## Analyze & Elaborate ##
 #########################
 
-# TODO(#11492): Fix the issue of CDC delay
 if {$DEFINE != ""} {
   analyze -sverilog +define+${DEFINE} +define+AST_BYPASS_CLK -f ${SV_FLIST}
 } else {
