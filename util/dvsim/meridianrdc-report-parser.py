@@ -35,15 +35,15 @@ def extract_rule_patterns(file_path: Path):
     # total_msgs = 0
     # extract the summary table
     m = re.findall(
-        r'^Summary of Policy: ALL((?:.|\n|\r\n)*)Rule Details of Policy: ALL',
+        r'^Summary of Policy: NEW((?:.|\n|\r\n)*)Rule Details of Policy: NEW',
         full_file, flags=re.MULTILINE)
     if m:
         # step through the table and identify rule names and their
         # category and severity
         for line in m[0].split('\n'):
-            if re.match(r'^POLICY\s+ALL', line):
+            if re.match(r'^POLICY\s+NEW', line):
                 continue
-                # total = re.findall(r'^POLICY\s+ALL\s+([0-9]+)', line)
+                # total = re.findall(r'^POLICY\s+NEW\s+([0-9]+)', line)
                 # total_msgs = int(total[0])
             elif re.match(r'^ GROUP\s+SDC_ENV_LINT', line):
                 category = 'sdc'
@@ -220,11 +220,11 @@ def main():
     # This is then used to construct the regex patterns to look for
     # in a second pass to get the actual RDC messages.
     rdc_rule_patterns = extract_rule_patterns(
-        args.repdir.joinpath('syn-icarus/mrdc.rpt'))
+        args.repdir.joinpath('REPORT/mrdc.new.rpt'))
 
     # Patterns for vcdc.rpt
     parser_args.update({
-        args.repdir.joinpath('syn-icarus/mrdc.rpt'): rdc_rule_patterns
+        args.repdir.joinpath('REPORT/mrdc.new.rpt'): rdc_rule_patterns
     })
 
     # Parse logs
