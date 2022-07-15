@@ -9,6 +9,9 @@
  *
  * This module is the top-level of the OTBN processing core.
  */
+// Below countermeasure (no data dependent control flow in OTBN ISA) is inherent to the design and
+// has no directly associated RTL
+// SEC_CM: CTRL_FLOW.SCA
 module otbn_core
   import otbn_pkg::*;
 #(
