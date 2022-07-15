@@ -115,6 +115,23 @@
       package: "lc_ctrl_pkg"
     },
 
+    // Lifecycle RMA request and acknowledge
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_rma_req"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    },
+
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_rma_ack"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    },
+
     // Key sideload
     { struct:  "otbn_key_req"
       type:    "uni"
@@ -240,18 +257,20 @@
     }
     { name: "DATA.MEM.SEC_WIPE"
       desc: '''
-        Rotate the scrambling key, effectively wiping the dmem, on command
+        Rotate the scrambling key, effectively wiping the dmem.
+        Initiated on command, upon fatal errors and before RMA entry.
       '''
     }
     { name: "INSTRUCTION.MEM.SEC_WIPE"
       desc: '''
-        Rotate the scrambling key, effectively wiping the imem, on command
+        Rotate the scrambling key, effectively wiping the imem.
+        Initiated on command, upon fatal errors and before RMA entry.
       '''
     }
     { name: "DATA_REG_SW.SEC_WIPE"
       desc: '''
-        Securely wipe programmer visible OTBN register (GPRs, WDRs, CSRs, WSRs)
-        state with random data at the end of any OTBN operation.
+        Securely wipe programmer visible OTBN register (GPRs, WDRs, CSRs, WSRs) state with random data.
+        Initiated after reset, at the end of any OTBN operation, upon recoverable and fatal errors, and before RMA entry.
       '''
     }
     { name: "WRITE.MEM.INTEGRITY"

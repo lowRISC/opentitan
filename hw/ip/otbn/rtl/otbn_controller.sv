@@ -26,6 +26,7 @@ module otbn_controller
 
   input prim_mubi_pkg::mubi4_t fatal_escalate_en_i,
   input prim_mubi_pkg::mubi4_t recov_escalate_en_i,
+  input prim_mubi_pkg::mubi4_t rma_req_i,
   output controller_err_bits_t err_bits_o,
   output logic                 recoverable_err_o,
 
@@ -572,7 +573,12 @@ module otbn_controller
                                 bad_internal_state_err,
                                 reg_intg_violation_err};
 
-  assign fatal_err = internal_fatal_err | mubi4_test_true_loose(fatal_escalate_en_i);
+  // In case of an RMA request, just lock up the controller. This triggers the rotation of the
+  // scrambling keys. The start/stop controller takes care of initiating the internal secure wipe
+  // and eventually acknowledging the RMA request.
+  assign fatal_err = |{internal_fatal_err,
+                       mubi4_test_true_loose(fatal_escalate_en_i),
+                       mubi4_test_true_loose(rma_req_i)};
 
   assign recoverable_err_o = recoverable_err | (software_err & ~software_errs_fatal_i);
   assign mems_sec_wipe_o   = (state_d == OtbnStateLocked) & (state_q != OtbnStateLocked);
@@ -587,7 +593,8 @@ module otbn_controller
 
   `ASSERT(ErrBitSetOnErr,
       err & (mubi4_test_false_strict(fatal_escalate_en_i) &
-             mubi4_test_false_strict(recov_escalate_en_i)) |=>
+             mubi4_test_false_strict(recov_escalate_en_i) &
+             mubi4_test_false_strict(rma_req_i)) |=>
           err_bits_o)
   `ASSERT(ErrSetOnFatalErr, fatal_err |-> err)
   `ASSERT(SoftwareErrIfNonInsnAddrSoftwareErr, non_insn_addr_software_err |-> software_err)

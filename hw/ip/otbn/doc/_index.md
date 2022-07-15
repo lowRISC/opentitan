@@ -475,6 +475,7 @@ The full secure wipe mechanism is split into three parts:
 
 A secure wipe is performed automatically in certain situations, or can be requested manually by the host software.
 The full secure wipe is automatically initiated as a local reaction to a fatal error.
+In addition, it can be triggered by the [Life Cycle Controller]({{<relref "/hw/ip/lc_ctrl/doc" >}}) before RMA entry using the `lc_rma_req/ack` interface.
 A secure wipe of only the internal state is performed after reset, whenever an OTBN operation is complete, and after a recoverable error.
 Finally, host software can manually trigger the data memory and instruction memory secure wipe operations by issuing an appropriate [command](#design-details-commands).
 
@@ -1017,6 +1018,7 @@ The three forms of secure wipe can be triggered in different ways.
 A secure wipe of either the instruction or the data memory can be triggered from from host software by issuing a `SEC_WIPE_DMEM` or `SEC_WIPE_IMEM` [command](#design-details-command).
 
 A secure wipe of instruction memory, data memory, and all internal state is performed automatically when handling a [fatal error](#design-details-fatal-errors).
+In addition, it can be triggered by the [Life Cycle Controller]({{<relref "/hw/ip/lc_ctrl/doc" >}}) before RMA entry using the `lc_rma_req/ack` interface.
 
 A secure wipe of the internal state only is triggered automatically after reset and when OTBN [ends the software execution](#design-details-software-execution), either successfully, or unsuccessfully due to a [recoverable error](#design-details-recoverable-errors).
 

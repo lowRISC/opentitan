@@ -39,8 +39,11 @@ module otbn
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
-  // Lifecycle interface
-  input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+  // Lifecycle interfaces
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
+  input  lc_ctrl_pkg::lc_tx_t lc_rma_req_i,
+  output lc_ctrl_pkg::lc_tx_t lc_rma_ack_o,
 
   // Memory configuration
   input prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
@@ -174,6 +177,27 @@ module otbn
     .lc_en_i(lc_escalate_en_i),
     .lc_en_o(lc_escalate_en)
   );
+
+  lc_ctrl_pkg::lc_tx_t lc_rma_req;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_rma_req_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_rma_req_i),
+    .lc_en_o(lc_rma_req)
+  );
+
+  // Internally, OTBN uses MUBI types.
+  mubi4_t mubi_rma_req, mubi_rma_ack;
+  assign mubi_rma_req = lc_ctrl_pkg::lc_to_mubi4(lc_rma_req);
+
+  // When stubbing, forward req to ack.
+  if (Stub) begin : gen_stub_rma_ack
+    assign lc_rma_ack_o = lc_rma_req;
+  end else begin : gen_real_rma_ack
+    assign lc_rma_ack_o = lc_ctrl_pkg::mubi4_to_lc(mubi_rma_ack);
+  end
 
   // Interrupts ================================================================
 
@@ -1091,6 +1115,8 @@ module otbn
     .req_sec_wipe_urnd_keys_i    (req_sec_wipe_urnd_keys),
 
     .escalate_en_i               (core_escalate_en),
+    .rma_req_i                   (mubi_rma_req),
+    .rma_ack_o                   (mubi_rma_ack),
 
     .software_errs_fatal_i       (software_errs_fatal_q),
 

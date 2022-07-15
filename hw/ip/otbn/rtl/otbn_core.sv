@@ -82,6 +82,11 @@ module otbn_core
   // halt and then enter a locked state.
   input prim_mubi_pkg::mubi4_t escalate_en_i,
 
+  // Indicates an incoming RMA request. The core needs to halt, trigger a secure wipe immediately
+  // and then enter a locked state.
+  input  prim_mubi_pkg::mubi4_t rma_req_i,
+  output prim_mubi_pkg::mubi4_t rma_ack_o,
+
   // When set software errors become fatal errors.
   input logic software_errs_fatal_i,
 
@@ -267,6 +272,8 @@ module otbn_core
 
     .start_i,
     .escalate_en_i(start_stop_escalate_en),
+    .rma_req_i,
+    .rma_ack_o,
 
     .controller_start_o(controller_start),
 
@@ -397,6 +404,7 @@ module otbn_core
 
     .fatal_escalate_en_i(controller_fatal_escalate_en),
     .recov_escalate_en_i(controller_recov_escalate_en),
+    .rma_req_i,
     .err_bits_o         (controller_err_bits),
     .recoverable_err_o,
 

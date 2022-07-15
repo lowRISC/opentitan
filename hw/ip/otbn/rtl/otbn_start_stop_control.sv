@@ -29,8 +29,10 @@ module otbn_start_stop_control
   input  logic clk_i,
   input  logic rst_ni,
 
-  input  logic  start_i,
-  input mubi4_t escalate_en_i,
+  input  logic   start_i,
+  input  mubi4_t escalate_en_i,
+  input  mubi4_t rma_req_i,
+  output mubi4_t rma_ack_o,
 
   output logic controller_start_o,
 
@@ -63,6 +65,8 @@ module otbn_start_stop_control
   otbn_start_stop_state_e state_q, state_d;
   logic init_sec_wipe_done_q, init_sec_wipe_done_d;
   mubi4_t wipe_after_urnd_refresh_q, wipe_after_urnd_refresh_d;
+  mubi4_t rma_ack_d, rma_ack_q;
+  logic mubi_err_q, mubi_err_d;
 
   logic addr_cnt_inc;
   logic [4:0] addr_cnt_q, addr_cnt_d;
@@ -71,22 +75,24 @@ module otbn_start_stop_control
   logic       spurious_secure_wipe_req, dropped_secure_wipe_req;
   logic       secure_wipe_error_q, secure_wipe_error_d;
 
-  logic mubi_err_q, mubi_err_d;
-  assign mubi_err_d = mubi_err_q | mubi4_test_invalid(wipe_after_urnd_refresh_q);
-
-  // There are two ways in which the start/stop controller can be told to stop. Either
-  // secure_wipe_req_i comes from the controller (which means "I've run some instructions and I've
-  // hit an ECALL or error"). Or escalate_en_i can be asserted (which means "Someone else has told
-  // us to stop immediately"). If running, both can be true at once.
+  // There are three ways in which the start/stop controller can be told to stop.
+  // 1. secure_wipe_req_i comes from the controller (which means "I've run some instructions and
+  //    I've hit an ECALL or error").
+  // 2. escalate_en_i can be asserted (which means "Someone else has told us to stop immediately").
+  // 3. rma_req_i can be asserted (which means "Lifecycle wants to transition to the RMA state").
+  // If running, all three can be true at once.
   //
-  // An escalation signal gets latched into should_lock. If we were running some instructions, we'll
-  // go through the secure wipe process, but we'll see the should_lock_q signal when done and go
-  // into the local locked state.
+  // An escalation signal as well as RMA requests get latched into should_lock. We'll then go
+  // through the secure wipe process (unless we weren't running any instructions in case of an
+  // escalation). We'll see the should_lock_q signal when done and go into the local locked
+  // state. If necessary, the RMA request is acknowledged upon secure wipe completion.
+
   // SEC_CM: CONTROLLER.FSM.GLOBAL_ESC
-  logic esc_request, should_lock_d, should_lock_q, stop;
+  logic esc_request, rma_request, should_lock_d, should_lock_q, stop;
   assign esc_request   = mubi4_test_true_loose(escalate_en_i);
-  assign stop          = esc_request | secure_wipe_req_i;
-  assign should_lock_d = should_lock_q | esc_request;
+  assign rma_request   = mubi4_test_true_loose(rma_req_i);
+  assign stop          = esc_request | rma_request | secure_wipe_req_i;
+  assign should_lock_d = should_lock_q | esc_request | rma_request;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -95,6 +101,17 @@ module otbn_start_stop_control
       should_lock_q <= should_lock_d;
     end
   end
+
+  prim_mubi4_sender #(
+    .AsyncOn(1'b1),
+    .EnSecBuf(1'b1),
+    .ResetValue(prim_mubi_pkg::MuBi4False)
+  ) u_prim_mubi4_sender_rma_ack (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(rma_ack_d),
+    .mubi_o(rma_ack_q)
+  );
 
   logic allow_secure_wipe, expect_secure_wipe;
 
@@ -123,6 +140,8 @@ module otbn_start_stop_control
     expect_secure_wipe        = 1'b0;
     spurious_urnd_ack_error   = 1'b0;
     wipe_after_urnd_refresh_d = wipe_after_urnd_refresh_q;
+    rma_ack_d                 = rma_ack_q;
+    mubi_err_d                = mubi_err_q;
 
     unique case (state_q)
       OtbnStartStopStateInitial: begin
@@ -134,9 +153,9 @@ module otbn_start_stop_control
         end
       end
       OtbnStartStopStateHalt: begin
-        if (stop) begin
+        if (stop && !rma_request) begin
           state_d = OtbnStartStopStateLocked;
-        end else if (start_i) begin
+        end else if (start_i || rma_request) begin
           urnd_reseed_req_o = 1'b1;
           ispr_init_o       = 1'b1;
           state_reset_o     = 1'b1;
@@ -145,7 +164,7 @@ module otbn_start_stop_control
       end
       OtbnStartStopStateUrndRefresh: begin
         urnd_reseed_req_o = 1'b1;
-        if (stop && mubi4_test_false_strict(wipe_after_urnd_refresh_q)) begin
+        if (stop && mubi4_test_false_strict(wipe_after_urnd_refresh_q) && !rma_request) begin
           // We are refreshing URND before execution and are told to stop, so lock immediately.
           state_d = OtbnStartStopStateLocked;
         end else if (mubi4_test_true_strict(wipe_after_urnd_refresh_q)) begin
@@ -229,6 +248,7 @@ module otbn_start_stop_control
       end
       OtbnStartStopSecureWipeComplete: begin
         urnd_advance_o = 1'b1;
+        rma_ack_d = rma_req_i;
         state_d = should_lock_d ? OtbnStartStopStateLocked : OtbnStartStopStateHalt;
         wipe_after_urnd_refresh_d = MuBi4False;
       end
@@ -242,6 +262,7 @@ module otbn_start_stop_control
       default: begin
         // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
         state_error = 1'b1;
+        rma_ack_d = MuBi4False;
         state_d = OtbnStartStopStateLocked;
       end
     endcase
@@ -252,6 +273,19 @@ module otbn_start_stop_control
       // error if we see a stray ACK and lock the FSM.
       spurious_urnd_ack_error = 1'b1;
       state_d                 = OtbnStartStopStateLocked;
+    end
+
+    // If the MuBi signals take on invalid values, something bad is happening. Put them back to
+    // a safe value and signal an error.
+    if (mubi4_test_invalid(wipe_after_urnd_refresh_q)) begin
+      wipe_after_urnd_refresh_d = MuBi4False;
+      mubi_err_d = 1'b1;
+      state_d = OtbnStartStopStateLocked;
+    end
+    if (mubi4_test_invalid(rma_ack_q)) begin
+      rma_ack_d = MuBi4False;
+      mubi_err_d = 1'b1;
+      state_d = OtbnStartStopStateLocked;
     end
   end
 
@@ -317,6 +351,8 @@ module otbn_start_stop_control
   end
 
   assign fatal_error_o = spurious_urnd_ack_error | state_error | secure_wipe_error_q | mubi_err_q;
+
+  assign rma_ack_o = rma_ack_q;
 
   `ASSERT(StartStopStateValid_A,
       state_q inside {OtbnStartStopStateInitial,
