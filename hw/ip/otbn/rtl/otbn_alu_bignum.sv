@@ -795,12 +795,13 @@ module otbn_alu_bignum
       //   valid if X does not generate carry - Select Y result
       // * If neither happen a + b < mod - Select X result
       AluOpBignumAddm: begin
+        // `adder_y_res` is always used: either as condition in the following `if` statement or, if
+        // the `if` statement short-circuits, in the body of the `if` statement.
+        adder_y_res_used = 1'b1;
         if (adder_x_res[WLEN+1] || adder_y_res[WLEN+1]) begin
           operation_result_o = adder_y_res[WLEN:1];
-          adder_y_res_used = 1'b1;
         end else begin
           operation_result_o = adder_x_res[WLEN:1];
-          adder_y_res_used = 1'b0;
         end
       end
 
