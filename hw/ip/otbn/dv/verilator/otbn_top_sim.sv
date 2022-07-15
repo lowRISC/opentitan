@@ -115,6 +115,8 @@ module otbn_top_sim (
     .req_sec_wipe_urnd_keys_i    ( 1'b0                       ),
 
     .escalate_en_i               ( prim_mubi_pkg::MuBi4False  ),
+    .rma_req_i                   ( prim_mubi_pkg::MuBi4False  ),
+    .rma_ack_o                   (                            ),
 
     .software_errs_fatal_i       ( 1'b0                       ),
 

@@ -129,7 +129,9 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
-    .lc_escalate_en_i (escalate_if.enable),
+    .lc_escalate_en_i(escalate_if.enable),
+    .lc_rma_req_i    (lc_ctrl_pkg::Off),
+    .lc_rma_ack_o    (),
 
     .ram_cfg_i('0),
 

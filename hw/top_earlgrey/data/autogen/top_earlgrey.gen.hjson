@@ -5826,6 +5826,28 @@
           index: -1
         }
         {
+          name: lc_rma_req
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: otbn
+          index: -1
+        }
+        {
+          name: lc_rma_ack
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: otbn
+          index: -1
+        }
+        {
           name: keymgr_key
           struct: otbn_key_req
           package: keymgr_pkg
@@ -17551,6 +17573,28 @@
         default: lc_ctrl_pkg::Off
         inst_name: otbn
         top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        name: lc_rma_req
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: otbn
+        index: -1
+      }
+      {
+        name: lc_rma_ack
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: otbn
         index: -1
       }
       {
