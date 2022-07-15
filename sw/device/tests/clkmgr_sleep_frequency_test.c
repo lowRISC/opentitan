@@ -11,6 +11,7 @@
 #include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
+#include "sw/device/lib/testing/sensor_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -91,15 +92,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &rv_plic));
 
   LOG_INFO("TEST: wait for ast init");
-  dif_toggle_t init_st = kDifToggleDisabled;
-
-  while (init_st == kDifToggleDisabled) {
-    CHECK_DIF_OK(
-        dif_sensor_ctrl_get_ast_init_done_status(&sensor_ctrl, &init_st));
-
-    busy_spin_micros(kWaitForCSRPollingMicros);
-  }
-
+  IBEX_SPIN_FOR(sensor_ctrl_ast_init_done(&sensor_ctrl), 1000);
   LOG_INFO("TEST: done ast init");
 
   CHECK(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0));

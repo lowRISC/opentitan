@@ -8,6 +8,7 @@
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
+#include "sw/device/lib/testing/sensor_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -56,20 +57,10 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
-  // TODO(#13611) Uncomment when fixed
-  /*
   LOG_INFO("TEST: wait for ast init");
-  dif_toggle_t init_st = kDifToggleDisabled;
-
-  while (init_st == kDifToggleDisabled) {
-    CHECK_DIF_OK(
-        dif_sensor_ctrl_get_ast_init_done_status(&sensor_ctrl, &init_st));
-
-    busy_spin_micros(kWaitForCSRPollingUs);
-  }
-
+  IBEX_SPIN_FOR(sensor_ctrl_ast_init_done(&sensor_ctrl), 1000);
   LOG_INFO("TEST: done ast init");
-  */
+
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
     // At POR.
     LOG_INFO("Run clock measurements right after POR");
