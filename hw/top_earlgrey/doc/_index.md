@@ -4,77 +4,119 @@ title: "Earl Grey Top Level Specification"
 
 # Overview
 
-<img src="earlgrey.png" align="right" alt="Earl Grey logo" width=200 title="Earl Grey" hspace="20"/>
+![Top Level Block Diagram](top_earlgrey_block_diagram.svg)
 
-This document specifies the top level functionality of the "Earl Grey" chip (`top_earlgrey`).
+The OpenTitan Earl Grey chip is a low-power secure microcontroller that is designed for several use cases requiring hardware security.
+The block diagram is shown above and shows the system configuration, including the Ibex processor and all of the memories and comportable IPs.
 
-## Features
+As can be seen in the blockdiagram, the system is split into a fast processor core domain that runs on a 100MHz jittery clock, and a peripheral domain that runs at 24MHz.
+Further, a portion of the peripheral domain, the analog sensor top and the padring can stay always-on.
+The rest of the system can be shut off as part of the sleep mode.
 
-- RISC-V microprocessor ("Ibex") and associated JTAG IO. Related features:
-  - DM (debug module)
-  - PLIC (platform level interrupt controller)
-  - U/M execution modes (user/machine)
-  - Enhanced Physical Memory Protection (ePMP)
-  - Security features:
-    - Dual core lockstep configuration
-    - Data independent timing
-    - Dummy instruction insertion
-    - Bus and register file integrity
-    - Hardened PC
-- Memory
-  - 1024kB eFlash
-  - 128kB SRAM
-  - 4KB Always ON (AON) retention SRAM
-  - 32kB ROM
-  - All memories support scrambling and integrity checks.
-- Security peripherals
-  - Flash controller
-  - AES
-  - SHA2-256/HMAC
-  - SHA3-KMAC
-  - CSRNG
-  - Big Number Accelerator (OTBN)
-  - Key Manager with DICE support
-  - Alert handler
-  - Digital wrapper for entropy source
-- IO peripherals
-  - x32 multiplexable IO pads with pin multiplexing unit and pad control
-  - GPIO (using multiplexable IO)
-  - x4 UART (using multiplexable IO)
-  - x3 I2C with support for host and device modes (using multiplexable IO)
-  - SPI device (using fixed IO) with the following modes of operation: TPM, generic, flash and passthrough
-  - x2 SPI host
-- Other peripherals
-  - Fixed-frequency timer
-  - Always ON (AON) timer
-  - Pulse-Width Modulator (PWM)
-  - Pattern Generator
-- Clock and reset IO and management
-- Software
-  - Boot ROM implementing code secure boot and chip configuration
-  - Bare metal applications and validation tests
+The OpenTitan Earl Grey chip provides the following features:
 
-## Description
+<table>
+<thead style='font-size:100%'>
+  <tr>
+    <th colspan="2">OpenTitan Earl Grey Features</th>
+  </tr>
+</thead>
+<tbody style='font-size:90%;line-height:110%'>
+  <tr>
+    <td>
+      <ul>
+        <li>RV32IMCB RISC-V "Ibex" core:
+          <ul>
+            <li>3-stage pipeline, single-cycle multiplier</li>
+            <li>Selected subset of the bit-manipulation extension</li>
+            <li>4kB instruction cache with 2 ways</li>
+            <li>RISC-V compliant JTAG DM (debug module)</li>
+            <li>PLIC (platform level interrupt controller)</li>
+            <li>U/M (user/machine) execution modes </li>
+            <li>Enhanced Physical Memory Protection (ePMP)</li>
+            <li>Security features:
+              <ul>
+                <li>Low-latency memory scrambling on the icache</li>
+                <li>Dual-core lockstep configuration</li>
+                <li>Data independent timing</li>
+                <li>Dummy instruction insertion</li>
+                <li>Bus and register file integrity</li>
+                <li>Hardened PC</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <br></br>
+        <li>Security peripherals:
+          <ul>
+            <li>AES-128/192/256 with ECB/CBC/CFB/OFB/CTR modes</li>
+            <li>HMAC / SHA2-256</li>
+            <li>KMAC / SHA3-224, 256, 384, 512, [c]SHAKE-128, 256</li>
+            <li>Programmable big number accelerator for RSA and ECC (OTBN)</li>
+            <li>NIST-compliant cryptographically secure random number generator (CSRNG)</li>
+            <li>Digital wrapper for analog entropy source with FIPS and CC-compliant health checks</li>
+            <li>Key manager with DICE support</li>
+            <li>Manufacturing life cycle manager</li>
+            <li>Alert handler for handling critical security events</li>
+            <li>OTP controller with access controls and memory scrambling</li>
+            <li>Flash controller with access controls and memory scrambling</li>
+            <li>ROM and SRAM controllers with low-latency memory scrambling</li>
+          </ul>
+        </li>
+      </ul>
+    </td>
+    <td>
+      <ul>
+        <li>Memory:
+          <ul>
+            <li>2x512kB banks eFlash</li>
+            <li>128kB main SRAM</li>
+            <li>4KB Always ON (AON) retention SRAM</li>
+            <li>32kB ROM</li>
+            <li>2kB OTP</li>
+          </ul>
+        </li>
+        <br></br>
+        <li>IO peripherals:
+          <ul>
+            <li>47x multiplexable IO pads with pad control</li>
+            <li>32x GPIO (using multiplexable IO)</li>
+            <li>4x UART (using multiplexable IO)</li>
+            <li>3x I2C with host and device modes (using multiplexable IO)</li>
+            <li>SPI device (using fixed IO) with TPM, generic, flash and passthrough modes</li>
+            <li>2x SPI host (using both fixed and multiplexable IO)</li>
+          </ul>
+        </li>
+        <br></br>
+        <li>Other peripherals:
+          <ul>
+            <li>Clock, reset and power management</li>
+            <li>Fixed-frequency timer</li>
+            <li>Always ON (AON) timer</li>
+            <li>Pulse-width modulator (PWM)</li>
+            <li>Pattern Generator</li>
+          </ul>
+        </li>
+        <br></br>
+        <li>Software:
+          <ul>
+            <li>Boot ROM code implementing secure boot and chip configuration</li>
+            <li>Bare metal applications and validation tests</li>
+          </ul>
+        </li>
+      </ul>
+    </td>
+  </tr>
+</tbody>
+</table>
 
-The netlist `top_earlgrey` contains the features listed above, proving basic functionality of the Ibex RISC-V processor core on an FPGA development environment, with a suite of peripherals and memories.
+# Theory of Operations
 
+The netlist `chip_earlgrey_asic` contains the features listed above and is intended for ASIC synthesis, whereas the netlist `chip_earlgrey_cw310` provides an emulation environment for the `cw310` FPGA board.
 The code for Ibex is developed in its own [lowRISC repo](http://github.com/lowrisc/ibex), and is [*vendored in*]({{< relref "doc/ug/vendor_hw.md" >}}) to this repository.
 Surrounding Ibex is a suite of *Comportable* peripherals that follow the [Comportability Guidelines]({{< relref "doc/rm/comportability_specification" >}}) for lowRISC peripheral IP.
 Each of these IP has its own specification.
 See the table produced in the [hardware documentation page]({{< relref "hw" >}}) for links to those specifications.
-
-# Theory of Operations
-
-## Block Diagram
-
-The block diagram of `top_earlgrey` (the auto-generated module) is shown below.
-
-**TODO: Top level diagram has pending updates.**
-
-![Top Level Block Diagram](top_earlgrey_block_diagram.svg)
-
-In this diagram, the instantiation of the Ibex processor and all of the memories and comportable IPs are shown.
-The IO shown at this level are the internal signals between the IP and the pads instantiated at the target top level netlist.
 
 ## Design Details
 
@@ -209,7 +251,7 @@ See that specification for generic details on this scheme.
 
 #### Chip IO Peripherals
 
-##### Pin Multiplexor (`pinmux`) and Pad Control (`padctrl`)
+##### Pin Multiplexor and Pad Control Module (`pinmux`)
 
 **TODO: this section needs to be updated to reflect the pinmux/padctrl merger**
 
