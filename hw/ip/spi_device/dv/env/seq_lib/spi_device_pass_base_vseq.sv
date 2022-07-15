@@ -4,6 +4,12 @@
 
 // Passthrough base sequence
 class spi_device_pass_base_vseq extends spi_device_base_vseq;
+  // only enable this in 1-2 tests
+  bit allow_set_cmd_info_invalid;
+  bit allow_use_invalid_opcode;
+
+  bit [7:0] valid_opcode_q[$];
+
   `uvm_object_utils(spi_device_pass_base_vseq)
   `uvm_object_new
 
@@ -13,86 +19,88 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     // Configure the first 11 commands which are fixed
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes == 0 &&
-      info.op_code == READ_STATUS_1 &&
+      info.opcode == READ_STATUS_1 &&
       info.num_lanes == 1 &&
       info.write_command == 0;)
     add_cmd_info(info, 0);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes == 0 &&
-      info.op_code == READ_STATUS_2;
+      info.opcode == READ_STATUS_2;
       info.num_lanes == 1 &&
       info.write_command == 0;)
     add_cmd_info(info, 1);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes == 0 &&
-      info.op_code == READ_STATUS_3 &&
+      info.opcode == READ_STATUS_3 &&
       info.num_lanes == 1 &&
       info.write_command == 0;)
     add_cmd_info(info, 2);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes == 0 &&
-      info.op_code == READ_JEDEC &&
+      info.opcode == READ_JEDEC &&
       info.num_lanes == 1 &&
       info.write_command == 0;)
     add_cmd_info(info, 3);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes == 0 &&
-      info.op_code == READ_SFDP;
+      info.opcode == READ_SFDP;
       info.num_lanes == 1 &&
       info.write_command == 0;)
     add_cmd_info(info, 4);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes > 0 &&
-      info.op_code == READ_NORMAL &&
+      info.opcode == READ_NORMAL &&
       info.num_lanes == 1 &&
       info.write_command == 0;)
     add_cmd_info(info, 5);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes > 0 &&
-      info.op_code == READ_FAST &&
+      info.opcode == READ_FAST &&
       info.num_lanes == 1 &&
       info.write_command == 0;)
     add_cmd_info(info, 6);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes > 0 &&
-      info.op_code == READ_DUAL &&
+      info.opcode == READ_DUAL &&
       info.write_command == 0 &&
       info.num_lanes == 2;)
     add_cmd_info(info, 7);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes > 0 &&
-      info.op_code == READ_QUAD &&
+      info.opcode == READ_QUAD &&
       info.write_command == 0 &&
       info.num_lanes == 4;)
     add_cmd_info(info, 8);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes > 0 &&
-      info.op_code == READ_DUALIO &&
+      info.opcode == READ_DUALIO &&
       info.write_command == 0 &&
       info.num_lanes == 2;)
     add_cmd_info(info, 9);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes > 0 &&
-      info.op_code == READ_QUADIO &&
+      info.opcode == READ_QUADIO &&
       info.write_command == 0 &&
       info.num_lanes == 4;)
     add_cmd_info(info, 10);
     for (int i = 11; i < 24; i++) begin
       info = spi_flash_cmd_info::type_id::create("info");
       `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-        foreach (cfg.spi_host_agent_cfg.cmd_infos[j]) {info.op_code != j;})
+        foreach (cfg.spi_host_agent_cfg.cmd_infos[j]) {info.opcode != j;})
       add_cmd_info(info, i);
     end
+
+    valid_opcode_q = cfg.spi_host_agent_cfg.cmd_infos.find_index() with ('1);
   endtask : config_all_cmd_infos
 
   // Task for flash or pass init
@@ -136,6 +144,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
     spi_device_flash_auto_rsp_nonblocking();
     randomize_mem();
+    randomize_all_cmd_filters();
   endtask : spi_device_flash_pass_init
 
   // Task for configuring enable/disable of command opcode
@@ -148,6 +157,13 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     ral.cmd_filter[cmd_index].filter[cmd_offset].set(not_enable);
     csr_update(.csr(ral.cmd_filter[cmd_index]));
   endtask : cfg_cmd_filter
+
+  virtual task randomize_all_cmd_filters();
+    foreach (ral.cmd_filter[idx]) begin
+      `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_filter[idx])
+      csr_update(.csr(ral.cmd_filter[idx]));
+    end
+  endtask : randomize_all_cmd_filters
 
   // Task for keeping opcode integrity regardless of rx_order config
   virtual task order_cmd_bits(bit [7:0] pass_cmd, bit[23:0] pass_addr, ref bit [31:0] addr_cmd);
@@ -176,8 +192,15 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   virtual task add_cmd_info(spi_flash_cmd_info info, bit [4:0] idx);
     bit [3:0] lanes_en;
     addr_mode_e addr_size;
-    cfg.spi_host_agent_cfg.add_cmd_info(info);
-    cfg.spi_device_agent_cfg.add_cmd_info(info);
+    bit valid;
+
+    if (allow_set_cmd_info_invalid) valid = $urandom_range(0, 1);
+    else valid = 1;
+
+    if (valid) begin
+      cfg.spi_host_agent_cfg.add_cmd_info(info);
+      cfg.spi_device_agent_cfg.add_cmd_info(info);
+    end
 
     `uvm_info(`gfn, $sformatf("Add this cmd_info \n%s", info.sprint()), UVM_MEDIUM)
     case (info.num_lanes)
@@ -192,7 +215,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       4: addr_size = Addr4B;
       default : `uvm_fatal(`gfn, $sformatf("Unsupported addr bytes 0x%0h", info.addr_bytes))
     endcase
-    ral.cmd_info[idx].addr_mode.set(addr_size);
     // if addr_size is aligned with addr_4b_en, we could use AddrCfg instead of Addr4B/Addr3B
     if (`gmv(ral.cfg.addr_4b_en) == 1 && addr_size == Addr4B ||
          `gmv(ral.cfg.addr_4b_en) == 0 && addr_size == Addr3B) begin
@@ -200,8 +222,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     end
     ral.cmd_info[idx].addr_mode.set(addr_size);
 
-    ral.cmd_info[idx].valid.set(1'b1); // Enable this OPCODE
-    ral.cmd_info[idx].opcode.set(info.op_code);// Read Dual
+    ral.cmd_info[idx].valid.set(valid); // Enable this OPCODE
+    ral.cmd_info[idx].opcode.set(info.opcode);// Read Dual
     ral.cmd_info[idx].payload_en.set(lanes_en);
     ral.cmd_info[idx].payload_dir.set(!info.write_command);
     ral.cmd_info[idx].addr_swap_en.set(info.addr_swap);
@@ -209,4 +231,34 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     csr_update(.csr(ral.cmd_info[idx]));
   endtask : add_cmd_info
 
+  function bit [7:0] get_rand_opcode();
+    bit valid_op;
+    bit [7:0] op;
+
+    if (allow_use_invalid_opcode) begin
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(valid_op,
+            valid_op dist {1 :/ 4, 0 :/ 1};)
+    end else begin
+      valid_op = 1;
+    end
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(op,
+        if (valid_op) {
+          op inside {valid_opcode_q};
+        } else {
+          !(op inside {valid_opcode_q});
+        })
+    return op;
+  endfunction
+
+  function int get_rand_payload_size();
+    uint size;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(size,
+        size dist {
+           [0:5]    :/ 2,
+           128      :/ 1,
+           256      :/ 2, // typical value for a flash page size
+           512      :/ 1,
+           [6:1000] :/ 1};)
+    return size;
+  endfunction
 endclass : spi_device_pass_base_vseq

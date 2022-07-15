@@ -130,29 +130,40 @@ class spi_host_driver extends spi_driver;
   endtask
 
   task drive_flash_item();
-    bit [7:0] drive_data[$];
+    bit [7:0] cmd_addr_bytes[$];
 
     `uvm_info(`gfn, $sformatf("Driving flash item: \n%s", req.sprint()), UVM_MEDIUM)
     cfg.vif.csb[cfg.csb_sel] <= 1'b0;
 
-    drive_data = {req.opcode, req.address_q, req.payload_q};
-    sck_pulses = drive_data.size() * 8;
-    if (!req.write_command) begin
+    cmd_addr_bytes = {req.opcode, req.address_q};
+    sck_pulses = cmd_addr_bytes.size() * 8 + req.dummy_cycles;
+    if (req.write_command) begin
+      `DV_CHECK_EQ(req.num_lanes, 1)
+      sck_pulses += req.payload_q.size * 8;
+    end else begin
       `DV_CHECK_EQ(req.payload_q.size, 0)
-      sck_pulses = sck_pulses + req.read_size * (8 / req.num_lanes);
+      sck_pulses += req.read_size * (8 / req.num_lanes);
     end
 
     // for mode 1 and 3, get the leading edges out of the way
     cfg.wait_sck_edge(LeadingEdge);
 
+    // driver cmd and address
+    issue_data(cmd_addr_bytes);
+
+    // align to DrivingEdge, if the item has more to send
+    if (req.dummy_cycles > 0 || req.payload_q.size > 0 ) cfg.wait_sck_edge(DrivingEdge);
+
+    repeat (req.dummy_cycles) begin
+      //cfg.vif.sio <= 'dz;
+      cfg.wait_sck_edge(DrivingEdge);
+    end
     // drive data
-    issue_data(drive_data);
+    issue_data(req.payload_q);
 
     wait(sck_pulses == 0);
-    if (cfg.csb_consecutive == 0) begin
-      cfg.vif.csb[cfg.csb_sel] <= 1'b1;
-      cfg.vif.sio[0] <= 1'bx;
-    end
+    cfg.vif.csb[cfg.csb_sel] <= 1'b1;
+    cfg.vif.sio <= 'dx;
   endtask
 
   task drive_sck_no_csb_item();
