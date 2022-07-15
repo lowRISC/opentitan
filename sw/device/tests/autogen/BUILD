@@ -15,7 +15,8 @@ opentitan_functest(
     srcs = ["plic_all_irqs_test.c"],
     verilator = verilator_params(
         timeout = "eternal",
-        tags = ["broken"],
+        tags = ["flaky"],
+        # often times out in 3600s on 4 cores
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
