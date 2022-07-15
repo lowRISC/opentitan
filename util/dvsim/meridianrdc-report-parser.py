@@ -15,7 +15,7 @@ from LintParser import LintParser
 
 def extract_rule_patterns(file_path: Path):
     '''
-    This parses the CDC summary table to get the message totals,
+    This parses the RDC summary table to get the message totals,
     rule names and corresponding severities.
     '''
 
