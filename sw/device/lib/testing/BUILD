@@ -245,6 +245,18 @@ cc_library(
 )
 
 cc_library(
+    name = "sensor_ctrl_testutils",
+    srcs = ["sensor_ctrl_testutils.c"],
+    hdrs = ["sensor_ctrl_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:sensor_ctrl",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "sram_ctrl_testutils",
     srcs = ["sram_ctrl_testutils.c"],
     hdrs = ["sram_ctrl_testutils.h"],
