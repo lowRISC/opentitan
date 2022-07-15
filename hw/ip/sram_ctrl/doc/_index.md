@@ -208,12 +208,12 @@ The memory inside the SRAM controller can be used right away after a system rese
 However, since the scrambling key defaults to a predefined value, it is recommended that SW performs the following initialization steps as early in the boot process as possible.
 
 1. Request an updated ephemeral scrambling key from OTP by writing 0x1 to {{< regref "CTRL.RENEW_SCR_KEY" >}}.
-   SW can spin on {{< regref "STATUS.SCR_KEY_VALID" >}} to wait until the new key has been obtained.
-   This is however not strictly needed, since memory accesses to the SRAM will be stalled until the updated key has been obtained.
+   SW should spin on {{< regref "STATUS.SCR_KEY_VALID" >}} to wait until the new key has been obtained.
+   While this is not strictly needed since memory accesses to the SRAM will be stalled until the updated key has been obtained, the PC value upon a watchdog crash will be more informative when using a spin wait.
 
 2. (optional) Initialize the memory with pseudo random data by writing 0x1 to {{< regref "CTRL.INIT" >}}
-   SW can spin on {{< regref "STATUS.INIT_DONE" >}} to wait until the memory has been initialized.
-   This is however not strictly needed, since memory accesses to the SRAM will be stalled until the initialization is done.
+   SW should spin on {{< regref "STATUS.INIT_DONE" >}} to wait until the memory has been initialized.
+   While this is not strictly needed since memory accesses to the SRAM will be stalled until the initialization is done, the PC value upon a watchdog crash will be more informative when using a spin wait.
 
 3. (optional) Check the {{< regref "STATUS.SCR_KEY_SEED_VALID" >}} bit:
     - In case the scrambling key seeds have been fully provisioned to OTP, this bit should be set to 0x1. A value of 0x0 indicates that the OTP could be malfunctioning or has been tampered with.
