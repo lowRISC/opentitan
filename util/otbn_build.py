@@ -213,6 +213,7 @@ def main() -> int:
         if not src_file.exists():
             log.fatal("Source file %s not found." % src_file)
             return 1
+
     obj_files = []
     for f in src_files:
         if f.suffix == '.o':
