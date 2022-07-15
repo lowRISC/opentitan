@@ -88,13 +88,13 @@ ifneq (${sw_images},)
 			if [[ $$index == "1" ]]; then \
 				bazel_label+="_sim_dv"; \
 			fi; \
-			bazel_opts="--define DISABLE_VERILATOR_BUILD=true"; \
+			bazel_opts="${sw_build_opts} --define DISABLE_VERILATOR_BUILD=true"; \
 			if [[ -z $${BAZEL_PYTHON_WHEELS_REPO} ]]; then \
 				echo "Building \"$${bazel_label}\" on network connected machine."; \
 				bazel_cmd="./bazelisk.sh"; \
 			else \
 				echo "Building \"$${bazel_label}\" on air-gapped machine."; \
-				bazel_opts+=" --distdir=$${BAZEL_DISTDIR} --repository_cache=$${BAZEL_CACHE}"; \
+				bazel_opts+="${sw_build_opts} --distdir=$${BAZEL_DISTDIR} --repository_cache=$${BAZEL_CACHE}"; \
 				bazel_cmd="bazel"; \
 			fi; \
 			$${bazel_cmd} build $${bazel_opts} $${bazel_label}; \

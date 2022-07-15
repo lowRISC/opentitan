@@ -10,6 +10,7 @@
   import_cfgs:      ["{proj_root}/hw/data/common_project_cfg.hjson",
                      "{dv_root}/tools/dvsim/common_modes.hjson",
                      "{dv_root}/tools/dvsim/fusesoc.hjson",
+                     "{dv_root}/tools/dvsim/bazel.hjson",
                      "{dv_root}/tools/dvsim/{tool}.hjson"]
 
   // Default directory structure for the output

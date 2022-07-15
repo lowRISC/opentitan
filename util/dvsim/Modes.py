@@ -270,6 +270,7 @@ class BuildModes(Modes):
         self.post_run_cmds = []
         self.run_opts = []
         self.sw_images = []
+        self.sw_build_opts = []
 
         super().__init__(bdict)
         self.en_build_modes = list(set(self.en_build_modes))
@@ -302,6 +303,7 @@ class RunModes(Modes):
         self.build_mode = ""
         self.sw_images = []
         self.sw_build_device = ""
+        self.sw_build_opts = []
 
         super().__init__(rdict)
         self.en_run_modes = list(set(self.en_run_modes))
@@ -328,6 +330,7 @@ class Tests(RunModes):
         "build_mode": "",
         "sw_images": [],
         "sw_build_device": "",
+        "sw_build_opts": []
     }
 
     def __init__(self, tdict):
@@ -419,6 +422,7 @@ class Tests(RunModes):
             test_obj.post_run_cmds.extend(test_obj.build_mode.post_run_cmds)
             test_obj.run_opts.extend(test_obj.build_mode.run_opts)
             test_obj.sw_images.extend(test_obj.build_mode.sw_images)
+            test_obj.sw_build_opts.extend(test_obj.build_mode.sw_build_opts)
 
         # Return the list of tests
         return tests_objs
@@ -426,7 +430,8 @@ class Tests(RunModes):
     @staticmethod
     def merge_global_opts(tests, global_pre_build_cmds, global_post_build_cmds,
                           global_build_opts, global_pre_run_cmds,
-                          global_post_run_cmds, global_run_opts, global_sw_images):
+                          global_post_run_cmds, global_run_opts,
+                          global_sw_images, global_sw_build_opts):
         processed_build_modes = []
         for test in tests:
             if test.build_mode.name not in processed_build_modes:
@@ -438,6 +443,7 @@ class Tests(RunModes):
             test.post_run_cmds.extend(global_post_run_cmds)
             test.run_opts.extend(global_run_opts)
             test.sw_images.extend(global_sw_images)
+            test.sw_build_opts.extend(global_sw_build_opts)
 
 
 class Regressions(Modes):
