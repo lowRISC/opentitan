@@ -136,18 +136,21 @@ module sram_ctrl
   assign hw2reg.status.init_error.d  = 1'b1;
   assign hw2reg.status.init_error.de = init_error;
 
+  logic alert_req;
+  assign alert_req = (|bus_integ_error) | init_error;
+
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[0]),
     .IsFatal(1)
   ) u_prim_alert_sender_parity (
     .clk_i,
     .rst_ni,
-    .alert_test_i  ( alert_test                    ),
-    .alert_req_i   ( |bus_integ_error | init_error ),
-    .alert_ack_o   (                               ),
-    .alert_state_o (                               ),
-    .alert_rx_i    ( alert_rx_i[0]                 ),
-    .alert_tx_o    ( alert_tx_o[0]                 )
+    .alert_test_i  ( alert_test    ),
+    .alert_req_i   ( alert_req     ),
+    .alert_ack_o   (               ),
+    .alert_state_o (               ),
+    .alert_rx_i    ( alert_rx_i[0] ),
+    .alert_tx_o    ( alert_tx_o[0] )
   );
 
   /////////////////////////
@@ -176,15 +179,15 @@ module sram_ctrl
   logic local_esc, local_esc_reg;
   // This signal only aggregates registered escalation signals and is used for transaction
   // blocking further below, which is on a timing-critical path.
-  assign local_esc_reg = reg2hw.status.escalated.q  ||
-                         reg2hw.status.init_error.q ||
+  assign local_esc_reg = reg2hw.status.escalated.q  |
+                         reg2hw.status.init_error.q |
                          reg2hw.status.bus_integ_error.q;
   // This signal aggregates all escalation trigger signals, including the ones that are generated in
   // the same cycle such as init_error and bus_integ_error. It is used for countermeasures that are
   // not on the critical path (such as clearing the scrambling keys).
-  assign local_esc = escalate         ||
-                     init_error       ||
-                     |bus_integ_error ||
+  assign local_esc = escalate           |
+                     init_error         |
+                     (|bus_integ_error) |
                      local_esc_reg;
 
   // Convert registered, local escalation sources to a multibit signal and combine this with
