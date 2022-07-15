@@ -145,6 +145,7 @@ module otbn_start_stop_control
           state_d = OtbnStartStopSecureWipeWdrUrnd;
         end
       end
+      // SEC_CM: DATA_REG_SW.SEC_WIPE
       // Writing random numbers to the wide data registers.
        OtbnStartStopSecureWipeWdrUrnd: begin
         urnd_advance_o        = 1'b1;

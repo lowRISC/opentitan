@@ -201,5 +201,53 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_data_mem_sec_wipe
+      desc: "Verify the countermeasure(s) DATA.MEM.SEC_WIPE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_instruction_mem_sec_wipe
+      desc: "Verify the countermeasure(s) INSTRUCTION.MEM.SEC_WIPE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_data_reg_sw_sec_wipe
+      desc: "Verify the countermeasure(s) DATA_REG_SW.SEC_WIPE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_write_mem_integrity
+      desc: "Verify the countermeasure(s) WRITE.MEM.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_flow_count
+      desc: "Verify the countermeasure(s) CTRL_FLOW.COUNT."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_flow_sca
+      desc: "Verify the countermeasure(s) CTRL_FLOW.SCA."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_data_mem_sw_noaccess
+      desc: "Verify the countermeasure(s) DATA.MEM.SW_NOACCESS."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_key_sideload
+      desc: "Verify the countermeasure(s) KEY.SIDELOAD."
+      milestone: V2S
+      tests: []
+    }
   ]
 }

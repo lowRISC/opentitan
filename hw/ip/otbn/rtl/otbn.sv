@@ -600,6 +600,7 @@ module otbn
   assign dmem_req = dmem_access_core ? dmem_req_core : dmem_req_bus;
   assign dmem_write = dmem_access_core ? dmem_write_core : dmem_write_bus;
   assign dmem_wmask = dmem_access_core ? dmem_wmask_core : dmem_wmask_bus;
+  // SEC_CM: DATA.MEM.SW_NOACCESS
   assign dmem_index = dmem_access_core ? dmem_index_core : {1'b0, dmem_index_bus};
   assign dmem_wdata = dmem_access_core ? dmem_wdata_core : dmem_wdata_bus;
 
@@ -690,6 +691,7 @@ module otbn
   assign unused_dmem_addr_bus = ^{dmem_addr_bus[DmemAddrWidth-1:DmemIndexWidth],
                                   dmem_addr_bus[1:0]};
 
+  // SEC_CM: WRITE.MEM.INTEGRITY
   prim_crc32 #(
     .BytesPerWord(6)
   ) u_mem_load_crc32 (

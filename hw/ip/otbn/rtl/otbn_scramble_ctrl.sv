@@ -153,6 +153,7 @@ module otbn_scramble_ctrl
     state_error_o               = 1'b0;
 
     // Action dmem secure wipe request unless a new key request is already ongoing
+    // SEC_CM: DATA.MEM.SEC_WIPE
     if (otbn_dmem_scramble_sec_wipe_i && state_q != ScrambleCtrlDmemReq) begin
       dmem_key_valid_d            = 1'b0;
       dmem_key_en                 = 1'b1;
@@ -161,6 +162,7 @@ module otbn_scramble_ctrl
     end
 
     // Action imem secure wipe request unless a new key request is already ongoing
+    // SEC_CM: INSTRUCTION.MEM.SEC_WIPE
     if (otbn_imem_scramble_sec_wipe_i && state_q != ScrambleCtrlImemReq) begin
       imem_key_valid_d            = 1'b0;
       imem_key_en                 = 1'b1;

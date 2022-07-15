@@ -588,6 +588,7 @@ module otbn_controller
   // SEC_CM: CONTROLLER.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, otbn_state_e, OtbnStateHalt)
 
+  // SEC_CM: CTRL_FLOW.COUNT
   assign insn_cnt_clear = state_reset_i | (state_q == OtbnStateLocked) | insn_cnt_clear_i;
 
   always_comb begin

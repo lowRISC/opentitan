@@ -320,6 +320,7 @@ module otbn_alu_bignum
   assign ispr_rdata_no_intg_mux_in[IsprUrnd]   = urnd_data_i;
   assign ispr_rdata_no_intg_mux_in[IsprFlags]  = {{(WLEN - (NFlagGroups * FlagsWidth)){1'b0}},
                                                  flags_flattened};
+  // SEC_CM: KEY.SIDELOAD
   assign ispr_rdata_no_intg_mux_in[IsprKeyS0L] = sideload_key_shares_i[0][255:0];
   assign ispr_rdata_no_intg_mux_in[IsprKeyS0H] = {{(WLEN - (SideloadKeyWidth - 256)){1'b0}},
                                                   sideload_key_shares_i[0][SideloadKeyWidth-1:256]};

@@ -241,6 +241,41 @@
         request drops at an unexpected time.
       '''
     }
+    { name: "DATA.MEM.SEC_WIPE"
+      desc: '''
+        Rotate the scrambling key, effectively wiping the dmem, on command
+      '''
+    }
+    { name: "INSTRUCTION.MEM.SEC_WIPE"
+      desc: '''
+        Rotate the scrambling key, effectively wiping the imem, on command
+      '''
+    }
+    { name: "DATA_REG_SW.SEC_WIPE"
+      desc: '''
+        Securely wipe programmer visible OTBN register (GPRs, WDRs, CSRs, WSRs)
+        state with random data at the end of any OTBN operation.
+      '''
+    }
+    { name: "WRITE.MEM.INTEGRITY"
+      desc: '''
+        A software visible checksum is calculated for all dmem and imem writes
+      '''
+    }
+    { name: "CTRL_FLOW.COUNT"
+      desc: "A software visible count of instructions executed"
+    }
+    { name: "CTRL_FLOW.SCA"
+      desc: '''
+        OTBN architecture does not have any data dependent timing behaviour
+      '''
+    }
+    { name: "DATA.MEM.SW_NOACCESS"
+      desc: "A portion of DMEM is invisible to CPU software"
+    }
+    { name: "KEY.SIDELOAD"
+      desc: "Keys can be sideloaded without exposing them to the CPU"
+    }
   ]
 
   regwidth: "32"
