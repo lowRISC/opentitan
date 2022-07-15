@@ -84,15 +84,27 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
   mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_CONF_REG_OFFSET,
                       entropy_conf_reg);
 
-  if (config.health_test_threshold_scope) {
-    // Configure health test window.
-    // Conditioning bypass is hardcoded to disabled (see above). If we want to
-    // expose the ES_TYPE field in the future, we need to also configure the
-    // health test window size for bypass mode.
-    mmio_region_write32(entropy_src->base_addr,
-                        ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
-                        config.health_test_window_size);
-  }
+  // Configure health test window.
+  // Conditioning bypass is hardcoded to disabled (see above). If we want to
+  // expose the ES_TYPE field in the future, we need to also configure the
+  // health test window size for bypass mode.
+  uint32_t health_test_window_sizes =
+      bitfield_field32_write(ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL,
+                             ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD,
+                             config.health_test_window_size);
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
+                      health_test_window_sizes);
+
+  // Alert Threshold register configuration.
+  uint32_t alert_threshold = bitfield_field32_write(
+      0, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_FIELD,
+      config.alert_threshold);
+  alert_threshold = bitfield_field32_write(
+      alert_threshold, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_FIELD,
+      ~config.alert_threshold);
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET, alert_threshold);
 
   // MODULE_ENABLE register configuration.
   mmio_region_write32(entropy_src->base_addr,
