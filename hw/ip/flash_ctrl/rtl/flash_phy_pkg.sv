@@ -66,6 +66,7 @@ package flash_phy_pkg;
     logic part;
     logic [InfoTypesWidth-1:0] info_sel;
     rd_buf_attr_e attr;
+    logic err;
   } rd_buf_t;
 
   typedef struct packed {

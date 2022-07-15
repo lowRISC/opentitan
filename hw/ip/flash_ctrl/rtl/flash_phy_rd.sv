@@ -177,6 +177,7 @@ module flash_phy_rd
                           buf_en_q &
                           (buf_valid[i] | buf_wip[i]) &
                           (read_buf[i].addr == flash_word_addr) &
+                          ~read_buf[i].err &
                           part_match &
                           info_sel_match;
 
@@ -220,7 +221,8 @@ module flash_phy_rd
       .rst_ni,
       .en_i(buf_en_q),
       .alloc_i(rdy_o & alloc[i]),
-      .update_i(update[i] & ~muxed_err),
+      .update_i(update[i]),
+      .err_i(muxed_err),
       .wipe_i(data_hazard[i]),
       .addr_i(flash_word_addr),
       .part_i(part_i),
@@ -552,6 +554,8 @@ module flash_phy_rd
   logic flash_rsp_match;
   logic [NumBuf-1:0] buf_rsp_match;
   logic [PlainDataWidth-1:0] buf_rsp_data;
+  logic buf_rsp_err;
+
 
   // update buffers
   // When forwarding, update entry stored in alloc_q
@@ -574,9 +578,11 @@ module flash_phy_rd
   // select among the buffers
   always_comb begin
     buf_rsp_data = muxed_data;
+    buf_rsp_err = '0;
     for (int i = 0; i < NumBuf; i++) begin
       if (buf_rsp_match[i]) begin
         buf_rsp_data = read_buf[i].data;
+        buf_rsp_err = read_buf[i].err;
       end
     end
   end
@@ -631,7 +637,7 @@ module flash_phy_rd
   assign data_valid_o = flash_rsp_match | (|buf_rsp_match);
 
   // integrity and reliability ECC errors always cause in band errors
-  assign data_err_o   = muxed_err | intg_err;
+  assign data_err_o   = data_valid_o & (muxed_err | intg_err | (|buf_rsp_match & buf_rsp_err));
 
   // integrity ECC error can also cause out of band alert
   assign intg_ecc_err_o = data_valid_o & intg_err;
