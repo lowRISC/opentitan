@@ -38,6 +38,9 @@ bool test_main(void) {
       .fips_enable = true,
       .route_to_firmware = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
+      .health_test_threshold_scope = false, /*default*/
+      .health_test_window_size = 0x0200,    /*default*/
+      .alert_threshold = 2,                 /*default*/
   };
   CHECK_DIF_OK(
       dif_entropy_src_configure(&entropy_src, config, kDifToggleEnabled));

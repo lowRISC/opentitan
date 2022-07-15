@@ -121,6 +121,12 @@ typedef struct dif_entropy_src_config {
    * Units: bits
    */
   uint16_t health_test_window_size;
+
+  /**
+   * The number of health test failures that must occur before an alert is
+   * triggered. When set to 0, alerts are disabled.
+   */
+  uint16_t alert_threshold;
 } dif_entropy_src_config_t;
 
 /**
