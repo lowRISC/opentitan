@@ -82,6 +82,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     flash_otf_item obs;
     data_4s_t rcvd_data;
     fdata_q_t fq;
+    addr_t err_addr;
     string str = $sformatf("host_read_comp_bank%0d", bank);
 
     `uvm_info("EXPGET_HOST", $sformatf(" addr %x  data:%x   cnt:%0d  rtlff:%0d  ctrlff:%0d",
@@ -114,11 +115,12 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     `uvm_info("process_eg_host", $sformatf(" rcvd:%0d",cfg.otf_host_rd_sent), UVM_MEDIUM)
 
     if (cfg.ecc_mode == 3 && obs.derr == 1) begin
+      err_addr = {obs.cmd.addr[31:3],3'h0};
       // check expected derr
-      if (cfg.derr_addr_tbl.exists({obs.cmd.addr[31:3],3'h0})) begin
-        `uvm_info("process_eg_host", "expected double bit error", UVM_MEDIUM)
+      if (cfg.derr_addr_tbl.exists(err_addr)) begin
+        `uvm_info("process_eg_host", $sformatf("expected double bit error 0x%x", err_addr), UVM_MEDIUM)
       end else begin
-        `uvm_error("process_eg_host", "unexpected double bit error")
+        `uvm_error("process_eg_host", $sformatf("unexpected double bit error 0x%x", err_addr))
       end
     end else begin
       if (exp.start_addr[2]) begin
@@ -161,6 +163,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   //   - Compare read data.
   task process_read(flash_otf_item exp, int bank);
     flash_otf_item send;
+    addr_t err_addr;
     int col_sz = exp.fq.size;
     `uvm_info("process_read", $sformatf("bank:%0d colsz:%0d ffsz:%0d",
                                         bank, col_sz, eg_rtl_fifo[bank].used()), UVM_MEDIUM)
@@ -192,11 +195,12 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
              UVM_MEDIUM, "process_read")
 
     if (cfg.ecc_mode == 3 && send.derr == 1) begin
+      err_addr = {send.cmd.addr[31:3],3'h0};
       // check expected derr
-      if (cfg.derr_addr_tbl.exists({send.cmd.addr[31:3],3'h0})) begin
-        `uvm_info("process_read", "expected double bit error", UVM_MEDIUM)
+      if (cfg.derr_addr_tbl.exists(err_addr)) begin
+        `uvm_info("process_read", $sformatf("expected double bit error 0x%x", err_addr), UVM_MEDIUM)
       end else begin
-        `uvm_error("process_read", "unexpected double bit error")
+        `uvm_error("process_read", $sformatf("unexpected double bit error 0x%x", err_addr))
       end
     end else begin
       compare_data(send.raw_fq, exp.fq, bank, "rdata");

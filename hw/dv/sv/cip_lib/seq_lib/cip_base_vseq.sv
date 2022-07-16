@@ -273,7 +273,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           end
         end
         if (check_rsp && !cfg.under_reset && tl_intg_err_type == TlIntgErrNone) begin
-          `DV_CHECK_EQ(rsp.d_error, exp_err_rsp, "unexpected error response")
+          `DV_CHECK_EQ(rsp.d_error, exp_err_rsp, $sformatf("%x unexpected error response", rsp.a_addr))
         end
 
 

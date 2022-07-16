@@ -265,6 +265,12 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       if (cfg.ecc_mode > 1) begin
         if (exp_item.region.ecc_en == MuBi4True) cfg.add_bit_err(flash_op, 0);
       end
+      if (cfg.derr_created[0]) begin
+        `uvm_info("read_flash", $sformatf("assert_derr 0x%x", {flash_op.addr[31:3], 3'h0}), UVM_MEDIUM)
+      end
+      if (cfg.derr_created[0] == 1 && cfg.scb_h.do_alert_check == 1) begin
+        `uvm_info("read_flash","assert_derr", UVM_MEDIUM)
+      end
 //      if (cfg.derr_created) begin
 //        cfg.scb_h.exp_alert["fatal_err"] = 1;
 //        cfg.scb_h.alert_chk_max_delay["fatal_err"] = 1000;
@@ -349,12 +355,19 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
           flash_op.partition = FlashPartData;
           flash_op.num_words = 1;
           cfg.add_bit_err(flash_op, 1);
-          if (cfg.derr_created[1]) cfg.scb_h.ecc_error_addr[tl_addr] = 1;
+          if (cfg.derr_created[1]) begin
+            cfg.scb_h.ecc_error_addr[tl_addr] = 1;
+            `uvm_info("direct_read", $sformatf("assert_derr 0x%x", tl_addr), UVM_MEDIUM)
+
+            if (cfg.scb_h.do_alert_check == 1) begin
+            end
+          end
           derr = cfg.derr_created[1];
           cfg.derr_created[1] = 0;
         end
+        if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0})) derr = 1;
       end
-
+`JDBG(("exec: 0x%x   derr:%0d", tl_addr, derr))
       do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata),
                      .exp_err_rsp(derr));
       exp_item.dq.push_back(rdata);

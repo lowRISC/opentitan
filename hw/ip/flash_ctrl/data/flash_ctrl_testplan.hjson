@@ -288,6 +288,18 @@
       tests: []
     }
     {
+      name: double_bit_err_detect
+      desc: '''
+            Run read write test and inject double bit erorr only once in random time.
+            Check wheter the fatal alert is asserted.
+            For ctrl read, op_status.err and err_code.rd_err shoudl be set.
+            For direct read, read response should have d_error set.
+            Do this for a multiple rounds.
+            '''
+      milestone: V2
+      tests: ["flash_ctrl_derr_detect"]
+    }
+    {
       name: single_bit_err
       desc: '''
             Run read only or read write test with randomly injected single bit error.

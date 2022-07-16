@@ -396,7 +396,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     csr_size_err = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
     tl_item_err = item.get_exp_d_error();
 
-    ecc_err = ecc_error_addr.exists(item.a_addr);
+    // For flash, address has to be 8byte aligned.
+    ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
 
     `downcast(cip_item, item)
     cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,

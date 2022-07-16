@@ -555,7 +555,6 @@ module flash_phy_rd
   logic [PlainDataWidth-1:0] buf_rsp_data;
   logic buf_rsp_err;
 
-
   // update buffers
   // When forwarding, update entry stored in alloc_q
   // When de-scrambling however, the contents of alloc_q may have already updated to the next read,
