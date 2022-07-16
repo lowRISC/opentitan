@@ -244,6 +244,7 @@ bool test_main() {
   static entropy_src_test_context_t ctx;
   uint32_t loop = 1;
   test_initialize(&ctx);
+  wait_entropy_src_state(kDifEntropySrcMainFsmStateContHTRunning);
   CHECK_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ctx.ibex, &ctx.fpga_info));
 
   // Run multiple times if in a FPGA.
