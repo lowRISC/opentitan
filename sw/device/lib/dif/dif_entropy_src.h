@@ -436,45 +436,46 @@ dif_result_t dif_entropy_src_read(const dif_entropy_src_t *entropy_src,
                                   uint32_t *word);
 
 /**
- * Performs an override read from the entropy pipeline.
+ * Performs a blocking read from the entropy pipeline through the observe FIFO,
+ * which contains post-test, unconditioned entropy.
  *
- * Entropy source must be configured with firmware override mode enabled, and
- * the `len` parameter must be strictly less than the FIFO threshold set in the
- * firmware override parameters.
+ * The entropy source must be configured with firmware override mode enabled,
+ * and the `len` parameter must be less than or equal to the FIFO threshold set
+ * in the firmware override parameters (that is, the threshold that triggers an
+ * interrupt). Additionally, `buf` may be `NULL`; in this case, reads will be
+ * discarded.
  *
- * `buf` may be `NULL`; in this case, reads will be discarded.
- *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @param[out] buf A buffer to fill with words from the pipeline.
  * @param len The number of words to read into `buf`.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_fifo_read(const dif_entropy_src_t *entropy_src,
-                                       uint32_t *buf, size_t len);
+dif_result_t dif_entropy_src_observe_fifo_blocking_read(
+    const dif_entropy_src_t *entropy_src, uint32_t *buf, size_t len);
 
 /**
- * Performs an override write to the entropy pipeline.
+ * Performs a write to the entropy pipeline through the observe FIFO.
  *
  * Entropy source must be configured with firmware override and insert mode
- * enabled, otherwise the function will return
- * `kDifBadArg`.
+ * enabled, otherwise the function will return `kDifError`.
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @param buf A buffer to push words from into the pipeline.
  * @param len The number of words to write from `buf`.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_fifo_write(const dif_entropy_src_t *entropy_src,
-                                        const uint32_t *buf, size_t len);
+dif_result_t dif_entropy_src_observe_fifo_write(
+    const dif_entropy_src_t *entropy_src, const uint32_t *buf, size_t len);
 
 /**
  * Starts conditioner operation.
  *
- * Initializes the conditioner. Use the `dif_entropy_src_fifo_write()` function
- * to send data to the conditioner, and `dif_entropy_src_conditioner_end()` once
- * ready to end the conditioner operation.
+ * Initializes the conditioner. Use the `dif_entropy_src_observe_fifo_write()`
+ * function to send data to the conditioner, and
+ * `dif_entropy_src_conditioner_end()` once ready to end the conditioner
+ * operation.
  *
  * This function is only available when firmware override mode is enabled. See
  * `dif_entropy_src_fw_override_configure()` for more details.
