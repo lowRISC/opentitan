@@ -468,6 +468,122 @@ TEST_F(ReadTest, ReadOk) {
   EXPECT_EQ(got_word, expected_word);
 }
 
+class ObserveFifoBlockingReadTest : public EntropySrcTest {};
+
+TEST_F(ObserveFifoBlockingReadTest, NullHandle) {
+  uint32_t buf[8];
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_observe_fifo_blocking_read(nullptr, buf, 8));
+}
+
+TEST_F(ObserveFifoBlockingReadTest, BadLength) {
+  uint32_t buf[8];
+  EXPECT_READ32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET, 7);
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_observe_fifo_blocking_read(&entropy_src_, buf, 8));
+}
+
+TEST_F(ObserveFifoBlockingReadTest, BadConfig) {
+  uint32_t buf[8];
+  EXPECT_READ32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET, 8);
+  EXPECT_READ32(
+      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+      {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
+        kMultiBitBool4False},
+       {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET, kMultiBitBool4False}});
+  EXPECT_EQ(dif_entropy_src_observe_fifo_blocking_read(&entropy_src_, buf, 8),
+            kDifError);
+}
+
+TEST_F(ObserveFifoBlockingReadTest, SuccessDataThroughAway) {
+  uint32_t buf[4] = {0};
+  EXPECT_READ32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET, 4);
+  EXPECT_READ32(
+      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+      {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
+        kMultiBitBool4False},
+       {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET, kMultiBitBool4True}});
+  EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                {{ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT, 1}});
+  for (size_t i = 0; i < 4; ++i) {
+    EXPECT_READ32(ENTROPY_SRC_FW_OV_RD_DATA_REG_OFFSET, i);
+  }
+  EXPECT_WRITE32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                 {{ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT, 1}});
+  EXPECT_DIF_OK(
+      dif_entropy_src_observe_fifo_blocking_read(&entropy_src_, nullptr, 4));
+  for (size_t i = 0; i < 4; ++i) {
+    EXPECT_EQ(buf[i], 0);
+  }
+}
+
+TEST_F(ObserveFifoBlockingReadTest, SuccessDataSave) {
+  uint32_t buf[4];
+  EXPECT_READ32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET, 4);
+  EXPECT_READ32(
+      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+      {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
+        kMultiBitBool4False},
+       {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET, kMultiBitBool4True}});
+  EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                {{ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT, 1}});
+  for (size_t i = 0; i < 4; ++i) {
+    EXPECT_READ32(ENTROPY_SRC_FW_OV_RD_DATA_REG_OFFSET, i);
+  }
+  EXPECT_WRITE32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                 {{ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT, 1}});
+  EXPECT_DIF_OK(
+      dif_entropy_src_observe_fifo_blocking_read(&entropy_src_, buf, 4));
+  for (size_t i = 0; i < 4; ++i) {
+    EXPECT_EQ(buf[i], i);
+  }
+}
+
+class ObserveFifoWriteTest : public EntropySrcTest {};
+
+TEST_F(ObserveFifoWriteTest, NullArgs) {
+  uint32_t buf[8];
+  EXPECT_DIF_BADARG(dif_entropy_src_observe_fifo_write(nullptr, buf, 8));
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_observe_fifo_write(&entropy_src_, nullptr, 8));
+  EXPECT_DIF_BADARG(dif_entropy_src_observe_fifo_write(nullptr, nullptr, 8));
+}
+
+TEST_F(ObserveFifoWriteTest, BadConfig) {
+  uint32_t buf[8];
+
+  // Firmware override mode not set.
+  EXPECT_READ32(
+      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+      {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
+        kMultiBitBool4False},
+       {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET, kMultiBitBool4False}});
+  EXPECT_EQ(dif_entropy_src_observe_fifo_write(&entropy_src_, buf, 8),
+            kDifError);
+
+  // Entropy insert mode not set.
+  EXPECT_READ32(
+      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+      {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
+        kMultiBitBool4False},
+       {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET, kMultiBitBool4True}});
+  EXPECT_EQ(dif_entropy_src_observe_fifo_write(&entropy_src_, buf, 8),
+            kDifError);
+}
+
+TEST_F(ObserveFifoWriteTest, Success) {
+  uint32_t buf[4] = {1, 2, 3, 4};
+  EXPECT_READ32(
+      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+      {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
+        kMultiBitBool4True},
+       {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET, kMultiBitBool4True}});
+  for (size_t i = 0; i < 4; ++i) {
+    EXPECT_WRITE32(ENTROPY_SRC_FW_OV_WR_DATA_REG_OFFSET, i + 1);
+  }
+  EXPECT_DIF_OK(dif_entropy_src_observe_fifo_write(&entropy_src_, buf, 4));
+}
+
 class ReadFifoDepthTest : public EntropySrcTest {};
 
 TEST_F(ReadFifoDepthTest, EntropyBadArg) {

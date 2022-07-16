@@ -431,31 +431,37 @@ dif_result_t dif_entropy_src_read(const dif_entropy_src_t *entropy_src,
   return kDifOk;
 }
 
-dif_result_t dif_entropy_src_fifo_read(const dif_entropy_src_t *entropy_src,
-                                       uint32_t *buf, size_t len) {
+dif_result_t dif_entropy_src_observe_fifo_blocking_read(
+    const dif_entropy_src_t *entropy_src, uint32_t *buf, size_t len) {
   if (entropy_src == NULL) {
     return kDifBadArg;
   }
 
+  // Check that the number of bytes to be read is less than or equal to the FIFO
+  // threshold that triggers an interrupt.
   uint32_t reg = mmio_region_read32(entropy_src->base_addr,
-                                    ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET);
+                                    ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET);
+  if (len > reg) {
+    return kDifBadArg;
+  }
+
+  // Check that we are in firmware override mode. We can only read from the
+  // override FIFO if we are.
+  reg = mmio_region_read32(entropy_src->base_addr,
+                           ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET);
   if (bitfield_field32_read(reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD) !=
       kMultiBitBool4True) {
     return kDifError;
   }
 
-  reg = mmio_region_read32(entropy_src->base_addr,
-                           ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET);
-  if (reg < len) {
-    return kDifBadArg;
-  }
-
+  // Block until there is enough data in the observe FIFO.
   do {
     reg = mmio_region_read32(entropy_src->base_addr,
                              ENTROPY_SRC_INTR_STATE_REG_OFFSET);
   } while (!bitfield_bit32_read(
       reg, ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT));
 
+  // Read post-health test, pre-conditioned, entropy from the observe FIFO.
   for (size_t i = 0; i < len; ++i) {
     reg = mmio_region_read32(entropy_src->base_addr,
                              ENTROPY_SRC_FW_OV_RD_DATA_REG_OFFSET);
@@ -469,11 +475,12 @@ dif_result_t dif_entropy_src_fifo_read(const dif_entropy_src_t *entropy_src,
       0, ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT, true);
   mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_INTR_STATE_REG_OFFSET,
                       reg);
+
   return kDifOk;
 }
 
-dif_result_t dif_entropy_src_fifo_write(const dif_entropy_src_t *entropy_src,
-                                        const uint32_t *buf, size_t len) {
+dif_result_t dif_entropy_src_observe_fifo_write(
+    const dif_entropy_src_t *entropy_src, const uint32_t *buf, size_t len) {
   if (entropy_src == NULL || buf == NULL) {
     return kDifBadArg;
   }
@@ -485,13 +492,14 @@ dif_result_t dif_entropy_src_fifo_write(const dif_entropy_src_t *entropy_src,
       bitfield_field32_read(
           reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_FIELD) !=
           kMultiBitBool4True) {
-    return kDifUnavailable;
+    return kDifError;
   }
 
   for (size_t i = 0; i < len; ++i) {
     mmio_region_write32(entropy_src->base_addr,
                         ENTROPY_SRC_FW_OV_WR_DATA_REG_OFFSET, buf[i]);
   }
+
   return kDifOk;
 }
 

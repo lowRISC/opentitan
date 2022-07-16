@@ -91,18 +91,18 @@ void test_firmware_override(dif_entropy_src_t *entropy) {
   entropy_with_fw_override_enable(entropy);
   entropy_data_flush(entropy);
 
-  // Read data from the obeservation and write it back into the pre conditioner
-  // until there is data available in the output buffer.
+  // Read data from the observation FIFO and write it back into the
+  // pre-conditioner until there is data available in the output buffer.
   uint32_t buf[kEntropyFifoBufferSize] = {0};
   uint32_t word_count = 0;
   do {
-    CHECK_DIF_OK(
-        dif_entropy_src_fifo_read(entropy, buf, kEntropyFifoBufferSize));
+    CHECK_DIF_OK(dif_entropy_src_observe_fifo_blocking_read(
+        entropy, buf, kEntropyFifoBufferSize));
     for (size_t i = 0; i < kEntropyFifoBufferSize; ++i) {
       CHECK(buf[i] != 0);
     }
-    CHECK_DIF_OK(
-        dif_entropy_src_fifo_write(entropy, buf, kEntropyFifoBufferSize));
+    CHECK_DIF_OK(dif_entropy_src_observe_fifo_write(entropy, buf,
+                                                    kEntropyFifoBufferSize));
     word_count += kEntropyFifoBufferSize;
   } while (dif_entropy_src_avail(entropy) == kDifUnavailable);
   LOG_INFO("Processed %d words via FIFO_OVR buffer.", word_count);
