@@ -537,3 +537,15 @@ dif_result_t dif_entropy_src_get_fifo_depth(
 
   return kDifOk;
 }
+
+dif_result_t dif_entropy_src_get_main_fsm_state(
+    const dif_entropy_src_t *entropy_src, dif_entropy_main_fsm_t *state) {
+  if (entropy_src == NULL || state == NULL) {
+    return kDifBadArg;
+  }
+
+  *state = mmio_region_read32(entropy_src->base_addr,
+                              ENTROPY_SRC_MAIN_SM_STATE_REG_OFFSET);
+
+  return kDifOk;
+}

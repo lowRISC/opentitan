@@ -54,6 +54,33 @@ typedef enum dif_entropy_src_single_bit_mode {
 } dif_entropy_src_single_bit_mode_t;
 
 /**
+ * Main FSM state
+ */
+typedef enum dif_entropy_main_fsm {
+  kDifEntropySrcMainFsmStateIdle = 0x0f5,
+  kDifEntropySrcMainFsmStateBootHTRunning = 0x1d2,
+  kDifEntropySrcMainFsmStateBootPostHTChk = 0x16e,
+  kDifEntropySrcMainFsmStateBootPhaseDone = 0x08e,
+  kDifEntropySrcMainFsmStateStartupHTStart = 0x02c,
+  kDifEntropySrcMainFsmStateStartupPhase1 = 0x101,
+  kDifEntropySrcMainFsmStateStartupPass1 = 0x1a5,
+  kDifEntropySrcMainFsmStateStartupFail1 = 0x017,
+  kDifEntropySrcMainFsmStateContHTStart = 0x040,
+  kDifEntropySrcMainFsmStateContHTRunning = 0x1a2,
+  kDifEntropySrcMainFsmStateFWInsertStart = 0x0c3,
+  kDifEntropySrcMainFsmStateFWInsertMsg = 0x059,
+  kDifEntropySrcMainFsmStateSha3MsgDone = 0x10f,
+  kDifEntropySrcMainFsmStateSha3Prep = 0x0f8,
+  kDifEntropySrcMainFsmStateSha3Process = 0x0bf,
+  kDifEntropySrcMainFsmStateSha3Valid = 0x171,
+  kDifEntropySrcMainFsmStateSha3Done = 0x198,
+  kDifEntropySrcMainFsmStateSha3Quiesce = 0x1cd,
+  kDifEntropySrcMainFsmStateAlertState = 0x1fb,
+  kDifEntropySrcMainFsmStateAlertHang = 0x15c,
+  kDifEntropySrcMainFsmStateError = 0x13d
+} dif_entropy_main_fsm_t;
+
+/**
  * Firmware override parameters for an entropy source.
  */
 typedef struct dif_entropy_src_fw_override_config {
@@ -492,6 +519,17 @@ dif_result_t dif_entropy_src_get_idle(const dif_entropy_src_t *entropy_src);
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_get_fifo_depth(
     const dif_entropy_src_t *entropy_src, uint32_t *fifo_depth);
+
+/**
+ * Read the current main fsm state.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param[out] state The current state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_get_main_fsm_state(
+    const dif_entropy_src_t *entropy_src, dif_entropy_main_fsm_t *state);
 
 #ifdef __cplusplus
 }  // extern "C"
