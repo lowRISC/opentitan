@@ -14,11 +14,15 @@ class flash_otf_item extends uvm_object;
   bit                                    scr_en, ecc_en;
   int                                    page;
   flash_mp_region_cfg_t region;
-
+  bit                                    derr;
+  bit                                    skip_err_chk;
+  addr_t                                 err_addr;
   function new(string name = "flash_otf_item");
     super.new(name);
     head_pad = 0;
     tail_pad = 0;
+    derr = 0;
+    skip_err_chk = 0;
   endfunction // new
 
   virtual function void print(string name = "flash_otf_item");
@@ -101,7 +105,8 @@ class flash_otf_item extends uvm_object;
   function void scramble(bit [flash_phy_pkg::KeySize-1:0] addr_key,
                          bit [flash_phy_pkg::KeySize-1:0] data_key,
                          bit [flash_ctrl_pkg::BusAddrByteW-2:0] addr,
-                         bit dis = 1);
+                         bit dis = 1,
+                         bit add_icv_err = 0);
     bit [FlashDataWidth-1:0] data;
     bit [71:0]               data_with_icv;
     bit [75:0]               ecc_76;
@@ -126,6 +131,9 @@ class flash_otf_item extends uvm_object;
       data = raw_fq[i][FlashDataWidth-1:0];
       if (ecc_en) begin
         data_with_icv = prim_secded_pkg::prim_secded_hamming_72_64_enc(raw_fq[i][63:0]);
+        if (add_icv_err) begin
+          data_with_icv[67:64] = ~data_with_icv[67:64];
+        end
       end else begin
         // We only need bit 67:64 when ecc_en == true.
         // So set all vector to zero when ecc_en is off.
@@ -155,6 +163,7 @@ class flash_otf_item extends uvm_object;
     bit [71:0]               data_with_icv;
     bit[flash_ctrl_pkg::BusAddrByteW-2:0] addr = mem_addr;
     data_q_t   tmp_dq;
+
     ecc_err = 'h0;
     if (region == null) begin
       `uvm_fatal("scramble", "region should be assigned before calling this function")
@@ -162,7 +171,6 @@ class flash_otf_item extends uvm_object;
       scr_en = (region.scramble_en == MuBi4True);
       ecc_en = (region.ecc_en == MuBi4True);
     end
-
     `uvm_info("rd_scr", $sformatf("size:%0d addr:%x scr_en:%0d ecc_en:%0d",
                                   fq.size(), addr, scr_en, ecc_en), UVM_MEDIUM)
     foreach (fq[i]) begin
@@ -186,6 +194,7 @@ class flash_otf_item extends uvm_object;
         icv_err = (data_with_icv[67:64] != data[67:64]);
         ecc_err |= (dec68.err[1] | icv_err);
         if (dec68.err[1] | icv_err) begin
+          err_addr = addr << 3;
           `uvm_info("DCR_DBG", $sformatf("%4d:err76:%2b synd:%x icv_err:%2b",
                                          i, dec68.err, dec68.syndrome, icv_err),
                     UVM_MEDIUM)
@@ -198,7 +207,7 @@ class flash_otf_item extends uvm_object;
 
       raw_fq.push_back(data);
 
-      if (ecc_en == 1 && ecc_err != 0) begin
+      if (skip_err_chk == 0 && ecc_err != 0) begin
         `uvm_error("rd_scr", "ecc error is detected")
       end
       addr++;
@@ -213,6 +222,7 @@ class flash_otf_item extends uvm_object;
     if (head_pad) dq = dq[1:$];
     if (tail_pad) dq = dq[0:$-1];
     raw_fq = dq2fq(dq);
+    derr = ecc_err;
   endfunction // descramble
 
   function void clear_qs();
