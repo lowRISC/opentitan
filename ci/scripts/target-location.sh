@@ -29,5 +29,5 @@ then
   REDIR='/dev/null'
 fi
 
-readonly REL_PATH=$(${REPO_TOP}/bazelisk.sh cquery $@ --output starlark --starlark:file=${REPO_TOP}/rules/output.cquery 2>$REDIR)
+readonly REL_PATH=$(${REPO_TOP}/bazelisk.sh outquery "$@" 2>$REDIR)
 echo "${REPO_TOP}/${REL_PATH}"
