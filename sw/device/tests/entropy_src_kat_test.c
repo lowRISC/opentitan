@@ -73,7 +73,7 @@ void test_sha384_kat(dif_entropy_src_t *entropy) {
   CHECK_DIF_OK(dif_entropy_src_observe_fifo_write(entropy, kInputMsg,
                                                   ARRAYSIZE(kInputMsg)));
 
-  CHECK_DIF_OK(dif_entropy_src_conditioner_end(entropy));
+  CHECK_DIF_OK(dif_entropy_src_conditioner_stop(entropy));
 
   uint32_t got[kEntropyFifoBufferSize];
   for (size_t i = 0; i < ARRAYSIZE(got); ++i) {

@@ -18,7 +18,7 @@ void entropy_testutils_boot_mode_init(void);
 /**
  * Wait for the entropy_src to reach a certain state.
  */
-void wait_entropy_src_state(const dif_entropy_src_t *entropy_src,
-                            dif_entropy_main_fsm_t state);
+void entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
+                                      dif_entropy_src_main_fsm_t state);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_ENTROPY_TESTUTILS_H_

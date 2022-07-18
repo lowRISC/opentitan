@@ -54,9 +54,9 @@ typedef enum dif_entropy_src_single_bit_mode {
 } dif_entropy_src_single_bit_mode_t;
 
 /**
- * Main FSM state
+ * Main FSM state.
  */
-typedef enum dif_entropy_main_fsm {
+typedef enum dif_entropy_src_main_fsm {
   kDifEntropySrcMainFsmStateIdle = 0x0f5,
   kDifEntropySrcMainFsmStateBootHTRunning = 0x1d2,
   kDifEntropySrcMainFsmStateBootPostHTChk = 0x16e,
@@ -78,7 +78,7 @@ typedef enum dif_entropy_main_fsm {
   kDifEntropySrcMainFsmStateAlertState = 0x1fb,
   kDifEntropySrcMainFsmStateAlertHang = 0x15c,
   kDifEntropySrcMainFsmStateError = 0x13d
-} dif_entropy_main_fsm_t;
+} dif_entropy_src_main_fsm_t;
 
 /**
  * Firmware override parameters for an entropy source.
@@ -305,7 +305,7 @@ typedef struct dif_entropy_src_alert_fail_counts {
  * This function should only need to be called once for the lifetime of the
  * `entropy` handle.
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @param config Runtime configuration parameters.
  * @param enabled The enablement state of the entropy source.
  * @return The result of the operation.
@@ -321,7 +321,7 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
  * This function should only need to be called once for the lifetime of the
  * `entropy` handle.
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @param config Runtime configuration parameters for firmware override.
  * @param enabled The enablement state of the firmware override option.
  * @return The result of the operation.
@@ -337,7 +337,7 @@ dif_result_t dif_entropy_src_fw_override_configure(
  * This function should only need to be called once for each health test that
  * requires configuration for the lifetime of the `entropy` handle.
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @param config Runtime configuration parameters for the health test.
  * @return The result of the operation.
  */
@@ -363,7 +363,7 @@ dif_result_t dif_entropy_src_set_enabled(const dif_entropy_src_t *entropy_src,
  * This function is reentrant: calling it while functionality is locked will
  * have no effect and return `kDifEntropySrcOk`.
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -372,7 +372,7 @@ dif_result_t dif_entropy_src_lock(const dif_entropy_src_t *entropy_src);
 /**
  * Checks whether this entropy source is locked.
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @param[out] is_locked Out-param for the locked state.
  * @return The result of the operation.
  */
@@ -381,9 +381,9 @@ dif_result_t dif_entropy_src_is_locked(const dif_entropy_src_t *entropy_src,
                                        bool *is_locked);
 
 /**
- * Queries the entropy source IP for its revision information.
+ * Queries the entropy_src source IP for its revision information.
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @param[out] revision Out-param for revision data.
  * @return The result of the operation.
  */
@@ -394,7 +394,7 @@ dif_result_t dif_entropy_src_get_revision(const dif_entropy_src_t *entropy_src,
 /**
  * Queries the entropy source for health test statistics.
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @param[out] stats Out-param for stats data.
  * @return The result of the operation.
  */
@@ -406,7 +406,7 @@ dif_result_t dif_entropy_src_get_health_test_stats(
 /**
  * Queries the entropy source for health test failure statistics.
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @param[out] counts Out-param for test failure data that triggers alerts.
  * @return The result of the operation.
  */
@@ -475,7 +475,7 @@ dif_result_t dif_entropy_src_observe_fifo_write(
  *
  * Initializes the conditioner. Use the `dif_entropy_src_observe_fifo_write()`
  * function to send data to the conditioner, and
- * `dif_entropy_src_conditioner_end()` once ready to end the conditioner
+ * `dif_entropy_src_conditioner_stop()` once ready to stop the conditioner
  * operation.
  *
  * This function is only available when firmware override mode is enabled. See
@@ -499,17 +499,8 @@ dif_result_t dif_entropy_src_conditioner_start(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_conditioner_end(
+dif_result_t dif_entropy_src_conditioner_stop(
     const dif_entropy_src_t *entropy_src);
-
-/**
- * Get main entropy fsm idle status
- *
- * @param entropy_src An entropy source handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_get_idle(const dif_entropy_src_t *entropy_src);
 
 /**
  * Read the fifo depth.
@@ -523,15 +514,15 @@ dif_result_t dif_entropy_src_get_fifo_depth(
     const dif_entropy_src_t *entropy_src, uint32_t *fifo_depth);
 
 /**
- * Read the current main fsm state.
+ * Reads the current main FSM state.
  *
  * @param entropy_src An entropy source handle.
- * @param[out] state The current state.
+ * @param[out] state The current FSM state.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_get_main_fsm_state(
-    const dif_entropy_src_t *entropy_src, dif_entropy_main_fsm_t *state);
+    const dif_entropy_src_t *entropy_src, dif_entropy_src_main_fsm_t *state);
 
 #ifdef __cplusplus
 }  // extern "C"

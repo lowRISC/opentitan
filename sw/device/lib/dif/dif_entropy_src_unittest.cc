@@ -602,6 +602,34 @@ TEST_F(ObserveFifoWriteTest, Success) {
   EXPECT_DIF_OK(dif_entropy_src_observe_fifo_write(&entropy_src_, buf, 4));
 }
 
+class ConditionerStartTest : public EntropySrcTest {};
+
+TEST_F(ConditionerStartTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_entropy_src_conditioner_start(nullptr));
+}
+
+TEST_F(ConditionerStartTest, ConditionerAlreadyStarted) {
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_EQ(dif_entropy_src_conditioner_start(&entropy_src_), kDifUnavailable);
+}
+
+TEST_F(ConditionerStartTest, Success) {
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_DIF_OK(dif_entropy_src_conditioner_start(&entropy_src_));
+}
+
+class ConditionerStopTest : public EntropySrcTest {};
+
+TEST_F(ConditionerStopTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_entropy_src_conditioner_stop(nullptr));
+}
+
+TEST_F(ConditionerStopTest, Success) {
+  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_DIF_OK(dif_entropy_src_conditioner_stop(&entropy_src_));
+}
+
 class ReadFifoDepthTest : public EntropySrcTest {};
 
 TEST_F(ReadFifoDepthTest, EntropyBadArg) {
@@ -618,6 +646,29 @@ TEST_F(ReadFifoDepthTest, ReadSuccess) {
   uint32_t depth;
   EXPECT_DIF_OK(dif_entropy_src_get_fifo_depth(&entropy_src_, &depth));
   EXPECT_EQ(depth, 6);
+}
+
+class GetMainFsmStateTest : public EntropySrcTest {};
+
+TEST_F(GetMainFsmStateTest, NullArgs) {
+  dif_entropy_src_main_fsm_t state;
+  EXPECT_DIF_BADARG(dif_entropy_src_get_main_fsm_state(nullptr, &state));
+  EXPECT_DIF_BADARG(dif_entropy_src_get_main_fsm_state(&entropy_src_, nullptr));
+  EXPECT_DIF_BADARG(dif_entropy_src_get_main_fsm_state(nullptr, nullptr));
+}
+
+TEST_F(GetMainFsmStateTest, Success) {
+  dif_entropy_src_main_fsm_t state;
+
+  EXPECT_READ32(ENTROPY_SRC_MAIN_SM_STATE_REG_OFFSET,
+                kDifEntropySrcMainFsmStateIdle);
+  EXPECT_DIF_OK(dif_entropy_src_get_main_fsm_state(&entropy_src_, &state));
+  EXPECT_EQ(state, kDifEntropySrcMainFsmStateIdle);
+
+  EXPECT_READ32(ENTROPY_SRC_MAIN_SM_STATE_REG_OFFSET,
+                kDifEntropySrcMainFsmStateError);
+  EXPECT_DIF_OK(dif_entropy_src_get_main_fsm_state(&entropy_src_, &state));
+  EXPECT_EQ(state, kDifEntropySrcMainFsmStateError);
 }
 
 }  // namespace
