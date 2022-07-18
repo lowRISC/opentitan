@@ -63,6 +63,31 @@ function up_to_date() {
     return 0
 }
 
+function outquery_starlark_expr() {
+    local query="$1"
+    shift
+    if [[ ${query} == "outquery" ]]; then
+        q="-one"
+    else
+        q=${query#outquery}
+    fi
+
+    case "$q" in
+        -one)
+            echo "target.files.to_list()[0].path"
+            ;;
+        -all)
+            echo "\"\\n\".join([f.path for f in target.files.to_list()])"
+            ;;
+        -*)
+            echo "\"\\n\".join([f.path for f in target.files.to_list() if \"$q\"[1:] in f.path])"
+            ;;
+        .*)
+            echo "\"\\n\".join([f.path for f in target.files.to_list() if f.path.endswith(\"$q\")])"
+            ;;
+    esac
+}
+
 function main() {
     local bindir="${REPO_TOP}/${BINDIR}"
     local file="${bindir}/bazelisk"
@@ -79,7 +104,24 @@ function main() {
         echo "sha256sum doesn't match expected value"
         exit 1
     fi
-    exec "$file" "$@"
+
+    case "$1" in
+        outquery*)
+            # The custom 'outquery' command can be used to query bazel for the
+            # outputs associated with labels.
+            # The outquery command can take several forms:
+            #   outquery: return one output file associated with the label.
+            #   outquery-all: return all output files associated with the label.
+            #   outquery-x: return output files containing the substring "x".
+            #   outquery.x: return output files ending with the substring ".x".
+            QEXPR="$(outquery_starlark_expr "$1")"
+            shift
+            exec "$file" cquery "$@" --output=starlark --starlark:expr="$QEXPR"
+            ;;
+        *)
+            exec "$file" "$@"
+            ;;
+    esac
 }
 
 main "$@"
