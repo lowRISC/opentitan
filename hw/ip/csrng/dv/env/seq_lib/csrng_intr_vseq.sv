@@ -66,7 +66,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     path1 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack", cfg.which_hw_inst_exc);
     path2 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack_sts", cfg.which_hw_inst_exc);
 
-    force_path(path1, path2, 1'b1, 1'b0);
+    force_path(path1, path2, 1'b1, 1'b1);
     // Wait for cs_hw_inst_exc interrupt
     csr_spinwait(.ptr(ral.intr_state.cs_hw_inst_exc), .exp_data(1'b1));
 
