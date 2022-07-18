@@ -714,6 +714,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     uvm_reg       alert_fail_reg      = ral.alert_fail_counts;
     uvm_reg       extht_fail_reg      = ral.extht_fail_counts;
+    uvm_reg_field any_fail_count_fld  = ral.alert_summary_fail_counts.any_fail_count;
     string        fmt;
     int           any_fail_count_regval;
     int           alert_threshold;
@@ -727,7 +728,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     fmt = "Predicting alert status with %0d new failures this window";
     `uvm_info(`gfn, $sformatf(fmt, total_fail_count), UVM_FULL)
 
-    any_fail_count_regval = `gmv(ral.alert_summary_fail_counts.any_fail_count);
+    any_fail_count_regval = `gmv(any_fail_count_fld);
 
     failure = (total_fail_count != 0);
     main_sm_exp_alert_cond = (dut_phase == STARTUP) ?
@@ -767,6 +768,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         // Now we know that all tests have passed we can clear the failure counts
         `DV_CHECK_FATAL(alert_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_DIRECT)))
         `DV_CHECK_FATAL(extht_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_DIRECT)))
+        `DV_CHECK_FATAL(any_fail_count_fld.predict(.value('0), .kind(UVM_PREDICT_DIRECT)))
       end else begin
         fmt = "Alert state persists: Fail count (%01d) >= threshold (%01d)";
         `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_HIGH)
@@ -1069,6 +1071,46 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     void'(csr.predict(.value(result), .kind(UVM_PREDICT_WRITE)));
   endfunction
 
+  // Function to check for correct values to register fields with mandatory redundancy
+  // (i.e. MultiBit boolean values or the ALERT_THRESHOLD register).
+  //
+  // Performs several scoreboarding functions:
+  // It checks that the recently written (mirrored) value is valid. If invalid, the function:
+  // - Expects a recovereable alert
+  // - Updates the prediction for the RECOV_ALERT_STS register
+  // - Samples the relevant coverpoint for recoverable alert events.
+  //
+  // Arguments:
+  // reg_name: the register to check
+  // mubi_field: the specific field to examine (when checking for bad MuBi's)
+  // sts_field_name: the name of the field to assert
+  // which_mubi: The associated coverpoint value to assert when a bad
+  //             redundancy is discovered. (includes bad writes to alert threshold
+  //             as well as all MuBi fields).
+  virtual function void check_redundancy_val(string reg_name, string mubi_field,
+                                            string sts_field_name, invalid_mubi_e which_mubi);
+    bit bad_redundancy;
+    // Check the currently predicted value for the desired register and field
+    //
+    // Almost all of the redundant values are isolated MultiBit Booleans except for
+    // ALERT_THRESHOLD in which the threhold field must equal the inverse of the
+    // inverse threshold field.
+    if (reg_name != "alert_threshold") begin
+      bad_redundancy = mubi4_test_invalid(get_reg_fld_mirror_value(ral, reg_name, mubi_field));
+    end else begin
+      bit thresh     = get_reg_fld_mirror_value(ral, "alert_threshold", "alert_threshold");
+      bit thresh_inv = get_reg_fld_mirror_value(ral, "alert_threshold", "alert_threshold_inv");
+      bad_redundancy = (thresh != ~thresh_inv);
+    end
+
+    if (bad_redundancy) begin
+      uvm_reg_field sts_field = ral.recov_alert_sts.get_field_by_name(sts_field_name);
+      `DV_CHECK_FATAL(sts_field.predict(.value(1'b1), .kind(UVM_PREDICT_READ)))
+      set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+      cov_vif.cg_mubi_err_sample(which_mubi);
+    end
+  endfunction
+
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
     bit do_read_check       = 1'b1;
@@ -1291,12 +1333,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               string msg;
               bit sw_regupd = ral.sw_regupd.sw_regupd.get_mirrored_value();
               bit do_disable, do_enable;
+
               uvm_reg_field enable_field = csr.get_field_by_name("module_enable");
               prim_mubi_pkg::mubi4_t enable_mubi = enable_field.get_mirrored_value();
               do_enable  = (enable_mubi == prim_mubi_pkg::MuBi4True);
               // Though non-mubi values sent alerts, for the
               // purposes of enablement, all invalid values are effectively disables.
               do_disable = ~do_enable;
+              check_redundancy_val("module_enable", "module_enable",
+                                   "module_enable_field_alert", invalid_module_enable);
+
               msg = $sformatf("locked? %01d", dut_reg_locked);
               `uvm_info(`gfn, msg, UVM_FULL)
               if (do_enable && !dut_pipeline_enabled) begin
@@ -1335,6 +1381,34 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                 join_none : background_process
               end
             end
+            "conf": begin
+              check_redundancy_val("conf", "fips_enable", "fips_enable_field_alert",
+                                   invalid_fips_enable);
+              check_redundancy_val("conf", "entropy_data_reg_enable",
+                                   "entropy_data_reg_en_field_alert",
+                                   invalid_entropy_data_reg_enable);
+              check_redundancy_val("conf", "threshold_scope", "threshold_scope_field_alert",
+                                   invalid_threshold_scope);
+              check_redundancy_val("conf", "rng_bit_enable", "rng_bit_enable_field_alert",
+                                   invalid_rng_bit_enable);
+            end
+            "entropy_control": begin
+              check_redundancy_val("entropy_control", "es_route", "es_route_field_alert",
+                                   invalid_es_route);
+              check_redundancy_val("entropy_control", "es_type", "es_type_field_alert",
+                                   invalid_es_type);
+            end
+            "alert_threshold": begin
+              check_redundancy_val("alert_threshold", "", "es_thresh_cfg_alert",
+                                   invalid_alert_threshold);
+            end
+            "fw_ov_control": begin
+              check_redundancy_val("fw_ov_control", "fw_ov_mode", "fw_ov_mode_field_alert",
+                                   invalid_fw_ov_mode);
+              check_redundancy_val("fw_ov_control", "fw_ov_entropy_insert",
+                                   "fw_ov_entropy_insert_field_alert",
+                                    invalid_fw_ov_entropy_insert);
+            end
             "fw_ov_sha3_start": begin
               // The fw_ov_sha3_start field triggers the internal processing of SHA data
               mubi4_t start_mubi  = ral.fw_ov_sha3_start.fw_ov_insert_start.get_mirrored_value();
@@ -1349,6 +1423,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               mubi4_t insert_mubi = ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value();
               bit fw_ov_insert    = fw_ov_mode && (insert_mubi == MuBi4True);
               bit do_disable_sha  = fw_ov_sha_enabled && (start_mubi == MuBi4False);
+
+              check_redundancy_val("fw_ov_sha3_start", "fw_ov_insert_start",
+                                   "fw_ov_sha3_start_field_alert", invalid_fw_ov_insert_start);
+
               // Disabling the fw_ov_sha3_start field triggers the conditioner, but only
               // if the DUT is configured properly.
               if (dut_pipeline_enabled && is_fips_mode && fw_ov_insert && do_disable_sha) begin

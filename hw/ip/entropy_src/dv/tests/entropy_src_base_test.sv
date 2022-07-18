@@ -27,7 +27,8 @@ class entropy_src_base_test extends cip_base_test #(
   // Overrides should happen in the specific testcase.
 
   virtual function void configure_env();
-    // TODO: randomize seed_cnt
+    // seed_cnt only used by smoke test
+    // so there is no need to randomize it.
     cfg.seed_cnt                  = 1;
     cfg.otp_en_es_fw_read_pct     = 100;
     cfg.otp_en_es_fw_over_pct     = 100;
@@ -43,6 +44,7 @@ class entropy_src_base_test extends cip_base_test #(
     cfg.soft_mtbf                 = -1.0;
     cfg.hard_mtbf                 = -1.0;
 
+    cfg.dut_cfg.bad_mubi_cfg_pct  = 0;
   endfunction
 
 endclass : entropy_src_base_test

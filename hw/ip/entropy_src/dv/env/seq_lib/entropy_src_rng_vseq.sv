@@ -99,7 +99,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     super.enable_dut();
   endtask
 
-  virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg, bit do_disable=1'b0);
+  virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg,
+                                realtime pause=default_cfg_pause,
+                                bit do_disable=1'b0,
+                                output bit completed,
+                                output bit regwen);
     int hi_thresh, lo_thresh;
 
     if (do_disable) begin
@@ -149,7 +153,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // get written last
     // Note there is no need to disable the dut again for the remaining registers
     // it has already been done above.
-    super.entropy_src_init(.newcfg(newcfg), .do_disable(1'b0));
+    super.entropy_src_init(.newcfg(newcfg), .pause(pause), .do_disable(1'b0),
+                           .completed(completed), .regwen(regwen));
 
   endtask
 
@@ -170,6 +175,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     m_csrng_pull_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
         type_id::create("m_csrng_pull_seq");
 
+    // Don't configure the DUT in dut_init (which is called in pre-start).  Instead wait until
+    // we reach the main body() task, where we can handle any configuration alerts.
+    do_entropy_src_init = 1'b0;
 
     super.pre_start();
   endtask
@@ -187,8 +195,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     csr_wr(.ptr(ral.module_enable.module_enable), .value(MuBi4False));
     // Disabling the module will clear the error state,
     // as well as the observe and entropy_data FIFOs
-    // Clear all three related interupts here
-    csr_wr(.ptr(ral.intr_state), .value(32'h7));
+    // Clear all interupts here
+    csr_wr(.ptr(ral.intr_state), .value(32'hf));
 
     // Optionally switch the device into FIPS mode for the remainder of the test
     if (switch_to_fips_mode) begin
@@ -197,7 +205,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     end
 
     // Clear all recoverable alerts
-    csr_wr(.ptr(ral.recov_alert_sts), .value(32'hffff_ffff));
+    csr_wr(.ptr(ral.recov_alert_sts), .value('0));
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
     if (do_check_ht_diag) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
@@ -239,7 +247,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   endtask
 
   task process_interrupts();
-    bit [TL_DW - 1:0] intr_status, clear_intr;
+    bit [TL_DW - 1:0] intr_status;
     `uvm_info(`gfn, "process interrupts", UVM_HIGH)
 
     // avoid zero delay loop during reset
@@ -310,14 +318,16 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     m_csrng_pull_seq.wait_for_sequence_state(UVM_BODY);
 
     `uvm_info(`gfn, "Stopping CSRNG seq", UVM_LOW)
-    m_csrng_pull_seq.stop(.hard(1));
-    `uvm_info(`gfn, "Stopping CSRNG sequencer", UVM_LOW)
-    m_csrng_pull_seq.wait_for_sequence_state(UVM_FINISHED);
+    m_csrng_pull_seq.stop(.hard(0));
     `uvm_info(`gfn, "Stopping RNG seq", UVM_LOW)
     m_rng_push_seq.stop(.hard(0));
-    m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
     `uvm_info(`gfn, "SEQs SHUTDOWN applying CSRNG reset", UVM_MEDIUM)
     apply_reset(.kind("CSRNG_ONLY"));
+    `uvm_info(`gfn, "Waiting for SEQs finished", UVM_MEDIUM)
+    m_csrng_pull_seq.wait_for_sequence_state(UVM_FINISHED);
+    m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
+    `uvm_info(`gfn, "SEQs shutdown", UVM_LOW)
+
   endtask
 
   function void randomize_unexpected_config_time();
@@ -335,7 +345,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     if (cfg.mean_rand_csr_alert_time > 0) begin
       sched_csr_alert_time = randomize_failure_time(cfg.mean_rand_csr_alert_time);
       // randomize_failure_time uses negative values to communicate errors
-      `uvm_info(`gfn, $sformatf("sched_csr_alert_time: %g", sched_csr_alert_time), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("sched_csr_alert_time: %g", sched_csr_alert_time), UVM_FULL)
       `DV_CHECK_FATAL(sched_csr_alert_time >= 0, "Failed to schedule CSR alert event")
     end else begin
       // Use a negative value here to communicate no scheduled events
@@ -357,7 +367,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   endtask
 
   task post_start();
-    expect_fatal_alerts = 1;
     super.post_start();
   endtask
 
@@ -404,6 +413,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
                            (cfg.dut_cfg.fw_read_enable == MuBi4True));
     do_inject           = injection_mandatory || cfg.spurious_inject_entropy;
 
+    `uvm_info(`gfn, "Starting entropy injection thread", UVM_LOW)
+
     if (do_inject) begin
       while (do_background_procs) begin
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fw_ov_insert_per_seed);
@@ -424,12 +435,15 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         cfg.clk_rst_vif.wait_clks(dly_to_insert_entropy);
       end
     end
+
+    `uvm_info(`gfn, "Exiting entropy injection thread", UVM_LOW)
+
   endtask
 
   // A thread task to continously handle interrupts
   // runs until the timer thread
   task interrupt_handler_thread();
-    `uvm_info(`gfn, "Starting interrupt loop", UVM_HIGH)
+    `uvm_info(`gfn, "Starting interrupt loop", UVM_LOW)
     while (do_background_procs) begin
       process_interrupts();
       // If a NONFIPS-to-FIPS re-enable is needed, coordinate the
@@ -445,21 +459,24 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         `uvm_info(`gfn, "Reinit complete", UVM_HIGH)
        end
     end
-    `uvm_info(`gfn, "Exiting interrupt loop", UVM_HIGH)
+    `uvm_info(`gfn, "Exiting interrupt loop", UVM_LOW)
   endtask
 
   // A thread to prompt the simulation to end at the correct time.
   // 1. Sets continue_sim to 0 when simulation is due to end
   // 2. Stops background processes
-  task master_timer_thread();
+  task main_timer_thread();
     realtime delta = cfg.sim_duration - $realtime();
+    `uvm_info(`gfn, "Starting main timer", UVM_LOW)
+
     // Assumes that continue_sim has already
     // been set to 1
     if (delta > 0) begin
       #(delta);
-      do_background_procs = 0;
-      continue_sim = 0;
     end
+    do_background_procs = 0;
+    continue_sim = 0;
+    `uvm_info(`gfn, "Exiting main timer", UVM_LOW)
   endtask
 
   // Keep an eye on the number of SEEDS received on the
@@ -470,6 +487,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     bit boot_mode_csrng;
     mubi4_t fips_enable, es_route;
 
+    `uvm_info(`gfn, "Starting re-init monitor", UVM_LOW)
+
     wait(cfg.under_reset == 0);
     csr_rd(.ptr(ral.conf.fips_enable), .value(fips_enable));
     csr_rd(.ptr(ral.entropy_control.es_route), .value(es_route));
@@ -478,68 +497,104 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
                       es_route != MuBi4True;
 
     if (boot_mode_csrng && do_background_procs) begin
-      fork : isolation_fork
-        fork
-          begin
-            m_csrng_pull_seq.wait_for_items_processed(csrng_pull_seq_seed_offset + 1);
-            // Notify the interrtupt/CSR access thread after the single boot mode seed has been
-            // received
-            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut)
-            cfg.clk_rst_vif.wait_clks(dly_to_reenable_dut);
-            // restart the DUT in continuous mode
-            `uvm_info(`gfn, "Triggering reinit from BOOT to Continuous Mode", UVM_MEDIUM)
-            do_reenable = 1;
-          end
-          // Give up if we get a call to stop
-          wait(!do_background_procs);
-        join_any
-        disable fork;
-      join
+      `uvm_info(`gfn, "Waiting for CSRNG Seed", UVM_MEDIUM)
+      `DV_SPINWAIT_EXIT(m_csrng_pull_seq.wait_for_items_processed(csrng_pull_seq_seed_offset + 1);,
+                        wait (!do_background_procs))
+      if(do_background_procs) begin
+        // Notify the interrtupt/CSR access thread after the single boot mode seed has been
+        // received
+        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut)
+        `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_clks(dly_to_reenable_dut);,
+                          wait (!do_background_procs))
+        // restart the DUT in continuous mode
+        `uvm_info(`gfn, "Triggering reinit from BOOT to Continuous Mode", UVM_MEDIUM)
+        if (do_background_procs) do_reenable = 1;
+      end
     end
+    `uvm_info(`gfn, "Exiting re-init monitor", UVM_LOW)
   endtask
 
   task forced_alert_thread();
     realtime delta;
     string msg;
+
+    `uvm_info(`gfn, "Starting forced-alert thread", UVM_LOW)
+
     while (do_background_procs) begin
       randomize_csr_alert_time();
       if (sched_csr_alert_time > 0) begin
         delta = sched_csr_alert_time - $realtime();
-        fork : isolation_fork
-          fork
-            #(delta);
-            wait(!do_background_procs);
-          join_any
-          disable fork;
-        join
-        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_alert_value);
-        msg = $sformatf("Generating alert via ERR_CODE_TEST with err_code %d", csr_alert_value);
-        `uvm_info(`gfn, msg, UVM_MEDIUM)
-        csr_wr(.ptr(ral.err_code_test.err_code_test), .value(csr_alert_value));
-        // This may generate an alert.  Most codes, except code 22 (mismatched counter primitives)
-        // only generate alerts when enabled.  Code 22 always generates an alert.
+        `DV_SPINWAIT_EXIT(#(delta);, wait(!do_background_procs))
+        if (do_background_procs) begin
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_alert_value);
+          msg = $sformatf("Generating alert via ERR_CODE_TEST with err_code %d", csr_alert_value);
+          `uvm_info(`gfn, msg, UVM_MEDIUM)
+          csr_wr(.ptr(ral.err_code_test.err_code_test), .value(csr_alert_value));
+          // This may generate an alert.  Most codes, except code 22 (mismatched counter primitives)
+          // only generate alerts when enabled.  Code 22 always generates an alert.
+        end
       end
     end
+    `uvm_info(`gfn, "Exiting forced-alert thread", UVM_LOW)
+
   endtask
 
   task reconfig_timer_thread();
     realtime delta;
+    string msg;
+
+    `uvm_info(`gfn, "Starting reconfig timer thread", UVM_LOW)
+
     randomize_unexpected_config_time();
     if (sched_reconfig_time > 0) begin
       delta = (sched_reconfig_time - $realtime());
-      fork : isolation_fork
-        fork
-          begin
-            #(delta);
-            `uvm_info(`gfn, $sformatf("Triggering reconfig after %0.2f ms", delta/1ms), UVM_HIGH)
-          end
-          wait(!do_background_procs);
-        join_any
-        disable fork;
-      join
+      msg  = $sformatf("Triggering reconfig after %0.2f ms", delta/1ms);
+      `DV_SPINWAIT_EXIT(#(delta);, wait(!do_background_procs);)
+      if(do_background_procs) begin
+        `uvm_info(`gfn, msg, UVM_MEDIUM)
+      end
       // Stop other background procs (if they haven't been already)
-      // This will prompt a reconfig.
+      // This will prompt a reconfig
       do_background_procs = 0;
+    end
+    `uvm_info(`gfn, "Exiting reconfig timer thread", UVM_LOW)
+  endtask
+
+  // Make a new random dut configuration according
+  // to our current DUT constraints
+  task random_reconfig(bit do_reset);
+    bit reconfig_complete;
+    bit regwen;
+
+    entropy_src_dut_cfg altcfg=cfg.dut_cfg;
+    if (do_reset) begin
+      apply_reset(.kind("HARD_DUT_ONLY"));
+      post_apply_reset(.reset_kind("HARD"));
+    end
+    wait(cfg.under_reset == 0);
+    do_reenable = 0;
+
+    do begin
+      `DV_CHECK_RANDOMIZE_FATAL(altcfg);
+      entropy_src_init(.newcfg(altcfg),
+                       .do_disable(1'b1),
+                       .completed(reconfig_complete),
+                       .regwen(regwen));
+      if (!reconfig_complete) begin
+        // Don't do any more bad MuBi's settings this round.
+        `uvm_info(`gfn, "Disabling Bad Mubi settings for now", UVM_MEDIUM)
+         altcfg.bad_mubi_cfg_pct = 0;
+      end
+    end while (!reconfig_complete && continue_sim);
+    init_successful = 1;
+    // Capture the current DUT settings in cfg.dut_cfg
+    // This presents the results of the update
+    // to the scoreboard for review.
+    check_reconfig();
+    if (regwen || do_reset) begin
+       cfg.dut_cfg = altcfg;
+       `uvm_info(`gfn, "DUT Reconfigured", UVM_LOW)
+       `uvm_info(`gfn, cfg.dut_cfg.convert2string(), UVM_LOW)
     end
   endtask
 
@@ -552,22 +607,20 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // Start sequences in the background
     start_indefinite_seqs();
 
-    // Do the first DUT initialization as usual
-    super.body();
-
     fork
-      master_timer_thread();
-
+      main_timer_thread();
       while (continue_sim) begin
         bit regwen;
-        // For use when doing random reconfigs
-        entropy_src_dut_cfg altcfg;
-
         do_background_procs = 1;
         reset_needed = 0;
 
+        // If the initial configuration (in dut_init) failed, start with a reconfig.
+        if (!init_successful) random_reconfig(0);
+
         // Explicitly enable the DUT
         enable_dut();
+
+        `uvm_info(`gfn, "Launching event threads", UVM_LOW)
 
         // In addition to the CSRNG and RNG sequences
         // the following four threads will run until
@@ -581,40 +634,16 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         join
 
         if(!continue_sim) break;
-
-        // Resuming single thread operation
+        `uvm_info(`gfn, "Resuming single thread operation", UVM_LOW)
 
         //
         // Resetting and/or reconfiguring before the next loop.
         //
-
-        if (reset_needed) begin
-          apply_reset(.kind("HARD_DUT_ONLY"));
-          post_apply_reset(.reset_kind("HARD"));
-          wait(cfg.under_reset == 0);
-        end
-
-        // Make a new random dut configuration according
-        // to our current DUT constraints
-        altcfg=cfg.dut_cfg;
-        `DV_CHECK_RANDOMIZE_FATAL(altcfg)
-        entropy_src_init(altcfg);
-
-        do_reenable = 0;
-
-        // Capture the current DUT settings in cfg.dut_cfg
-        // This presents the results of the update
-        // to the scoreboard for review.
-        check_reconfig();
-        csr_rd(.ptr(ral.regwen.regwen), .value(regwen));
-        if (regwen || reset_needed) begin
-          cfg.dut_cfg = altcfg;
-          `uvm_info(`gfn, "DUT Reconfigured", UVM_LOW)
-          `uvm_info(`gfn, cfg.dut_cfg.convert2string(), UVM_LOW)
-        end
-
+        random_reconfig(reset_needed);
         // Now we can clear the reset flag.
         reset_needed = 0;
+        `uvm_info(`gfn, "Reconfig complete, resuming simulation", UVM_MEDIUM)
+
         // Also, don't schedule a reinit yet (for BOOT-to-Continuous mode switching)
 
       end

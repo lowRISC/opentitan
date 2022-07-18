@@ -18,7 +18,6 @@ class entropy_src_smoke_test extends entropy_src_base_test;
     cfg.dut_cfg.route_software_pct          = 100;
     cfg.dut_cfg.entropy_data_reg_enable_pct = 100;
     cfg.dut_cfg.ht_threshold_scope_pct      = 100;
-    cfg.dut_cfg.use_invalid_mubi            = 0;
 
     // Disable tight HT thresholds, as the smoke vseq does
     // not expect HT failures.

@@ -53,6 +53,7 @@ class entropy_src_rng_test extends entropy_src_base_test;
 
     cfg.dut_cfg.fips_enable_pct             = 50;
     cfg.dut_cfg.module_enable_pct           = 100;
+    cfg.dut_cfg.bad_mubi_cfg_pct            = 50;
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
 
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)

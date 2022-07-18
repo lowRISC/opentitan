@@ -12,7 +12,6 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
   push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq;
 
   task body();
-    super.body();
 
     seed_cnt = cfg.seed_cnt;
 
