@@ -38,8 +38,8 @@ static void entropy_data_flush(dif_entropy_src_t *entropy_src) {
   // available in FW override mode.
   const uint32_t kMaxReadCount = 12;
 
-  while (dif_entropy_src_avail(entropy_src) == kDifOk) {
-    CHECK_DIF_OK(dif_entropy_src_read(entropy_src, &entropy_bits));
+  while (dif_entropy_src_is_entropy_available(entropy_src) == kDifOk) {
+    CHECK_DIF_OK(dif_entropy_src_non_blocking_read(entropy_src, &entropy_bits));
     CHECK(entropy_bits != 0);
     read_count++;
     if (read_count >= kMaxReadCount) {
@@ -104,7 +104,7 @@ void test_firmware_override(dif_entropy_src_t *entropy) {
     CHECK_DIF_OK(dif_entropy_src_observe_fifo_write(entropy, buf,
                                                     kEntropyFifoBufferSize));
     word_count += kEntropyFifoBufferSize;
-  } while (dif_entropy_src_avail(entropy) == kDifUnavailable);
+  } while (dif_entropy_src_is_entropy_available(entropy) == kDifUnavailable);
   LOG_INFO("Processed %d words via FIFO_OVR buffer.", word_count);
   entropy_data_flush(entropy);
 }

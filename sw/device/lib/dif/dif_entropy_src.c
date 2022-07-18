@@ -394,36 +394,37 @@ dif_result_t dif_entropy_src_get_alert_fail_counts(
   return kDifOk;
 }
 
-static bool get_entropy_avail(const dif_entropy_src_t *entropy_src) {
+static bool is_entropy_available(const dif_entropy_src_t *entropy_src) {
   return mmio_region_get_bit32(entropy_src->base_addr,
                                ENTROPY_SRC_INTR_STATE_REG_OFFSET,
                                ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT);
 }
 
-dif_result_t dif_entropy_src_avail(const dif_entropy_src_t *entropy_src) {
+dif_result_t dif_entropy_src_is_entropy_available(
+    const dif_entropy_src_t *entropy_src) {
   if (entropy_src == NULL) {
     return kDifBadArg;
   }
 
-  return get_entropy_avail(entropy_src) ? kDifOk : kDifUnavailable;
+  return is_entropy_available(entropy_src) ? kDifOk : kDifUnavailable;
 }
 
-dif_result_t dif_entropy_src_read(const dif_entropy_src_t *entropy_src,
-                                  uint32_t *word) {
+dif_result_t dif_entropy_src_non_blocking_read(
+    const dif_entropy_src_t *entropy_src, uint32_t *word) {
   if (entropy_src == NULL || word == NULL) {
     return kDifBadArg;
   }
 
-  // Check if entropy is available
-  if (!get_entropy_avail(entropy_src)) {
+  // Check if entropy is available.
+  if (!is_entropy_available(entropy_src)) {
     return kDifUnavailable;
   }
 
   *word = mmio_region_read32(entropy_src->base_addr,
                              ENTROPY_SRC_ENTROPY_DATA_REG_OFFSET);
 
-  // clear interrupt state after fetching read
-  // if there is still entropy available, the interrupt state will set again
+  // Clear interrupt state after fetching read if there is still entropy
+  // available, the interrupt state will set again.
   mmio_region_nonatomic_set_bit32(entropy_src->base_addr,
                                   ENTROPY_SRC_INTR_STATE_REG_OFFSET,
                                   ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT);
