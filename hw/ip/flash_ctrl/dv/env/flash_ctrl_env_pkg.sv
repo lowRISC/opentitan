@@ -187,6 +187,19 @@ package flash_ctrl_env_pkg;
     NumTgt = 4
   } flash_tgt_prefix_e;
 
+  typedef enum {
+    FlashEccDisabled,
+    FlashEccEnabled,
+    FlashSerrTestMode,
+    FlashDerrTestMode,
+    FlashIerrTestMode
+  } ecc_mode_e;
+
+  typedef enum {
+    ReadTaskCtrl = 0,
+    ReadTaskHost = 1
+  } read_task_e;
+
   typedef struct packed {
     mubi4_t en;           // enable this region
     mubi4_t read_en;      // enable reads
