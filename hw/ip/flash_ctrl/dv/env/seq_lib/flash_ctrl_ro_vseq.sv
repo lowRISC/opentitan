@@ -17,18 +17,19 @@ class flash_ctrl_ro_vseq extends flash_ctrl_otf_base_vseq;
 
     fork
       begin
-        for (int i = 0; i < 1000; ++i) begin
+        for (int i = 0; i < 10; ++i) begin
           fork
-            send_rand_host_rd();
+            send_rand_host_rd(, i);
           join_none
           #0;
         end
+        `JDBG(("TEST: outstanding_access:%0d", csr_utils_pkg::outstanding_accesses))
         csr_utils_pkg::wait_no_outstanding_access();
       end
       begin
         repeat(100) begin
-          num = $urandom_range(CTRL_TRANS_MIN, CTRL_TRANS_MAX);
-          bank = $urandom_range(0, 1);
+          num = 1;//$urandom_range(CTRL_TRANS_MIN, CTRL_TRANS_MAX);
+          bank = 0;//$urandom_range(0, 1);
           read_flash(ctrl, bank, num);
         end
       end

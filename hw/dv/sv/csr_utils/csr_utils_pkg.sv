@@ -25,10 +25,12 @@ package csr_utils_pkg;
 
   function automatic void increment_outstanding_access();
     outstanding_accesses++;
+    `JDBG(("OSTD inc ost : %0d",outstanding_accesses))
   endfunction
 
   function automatic void decrement_outstanding_access();
     outstanding_accesses--;
+    `JDBG(("OSTD dec ost : %0d",outstanding_accesses))
   endfunction
 
   task automatic wait_no_outstanding_access();

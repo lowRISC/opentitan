@@ -41,7 +41,7 @@ class flash_ctrl_base_test #(
   endfunction : get_type_name
 
   `uvm_component_new
-
+  int run_cnt = 1;
   // the base class dv_base_test creates the following instances:
   // flash_ctrl_env_cfg: cfg
   // flash_ctrl_env:     env
@@ -56,5 +56,23 @@ class flash_ctrl_base_test #(
     void'($value$plusargs("multi_alert=%0b", cfg.multi_alert_en));
     void'($value$plusargs("ecc_mode=%0d", cfg.ecc_mode));
     void'($value$plusargs("serr_pct=%0d", cfg.serr_pct));
+    void'($value$plusargs("derr_pct=%0d", cfg.derr_pct));
+    void'($value$plusargs("ierr_pct=%0d", cfg.ierr_pct));
   endfunction
+
+  task run_phase(uvm_phase phase);
+    if ($value$plusargs("rerun=%0d", run_cnt)) begin
+      `uvm_info("TEST", $sformatf("run_cnt is set to %0d", run_cnt), UVM_LOW)
+    end
+    phase.raise_objection(this);
+    run_test_seq = 0;
+    super.run_phase(phase);
+
+    repeat(run_cnt) begin
+      run_seq(test_seq_s, phase);
+      env.virtual_sequencer.stop_sequences();
+    end
+    phase.drop_objection(this);
+
+  endtask // run_phase
 endclass : flash_ctrl_base_test

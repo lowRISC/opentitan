@@ -202,7 +202,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       inout bit [BUS_DW-1:0]  data,
       output bit              completed,
       output bit              saw_err,
-      input                   uint tl_access_timeout_ns = default_spinwait_timeout_ns,
+      input uint              tl_access_timeout_ns = default_spinwait_timeout_ns,
       input bit [BUS_DBW-1:0] mask = '1,
       input bit               check_rsp = 1'b1,
       input bit               exp_err_rsp = 1'b0,
@@ -211,7 +211,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       input bit               check_exp_data = 1'b0,
       input bit               blocking = csr_utils_pkg::default_csr_blocking,
       input                   mubi4_t instr_type = MuBi4False,
-                              tl_sequencer tl_sequencer_h = p_sequencer.tl_sequencer_h,
+      tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
       input                   tl_intg_err_e tl_intg_err_type = TlIntgErrNone,
       input int               req_abort_pct = 0);
 
@@ -220,12 +220,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (blocking) begin
       tl_access_sub(addr, write, data, completed, saw_err, rsp, tl_access_timeout_ns, mask,
                     check_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data, req_abort_pct,
-                    instr_type, tl_sequencer_h, tl_intg_err_type, use_rsp_ff);
+                    instr_type, tl_sequencer_h, tl_intg_err_type);
     end else begin
       fork
         tl_access_sub(addr, write, data, completed, saw_err, rsp, tl_access_timeout_ns, mask,
                       check_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data,
-                      req_abort_pct, instr_type, tl_sequencer_h, tl_intg_err_type, use_rsp_ff);
+                      req_abort_pct, instr_type, tl_sequencer_h, tl_intg_err_type);
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
       #0;
@@ -262,6 +262,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           tl_seq.max_req_delay = 0;
         end
         tl_seq.req_abort_pct = req_abort_pct;
+        `JDBG(("req_csr:0x%x", addr))
         csr_utils_pkg::increment_outstanding_access();
         `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq,
             addr  == local::addr;
@@ -280,10 +281,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             `DV_CHECK_EQ(masked_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
           end
         end
-        if (use_rsp_ff == 1) begin
-          ff_data = exp_rsp_ff.pop_front();
-          exp_err_rsp = ff_data[BUS_AW];
-        end
+//        if (use_rsp_ff == 1) begin
+//          ff_data = exp_rsp_ff.pop_front();
+//          exp_err_rsp = ff_data[BUS_AW];
+//        end
         if (check_rsp && !cfg.under_reset && tl_intg_err_type == TlIntgErrNone) begin
           `DV_CHECK_EQ(rsp.d_error, exp_err_rsp,
                        $sformatf("unexpected error response for addr: 0x%x", rsp.a_addr))
@@ -294,6 +295,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         completed = rsp.rsp_completed;
         saw_err = rsp.d_error;
 
+        `JDBG(("rsp_csr:0x%x", addr))
         csr_utils_pkg::decrement_outstanding_access();,
         // thread to check timeout
         $sformatf("Timeout waiting tl_access : addr=0x%0h", addr),
