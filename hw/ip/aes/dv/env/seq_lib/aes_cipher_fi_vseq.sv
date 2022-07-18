@@ -23,6 +23,8 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
   rand int                  if_num;
   rand int                  target;
 
+  int                       if_size;
+
 
   task body();
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s",
@@ -43,8 +45,10 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
             if (!randomize(if_num) with { if_num inside { [0:2] };}) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
+            // workaround for vcs issue
+            if_size = cfg.aes_cipher_control_fi_vif[if_num].get_if_size();
             if (!randomize(target) with {
-              target inside { [0:cfg.aes_cipher_control_fi_vif[if_num].get_if_size()-1]};}) begin
+              target inside { [0:if_size -1]};}) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
             cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
