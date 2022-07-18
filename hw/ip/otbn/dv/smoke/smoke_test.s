@@ -241,6 +241,7 @@ bn.wsrw 0x3 /* ACC */, w26
 
 bn.mulqacc           w27.0, w28.0, 0
 bn.mulqacc           w27.1, w28.0, 64
+bn.xor        w29,   w29,   w29
 bn.mulqacc.so w29.L, w27.0, w28.1, 64
 bn.mulqacc           w27.2, w28.0, 0
 bn.mulqacc           w27.1, w28.1, 0
@@ -253,6 +254,7 @@ bn.mulqacc           w27.3, w28.1, 0
 bn.mulqacc           w27.2, w28.2, 0
 bn.mulqacc           w27.1, w28.3, 0
 bn.mulqacc           w27.3, w28.2, 64
+bn.xor        w30,   w30,   w30
 bn.mulqacc.so w30.L, w27.2, w28.3, 64
 bn.mulqacc.so w30.U, w27.3, w28.3, 0
 
