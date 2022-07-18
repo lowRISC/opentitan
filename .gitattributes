@@ -1,5 +1,13 @@
 # cdc
-hw/top_*/cdc/*.tcl          cdc
-hw/cdc/tools/*/run-cdc.tcl  cdc
-hw/cdc/tools/dvsim/cdc.mk   cdc
-# common_cdc_cfg.hjson & verixcdc.hjson may affect dvsim flow, so leave it
+hw/top_*/cdc/chip*cdc*.hjson cdc dvsim
+hw/top_*/cdc/*.tcl           cdc
+hw/cdc/tools/*/run-cdc.tcl   cdc
+hw/cdc/tools/dvsim/cdc.mk    cdc dvsim
+hw/cdc/tools/dvsim/*.hjson   cdc dvsim
+
+# rdc: handles as CDC
+hw/top_*/rdc/chip*rdc*.hjson cdc dvsim
+hw/top_*/rdc/*.tcl           cdc
+hw/rdc/tools/*/run-rdc.tcl   cdc
+hw/rdc/tools/dvsim/rdc.mk    cdc dvsim
+hw/rdc/tools/dvsim/*.hjson   cdc dvsim
