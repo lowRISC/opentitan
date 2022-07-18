@@ -40,6 +40,7 @@ class flash_ctrl_smoke_hw_vseq extends flash_ctrl_base_vseq;
 
     // Memory protection regions settings. One MP region, Single Page
     flash_mp_region_cfg_t mp_region;
+    bit                                 comp;
 
     default_region_read_en    = MuBi4True;
     default_region_program_en = MuBi4True;
@@ -89,7 +90,8 @@ class flash_ctrl_smoke_hw_vseq extends flash_ctrl_base_vseq;
     // Host direct read of random written value
     `uvm_info(`gfn, $sformatf("Starting direct read"), UVM_HIGH)
     for (int j = 0; j < 10; j++) begin
-      do_direct_read(.addr(j * 4), .mask('1), .blocking(1), .check_rdata(0), .rdata(rdata));
+      do_direct_read(.addr(j * 4), .mask('1), .blocking(1), .check_rdata(0), .rdata(rdata),
+                     .completed(comp));
       exp_data.push_back(rdata);
     end
 

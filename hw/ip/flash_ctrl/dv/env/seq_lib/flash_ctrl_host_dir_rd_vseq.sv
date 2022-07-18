@@ -148,7 +148,7 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
   endtask : body
 
   task do_tasks();
-
+    bit comp;
     //enable polling of fifo status for frontdoor write and read
     poll_fifo_status = 1;
 
@@ -181,7 +181,8 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
 
     for (int j = 0; j < flash_op.num_words; j++) begin
       read_addr = flash_op.addr + 4 * j;
-      do_direct_read(.addr(read_addr), .mask('1), .blocking(1'b0), .check_rdata(0), .rdata(rdata));
+      do_direct_read(.addr(read_addr), .mask('1), .blocking(1'b0), .check_rdata(0), .rdata(rdata),
+                     .completed(comp));
     end
     csr_utils_pkg::wait_no_outstanding_access();
 
@@ -222,7 +223,8 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
 
     for (int j = 0; j < flash_op.num_words; j++) begin
       read_addr = flash_op.addr + 4 * j;
-      do_direct_read(.addr(read_addr), .mask('1), .blocking(1'b0), .check_rdata(0), .rdata(rdata));
+      do_direct_read(.addr(read_addr), .mask('1), .blocking(1'b0), .check_rdata(0), .rdata(rdata),
+                     .completed(comp));
     end
     csr_utils_pkg::wait_no_outstanding_access();
 

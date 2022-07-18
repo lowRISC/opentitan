@@ -399,10 +399,12 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   // host read data.
   virtual task host_read_op_data(flash_op_t flash_op);
     data_4s_t rdata;
+    bit completed;
     exp_data.delete();
     for (int j = 0; j < flash_op.num_words; j++) begin
       read_addr = flash_op.addr + 4 * j;
-      do_direct_read(.addr(read_addr), .mask('1), .blocking(1), .check_rdata(0), .rdata(rdata));
+      do_direct_read(.addr(read_addr), .mask('1), .blocking(1), .check_rdata(0), .rdata(rdata),
+                     .completed(completed));
       exp_data.push_back(rdata);
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
     end

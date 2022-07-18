@@ -291,7 +291,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     flash_otf_item exp_item;
     int page;
     flash_op_t flash_op;
-    bit overflow = 0;
+    bit                                    completed;
+    bit                                    derr;
+    bit                                    use_rsp_ff = 0;
+    bit               overflow = 0;
 
     if (cfg.ecc_mode > 0) begin
       end_addr = addr + num * 4 - 1;
@@ -335,7 +338,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         end
       end
 
-      do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata));
+      do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata),
+                     .completed(completed), .exp_err_rsp(derr), .use_rsp_ff(use_rsp_ff));
       exp_item.dq.push_back(rdata);
 
       p_sequencer.eg_exp_host_port[bank].write(exp_item);

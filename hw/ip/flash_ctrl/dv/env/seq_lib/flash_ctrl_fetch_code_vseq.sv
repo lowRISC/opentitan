@@ -297,7 +297,7 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
 
   // Task to Check Code Access
   virtual task check_code_access(input bit opt);
-
+    bit comp;
     // Local Variables
     addr_t read_addr;
     data_t rdata;
@@ -319,7 +319,8 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
       read_addr = flash_op.addr + 4 * i;
       // Note: rdata is omitted, as it cannot be directly compared with Backdoor reads
       do_direct_read(.addr(read_addr), .mask('1), .blocking(cfg.block_host_rd), .check_rdata(0),
-                     .instr_type(instr_type), .rdata(rdata_unused), .exp_err_rsp(opt));
+                     .instr_type(instr_type), .rdata(rdata_unused), .exp_err_rsp(opt),
+                     .completed(comp));
       cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
     csr_utils_pkg::wait_no_outstanding_access();

@@ -59,6 +59,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // mask out bits out of the csr/mem range and LSB 2 bits
   bit [BUS_AW-1:0] csr_addr_mask[string];
 
+  // Multithread outstanding response
+  bit [BUS_AW:0]   exp_rsp_ff[$];
+
   // This knob is used in run_seq_with_rand_reset_vseq to control how long we wait before injecting
   // a reset.
   rand uint rand_reset_delay;
@@ -184,6 +187,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input mubi4_t           instr_type = MuBi4False,
                          tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
                          input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone);
+
     bit completed, saw_err;
     tl_access_w_abort(addr, write, data, completed, saw_err, tl_access_timeout_ns, mask, check_rsp,
                       exp_err_rsp, exp_data, compare_mask, check_exp_data, blocking, instr_type,
@@ -198,7 +202,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       inout bit [BUS_DW-1:0]  data,
       output bit              completed,
       output bit              saw_err,
-      input uint              tl_access_timeout_ns = default_spinwait_timeout_ns,
+      input                   uint tl_access_timeout_ns = default_spinwait_timeout_ns,
       input bit [BUS_DBW-1:0] mask = '1,
       input bit               check_rsp = 1'b1,
       input bit               exp_err_rsp = 1'b0,
@@ -206,21 +210,22 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       input bit [BUS_DW-1:0]  compare_mask = '1,
       input bit               check_exp_data = 1'b0,
       input bit               blocking = csr_utils_pkg::default_csr_blocking,
-      input mubi4_t           instr_type = MuBi4False,
-      tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
-      input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone,
+      input                   mubi4_t instr_type = MuBi4False,
+                              tl_sequencer tl_sequencer_h = p_sequencer.tl_sequencer_h,
+      input                   tl_intg_err_e tl_intg_err_type = TlIntgErrNone,
       input int               req_abort_pct = 0);
 
     cip_tl_seq_item rsp;
+    bit                       use_rsp_ff = 0; //fixme
     if (blocking) begin
       tl_access_sub(addr, write, data, completed, saw_err, rsp, tl_access_timeout_ns, mask,
                     check_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data, req_abort_pct,
-                    instr_type, tl_sequencer_h, tl_intg_err_type);
+                    instr_type, tl_sequencer_h, tl_intg_err_type, use_rsp_ff);
     end else begin
       fork
         tl_access_sub(addr, write, data, completed, saw_err, rsp, tl_access_timeout_ns, mask,
                       check_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data,
-                      req_abort_pct, instr_type, tl_sequencer_h, tl_intg_err_type);
+                      req_abort_pct, instr_type, tl_sequencer_h, tl_intg_err_type, use_rsp_ff);
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
       #0;
@@ -232,8 +237,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              inout bit [BUS_DW-1:0]  data,
                              output bit              completed,
                              output bit              saw_err,
-                             output cip_tl_seq_item  rsp,
-                             input uint         tl_access_timeout_ns = default_spinwait_timeout_ns,
+                             output                  cip_tl_seq_item rsp,
+                             input                   uint tl_access_timeout_ns = default_spinwait_timeout_ns,
                              input bit [BUS_DBW-1:0] mask = '1,
                              input bit               check_rsp = 1'b1,
                              input bit               exp_err_rsp = 1'b0,
@@ -241,9 +246,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              input bit [BUS_DW-1:0]  compare_mask = '1,
                              input bit               check_exp_data = 1'b0,
                              input int               req_abort_pct = 0,
-                             input mubi4_t           instr_type = MuBi4False,
-                             tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
-                             input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone);
+                             input                   mubi4_t instr_type = MuBi4False,
+                                                     tl_sequencer tl_sequencer_h = p_sequencer.tl_sequencer_h,
+                             input                   tl_intg_err_e tl_intg_err_type = TlIntgErrNone,
+                             input bit               use_rsp_ff = 1'b0);
+    bit [BUS_AW:0]                                   ff_data;
     `DV_SPINWAIT(
         // thread to read/write tlul
         cip_tl_host_single_seq tl_seq;
@@ -261,6 +268,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             write == local::write;
             mask  == local::mask;
             data  == local::data;)
+
         `uvm_send_pri(tl_seq, 100)
         rsp = tl_seq.rsp;
 
@@ -272,10 +280,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             `DV_CHECK_EQ(masked_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
           end
         end
-        if (check_rsp && !cfg.under_reset && tl_intg_err_type == TlIntgErrNone) begin
-          `DV_CHECK_EQ(rsp.d_error, exp_err_rsp, "unexpected error response")
+        if (use_rsp_ff == 1) begin
+          ff_data = exp_rsp_ff.pop_front();
+          exp_err_rsp = ff_data[BUS_AW];
         end
-
+        if (check_rsp && !cfg.under_reset && tl_intg_err_type == TlIntgErrNone) begin
+          `DV_CHECK_EQ(rsp.d_error, exp_err_rsp,
+                       $sformatf("unexpected error response for addr: 0x%x", rsp.a_addr))
+        end
 
         // Expose whether the transaction ran and whether it generated an error. Note that we
         // probably only want to do a RAL update if it ran and caused no error.
