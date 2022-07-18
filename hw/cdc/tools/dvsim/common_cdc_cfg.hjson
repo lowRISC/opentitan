@@ -53,7 +53,7 @@
     {category: "cdc",   severity: "info",     label: "CDC Infos"},
     {category: "cdc",   severity: "review",   label: "CDC Reviews"},
     {category: "cdc",   severity: "warning",  label: "CDC Warnings"},
-    {category: "cdc",   severity: "error",    label: "CDC Erros"}
+    {category: "cdc",   severity: "error",    label: "CDC Errors"}
   ]
   // Restrict the maximum message count in each bucket
   max_msg_count: 1000
