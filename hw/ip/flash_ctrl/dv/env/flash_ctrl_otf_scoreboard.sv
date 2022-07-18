@@ -82,6 +82,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     flash_otf_item obs;
     data_4s_t rcvd_data;
     fdata_q_t fq;
+    addr_t err_addr;
     string str = $sformatf("host_read_comp_bank%0d", bank);
 
     `uvm_info("EXPGET_HOST", $sformatf(" addr %x  data:%x   cnt:%0d  rtlff:%0d  ctrlff:%0d",
@@ -98,9 +99,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     obs.cmd.addr = exp.start_addr; // tl_addr
     // for debug print
     obs.start_addr = exp.start_addr;
-    // descramble needs 2 buswords
-    obs.cmd.num_words = 2;
-
+    obs.cmd.num_words = 1;
     obs.mem_addr = exp.start_addr >> 3;
 
     obs.print("RAW");
@@ -108,28 +107,46 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
     obs.print("rtl_host: before");
     obs.region = exp.region;
+    if (cfg.ecc_mode > FlashSerrTestMode) obs.skip_err_chk = 1;
+    // descramble needs 2 buswords
+    obs.cmd.num_words = 2;
     obs.descramble(exp.addr_key, exp.data_key);
     obs.print("rtl_host: after");
     `uvm_info("process_eg_host", $sformatf(" rcvd:%0d",cfg.otf_host_rd_sent), UVM_MEDIUM)
 
-    if (exp.start_addr[2]) begin
-       rcvd_data = obs.dq[1];
+    if (cfg.ecc_mode > FlashSerrTestMode && obs.derr == 1) begin
+      err_addr = {obs.cmd.addr[31:3],3'h0};
+      // check expected derr
+      if (cfg.derr_addr_tbl.exists(err_addr)) begin
+        `uvm_info("process_eg_host",
+                  $sformatf("expected double bit error 0x%x", err_addr), UVM_MEDIUM)
+      end else if (cfg.ierr_addr_tbl.exists(err_addr)) begin
+        `uvm_info("process_eg_host",
+                  $sformatf("expected icv error 0x%x", err_addr), UVM_MEDIUM)
+      end else begin
+        `uvm_error("process_eg_host",
+                   $sformatf("unexpected double bit error 0x%x", err_addr))
+      end
     end else begin
-       rcvd_data = obs.dq[0];
-    end
+      if (exp.start_addr[2]) begin
+        rcvd_data = obs.dq[1];
+      end else begin
+        rcvd_data = obs.dq[0];
+      end
 
-    if (rcvd_data == exp.dq[0]) begin
-      `dv_info("data match!!", UVM_MEDIUM, str)
-    end else begin
-      `dv_error($sformatf(" : obs:exp    %8x:%8x mismatch!!", rcvd_data, exp.dq[0]), str)
+      if (rcvd_data == exp.dq[0]) begin
+        `dv_info("data match!!", UVM_MEDIUM, str)
+      end else begin
+        `dv_error($sformatf(" : obs:exp    %8x:%8x mismatch!!", rcvd_data, exp.dq[0]), str)
+      end
     end
-
     cfg.otf_host_rd_sent++;
   endtask // process_eg_host
 
   task process_eg(flash_otf_item item, int bank);
-    `uvm_info("EG_EXPGET", $sformatf("op:%s fq:%0d cnt:%0d rtlff:%0d", item.cmd.op.name(),
-                                     item.fq.size(), eg_exp_cnt++, eg_rtl_fifo[bank].used()),
+    `uvm_info("EG_EXPGET",
+              $sformatf("op:%s fq:%0d cnt:%0d rtlff:%0d", item.cmd.op.name(),
+                        item.fq.size(), eg_exp_cnt++, eg_rtl_fifo[bank].used()),
               UVM_MEDIUM)
 
     case (item.cmd.op)
@@ -152,6 +169,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   //   - Compare read data.
   task process_read(flash_otf_item exp, int bank);
     flash_otf_item send;
+    addr_t err_addr;
     int col_sz = exp.fq.size;
     `uvm_info("process_read", $sformatf("bank:%0d colsz:%0d ffsz:%0d",
                                         bank, col_sz, eg_rtl_fifo[bank].used()), UVM_MEDIUM)
@@ -175,13 +193,30 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     end
     send.mem_addr = exp.start_addr >> 3;
     send.region = exp.region;
+    if (cfg.ecc_mode > FlashSerrTestMode) send.skip_err_chk = 1;
     send.descramble(exp.addr_key, exp.data_key);
     send.print("exp_read: raw_data");
     `dv_info($sformatf("RDATA size: %d x 8B bank:%0d sent_cnt:%0d",
                        send.raw_fq.size(), bank, cfg.otf_ctrl_rd_sent++),
              UVM_MEDIUM, "process_read")
 
-    compare_data(send.raw_fq, exp.fq, bank, "rdata");
+    if (cfg.ecc_mode > FlashSerrTestMode && send.derr == 1) begin
+      send.err_addr[OTFBankId] = bank;
+
+      // check expected derr
+      if (cfg.derr_addr_tbl.exists(send.err_addr)) begin
+        `uvm_info("process_read",
+                  $sformatf("expected double bit error 0x%x", send.err_addr), UVM_MEDIUM)
+      end else if (cfg.ierr_addr_tbl.exists(send.err_addr)) begin
+        `uvm_info("process_read",
+                  $sformatf("expected icv error 0x%x", send.err_addr), UVM_MEDIUM)
+      end else begin
+        `uvm_error("process_read",
+                   $sformatf("unexpected double bit error 0x%x", send.err_addr))
+      end
+    end else begin
+      compare_data(send.raw_fq, exp.fq, bank, "rdata");
+    end
   endtask
 
   // Scoreboard process write in following order.
@@ -257,7 +292,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
   task process_rcmd(flash_phy_prim_item item, int bank);
     addr_t serr_addr;
-    if (cfg.ecc_mode == 2) begin
+    if (cfg.ecc_mode == FlashSerrTestMode) begin
       serr_addr = item.req.addr << 3;
       serr_addr[OTFBankId] = bank;
       if (cfg.serr_addr_tbl.exists(serr_addr)) begin

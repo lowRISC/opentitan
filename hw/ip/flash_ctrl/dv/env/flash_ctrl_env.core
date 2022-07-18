@@ -65,6 +65,7 @@ filesets:
       - seq_lib/flash_ctrl_rw_rnd_wd_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_serr_counter_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_serr_address_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_derr_detect_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

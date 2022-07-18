@@ -301,6 +301,55 @@
       run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=1"]
       reseed: 5
     }
+
+    {
+      name: flash_ctrl_read_word_sweep_derr
+      uvm_test_seq: flash_ctrl_read_word_sweep_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=3",
+                 "+bypass_alert_ready_to_end_check=1"]
+      reseed: 5
+    }
+    {
+      name: flash_ctrl_read_rand_word_derr
+      uvm_test_seq: flash_ctrl_read_rnd_wd_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=3",
+                 "+bypass_alert_ready_to_end_check=1"]
+      reseed: 5
+    }
+    {
+      name: flash_ctrl_ro_derr
+      uvm_test_seq: flash_ctrl_ro_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=3",
+                 "+bypass_alert_ready_to_end_check=1"]
+      reseed: 10
+    }
+    {
+      name: flash_ctrl_rw_derr
+      uvm_test_seq: flash_ctrl_rw_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=3",
+                 "+bypass_alert_ready_to_end_check=1"]
+      reseed: 10
+    }
+    {
+      name: flash_ctrl_rw_rand_word_derr
+      uvm_test_seq: flash_ctrl_rw_rnd_wd_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=3",
+                 "+bypass_alert_ready_to_end_check=1"]
+      reseed: 10
+    }
+    {
+      name: flash_ctrl_derr_detect
+      uvm_test_seq: flash_ctrl_derr_detect_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=1", "+rerun=5"]
+      reseed: 5
+    }
+    {
+      name: flash_ctrl_integrity
+      uvm_test_seq: flash_ctrl_rw_rnd_wd_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=4", "+ierr_pct=3",
+                 "+bypass_alert_ready_to_end_check=1"]
+      reseed: 5
+    }
   ]
 
   // List of regressions.

@@ -354,7 +354,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       input bit blocking = $urandom_range(0, 1), input bit check_rdata = 0,
       input     data_t exp_rdata = '0, input mubi4_t instr_type = MuBi4False,
       output    data_4s_t rdata, output bit completed,
-      input bit exp_err_rsp = 1'b0, input bit use_rsp_ff = 1'b0);
+      input bit exp_err_rsp = 1'b0);
 
     bit         saw_err;
 
@@ -364,8 +364,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                       .compare_mask(mask), .check_exp_data(check_rdata), .blocking(blocking),
                       .instr_type(instr_type),
                       .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.flash_ral_name]));
-//confider override
-//                      .use_rsp_ff(use_rsp_ff));
   endtask : do_direct_read
 
   // Task to Read/Erase/Program the Two Secret Seed Partitions (Creator and Owner)

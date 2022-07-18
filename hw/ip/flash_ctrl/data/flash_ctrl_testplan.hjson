@@ -276,18 +276,41 @@
       tests: ["flash_ctrl_mid_op_rst"]
     }
     {
-      name: ecc
+      name: double_bit_err
       desc: '''
-            Randomly enable ECC for a randomly selected set of pages. Randomly corrupt a single bit
-            in the memory that is about to be read and ensure that the ECC works - the corrupted
-            bit should be fixed. Corrupt randomly either the data or the ECC bits. Randomly corrupt
-            2 bits in the same word and ensure that the read results in error. Ensure that pages
-            with ECC not enabled reads back corrupted data without any errors. Verify both types,
-            pre-scramble ECC(integrity ECC, 4-bits) and post-scramble ECC(reliability ECC, 8-bits).
-	    Test status and control ECC bits.
+            Run read only or read write test with randomly injected double bit error.
+            For ctrl read, expected double bit error transaction is checked by reading
+            op_status.err and err_code.rd_err.
+            For direct read, expected double bit error transaction is checked by
+            tl_agent.
+            Non-error traffic should not be affected by errored traffic.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_read_word_sweep_derr", "flash_ctrl_read_rand_word_derr",
+              "flash_ctrl_ro_derr", "flash_ctrl_rw_derr", "flash_ctrl_rw_rand_word_derr"]
+    }
+    {
+      name: double_bit_err_detect
+      desc: '''
+            Run read write test and inject double bit erorr only once in random time.
+            Check whether the fatal alert is asserted.
+            For ctrl read, op_status.err and err_code.rd_err should be set.
+            For direct read, read response should have d_error set.
+            Do this for a multiple rounds.
+            '''
+      milestone: V2
+      tests: ["flash_ctrl_derr_detect"]
+    }
+    {
+      name: integrity_ecc_test
+      desc: '''
+            Run read write test with corrupted integrity value in random time.
+            Check wheter the fatal alert is asserted.
+            For ctrl read, op_status.err and err_code.rd_err should be set.
+            For direct read, read response should have d_error set.
+            '''
+      milestone: V2
+      tests: ["flash_ctrl_integrity"]
     }
     {
       name: single_bit_err

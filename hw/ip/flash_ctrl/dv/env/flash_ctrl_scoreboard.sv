@@ -275,7 +275,7 @@ class flash_ctrl_scoreboard #(
             "intr_test": begin
             end
 
-            "op_status", "status", "erase_suspend",
+            "op_status", "status", "erase_suspend", "err_code",
             "ecc_single_err_cnt", "ecc_single_err_addr_0",
             "ecc_single_err_addr_1": begin
               // TODO: FIXME
@@ -695,18 +695,25 @@ class flash_ctrl_scoreboard #(
 
   // Overriden function from cip_base_scoreboard, to handle TL/UL Error seen on Hardware Interface
   // when using Code Access Restrictions (EXEC)
-
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     bit   ecc_err;
     // For flash, address has to be 8byte aligned.
     ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
 
+    `uvm_info("predic_tl_err_dbg",
+              $sformatf("addr:0x%x(%x) ecc_err:%0d channel:%s ral_name:%s item:%p",
+                        {item.a_addr[AddrWidth-1:3],3'b0},
+                        item.a_addr, ecc_err,
+                        channel.name, ral_name,
+                        item
+                        ), UVM_MEDIUM)
+
     if ((ral_name == cfg.flash_ral_name) && (get_flash_instr_type_err(item, channel))) return (1);
     else if (ecc_err) begin
       if (channel == DataChannel) begin
-      `DV_CHECK_EQ(item.d_error, 1, $sformatf("On interface %s, TL item: %s, ecc_err:%0d",
-                                              ral_name, item.sprint(uvm_default_line_printer),
-                                              ecc_err))
+        `DV_CHECK_EQ(item.d_error, 1, $sformatf("On interface %s, TL item: %s, ecc_err:%0d",
+                                                ral_name, item.sprint(uvm_default_line_printer),
+                                                ecc_err))
         return 1;
       end
     end
