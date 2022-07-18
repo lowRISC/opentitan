@@ -937,7 +937,7 @@ unsigned otbn_model_step(OtbnModel *model, unsigned model_state,
 
     case 1:
       // Finished
-      model_state = (model_state & ~RUNNING_BIT) | CHECK_DUE_BIT;
+      model_state = (model_state & ~RUNNING_BIT);
       break;
 
     default:
