@@ -10,12 +10,17 @@ from .ext_regs import OTBNExtRegs
 
 
 class TraceWSR(Trace):
-    def __init__(self, wsr_name: str, new_value: int):
+    def __init__(self, wsr_name: str, new_value: Optional[int]):
         self.wsr_name = wsr_name
         self.new_value = new_value
 
     def trace(self) -> str:
-        return '{} = {:#x}'.format(self.wsr_name, self.new_value)
+        s = '{} = '.format(self.wsr_name)
+        if self.new_value is None:
+            s += '0x' + 'x' * 8
+        else:
+            s += '{:#x}'.format(self.new_value)
+        return s
 
     def rtl_trace(self) -> str:
         return '> {}: {}'.format(self.wsr_name,
@@ -26,6 +31,7 @@ class WSR:
     '''Models a Wide Status Register'''
     def __init__(self, name: str):
         self.name = name
+        self._pending_write = False
 
     def has_value(self) -> bool:
         '''Return whether the WSR has a valid value'''
@@ -56,10 +62,12 @@ class WSR:
 
     def commit(self) -> None:
         '''Commit pending changes'''
+        self._pending_write = False
         return
 
     def abort(self) -> None:
         '''Abort pending changes'''
+        self._pending_write = False
         return
 
     def changes(self) -> Sequence[Trace]:
@@ -84,19 +92,25 @@ class DumbWSR(WSR):
     def write_unsigned(self, value: int) -> None:
         assert 0 <= value < (1 << 256)
         self._next_value = value
+        self._pending_write = True
+
+    def write_invalid(self) -> None:
+        self._next_value = None
+        self._pending_write = True
 
     def commit(self) -> None:
         if self._next_value is not None:
             self._value = self._next_value
         self._next_value = None
+        self._pending_write = False
 
     def abort(self) -> None:
         self._next_value = None
+        self._pending_write = False
 
     def changes(self) -> List[TraceWSR]:
         return ([TraceWSR(self.name, self._next_value)]
-                if self._next_value is not None
-                else [])
+                if self._pending_write else [])
 
 
 class RandWSR(WSR):
