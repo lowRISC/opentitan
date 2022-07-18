@@ -589,6 +589,18 @@ TEST_F(ObserveFifoWriteTest, BadConfig) {
             kDifError);
 }
 
+TEST_F(ObserveFifoWriteTest, FifoFull) {
+  uint32_t buf[4];
+  EXPECT_READ32(
+      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+      {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
+        kMultiBitBool4True},
+       {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET, kMultiBitBool4True}});
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_WR_FIFO_FULL_REG_OFFSET, 1);
+  EXPECT_EQ(dif_entropy_src_observe_fifo_write(&entropy_src_, buf, 4),
+            kDifIpFifoFull);
+}
+
 TEST_F(ObserveFifoWriteTest, Success) {
   uint32_t buf[4] = {1, 2, 3, 4};
   EXPECT_READ32(
@@ -596,6 +608,7 @@ TEST_F(ObserveFifoWriteTest, Success) {
       {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
         kMultiBitBool4True},
        {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET, kMultiBitBool4True}});
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_WR_FIFO_FULL_REG_OFFSET, 0);
   for (size_t i = 0; i < 4; ++i) {
     EXPECT_WRITE32(ENTROPY_SRC_FW_OV_WR_DATA_REG_OFFSET, i + 1);
   }
@@ -628,6 +641,27 @@ TEST_F(ConditionerStopTest, NullHandle) {
 TEST_F(ConditionerStopTest, Success) {
   EXPECT_WRITE32(ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET, kMultiBitBool4False);
   EXPECT_DIF_OK(dif_entropy_src_conditioner_stop(&entropy_src_));
+}
+
+class IsFifoFullTest : public EntropySrcTest {};
+
+TEST_F(IsFifoFullTest, NullArgs) {
+  bool is_full;
+  EXPECT_DIF_BADARG(dif_entropy_src_is_fifo_full(nullptr, &is_full));
+  EXPECT_DIF_BADARG(dif_entropy_src_is_fifo_full(&entropy_src_, nullptr));
+  EXPECT_DIF_BADARG(dif_entropy_src_is_fifo_full(nullptr, nullptr));
+}
+
+TEST_F(IsFifoFullTest, Success) {
+  bool is_full;
+
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_WR_FIFO_FULL_REG_OFFSET, 1);
+  EXPECT_DIF_OK(dif_entropy_src_is_fifo_full(&entropy_src_, &is_full));
+  EXPECT_TRUE(is_full);
+
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_WR_FIFO_FULL_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_entropy_src_is_fifo_full(&entropy_src_, &is_full));
+  EXPECT_FALSE(is_full);
 }
 
 class ReadFifoDepthTest : public EntropySrcTest {};

@@ -503,10 +503,21 @@ dif_result_t dif_entropy_src_conditioner_stop(
     const dif_entropy_src_t *entropy_src);
 
 /**
- * Read the fifo depth.
+ * Checks whether the firmware override FIFO is full.
  *
  * @param entropy_src An entropy source handle.
- * @param[out] fifo_depth The fifo depth.
+ * @param[out] is_full Whether the FIFO is full.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_is_fifo_full(const dif_entropy_src_t *entropy_src,
+                                          bool *is_full);
+
+/**
+ * Read the firmware override FIFO depth.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param[out] fifo_depth The FIFO depth.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
