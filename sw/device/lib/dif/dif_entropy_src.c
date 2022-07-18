@@ -486,6 +486,8 @@ dif_result_t dif_entropy_src_observe_fifo_write(
     return kDifBadArg;
   }
 
+  // Check that we are in firmware override mode and that we can insert data
+  // into the entropy pipeline.
   uint32_t reg = mmio_region_read32(entropy_src->base_addr,
                                     ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET);
   if (bitfield_field32_read(reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD) !=
@@ -494,6 +496,12 @@ dif_result_t dif_entropy_src_observe_fifo_write(
           reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_FIELD) !=
           kMultiBitBool4True) {
     return kDifError;
+  }
+
+  // Check if the FIFO is full.
+  if (mmio_region_read32(entropy_src->base_addr,
+                         ENTROPY_SRC_FW_OV_WR_FIFO_FULL_REG_OFFSET)) {
+    return kDifIpFifoFull;
   }
 
   for (size_t i = 0; i < len; ++i) {
@@ -532,6 +540,18 @@ dif_result_t dif_entropy_src_conditioner_stop(
   mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET,
                       kMultiBitBool4False);
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_is_fifo_full(const dif_entropy_src_t *entropy_src,
+                                          bool *is_full) {
+  if (entropy_src == NULL || is_full == NULL) {
+    return kDifBadArg;
+  }
+
+  *is_full = mmio_region_read32(entropy_src->base_addr,
+                                ENTROPY_SRC_FW_OV_WR_FIFO_FULL_REG_OFFSET);
+
   return kDifOk;
 }
 
