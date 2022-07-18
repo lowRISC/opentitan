@@ -207,7 +207,7 @@
       wrd: bxxxxx
 
 - mnemonic: bn.mulqacc.wo
-  synopsis: Quarter-word Multiply and Accumulate with half-word writeback
+  synopsis: Quarter-word Multiply and Accumulate with full-word writeback
   operands:
     - *mulqacc-zero-acc
     - &mulqacc-wrd
