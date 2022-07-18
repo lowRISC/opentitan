@@ -524,7 +524,7 @@ dif_result_t dif_entropy_src_conditioner_start(
   return kDifOk;
 }
 
-dif_result_t dif_entropy_src_conditioner_end(
+dif_result_t dif_entropy_src_conditioner_stop(
     const dif_entropy_src_t *entropy_src) {
   if (entropy_src == NULL) {
     return kDifBadArg;
@@ -548,7 +548,7 @@ dif_result_t dif_entropy_src_get_fifo_depth(
 }
 
 dif_result_t dif_entropy_src_get_main_fsm_state(
-    const dif_entropy_src_t *entropy_src, dif_entropy_main_fsm_t *state) {
+    const dif_entropy_src_t *entropy_src, dif_entropy_src_main_fsm_t *state) {
   if (entropy_src == NULL || state == NULL) {
     return kDifBadArg;
   }

@@ -59,8 +59,8 @@ void entropy_testutils_boot_mode_init(void) {
 }
 
 void entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
-                                      dif_entropy_main_fsm_t state) {
-  dif_entropy_main_fsm_t cur_state;
+                                      dif_entropy_src_main_fsm_t state) {
+  dif_entropy_src_main_fsm_t cur_state;
 
   do {
     CHECK_DIF_OK(dif_entropy_src_get_main_fsm_state(entropy_src, &cur_state));
