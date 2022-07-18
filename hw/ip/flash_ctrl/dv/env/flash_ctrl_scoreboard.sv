@@ -38,6 +38,9 @@ class flash_ctrl_scoreboard #(
   int                    exp_alert_contd[string];
   alert_handshake_e      hs_state;
 
+  // ecc error expected
+  bit ecc_error_addr[bit [AddrWidth - 1 : 0]];
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_a_chan_fifo;
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_d_chan_fifo;
@@ -692,8 +695,21 @@ class flash_ctrl_scoreboard #(
 
   // Overriden function from cip_base_scoreboard, to handle TL/UL Error seen on Hardware Interface
   // when using Code Access Restrictions (EXEC)
+
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+    bit   ecc_err;
+    // For flash, address has to be 8byte aligned.
+    ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
+
     if ((ral_name == cfg.flash_ral_name) && (get_flash_instr_type_err(item, channel))) return (1);
+    else if (ecc_err) begin
+      if (channel == DataChannel) begin
+      `DV_CHECK_EQ(item.d_error, 1, $sformatf("On interface %s, TL item: %s, ecc_err:%0d",
+                                              ral_name, item.sprint(uvm_default_line_printer),
+                                              ecc_err))
+        return 1;
+      end
+    end
     return (super.predict_tl_err(item, channel, ral_name));
   endfunction : predict_tl_err
 
@@ -739,4 +755,5 @@ class flash_ctrl_scoreboard #(
       end
     end
   endfunction
+
 endclass : flash_ctrl_scoreboard

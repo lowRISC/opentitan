@@ -183,12 +183,14 @@ class flash_ctrl_full_mem_access_vseq extends flash_ctrl_base_vseq;
     bit   [TL_AW-1:0] read_addr;
     bit   [TL_AW-1:0] start_addr;
     data_4s_t rdata;
+    bit               comp;
     start_addr = bank_start_addr;
     cfg.dir_rd_in_progress = 1'b1;
     for (int i = 0; i < NUM_BK_DATA_WORDS; i++) begin
       read_addr = start_addr + 4 * i;
       `uvm_info(`gfn, $sformatf("Direct read address 0x%0h", read_addr), UVM_HIGH)
-      do_direct_read(.addr(read_addr), .mask('1), .blocking(1), .check_rdata(0), .rdata(rdata));
+      do_direct_read(.addr(read_addr), .mask('1), .blocking(1), .check_rdata(0), .rdata(rdata),
+                     .completed(comp));
     end
     csr_utils_pkg::wait_no_outstanding_access();
     cfg.dir_rd_in_progress = 1'b0;

@@ -35,7 +35,7 @@ class flash_ctrl_rw_rnd_wd_vseq extends flash_ctrl_otf_base_vseq;
           `DV_CHECK_RANDOMIZE_FATAL(this)
           bank = $urandom_range(0, 1);
           ctrl.partition  = FlashPartData;
-          ctrl.otf_addr = is_addr_odd * 4;
+          ctrl.otf_addr += (is_addr_odd * 4);
           randcase
             1:prog_flash(ctrl, bank, ctrl_num, fractions);
             1:read_flash(ctrl, bank, ctrl_num, fractions);
