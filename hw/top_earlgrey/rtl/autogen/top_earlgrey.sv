@@ -539,8 +539,6 @@ module top_earlgrey #(
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   otp_ctrl_pkg::flash_otp_key_req_t       flash_ctrl_otp_req;
   otp_ctrl_pkg::flash_otp_key_rsp_t       flash_ctrl_otp_rsp;
-  lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_req;
-  lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_ack;
   lc_ctrl_pkg::lc_flash_rma_seed_t       flash_ctrl_rma_seed;
   otp_ctrl_pkg::sram_otp_key_req_t [2:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [2:0] otp_ctrl_sram_otp_key_rsp;
@@ -558,6 +556,9 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
   rom_ctrl_pkg::pwrmgr_data_t       rom_ctrl_pwrmgr_data;
   rom_ctrl_pkg::keymgr_data_t       rom_ctrl_keymgr_data;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
+  lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_ack;
+  lc_ctrl_pkg::lc_tx_t       otbn_lc_rma_ack;
   logic       usbdev_usb_dp_pullup;
   logic       usbdev_usb_dn_pullup;
   logic       usbdev_usb_aon_suspend_req;
@@ -1491,9 +1492,9 @@ module top_earlgrey #(
       .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
       .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_req),
       .lc_clk_byp_ack_i(lc_ctrl_lc_clk_byp_ack),
-      .lc_flash_rma_req_o(flash_ctrl_rma_req),
+      .lc_flash_rma_req_o(lc_ctrl_lc_flash_rma_req),
       .lc_flash_rma_seed_o(flash_ctrl_rma_seed),
-      .lc_flash_rma_ack_i(flash_ctrl_rma_ack),
+      .lc_flash_rma_ack_i(otbn_lc_rma_ack),
       .lc_check_byp_en_o(lc_ctrl_lc_check_byp_en),
       .lc_creator_seed_sw_rw_en_o(lc_ctrl_lc_creator_seed_sw_rw_en),
       .lc_owner_seed_sw_rw_en_o(lc_ctrl_lc_owner_seed_sw_rw_en),
@@ -2100,7 +2101,7 @@ module top_earlgrey #(
       .lc_iso_part_sw_wr_en_i(lc_ctrl_lc_iso_part_sw_wr_en),
       .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .rma_req_i(flash_ctrl_rma_req),
+      .rma_req_i(lc_ctrl_lc_flash_rma_req),
       .rma_ack_o(flash_ctrl_rma_ack),
       .rma_seed_i(flash_ctrl_rma_seed),
       .pwrmgr_o(pwrmgr_aon_pwr_flash),
@@ -2293,8 +2294,8 @@ module top_earlgrey #(
       .idle_o(clkmgr_aon_idle[3]),
       .ram_cfg_i(ast_ram_1p_cfg),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .lc_rma_req_i(lc_ctrl_pkg::Off),
-      .lc_rma_ack_o(),
+      .lc_rma_req_i(flash_ctrl_rma_ack),
+      .lc_rma_ack_o(otbn_lc_rma_ack),
       .keymgr_key_i(keymgr_otbn_key),
       .tl_i(otbn_tl_req),
       .tl_o(otbn_tl_rsp),
