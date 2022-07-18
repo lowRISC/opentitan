@@ -12,6 +12,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // Used for tracing programmed data
   bit [15:0] global_pat_cnt = 16'hA000;
 
+  // Double bit err is created
+  bit        global_derr_is_set = 0;
+
   // Number of controller transactions
   // Min: 1 Max:32
   rand int  ctrl_num;
@@ -29,8 +32,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     if (cfg.ecc_mode > 0) begin
       cfg.tgt_pre.shuffle();
       flash_init = FlashMemInitEccMode;
-      `uvm_info("reset_flash", $sformatf("ecc_mode flash_init: rd:%2b dr:%2b wr:%2b ",
-                               cfg.tgt_pre[TgtRd], cfg.tgt_pre[TgtDr], cfg.tgt_pre[TgtWr]),
+      `uvm_info("reset_flash", $sformatf("ecc_mode %0d flash_init: rd:%2b dr:%2b wr:%2b ",
+                               cfg.ecc_mode, cfg.tgt_pre[TgtRd], cfg.tgt_pre[TgtDr], cfg.tgt_pre[TgtWr]),
                                UVM_MEDIUM)
     end else begin
       flash_init = FlashMemInitRandomize;
@@ -46,6 +49,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     if (cfg.ecc_mode > 0) begin
       flash_ctrl_default_region_cfg(,,,MuBi4True, MuBi4True);
       flash_otf_init();
+      if (cfg.ecc_mode > 2) begin
+        cfg.scb_h.do_alert_check = 0;
+      end
     end else begin
       flash_ctrl_default_region_cfg(,,,MuBi4True);
     end
@@ -124,31 +130,34 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       tot_wd = wd * num + is_odd;
       end_addr = start_addr + (tot_wd * 4) - 1;
     end
-
-    // Check resolution error
-    // Current resolution : 0x40.
-    // Check if address[6] is same for start and end addr.
-    if (start_addr[6] != end_addr[6]) begin
-      `uvm_info("prog_flash", $sformatf("prog_window violation, start_addr:0x%x  end_addr:0x%x",
-                                start_addr, end_addr), UVM_MEDIUM)
-      // Shift start addr window
-      start_addr[flash_ctrl_pkg::BusAddrByteW-1:6] = end_addr[flash_ctrl_pkg::BusAddrByteW-1:6];
-      start_addr[5:0] = 0;
-      `uvm_info("prog_flash", $sformatf("change start_addr to 0x%x end_addr:0x%x", start_addr,
-                                start_addr + (4 * (wd + (wd % 2))) - 1), UVM_MEDIUM)
-      is_odd = 0;
-      tot_wd = wd * num;
-    end
-
     // Check if end_addr overflows.
     // Roll over start address if this is the case.
     `uvm_info("prog_flash", $sformatf("bank:%0d otf_addr:0x%0h, size:%0d x %0d x 4B",
                               bank, flash_op.otf_addr, num, wd), UVM_MEDIUM)
     tail = tot_wd % 2;
     flash_op.otf_addr = start_addr;
+
     for (int i = 0; i < num; i++) begin
       flash_program_data = '{};
       is_odd = flash_op.otf_addr[2];
+      end_addr = flash_op.otf_addr + ((wd + is_odd) * 4) - 1;
+      // Check resolution error
+      // Current resolution : 0x40.
+      // Check if address[6] is same for start and end addr.
+      `uvm_info("prog_flash", $sformatf("start_addr:%x  end_addr:%x",
+                                        flash_op.otf_addr, end_addr), UVM_HIGH)
+      if (flash_op.otf_addr[6] != end_addr[6]) begin
+        `uvm_info("prog_flash", $sformatf("prog_window violation, start_addr:0x%x  end_addr:0x%x",
+                                          flash_op.otf_addr, end_addr), UVM_MEDIUM)
+        // Shift start addr window
+        flash_op.otf_addr[BusAddrByteW-1:6] = end_addr[BusAddrByteW-1:6];
+        flash_op.otf_addr[5:0] = 0;
+        end_addr = flash_op.otf_addr + (wd * 4) -1;
+        `uvm_info("prog_flash", $sformatf("change start_addr to 0x%x end_addr:0x%x",
+                                          flash_op.otf_addr,
+                                          end_addr), UVM_MEDIUM)
+        is_odd = 0;
+      end
       unit_word = wd;
       // Each flash_program_data[] entry : 4B
       // {global_cnt(16bits), lcnt(16bits)}
@@ -213,6 +222,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     bit poll_fifo_status = 1;
     bit [flash_ctrl_pkg::BusAddrByteW-1:0] start_addr, end_addr;
     int                                    page;
+    uvm_reg_data_t reg_data;
+    bit                                    derr_is_set;
     bit                                    overflow = 0;
 
     flash_op.op = FlashOpRead;
@@ -259,11 +270,46 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       exp_item.data_key=  otp_data_key;
 
       if (cfg.ecc_mode > 1) begin
-        if (exp_item.region.ecc_en == MuBi4True) cfg.add_serr(flash_op);
+        if (exp_item.region.ecc_en == MuBi4True) begin
+          if (cfg.ecc_mode == 2 || flash_op.addr[2] == 0) begin
+            cfg.add_bit_err(flash_op, 0, exp_item);
+          end
+        end
       end
+
+      if (cfg.derr_once) begin
+        derr_is_set = cfg.derr_created[0] & ~global_derr_is_set;
+      end else begin
+        derr_is_set = cfg.derr_created[0];
+      end
+      if (derr_is_set) begin
+        `uvm_info("read_flash", $sformatf("assert_derr 0x%x", {flash_op.addr[31:3], 3'h0}), UVM_MEDIUM)
+        global_derr_is_set = 1;
+        if (cfg.scb_h.do_alert_check == 1) begin
+          cfg.scb_h.exp_alert["fatal_err"] = 1;
+          cfg.scb_h.alert_chk_max_delay["fatal_err"] = 2000;
+          cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
+
+          cfg.scb_h.exp_alert["recov_err"] = 1;
+          cfg.scb_h.alert_chk_max_delay["recov_err"] = 2000;
+          cfg.scb_h.exp_alert_contd["recov_err"] = 10000;
+
+        end
+      end
+
       flash_ctrl_start_op(flash_op);
       flash_ctrl_read(flash_op.num_words, flash_read_data, poll_fifo_status);
       wait_flash_op_done();
+      if (derr_is_set | cfg.ierr_created[0]) begin
+        csr_rd_check(.ptr(ral.op_status.err), .compare_value(1));
+        csr_rd_check(.ptr(ral.err_code.rd_err), .compare_value(1));
+        reg_data = get_csr_val_with_updated_field(ral.err_code.rd_err, reg_data, 1);
+        csr_wr(.ptr(ral.err_code), .value(reg_data));
+        reg_data = get_csr_val_with_updated_field(ral.op_status.err, reg_data, 0);
+        csr_wr(.ptr(ral.op_status), .value(reg_data));
+        if (cfg.derr_once == 0) cfg.derr_created[0] = 0;
+        cfg.ierr_created[0] = 0;
+      end
 
       exp_item.dq = flash_read_data;
       exp_item.fq = exp_item.dq2fq(flash_read_data);
@@ -291,8 +337,11 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     flash_otf_item exp_item;
     int                                    page;
     flash_op_t flash_op;
+    bit                                    completed;
+    bit                                    derr_is_set;
+    bit               derr;
     bit               overflow = 0;
-
+    bit               use_rsp_ff = 0;
     if (cfg.ecc_mode > 0) begin
       end_addr = addr + num * 4 - 1;
       overflow = (end_addr[OTFHostId:0] > 18'h1_FE00);
@@ -314,6 +363,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     // Capture for the print in sb.
     st_addr = tl_addr;
     for (int i = 0; i < num ; i++) begin
+      derr = 0;
       // force address wrap around
       if (cfg.ecc_mode > 0) tl_addr[18:17] = cfg.tgt_pre[TgtDr];
 
@@ -331,18 +381,56 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
           // host can only access data partitions.
           flash_op.partition = FlashPartData;
           flash_op.num_words = 1;
-          cfg.add_serr(flash_op);
+          if (cfg.ecc_mode == 2 || tl_addr[2] == 0) begin
+            `JDBG(("ierr_pct:%0d",cfg.ierr_pct))
+            cfg.add_bit_err(flash_op, 1, exp_item);
+          end
+          if (cfg.derr_once) begin
+            derr_is_set = cfg.derr_created[1] & ~global_derr_is_set;
+          end else begin
+            derr_is_set = (cfg.derr_created[1] | cfg.ierr_created[1]);
+          end
+
+          if (derr_is_set) begin
+            `uvm_info("direct_read", $sformatf("assert_derr 0x%x", tl_addr), UVM_MEDIUM)
+            cfg.scb_h.ecc_error_addr[{tl_addr[31:3],3'h0}] = 1;
+            `JDBG(("set tbl %x", {tl_addr[31:3],3'h0}))
+            global_derr_is_set = 1;
+          end
+          if (cfg.derr_once == 0) cfg.derr_created[1] = 0;
+          `JDBG(("ierr_created[1]:%0d  derr_is_set:%0d exists:%0d",
+                 cfg.ierr_created[1], derr_is_set, cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0})))
+          cfg.ierr_created[1] = 0;
+        end
+        if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) derr = 1;
+      end
+`JDBG(("exec: 0x%x   derr:%0d", tl_addr, derr))
+      if (cfg.ecc_mode > 2) begin
+        use_rsp_ff = 1;
+        exp_rsp_ff.push_back({derr, tl_addr});
+        if (derr & cfg.scb_h.do_alert_check) begin
+          cfg.scb_h.exp_alert["fatal_err"] = 1;
+          cfg.scb_h.alert_chk_max_delay["fatal_err"] = 2000;
+          cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
         end
       end
-
-      do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata));
-      exp_item.dq.push_back(rdata);
-
-      p_sequencer.eg_exp_host_port[bank].write(exp_item);
-      `uvm_info("direct_read",
-                $sformatf("SEQ:st_addr:%x addr:%x rcvd:%0d rdata:%x",
-                          st_addr, tl_addr, cfg.otf_host_rd_rcvd, rdata),
-                UVM_MEDIUM)
+      cfg.inc_otd_tbl(tl_addr);
+      do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata),
+                     .completed(completed), .exp_err_rsp(derr), .use_rsp_ff(use_rsp_ff));
+      if (completed) begin
+        exp_item.dq.push_back(rdata);
+        p_sequencer.eg_exp_host_port[bank].write(exp_item);
+        `uvm_info("direct_read",
+                  $sformatf("SEQ:st_addr:%x addr:%x rcvd:%0d rdata:%x derr:%0d",
+                            st_addr, tl_addr, cfg.otf_host_rd_rcvd, rdata, derr),
+                  UVM_MEDIUM)
+      end else begin
+        `uvm_info("direct_read",
+                  $sformatf("SEQ:st_addr:%x addr:%x rcvd:%0d aborted  derr:%0d",
+                            st_addr, tl_addr, cfg.otf_host_rd_rcvd, derr),
+                  UVM_MEDIUM)
+      end
+      cfg.dec_otd_tbl(tl_addr);
       cfg.otf_host_rd_rcvd++;
       tl_addr += 4;
     end
@@ -383,14 +471,35 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     end
   endfunction // flash_otf_init
 
-  virtual task send_rand_host_rd();
+  virtual task send_rand_host_rd(int num = -1);
     flash_op_t host;
     int host_num, host_bank;
 
     host.otf_addr[OTFHostId-2:0] = $urandom();
     host.otf_addr[1:0] = 'h0;
-    host_num = $urandom_range(1,128);
-    host_bank = $urandom_range(0,1);
+    host.otf_addr[2] = 1;
+    if (num >= 0) host_num = num;
+    else host_num = $urandom_range(1,128);
+    host_bank = 0;//$urandom_range(0,1);
+
     otf_direct_read(host.otf_addr, host_bank, host_num);
   endtask // send_rand_host_rd
+  task otf_tb_clean_up();
+    cfg.scb_h.alert_count["fatal_err"] = 0;
+    cfg.scb_h.exp_alert_contd["fatal_err"] = 0;
+    cfg.scb_h.alert_count["recov_err"] = 0;
+    cfg.scb_h.exp_alert_contd["recov_err"] = 0;
+    cfg.scb_h.eflash_addr_phase_queue = '{};
+
+    cfg.derr_created[0] = 0;
+    cfg.derr_created[1] = 0;
+    cfg.derr_addr_tbl.delete();
+    cfg.derr_otd.delete();
+    cfg.serr_addr_tbl.delete();
+
+    cfg.scb_h.ecc_error_addr.delete();
+    exp_rsp_ff = '{};
+    global_derr_is_set = 0;
+  endtask // otf_tb_clean_up
+
 endclass // flash_ctrl_otf_base_vseq

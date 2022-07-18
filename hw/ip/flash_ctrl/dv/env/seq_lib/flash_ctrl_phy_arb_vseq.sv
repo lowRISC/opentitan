@@ -370,10 +370,11 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
   // host read data.
   virtual task host_read_data(flash_op_t flash_op);
     data_4s_t rdata;
+    bit comp;
     for (int j = 0; j < flash_op.num_words; j++) begin
       read_addr = flash_op.addr + 4 * j;
       do_direct_read(.addr(read_addr), .mask('1), .blocking(cfg.block_host_rd), .check_rdata(0),
-                     .rdata(rdata));
+                     .rdata(rdata), .completed(comp));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
     end
   endtask : host_read_data
@@ -438,12 +439,13 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
 
     fork
       begin  // host read data
+        bit comp;
         `uvm_info(`gfn, $sformatf("FLASH OP HOST RD ARB: %0p", flash_op_host_rd), UVM_HIGH)
         cfg.clk_rst_vif.wait_clks(32);
         for (int j = 0; j < flash_op_host_rd.num_words; j++) begin
           read_addr = flash_op_host_rd.addr + 4 * j;
           do_direct_read(.addr(read_addr), .mask('1), .blocking(cfg.block_host_rd),
-                         .check_rdata(0), .rdata(rdata));
+                         .check_rdata(0), .rdata(rdata), .completed(comp));
           `uvm_info(`gfn, $sformatf("FINISH SENDING HOST ADD: %0d", read_addr), UVM_HIGH)
         end
         csr_utils_pkg::wait_no_outstanding_access();

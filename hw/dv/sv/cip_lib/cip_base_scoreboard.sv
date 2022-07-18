@@ -33,6 +33,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // intg check
   bit en_d_user_intg_chk = 1;
 
+  // ecc error expected
+  bit ecc_error_addr[bit [AddrWidth - 1 : 0]];
+
   // covergroups
   tl_errors_cg_wrap   tl_errors_cgs_wrap[string];
   tl_intg_err_cg_wrap tl_intg_err_cgs_wrap[string];
@@ -360,7 +363,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     bit exp_d_error;
 
     bit unmapped_err, mem_access_err, bus_intg_err, byte_wr_err, csr_size_err, tl_item_err;
-    bit mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err;
+    bit mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err, ecc_err;
 
     cip_tl_seq_item cip_item;
     tl_intg_err_e tl_intg_err_type;
@@ -392,11 +395,16 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     byte_wr_err = is_tl_access_unsupported_byte_wr(item, ral_name);
     csr_size_err = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
     tl_item_err = item.get_exp_d_error();
+
+    // For flash, address has to be 8byte aligned.
+    ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
+
     `downcast(cip_item, item)
     cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
                                  write_w_instr_type_err, instr_type_err);
     exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
-                   write_w_instr_type_err | instr_type_err;
+                   write_w_instr_type_err | instr_type_err |
+                   ecc_err;
 
     invalid_access = unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
                      write_w_instr_type_err | instr_type_err;
@@ -425,10 +433,11 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       `DV_CHECK_EQ(item.d_error, exp_d_error,
           $sformatf({"On interface %0s, TL item: %0s, unmapped_err: %0d, mem_access_err: %0d, ",
                     "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",
-                    "write_w_instr_type_err: %0d, ", "cfg.tl_mem_access_gated: %0d"},
+                    "write_w_instr_type_err: %0d, ", "cfg.tl_mem_access_gated: %0d ",
+                    "ecc_err: %0d"},
                     ral_name, item.sprint(uvm_default_line_printer), unmapped_err, mem_access_err,
                     bus_intg_err, byte_wr_err, csr_size_err, tl_item_err, write_w_instr_type_err,
-                    cfg.tl_mem_access_gated))
+                    cfg.tl_mem_access_gated, ecc_err))
 
       // In data read phase, check d_data when d_error = 1.
       if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
