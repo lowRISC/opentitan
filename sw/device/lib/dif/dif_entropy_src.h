@@ -416,24 +416,25 @@ dif_result_t dif_entropy_src_get_alert_fail_counts(
     dif_entropy_src_alert_fail_counts_t *counts);
 
 /**
- * Checks to see if entropy is available for software consumption
+ * Checks to see if entropy is available for software consumption.
  *
- * @param entropy An entropy source handle.
+ * @param entropy_src An entropy source handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_avail(const dif_entropy_src_t *entropy_src);
+dif_result_t dif_entropy_src_is_entropy_available(
+    const dif_entropy_src_t *entropy_src);
 
 /**
- * Reads off a word of entropy from the entropy source.
+ * Reads a word of entropy from the entropy source.
  *
- * @param entropy An entropy source handle.
- * @param[out] word Out-param for the entropy.
+ * @param entropy_src An entropy source handle.
+ * @param[out] word Out-param for the entropy word.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_read(const dif_entropy_src_t *entropy_src,
-                                  uint32_t *word);
+dif_result_t dif_entropy_src_non_blocking_read(
+    const dif_entropy_src_t *entropy_src, uint32_t *word);
 
 /**
  * Performs a blocking read from the entropy pipeline through the observe FIFO,

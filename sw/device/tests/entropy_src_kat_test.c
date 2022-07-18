@@ -77,7 +77,7 @@ void test_sha384_kat(dif_entropy_src_t *entropy) {
 
   uint32_t got[kEntropyFifoBufferSize];
   for (size_t i = 0; i < ARRAYSIZE(got); ++i) {
-    CHECK_DIF_OK(dif_entropy_src_read(entropy, &got[i]));
+    CHECK_DIF_OK(dif_entropy_src_non_blocking_read(entropy, &got[i]));
   }
 
   const uint32_t kExpectedDigest[kEntropyFifoBufferSize] = {

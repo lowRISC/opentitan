@@ -49,7 +49,8 @@ bool test_main(void) {
   uint32_t result = 0;
   for (uint32_t i = 0; i < kEntropyDataNumWords; ++i) {
     // wait for entropy to become available
-    while (dif_entropy_src_read(&entropy_src, &entropy_data[i]) != kDifOk)
+    while (dif_entropy_src_non_blocking_read(&entropy_src, &entropy_data[i]) !=
+           kDifOk)
       ;
     LOG_INFO("received 0x%x, expected 0x%x", entropy_data[i],
              kExpectedEntropyData[i]);
