@@ -1618,6 +1618,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             posedge kmac_err.code == ErrKeyNotValid);
       )
       wait(sha3_idle == 1);
+      num_blocks_filled = 0;
     end
   endtask
 
