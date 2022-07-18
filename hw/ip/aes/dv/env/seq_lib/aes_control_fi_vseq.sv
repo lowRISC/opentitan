@@ -36,6 +36,7 @@ class aes_control_fi_vseq extends aes_base_vseq;
       begin: isolation_fork
         fork
           error: begin
+            int fi_if_size = cfg.aes_control_fi_vif[if_num].get_if_size();
             // avoid forcing IDLE
             if (!randomize(force_value) with { force_value != '0;}) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
@@ -44,7 +45,7 @@ class aes_control_fi_vseq extends aes_base_vseq;
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
             if (!randomize(target) with {
-              target inside { [0:cfg.aes_control_fi_vif[if_num].get_if_size()-1]};}) begin
+              target inside { [0:fi_if_size-1]};}) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
             cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
