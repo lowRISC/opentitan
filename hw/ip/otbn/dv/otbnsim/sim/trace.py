@@ -27,16 +27,22 @@ class Trace:
         return None
 
     @staticmethod
-    def hex_value(value: int, bit_width: int) -> str:
+    def hex_value(value: Optional[int], bit_width: int) -> str:
         '''Render a hex value in the format expected by RTL tracing'''
         if bit_width == 32:
-            return '{:#010x}'.format(value)
+            if value is None:
+                return '0x' + 'x' * 8
+            else:
+                return '{:#010x}'.format(value)
 
         num_words = (bit_width + 31) // 32
         mask32 = (1 << 32) - 1
         # Collect up words, LSB first
         words = []
         for idx in range(num_words):
+            if value is None:
+                words.append('x' * 8)
+                continue
             lsb = 32 * idx
             word = (value >> lsb) & mask32
             top_width = (bit_width - lsb + 3) // 4

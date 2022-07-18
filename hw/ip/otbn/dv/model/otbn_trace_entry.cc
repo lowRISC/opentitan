@@ -31,7 +31,36 @@ bool OtbnTraceBodyLine::fill_from_string(const std::string &src,
 }
 
 bool OtbnTraceBodyLine::operator==(const OtbnTraceBodyLine &other) const {
-  return raw_ == other.raw_;
+  // If the raw lines are identical, the two objects are identical and no
+  // further checks are required.
+  if (raw_ == other.raw_) {
+    return true;
+  }
+
+  // If the raw lines are not identical, the two objects can be identical if one
+  // of them contains unknown values.
+
+  // Type and location have to be identical, though.
+  if (type_ != other.type_ || loc_ != other.loc_) {
+    return false;
+  }
+
+  // The values have to be of identical length.
+  if (value_.size() != other.value_.size()) {
+    return false;
+  }
+
+  // Compare values digit by digit and treat `x` as unknown value, which is
+  // identical to any other value.
+  std::string::const_iterator other_it = other.value_.begin();
+  for (std::string::const_iterator it = value_.begin(); it != value_.end();
+       it++) {
+    if (*it != *other_it && !(*it == 'x' || *other_it == 'x')) {
+      return false;
+    }
+    other_it++;
+  }
+  return true;
 }
 
 bool OtbnTraceEntry::from_rtl_trace(const std::string &trace) {
