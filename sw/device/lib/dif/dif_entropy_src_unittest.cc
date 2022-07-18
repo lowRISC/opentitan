@@ -664,6 +664,42 @@ TEST_F(IsFifoFullTest, Success) {
   EXPECT_FALSE(is_full);
 }
 
+class HasFifoOverflowedTest : public EntropySrcTest {};
+
+TEST_F(HasFifoOverflowedTest, NullArgs) {
+  bool has_overflowed;
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_has_fifo_overflowed(nullptr, &has_overflowed));
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_has_fifo_overflowed(&entropy_src_, nullptr));
+  EXPECT_DIF_BADARG(dif_entropy_src_has_fifo_overflowed(nullptr, nullptr));
+}
+
+TEST_F(HasFifoOverflowedTest, Success) {
+  bool has_overflowed;
+
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW_REG_OFFSET, 1);
+  EXPECT_DIF_OK(
+      dif_entropy_src_has_fifo_overflowed(&entropy_src_, &has_overflowed));
+  EXPECT_TRUE(has_overflowed);
+
+  EXPECT_READ32(ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW_REG_OFFSET, 0);
+  EXPECT_DIF_OK(
+      dif_entropy_src_has_fifo_overflowed(&entropy_src_, &has_overflowed));
+  EXPECT_FALSE(has_overflowed);
+}
+
+class ClearFifoOverflowTest : public EntropySrcTest {};
+
+TEST_F(ClearFifoOverflowTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_entropy_src_clear_fifo_overflow(nullptr));
+}
+
+TEST_F(ClearFifoOverflowTest, Success) {
+  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_entropy_src_clear_fifo_overflow(&entropy_src_));
+}
+
 class ReadFifoDepthTest : public EntropySrcTest {};
 
 TEST_F(ReadFifoDepthTest, EntropyBadArg) {
