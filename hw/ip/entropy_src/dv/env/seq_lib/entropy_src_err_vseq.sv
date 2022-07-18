@@ -30,8 +30,6 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
     which_fifo_e     which_fifo;
     which_fifo_err_e which_fifo_err;
 
-    super.body();
-
     // Turn off fatal alert check
     expect_fatal_alerts = 1'b1;
 

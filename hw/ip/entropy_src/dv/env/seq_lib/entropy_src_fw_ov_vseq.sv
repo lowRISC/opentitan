@@ -12,7 +12,6 @@ class entropy_src_fw_ov_vseq extends entropy_src_base_vseq;
   int word_cnt;
 
   task body();
-    super.body();
 
     // TODO: (Cleanup) do we want to change the cfg field "seed_cnt" to be more general?
     word_cnt = cfg.seed_cnt;

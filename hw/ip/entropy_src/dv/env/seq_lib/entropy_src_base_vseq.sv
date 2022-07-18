@@ -17,30 +17,39 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   bit  do_entropy_src_init = 1'b1;
   bit  do_interrupt        = 1'b1;
 
+  bit init_successful      = 1'b0;
+
   bit [15:0] path_err_val;
 
   virtual entropy_src_cov_if   cov_vif;
 
-  `uvm_object_new
+  realtime default_cfg_pause = 50us;
 
-  virtual task body();
-    if (!uvm_config_db#(virtual entropy_src_cov_if)::get
-        (null, "*.env" , "entropy_src_cov_if", cov_vif)) begin
-      `uvm_fatal(`gfn, $sformatf("Failed to get entropy_src_cov_if from uvm_config_db"))
-    end
-  endtask
+  `uvm_object_new
 
   task pre_start();
     cfg.otp_en_es_fw_read_vif.drive(.val(cfg.otp_en_es_fw_read));
     cfg.otp_en_es_fw_over_vif.drive(.val(cfg.otp_en_es_fw_over));
 
+    if (!uvm_config_db#(virtual entropy_src_cov_if)::get
+        (null, "*.env" , "entropy_src_cov_if", cov_vif)) begin
+      `uvm_fatal(`gfn, $sformatf("Failed to get entropy_src_cov_if from uvm_config_db"))
+    end
+
     super.pre_start();
+
   endtask;
 
   virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init();
+    int regwen;
 
-    if (do_entropy_src_init) entropy_src_init();
+    super.dut_init(.reset_kind(reset_kind));
+
+    // Don't loop here trying to reconfigure (in case the configuration fails)
+    // leave that to any derived tests that allow for configuration failures.
+    if (do_entropy_src_init) begin
+      entropy_src_init(.newcfg(cfg.dut_cfg), .completed(init_successful), .regwen(regwen));
+    end
   endtask
 
   //
@@ -102,37 +111,22 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // Abstract the method of enabling the dut, to potentially allow for
   // callbacks to be applied in the derived classes
   virtual task enable_dut();
-    `uvm_info(`gfn, "CSR Thread: Enabling DUT", UVM_MEDIUM)
+    `uvm_info(`gfn, "Enabling DUT", UVM_MEDIUM)
     csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4True));
   endtask
 
+  // Helper function to entropy_src_init. Tries to apply the the new configuration
+  // Does not check for invalid MuBi or threshold alert values
+  task try_apply_base_configuration(entropy_src_dut_cfg newcfg, realtime pause,
+                                    output bit completed);
 
-  // setup basic entropy_src features
-  //
-  // If disable==1, explicitly clear module_enable before configuring
-  // to remove the write_lock
-  virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg,
-                                bit do_disable=1'b0);
-
-    // If the new configuration is intentionally trying to force bad mubi
-    // configurations, disable the alerts before applying the bad configs
-    if (newcfg.use_invalid_mubi) begin
-      cfg.entropy_src_assert_vif.assert_off_alert();
-    end
-
-    if (do_disable) begin
-      ral.module_enable.set(MuBi4False);
-      csr_update(.csr(ral.module_enable));
-    end
-
-    #50us;
+    completed = 0;
 
     // Controls
     ral.entropy_control.es_type.set(newcfg.type_bypass);
     ral.entropy_control.es_route.set(newcfg.route_software);
     csr_update(.csr(ral.entropy_control));
-
-    #50us;
+    #(pause);
 
     // Thresholds for the continuous health checks:
     // REPCNT and REPCNTS
@@ -146,40 +140,39 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       ral.repcnts_thresholds.fips_thresh.set(newcfg.repcnts_thresh_fips);
       csr_update(.csr(ral.repcnts_thresholds));
     end
-    #50us;
+    #(pause);
 
     // Windowed health test thresholds managed in derived vseq classes
-
 
     // FW_OV registers
     ral.fw_ov_control.fw_ov_mode.set(newcfg.fw_read_enable);
     ral.fw_ov_control.fw_ov_entropy_insert.set(newcfg.fw_over_enable);
     csr_update(.csr(ral.fw_ov_control));
-    #50us;
+    #(pause);
+
+    ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4False);
+    csr_update(.csr(ral.fw_ov_sha3_start));
+    #(pause);
 
     ral.observe_fifo_thresh.observe_fifo_thresh.set(newcfg.observe_fifo_thresh);
     csr_update(ral.observe_fifo_thresh);
+    #(pause);
 
-    #50us;
-
-    // Enables (should be done last)
     ral.conf.fips_enable.set(newcfg.fips_enable);
     ral.conf.entropy_data_reg_enable.set(newcfg.entropy_data_reg_enable);
     ral.conf.rng_bit_enable.set(newcfg.rng_bit_enable);
     ral.conf.rng_bit_sel.set(newcfg.rng_bit_sel);
     ral.conf.threshold_scope.set(newcfg.ht_threshold_scope);
     csr_update(.csr(ral.conf));
-
-    #50us;
+    #(pause);
 
     // Register write enable lock is on be default
     // Setting this to zero will lock future writes
     csr_wr(.ptr(ral.sw_regupd), .value(newcfg.sw_regupd));
-
-    #50us;
+    #(pause);
 
     // Module_enables (should be done last)
-    if(newcfg.module_enable == MuBi4True) begin
+    if (newcfg.module_enable == MuBi4True) begin
       // Use the enable method to invoke any callbacks.
       enable_dut();
     end else begin
@@ -188,19 +181,119 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       ral.module_enable.set(newcfg.module_enable);
       csr_update(.csr(ral.module_enable));
     end
-
-    #50us;
+    #(pause);
 
     ral.me_regwen.set(newcfg.me_regwen);
     csr_update(.csr(ral.me_regwen));
-
-    #50us;
+    #(pause);
 
     if (do_interrupt) begin
       ral.intr_enable.set(en_intr);
       csr_update(ral.intr_enable);
     end
-  endtask // entropy_src_init
+
+    cfg.clk_rst_vif.wait_clks(2);
+    `uvm_info(`gfn, "Configuration Complete", UVM_MEDIUM)
+
+    completed = 1;
+  endtask
+
+  // Setup basic entropy_src features, halting if a recoverable alert is detected
+  //
+  // If disable==1, explicitly clear module_enable before configuring
+  // to remove the write_lock
+  //
+  // Outputs REGWEN = 0, if the device coniguration was attempted when most registers
+  // were locked. (Likely intentionally)
+  virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg,
+                                realtime pause=default_cfg_pause,
+                                bit do_disable=1'b0,
+                                output bit completed,
+                                output bit regwen);
+    completed = 0;
+
+    // If the new configuration is intentionally trying to force bad mubi
+    // configurations, disable the alerts before applying the bad configs
+    if (newcfg.use_invalid_mubi) begin
+      cfg.entropy_src_assert_vif.assert_off_alert();
+    end
+
+    if (do_disable) begin
+      ral.module_enable.set(MuBi4False);
+      csr_update(.csr(ral.module_enable));
+      `uvm_info(`gfn, "DUT Disabled", UVM_MEDIUM)
+    end
+
+    csr_rd(.ptr(ral.regwen.regwen), .value(regwen));
+
+    wait_no_outstanding_access();
+
+    `uvm_info(`gfn, "Applying configuration", UVM_MEDIUM)
+
+    `DV_SPINWAIT_EXIT(
+      try_apply_base_configuration(newcfg, pause, completed);,
+      while (!cfg.m_alert_agent_cfg["recov_alert"].vif.is_alert_handshaking()) begin
+         cfg.clk_rst_vif.wait_clks(1);
+      end
+      wait_no_outstanding_access();
+    )
+
+    if (!completed) begin
+      bit [TL_DW - 1:0] value;
+      `uvm_info(`gfn, "Detected recoverable alert", UVM_LOW)
+
+      `uvm_info(`gfn, "Falling back on safe config", UVM_LOW)
+
+      // Set all fields with redundancy to safe values
+      entropy_src_safe_config();
+      // Read the alert sts register, let the scoreboard validate the value (if enabled)
+      csr_rd(.ptr(ral.recov_alert_sts), .value(value));
+      `uvm_info(`gfn, $sformatf("RECOV_ALERT_STS (pre): %08x", value), UVM_MEDIUM)
+      // clear the alert status register.
+      csr_wr(.ptr(ral.recov_alert_sts), .value('h0));
+      // Re-read the alert_status register to confirm that it has been cleared.
+      csr_rd(.ptr(ral.recov_alert_sts), .value(value));
+      `uvm_info(`gfn, $sformatf("RECOV_ALERT_STS: %08x", value), UVM_MEDIUM)
+    end
+
+    `uvm_info(`gfn, $sformatf("Exiting configuration, status %d", completed) , UVM_MEDIUM)
+
+  endtask
+
+  // helper task to clear any invalid configurations
+  task entropy_src_safe_config();
+
+    `uvm_info(`gfn, "Moving DUT into a safe configuration", UVM_MEDIUM)
+    // explicitly clear module_enable to allow module writes
+    ral.module_enable.module_enable.set(MuBi4False);
+    csr_update(.csr(ral.module_enable));
+
+    // Clear all interrupts
+    csr_wr(.ptr(ral.intr_state), .value(32'hf));
+
+    ral.entropy_control.es_type.set(MuBi4False);
+    ral.entropy_control.es_route.set(MuBi4False);
+    csr_update(.csr(ral.entropy_control));
+
+    ral.conf.fips_enable.set(MuBi4False);
+    ral.conf.entropy_data_reg_enable.set(MuBi4False);
+    ral.conf.rng_bit_enable.set(MuBi4False);
+    ral.conf.threshold_scope.set(MuBi4False);
+    csr_update(.csr(ral.conf));
+
+    ral.fw_ov_control.fw_ov_mode.set(MuBi4False);
+    ral.fw_ov_control.fw_ov_entropy_insert.set(MuBi4False);
+    csr_update(.csr(ral.fw_ov_control));
+
+    ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4False);
+    csr_update(.csr(ral.fw_ov_sha3_start));
+
+    ral.alert_threshold.reset();
+    csr_wr(.ptr(ral.alert_threshold), .value(ral.alert_threshold.get_reset()));
+
+    `uvm_info(`gfn, "Safe configuration", UVM_MEDIUM)
+
+  endtask
 
   typedef enum int {
     TlSrcEntropyDataReg,

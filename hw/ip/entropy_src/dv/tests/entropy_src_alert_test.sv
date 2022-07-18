@@ -11,7 +11,7 @@ class entropy_src_alert_test extends entropy_src_base_test;
     super.configure_env();
 
     cfg.en_scb                              = 0;
-    cfg.dut_cfg.use_invalid_mubi            = 1;
+    cfg.dut_cfg.bad_mubi_cfg_pct            = 100;
     cfg.dut_cfg.route_software_pct          = 0;
     cfg.dut_cfg.entropy_data_reg_enable_pct = 100;
     cfg.dut_cfg.fw_read_pct                 = 100;

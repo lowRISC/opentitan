@@ -46,7 +46,11 @@ class entropy_src_dut_cfg extends uvm_object;
   // Knob to leave thresholds at default, completely disabling them
   uint          default_ht_thresholds_pct;
 
-  bit           use_invalid_mubi;
+  // Knob to control frequency of bad settings to MuBi registers or other redundancy fields
+  // In order to cleanly test the alert mechanisms, at most one bad field value is allowed
+  // per dut configuration.
+  // This knob controls the frequency of bad configurations
+  uint          bad_mubi_cfg_pct;
 
   ///////////////////////////////////////////////
   // Fixed DUT configurations (TODO:RANDOMIZE) //
@@ -66,6 +70,9 @@ class entropy_src_dut_cfg extends uvm_object;
 
   rand int                      observe_fifo_thresh;
 
+  rand bit [15:0]               alert_threshold;
+  rand bit [15:0]               alert_threshold_inv;
+
   rand prim_mubi_pkg::mubi4_t   fw_read_enable, fw_over_enable, fw_ov_insert_start;
 
   // Note: These integer-valued fields are used to derive their real-valued counterparts.
@@ -82,7 +89,8 @@ class entropy_src_dut_cfg extends uvm_object;
   // Bit to leave thresholds at default values (effectively disabling HTs)
   rand int          default_ht_thresholds;
 
-  rand invalid_mubi_e   which_invalid_mubi;
+  rand bit             use_invalid_mubi;
+  rand invalid_mubi_e  which_invalid_mubi;
 
   /////////////////
   // Constraints //
@@ -176,9 +184,20 @@ class entropy_src_dut_cfg extends uvm_object;
       [6  : 10] :/ 1,
       [11 : 80] :/ 1};}
 
+  // TODO: Update dist to satisfy cover points
+  constraint alert_threshold_c {alert_threshold dist {
+      1 :/ 2,
+      2 :/ 5,
+      3 :/ 1,
+      4 :/ 1};}
+
   constraint default_ht_thresholds_c {default_ht_thresholds dist {
       1 :/ default_ht_thresholds_pct,
       0 :/ (100 - default_ht_thresholds_pct)};}
+
+  constraint use_invalid_mubi_c {use_invalid_mubi dist {
+      1 :/ bad_mubi_cfg_pct,
+      0 :/ (100 - bad_mubi_cfg_pct)};}
 
   // TODO: Is zero a valid value for this register?
   // What does the DUT do with a value of zero?
@@ -279,6 +298,8 @@ class entropy_src_dut_cfg extends uvm_object;
 
     if (use_invalid_mubi) begin
       prim_mubi_pkg::mubi4_t invalid_mubi_val;
+      bit bad_alert_threshold_inv = 0;
+
       invalid_mubi_val = get_rand_mubi4_val(.t_weight(0), .f_weight(0), .other_weight(1));
 
       case (which_invalid_mubi)
@@ -293,13 +314,22 @@ class entropy_src_dut_cfg extends uvm_object;
         invalid_es_route: route_software = invalid_mubi_val;
         invalid_es_type: type_bypass = invalid_mubi_val;
         invalid_alert_threshold: begin
+          // Let the alert_threshold_inv field take some
+          // improper value.
+          bad_alert_threshold_inv = 1;
         end
         default: begin
           `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
         end
-      endcase // case (which_invalid_mubi)
+      endcase
+      if (!bad_alert_threshold_inv) begin
+        alert_threshold_inv = ~alert_threshold;
+      end else if (alert_threshold_inv == ~alert_threshold) begin
+        // In the unlikely event that the random value of alert_threshold_inv satisfies
+        // our inverse condition force it a known unacceptable value
+        alert_threshold_inv = (alert_threshold == 0) ? 16'h1 : alert_threshold;
+      end
     end
-
   endfunction
 
 endclass
