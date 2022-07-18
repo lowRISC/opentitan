@@ -847,7 +847,7 @@ module spi_passthrough
   // Single mode is used
   `ASSUME(PayloadSwapConstraint_M,
     cmd_info.payload_swap_en |-> (cmd_info.payload_en == 4'b 0001)
-                              && (cmd_info.payload_dir == PayloadOut))
+                              && (cmd_info.payload_dir == PayloadIn))
 
 
 endmodule: spi_passthrough
