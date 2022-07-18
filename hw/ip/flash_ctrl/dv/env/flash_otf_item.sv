@@ -158,12 +158,12 @@ class flash_otf_item extends uvm_object;
                                   fq.size(), addr, scr_en, ecc_en), UVM_MEDIUM)
     foreach (fq[i]) begin
       if (scr_en) begin
-        raw_fq.push_back(create_raw_data(fq[i], addr, addr_key, data_key, err76));
+        raw_fq.push_back(create_raw_data(fq[i], addr, addr_key, data_key, err76, ecc_en));
         ecc_err |= err76;
       end else begin
         raw_fq.push_back(fq[i]);
       end
-      if (ecc_err != 0) begin
+      if (ecc_en == 1 && ecc_err != 0) begin
         `uvm_error("rd_scr", "ecc error is detected")
       end
       addr++;

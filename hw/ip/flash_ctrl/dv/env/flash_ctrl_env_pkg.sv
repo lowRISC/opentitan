@@ -348,6 +348,7 @@ package flash_ctrl_env_pkg;
       input bit [FlashKeySize-1:0]                 flash_addr_key,
       input bit [FlashKeySize-1:0]                 flash_data_key,
       output bit [1:0]                             ecc_76_err,
+      input bit                                    ecc_en,
       input bit                                    dis = 1);
     bit [FlashDataWidth-1:0]                         mask;
     bit [FlashDataWidth-1:0]                         masked_data;
@@ -357,7 +358,13 @@ package flash_ctrl_env_pkg;
 
     mask = flash_galois_multiply(flash_addr_key, bank_addr);
 
-    dec68 = prim_secded_pkg::prim_secded_hamming_76_68_dec(data);
+    if (ecc_en) begin
+      dec68 = prim_secded_pkg::prim_secded_hamming_76_68_dec(data);
+    end else begin
+      dec68.data = data;
+      dec68.err = 'h0;
+    end
+
     masked_data = dec68.data[FlashDataWidth-1:0] ^ mask;
 
     plain_text = crypto_dpi_prince_pkg::c_dpi_prince_decrypt(masked_data,
@@ -368,6 +375,8 @@ package flash_ctrl_env_pkg;
     ecc_76_err = dec68.err;
 
     if (dis) begin
+      `uvm_info("DCR_DBG", $sformatf("datakey:%x", flash_data_key), UVM_HIGH)
+      `uvm_info("DCR_DBG", $sformatf("masked_data:%x cout:%x", masked_data, plain_text), UVM_HIGH)
       `uvm_info("DCR_DBG", $sformatf(
                 "addr:%x  mask:%x  din:%x  dout:%x  ecc_err:%2b synd:%x",
                 bank_addr, mask, data, (plain_text^mask), ecc_76_err, dec68.syndrome),
