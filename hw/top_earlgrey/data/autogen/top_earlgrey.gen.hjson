@@ -1886,7 +1886,9 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: lc_ctrl
-          top_signame: flash_ctrl_rma_req
+          end_idx: -1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_flash_rma_req
           index: -1
         }
         {
@@ -1910,7 +1912,7 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: lc_ctrl
-          top_signame: flash_ctrl_rma_ack
+          top_signame: otbn_lc_rma_ack
           index: -1
         }
         {
@@ -4786,9 +4788,7 @@
           width: 1
           inst_name: flash_ctrl
           default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: flash_ctrl_rma_req
+          top_signame: lc_ctrl_lc_flash_rma_req
           index: -1
         }
         {
@@ -5834,6 +5834,7 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: otbn
+          top_signame: flash_ctrl_rma_ack
           index: -1
         }
         {
@@ -5845,6 +5846,9 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: otbn
+          end_idx: -1
+          top_type: broadcast
+          top_signame: otbn_lc_rma_ack
           index: -1
         }
         {
@@ -7779,14 +7783,6 @@
       [
         otp_ctrl.flash_otp_key
       ]
-      flash_ctrl.rma_req:
-      [
-        lc_ctrl.lc_flash_rma_req
-      ]
-      flash_ctrl.rma_ack:
-      [
-        lc_ctrl.lc_flash_rma_ack
-      ]
       flash_ctrl.rma_seed:
       [
         lc_ctrl.lc_flash_rma_seed
@@ -7837,6 +7833,18 @@
       rom_ctrl.keymgr_data:
       [
         keymgr.rom_digest
+      ]
+      lc_ctrl.lc_flash_rma_req:
+      [
+        flash_ctrl.rma_req
+      ]
+      flash_ctrl.rma_ack:
+      [
+        otbn.lc_rma_req
+      ]
+      otbn.lc_rma_ack:
+      [
+        lc_ctrl.lc_flash_rma_ack
       ]
       usbdev.usb_dp_pullup:
       [
@@ -15164,7 +15172,9 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: lc_ctrl
-        top_signame: flash_ctrl_rma_req
+        end_idx: -1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_flash_rma_req
         index: -1
       }
       {
@@ -15188,7 +15198,7 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: lc_ctrl
-        top_signame: flash_ctrl_rma_ack
+        top_signame: otbn_lc_rma_ack
         index: -1
       }
       {
@@ -17045,9 +17055,7 @@
         width: 1
         inst_name: flash_ctrl
         default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: flash_ctrl_rma_req
+        top_signame: lc_ctrl_lc_flash_rma_req
         index: -1
       }
       {
@@ -17584,6 +17592,7 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: otbn
+        top_signame: flash_ctrl_rma_ack
         index: -1
       }
       {
@@ -17595,6 +17604,9 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: otbn
+        end_idx: -1
+        top_type: broadcast
+        top_signame: otbn_lc_rma_ack
         index: -1
       }
       {
@@ -20090,28 +20102,6 @@
       }
       {
         package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: flash_ctrl_rma_req
-        width: 1
-        type: uni
-        end_idx: -1
-        act: rcv
-        suffix: ""
-        default: lc_ctrl_pkg::LC_TX_DEFAULT
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: flash_ctrl_rma_ack
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: lc_ctrl_pkg::LC_TX_DEFAULT
-      }
-      {
-        package: lc_ctrl_pkg
         struct: lc_flash_rma_seed
         signame: flash_ctrl_rma_seed
         width: 1
@@ -20296,6 +20286,39 @@
         act: req
         suffix: ""
         default: rom_ctrl_pkg::KEYMGR_DATA_DEFAULT
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_flash_rma_req
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: flash_ctrl_rma_ack
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::LC_TX_DEFAULT
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: otbn_lc_rma_ack
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
       }
       {
         package: ""

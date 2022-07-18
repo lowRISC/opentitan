@@ -857,8 +857,6 @@
       'csrng.cs_aes_halt'       : ['entropy_src.cs_aes_halt'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'flash_ctrl.otp'          : ['otp_ctrl.flash_otp_key'],
-      'flash_ctrl.rma_req'      : ['lc_ctrl.lc_flash_rma_req'],
-      'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
                                    'sram_ctrl_ret_aon.sram_otp_key'
@@ -877,6 +875,11 @@
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
+
+      // Daisy chained LC RMA req/ack interface: LC -> Flash -> OTBN -> LC
+      'lc_ctrl.lc_flash_rma_req' : ['flash_ctrl.rma_req'],
+      'flash_ctrl.rma_ack'       : ['otbn.lc_rma_req'],
+      'otbn.lc_rma_ack'          : ['lc_ctrl.lc_flash_rma_ack'],
 
       // usbdev connection to pinmux
       'usbdev.usb_dp_pullup'      : ['pinmux_aon.usbdev_dppullup_en'],
