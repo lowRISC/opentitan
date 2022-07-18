@@ -26,8 +26,8 @@ extern "C" {
  * IMPORTANT: This may need to be modified if the modexp routine is changed!
  */
 enum {
-  kModExpOtbnInsnCountMin = 182578,
-  kModExpOtbnInsnCountMax = 197207,
+  kModExpOtbnInsnCountMin = 181147,
+  kModExpOtbnInsnCountMax = 198397,
 };
 
 /**
