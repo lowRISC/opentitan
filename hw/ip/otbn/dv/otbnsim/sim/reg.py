@@ -138,4 +138,4 @@ class RegFile:
 
     def wipe(self) -> None:
         for r in self._registers:
-            r.write_unsigned(0)
+            r.write_invalid()

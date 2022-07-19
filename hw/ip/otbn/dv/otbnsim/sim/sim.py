@@ -277,8 +277,9 @@ class OTBNSim:
 
     def _step_wiping(self, verbose: bool) -> StepRes:
         '''Step the simulation when wiping'''
-        assert self.state.wipe_cycles > 0
-        self.state.wipe_cycles -= 1
+        assert self.state.wipe_cycles >= 0
+        if self.state.wipe_cycles > 0:
+            self.state.wipe_cycles -= 1
 
         # If something bad happened asynchronously (because of an escalation),
         # we want to finish the secure wipe but accept no further commands.  To
@@ -289,8 +290,9 @@ class OTBNSim:
             self.state._fsm_state = FsmState.WIPING_BAD
 
         # Reflect wiping in STATUS register if it has not been updated yet.
-        if (self.state.ext_regs.read('STATUS', True) not in
-            [Status.BUSY_SEC_WIPE_INT, Status.LOCKED]):
+        if (self.state.wipe_cycles > 0 and
+            (self.state.ext_regs.read('STATUS', True) not in
+             [Status.BUSY_SEC_WIPE_INT, Status.LOCKED])):
             self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
 
         is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
@@ -306,27 +308,40 @@ class OTBNSim:
         if not is_good:
             self.state.ext_regs.write('INSN_CNT', 0, True)
 
-        # Wipe all registers and set STATUS on the penultimate cycle.
         if self.state.wipe_cycles == 1:
-            next_status = Status.IDLE if is_good else Status.LOCKED
-            self.state.ext_regs.write('STATUS', next_status, True)
-            self.state.wipe()
+            if self.state.first_round_of_wipe:
+                # Request URND refresh before second round.
+                self.state.wsrs.URND.running = False
+                self.state._urnd_client.request()
+            else:
+                # Wipe all registers and set STATUS on the penultimate cycle.
+                next_status = Status.IDLE if is_good else Status.LOCKED
+                self.state.ext_regs.write('STATUS', next_status, True)
+                self.state.wipe()
 
         # On the final cycle, set the next state to IDLE or LOCKED. If an
         # initial secure wipe was in progress, it is now done (if the wipe was
         # good).
         if self.state.wipe_cycles == 0:
-            if is_good:
-                next_state = FsmState.IDLE
-                if self.state.init_sec_wipe_is_running():
-                    self.state.complete_init_sec_wipe()
+            if self.state.first_round_of_wipe:
+                # Once the URND refresh is acknowledged, do second round of wipe.
+                if self.state.wsrs.URND.running:
+                    self.state.first_round_of_wipe = False
+                    self.state.set_fsm_state(self.state.get_fsm_state())
             else:
-                next_state = FsmState.LOCKED
-            self.state.set_fsm_state(next_state)
+                if is_good:
+                    next_state = FsmState.IDLE
+                    if self.state.init_sec_wipe_is_running():
+                        self.state.complete_init_sec_wipe()
+                else:
+                    next_state = FsmState.LOCKED
 
-            # Also, set wipe_cycles to an invalid value to make really sure
-            # we've left the wiping code.
-            self.wipe_cycles = -1
+                # Also, set wipe_cycles to an invalid value to make really sure
+                # we've left the wiping code.
+                self.wipe_cycles = -1
+                self.state.first_round_of_wipe = True
+                self.state.set_fsm_state(next_state)
+
         return (None, self._on_stall(verbose, fetch_next=False))
 
     def dump_data(self) -> bytes:

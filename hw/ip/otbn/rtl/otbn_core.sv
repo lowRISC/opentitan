@@ -807,7 +807,6 @@ module otbn_core
 
     .urnd_data_i        (urnd_data),
     .sec_wipe_acc_urnd_i(sec_wipe_acc_urnd),
-    .sec_wipe_zero_i    (sec_wipe_zero),
 
     .mac_en_i    (mac_bignum_en),
     .mac_commit_i(mac_bignum_commit),
@@ -904,13 +903,21 @@ module otbn_core
           mubi4_test_true_loose(start_stop_escalate_en) && mubi4_test_false_strict(escalate_en_i)
           |=> err_bits_q)
 
+  // The following assertions allow up to 400 cycles from escalation until the start/stop FSM locks.
+  // This is a long time, but it's necessary because following an escalation the start/stop FSM goes
+  // through two rounds of secure wiping with random data with an URND reseed in between.  Depending
+  // on the delay configured in the EDN model, the reseed alone can take 200 cycles.
+
   `ASSERT(OtbnStartStopGlobalEscCntrMeasure_A, err_bits_q && mubi4_test_true_loose(escalate_en_i)
-          && mubi4_test_true_loose(start_stop_escalate_en)|=> ##[1:100]
+          && mubi4_test_true_loose(start_stop_escalate_en)|=> ##[1:400]
           u_otbn_start_stop_control.state_q == otbn_pkg::OtbnStartStopStateLocked)
 
   `ASSERT(OtbnStartStopLocalEscCntrMeasure_A, err_bits_q && mubi4_test_false_strict(escalate_en_i)
-          && mubi4_test_true_loose(start_stop_escalate_en) |=>  ##[1:100]
+          && mubi4_test_true_loose(start_stop_escalate_en) |=>  ##[1:400]
           u_otbn_start_stop_control.state_q == otbn_pkg::OtbnStartStopStateLocked)
+
+  // In contrast to the start/stop FSM, the controller FSM should lock quickly after an escalation,
+  // independent of the secure wipe.
 
   `ASSERT(OtbnControllerGlobalEscCntrMeasure_A, err_bits_q && mubi4_test_true_loose(escalate_en_i)
           && mubi4_test_true_loose(controller_fatal_escalate_en)|=> ##[1:100]

@@ -185,7 +185,7 @@ module otbn_controller
   logic done_complete;
   logic executing;
   logic state_error;
-  logic spurious_secure_wipe_ack;
+  logic spurious_secure_wipe_ack_q, spurious_secure_wipe_ack_d;
 
   logic                     insn_fetch_req_valid_raw;
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr_last;
@@ -322,10 +322,19 @@ module otbn_controller
 
   // Spot spurious acks on the secure wipe interface. There is a an ack at the end of the initial
   // secure wipe, and as `secure_wipe_running_q` is only high during secure wipes triggered by this
-  // controller, we have to ignore acks before the initial secure wipe is done.
-  assign spurious_secure_wipe_ack = secure_wipe_ack_i &
-                                    ~secure_wipe_running_q &
-                                    ~secure_wipe_running_i;
+  // controller, we have to ignore acks before the initial secure wipe is done.  Register this
+  // signal to break a circular path (a secure wipe can be triggered by a stop, and a spurious
+  // secure wipe ack can trigger a stop).
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      spurious_secure_wipe_ack_q <= 1'b0;
+    end else begin
+      spurious_secure_wipe_ack_q <= spurious_secure_wipe_ack_d;
+    end
+  end
+  assign spurious_secure_wipe_ack_d = secure_wipe_ack_i &
+                                      ~secure_wipe_running_q &
+                                      ~secure_wipe_running_i;
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
@@ -511,7 +520,7 @@ module otbn_controller
 
   assign fatal_software_err       = software_err & software_errs_fatal_i;
   assign bad_internal_state_err   = |{state_error, loop_hw_err, rf_base_call_stack_hw_err_i,
-                                      spurious_secure_wipe_ack};
+                                      spurious_secure_wipe_ack_q};
   assign reg_intg_violation_err   = rf_bignum_rf_err | ispr_rdata_intg_err;
   assign key_invalid_err          = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
   assign illegal_insn_err         = illegal_insn_static | rf_indirect_err;
