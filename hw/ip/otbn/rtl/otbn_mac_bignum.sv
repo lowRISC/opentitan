@@ -24,7 +24,6 @@ module otbn_mac_bignum
 
   input logic [WLEN-1:0] urnd_data_i,
   input logic            sec_wipe_acc_urnd_i,
-  input logic            sec_wipe_zero_i,
 
   output logic [ExtWLEN-1:0] ispr_acc_intg_o,
   input  logic [ExtWLEN-1:0] ispr_acc_wr_data_intg_i,
@@ -192,8 +191,6 @@ module otbn_mac_bignum
         acc_no_intg_d = urnd_data_i;
         acc_intg_d = acc_intg_calc;
       end
-      // Pre-encoded values can be written directly to the register.
-      sec_wipe_zero_i: acc_intg_d = EccWideZeroWord;
       default: begin
         // If performing an ACC ISPR write the next accumulator value is taken from the ISPR write
         // data, otherwise it is drawn from the adder result. The new accumulator can be optionally
@@ -211,8 +208,7 @@ module otbn_mac_bignum
 
   // Only write to accumulator if the MAC is enabled or an ACC ISPR write is occuring or secure
   // wipe of the internal state is occuring.
-  assign acc_en = (mac_en_i & mac_commit_i) | ispr_acc_wr_en_i | sec_wipe_acc_urnd_i |
-    sec_wipe_zero_i;
+  assign acc_en = (mac_en_i & mac_commit_i) | ispr_acc_wr_en_i | sec_wipe_acc_urnd_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

@@ -19,9 +19,9 @@ from .reg import RegFile
 from .trace import Trace, TracePC
 from .wsr import WSRFile
 
-# The number of cycles spent in the 'WIPE' state. This takes constant time in
-# the RTL, mirrored here.
-_WIPE_CYCLES = 98
+# The number of cycles spent per round of a secure wipe. This takes constant
+# time in the RTL, mirrored here.
+_WIPE_CYCLES = 67
 
 
 class FsmState(IntEnum):
@@ -98,6 +98,8 @@ class OTBNState:
         self._next_fsm_state = FsmState.IDLE
 
         self._init_sec_wipe_state = InitSecWipeState.NOT_DONE
+
+        self.first_round_of_wipe = True
 
         self.loop_stack = LoopStack()
 

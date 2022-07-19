@@ -122,26 +122,98 @@ module otbn_core_model
   end
 
   // EDN URND Seed Request Logic
-  logic edn_urnd_req_q, edn_urnd_req_d, start_q, start_d;
+  logic start_q, start_d;
   bit is_idle;
-  bit initial_urnd_reseed_done;
 
-  // URND Reseeding is done before the initial secure wipe and when OTBN receives the EXECUTE
-  // command.
   assign start_d = (cmd == CmdExecute) & is_idle;
   assign is_idle = otbn_pkg::status_e'(status_o) == StatusIdle;
-  assign edn_urnd_req_d = ~edn_urnd_cdc_done_i &
-                          (edn_urnd_req_q | start_q | ~initial_urnd_reseed_done);
 
-  assign edn_urnd_o = edn_urnd_req_q;
+  // URND Reseeding is done twice as part of every secure wipe: once before the secure wipe and once
+  // after a first wipe with random data.  A secure wipe happens after reset and when OTBN receives
+  // the `EXECUTE` command.
+  typedef enum logic [2:0] {
+    OtbnCoreModelUrndStateReset,
+    OtbnCoreModelUrndStateAwaitInitialAck,
+    OtbnCoreModelUrndStateAwaitWipe,
+    OtbnCoreModelUrndStateAwaitSecondAck,
+    OtbnCoreModelUrndStateAwaitStart,
+    OtbnCoreModelUrndStateAwaitPostStartAck,
+    OtbnCoreModelUrndStateAwaitPostExecSecWipe
+  } urnd_state_e;
+  urnd_state_e urnd_state_q, urnd_state_d;
+
+  localparam int unsigned WIPE_CYCLES = 66;
+  typedef logic [$clog2(WIPE_CYCLES+1)-1:0] wipe_cyc_cnt_t;
+  wipe_cyc_cnt_t wipe_cyc_cnt_q, wipe_cyc_cnt_d;
+
+  always_comb begin
+    edn_urnd_o     = 1'b0;
+    urnd_state_d   = urnd_state_q;
+    wipe_cyc_cnt_d = wipe_cyc_cnt_q;
+
+    unique case (urnd_state_q)
+      OtbnCoreModelUrndStateReset: begin
+        urnd_state_d = OtbnCoreModelUrndStateAwaitInitialAck;
+      end
+
+      OtbnCoreModelUrndStateAwaitInitialAck: begin
+        edn_urnd_o = 1'b1;
+        if (edn_urnd_cdc_done_i) begin
+          wipe_cyc_cnt_d = wipe_cyc_cnt_t'(WIPE_CYCLES);
+          urnd_state_d   = OtbnCoreModelUrndStateAwaitWipe;
+        end
+      end
+
+      OtbnCoreModelUrndStateAwaitWipe: begin
+        wipe_cyc_cnt_d = wipe_cyc_cnt_q - 1;
+        if (wipe_cyc_cnt_q == '0) begin
+          edn_urnd_o   = 1'b1;
+          urnd_state_d = OtbnCoreModelUrndStateAwaitSecondAck;
+        end
+      end
+
+      OtbnCoreModelUrndStateAwaitSecondAck: begin
+        edn_urnd_o = 1'b1;
+        if (edn_urnd_cdc_done_i) begin
+          urnd_state_d = OtbnCoreModelUrndStateAwaitStart;
+        end
+      end
+
+      OtbnCoreModelUrndStateAwaitStart: begin
+        if (start_q) begin
+          urnd_state_d = OtbnCoreModelUrndStateAwaitPostStartAck;
+        end
+      end
+
+      OtbnCoreModelUrndStateAwaitPostStartAck: begin
+        edn_urnd_o = 1'b1;
+        if (edn_urnd_cdc_done_i) begin
+          urnd_state_d = OtbnCoreModelUrndStateAwaitPostExecSecWipe;
+        end
+      end
+
+      OtbnCoreModelUrndStateAwaitPostExecSecWipe: begin
+        if (status_q == StatusBusySecWipeInt) begin
+          // This wipe is three clock cycles shorter, because it does starts directly after
+          // execution and not directly after an URND reseed.
+          wipe_cyc_cnt_d = wipe_cyc_cnt_t'(WIPE_CYCLES) - 3;
+          urnd_state_d   = OtbnCoreModelUrndStateAwaitWipe;
+        end
+      end
+
+      default: urnd_state_d = OtbnCoreModelUrndStateReset;
+    endcase
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      edn_urnd_req_q <= 1'b0;
-      start_q <= 1'b0;
+      start_q        <= 1'b0;
+      urnd_state_q   <= OtbnCoreModelUrndStateReset;
+      wipe_cyc_cnt_q <= '0;
     end else begin
-      edn_urnd_req_q <= edn_urnd_req_d;
-      start_q <= start_d;
+      start_q        <= start_d;
+      urnd_state_q   <= urnd_state_d;
+      wipe_cyc_cnt_q <= wipe_cyc_cnt_d;
     end
   end
 
@@ -236,7 +308,6 @@ module otbn_core_model
       failed_rnd_cdc <= 0;
       failed_otp_key_cdc <= 0;
       failed_initial_secure_wipe <= 0;
-      initial_urnd_reseed_done <= 0;
       initial_secure_wipe_started <= 0;
       model_state <= 0;
     end else begin
@@ -255,7 +326,6 @@ module otbn_core_model
                                                             keymgr_key_i.valid) != 0);
       end
       if (edn_urnd_cdc_done_i) begin
-        initial_urnd_reseed_done <= 1;
         failed_urnd_cdc <= (otbn_model_urnd_cdc_done(model_handle) != 0);
       end
       if (edn_rnd_cdc_done_i) begin

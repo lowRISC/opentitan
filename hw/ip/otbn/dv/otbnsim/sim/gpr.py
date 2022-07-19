@@ -119,4 +119,4 @@ class GPRs(RegFile):
         # TODO: Check that we wipe the call stack in the RTL and make sure it
         #       appears in a trace entry, then match that here.
         for idx in range(2, 32):
-            self.get_reg(idx).write_unsigned(0)
+            self.get_reg(idx).write_invalid()

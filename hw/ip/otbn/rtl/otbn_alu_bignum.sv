@@ -248,7 +248,6 @@ module otbn_alu_bignum
           mod_intg_d[i_word*39+:39]  = mod_intg_calc[i_word*39+:39];
         end
         // Pre-encoded inputs can directly be written to the register.
-        sec_wipe_zero_i: mod_intg_d[i_word*39+:39] = EccZeroWord;
         default: mod_intg_d[i_word*39+:39] = ispr_mod_bignum_wdata_intg_blanked[i_word*39+:39];
       endcase
 
@@ -262,7 +261,6 @@ module otbn_alu_bignum
       endcase
     end
 
-    `ASSERT(ModSecWipeSelOneHot, $onehot0({sec_wipe_mod_urnd_i, sec_wipe_zero_i}))
     `ASSERT(ModWrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[i_word]}))
 
     assign mod_ispr_wr_en[i_word] = (ispr_addr_i == IsprMod)                          &
@@ -271,8 +269,7 @@ module otbn_alu_bignum
 
     assign mod_wr_en[i_word] = ispr_init_i            |
                                mod_ispr_wr_en[i_word] |
-                               sec_wipe_mod_urnd_i    |
-                               sec_wipe_zero_i;
+                               sec_wipe_mod_urnd_i;
   end
 
   assign ispr_acc_wr_en_o   =

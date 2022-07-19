@@ -90,8 +90,10 @@ class otbn_intg_err_vseq extends otbn_base_vseq;
     @(cfg.clk_rst_vif.cbn);
     release_force();
 
-    // OTBN should now do a secure wipe. Give it some cycles to do so.
-    repeat (100) @(cfg.clk_rst_vif.cbn);
+    // OTBN should now do a secure wipe. Give it up to 400 cycles to do so (because it needs to go
+    // twice over all registers and reseed URND in between, the time of which depends on the delay
+    // configured in the EDN model).
+    repeat (400) @(cfg.clk_rst_vif.cbn);
 
     // We should now be in a locked state after the secure wipe.
     `DV_CHECK_FATAL(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);

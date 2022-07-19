@@ -448,5 +448,5 @@ class WSRFile:
         self.KeyS1.set_unsigned(key1)
 
     def wipe(self) -> None:
-        self.MOD.write_unsigned(0)
-        self.ACC.write_unsigned(0)
+        self.MOD.write_invalid()
+        self.ACC.write_invalid()
