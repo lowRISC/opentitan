@@ -592,6 +592,35 @@ dif_result_t dif_entropy_src_get_fifo_depth(
   return kDifOk;
 }
 
+dif_result_t dif_entropy_src_get_debug_state(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_debug_state_t *debug_state) {
+  if (entropy_src == NULL || debug_state == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t debug_state_reg = mmio_region_read32(
+      entropy_src->base_addr, ENTROPY_SRC_DEBUG_STATUS_REG_OFFSET);
+  debug_state->entropy_fifo_depth = bitfield_field32_read(
+      debug_state_reg, ENTROPY_SRC_DEBUG_STATUS_ENTROPY_FIFO_DEPTH_FIELD);
+  debug_state->sha3_fsm_state = bitfield_field32_read(
+      debug_state_reg, ENTROPY_SRC_DEBUG_STATUS_SHA3_FSM_FIELD);
+  debug_state->sha3_block_processed = bitfield_bit32_read(
+      debug_state_reg, ENTROPY_SRC_DEBUG_STATUS_SHA3_BLOCK_PR_BIT);
+  debug_state->sha3_squeezing = bitfield_bit32_read(
+      debug_state_reg, ENTROPY_SRC_DEBUG_STATUS_SHA3_SQUEEZING_BIT);
+  debug_state->sha3_absorbed = bitfield_bit32_read(
+      debug_state_reg, ENTROPY_SRC_DEBUG_STATUS_SHA3_ABSORBED_BIT);
+  debug_state->sha3_error = bitfield_bit32_read(
+      debug_state_reg, ENTROPY_SRC_DEBUG_STATUS_SHA3_ERR_BIT);
+  debug_state->main_fsm_is_idle = bitfield_bit32_read(
+      debug_state_reg, ENTROPY_SRC_DEBUG_STATUS_MAIN_SM_IDLE_BIT);
+  debug_state->main_fsm_boot_done = bitfield_bit32_read(
+      debug_state_reg, ENTROPY_SRC_DEBUG_STATUS_MAIN_SM_BOOT_DONE_BIT);
+
+  return kDifOk;
+}
+
 dif_result_t dif_entropy_src_get_recoverable_alerts(
     const dif_entropy_src_t *entropy_src, uint32_t *alerts) {
   if (entropy_src == NULL || alerts == NULL) {

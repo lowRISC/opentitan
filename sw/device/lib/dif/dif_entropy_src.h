@@ -282,6 +282,62 @@ typedef struct dif_entropy_src_alert_fail_counts {
 } dif_entropy_src_alert_fail_counts_t;
 
 /**
+ * SHA3 state machine states.
+ *
+ * See `hw/ip/kmac/rtl/sha3_pkg.sv` for more details.
+ */
+typedef enum dif_entropy_src_sha3_state {
+  kDifEntropySrcSha3StateIdle = 0,
+  kDifEntropySrcSha3StateAbsorb = 1,
+  kDifEntropySrcSha3StateSqueeze = 2,
+  kDifEntropySrcSha3StateManualRun = 3,
+  kDifEntropySrcSha3StateFlush = 4,
+  kDifEntropySrcSha3StateError = 5,
+} dif_entropy_src_sha3_state_t;
+
+/**
+ * Debug status information.
+ */
+typedef struct dif_entropy_src_debug_state {
+  /**
+   * Depth of the entropy source FIFO.
+   *
+   * Valid range: [0, 7]
+   */
+  uint8_t entropy_fifo_depth;
+  /**
+   * The current state of the SHA3 preconditioner state machine.
+   *
+   * See `dif_entropy_src_sha3_state_t` for more details.
+   */
+  dif_entropy_src_sha3_state_t sha3_fsm_state;
+  /**
+   * Whether the SHA3 preconditioner has completed processing the current block.
+   */
+  bool sha3_block_processed;
+  /**
+   * Whether the SHA3 preconditioner is in the squeezing state.
+   */
+  bool sha3_squeezing;
+  /**
+   * Whether the SHA3 preconditioner is in the absorbed state.
+   */
+  bool sha3_absorbed;
+  /**
+   * Whether the SHA3 preconditioner has is in an error state.
+   */
+  bool sha3_error;
+  /**
+   * Whether the main FSM is in the idle state.
+   */
+  bool main_fsm_is_idle;
+  /**
+   * Whether the main FSM is in the boot done state.
+   */
+  bool main_fsm_boot_done;
+} dif_entropy_src_debug_state_t;
+
+/**
  * Recoverable alerts.
  */
 typedef enum dif_entropy_src_alert_cause {
@@ -658,6 +714,18 @@ dif_result_t dif_entropy_src_clear_fifo_overflow(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_get_fifo_depth(
     const dif_entropy_src_t *entropy_src, uint32_t *fifo_depth);
+
+/**
+ * Reads the debug status register.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param[out] debug_state The current debug state of the IP.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_get_debug_state(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_debug_state_t *debug_state);
 
 /**
  * Reads the recoverable alert status register.

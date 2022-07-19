@@ -718,6 +718,38 @@ TEST_F(ReadFifoDepthTest, ReadSuccess) {
   EXPECT_EQ(depth, 6);
 }
 
+class GetDebugStateTest : public EntropySrcTest {};
+
+TEST_F(GetDebugStateTest, NullArgs) {
+  dif_entropy_src_debug_state_t debug_state;
+  EXPECT_DIF_BADARG(dif_entropy_src_get_debug_state(nullptr, &debug_state));
+  EXPECT_DIF_BADARG(dif_entropy_src_get_debug_state(&entropy_src_, nullptr));
+  EXPECT_DIF_BADARG(dif_entropy_src_get_debug_state(nullptr, nullptr));
+}
+
+TEST_F(GetDebugStateTest, Success) {
+  dif_entropy_src_debug_state_t debug_state;
+  EXPECT_READ32(
+      ENTROPY_SRC_DEBUG_STATUS_REG_OFFSET,
+      {{ENTROPY_SRC_DEBUG_STATUS_MAIN_SM_BOOT_DONE_BIT, 1},
+       {ENTROPY_SRC_DEBUG_STATUS_MAIN_SM_IDLE_BIT, 1},
+       {ENTROPY_SRC_DEBUG_STATUS_SHA3_ERR_BIT, 1},
+       {ENTROPY_SRC_DEBUG_STATUS_SHA3_ABSORBED_BIT, 1},
+       {ENTROPY_SRC_DEBUG_STATUS_SHA3_SQUEEZING_BIT, 1},
+       {ENTROPY_SRC_DEBUG_STATUS_SHA3_BLOCK_PR_BIT, 1},
+       {ENTROPY_SRC_DEBUG_STATUS_SHA3_FSM_OFFSET, kDifEntropySrcSha3StateFlush},
+       {ENTROPY_SRC_DEBUG_STATUS_ENTROPY_FIFO_DEPTH_OFFSET, 4}});
+  EXPECT_DIF_OK(dif_entropy_src_get_debug_state(&entropy_src_, &debug_state));
+  EXPECT_EQ(debug_state.entropy_fifo_depth, 4);
+  EXPECT_EQ(debug_state.sha3_fsm_state, kDifEntropySrcSha3StateFlush);
+  EXPECT_EQ(debug_state.sha3_block_processed, true);
+  EXPECT_EQ(debug_state.sha3_squeezing, true);
+  EXPECT_EQ(debug_state.sha3_absorbed, true);
+  EXPECT_EQ(debug_state.sha3_error, true);
+  EXPECT_EQ(debug_state.main_fsm_is_idle, true);
+  EXPECT_EQ(debug_state.main_fsm_boot_done, true);
+}
+
 class GetRecoverableAlertsTest : public EntropySrcTest {};
 
 TEST_F(GetRecoverableAlertsTest, NullArgs) {
