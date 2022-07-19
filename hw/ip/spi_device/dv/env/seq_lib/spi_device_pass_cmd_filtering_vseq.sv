@@ -18,7 +18,7 @@ class spi_device_pass_cmd_filtering_vseq extends spi_device_pass_base_vseq;
     for (int i = 0; i < num_trans; ++i) begin
       op = get_rand_opcode;
       `uvm_info(`gfn, $sformatf("running iteration %0d, test op = 0x%0h", i, op), UVM_LOW)
-      payload_size = 1; //get_rand_payload_size();
+      payload_size = get_rand_payload_size();
 
       // test 2 cases:
       //  - disable cmd filter, test cmd passthrough to downstream

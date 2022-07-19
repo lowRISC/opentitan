@@ -65,6 +65,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         PassthroughMode: begin
           `DV_CHECK_EQ(item.item_type, SpiFlashTrans)
           if (is_opcode_passthrough(item.opcode)) begin
+            handle_addr_payload_swap(item);
             spi_passthrough_upstream_q.push_back(item);
           end
         end
@@ -74,7 +75,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
   endtask
 
-  function bit is_opcode_passthrough(bit[7:0] opcode);
+  virtual function bit is_opcode_passthrough(bit[7:0] opcode);
     int cmd_index = get_cmd_filter_index(opcode);
     int cmd_offset = get_cmd_filter_offset(opcode);
     bit filter = `gmv(ral.cmd_filter[cmd_index].filter[cmd_offset]);
@@ -82,6 +83,51 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     `uvm_info(`gfn, $sformatf("opcode filter: %0d, valid: %0d", filter, valid_cmd), UVM_MEDIUM)
     return !filter && valid_cmd;
+  endfunction
+
+  virtual function void handle_addr_payload_swap(spi_item item);
+    spi_device_reg_cmd_info reg_cmd_info = get_cmd_info_reg_by_opcode(item.opcode);
+    if (reg_cmd_info == null) return;
+
+    if (`gmv(reg_cmd_info.addr_swap_en)) begin
+      bit [TL_DW-1:0] mask = `gmv(ral.addr_swap_mask);
+      bit [TL_DW-1:0] data = `gmv(ral.addr_swap_data);
+
+      `uvm_info(`gfn, $sformatf("Swap addr for opcode: 0x%0h, mask/data: 0x%0h/0x%0h, old: %p",
+          item.opcode, mask, data, item.address_q), UVM_MEDIUM)
+      foreach (item.address_q[i]) begin
+        // address_q[0] is the first collected address, but actual address is from MSB to LSB
+        // (first one received is the last byte of the address)
+        int addr_idx = item.address_q.size - i - 1;
+        item.address_q[i] = (item.address_q[i] & ~mask[addr_idx*8 +: 8]) |
+                            (data[addr_idx*8 +: 8] & mask[addr_idx*8 +: 8]);
+      end
+       `uvm_info(`gfn, $sformatf("New addr: %p", item.address_q), UVM_MEDIUM)
+    end
+
+    if (`gmv(reg_cmd_info.payload_swap_en)) begin
+      bit [TL_DW-1:0] mask = `gmv(ral.payload_swap_mask);
+      bit [TL_DW-1:0] data = `gmv(ral.payload_swap_data);
+      // swap up to 4 bytes
+      int swap_byte_num = item.payload_q.size > 4 ? 4 : item.payload_q.size;
+
+      `uvm_info(`gfn, $sformatf("Swap addr for opcode: 0x%0h, mask/data: 0x%0h/0x%0h, old: %p",
+          item.opcode, mask, data, item.payload_q[0:swap_byte_num]), UVM_MEDIUM)
+      for (int i = 0; i < swap_byte_num; i++) begin
+        item.payload_q[i] = (item.payload_q[i] & ~mask[i*8 +: 8]) |
+                            (data[i*8 +: 8] & mask[i*8 +: 8]);
+      end
+      `uvm_info(`gfn, $sformatf("New payload: %p", item.payload_q[0:swap_byte_num]), UVM_MEDIUM)
+    end
+  endfunction
+
+  virtual function spi_device_reg_cmd_info get_cmd_info_reg_by_opcode(bit [7:0] opcode);
+    foreach (ral.cmd_info[i]) begin
+      if (`gmv(ral.cmd_info[i].valid) == 1 && `gmv(ral.cmd_info[i].opcode) == opcode) begin
+        return ral.cmd_info[i];
+      end
+    end
+    return null;
   endfunction
 
   // extract spi items sent from device

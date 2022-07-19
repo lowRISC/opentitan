@@ -8,6 +8,11 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   bit allow_set_cmd_info_invalid;
   bit allow_use_invalid_opcode;
 
+  // knob to enable testing addr/payload swap
+  bit allow_addr_swap;
+  bit allow_payload_swap;
+  int addr_payload_swap_pct = 30;
+
   bit [7:0] valid_opcode_q[$];
 
   `uvm_object_utils(spi_device_pass_base_vseq)
@@ -140,6 +145,17 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       ral.control.mode.set(PassthroughMode);
     end
     csr_update(.csr(ral.control));
+
+    // addr/payload swap settting
+    `DV_CHECK_RANDOMIZE_FATAL(ral.addr_swap_mask)
+    csr_update(.csr(ral.addr_swap_mask));
+    `DV_CHECK_RANDOMIZE_FATAL(ral.addr_swap_data)
+    csr_update(.csr(ral.addr_swap_data));
+    `DV_CHECK_RANDOMIZE_FATAL(ral.payload_swap_mask)
+    csr_update(.csr(ral.payload_swap_mask));
+    `DV_CHECK_RANDOMIZE_FATAL(ral.payload_swap_data)
+    csr_update(.csr(ral.payload_swap_data));
+
     config_all_cmd_infos();
 
     spi_device_flash_auto_rsp_nonblocking();
@@ -193,6 +209,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     bit [3:0] lanes_en;
     addr_mode_e addr_size;
     bit valid;
+    bit swap;
 
     if (allow_set_cmd_info_invalid) valid = $urandom_range(0, 1);
     else valid = 1;
@@ -226,8 +243,30 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     ral.cmd_info[idx].opcode.set(info.opcode);// Read Dual
     ral.cmd_info[idx].payload_en.set(lanes_en);
     ral.cmd_info[idx].payload_dir.set(!info.write_command);
-    ral.cmd_info[idx].addr_swap_en.set(info.addr_swap);
-    ral.cmd_info[idx].payload_swap_en.set(info.data_swap);
+
+    // set dummy cycles
+    if (info.dummy_cycles > 0) begin
+      ral.cmd_info[idx].dummy_en.set(1);
+      ral.cmd_info[idx].dummy_size.set(info.dummy_cycles - 1);
+    end else begin
+      ral.cmd_info[idx].dummy_en.set(0);
+      `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info[idx].dummy_size)
+    end
+
+    if (allow_addr_swap) begin
+      swap = $urandom_range(0, 99) < addr_payload_swap_pct;
+    end else begin
+      swap = 0;
+    end
+    ral.cmd_info[idx].addr_swap_en.set(swap);
+
+    // only write and single mode allows payload swap
+    if (allow_payload_swap && info.write_command && info.num_lanes == 1) begin
+      swap = $urandom_range(0, 99) < addr_payload_swap_pct;
+    end else begin
+      swap = 0;
+    end
+    ral.cmd_info[idx].payload_swap_en.set(swap);
     csr_update(.csr(ral.cmd_info[idx]));
   endtask : add_cmd_info
 

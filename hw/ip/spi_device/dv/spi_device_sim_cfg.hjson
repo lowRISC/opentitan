@@ -146,13 +146,8 @@
     }
 
     {
-      name: spi_device_pass_addr_translation
-      uvm_test_seq: spi_device_pass_addr_translation_vseq
-    }
-
-    {
-      name: spi_device_pass_data_translation
-      uvm_test_seq: spi_device_pass_data_translation_vseq
+      name: spi_device_pass_addr_payload_swap
+      uvm_test_seq: spi_device_pass_addr_payload_swap_vseq
     }
 
     {
