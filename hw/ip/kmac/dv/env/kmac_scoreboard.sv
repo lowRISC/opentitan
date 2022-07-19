@@ -2084,6 +2084,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end else begin
             case (kmac_cmd_e'(kmac_cmd))
               CmdStart: begin
+                bit en_unsupported_modestrength = 1;
 
                 // Mode/Strength configuration error
                 if ((hash_mode inside {sha3_pkg::Shake, sha3_pkg::CShake} &&
@@ -2099,10 +2100,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   // If the mode/strength are mis-configured, the IP will finish running a hash
                   // with the incorrect configuration, producing a garbage digest that should not
                   // be checked.
-                  do_check_digest = 1'b0;
+                  if (`gmv(ral.cfg_shadowed.en_unsupported_modestrength)) do_check_digest = 1'b0;
+                  else en_unsupported_modestrength = 0;
                 end
 
-                if (checked_kmac_cmd == CmdNone) begin
+                if (checked_kmac_cmd == CmdNone && en_unsupported_modestrength) begin
                   // the first 6B of the prefix (function name),
                   // need to check that it is "KMAC" when `kmac_en == 1`
                   bit [47:0] function_name_6B;
