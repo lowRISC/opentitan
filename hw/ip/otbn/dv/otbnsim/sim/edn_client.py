@@ -69,11 +69,14 @@ class EdnClient:
         self._retry = False
 
     def take_word(self, word: int, fips_err: bool) -> None:
-        '''Take a 32-bit data word that we've been waiting for'''
+        '''
+        Take a 32-bit data word, which we requested.
+
+        If there is a reset in between an EDN transaction, request flag will
+        drop. In that case, incoming word will be ignored. Otherwise, append
+        it to the internal `_acc` list.
+        '''
         assert 0 <= word < (1 << 32)
-        assert self._acc is not None
-        assert len(self._acc) < ACC_LEN
-        assert self._cdc_counter is None
 
         if self._acc is None:
             return
