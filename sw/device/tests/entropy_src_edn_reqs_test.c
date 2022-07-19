@@ -207,7 +207,7 @@ static void alert_handler_test(entropy_src_test_context_t *ctx) {
 
 void test_initialize(entropy_src_test_context_t *ctx) {
   LOG_INFO("%s", __func__);
-  entropy_testutils_boot_mode_init();
+  entropy_testutils_auto_mode_init();
 
   mmio_region_t addr =
       mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
@@ -248,7 +248,8 @@ bool test_main() {
   CHECK_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ctx.ibex, &ctx.fpga_info));
 
   // Run multiple times if in a FPGA.
-  loop = (ctx.fpga_info != 0) ? kFpgaLoop : loop;
+  // loop = (ctx.fpga_info != 0) ? kFpgaLoop : loop;
+  loop = kFpgaLoop;
 
   for (int i = 0; i < loop; ++i) {
     LOG_INFO("Entropy src test %d/%d", i, loop);

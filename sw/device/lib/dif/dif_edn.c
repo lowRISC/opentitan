@@ -69,10 +69,17 @@ dif_result_t dif_edn_set_auto_mode(const dif_edn_t *edn,
   DIF_RETURN_IF_ERROR(check_locked(edn));
 
   uint32_t reg = mmio_region_read32(edn->base_addr, EDN_CTRL_REG_OFFSET);
+
+  // first pulse fifo reset to clear out old fifo contents
   reg = bitfield_field32_write(reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
                                kMultiBitBool4True);
   mmio_region_write32(edn->base_addr, EDN_CTRL_REG_OFFSET, reg);
 
+  reg = bitfield_field32_write(reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
+                               kMultiBitBool4False);
+  mmio_region_write32(edn->base_addr, EDN_CTRL_REG_OFFSET, reg);
+
+  // program ctrl contents
   for (size_t i = 0; i < config.reseed_material.len; ++i) {
     mmio_region_write32(edn->base_addr, EDN_RESEED_CMD_REG_OFFSET,
                         config.reseed_material.data[i]);

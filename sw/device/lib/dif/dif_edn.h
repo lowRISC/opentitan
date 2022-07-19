@@ -42,6 +42,15 @@ enum {
   kDifEntropySeedMaterialMaxWordLen = 12,
 };
 
+enum {
+  /**
+   * Csrng commands
+   */
+  kDifEdnCmdInstantiate = 1,
+  kDifEdnCmdReseed = 2,
+  kDifEdnCmdGenerate = 3
+};
+
 /**
  * CSRNG additional parameters for instantiate and generate commands.
  */

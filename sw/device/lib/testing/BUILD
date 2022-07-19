@@ -111,6 +111,7 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/testing/test_framework:check",
     ],
