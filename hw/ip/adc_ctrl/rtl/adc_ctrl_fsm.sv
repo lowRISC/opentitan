@@ -149,16 +149,8 @@ module adc_ctrl_fsm
     end
   end
 
-  // At one point the low power periodic scan was supposed to trigger a switch to normal scan
-  // when there is "ANY" match. This does not appear to be the use case anymore, but just in case
-  // keep the code below as a reference.
-  // for (genvar k = 0 ; k < NumAdcFilter ; k++) begin : gen_fst_lp_match
-  //   assign fst_lp_match[k] =
-  //   ((lp_sample_cnt_q == 8'd1) && (fsm_state_q == LP_EVAL)) ? adc_ctrl_match_i[k] : 1'b0;
-  // end
-  //
-  // assign any_fst_lp_match = |fst_lp_match;
-
+  // TODO: #13725
+  // The logic below can be enhanced for better handling in the future
   logic ld_match;
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
     if (!rst_aon_ni) begin

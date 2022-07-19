@@ -112,6 +112,15 @@ package adc_ctrl_reg_pkg;
   } adc_ctrl_reg2hw_adc_intr_ctl_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic [7:0]  q;
+    } filter_match;
+    struct packed {
+      logic        q;
+    } oneshot;
+  } adc_ctrl_reg2hw_adc_intr_status_reg_t;
+
+  typedef struct packed {
     logic        d;
     logic        de;
   } adc_ctrl_hw2reg_intr_state_reg_t;
@@ -142,37 +151,9 @@ package adc_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        d;
+      logic [7:0]  d;
       logic        de;
-    } cc_sink_det;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cc_1a5_sink_det;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cc_3a0_sink_det;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cc_src_det;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cc_1a5_src_det;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cc_src_det_flip;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cc_1a5_src_det_flip;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cc_discon;
+    } filter_match;
     struct packed {
       logic        d;
       logic        de;
@@ -181,28 +162,29 @@ package adc_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    adc_ctrl_reg2hw_intr_state_reg_t intr_state; // [438:438]
-    adc_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [437:437]
-    adc_ctrl_reg2hw_intr_test_reg_t intr_test; // [436:435]
-    adc_ctrl_reg2hw_alert_test_reg_t alert_test; // [434:433]
-    adc_ctrl_reg2hw_adc_en_ctl_reg_t adc_en_ctl; // [432:431]
-    adc_ctrl_reg2hw_adc_pd_ctl_reg_t adc_pd_ctl; // [430:402]
-    adc_ctrl_reg2hw_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [401:394]
-    adc_ctrl_reg2hw_adc_sample_ctl_reg_t adc_sample_ctl; // [393:378]
-    adc_ctrl_reg2hw_adc_fsm_rst_reg_t adc_fsm_rst; // [377:377]
-    adc_ctrl_reg2hw_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [376:201]
-    adc_ctrl_reg2hw_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [200:25]
-    adc_ctrl_reg2hw_adc_wakeup_ctl_reg_t adc_wakeup_ctl; // [24:17]
-    adc_ctrl_reg2hw_filter_status_reg_t filter_status; // [16:9]
-    adc_ctrl_reg2hw_adc_intr_ctl_reg_t adc_intr_ctl; // [8:0]
+    adc_ctrl_reg2hw_intr_state_reg_t intr_state; // [447:447]
+    adc_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [446:446]
+    adc_ctrl_reg2hw_intr_test_reg_t intr_test; // [445:444]
+    adc_ctrl_reg2hw_alert_test_reg_t alert_test; // [443:442]
+    adc_ctrl_reg2hw_adc_en_ctl_reg_t adc_en_ctl; // [441:440]
+    adc_ctrl_reg2hw_adc_pd_ctl_reg_t adc_pd_ctl; // [439:411]
+    adc_ctrl_reg2hw_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [410:403]
+    adc_ctrl_reg2hw_adc_sample_ctl_reg_t adc_sample_ctl; // [402:387]
+    adc_ctrl_reg2hw_adc_fsm_rst_reg_t adc_fsm_rst; // [386:386]
+    adc_ctrl_reg2hw_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [385:210]
+    adc_ctrl_reg2hw_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [209:34]
+    adc_ctrl_reg2hw_adc_wakeup_ctl_reg_t adc_wakeup_ctl; // [33:26]
+    adc_ctrl_reg2hw_filter_status_reg_t filter_status; // [25:18]
+    adc_ctrl_reg2hw_adc_intr_ctl_reg_t adc_intr_ctl; // [17:9]
+    adc_ctrl_reg2hw_adc_intr_status_reg_t adc_intr_status; // [8:0]
   } adc_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    adc_ctrl_hw2reg_intr_state_reg_t intr_state; // [84:83]
-    adc_ctrl_hw2reg_adc_chn_val_mreg_t [1:0] adc_chn_val; // [82:27]
-    adc_ctrl_hw2reg_filter_status_reg_t filter_status; // [26:18]
-    adc_ctrl_hw2reg_adc_intr_status_reg_t adc_intr_status; // [17:0]
+    adc_ctrl_hw2reg_intr_state_reg_t intr_state; // [77:76]
+    adc_ctrl_hw2reg_adc_chn_val_mreg_t [1:0] adc_chn_val; // [75:20]
+    adc_ctrl_hw2reg_filter_status_reg_t filter_status; // [19:11]
+    adc_ctrl_hw2reg_adc_intr_status_reg_t adc_intr_status; // [10:0]
   } adc_ctrl_hw2reg_t;
 
   // Register offsets

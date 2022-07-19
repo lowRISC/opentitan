@@ -312,45 +312,17 @@
     { name: "adc_intr_status",
       desc: "Debug cable internal status",
       swaccess: "rw1c",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
       resval: "0",
       tags: [ // the value of these regs is determined by the
               // value on the pins, hence it cannot be predicted.
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
-        { bits: "0",
-          name: "cc_sink_det",
-          desc: "0: filter0 condition is not met; 1: filter0 condition is met",
+        { bits: "NumAdcFilter-1:0",
+          name: "filter_match",
+          desc: "0: filter condition is not met; 1: filter condition is met",
         }
-        { bits: "1",
-          name: "cc_1A5_sink_det",
-          desc: "0: filter1 condition is not met; 1: filter1 condition is met",
-        }
-        { bits: "2",
-          name: "cc_3A0_sink_det",
-          desc: "0: filter2 condition is not met; 1: filter2 condition is met",
-        }
-        { bits: "3",
-          name: "cc_src_det",
-          desc: "0: filter3 condition is not met; 1: filter3 condition is met",
-        }
-        { bits: "4",
-          name: "cc_1A5_src_det",
-          desc: "0: filter4 condition is not met; 1: filter4 condition is met",
-        }
-        { bits: "5",
-          name: "cc_src_det_flip",
-          desc: "0: filter5 condition is not met; 1: filter5 condition is met",
-        }
-        { bits: "6",
-          name: "cc_1A5_src_det_flip",
-          desc: "0: filter6 condition is not met; 1: filter6 condition is met",
-        }
-        { bits: "7",
-          name: "cc_discon",
-          desc: "0: filter7 condition is not met; 1: filter7 condition is met",
-        }
-        { bits: "8",
+        { bits: "NumAdcFilter:NumAdcFilter",
           name: "oneshot",
           desc: "0: oneshot sample is not done ; 1: oneshot sample is done",
         }

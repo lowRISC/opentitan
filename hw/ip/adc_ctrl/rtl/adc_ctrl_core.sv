@@ -169,6 +169,7 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
     .intr_enable_i(reg2hw_i.intr_enable),
     .intr_test_i(reg2hw_i.intr_test),
     .intr_state_o,
+    .adc_intr_status_i(reg2hw_i.adc_intr_status),
     .adc_intr_status_o,
     .intr_debug_cable_o
   );
