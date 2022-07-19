@@ -14,6 +14,7 @@
  * configuration to enable entropy distribution for testing purposes.
  */
 void entropy_testutils_boot_mode_init(void);
+void entropy_testutils_auto_mode_init(void);
 
 /**
  * Wait for the entropy_src to reach a certain state.
