@@ -21,8 +21,34 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   rand bit  is_addr_odd;
   rand int  fractions;
 
+  // flash op
+  // WIP. not all field is valid.
+  rand flash_op_t rand_op;
+
+  // Permission to access special partition
+  rand bit [2:0] allow_spec_info_acc;
+
   constraint ctrl_num_c { ctrl_num dist { CTRL_TRANS_MIN := 2, [2:31] :/ 1, CTRL_TRANS_MAX := 2}; }
   constraint fractions_c { fractions dist { [1:4] := 4, [5:16] := 1}; }
+  constraint rand_op_c {
+    solve flash_program_data before rand_op;
+    solve rand_op.partition before rand_op.prog_sel, rand_op.addr;
+    solve rand_op.addr before rand_op.otf_addr;
+
+    rand_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo2] :/ 1};
+    rand_op.addr[TL_AW-1:BusAddrByteW] == 'h0;
+    rand_op.addr[1:0] == 'h0;
+    if (rand_op.partition != FlashPartData) {
+      rand_op.addr inside {[0:InfoTypeBytes[rand_op.partition>>1]-1]};
+      rand_op.prog_sel == 1;
+    } else {
+      rand_op.prog_sel == 0;
+    }
+    rand_op.otf_addr == rand_op.addr[BusAddrByteW-2:0];
+  }
+  constraint special_info_acc_c {
+    allow_spec_info_acc dist { 3'h7 := 1, 3'h0 := 1, [1:6] :/ 2};
+  }
 
   virtual task pre_start();
     // Erased page doesn't go through descramble.
@@ -32,12 +58,15 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     if (cfg.ecc_mode > 0) begin
       cfg.tgt_pre.shuffle();
       flash_init = FlashMemInitEccMode;
-      `uvm_info("reset_flash", $sformatf("ecc_mode %0d flash_init: rd:%2b dr:%2b wr:%2b ",
-                               cfg.ecc_mode, cfg.tgt_pre[TgtRd], cfg.tgt_pre[TgtDr], cfg.tgt_pre[TgtWr]),
-                               UVM_MEDIUM)
     end else begin
       flash_init = FlashMemInitRandomize;
     end
+    `uvm_info("reset_flash", $sformatf({"ecc_mode %0d allow_spec_info_acc:%3b",
+                                        " flash_init: rd:%2b dr:%2b wr:%2b"},
+                                       cfg.ecc_mode, allow_spec_info_acc, cfg.tgt_pre[TgtRd],
+                                       cfg.tgt_pre[TgtDr], cfg.tgt_pre[TgtWr]),
+              UVM_MEDIUM)
+
     configure_otf_mode();
     super.pre_start();
     if (cfg.seq_cfg.en_init_keys_seeds == 1) begin
@@ -54,8 +83,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       end
     end else begin
       flash_ctrl_default_region_cfg(,,,MuBi4True);
+      flash_ctrl_info_cfg(MuBi4True);
     end
-
+//    cfg.allow_spec_info_acc = allow_spec_info_acc;
+    update_partition_access(cfg.allow_spec_info_acc);
     // Polling init wip is done
     csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
     cfg.m_fpp_agent_cfg.mon_start = 1;
@@ -104,19 +135,20 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     int                                    tot_wd;
     int                                    page;
     bit                                    overflow = 0;
-
+    bit                                    drop = 0;
     is_odd = flash_op.otf_addr[2];
     tot_wd = wd * num + is_odd;
 
     flash_op.op = FlashOpProgram;
     flash_op.num_words = wd;
+
     if (cfg.ecc_mode > 0) flash_op.otf_addr[18:17] = cfg.tgt_pre[TgtWr];
 
     start_addr = flash_op.otf_addr;
     // last byte address in each program
     end_addr = start_addr + (tot_wd * 4) - 1;
     if (cfg.ecc_mode == 0) begin
-      overflow = end_addr[OTFHostId];
+      overflow = end_addr[OTFBankId];
     end else begin
       overflow = (end_addr[18:17] != start_addr[18:17] ||
                   end_addr[16:0] > 17'h1_FE00);
@@ -132,13 +164,16 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     end
     // Check if end_addr overflows.
     // Roll over start address if this is the case.
-    `uvm_info("prog_flash", $sformatf("bank:%0d otf_addr:0x%0h, size:%0d x %0d x 4B",
-                              bank, flash_op.otf_addr, num, wd), UVM_MEDIUM)
-    tail = tot_wd % 2;
+    `uvm_info("prog_flash", $sformatf({"bank:%0d otf_addr:0x%0h,",
+                                       " part: %s size:%0d x %0d x 4B"},
+                              bank, flash_op.otf_addr, flash_op.partition.name, num, wd), UVM_MEDIUM)
+//    tail = tot_wd % 2;
     flash_op.otf_addr = start_addr;
 
     for (int i = 0; i < num; i++) begin
       flash_program_data = '{};
+      tail = 0;
+      drop = 0;
       is_odd = flash_op.otf_addr[2];
       end_addr = flash_op.otf_addr + ((wd + is_odd) * 4) - 1;
       // Check resolution error
@@ -153,7 +188,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         flash_op.otf_addr[BusAddrByteW-1:6] = end_addr[BusAddrByteW-1:6];
         flash_op.otf_addr[5:0] = 0;
         end_addr = flash_op.otf_addr + (wd * 4) -1;
-        `uvm_info("prog_flash", $sformatf("change start_addr to 0x%x end_addr:0x%x",
+        `uvm_info("prog_flash", $sformatf("change to page:%0d start_addr to 0x%x end_addr:0x%x",
+                                          addr2page(flash_op.addr),
                                           flash_op.otf_addr,
                                           end_addr), UVM_MEDIUM)
         is_odd = 0;
@@ -167,18 +203,36 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       flash_op.addr = flash_op.otf_addr;
       // Bank : bit[19]
       flash_op.addr[TL_AW-1:OTFBankId] = bank;
+      page = addr2page(flash_op.addr);
+
+      if (flash_op.partition == FlashPartInfo && bank == 0 &&
+          page inside {[1:3]}) begin
+        if (!cfg.allow_spec_info_acc[page-1]) begin
+          `uvm_info("prog_flash", $sformatf("page:%0d access is not allowed", page), UVM_MEDIUM)
+          set_otf_exp_alert("recov_err");
+          drop = 1;
+        end
+      end
+      // check info page range
+      if (flash_op.partition !== FlashPartData) begin
+        if (page >= InfoTypeSize[flash_op.partition>>1]) begin
+          `uvm_info("prog_flash", $sformatf("bank:%0d page:%0d addr:0x%0h is out of range", bank, page, flash_op.otf_addr), UVM_MEDIUM)
+          set_otf_exp_alert("recov_err");
+          drop = 1;
+        end
+      end
+
       flash_ctrl_start_op(flash_op);
       flash_ctrl_write(flash_program_data, poll_fifo_status);
       wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
 
-      `uvm_info("prog_flash",$sformatf("addr:%x num:%0d wd:%0d  odd:%0d tail:%0d",
-                                       flash_op.otf_addr,num,wd,is_odd,tail), UVM_MEDIUM)
       if (is_odd == 1) begin
         tmp_data = {32{1'b1}};
         flash_program_data.push_front(tmp_data);
         unit_word++;
-        tail = unit_word % 2;
       end
+      tail = unit_word % 2;
+
       if (wd > 1 && tail == 1) begin
         tmp_data = {32{1'b1}};
         flash_program_data.push_back(tmp_data);
@@ -187,22 +241,34 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         tmp_data = {32{1'b1}};
         flash_program_data.push_back(tmp_data);
       end
-      flash_otf_print_data64(flash_program_data, "wdata");
-      `uvm_create_obj(flash_otf_item, exp_item)
+      `uvm_info("prog_flash",$sformatf("addr:%x num:%0d wd:%0d  odd:%0d tail:%0d",
+                                       flash_op.otf_addr,num,wd,is_odd,tail), UVM_MEDIUM)
+      if (drop) begin
+        `uvm_info("prog_flash", "skip sb path due to err", UVM_MEDIUM)
+      end else begin
+        flash_otf_print_data64(flash_program_data, "wdata");
+        `uvm_create_obj(flash_otf_item, exp_item)
 
-      exp_item.cmd = flash_op;
-      exp_item.dq = flash_program_data;
-      // Pass for the print in sb.
-      exp_item.start_addr = start_addr;
-      page = addr2page(flash_op.addr);
-      exp_item.page = page;
-      exp_item.region = get_region(page);
-      // Scramble data
-      exp_item.scramble(otp_addr_key, otp_data_key, flash_op.otf_addr);
+        exp_item.cmd = flash_op;
+        exp_item.dq = flash_program_data;
+        // Pass start_addr for print in sb.
+        // exp_item.start_addr = start_addr;
 
-      p_sequencer.eg_exp_ctrl_port[bank].write(exp_item);
-      flash_phy_prim_agent_pkg::print_flash_data(exp_item.fq,
-            $sformatf("fdata_%0d bank%0d", cfg.otf_ctrl_wr_sent, bank));
+        // This doesn't need so far.
+        exp_item.page = page;
+        if (flash_op.partition == FlashPartData) begin
+          exp_item.region = get_region(page);
+        end else begin
+          exp_item.region = get_region_from_info(cfg.mp_info[bank][flash_op.partition>>1][page]);
+        end
+
+        // Scramble data
+        exp_item.scramble(otp_addr_key, otp_data_key, flash_op.otf_addr);
+
+        p_sequencer.eg_exp_ctrl_port[bank].write(exp_item);
+        flash_phy_prim_agent_pkg::print_flash_data(exp_item.fq,
+                                                   $sformatf("fdata_%0d bank%0d", cfg.otf_ctrl_wr_sent, bank));
+      end
       flash_op.otf_addr = flash_op.otf_addr + (4 * wd);
       global_pat_cnt++;
       cfg.otf_ctrl_wr_sent++;
@@ -229,7 +295,11 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     flash_op.op = FlashOpRead;
     flash_op.num_words = wd;
 
-    if (cfg.ecc_mode > 0) flash_op.otf_addr[18:17] = cfg.tgt_pre[TgtRd];
+    if (cfg.ecc_mode == 0) begin
+      flash_op.otf_addr[OTFHostId] = 0;
+    end else begin
+      flash_op.otf_addr[18:17] = cfg.tgt_pre[TgtRd];
+    end
     start_addr = flash_op.otf_addr;
     end_addr = start_addr + (wd * 4 * num) - 1;
 
@@ -502,4 +572,44 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     global_derr_is_set = 0;
   endtask // otf_tb_clean_up
 
+  task flash_ctrl_info_cfg(mubi4_t scr_en = MuBi4False);
+    foreach (cfg.mp_info[i, j, k]) begin
+           cfg.mp_info[i][j][k] = default_info_page_cfg;
+           cfg.mp_info[i][j][k].scramble_en = scr_en;
+           flash_ctrl_mp_info_page_cfg(i, j, k,
+                                       cfg.mp_info[i][j][k]);
+    end
+  endtask // flash_ctrl_info_cfg
+
+  function flash_mp_region_cfg_t get_region_from_info(flash_bank_mp_info_page_cfg_t info);
+    flash_mp_region_cfg_t region;
+    region.en          = info.en;
+    region.read_en     = info.read_en;
+    region.program_en  = info.program_en;
+    region.erase_en    = info.erase_en;
+    region.scramble_en = info.scramble_en;
+    region.ecc_en      = info.ecc_en;
+    region.he_en       = info.he_en;
+    return region;
+  endfunction // get_region_from_info
+
+  function void update_partition_access(bit[2:0] acc);
+    cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::Off;
+    cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::Off;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::Off;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::Off;
+
+    if (acc[0]) cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
+    if (acc[1]) cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en = lc_ctrl_pkg::On;
+    if (acc[2]) begin
+      cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::On;
+      cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
+    end
+  endfunction // update_partition_access
+
+  function void set_otf_exp_alert(string str);
+    cfg.scb_h.exp_alert_ff[str].push_back(1);
+    cfg.scb_h.alert_chk_max_delay[str] = 2000;
+    `uvm_info("set_otf_exp_alert", $sformatf("exp_alert_ff[%s] size: %0d", str, cfg.scb_h.exp_alert_ff[str].size()), UVM_MEDIUM)
+  endfunction // set_otf_exp_alert
 endclass // flash_ctrl_otf_base_vseq

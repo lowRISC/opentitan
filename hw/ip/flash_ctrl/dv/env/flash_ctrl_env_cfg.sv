@@ -110,6 +110,14 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // 8 : default region
   int p2r_map[FlashNumPages] = '{default : 8};
 
+  flash_bank_mp_info_page_cfg_t mp_info[NumBanks][InfoTypes][];
+
+  // Permission to access special partition
+  // 0: secret / creator
+  // 1: secret / owner
+  // 2: isolated
+  bit [2:0] allow_spec_info_acc = 3'h0;
+
   // Allow multiple expected allert in a single test
   bit multi_alert_en = 0;
 
@@ -175,6 +183,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
     foreach (tgt_pre[i]) tgt_pre[i] = i;
     foreach (derr_idx[i]) derr_idx[i] = i;
+    foreach (mp_info[i, j]) mp_info[i][j] = new[InfoTypeSize[j]];
+
   endfunction : initialize
 
   // For a given partition returns its size in bytes in each of the banks.
