@@ -11,8 +11,9 @@ class entropy_src_stress_all_vseq extends entropy_src_base_vseq;
 
   task body();
     string seq_names[] = {"entropy_src_smoke_vseq",
-                          "entropy_src_common_vseq", // for intr_test
-                          "entropy_src_rng_vseq"};
+                          "entropy_src_common_vseq"}; //, // for intr_test
+                          // TODO: #13741
+                          // "entropy_src_rng_vseq"};
 
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence            seq;
