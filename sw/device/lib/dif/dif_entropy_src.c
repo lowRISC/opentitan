@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/multibits.h"
@@ -587,6 +588,154 @@ dif_result_t dif_entropy_src_get_fifo_depth(
 
   *fifo_depth = mmio_region_read32(entropy_src->base_addr,
                                    ENTROPY_SRC_OBSERVE_FIFO_DEPTH_REG_OFFSET);
+
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_get_recoverable_alerts(
+    const dif_entropy_src_t *entropy_src, uint32_t *alerts) {
+  if (entropy_src == NULL || alerts == NULL) {
+    return kDifBadArg;
+  }
+
+  *alerts = mmio_region_read32(entropy_src->base_addr,
+                               ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET);
+
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_clear_recoverable_alerts(
+    const dif_entropy_src_t *entropy_src, uint32_t alerts) {
+  if (entropy_src == NULL || alerts > kDifEntropySrcAlertAllAlerts) {
+    return kDifBadArg;
+  }
+
+  uint32_t active_alerts = mmio_region_read32(
+      entropy_src->base_addr, ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET);
+  active_alerts &= ~alerts;
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET, active_alerts);
+
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_get_errors(const dif_entropy_src_t *entropy_src,
+                                        uint32_t *errors) {
+  if (entropy_src == NULL || errors == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t err_code_reg = mmio_region_read32(entropy_src->base_addr,
+                                             ENTROPY_SRC_ERR_CODE_REG_OFFSET);
+
+  *errors = 0;
+
+  // ESRNG FIFO errors.
+  if (bitfield_bit32_read(err_code_reg,
+                          ENTROPY_SRC_ERR_CODE_SFIFO_ESRNG_ERR_BIT)) {
+    if (bitfield_bit32_read(err_code_reg,
+                            ENTROPY_SRC_ERR_CODE_FIFO_WRITE_ERR_BIT)) {
+      *errors |= kDifEntropySrcErrorRngFifoWrite;
+    }
+    if (bitfield_bit32_read(err_code_reg,
+                            ENTROPY_SRC_ERR_CODE_FIFO_READ_ERR_BIT)) {
+      *errors |= kDifEntropySrcErrorRngFifoRead;
+    }
+    if (bitfield_bit32_read(err_code_reg,
+                            ENTROPY_SRC_ERR_CODE_FIFO_STATE_ERR_BIT)) {
+      *errors |= kDifEntropySrcErrorRngFifoState;
+    }
+  }
+
+  // Observe FIFO errors.
+  if (bitfield_bit32_read(err_code_reg,
+                          ENTROPY_SRC_ERR_CODE_SFIFO_OBSERVE_ERR_BIT)) {
+    if (bitfield_bit32_read(err_code_reg,
+                            ENTROPY_SRC_ERR_CODE_FIFO_WRITE_ERR_BIT)) {
+      *errors |= kDifEntropySrcErrorObserveFifoWrite;
+    }
+    if (bitfield_bit32_read(err_code_reg,
+                            ENTROPY_SRC_ERR_CODE_FIFO_READ_ERR_BIT)) {
+      *errors |= kDifEntropySrcErrorObserveFifoRead;
+    }
+    if (bitfield_bit32_read(err_code_reg,
+                            ENTROPY_SRC_ERR_CODE_FIFO_STATE_ERR_BIT)) {
+      *errors |= kDifEntropySrcErrorObserveFifoState;
+    }
+  }
+
+  // ESFINAL FIFO errors.
+  if (bitfield_bit32_read(err_code_reg,
+                          ENTROPY_SRC_ERR_CODE_SFIFO_ESFINAL_ERR_BIT)) {
+    if (bitfield_bit32_read(err_code_reg,
+                            ENTROPY_SRC_ERR_CODE_FIFO_WRITE_ERR_BIT)) {
+      *errors |= kDifEntropySrcErrorFinalFifoWrite;
+    }
+    if (bitfield_bit32_read(err_code_reg,
+                            ENTROPY_SRC_ERR_CODE_FIFO_READ_ERR_BIT)) {
+      *errors |= kDifEntropySrcErrorFinalFifoRead;
+    }
+    if (bitfield_bit32_read(err_code_reg,
+                            ENTROPY_SRC_ERR_CODE_FIFO_STATE_ERR_BIT)) {
+      *errors |= kDifEntropySrcErrorFinalFifoState;
+    }
+  }
+
+  // Remaining FSM/Counter errors.
+  if (bitfield_bit32_read(err_code_reg,
+                          ENTROPY_SRC_ERR_CODE_ES_ACK_SM_ERR_BIT)) {
+    *errors |= kDifEntropySrcErrorAckStateMachine;
+  }
+  if (bitfield_bit32_read(err_code_reg,
+                          ENTROPY_SRC_ERR_CODE_ES_MAIN_SM_ERR_BIT)) {
+    *errors |= kDifEntropySrcErrorMainStateMachine;
+  }
+  if (bitfield_bit32_read(err_code_reg, ENTROPY_SRC_ERR_CODE_ES_CNTR_ERR_BIT)) {
+    *errors |= kDifEntropySrcErrorHardenedCounter;
+  }
+
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_error_force(const dif_entropy_src_t *entropy_src,
+                                         dif_entropy_src_error_t error) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t err_code_reg = 0;
+
+  switch (error) {
+    case kDifEntropySrcErrorRngFifoWrite:
+    case kDifEntropySrcErrorRngFifoRead:
+    case kDifEntropySrcErrorRngFifoState:
+      err_code_reg = ENTROPY_SRC_ERR_CODE_SFIFO_ESRNG_ERR_BIT;
+      break;
+    case kDifEntropySrcErrorObserveFifoWrite:
+    case kDifEntropySrcErrorObserveFifoRead:
+    case kDifEntropySrcErrorObserveFifoState:
+      err_code_reg = ENTROPY_SRC_ERR_CODE_SFIFO_OBSERVE_ERR_BIT;
+      break;
+    case kDifEntropySrcErrorFinalFifoWrite:
+    case kDifEntropySrcErrorFinalFifoRead:
+    case kDifEntropySrcErrorFinalFifoState:
+      err_code_reg = ENTROPY_SRC_ERR_CODE_SFIFO_ESFINAL_ERR_BIT;
+      break;
+    case kDifEntropySrcErrorAckStateMachine:
+      err_code_reg = ENTROPY_SRC_ERR_CODE_ES_ACK_SM_ERR_BIT;
+      break;
+    case kDifEntropySrcErrorMainStateMachine:
+      err_code_reg = ENTROPY_SRC_ERR_CODE_ES_MAIN_SM_ERR_BIT;
+      break;
+    case kDifEntropySrcErrorHardenedCounter:
+      err_code_reg = ENTROPY_SRC_ERR_CODE_ES_CNTR_ERR_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_ERR_CODE_TEST_REG_OFFSET, err_code_reg);
 
   return kDifOk;
 }

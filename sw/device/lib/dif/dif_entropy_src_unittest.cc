@@ -718,6 +718,97 @@ TEST_F(ReadFifoDepthTest, ReadSuccess) {
   EXPECT_EQ(depth, 6);
 }
 
+class GetRecoverableAlertsTest : public EntropySrcTest {};
+
+TEST_F(GetRecoverableAlertsTest, NullArgs) {
+  uint32_t alerts;
+  EXPECT_DIF_BADARG(dif_entropy_src_get_recoverable_alerts(nullptr, &alerts));
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_get_recoverable_alerts(&entropy_src_, nullptr));
+  EXPECT_DIF_BADARG(dif_entropy_src_get_recoverable_alerts(nullptr, nullptr));
+}
+
+TEST_F(GetRecoverableAlertsTest, Success) {
+  uint32_t alerts;
+  EXPECT_READ32(ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET,
+                kDifEntropySrcAlertFwOvSha3StartField |
+                    kDifEntropySrcAlertFwOvEntropyInsertField);
+  EXPECT_DIF_OK(dif_entropy_src_get_recoverable_alerts(&entropy_src_, &alerts));
+  EXPECT_EQ(alerts, kDifEntropySrcAlertFwOvSha3StartField |
+                        kDifEntropySrcAlertFwOvEntropyInsertField);
+}
+
+class ClearRecoverableAlertsTest : public EntropySrcTest {};
+
+TEST_F(ClearRecoverableAlertsTest, NullHandle) {
+  uint32_t alerts;
+  EXPECT_DIF_BADARG(dif_entropy_src_clear_recoverable_alerts(nullptr, alerts));
+}
+
+TEST_F(ClearRecoverableAlertsTest, BadAlerts) {
+  uint32_t alerts = 1U << 15;
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_clear_recoverable_alerts(&entropy_src_, alerts));
+}
+
+TEST_F(ClearRecoverableAlertsTest, SuccessOneAlert) {
+  uint32_t alerts = kDifEntropySrcAlertRngBitEnableField;
+  EXPECT_READ32(ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET, 0x2f);
+  EXPECT_WRITE32(ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET, 0xf);
+  EXPECT_DIF_OK(
+      dif_entropy_src_clear_recoverable_alerts(&entropy_src_, alerts));
+}
+
+TEST_F(ClearRecoverableAlertsTest, SuccessAllAlerts) {
+  uint32_t alerts = kDifEntropySrcAlertAllAlerts;
+  EXPECT_READ32(ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET, 0x7faf);
+  EXPECT_WRITE32(ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET, 0);
+  EXPECT_DIF_OK(
+      dif_entropy_src_clear_recoverable_alerts(&entropy_src_, alerts));
+}
+
+class GetErrorsTest : public EntropySrcTest {};
+
+TEST_F(GetErrorsTest, NullArgs) {
+  uint32_t errors;
+  EXPECT_DIF_BADARG(dif_entropy_src_get_errors(nullptr, &errors));
+  EXPECT_DIF_BADARG(dif_entropy_src_get_errors(&entropy_src_, nullptr));
+  EXPECT_DIF_BADARG(dif_entropy_src_get_errors(nullptr, nullptr));
+}
+
+TEST_F(GetErrorsTest, Success) {
+  uint32_t errors;
+  EXPECT_READ32(ENTROPY_SRC_ERR_CODE_REG_OFFSET, 0x30000003);
+  EXPECT_DIF_OK(dif_entropy_src_get_errors(&entropy_src_, &errors));
+  EXPECT_EQ(errors, kDifEntropySrcErrorRngFifoWrite |
+                        kDifEntropySrcErrorRngFifoRead |
+                        kDifEntropySrcErrorObserveFifoWrite |
+                        kDifEntropySrcErrorObserveFifoRead);
+}
+
+class ForceErrorTest : public EntropySrcTest {};
+
+TEST_F(ForceErrorTest, NullHandle) {
+  EXPECT_DIF_BADARG(
+      dif_entropy_src_error_force(nullptr, kDifEntropySrcErrorAckStateMachine));
+}
+
+TEST_F(ForceErrorTest, BadError) {
+  EXPECT_DIF_BADARG(dif_entropy_src_error_force(
+      &entropy_src_, static_cast<dif_entropy_src_error_t>(12)));
+}
+
+TEST_F(ForceErrorTest, Success) {
+  EXPECT_WRITE32(ENTROPY_SRC_ERR_CODE_TEST_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_entropy_src_error_force(&entropy_src_,
+                                            kDifEntropySrcErrorRngFifoWrite));
+
+  EXPECT_WRITE32(ENTROPY_SRC_ERR_CODE_TEST_REG_OFFSET,
+                 ENTROPY_SRC_ERR_CODE_ES_CNTR_ERR_BIT);
+  EXPECT_DIF_OK(dif_entropy_src_error_force(
+      &entropy_src_, kDifEntropySrcErrorHardenedCounter));
+}
+
 class GetMainFsmStateTest : public EntropySrcTest {};
 
 TEST_F(GetMainFsmStateTest, NullArgs) {

@@ -31,22 +31,18 @@ typedef enum dif_entropy_src_single_bit_mode {
    * Single-bit-mode, sampling the zeroth bit.
    */
   kDifEntropySrcSingleBitMode0 = 0,
-
   /**
    * Single-bit-mode, sampling the first bit.
    */
   kDifEntropySrcSingleBitMode1 = 1,
-
   /**
    * Single-bit-mode, sampling the second bit.
    */
   kDifEntropySrcSingleBitMode2 = 2,
-
   /**
    * Single-bit-mode, sampling the third bit.
    */
   kDifEntropySrcSingleBitMode3 = 3,
-
   /**
    * Indicates that single-bit-mode is disabled.
    */
@@ -93,7 +89,6 @@ typedef struct dif_entropy_src_fw_override_config {
    * To take effect, this requires the firmware override feature to be enabled.
    */
   bool entropy_insert_enable;
-
   /**
    * This field sets the depth of the observe FIFO hardware buffer used when
    * the firmware override feature is enabled.
@@ -117,18 +112,15 @@ typedef struct dif_entropy_src_config {
    * responsible for implementing the conditioning function.
    */
   bool fips_enable;
-
   /**
    * If set, entropy will be routed to a firmware-visible register instead of
    * being distributed to other hardware IPs.
    */
   bool route_to_firmware;
-
   /**
    * Specifies which single-bit-mode to use, if any at all.
    */
   dif_entropy_src_single_bit_mode_t single_bit_mode;
-
   /**
    * Controls the scope (either by-line or by-sum) of the health tests.
    *
@@ -141,14 +133,12 @@ typedef struct dif_entropy_src_config {
    * force rejection of the sample, and count toward the total alert count.
    */
   bool health_test_threshold_scope;
-
   /**
    * The size of the window used for health tests.
    *
    * Units: bits
    */
   uint16_t health_test_window_size;
-
   /**
    * The number of health test failures that must occur before an alert is
    * triggered. When set to 0, alerts are disabled.
@@ -168,7 +158,6 @@ typedef enum dif_entropy_src_test {
    * for too many samples.
    */
   kDifEntropySrcTestRepetitionCount = 0,
-
   /**
    * An SP 800-90B symbol repetition count test.
    *
@@ -176,7 +165,6 @@ typedef enum dif_entropy_src_test {
    * bit, basis.
    */
   kDifEntropySrcTestRepetitionCountSymbol = 1,
-
   /**
    * An SP 800-90B adaptive proportion test.
    *
@@ -184,14 +172,12 @@ typedef enum dif_entropy_src_test {
    * output by the noise source.
    */
   kDifEntropySrcTestAdaptiveProportion = 2,
-
   /**
    * A bucket test.
    *
    * This test looks for correlations between individual noise channels.
    */
   kDifEntropySrcTestBucket = 3,
-
   /**
    * A "Markov" test.
    *
@@ -199,7 +185,6 @@ typedef enum dif_entropy_src_test {
    * between individual noise channels.
    */
   kDifEntropySrcTestMarkov = 4,
-
   /**
    * A firmware-driven "mailbox" test.
    *
@@ -207,7 +192,6 @@ typedef enum dif_entropy_src_test {
    * potential concerns to the hardware.
    */
   kDifEntropySrcTestMailbox = 5,
-
   /** \internal */
   kDifEntropySrcTestNumVariants = 6,
 } dif_entropy_src_test_t;
@@ -221,12 +205,10 @@ typedef struct dif_entropy_src_health_test_config {
    * The entropy source health test type to configure.
    */
   dif_entropy_src_test_t test_type;
-
   /**
    * The high threshold for the health test.
    */
   uint16_t high_threshold;
-
   /**
    * The low threshold for the health test.
    *
@@ -298,6 +280,137 @@ typedef struct dif_entropy_src_alert_fail_counts {
    */
   uint8_t low_fails[kDifEntropySrcTestNumVariants];
 } dif_entropy_src_alert_fail_counts_t;
+
+/**
+ * Recoverable alerts.
+ */
+typedef enum dif_entropy_src_alert_cause {
+  /**
+   * Triggered when the FIPS_ENABLE field in the CONF register is set to an
+   * unsupported value.
+   */
+  kDifEntropySrcAlertFipsEnableField = 1U << 0,
+  /**
+   * Triggered when the ENTROPY_DATA_REG_ENABLE field in the CONF register is
+   * set to an unsupported value.
+   */
+  kDifEntropySrcAlertEntropyDataRegEnField = 1U << 1,
+  /**
+   * Triggered when the MODULE_ENABLE field in the MODULE_ENABLE register is set
+   * to an unsupported value.
+   */
+  kDifEntropySrcAlertModuleEnableField = 1U << 2,
+  /**
+   * Triggered when the THRESHOLD_SCOPE field in the CONF register is set to an
+   * unsupported value.
+   */
+  kDifEntropySrcAlertThresholdScopeField = 1U << 3,
+  /**
+   * Triggered when the RNG_BIT_ENABLE field in the CONF register is set to an
+   * unsupported value.
+   */
+  kDifEntropySrcAlertRngBitEnableField = 1U << 5,
+  /**
+   * Triggered when the FW_OV_SHA3_START field in the FW_OV_SHA3_START register
+   * is set to an unsupported value.
+   */
+  kDifEntropySrcAlertFwOvSha3StartField = 1U << 7,
+  /**
+   * Triggered when the FW_OV_MODE field in the FW_OV_CONTROL register is set to
+   * an unsupported value.
+   */
+  kDifEntropySrcAlertFwOvModeField = 1U << 8,
+  /**
+   * Triggered when the FW_OV_ENTROPY_INSERT field in the FW_OV_CONTROL register
+   * is set to an unsupported value.
+   */
+  kDifEntropySrcAlertFwOvEntropyInsertField = 1U << 9,
+  /**
+   * Triggered when the ES_ROUTE field in the ENTROPY_CONTROL register is set to
+   * an unsupported value.
+   */
+  kDifEntropySrcAlertEsRouteField = 1U << 10,
+  /**
+   * Triggered when the ES_TYPE field in the ENTROPY_CONTROL register is set to
+   * an unsupported value.
+   */
+  kDifEntropySrcAlertEsTypeField = 1U << 11,
+  /**
+   * Triggered when the main state machine detects a threshold failure state.
+   */
+  kDifEntropySrcAlertMainStateMachine = 1U << 12,
+  /**
+   * Triggered when the internal entropy bus value is equal to the prior valid
+   * value on the bus, indicating a possible attack.
+   */
+  kDifEntropySrcAlertDuplicateValue = 1U << 13,
+  /**
+   * Triggered when the ALERT_THRESHOLD register is not configured properly,
+   * i.e., the upper field must be the exact inverse of the lower field.
+   */
+  kDifEntropySrcAlertThresholdConfig = 1U << 14,
+  /**
+   * All alert reasons.
+   *
+   * This is useful when clearing all recoverable alerts at once.
+   */
+  kDifEntropySrcAlertAllAlerts = (1U << 15) - 1,
+} dif_entropy_src_alert_cause_t;
+
+/**
+ * Error codes (non-recoverable).
+ */
+typedef enum dif_entropy_src_error {
+  /**
+   * Triggered when a write error has been detected for the esrng FIFO.
+   */
+  kDifEntropySrcErrorRngFifoWrite = 1U << 0,
+  /**
+   * Triggered when a read error has been detected for the esrng FIFO.
+   */
+  kDifEntropySrcErrorRngFifoRead = 1U << 1,
+  /**
+   * Triggered when a state error has been detected for the esrng FIFO.
+   */
+  kDifEntropySrcErrorRngFifoState = 1U << 2,
+  /**
+   * Triggered when a write error has been detected for the observe FIFO.
+   */
+  kDifEntropySrcErrorObserveFifoWrite = 1U << 3,
+  /**
+   * Triggered when a read error has been detected for the observe FIFO.
+   */
+  kDifEntropySrcErrorObserveFifoRead = 1U << 4,
+  /**
+   * Triggered when a state error has been detected for the observe FIFO.
+   */
+  kDifEntropySrcErrorObserveFifoState = 1U << 5,
+  /**
+   * Triggered when a write error has been detected for the esfinal FIFO.
+   */
+  kDifEntropySrcErrorFinalFifoWrite = 1U << 6,
+  /**
+   * Triggered when a read error has been detected for the esfinal FIFO.
+   */
+  kDifEntropySrcErrorFinalFifoRead = 1U << 7,
+  /**
+   * Triggered when a state error has been detected for the esfinal FIFO.
+   */
+  kDifEntropySrcErrorFinalFifoState = 1U << 8,
+  /**
+   * Triggered when an error has been detected for the acknowledgment stage
+   * state machine.
+   */
+  kDifEntropySrcErrorAckStateMachine = 1U << 9,
+  /**
+   * Triggered when an error has been detected for the main state machine.
+   */
+  kDifEntropySrcErrorMainStateMachine = 1U << 10,
+  /**
+   * Triggered when an error has been detected for a hardened counter.
+   */
+  kDifEntropySrcErrorHardenedCounter = 1U << 11,
+} dif_entropy_src_error_t;
 
 /**
  * Configures entropy source with runtime information.
@@ -545,6 +658,53 @@ dif_result_t dif_entropy_src_clear_fifo_overflow(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_get_fifo_depth(
     const dif_entropy_src_t *entropy_src, uint32_t *fifo_depth);
+
+/**
+ * Reads the recoverable alert status register.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param[out] alerts The alerts that were triggered (one or more
+ *                    `dif_entropy_src_alert_t`'s ORed together).
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_get_recoverable_alerts(
+    const dif_entropy_src_t *entropy_src, uint32_t *alerts);
+
+/**
+ * Clears the alerts that are recoverable.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param alerts The alerts to be cleared (one or more
+ *               `dif_entropy_src_alert_t`'s ORed together).
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_clear_recoverable_alerts(
+    const dif_entropy_src_t *entropy_src, uint32_t alerts);
+
+/**
+ * Reads the (nonrecoverable) error code status register.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param[out] errors The errors that were triggered (one or more
+ *                    `dif_entropy_src_error_t`'s ORed together).
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_get_errors(const dif_entropy_src_t *entropy_src,
+                                        uint32_t *errors);
+
+/**
+ * Forces the hardware to generate a error for testing purposes.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param error The error to force (for testing purposes).
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_error_force(const dif_entropy_src_t *entropy_src,
+                                         dif_entropy_src_error_t error);
 
 /**
  * Reads the current main FSM state.
