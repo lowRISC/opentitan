@@ -210,22 +210,8 @@ module adc_ctrl_reg_top (
   logic [8:0] adc_intr_ctl_qs;
   logic [8:0] adc_intr_ctl_wd;
   logic adc_intr_status_we;
-  logic adc_intr_status_cc_sink_det_qs;
-  logic adc_intr_status_cc_sink_det_wd;
-  logic adc_intr_status_cc_1a5_sink_det_qs;
-  logic adc_intr_status_cc_1a5_sink_det_wd;
-  logic adc_intr_status_cc_3a0_sink_det_qs;
-  logic adc_intr_status_cc_3a0_sink_det_wd;
-  logic adc_intr_status_cc_src_det_qs;
-  logic adc_intr_status_cc_src_det_wd;
-  logic adc_intr_status_cc_1a5_src_det_qs;
-  logic adc_intr_status_cc_1a5_src_det_wd;
-  logic adc_intr_status_cc_src_det_flip_qs;
-  logic adc_intr_status_cc_src_det_flip_wd;
-  logic adc_intr_status_cc_1a5_src_det_flip_qs;
-  logic adc_intr_status_cc_1a5_src_det_flip_wd;
-  logic adc_intr_status_cc_discon_qs;
-  logic adc_intr_status_cc_discon_wd;
+  logic [7:0] adc_intr_status_filter_match_qs;
+  logic [7:0] adc_intr_status_filter_match_wd;
   logic adc_intr_status_oneshot_qs;
   logic adc_intr_status_oneshot_wd;
   // Define register CDC handling.
@@ -3636,212 +3622,30 @@ module adc_ctrl_reg_top (
 
 
   // R[adc_intr_status]: V(False)
-  //   F[cc_sink_det]: 0:0
+  //   F[filter_match]: 7:0
   prim_subreg #(
-    .DW      (1),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_adc_intr_status_cc_sink_det (
+    .RESVAL  (8'h0)
+  ) u_adc_intr_status_filter_match (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_status_we),
-    .wd     (adc_intr_status_cc_sink_det_wd),
+    .wd     (adc_intr_status_filter_match_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_intr_status.cc_sink_det.de),
-    .d      (hw2reg.adc_intr_status.cc_sink_det.d),
+    .de     (hw2reg.adc_intr_status.filter_match.de),
+    .d      (hw2reg.adc_intr_status.filter_match.d),
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.adc_intr_status.filter_match.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (adc_intr_status_cc_sink_det_qs)
-  );
-
-  //   F[cc_1a5_sink_det]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_adc_intr_status_cc_1a5_sink_det (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (adc_intr_status_we),
-    .wd     (adc_intr_status_cc_1a5_sink_det_wd),
-
-    // from internal hardware
-    .de     (hw2reg.adc_intr_status.cc_1a5_sink_det.de),
-    .d      (hw2reg.adc_intr_status.cc_1a5_sink_det.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (adc_intr_status_cc_1a5_sink_det_qs)
-  );
-
-  //   F[cc_3a0_sink_det]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_adc_intr_status_cc_3a0_sink_det (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (adc_intr_status_we),
-    .wd     (adc_intr_status_cc_3a0_sink_det_wd),
-
-    // from internal hardware
-    .de     (hw2reg.adc_intr_status.cc_3a0_sink_det.de),
-    .d      (hw2reg.adc_intr_status.cc_3a0_sink_det.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (adc_intr_status_cc_3a0_sink_det_qs)
-  );
-
-  //   F[cc_src_det]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_adc_intr_status_cc_src_det (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (adc_intr_status_we),
-    .wd     (adc_intr_status_cc_src_det_wd),
-
-    // from internal hardware
-    .de     (hw2reg.adc_intr_status.cc_src_det.de),
-    .d      (hw2reg.adc_intr_status.cc_src_det.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (adc_intr_status_cc_src_det_qs)
-  );
-
-  //   F[cc_1a5_src_det]: 4:4
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_adc_intr_status_cc_1a5_src_det (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (adc_intr_status_we),
-    .wd     (adc_intr_status_cc_1a5_src_det_wd),
-
-    // from internal hardware
-    .de     (hw2reg.adc_intr_status.cc_1a5_src_det.de),
-    .d      (hw2reg.adc_intr_status.cc_1a5_src_det.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (adc_intr_status_cc_1a5_src_det_qs)
-  );
-
-  //   F[cc_src_det_flip]: 5:5
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_adc_intr_status_cc_src_det_flip (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (adc_intr_status_we),
-    .wd     (adc_intr_status_cc_src_det_flip_wd),
-
-    // from internal hardware
-    .de     (hw2reg.adc_intr_status.cc_src_det_flip.de),
-    .d      (hw2reg.adc_intr_status.cc_src_det_flip.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (adc_intr_status_cc_src_det_flip_qs)
-  );
-
-  //   F[cc_1a5_src_det_flip]: 6:6
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_adc_intr_status_cc_1a5_src_det_flip (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (adc_intr_status_we),
-    .wd     (adc_intr_status_cc_1a5_src_det_flip_wd),
-
-    // from internal hardware
-    .de     (hw2reg.adc_intr_status.cc_1a5_src_det_flip.de),
-    .d      (hw2reg.adc_intr_status.cc_1a5_src_det_flip.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (adc_intr_status_cc_1a5_src_det_flip_qs)
-  );
-
-  //   F[cc_discon]: 7:7
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_adc_intr_status_cc_discon (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (adc_intr_status_we),
-    .wd     (adc_intr_status_cc_discon_wd),
-
-    // from internal hardware
-    .de     (hw2reg.adc_intr_status.cc_discon.de),
-    .d      (hw2reg.adc_intr_status.cc_discon.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (adc_intr_status_cc_discon_qs)
+    .qs     (adc_intr_status_filter_match_qs)
   );
 
   //   F[oneshot]: 8:8
@@ -3863,7 +3667,7 @@ module adc_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.adc_intr_status.oneshot.q),
     .ds     (),
 
     // to register interface (read)
@@ -4061,21 +3865,7 @@ module adc_ctrl_reg_top (
   assign adc_intr_ctl_wd = reg_wdata[8:0];
   assign adc_intr_status_we = addr_hit[30] & reg_we & !reg_error;
 
-  assign adc_intr_status_cc_sink_det_wd = reg_wdata[0];
-
-  assign adc_intr_status_cc_1a5_sink_det_wd = reg_wdata[1];
-
-  assign adc_intr_status_cc_3a0_sink_det_wd = reg_wdata[2];
-
-  assign adc_intr_status_cc_src_det_wd = reg_wdata[3];
-
-  assign adc_intr_status_cc_1a5_src_det_wd = reg_wdata[4];
-
-  assign adc_intr_status_cc_src_det_flip_wd = reg_wdata[5];
-
-  assign adc_intr_status_cc_1a5_src_det_flip_wd = reg_wdata[6];
-
-  assign adc_intr_status_cc_discon_wd = reg_wdata[7];
+  assign adc_intr_status_filter_match_wd = reg_wdata[7:0];
 
   assign adc_intr_status_oneshot_wd = reg_wdata[8];
 
@@ -4215,14 +4005,7 @@ module adc_ctrl_reg_top (
       end
 
       addr_hit[30]: begin
-        reg_rdata_next[0] = adc_intr_status_cc_sink_det_qs;
-        reg_rdata_next[1] = adc_intr_status_cc_1a5_sink_det_qs;
-        reg_rdata_next[2] = adc_intr_status_cc_3a0_sink_det_qs;
-        reg_rdata_next[3] = adc_intr_status_cc_src_det_qs;
-        reg_rdata_next[4] = adc_intr_status_cc_1a5_src_det_qs;
-        reg_rdata_next[5] = adc_intr_status_cc_src_det_flip_qs;
-        reg_rdata_next[6] = adc_intr_status_cc_1a5_src_det_flip_qs;
-        reg_rdata_next[7] = adc_intr_status_cc_discon_qs;
+        reg_rdata_next[7:0] = adc_intr_status_filter_match_qs;
         reg_rdata_next[8] = adc_intr_status_oneshot_qs;
       end
 

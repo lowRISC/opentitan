@@ -19,6 +19,7 @@ module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
   input  adc_ctrl_reg2hw_intr_test_reg_t intr_test_i,
 
   output adc_ctrl_hw2reg_intr_state_reg_t intr_state_o,
+  input  adc_ctrl_reg2hw_adc_intr_status_reg_t adc_intr_status_i,
   output adc_ctrl_hw2reg_adc_intr_status_reg_t adc_intr_status_o,
 
   output intr_debug_cable_o
@@ -79,27 +80,23 @@ module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
 
   //To write into interrupt status register
   logic [1+NumAdcFilter-1:0] intr_events;
+
+  // Note that aon_req_hold is a value held in an async domain.
+  // aon_req_hold's value should not change until handshake is completed by `prim_sync_reqack`.
+  // There is no reason to use `prim_sync_reqack` in this case because that module passes
+  // through data only when the direction is src->dst.
   assign intr_events = {cfg_oneshot_done_i,
                         {NumAdcFilter{filter_match_event}} & aon_req_hold} & cfg_intr_en_i;
 
-  assign adc_intr_status_o.cc_sink_det.de = intr_events[0];
-  assign adc_intr_status_o.cc_1a5_sink_det.de = intr_events[1];
-  assign adc_intr_status_o.cc_3a0_sink_det.de = intr_events[2];
-  assign adc_intr_status_o.cc_src_det.de = intr_events[3];
-  assign adc_intr_status_o.cc_1a5_src_det.de = intr_events[4];
-  assign adc_intr_status_o.cc_src_det_flip.de = intr_events[5];
-  assign adc_intr_status_o.cc_1a5_src_det_flip.de = intr_events[6];
-  assign adc_intr_status_o.cc_discon.de = intr_events[7];
+  assign adc_intr_status_o.filter_match.de = |intr_events[7:0];
   assign adc_intr_status_o.oneshot.de = intr_events[8];
 
-  assign adc_intr_status_o.cc_sink_det.d = 1'b1;
-  assign adc_intr_status_o.cc_1a5_sink_det.d = 1'b1;
-  assign adc_intr_status_o.cc_3a0_sink_det.d = 1'b1;
-  assign adc_intr_status_o.cc_src_det.d = 1'b1;
-  assign adc_intr_status_o.cc_1a5_src_det.d = 1'b1;
-  assign adc_intr_status_o.cc_src_det_flip.d = 1'b1;
-  assign adc_intr_status_o.cc_1a5_src_det_flip.d = 1'b1;
-  assign adc_intr_status_o.cc_discon.d = 1'b1;
+  // since interrupt events are pulsed, when successive events arrive we need to make sure to
+  // hold the previously latched values
+  assign adc_intr_status_o.filter_match.d = intr_events[7:0] | adc_intr_status_i.filter_match.q;
+
+  logic unused_oneshot;
+  assign unused_oneshot = adc_intr_status_i.oneshot.q;   
   assign adc_intr_status_o.oneshot.d = 1'b1;
 
   // instantiate interrupt hardware primitive
