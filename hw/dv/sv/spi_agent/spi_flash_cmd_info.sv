@@ -9,9 +9,7 @@ class spi_flash_cmd_info extends uvm_sequence_item;
   rand bit [2:0] addr_bytes;
   rand bit write_command;
   rand bit [2:0] num_lanes;
-  rand int dummy_cycles; // TODO add support in driver and monitor
-  rand bit addr_swap;
-  rand bit data_swap;
+  rand int dummy_cycles;
 
   constraint addr_bytes_c {
     addr_bytes inside {0, 3, 4};
@@ -24,31 +22,20 @@ class spi_flash_cmd_info extends uvm_sequence_item;
     num_lanes inside {1, 2, 4};
   }
 
-  // payload_swap_en only works with write data and SingleIO mode
-  constraint data_swap_c {
-    data_swap -> num_lanes == 1 &&  write_command == 1;
-  }
-
   constraint dummy_cycles_c {
     dummy_cycles dist {
-      0       :/ 2,
-      [1:8]   :/ 2,
-      [9:100] :/ 1
+      0     :/ 1,
+      [2:7] :/ 1,
+      8     :/ 1
     };
   }
-  // TODO, simplify setting. Remove this later
-  constraint simplify_c {
-    addr_swap == 0;
-    data_swap == 0;
-  }
+
   `uvm_object_utils_begin(spi_flash_cmd_info)
     `uvm_field_int(opcode,        UVM_DEFAULT)
     `uvm_field_int(addr_bytes,    UVM_DEFAULT)
     `uvm_field_int(write_command, UVM_DEFAULT)
     `uvm_field_int(dummy_cycles,  UVM_DEFAULT)
     `uvm_field_int(num_lanes,     UVM_DEFAULT)
-    `uvm_field_int(addr_swap,     UVM_DEFAULT)
-    `uvm_field_int(data_swap,     UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

@@ -24,7 +24,6 @@
 `include "spi_device_tpm_read_vseq.sv"
 `include "spi_device_pass_base_vseq.sv"
 `include "spi_device_pass_cmd_filtering_vseq.sv"
-`include "spi_device_pass_addr_translation_vseq.sv"
-`include "spi_device_pass_data_translation_vseq.sv"
+`include "spi_device_pass_addr_payload_swap_vseq.sv"
 `include "spi_device_dual_mode_vseq.sv"
 `include "spi_device_quad_mode_vseq.sv"

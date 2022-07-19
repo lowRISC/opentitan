@@ -227,7 +227,7 @@
             - Disable address translation for given command.
             - Check address is now passing unchanged.'''
       milestone: V2
-      tests: ["spi_device_pass_addr_translation"]
+      tests: ["spi_device_pass_addr_payload_swap"]
     }
     {
       name: pass_payload_translation
@@ -239,7 +239,7 @@
             - Disable payload translation for given command.
             - Check payload is now passing unchanged.'''
       milestone: V2
-      tests: ["spi_device_pass_data_translation"]
+      tests: ["spi_device_pass_addr_payload_swap"]
     }
     {
       name: cmd_info_slots
