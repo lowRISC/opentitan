@@ -379,6 +379,7 @@ dif_result_t dif_rv_core_ibex_get_rnd_status(
     dif_rv_core_ibex_rnd_status_t *status);
 
 typedef uint32_t dif_rv_core_ibex_fpga_info_t;
+
 /**
  * Read the FPGA build timestamp info. This function only returns valid data for
  * fpga environments, for all other environments it is simply 0.

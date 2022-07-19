@@ -10,8 +10,8 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/ibex_peri.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
@@ -49,6 +49,7 @@ static dif_flash_ctrl_state_t flash_ctrl;
 static dif_pinmux_t pinmux;
 static dif_rstmgr_t rstmgr;
 static dif_uart_t uart0;
+static dif_rv_core_ibex_t ibex;
 
 // `test_in_rom = True` tests can override this symbol to provide their own
 // rom tests. By default, it simply jumps into the OTTF's flash.
@@ -96,7 +97,10 @@ bool rom_test_main(void) {
 
   // Print the FPGA version-id.
   // This is guaranteed to be zero on all non-FPGA implementations.
-  uint32_t fpga = fpga_version();
+  dif_rv_core_ibex_fpga_info_t fpga;
+  CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR), &ibex));
+  CHECK_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ibex, &fpga));
   if (fpga != 0) {
     LOG_INFO("TestROM:%08x", fpga);
   }
