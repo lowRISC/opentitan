@@ -573,11 +573,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
               // sample coverage
               if (cfg.en_cov) begin
-                cov.app_cg_wrappers[app_mode].sample(0,
-                                                    kmac_app_block_strb,
-                                                    0,
-                                                    kmac_app_last,
-                                                    in_keccak_rounds);
+                cov.app_cg_wrappers[app_mode].app_sample(0,
+                    kmac_app_block_strb,
+                    0,
+                    kmac_app_last,
+                    in_keccak_rounds);
               end
 
               got_data_from_kmac_app = 1;
@@ -629,13 +629,14 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                 // sample coverage
                 if (cfg.en_cov) begin
-                  cov.app_cg_wrappers[app_mode].sample(
+                  cov.app_cg_wrappers[app_mode].app_sample(
                     kmac_app_rsp.byte_data_q.size() <= keymgr_pkg::KmacDataIfWidth/8,
                     '0,
                     kmac_app_rsp.rsp_error,
                     1,
                     0
                   );
+                  cov.app_cg_wrappers[app_mode].app_cfg_reg_sample(hash_mode);
                 end
 
                 // safety check that things are working properly and
@@ -2561,6 +2562,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     int key_word_len, key_byte_len;
 
+    // Actual hash_mode based on interface or SW register
+    sha3_pkg::sha3_mode_e actual_hash_mode = in_kmac_app ? sha3_pkg::CShake : hash_mode;
+
     if (cfg.en_scb == 0) return;
 
     if (sideload_en || (in_kmac_app && app_mode == AppKeymgr)) key_len = key_len_e'(Key256);
@@ -2586,13 +2590,14 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       // quick check that the calculated output length is the same
       // as the number of bytes read from the digest window
       `DV_CHECK_EQ_FATAL(digest_share0.size(), output_len_bytes,
-          $sformatf("Calculated output length doesn't match actual output length!"))
+          $sformatf("Calculated output length(%0d) doesn't match actual output length(%0d)!",
+                    output_len_bytes, digest_share0.size()))
     end
 
     if (cfg.en_cov) begin
       // sample configuration coverage, as only now do we know which KMAC variant is used
       // (xof/non-xof)
-      cov.sample_cfg(kmac_en, xof_en, strength, hash_mode, key_len,
+      cov.sample_cfg(kmac_en, xof_en, strength, actual_hash_mode, key_len,
                      `gmv(ral.cfg_shadowed.msg_endianness), `gmv(ral.cfg_shadowed.state_endianness),
                      `gmv(ral.cfg_shadowed.sideload), entropy_mode, entropy_fast_process);
 
@@ -2644,7 +2649,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end
     `uvm_info(`gfn, $sformatf("msg_arr for DPI mode: %0p", msg_arr), UVM_HIGH)
 
-    case (hash_mode)
+    case (actual_hash_mode)
       ///////////
       // SHA-3 //
       ///////////

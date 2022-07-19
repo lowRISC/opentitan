@@ -165,16 +165,31 @@ class app_cg_wrap;
     }
   endgroup
 
+  covergroup app_cfg_reg_cg(string name) with function sample(sha3_pkg::sha3_mode_e sw_hash_mode);
+    option.per_instance = 1;
+    option.name = name;
+    sw_configured_hash_mode: coverpoint sw_hash_mode {
+      bins sha3   = {sha3_pkg::Sha3};
+      bins shake  = {sha3_pkg::Shake};
+      bins cshake = {sha3_pkg::CShake};
+    }
+  endgroup
+
   function new(string name = "app_cg");
     app_cg = new(name);
+    app_cfg_reg_cg = new(name);
   endfunction
 
-  function void sample(bit single_beat,
-                       bit [keymgr_pkg::KmacDataIfWidth/8-1:0] strb,
-                       bit err,
-                       bit is_done,
-                       bit in_keccak);
+  function void app_sample(bit single_beat,
+                           bit [keymgr_pkg::KmacDataIfWidth/8-1:0] strb,
+                           bit err,
+                           bit is_done,
+                           bit in_keccak);
     app_cg.sample(single_beat, strb, err, is_done, in_keccak);
+  endfunction
+
+  function void app_cfg_reg_sample(sha3_pkg::sha3_mode_e sw_hash_mode);
+    app_cfg_reg_cg.sample(sw_hash_mode);
   endfunction
 endclass
 
@@ -293,10 +308,6 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
       bins app_valid_sideload       = binsof(sideload) intersect {1} && binsof(in_app_keymgr);
       bins app_invalid_sideload     = binsof(sideload) intersect {0} && binsof(in_app_keymgr);
     }
-  endgroup
-
-  covergroup app_cg with function sample();
-
   endgroup
 
   covergroup error_cg with function sample(kmac_pkg::err_code_e kmac_err,
