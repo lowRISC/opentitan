@@ -40,6 +40,7 @@ filesets:
       - seq_lib/aes_fi_vseq.sv: {is_include_file: true}
       - seq_lib/aes_control_fi_vseq.sv: {is_include_file: true}
       - seq_lib/aes_cipher_fi_vseq.sv: {is_include_file: true}
+      - seq_lib/aes_ctr_fi_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
