@@ -29,6 +29,7 @@ class kmac_error_vseq extends kmac_app_vseq;
   }
 
   constraint kmac_err_type_c {
+    kmac_err_type != ErrUnexpectedModeStrength;
     if (en_kmac_err) {
       (kmac_err_type inside
           {kmac_pkg::ErrNone,
@@ -39,6 +40,8 @@ class kmac_error_vseq extends kmac_app_vseq;
     } else {
       kmac_err_type == kmac_pkg::ErrNone;
     }
+    // TODO: remove this constraint when scb error found.
+    (kmac_err_type == kmac_pkg:: ErrUnexpectedModeStrength) -> (en_unsupported_modestrength == 1);
 
     (kmac_err_type == kmac_pkg::ErrSwPushedMsgFifo) -> (en_app == 1);
 

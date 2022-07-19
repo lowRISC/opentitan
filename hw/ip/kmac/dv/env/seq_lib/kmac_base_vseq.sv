@@ -71,6 +71,9 @@ class kmac_base_vseq extends cip_base_vseq #(
   // entropy ready
   rand bit entropy_ready;
 
+  // process the digest when mode strength does not match
+  rand bit en_unsupported_modestrength;
+
   // Message masking
   rand bit msg_mask;
 
@@ -315,6 +318,7 @@ class kmac_base_vseq extends cip_base_vseq #(
     ral.cfg_shadowed.entropy_ready.set(entropy_ready);
     ral.cfg_shadowed.msg_mask.set(msg_mask);
     ral.cfg_shadowed.err_processed.set(1'b0);
+    ral.cfg_shadowed.en_unsupported_modestrength.set(en_unsupported_modestrength);
     // It is not required to set up sideload bit when keymgr app interface is requesting a hash
     // operation, because it will always use sideload key regardless of the cfg settings.
     if (keymgr_app_intf) ral.cfg_shadowed.sideload.set($urandom_range(0, 1));
@@ -407,7 +411,8 @@ class kmac_base_vseq extends cip_base_vseq #(
             $sformatf("custom_str: %0s\n", str_utils_pkg::bytes_to_str(custom_str_arr)),
             $sformatf("entropy_mode: %0s\n", entropy_mode.name()),
             $sformatf("entropy_fast_process: %0b\n", entropy_fast_process),
-            $sformatf("entropy_ready: %0b\n", entropy_ready)};
+            $sformatf("entropy_ready: %0b\n", entropy_ready),
+            $sformatf("en_unsupported_modestrength %0b\n", en_unsupported_modestrength)};
   endfunction
 
   // This function implements the bulk of integer encoding specified by NIST.SP.800-185
