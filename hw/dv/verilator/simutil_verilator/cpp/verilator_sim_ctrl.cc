@@ -305,7 +305,7 @@ void VerilatorSimCtrl::PrintStatistics() const {
   std::cout << std::endl
             << "Simulation statistics" << std::endl
             << "=====================" << std::endl
-            << "Executed cycles:  " << time_ / 2 << std::endl
+            << "Executed cycles:  " << std::dec << time_ / 2 << std::endl
             << "Wallclock time:   " << GetExecutionTimeMs() / 1000.0 << " s"
             << std::endl
             << "Simulation speed: " << speed_hz << " cycles/s "
