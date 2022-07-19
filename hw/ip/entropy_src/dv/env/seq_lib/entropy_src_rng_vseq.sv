@@ -39,6 +39,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // Signal to start and stop the RNG when it becomes halted in boot/bypass modes
   int do_reenable = 0;
 
+  bit csrng_seq_created = 0;
+
   constraint dly_to_access_intr_c {
     dly_to_access_intr dist {
       0                   :/ 1,
@@ -317,9 +319,18 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // Note: the CSRNG agent needs to be completely shut down before
     // shutting down the the AST/RNG.  Otherwise the CSRNG pull agent
     // will stall waiting for entropy.
-    `uvm_info(`gfn, "Stopping CSRNG seq", UVM_LOW)
-    m_csrng_pull_seq.stop(.hard(1));
-    m_csrng_pull_seq.wait_for_sequence_state(UVM_FINISHED);
+    if (csrng_seq_created) begin
+      `uvm_info(`gfn, "Stopping CSRNG seq", UVM_LOW)
+      m_csrng_pull_seq.stop(.hard(1));
+      m_csrng_pull_seq.wait_for_sequence_state(UVM_FINISHED);
+      csrng_seq_created = 0;
+    end else begin
+      `uvm_info(`gfn, "Skip stopping CSRNG seq because the sequence is not created", UVM_LOW)
+    end
+
+    `uvm_info(`gfn, "Wait for CSRNG single seq to end", UVM_LOW)
+    m_csrng_pull_seq_single.wait_for_sequence_state(UVM_FINISHED);
+
     `uvm_info(`gfn, "Stopping RNG seq", UVM_LOW)
     m_rng_push_seq.stop(.hard(0));
     m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
@@ -381,6 +392,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   endtask
 
   task start_indefinite_seqs();
+    wait (cfg.under_reset == 0);
     fork
       // Thread 1 of 2: run the RNG push sequencer
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
@@ -394,12 +406,16 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
           // Notify the CSR access thread after the single boot mode seed has been received
           m_csrng_pull_seq_single.start(p_sequencer.csrng_sequencer_h);
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut);
-          cfg.clk_rst_vif.wait_clks(dly_to_reenable_dut);
+          `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_clks(dly_to_reenable_dut);,
+                            wait(cfg.under_reset);)
           // restart the DUT in continuous mode
-          do_reenable = 1;
+          if (!cfg.under_reset) do_reenable = 1;
         end
         // Collect all post boot mode seeds in indefinite mode
-        m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
+        if (!cfg.under_reset) begin
+          m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
+          csrng_seq_created = 1;
+        end
       end
     join_none
   endtask
