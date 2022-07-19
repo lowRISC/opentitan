@@ -327,6 +327,7 @@ dif_result_t dif_rv_core_ibex_read_fpga_info(
   if (rv_core_ibex == NULL || info == NULL) {
     return kDifBadArg;
   }
+
   *info = mmio_region_read32(rv_core_ibex->base_addr,
                              RV_CORE_IBEX_FPGA_INFO_REG_OFFSET);
   return kDifOk;

@@ -514,7 +514,6 @@ class FpgaInfoTest : public RvCoreIbexTestInitialized {};
 
 TEST_F(FpgaInfoTest, ReadSuccess) {
   EXPECT_READ32(RV_CORE_IBEX_FPGA_INFO_REG_OFFSET, 0xf55ef65e);
-
   dif_rv_core_ibex_fpga_info_t info;
   EXPECT_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ibex_, &info));
   EXPECT_EQ(info, 0xf55ef65e);
