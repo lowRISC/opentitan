@@ -391,7 +391,9 @@
           If 1, entropy logic uses garbage data while not processing the KMAC
           key block. It will re-use previous entropy value and will not
           expand the entropy when it is consumed. Only it refreshes the
-          entropy while processing the secret key block.
+          entropy while processing the secret key block. This process should
+          not be used if SCA resistance is required because it may cause side
+          channel leakage.
           '''
           tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_entropy_fast_process"]
         } // f: entropy_fast_process
