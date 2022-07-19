@@ -289,7 +289,8 @@ class OTBNSim:
             self.state._fsm_state = FsmState.WIPING_BAD
 
         # Reflect wiping in STATUS register if it has not been updated yet.
-        if self.state.ext_regs.read('STATUS', True) == Status.BUSY_EXECUTE:
+        if (self.state.ext_regs.read('STATUS', True) not in
+            [Status.BUSY_SEC_WIPE_INT, Status.LOCKED]):
             self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
 
         is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
