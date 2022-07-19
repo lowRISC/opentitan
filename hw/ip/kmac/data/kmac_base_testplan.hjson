@@ -334,6 +334,18 @@
             '''
     }
     {
+      name: app_sw_cfg_cg
+      desc: '''
+            Covers several scenarios related to the app interface and cfg_shadowed register value:
+            - Hash_mode field value.
+            - Kmac_en field value.
+            - Kstrength field value.
+
+            These sw register settings should not affect kmac app interface calculation.
+            Note that this covergroup will be duplicated once per app interface.
+            '''
+   }
+   {
       name: edn_cg
       desc: '''
             Covers that EDN entropy can be received by KMAC while keccak rounds are active/inactive,
