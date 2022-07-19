@@ -214,7 +214,7 @@ KeyMgr provides the sideloaded key in two-share masked form regardless of the co
 If `EnMasking` is not defined, the KMAC merges the shared key to the unmasked form before uses the key.
 
 The IP has N number of the application interface. The apps connected to the KMAC IP may initiate the SHA3/cSHAKE/KMAC hashing operation via the application interface `kmac_pkg::app_{req|rsp}_t`.
-The type of the hashing operation is determined in the compile-time parameter `kmac_pkf::AppCfg`.
+The type of the hashing operation is determined in the compile-time parameter `kmac_pkg::AppCfg`.
 
 | Index | App      | Algorithm | Prefix
 |:-----:|:--------:|:---------:|------------
