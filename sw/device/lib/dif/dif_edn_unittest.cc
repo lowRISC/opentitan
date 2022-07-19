@@ -96,6 +96,14 @@ TEST_F(SetModeTest, Auto) {
                      {EDN_CTRL_CMD_FIFO_RST_OFFSET, kMultiBitBool4True},
                  });
 
+  EXPECT_WRITE32(EDN_CTRL_REG_OFFSET,
+                 {
+                     {EDN_CTRL_EDN_ENABLE_OFFSET, kMultiBitBool4False},
+                     {EDN_CTRL_BOOT_REQ_MODE_OFFSET, kMultiBitBool4False},
+                     {EDN_CTRL_AUTO_REQ_MODE_OFFSET, kMultiBitBool4False},
+                     {EDN_CTRL_CMD_FIFO_RST_OFFSET, kMultiBitBool4False},
+                 });
+
   dif_edn_auto_params_t params = {
       .reseed_material =
           {
@@ -125,7 +133,7 @@ TEST_F(SetModeTest, Auto) {
                      {EDN_CTRL_EDN_ENABLE_OFFSET, kMultiBitBool4False},
                      {EDN_CTRL_BOOT_REQ_MODE_OFFSET, kMultiBitBool4False},
                      {EDN_CTRL_AUTO_REQ_MODE_OFFSET, kMultiBitBool4True},
-                     {EDN_CTRL_CMD_FIFO_RST_OFFSET, kMultiBitBool4True},
+                     {EDN_CTRL_CMD_FIFO_RST_OFFSET, kMultiBitBool4False},
                  });
 
   EXPECT_DIF_OK(dif_edn_set_auto_mode(&edn_, params));

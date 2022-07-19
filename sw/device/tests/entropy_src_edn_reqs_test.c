@@ -42,6 +42,7 @@ static const otbn_addr_t kVarUrndOut = OTBN_ADDR_T_INIT(randomness, urnd_out);
 typedef struct entropy_src_test_context {
   otbn_t otbn;
   dif_aes_t aes;
+  dif_entropy_src_t entropy_src;
   dif_kmac_t kmac;
   dif_keymgr_t kmgr;
   dif_otp_ctrl_t otp;
@@ -209,10 +210,8 @@ void test_initialize(entropy_src_test_context_t *ctx) {
   LOG_INFO("%s", __func__);
   entropy_testutils_auto_mode_init();
 
-  mmio_region_t addr =
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
-  CHECK_DIF_OK(dif_alert_handler_init(addr, &ctx->alert_handler));
-  alert_handler_configure(ctx);
+   mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
+  CHECK_DIF_OK(dif_entropy_src_init(addr, &ctx->entropy_src));
 
   addr = mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(addr, &ctx->ibex));
@@ -234,6 +233,10 @@ void test_initialize(entropy_src_test_context_t *ctx) {
 
   addr = mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_kmac_init(addr, &ctx->kmac));
+
+  addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
+  CHECK_DIF_OK(dif_alert_handler_init(addr, &ctx->alert_handler));
+  alert_handler_configure(ctx);
 }
 
 /**
@@ -244,12 +247,13 @@ bool test_main() {
   static entropy_src_test_context_t ctx;
   uint32_t loop = 1;
   test_initialize(&ctx);
-  wait_entropy_src_state(kDifEntropySrcMainFsmStateContHTRunning);
+
   CHECK_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ctx.ibex, &ctx.fpga_info));
+  // entropy_testutils_wait_for_state(&ctx.entropy_src,
+  //                                  kDifEntropySrcMainFsmStateContHTRunning);
 
   // Run multiple times if in a FPGA.
-  // loop = (ctx.fpga_info != 0) ? kFpgaLoop : loop;
-  loop = kFpgaLoop;
+  loop = (ctx.fpga_info != 0) ? kFpgaLoop : loop;
 
   for (int i = 0; i < loop; ++i) {
     LOG_INFO("Entropy src test %d/%d", i, loop);
