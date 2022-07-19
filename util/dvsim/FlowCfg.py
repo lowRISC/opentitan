@@ -9,14 +9,15 @@ import pprint
 import re
 import subprocess
 import sys
+from pathlib import Path
 from shutil import which
 
 import hjson
 from CfgJson import set_target_attribute
 from LauncherFactory import get_launcher_cls
 from Scheduler import Scheduler
-from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards, md_results_to_html,
-                   mk_path, mk_symlink, rm_path, subst_wildcards)
+from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards,
+                   md_results_to_html, mk_path, rm_path, subst_wildcards)
 
 
 # Interface class for extensions.
@@ -133,11 +134,6 @@ class FlowCfg():
             self.rel_path = os.path.dirname(self.flow_cfg_file).replace(
                 self.proj_root + '/', '')
 
-        self.results_path = os.path.join(self.scratch_base_path, "reports", self.rel_path,
-                                         self.timestamp)
-        self.symlink_path = os.path.join(self.scratch_base_path, "reports", self.rel_path,
-                                         "latest")
-
         # Process overrides before substituting wildcards
         self._process_overrides()
 
@@ -145,6 +141,10 @@ class FlowCfg():
         # after merging the hjson but before expansion, they can override
         # _expand and add the code at the start.
         self._expand()
+
+        # Construct the result_path Path variable after variable expansion.
+        self.results_path = (Path(self.scratch_base_path) / "reports" /
+                             self.rel_path / self.timestamp)
 
         # Run any final checks
         self._post_init()
@@ -386,11 +386,11 @@ class FlowCfg():
 
     def _gen_results(self, results):
         '''
-        The function is called after the regression has completed. It collates
-        the status of all run targets and generates a dict. It parses the
-        testplan and maps the generated result to the testplan entries to
-        generate a final table (list). It also prints the full list of failures
-        for debug / triage. The final result is in markdown format.
+        The function is called after the flow has completed. It collates
+        the status of all run targets and generates a dict. It parses the log
+        to identify the errors, warnings and failures as applicable. It also
+        prints the full list of failures for debug / triage to the final
+        report, which is in markdown format.
 
         results should be a dictionary mapping deployed item to result.
         '''
@@ -404,10 +404,11 @@ class FlowCfg():
         '''
         for item in self.cfgs:
             result = item._gen_results(results)
-            item.write_results_html("results.html", item.results_md)
             log.info("[results]: [%s]:\n%s\n", item.name, result)
             log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
-            log.log(VERBOSE, "[results_path]: [%s] [%s]", item.name, item.results_path)
+            item.write_results_html("results.html", item.results_md)
+            log.log(VERBOSE, "[report]: [%s] [%s/results.html]", item.name,
+                    item.results_path)
             self.errors_seen |= item.errors_seen
 
         if self.is_primary_cfg:
@@ -421,28 +422,17 @@ class FlowCfg():
         return
 
     def write_results_html(self, filename, text_md):
-        '''Convert given text_md to html format and write it to file with given filename.
-        '''
-        # Prepare workspace to generate reports.
-        # Keep up to 2 weeks results.
-        # If path exists, skip clean_odirs and directly update the files in the existing path.
-        if not (os.path.exists(self.results_path)):
-            clean_odirs(odir=self.results_path, max_odirs=14)
-        mk_path(self.results_path)
-        mk_path(self.symlink_path)
+        """Converts md text to HTML and writes to file in results_path area."""
 
-        # Prepare results and paths.
-        text_html = md_results_to_html(self.results_title, self.css_file, text_md)
-        result_path = os.path.join(self.results_path, filename)
-        symlink_path = os.path.join(self.symlink_path, filename)
+        # Prepare reports directory, keeping 90 day history.
+        if not self.results_path.is_dir():
+            clean_odirs(odir=self.results_path, max_odirs=89)
+            mk_path(self.results_path)
 
         # Write results to the report area.
-        with open(result_path, "w") as results_file:
-            results_file.write(text_html)
-        log.log(VERBOSE, "[results page]: [%s][%s], self.name, results_path")
-
-        # Link the `/latest` folder with the latest reports.
-        mk_symlink(result_path, symlink_path)
+        with open(self.results_path / filename, "w") as f:
+            f.write(
+                md_results_to_html(self.results_title, self.css_file, text_md))
 
     def _get_results_page_link(self, link_text):
         if not self.args.publish:
@@ -458,13 +448,16 @@ class FlowCfg():
             gen_results = self.email_summary_md or self.results_summary_md
         else:
             gen_results = self.email_results_md or self.results_md
-        results_html = md_results_to_html(self.results_title, self.css_file,
-                                          gen_results)
-        results_html_file = self.scratch_root + "/email.html"
-        f = open(results_html_file, 'w')
-        f.write(results_html)
-        f.close()
-        log.info("[results:email]: [%s]", results_html_file)
+
+        fname = f"{self.scratch_root}/{self.name}-{self.flow}"
+        if self.tool:
+            fname = f"{fname}-{self.tool}"
+        fname = f"{fname}-report.html"
+        log.info("[results]: [email]: [%s]", fname)
+        with open(fname, "w") as f:
+            f.write(
+                md_results_to_html(self.results_title, self.css_file,
+                                   gen_results))
 
     def _publish_results(self):
         '''Publish results to the opentitan web server.
@@ -561,7 +554,7 @@ class FlowCfg():
             dirname = dirname.replace('/', '')
             # Only track history directories with format
             # "year.month.date_hour.min.sec".
-            if not bool(re.match('[\d*.]*_[\d*.]*', dirname)):
+            if not bool(re.match(r"[\d*.]*_[\d*.]*", dirname)):
                 continue
             rdirs.append(dirname)
         rdirs.sort(reverse=True)
