@@ -150,7 +150,9 @@ typedef struct dif_kmac_config {
 
   /**
    * Entropy fast process mode when enabled prevents the KMAC unit consuming
-   * entropy unless it is processing a secret key.
+   * entropy unless it is processing a secret key. This process should not be
+   * used when resistance against side-channel attacks is required, because
+   * it may lead to leakage of the secret key in the power trace.
    */
   bool entropy_fast_process;
 
