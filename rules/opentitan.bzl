@@ -561,6 +561,8 @@ def opentitan_rom_binary(
         srcs = targets,
     )
 
+    return targets
+
 def opentitan_flash_binary(
         name,
         platform = OPENTITAN_PLATFORM,
@@ -682,3 +684,5 @@ def opentitan_flash_binary(
         name = name,
         srcs = targets,
     )
+
+    return targets

@@ -277,20 +277,21 @@ def opentitan_functest(
 
     # Generate flash artifacts for test.
     deps = kwargs.pop("deps", [])
+    sw_artifacts = []
     if test_in_rom:
-        opentitan_rom_binary(
+        sw_artifacts.extend(opentitan_rom_binary(
             name = name + "_rom_prog",
             deps = deps,
             **kwargs
-        )
+        ))
     if not test_binary:
         test_binary = name + "_prog"
-        opentitan_flash_binary(
+        sw_artifacts.extend(opentitan_flash_binary(
             name = test_binary,
             output_signed = signed,
             deps = deps,
             **kwargs
-        )
+        ))
 
     all_tests = []
 
@@ -309,12 +310,9 @@ def opentitan_functest(
         if "manual" not in params.get("tags"):
             all_tests.append(test_name)
 
-        sw_logs_db = []
-
         # Set flash image.
         if target in ["sim_dv", "sim_verilator"]:
             flash = "{}_{}_scr_vmem64".format(test_binary, target)
-            sw_logs_db.append("{}_{}_logs_db".format(test_binary, target))
         else:
             flash = "{}_{}_bin".format(test_binary, target)
         if signed:
@@ -336,8 +334,6 @@ def opentitan_functest(
         rom = params.pop("rom")
         if test_in_rom:
             rom = "{}_rom_prog_{}_scr_vmem".format(name, target)
-        if target in ["sim_dv", "sim_verilator"]:
-            sw_logs_db.append(rom.replace("_scr_vmem", "_logs_db"))
 
         bitstream = params.pop("bitstream", None)
         rom_kind = params.pop("rom_kind", None)
@@ -405,17 +401,13 @@ def opentitan_functest(
 
         # Specify the test harness
         env["TEST_HARNESS"] = "$(location {})".format(test_harness)
-        concat_data += [test_harness]
+        concat_data.append(test_harness)
 
         native.sh_test(
             name = test_name,
             srcs = [test_runner],
             args = concat_args,
-            data = [
-                flash,
-                rom,
-                otp,
-            ] + concat_data + sw_logs_db,
+            data = sw_artifacts + concat_data + [otp],
             env = env,
             **params
         )
