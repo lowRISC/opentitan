@@ -137,8 +137,8 @@
       tests: ["{name}_sec_cm"]
     }
     {
-      name: sec_cm_ctr_redun
-      desc: '''Verify the countermeasure(s) CTR.REDUN.
+      name: sec_cm_init_ctr_redun
+      desc: '''Verify the countermeasure(s) INIT.CTR.REDUN.
 
             Besides the stimulus and checks mentioned in `prim_count_check` and
             `sec_cm_key_local_esc`, also have following checks:
@@ -158,5 +158,13 @@
       milestone: V2S
       tests: ["{name}_smoke"]
     }
+    {
+      name: sec_cm_tlul_fifo_ctr_redun
+      desc: '''Verify the countermeasure(s) TLUL_FIFO.CTR.REDUN.
+            '''
+      milestone: V2S
+      tests: ["{name}_sec_cm"]
+    }
+
   ]
 }
