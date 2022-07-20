@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
@@ -694,4 +695,58 @@ aes_error_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
   // Compute the authentication tag T.
   return aes_gcm_compute_tag(key, &Htbl, plaintext_len, ciphertext, aad_len,
                              aad, &j0, tag);
+}
+
+aes_error_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
+                            const uint8_t *iv, const size_t ciphertext_len,
+                            const uint8_t *ciphertext, const size_t aad_len,
+                            const uint8_t *aad, const uint8_t *tag,
+                            uint8_t *plaintext, hardened_bool_t *success) {
+  // Check that the input parameter sizes are valid.
+  if (check_buffer_lengths(iv_len, ciphertext_len, aad_len) !=
+      kHardenedBoolTrue) {
+    return kAesInternalError;
+  }
+
+  // Compute the hash subkey H as a product table.
+  aes_gcm_product_table_t Htbl;
+  aes_error_t err = aes_gcm_hash_subkey(key, &Htbl);
+  if (err != kAesOk) {
+    return err;
+  }
+
+  // Compute the counter block (called J0 in the NIST specification).
+  aes_block_t j0;
+  err = aes_gcm_counter(iv_len, iv, &Htbl, &j0);
+  if (err != kAesOk) {
+    return err;
+  }
+
+  // Compute the expected authentication tag T.
+  uint8_t expected_tag[kAesGcmTagNumBytes];
+  err = aes_gcm_compute_tag(key, &Htbl, ciphertext_len, ciphertext, aad_len,
+                            aad, &j0, expected_tag);
+  if (err != kAesOk) {
+    return err;
+  }
+
+  // Copy expected and actual tag to word-size buffers to avoid violating
+  // strict aliasing rules.
+  uint32_t expected_tag_words[kAesGcmTagNumWords];
+  uint32_t tag_words[kAesGcmTagNumWords];
+  memcpy(expected_tag_words, expected_tag, kAesGcmTagNumBytes);
+  memcpy(tag_words, tag, kAesGcmTagNumBytes);
+
+  // Compare the expected tag to the actual tag (in constant time).
+  *success = hardened_memeq(expected_tag_words, tag_words, kAesGcmTagNumWords);
+  if (*success != kHardenedBoolTrue) {
+    // If authentication fails, do not proceed to decryption; simply exit
+    // with success = False. We still use `kAesOk` because there was no
+    // internal error during the authentication check.
+    return kAesOk;
+  }
+
+  // Compute plaintext P = GCTR(K, inc32(J0), ciphertext).
+  block_inc32(&j0);
+  return aes_gcm_gctr(key, &j0, ciphertext_len, ciphertext, plaintext);
 }

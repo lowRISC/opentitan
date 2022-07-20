@@ -69,6 +69,7 @@ void hardened_memshred(uint32_t *dest, size_t word_len);
  * - It only computes equality, not lexicographic ordering, which would be even
  *   slower.
  * - It returns a `hardened_bool_t`.
+ * - It is constant-time.
  *
  * Input pointers *MUST* be 32-bit aligned, although they do not need to
  * actually point to memory declared as `uint32_t` per the C aliasing rules.
