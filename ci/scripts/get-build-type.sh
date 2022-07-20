@@ -62,8 +62,8 @@ if [[ "$build_reason" = "PullRequest" ]]; then
     # Check if the commit has only CDC related changes (run-cdc.tcl,
     # cdc_waivers*.tcl).
     echo "Checking for changes in this PR other than to CDC waivers"
-    git diff --quiet "$merge_base" -- ':(attr:!cdc)' && only_cdc_change=1 || true
-    if [[ $only_cdc_change -eq 1 ]]; then
+    git diff --quiet "$merge_base" -- ':(attr:!cdc)' && only_cdc_changes=1 || true
+    if [[ $only_cdc_changes -eq 1 ]]; then
         echo "PR is only CDC waiver changes"
     else
         echo "PR contains non CDC-related changes"
