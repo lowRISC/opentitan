@@ -227,7 +227,7 @@ module sram_ctrl
   // We employ two redundant counters to guard against FI attacks.
   // If any of the two is glitched and the two counter states do not agree,
   // we trigger an alert.
-  // SEC_CM: CTR.REDUN
+  // SEC_CM: INIT.CTR.REDUN
   prim_count #(
     .Width(AddrWidth),
     .OutSelDnCnt(0), // count up
@@ -424,7 +424,8 @@ module sram_ctrl
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(0),
-    .EnableDataIntgPt(1) // SEC_CM: MEM.INTEGRITY
+    .EnableDataIntgPt(1), // SEC_CM: MEM.INTEGRITY
+    .SecFifoPtr      (1)  // SEC_CM: TLUL_FIFO.CTR.REDUN
   ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
@@ -499,6 +500,16 @@ module sram_ctrl
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(LcGateFsmCheck_A,
       u_tlul_lc_gate.u_state_regs, alert_tx_o[0])
 
-  // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_regs, alert_tx_o[0])
+  // Alert assertions for reg_we onehot check.
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
+      u_reg_regs, alert_tx_o[0])
+
+  // Alert assertions for redundant counters.
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(FifoWptrCheck_A,
+      u_tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+      alert_tx_o[0])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(FifoRptrCheck_A,
+      u_tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+      alert_tx_o[0])
+
 endmodule : sram_ctrl

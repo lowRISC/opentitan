@@ -156,11 +156,14 @@
     { name: "KEY.LOCAL_ESC",
       desc: "Scrambling key and nonce are reset to a fixed value upon local escalation due to bus integrity or counter errors, and bus transactions going to the memory will be blocked."
     }
-    { name: "CTR.REDUN",
+    { name: "INIT.CTR.REDUN",
       desc: "The initialization counter is duplicated."
     }
     { name: "SCRAMBLE.KEY.SIDELOAD",
       desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
+    }
+    { name: "TLUL_FIFO.CTR.REDUN",
+      desc: "The TL-UL response FIFO pointers are implemented with duplicate counters."
     }
   ]
 
