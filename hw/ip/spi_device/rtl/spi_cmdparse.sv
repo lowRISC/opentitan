@@ -171,10 +171,14 @@ module spi_cmdparse
                           && (data_i == cmd_info_i[CmdInfoReadJedecId].opcode);
   assign opcode_readsfdp = cmd_info_i[CmdInfoReadSfdp].valid
                          && (data_i == cmd_info_i[CmdInfoReadSfdp].opcode);
-  assign opcode_en4b = (data_i == cmd_info_i[CmdInfoEn4B].opcode);
-  assign opcode_ex4b = (data_i == cmd_info_i[CmdInfoEx4B].opcode);
-  assign opcode_wren = (data_i == cmd_info_i[CmdInfoWrEn].opcode);
-  assign opcode_wrdi = (data_i == cmd_info_i[CmdInfoWrDi].opcode);
+  assign opcode_en4b = cmd_info_i[CmdInfoEn4B].valid
+                     && (data_i == cmd_info_i[CmdInfoEn4B].opcode);
+  assign opcode_ex4b = cmd_info_i[CmdInfoEx4B].valid
+                     && (data_i == cmd_info_i[CmdInfoEx4B].opcode);
+  assign opcode_wren = cmd_info_i[CmdInfoWrEn].valid
+                     && (data_i == cmd_info_i[CmdInfoWrEn].opcode);
+  assign opcode_wrdi = cmd_info_i[CmdInfoWrDi].valid
+                     && (data_i == cmd_info_i[CmdInfoWrDi].opcode);
 
   always_comb begin
     opcode_readcmd = 1'b 0;
