@@ -449,13 +449,6 @@ The stack has a maximum depth of eight and the top of the stack is the current l
 
 # Security Features
 
-<div class="bd-callout bd-callout-warning">
-  <h5>Work in progress</h5>
-
-  Work on OTBN is ongoing, including work on the specification and implementation of its security features.
-  Do not treat the following description (or anything in this documentation) as final, fully implemented, or verified.
-</div>
-
 OTBN is a security co-processor.
 It contains various security features and is hardened against side-channel analysis and fault injection attacks.
 The following sections describe the high-level security features of OTBN.
