@@ -54,6 +54,6 @@ rust_library(
     deps = [
         "@raze__enum_primitive__0_1_0//:enum_primitive",
         "@raze__kernel__0_1_0//:kernel",
-        "@raze__tickv__0_1_0//:tickv",
+        "@raze__tickv__1_0_0//:tickv",
     ],
 )

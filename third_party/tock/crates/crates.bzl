@@ -208,7 +208,7 @@ def raze_fetch_remote_crates(
 
         rv32i__0_1_0=None,
 
-        tickv__0_1_0=None,
+        tickv__1_0_0=None,
 
         tock_cells__0_1_0=None,
 
@@ -229,8 +229,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__capsules__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.capsules-0.1.0.bazel"),
             init_submodules = True,
         )
@@ -246,8 +246,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__components__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.components-0.1.0.bazel"),
             init_submodules = True,
         )
@@ -263,8 +263,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__earlgrey__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.earlgrey-0.1.0.bazel"),
             init_submodules = True,
         )
@@ -280,8 +280,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__earlgrey_cw310__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.earlgrey-cw310-0.1.0.bazel"),
             init_submodules = True,
         )
@@ -297,8 +297,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__enum_primitive__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.enum_primitive-0.1.0.bazel"),
             init_submodules = True,
         )
@@ -314,8 +314,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__kernel__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.kernel-0.1.0.bazel"),
             init_submodules = True,
         )
@@ -467,8 +467,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__lowrisc__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.lowrisc-0.1.0.bazel"),
             init_submodules = True,
         )
@@ -484,8 +484,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__riscv__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.riscv-0.1.0.bazel"),
             init_submodules = True,
         )
@@ -501,8 +501,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__riscv_csr__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.riscv-csr-0.1.0.bazel"),
             init_submodules = True,
         )
@@ -518,26 +518,26 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__rv32i__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.rv32i-0.1.0.bazel"),
             init_submodules = True,
         )
 
-    if tickv__0_1_0:
+    if tickv__1_0_0:
         maybe(
             native.new_local_repository,
-            name = "raze__tickv__0_1_0",
-            path = tickv__0_1_0,
-            build_file = "//third_party/tock/crates/remote:BUILD.tickv-0.1.0.bazel",
+            name = "raze__tickv__1_0_0",
+            path = tickv__1_0_0,
+            build_file = "//third_party/tock/crates/remote:BUILD.tickv-1.0.0.bazel",
         )
     else:
         maybe(
             new_git_repository,
-            name = "raze__tickv__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
-            build_file = Label("//third_party/tock/crates/remote:BUILD.tickv-0.1.0.bazel"),
+            name = "raze__tickv__1_0_0",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
+            build_file = Label("//third_party/tock/crates/remote:BUILD.tickv-1.0.0.bazel"),
             init_submodules = True,
         )
 
@@ -552,8 +552,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__tock_cells__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.tock-cells-0.1.0.bazel"),
             init_submodules = True,
         )
@@ -569,8 +569,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__tock_registers__0_7_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.tock-registers-0.7.0.bazel"),
             init_submodules = True,
         )
@@ -586,8 +586,8 @@ def raze_fetch_remote_crates(
         maybe(
             new_git_repository,
             name = "raze__tock_tbf__0_1_0",
-            remote = "https://github.com/cfrantz/tock",
-            commit = "b6bc0863a1b155758fdac00d8f660cafc4a786ee",
+            remote = "https://github.com/lowRISC/tock",
+            commit = "cc09da83f8914915c683307ec5c5371f4798331e",
             build_file = Label("//third_party/tock/crates/remote:BUILD.tock-tbf-0.1.0.bazel"),
             init_submodules = True,
         )

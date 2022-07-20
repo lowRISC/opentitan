@@ -16,7 +16,7 @@ def tock_deps(tock=None, libtock=None):
         riscv__0_1_0=tock,
         riscv_csr__0_1_0=tock,
         rv32i__0_1_0=tock,
-        tickv__0_1_0=tock,
+        tickv__1_0_0=tock,
         tock_cells__0_1_0=tock,
         tock_registers__0_7_0=tock,
         tock_tbf__0_1_0=tock,

@@ -5,7 +5,7 @@ MEMORY {
    * the kernel binary, check for the actual address of APP_MEMORY!
    */
   FLASH (X) : ORIGIN = 0x20040000, LENGTH = 32M
-  RAM   (W) : ORIGIN = 0x10004000, LENGTH = 512K
+  RAM   (W) : ORIGIN = 0x10004400, LENGTH = 512K
 }
 
 TBF_HEADER_SIZE = 0x40;

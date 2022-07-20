@@ -14,7 +14,7 @@ path = "empty_file_to_appease_cargo.rs"
 # Please avoid version numbers that only have one component.
 [dependencies]
 # TODO(cfrantz): rework these into stable URIs
-earlgrey-cw310 = { git = "https://github.com/cfrantz/tock", branch="ot2"}
+earlgrey-cw310 = { git = "https://github.com/lowRISC/tock", branch="opentitan-master", default-features=false}
 libtock2 = { git = "https://github.com/tock/libtock-rs" }
 
 [workspace.metadata.raze]
