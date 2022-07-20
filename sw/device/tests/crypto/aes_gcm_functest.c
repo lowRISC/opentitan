@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
@@ -25,10 +26,10 @@ typedef struct aes_gcm_test {
   // of 4, then the most significant bytes of the last word are ignored.
   size_t aad_len;
   uint8_t *aad;
-  // Expected authentication tag.
-  uint8_t expected_tag[16];
-  // Expected ciphertext (same length as plaintext).
-  uint8_t *expected_ciphertext;
+  // Authentication tag.
+  uint8_t tag[16];
+  // Ciphertext (same length as plaintext).
+  uint8_t *ciphertext;
 } aes_gcm_test_t;
 
 /**
@@ -91,11 +92,11 @@ static const aes_gcm_test_t kAesGcmTestvectors[3] = {
         .plaintext = NULL,
         .aad_len = 0,
         .aad = NULL,
-        .expected_tag =
+        .tag =
             {// Tag = b7aa223a6c75a0976633ce79d9fddf06
              0xb7, 0xaa, 0x22, 0x3a, 0x6c, 0x75, 0xa0, 0x97, 0x66, 0x33, 0xce,
              0x79, 0xd9, 0xfd, 0xdf, 0x06},
-        .expected_ciphertext = NULL,
+        .ciphertext = NULL,
     },
 
     // Empty input, empty aad, 128-bit IV, 128-bit key
@@ -110,11 +111,11 @@ static const aes_gcm_test_t kAesGcmTestvectors[3] = {
         .plaintext = NULL,
         .aad_len = 0,
         .aad = NULL,
-        .expected_tag =
+        .tag =
             {// Tag = 4c59f0d420d9eb8669c40ad23b5419ba
              0x4c, 0x59, 0xf0, 0xd4, 0x20, 0xd9, 0xeb, 0x86, 0x69, 0xc4, 0x0a,
              0xd2, 0x3b, 0x54, 0x19, 0xba},
-        .expected_ciphertext = NULL,
+        .ciphertext = NULL,
     },
 
     // 128-bit IV, 256-bit key, real message and aad
@@ -129,11 +130,11 @@ static const aes_gcm_test_t kAesGcmTestvectors[3] = {
         .plaintext = kPlaintext,
         .aad_len = kAadLen,
         .aad = kAad,
-        .expected_tag =
+        .tag =
             {// Tag = 324895b3d2f656e4fa2f8ce056137061
              0x32, 0x48, 0x95, 0xb3, 0xd2, 0xf6, 0x56, 0xe4, 0xfa, 0x2f, 0x8c,
              0xe0, 0x56, 0x13, 0x70, 0x61},
-        .expected_ciphertext = kCiphertext256,
+        .ciphertext = kCiphertext256,
     },
 };
 
@@ -178,11 +179,43 @@ bool test_main(void) {
     LOG_INFO("aes_gcm_encrypt() took %u cycles", cycles);
     CHECK(err == kAesOk, "AES-GCM encryption returned an error: %08x", err);
 
-    CHECK_ARRAYS_EQ(actual_tag, test.expected_tag, sizeof(test.expected_tag));
+    CHECK_ARRAYS_EQ(actual_tag, test.tag, sizeof(test.tag));
     if (test.plaintext_len > 0) {
-      CHECK_ARRAYS_EQ(actual_ciphertext, test.expected_ciphertext,
-                      test.plaintext_len);
+      CHECK_ARRAYS_EQ(actual_ciphertext, test.ciphertext, test.plaintext_len);
     }
+
+    // Call AES-GCM decrypt with the correct tag.
+    uint8_t actual_plaintext[test.plaintext_len];
+    hardened_bool_t success;
+    start = ibex_mcycle_read();
+    err = aes_gcm_decrypt(test_key, test.iv_len, test.iv, test.plaintext_len,
+                          test.ciphertext, test.aad_len, test.aad, test.tag,
+                          actual_plaintext, &success);
+    end = ibex_mcycle_read();
+    cycles = end - start;
+    LOG_INFO("aes_gcm_decrypt() took %u cycles", cycles);
+    CHECK(err == kAesOk, "AES-GCM decryption returned an error: %08x", err);
+    CHECK(success == kHardenedBoolTrue,
+          "AES-GCM decryption failed on valid input");
+
+    if (test.plaintext_len > 0) {
+      CHECK_ARRAYS_EQ(actual_plaintext, test.plaintext, test.plaintext_len);
+    }
+
+    // Call AES-GCM decrypt with an incorrect tag.
+    uint8_t bad_tag[16];
+    memcpy(bad_tag, test.tag, 16);
+    bad_tag[15]++;
+    start = ibex_mcycle_read();
+    err = aes_gcm_decrypt(test_key, test.iv_len, test.iv, test.plaintext_len,
+                          test.ciphertext, test.aad_len, test.aad, bad_tag,
+                          actual_plaintext, &success);
+    end = ibex_mcycle_read();
+    cycles = end - start;
+    LOG_INFO("aes_gcm_decrypt() took %u cycles", cycles);
+    CHECK(err == kAesOk, "AES-GCM decryption returned an error: %08x", err);
+    CHECK(success == kHardenedBoolFalse,
+          "AES-GCM decryption passed an invalid tag");
 
     LOG_INFO("Finished AES-GCM test %d.", i + 1);
   }
