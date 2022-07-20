@@ -151,13 +151,13 @@
     }
 
     {
-      name: spi_device_dual_mode
-      uvm_test_seq: spi_device_dual_mode_vseq
+      name: spi_device_intercept
+      uvm_test_seq: spi_device_intercept_vseq
     }
 
     {
-      name: spi_device_quad_mode
-      uvm_test_seq: spi_device_quad_mode_vseq
+      name: spi_device_pass_all
+      uvm_test_seq: spi_device_pass_all_vseq
     }
   ]
 

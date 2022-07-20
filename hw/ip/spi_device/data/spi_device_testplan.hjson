@@ -214,7 +214,7 @@
             - Set filter bit back to 0.
             - Check opcode and address are passing through again.'''
       milestone: V2
-      tests: ["spi_device_pass_cmd_filtering"]
+      tests: ["spi_device_pass_cmd_filtering", "spi_device_pass_all"]
     }
     {
       name: pass_addr_translation
@@ -227,7 +227,7 @@
             - Disable address translation for given command.
             - Check address is now passing unchanged.'''
       milestone: V2
-      tests: ["spi_device_pass_addr_payload_swap"]
+      tests: ["spi_device_pass_addr_payload_swap", "spi_device_pass_all"]
     }
     {
       name: pass_payload_translation
@@ -239,7 +239,7 @@
             - Disable payload translation for given command.
             - Check payload is now passing unchanged.'''
       milestone: V2
-      tests: ["spi_device_pass_addr_payload_swap"]
+      tests: ["spi_device_pass_addr_payload_swap", "spi_device_pass_all"]
     }
     {
       name: cmd_info_slots
@@ -252,7 +252,7 @@
             - Disable some cmd info slots.
             - Check no propagation of disabled commands.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_pass_all"]
     }
     {
       name: cmd_read_status
@@ -263,7 +263,7 @@
             - Initiate response to the read status.
             - Check proper reception of response.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_intercept", "spi_device_pass_all"]
     }
     {
       name: cmd_read_jedec
@@ -274,7 +274,7 @@
             - Initiate response to the read jedec.
             - Check proper reception of response.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_intercept", "spi_device_pass_all"]
     }
     {
       name: cmd_read_sfdp
@@ -285,7 +285,7 @@
             - Initiate response to the read sfdp.
             - Check proper reception of response.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_intercept", "spi_device_pass_all"]
     }
     {
       name: cmd_fast_read
@@ -296,7 +296,7 @@
             - Initiate response to the fast read.
             - Check proper reception of response.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_intercept", "spi_device_pass_all"]
     }
     {
       name: flash_cmd_upload
