@@ -168,8 +168,12 @@ bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
                                 const uint32_t *data,
                                 dif_flash_ctrl_partition_type_t partition_type,
                                 uint32_t word_count) {
-  // Cannot program partial flash words.
-  if (byte_address & (FLASH_CTRL_PARAM_BYTES_PER_WORD - 1)) {
+  // Cannot program partial words.
+  // TODO: #13773 for more details.
+  // When 13773 is supported, programs to non-scrambled or ecc enabled
+  // pages can support byte writes.  While programs to scrambled or ecc
+  // enabled pages can support only flash item writes.
+  if (byte_address & sizeof(uint32_t) - 1) {
     return false;
   }
   dif_flash_ctrl_transaction_t transaction = {.byte_address = byte_address,
