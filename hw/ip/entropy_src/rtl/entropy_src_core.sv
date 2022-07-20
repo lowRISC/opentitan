@@ -417,6 +417,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    sha3_count_error;
   logic [EsEnableCopies-1:0] es_enable_q_fo;
   logic                      es_hw_regwen;
+  logic                      recov_alert_state;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_sha3_state;
@@ -1962,7 +1963,21 @@ module entropy_src_core import entropy_src_pkg::*; #(
          ((any_fail_count >= ~alert_threshold_inv) && (~alert_threshold_inv != '0)) ||
          (any_fail_count >= alert_threshold) && (alert_threshold != '0);
 
-  assign recov_alert_o =
+
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue(0),
+    .EnSync(0)
+  ) u_prim_edge_detector_recov_alert (
+    .clk_i,
+    .rst_ni,
+    .d_i(recov_alert_state),
+    .q_sync_o(),
+    .q_posedge_pulse_o(recov_alert_o),
+    .q_negedge_pulse_o()
+  );
+
+  assign recov_alert_state =
          es_enable_pfa ||
          fips_enable_pfa ||
          entropy_data_reg_en_pfa ||
@@ -1970,6 +1985,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          rng_bit_enable_pfa ||
          fw_ov_mode_pfa ||
          fw_ov_entropy_insert_pfa ||
+         fw_ov_sha3_start_pfa ||
          es_route_pfa ||
          es_type_pfa ||
          es_main_sm_alert ||

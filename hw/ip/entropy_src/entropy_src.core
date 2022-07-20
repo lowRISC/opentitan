@@ -10,6 +10,7 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:prim:count
+      - lowrisc:prim:edge_detector
       - lowrisc:prim:assert
       - lowrisc:prim:lfsr
       - lowrisc:prim:sparse_fsm
