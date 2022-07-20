@@ -81,13 +81,26 @@ interface entropy_src_cov_if
     option.name         = "entropy_src_cntr_err_cg";
     option.per_instance = 1;
 
-    cp_which_cntr: coverpoint which_cntr;
+    // coverpoint for counters with only one instance
+    cp_which_cntr: coverpoint which_cntr {
+       bins single_cntrs[] = {window_cntr, repcnts_ht_cntr};
+    }
 
-    cp_which_line: coverpoint which_line iff(which_cntr inside {repcnt_ht_cntr,
-                                                                adaptp_ht_cntr,
-                                                                markov_ht_cntr});
+    cp_which_repcnt_line: coverpoint which_line iff(which_cntr == repcnt_ht_cntr) {
+      bins repcnt_cntrs[] = { [0:3] };
+    }
 
-    cp_which_bucket: coverpoint which_bucket iff(which_cntr == bucket_ht_cntr);
+    cp_which_adaptp_line: coverpoint which_line iff(which_cntr == adaptp_ht_cntr) {
+      bins adaptp_cntrs[] = { [0:3] };
+    }
+
+    cp_which_markov_line: coverpoint which_line iff(which_cntr == markov_ht_cntr) {
+      bins markov_cntrs[] = { [0:3] };
+    }
+
+    cp_which_bucket: coverpoint which_bucket iff(which_cntr == bucket_ht_cntr) {
+      bins bucket_cntrs[] = { [0:15] };
+    }
 
   endgroup : entropy_src_cntr_err_cg
 
