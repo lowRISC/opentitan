@@ -18,6 +18,44 @@ opentitan_functest(
         timeout = "long",
     ),
     deps = [
+        ":aes_gcm_testutils",
+        ":aes_gcm_testvectors",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
+    name = "aes_gcm_testutils",
+    srcs = ["aes_gcm_testutils.c"],
+    hdrs = ["aes_gcm_testutils.h"],
+    deps = [
+        "//sw/device/lib/crypto/impl/aes_gcm",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
+    name = "aes_gcm_testvectors",
+    srcs = ["aes_gcm_testvectors.h"],
+    deps = [
+        ":aes_gcm_testutils",
+    ],
+)
+
+opentitan_functest(
+    name = "aes_gcm_timing_test",
+    srcs = ["aes_gcm_timing_test.c"],
+    cw310 = cw310_params(
+        timeout = "long",
+    ),
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":aes_gcm_testutils",
+        ":aes_gcm_testvectors",
         "//sw/device/lib/crypto/impl/aes_gcm",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
