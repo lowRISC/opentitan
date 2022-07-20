@@ -55,19 +55,16 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   bit do_creator_sw_cfg_ast_cfg = 1;
 
   // sw related
-  // Directory from where to pick up the SW test images -default to PWD {run_dir}.
-  string sw_build_bin_dir = ".";
-
   // In OpenTitan, the same SW test image can be built for DV, Verilator and FPGA. SW build for
   // other platforms can be run on DV as well. We allow that by specifying the SW build device.
   string sw_build_device = "sim_dv";
 
   // Types of SW images used in the test.
   //
-  // Set via plusarg. This is the path (relative to ~sw_build_bin_dir~) upto the basename of the SW
-  // image. If the SW image is not pre-built (generated with Bazel), then the ~sw_build_device~ is
-  // suffixed to the basename to pick the correct image. The following files (extensions) with this
-  // basename are expected to exist there:
+  // Set via plusarg. This is the basename of the SW image. If the SW image is not pre-built
+  // (e.g., generated with Bazel), then the ~sw_build_device~ is suffixed to the basename to
+  // pick the correct image. The following files (extensions) with this basename are expected
+  // to exist there:
   // - .elf:          embedded executable
   // - .32.vmem:      mem image with 32-bit word size (for boot ROM)
   // - .64.vmem:      mem image with 64-bit word size (for sw_test / flash load)
@@ -75,8 +72,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // - .rodata.txt:   dump of RO sections of the SW
   // - .logs.txt:     dump of SW logs
   //
-  // The ~resolve_sw_image_paths()~ function does the job of prefixing this path with
-  // ~sw_build_bin_dir and suffixing with ~sw_build_device~.
+  // The ~resolve_sw_image_paths()~ function does the job of suffixing this path with
+  // ~sw_build_device~.
   string sw_images[sw_type_e];
   string sw_image_flags[sw_type_e][$];
 
@@ -319,15 +316,16 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
   // Parse a space-separated list of sw_images supplied as a string.
   //
-  // The typical usecase is the list of SW images used by the test supplied as a plusarg. Each
-  // SW image can have additional metadata specified using ":" as delimiters. Examples:
-  // +sw_images="path/to/sw/test1:1 path/to/sw/test2:0"
-  // +sw_images="foo/bar:0:flag1 bar/baz:1:flag1:flag2 quux/foo:2:flag3".
+  // The typical usecase is the list of SW images used by the test supplied as a plusarg. The
+  // SW images are defined by their filename. Each SW image can have additional metadata
+  // specified using ":" as delimiters. Examples:
+  // +sw_images="test_binary_1:1 test_binary_2:0"
+  // +sw_images="foo:0:flag1 bar:1:flag1:flag2".
   //
   // The index (optional) is mapped to the type of SW image (enumerated in sw_type_e). If index is
   // not specified, then `SwTypeTest` is assumed. Flags (optional) are arbitrary strings attached to
-  // the SW image. They can be used to treat the SW image in a specific way. The flags "prebuilt"
-  // and "signed" for example, are used to set the SW image path correctly.
+  // the SW image. They can be used to treat the SW image in a specific way. The flag "signed" for
+  // example, is used to set the SW image extension correctly.
   virtual function void parse_sw_images_string(string sw_images_string);
     string sw_images_split[$];
 
@@ -348,7 +346,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
         continue;
       end
 
-      // There are at least 2 fields - first is the path, second is the index (SW type).
+      // There are at least 2 fields - first is the filename, second is the index (SW type).
       sw_type = sw_type_e'(sw_image_fields[1].atoi());
       sw_images[sw_type] = sw_image_fields[0];
       if (sw_image_fields.size() > 2) begin
@@ -362,18 +360,17 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   virtual function void resolve_sw_image_paths();
     foreach (sw_images[i]) begin
       if ("prebuilt" inside {sw_image_flags[i]}) begin
-        sw_images[i] = $sformatf("%0s/%0s", sw_build_bin_dir, sw_images[i]);
+        sw_images[i] = $sformatf("%0s", sw_images[i]);
       end else if ("signed" inside {sw_image_flags[i]}) begin
         // TODO: support multiple signing keys. See "signing_keys" in
         // `rules/opentitan.bzl` for options.
-        sw_images[i] = $sformatf("%0s/%0s_prog_%0s.test_key_0.signed",
-          sw_build_bin_dir, sw_images[i], sw_build_device);
+        sw_images[i] = $sformatf("%0s_prog_%0s.test_key_0.signed", sw_images[i], sw_build_device);
       end else begin
         if (i == SwTypeTest) begin
-          sw_images[i] = $sformatf("%0s/%0s_prog_%0s", sw_build_bin_dir, sw_images[i],
+          sw_images[i] = $sformatf("%0s_prog_%0s", sw_images[i],
             sw_build_device);
         end else begin
-          sw_images[i] = $sformatf("%0s/%0s_%0s", sw_build_bin_dir, sw_images[i], sw_build_device);
+          sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
         end
       end
     end

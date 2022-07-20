@@ -49,9 +49,6 @@ class chip_base_test extends cip_base_test #(
     // Knob to use SPI to load image via ROM bootstrap.
     void'($value$plusargs("use_spi_load_bootstrap=%0b", cfg.use_spi_load_bootstrap));
 
-    // Knob to indicate where to pick up the SW images from.
-    void'($value$plusargs("sw_build_bin_dir=%0s", cfg.sw_build_bin_dir));
-
     // Knob to indicate what build device to use (DV, Verilator or FPGA).
     void'($value$plusargs("sw_build_device=%0s", cfg.sw_build_device));
 
