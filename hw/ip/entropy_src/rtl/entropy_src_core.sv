@@ -1962,7 +1962,19 @@ module entropy_src_core import entropy_src_pkg::*; #(
          ((any_fail_count >= ~alert_threshold_inv) && (~alert_threshold_inv != '0)) ||
          (any_fail_count >= alert_threshold) && (alert_threshold != '0);
 
-  assign recov_alert_o =
+  logic recov_alert_level_d, recov_alert_level_q;
+
+  always_ff @(posedge clk_i, negedge rst_ni) begin
+    if (!rst_ni) begin
+      recov_alert_level_q <= 1'b0;
+    end else begin
+      recov_alert_level_q <= recov_alert_level_d;
+    end
+  end
+
+  assign recov_alert_o = recov_alert_level_d & ~recov_alert_level_q;
+
+  assign recov_alert_level_d =
          es_enable_pfa ||
          fips_enable_pfa ||
          entropy_data_reg_en_pfa ||
@@ -1970,6 +1982,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          rng_bit_enable_pfa ||
          fw_ov_mode_pfa ||
          fw_ov_entropy_insert_pfa ||
+         fw_ov_sha3_start_pfa ||
          es_route_pfa ||
          es_type_pfa ||
          es_main_sm_alert ||
