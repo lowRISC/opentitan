@@ -12,8 +12,16 @@
 
 
 parameters:
-  # Rsync-style file patterns to include in the partial BIN_DIR output.
+  # Rsync-style file patterns to include in the partial BIN_DIR output. If a
+  # file is captured by these patterns, but it was previously downloaded via
+  # ci/download-artifacts-template.yml, it will not be uploaded again.
   - name: includePatterns
+    type: object
+    default: []
+  # Rsync-style file patterns to unconditionally include in the partial BIN_DIR
+  # output. If a file is captured by these patterns, it will be uploaded even if
+  # it came from ci/download-artifacts-template.yml.
+  - name: unconditionalIncludePatterns
     type: object
     default: []
 
@@ -23,13 +31,22 @@ steps:
       test -n "$BUILD_ROOT"
       . util/build_consts.sh
 
-      # Write all include patterns to a file used by rsync.
-      echo "${{ join('\n', parameters.includePatterns) }}" > "$BUILD_ROOT/include_patterns.txt"
+      # Write all sets of include patterns to files used by rsync.
+      echo -e "${{ join('\n', parameters.includePatterns) }}" > "$BUILD_ROOT/include_patterns.txt"
+      echo -e "${{ join('\n', parameters.unconditionalIncludePatterns) }}" > "$BUILD_ROOT/unconditional_include_patterns.txt"
 
       echo
-      echo Files matching these patterns will be included in the binary build artifact for this job:
+      echo Files matching these patterns will be included in the binary build
+      echo artifact for this job unless they were downloaded from an upstream job:
       echo vvvvvvvvvvvvvvvvvv
       cat "$BUILD_ROOT/include_patterns.txt"
+      echo ^^^^^^^^^^^^^^^^^^
+
+      echo
+      echo Files matching these patterns will always be included in the binary
+      echo build artifact for this job:
+      echo vvvvvvvvvvvvvvvvvv
+      cat "$BUILD_ROOT/unconditional_include_patterns.txt"
       echo ^^^^^^^^^^^^^^^^^^
 
       # The file upstream_bin_dir_contents.txt lists all files which were part
@@ -49,6 +66,7 @@ steps:
         --verbose \
         --remove-source-files \
         --prune-empty-dirs \
+        --include-from="$BUILD_ROOT/unconditional_include_patterns.txt" \
         --exclude-from="$BUILD_ROOT/upstream_bin_dir_contents.txt" \
         --include="*/" \
         --include-from="$BUILD_ROOT/include_patterns.txt" \
