@@ -257,16 +257,78 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the 
 
 #### Troubleshooting
 
-If the firmware load fails, try pressing the "USB RST" button before loading the bitstream.
+If the firmware load fails, try pressing the "USR-RST" button before loading the bitstream.
 
 ## Connect with OpenOCD and debug
 
-To connect the ChipWhisperer CW310 FPGA board with OpenOCD, run the following command
+The CW310 supports JTAG-based debugging with OpenOCD and GDB via the standard ARM JTAG headers on the board (labeled USR Debug Headers).
+To use it, program the bitstream and bootstrap the desired firmware, then connect a JTAG adapter to one of the headers.
+For this guide, the `Olimex ARM-USB-TINY-H` JTAG adapter was used.
+
+After bootstrapping the firmware, the TAP straps may need to be set.
+As of this writing, the FPGA images are typically programmed to be in the RMA lifecycle state, and the TAP straps are sampled continuously in that state.
+To connect the JTAG chain to the CPU's TAP, adjust the strap values with opentitantool.
+Assuming opentitantool has been built and that the current directory is the root of the workspace, run these commands:
+
+```console
+$ ./bazel-bin/sw/host/opentitantool/opentitantool \
+        --conf sw/host/opentitantool/config/opentitan_cw310.json \
+        --interface cw310 \
+        gpio write TAP_STRAP0 false
+$ ./bazel-bin/sw/host/opentitantool/opentitantool \
+        --conf sw/host/opentitantool/config/opentitan_cw310.json \
+        --interface cw310 \
+        gpio write TAP_STRAP1 true
+```
+
+Connect a JTAG adapter to one of the headers.
+For the `Olimex ARM-USB-TINY-H`, use the classic ARM JTAG header (J13) and make sure switch S2 is set to 3.3 V.
+Depending on the adapter's default state, OpenTitan may be held in reset when the adapter is initially connected.
+This reset will come under software control once OpenOCD initializes the driver.
+
+To connect the ChipWhisperer CW310 FPGA board with OpenOCD, run the following command:
 
 ```console
 cd $REPO_TOP
-openocd -s util/openocd -f board/lowrisc-earlgrey-cw310.cfg
+openocd -f <adapter-config.cfg> \
+        -c "adapter speed 500; transport select jtag; reset_config trst_and_srst" \
+        -f util/openocd/target/lowrisc-earlgrey.cfg
 ```
+
+For the `Olimex ARM-USB-TINY-H` with a Debian-based distro, the adapter configuration would be at `/usr/share/openocd/scripts/interface/ftdi/olimex-arm-usb-tiny-h.cfg`.
+So for that particular case, the command would be the following:
+
+```console
+cd $REPO_TOP
+openocd -f /usr/share/openocd/scripts/interface/ftdi/olimex-arm-usb-tiny-h.cfg \
+        -c "adapter speed 500; transport select jtag; reset_config trst_and_srst" \
+        -f util/openocd/target/lowrisc-earlgrey.cfg
+```
+
+Example OpenOCD output:
+```
+Open On-Chip Debugger 0.11.0
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+trst_and_srst separate srst_gates_jtag trst_push_pull srst_open_drain connect_deassert_srst
+
+Info : Hardware thread awareness created
+force hard breakpoints
+Info : Listening on port 6666 for tcl connections
+Info : Listening on port 4444 for telnet connections
+Info : clock speed 1000 kHz
+Info : JTAG tap: riscv.tap tap/device found: 0x04f5484d (mfg: 0x426 (Google Inc), part: 0x4f54, ver: 0x0)
+Info : datacount=2 progbufsize=8
+Info : Examined RISC-V core; found 1 harts
+Info :  hart 0: XLEN=32, misa=0x40101106
+Info : starting gdb server for riscv.tap.0 on 3333
+Info : Listening on port 3333 for gdb connections
+```
+
+Note that the `reset_config` command may need to be adjusted for the particular JTAG adapter in use.
+TRSTn is available on the 20-pin ARM JTAG header only.
+Use `srst_only` if the adapter only supports SRSTn.
 
 See the [install instructions]({{< relref "install_openocd" >}}) for guidance on installing OpenOCD.
 
