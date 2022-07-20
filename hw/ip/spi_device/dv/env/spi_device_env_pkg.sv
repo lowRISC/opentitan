@@ -64,6 +64,12 @@ package spi_device_env_pkg;
     PayloadOut
   } payload_dir_e;
 
+  typedef struct packed {
+    bit busy;
+    bit WEL;
+    bit [21:0] other_status;
+  } flash_status_t;
+
   // alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};

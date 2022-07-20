@@ -255,7 +255,7 @@ class spi_monitor extends dv_base_monitor#(
       endcase
     end
     `DV_CHECK_EQ(which_bit, 0)
-    `uvm_info(`gfn, $sformatf("sampled one byte data for flash: 0x%0h", data), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("sampled one byte data for flash: 0x%0h", data), UVM_HIGH)
   endtask : sample_flash_one_byte_data
 
   // address is 3 or 4 bytes
@@ -265,7 +265,7 @@ class spi_monitor extends dv_base_monitor#(
       sample_flash_one_byte_data(.num_lanes(1), .is_device_rsp(0), .data(addr));
       byte_addr_q.push_back(addr);
     end
-    `uvm_info(`gfn, $sformatf("sampled flash addr: %p", byte_addr_q), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("sampled flash addr: %p", byte_addr_q), UVM_HIGH)
   endtask : sample_flash_address
 
   virtual task monitor_ready_to_end();

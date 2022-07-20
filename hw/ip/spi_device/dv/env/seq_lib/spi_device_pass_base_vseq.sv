@@ -13,6 +13,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   bit allow_payload_swap;
   int addr_payload_swap_pct = 30;
 
+  bit allow_intercept;
+
   bit [7:0] valid_opcode_q[$];
 
   `uvm_object_utils(spi_device_pass_base_vseq)
@@ -21,11 +23,17 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   // Task for adding cmd info
   virtual task config_all_cmd_infos();
     spi_flash_cmd_info info = spi_flash_cmd_info::type_id::create("info");
+
+    // clean up previous configure cmd_infos
+    cfg.spi_host_agent_cfg.cmd_infos.delete();
+    cfg.spi_device_agent_cfg.cmd_infos.delete();
+
     // Configure the first 11 commands which are fixed
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_bytes == 0 &&
       info.opcode == READ_STATUS_1 &&
       info.num_lanes == 1 &&
+      info.dummy_cycles == 0 &&
       info.write_command == 0;)
     add_cmd_info(info, 0);
     info = spi_flash_cmd_info::type_id::create("info");
@@ -33,6 +41,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       info.addr_bytes == 0 &&
       info.opcode == READ_STATUS_2;
       info.num_lanes == 1 &&
+      info.dummy_cycles == 0 &&
       info.write_command == 0;)
     add_cmd_info(info, 1);
     info = spi_flash_cmd_info::type_id::create("info");
@@ -40,6 +49,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       info.addr_bytes == 0 &&
       info.opcode == READ_STATUS_3 &&
       info.num_lanes == 1 &&
+      info.dummy_cycles == 0 &&
       info.write_command == 0;)
     add_cmd_info(info, 2);
     info = spi_flash_cmd_info::type_id::create("info");
@@ -47,6 +57,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       info.addr_bytes == 0 &&
       info.opcode == READ_JEDEC &&
       info.num_lanes == 1 &&
+      info.dummy_cycles == 0 &&
       info.write_command == 0;)
     add_cmd_info(info, 3);
     info = spi_flash_cmd_info::type_id::create("info");
@@ -156,6 +167,12 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     `DV_CHECK_RANDOMIZE_FATAL(ral.payload_swap_data)
     csr_update(.csr(ral.payload_swap_data));
 
+    // configure intercept_en
+    if (allow_intercept) begin
+      // TODO, only support status intercept
+      `DV_CHECK_RANDOMIZE_FATAL(ral.intercept_en.status)
+      csr_update(ral.intercept_en);
+    end
     config_all_cmd_infos();
 
     spi_device_flash_auto_rsp_nonblocking();
@@ -270,7 +287,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     csr_update(.csr(ral.cmd_info[idx]));
   endtask : add_cmd_info
 
-  function bit [7:0] get_rand_opcode();
+  virtual function bit [7:0] get_rand_opcode();
     bit valid_op;
     bit [7:0] op;
 
@@ -300,4 +317,12 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
            [6:1000] :/ 1};)
     return size;
   endfunction
+
+  virtual task random_write_flash_status();
+    `DV_CHECK_RANDOMIZE_FATAL(ral.flash_status)
+    `uvm_info(`gfn, $sformatf("program flash_status: 0x%0h", ral.flash_status.get()), UVM_MEDIUM)
+    csr_update(.csr(ral.flash_status));
+
+    cfg.clk_rst_vif.wait_clks(10);
+  endtask
 endclass : spi_device_pass_base_vseq

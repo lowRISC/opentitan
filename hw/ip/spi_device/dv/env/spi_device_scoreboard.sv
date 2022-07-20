@@ -7,6 +7,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                                           .COV_T (spi_device_env_cov));
   `uvm_component_utils(spi_device_scoreboard)
 
+  localparam int NumInternalRecognizedCmd = 11;
+
   // TLM fifos to pick up the packets
   uvm_tlm_analysis_fifo #(spi_item) upstream_spi_host_fifo;
   uvm_tlm_analysis_fifo #(spi_item) upstream_spi_device_fifo;
@@ -27,6 +29,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   // for passthrough
   spi_item spi_passthrough_upstream_q[$];
+  spi_item spi_passthrough_intercept_upstream_q[$];
+
+  flash_status_t flash_status_q[$];
 
   `uvm_component_new
 
@@ -53,6 +58,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     spi_item item;
     forever begin
       upstream_spi_host_fifo.get(item);
+      `uvm_info(`gfn, $sformatf("upstream received host spi item:\n%0s", item.sprint()),
+                UVM_MEDIUM)
       case (`gmv(ral.control.mode))
         GenericMode: begin
           `DV_CHECK_EQ(item.item_type, SpiTransNormal)
@@ -64,16 +71,50 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         end
         PassthroughMode: begin
           `DV_CHECK_EQ(item.item_type, SpiFlashTrans)
-          if (is_opcode_passthrough(item.opcode)) begin
+          if (is_intercepted_status_cmd(item.opcode)) begin
+            check_internal_processed_status(item);
+            if (is_opcode_passthrough(item.opcode)) begin
+              spi_passthrough_intercept_upstream_q.push_back(item);
+            end
+          end else if (is_opcode_passthrough(item.opcode)) begin
             handle_addr_payload_swap(item);
             spi_passthrough_upstream_q.push_back(item);
           end
         end
-        default: `uvm_fatal(`gfn, $sformatf("Unexpected mode: %d", `gmv(ral.control.mode)))
+        default: `uvm_fatal(`gfn, $sformatf("Unexpected mode: %0d", `gmv(ral.control.mode)))
       endcase
-      `uvm_info(`gfn, $sformatf("upstream received host spi item:\n%0s", item.sprint()), UVM_MEDIUM)
+
+      latch_flash_status();
     end
   endtask
+
+  // update flash_status to the value of the last item
+  virtual function void latch_flash_status();
+    if (flash_status_q.size == 0) return;
+
+    void'(ral.flash_status.predict(.value(flash_status_q[$]), .kind(UVM_PREDICT_WRITE)));
+    `uvm_info(`gfn, $sformatf("flash status updated to: 0x%0h", flash_status_q[$]), UVM_MEDIUM)
+    flash_status_q.delete();
+  endfunction
+
+  virtual function bit is_intercepted_status_cmd(bit[7:0] opcode);
+    bit is_intercepted = `gmv(ral.intercept_en.status) &&
+        opcode inside {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3} &&
+        is_internal_recog_cmd(opcode);
+    bit valid_cmd = cfg.spi_host_agent_cfg.is_opcode_supported(opcode);
+    `uvm_info(`gfn, $sformatf("opcode status intercepted: 0x%0h, valid: %0d",
+              opcode, valid_cmd), UVM_MEDIUM)
+    return is_intercepted && valid_cmd;
+  endfunction
+
+  // if the cmd isn't in the first 11 slots, it won't be processed in spi_device
+  // interception or returning data from spi mem won't occur. It can only passthru to downstream
+  virtual function bit is_internal_recog_cmd(bit[7:0] opcode);
+    for (int i = 0; i < NumInternalRecognizedCmd; i++) begin
+      if (`gmv(ral.cmd_info[i].valid) == 1 && `gmv(ral.cmd_info[i].opcode) == opcode) return 1;
+    end
+    return 0;
+  endfunction
 
   virtual function bit is_opcode_passthrough(bit[7:0] opcode);
     int cmd_index = get_cmd_filter_index(opcode);
@@ -83,6 +124,24 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     `uvm_info(`gfn, $sformatf("opcode filter: %0d, valid: %0d", filter, valid_cmd), UVM_MEDIUM)
     return !filter && valid_cmd;
+  endfunction
+
+  virtual function void check_internal_processed_status(spi_item item);
+    int start_addr;
+    bit [23:0] status = `gmv(ral.flash_status); // 3 bytes
+    case (item.opcode)
+      READ_STATUS_1: start_addr = 0;
+      READ_STATUS_2: start_addr = 1;
+      READ_STATUS_3: start_addr = 2;
+      default: `uvm_error(`gfn, $sformatf("unexpected status opcode: 0x%0h", item.opcode))
+    endcase
+    foreach (item.payload_q[i]) begin
+      // status has 3 bytes, if read OOB, it will wrap
+      int offset = (start_addr + i) % 3;
+      `DV_CHECK_EQ(item.payload_q[i], status[offset * 8 +: 8],
+          $sformatf("status mismatch, offset %0d, act: 0x%0h, exp: 0x%0h",
+              offset, item.payload_q[i], status[offset * 8 +: 8]))
+    end
   endfunction
 
   virtual function void handle_addr_payload_swap(spi_item item);
@@ -151,12 +210,31 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
       // upstream item should be in the queue at the same time, add small delay
       #1ps;
-      `DV_CHECK_EQ(spi_passthrough_upstream_q.size, 1)
+      if (spi_passthrough_intercept_upstream_q.size > 0) begin
+        bit is_read_cmd; // this doesn't include state, jedec, sfdp
+        `DV_CHECK_EQ(spi_passthrough_intercept_upstream_q.size, 1)
+        `DV_CHECK_EQ(spi_passthrough_upstream_q.size, 0)
 
-      upstream_item = spi_passthrough_upstream_q.pop_front();
-      if (!downstream_item.compare(upstream_item)) begin
-        `uvm_error(`gfn, $sformatf("Compare item failed\ndownstream item:\n%s, upstream item:\n%s",
-              downstream_item.sprint(), upstream_item.sprint()))
+        upstream_item = spi_passthrough_intercept_upstream_q.pop_front();
+
+        if (is_read_cmd) begin
+          // TODO, add this later
+        end else begin
+          // compare opcode and address. data is ignored
+          `DV_CHECK_EQ(upstream_item.opcode, downstream_item.opcode)
+          `DV_CHECK_EQ(upstream_item.address_q.size, downstream_item.address_q.size)
+          foreach (upstream_item.address_q[i]) begin
+            `DV_CHECK_EQ(upstream_item.address_q[i], downstream_item.address_q[i])
+          end
+        end
+      end else begin
+        `DV_CHECK_EQ(spi_passthrough_upstream_q.size, 1)
+
+        upstream_item = spi_passthrough_upstream_q.pop_front();
+        if (!downstream_item.compare(upstream_item)) begin
+          `uvm_error(`gfn, $sformatf("Compare failed, downstream item:\n%s upstream item:\n%s",
+                downstream_item.sprint(), upstream_item.sprint()))
+        end
       end
     end
   endtask
@@ -204,7 +282,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
 
     // if incoming access is a write to a valid csr, then make updates right away
-    if (write && channel == AddrChannel) begin
+    // don't update flash_status predict value as it's updated at the end of spi transaction
+    if (write && channel == AddrChannel && csr.get_name != "flash_status") begin
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
@@ -218,6 +297,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       "rxf_ptr": begin
         if (write && channel == AddrChannel) begin
           update_rx_mem_fifo_and_wptr();
+        end
+      end
+      "flash_status": begin
+        if (write && channel == AddrChannel) begin
+          // store the item in a queue as flash_status is updated at the end of spi transaction
+          flash_status_q.push_back(item.a_data);
         end
       end
       "intr_test": begin
@@ -369,6 +454,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     tx_rptr_exp = ral.txf_ptr.rptr.get_reset();
     rx_wptr_exp = ral.rxf_ptr.wptr.get_reset();
     intr_exp    = ral.intr_state.get_reset();
+
+    tx_word_q.delete();
+    rx_word_q.delete();
+    spi_passthrough_upstream_q.delete();
+    spi_passthrough_intercept_upstream_q.delete();
+    flash_status_q.delete();
   endfunction
 
   function void check_phase(uvm_phase phase);
@@ -379,6 +470,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_CHECK_EQ(tx_word_q.size, 0)
     `DV_CHECK_EQ(rx_word_q.size, 0)
     `DV_CHECK_EQ(spi_passthrough_upstream_q.size, 0)
+    `DV_CHECK_EQ(flash_status_q.size, 0)
   endfunction
 
 endclass
