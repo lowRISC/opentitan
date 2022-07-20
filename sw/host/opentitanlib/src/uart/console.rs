@@ -87,10 +87,14 @@ impl UartConsole {
                     .map_or(Ok(()), |out| out.write_fmt(format_args!("[{}]", t)))?;
                 self.newline = false;
             }
-            stdout
-                .as_mut()
-                .map_or(Ok(()), |out| out.write_all(&buf[i..i + 1]))?;
             self.newline = buf[i] == b'\n';
+            stdout.as_mut().map_or(Ok(()), |out| {
+                out.write_all(if self.newline {
+                    b"\r\n"
+                } else {
+                    &buf[i..i + 1]
+                })
+            })?;
         }
         stdout.as_mut().map_or(Ok(()), |out| out.flush())?;
 
