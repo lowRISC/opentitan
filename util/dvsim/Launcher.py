@@ -268,6 +268,8 @@ class Launcher:
                 context=[],
             )
 
+        self.deploy.extract_runtimes(lines)
+
         if chk_failed or chk_passed:
             for cnt, line in enumerate(lines):
                 if chk_failed:
