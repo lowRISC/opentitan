@@ -410,6 +410,9 @@ jobs:
     displayName: Splicing bitstream with Vivado
   - template: ci/upload-artifacts-template.yml
     parameters:
+      unconditionalIncludePatterns:
+        - "/hw/top_earlgrey/rom.mmi"
+        - "/hw/top_earlgrey/otp.mmi"
       includePatterns:
         - "/hw/***"
   - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
