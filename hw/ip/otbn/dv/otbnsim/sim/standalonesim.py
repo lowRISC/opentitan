@@ -2,11 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+from itertools import cycle
 from typing import Optional, TextIO
 from .sim import OTBNSim
 
-_TEST_RND_DATA = \
-    0xAAAAAAAA_99999999_AAAAAAAA_99999999_AAAAAAAA_99999999_AAAAAAAA_99999999
+_TEST_RND_DATA = cycle([
+    0xAAAAAAAA_99999999_AAAAAAAA_99999999_AAAAAAAA_99999999_AAAAAAAA_99999999,
+    0xCCCCCCCC_BBBBBBBB_CCCCCCCC_BBBBBBBB_CCCCCCCC_BBBBBBBB_CCCCCCCC_BBBBBBBB,
+])
+
 
 # This is the default seed for URND PRNG. Note that the actualy URND value will
 # be random since we are modelling PRNG inside the URND register model.
@@ -32,7 +36,8 @@ class StandaloneSim(OTBNSim):
         while self.state.executing():
             # If there's a RND request, respond immediately
             if self.state.ext_regs.read('RND_REQ', True):
-                self.state.wsrs.RND.set_unsigned(_TEST_RND_DATA, False, False)
+                self.state.wsrs.RND.set_unsigned(next(_TEST_RND_DATA), False,
+                                                 False)
 
             self.step(verbose)
             insn_count += 1

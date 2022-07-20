@@ -122,7 +122,9 @@ module otbn_top_sim (
     .sideload_key_shares_valid_i ( 2'b11                      )
   );
 
-  localparam logic [WLEN-1:0] FixedEdnVal = {{4{64'hAAAA_AAAA_9999_9999}}};
+  // The values returned by the mock EDN must match those set in `standalonesim.py`.
+  localparam logic [1:0][WLEN-1:0] FixedEdnVals = {{4{64'hCCCC_CCCC_BBBB_BBBB}},
+                                                   {4{64'hAAAA_AAAA_9999_9999}}};
 
   edn_req_t rnd_req;
   edn_rsp_t rnd_rsp;
@@ -130,8 +132,8 @@ module otbn_top_sim (
   assign rnd_req.edn_req = edn_rnd_req;
 
   otbn_mock_edn #(
-    .Width       ( WLEN        ),
-    .FixedEdnVal ( FixedEdnVal )
+    .Width        ( WLEN         ),
+    .FixedEdnVals ( FixedEdnVals )
   ) u_mock_rnd_edn(
     .clk_i      ( IO_CLK       ),
     .rst_ni     ( IO_RST_N     ),
@@ -151,8 +153,8 @@ module otbn_top_sim (
   assign urnd_req.edn_req = edn_urnd_req;
 
   otbn_mock_edn #(
-    .Width       ( WLEN        ),
-    .FixedEdnVal ( FixedEdnVal )
+    .Width        ( WLEN         ),
+    .FixedEdnVals ( FixedEdnVals )
   ) u_mock_urnd_edn(
     .clk_i      ( IO_CLK       ),
     .rst_ni     ( IO_RST_N     ),
