@@ -12,21 +12,25 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
    push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)          m_rng_push_seq;
 
   task body();
-    bit [5:0]     err_code_test_bit;
-    string        path, path1, path2;
-    bit           value1, value2;
-    string        fifo_name, path_name;
-    int           first_index, last_index;
-    string        fifo_base_path;
-    string        path_exts [4] = {"push", "full", "pop", "not_empty"};
-    string        fifo_forced_paths [4];
-    bit           fifo_forced_values [4] = {1'b1, 1'b1, 1'b0, 1'b1};
-    string        fifo_err_path [2][string];
-    bit           fifo_err_value [2][string];
-    string        path_key;
-    string        reg_name, fld_name;
-    uvm_reg       csr;
-    uvm_reg_field fld;
+    bit [5:0]        err_code_test_bit;
+    string           path, path1, path2;
+    bit              value1, value2;
+    string           fifo_name, path_name;
+    int              first_index, last_index;
+    string           fifo_base_path;
+    string           path_exts [4] = {"push", "full", "pop", "not_empty"};
+    string           fifo_forced_paths [4];
+    bit              fifo_forced_values [4] = {1'b1, 1'b1, 1'b0, 1'b1};
+    string           fifo_err_path [2][string];
+    bit              fifo_err_value [2][string];
+    string           path_key;
+    string           reg_name, fld_name;
+    uvm_reg          csr;
+    uvm_reg_field    fld;
+    which_fifo_e     which_fifo;
+    which_fifo_err_e which_fifo_err;
+
+    super.body();
 
     // Turn off fatal alert check
     expect_fatal_alerts = 1'b1;
@@ -59,6 +63,21 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
       fifo_forced_paths[i] = cfg.entropy_src_path_vif.fifo_err_path(fifo_base_path, path_exts[i]);
     end
 
+    // convert which_err_code to which_fifo or which_fifo_err for fifo error cover group
+    case (cfg.which_err_code) inside
+      sfifo_esrng_err: which_fifo = sfifo_esrng;
+      sfifo_observe_err: which_fifo = sfifo_observe;
+      sfifo_esfinal_err: which_fifo = sfifo_esfinal;
+      fifo_write_err: which_fifo_err = write;
+      fifo_read_err: which_fifo_err = read;
+      fifo_state_err: which_fifo_err = state;
+      default: begin
+      end
+    endcase // case (cfg.which_err_code)
+
+    // Turn off assertions
+    cfg.entropy_src_assert_vif.assert_off_err();
+
     case (cfg.which_err_code) inside
       sfifo_esrng_err, sfifo_observe_err, sfifo_esfinal_err: begin
         path_name = cfg.which_fifo_err.name();
@@ -73,12 +92,11 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
         fld = csr.get_field_by_name(fld_name);
 
         if (cfg.which_err_code == sfifo_esrng_err && cfg.which_fifo_err == write) begin
-          // Turn off assertions
-          cfg.entropy_src_assert_if.assert_off_err();
           force_fifo_err_exception(fifo_forced_paths, fifo_forced_values, fld, 1'b1);
         end else begin
           force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
         end
+        cov_vif.cg_fifo_err_sample(cfg.which_fifo_err, which_fifo);
       end
       es_ack_sm_err, es_main_sm_err: begin
         path = cfg.entropy_src_path_vif.sm_err_path(fld_name.substr(first_index+1, last_index-1));
@@ -86,6 +104,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
         fld = csr.get_field_by_name(fld_name);
 
         force_path_err(path, 16'b0, fld, 1'b1);
+        cov_vif.cg_sm_err_sample(fld_name == "es_ack_sm_err", fld_name == "es_main_sm_err");
       end
       es_cntr_err: begin
         fld = csr.get_field_by_name(fld_name);
@@ -112,6 +131,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
             `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
           end
         endcase // case (cfg.which_cntr)
+        cov_vif.cg_cntr_err_sample(cfg.which_cntr, cfg.which_cntr_replicate, cfg.which_bin);
       end
       fifo_write_err, fifo_read_err, fifo_state_err: begin
         fifo_name = cfg.which_fifo.name();
@@ -124,13 +144,16 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
 
         fld = csr.get_field_by_name(fld_name);
 
+        foreach (path_exts[i]) begin
+          fifo_forced_paths[i] = cfg.entropy_src_path_vif.fifo_err_path("sfifo_esrng",
+                                                                        path_exts[i]);
+        end
         if (cfg.which_err_code == fifo_write_err && cfg.which_fifo == sfifo_esrng) begin
-          // Turn off assertions
-          cfg.entropy_src_assert_if.assert_off_err();
           force_fifo_err_exception(fifo_forced_paths, fifo_forced_values, fld, 1'b1);
         end else begin
           force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
         end
+        cov_vif.cg_fifo_err_sample(which_fifo_err, cfg.which_fifo);
       end
       sfifo_esrng_err_test ,sfifo_observe_err_test, sfifo_esfinal_err_test, es_ack_sm_err_test,
       es_main_sm_err_test, es_cntr_err_test, fifo_write_err_test, fifo_read_err_test,

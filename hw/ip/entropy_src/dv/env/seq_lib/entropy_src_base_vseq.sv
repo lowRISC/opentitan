@@ -99,7 +99,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // If the new configuration is intentionally trying to force bad mubi
     // configurations, disable the alerts before applying the bad configs
     if (newcfg.use_invalid_mubi) begin
-      cfg.entropy_src_assert_if.assert_off_alert();
+      cfg.entropy_src_assert_vif.assert_off_alert();
     end
 
     #50us;

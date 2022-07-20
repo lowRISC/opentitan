@@ -128,6 +128,8 @@ interface entropy_src_assert_if
     $assertoff(0, tb.dut.gen_alert_tx[0].u_prim_alert_sender.gen_async_assert.DiffEncoding_A);
     $assertoff(0, `CORE.u_sha3.FsmKnown_A);
     $assertoff(0, `CORE.u_sha3.MuxSelKnown_A);
+    $assertoff(0, `CORE.u_entropy_src_main_sm.u_state_regs_A);
+    $assertoff(0, `CORE.u_entropy_src_ack_sm.u_state_regs_A);
     $assertoff(0, `CORE.u_prim_fifo_sync_esfinal.DepthKnown_A);
     $assertoff(0, `CORE.u_prim_fifo_sync_esfinal.RvalidKnown_A);
     $assertoff(0, `CORE.u_prim_fifo_sync_esfinal.WreadyKnown_A);

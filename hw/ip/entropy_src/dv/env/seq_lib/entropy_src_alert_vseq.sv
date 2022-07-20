@@ -194,6 +194,8 @@ class entropy_src_alert_vseq extends entropy_src_base_vseq;
     ral.fw_ov_control.fw_ov_mode.set(cfg.dut_cfg.fw_read_enable);
     ral.fw_ov_control.fw_ov_entropy_insert.set(cfg.dut_cfg.fw_over_enable);
     csr_update(.csr(ral.fw_ov_control));
+    ral.fw_ov_sha3_start.fw_ov_insert_start.set(cfg.dut_cfg.fw_ov_insert_start);
+    csr_update(.csr(ral.fw_ov_sha3_start));
 
     cfg.clk_rst_vif.wait_clks(100);
 
@@ -201,35 +203,47 @@ class entropy_src_alert_vseq extends entropy_src_base_vseq;
     reg_name = "recov_alert_sts";
     fld_name = cfg.dut_cfg.which_invalid_mubi.name();
 
-    first_index = find_index("_", fld_name, "first");
+    if (fld_name == "invalid_alert_threshold") begin
+      // Test es_thresh_cfg_alert
+      test_es_thresh_cfg_alert();
+    end else begin
+      // Test invalid mubi alert
+      first_index = find_index("_", fld_name, "first");
 
-    csr = ral.get_reg_by_name(reg_name);
-    fld = csr.get_field_by_name({fld_name.substr(first_index+1, fld_name.len()-1), "_field_alert"});
+      csr = ral.get_reg_by_name(reg_name);
+      fld = csr.get_field_by_name({fld_name.substr(first_index+1, fld_name.len()-1),
+            "_field_alert"});
 
-    exp_recov_alert_sts = 32'b0;
-    exp_recov_alert_sts[fld.get_lsb_pos()] = 1;
-    csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
+      exp_recov_alert_sts = 32'b0;
+      exp_recov_alert_sts[fld.get_lsb_pos()] = 1;
+      csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
 
-    cfg.clk_rst_vif.wait_clks(100);
+      cfg.clk_rst_vif.wait_clks(100);
 
-    // write back valid values
-    csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4False));
-    csr_wr(.ptr(ral.entropy_control), .value(8'h55));
-    ral.conf.fips_enable.set(prim_mubi_pkg::MuBi4True);
-    ral.conf.entropy_data_reg_enable.set(prim_mubi_pkg::MuBi4True);
-    ral.conf.threshold_scope.set(prim_mubi_pkg::MuBi4False);
-    ral.conf.rng_bit_enable.set(prim_mubi_pkg::MuBi4False);
-    csr_update(.csr(ral.conf));
-    ral.fw_ov_control.fw_ov_mode.set(prim_mubi_pkg::MuBi4True);
-    ral.fw_ov_control.fw_ov_entropy_insert.set(prim_mubi_pkg::MuBi4True);
-    csr_update(.csr(ral.fw_ov_control));
+      // write back valid values
+      ral.module_enable.set(prim_mubi_pkg::MuBi4False);
+      csr_update(.csr(ral.module_enable));
+      ral.entropy_control.es_type.set(prim_mubi_pkg::MuBi4False);
+      ral.entropy_control.es_route.set(prim_mubi_pkg::MuBi4False);
+      csr_update(.csr(ral.entropy_control));
+      ral.fw_ov_control.fw_ov_mode.set(prim_mubi_pkg::MuBi4True);
+      ral.fw_ov_control.fw_ov_entropy_insert.set(prim_mubi_pkg::MuBi4True);
+      csr_update(.csr(ral.fw_ov_control));
+      ral.fw_ov_sha3_start.fw_ov_insert_start.set(prim_mubi_pkg::MuBi4True);
+      csr_update(.csr(ral.fw_ov_sha3_start));
+      ral.conf.fips_enable.set(prim_mubi_pkg::MuBi4True);
+      ral.conf.entropy_data_reg_enable.set(prim_mubi_pkg::MuBi4True);
+      ral.conf.threshold_scope.set(prim_mubi_pkg::MuBi4False);
+      ral.conf.rng_bit_enable.set(prim_mubi_pkg::MuBi4False);
+      csr_update(.csr(ral.conf));
 
-    // Clear recov_alert_sts register
-    csr_wr(.ptr(ral.recov_alert_sts), .value(0));
+      // Clear recov_alert_sts register
+      csr_wr(.ptr(ral.recov_alert_sts), .value(0));
 
-    // Check recov_alert_sts register
-    cfg.clk_rst_vif.wait_clks(100);
-    csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
+      // Check recov_alert_sts register
+      cfg.clk_rst_vif.wait_clks(100);
+      csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
+    end
 
     // Test es_bus_cmp alert
     test_es_bus_cmp_alert();
@@ -240,11 +254,9 @@ class entropy_src_alert_vseq extends entropy_src_base_vseq;
     // Test es_main_sm alert
     test_es_main_sm_alert();
 
-    // Test es_thresh_cfg_alert
-    test_es_thresh_cfg_alert();
-
     // Turn assertions back on
-    cfg.entropy_src_assert_if.assert_on_alert();
+    cfg.entropy_src_assert_vif.assert_on_alert();
+
   endtask : body
 
 endclass : entropy_src_alert_vseq

@@ -35,7 +35,7 @@ class entropy_src_dut_cfg extends uvm_object;
   uint          route_software_pct, type_bypass_pct;
 
   // Constraint knobs for Boolean fields in FW_OV_CONTROL register
-  uint          fw_read_pct, fw_over_pct;
+  uint          fw_read_pct, fw_over_pct, fw_ov_insert_start_pct;
 
   // Health test-related knobs
   // Real constraints on sigma ranges (floating point value)
@@ -66,7 +66,7 @@ class entropy_src_dut_cfg extends uvm_object;
 
   rand int                      observe_fifo_thresh;
 
-  rand prim_mubi_pkg::mubi4_t   fw_read_enable, fw_over_enable;
+  rand prim_mubi_pkg::mubi4_t   fw_read_enable, fw_over_enable, fw_ov_insert_start;
 
   // Note: These integer-valued fields are used to derive their real-valued counterparts.
   rand int unsigned adaptp_sigma_i, markov_sigma_i, bucket_sigma_i;
@@ -97,6 +97,10 @@ class entropy_src_dut_cfg extends uvm_object;
   constraint fw_over_enable_c {fw_over_enable dist {
       prim_mubi_pkg::MuBi4True  :/ fw_over_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - fw_over_pct) };}
+
+  constraint fw_ov_insert_start_c {fw_ov_insert_start dist {
+      prim_mubi_pkg::MuBi4True  :/ fw_ov_insert_start_pct,
+      prim_mubi_pkg::MuBi4False :/ (100 - fw_ov_insert_start_pct) };}
 
   constraint module_enable_c {module_enable dist {
       prim_mubi_pkg::MuBi4True  :/ module_enable_pct,
@@ -239,8 +243,11 @@ class entropy_src_dut_cfg extends uvm_object;
         invalid_rng_bit_enable: rng_bit_enable = invalid_mubi_val;
         invalid_fw_ov_mode: fw_read_enable = invalid_mubi_val;
         invalid_fw_ov_entropy_insert: fw_over_enable = invalid_mubi_val;
+        invalid_fw_ov_insert_start: fw_ov_insert_start = invalid_mubi_val;
         invalid_es_route: route_software = invalid_mubi_val;
         invalid_es_type: type_bypass = invalid_mubi_val;
+        invalid_alert_threshold: begin
+        end
         default: begin
           `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
         end

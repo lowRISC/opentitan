@@ -21,10 +21,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Configuration for DUT CSRs (held in a separate object for easy re-randomization)
   entropy_src_dut_cfg dut_cfg;
 
-  // handle to csrng assert interface
-  virtual entropy_src_assert_if entropy_src_assert_if;
-  // handle to edn path interface
-  virtual entropy_src_path_if entropy_src_path_vif;
+  // handle to entropy_src assert interface
+  virtual entropy_src_assert_if entropy_src_assert_vif;
+  // handle to entropy_src path interface
+  virtual entropy_src_path_if   entropy_src_path_vif;
   //
   // Variables for controlling test duration.  Depending on the test there are two options:
   // fixed duration in time or total number of seeds.
@@ -150,7 +150,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
     // get entropy_src assert interface handle
     if (!uvm_config_db#(virtual entropy_src_assert_if)::
-        get(null, "*.env" , "entropy_src_assert_if", entropy_src_assert_if)) begin
+        get(null, "*.env" , "entropy_src_assert_vif", entropy_src_assert_vif)) begin
       `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO ASSERT IF"))
     end
   endfunction

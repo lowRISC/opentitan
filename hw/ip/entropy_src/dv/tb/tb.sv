@@ -103,7 +103,7 @@ module tb;
         (null, "*.env.m_rng_agent*", "vif", rng_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))::
         set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
-    uvm_config_db#(virtual entropy_src_assert_if)::set(null, "*.env", "entropy_src_assert_if",
+    uvm_config_db#(virtual entropy_src_assert_if)::set(null, "*.env", "entropy_src_assert_vif",
         entropy_src_assert_if);
     uvm_config_db#(virtual entropy_src_path_if)::set(null, "*.env", "entropy_src_path_vif",
         entropy_src_path_if);
