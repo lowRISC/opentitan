@@ -284,7 +284,7 @@ If the DUT has a CPU for which a ROM firmware is developed (burnt-in during manu
 A top level testbench has been created with the DUT instantiated.
 The following interfaces are connected (as applicable): TileLink, clocks and resets, interrupts and alerts.
 Other interfaces may not be connected at this point (connecting these is part of SIM_TB_ENV_CREATED).
-Inputs for which interfaces have not yet been created are tied off to 0.
+Inputs for which interfaces have not yet been created are tied off to the default value.
 
 ### PRELIMINARY_ASSERTION_CHECKS_ADDED
 
@@ -352,7 +352,7 @@ The nightly regression should finish overnight so that the results are available
 
 ### FPV_REGRESSION_SETUP
 
-An FPV regression has been set up by adding the module to the `hw/formal/fpv_all` script.
+An FPV regression has been set up by adding the module to the `hw/top_earlgrey/formal/top_earlgrey_fpv_cfgs.hjson` file.
 
 ### SIM_COVERAGE_MODEL_ADDED
 
