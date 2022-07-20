@@ -143,7 +143,7 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
 
         if (cfg.which_fatal_err == sfifo_esrng_error && cfg.which_fifo_err == write) begin
           //Turn off assertions
-          cfg.entropy_src_assert_if.assert_off_err();
+          cfg.entropy_src_assert_vif.assert_off_err();
           force_fifo_err_exception(fifo_forced_paths, fifo_forced_values,
                                    ral.intr_state.es_fatal_err, 1'b1);
         end else begin
