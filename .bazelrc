@@ -35,3 +35,30 @@ coverage --combined_report=lcov --instrument_test_targets --experimental_cc_cove
 # 1 test per 4 cores to avoid verilator performance falloff and timeouts we'd
 # otherwise see on machines with fewer than 40 cores.
 test --local_test_jobs=HOST_CPUS*0.25
+
+# AddressSanitizer (ASan) catches runtime out-of-bounds accesses to globals, the
+# stack, and (less importantly for OpenTitan) the heap. ASan instruments
+# programs at compile time and also requires a runtime library.
+#
+# ASan documentation: https://clang.llvm.org/docs/AddressSanitizer.html
+#
+# Enable ASan with --config=asan.
+build:asan --copt -fsanitize=address
+build:asan --copt -g
+build:asan --strip=never
+build:asan --copt -fno-omit-frame-pointer
+build:asan --linkopt -fsanitize=address
+
+# UndefinedBehaviorSanitizer (UBSan) catches C/C++ undefined behavior at
+# runtime, e.g. signed integer overflow. UBSan instruments programs at compile
+# time and also requires a runtime library.
+#
+# UBSan documentation:
+# https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+#
+# Enable UBSan with --config=ubsan.
+build:ubsan --copt -fsanitize=undefined
+build:ubsan --copt -g
+build:ubsan --strip=never
+build:ubsan --copt -fno-omit-frame-pointer
+build:ubsan --linkopt -fsanitize=undefined
