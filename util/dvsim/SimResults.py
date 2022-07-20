@@ -106,6 +106,10 @@ class SimResults:
             row.passing += 1
         row.total += 1
 
+        if item.job_runtime.time > row.job_runtime.time:
+            row.job_runtime = item.job_runtime
+            row.simulated_time = item.simulated_time
+
     def _bucketize(self, fail_msg):
         bucket = fail_msg
         # Remove stuff.

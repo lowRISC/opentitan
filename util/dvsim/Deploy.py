@@ -9,8 +9,10 @@ import shlex
 from pathlib import Path
 
 from LauncherFactory import get_launcher
-from sim_utils import get_cov_summary_table
+from sim_utils import get_cov_summary_table, get_job_runtime, get_simulated_time
 from tabulate import tabulate
+from Testplan import JobTime
+from typing import List
 from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards,
                    rm_path, subst_wildcards)
 
@@ -75,6 +77,8 @@ class Deploy():
 
         # Launcher instance created later using create_launcher() method.
         self.launcher = None
+
+        self.job_runtime = JobTime()
 
     def _define_attrs(self):
         """Defines the attributes this instance needs to have.
@@ -283,6 +287,16 @@ class Deploy():
         """Returns the timeout in minutes."""
         return 0
 
+    def extract_runtimes(self, log_text: List):
+        """Input the logfile in lines and extract the job_runtime."""
+        try:
+            self.job_runtime.time, self.job_runtime.unit = get_job_runtime(
+                log_text, self.sim_cfg.tool)
+        except NotImplementedError:
+            log.debug("Using dvsim default runtime due to unsupported tool: " + self.sim_cfg.tool)
+        except SyntaxError:
+            log.debug("Parsing job runtime has syntax error with " + self.sim_cfg.tool)
+
     def create_launcher(self):
         """Creates the launcher instance.
 
@@ -431,6 +445,7 @@ class RunTest(Deploy):
         self.test_obj = test
         self.index = index
         self.seed = RunTest.get_seed()
+        self.simulated_time = JobTime()
         super().__init__(sim_cfg)
 
         if build_job is not None:
@@ -515,6 +530,17 @@ class RunTest(Deploy):
     def get_timeout_mins(self):
         """Returns the timeout in minutes."""
         return self.run_timeout_mins
+
+    def extract_runtimes(self, log_text: List):
+        """Input the logfile in lines and extract the job_runtime and simulated_time."""
+        super().extract_runtimes(log_text)
+        try:
+            self.simulated_time.time, self.simulated_time.unit = get_simulated_time(
+                log_text, self.sim_cfg.tool)
+        except NotImplementedError:
+            log.debug("Parsing simulated time with unsupported tool: " + self.sim_cfg.tool)
+        except SyntaxError:
+            log.debug("Parsing job simulated time has syntax error with " + self.sim_cfg.tool)
 
 
 class CovUnr(Deploy):
