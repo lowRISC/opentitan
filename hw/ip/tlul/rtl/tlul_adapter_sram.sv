@@ -24,7 +24,9 @@ module tlul_adapter_sram
   parameter int SramAw            = 12,
   parameter int SramDw            = 32, // Must be multiple of the TL width
   parameter int Outstanding       = 1,  // Only one request is accepted
-  parameter bit ByteAccess        = 1,  // 1: true, 0: false
+  parameter bit ByteAccess        = 1,  // 1: Enables sub-word write transactions. Note that this
+                                        //    results in read-modify-write operations for integrity
+                                        //    re-generation if EnableDataIntgPt is set to 1.
   parameter bit ErrOnWrite        = 0,  // 1: Writes not allowed, automatically error
   parameter bit ErrOnRead         = 0,  // 1: Reads not allowed, automatically error
   parameter bit CmdIntgCheck      = 0,  // 1: Enable command integrity check
@@ -99,7 +101,7 @@ module tlul_adapter_sram
   // or other downstream effects
   assign intg_error_o = intg_error | rsp_fifo_error | intg_error_q;
 
-  // wr_attr_error: Check if the request size,mask are permitted.
+  // wr_attr_error: Check if the request size, mask are permitted.
   //    Basic check of size, mask, addr align is done in tlul_err module.
   //    Here it checks any partial write if ByteAccess isn't allowed.
   assign wr_attr_error = (tl_i.a_opcode == PutFullData || tl_i.a_opcode == PutPartialData)
