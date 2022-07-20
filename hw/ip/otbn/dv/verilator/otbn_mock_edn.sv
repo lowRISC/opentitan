@@ -10,7 +10,7 @@ module otbn_mock_edn
   import edn_pkg::*;
 #(
   parameter int Width = 256,
-  parameter logic [Width-1:0] FixedEdnVal = '0,
+  parameter logic [1:0][Width-1:0] FixedEdnVals = '0,
   parameter int Delay = 16,
 
   localparam int DelayWidth = $clog2(Delay)
@@ -30,19 +30,30 @@ module otbn_mock_edn
   assign edn_rsp_o.edn_bus  = edn_req_counter[1] ? 32'hAAAA_AAAA : 32'h9999_9999;
 
   parameter int MaxDelay = Delay - 1;
+  logic                  edn_data_sel_q, edn_data_sel_d;
   logic [DelayWidth-1:0] edn_req_counter;
   logic                  edn_req_active;
   logic                  edn_req_complete;
 
   assign edn_req_complete = edn_req_counter == MaxDelay[DelayWidth-1:0];
   assign edn_ack_o        = edn_req_complete;
-  assign edn_data_o       = edn_req_complete ? FixedEdnVal : '0;
+  always_comb begin
+    edn_data_o     = '0;
+    edn_data_sel_d = edn_data_sel_q;
+    if (edn_req_complete) begin
+      edn_data_o      = FixedEdnVals[edn_data_sel_q];
+      edn_data_sel_d ^= 1'b1; // flip selection of fixed value
+    end
+  end
 
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      edn_data_sel_q  <= 1'b0;
       edn_req_counter <= '0;
       edn_req_active  <= 0;
     end else begin
+      edn_data_sel_q <= edn_data_sel_d;
+
       if (edn_req_active) begin
         edn_req_counter <= edn_req_counter + 1;
       end
