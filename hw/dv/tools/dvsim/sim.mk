@@ -60,31 +60,29 @@ ifneq (${sw_images},)
 	# `sw_images` is a space-separated list of tests to be built into an image.
 	# Optionally, each item in the list can have additional metadata / flags using
 	# the delimiter ':'. The format is as follows:
-	# <path-to-sw-test>:<index>:<flag1>:<flag2>
+	# <Bazel label>:<index>:<flag1>:<flag2>
 	#
-	# If no delimiter is detected, then the full string is considered to be the
-	# <path-to-sw-test>. If 1 delimiter is detected, then it must be <path-to-sw-
-	# test> followed by <index>. The <flag> is considered optional.
+	# If one delimiter is detected, then the full string is considered to be the
+	# <Bazel label>. If two delimiters are detected, then it must be <Bazel label>
+	# followed by <index>. The <flag> is considered optional.
 	set -e; \
-	mkdir -p ${sw_build_dir}; \
 	for sw_image in ${sw_images}; do \
-		image=`echo $$sw_image | cut -d: -f 1`; \
-		index=`echo $$sw_image | cut -d: -f 2`; \
-		flags=(`echo $$sw_image | cut -d: -f 3- --output-delimiter " "`); \
-		target_dir=`dirname ${sw_build_dir}/build-bin/$$image`; \
-		mkdir -p $$target_dir; \
-		cd ${proj_root}; \
-		if [[ -z $$image ]]; then \
+		if [[ -z $$sw_image ]]; then \
 			echo "ERROR: SW image \"$$sw_image\" is malformed."; \
-			echo "Expected format: path-to-sw-test:index:optional-flags."; \
+			echo "Expected format: <Bazel label>:<index>:<optional-flags>."; \
 			exit 1; \
 		fi; \
+		prebuilt_path=`echo $$sw_image | cut -d: -f 1`; \
+		bazel_label=`echo $$sw_image | cut -d: -f 1-2`; \
+		bazel_target=`echo $$sw_image | cut -d: -f 2`; \
+		index=`echo $$sw_image | cut -d: -f 3`; \
+		flags=(`echo $$sw_image | cut -d: -f 4- --output-delimiter " "`); \
+		cd ${proj_root}; \
 		if [[ $${flags[@]} =~ "prebuilt" ]]; then \
-			echo "SW image \"$$image\" is prebuilt - copying sources."; \
-			cp ${proj_root}/$$image* $$target_dir/.; \
+			echo "SW image \"$$bazel_label\" is prebuilt - copying sources."; \
+			cp ${proj_root}/$${prebuilt_path} $${run_dir}/`basename $${prebuilt_path}`; \
 		else \
-			echo "Building SW image \"$$image\"."; \
-			bazel_label="//`dirname $${image}`:`basename $${image}`"; \
+			echo "Building SW image \"$$bazel_label\"."; \
 			if [[ $$index == "1" ]]; then \
 				bazel_label+="_sim_dv"; \
 			fi; \
@@ -94,13 +92,14 @@ ifneq (${sw_images},)
 				bazel_cmd="./bazelisk.sh"; \
 			else \
 				echo "Building \"$${bazel_label}\" on air-gapped machine."; \
-				bazel_opts+="${sw_build_opts} --distdir=$${BAZEL_DISTDIR} --repository_cache=$${BAZEL_CACHE}"; \
+				bazel_opts+=" --distdir=$${BAZEL_DISTDIR} --repository_cache=$${BAZEL_CACHE}"; \
 				bazel_cmd="bazel"; \
 			fi; \
+			echo "Building with command: $${bazel_cmd} build $${bazel_opts} $${bazel_label}"; \
 			$${bazel_cmd} build $${bazel_opts} $${bazel_label}; \
 			find -L $$($${bazel_cmd} info output_path)/ \
-				-type f -name "$$(basename $${image})*" | \
-				xargs -I % cp -f % $${target_dir}; \
+				-type f -name "$${bazel_target}*" | \
+				xargs -I % sh -c 'cp -f % $${run_dir}/$$(basename %)'; \
 		fi; \
 	done;
 endif
