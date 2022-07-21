@@ -342,7 +342,8 @@ module otbn
     .Outstanding     (1),
     .ByteAccess      (0),
     .ErrOnRead       (0),
-    .EnableDataIntgPt(1)
+    .EnableDataIntgPt(1),
+    .SecFifoPtr      (1)  // SEC_CM: TLUL_FIFO.CTR.REDUN
   ) u_tlul_adapter_sram_imem (
     .clk_i,
     .rst_ni      (rst_n),
@@ -578,7 +579,8 @@ module otbn
     .Outstanding     (1),
     .ByteAccess      (0),
     .ErrOnRead       (0),
-    .EnableDataIntgPt(1)
+    .EnableDataIntgPt(1),
+    .SecFifoPtr      (1)  // SEC_CM: TLUL_FIFO.CTR.REDUN
   ) u_tlul_adapter_sram_dmem (
     .clk_i,
     .rst_ni      (rst_n),
@@ -734,6 +736,7 @@ module otbn
   );
 
   // SEC_CM: BUS.INTEGRITY
+  // SEC_CM: TLUL_FIFO.CTR.REDUN
   logic bus_intg_violation;
   assign bus_intg_violation = (imem_bus_intg_violation | dmem_bus_intg_violation |
                                reg_bus_intg_violation);
@@ -1215,5 +1218,19 @@ module otbn
       alert_tx_o[AlertFatal])
   `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RfBignumOnehotCheck_A,
       u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.u_prim_onehot_check,
+      alert_tx_o[AlertFatal])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DmemFifoWptrCheck_A,
+      u_tlul_adapter_sram_dmem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+      alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DmemFifoRptrCheck_A,
+      u_tlul_adapter_sram_dmem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+      alert_tx_o[AlertFatal])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ImemFifoWptrCheck_A,
+      u_tlul_adapter_sram_imem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+      alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ImemFifoRptrCheck_A,
+      u_tlul_adapter_sram_imem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
       alert_tx_o[AlertFatal])
 endmodule

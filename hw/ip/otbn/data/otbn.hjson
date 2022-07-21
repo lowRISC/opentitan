@@ -276,6 +276,9 @@
     { name: "KEY.SIDELOAD"
       desc: "Keys can be sideloaded without exposing them to the CPU"
     }
+    { name: "TLUL_FIFO.CTR.REDUN",
+      desc: "The TL-UL response FIFO pointers are implemented with duplicate counters."
+    }
   ]
 
   regwidth: "32"
