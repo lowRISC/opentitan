@@ -45,20 +45,46 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   // setup basic csrng features
   virtual task csrng_init();
-    state_e   state;
-    string    path;
-
-    // Force into random state while disabled
-    if (cfg.force_state) begin
-      path = "tb.dut.u_csrng_core.u_csrng_main_sm.state_d";
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(state, !(state inside { Error });)
-      `DV_CHECK(uvm_hdl_deposit(path, state));
-    end
+    main_state_e   state_main, state_main_idle, state_main_error;
+    cmd_state_e    state_cmd;
+    string         path, base_cmd_state_path,
+                   path_main_state_d, path_main_state_q, path_main_escalate,
+                   path_cmd_state_d[NUM_HW_APPS + 1], path_cmd_state_q[NUM_HW_APPS + 1];
 
     // In cases where we are testing alert scenarios using invalid register configurations
     // we must first disable the DUT assertions to allow the environment to catch the alerts
     if (cfg.use_invalid_mubi) begin
       cfg.csrng_assert_vif.assert_off_alert();
+    end
+
+    if (cfg.force_state) begin
+      path_main_state_d  = "tb.dut.u_csrng_core.u_csrng_main_sm.state_d";
+      path_main_state_q  = "tb.dut.u_csrng_core.u_csrng_main_sm.state_q";
+      path_main_escalate = "tb.dut.u_csrng_core.u_csrng_main_sm.local_escalate_i";
+      state_main_idle    = MainIdle;
+      state_main_error   = MainError;
+      for (uint i = 0; i < (NUM_HW_APPS + 1); i++) begin
+        base_cmd_state_path = $sformatf("tb.dut.u_csrng_core.gen_cmd_stage[%0d].", i);
+        path_cmd_state_d[i]  = {base_cmd_state_path, "u_csrng_cmd_stage.state_d"};
+        path_cmd_state_q[i]  = {base_cmd_state_path, "u_csrng_cmd_stage.state_q"};
+      end
+
+      // Force into random state, pull reset to verify state->Idle transitions due to reset.
+      `DV_CHECK_STD_RANDOMIZE_FATAL(state_main)
+      `DV_CHECK(uvm_hdl_deposit(path_main_state_d, state_main));
+      for (uint i = 0; i < (NUM_HW_APPS + 1); i++) begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(state_cmd)
+        `DV_CHECK(uvm_hdl_deposit(path_cmd_state_d[i], state_cmd));
+      end
+      cfg.clk_rst_vif.wait_n_clks(2);
+      cfg.clk_rst_vif.apply_reset(.reset_width_clks(1), .post_reset_dly_clks(1));
+      // Force into random state, while !enabled to verify state->Idle transitions due to !enabled.
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(state_main, !(state_main inside { MainIdle, MainError });)
+      `DV_CHECK(uvm_hdl_deposit(path_main_state_d, state_main));
+      for (uint i = 0; i < (NUM_HW_APPS + 1); i++) begin
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(state_cmd, !(state_cmd inside { CmdIdle, CmdError });)
+        `DV_CHECK(uvm_hdl_deposit(path_cmd_state_d[i], state_cmd));
+      end
     end
 
     // Enables
@@ -67,6 +93,61 @@ class csrng_base_vseq extends cip_base_vseq #(
     ral.ctrl.sw_app_enable.set(cfg.sw_app_enable);
     ral.ctrl.read_int_state.set(cfg.read_int_state);
     csr_update(.csr(ral.ctrl));
+
+    if (cfg.force_state) begin
+      // Force all module outputs to 0 so rest of block not affected by forces.
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.acmd_accept_o";
+      `DV_CHECK(uvm_hdl_force(path, 1'b0));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.cmd_entropy_req_o";
+      `DV_CHECK(uvm_hdl_force(path, 1'b0));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.instant_req_o";
+      `DV_CHECK(uvm_hdl_force(path, 1'b0));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.reseed_req_o";
+      `DV_CHECK(uvm_hdl_force(path, 1'b0));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.generate_req_o";
+      `DV_CHECK(uvm_hdl_force(path, 1'b0));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.update_req_o";
+      `DV_CHECK(uvm_hdl_force(path, 1'b0));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.uninstant_req_o";
+      `DV_CHECK(uvm_hdl_force(path, 1'b0));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.clr_adata_packer_o";
+      `DV_CHECK(uvm_hdl_force(path, 1'b0));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.main_sm_alert_o";
+      `DV_CHECK(uvm_hdl_force(path, 1'b0));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.main_sm_err_o";
+      `DV_CHECK(uvm_hdl_force(path, 1'b0));
+
+      // Force into random state, force Error state to verify state->Error transitions.
+      `DV_CHECK(uvm_hdl_deposit(path_main_state_d, state_main));
+      cfg.clk_rst_vif.wait_n_clks(2);
+      `DV_CHECK(uvm_hdl_force(path_main_escalate, 1'b1));
+      cfg.clk_rst_vif.wait_clks(1);
+      `DV_CHECK(uvm_hdl_release(path_main_escalate));
+      cfg.clk_rst_vif.wait_clks(1);
+      // Force Idle state and release all module outputs so testcase can run normally.
+      `DV_CHECK(uvm_hdl_deposit(path_main_state_d, state_main_idle));
+
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.acmd_accept_o";
+      `DV_CHECK(uvm_hdl_release(path));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.cmd_entropy_req_o";
+      `DV_CHECK(uvm_hdl_release(path));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.instant_req_o";
+      `DV_CHECK(uvm_hdl_release(path));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.reseed_req_o";
+      `DV_CHECK(uvm_hdl_release(path));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.generate_req_o";
+      `DV_CHECK(uvm_hdl_release(path));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.update_req_o";
+      `DV_CHECK(uvm_hdl_release(path));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.uninstant_req_o";
+      `DV_CHECK(uvm_hdl_release(path));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.clr_adata_packer_o";
+      `DV_CHECK(uvm_hdl_release(path));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.main_sm_alert_o";
+      `DV_CHECK(uvm_hdl_release(path));
+      path = "tb.dut.u_csrng_core.u_csrng_main_sm.main_sm_err_o";
+      `DV_CHECK(uvm_hdl_release(path));
+    end
   endtask
 
   task wait_cmd_req_done();

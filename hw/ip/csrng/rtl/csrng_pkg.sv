@@ -13,7 +13,6 @@ package csrng_pkg;
   parameter int unsigned   CSRNG_CMD_WIDTH = 32;
   parameter int unsigned   FIPS_GENBITS_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH +
                            GENBITS_BUS_WIDTH;
-  parameter int unsigned   StateWidth = 8;
 
   // instantiation interface
   typedef struct packed {
@@ -45,6 +44,7 @@ package csrng_pkg;
     GENU = 3'h7
   } acmd_e;
 
+// Main state machine:
 // Encoding generated with:
 // $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \
 //      -s 1300573258 --language=sv
@@ -65,9 +65,10 @@ package csrng_pkg;
 // Maximum Hamming distance: 7
 // Minimum Hamming weight: 1
 // Maximum Hamming weight: 7
-//
-  typedef    enum logic [StateWidth-1:0] {
-    Idle          = 8'b01001110, // idle
+
+  parameter int unsigned   MainStateWidth = 8;
+  typedef    enum logic [MainStateWidth-1:0] {
+    MainIdle      = 8'b01001110, // idle
     ParseCmd      = 8'b10111011, // parse the cmd
     InstantPrep   = 8'b11000001, // instantiate prep
     InstantReq    = 8'b01010100, // instantiate request (takes adata or entropy)
@@ -81,8 +82,44 @@ package csrng_pkg;
     UninstantReq  = 8'b01100011, // uninstantiate request
     ClrAData      = 8'b00000010, // clear out the additional data packer fifo
     CmdCompWait   = 8'b10111100, // wait for command to complete
-    Error         = 8'b01111000  // error state, results in fatal alert
-  } state_e;
+    MainError     = 8'b01111000  // error state, results in fatal alert
+  } main_state_e;
+
+// State machine to process command
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 8 \
+//      -s 170131814 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||| (28.89%)
+//  4: |||||||||||||||||||| (35.56%)
+//  5: |||||||||||| (22.22%)
+//  6: ||||| (8.89%)
+//  7: | (2.22%)
+//  8: | (2.22%)
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 8
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 7
+
+  parameter int unsigned   CmdStateWidth = 8;
+  typedef    enum logic [CmdStateWidth-1:0] {
+    CmdIdle   = 8'b00011011, // idle
+    ArbGnt    = 8'b11110101, // general arbiter request
+    SendSOP   = 8'b00011100, // send sop (start of packet)
+    SendMOP   = 8'b00000001, // send mop (middle of packet)
+    GenCmdChk = 8'b01010110, // gen cmd check
+    CmdAck    = 8'b10001101, // wait for command ack
+    GenReq    = 8'b11000000, // process gen requests
+    GenArbGnt = 8'b11111110, // generate subsequent arb request
+    GenSOP    = 8'b10110010, // generate subsequent request
+    CmdError  = 8'b10111001  // illegal state reached and hang
+  } cmd_state_e;
 
   parameter int CsKeymgrDivWidth = 384;
   typedef logic [CsKeymgrDivWidth-1:0] cs_keymgr_div_t;

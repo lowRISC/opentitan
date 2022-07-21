@@ -34,8 +34,8 @@ module csrng_main_sm import csrng_pkg::*; #(
   output logic                  main_sm_err_o
 );
 
-  state_e state_d, state_q;
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Idle)
+  main_state_e state_d, state_q;
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, main_state_e, MainIdle)
 
   assign main_sm_state_o = {state_q};
 
@@ -52,7 +52,10 @@ module csrng_main_sm import csrng_pkg::*; #(
     main_sm_alert_o = 1'b0;
     main_sm_err_o = 1'b0;
     unique case (state_q)
-      Idle: begin
+      MainIdle: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (enable_i) begin
           if (ctr_drbg_cmd_req_rdy_i) begin
             // signal the arbiter to grant this request
@@ -64,8 +67,11 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       ParseCmd: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           if (ctr_drbg_cmd_req_rdy_i) begin
             if (acmd_i == INS) begin
@@ -96,8 +102,11 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       InstantPrep: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           if (flag0_i) begin
             // assumes all adata is present now
@@ -112,16 +121,22 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       InstantReq: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           instant_req_o = 1'b1;
           state_d = ClrAData;
         end
       end
       ReseedPrep: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           if (flag0_i) begin
             // assumes all adata is present now
@@ -136,86 +151,110 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       ReseedReq: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           reseed_req_o = 1'b1;
           state_d = ClrAData;
         end
       end
       GeneratePrep: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           // assumes all adata is present now
           state_d = GenerateReq;
         end
       end
       GenerateReq: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           generate_req_o = 1'b1;
           state_d = ClrAData;
         end
       end
       UpdatePrep: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           // assumes all adata is present now
           state_d = UpdateReq;
         end
       end
       UpdateReq: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           update_req_o = 1'b1;
           state_d = ClrAData;
         end
       end
       UninstantPrep: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           // assumes all adata is present now
           state_d = UninstantReq;
         end
       end
       UninstantReq: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           uninstant_req_o = 1'b1;
           state_d = ClrAData;
         end
       end
       ClrAData: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           clr_adata_packer_o = 1'b1;
           state_d = CmdCompWait;
         end
       end
       CmdCompWait: begin
+        if (local_escalate_i) begin
+          state_d = MainError;
+        end else
         if (!enable_i) begin
-          state_d = Idle;
+          state_d = MainIdle;
         end else begin
           if (cmd_complete_i) begin
-            state_d = Idle;
+            state_d = MainIdle;
           end
         end
       end
-      Error: begin
+      MainError: begin
         main_sm_err_o = 1'b1;
       end
-      default: state_d = Error;
+      default: state_d = MainError;
     endcase
-    if (local_escalate_i) begin
-      state_d = Error;
-    end
   end
 
 endmodule
