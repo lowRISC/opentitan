@@ -112,6 +112,12 @@ module flash_phy_rd
   logic [NumBuf-1:0] buf_match;
   logic no_match;
 
+  // This net tracks which buffers have a dependency to items currently in the rsp_order_fifo
+  logic [NumBuf-1:0] buf_dependency;
+
+  // all buffers have a current dependency to an entry in rsp_order_fifo
+  logic all_buf_dependency;
+
   // There is a stateful operation aimed at valid buffer, that buffer must be flushed
   logic [NumBuf-1:0] data_hazard;
 
@@ -153,7 +159,12 @@ module flash_phy_rd
     .clk_i,
     .rst_ni,
     .req_chk_i(1'b0), // Valid is allowed to drop without ready.
-    .req_i(|buf_invalid_alloc ? '0 : {NumBuf{1'b1}}),
+    // If there is an invalid buffer, always allocate from that one first
+    // If all buffers have a dependency to an in-flight transaction, do not
+    // allocate and wait for the dependencies to end.
+    // If none of the above are true, THEN pick a buffer from the current valid
+    // buffers that DO NOT have an ongoing dependency.
+    .req_i(|buf_invalid_alloc | all_buf_dependency ? '0 : buf_valid & ~buf_dependency),
     .data_i(dummy_data),
     .gnt_o(buf_valid_alloc),
     .idx_o(),
@@ -276,6 +287,80 @@ module flash_phy_rd
   // if buffer matched, that is the return source
   assign rsp_fifo_wdata.buf_sel = |alloc ? buf_alloc : buf_match;
 
+  logic rsp_order_fifo_wr;
+  assign rsp_order_fifo_wr = req_i && rdy_o;
+
+  // The following logic determines the dependency between entries in the read buffer
+  // with items currently queued up for response.
+  localparam int NumBufWidth = $clog2(NumBuf);
+
+   // also need to add an assertion to check for overflows
+  localparam int BufDepCntWidth = $clog2(RspOrderDepth + 1);
+  logic [NumBuf-1:0][BufDepCntWidth-1:0] buf_dependency_cnt;
+
+  // The logic below can be more simplified in an always_comb loop,
+  // but the `i` assignment causes some lint tools to be mildly unhappy.
+  // This separarate creation seems to be more tool friendly.
+  logic [NumBuf-1:0][NumBufWidth-1:0] buf_mux_cnt;
+  for(genvar i = 0; i < NumBuf; i++) begin : gen_cnt_assign
+     assign buf_mux_cnt[i] = i;
+  end
+
+  // the dep buf select needs to be different between increment and decrement
+  // When incrementing, we are looking at the wdata of the rsp_order_fifo
+  // When decrementing, we are looking at the rdata of the rsp_order_fifo
+  logic [NumBufWidth-1:0] incr_buf_sel;
+  logic [NumBufWidth-1:0] decr_buf_sel;
+  always_comb begin
+    incr_buf_sel = '0;
+    decr_buf_sel = '0;
+    for (int unsigned i = 0; i < NumBuf; i++) begin
+      if (rsp_fifo_wdata.buf_sel[i]) begin
+        incr_buf_sel = buf_mux_cnt[i];
+      end
+      if (rsp_fifo_rdata.buf_sel[i]) begin
+        decr_buf_sel = buf_mux_cnt[i];
+      end
+    end
+  end // always_comb
+
+  logic [BufDepCntWidth-1:0] curr_incr_cnt, curr_decr_cnt;
+  assign curr_incr_cnt = buf_en_q & buf_dependency_cnt[incr_buf_sel];
+  assign curr_decr_cnt = buf_en_q & buf_dependency_cnt[decr_buf_sel];
+
+  logic cnt_incr, cnt_decr;
+  assign cnt_incr = rsp_order_fifo_wr & (curr_incr_cnt < RspOrderDepth);
+  assign cnt_decr = (rsp_fifo_vld & data_valid_o) & (curr_decr_cnt > '0);
+
+  logic fin_cnt_incr, fin_cnt_decr;
+  assign fin_cnt_incr = (incr_buf_sel == decr_buf_sel) ? cnt_incr && !cnt_decr : cnt_incr;
+  assign fin_cnt_decr = (incr_buf_sel == decr_buf_sel) ? !cnt_incr && cnt_decr : cnt_decr;
+
+  // This tells us which buffer currently has a dependency to an item in the rsp_order_fifo
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      buf_dependency_cnt <= '0;
+    end else begin
+       if (fin_cnt_incr) begin
+          buf_dependency_cnt[incr_buf_sel] <= curr_incr_cnt + 1'b1;
+       end
+       if (fin_cnt_decr) begin
+          buf_dependency_cnt[decr_buf_sel] <= curr_decr_cnt - 1'b1;
+       end
+    end
+  end
+
+  // per buffer dependency determination
+  always_comb begin
+    buf_dependency = '0;
+    for (int i = 0; i < NumBuf; i++) begin
+      buf_dependency[i] = |buf_dependency_cnt[i];
+    end
+  end
+
+  // all buffer entries currently have a dependency
+  assign all_buf_dependency = &buf_dependency;
+
   // If width is the same, word_sel is unused
   if (WidthMultiple == 1) begin : gen_single_word_sel
     assign rsp_fifo_wdata.word_sel = '0;
@@ -298,7 +383,7 @@ module flash_phy_rd
     .clk_i,
     .rst_ni,
     .clr_i   (1'b0),
-    .wvalid_i(req_i && rdy_o),
+    .wvalid_i(rsp_order_fifo_wr),
     .wready_o(rsp_fifo_rdy),
     .wdata_i (rsp_fifo_wdata),
     .depth_o (),
@@ -339,9 +424,12 @@ module flash_phy_rd
   logic rd_stages_rdy;
   assign rd_stages_rdy = rsp_fifo_rdy & scramble_stage_rdy;
 
-  // if no buffers matched, accept only if flash is ready and there is space
-  // if buffer is matched, accept as long as there is space in the rsp fifo
-  assign rdy_o = no_match ? ack_i & flash_rdy & rd_stages_rdy : rd_stages_rdy;
+  // If no buffers matched, accept only if flash is ready and there is space
+  // If buffer is matched, accept as long as there is space in the rsp fifo
+  // If all buffers are currently allocated or have a dependency, wait until
+  // at least 1 dependency has cleared.
+  assign rdy_o = (no_match ? ack_i & flash_rdy & rd_stages_rdy : rd_stages_rdy) &
+                 ~all_buf_dependency;
 
   // issue a transaction to flash only if there is space in read stages,
   // there is no buffer match and flash is not currently busy.
@@ -684,6 +772,29 @@ module flash_phy_rd
 
   // The read storage depth and mask depth should always be the same after popping
   `ASSERT(FifoSameDepth_A, rd_and_mask_fifo_pop |=> unused_rd_depth == unused_mask_depth)
+
+  // If there are more buffers than there are number of response fifo entries, we an never have
+  // a fully dependent condition
+  `ASSERT(BufferDepRsp_A, NumBuf > RspOrderDepth |-> ~all_buf_dependency)
+
+  // We should never attempt to increment when at max value
+  `ASSERT(BufferIncrOverFlow_A, rsp_order_fifo_wr |-> curr_incr_cnt < RspOrderDepth)
+
+  // We should never attempt to decrement when at min value
+  `ASSERT(BufferDecrUnderRun_A, rsp_fifo_vld & data_valid_o |-> (curr_decr_cnt > '0))
+
+  // The total number of dependent buffers cannot never exceed the size of response queue
+  `ifdef INC_ASSERT
+  logic [31:0] assert_cnt;
+  always_comb begin
+    assert_cnt = '0;
+    for (int unsigned i = 0; i < NumBuf; i++) begin
+      assert_cnt = assert_cnt + buf_dependency[i];
+    end
+  end
+
+  `ASSERT(DepBufferRspOrder_A, rsp_order_fifo_wr |=> assert_cnt <= RspOrderDepth)
+  `endif
 
   /////////////////////////////////
   // Functional coverage points to add
