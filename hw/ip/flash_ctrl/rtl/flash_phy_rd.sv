@@ -291,7 +291,7 @@ module flash_phy_rd
     .Width  (RspOrderFifoWidth),
     .Pass   (0),
     .Depth  (RspOrderDepth),
-    .Secure (1'b1)
+    .Secure (1'b1) // SEC_CM: FIFO.CTR.REDUN
   ) u_rsp_order_fifo (
     .clk_i,
     .rst_ni,
@@ -462,7 +462,7 @@ module flash_phy_rd
     .Pass    (0),
     .Depth   (2),
     .OutputZeroIfEmpty (1),
-    .Secure  (1'b1)
+    .Secure  (1'b1) // SEC_CM: FIFO.CTR.REDUN
   ) u_rd_storage (
     .clk_i,
     .rst_ni,

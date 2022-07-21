@@ -614,12 +614,14 @@ module flash_ctrl
   end
 
   // tlul adapter represents software's access interface to flash
+  logic rd_fifo_err;
   tlul_adapter_sram #(
     .SramAw(1),           //address unused
     .SramDw(BusWidth),
     .ByteAccess(0),       //flash may not support byte access
     .ErrOnWrite(1),       //writes not supported
-    .EnableDataIntgPt(1)
+    .EnableDataIntgPt(1),
+    .SecFifoPtr(1)        // SEC_CM: FIFO.CTR.REDUN
   ) u_to_rd_fifo (
     .clk_i,
     .rst_ni,
@@ -635,7 +637,7 @@ module flash_ctrl
     .addr_o      (),
     .wmask_o     (),
     .wdata_o     (),
-    .intg_error_o(),
+    .intg_error_o(rd_fifo_err),
     .rdata_i     (rd_fifo_rdata),
     .rvalid_i    (adapter_rvalid | rd_no_op_q),
     .rerror_i    ({rd_no_op_q, 1'b0})
@@ -1074,7 +1076,7 @@ module flash_ctrl
   assign hw2reg.std_fault_status.storage_err.de    = storage_err;
   assign hw2reg.std_fault_status.phy_fsm_err.de    = flash_phy_rsp.fsm_err;
   assign hw2reg.std_fault_status.ctrl_cnt_err.de   = rd_cnt_err | prog_cnt_err;
-  assign hw2reg.std_fault_status.fifo_err.de       = flash_phy_rsp.fifo_err;
+  assign hw2reg.std_fault_status.fifo_err.de       = flash_phy_rsp.fifo_err | rd_fifo_err;
 
   // Correctable ECC count / address
   for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg
@@ -1428,6 +1430,14 @@ module flash_ctrl
        alert_tx_o[1])
    end
    `endif
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdFifoWptrCheck_A,
+      u_to_rd_fifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+      alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdFifoRptrCheck_A,
+      u_to_rd_fifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+      alert_tx_o[1])
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])

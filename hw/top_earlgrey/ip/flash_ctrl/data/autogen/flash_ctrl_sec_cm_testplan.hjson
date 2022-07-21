@@ -179,5 +179,11 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_fifo_ctr_redun
+      desc: "Verify the countermeasure(s) FIFO.CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
   ]
 }
