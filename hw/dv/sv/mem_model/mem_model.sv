@@ -27,7 +27,7 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
 
   function bit [7:0] read_byte(mem_addr_t addr);
     bit [7:0] data;
-    if (system_memory.exists(addr)) begin
+    if (addr_exists(addr)) begin
       data = system_memory[addr];
       `uvm_info(`gfn, $sformatf("Read Mem  : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
     end else begin
@@ -77,7 +77,7 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     for (int i = 0; i < DataWidth / 8; i++) begin
       mem_addr_t byte_addr = addr + i;
       byte_data = act_data[7:0];
-      if (mask[0] && (!compare_exist_addr_only || system_memory.exists(byte_addr))) begin
+      if (mask[0] && (!compare_exist_addr_only || addr_exists(byte_addr))) begin
         compare_byte(byte_addr, byte_data);
       end else begin
         // Nothing to do here: since this byte wasn't selected by the mask, there are no
@@ -88,4 +88,7 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     end
   endfunction
 
+  function bit addr_exists(mem_addr_t addr);
+    return system_memory.exists(addr);
+  endfunction
 endclass
