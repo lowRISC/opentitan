@@ -8,9 +8,9 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use structopt::StructOpt;
 
-use opentitanlib::app::{self, TransportWrapper};
-use opentitanlib::transport::cw310;
-use opentitanlib::util::rom_detect::RomKind;
+use crate::app::{self, TransportWrapper};
+use crate::transport::cw310;
+use crate::util::rom_detect::RomKind;
 
 /// Load a bitstream into the FPGA.
 #[derive(Debug, StructOpt)]

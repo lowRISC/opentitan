@@ -7,8 +7,8 @@ use erased_serde::Serialize;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 
-use opentitanlib::app::{self, TransportWrapper};
-use opentitanlib::bootstrap::{self, BootstrapOptions};
+use crate::app::{self, TransportWrapper};
+use crate::bootstrap::{self, BootstrapOptions};
 
 /// Load a program into the chip.
 #[derive(Debug, StructOpt)]

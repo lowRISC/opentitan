@@ -11,6 +11,7 @@ pub mod io;
 pub mod otp;
 pub mod proxy;
 pub mod spiflash;
+pub mod test_utils;
 pub mod transport;
 pub mod uart;
 pub mod util;
