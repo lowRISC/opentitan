@@ -57,6 +57,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   virtual task process_upstream_spi_host_fifo();
     spi_item item;
     forever begin
+      bit is_status, is_jedec, is_sfdp, is_mbx_read;
       upstream_spi_host_fifo.get(item);
       `uvm_info(`gfn, $sformatf("upstream received host spi item:\n%0s", item.sprint()),
                 UVM_MEDIUM)
@@ -65,17 +66,16 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           `DV_CHECK_EQ(item.item_type, SpiTransNormal)
           receive_spi_rx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
         end
-        FlashMode: begin
+        FlashMode, PassthroughMode: begin
           `DV_CHECK_EQ(item.item_type, SpiFlashTrans)
-          // TODO, handle this later
-        end
-        PassthroughMode: begin
-          `DV_CHECK_EQ(item.item_type, SpiFlashTrans)
-          if (is_intercepted_status_cmd(item.opcode)) begin
-            check_internal_processed_status(item);
+          if (is_internal_processed_cmd(item.opcode, is_status, is_jedec,
+                                        is_sfdp, is_mbx_read)) begin
             if (is_opcode_passthrough(item.opcode)) begin
               spi_passthrough_intercept_upstream_q.push_back(item);
             end
+            if (is_status) check_internal_processed_read_status(item);
+            if (is_jedec) check_internal_processed_read_jedec(item);
+            // TODO, support more
           end else if (is_opcode_passthrough(item.opcode)) begin
             handle_addr_payload_swap(item);
             spi_passthrough_upstream_q.push_back(item);
@@ -97,14 +97,34 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     flash_status_q.delete();
   endfunction
 
-  virtual function bit is_intercepted_status_cmd(bit[7:0] opcode);
-    bit is_intercepted = `gmv(ral.intercept_en.status) &&
-        opcode inside {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3} &&
-        is_internal_recog_cmd(opcode);
-    bit valid_cmd = cfg.spi_host_agent_cfg.is_opcode_supported(opcode);
-    `uvm_info(`gfn, $sformatf("opcode status intercepted: 0x%0h, valid: %0d",
+  virtual function bit is_internal_processed_cmd(bit[7:0] opcode,
+      output bit is_status, output bit is_jedec, output bit is_sfdp, output bit is_mbx_read);
+
+    bit is_internal_processed;
+    bit valid_cmd;
+    bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
+
+    is_status = opcode inside {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3};
+    if (is_passthru) is_status &= `gmv(ral.intercept_en.status);
+
+    is_jedec = opcode == READ_JEDEC && `gmv(ral.intercept_en.jedec);
+    if (is_passthru) is_jedec &= `gmv(ral.intercept_en.jedec);
+
+    is_sfdp = opcode == READ_SFDP;
+    if (is_passthru) is_sfdp &= `gmv(ral.intercept_en.sfdp);
+
+    is_mbx_read = opcode inside {READ_NORMAL, READ_FAST, READ_DUAL,
+                             READ_QUAD, READ_DUALIO, READ_QUADIO} &&
+              `gmv(ral.cfg.mailbox_en);
+    if (is_passthru) is_mbx_read &= `gmv(ral.intercept_en.mbx);
+
+    is_internal_processed = (is_status | is_jedec | is_sfdp | is_mbx_read) &&
+                            is_internal_recog_cmd(opcode);
+    valid_cmd = cfg.spi_host_agent_cfg.is_opcode_supported(opcode);
+
+    `uvm_info(`gfn, $sformatf("Internal processed opcode: 0x%0h, valid: %0d",
               opcode, valid_cmd), UVM_MEDIUM)
-    return is_intercepted && valid_cmd;
+    return is_internal_processed && valid_cmd;
   endfunction
 
   // if the cmd isn't in the first 11 slots, it won't be processed in spi_device
@@ -122,11 +142,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     bit filter = `gmv(ral.cmd_filter[cmd_index].filter[cmd_offset]);
     bit valid_cmd = cfg.spi_host_agent_cfg.is_opcode_supported(opcode);
 
+    if (`gmv(ral.control.mode) != PassthroughMode) return 0;
+
     `uvm_info(`gfn, $sformatf("opcode filter: %0d, valid: %0d", filter, valid_cmd), UVM_MEDIUM)
     return !filter && valid_cmd;
   endfunction
 
-  virtual function void check_internal_processed_status(spi_item item);
+  virtual function void check_internal_processed_read_status(spi_item item);
     int start_addr;
     bit [23:0] status = `gmv(ral.flash_status); // 3 bytes
     case (item.opcode)
@@ -141,6 +163,28 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       `DV_CHECK_EQ(item.payload_q[i], status[offset * 8 +: 8],
           $sformatf("status mismatch, offset %0d, act: 0x%0h, exp: 0x%0h",
               offset, item.payload_q[i], status[offset * 8 +: 8]))
+    end
+  endfunction
+
+  virtual function void check_internal_processed_read_jedec(spi_item item);
+    bit [7:0] exp_jedec_q[$];
+    bit [15:0] id = `gmv(ral.jedec_id.id);
+    bit [7:0]  mf = `gmv(ral.jedec_id.mf);
+
+    repeat (`gmv(ral.jedec_cc.num_cc)) exp_jedec_q.push_back(`gmv(ral.jedec_cc.cc));
+
+    exp_jedec_q.push_back(mf);
+    exp_jedec_q.push_back(id[7:0]);
+    exp_jedec_q.push_back(id[15:8]);
+
+    foreach (item.payload_q[i]) begin
+      if (i < exp_jedec_q.size) begin
+        `DV_CHECK_EQ(item.payload_q[i], exp_jedec_q[i],
+            $sformatf("act 0x%0x != exp 0x%0x, index: %0d", item.payload_q[i], exp_jedec_q[i], i))
+      end else begin
+        `DV_CHECK_EQ(item.payload_q[i], 0,
+            $sformatf("act 0x%0x != exp 0x0, index: %0d (OOB)", item.payload_q[i], i))
+      end
     end
   endfunction
 

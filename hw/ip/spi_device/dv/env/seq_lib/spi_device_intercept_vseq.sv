@@ -7,13 +7,12 @@
 class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
   `uvm_object_utils(spi_device_intercept_vseq)
   `uvm_object_new
-  bit [7:0] intercept_ops[$] = {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3};
+  bit [7:0] intercept_ops[$] = {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3,
+                                READ_JEDEC};
 
-  virtual task spi_device_flash_pass_init(device_mode_e mode);
-    super.spi_device_flash_pass_init( mode);
-
-    ral.intercept_en.set(1);
-    csr_update(ral.intercept_en);
+  virtual task pre_start();
+    allow_intercept = 1;
+    super.pre_start();
   endtask
 
   virtual function bit [7:0] get_rand_opcode();
