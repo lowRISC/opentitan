@@ -232,7 +232,7 @@ def opentitan_functest(
         data = [],
         test_in_rom = False,
         signed = False,
-        test_harness = "//sw/host/opentitantool",
+        test_harness = "@//sw/host/opentitantool",
         key = "test_key_0",
         dv = None,
         verilator = None,
