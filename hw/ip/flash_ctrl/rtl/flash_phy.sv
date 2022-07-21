@@ -224,7 +224,7 @@ module flash_phy
       .Width   (BusFullWidth + 1),
       .Pass    (1'b1),
       .Depth   (FlashMacroOustanding),
-      .Secure  (1'b1)
+      .Secure  (1'b1) // SEC_CM: FIFO.CTR.REDUN
     ) u_host_rsp_fifo (
       .clk_i,
       .rst_ni,
