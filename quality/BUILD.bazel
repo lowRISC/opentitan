@@ -58,6 +58,7 @@ licence_test(
         "sw/otbn/crypto/p256.s",
         "sw/otbn/crypto/rsa_verify.s",
         "sw/otbn/crypto/handwritten/rsa_verify_3072.s",
+        "sw/otbn/crypto/sha512.s",
         # Mersenne Twister PRNG
         "sw/device/sca/lib/prng.c",
         # Alma testbench files
