@@ -734,7 +734,20 @@ module edn_core import edn_pkg::*;
   assign edn_bus_cmp_alert = cs_rdata_capt_vld && cs_rdata_capt_vld_q &&
          (cs_rdata_capt_q == packer_cs_rdata[63:0]);
 
-  assign recov_alert_o = edn_bus_cmp_alert;
+
+
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue(0),
+    .EnSync(0)
+  ) u_prim_edge_detector_recov_alert (
+    .clk_i,
+    .rst_ni,
+    .d_i(edn_bus_cmp_alert),
+    .q_sync_o(),
+    .q_posedge_pulse_o(recov_alert_o),
+    .q_negedge_pulse_o()
+  );
 
   assign hw2reg.recov_alert_sts.edn_bus_cmp_alert.de = edn_bus_cmp_alert;
   assign hw2reg.recov_alert_sts.edn_bus_cmp_alert.d  = edn_bus_cmp_alert;

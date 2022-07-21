@@ -118,6 +118,12 @@ Once firmware initialization is complete, it is important to exit this mode if t
 This is done by either *clearing* the `EDN_ENABLE` field or *clearing* the `BOOT_REQ_MODE` field in {{< regref "CTRL" >}} to halt the boot-time request state machine.
 Firmware must then wait for successful the shutdown of the state machine by polling the `REQ_MODE_SM_STS` field of the {{< regref "SUM_STS" >}} register.
 
+It should be noted that when in boot-time request mode, no status will be updated that is used for the software port operation.
+If some hang condition were to occur when in this mode, the main state machine debug register should be read to determine if a hang condition is present.
+There is a limit to how much entropy can be requested in the boot-time request mode BOOT_GEN_CMD command (GLEN = 4K).
+It is the responsibility of software to switch to the software mode of operation before the command has completed.
+If the BOOT_GEN_CMD command ends while an endpoint is requesting, EDN will never ack and the endpoint bus will hang.
+
 #### Note on Security Considerations when Using Boot-time Request Mode
 
 Boot-time request mode is not intended for normal operation, as it tolerates the potential use of preliminary seeds for the attached CSRNG instance.
@@ -154,6 +160,9 @@ Note that if BOOT_REQ_MODE is asserted the state machine will enter boot-time re
 To issue any new commands other than those stored in the generate or reseed FIFOs, it is important to disable auto request mode, by deasserting the `AUTO_REQ_MODE` field in the {{< regref "CTRL" >}} register.
 Firmware must then wait until the current command is completed by polling the `REQ_MODE_SM_STS` bit in the {{< regref "SUM_STS" >}} register
 Once `REQ_MODE_SM_STS` reads zero, the state machine is idle and new firmware-driven commands can be passed to the CSRNG via the {{< regref "SW_CMD_REQ" >}} register.
+
+It should be noted that when in auto request mode, no status will be updated that is used for the software port operation once the `instantiate` command has completed.
+If some hang condition were to occur when in this mode, the main state machine debug register should be read to determine if a hang condition is present.
 
 ### Note on State Machine Shutdown Delays
 
