@@ -183,7 +183,8 @@ module rom_ctrl
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(SecDisableScrambling),
-    .EnableDataIntgPt(!SecDisableScrambling)
+    .EnableDataIntgPt(!SecDisableScrambling), // SEC_CM: BUS.INTEGRITY
+    .SecFifoPtr      (1)                      // SEC_CM: TLUL_FIFO.CTR.REDUN
   ) u_tl_adapter_rom (
     .clk_i        (clk_i),
     .rst_ni       (rst_n),
@@ -529,4 +530,12 @@ module rom_ctrl
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
                                                  u_reg_regs, alert_tx_o[AlertFatal])
+
+  // Alert assertions for redundant counters.
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(FifoWptrCheck_A,
+      u_tl_adapter_rom.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+      alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(FifoRptrCheck_A,
+      u_tl_adapter_rom.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+      alert_tx_o[AlertFatal])
 endmodule

@@ -199,6 +199,9 @@
       name: "CTRL.MEM.INTEGRITY"
       desc: "End-to-end data/memory integrity scheme."
     },
+    { name: "TLUL_FIFO.CTR.REDUN",
+      desc: "The TL-UL response FIFO pointers are implemented with duplicate counters."
+    }
   ]
   regwidth: "32"
   registers: {
