@@ -249,5 +249,11 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_tlul_fifo_ctr_redun
+      desc: "Verify the countermeasure(s) TLUL_FIFO.CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
   ]
 }
