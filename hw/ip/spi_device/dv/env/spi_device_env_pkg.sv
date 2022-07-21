@@ -81,6 +81,22 @@ package spi_device_env_pkg;
   parameter uint SRAM_PTR_PHASE_BIT              = SRAM_MSB + 1;
   parameter uint SRAM_WORD_SIZE                  = 4;
   parameter uint ASYNC_FIFO_SIZE                 = 8;
+  parameter uint READ_CMD_START_ADDR             = SRAM_OFFSET;
+  parameter uint READ_CMD_BUFFER_SIZE            = 2048;
+  // MAILBOX_START_ADDR is 0x800
+  parameter uint MAILBOX_START_ADDR              = READ_CMD_START_ADDR + READ_CMD_BUFFER_SIZE;
+  parameter uint MAILBOX_BUFFER_SIZE             = 1024;
+  // SFDP_START_ADDR is 0xc00
+  parameter uint SFDP_START_ADDR                 = MAILBOX_START_ADDR + MAILBOX_BUFFER_SIZE;
+  parameter uint SFDP_SIZE                       = 256;
+  parameter uint PAYLOAD_FIFO_START_ADDR         = SFDP_START_ADDR + SFDP_SIZE; // 0xd00
+  parameter uint PAYLOAD_FIFO_SIZE               = 256;
+  // CMD_FIFO_START_ADDR is 0xe00
+  parameter uint CMD_FIFO_START_ADDR             = PAYLOAD_FIFO_START_ADDR + PAYLOAD_FIFO_SIZE;
+  parameter uint CMD_FIFO_SIZE                   = 32;
+  parameter uint ADDR_FIFO_START_ADDR            = CMD_FIFO_START_ADDR + CMD_FIFO_SIZE; // 0xe20
+  parameter uint ADDR_FIFO_SIZE                  = 32;
+
   parameter bit[7:0] TPM_WRITE_CMD               = 8'hC0;
   parameter bit[7:0] TPM_READ_CMD                = 8'hC1;
   parameter byte TPM_START                       = 8'h01;

@@ -62,7 +62,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     add_cmd_info(info, 3);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes == 0 &&
+      info.addr_bytes == 3 &&
       info.opcode == READ_SFDP;
       info.num_lanes == 1 &&
       info.write_command == 0;)
@@ -172,6 +172,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       // TODO, only support status intercept
       `DV_CHECK_RANDOMIZE_FATAL(ral.intercept_en.status)
       `DV_CHECK_RANDOMIZE_FATAL(ral.intercept_en.jedec)
+      ral.intercept_en.sfdp.set(1);
       csr_update(ral.intercept_en);
     end
 
@@ -228,6 +229,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     // Prepare Buffer
     for (int i = 0; i < 1024; i++) begin // Fill buffer with random data
       mem_wr(.ptr(ral.buffer), .offset(i), .data(buffer_data[i]));
+      `uvm_info(`gfn, $sformatf("write mem addr 0x%0x: 0x%0x", i << 2, buffer_data[i]), UVM_MEDIUM)
     end
   endtask : randomize_mem
 
@@ -282,6 +284,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
     if (allow_addr_swap) begin
       swap = $urandom_range(0, 99) < addr_payload_swap_pct;
+      if (swap) `uvm_info(`gfn, $sformatf("addr_swap is set for opcode 0x%0x", info.opcode),
+                          UVM_MEDIUM)
     end else begin
       swap = 0;
     end
@@ -290,6 +294,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     // only write and single mode allows payload swap
     if (allow_payload_swap && info.write_command && info.num_lanes == 1) begin
       swap = $urandom_range(0, 99) < addr_payload_swap_pct;
+      if (swap) `uvm_info(`gfn, $sformatf("payload_swap is set for opcode 0x%0x", info.opcode),
+                          UVM_MEDIUM)
     end else begin
       swap = 0;
     end

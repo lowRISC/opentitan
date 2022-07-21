@@ -8,7 +8,8 @@ class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
   `uvm_object_utils(spi_device_intercept_vseq)
   `uvm_object_new
   bit [7:0] intercept_ops[$] = {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3,
-                                READ_JEDEC};
+                                READ_JEDEC,
+                                READ_SFDP};
 
   virtual task pre_start();
     allow_intercept = 1;

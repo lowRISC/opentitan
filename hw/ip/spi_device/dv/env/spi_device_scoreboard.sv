@@ -19,11 +19,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   local mem_model rx_mem;
   local uint tx_rptr_exp;
   local uint rx_wptr_exp;
+  local mem_model spi_mem;
+
 
   // expected values
   local bit [NumSpiDevIntr-1:0] intr_exp;
 
-  // tx/rx fifo, size is 2 words
+  // tx/rx async fifo, size is 2 words
   local bit [31:0] tx_word_q[$];
   local bit [31:0] rx_word_q[$];
 
@@ -42,6 +44,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     downstream_spi_host_fifo = new("downstream_spi_host_fifo", this);
     tx_mem = mem_model#()::type_id::create("tx_mem", this);
     rx_mem = mem_model#()::type_id::create("rx_mem", this);
+
+    `DV_CHECK_FATAL(exp_mem.exists(RAL_T::type_name))
+    spi_mem = exp_mem[RAL_T::type_name];
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -70,12 +75,17 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           `DV_CHECK_EQ(item.item_type, SpiFlashTrans)
           if (is_internal_processed_cmd(item.opcode, is_status, is_jedec,
                                         is_sfdp, is_mbx_read)) begin
-            if (is_opcode_passthrough(item.opcode)) begin
-              spi_passthrough_intercept_upstream_q.push_back(item);
-            end
             if (is_status) check_internal_processed_read_status(item);
             if (is_jedec) check_internal_processed_read_jedec(item);
+            if (is_sfdp) check_internal_processed_read_sfdp(item);
             // TODO, support more
+
+            // addr/data swap only occurs to passthrough, call handle_addr_payload_swap after
+            // all internal processed cmds are done
+            if (is_opcode_passthrough(item.opcode)) begin
+              handle_addr_payload_swap(item);
+              spi_passthrough_intercept_upstream_q.push_back(item);
+            end
           end else if (is_opcode_passthrough(item.opcode)) begin
             handle_addr_payload_swap(item);
             spi_passthrough_upstream_q.push_back(item);
@@ -185,6 +195,27 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         `DV_CHECK_EQ(item.payload_q[i], 0,
             $sformatf("act 0x%0x != exp 0x0, index: %0d (OOB)", item.payload_q[i], i))
       end
+    end
+  endfunction
+
+  virtual function void check_internal_processed_read_sfdp(spi_item item);
+    foreach (item.payload_q[i]) begin
+      uvm_reg_addr_t addr, offset;
+      bit [1:0] addr_lsb_2bits;
+
+      // address should be 3 bytes, only the last byte is used
+      `DV_CHECK_EQ(item.address_q.size, 3)
+      offset = (item.address_q[2] + i) % SFDP_SIZE;
+
+      // get_normalized_addr makes it word-aligned, but we need byte offset
+      addr = offset + SFDP_START_ADDR;
+      addr_lsb_2bits = addr % 4;
+      addr = cfg.ral.get_normalized_addr(addr) + addr_lsb_2bits;
+
+      `DV_CHECK(spi_mem.addr_exists(addr))
+      spi_mem.compare_byte(addr, item.payload_q[i]);
+      `uvm_info(`gfn, $sformatf("compare sfdp idx %0d, act: 0x%0x, mem addr 0x%0x, exp: 0x%0x",
+                offset, item.payload_q[i], addr, spi_mem.read_byte(addr)), UVM_MEDIUM)
     end
   endfunction
 
