@@ -171,8 +171,18 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     if (allow_intercept) begin
       // TODO, only support status intercept
       `DV_CHECK_RANDOMIZE_FATAL(ral.intercept_en.status)
+      `DV_CHECK_RANDOMIZE_FATAL(ral.intercept_en.jedec)
       csr_update(ral.intercept_en);
     end
+
+    // randomize jedec
+    `DV_CHECK_RANDOMIZE_FATAL(ral.jedec_cc.cc)
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.jedec_cc.num_cc,
+                                   value dist {0 :/ 2, [1:254] :/ 2, 255 :/ 1};)
+    csr_update(.csr(ral.jedec_cc));
+    `DV_CHECK_RANDOMIZE_FATAL(ral.jedec_id)
+    csr_update(.csr(ral.jedec_id));
+
     config_all_cmd_infos();
 
     spi_device_flash_auto_rsp_nonblocking();
