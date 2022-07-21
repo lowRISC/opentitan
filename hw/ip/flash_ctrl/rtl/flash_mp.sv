@@ -180,6 +180,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
 
   logic data_en;
   assign data_en          = data_part_sel &
+                            ~addr_invalid &
                             mubi4_test_true_strict(data_region_cfg.en);
 
   assign data_rd_en       = data_en & rd_i &
@@ -247,7 +248,9 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   assign page_cfg = hw_sel ? hw_page_cfg : info_page_cfgs_i[bank_addr][info_sel_i][info_page_addr];
 
   // final operation
-  assign info_en          = info_part_sel             & mubi4_test_true_strict(page_cfg.en);
+  assign info_en          = info_part_sel &
+                            ~addr_invalid &
+                            mubi4_test_true_strict(page_cfg.en);
   assign info_rd_en       = info_en & rd_i            & mubi4_test_true_strict(page_cfg.rd_en);
   assign info_prog_en     = info_en & prog_i          & mubi4_test_true_strict(page_cfg.prog_en);
   assign info_pg_erase_en = info_en & pg_erase_i      & mubi4_test_true_strict(page_cfg.erase_en);
@@ -315,22 +318,22 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
 
   // Bank erase enable should always be one-hot.  We cannot erase multiple banks
   // at the same time
-  `ASSERT(bkEraseEnOnehot_a, (req_o & bk_erase_o) |-> $onehot(bk_erase_en))
+  `ASSERT(bkEraseEnOnehot_A, (req_o & bk_erase_o) |-> $onehot(bk_erase_en))
   // Requests can only happen one at a time
-  `ASSERT(requestTypesOnehot_a, req_o |-> $onehot({rd_o, prog_o, pg_erase_o, bk_erase_o}))
+  `ASSERT(requestTypesOnehot_A, req_o |-> $onehot({rd_o, prog_o, pg_erase_o, bk_erase_o}))
   // Info / data errors are mutually exclusive
-  `ASSERT(invalidReqOnehot_a, req_o |-> $onehot0({invalid_data_txn, invalid_info_txn}))
+  `ASSERT(invalidReqOnehot_A, req_o |-> $onehot0({invalid_data_txn, invalid_info_txn}))
   // Cannot match more than one info rule at a time
-  `ASSERT(hwInfoRuleOnehot_a, req_i & hw_sel |-> $onehot0(unused_rule_match))
+  `ASSERT(hwInfoRuleOnehot_A, req_i & hw_sel |-> $onehot0(unused_rule_match))
   // An input request should lead to an output request if there are no errors
-  `ASSERT(InReqOutReq_a, req_i |-> req_o | no_allowed_txn)
+  `ASSERT(InReqOutReq_A, req_i |-> req_o | no_allowed_txn)
   // An Info request should not lead to data requests
-  `ASSERT(InfoReqToData_a, req_i & info_part_sel |-> ~|{data_en,
+  `ASSERT(InfoReqToData_A, req_i & info_part_sel |-> ~|{data_en,
                                                         data_rd_en,
                                                         data_prog_en,
                                                         data_pg_erase_en})
   // A data request should not lead to info requests
-  `ASSERT(DataReqToInfo_a, req_i & data_part_sel |->
+  `ASSERT(DataReqToInfo_A, req_i & data_part_sel |->
     ~|{info_en,
     info_rd_en,
     info_prog_en,
@@ -338,12 +341,16 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
     info_bk_erase_en})
 
   // If a bank erase request only selects data, then info should be erased
-  `ASSERT(BankEraseData_a, req_i & bk_erase_i & |bk_erase_en & data_part_sel |-> data_bk_erase_en &
+  `ASSERT(BankEraseData_A, req_i & bk_erase_i & |bk_erase_en & data_part_sel |-> data_bk_erase_en &
           ~info_bk_erase_en)
 
   // If a bank erase request also selects the info partition, then both data
   // and info must be erased
-  `ASSERT(BankEraseInfo_a, req_i & bk_erase_i & |bk_erase_en & info_part_sel |-> &{data_bk_erase_en,
+  `ASSERT(BankEraseInfo_A, req_i & bk_erase_i & |bk_erase_en & info_part_sel |-> &{data_bk_erase_en,
                                                                     info_bk_erase_en})
+
+  // When no transactions are allowed, the output request should always be 0.
+  `ASSERT(NoReqWhenErr_A, no_allowed_txn |-> ~req_o)
+
 
 endmodule // flash_erase_ctrl
