@@ -1,5 +1,5 @@
 ---
-title: "Earlgrey Chip DV document"
+title: "OpenTitan Earl Grey Chip DV Document"
 ---
 
 ## Goals
@@ -63,19 +63,19 @@ Some of them in use are:
 ### TL_agent
 The full chip testbench instantiates (already handled in CIP base env) the [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into CHIP device.
 
-###  UART Agent
+### UART Agent
 [Describe here or add link to its README]
 
-###  SPI Agent
+### SPI Agent
 [Describe here or add link to its README]
 
-###  JTAG Agent
+### JTAG Agent
 [Describe here or add link to its README]
 
-###  I2C Agent
+### I2C Agent
 [Describe here or add link to its README]
 
-###  USB20 Agent
+### USB20 Agent
 [Describe here or add link to its README]
 
 ### UVM RAL Model

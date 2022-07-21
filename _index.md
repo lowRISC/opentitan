@@ -26,3 +26,7 @@ Unless otherwise noted, everything in the repository is covered by the Apache Li
 ## Documentation Sections
 
 {{% sectionContent type="section" depth="1" %}}
+
+## Datasheets
+
+* [OpenTitan Earl Grey Chip Datasheet]({{< relref "hw/top_earlgrey/doc" >}})

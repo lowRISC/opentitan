@@ -37,10 +37,11 @@ Finally, we provide the same set of information for all available [top level des
   * [DV document](https://ibex-core.readthedocs.io/en/latest/03_reference/verification.html)
   * DV simulation results, with coverage (nightly) (TBD)
 
-## Earl Grey toplevel design
+## Earl Grey Chip
 
-* [Design specification]({{< relref "hw/top_earlgrey/doc" >}})
-* [DV document]({{< relref "hw/top_earlgrey/doc/dv" >}})
+* [Earl Grey Chip Datasheet]({{< relref "hw/top_earlgrey/doc" >}})
+* [Earl Grey Chip Specification]({{< relref "hw/top_earlgrey/doc/design" >}})
+* [Earl Grey Chip DV Document]({{< relref "hw/top_earlgrey/doc/dv" >}})
 * [DV simulation results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/results.html)
 * [Connectivity results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/conn/jaspergold/latest/results.html)
 * [AscentLint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/latest/results.html)
