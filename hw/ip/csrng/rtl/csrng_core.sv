@@ -189,6 +189,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                   cmd_gen_cnt_err_sum;
   logic                   cmd_stage_sm_err_sum;
   logic                   main_sm_err_sum;
+  logic                   cs_main_sm_alert;
   logic                   cs_main_sm_err;
   logic [StateWidth-1:0]  cs_main_sm_state;
   logic                   drbg_gen_sm_err_sum;
@@ -725,9 +726,22 @@ module csrng_core import csrng_pkg::*; #(
   assign recov_alert_event = cs_enable_pfa ||
          sw_app_enable_pfa ||
          read_int_state_pfa ||
+         cs_main_sm_alert ||
          cs_bus_cmp_alert;
 
-  assign recov_alert_o = recov_alert_event;
+
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue(0),
+    .EnSync(0)
+  ) u_prim_edge_detector_recov_alert (
+    .clk_i,
+    .rst_ni,
+    .d_i(recov_alert_event),
+    .q_sync_o(),
+    .q_posedge_pulse_o(recov_alert_o),
+    .q_negedge_pulse_o()
+  );
 
 
   // check for illegal enable field states, and set alert if detected
@@ -934,6 +948,9 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.de = cs_bus_cmp_alert;
   assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.d  = cs_bus_cmp_alert;
 
+  assign hw2reg.recov_alert_sts.cs_main_sm_alert.de = cs_main_sm_alert;
+  assign hw2reg.recov_alert_sts.cs_main_sm_alert.d  = cs_main_sm_alert;
+
 
   // HW interface connections (up to 16, numbered 0-14)
   for (genvar hai = 0; hai < (NApps-1); hai = hai+1) begin : gen_app_if
@@ -1077,6 +1094,7 @@ module csrng_core import csrng_pkg::*; #(
     .cmd_complete_i         (state_db_wr_req),
     .local_escalate_i       (cmd_gen_cnt_err_sum),
     .main_sm_state_o        (cs_main_sm_state),
+    .main_sm_alert_o        (cs_main_sm_alert),
     .main_sm_err_o          (cs_main_sm_err)
   );
 

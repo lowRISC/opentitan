@@ -30,6 +30,7 @@ module csrng_main_sm import csrng_pkg::*; #(
   input logic                   cmd_complete_i,
   input logic                   local_escalate_i,
   output logic [StateWidth-1:0] main_sm_state_o,
+  output logic                  main_sm_alert_o,
   output logic                  main_sm_err_o
 );
 
@@ -48,6 +49,7 @@ module csrng_main_sm import csrng_pkg::*; #(
     update_req_o = 1'b0;
     uninstant_req_o = 1'b0;
     clr_adata_packer_o = 1'b0;
+    main_sm_alert_o = 1'b0;
     main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
@@ -86,6 +88,9 @@ module csrng_main_sm import csrng_pkg::*; #(
               if (acmd_eop_i) begin
                 state_d = UninstantPrep;
               end
+            end else begin
+              // command was not supported
+              main_sm_alert_o = 1'b1;
             end
           end
         end
