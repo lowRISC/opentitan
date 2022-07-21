@@ -1605,6 +1605,7 @@
           name: "prog_fifo",
           items: "1",
           validbits: "32",
+          data-intg-passthru: "true",
           byte-write: "false",
           unusual: "false"
           swaccess: "wo",
@@ -1622,6 +1623,7 @@
           name: "rd_fifo",
           items: "1",
           validbits: "32",
+          data-intg-passthru: "true",
           byte-write: "false",
           unusual: "false"
           swaccess: "ro",
