@@ -752,16 +752,6 @@
       milestone: V2
       tests: ["chip_sw_plic_sw_irq"]
     }
-    {
-      name: chip_sw_plic_nmi_irq
-      desc: '''Verify the NMI interrupt to the CPU and correctness of the cause.
-
-            TBD if multiple NMI irqs are OR-ed into the CPU (example - NMI from alert handler and
-            the watchdog bark), then map each test to this testpoint.
-            '''
-      milestone: V2
-      tests: []
-    }
 
     // CLKMGR tests:
     {
@@ -2788,6 +2778,23 @@
     // RV_CORE_IBEX //
     //////////////////
 
+    {
+      name: chip_sw_nmi_irq
+      desc: '''Verify the NMI interrupt to the CPU and correctness of the cause.
+
+            Randomly use these two methods (simultaneously or choose one of them) to trigger the
+            NMI interrupt:
+            - Trigger the alert_handler escalation pair that maps to NMI.
+            - Trigger a watchdog bark.
+
+            Check rv_core_ibex's NMI interrupt register and clear the interrupt.
+            If the NMI interrupt is triggered by alert_handle and the `class_clr_regwen` register
+            is not locked, check that alert_handler can clear this NMI escalation stage. Then make
+            sure that the alert_handler won't move forward to the next escalation stage.
+            '''
+      milestone: V2
+      tests: []
+    }
     {
       name: chip_sw_rv_core_ibex_rnd
       desc: '''Verify the functionality of the random number generation CSRs.
