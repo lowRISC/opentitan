@@ -15,8 +15,8 @@ use structopt::StructOpt;
 
 use super::bootstrap::Bootstrap;
 use super::load_bitstream::LoadBitstream;
-use opentitanlib::app::TransportWrapper;
-use opentitanlib::backend;
+use crate::app::TransportWrapper;
+use crate::backend;
 // use opentitanlib::io::uart::UartParams;
 
 #[derive(Debug, StructOpt)]

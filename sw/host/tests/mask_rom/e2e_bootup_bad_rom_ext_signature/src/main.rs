@@ -3,17 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, Result};
+use opentitanlib::app::TransportWrapper;
+use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::uart::console::{ExitStatus, UartConsole};
 use regex::Regex;
 use std::io::Write;
 use std::path::PathBuf;
 use std::time::Duration;
 use structopt::StructOpt;
 use tempfile::NamedTempFile;
-
-mod helpers;
-use helpers::init::InitializeTest;
-use opentitanlib::app::TransportWrapper;
-use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
 #[derive(Debug, StructOpt)]
 struct Opts {
