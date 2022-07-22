@@ -8,6 +8,7 @@
   build_db_dir: "{build_dir}/xcelium.d"
 
   build_opts: ["-elaborate -64bit -sv",
+               // Wait to acquire a license.
                "-licqueue",
                // TODO: duplicate primitives between OT and Ibex #1231
                "-ALLOWREDEFINITION",
@@ -15,6 +16,7 @@
                "-timescale {timescale}",
                "-f {sv_flist}",
                "-uvmhome CDNS-1.2",
+               // Specify the library name for the run step to use.
                "-xmlibdirname {build_db_dir}",
                // List multiple tops for the simulation. Prepend each top level with `-top`.
                "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
@@ -29,6 +31,8 @@
                // Use this to conditionally compile for Xcelium (example: LRM interpretations differ
                // across tools).
                "+define+XCELIUM",
+               // Suppress printing of the copyright banner.
+               "-nocopyright",
                // Ignore "timescale is not specified for the package" warning
                "-nowarn TSNSPK",
                // Ignore "IEEE 1800-2009 SystemVerilog simulation semantics" warning
@@ -53,6 +57,9 @@
   uvm_testseq_plusarg: "{eval_cmd} echo {uvm_test_seq} | sed -E 's/(.+)/+UVM_TEST_SEQ=\\1/'"
 
   run_opts:   ["-input {run_script}",
+               // Suppress printing of the copyright banner.
+               "-nocopyright",
+               // Wait to acquire a license.
                "-licqueue",
                "-64bit -xmlibdirname {build_db_dir}",
                // Use the same snapshot name set during the build step.
@@ -228,8 +235,8 @@
     {
       name: xcelium_profile
       is_sim_mode: 1
-      build_opts: []
-      run_opts:   []
+      build_opts: ["-perfstat"]
+      run_opts:   ["-perfstat", "-perflog perfstat.log"]
     }
     {
       name: xcelium_xprop

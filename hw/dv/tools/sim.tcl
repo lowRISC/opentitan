@@ -37,5 +37,11 @@ global tb_top
 global gui
 if {$gui == 0} {
   run
-  quit
+  if {$simulator eq "xcelium"} {
+    # Xcelium provides a `finish` tcl command instead of `quit`. The argument '2' enables the
+    # logging of additional resource usage information.
+    finish 2
+  } else {
+    quit
+  }
 }
