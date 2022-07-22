@@ -50,6 +50,8 @@ class tl_host_driver extends tl_base_driver;
 
   // reset signals every time reset occurs.
   virtual task reset_signals();
+    invalidate_a_channel();
+    cfg.vif.h2d_int.d_ready <= 1'b0;
     forever begin
       @(negedge cfg.vif.rst_n);
       reset_asserted = 1'b1;

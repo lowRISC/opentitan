@@ -23,6 +23,8 @@ class tl_device_driver extends tl_base_driver;
 
   // reset signals every time reset occurs.
   virtual task reset_signals();
+    invalidate_d_channel();
+    cfg.vif.d2h_int.a_ready <= 1'b0;
     forever begin
       @(negedge cfg.vif.rst_n);
       invalidate_d_channel();
