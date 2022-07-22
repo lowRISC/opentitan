@@ -75,6 +75,7 @@ class chip_base_test extends cip_base_test #(
     // Set the test timeout value to be sufficiently large.
     test_timeout_ns = 50_000_000;
     test_timeout_ns = `DV_MAX2(test_timeout_ns, 5 * cfg.sw_test_timeout_ns);
+    `uvm_info(`gfn, $sformatf("test_timeout_ns = %0d", test_timeout_ns), UVM_LOW)
   endfunction : build_phase
 
 endclass : chip_base_test

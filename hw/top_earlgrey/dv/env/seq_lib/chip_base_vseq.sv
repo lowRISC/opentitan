@@ -147,14 +147,10 @@ class chip_base_vseq #(
 
   // shorten alert ping timer enable wait time
   virtual task check_lc_ctrl_broadcast(bit [LcBroadcastLast-1:0] bool_vector);
-    string path;
-    lc_ctrl_pkg::lc_tx_t curr_val;
-
     foreach (lc_broadcast_paths[i]) begin
-      path = {`DV_STRINGIFY(`LC_CTRL_HIER),
-      ".", lc_broadcast_paths[i]};
-      uvm_hdl_read(path, curr_val);
-
+      uvm_hdl_data_t curr_val;
+      string path = {`DV_STRINGIFY(`LC_CTRL_HIER), ".", lc_broadcast_paths[i]};
+      `DV_CHECK_FATAL(uvm_hdl_read(path, curr_val))
       // if bool vector bit is 1, the probed value should be ON
       // if bool vector bit is 0, the probed value should be OFF
       if (bool_vector[i] ~^ (curr_val == lc_ctrl_pkg::On)) begin

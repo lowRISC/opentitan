@@ -23,7 +23,7 @@ class chip_sw_random_sleep_all_reset_vseq extends chip_sw_base_vseq;
 
   rand int cycles_after_trigger;
   rand int cycles_till_reset;
-  rand bit reset_delay;
+  rand int reset_delay;
   int loop_num;
 
   constraint cycles_after_trigger_c {cycles_after_trigger inside {[0 : 9]};}

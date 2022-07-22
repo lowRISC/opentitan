@@ -14,10 +14,10 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
     super.post_apply_reset(reset_kind);
 
     for (int ram_idx = 0; ram_idx < cfg.num_ram_ret_tiles; ram_idx++) begin
-      cfg.mem_bkdr_util_h[int'(RamRet0) + ram_idx].randomize_mem();
+      cfg.mem_bkdr_util_h[chip_mem_e'(RamRet0 + ram_idx)].randomize_mem();
     end
     for (int ram_idx = 0; ram_idx < cfg.num_ram_main_tiles; ram_idx++) begin
-      cfg.mem_bkdr_util_h[int'(RamMain0) + ram_idx].randomize_mem();
+      cfg.mem_bkdr_util_h[chip_mem_e'(RamMain0 + ram_idx)].randomize_mem();
     end
     wait_rom_check_done();
   endtask
@@ -52,4 +52,5 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
     $asserton(0, "tb.dut.u_ast.u_jitter_en_sync.PrimMubi4SyncCheckTransients0_A");
     $asserton(0, "tb.dut.u_ast.u_jitter_en_sync.PrimMubi4SyncCheckTransients1_A");
   endtask
+
 endclass
