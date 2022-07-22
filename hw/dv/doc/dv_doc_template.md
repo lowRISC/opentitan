@@ -1,5 +1,6 @@
 ---
 title: "FOO DV document"
+draft: true
 ---
 
 <!-- Copy this file to hw/ip/foo/doc/index.md and make changes as needed.
@@ -9,7 +10,10 @@ located at OpenTitan team drive / 'design verification'
 as a starting point and modify it to reflect your foo testbench and save it
 to hw/ip/foo/doc/tb.svg. It should get linked and rendered under the block
 diagram section below. Please update / modify / remove sections below as
-applicable. Once done, remove this comment before making a PR. -->
+applicable. Once done, remove this comment before making a PR.
+
+Remove "draft: true" before submission.
+-->
 
 ## Goals
 * **DV**

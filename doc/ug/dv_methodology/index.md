@@ -72,7 +72,7 @@ The [build_docs]({{< relref "doc/ug/documentation" >}}) tool works in conjunctio
 The DV document expands the testplan inline, in addition to capturing the overall strategy, intent, the testbench block diagram, a list of interfaces / agents, VIPs, reference models, the functional coverage model, assertions and checkers. It also covers FPV goals, if applicable.
 This is written in [Markdown]({{< relref "doc/rm/markdown_usage_style" >}}) and is made available in the corresponding `doc` directory of each DUT.
 
-A [template]({{< relref "hw/dv/doc/dv_doc_template" >}}) for the DV documentation as well as the testbench block diagram in the OpenTitan team drive  (under the 'design verification' directory) are available to help get started.
+A [template](https://github.com/lowRISC/opentitan/blob/master/hw/dv/doc/dv_doc_template.md) for the DV documentation as well as the testbench block diagram in the OpenTitan team drive  (under the 'design verification' directory) are available to help get started.
 
 ### Regression Dashboard
 
