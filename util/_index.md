@@ -1,5 +1,5 @@
 ---
-title: "OpenTitan Utilities"
+title: "Utilities"
 ---
 
 This is the landing spot for utility script documentation within the OpenTitan project.

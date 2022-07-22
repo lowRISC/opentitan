@@ -1,3 +1,3 @@
 ---
-title: "OpenTitan Host Software"
+title: "Host Software"
 ---

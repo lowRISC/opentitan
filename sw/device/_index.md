@@ -1,5 +1,5 @@
 ---
-title: "OpenTitan Device Software"
+title: "Device Software"
 ---
 
 ## Reference Firmware Images
