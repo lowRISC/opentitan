@@ -14,7 +14,7 @@ This document is not an introduction to RISC-V assembly; for that purpose, see t
 
 Assembly is typically very specialized; the following rules do not presume to describe every use-case, so use your best judgement.
 
-This style guide is specialized for R32IMC, the ISA implemented by Ibex. 
+This style guide is specialized for R32IMC, the ISA implemented by Ibex.
 As such, no advice is provided for other RISC-V extensions, though this style guide is written such that advice for other extensions could be added without conflicts.
 
 ## General Advice
@@ -362,4 +362,3 @@ Inline assembly statements must conform to the following formatting requirements
 
 C and C++ compilers are, in general, not supposed to introspect `asm` blocks, and as such cannot determine that they never return.
 Functions marked as never returning should end in `__builtin_unreachable()`, which the compiler will usually turn into an `unimp`.
-

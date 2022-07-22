@@ -1,5 +1,6 @@
 ---
 title: "OpenTitan Security"
+url: "security/"
 ---
 
 ## Overview

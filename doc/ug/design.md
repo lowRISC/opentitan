@@ -53,7 +53,7 @@ These descriptions are used by `build_docs.py` to ensure that the technical spec
 
 Underlying and critical to this tooling is the human-written content that goes into the source Markdown and register descriptions.
 Clarity and consistency is key.
-See the [Markdown Style Guide]({{< relref "doc/rm/markdown_usage_style.md" >}}) for details and guidelines on the description language.
+See the [Markdown Style Guide]({{< relref "doc/sg/markdown_usage_style.md" >}}) for details and guidelines on the description language.
 
 ## Usage of Register Tool
 

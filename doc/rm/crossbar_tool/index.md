@@ -35,7 +35,7 @@ Together, these describe a generic Directed Acyclic Graph (DAG) with some additi
 
 If the tool is used in the process of top generation (`topgen.py`, details forthcoming), a few fields are derived from the top Hjson configuration module structure.
 
-A description of Hjson and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "doc/rm/hjson_usage_style" >}}).
+A description of Hjson and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "doc/sg/hjson_usage_style" >}}).
 
 An item in the `nodes` list corresponds to a host or device interface on an instantiated IP block.
 The name of such a node should be of the form `<instance_name>.<interface_name>`, so the `my_if` interface on the instance `my_instance` would be denoted `my_instance.my_if`.

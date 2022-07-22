@@ -4,7 +4,7 @@ title: "Building documentation"
 
 The documentation for OpenTitan is available [online](https://docs.opentitan.org).
 The creation of documentation is mainly based around the conversion from Markdown to HTML files with [Hugo](https://gohugo.io/).
-Rules for how to write correct Markdown files can be found in the [reference manual]({{< relref "doc/rm/markdown_usage_style.md" >}}).
+Rules for how to write correct Markdown files can be found in the [reference manual]({{< relref "doc/sg/markdown_usage_style.md" >}}).
 
 ## Building locally
 

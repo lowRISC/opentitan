@@ -18,7 +18,7 @@ DIFs provide extensively reviewed APIs for actuating hardware for three separate
 
 #### Language
 
-DIFs **must** be written in C, specifically [C11 (with a few allowed extensions)]({{< relref "doc/rm/c_cpp_coding_style.md#c-style-guide" >}}).
+DIFs **must** be written in C, specifically [C11 (with a few allowed extensions)]({{< relref "doc/sg/c_cpp_coding_style.md#c-style-guide" >}}).
 DIFs **must** conform to the style guide in [`sw/device/lib/dif`]({{< relref "sw/device/lib/dif" >}}).
 
 DIFs **must** only depend on:
