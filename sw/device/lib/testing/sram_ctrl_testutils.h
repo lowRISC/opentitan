@@ -35,6 +35,7 @@ void sram_ctrl_testutils_write(uintptr_t address,
  *
  * The data is checked for equality.
  */
+OT_WARN_UNUSED_RESULT
 bool sram_ctrl_testutils_read_check_eq(
     uintptr_t address, const sram_ctrl_testutils_data_t *expected);
 
@@ -43,6 +44,7 @@ bool sram_ctrl_testutils_read_check_eq(
  *
  * The data is checked for inequality.
  */
+OT_WARN_UNUSED_RESULT
 bool sram_ctrl_testutils_read_check_neq(
     uintptr_t address, const sram_ctrl_testutils_data_t *expected);
 

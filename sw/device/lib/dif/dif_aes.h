@@ -377,6 +377,7 @@ dif_result_t dif_aes_read_output(const dif_aes_t *aes, dif_aes_data_t *data);
  * @param block_amount The amount of blocks to be encrypted.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_aes_process_data(const dif_aes_t *aes,
                                   const dif_aes_data_t *plain_text,
                                   dif_aes_data_t *cipher_text,

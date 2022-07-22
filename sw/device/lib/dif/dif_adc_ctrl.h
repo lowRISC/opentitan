@@ -405,6 +405,7 @@ dif_result_t dif_adc_ctrl_irq_clear_causes(const dif_adc_ctrl_t *adc_ctrl,
  * @param enabled The enablement state to set.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_adc_ctrl_filter_match_wakeup_set_enabled(
     const dif_adc_ctrl_t *adc_ctrl, dif_adc_ctrl_filter_t filter,
     dif_toggle_t enabled);
@@ -417,6 +418,7 @@ dif_result_t dif_adc_ctrl_filter_match_wakeup_set_enabled(
  * @param[out] is_enabled The enablement state retrieved.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_adc_ctrl_filter_match_wakeup_get_enabled(
     const dif_adc_ctrl_t *adc_ctrl, dif_adc_ctrl_filter_t filter,
     dif_toggle_t *is_enabled);
@@ -433,6 +435,7 @@ dif_result_t dif_adc_ctrl_filter_match_wakeup_get_enabled(
  * @param enabled The enablement state to set.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_adc_ctrl_irq_cause_set_enabled(const dif_adc_ctrl_t *adc_ctrl,
                                                 uint32_t causes,
                                                 dif_toggle_t enabled);
@@ -446,6 +449,7 @@ dif_result_t dif_adc_ctrl_irq_cause_set_enabled(const dif_adc_ctrl_t *adc_ctrl,
  *                            `debug_cable` IRQ.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_adc_ctrl_irq_cause_get_enabled(const dif_adc_ctrl_t *adc_ctrl,
                                                 uint32_t *enabled_causes);
 

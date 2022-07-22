@@ -310,6 +310,7 @@ dif_result_t dif_clkmgr_disable_measure_counts(
  * @param[out] state The state of control enable.
  * @returns The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_measure_counts_get_enable(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_measure_clock_t clock,
     dif_toggle_t *state);
@@ -323,6 +324,7 @@ dif_result_t dif_clkmgr_measure_counts_get_enable(
  * @param[out] max_threshold The maximum threshold.
  * @returns The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_measure_counts_get_thresholds(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_measure_clock_t clock,
     uint32_t *min_threshold, uint32_t *max_threshold);

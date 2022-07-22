@@ -89,6 +89,7 @@ typedef enum dif_otbn_err_bits {
  * @param otbn OTBN instance
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_reset(const dif_otbn_t *otbn);
 
 /**
@@ -98,6 +99,7 @@ dif_result_t dif_otbn_reset(const dif_otbn_t *otbn);
  * @param cmd The command.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_write_cmd(const dif_otbn_t *otbn, dif_otbn_cmd_t cmd);
 
 /**
@@ -107,6 +109,7 @@ dif_result_t dif_otbn_write_cmd(const dif_otbn_t *otbn, dif_otbn_cmd_t cmd);
  * @param[out] status OTBN status
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_get_status(const dif_otbn_t *otbn,
                                  dif_otbn_status_t *status);
 
@@ -117,6 +120,7 @@ dif_result_t dif_otbn_get_status(const dif_otbn_t *otbn,
  * @param[out] err_bits The error bits returned by the hardware.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_get_err_bits(const dif_otbn_t *otbn,
                                    dif_otbn_err_bits_t *err_bits);
 
@@ -131,6 +135,7 @@ dif_result_t dif_otbn_get_err_bits(const dif_otbn_t *otbn,
  * @param[out] insn_cnt The number of instructions executed by OTBN.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_get_insn_cnt(const dif_otbn_t *otbn, uint32_t *insn_cnt);
 
 /**
@@ -144,6 +149,7 @@ dif_result_t dif_otbn_get_insn_cnt(const dif_otbn_t *otbn, uint32_t *insn_cnt);
  * @param len_bytes number of bytes to copy.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_imem_write(const dif_otbn_t *otbn, uint32_t offset_bytes,
                                  const void *src, size_t len_bytes);
 
@@ -158,6 +164,7 @@ dif_result_t dif_otbn_imem_write(const dif_otbn_t *otbn, uint32_t offset_bytes,
  * @param len_bytes number of bytes to copy.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_imem_read(const dif_otbn_t *otbn, uint32_t offset_bytes,
                                 void *dest, size_t len_bytes);
 
@@ -172,6 +179,7 @@ dif_result_t dif_otbn_imem_read(const dif_otbn_t *otbn, uint32_t offset_bytes,
  * @param len_bytes number of bytes to copy.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn, uint32_t offset_bytes,
                                  const void *src, size_t len_bytes);
 
@@ -186,6 +194,7 @@ dif_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn, uint32_t offset_bytes,
  * @param len_bytes number of bytes to copy.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn, uint32_t offset_bytes,
                                 void *dest, size_t len_bytes);
 
@@ -200,6 +209,7 @@ dif_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn, uint32_t offset_bytes,
  * @return The result of the operation, `kDifUnavailable` is returned when the
  * requested change cannot be made.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_set_ctrl_software_errs_fatal(const dif_otbn_t *otbn,
                                                    bool enable);
 
