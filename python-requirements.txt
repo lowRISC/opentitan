@@ -43,10 +43,10 @@ types-tabulate
 anytree
 
 # Development version with OT-specific changes
-git+https://github.com/lowRISC/fusesoc.git@ot-0.1
+git+https://github.com/lowRISC/fusesoc.git@ot-0.3
 
 # Development version with OT-specific changes
-git+https://github.com/lowRISC/edalize.git@ot-0.1
+git+https://github.com/lowRISC/edalize.git@v0.4.0
 
 # Development version of minimal ChipWhisperer toolchain with latest features
 # and bug fixes. We fix the version for improved stability and manually update
