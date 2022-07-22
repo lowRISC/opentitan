@@ -26,10 +26,19 @@ def _bitstream_splice_impl(ctx):
         },
     )
 
+    # Vivado's `updatemem` only accepts bitstream filenames that end with
+    # ".bit". If the `src` bitstream came from the GCP bucket, its filename will
+    # end with ".bit.splice" or ".bit.orig" and `updatemem` would reject it.
+    #
+    # TODO(#13807) Eliminate this symlink step once the names of cached
+    # bitstream files are guaranteed to end with ".bit".
+    tmpsrc = ctx.actions.declare_file("{}.tmpsrc.bit".format(ctx.label.name))
+    ctx.actions.symlink(output = tmpsrc, target_file = ctx.file.src)
+
     ctx.actions.run(
         mnemonic = "SpliceBitstream",
         outputs = [output],
-        inputs = [ctx.file.src, ctx.file.meminfo, update],
+        inputs = [tmpsrc, ctx.file.meminfo, update],
         arguments = [
             "-force",
             "--meminfo",
@@ -37,7 +46,7 @@ def _bitstream_splice_impl(ctx):
             "--data",
             update.path,
             "--bit",
-            ctx.file.src.path,
+            tmpsrc.path,
             "--proc",
             "dummy",
             "--out",

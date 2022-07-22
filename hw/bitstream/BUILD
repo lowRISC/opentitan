@@ -2,27 +2,35 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:splice.bzl", "bitstream_splice")
+
 package(default_visibility = ["//visibility:public"])
 
-# Use a bitstream from the GCP bucket (this is also the default condition).
-# You can control the GCP bitstream selection via the BITSTREAM environment
-# variable.  See //rules/bitstreams.bzl for more information.
+# By default, targets in this file will use cached artifacts from the GCP bucket
+# instead of building them from scratch.
 #
-# Example:
-#   bazel test //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 --define bitstream=gcp
-config_setting(
-    name = "bitstream_gcp",
-    define_values = {
-        "bitstream": "gcp",
-    },
-)
+# You can control GCP bitstream selection with the BITSTREAM environment
+# variable. See //rules:bitstreams.bzl for more information.
+#
+# Alternatively, you can disable or alter this caching behavior with the
+# "bitstream" config setting.
+#
+# * `--define bitstream=skip` skips loading a bitstream into the FPGA. This is
+#   useful if you already have a bitstream loaded into the FPGA and you don't
+#   want the GCP cache manager to do anything unexpected.
+#
+# * `--define bitstream=vivado` causes these targets to build from scratch with
+#   Vivado. You'll need to have Xilinx Vivado installed and have properly
+#   configured access to a license or license server.
+#
+# * `--define bitstream=gcp_splice` causes these targets to use a cached
+#   bitstream, but splice in a locally-built ROM image or OTP.
+#
+# Downstream targets will see the effects of this caching logic. For example,
+# specifying `--define bitstream=vivado` when testing
+# //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 will turn
+# `:test_rom` into a full Vivado bitstream build.
 
-# Skip loading a bitstream in to the FPGA.  This is useful if you already
-# have a bitstream loaded into the FPGA and you don't want the GCP cache
-# manager to do anything unexpected.
-#
-# Example:
-#   bazel test //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 --define bitstream=skip
 config_setting(
     name = "bitstream_skip",
     define_values = {
@@ -30,16 +38,17 @@ config_setting(
     },
 )
 
-# Use a bitstream built by Vivado.  You'll need to have Xilinx Vivado
-# installed and have properly configured access to a license or license
-# server.
-#
-# Example:
-#   bazel test //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 --define bitstream=vivado
 config_setting(
     name = "bitstream_vivado",
     define_values = {
         "bitstream": "vivado",
+    },
+)
+
+config_setting(
+    name = "bitstream_gcp_splice",
+    define_values = {
+        "bitstream": "gcp_splice",
     },
 )
 
@@ -48,7 +57,7 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_test_rom"],
-        "bitstream_gcp": ["@bitstreams//:bitstream_test_rom"],
+        "bitstream_gcp_splice": [":gcp_spliced_test_rom"],
         "//conditions:default": ["@bitstreams//:bitstream_test_rom"],
     }),
 )
@@ -58,16 +67,67 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_mask_rom"],
-        "bitstream_gcp": ["@bitstreams//:bitstream_mask_rom"],
+        "bitstream_gcp_splice": [":gcp_spliced_mask_rom"],
         "//conditions:default": ["@bitstreams//:bitstream_mask_rom"],
     }),
 )
 
-# TODO(lowRISC/opentitan#13603): Use `select` once we're uploading these
-# artifacts to GCP.
 filegroup(
     name = "mask_rom_otp_dev",
-    srcs = [
-        "//hw/bitstream/vivado:fpga_cw310_mask_rom_otp_dev",
-    ],
+    srcs = select({
+        "bitstream_skip": ["skip.bit"],
+        "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_mask_rom_otp_dev"],
+        "bitstream_gcp_splice": [":gcp_spliced_mask_rom_otp_dev"],
+        # FIXME(#13603) By default, this will actually do a local splice instead
+        # of retrieving the pre-spliced bitstream from the cache.
+        "//conditions:default": [":gcp_spliced_mask_rom_otp_dev"],
+    }),
+)
+
+filegroup(
+    name = "rom_mmi",
+    srcs = select({
+        "bitstream_skip": ["skip.bit"],
+        "bitstream_vivado": ["//hw/bitstream/vivado:rom_mmi"],
+        "//conditions:default": ["@bitstreams//:rom_mmi"],
+    }),
+)
+
+filegroup(
+    name = "otp_mmi",
+    srcs = select({
+        "bitstream_skip": ["skip.bit"],
+        "bitstream_vivado": ["//hw/bitstream/vivado:otp_mmi"],
+        "//conditions:default": ["@bitstreams//:otp_mmi"],
+    }),
+)
+
+# Build the Test ROM and splice it into a cached bitstream.
+bitstream_splice(
+    name = "gcp_spliced_test_rom",
+    src = "@bitstreams//:bitstream_test_rom",
+    data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
+    meminfo = ":rom_mmi",
+    tags = ["manual"],
+    visibility = ["//visibility:private"],
+)
+
+# Build the Mask ROM and splice it into a cached bitstream.
+bitstream_splice(
+    name = "gcp_spliced_mask_rom",
+    src = "@bitstreams//:bitstream_test_rom",
+    data = "//sw/device/silicon_creator/mask_rom:mask_rom_fpga_cw310_scr_vmem",
+    meminfo = ":rom_mmi",
+    tags = ["manual"],
+    visibility = ["//visibility:private"],
+)
+
+# Splice the OTP Dev image into `:gcp_spliced_mask_rom`.
+bitstream_splice(
+    name = "gcp_spliced_mask_rom_otp_dev",
+    src = ":gcp_spliced_mask_rom",
+    data = "//hw/ip/otp_ctrl/data:img_dev",
+    meminfo = ":otp_mmi",
+    tags = ["manual"],
+    visibility = ["//visibility:private"],
 )
