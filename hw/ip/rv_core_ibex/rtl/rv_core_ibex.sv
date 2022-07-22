@@ -187,6 +187,20 @@ module rv_core_ibex
   // core sleeping
   logic core_sleep;
 
+  // The following intermediate signals are created to aid in simulations.
+  //
+  // If a parent port is connected directly to a port of sub-modules, the implicit wire connection
+  // can have only one procedural driver (assign, force etc). What that means is, it prevents us
+  // from forcing the sub-module port without impacting the same port on other sub-modules. The
+  // reason for this is, regardless of which hierarchy the port signal is forced, it is a singular
+  // wire-connected entity - the effect of the force ends up getting reflected on the same port of
+  // sub-modules, as well as the parent port. To achieve the behavior of a force on a sub-module
+  // port not impacting (i.e. back-propagating to) the same port on parent / peer sub-modules, we
+  // need to add an extra `logic` type variables between the port-port connections.
+  logic ibex_top_clk_i;
+  logic addr_trans_rst_ni;
+  assign ibex_top_clk_i = clk_i;
+  assign addr_trans_rst_ni = rst_ni;
 
   // errors and core alert events
   logic ibus_intg_err, dbus_intg_err;
@@ -388,11 +402,11 @@ module rv_core_ibex
     .DmHaltAddr               ( DmHaltAddr               ),
     .DmExceptionAddr          ( DmExceptionAddr          )
   ) u_core (
-    .clk_i,
+    .clk_i              (ibex_top_clk_i),
     .rst_ni,
 
 
-    .test_en_i      (prim_mubi_pkg::mubi4_test_true_strict(scanmode_i)),
+    .test_en_i          (prim_mubi_pkg::mubi4_test_true_strict(scanmode_i)),
     .scan_rst_ni,
 
     .ram_cfg_i,
@@ -511,7 +525,7 @@ module rv_core_ibex
     .NumRegions(NumRegions)
   ) u_ibus_trans (
     .clk_i,
-    .rst_ni,
+    .rst_ni(addr_trans_rst_ni),
     .region_cfg_i(ibus_region_cfg),
     .addr_i(instr_addr),
     .addr_o(instr_addr_trans)
@@ -570,7 +584,7 @@ module rv_core_ibex
     .NumRegions(NumRegions)
   ) u_dbus_trans (
     .clk_i,
-    .rst_ni,
+    .rst_ni(addr_trans_rst_ni),
     .region_cfg_i(dbus_region_cfg),
     .addr_i(data_addr),
     .addr_o(data_addr_trans)
