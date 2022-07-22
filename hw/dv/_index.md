@@ -2,4 +2,4 @@
 title: "Design Verification"
 ---
 
-{{% sectionContent %}}
+{{% sectionContent type="section" depth="1" %}}
