@@ -17,16 +17,17 @@ proc get_env_var {name} {
   }
 }
 
-set FOUNDRY_ROOT       [get_env_var "FOUNDRY_ROOT"]
-set SV_FLIST           [get_env_var "SV_FLIST"]
-set BUILD_DIR          [get_env_var "BUILD_DIR"]
-set DUT                [get_env_var "DUT"]
-set CONSTRAINT         [get_env_var "CONSTRAINT"]
-set FOUNDRY_CONSTRAINT [get_env_var "FOUNDRY_CONSTRAINT"]
-set PARAMS             [get_env_var "PARAMS"]
-set RDC_WAIVER_FILE    [get_env_var "RDC_WAIVER_FILE"]
-set RDC_WAIVER_DIR     [file dirname $RDC_WAIVER_FILE]
-set ENV_FILE           [get_env_var "ENV_FILE"]
+set FOUNDRY_ROOT        [get_env_var "FOUNDRY_ROOT"]
+set SV_FLIST            [get_env_var "SV_FLIST"]
+set BUILD_DIR           [get_env_var "BUILD_DIR"]
+set DUT                 [get_env_var "DUT"]
+set CONSTRAINT          [get_env_var "CONSTRAINT"]
+set FOUNDRY_CONSTRAINT  [get_env_var "FOUNDRY_CONSTRAINT"]
+set PARAMS              [get_env_var "PARAMS"]
+set RDC_WAIVER_FILE     [get_env_var "RDC_WAIVER_FILE"]
+set RDC_WAIVER_DIR      [file dirname $RDC_WAIVER_FILE]
+set ENV_FILE            [get_env_var "ENV_FILE"]
+set RESET_SCENARIO_FILE [get_env_var "RESET_SCENARIO_FILE"]
 
 # Used to disable some SDC constructs that are not needed by RDC.
 # Reusing IS_CDC_RUN
@@ -80,32 +81,60 @@ if {$PARAMS != ""} {
 ## Define Common Synchronizers ##
 #################################
 
+# -force:      Force suppression of E_RST_METASTABILITY violation going to this
+#              cell
+# -supress_rf: Force suppression of E_RST_METASTABILITY violation going
+#              "through" this cell
+set_rdc_user_defined_sync_cell -force prim_flop_2sync \
+  -comment "async reset then 2FF @ CLK"
 
 #########################
 ## Apply Constraints   ##
 #########################
 
-read_sdc $CONSTRAINT
+# Create Scenario for each constraint
+create_scenario { sdc env }
+
+set envs env_from_public_sdc.env
+
+read_sdc -scenario sdc -output_env $envs $CONSTRAINT
+
 if {$FOUNDRY_CONSTRAINT != ""} {
-  read_sdc $FOUNDRY_CONSTRAINT
+  lappend envs env_from_foundry_sdc.env
+  read_sdc -scenario sdc -output_env [lindex $envs 1] $FOUNDRY_CONSTRAINT
 }
 
 ############################
 ## Apply Environment File ##
 ############################
 
+# default scenario to env
+current_scenario env
+
 if {$ENV_FILE != ""} {
-  read_env $ENV_FILE
+  lappend envs $ENV_FILE
 }
 
+read_env $envs
+
 #########################
-## Run RDC             ##
+## Analyze + Scenario  ##
 #########################
 
 analyze_intent
 
 create_set_reset_scenario_script -output reset_scenarios.tcl -primary
+
+# Import hand-edited reset scenario file
+if {$RESET_SCENARIO_FILE != ""} {
+  source $RESET_SCENARIO_FILE
+}
+
 source reset_scenarios.tcl
+
+#########################
+## Run RDC             ##
+#########################
 
 verify_rdc
 

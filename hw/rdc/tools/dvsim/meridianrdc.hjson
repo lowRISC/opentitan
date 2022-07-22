@@ -8,6 +8,7 @@
     { FOUNDRY_CONSTRAINT: "{foundry_sdc_file}" },
     { RDC_WAIVER_FILE:    "{rdc_waiver_file}" }
     { ENV_FILE:           "{env_file}" }
+    { RESET_SCENARIO_FILE: "{reset_scenario_file}"}
   ]
 
   // Tool invocation
