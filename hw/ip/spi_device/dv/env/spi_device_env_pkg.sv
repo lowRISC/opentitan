@@ -14,6 +14,7 @@ package spi_device_env_pkg;
   import cip_base_pkg::*;
   import mem_model_pkg::*;
   import spi_device_ral_pkg::*;
+  import dv_base_reg_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -97,8 +98,8 @@ package spi_device_env_pkg;
   parameter uint ADDR_FIFO_START_ADDR            = CMD_FIFO_START_ADDR + CMD_FIFO_SIZE; // 0xe20
   parameter uint ADDR_FIFO_SIZE                  = 32;
 
-  parameter bit[7:0] TPM_WRITE_CMD               = 8'hC0;
-  parameter bit[7:0] TPM_READ_CMD                = 8'hC1;
+  parameter bit[7:0] TPM_WRITE_CMD               = 8'h03;
+  parameter bit[7:0] TPM_READ_CMD                = 8'h83;
   parameter byte TPM_START                       = 8'h01;
   parameter byte TPM_WAIT                        = 8'h00;
   parameter bit[11:0] TPM_HW_STS_OFFSET          = 12'h018;

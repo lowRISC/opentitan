@@ -34,17 +34,21 @@ class spi_device_tpm_write_vseq extends spi_device_tpm_base_vseq;
     // send payload
     cfg.spi_host_agent_cfg.csb_consecutive = 1;
     spi_host_xfer_word(address_command, device_word_rsp);
-    while (pay_num < 5) begin
-      spi_host_xfer_byte(data_bytes[pay_num], device_byte_rsp);
-      `uvm_info(`gfn, $sformatf("Device Resp = 0x%0h", device_byte_rsp), UVM_LOW)
-      device_byte_rsp = {<<1{device_byte_rsp}};
-      if (pay_num > 0) pay_num++;
-      if (pay_num == 0  && device_byte_rsp == TPM_START) pay_num++;
-      if (pay_num == 4) cfg.spi_host_agent_cfg.csb_consecutive = 0;
-    end
-
-    chk_fifo_contents(address_command, data_bytes);
-
+    fork
+      check_tpm_cmd_addr(tpm_cmd, tpm_addr);
+      begin
+        `DV_SPINWAIT(
+          while (pay_num < 5) begin
+            spi_host_xfer_byte(data_bytes[pay_num], device_byte_rsp);
+            `uvm_info(`gfn, $sformatf("Device Resp = 0x%0h", device_byte_rsp), UVM_LOW)
+            if (pay_num > 0) pay_num++;
+            if (pay_num == 0  && device_byte_rsp == TPM_START) pay_num++;
+            if (pay_num == 4) cfg.spi_host_agent_cfg.csb_consecutive = 0;
+          end
+        )
+        check_tpm_write_fifo(data_bytes);
+      end
+    join
   endtask : body
 
 endclass : spi_device_tpm_write_vseq

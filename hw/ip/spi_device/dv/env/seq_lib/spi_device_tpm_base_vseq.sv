@@ -21,15 +21,17 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
 
   // Configure clocks and tpm, generate a word.
   virtual task tpm_init();
+    // Only SPI mode 0 is supported (CPHA=0, CPOL=0).
     cfg.spi_host_agent_cfg.sck_polarity[0] = 0;
     cfg.spi_host_agent_cfg.sck_phase[0] = 0;
+    // Only support tx/rx_order = 0
     cfg.spi_host_agent_cfg.host_bit_dir = 0;
     cfg.spi_host_agent_cfg.device_bit_dir = 0;
-    ral.cfg.tx_order.set(1);
-    ral.cfg.rx_order.set(1);
+    ral.cfg.tx_order.set(cfg.spi_host_agent_cfg.host_bit_dir);
+    ral.cfg.rx_order.set(cfg.spi_host_agent_cfg.device_bit_dir);
     ral.cfg.cpol.set(1'b0);
     ral.cfg.cpha.set(1'b0);
-    csr_update(.csr(ral.cfg)); // TODO check if randomization possible
+    csr_update(.csr(ral.cfg));
 
     ral.tpm_cfg.en.set(1'b1);
     // 1 for CRB, 0 for FIFO.
@@ -62,24 +64,32 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
   endtask : tpm_configure_locality
 
   // Check the CMD_ADDR/wrFIFO contents.
-  virtual task chk_fifo_contents(bit [31:0] addr_cmd, byte data_bytes[$]);
-    bit [7:0]  wrfifo_data;
-    bit [31:0] chk_cmd_addr_data;
+  virtual task check_tpm_cmd_addr(bit [7:0] exp_cmd, bit [23:0] exp_addr);
+    bit [31:0] cmd_addr_data;
+    bit [7:0] act_cmd;
+    bit [23:0] act_addr;
 
+    // first sent byte is MSB of the address
+    exp_addr = {exp_addr[7:0], exp_addr[15:8], exp_addr[23:16]};
     // Check command and address fifo
-    csr_rd(.ptr(ral.tpm_cmd_addr), .value(chk_cmd_addr_data));
-    addr_cmd = {<<1{addr_cmd}};
-    `DV_CHECK_CASE_EQ(addr_cmd, chk_cmd_addr_data)
+    csr_rd(.ptr(ral.tpm_cmd_addr), .value(cmd_addr_data));
+    act_cmd = get_field_val(ral.tpm_cmd_addr.cmd, cmd_addr_data);
+    act_addr = get_field_val(ral.tpm_cmd_addr.addr, cmd_addr_data);
+    `DV_CHECK_CASE_EQ(act_cmd, exp_cmd)
+    `DV_CHECK_CASE_EQ(act_addr, exp_addr)
+  endtask : check_tpm_cmd_addr
+
+  // Check the CMD_ADDR/wrFIFO contents.
+  virtual task check_tpm_write_fifo(byte data_bytes[$]);
+    bit [7:0]  wrfifo_data;
 
     // Check write fifo
     for (int i = 1; i <= 4; i++) begin
       csr_rd(.ptr(ral.tpm_write_fifo), .value(wrfifo_data));
       `uvm_info(`gfn, $sformatf("WR FIFO Content = 0x%0h", wrfifo_data), UVM_LOW)
-      data_bytes[i] = {<<1{data_bytes[i]}};
       `DV_CHECK_CASE_EQ(wrfifo_data, data_bytes[i])
     end
-
-  endtask : chk_fifo_contents
+  endtask : check_tpm_write_fifo
 
   // Poll for START symbol from TPM, collect device data
   virtual task poll_start_collect_data(byte data_bytes[5], ref bit [7:0] returned_bytes[*]);
@@ -88,7 +98,6 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     `DV_SPINWAIT(
       while (pay_num < 5) begin
         spi_host_xfer_byte(data_bytes[pay_num], device_byte_rsp);
-        device_byte_rsp = {<<1{device_byte_rsp}};
         `uvm_info(`gfn, $sformatf("Device Resp = 0x%0h", device_byte_rsp), UVM_LOW)
         if (pay_num > 0) begin
           returned_bytes[pay_num - 1] = device_byte_rsp;

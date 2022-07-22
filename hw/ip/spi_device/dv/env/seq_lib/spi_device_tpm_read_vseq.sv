@@ -35,14 +35,13 @@ class spi_device_tpm_read_vseq extends spi_device_tpm_base_vseq;
       `DV_CHECK_STD_RANDOMIZE_FATAL(tpm_addr)
       // Data size will be 5, first byte dummy for polling, remaining 4 for payload
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data_bytes, data_bytes.size() == 5;)
-      tpm_addr = {<<1{tpm_addr}};
       address_command = {tpm_addr, tpm_cmd};
       `uvm_info(`gfn, $sformatf("Address Command = 0x%0h", address_command), UVM_LOW)
       cfg.spi_host_agent_cfg.csb_consecutive = 1;
       spi_host_xfer_word(address_command, device_word_rsp);
       fork
         begin
-          csr_rd(.ptr(ral.tpm_cmd_addr), .value(tpm_addr_read));
+          check_tpm_cmd_addr(tpm_cmd, tpm_addr);
           // Upon receiving read command, set read fifo contents
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(read_fifo_data, read_fifo_data.size() == 4;)
           foreach (read_fifo_data[i]) csr_wr(.ptr(ral.tpm_read_fifo), .value(read_fifo_data[i]));
