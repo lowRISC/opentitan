@@ -29,7 +29,7 @@
                 <ul class="{{- if .IsAncestor $displayedNode}} ancestor{{- end }}
                     {{- if ne $numberOfPages 0 }} parent{{- end }}">
                     {{- $subElements := dict }}
-                    {{- range .Site.Pages }}
+                    {{- range (where .Site.Pages ".Params.unlisted" "!=" "true") }}
                         {{- if and (eq .Parent $currentNode) (.IsDescendant $currentNode) }}
                             {{- $subElements = merge $subElements (dict (string .) . ) }}
                         {{- end }}
