@@ -85,17 +85,19 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
   virtual task poll_start_collect_data(byte data_bytes[5], ref bit [7:0] returned_bytes[*]);
     int pay_num = 0;
     bit [7:0]  device_byte_rsp;
-    while (pay_num < 5) begin
-      spi_host_xfer_byte(data_bytes[pay_num], device_byte_rsp);
-      device_byte_rsp = {<<1{device_byte_rsp}};
-      `uvm_info(`gfn, $sformatf("Device Resp = 0x%0h", device_byte_rsp), UVM_LOW)
-      if (pay_num > 0) begin
-        returned_bytes[pay_num - 1] = device_byte_rsp;
-        pay_num++;
+    `DV_SPINWAIT(
+      while (pay_num < 5) begin
+        spi_host_xfer_byte(data_bytes[pay_num], device_byte_rsp);
+        device_byte_rsp = {<<1{device_byte_rsp}};
+        `uvm_info(`gfn, $sformatf("Device Resp = 0x%0h", device_byte_rsp), UVM_LOW)
+        if (pay_num > 0) begin
+          returned_bytes[pay_num - 1] = device_byte_rsp;
+          pay_num++;
+        end
+        if ((pay_num == 0  && device_byte_rsp == TPM_START)) pay_num++;
+        if (pay_num == 4) cfg.spi_host_agent_cfg.csb_consecutive = 0;
       end
-      if ((pay_num == 0  && device_byte_rsp == TPM_START)) pay_num++;
-      if (pay_num == 4) cfg.spi_host_agent_cfg.csb_consecutive = 0;
-    end
+    )
   endtask : poll_start_collect_data
 
 endclass : spi_device_tpm_base_vseq
