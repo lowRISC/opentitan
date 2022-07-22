@@ -359,6 +359,7 @@ dif_result_t dif_pinmux_output_select(const dif_pinmux_t *pinmux,
  *                       hardware.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_pinmux_pad_write_attrs(const dif_pinmux_t *pinmux,
                                         dif_pinmux_index_t pad,
                                         dif_pinmux_pad_kind_t type,
@@ -374,6 +375,7 @@ dif_result_t dif_pinmux_pad_write_attrs(const dif_pinmux_t *pinmux,
  * @param attrs[out] Obtained attributes.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_pinmux_pad_get_attrs(const dif_pinmux_t *pinmux,
                                       dif_pinmux_index_t pad,
                                       dif_pinmux_pad_kind_t type,

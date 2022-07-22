@@ -560,7 +560,7 @@ TEST_F(ObserveFifoBlockingReadTest, SuccessDataSave) {
 class ObserveFifoWriteTest : public EntropySrcTest {};
 
 TEST_F(ObserveFifoWriteTest, NullArgs) {
-  uint32_t buf[8];
+  uint32_t buf[8] = {0};
   EXPECT_DIF_BADARG(dif_entropy_src_observe_fifo_write(nullptr, buf, 8));
   EXPECT_DIF_BADARG(
       dif_entropy_src_observe_fifo_write(&entropy_src_, nullptr, 8));
@@ -773,7 +773,7 @@ TEST_F(GetRecoverableAlertsTest, Success) {
 class ClearRecoverableAlertsTest : public EntropySrcTest {};
 
 TEST_F(ClearRecoverableAlertsTest, NullHandle) {
-  uint32_t alerts;
+  uint32_t alerts = 0;
   EXPECT_DIF_BADARG(dif_entropy_src_clear_recoverable_alerts(nullptr, alerts));
 }
 

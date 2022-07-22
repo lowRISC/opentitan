@@ -53,7 +53,7 @@ bool flash_ctrl_testutils_wait_transaction_end(
   }
   CHECK_DIF_OK(
       dif_flash_ctrl_clear_error_codes(flash_state, output.error_code.codes));
-  return output.operation_error;
+  return output.operation_error == 0;
 }
 
 uint32_t flash_ctrl_testutils_data_region_setup_properties(
@@ -186,7 +186,7 @@ bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
   const uint32_t prog_window_size =
       (uint32_t)FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES / sizeof(uint32_t);
   const uint32_t prog_window_mask = ~(prog_window_size - 1);
-  bool retval = false;
+  bool retval = true;
   while (words_written < word_count) {
     // Writes must not cross programming resolution window boundaries, which
     // occur at every prog_window_size words.
@@ -200,7 +200,7 @@ bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
     CHECK_DIF_OK(dif_flash_ctrl_start(flash_state, transaction));
     CHECK_DIF_OK(dif_flash_ctrl_prog_fifo_push(flash_state, words_to_write,
                                                data + words_written));
-    retval |= flash_ctrl_testutils_wait_transaction_end(flash_state);
+    retval &= flash_ctrl_testutils_wait_transaction_end(flash_state);
     word_address += words_to_write;
     words_written += words_to_write;
   }
@@ -214,7 +214,7 @@ bool flash_ctrl_testutils_erase_and_write_page(
     dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count) {
   bool retval = flash_ctrl_testutils_erase_page(flash_state, byte_address,
                                                 partition_id, partition_type);
-  retval |= flash_ctrl_testutils_write(flash_state, byte_address, partition_id,
+  retval &= flash_ctrl_testutils_write(flash_state, byte_address, partition_id,
                                        data, partition_type, word_count);
   return retval;
 }

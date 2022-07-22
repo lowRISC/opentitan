@@ -76,6 +76,7 @@ typedef struct dif_hmac_digest {
  * @param config The per-transaction configuration.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
                                       const uint8_t *key,
                                       const dif_hmac_transaction_t config);
@@ -92,6 +93,7 @@ dif_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
  * @param config The per-transaction configuration.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_hmac_mode_sha256_start(const dif_hmac_t *hmac,
                                         const dif_hmac_transaction_t config);
 
@@ -116,6 +118,7 @@ dif_result_t dif_hmac_mode_sha256_start(const dif_hmac_t *hmac,
  * @param[out] bytes_sent The number of bytes sent to the FIFO (optional).
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_hmac_fifo_push(const dif_hmac_t *hmac, const void *data,
                                 size_t len, size_t *bytes_sent);
 
@@ -128,6 +131,7 @@ dif_result_t dif_hmac_fifo_push(const dif_hmac_t *hmac, const void *data,
  * @param[out] num_entries The number of entries in the FIFO.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_hmac_fifo_count_entries(const dif_hmac_t *hmac,
                                          uint32_t *num_entries);
 
@@ -141,6 +145,7 @@ dif_result_t dif_hmac_fifo_count_entries(const dif_hmac_t *hmac,
  * @param[out] msg_len The number of bits in the HMAC message.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_hmac_get_message_length(const dif_hmac_t *hmac,
                                          uint64_t *msg_len);
 
@@ -154,6 +159,7 @@ dif_result_t dif_hmac_get_message_length(const dif_hmac_t *hmac,
  * @param hmac The HMAC device to initiate the run on.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_hmac_process(const dif_hmac_t *hmac);
 
 /**
@@ -177,6 +183,7 @@ dif_result_t dif_hmac_process(const dif_hmac_t *hmac);
  * digest.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_hmac_finish(const dif_hmac_t *hmac, dif_hmac_digest_t *digest);
 
 /**
@@ -189,6 +196,7 @@ dif_result_t dif_hmac_finish(const dif_hmac_t *hmac, dif_hmac_digest_t *digest);
  * @param entropy A source of randomness to write to the HMAC internal state.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_hmac_wipe_secret(const dif_hmac_t *hmac, uint32_t entropy);
 
 #ifdef __cplusplus

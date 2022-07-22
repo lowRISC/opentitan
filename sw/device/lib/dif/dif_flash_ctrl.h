@@ -48,6 +48,7 @@ typedef struct dif_flash_ctrl_state {
  * @param base_addr The base address for the flash controller.
  * @return `kDifBadArg` if `handle` is null. `kDifOk` otherwise.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_init_state(dif_flash_ctrl_state_t *handle,
                                        mmio_region_t base_addr);
 
@@ -88,6 +89,7 @@ dif_flash_ctrl_device_info_t dif_flash_ctrl_get_device_info(void);
  * @param enable Enable/disable flash functionality.
  * @return `kDifBadArg` if `handle` is null. `kDifOk` otherwise.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_set_flash_enablement(dif_flash_ctrl_state_t *handle,
                                                  dif_toggle_t enable);
 
@@ -99,6 +101,7 @@ dif_result_t dif_flash_ctrl_set_flash_enablement(dif_flash_ctrl_state_t *handle,
  * @return `kDifBadArg` if `handle` or `enabled_out` are null and `kDifOk`
  * otherwise.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_get_flash_enablement(
     const dif_flash_ctrl_state_t *handle, dif_toggle_t *enabled_out);
 
@@ -110,6 +113,7 @@ dif_result_t dif_flash_ctrl_get_flash_enablement(
  * @return `kDifBadArg` if `handle` or `enabled_out` are null and `kDifOk`
  * otherwise.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_set_exec_enablement(dif_flash_ctrl_state_t *handle,
                                                 dif_toggle_t enable);
 
@@ -122,6 +126,7 @@ dif_result_t dif_flash_ctrl_set_exec_enablement(dif_flash_ctrl_state_t *handle,
  * @return `kDifBadArg` if `handle` or `enabled_out` are null and `kDifOk`
  * otherwise.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_get_exec_enablement(
     const dif_flash_ctrl_state_t *handle, dif_toggle_t *enabled_out);
 
@@ -135,6 +140,7 @@ dif_result_t dif_flash_ctrl_get_exec_enablement(
  * @return `kDifBadArg` if `handle` is null, `kDifError` if initialization has
  * already been started, and `kDifOk` otherwise.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_start_controller_init(
     dif_flash_ctrl_state_t *handle);
 
@@ -205,6 +211,7 @@ typedef struct dif_flash_ctrl_prog_capabilities {
  * @return `kDifBadArg` if `handle` or `allowed_types_out` are null. `kDifOk`
  * otherwise.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_get_allowed_prog_types(
     const dif_flash_ctrl_state_t *handle,
     dif_flash_ctrl_prog_capabilities_t *allowed_types_out);
@@ -220,6 +227,7 @@ dif_result_t dif_flash_ctrl_get_allowed_prog_types(
  * given type should be *disabled*.
  * @return `kDifBadArg` if handle is null. `kDifOk` otherwise.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_disallow_prog_types(
     dif_flash_ctrl_state_t *handle,
     dif_flash_ctrl_prog_capabilities_t types_to_disable);

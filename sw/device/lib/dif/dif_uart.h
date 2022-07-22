@@ -271,6 +271,7 @@ dif_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
  * @param reset FIFO to reset (RX, TX or both).
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
                                  dif_uart_fifo_reset_t reset);
 
@@ -294,6 +295,7 @@ dif_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
  * @param enable Enable/disable control flag.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_uart_loopback_set(const dif_uart_t *uart,
                                    dif_uart_loopback_t loopback,
                                    dif_toggle_t enable);

@@ -24,8 +24,9 @@ void flash_ctrl_testutils_wait_for_init(dif_flash_ctrl_state_t *flash_state);
  * Clears any error codes and returns the value of operation_error.
  *
  * @param flash_state A flash_ctrl state handle.
- * @return True if the operation produced an error.
+ * @return False if the operation produced an error.
  */
+OT_WARN_UNUSED_RESULT
 bool flash_ctrl_testutils_wait_transaction_end(
     dif_flash_ctrl_state_t *flash_state);
 
@@ -119,8 +120,9 @@ uint32_t flash_ctrl_testutils_info_region_scrambled_setup(
  * @param byte_address The byte address of the page to erase.
  * @param partition_id The partition index.
  * @param partition_type The partition type, data or info.
- * @return The operation error flag.
+ * @return False if the operation failed.
  */
+OT_WARN_UNUSED_RESULT
 bool flash_ctrl_testutils_erase_page(
     dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
     uint32_t partition_id, dif_flash_ctrl_partition_type_t partition_type);
@@ -138,8 +140,9 @@ bool flash_ctrl_testutils_erase_page(
  * @param data The data to program.
  * @param partition_type The partition type, data or info.
  * @param word_count The number of words to program.
- * @return True if the operation produced an error.
+ * @return False if the operation produced an error.
  */
+OT_WARN_UNUSED_RESULT
 bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
                                 uint32_t byte_address, uint32_t partition_id,
                                 const uint32_t *data,
@@ -157,8 +160,9 @@ bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
  * @param data The data to program.
  * @param partition_type The partition type, data or info.
  * @param word_count The number of words to program.
- * @return The combined operation error flags from erase and program.
+ * @return False if the operation fails.
  */
+OT_WARN_UNUSED_RESULT
 bool flash_ctrl_testutils_erase_and_write_page(
     dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
     uint32_t partition_id, const uint32_t *data,
@@ -176,6 +180,7 @@ bool flash_ctrl_testutils_erase_and_write_page(
  * @param word_count The number of words to read.
  * @return The operation error flag.
  */
+OT_WARN_UNUSED_RESULT
 bool flash_ctrl_testutils_read(dif_flash_ctrl_state_t *flash_state,
                                uint32_t byte_address, uint32_t partition_id,
                                uint32_t *data_out,
@@ -205,8 +210,9 @@ void flash_ctrl_testutils_default_region_access(
  * @param bank The bank ID.
  * @param data_only True to only erase the data partitions. False to erase
  *                  everything.
- * @return if the operation failed.
+ * @return False if the operation failed.
  */
+OT_WARN_UNUSED_RESULT
 bool flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
                                      uint32_t bank, bool data_only);
 
