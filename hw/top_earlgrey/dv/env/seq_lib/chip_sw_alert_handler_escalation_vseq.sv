@@ -68,7 +68,7 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
       cfg.sw_test_timeout_ns);
 
     prev_key = curr_key;
-    uvm_hdl_read(keymgr_path, curr_key);
+    `DV_CHECK_FATAL(uvm_hdl_read(keymgr_path, curr_key))
     if (curr_key == prev_key) begin
       `uvm_fatal(`gfn, $sformatf("something is very wrong"))
     end
