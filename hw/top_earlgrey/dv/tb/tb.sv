@@ -568,18 +568,6 @@ module tb;
     end
   end
 
-  // otp test_access memory is only accessible after otp_init and lc_dft_en = 1.
-  // TODO: remove them once the otp/pwr otp/lc connections are completed.
-  initial begin
-    string common_seq_type, csr_seq_type;
-    void'($value$plusargs("run_%0s", common_seq_type));
-    void'($value$plusargs("csr_%0s", csr_seq_type));
-    if (common_seq_type inside {"mem_partial_access", "csr_mem_rw_with_rand_reset", "tl_errors"} ||
-        csr_seq_type == "mem_walk") begin
-      force tb.dut.top_earlgrey.u_otp_ctrl.lc_dft_en_i = lc_ctrl_pkg::On;
-    end
-  end
-
   // Control assertions in the DUT with UVM resource string "dut_assert_en".
   `DV_ASSERT_CTRL("dut_assert_en", tb.dut)
 
