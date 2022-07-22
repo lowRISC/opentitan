@@ -12,10 +12,10 @@ module rv_core_addr_trans import rv_core_ibex_pkg::*; #(
   parameter int AddrWidth = 32,
   parameter int NumRegions = 2
 ) (
-  input clk_i,
-  input rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
   input region_cfg_t [NumRegions-1:0] region_cfg_i,
-  input [AddrWidth-1:0] addr_i,
+  input logic [AddrWidth-1:0] addr_i,
   output logic [AddrWidth-1:0] addr_o
 );
 
