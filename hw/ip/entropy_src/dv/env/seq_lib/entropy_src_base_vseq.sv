@@ -90,16 +90,24 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.recov_alert_sts));
 
     super.dut_shutdown();
-    apply_reset(.kind("CSRNG_ONLY"));
   endtask
 
   // setup basic entropy_src features
-  virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg);
+  //
+  // If disable==1, explicitly clear module_enable before configuring
+  // to remove the write_lock
+  virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg,
+                                bit do_disable=1'b0);
 
     // If the new configuration is intentionally trying to force bad mubi
     // configurations, disable the alerts before applying the bad configs
     if (newcfg.use_invalid_mubi) begin
       cfg.entropy_src_assert_vif.assert_off_alert();
+    end
+
+    if (do_disable) begin
+      ral.module_enable.set(MuBi4False);
+      csr_update(.csr(ral.module_enable));
     end
 
     #50us;
@@ -211,7 +219,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     uvm_reg_field intr_field;
     uvm_reg       data_reg;
 
-
     entropy_data_reg_enable = (cfg.otp_en_es_fw_read == MuBi8True) &&
                               (ral.conf.entropy_data_reg_enable.get_mirrored_value() == MuBi4True);
 
@@ -226,7 +233,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       TlSrcObserveFIFO: begin
         intr_field        = ral.intr_state.es_observe_fifo_ready;
         data_reg          = ral.fw_ov_rd_data;
-        cnt_per_interrupt = ral.observe_fifo_thresh.get();
+        csr_rd(.ptr(ral.observe_fifo_thresh), .value(cnt_per_interrupt));
       end
       default: begin
         `uvm_fatal(`gfn, "Invalid source for accessing TL entropy (enviroment error)")
@@ -234,14 +241,17 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     endcase
 
     do begin
+      `uvm_info(`gfn, "READING INTERRUPT STS", UVM_DEBUG)
       csr_rd(.ptr(intr_field), .value(intr_status));
       if (intr_status) begin
         // Read and check entropy
+        `uvm_info(`gfn, $sformatf("Reading %d words", cnt_per_interrupt), UVM_HIGH)
         for (int i = 0; i < cnt_per_interrupt; i++) begin
           bit [TL_DW-1:0] entropy_tlul;
-          csr_rd(.ptr(data_reg), .value(entropy_tlul));
+          csr_rd(.ptr(data_reg), .value(entropy_tlul), .blocking(1'b1));
         end
         // Clear the appropriate interrupt bit
+        `uvm_info(`gfn, "CLEARING FIFO INTERRUPT", UVM_DEBUG)
         csr_wr(.ptr(intr_field), .value(1'b1), .blocking(1'b1));
         bundles_found++;
       end
