@@ -1,5 +1,5 @@
 ---
-title: "OpenTitan Software"
+title: "Software"
 ---
 
 This is the landing spot for software documentation within the OpenTitan project.
@@ -53,10 +53,10 @@ This includes the Device Interface Functions (DIFs).
 
 All DIFs are also documented on their respective [Hardware IP Specification]({{< relref "hw" >}})
 
-## Vendored in Code see [Vendor Tool User Guide]({{% relref "doc/ug/vendor_hw.md" %}})
+## Vendored in Code
+
+See [Vendor Tool User Guide]({{% relref "doc/ug/vendor_hw.md" %}})
 
 * [CoreMark](https://github.com/eembc/coremark)
-* [RISC-V Compliance](https://github.com/riscv/riscv-compliance)
-* [GoogleTest](https://github.com/google/googletest)
 * [Cryptoc](https://chromium.googlesource.com/chromiumos/third_party/cryptoc/)
 * [LLVM's Compiler-RT Coverage Profiling Library](https://github.com/llvm/llvm-project/tree/master/compiler-rt)

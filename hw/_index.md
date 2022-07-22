@@ -1,5 +1,5 @@
 ---
-title: "Hardware Dashboard"
+title: "Hardware"
 aliases: [/doc/project/hw_dashboard/]
 ---
 
