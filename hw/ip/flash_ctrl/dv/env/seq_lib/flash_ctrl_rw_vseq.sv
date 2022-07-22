@@ -15,7 +15,7 @@ class flash_ctrl_rw_vseq extends flash_ctrl_otf_base_vseq;
 
     fork
       begin
-        repeat(500) begin
+        repeat(250) begin
           `DV_CHECK_RANDOMIZE_FATAL(this)
           bank = $urandom_range(0, 1);
           randcase
@@ -25,7 +25,7 @@ class flash_ctrl_rw_vseq extends flash_ctrl_otf_base_vseq;
         end
       end
       begin
-        for (int i = 0; i < 100; ++i) begin
+        for (int i = 0; i < 2500; ++i) begin
           fork
             send_rand_host_rd();
           join_none
