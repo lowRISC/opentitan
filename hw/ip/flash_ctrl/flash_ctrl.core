@@ -38,9 +38,10 @@ filesets:
       - rtl/flash_phy.sv
       - rtl/flash_phy_core.sv
       - rtl/flash_phy_rd.sv
+      - rtl/flash_phy_rd_buffers.sv
+      - rtl/flash_phy_rd_buf_dep.sv
       - rtl/flash_phy_prog.sv
       - rtl/flash_phy_erase.sv
-      - rtl/flash_phy_rd_buffers.sv
       - rtl/flash_phy_scramble.sv
     file_type: systemVerilogSource
 
