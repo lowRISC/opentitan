@@ -103,6 +103,21 @@ static void sca_init_gpio(sca_trigger_source_t trigger) {
   uint32_t select_mask =
       bitfield_field32_write(0, kTriggerSourceBitfield, UINT32_MAX);
   uint32_t enable_mask = bitfield_bit32_write(0, kTriggerGateBitIndex, true);
+
+  // Configure the pinmux to enable the GPIOs.
+  for (size_t i = 0; i < 32; ++i) {
+    if ((select_mask | enable_mask) & (1u << i)) {
+      dif_pinmux_index_t mio = kTopEarlgreyPinmuxInselIoa0 + i;
+      dif_pinmux_index_t periph_io =
+          kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i;
+      OT_DISCARD(dif_pinmux_input_select(&pinmux, periph_io, mio));
+
+      mio = kTopEarlgreyPinmuxMioOutIoa0 + i;
+      periph_io = kTopEarlgreyPinmuxOutselGpioGpio0 + i;
+      OT_DISCARD(dif_pinmux_output_select(&pinmux, mio, periph_io));
+    }
+  }
+
   OT_DISCARD(dif_gpio_output_set_enabled_all(&gpio, select_mask | enable_mask));
 
   OT_DISCARD(dif_gpio_write_masked(

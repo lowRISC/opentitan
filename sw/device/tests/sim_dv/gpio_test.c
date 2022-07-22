@@ -242,11 +242,43 @@ void ottf_external_isr(void) {
 
 OTTF_DEFINE_TEST_CONFIG();
 
+void configure_pinmux(void) {
+  // input: assign MIO0..MIO31 to GPIO0..GPIO31 (except UARTs)
+  for (size_t i = 0; i < kDifGpioNumPins; ++i) {
+    dif_pinmux_index_t mio = kTopEarlgreyPinmuxInselIoa0 + i;
+    if (mio == kTopEarlgreyPinmuxInselIoc3 ||
+        mio == kTopEarlgreyPinmuxInselIob4) {
+      // Don't assign the UART pins to a GPIO.
+      continue;
+    } else {
+      dif_pinmux_index_t periph_io =
+          kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i;
+      CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, periph_io, mio));
+    }
+  }
+
+  // output: assign GPIO0..GPIO31 to MIO0..MIO31 (except UARTs)
+  for (size_t i = 0; i < kDifGpioNumPins; ++i) {
+    dif_pinmux_index_t mio = kTopEarlgreyPinmuxMioOutIoa0 + i;
+    if (mio == kTopEarlgreyPinmuxMioOutIoc3 ||
+        mio == kTopEarlgreyPinmuxMioOutIoc4 ||
+        mio == kTopEarlgreyPinmuxMioOutIob4 ||
+        mio == kTopEarlgreyPinmuxMioOutIob5) {
+      // Don't assign the UART pins to a GPIO.
+      continue;
+    } else {
+      dif_pinmux_index_t periph_io = kTopEarlgreyPinmuxOutselGpioGpio0 + i;
+      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, mio, periph_io));
+    }
+  }
+}
+
 bool test_main(void) {
   // Initialize the pinmux - this assigns MIO0-31 to GPIOs.
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
+  configure_pinmux();
 
   // Initialize the GPIO.
   CHECK_DIF_OK(

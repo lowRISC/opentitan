@@ -24,9 +24,39 @@ static dif_pinmux_t pinmux;
 static dif_spi_device_handle_t spi;
 static dif_uart_t uart;
 
+static dif_pinmux_index_t leds[] = {
+    kTopEarlgreyPinmuxMioOutIor10,
+    kTopEarlgreyPinmuxMioOutIor11,
+    kTopEarlgreyPinmuxMioOutIor12,
+    kTopEarlgreyPinmuxMioOutIor13,
+};
+
+static dif_pinmux_index_t switches[] = {
+    kTopEarlgreyPinmuxInselIob6,
+    kTopEarlgreyPinmuxInselIob7,
+    kTopEarlgreyPinmuxInselIob8,
+    kTopEarlgreyPinmuxInselIob9,
+};
+
+void configure_pinmux(void) {
+  pinmux_testutils_init(&pinmux);
+  // Hook up some LEDs.
+  for (size_t i = 0; i < ARRAYSIZE(leds); ++i) {
+    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxOutselGpioGpio0 + i;
+    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, leds[i], gpio));
+  }
+  // Hook up DIP switches.
+  for (size_t i = 0; i < ARRAYSIZE(switches); ++i) {
+    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxPeripheralInGpioGpio8 + i;
+    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio, switches[i]));
+  }
+}
+
 void _ottf_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  configure_pinmux();
+
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
   CHECK_DIF_OK(
@@ -37,8 +67,6 @@ void _ottf_main(void) {
                                     .parity = kDifUartParityEven,
                                 }));
   base_uart_stdout(&uart);
-
-  pinmux_testutils_init(&pinmux);
 
   CHECK_DIF_OK(dif_spi_device_init_handle(
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi));
@@ -76,7 +104,9 @@ void _ottf_main(void) {
   CHECK_DIF_OK(dif_gpio_write_all(&gpio, 0x0000));
   LOG_INFO("Try out the switches on the board");
   LOG_INFO("or type anything into the console window.");
-  LOG_INFO("The LEDs show the ASCII code of the last character.");
+  LOG_INFO(
+      "The LEDs show the lower nibble of the ASCII code of the last "
+      "character.");
 
   CHECK_DIF_OK(dif_spi_device_send(&spi, "SPI!", 4,
                                    /*bytes_sent=*/NULL));
