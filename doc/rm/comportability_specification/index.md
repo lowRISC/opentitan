@@ -324,7 +324,7 @@ The description of the IP block and its registers is done in an Hjson file that 
 [Register Tool document]({{< relref "doc/rm/register_tool" >}}).
 All lowRISC peripheral designs must conform to this configuration and register specification.
 
-A description of Hjson (a variant of json) and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "doc/rm/hjson_usage_style.md" >}}).
+A description of Hjson (a variant of json) and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "doc/sg/hjson_usage_style.md" >}}).
 
 ### Configuration information in the file
 

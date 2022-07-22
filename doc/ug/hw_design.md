@@ -37,7 +37,7 @@ An example of a canonical RFC will be provided *here* (TODO).
 ## Detailed Specification
 
 Once past initial review of the feature set and high level description, as well as potential security review, the full detailed specification should be completed, still in Google Doc form.
-The content, form, and format are discussed in the [design methodology]({{< relref "design.md" >}}) and [documentation methodology]({{< relref "../rm/markdown_usage_style.md" >}}) guides.
+The content, form, and format are discussed in the [design methodology]({{< relref "design.md" >}}) and [documentation methodology]({{< relref "doc/sg/markdown_usage_style.md" >}}) guides.
 The outcome of this process should be a specification that is ready for further detailed review by other project members.
 The content and the status of the proposal can be shared with the team.
 

@@ -22,7 +22,7 @@ Setup and examples of the tool are given in the README.md file in the `util/regg
 
 The tool input is an Hjson file containing the Comportable description of the IP block and its registers.
 
-A description of Hjson (a variant of JSON) and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "doc/rm/hjson_usage_style.md" >}}).
+A description of Hjson (a variant of JSON) and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "doc/sg/hjson_usage_style.md" >}}).
 
 The tables below describe valid keys for each context.
 It is an error if *required* keys are missing from the input JSON.

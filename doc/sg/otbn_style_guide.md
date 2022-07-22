@@ -39,7 +39,7 @@ Example:
 ### Pseudoinstructions
 
 As in RISC-V, prefer pseudoinstructions (e.g. `ret`, `li`) in OTBN code where they exist.
-However, `loop` and `loopi` instructions require counting the number of instructions in the loop body, which can be tricky for pseudoinstructions that can expand to multiple instructions. 
+However, `loop` and `loopi` instructions require counting the number of instructions in the loop body, which can be tricky for pseudoinstructions that can expand to multiple instructions.
 (For example, `li` can expand to either 1 or 2 instructions depending on the immediate value.)
 Therefore, it is permitted to avoid pseudoinstructions that can expand to multiple instructions within loop bodies.
 

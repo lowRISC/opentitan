@@ -17,7 +17,7 @@ In particular, note that the register `x1` has special stack-like behaviour.
 There are some example programs at `sw/otbn/code-snippets`.
 These range from simple examples of how to use pseudo-operations up to example cryptographic primitives.
 
-For specific formatting and secure coding guidelines, see the [OTBN style guide]({{< relref "doc/rm/otbn_style_guide" >}}).
+For specific formatting and secure coding guidelines, see the [OTBN style guide]({{< relref "doc/sg/otbn_style_guide" >}}).
 
 ## The tools
 

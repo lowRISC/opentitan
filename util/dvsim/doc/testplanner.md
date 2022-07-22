@@ -38,7 +38,7 @@ The following attributes are used to define each testpoint, at minimum:
     A multi-line string that briefly describes the intent of the test.
     It is recommended, but not always necessary to add a high level goal, stimulus, and the checking procedure so that the reader gets a clear idea of what and how the said feature is going to be tested.
 
-    Full [Markdown]({{< relref "doc/rm/markdown_usage_style" >}}) syntax is supported when writing the description.
+    Full [Markdown]({{< relref "doc/sg/markdown_usage_style" >}}) syntax is supported when writing the description.
 
 * **tests: list of written test(s) for this testpoint**
 
