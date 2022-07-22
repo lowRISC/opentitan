@@ -17,6 +17,8 @@ class push_pull_indefinite_host_seq #(parameter int HostDataWidth = 32,
 
   `uvm_object_new
 
+  int items_processed;
+
   typedef enum int {
     Continue = 0,
     Stop     = 1,
@@ -25,7 +27,12 @@ class push_pull_indefinite_host_seq #(parameter int HostDataWidth = 32,
 
   stop_status_e stop_status;
 
+  task wait_for_items_processed(int n);
+    wait(items_processed >= n);
+  endtask;
+
   virtual task body();
+    items_processed = 0;
     fork : isolation_fork
       begin
         fork
@@ -39,6 +46,7 @@ class push_pull_indefinite_host_seq #(parameter int HostDataWidth = 32,
             randomize_item(req);
             finish_item(req);
             get_response(rsp);
+            items_processed++;
           end : send_req
         join_any;
         disable fork;

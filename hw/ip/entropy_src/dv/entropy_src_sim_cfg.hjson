@@ -102,12 +102,12 @@
 
   component_a: "uvm_test_top.env.scoreboard"
   id_a : _ALL_
-  verbosity_a: UVM_MEDIUM
+  verbosity_a: UVM_FULL
   phase_a: run
 
   component_b: "uvm_test_top.env.virtual_sequencer"
   id_b : _ALL_
-  verbosity_b: UVM_MEDIUM
+  verbosity_b: UVM_FULL
   phase_b: run
 
   run_modes: [
