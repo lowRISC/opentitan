@@ -2,4 +2,4 @@
 title: "IP cores"
 ---
 
-{{% sectionContent %}}
+{{% sectionContent type="section" depth="1" %}}
