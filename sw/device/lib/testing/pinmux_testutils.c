@@ -12,36 +12,23 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-#define NUM_GPIO 32
-
 void pinmux_testutils_init(dif_pinmux_t *pinmux) {
-  // input: assign MIO0..MIO31 to GPIO0..GPIO31 (except UARTs)
-  for (uint32_t index = 0; index < NUM_GPIO; index++) {
-    dif_pinmux_index_t mio = kTopEarlgreyPinmuxInselIoa0 + index;
-    if (mio == kTopEarlgreyPinmuxInselIoc3 ||
-        mio == kTopEarlgreyPinmuxInselIob4) {
-      // Avoid causing glitches: Don't assign the UART pins to a GPIO.
-      continue;
-    } else {
-      dif_pinmux_index_t gpio = kTopEarlgreyPinmuxPeripheralInGpioGpio0 + index;
-      CHECK_DIF_OK(dif_pinmux_input_select(pinmux, gpio, mio));
-    }
-  }
-
-  // output: assign GPIO0..GPIO31 to MIO0..MIO31 (except UARTs)
-  for (uint32_t index = 0; index < NUM_GPIO; index++) {
-    dif_pinmux_index_t mio = kTopEarlgreyPinmuxMioOutIoa0 + index;
-    if (mio == kTopEarlgreyPinmuxMioOutIoc3 ||
-        mio == kTopEarlgreyPinmuxMioOutIoc4 ||
-        mio == kTopEarlgreyPinmuxMioOutIob4 ||
-        mio == kTopEarlgreyPinmuxMioOutIob5) {
-      // Avoid causing glitches: Don't assign the UART pins to a GPIO.
-      continue;
-    } else {
-      dif_pinmux_index_t gpio = kTopEarlgreyPinmuxOutselGpioGpio0 + index;
-      CHECK_DIF_OK(dif_pinmux_output_select(pinmux, mio, gpio));
-    }
-  }
+  // Set up SW straps on IOC0-IOC2, for GPIOs 22-24
+  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInGpioGpio22,
+                                       kTopEarlgreyPinmuxInselIoc0));
+  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInGpioGpio23,
+                                       kTopEarlgreyPinmuxInselIoc1));
+  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInGpioGpio24,
+                                       kTopEarlgreyPinmuxInselIoc2));
+  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc0,
+                                        kTopEarlgreyPinmuxOutselGpioGpio22));
+  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc1,
+                                        kTopEarlgreyPinmuxOutselGpioGpio23));
+  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc2,
+                                        kTopEarlgreyPinmuxOutselGpioGpio24));
 
   // Configure UART0 RX input to connect to MIO pad IOC3
   CHECK_DIF_OK(dif_pinmux_input_select(pinmux,

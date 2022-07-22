@@ -1389,12 +1389,8 @@
         remove_ports: [],
         remove_pads: [
           'CC1', 'CC2',
-          'SPI_DEV_D2', 'SPI_DEV_D3'
           'FLASH_TEST_VOLT', 'OTP_EXT_VOLT'
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
-          'IOB3', 'IOB6', 'IOB7', 'IOB8', 'IOB9', 'IOB10', 'IOB11', 'IOB12',
-          'IOC12',
-          'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13',
           'USB_P', 'USB_N'
         ],
 

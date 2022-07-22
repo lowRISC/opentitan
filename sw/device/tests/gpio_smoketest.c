@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -12,6 +13,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_gpio_t gpio;
+static dif_pinmux_t pinmux;
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
@@ -28,10 +30,10 @@ static const uint32_t kGpioVals[] = {0xAAAAAAAA, 0x55555555, 0xA5A5A5A5,
 /**
  * Pins to be tested.
  *
- * This test only uses pins 0-12 to be compatible with both FPGA and DV.
+ * This test only uses pins 2-9 to be compatible with both FPGA and DV.
  * See chip-level testbenches and top-level hjson file for actual configuration.
  */
-static const uint32_t kGpioMask = 0x00000FFF;
+static const uint32_t kGpioMask = 0x000001fc;
 
 /**
  * Writes the given value to GPIO pins and compares it against the value read.
@@ -60,6 +62,19 @@ static void test_gpio_write(uint32_t write_val) {
  * NOTE: This test can currently run only on FPGA and DV.
  */
 bool test_main(void) {
+  CHECK_DIF_OK(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  // Assign GPIOs in the pinmux
+  for (size_t i = 0; i < 32; ++i) {
+    if (kGpioMask & (1u << i)) {
+      dif_pinmux_index_t mio = kTopEarlgreyPinmuxMioOutIoa0 + i;
+      dif_pinmux_index_t gpio_out = kTopEarlgreyPinmuxOutselGpioGpio0 + i;
+      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, mio, gpio_out));
+      mio = kTopEarlgreyPinmuxInselIoa0 + i;
+      dif_pinmux_index_t gpio_in = kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i;
+      CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio_in, mio));
+    }
+  }
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, kGpioMask));

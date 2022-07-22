@@ -85,6 +85,6 @@ void demo_uart_to_uart_and_gpio_echo(dif_uart_t *uart, dif_gpio_t *gpio) {
     uint8_t rcv_char;
     CHECK_DIF_OK(dif_uart_bytes_receive(uart, 1, &rcv_char, NULL));
     CHECK_DIF_OK(dif_uart_byte_send_polled(uart, rcv_char));
-    CHECK_DIF_OK(dif_gpio_write_all(gpio, rcv_char << 8));
+    CHECK_DIF_OK(dif_gpio_write_all(gpio, rcv_char));
   }
 }
