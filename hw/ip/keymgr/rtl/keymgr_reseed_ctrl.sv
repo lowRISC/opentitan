@@ -90,18 +90,18 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
   // whenever reseed count reaches reseed_interval, issue a request and wait for ack
   // SEC_CM: RESEED.CTR.REDUN
   prim_count #(
-    .Width(16),
-    .OutSelDnCnt(0),
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(16)
   ) u_reseed_cnt (
     .clk_i,
     .rst_ni,
     .clr_i(edn_done),
     .set_i('0),
     .set_cnt_i('0),
-    .en_i(cnt_en),
+    .incr_en_i(cnt_en),
+    .decr_en_i(1'b0),
     .step_i(16'h1),
     .cnt_o(reseed_cnt),
+    .cnt_next_o(),
     .err_o(cnt_err_o)
   );
 

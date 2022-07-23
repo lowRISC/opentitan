@@ -32,7 +32,6 @@ interface otbn_loop_if #(
   input logic [31:0] current_loop_q_iterations,
 
   input logic [LoopStackIdxWidth-1:0] loop_stack_rd_idx,
-  input logic [31:0]                  loop_count_max_vals [otbn_pkg::LoopStackDepth],
 
   input logic loop_stack_push,
   input logic loop_stack_pop

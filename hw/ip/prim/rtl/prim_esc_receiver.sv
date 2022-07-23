@@ -101,8 +101,6 @@ module prim_esc_receiver
 
   prim_count #(
     .Width(TimeoutCntDw),
-    .OutSelDnCnt(0), // count up
-    .CntStyle(prim_count_pkg::DupCnt),
     // The escalation receiver behaves differently than other comportable IP. I.e., instead of
     // sending out an alert signal, this condition is handled internally in the alert handler.
     .EnableAlertTriggerSVA(0)
@@ -112,9 +110,11 @@ module prim_esc_receiver
     .clr_i(1'b0),
     .set_i(timeout_cnt_set),
     .set_cnt_i(TimeoutCntDw'(1)),
-    .en_i(timeout_cnt_en),
+    .incr_en_i(timeout_cnt_en),
+    .decr_en_i(1'b0),
     .step_i(TimeoutCntDw'(1)),
     .cnt_o(timeout_cnt),
+    .cnt_next_o(),
     .err_o(timeout_cnt_error)
   );
 

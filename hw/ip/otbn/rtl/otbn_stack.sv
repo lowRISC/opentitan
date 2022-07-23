@@ -52,9 +52,9 @@ module otbn_stack
   output logic                   next_top_valid_o
 );
   logic [StackWidth-1:0]  stack_storage [StackDepth];
-  logic [StackDepthW:0]   stack_wr_ptr, stack_top_idx;
+  logic [StackDepthW:0]   stack_wr_ptr;
   logic [StackDepthW-1:0] stack_rd_idx, stack_wr_idx;
-  logic [StackDepthW:0]   next_stack_top_idx, stack_top_idx_step;
+  logic [StackDepthW:0]   next_stack_wr_ptr;
   logic [StackDepthW-1:0] next_stack_rd_idx;
 
   logic stack_empty;
@@ -69,75 +69,24 @@ module otbn_stack
   assign stack_write = push_i & (~full_o | pop_i);
   assign stack_read  = top_valid_o & pop_i;
 
-  assign stack_top_idx = stack_wr_ptr[StackDepthW:0];
-  assign stack_rd_idx = stack_top_idx[StackDepthW-1:0] - 1'b1;
-  assign stack_wr_idx = pop_i ? stack_rd_idx : stack_top_idx[StackDepthW-1:0];
-
-  // This allows us to get around declaring a signed logic, which in turn needs several casts to
-  // avoid lint messages.
-  localparam logic [StackDepthW:0] Neg1Val = {StackDepthW+1{1'b1}};
-  logic [StackDepthW:0] stack_wr_ptr_step;
-  always_comb begin
-    unique case ({stack_write, stack_read})
-      2'b10:   stack_wr_ptr_step = 1;
-      2'b01:   stack_wr_ptr_step = Neg1Val; // two's complement representation
-      default: stack_wr_ptr_step = '0;
-    endcase
-  end
-
-  // SEC_CM: STACK_WR_PTR.CTR.GLITCH_DETECT
-  // Detect glitches on the `step_i` input of the stack write pointer.  If a glitch is detected,
-  // latch it until the stack gets cleared (or the module is reset).  Detecting glitches on the
-  // clock edge instead of combinationally is required because the error output drives the control
-  // path, thus feeding the glitch detector output back combinationally would result in
-  // combinational loops.
-  logic stack_wr_ptr_step_err_d, stack_wr_ptr_step_err_q;
-  always_comb begin
-    stack_wr_ptr_step_err_d = stack_wr_ptr_step_err_q;
-    if (clear_i) stack_wr_ptr_step_err_d = 1'b0;
-    if (!(stack_wr_ptr_step inside {Neg1Val, 0, 1})) stack_wr_ptr_step_err_d = 1'b1;
-    if (stack_wr_ptr_step == 1 && !stack_write) stack_wr_ptr_step_err_d = 1'b1;
-    if (stack_wr_ptr_step == Neg1Val && !stack_read) stack_wr_ptr_step_err_d = 1'b1;
-    if (stack_wr_ptr_step == 0 && (stack_write ^ stack_read)) stack_wr_ptr_step_err_d = 1'b1;
-  end
-
-  logic stack_wr_ptr_step_err_buf;
-  prim_buf #(
-    .Width (1)
-  ) u_stack_wr_ptr_step_err_buf (
-    .in_i   (stack_wr_ptr_step_err_d),
-    .out_o  (stack_wr_ptr_step_err_buf)
-  );
-
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      stack_wr_ptr_step_err_q <= 1'b0;
-    end else begin
-      stack_wr_ptr_step_err_q <= stack_wr_ptr_step_err_buf;
-    end
-  end
-
-  logic stack_wr_ptr_en;
-  assign stack_wr_ptr_en = stack_wr_ptr_step != '0;
+  assign stack_rd_idx = stack_wr_ptr[StackDepthW-1:0] - 1'b1;
+  assign stack_wr_idx = pop_i ? stack_rd_idx : stack_wr_ptr[StackDepthW-1:0];
 
   // SEC_CM: STACK_WR_PTR.CTR.REDUN
-  logic stack_wr_ptr_err;
   prim_count #(
-    .Width        (StackDepthW+1),
-    .OutSelDnCnt  (0),
-    .CntStyle     (prim_count_pkg::DupCnt)
+    .Width        (StackDepthW+1)
   ) u_stack_wr_ptr (
     .clk_i,
     .rst_ni,
     .clr_i      (clear_i),
     .set_i      (1'b0),
     .set_cnt_i  ('0),
-    .en_i       (stack_wr_ptr_en),
-    // Since this signal has the same width as the counter, negative values will
-    // be correctly be subtracted due to the 2s complement representation.
-    .step_i     (stack_wr_ptr_step),
+    .incr_en_i  (stack_write),
+    .decr_en_i  (stack_read),
+    .step_i     ((StackDepthW+1)'(1'b1)),
     .cnt_o      (stack_wr_ptr),
-    .err_o      (stack_wr_ptr_err)
+    .cnt_next_o (next_stack_wr_ptr),
+    .err_o      (cnt_err_o)
   );
 
   always_ff @(posedge clk_i) begin
@@ -150,32 +99,15 @@ module otbn_stack
   assign full_o      = stack_full;
   assign top_data_o  = stack_storage[stack_rd_idx];
   assign top_valid_o = ~stack_empty;
-  assign cnt_err_o   = stack_wr_ptr_err | stack_wr_ptr_step_err_q;
 
   assign stack_wr_idx_o = stack_wr_idx;
   assign stack_rd_idx_o = stack_rd_idx;
   assign stack_write_o  = stack_write;
   assign stack_read_o   = stack_read;
 
-  always_comb begin
-    next_stack_top_idx = '0;
-    stack_top_idx_step = '0;
-
-    if (clear_i) begin
-      next_stack_top_idx = '0;
-    end else begin
-      if (stack_wr_ptr_en) begin
-        stack_top_idx_step = stack_wr_ptr_step;
-      end
-
-      next_stack_top_idx = stack_top_idx + stack_top_idx_step;
-    end
-  end
-
-  assign next_stack_rd_idx = next_stack_top_idx[StackDepthW-1:0] - 1'b1;
+  assign next_stack_rd_idx = next_stack_wr_ptr[StackDepthW-1:0] - 1'b1;
 
   assign next_top_data_o = stack_write ? push_data_i : stack_storage[next_stack_rd_idx];
-  assign next_top_valid_o = next_stack_top_idx != '0;
+  assign next_top_valid_o = next_stack_wr_ptr != '0;
 
-  `ASSERT(next_stack_top_idx_correct, stack_top_idx == $past(next_stack_top_idx))
 endmodule

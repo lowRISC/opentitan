@@ -432,18 +432,18 @@ module keccak_round
   // This primitive is used to place a hardened counter
   // SEC_CM: CTR.REDUN
   prim_count #(
-    .Width(RndW),
-    .OutSelDnCnt(1'b 0), // 0 selects up count
-    .CntStyle(prim_count_pkg::CrossCnt)
+    .Width(RndW)
   ) u_round_count (
     .clk_i,
     .rst_ni,
-    .clr_i(1'b 0),
-    .set_i(rst_rnd_num), // clears up count to 0 and sets down count to max
-    .set_cnt_i(RndW'(MaxRound-1)),
-    .en_i(inc_rnd_num),
+    .clr_i(rst_rnd_num),
+    .set_i(1'b0),
+    .set_cnt_i('0),
+    .incr_en_i(inc_rnd_num),
+    .decr_en_i(1'b0),
     .step_i(RndW'(1)),
     .cnt_o(round),
+    .cnt_next_o(),
     .err_o(round_count_error_o)
   );
 

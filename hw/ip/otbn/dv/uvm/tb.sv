@@ -157,13 +157,6 @@ module tb;
 
   bind dut.u_otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
-  logic [31:0] otbn_loop_count_max_vals [otbn_pkg::LoopStackDepth];
-
-  for (genvar i = 0; i < otbn_pkg::LoopStackDepth; ++i) begin : gen_otbn_loop_count_max_vals
-    assign otbn_loop_count_max_vals[i] = dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.
-        g_loop_counters[i].u_loop_count.max_val;
-  end
-
   bind dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller
     otbn_loop_if i_otbn_loop_if (
       .clk_i,
@@ -192,8 +185,7 @@ module tb;
       .current_loop_d_iterations (prefetch_loop_iterations_o),
       .current_loop_q_iterations (current_loop.loop_iterations),
 
-      .loop_stack_rd_idx,
-      .loop_count_max_vals($root.tb.otbn_loop_count_max_vals)
+      .loop_stack_rd_idx
     );
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);

@@ -35,8 +35,6 @@ module alert_handler_accu import alert_pkg::*; (
   // FSM into a terminal error state where all escalation actions will be permanently asserted.
   prim_count #(
     .Width(AccuCntDw),
-    .OutSelDnCnt(0), // count up
-    .CntStyle(prim_count_pkg::CrossCnt),
     // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
     // an alert signal, this condition is handled internally in the alert handler.
     .EnableAlertTriggerSVA(0)
@@ -46,9 +44,11 @@ module alert_handler_accu import alert_pkg::*; (
     .clr_i,
     .set_i(1'b0),
     .set_cnt_i('0),
-    .en_i(accu_en),
+    .incr_en_i(accu_en),
+    .decr_en_i(1'b0),
     .step_i(AccuCntDw'(1)),
     .cnt_o(accu_cnt_o),
+    .cnt_next_o(),
     .err_o(accu_fail_o)
   );
 

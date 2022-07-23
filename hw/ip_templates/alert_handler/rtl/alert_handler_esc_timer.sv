@@ -55,8 +55,6 @@ module alert_handler_esc_timer import alert_pkg::*; (
   // SEC_CM: ESC_TIMER.CTR.REDUN
   prim_count #(
     .Width(EscCntDw),
-    .OutSelDnCnt(0), // count up
-    .CntStyle(prim_count_pkg::DupCnt),
     // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
     // an alert signal, this condition is handled internally in the alert handler.
     .EnableAlertTriggerSVA(0)
@@ -66,9 +64,11 @@ module alert_handler_esc_timer import alert_pkg::*; (
     .clr_i(cnt_clr && !cnt_en),
     .set_i(cnt_clr && cnt_en),
     .set_cnt_i(EscCntDw'(1)),
-    .en_i(!cnt_clr && cnt_en),
+    .incr_en_i(cnt_en),
+    .decr_en_i(1'b0),
     .step_i(EscCntDw'(1)),
     .cnt_o(esc_cnt_o),
+    .cnt_next_o(),
     .err_o(cnt_error)
   );
 

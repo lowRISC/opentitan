@@ -57,9 +57,7 @@ module clkmgr_trans
   // SEC_CM: IDLE.CTR.REDUN
   logic cnt_err;
   prim_count #(
-    .Width(IdleCntWidth),
-    .OutSelDnCnt('0),
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(IdleCntWidth)
   ) u_idle_cnt (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -67,9 +65,11 @@ module clkmgr_trans
     .clr_i(mubi4_test_false_loose(idle_i)),
     .set_i('0),
     .set_cnt_i('0),
-    .en_i(mubi4_test_true_strict(idle_i) & ~idle_valid),
+    .incr_en_i(mubi4_test_true_strict(idle_i) & ~idle_valid),
+    .decr_en_i(1'b0),
     .step_i(IdleCntWidth'(1'b1)),
     .cnt_o(idle_cnt),
+    .cnt_next_o(),
     .err_o(cnt_err)
   );
 

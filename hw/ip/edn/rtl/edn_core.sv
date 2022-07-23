@@ -595,26 +595,27 @@ module edn_core import edn_pkg::*;
   // Maximum requests counter for a generate command
 
   // SEC_CM: CTR.REDUN
-    prim_count #(
-        .Width(RegWidth),
-        .OutSelDnCnt(1'b1), // count down
-        .CntStyle(prim_count_pkg::CrossCnt)
-      ) u_prim_count_max_reqs_cntr (
-        .clk_i,
-        .rst_ni,
-        .clr_i(1'b0),
-        .set_i(max_reqs_cnt_load),
-        .set_cnt_i(max_reqs_between_reseed_bus),
-        .en_i(send_gencmd && cmd_sent),
-        .step_i(RegWidth'(1)),
-        .cnt_o(max_reqs_cnt),
-        .err_o(max_reqs_cnt_err)
-      );
+  prim_count #(
+    .Width(RegWidth),
+    .ResetValue({RegWidth{1'b1}})
+  ) u_prim_count_max_reqs_cntr (
+    .clk_i,
+    .rst_ni,
+    .clr_i(1'b0),
+    .set_i(max_reqs_cnt_load),
+    .set_cnt_i(max_reqs_between_reseed_bus),
+    .incr_en_i(1'b0),
+    .decr_en_i(send_gencmd && cmd_sent), // count down
+    .step_i(RegWidth'(1)),
+    .cnt_o(max_reqs_cnt),
+    .cnt_next_o(),
+    .err_o(max_reqs_cnt_err)
+  );
 
 
   assign max_reqs_cnt_load = (max_reqs_between_reseed_load || // sw initial load
                               send_rescmd && cmd_sent ||      // runtime decrement
-                              main_sm_done_pulse);             // restore when auto mode done
+                              main_sm_done_pulse);            // restore when auto mode done
 
   assign max_reqs_cnt_zero = (max_reqs_cnt == '0);
 

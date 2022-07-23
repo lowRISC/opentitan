@@ -35,10 +35,7 @@ interface csrng_assert_if
 
   task automatic assert_off ();
     $assertoff(0, `PATH1.u_state_regs_A);
-    $assertoff(0, `PATH1.u_prim_count_cmd_gen_cntr.MaxUpCntStable_A);
-    $assertoff(0, `PATH1.u_prim_count_cmd_gen_cntr.SimulClrSet_A);
-    $assertoff(0, `PATH1.u_prim_count_cmd_gen_cntr.OutSet_A);
-    $assertoff(0, `PATH1.u_prim_count_cmd_gen_cntr.gen_cross_cnt_hardening.CrossCntErrBackward_A);
+    $assertoff(0, `PATH1.u_prim_count_cmd_gen_cntr.CntErrBackward_A);
     $assertoff(0, `PATH2.`PATH2_1.AesCipherControlStateValid);
     $assertoff(0, `PATH2.`PATH2_2.AesCipherControlStateValid);
     $assertoff(0, `PATH2.`PATH2_3.AesCipherControlStateValid);
@@ -53,10 +50,7 @@ interface csrng_assert_if
 
   task automatic assert_on ();
     $asserton(0, `PATH1.u_state_regs_A);
-    $asserton(0, `PATH1.u_prim_count_cmd_gen_cntr.MaxUpCntStable_A);
-    $asserton(0, `PATH1.u_prim_count_cmd_gen_cntr.SimulClrSet_A);
-    $asserton(0, `PATH1.u_prim_count_cmd_gen_cntr.OutSet_A);
-    $asserton(0, `PATH1.u_prim_count_cmd_gen_cntr.gen_cross_cnt_hardening.CrossCntErrBackward_A);
+    $asserton(0, `PATH1.u_prim_count_cmd_gen_cntr.CntErrBackward_A);
     $asserton(0, `PATH2.`PATH2_1.AesCipherControlStateValid);
     $asserton(0, `PATH2.`PATH2_2.AesCipherControlStateValid);
     $asserton(0, `PATH2.`PATH2_3.AesCipherControlStateValid);

@@ -213,9 +213,6 @@
         If the two instances of the counter mismatch, an error is emitted.
       '''
     }
-    { name: "STACK_WR_PTR.CTR.GLITCH_DETECT"
-      desc: "Glitches are detected on the stack counter increment / decrement control signal."
-    }
     { name: "RF_BIGNUM.DATA_REG_SW.INTEGRITY"
       desc: "Register file is protected with ECC integrity."
     }

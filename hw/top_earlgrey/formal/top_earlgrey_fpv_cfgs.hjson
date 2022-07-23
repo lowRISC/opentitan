@@ -59,91 +59,22 @@
                cov: true
              }
              {
-               name: prim_dup_up_count_fpv
+               name: prim_count_zero_reset_fpv
                dut: prim_count_tb
                fusesoc_core: lowrisc:fpv:prim_count_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               build_opts: ["-define OutSelDnCnt 0", "-define CntStyle DupCnt"]
+               build_opts: ["-define ResetValue 0"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
                cov: true
              }
              {
-               name: prim_cross_up_count_fpv
+               name: prim_count_max_reset_fpv
                dut: prim_count_tb
                fusesoc_core: lowrisc:fpv:prim_count_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               build_opts: ["-define OutSelDnCnt 0",  "-define CntStyle CrossCnt"]
+               build_opts: ["-define ResetValue -1"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
                cov: true
-             }
-             {
-               name: prim_cross_down_count_fpv
-               dut: prim_count_tb
-               fusesoc_core: lowrisc:fpv:prim_count_fpv
-               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               build_opts: ["-define OutSelDnCnt 1", "-define CntStyle CrossCnt"]
-               rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               cov: true
-             }
-             {
-               name: prim_dup_up_count_stopat_cnt0_fpv
-               dut: prim_count_tb
-               fusesoc_core: lowrisc:fpv:prim_count_fpv
-               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               build_opts: ["-define OutSelDnCnt 0", "-define CntStyle DupCnt"]
-               rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               cov: true
-               stopats: ["*.up_cnt_q[0]"]
-             }
-             {
-               name: prim_dup_up_count_stopat_cnt1_fpv
-               dut: prim_count_tb
-               fusesoc_core: lowrisc:fpv:prim_count_fpv
-               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               build_opts: ["-define OutSelDnCnt 0", "-define CntStyle DupCnt"]
-               rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               cov: false
-               stopats: ["*.up_cnt_q[1]"]
-             }
-             {
-               name: prim_cross_up_count_stopat_upcnt_fpv
-               dut: prim_count_tb
-               fusesoc_core: lowrisc:fpv:prim_count_fpv
-               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               build_opts: ["-define OutSelDnCnt 0",  "-define CntStyle CrossCnt"]
-               rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               cov: false
-               stopats: ["*.up_cnt_q[0]"]
-             }
-             {
-               name: prim_cross_up_count_stopat_downcnt_fpv
-               dut: prim_count_tb
-               fusesoc_core: lowrisc:fpv:prim_count_fpv
-               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               build_opts: ["-define OutSelDnCnt 0",  "-define CntStyle CrossCnt"]
-               rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               cov: false
-               stopats: ["*.down_cnt"]
-             }
-             {
-               name: prim_cross_down_count_stopat_upcnt_fpv
-               dut: prim_count_tb
-               fusesoc_core: lowrisc:fpv:prim_count_fpv
-               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               build_opts: ["-define OutSelDnCnt 1", "-define CntStyle CrossCnt"]
-               rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               stopats: ["*.up_cnt_q[0]"]
-               cov: false
-             }
-             {
-               name: prim_cross_down_count_stopat_downcnt_fpv
-               dut: prim_count_tb
-               fusesoc_core: lowrisc:fpv:prim_count_fpv
-               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               build_opts: ["-define OutSelDnCnt 1", "-define CntStyle CrossCnt"]
-               rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
-               stopats: ["*.down_cnt"]
-               cov: false
              }
              {
                name: prim_lfsr_fpv
@@ -405,7 +336,7 @@
                rel_path: "hw/ip/prim/prim_onehot_check/{sub_flow}/{tool}"
                cov: true
              }
-             // Below are IPs that already has a DV testbench,
+             // Below are IPs that already have a DV testbench,
              // FPV only verifies the security countermeasure assertions,
              // so will not collect FPV coverage.
              {

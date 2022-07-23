@@ -6,7 +6,7 @@
 // Description: Asserts interface to turn off assertions that have long paths
 
 `define PATH1 \
-    tb.dut.u_edn_core.u_prim_count_max_reqs_cntr.gen_cross_cnt_hardening
+    tb.dut.u_edn_core.u_prim_count_max_reqs_cntr
 `define PATH2 \
     tb.dut.u_edn_core.u_prim_mubi4_sync_edn_enable
 `define PATH3 \
@@ -26,13 +26,13 @@ interface edn_assert_if
 );
 
   task automatic assert_off ();
-    $assertoff(0, `PATH1.CrossCntErrBackward_A);
+    $assertoff(0, `PATH1.CntErrBackward_A);
     $assertoff(0, `PATH6.u_state_regs_A);
     $assertoff(0, `PATH7.u_state_regs_A);
   endtask // assert_off
 
   task automatic assert_on ();
-    $asserton(0, `PATH1.CrossCntErrBackward_A);
+    $asserton(0, `PATH1.CntErrBackward_A);
     $asserton(0, `PATH6.u_state_regs_A);
     $asserton(0, `PATH7.u_state_regs_A);
   endtask // assert_on

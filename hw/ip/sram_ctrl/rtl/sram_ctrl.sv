@@ -229,18 +229,18 @@ module sram_ctrl
   // we trigger an alert.
   // SEC_CM: INIT.CTR.REDUN
   prim_count #(
-    .Width(AddrWidth),
-    .OutSelDnCnt(0), // count up
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(AddrWidth)
   ) u_prim_count (
     .clk_i,
     .rst_ni,
     .clr_i(init_trig),
     .set_i(1'b0),
     .set_cnt_i('0),
-    .en_i(init_req),
+    .incr_en_i(init_req),
+    .decr_en_i(1'b0),
     .step_i(AddrWidth'(1)),
     .cnt_o(init_cnt),
+    .cnt_next_o(),
     .err_o(init_error)
   );
 

@@ -214,10 +214,10 @@ module prim_esc_tb;
     main_clk.wait_clks(2);
     ping_req = 0;
     // If duplicate counter values are inconsistent, the design will set the `esc_req_out` signal.
-    force prim_esc_tb.i_esc_receiver.u_prim_count.up_cnt_q[1] = '0;
+    force prim_esc_tb.i_esc_receiver.u_prim_count.cnt_q[1] = '0;
     `DV_SPINWAIT(wait (esc_req_out == 1);, , , "Wait for esc_req_out timeout");
     if (integ_fail) test_error("Escalation receiver counter unexpected signal integrity error!");
-    release prim_esc_tb.i_esc_receiver.u_prim_count.up_cnt_q[1];
+    release prim_esc_tb.i_esc_receiver.u_prim_count.cnt_q[1];
 
     $display("[prim_esc_seq] Escalation couter error sequence finished!");
 

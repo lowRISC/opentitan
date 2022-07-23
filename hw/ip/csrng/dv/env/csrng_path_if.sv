@@ -54,6 +54,6 @@ interface csrng_path_if
 
   function automatic string cmd_gen_cnt_err_path(int NHwApps);
     return {core_path, $sformatf(".gen_cmd_stage[%0d]", NHwApps),
-            ".u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr.gen_cross_cnt_hardening.msb"};
+            ".u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr.err_o"};
   endfunction // cmd_gen_cnt_err_path
 endinterface // csrng_path_if

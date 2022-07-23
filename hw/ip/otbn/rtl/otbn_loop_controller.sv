@@ -220,17 +220,21 @@ module otbn_loop_controller
     assign loop_count_dec = current_loop_counter_dec & (loop_stack_rd_idx == i_count);
 
     //SEC_CM: LOOP_STACK.CTR.REDUN
-    prim_count #(.Width(32), .CntStyle(prim_count_pkg::CrossCnt)) u_loop_count (
+    prim_count #(
+      .Width(32),
+      .ResetValue({32{1'b1}})
+    ) u_loop_count (
       .clk_i,
       .rst_ni,
-
-      .clr_i    (state_reset_i),
-      .set_i    (loop_count_set),
-      .set_cnt_i(new_loop.loop_iterations),
-      .en_i     (loop_count_dec),
-      .step_i   (32'd1),
-      .cnt_o    (loop_counters[i_count]),
-      .err_o    (loop_counter_err[i_count])
+      .clr_i     (state_reset_i),
+      .set_i     (loop_count_set),
+      .set_cnt_i (new_loop.loop_iterations),
+      .incr_en_i (1'b0),
+      .decr_en_i (loop_count_dec), // count down
+      .step_i    (32'd1),
+      .cnt_o     (loop_counters[i_count]),
+      .cnt_next_o(),
+      .err_o     (loop_counter_err[i_count])
     );
 
     // Cannot clear and set prim_count in the same cycle

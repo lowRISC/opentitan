@@ -6,3 +6,6 @@
 
 waive -rules {PARAM_NOT_USED} -location {prim_count.sv} -regexp {.*EnableAlertTriggerSVA.*} \
       -comment "The disable parameter is used only during DV / FPV."
+
+waive -rules {IFDEF_CODE} -location {prim_count.sv} -msg {Assignment to 'fpv_force' contained within `ifndef 'FPV_ON' block at} \
+      -comment "This ifdef segment is ok, since it is used to provide the tool with a symbolic variable for error injection during FPV."

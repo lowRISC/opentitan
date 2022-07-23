@@ -137,17 +137,18 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   // SEC_CM: KMAC_IF.CTR.REDUN
   prim_count #(
     .Width(CntWidth),
-    .OutSelDnCnt(1'b1),
-    .CntStyle(prim_count_pkg::CrossCnt)
+    .ResetValue({CntWidth{1'b1}})
   ) u_cnt (
     .clk_i,
     .rst_ni,
     .clr_i(cnt_clr),
     .set_i(cnt_set),
     .set_cnt_i(rounds),
-    .en_i(cnt_en),
+    .incr_en_i(1'b0),
+    .decr_en_i(cnt_en),
     .step_i(CntWidth'(1'b1)),
     .cnt_o(cnt),
+    .cnt_next_o(),
     .err_o(cnt_err)
   );
 
@@ -187,7 +188,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
         // if for some reason multiple bits are set, adv_en has priority
         // as the current key state will be destroyed
 
-        // cross check for commands once trasnaction begins
+        // cross check for commands once transaction begins
         cmd_chk = '0;
         if (start) begin
           cnt_set = 1'b1;

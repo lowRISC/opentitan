@@ -145,35 +145,35 @@ module otp_ctrl_lfsr_timer
 
   // SEC_CM: TIMER_INTEG.CTR.REDUN
   prim_count #(
-    .Width(LfsrWidth),
-    .OutSelDnCnt(0),
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(LfsrWidth)
   ) u_prim_count_integ (
     .clk_i,
     .rst_ni,
     .clr_i(1'b0),
     .set_i(integ_cnt_set),
     .set_cnt_i(integ_cnt_set_val),
-    .en_i(!integ_cnt_zero),
-    .step_i({LfsrWidth{1'b1}}), // 2's complement for -1 so that this counts down.
+    .incr_en_i(1'b0),
+    .decr_en_i(!integ_cnt_zero),
+    .step_i(LfsrWidth'(1)),
     .cnt_o(integ_cnt),
+    .cnt_next_o(),
     .err_o(integ_cnt_err)
   );
 
   // SEC_CM: TIMER_CNSTY.CTR.REDUN
   prim_count #(
-    .Width(LfsrWidth),
-    .OutSelDnCnt(0),
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(LfsrWidth)
   ) u_prim_count_cnsty (
     .clk_i,
     .rst_ni,
     .clr_i(1'b0),
     .set_i(cnsty_cnt_set),
     .set_cnt_i(cnsty_cnt_set_val),
-    .en_i(!cnsty_cnt_zero && !cnsty_cnt_pause),
-    .step_i({LfsrWidth{1'b1}}), // 2's complement for -1 so that this counts down.
+    .incr_en_i(1'b0),
+    .decr_en_i(!cnsty_cnt_zero && !cnsty_cnt_pause),
+    .step_i(LfsrWidth'(1)),
     .cnt_o(cnsty_cnt),
+    .cnt_next_o(),
     .err_o(cnsty_cnt_err)
   );
 

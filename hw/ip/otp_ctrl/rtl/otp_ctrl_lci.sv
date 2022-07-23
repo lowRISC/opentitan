@@ -236,18 +236,18 @@ module otp_ctrl_lci
   // Native OTP word counter
   // SEC_CM: LCI.CTR.REDUN
   prim_count #(
-    .Width(CntWidth),
-    .OutSelDnCnt(0), // count up
-    .CntStyle(prim_count_pkg::CrossCnt)
+    .Width(CntWidth)
   ) u_prim_count (
     .clk_i,
     .rst_ni,
     .clr_i(cnt_clr),
     .set_i(1'b0),
     .set_cnt_i('0),
-    .en_i(cnt_en),
+    .incr_en_i(cnt_en),
+    .decr_en_i(1'b0),
     .step_i(CntWidth'(1)),
     .cnt_o(cnt),
+    .cnt_next_o(),
     .err_o(cnt_err)
   );
 

@@ -65,18 +65,18 @@ module entropy_src_repcnt_ht #(
     // NIST B counter
     // SEC_CM: CTR.REDUN
     prim_count #(
-      .Width(RegWidth),
-      .OutSelDnCnt(1'b0), // count up
-      .CntStyle(prim_count_pkg::DupCnt)
+      .Width(RegWidth)
     ) u_prim_count_rep_cntr (
       .clk_i,
       .rst_ni,
       .clr_i(1'b0),
       .set_i(!active_i || clear_i || samples_no_match_pulse[sh]),
       .set_cnt_i(RegWidth'(1)),
-      .en_i(samples_match_pulse[sh]),
+      .incr_en_i(samples_match_pulse[sh]),
+      .decr_en_i(1'b0),
       .step_i(RegWidth'(1)),
       .cnt_o(rep_cntr[sh]),
+      .cnt_next_o(),
       .err_o(rep_cntr_err[sh])
     );
 

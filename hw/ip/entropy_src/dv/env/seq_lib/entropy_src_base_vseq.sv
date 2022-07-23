@@ -385,7 +385,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   task window_cntr_err_test(uvm_reg_field reg_field);
     string path = cfg.entropy_src_path_vif.cntr_err_path("window", cfg.which_cntr_replicate);
     `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
-    // Force the path (up_cnt_q[1]) to stuck at a different value from up_cnt_q[0] to trigger
+    // Force the path (cnt_q[1]) to stuck at a different value from cnt_q[0] to trigger
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
   endtask // window_cntr_err_test
@@ -403,7 +403,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks(100);
     // Force repcnt ht counter err
     path = cfg.entropy_src_path_vif.cntr_err_path("repcnt_ht", cfg.which_cntr_replicate);
-    // Force the path (up_cnt_q[1]) to stuck at a different value from up_cnt_q[0] to trigger
+    // Force the path (cnt_q[1]) to stuck at a different value from cnt_q[0] to trigger
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
     // Write the threshold back to a high value
@@ -425,7 +425,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks(100);
     // Force repcnts ht counter err
     path = cfg.entropy_src_path_vif.cntr_err_path("repcnts_ht", cfg.which_cntr_replicate);
-    // Force the path (up_cnt_q[1]) to stuck at a different value from up_cnt_q[0] to trigger
+    // Force the path (cnt_q[1]) to stuck at a different value from cnt_q[0] to trigger
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
     // Write the threshold back to a high value
@@ -446,7 +446,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks(100);
     // Force adaptp ht counter err
     path = cfg.entropy_src_path_vif.cntr_err_path("adaptp_ht", cfg.which_cntr_replicate);
-    // Force the path (up_cnt_q[1]) to stuck at a different value from up_cnt_q[0] to trigger
+    // Force the path (cnt_q[1]) to stuck at a different value from cnt_q[0] to trigger
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
     // Write the threshold back to a high value
@@ -471,7 +471,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks(100);
     // Force bucket ht counter err
     path = cfg.entropy_src_path_vif.cntr_err_path("bucket_ht", cfg.which_bin);
-    // Force the path (up_cnt_q[1]) to stuck at a different value from up_cnt_q[0] to trigger
+    // Force the path (cnt_q[1]) to stuck at a different value from cnt_q[0] to trigger
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
     // Write the threshold back to a high value
@@ -495,7 +495,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks(100);
     // Force markov ht counter err
     path = cfg.entropy_src_path_vif.cntr_err_path("markov_ht", cfg.which_cntr_replicate);
-    // Force the path (up_cnt_q[1]) to stuck at a different value from up_cnt_q[0] to trigger
+    // Force the path (cnt_q[1]) to stuck at a different value from cnt_q[0] to trigger
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
     // Write the threshold back to a high value

@@ -182,23 +182,21 @@ extern "C" int OtbnTopInstallLoopWarps() {
 
 template <typename PrimCountT>
 void set_up_down_prim_count(PrimCountT *prim_count, uint32_t new_cnt) {
-  // There are both up and down counters. The down counter gives the remaining
-  // iterations and the up counter is the inverse. They must always sum to a
-  // constant value given by `max_val`.
+  // There are two counters within this primitive: The primary counter gives
+  // the remaining iterations and the secondary counter counts in reverse
+  // direction. They must always sum to the constant value 2**Width-1, which is
+  // 2**32-1 = 0xFFFFFFFF in this case.
 
   // Loop warping occurs on the negative clock edge. When writing signal values
   // here that won't trigger any processes within the verilator simulation. At
   // the next positive clock edge @(posedge clk) processes will run before any
   // _d update processes so write the relevant _d values here.
 
-  // down_cnt doesn't have seperate _d and _q values. Instead the logic to
-  // update down_cnt is within the @always(posedge clk) that writes the flop.
-  prim_count->gen_cross_cnt_hardening__DOT__down_cnt = new_cnt;
-
   auto up_cnt_flop = prim_count->gen_cnts__BRA__0__KET____DOT__u_cnt_flop;
+  auto down_cnt_flop = prim_count->gen_cnts__BRA__1__KET____DOT__u_cnt_flop;
 
-  up_cnt_flop->gen_generic__DOT__u_impl_generic->d_i =
-      prim_count->max_val - new_cnt;
+  up_cnt_flop->gen_generic__DOT__u_impl_generic->d_i = new_cnt;
+  down_cnt_flop->gen_generic__DOT__u_impl_generic->d_i = 0xFFFFFFFF - new_cnt;
 }
 
 template <typename LoopControllerT>

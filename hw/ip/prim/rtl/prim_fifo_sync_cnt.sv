@@ -35,35 +35,35 @@ module prim_fifo_sync_cnt #(
   if (Secure) begin : gen_secure_ptrs
     logic wptr_err;
     prim_count #(
-      .Width(Width),
-      .OutSelDnCnt(0),
-      .CntStyle(prim_count_pkg::DupCnt)
+      .Width(Width)
     ) u_wptr (
       .clk_i,
       .rst_ni,
       .clr_i,
       .set_i(wptr_wrap),
       .set_cnt_i(wptr_wrap_cnt),
-      .en_i(incr_wptr_i),
+      .incr_en_i(incr_wptr_i),
+      .decr_en_i(1'b0),
       .step_i(Width'(1'b1)),
       .cnt_o(wptr_o),
+      .cnt_next_o(),
       .err_o(wptr_err)
     );
 
     logic rptr_err;
     prim_count #(
-      .Width(Width),
-      .OutSelDnCnt(0),
-      .CntStyle(prim_count_pkg::DupCnt)
+      .Width(Width)
     ) u_rptr (
       .clk_i,
       .rst_ni,
       .clr_i,
       .set_i(rptr_wrap),
       .set_cnt_i(rptr_wrap_cnt),
-      .en_i(incr_rptr_i),
+      .incr_en_i(incr_rptr_i),
+      .decr_en_i(1'b0),
       .step_i(Width'(1'b1)),
       .cnt_o(rptr_o),
+      .cnt_next_o(),
       .err_o(rptr_err)
     );
 

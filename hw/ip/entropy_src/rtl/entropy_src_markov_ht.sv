@@ -71,18 +71,18 @@ module entropy_src_markov_ht #(
 
     // pair counter
     prim_count #(
-      .Width(RegWidth),
-      .OutSelDnCnt(1'b0), // count up
-      .CntStyle(prim_count_pkg::DupCnt)
+      .Width(RegWidth)
     ) u_prim_count_pair_cntr (
       .clk_i,
       .rst_ni,
       .clr_i(window_wrap_pulse_i),
       .set_i(!active_i || clear_i),
       .set_cnt_i(RegWidth'(0)),
-      .en_i(samples_no_match_pulse[sh]),
+      .incr_en_i(samples_no_match_pulse[sh]),
+      .decr_en_i(1'b0),
       .step_i(RegWidth'(1)),
       .cnt_o(pair_cntr[sh]),
+      .cnt_next_o(),
       .err_o(pair_cntr_err[sh])
     );
   end : gen_cntrs
