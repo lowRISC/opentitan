@@ -178,8 +178,8 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
 
     // Wait for test to enter WFI before generating ADC data which will
     // cause a wakeup event.
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
     // Fork tasks for detecting edges.
     powerdown_count = 0;

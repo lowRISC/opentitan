@@ -37,7 +37,7 @@ class chip_sw_pwm_pulses_vseq extends chip_sw_base_vseq;
   virtual task body();
     super.body();
     `uvm_info(`gfn, $sformatf("PWMSEQ : duty_cycle = %p",duty_cycle), UVM_MEDIUM)
-    wait(cfg.sw_logger_vif.printed_log == "pinmux_init end");
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "pinmux_init end")
     `uvm_info(`gfn, $sformatf("set mon active 1"), UVM_MEDIUM)
     foreach (cfg.m_pwm_monitor_cfg[i]) begin
       cfg.m_pwm_monitor_cfg[i].active = 1;

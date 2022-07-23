@@ -273,8 +273,8 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
           do_keymgr_check = 0;
         end
         // Wait for the test to start and enter the WFI state,
-        wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-        wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
+        `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+        `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
         // Randomize the data and keys for the next test phase.
         randomize_data();
         randomize_keys();

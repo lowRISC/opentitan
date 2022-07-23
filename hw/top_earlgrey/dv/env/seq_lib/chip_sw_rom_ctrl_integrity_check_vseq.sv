@@ -32,8 +32,8 @@ class chip_sw_rom_ctrl_integrity_check_vseq extends chip_sw_base_vseq;
 
   virtual task test_state_monitor();
     // wait for the test to boot and issue the WFI status
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
     // update the lc state to a production state and do a reset
     cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(lc_ctrl_state_pkg::LcStProd);
@@ -44,7 +44,7 @@ class chip_sw_rom_ctrl_integrity_check_vseq extends chip_sw_base_vseq;
     // process should be locked up.
     fork
       begin
-        wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom);
+        `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
         `uvm_error(`gfn, "Unexpected successful boot in PROD LC_STATE.")
       end
       begin

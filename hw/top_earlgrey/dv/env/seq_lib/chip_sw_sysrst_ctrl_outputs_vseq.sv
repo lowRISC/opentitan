@@ -59,8 +59,8 @@ class chip_sw_sysrst_ctrl_outputs_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task sync_with_sw();
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
   endtask
 
   virtual task check_loopback_pattern();

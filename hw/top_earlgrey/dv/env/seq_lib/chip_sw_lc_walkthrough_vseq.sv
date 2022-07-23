@@ -61,7 +61,7 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);
     apply_reset();
 
-    wait (cfg.sw_logger_vif.printed_log == "Waiting for LC transition done and reboot.");
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for LC transition done and reboot.")
     // Wait for a large number of cycles to transit to RMA state.
     wait_lc_status(LcTransitionSuccessful, 50_000);
     apply_reset();
@@ -70,7 +70,7 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
 
     // The following states will transfer twice to make sure LC_EXIT and RMA tokens are used.
     if (dest_dec_state inside {DecLcStProd, DecLcStDev}) begin
-      wait (cfg.sw_logger_vif.printed_log == "Waiting for LC RMA transition done and reboot.");
+      `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for LC RMA transition done and reboot.")
       // Wait for a large number of cycles to transit to RMA state.
       wait_lc_status(LcTransitionSuccessful, 50_000);
       apply_reset();

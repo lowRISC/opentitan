@@ -113,7 +113,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     super.body();
 
     // wait and check Keymgr entered CreatorRootKey State
-    wait (cfg.sw_logger_vif.printed_log == "Keymgr entered CreatorRootKey State");
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr entered CreatorRootKey State")
     cur_unmasked_key = get_unmasked_key(get_otp_root_key());
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_internal_key))
     `DV_CHECK_FATAL(uvm_hdl_read(path_internal_key, new_key))
@@ -122,34 +122,34 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     get_creator_data(creator_data);
     check_internal_key(cur_unmasked_key, creator_data, new_unmasked_key);
 
-    wait (cfg.sw_logger_vif.printed_log == "Keymgr generated identity at CreatorRootKey State");
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr generated identity at CreatorRootKey State")
     check_gen_id(new_unmasked_key, top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrCreatorIdentitySeed);
 
     // wait and check Keymgr entered OwnerIntKey State
-    wait (cfg.sw_logger_vif.printed_log == "Keymgr entered OwnerIntKey State");
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr entered OwnerIntKey State");
     cur_unmasked_key = new_unmasked_key;
     `DV_CHECK_FATAL(uvm_hdl_read(path_internal_key, new_key))
     new_unmasked_key = get_unmasked_key(new_key);
 
     check_internal_key(cur_unmasked_key, get_owner_int_data(), new_unmasked_key);
 
-    wait (cfg.sw_logger_vif.printed_log == "Keymgr generated identity at OwnerIntKey State");
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr generated identity at OwnerIntKey State")
     check_gen_id(new_unmasked_key, top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrOwnerIntIdentitySeed);
 
-    wait (cfg.sw_logger_vif.printed_log == "Keymgr generated SW output at OwnerIntKey State");
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr generated SW output at OwnerIntKey State")
     get_sw_shares(exp_digest);
     check_gen_out(new_unmasked_key, GenSWOutData, exp_digest);
 
     // check 3 sideload interfaces
-    wait (cfg.sw_logger_vif.printed_log ==
-          "Keymgr generated HW output for Kmac at OwnerIntKey State");
+    `DV_WAIT(cfg.sw_logger_vif.printed_log ==
+          "Keymgr generated HW output for Kmac at OwnerIntKey State")
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_kmac_key))
     `DV_CHECK_FATAL(uvm_hdl_read(path_kmac_key, hw_key))
     `DV_CHECK_EQ(hw_key.valid, 1)
     check_gen_out(new_unmasked_key, GenKmacOutData, get_unmasked_key(hw_key.key));
 
-    wait (cfg.sw_logger_vif.printed_log ==
-          "Keymgr generated HW output for Aes at OwnerIntKey State");
+    `DV_WAIT(cfg.sw_logger_vif.printed_log ==
+          "Keymgr generated HW output for Aes at OwnerIntKey State")
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_aes_key))
     `DV_CHECK_FATAL(uvm_hdl_read(path_aes_key, hw_key))
     `DV_CHECK_EQ(hw_key.valid, 1)
@@ -159,8 +159,8 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     begin
       bit [7:0] data_arr[];
       bit [kmac_pkg::AppDigestW-1:0] unmask_act_key, unmask_exp_key;
-      wait (cfg.sw_logger_vif.printed_log ==
-            "Keymgr generated HW output for Otbn at OwnerIntKey State");
+      `DV_WAIT(cfg.sw_logger_vif.printed_log ==
+            "Keymgr generated HW output for Otbn at OwnerIntKey State")
       `DV_CHECK_FATAL(uvm_hdl_check_path(path_otbn_key))
       `DV_CHECK_FATAL(uvm_hdl_read(path_otbn_key, otbn_key))
       `DV_CHECK_EQ(otbn_key.valid, 1)

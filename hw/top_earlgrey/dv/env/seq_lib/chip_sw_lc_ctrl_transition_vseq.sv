@@ -64,7 +64,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       apply_reset();
 
       // Wait for SW to finish power on set up.
-      wait(cfg.sw_logger_vif.printed_log == "Start LC_CTRL transition test.");
+      `DV_WAIT(cfg.sw_logger_vif.printed_log == "Start LC_CTRL transition test.")
 
       fork
         begin : isolation_fork
@@ -98,8 +98,8 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       join
 
       // Wait for SW test finishes with a pass/fail status.
-      wait (cfg.sw_test_status_vif.sw_test_status inside {SwTestStatusPassed,
-                                                          SwTestStatusFailed});
+      `DV_WAIT(cfg.sw_test_status_vif.sw_test_status inside {SwTestStatusPassed,
+                                                          SwTestStatusFailed})
       `uvm_info(`gfn, $sformatf("Sequence %0d/%0d finished!", trans_i, num_trans), UVM_LOW)
     end
   endtask

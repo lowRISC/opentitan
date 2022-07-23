@@ -31,8 +31,8 @@ class chip_sw_sram_ctrl_execution_main_vseq extends chip_sw_base_vseq;
         .en_entropy_src_fw_read(EN_ENTROPY_SRC_FW_READ),
         .en_entropy_src_fw_over(EN_ENTROPY_SRC_FW_OVER));
 
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
   endtask
 
   virtual task body();

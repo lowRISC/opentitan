@@ -382,8 +382,8 @@
 
 // a shorthand of `DV_SPINWAIT(wait(...))
 `ifndef DV_WAIT
-`define DV_WAIT(WAIT_CON_, MSG_ = "wait timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
-  `DV_SPINWAIT(wait(WAIT_CON_), MSG_, TIMEOUT_NS_, ID_)
+`define DV_WAIT(WAIT_COND_, MSG_ = "wait timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
+  `DV_SPINWAIT(wait (WAIT_COND_);, MSG_, TIMEOUT_NS_, ID_)
 `endif
 
 // Control assertions in the DUT.

@@ -61,16 +61,17 @@ class chip_sw_deep_sleep_all_reset_vseq extends chip_sw_base_vseq;
     // mimic external pull up in key in0
     cfg.ast_supply_vif.force_key0_i(1'b1);
     // Wait until we reach the SW test state.
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
     `uvm_info(`gfn, "SW test ready", UVM_MEDIUM)
 
     repeat (loop_num) begin
-      wait (cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by hw por" |
+      `DV_WAIT(
+            cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by hw por" |
             cfg.sw_logger_vif.printed_log == "Booting and setting normal sleep followed by hw por" |
             cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by sysrst" |
             cfg.sw_logger_vif.printed_log == "Booting and setting normal sleep followed by sysrst" |
             cfg.sw_logger_vif.printed_log == "Last Booting" |
-            cfg.sw_logger_vif.printed_log == "Test finish");
+            cfg.sw_logger_vif.printed_log == "Test finish")
 
        if (cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by sysrst" |
                 cfg.sw_logger_vif.printed_log ==
@@ -98,7 +99,7 @@ class chip_sw_deep_sleep_all_reset_vseq extends chip_sw_base_vseq;
 
   task execute_reset();
     `uvm_info(`gfn, "wait for low power entry", UVM_MEDIUM)
-    wait(cfg.pwrmgr_low_power_vif.low_power == 1);
+    `DV_WAIT(cfg.pwrmgr_low_power_vif.low_power == 1)
     `uvm_info(`gfn, "reset after low power entry", UVM_MEDIUM)
     assert_por_reset_deep_sleep (reset_delay);
   endtask // execute_reset
