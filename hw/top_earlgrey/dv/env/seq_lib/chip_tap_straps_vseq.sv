@@ -85,7 +85,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     // load rom/flash and wait for rom_check to complete
     cpu_init();
     wait_rom_check_done();
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
 
     check_dft_straps();
 

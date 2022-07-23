@@ -14,7 +14,7 @@ class chip_sw_gpio_vseq extends chip_sw_base_vseq;
     super.body();
 
     // Wait until we reach the SW test state.
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
 
     // Disable pullups and pulldowns on GPIOs.
     cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b0}});

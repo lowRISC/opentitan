@@ -49,16 +49,16 @@ class chip_sw_flash_ctrl_lc_rw_en_vseq extends chip_sw_base_vseq;
     cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStDev);
     apply_reset();
 
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest, 50_000_000)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
     // LC state changed to Prod.
 
     cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
     apply_reset();
 
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
     // LC state changed to Scrap. CPU not enabled so do the checks directly.
 

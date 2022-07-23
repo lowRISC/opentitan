@@ -42,8 +42,8 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
     // internal reset does not immediately go to 0 when external reset is applied
-    wait (cfg.rst_n_mon_vif.pins[0] === 0);
-    wait (cfg.rst_n_mon_vif.pins[0] === 1);
+    `DV_WAIT(cfg.rst_n_mon_vif.pins[0] === 0)
+    `DV_WAIT(cfg.rst_n_mon_vif.pins[0] === 1)
 
   endtask
 

@@ -51,11 +51,13 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     retval = uvm_hdl_check_path(LC_CTRL_TRANS_SUCCESS_PATH);
     `DV_CHECK_EQ_FATAL(retval, 1, $sformatf(
                        "Hierarchical path %0s appears to be invalid.", LC_CTRL_TRANS_SUCCESS_PATH))
-    while (transition_success == 0) begin
-      retval = uvm_hdl_read(LC_CTRL_TRANS_SUCCESS_PATH, transition_success);
-      `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", LC_CTRL_TRANS_SUCCESS_PATH))
-      cfg.clk_rst_vif.wait_clks(1);
-    end
+    `DV_SPINWAIT(
+      while (transition_success == 0) begin
+        retval = uvm_hdl_read(LC_CTRL_TRANS_SUCCESS_PATH, transition_success);
+        `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", LC_CTRL_TRANS_SUCCESS_PATH))
+        cfg.clk_rst_vif.wait_clks(1);
+      end
+    )
   endtask
 
   // TODO(lowRISC/opentitan:#11795): replace with SW symbol backdoor write
@@ -92,8 +94,8 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     cfg.en_scb_mem_chk = 0;
     ret_backdoor_write();
 
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
     apply_reset();
 
     // Second Boot.
@@ -103,15 +105,15 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
         .creator_root_key0(get_otp_key(creator_root_key0)),
         .creator_root_key1(get_otp_key(creator_root_key1)));
 
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
     wait_for_transition();
     cfg.clk_rst_vif.wait_clks(1000);
     apply_reset();
 
     // Third Boot.
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
 
   endtask
 

@@ -199,7 +199,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     fork
       begin: isolation_thread
         fork
-          wait(cfg.sw_test_status_vif.sw_test_done);
+          wait (cfg.sw_test_status_vif.sw_test_done);
           #(cfg.sw_test_timeout_ns * 1ns);
         join_any
         disable fork;
@@ -230,7 +230,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // wait until spi init is done
     // TODO, in some cases though, we might use UART logger instead of SW logger - need to keep that
     // in mind
-    wait(cfg.sw_logger_vif.printed_log == "HW initialisation completed, waiting for SPI input...");
+    `DV_WAIT(cfg.sw_logger_vif.printed_log ==
+             "HW initialisation completed, waiting for SPI input...")
 
     // for the first frame of data, sdo from chip is unknown, ignore checking that
     cfg.m_spi_agent_cfg.en_monitor_checks = 0;
@@ -240,21 +241,23 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_CHECK_EQ_FATAL((sw_byte_q.size % SPI_FRAME_BYTE_SIZE), 0,
                        "SPI data isn't aligned with frame size")
 
-    while (sw_byte_q.size > byte_cnt) begin
-      `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
-      for (int i = byte_cnt; i < SPI_FRAME_BYTE_SIZE; i++) begin
-        `uvm_info(`gfn, $sformatf("SPI flash data[%0d] = 0x%0x", i, sw_byte_q[i]), UVM_LOW)
-      end
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
-                                     data.size() == SPI_FRAME_BYTE_SIZE;
-                                     foreach (data[i]) {data[i] == sw_byte_q[byte_cnt+i];})
-      `uvm_send(m_spi_host_seq)
-      wait (string'(cfg.sw_logger_vif.printed_log) ==
-            $sformatf("Frame #%0d processed done", num_frame));
-      num_frame++;
+    `DV_SPINWAIT(
+      while (sw_byte_q.size > byte_cnt) begin
+        `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+        for (int i = byte_cnt; i < SPI_FRAME_BYTE_SIZE; i++) begin
+          `uvm_info(`gfn, $sformatf("SPI flash data[%0d] = 0x%0x", i, sw_byte_q[i]), UVM_LOW)
+        end
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
+                                      data.size() == SPI_FRAME_BYTE_SIZE;
+                                      foreach (data[i]) {data[i] == sw_byte_q[byte_cnt+i];})
+        `uvm_send(m_spi_host_seq)
+        `DV_WAIT(string'(cfg.sw_logger_vif.printed_log) ==
+              $sformatf("Frame #%0d processed done", num_frame))
+        num_frame++;
 
-      byte_cnt += SPI_FRAME_BYTE_SIZE;
-    end
+        byte_cnt += SPI_FRAME_BYTE_SIZE;
+      end
+    )
   endtask
 
   virtual function void read_sw_frames(string sw_image, ref byte sw_byte_q[$]);

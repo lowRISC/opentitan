@@ -51,13 +51,13 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_base_vseq;
     fork get_uart_tx_items(uart_idx); join_none
 
     // Wait until we receive at least 1 byte from the DUT (SW test).
-    wait(uart_tx_data_q.size() > 0);
+    `DV_WAIT(uart_tx_data_q.size() > 0)
 
     // Start sending uart_rx_data over RX.
     send_uart_rx_data();
 
     // Wait until we receive all bytes over TX.
-    wait(uart_tx_data_q.size() == exp_uart_tx_data.size());
+    `DV_WAIT(uart_tx_data_q.size() == exp_uart_tx_data.size())
 
     // Check if we received the right data set over the TX port.
     `uvm_info(`gfn, "Checking the received UART TX data for consistency.", UVM_LOW)

@@ -37,7 +37,7 @@ class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
 
       // Wait until we reach the SW test state.
-      wait(cfg.sw_logger_vif.printed_log == "ready for power down");
+      `DV_WAIT(cfg.sw_logger_vif.printed_log == "ready for power down")
 
       `uvm_info(`gfn, $sformatf("round %0d input_type: %s add_cycle: %d  reset_dealy: %d ",
                                 i, input_type.name(), add_cycle, reset_delay), UVM_MEDIUM)
@@ -59,8 +59,8 @@ class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
 
       // after reset / wakep, waitfor reboot
       // before test goes to the next round
-      wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom);
-      wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
+      `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
+      `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
 
     end
   endtask // body
@@ -77,7 +77,7 @@ class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
   task execute_reset();
     if (add_cycle == 1) begin
       `uvm_info(`gfn, "reset after low power entry", UVM_MEDIUM)
-      wait(cfg.pwrmgr_low_power_vif.low_power == 1);
+      `DV_WAIT(cfg.pwrmgr_low_power_vif.low_power == 1)
 
     end
     assert_por_reset(reset_delay);

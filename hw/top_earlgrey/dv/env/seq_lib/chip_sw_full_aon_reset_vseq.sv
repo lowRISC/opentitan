@@ -37,7 +37,7 @@ class chip_sw_full_aon_reset_vseq extends chip_sw_base_vseq;
     super.body();
 
     // Wait until we reach the SW test state.
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
 
     repeat (NumberOfResets) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -45,7 +45,7 @@ class chip_sw_full_aon_reset_vseq extends chip_sw_base_vseq;
       repeat (cycles_before_trigger) @(posedge cfg.ast_supply_vif.clk);
     end
     // Now let the processor finish booting and send another one.
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
     `uvm_info(`gfn, "Triggering an AON power glitch reset once boot is done", UVM_LOW)
     reset_cause = ResetCauseGlitch;
     trigger_por_reset();

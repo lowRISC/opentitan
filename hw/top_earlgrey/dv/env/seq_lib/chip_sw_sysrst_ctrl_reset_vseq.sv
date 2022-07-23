@@ -142,8 +142,8 @@ class chip_sw_sysrst_ctrl_reset_vseq extends chip_sw_base_vseq;
   virtual task body();
     super.body();
 
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
     check_flash_wp_value(1);
     wait_for_ec_rst_high();
     set_combo0_pads_low();
@@ -152,17 +152,17 @@ class chip_sw_sysrst_ctrl_reset_vseq extends chip_sw_base_vseq;
     check_flash_wp_value(0);
 
     write_test_phase(DEEP_SLEEP_WAKEUP_PHASE);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
     set_ulp_pads_deassert();
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
     set_ulp_pads_assert();
 
     write_test_phase(DEEP_SLEEP_RESET_PHASE);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
     set_all_pads_high();
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-    wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
     check_flash_wp_value(1);
     set_combo1_pads_low();
     check_ec_rst_when_rstreq_low();

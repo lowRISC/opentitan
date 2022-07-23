@@ -48,8 +48,8 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
     apply_reset();
 
     repeat (NumIterations) begin
-      wait (string'(cfg.sw_logger_vif.printed_log) ==
-            $sformatf("Waiting for LC transtition %0d done and reboot.", curr_state));
+      `DV_WAIT(string'(cfg.sw_logger_vif.printed_log) ==
+            $sformatf("Waiting for LC transtition %0d done and reboot.", curr_state))
       wait_lc_status(LcTransitionSuccessful);
       apply_reset();
 

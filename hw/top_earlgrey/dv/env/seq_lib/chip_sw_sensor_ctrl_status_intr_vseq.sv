@@ -39,11 +39,13 @@ class chip_sw_sensor_ctrl_status_intr_vseq extends chip_sw_base_vseq;
 
    virtual task wait_for_sleeping();
      bit sleeping = 0;
-     while (sleeping == 0) begin
-      `DV_CHECK_FATAL(uvm_hdl_read(SLEEPING_PATH, sleeping));
-      cfg.clk_rst_vif.wait_clks(10);
-      `uvm_info(`gfn, $sformatf("Cpu sleeping status: 0x%h", sleeping), UVM_HIGH)
-     end
+     `DV_SPINWAIT(
+      while (sleeping == 0) begin
+        `DV_CHECK_FATAL(uvm_hdl_read(SLEEPING_PATH, sleeping));
+        cfg.clk_rst_vif.wait_clks(10);
+        `uvm_info(`gfn, $sformatf("Cpu sleeping status: 0x%h", sleeping), UVM_HIGH)
+      end
+     )
    endtask
 
 
@@ -59,11 +61,11 @@ class chip_sw_sensor_ctrl_status_intr_vseq extends chip_sw_base_vseq;
     check_hdl_paths();
     for (int i = 0; i < iterations; i++) begin
       `uvm_info(`gfn, $sformatf("Iteration %d start", i), UVM_MEDIUM)
-      wait (cfg.sw_logger_vif.printed_log == "Waiting for IO change");
+      `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for IO change")
       wait_for_sleeping();
       change_io_val();
       `uvm_info(`gfn, $sformatf("Iteration %d end", i), UVM_MEDIUM)
-      wait (cfg.sw_logger_vif.printed_log == "IO change complete");
+      `DV_WAIT(cfg.sw_logger_vif.printed_log == "IO change complete")
     end
   endtask
 
