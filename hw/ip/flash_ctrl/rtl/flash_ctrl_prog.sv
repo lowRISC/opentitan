@@ -71,18 +71,18 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
   //end
 
   prim_count #(
-    .Width(12),
-    .OutSelDnCnt(0),
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(12)
   ) u_cnt (
     .clk_i,
     .rst_ni,
     .clr_i(op_start_i && op_done_o),
     .set_i('0),
     .set_cnt_i('0),
-    .en_i(data_rd_o),
+    .incr_en_i(data_rd_o),
+    .decr_en_i(1'b0),
     .step_i(12'h1),
     .cnt_o(cnt),
+    .cnt_next_o(),
     .err_o(cnt_err_o)
   );
 

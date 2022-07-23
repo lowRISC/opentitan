@@ -141,7 +141,6 @@ interface entropy_src_assert_if
     $assertoff(0, `CORE.u_entropy_src_markov_ht.u_min.ValidInImpliesValidOut_A);
     $assertoff(0, `CORE.u_entropy_src_markov_ht.u_max.ValidInImpliesValidOut_A);
     $assertoff(0, `CORE.u_sha3.u_keccak.gen_unmask_st_chk.UnmaskValidStates_A);
-    $assertoff(0, `CORE.`SHA3.gen_cross_cnt_hardening.DownCntStepInt_A);
     $assertoff(0, `CORE.`REPCNT.ValidInImpliesValidOut_A);
     $assertoff(0, `CORE.`BUCKET.ValidInImpliesValidOut_A);
   endtask // assert_off_err

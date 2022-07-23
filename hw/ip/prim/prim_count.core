@@ -9,7 +9,6 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
-      - lowrisc:prim:count_pkg:0.1
     files:
       - rtl/prim_count.sv
     file_type: systemVerilogSource

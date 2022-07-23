@@ -280,18 +280,18 @@ module kmac_entropy
   // SEC_CM CTR.REDUN
   // This primitive is used to place a hardened counter
   prim_count #(
-    .Width(HashCntW),
-    .OutSelDnCnt(1'b0), // 0 selects up count
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(HashCntW)
   ) u_hash_count (
     .clk_i,
     .rst_ni,
     .clr_i(hash_cnt_clr),
     .set_i(1'b0),
     .set_cnt_i(HashCntW'(0)),
-    .en_i(hash_cnt_en),
+    .incr_en_i(hash_cnt_en),
+    .decr_en_i(1'b0),
     .step_i(HashCntW'(1)),
     .cnt_o(hash_cnt_o),
+    .cnt_next_o(),
     .err_o(hash_count_error)
   );
 
@@ -336,18 +336,18 @@ module kmac_entropy
   // SEC_CM CTR.REDUN
   // This primitive is used to place a hardened counter
   prim_count #(
-    .Width(SeedIdxWidth),
-    .OutSelDnCnt(1'b0), // 0 selects up count
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(SeedIdxWidth)
   ) u_seed_idx_count (
     .clk_i,
     .rst_ni,
     .clr_i(lfsr_seed_done),
     .set_i(1'b0),
     .set_cnt_i(SeedIdxWidth'(0)),
-    .en_i(|lfsr_seed_en),
+    .incr_en_i(|lfsr_seed_en),
+    .decr_en_i(1'b0),
     .step_i(SeedIdxWidth'(1)),
     .cnt_o(seed_idx),
+    .cnt_next_o(),
     .err_o(seed_idx_count_error)
   );
 

@@ -2,40 +2,31 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Primitive hardened counter module
+// Hardened counter primitive:
 //
-// This module implements two styles of hardened counting
-// 1. Duplicate count
-//    There are two copies of the relevant counter and they are constantly compared.
-// 2. Cross count
-//    There is an up count and a down count, and the combined value must always
-//    combine to the same value.
+// This internally uses a cross counter scheme with primary and a secondary counter, where the
+// secondary counter counts in reverse direction. The sum of both counters must remain constant and
+// equal to 2**Width-1 or otherwise an err_o will be asserted.
 //
-// This counter supports a generic clr / set / en interface, where
-// clr_i and set_i MUST NOT be set at the same time!
+// This counter supports a generic clear / set / increment / decrement interface:
 //
-// In duplicate count mode
-//    - clr_i sets all (internal) counters to 0.
-//    - set_i sets the up_count's starting value to set_cnt_i.
-//      Note: the max_val is just the max possible value given by the counter's width.
-//    - en_i increments the counter by step_i, if neither of the above is set.
+// clr_i: This clears the primary counter to ResetValue and adjusts the secondary counter to match
+//        (i.e. 2**Width-1-ResetValue). Clear has priority over set, increment and decrement.
+// set_i: This sets the primary counter to set_cnt_i and adjusts the secondary counter to match
+//        (i.e. 2**Width-1-set_cnt_i). Set has priority over increment and decrement.
+// incr_en_i: Increments the primary counter by step_i, and decrements the secondary by step_i.
+// decr_en_i: Decrements the primary counter by step_i, and increments the secondary by step_i.
 //
-// In cross count mode
-//    - clr_i sets
-//      -- the down_count to 0.
-//      -- the up_count's max_val to the max possible value given by the counter's width.
-//    - set_i sets
-//      -- the up_count to 0 and the down_count to set_cnt_i,
-//      -- the up_count's max_val to set_cnt_i.
-//    - en_i increments/decrements the up_count/down_count by step_i, if neither of the above is
-//      set.
+// Note that if both incr_en_i and decr_en_i are asserted at the same time, the counter remains
+// unchanged. The counter is also protected against under- and overflows.
 
 `include "prim_assert.sv"
 
-module prim_count import prim_count_pkg::*; #(
+module prim_count #(
   parameter int Width = 2,
-  parameter bit OutSelDnCnt = 1, // 0 selects up count
-  parameter prim_count_style_e CntStyle = CrossCnt, // DupCnt or CrossCnt
+  // Can be used to reset the counter to a different value than 0, for example when
+  // the counter is used as a down-counter.
+  parameter logic [Width-1:0] ResetValue = '0,
   // This should only be disabled in special circumstances, for example
   // in non-comportable IPs where an error does not trigger an alert.
   parameter bit EnableAlertTriggerSVA = 1
@@ -44,171 +35,223 @@ module prim_count import prim_count_pkg::*; #(
   input rst_ni,
   input clr_i,
   input set_i,
-  input [Width-1:0] set_cnt_i,
-  input en_i,
-  input [Width-1:0] step_i, // increment/decrement step when enabled
-  output logic [Width-1:0] cnt_o,
+  input [Width-1:0] set_cnt_i,         // Set value for the counter.
+  input incr_en_i,
+  input decr_en_i,
+  input [Width-1:0] step_i,            // Increment/decrement step when enabled.
+  output logic [Width-1:0] cnt_o,      // Current counter state
+  output logic [Width-1:0] cnt_next_o, // Next counter state
   output logic err_o
 );
 
-  // if output selects down count, it MUST be the cross count style
-  `ASSERT_INIT(CntStyleMatch_A, OutSelDnCnt ? CntStyle == CrossCnt : 1'b1)
+  ///////////////////
+  // Counter logic //
+  ///////////////////
 
-  localparam int CntCopies = (CntStyle == DupCnt) ? 2 : 1;
+  // Reset Values for primary and secondary counters.
+  localparam int NumCnt = 2;
+  localparam logic [NumCnt-1:0][Width-1:0] ResetValues = {{Width{1'b1}} - ResetValue, // secondary
+                                                          ResetValue};                // primary
 
-  // clear up count whenever there is an explicit clear, or
-  // when the max value is re-set during cross count.
-  logic clr_up_cnt;
-  assign clr_up_cnt = clr_i |
-                      (set_i & (CntStyle == CrossCnt));
+  logic [NumCnt-1:0][Width-1:0] cnt_d, cnt_q, fpv_force;
 
-  // set up count to desired value only during duplicate counts.
-  logic set_up_cnt;
-  assign set_up_cnt = set_i & (CntStyle == DupCnt);
+`ifndef FPV_ON
+  // This becomes a free variable in FPV.
+  assign fpv_force = '0;
+`endif
 
-  logic [CntCopies-1:0][Width-1:0] up_cnt_d, up_cnt_d_buf;
-  logic [CntCopies-1:0][Width-1:0] up_cnt_q;
-  logic [Width-1:0] max_val;
-  logic err;
-
-  if (CntStyle == CrossCnt) begin : gen_crosscnt_max_val
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        max_val <= '1;
-      end else if (clr_i) begin
-        max_val <= '1;
-      end else if (set_i) begin
-        max_val <= set_cnt_i;
-      end
+  for (genvar k = 0; k < NumCnt; k++) begin : gen_cnts
+    // Note that increments / decrements are reversed for the secondary counter.
+    logic incr_en, decr_en;
+    logic [Width-1:0] set_val;
+    if (k == 0) begin : gen_up_cnt
+      assign incr_en = incr_en_i;
+      assign decr_en = decr_en_i;
+      assign set_val = set_cnt_i;
+    end else begin : gen_dn_cnt
+      assign incr_en = decr_en_i;
+      assign decr_en = incr_en_i;
+      // The secondary value needs to be adjusted accordingly.
+      assign set_val = {Width{1'b1}} - set_cnt_i;
     end
-  end else begin : gen_dupcnt_max_val
-     assign max_val = '1;
-  end
 
-  for (genvar i = 0; i < CntCopies; i++) begin : gen_cnts
-    // up-count
-    assign up_cnt_d[i] = (clr_up_cnt)                     ? '0 :
-                         (set_up_cnt)                     ? set_cnt_i :
-                         (en_i & (up_cnt_q[i] < max_val)) ? up_cnt_q[i] + step_i :
-                                                          up_cnt_q[i];
+    // Main counter logic
+    logic [Width:0] ext_cnt;
+    assign ext_cnt = (decr_en) ? {1'b0, cnt_q[k]} - {1'b0, step_i} :
+                     (incr_en) ? {1'b0, cnt_q[k]} + {1'b0, step_i} : {1'b0, cnt_q[k]};
 
-    prim_buf #(
-      .Width(Width)
-    ) u_buf (
-      .in_i(up_cnt_d[i]),
-      .out_o(up_cnt_d_buf[i])
-    );
+    // Saturation logic
+    logic uflow, oflow;
+    assign oflow = incr_en && ext_cnt[Width];
+    assign uflow = decr_en && ext_cnt[Width];
+    logic [Width-1:0] cnt_sat;
+    assign cnt_sat = (uflow) ? '0            :
+                     (oflow) ? {Width{1'b1}} : ext_cnt[Width-1:0];
 
+    // Clock gate flops when in saturation, and do not
+    // count if both incr_en and decr_en are asserted.
+    logic cnt_en;
+    assign cnt_en = (incr_en ^ decr_en) &&
+                    ((incr_en && !(&cnt_q[k])) ||
+                    (decr_en && !(cnt_q[k] == '0)));
+
+    // Counter muxes
+    assign cnt_d[k] = (clr_i)  ? ResetValues[k] :
+                      (set_i)  ? set_val        :
+                      (cnt_en) ? cnt_sat        : cnt_q[k];
+
+    logic [Width-1:0] cnt_unforced_q;
     prim_flop #(
       .Width(Width),
-      .ResetValue('0)
+      .ResetValue(ResetValues[k])
     ) u_cnt_flop (
       .clk_i,
       .rst_ni,
-      .d_i(up_cnt_d_buf[i]),
-      .q_o(up_cnt_q[i])
+      .d_i(cnt_d[k]),
+      .q_o(cnt_unforced_q)
     );
+
+    // fpv_force is only used during FPV.
+    assign cnt_q[k] = fpv_force[k] + cnt_unforced_q;
   end
 
-  if (CntStyle == CrossCnt) begin : gen_cross_cnt_hardening
-    logic [Width-1:0] down_cnt;
-    logic [Width-1:0] sum;
+  // The sum of both counters must always equal the counter maximum.
+  logic [Width:0] sum;
+  assign sum = (cnt_q[0] + cnt_q[1]);
+  assign err_o = (sum != {1'b0, {Width{1'b1}}});
 
-    // down-count
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        down_cnt <= '{default: '1};
-      end else if (clr_i) begin
-        down_cnt <= '{default: '1};
-      end else if (set_i) begin
-        down_cnt <= set_cnt_i;
-      end else if (en_i && (down_cnt > '0)) begin
-        down_cnt <= down_cnt - step_i;
-      end
-    end
+  // Output count values
+  assign cnt_o      = cnt_q[0];
+  assign cnt_next_o = cnt_d[0];
 
-    logic msb;
-    assign {msb, sum} = down_cnt + up_cnt_q[0];
-    assign cnt_o = OutSelDnCnt ? down_cnt : up_cnt_q[0];
-    assign err   = (max_val != sum) | msb;
+  ////////////////
+  // Assertions //
+  ////////////////
+`ifdef INC_ASSERT
 
-    `ASSERT(CrossCntErrForward_A,
-            ((down_cnt + up_cnt_q[0]) != {1'b0, max_val}) |-> err_o)
-    `ASSERT(CrossCntErrBackward_A, err_o |->
-            ((down_cnt + up_cnt_q[0]) != {1'b0, max_val}))
+  // We need to disable most assertions in that case using a helper signal.
+  // We can't rely on err_o since some error patterns cannot be detected (e.g. all error
+  // patterns that still fullfill the sum constraint).
+  logic fpv_err_present;
+  assign fpv_err_present = |fpv_force;
 
-    // Down counter assumption to control underflow
-    // We can also constrain the down counter underflow via `down_cnt % step_i == 0`.
-    // However, modulo operation can be very complex for formal analysis.
-    `ASSUME(DownCntStepInt_A, down_cnt == 0 || down_cnt >= step_i)
+  // Helper functions for assertions.
+  function automatic logic signed [Width+1:0] max(logic signed [Width+1:0] a,
+                                                  logic signed [Width+1:0] b);
+    return (a > b) ? a : b;
+  endfunction
 
-    // Up counter assumption to control overflow
-      logic [Width:0] unused_cnt;
-      assign unused_cnt = up_cnt_q[0] + step_i;
-      logic unused_incr_cnt;
-      assign unused_incr_cnt = !clr_i & !set_i & en_i;
+  function automatic logic signed [Width+1:0] min(logic signed [Width+1:0] a,
+                                                  logic signed [Width+1:0] b);
+    return (a < b) ? a : b;
+  endfunction
 
-      `ASSUME(UpCntOverFlow_A, unused_incr_cnt && !err |-> ~unused_cnt[Width])
+  // Cnt next
+  `ASSERT(CntNext_A,
+      rst_ni
+      |=>
+      cnt_o == $past(cnt_next_o),
+      clk_i, err_o || fpv_err_present || !rst_ni)
 
-  end else if (CntStyle == DupCnt) begin : gen_dup_cnt_hardening
-    // duplicate count compare is always valid
-    assign cnt_o = up_cnt_q[0];
-    assign err   = (up_cnt_q[0] != up_cnt_q[1]);
+  // Clear
+  `ASSERT(ClrFwd_A,
+      rst_ni && clr_i
+      |=>
+      (cnt_o == ResetValue) &&
+      (cnt_q[1] == ({Width{1'b1}} - ResetValue)),
+      clk_i, err_o || fpv_err_present || !rst_ni)
+  `ASSERT(ClrBkwd_A,
+      rst_ni && !(incr_en_i || decr_en_i || set_i) ##1
+      $changed(cnt_o) && $changed(cnt_q[1])
+      |->
+      $past(clr_i),
+      clk_i, err_o || fpv_err_present || !rst_ni)
 
-    `ASSERT(DupCntErrForward_A,  up_cnt_q[0] != up_cnt_q[1] |-> err_o)
-    `ASSERT(DupCntErrBackward_A, err_o |-> up_cnt_q[0] != up_cnt_q[1])
-  end
+  // Set
+  `ASSERT(SetFwd_A,
+      rst_ni && set_i && !clr_i
+      |=>
+      (cnt_o == $past(set_cnt_i)) &&
+      (cnt_q[1] == ({Width{1'b1}} - $past(set_cnt_i))),
+      clk_i, err_o || fpv_err_present || !rst_ni)
+  `ASSERT(SetBkwd_A,
+      rst_ni && !(incr_en_i || decr_en_i || clr_i) ##1
+      $changed(cnt_o) && $changed(cnt_q[1])
+      |->
+      $past(set_i),
+      clk_i, err_o || fpv_err_present || !rst_ni)
 
-  assign err_o = err;
+  // Do not count if both increment and decrement are asserted.
+  `ASSERT(IncrDecrUpDnCnt_A,
+      rst_ni && incr_en_i && decr_en_i && !(clr_i || set_i)
+      |=>
+      $stable(cnt_o) && $stable(cnt_q[1]),
+      clk_i, err_o || fpv_err_present || !rst_ni)
 
-  // ASSERTIONS AND ASSUMPTIONS
-  `ifdef INC_ASSERT
-  // Helper variables to hold the previous valid `cnt_o` and `step_i` when `en_i` is set.
-  logic [Width-1:0] past_cnt_o, past_step_i;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      past_cnt_o  <= cnt_o;
-      past_step_i <= step_i;
-    end else if (en_i) begin
-      past_cnt_o  <= cnt_o;
-      past_step_i <= step_i;
-    end
-  end
-  `endif
+  // Up counter
+  `ASSERT(IncrUpCnt_A,
+      rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i)
+      |=>
+      cnt_o == min($past(cnt_o) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}}),
+      clk_i, err_o || fpv_err_present || !rst_ni)
+  `ASSERT(IncrDnCnt_A,
+      rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i)
+      |=>
+      cnt_q[1] == max($past(signed'({2'b0, cnt_q[1]})) - $past({2'b0, step_i}), '0),
+      clk_i, err_o || fpv_err_present || !rst_ni)
+  `ASSERT(UpCntIncrStable_A,
+      incr_en_i && !(clr_i || set_i || decr_en_i) &&
+      cnt_o == {Width{1'b1}}
+      |=>
+      $stable(cnt_o),
+      clk_i, err_o || fpv_err_present || !rst_ni)
+  `ASSERT(UpCntDecrStable_A,
+      decr_en_i && !(clr_i || set_i || incr_en_i) &&
+      cnt_o == '0
+      |=>
+      $stable(cnt_o),
+      clk_i, err_o || fpv_err_present || !rst_ni)
 
-  // Clear and set should not be seen at the same time
-  `ASSUME(SimulClrSet_A, clr_i || set_i |-> clr_i != set_i)
+  // Down counter
+  `ASSERT(DecrUpCnt_A,
+      rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i)
+      |=>
+      cnt_o == max($past(signed'({2'b0, cnt_o})) - $past({2'b0, step_i}), '0),
+      clk_i, err_o || fpv_err_present || !rst_ni)
+  `ASSERT(DecrDnCnt_A,
+      rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i)
+      |=>
+      cnt_q[1] == min($past(cnt_q[1]) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}}),
+      clk_i, err_o || fpv_err_present || !rst_ni)
+  `ASSERT(DnCntIncrStable_A,
+      rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) &&
+      cnt_q[1] == '0
+      |=>
+      $stable(cnt_q[1]),
+      clk_i, err_o || fpv_err_present || !rst_ni)
+  `ASSERT(DnCntDecrStable_A,
+      rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) &&
+      cnt_q[1] == {Width{1'b1}}
+      |=>
+      $stable(cnt_q[1]),
+      clk_i, err_o || fpv_err_present || !rst_ni)
 
-  // when the counter is forced by TB, it can be any value, but we should see err_o is set.
-  `ASSERT(OutClr_A, clr_i |=> (OutSelDnCnt ? &cnt_o : cnt_o == 0) || err_o)
-
-  // When `en_i` is set without `clr_i` and `set_i`, and counter does not reach max/min value,
-  // we expect `cnt_o` to increment or decrement base on `step_i`, or error occurs
-  `ASSERT(OutStep_A,
-          !(clr_i ||set_i) throughout en_i ##[1:$] en_i && max_val > cnt_o && cnt_o > 0 |->
-          ((CntStyle == DupCnt || !OutSelDnCnt) ? cnt_o - past_cnt_o == past_step_i :
-           past_cnt_o - cnt_o == past_step_i) || err_o)
-
-  // When `set_i` is set, at next clock cycle:
-  // 1). For duplicate counter, sets the `cnt_o` to `set_cnt_i`.
-  // 2). For cross up counter, sets the `max_value` to `set_cnt_i`.
-  // 3). For cross down counter, sets the `cnt_o` and `max_value` to `set_cnt_i`.
-  // 4). error occurs due to a fault injection
-  `ASSERT(OutSet_A, ##1 set_i |=>
-          ((CntStyle == DupCnt || OutSelDnCnt) ? cnt_o == $past(set_cnt_i) : cnt_o == 0) || err_o)
-
-  // If the up counter reaches its max value, the value won't increment or change, unless there is
-  // a fault injection
-  `ASSERT(MaxUpCntStable_A, up_cnt_q[0] == max_val && !clr_i && !set_i |=>
-          $stable(up_cnt_q[0]) || err_o || $past(err_o))
+  // Error
+  `ASSERT(CntErrForward_A,
+      (cnt_q[1] + cnt_q[0]) != {Width{1'b1}}
+      |->
+      err_o)
+  `ASSERT(CntErrBackward_A,
+      err_o
+      |->
+      (cnt_q[1] + cnt_q[0]) != {Width{1'b1}})
 
   // This logic that will be assign to one, when user adds macro
   // ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
   // is used in design without adding this assertion check.
-  `ifdef INC_ASSERT
   logic unused_assert_connected;
 
   `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
-  `endif
-endmodule // prim_count
+`endif
 
+endmodule // prim_count

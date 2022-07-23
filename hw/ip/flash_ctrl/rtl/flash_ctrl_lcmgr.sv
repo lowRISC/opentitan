@@ -186,36 +186,36 @@ module flash_ctrl_lcmgr
   // SEC_CM: CTR.REDUN
   logic seed_cnt_err_d, seed_cnt_err_q;
   prim_count #(
-    .Width(SeedCntWidth),
-    .OutSelDnCnt(1'b0),
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(SeedCntWidth)
   ) u_seed_cnt (
     .clk_i,
     .rst_ni,
     .clr_i(seed_cnt_clr),
     .set_i('0),
     .set_cnt_i('0),
-    .en_i(seed_cnt_en),
+    .incr_en_i(seed_cnt_en),
+    .decr_en_i(1'b0),
     .step_i(SeedCntWidth'(1'b1)),
     .cnt_o(seed_cnt_q),
+    .cnt_next_o(),
     .err_o(seed_cnt_err_d)
   );
 
   // SEC_CM: CTR.REDUN
   logic addr_cnt_err_d, addr_cnt_err_q;
   prim_count #(
-    .Width(SeedRdsWidth),
-    .OutSelDnCnt(1'b0),
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(SeedRdsWidth)
   ) u_addr_cnt (
     .clk_i,
     .rst_ni,
     .clr_i(addr_cnt_clr),
     .set_i('0),
     .set_cnt_i('0),
-    .en_i(addr_cnt_en),
+    .incr_en_i(addr_cnt_en),
+    .decr_en_i(1'b0),
     .step_i(SeedRdsWidth'(1'b1)),
     .cnt_o(addr_cnt_q),
+    .cnt_next_o(),
     .err_o(addr_cnt_err_d)
   );
 
@@ -608,54 +608,54 @@ module flash_ctrl_lcmgr
   // SEC_CM: CTR.REDUN
   logic page_err_q, page_err_d;
   prim_count #(
-    .Width(PageCntWidth),
-    .OutSelDnCnt(1'b0),
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(PageCntWidth)
   ) u_page_cnt (
     .clk_i,
     .rst_ni,
     .clr_i(page_cnt_clr),
     .set_i(page_cnt_ld),
     .set_cnt_i(RmaWipeEntries[rma_wipe_idx].start_page),
-    .en_i(page_cnt_incr),
+    .incr_en_i(page_cnt_incr),
+    .decr_en_i(1'b0),
     .step_i(PageCntWidth'(1)),
     .cnt_o(page_cnt),
+    .cnt_next_o(),
     .err_o(page_err_d)
   );
 
   logic word_err_q, word_err_d;
   //SEC_CM: CTR.REDUN
   prim_count #(
-    .Width(WordCntWidth),
-    .OutSelDnCnt(1'b0),
-    .CntStyle(prim_count_pkg::CrossCnt)
+    .Width(WordCntWidth)
   ) u_word_cnt (
     .clk_i,
     .rst_ni,
     .clr_i(word_cnt_clr),
     .set_i(word_cnt_ld),
     .set_cnt_i(WordCntWidth'(BusWordsPerPage)),
-    .en_i(word_cnt_incr),
+    .incr_en_i(word_cnt_incr),
+    .decr_en_i(1'b0),
     .step_i(WordCntWidth'(WidthMultiple)),
     .cnt_o(word_cnt),
+    .cnt_next_o(),
     .err_o(word_err_d)
   );
 
   logic rma_idx_err_q, rma_idx_err_d;
   //SEC_CM: CTR.REDUN
   prim_count #(
-    .Width(WipeIdxWidth),
-    .OutSelDnCnt(1'b0),
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(WipeIdxWidth)
   ) u_wipe_idx_cnt (
     .clk_i,
     .rst_ni,
     .clr_i('0),
     .set_i('0),
     .set_cnt_i('0),
-    .en_i(rma_wipe_idx_incr),
+    .incr_en_i(rma_wipe_idx_incr),
+    .decr_en_i(1'b0),
     .step_i(WipeIdxWidth'(1'b1)),
     .cnt_o(rma_wipe_idx),
+    .cnt_next_o(),
     .err_o(rma_idx_err_d)
   );
 

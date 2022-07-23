@@ -26,6 +26,6 @@ interface edn_path_if
   endfunction // sm_err_path
 
   function automatic string cntr_err_path();
-    return {core_path, ".u_prim_count_max_reqs_cntr.gen_cross_cnt_hardening.msb"};
+    return {core_path, ".u_prim_count_max_reqs_cntr.err_o"};
   endfunction // cntr_err_path
 endinterface // edn_path_if

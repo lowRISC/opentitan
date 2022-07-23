@@ -50,8 +50,7 @@ if {$env(DUT_TOP) == "prim_count_tb"} {
   elaborate -top $env(DUT_TOP) \
             -enable_sva_isunknown \
             -disable_auto_bbox \
-            -param OutSelDnCnt $OutSelDnCnt \
-            -param CntStyle $CntStyle
+            -param ResetValue $ResetValue
 } else {
   elaborate -top $env(DUT_TOP) -enable_sva_isunknown -disable_auto_bbox
 }

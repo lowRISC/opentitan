@@ -290,18 +290,18 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
 
   // SEC_CM: DRBG_GEN.CTR.REDUN
   prim_count #(
-    .Width(CtrLen),
-    .OutSelDnCnt(1'b0), // count up
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(CtrLen)
   ) u_prim_count_ctr_drbg (
     .clk_i,
     .rst_ni,
     .clr_i(!ctr_drbg_gen_enable_i),
     .set_i(v_ctr_load),
     .set_cnt_i(v_first[CtrLen-1:0]),
-    .en_i(v_ctr_inc),
+    .incr_en_i(v_ctr_inc), // count up
+    .decr_en_i(1'b0),
     .step_i(CtrLen'(1)),
     .cnt_o(v_ctr),
+    .cnt_next_o(),
     .err_o(ctr_drbg_gen_v_ctr_err_o)
   );
 

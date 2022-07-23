@@ -22,21 +22,21 @@ interface entropy_src_path_if
 
   function automatic string cntr_err_path(string cntr_name, int which_cntr);
     case (cntr_name)
-      "window": return {core_path, ".u_prim_count_window_cntr.up_cnt_q[1]"};
+      "window": return {core_path, ".u_prim_count_window_cntr.cnt_q[1]"};
       "repcnt_ht": return {core_path, ".u_entropy_src_repcnt_ht",
                            $sformatf(".gen_cntrs[%0d]", which_cntr),
-                           ".u_prim_count_rep_cntr.up_cnt_q[1]"};
+                           ".u_prim_count_rep_cntr.cnt_q[1]"};
       "repcnts_ht": return {core_path,
-                            ".u_entropy_src_repcnts_ht.u_prim_count_rep_cntr.up_cnt_q[1]"};
+                            ".u_entropy_src_repcnts_ht.u_prim_count_rep_cntr.cnt_q[1]"};
       "adaptp_ht": return {core_path, ".u_entropy_src_adaptp_ht",
                            $sformatf(".gen_cntrs[%0d]", which_cntr),
-                           ".u_prim_count_test_cnt.up_cnt_q[1]"};
+                           ".u_prim_count_test_cnt.cnt_q[1]"};
       "bucket_ht": return {core_path, ".u_entropy_src_bucket_ht",
                            $sformatf(".gen_symbol_match[%0d]", which_cntr),
-                           ".u_prim_count_bin_cntr.up_cnt_q[1]"};
+                           ".u_prim_count_bin_cntr.cnt_q[1]"};
       "markov_ht": return {core_path, ".u_entropy_src_markov_ht",
                            $sformatf(".gen_cntrs[%0d]", which_cntr),
-                           ".u_prim_count_pair_cntr.up_cnt_q[1]"};
+                           ".u_prim_count_pair_cntr.cnt_q[1]"};
       default: begin
         `uvm_fatal("es_path_if", "Invalid cntr name!")
       end

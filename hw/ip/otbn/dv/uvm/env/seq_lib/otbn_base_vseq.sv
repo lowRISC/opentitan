@@ -591,62 +591,49 @@ class otbn_base_vseq extends cip_base_vseq #(
 
   // Set a counter in the loop stack to a specified value
   protected function void _set_loop_counter(bit [31:0] loop_counter_idx, bit [31:0] new_count);
-    bit [31:0] new_up_cnt_q;
-    bit [31:0] new_up_cnt_d;
-    bit [31:0] new_past_cnt;
-    string counter_path;
+    bit [1:0][31:0] new_cnt_q;
+    bit [1:0][31:0] new_cnt_d;
+    string counter_path, index;
 
     counter_path = $sformatf("u_otbn_loop_controller.g_loop_counters[%d].u_loop_count",
                              cfg.loop_vif.loop_stack_rd_idx);
 
-    // The counters have a down and up count. The down count gives us the remaining iterations;
-    // the up count is the inverse. So down and up must always sum to a constant which is given by
-    // loop_count_max_vals (each time you set the counter within the RTL the constant is changed).
-    // This calculates the appropriate up count values from the desired new down count.
-    // Both _d and _q need to be provided and be consistent to avoid glitches on the error signal.
-    new_up_cnt_q = cfg.loop_vif.loop_count_max_vals[loop_counter_idx] - new_count;
+    // The prim_count primitive employs a "cross" counter, meaning that it contains a set of two
+    // counters where the secondary counter counts in reverse direction. Both counters have to sum
+    // up to 2**Width-1 = 2**32-1 = 32'hFFFF_FFFF at all times. The primitive can both increment
+    // and decrement the primary counter and in this particular case, this primary counter counts
+    // the remaining loop iterations. Whenever we force the primary counter to "new_count", we also
+    // have to calculate and set the value of the secondary counter to the inverse, accordingly.
+    new_cnt_q[0] = new_count;
+    new_cnt_q[1] = 32'hFFFF_FFFF - new_count;
     if (cfg.loop_vif.current_loop_q_iterations != cfg.loop_vif.current_loop_d_iterations) begin
-      // When iterations are being incremented the up count increases, so set _d appropriately
-      `DV_CHECK_EQ_FATAL(cfg.loop_vif.current_loop_q_iterations,
-                         cfg.loop_vif.current_loop_d_iterations + 1)
-
-      new_up_cnt_d = new_up_cnt_q + 1;
+      // The primary counter counts down in this case, and the secondary counter counts up.
+      `DV_CHECK_EQ_FATAL(cfg.loop_vif.current_loop_q_iterations - 1,
+                         cfg.loop_vif.current_loop_d_iterations)
+      new_cnt_d[0] = new_cnt_q[0] - 1;
+      new_cnt_d[1] = new_cnt_q[1] + 1;
     end else begin
       // No iteration count change so _d == _q
-      new_up_cnt_d = new_up_cnt_q;
+      new_cnt_d = new_cnt_q;
     end
 
-    // prim_count contains some aux logic used by the assertions. This also needs updating with
-    // the warped value.
-    new_past_cnt = new_count + 1;
+    for (int k = 0; k < 1; k++) begin
+      index = $sformatf("[%d]", k);
+      if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
+                           counter_path,
+                           ".cnt_d",
+                           index},
+                           new_cnt_d[k]) != 1) begin
+        `dv_fatal({"Failed to override cnt_d", index, " for loop warp."})
+      end
 
-    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
-                         counter_path,
-                         ".up_cnt_d[0]"},
-                         new_up_cnt_d) != 1) begin
-      `dv_fatal("Failed to override up_cnt_d for loop warp.")
-    end
-
-    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
-                         counter_path,
-                         ".up_cnt_q[0]"},
-                         new_up_cnt_q) != 1) begin
-      `dv_fatal("Failed to override up_cnt_q for loop warp.")
-    end
-
-    // down_cnt has no seperate _d and _q so just update the single `down_cnt` signal.
-    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
-                         counter_path,
-                         ".gen_cross_cnt_hardening.down_cnt"},
-                        new_count) != 1) begin
-      `dv_fatal("Failed to override down_cnt for loop warp.")
-    end
-
-    if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
-                         counter_path,
-                         ".past_cnt_o"},
-                        new_past_cnt) != 1) begin
-      `dv_fatal("Failed to override past_cnt_o for loop warp.")
+      if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
+                           counter_path,
+                           ".cnt_q",
+                           index},
+                           new_cnt_q[1]) != 1) begin
+        `dv_fatal({"Failed to override cnt_q", index, " for loop warp."})
+      end
     end
   endfunction
 

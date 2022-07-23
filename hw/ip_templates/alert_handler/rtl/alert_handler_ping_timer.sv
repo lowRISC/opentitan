@@ -176,8 +176,6 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   // SEC_CM: PING_TIMER.CTR.REDUN
   prim_count #(
     .Width(PING_CNT_DW),
-    .OutSelDnCnt(0), // count up
-    .CntStyle(prim_count_pkg::CrossCnt),
     // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
     // an alert signal, this condition is handled internally in the alert handler.
     .EnableAlertTriggerSVA(0)
@@ -187,9 +185,11 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .clr_i(esc_cnt_clr),
     .set_i(1'b0),
     .set_cnt_i('0),
-    .en_i(esc_cnt_en),
+    .incr_en_i(esc_cnt_en),
+    .decr_en_i(1'b0),
     .step_i(PING_CNT_DW'(1)),
     .cnt_o(esc_cnt),
+    .cnt_next_o(),
     .err_o(esc_cnt_error)
   );
 
@@ -209,8 +209,6 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   // SEC_CM: PING_TIMER.CTR.REDUN
   prim_count #(
     .Width(PING_CNT_DW),
-    .OutSelDnCnt(0),
-    .CntStyle(prim_count_pkg::DupCnt),
     // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
     // an alert signal, this condition is handled internally in the alert handler.
     .EnableAlertTriggerSVA(0)
@@ -220,9 +218,11 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .clr_i(1'b0),
     .set_i(cnt_set),
     .set_cnt_i(cnt_setval),
-    .en_i(!timer_expired),
-    .step_i({PING_CNT_DW{1'b1}}), // 2's complement for -1, since we count down
+    .incr_en_i(1'b0),
+    .decr_en_i(!timer_expired), // we are counting down here.
+    .step_i(PING_CNT_DW'(1'b1)),
     .cnt_o(cnt),
+    .cnt_next_o(),
     .err_o(cnt_error)
   );
 

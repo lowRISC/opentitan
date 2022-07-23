@@ -393,18 +393,18 @@ module kmac_core
   // This primitive is used to place a hardened counter
   // SEC_CM: CTR.REDUN
   prim_count #(
-    .Width(sha3_pkg::KeccakMsgAddrW),
-    .OutSelDnCnt(1'b0), // 0 selects up count
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(sha3_pkg::KeccakMsgAddrW)
   ) u_key_index_count (
     .clk_i,
     .rst_ni,
     .clr_i(clr_keyidx),
     .set_i(1'b0),
-    .set_cnt_i(sha3_pkg::KeccakMsgAddrW'(0)),
-    .en_i(inc_keyidx),
+    .set_cnt_i('0),
+    .incr_en_i(inc_keyidx),
+    .decr_en_i(1'b0),
     .step_i(sha3_pkg::KeccakMsgAddrW'(1)),
     .cnt_o(key_index),
+    .cnt_next_o(),
     .err_o(key_index_error_o)
   );
 

@@ -160,12 +160,6 @@
       tests: []
     }
     {
-      name: sec_cm_stack_wr_ptr_ctr_glitch_detect
-      desc: "Verify the countermeasure(s) STACK_WR_PTR.CTR.GLITCH_DETECT."
-      milestone: V2S
-      tests: []
-    }
-    {
       name: sec_cm_rf_bignum_data_reg_sw_integrity
       desc: "Verify the countermeasure(s) RF_BIGNUM.DATA_REG_SW.INTEGRITY."
       milestone: V2S

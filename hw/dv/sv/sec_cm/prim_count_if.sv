@@ -7,8 +7,7 @@
 // This contains a proxy class and store the object in sec_cm_pkg, which can be used in vseq to
 // control inject_fault and restore_fault
 interface prim_count_if #(
-  parameter int Width = 2,
-  parameter prim_count_pkg::prim_count_style_e CntStyle = prim_count_pkg::DupCnt
+  parameter int Width = 2
 ) (
   input clk_i,
   input rst_ni);
@@ -18,8 +17,6 @@ interface prim_count_if #(
   import uvm_pkg::*;
 
   string msg_id = $sformatf("%m");
-
-  prim_count_pkg::prim_count_style_e cnt_style = CntStyle;
 
   string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
   string signal_forced;
@@ -52,11 +49,7 @@ interface prim_count_if #(
 
   prim_count_if_proxy if_proxy;
   initial begin
-    case (cnt_style)
-      prim_count_pkg::CrossCnt: signal_forced = $sformatf("%s.up_cnt_q", path);
-      prim_count_pkg::DupCnt: signal_forced = $sformatf("%s.up_cnt_q[0]", path);
-      default: `uvm_fatal(msg_id, $sformatf("unsupported style %s", cnt_style.name()))
-    endcase
+    signal_forced = $sformatf("%s.cnt_q[%0d]", path, $urandom_range(0, 1));
     `DV_CHECK_FATAL(uvm_hdl_check_path(signal_forced), , msg_id)
 
     // Store the proxy object for TB to use

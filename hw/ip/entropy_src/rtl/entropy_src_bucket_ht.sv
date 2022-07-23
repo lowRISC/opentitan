@@ -50,20 +50,20 @@ module entropy_src_bucket_ht #(
     // use the bin incrementer to increase the bin total count
     // SEC_CM: CTR.REDUN
     prim_count #(
-        .Width(RegWidth),
-        .OutSelDnCnt(1'b0), // count up
-        .CntStyle(prim_count_pkg::DupCnt)
-      ) u_prim_count_bin_cntr (
-        .clk_i,
-        .rst_ni,
-        .clr_i(window_wrap_pulse_i),
-        .set_i(!active_i || clear_i),
-        .set_cnt_i(RegWidth'(0)),
-        .en_i(bin_incr[i]),
-        .step_i(RegWidth'(1)),
-        .cnt_o(bin_cntr[i]),
-        .err_o(bin_cntr_err[i])
-      );
+      .Width(RegWidth)
+    ) u_prim_count_bin_cntr (
+      .clk_i,
+      .rst_ni,
+      .clr_i(window_wrap_pulse_i),
+      .set_i(!active_i || clear_i),
+      .set_cnt_i(RegWidth'(0)),
+      .incr_en_i(bin_incr[i]),
+      .decr_en_i(1'b0),
+      .step_i(RegWidth'(1)),
+      .cnt_o(bin_cntr[i]),
+      .cnt_next_o(),
+      .err_o(bin_cntr_err[i])
+    );
     assign bin_cnt_exceeds_thresh[i] = (bin_cntr[i] > thresh_i);
   end : gen_symbol_match
 

@@ -215,35 +215,35 @@ module otp_ctrl_kdi
 
   // SEC_CM: KDI_SEED.CTR.REDUN
   prim_count #(
-    .Width(CntWidth),
-    .OutSelDnCnt(0), // count up
-    .CntStyle(prim_count_pkg::CrossCnt)
+    .Width(CntWidth)
   ) u_prim_count_seed (
     .clk_i,
     .rst_ni,
     .clr_i(seed_cnt_clr),
     .set_i(1'b0),
     .set_cnt_i('0),
-    .en_i(seed_cnt_en),
+    .incr_en_i(seed_cnt_en),
+    .decr_en_i(1'b0),
     .step_i(CntWidth'(1)),
     .cnt_o(seed_cnt),
+    .cnt_next_o(),
     .err_o(seed_cnt_err)
   );
 
   // SEC_CM: KDI_ENTROPY.CTR.REDUN
   prim_count #(
-    .Width(CntWidth),
-    .OutSelDnCnt(0), // count up
-    .CntStyle(prim_count_pkg::CrossCnt)
+    .Width(CntWidth)
   ) u_prim_count_entropy (
     .clk_i,
     .rst_ni,
     .clr_i(entropy_cnt_clr),
     .set_i(1'b0),
     .set_cnt_i('0),
-    .en_i(entropy_cnt_en),
+    .incr_en_i(entropy_cnt_en),
+    .decr_en_i(1'b0),
     .step_i(CntWidth'(1)),
     .cnt_o(entropy_cnt),
+    .cnt_next_o(),
     .err_o(entropy_cnt_err)
   );
 

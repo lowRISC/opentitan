@@ -370,18 +370,18 @@ module keymgr_ctrl
 
   // SEC_CM: CTRL.CTR.REDUN
   prim_count #(
-    .Width(CntWidth),
-    .OutSelDnCnt(1'b0),
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(CntWidth)
   ) u_cnt (
     .clk_i,
     .rst_ni,
     .clr_i(op_ack | random_ack),
     .set_i('0),
     .set_cnt_i('0),
-    .en_i(op_update | random_req),
+    .incr_en_i(op_update | random_req),
+    .decr_en_i(1'b0),
     .step_i(CntWidth'(1'b1)),
     .cnt_o(cnt),
+    .cnt_next_o(),
     .err_o(cnt_err)
   );
 

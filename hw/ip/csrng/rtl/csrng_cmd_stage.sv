@@ -179,17 +179,18 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   // SEC_CM: GEN_CMD.CTR.REDUN
   prim_count #(
     .Width(GenBitsCntrWidth),
-    .OutSelDnCnt(1'b1), // count down
-    .CntStyle(prim_count_pkg::CrossCnt)
+    .ResetValue({GenBitsCntrWidth{1'b1}})
   ) u_prim_count_cmd_gen_cntr (
     .clk_i,
     .rst_ni,
     .clr_i(!cs_enable_i),
     .set_i(cmd_gen_1st_req),
     .set_cnt_i(sfifo_cmd_rdata[24:12]),
-    .en_i(cmd_gen_cnt_dec),
+    .incr_en_i(1'b0),
+    .decr_en_i(cmd_gen_cnt_dec), // count down
     .step_i(GenBitsCntrWidth'(1)),
     .cnt_o(cmd_gen_cnt),
+    .cnt_next_o(),
     .err_o(cmd_gen_cnt_err_o)
   );
 

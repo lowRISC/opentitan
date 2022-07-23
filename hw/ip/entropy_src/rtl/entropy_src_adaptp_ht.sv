@@ -48,18 +48,18 @@ module entropy_src_adaptp_ht #(
     // cumulative ones counter
     // SEC_CM: CTR.REDUN
     prim_count #(
-      .Width(RegWidth),
-      .OutSelDnCnt(1'b0), // count up
-      .CntStyle(prim_count_pkg::DupCnt)
+      .Width(RegWidth)
     ) u_prim_count_test_cnt (
       .clk_i,
       .rst_ni,
       .clr_i(window_wrap_pulse_i),
       .set_i(!active_i || clear_i),
       .set_cnt_i(RegWidth'(0)),
-      .en_i(entropy_bit_vld_i),
+      .incr_en_i(entropy_bit_vld_i),
+      .decr_en_i(1'b0),
       .step_i(RegWidth'(entropy_bit_i[sh])),
       .cnt_o(test_cnt[sh]),
+      .cnt_next_o(),
       .err_o(test_cnt_err[sh])
     );
   end : gen_cntrs

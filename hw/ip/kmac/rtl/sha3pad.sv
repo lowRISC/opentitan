@@ -189,18 +189,18 @@ module sha3pad
   // This primitive is used to place a hardened counter
   // SEC_CM: CTR.REDUN
   prim_count #(
-    .Width(KeccakCountW),
-    .OutSelDnCnt(1'b0), // 0 selects up count
-    .CntStyle(prim_count_pkg::DupCnt)
+    .Width(KeccakCountW)
   ) u_sentmsg_count (
     .clk_i,
     .rst_ni,
     .clr_i(clr_sentmsg),
     .set_i(1'b0),
     .set_cnt_i(KeccakCountW'(0)),
-    .en_i(inc_sentmsg),
+    .incr_en_i(inc_sentmsg),
+    .decr_en_i(1'b0),
     .step_i(KeccakCountW'(1)),
     .cnt_o(sent_message),
+    .cnt_next_o(),
     .err_o(msg_count_error_o)
   );
 
@@ -873,4 +873,3 @@ module sha3pad
   `COVER(StPadSendMsg_C, st == StPad01 && keccak_ack)
   `COVER(StComplete_C, st == StPadFlush)
 endmodule
-

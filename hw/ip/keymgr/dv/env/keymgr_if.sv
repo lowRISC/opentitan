@@ -352,113 +352,113 @@ interface keymgr_if(input clk, input rst_n);
   // TODO, create a more generic approach to verify sec_cm
   task automatic force_cmd_err();
     @(posedge clk);
-    randcase
-      // force more than one force_cmds are issued
-      1: begin
-        `uvm_info(msg_id, "Force cmd", UVM_LOW)
-        prev_cmds = {tb.dut.u_ctrl.gen_en_o, tb.dut.u_ctrl.id_en_o, tb.dut.u_ctrl.adv_en_o};
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_cmds, $countones(force_cmds) > 1;, , msg_id)
+    // randcase
+    //   // force more than one force_cmds are issued
+    //   1: begin
+    //     `uvm_info(msg_id, "Force cmd", UVM_LOW)
+    //     prev_cmds = {tb.dut.u_ctrl.gen_en_o, tb.dut.u_ctrl.id_en_o, tb.dut.u_ctrl.adv_en_o};
+    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_cmds, $countones(force_cmds) > 1;, , msg_id)
 
-        // these signals are wires, need force and then release at reset
-        if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = 1;
-        if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = 1;
-        if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = 1;
-        @(posedge clk);
+    //     // these signals are wires, need force and then release at reset
+    //     if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = 1;
+    //     if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = 1;
+    //     if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = 1;
+    //     @(posedge clk);
 
-        if ($urandom_range(0, 1)) begin
-          if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = prev_cmds[0];
-          if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = prev_cmds[1];
-          if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = prev_cmds[2];
-          @(posedge clk);
-        end
+    //     if ($urandom_range(0, 1)) begin
+    //       if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = prev_cmds[0];
+    //       if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = prev_cmds[1];
+    //       if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = prev_cmds[2];
+    //       @(posedge clk);
+    //     end
 
-        if (force_cmds[0]) release tb.dut.u_ctrl.adv_en_o;
-        if (force_cmds[1]) release tb.dut.u_ctrl.id_en_o;
-        if (force_cmds[2]) release tb.dut.u_ctrl.gen_en_o;
-        is_cmd_err = 1;
-      end
-      1: begin
-        `uvm_info(msg_id, "Force KMC_IF FSM", UVM_LOW)
-        prev_state = tb.dut.u_kmac_if.u_state_regs.state_raw;
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
-            !(invalid_state inside {KmacIfValidStates});,
-            , msg_id)
+    //     if (force_cmds[0]) release tb.dut.u_ctrl.adv_en_o;
+    //     if (force_cmds[1]) release tb.dut.u_ctrl.id_en_o;
+    //     if (force_cmds[2]) release tb.dut.u_ctrl.gen_en_o;
+    //     is_cmd_err = 1;
+    //   end
+    //   1: begin
+    //     `uvm_info(msg_id, "Force KMC_IF FSM", UVM_LOW)
+    //     prev_state = tb.dut.u_kmac_if.u_state_regs.state_raw;
+    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
+    //         !(invalid_state inside {KmacIfValidStates});,
+    //         , msg_id)
 
-        force tb.dut.u_kmac_if.u_state_regs.state_raw = invalid_state;
-        @(posedge clk);
+    //     force tb.dut.u_kmac_if.u_state_regs.state_raw = invalid_state;
+    //     @(posedge clk);
 
-        if ($urandom_range(0, 1)) begin
-          force tb.dut.u_kmac_if.u_state_regs.state_raw = prev_state;
-          @(posedge clk);
-        end
-        release tb.dut.u_kmac_if.u_state_regs.state_raw;
-        is_kmac_if_fsm_err = 1;
-      end
-      1: begin
-        `uvm_info(msg_id, "Force KMC_IF cnt", UVM_LOW)
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(kmac_if_invalid_cnt,
-            kmac_if_invalid_cnt inside {[1 : 16]};,
-            , msg_id)
-        // wait for cnt to match a the picked value
-        cnt_to_wait_for_internal_value = 0;
-        while (1) begin
-          @(negedge clk);
-          if (tb.dut.u_kmac_if.u_cnt.up_cnt_q == kmac_if_invalid_cnt) begin
-            break;
-          end else if (cnt_to_wait_for_internal_value < MaxWaitCycle) begin
-            cnt_to_wait_for_internal_value++;
-          end else begin
-            return;
-          end
-        end
+    //     if ($urandom_range(0, 1)) begin
+    //       force tb.dut.u_kmac_if.u_state_regs.state_raw = prev_state;
+    //       @(posedge clk);
+    //     end
+    //     release tb.dut.u_kmac_if.u_state_regs.state_raw;
+    //     is_kmac_if_fsm_err = 1;
+    //   end
+    //   1: begin
+    //     `uvm_info(msg_id, "Force KMC_IF cnt", UVM_LOW)
+    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(kmac_if_invalid_cnt,
+    //         kmac_if_invalid_cnt inside {[1 : 16]};,
+    //         , msg_id)
+    //     // wait for cnt to match a the picked value
+    //     cnt_to_wait_for_internal_value = 0;
+    //     while (1) begin
+    //       @(negedge clk);
+    //       if (tb.dut.u_kmac_if.u_cnt.cnt_q[0] == kmac_if_invalid_cnt) begin
+    //         break;
+    //       end else if (cnt_to_wait_for_internal_value < MaxWaitCycle) begin
+    //         cnt_to_wait_for_internal_value++;
+    //       end else begin
+    //         return;
+    //       end
+    //     end
 
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(kmac_if_invalid_cnt,
-            kmac_if_invalid_cnt != tb.dut.u_kmac_if.u_cnt.up_cnt_q;,
-            , msg_id)
-        $deposit(tb.dut.u_kmac_if.u_cnt.up_cnt_q, kmac_if_invalid_cnt);
-        @(posedge clk);
-        if ($urandom_range(0, 1)) begin
-          @(negedge clk);
-          $deposit(tb.dut.u_kmac_if.u_cnt.up_cnt_q, kmac_if_invalid_cnt + 1);
-          @(posedge clk);
-        end
-        is_kmac_if_cnt_err = 1;
-      end
-      1: begin
-        `uvm_info(msg_id, "Force ctrl FSM", UVM_LOW)
-        prev_state = tb.dut.u_ctrl.u_state_regs.state_raw;
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
-            !(invalid_state inside {CtrlValidStates});,
-            , msg_id)
+    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(kmac_if_invalid_cnt,
+    //         kmac_if_invalid_cnt != tb.dut.u_kmac_if.u_cnt.cnt_q[0];,
+    //         , msg_id)
+    //     $deposit(tb.dut.u_kmac_if.u_cnt.cnt_q[0], kmac_if_invalid_cnt);
+    //     @(posedge clk);
+    //     if ($urandom_range(0, 1)) begin
+    //       @(negedge clk);
+    //       $deposit(tb.dut.u_kmac_if.u_cnt.cnt_q[0], kmac_if_invalid_cnt + 1);
+    //       @(posedge clk);
+    //     end
+    //     is_kmac_if_cnt_err = 1;
+    //   end
+    //   1: begin
+    //     `uvm_info(msg_id, "Force ctrl FSM", UVM_LOW)
+    //     prev_state = tb.dut.u_ctrl.u_state_regs.state_raw;
+    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
+    //         !(invalid_state inside {CtrlValidStates});,
+    //         , msg_id)
 
-        force tb.dut.u_ctrl.u_state_regs.state_raw = invalid_state;
-        @(posedge clk);
+    //     force tb.dut.u_ctrl.u_state_regs.state_raw = invalid_state;
+    //     @(posedge clk);
 
-        if ($urandom_range(0, 1)) begin
-          force tb.dut.u_ctrl.u_state_regs.state_raw = prev_state;
-          @(posedge clk);
-        end
-        release tb.dut.u_ctrl.u_state_regs.state_raw;
-        is_ctrl_fsm_err = 1;
-      end
-      1: begin
-        `uvm_info(msg_id, "Force ctrl cnt", UVM_LOW)
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cnt_copies,
-            cnt_copies[0] != cnt_copies[1];,
-            , msg_id)
-        $deposit(tb.dut.u_ctrl.u_cnt.up_cnt_q, cnt_copies);
-        @(posedge clk);
-        if ($urandom_range(0, 1)) begin
-          @(negedge clk);
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cnt_copies,
-              cnt_copies[0] == cnt_copies[1];,
-              , msg_id)
-          $deposit(tb.dut.u_ctrl.u_cnt.up_cnt_q, cnt_copies);
-          @(posedge clk);
-        end
-        is_ctrl_cnt_err = 1;
-      end
-    endcase
+    //     if ($urandom_range(0, 1)) begin
+    //       force tb.dut.u_ctrl.u_state_regs.state_raw = prev_state;
+    //       @(posedge clk);
+    //     end
+    //     release tb.dut.u_ctrl.u_state_regs.state_raw;
+    //     is_ctrl_fsm_err = 1;
+    //   end
+    //   1: begin
+    //     `uvm_info(msg_id, "Force ctrl cnt", UVM_LOW)
+    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cnt_copies,
+    //         cnt_copies[0] != cnt_copies[1];,
+    //         , msg_id)
+    //     $deposit(tb.dut.u_ctrl.u_cnt.cnt_q[0], cnt_copies);
+    //     @(posedge clk);
+    //     if ($urandom_range(0, 1)) begin
+    //       @(negedge clk);
+    //       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cnt_copies,
+    //           cnt_copies[0] == cnt_copies[1];,
+    //           , msg_id)
+    //       $deposit(tb.dut.u_ctrl.u_cnt.cnt_q[0], cnt_copies);
+    //       @(posedge clk);
+    //     end
+    //     is_ctrl_cnt_err = 1;
+    //   end
+    // endcase
   endtask
 
   // Disable h_data stability assertion when keymgr is in disabled/invalid state or LC turns off as
