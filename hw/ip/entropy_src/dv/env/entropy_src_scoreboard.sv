@@ -13,6 +13,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   `uvm_component_utils(entropy_src_scoreboard)
 
+  localparam int SHACondWidth = 64;
+
   virtual entropy_src_cov_if cov_vif;
 
   // used by collect_entropy to determine the FSMs phase
@@ -38,8 +40,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // Queue of TL_DW words for predicting outputs of the observe FIFO
   bit [TL_DW - 1:0]                observe_fifo_q[$];
 
-  // Queue of TL_DW words for inserting entropy input the DUT pipeline
-  bit [TL_DW - 1:0]                process_fifo_q[$];
+  // Queue of 64-bit words for inserting entropy input to the SHA pipeline
+  bit [SHACondWidth - 1:0]         process_fifo_q[$];
+
+  // Buffer to store SHA entropy when using FW_OV mode
+  bit [SHACondWidth - 1:0]         repacked_entropy_fw_ov;
+  int                              repack_idx_fw_ov = 0;
 
   // The most recent candidate seed from entropy_data_q
   // At each TL read the TL data item is compared to the appropriate
@@ -751,14 +757,36 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // Clear all relevant prediction variables for
   // Reset, disable, enable and (delayed) FIFOClr reset events.
   function void handle_disable_reset(reset_event_e rst_type);
+    bit is_raw = (ral.conf.fips_enable.get_mirrored_value() != MuBi4True);
+
     if (rst_type == Enable) begin
       clear_ht_stat_predictions();
     end
-    // Internal entropy stores are cleared on Disable and HardReset events
+
+    // Internal CSRNG stores are cleared on Disable and HardReset events
     if( rst_type == Disable || rst_type == HardReset ) begin
       fips_csrng_q.delete();
+    end
+
+    // The SHA3 engine is the one unit that is not cleared on disable
+    // it only clears itself when a digest is output or on hard reset
+    // so we leave the process_fifo_q alone to represent the fact
+    // that there is still data in the SHA3 state
+    //
+    // However, if the DUT is in raw mode, it is not using SHA3, it
+    // is just using a fifo, which will be reset.
+    //
+    if( rst_type == HardReset ||
+        ( (rst_type == Disable) && is_raw) ) begin
       process_fifo_q.delete();
     end
+
+    // For FW_OV mode the 64 bit packer is also cleared.
+    repack_idx_fw_ov = 0;
+    // Note: For non FW_OV mode, the repack_idx_tl and repack_idx_sha
+    // counters get reset automatically when the collect entropy task
+    // exits.
+
     if (rst_type == FIFOClr) begin
       observe_fifo_q.delete();
       entropy_data_q.delete();
@@ -774,9 +802,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     repcnt_symbol     = 0;
     max_repcnt        = 0;
     max_repcnt_symbol = 0;
+    // After this event, all other inputs from the RNG interface will be discarded by the DUT
+    // so we flush this queue to reflect the fact that the DUT will not be folding these into
+    // outputs.
     rng_fifo.flush();
-    // TODO: should we flush the CSRNG fifo?
-    //csrng_fifo.flush();
+    // Note the CSRNG TLM analysis fifo should NOT be flushed, as it contains actual DUT
+    // outputs which must be scoreboarded
 
     `uvm_info(`gfn, $sformatf("%s Detected", rst_type.name), UVM_MEDIUM)
   endfunction
@@ -1042,10 +1073,21 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               if (dut_pipeline_enabled && fw_ov_entropy_insert) begin
                 msg = $sformatf("Inserting word 0x%08x into pipeline", item.a_data);
                 `uvm_info(`gfn, msg, UVM_MEDIUM)
-                process_fifo_q.push_back(item.a_data);
-                // In bypass mode, data is automatically released when a full seed is acquired
-                if (!is_fips_mode && process_fifo_q.size() == (CSRNG_BUS_WIDTH / TL_DW)) begin
-                  package_and_release_entropy();
+                // Add this TL-word to the running SHA word
+                repacked_entropy_fw_ov = {item.a_data,
+                                          repacked_entropy_fw_ov[TL_DW +: (SHACondWidth - TL_DW)]};
+                repack_idx_fw_ov++;
+                `uvm_info(`gfn, $sformatf("repack_idx_fw_ov: %016x", repack_idx_fw_ov), UVM_HIGH)
+                if (repack_idx_fw_ov == SHACondWidth/TL_DW) begin
+                  repack_idx_fw_ov = 0;
+                  msg = $sformatf("fw_ov SHA word: %016x", repacked_entropy_fw_ov);
+                  `uvm_info(`gfn, msg, UVM_HIGH)
+                  process_fifo_q.push_back(repacked_entropy_fw_ov);
+                  // In bypass mode, data is automatically released when a full seed is acquired
+                  if (!is_fips_mode &&
+                      process_fifo_q.size() == (CSRNG_BUS_WIDTH / SHACondWidth)) begin
+                    package_and_release_entropy();
+                  end
                 end
               end
             end
@@ -1184,35 +1226,33 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     sample_frames = process_fifo_q.size();
 
-    `uvm_info(`gfn, $sformatf("processing %01d 32-bit frames", sample_frames), UVM_FULL)
+    `uvm_info(`gfn, $sformatf("processing %01d 64-bit frames", sample_frames), UVM_FULL)
 
     predict_conditioned = !((route_sw && sw_bypass) || (dut_phase == BOOT));
 
     fips_data = predict_conditioned && (rng_single_bit == prim_mubi_pkg::MuBi4False);
 
     if (predict_conditioned) begin
-      localparam int BytesPerWord = TL_DW / 8;
+      localparam int BytesPerSHAWord = SHACondWidth / 8;
 
       bit [7:0] sha_msg[];
       bit [7:0] sha_digest[CSRNG_BUS_WIDTH / 8];
       longint msg_len = 0;
 
-      sha_msg = new[process_fifo_q.size() * BytesPerWord];
+      sha_msg = new[process_fifo_q.size() * BytesPerSHAWord];
 
-      // The DUT's SHA engine takes data in 64 bit chunks, whereas the input is 32-bit wide.
-      // Any unpaired 32-bit chunks will be left in the pipeline.
-      while (process_fifo_q.size() > 1) begin
-        bit [31:0] word    = '0;
-        bit [7:0] sha_byte = '0;
-        for (int j = 0; j < 2; j++) begin
-          word = process_fifo_q.pop_front();
-          for (int i = 0; i < BytesPerWord; i++) begin
-            sha_byte = word[ 0 +: 8];
-            word     = word >> 8;
-            `uvm_info(`gfn, $sformatf("msglen: %04h, byte: %02h", msg_len, sha_byte), UVM_FULL)
-            sha_msg[msg_len] = sha_byte;
-            msg_len++;
-          end
+      // The DUT's SHA engine takes data in 64 (SHACondWidth) bit chunks, whereas the DPI call
+      // requires an array of bytes.  Here we break the SHA-words into a stream of bytes
+      while (process_fifo_q.size() > 0) begin
+        bit [SHACondWidth - 1:0] sha_word    = '0;
+        bit [7:0] sha_byte                   = '0;
+        sha_word = process_fifo_q.pop_front();
+        for (int i = 0; i < BytesPerSHAWord; i++) begin
+          sha_byte = sha_word[ 0 +: 8];
+          sha_word = sha_word >> 8;
+          `uvm_info(`gfn, $sformatf("msglen: %04h, byte: %02h", msg_len, sha_byte), UVM_FULL)
+          sha_msg[msg_len] = sha_byte;
+          msg_len++;
         end
       end
 
@@ -1235,12 +1275,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end else begin
 
       while (process_fifo_q.size() > 0) begin
-        bit [TL_DW - 1:0] word = process_fifo_q.pop_front();
-        string fmt             = "sample size: %01d, last elem.: %01h";
+        bit [SHACondWidth - 1:0] word = process_fifo_q.pop_front();
+        string fmt      = "sample size: %01d, last elem.: %016h";
         `uvm_info(`gfn, $sformatf(fmt, process_fifo_q.size()+1, word), UVM_FULL)
 
-        csrng_data = csrng_data >> TL_DW;
-        csrng_data[CSRNG_BUS_WIDTH - TL_DW +: TL_DW] = word;
+        csrng_data = csrng_data >> SHACondWidth;
+        csrng_data[CSRNG_BUS_WIDTH - SHACondWidth +: SHACondWidth] = word;
       end
       `uvm_info(`gfn, $sformatf("Unconditioned data: %096h", csrng_data), UVM_HIGH)
     end
@@ -1325,8 +1365,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     queue_of_rng_val_t        window;
     int                       window_rng_frames;
     int                       pass_requirement, pass_cnt;
-    int                       repack_idx = 0;
-    bit [TL_DW - 1:0]         repacked_entropy;
+    // Two levels of repacking to mimic the structure of the DUT
+    // first RNG samples are packed into 32-bit TL DW's
+    // then those are packed into 64-bit chunks suitable
+    // for SHA3 input
+    bit [TL_DW - 1:0]         repacked_entropy_tl;
+    bit [SHACondWidth:0]      repacked_entropy_sha;
+    int                       repack_idx_tl  = 0;
+    int                       repack_idx_sha = 0;
     bit                       ht_fips_mode;
     bit                       disable_detected;
     bit                       fw_ov_insert;
@@ -1412,15 +1458,25 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           window.push_back(rng_val);
 
           // Pack this data for redistribution
-          repacked_entropy = {rng_val,
-                              repacked_entropy[RNG_BUS_WIDTH +: (TL_DW - RNG_BUS_WIDTH)]};
-          repack_idx++;
-          `uvm_info(`gfn, $sformatf("repack_idx: %0d", repack_idx), UVM_DEBUG)
-          if (repack_idx == RngPerTlDw) begin
-            repack_idx = 0;
-            observe_fifo_q.push_back(repacked_entropy);
-            if (!fw_ov_insert) begin
-              process_fifo_q.push_back(repacked_entropy);
+          repacked_entropy_tl = {rng_val,
+                                 repacked_entropy_tl[RNG_BUS_WIDTH +: (TL_DW - RNG_BUS_WIDTH)]};
+          repack_idx_tl++;
+          `uvm_info(`gfn, $sformatf("repack_idx_tl: %0d", repack_idx_tl), UVM_DEBUG)
+          if (repack_idx_tl == RngPerTlDw) begin
+            repack_idx_tl = 0;
+            // publish this 32 bit word to the observe FIFO
+            observe_fifo_q.push_back(repacked_entropy_tl);
+
+            // Now repack the TL_DW width blocks into the larger SHA blocks
+            // to publish to the process_fifo_q
+            repacked_entropy_sha = {repacked_entropy_tl,
+                                    repacked_entropy_sha[TL_DW +: (SHACondWidth - TL_DW)]};
+            repack_idx_sha++;
+            if (repack_idx_sha == SHACondWidth/TL_DW) begin
+              repack_idx_sha = 0;
+              if (!fw_ov_insert) begin
+                process_fifo_q.push_back(repacked_entropy_sha);
+              end
             end
           end
 
@@ -1595,7 +1651,29 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    // post test checks - ensure that all local fifos and queues are empty
+    // Normally at this point a simulation checks that all FIFOs and
+    // Queues are empty.  However, for entropy_src, which has no 1-1
+    // mapping between inputs and potential output, most of the simulations
+    // are time-based not transaction-based.
+    //
+    // The scoreboard FIFOs are allowed to have some entries at end of sim
+    // as these may represent:
+    // - unused RNG inputs
+    // - unused internal state corresponding to partial seeds
+    // - dropped outputs (due to finite buffer space inside the DUT)
+    //
+    // One can in principal, check that there are no dropped outputs in
+    // the limited case that:
+    // 1. less than four (4) seeds have been generated, since the
+    //    last time the DUT was enabled, AND
+    // 2. all four have been given time to propagate through the DUT before
+    //    it is disabled.
+    //
+    // This second condition may be harder to achieve. An easier alternative
+    // would be to perform a check that none of the first 4 generated seeds
+    // are dropped since the DUT was most recently enabled.
+    //
+    // TODO: Add this latter alternative check.
   endfunction
 
 endclass
