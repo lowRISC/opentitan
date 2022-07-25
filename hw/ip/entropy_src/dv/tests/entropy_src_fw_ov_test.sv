@@ -18,7 +18,10 @@ class entropy_src_fw_ov_test extends entropy_src_base_test;
     cfg.dut_cfg.boot_mode_retry_limit       = 10;
     cfg.sim_duration                        = 10ms;
     cfg.hard_mtbf                           = 100s;
+    cfg.mean_rand_reconfig_time             = 1ms;
+    cfg.mean_rand_csr_alert_time            = 10ms;
     cfg.soft_mtbf                           = 7500us;
+
     // Apply truly impossible standards, to confirm that HT's don't matter here
     cfg.dut_cfg.adaptp_sigma_min            = 0.0;
     cfg.dut_cfg.adaptp_sigma_max            = 0.0;
@@ -27,11 +30,14 @@ class entropy_src_fw_ov_test extends entropy_src_base_test;
     cfg.dut_cfg.markov_sigma_min            = 0.0;
     cfg.dut_cfg.markov_sigma_max            = 0.0;
 
-    // TODO: Randomize (Ideally @50%)
-    cfg.dut_cfg.entropy_data_reg_enable_pct = 100;
-    // TODO: Randomize@50% (requires vseq update)
-    cfg.dut_cfg.route_software_pct          = 0;
-    // TODO: Randomize@50%
+    cfg.dut_cfg.sw_regupd_pct               = 50;
+
+    cfg.dut_cfg.entropy_data_reg_enable_pct = 50;
+    cfg.dut_cfg.route_software_pct          = 50;
+    // TODO: Randomize@90%
+    cfg.otp_en_es_fw_read_pct               = 100;
+    cfg.otp_en_es_fw_over_pct               = 100;
+
     cfg.dut_cfg.type_bypass_pct             = 0;
     cfg.dut_cfg.default_ht_thresholds_pct   = 100;
 

@@ -34,6 +34,13 @@ class entropy_src_base_test extends cip_base_test #(
     cfg.dut_cfg.me_regwen_pct     = 100;
     cfg.dut_cfg.module_enable_pct = 100;
     cfg.dut_cfg.type_bypass_pct   = 100;
+
+    // Setting the following parameters to less than zero means that random reconfig or random
+    // fatal alerts will not be driven by the RNG virtual sequence unless they are overridden
+    // in one of the derived test classes.
+    cfg.mean_rand_reconfig_time   = -1.0;
+    cfg.mean_rand_csr_alert_time  = -1.0;
+
   endfunction
 
 endclass : entropy_src_base_test
