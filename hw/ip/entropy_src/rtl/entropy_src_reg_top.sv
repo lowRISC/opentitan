@@ -358,6 +358,8 @@ module entropy_src_reg_top (
   logic recov_alert_sts_es_bus_cmp_alert_wd;
   logic recov_alert_sts_es_thresh_cfg_alert_qs;
   logic recov_alert_sts_es_thresh_cfg_alert_wd;
+  logic recov_alert_sts_es_fw_ov_wr_alert_qs;
+  logic recov_alert_sts_es_fw_ov_wr_alert_wd;
   logic err_code_sfifo_esrng_err_qs;
   logic err_code_sfifo_observe_err_qs;
   logic err_code_sfifo_esfinal_err_qs;
@@ -2756,6 +2758,32 @@ module entropy_src_reg_top (
     .qs     (recov_alert_sts_es_thresh_cfg_alert_qs)
   );
 
+  //   F[es_fw_ov_wr_alert]: 15:15
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_es_fw_ov_wr_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_es_fw_ov_wr_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.es_fw_ov_wr_alert.de),
+    .d      (hw2reg.recov_alert_sts.es_fw_ov_wr_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_es_fw_ov_wr_alert_qs)
+  );
+
 
   // R[err_code]: V(False)
   //   F[sfifo_esrng_err]: 0:0
@@ -3404,6 +3432,8 @@ module entropy_src_reg_top (
   assign recov_alert_sts_es_bus_cmp_alert_wd = reg_wdata[13];
 
   assign recov_alert_sts_es_thresh_cfg_alert_wd = reg_wdata[14];
+
+  assign recov_alert_sts_es_fw_ov_wr_alert_wd = reg_wdata[15];
   assign err_code_test_we = addr_hit[55] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
@@ -3752,6 +3782,7 @@ module entropy_src_reg_top (
         reg_rdata_next[12] = recov_alert_sts_es_main_sm_alert_qs;
         reg_rdata_next[13] = recov_alert_sts_es_bus_cmp_alert_qs;
         reg_rdata_next[14] = recov_alert_sts_es_thresh_cfg_alert_qs;
+        reg_rdata_next[15] = recov_alert_sts_es_fw_ov_wr_alert_qs;
       end
 
       addr_hit[54]: begin

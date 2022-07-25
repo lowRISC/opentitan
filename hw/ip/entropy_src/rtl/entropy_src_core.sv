@@ -419,6 +419,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [EsEnableCopies-1:0] es_enable_q_fo;
   logic                      es_hw_regwen;
   logic                      recov_alert_state;
+  logic                      es_fw_ov_wr_alert;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_sha3_state;
@@ -1996,7 +1997,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
          es_type_pfa ||
          es_main_sm_alert ||
          es_bus_cmp_alert ||
-         es_thresh_cfg_alert;
+         es_thresh_cfg_alert ||
+         es_fw_ov_wr_alert;
 
   assign hw2reg.recov_alert_sts.es_main_sm_alert.de = es_main_sm_alert;
   assign hw2reg.recov_alert_sts.es_main_sm_alert.d  = es_main_sm_alert;
@@ -2006,6 +2008,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign hw2reg.recov_alert_sts.es_thresh_cfg_alert.de = es_thresh_cfg_alert;
   assign hw2reg.recov_alert_sts.es_thresh_cfg_alert.d  = es_thresh_cfg_alert;
+
+  assign hw2reg.recov_alert_sts.es_fw_ov_wr_alert.de = es_fw_ov_wr_alert;
+  assign hw2reg.recov_alert_sts.es_fw_ov_wr_alert.d  = es_fw_ov_wr_alert;
 
 
   // repcnt fail counter
@@ -2272,6 +2277,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_precon_pop = es_bypass_mode ? pfifo_precon_not_empty :
          (pfifo_precon_not_empty && sha3_msgfifo_ready);
 
+  assign es_fw_ov_wr_alert = fw_ov_mode && fw_ov_mode_entropy_insert &&
+         fw_ov_fifo_wr_pulse && fw_ov_wr_fifo_full;
 
   //--------------------------------------------
   // entropy conditioner
