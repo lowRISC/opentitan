@@ -1373,6 +1373,16 @@
                 Writing a zero resets this status bit.
                 '''
         }
+        { bits: "15",
+          name: "ES_FW_OV_WR_ALERT",
+          desc: '''
+                This bit is set when the packer FIFO has been written but was full at the time,
+                and in both FW_OV_MODE and FW_OV_ENTROPY_INSERT modes.
+                This alert would normally be the result of not monitoring the !!FW_OV_WR_FIFO_FULL register
+                before each write to the !!FW_OV_WR_DATA register.
+                Writing a zero resets this status bit.
+                '''
+        }
       ]
     },
     {
