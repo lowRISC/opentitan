@@ -87,3 +87,27 @@ bitstream_splice(
     meminfo = ":otp_mmi",
     tags = ["manual"],
 )
+
+# Standalone CW310 image for use with hyperdebug.
+fusesoc_build(
+    name = "fpga_cw310_hyperdebug",
+    srcs = [
+        "//hw:all_files",
+        _FPGA_CW310_TESTROM,
+        _FPGA_CW310_OTP_RMA,
+    ],
+    cores = ["//:cores"],
+    data = ["//hw/ip/otbn:all_files"],
+    flags = [
+        "--BootRomInitFile=" + _FPGA_CW310_TESTROM_PATH,
+        "--OtpCtrlMemInitFile=" + _FPGA_CW310_OTP_RMA_PATH,
+    ],
+    output_groups = {
+        "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"],
+        "rom_mmi": ["synth-vivado/rom.mmi"],
+        "otp_mmi": ["synth-vivado/otp.mmi"],
+    },
+    systems = ["lowrisc:systems:chip_earlgrey_cw310_hyperdebug"],
+    tags = ["manual"],
+    target = "synth",
+)
