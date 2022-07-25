@@ -209,6 +209,15 @@
       tests: ["{variant}_lc_escalation"]
     }
     {
+      name: stress_all
+      desc: '''
+            - Combine above sequences in one test to run sequentially, except csr sequence and
+              some error tests that disabled scoreboard.
+            - Randomly add reset between each sequence'''
+      milestone: V2
+      tests: ["kmac_stress_all"]
+    }
+    {
       name: entropy_timers
       desc: ''' Test entropy interface for KMAC.
 
