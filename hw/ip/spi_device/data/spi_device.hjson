@@ -543,27 +543,30 @@
           name: "status"
           desc: '''Rest of the status register.
 
-            Fields other than the bit 0 (BUSY) field are SW-maintained fields.
-            HW just reads and returns to the host system.
+            Fields other than the bit 0 (BUSY) and bit 1 (WEL) fields are
+            SW-maintained fields. HW just reads and returns to the host system.
 
-            [ 1]: WEL
-            [ 2]: BP0
-            [ 3]: BP1
-            [ 4]: BP2
-            [ 5]: TB
-            [ 6]: SEC
-            [ 7]: SRP0
-            [ 8]: SRP1
-            [ 9]: QE
-            [11]: LB1
-            [12]: LB2
-            [13]: LB3
-            [14]: CMP
-            [15]: SUS
-            [18]: WPS
-            [21]: DRV0
-            [22]: DRV1
-            [23]: HOLD /RST
+            Bit 1 (WEL) is a SW modifiable and HW modifiable field. HW updates
+            the WEL field when `WRDI` or `WREN` command is received.
+
+            - [ 1]\: WEL
+            - [ 2]\: BP0
+            - [ 3]\: BP1
+            - [ 4]\: BP2
+            - [ 5]\: TB
+            - [ 6]\: SEC
+            - [ 7]\: SRP0
+            - [ 8]\: SRP1
+            - [ 9]\: QE
+            - [11]\: LB1
+            - [12]\: LB2
+            - [13]\: LB3
+            - [14]\: CMP
+            - [15]\: SUS
+            - [18]\: WPS
+            - [21]\: DRV0
+            - [22]\: DRV1
+            - [23]\: HOLD /RST
             '''
         } // f: status
       ]
