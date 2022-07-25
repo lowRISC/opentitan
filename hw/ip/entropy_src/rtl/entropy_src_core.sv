@@ -410,6 +410,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    markov_cntr_err;
   logic                    es_cntr_err;
   logic                    es_cntr_err_sum;
+  logic                    sha3_state_error_sum;
   logic                    efuse_es_sw_reg_en;
   logic                    efuse_es_sw_ov_en;
 
@@ -722,7 +723,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                              es_ack_sm_err_sum ||
                                              es_main_sm_err_sum)) ||
                                              es_cntr_err_sum || // prim_count err is always active
-                                             sha3_state_error;
+                                             sha3_state_error_sum;
 
   // set fifo errors that are single instances of source
   assign sfifo_esrng_err_sum = (|sfifo_esrng_err) ||
@@ -747,6 +748,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
          err_code_test_bit[21];
   assign es_cntr_err_sum = es_cntr_err ||
          err_code_test_bit[22];
+  assign sha3_state_error_sum = sha3_state_error ||
+         err_code_test_bit[23];
   assign fifo_write_err_sum =
          sfifo_esrng_err[2] ||
          sfifo_observe_err[2] ||
@@ -781,6 +784,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign hw2reg.err_code.es_cntr_err.d = 1'b1;
   assign hw2reg.err_code.es_cntr_err.de = es_cntr_err_sum;
+
+  assign hw2reg.err_code.sha3_state_err.d = 1'b1;
+  assign hw2reg.err_code.sha3_state_err.de = sha3_state_error_sum;
 
 
  // set the err code type bits
