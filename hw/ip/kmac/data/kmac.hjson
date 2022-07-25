@@ -355,34 +355,53 @@
           name: entropy_mode
           desc: '''Entropy Mode
 
-          Software selects the entropy source with this field. In EdnMode,
-          the entropy generator sends requests to EDN to get the entropy. The
-          received entropy is fed into internal LFSR.
-
-          In SwMode, the software should update the internal LFSR seed
-          through !!ENTROPY_SEED_0 etc.
-
-          Out of the reset, the entropy module inside KMAC IP generates LFSR to
-          support the ROM_CTRL operation. The logic does not go back to the
-          reset state to prevent KMAC from using LFSR with seeds. SW must
-          configure correct entropy_mode prior to setting the entropy_ready.
+          Using this field, software can configure mode of operation of the internal pseudo-random number generator (PRNG).
+          For the hardware to actually switch to an entropy mode other than the default idle_mode, software further needs to set the !!CFG_SHADOWED.entropy_ready bit.
+          After that point, the hardware cannot be made to return to idle_mode unless the module is reset.
           '''
 
           enum: [
             { value: "0"
               name: "idle_mode"
-              desc: '''At reset state, the entropy mode is Idle mode. It does
-              not operate in this mode.
+              desc: '''Default mode after reset.
+
+              The sole purpose of this mode is to enable ROM_CTRL operation right after coming out of reset.
+
+              The internal PRNG is not reseeded with fresh entropy, nor updated while the core operates.
+              It should therefore not be used after this very initial stage.
+              Software should setup a different mode and set !!CFG_SHADOWED.entropy_ready as early as possible.
+
+              The module cannot be made to return to idle_mode once any of the other modes have been used.
               '''
             }
             { value: "1"
               name: "edn_mode"
-              desc: "Entropy generator module fetches entropy from EDN"
+              desc: '''Receive fresh entropy from EDN for reseeding the internal PRNG.
+
+              This entropy mode is to be used for regular operation.
+
+              Once the !!CFG_SHADOWED.entropy_ready bit is set after reset, the module requests fresh entropy from EDN for reseeding the internal PRNG.
+              Only after that, the module can start processing commands.
+              Depending on !!CFG_SHADOWED, the internal PRNG is then used for (re-)masking inputs (prefix, key, message) and intermediate results of the Keccak core.
+
+              Depending on !!ENTROPY_PERIOD, the module will periodically reseed the internal PRNG with fresh entropy from EDN.
+              Using !!CMD.entropy_req software can manually initiate the reseeding.
+
+              '''
             }
             { value: "2"
               name: "sw_mode"
-              desc: '''Software update the internal entropy via register
-              interface'''
+              desc: '''Receive initial entropy from software for reseeding the internal PRNG.
+
+              This entropy mode is a fall-back option to be used if the entropy complex is not available.
+
+              Once the !!CFG_SHADOWED.entropy_ready bit is set after reset, the module will wait for software to write each of the !!ENTROPY_SEED_0 - !!ENTROPY_SEED_4 registers exactly once and in ascending order.
+              Only after that, the module can start processing commands.
+              Depending on !!CFG_SHADOWED, the internal PRNG is then used for (re-)masking inputs (prefix, key, message) and intermediate results of the Keccak core.
+
+              After this point, the PRNG can no longer be reseeded by software - also after switching back into this mode from edn_mode.
+              However, it is possible to switch to edn_mode.
+              '''
             }
           ]
           tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_entropy_mode"]
