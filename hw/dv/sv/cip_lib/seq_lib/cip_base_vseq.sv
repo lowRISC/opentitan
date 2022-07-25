@@ -722,8 +722,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               do_read_and_check_all_csrs = 1'b1;
               ongoing_reset = 1'b0;
             end
-          `DV_CHECK_EQ(has_outstanding_access(),  0, "No CSR outstanding items after reset!")
           join_any
+          `DV_CHECK_EQ(has_outstanding_access(),  0, "No CSR outstanding items after reset!")
           disable fork;
           `uvm_info(`gfn, $sformatf("\nStress w/ reset is done for run %0d/%0d", i, num_times),
                     UVM_LOW)
