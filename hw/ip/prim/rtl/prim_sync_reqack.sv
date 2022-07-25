@@ -171,7 +171,7 @@ module prim_sync_reqack (
   end
 
   // SRC domain can only de-assert REQ after receiving ACK.
-  `ASSERT(SyncReqAckHoldReq, $fell(src_req_i) |->
+  `ASSERT(SyncReqAckHoldReq, $fell(src_req_i) && req_chk_i |->
       $fell(src_ack_o), clk_src_i, !rst_src_ni || !req_chk_i)
 
   // DST domain cannot assert ACK without REQ.
