@@ -227,6 +227,7 @@ py_library(
         ":reg_block",
         ":register",
         ":window",
+        requirement("mistletoe"),
     ],
 )
 
