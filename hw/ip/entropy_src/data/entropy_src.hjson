@@ -1435,6 +1435,14 @@
                 This bit will stay set until the next reset.
                 '''
         }
+        { bits: "23",
+          name: "SHA3_STATE_ERR",
+          desc: '''
+                This bit will be set to one when a SHA3 state error has been detected.
+                This error will signal a fatal alert, and also an interrupt if enabled.
+                This bit will stay set until the next reset.
+                '''
+        }
         { bits: "28",
           name: "FIFO_WRITE_ERR",
           desc: '''
