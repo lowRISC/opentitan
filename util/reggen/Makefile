@@ -7,7 +7,7 @@ all: lint
 
 # We need a directory to build stuff and use the "util/reggen" namespace
 # in the top-level build-bin directory.
-repo-top := ../../../..
+repo-top := ../..
 build-dir := $(repo-top)/build-bin/util/reggen
 
 $(build-dir):
@@ -19,7 +19,7 @@ mypy-excls := gen_json.py gen_selfdoc.py
 py-files := $(filter-out $(mypy-excls),$(wildcard *.py))
 
 $(build-dir)/mypy.stamp: $(py-files) | $(build-dir)
-	mypy --strict $^
+	mypy --strict --config $(repo-top)/mypy.ini $^
 	touch $@
 
 .PHONY: lint
