@@ -950,14 +950,24 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
           // Special handling for registers with broader impacts
           case (csr.get_name())
+            "sw_regupd": begin
+              bit disabled, sw_regupd;
+              sw_regupd = ral.sw_regupd.sw_regupd.get_mirrored_value();
+              disabled  = (ral.module_enable.module_enable.get_mirrored_value() != MuBi4True);
+              `DV_CHECK_FATAL(ral.regwen.regwen.predict(.value(sw_regupd && disabled),
+                                                        .kind(UVM_PREDICT_READ)));
+
+            end
             "module_enable": begin
               string msg;
+              bit sw_regupd = ral.sw_regupd.sw_regupd.get_mirrored_value();
               bit do_disable, do_enable;
               uvm_reg_field enable_field = csr.get_field_by_name("module_enable");
               prim_mubi_pkg::mubi4_t enable_mubi = enable_field.get_mirrored_value();
-              // TODO: integrate this with invalid MuBi checks
-              do_disable = (enable_mubi == prim_mubi_pkg::MuBi4False);
               do_enable  = (enable_mubi == prim_mubi_pkg::MuBi4True);
+              // Though non-mubi values sent alerts, for the
+              // purposes of enablement, all invalid values are effectively disables.
+              do_disable = ~do_enable;
               msg = $sformatf("locked? %01d", dut_reg_locked);
               `uvm_info(`gfn, msg, UVM_FULL)
               if (do_enable && !dut_pipeline_enabled) begin
@@ -971,6 +981,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   end
                 join_none
               end
+              `DV_CHECK_FATAL(ral.regwen.regwen.predict(.value(sw_regupd && !do_enable),
+                                                        .kind(UVM_PREDICT_READ)));
               if (do_disable && dut_pipeline_enabled) begin
                 fork : background_process
                   begin
@@ -1042,11 +1054,52 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               bit [TL_DW - 1:0] err_code = ral.err_code.get_mirrored_value();
               bit[4:0] bit_num = err_code_test.get_mirrored_value();
               bit [TL_DW - 1:0] mask = (32'h1 << bit_num);
+              bit is_fatal = 0;
+              bit is_logged = 0;
+              bit main_sm_escalates = 0;
+              string msg;
+              msg = $sformatf("Received write to ERR_CODE_TEST: %d", bit_num);
+              `uvm_info(`gfn, msg, UVM_MEDIUM)
               err_code = err_code | mask;
-              `uvm_info(`gfn, "Received write to ERR_CODE_TEST", UVM_LOW)
-              `DV_CHECK_FATAL(ral.err_code.predict(.value(err_code), .kind(UVM_PREDICT_READ)));
-              cov_vif.cg_err_test_sample(bit_num);
-              set_exp_alert(.alert_name("fatal_alert"), .is_fatal(1));
+              msg = $sformatf("Predicted value of ERR_CODE: %08x", err_code);
+              `uvm_info(`gfn, msg, UVM_MEDIUM)
+              case(bit_num)
+                22: begin // es_cntr_err
+                  is_fatal = 1;
+                  is_logged = 1;
+                  main_sm_escalates = 1;
+                end
+                0, 1, 2, 20, 21, 28, 29, 30: begin // other valid err_code bits
+                  // These test bits correspond to events that are always logged
+                  // in err_code, but only create fatal alerts if they occur
+                  // when the DUT is enabled
+                  is_logged = 1;
+                  is_fatal = (ral.module_enable.module_enable.get_mirrored_value() == MuBi4True);
+                end
+                default: begin // all others
+                  is_fatal = 0;
+                  is_logged = 0;
+                end
+              endcase
+              msg = $sformatf("FATAL: %d, LOGGED: %d", is_fatal, is_logged);
+              `uvm_info(`gfn, msg, UVM_MEDIUM)
+              if (is_logged) begin
+                `DV_CHECK_FATAL(ral.err_code.predict(.value(err_code), .kind(UVM_PREDICT_READ)));
+              end
+              if (is_fatal) begin
+                cov_vif.cg_err_test_sample(bit_num);
+                set_exp_alert(.alert_name("fatal_alert"), .is_fatal(1));
+              end
+              fork
+                // Implementation timing detail:
+                // If a particular error is escalated it also becomes a main_sm error.
+                if (main_sm_escalates) begin
+                  int main_sm_err_mask = 1 << 21;
+                  cfg.clk_rst_vif.wait_clks(1);
+                  err_code |= main_sm_err_mask;
+                  `DV_CHECK_FATAL(ral.err_code.predict(.value(err_code), .kind(UVM_PREDICT_READ)));
+                end
+              join_none
             end
             default: begin
             end
@@ -1530,6 +1583,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
+
     if(kind == "HARD") begin
       // reset local fifos queues and variables
       handle_disable_reset(HardReset);
