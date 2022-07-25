@@ -16,7 +16,11 @@ import re
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the register"],
-    'desc': ['t', "description of the register"],
+    'desc': [
+        't',
+        "description of the register. "
+        "This field supports the markdown syntax."
+    ],
     'fields': ['l', "list of register field description groups"]
 }
 

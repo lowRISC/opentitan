@@ -7,6 +7,8 @@ Generate HTML documentation from IpBlock
 
 from typing import Optional, Set, TextIO
 
+import mistletoe as mk
+
 from .ip_block import IpBlock
 from .html_helpers import expand_paras, render_td
 from .multi_register import MultiRegister
@@ -161,7 +163,7 @@ def gen_html_register(outfile: TextIO,
     if desc_body:
         genout(outfile,
                '<tr><td colspan=5>{}</td></tr>'
-               .format(''.join(desc_body)))
+               .format(mk.markdown(desc_body)))
 
     genout(outfile, "<tr><td colspan=5>")
     gen_html_reg_pic(outfile, reg, width)
@@ -200,7 +202,7 @@ def gen_html_register(outfile: TextIO,
         desc_parts = []
 
         if field.desc is not None:
-            desc_parts += expand_paras(field.desc, rnames)
+            desc_parts += expand_paras(mk.markdown(field.desc), rnames)
 
         if field.enum is not None:
             desc_parts.append('<table>')

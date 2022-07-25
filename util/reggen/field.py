@@ -18,7 +18,11 @@ REQUIRED_FIELDS = {
 
 OPTIONAL_FIELDS = {
     'name': ['s', "name of the field"],
-    'desc': ['t', "description of field (required if the field has a name)"],
+    'desc': [
+        't',
+        "description of field (required if the field has a name). "
+        "This field supports the markdown syntax."
+    ],
     'alias_target': [
         's',
         "name of the field to apply the alias definition to."
