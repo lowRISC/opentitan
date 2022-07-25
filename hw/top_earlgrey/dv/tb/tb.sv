@@ -568,6 +568,28 @@ module tb;
     end
   end
 
+
+  // Kill "strong" assertion properties in these scopes at the end of simulation.
+  //
+  // At the end of the simulation, these assertions start (i.e. the antecedent is true) but before
+  // the consequent property is satisfied (which happens a few clocks later), the simulation ends
+  // via $finish, causing the simulation to report a failure. It is safe to kill these assertions
+  // because they have already succeeded several times during the course of the simulation.
+  // TODO: Find a more robust way to turn off these assertions at the end of simulation.
+  //
+  // This does not apply to VCS. Here'e the relevant note from VCS documentation that explains
+  // why:
+  // In VCS, strong and weak properties are not distinguished in terms of their reporting at the end
+  // of simulation. In all cases, if a property evaluation attempt did not complete evaluation, it
+  // is reported as unfinished evaluation attempt, and allows you to decide whether it is a failure
+  // or a success.
+`ifndef VCS
+  final begin
+    $assertkill(0, prim_reg_cdc);
+    $assertkill(0, sha3pad);
+  end
+`endif
+
   // Control assertions in the DUT with UVM resource string "dut_assert_en".
   `DV_ASSERT_CTRL("dut_assert_en", tb.dut)
 
