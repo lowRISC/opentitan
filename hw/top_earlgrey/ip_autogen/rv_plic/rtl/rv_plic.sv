@@ -391,7 +391,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
       .clk_i,
       .rst_ni,
       .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[0]     ),
+      .alert_req_i   ( alerts[i]     ),
       .alert_ack_o   (               ),
       .alert_state_o (               ),
       .alert_rx_i    ( alert_rx_i[i] ),
