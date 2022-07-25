@@ -33,6 +33,11 @@ global tb_top
 # wavedumpScope $waves $simulator tb.dut.foo.bar 12
 # wavedumpScope $waves $simulator tb.dut.baz 0
 
+if {$simulator eq "xcelium"} {
+  puts "INFO: The following assertions are permamently disabled:"
+  assertion -list -depth all -multiline -permoff $tb_top
+}
+
 # In GUI mode, let the user take control of running the simulation.
 global gui
 if {$gui == 0} {
