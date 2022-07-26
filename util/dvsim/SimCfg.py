@@ -120,7 +120,6 @@ class SimCfg(FlowCfg):
         self.pre_run_cmds = []
         self.post_run_cmds = []
         self.run_dir = ""
-        self.sw_build_dir = ""
         self.sw_images = []
         self.sw_build_opts = []
         self.pass_patterns = []

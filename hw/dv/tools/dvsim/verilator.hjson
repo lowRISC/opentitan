@@ -22,7 +22,6 @@
   build_dir:          "{scratch_path}/{build_mode}"
   run_dir_name:       "{index}.{test}"
   run_dir:            "{scratch_path}/{run_dir_name}/out"
-  sw_build_dir:       "{scratch_path}"
   sw_root_dir:        "{proj_root}/sw"
 
   regressions: [
