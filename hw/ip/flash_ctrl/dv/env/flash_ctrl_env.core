@@ -70,6 +70,8 @@ filesets:
       - seq_lib/flash_ctrl_derr_detect_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_hw_rma_reset_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_otp_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_intr_rd_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_intr_wr_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
