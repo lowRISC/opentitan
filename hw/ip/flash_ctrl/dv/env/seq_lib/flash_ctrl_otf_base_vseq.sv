@@ -132,6 +132,15 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
                                      cfg.otf_wr_pct,
                                      cfg.otf_rd_pct), UVM_MEDIUM)
 
+    if (cfg.intr_mode == 1) begin
+      cfg.rd_lvl = $urandom_range(1,15);
+      cfg.wr_lvl = $urandom_range(1,3);
+      `uvm_info("pre_start", $sformatf("interrupt testmode. rd_lvl:%0d wr_lvl:%0d",
+                                       cfg.rd_lvl, cfg.wr_lvl), UVM_MEDIUM)
+
+      flash_ctrl_fifo_levels_cfg_intr(cfg.rd_lvl, cfg.wr_lvl);
+      flash_ctrl_intr_enable(6'h3f);
+    end
   endtask
 
   // On the fly scoreboard mode
@@ -285,10 +294,13 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         drop = check_info_part(flash_op, "prog_flash");
       end
 
-      flash_ctrl_start_op(flash_op);
-      flash_ctrl_write(flash_program_data, poll_fifo_status);
-      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-
+      if (cfg.intr_mode) begin
+        flash_ctrl_intr_write(flash_op, flash_program_data);
+      end else begin
+        flash_ctrl_start_op(flash_op);
+        flash_ctrl_write(flash_program_data, poll_fifo_status);
+        wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+      end
       if (is_odd == 1) begin
         tmp_data = {32{1'b1}};
         flash_program_data.push_front(tmp_data);
@@ -480,11 +492,13 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
           cfg.scb_h.exp_alert_contd["recov_err"] = 10000;
         end
       end
-
-      `uvm_info("read_flash", $sformatf("read_send %x", flash_op.otf_addr), UVM_HIGH)
-      flash_ctrl_start_op(flash_op);
-      flash_ctrl_read(flash_op.num_words, flash_read_data, poll_fifo_status);
-      wait_flash_op_done();
+      if (cfg.intr_mode) begin
+        flash_ctrl_intr_read(flash_op, flash_read_data);
+      end else begin
+        flash_ctrl_start_op(flash_op);
+        flash_ctrl_read(flash_op.num_words, flash_read_data, poll_fifo_status);
+        wait_flash_op_done();
+      end
       if (derr_is_set | cfg.ierr_created[0]) begin
         `uvm_info("read_flash", $sformatf({"bank:%0d addr: %x(otf:%x) derr_is_set:%0d",
                                           " ierr_created[0]:%0d"}, bank, flash_op.addr,
@@ -807,13 +821,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en = lc_ctrl_pkg::On;
     end
   endfunction // update_partition_access
-
-  function void set_otf_exp_alert(string str);
-    cfg.scb_h.exp_alert_ff[str].push_back(1);
-    cfg.scb_h.alert_chk_max_delay[str] = 2000;
-    `uvm_info("set_otf_exp_alert", $sformatf("exp_alert_ff[%s] size: %0d",
-                                             str, cfg.scb_h.exp_alert_ff[str].size()), UVM_MEDIUM)
-  endfunction // set_otf_exp_alert
 
   // Check permission and page range of info partition
   // Set exp recov_err alert if check fails
