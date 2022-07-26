@@ -390,7 +390,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     sha3_process;
   logic                     sha3_block_processed;
   logic                     sha3_done;
-  logic                     sha3_absorbed;
+  prim_mubi_pkg::mubi4_t    sha3_absorbed;
   logic                     sha3_squeezing;
   logic [2:0]               sha3_fsm;
   logic [32:0]              sha3_err;
@@ -824,7 +824,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.debug_status.sha3_fsm.d = sha3_fsm;
   assign hw2reg.debug_status.sha3_block_pr.d = sha3_block_processed;
   assign hw2reg.debug_status.sha3_squeezing.d = sha3_squeezing;
-  assign hw2reg.debug_status.sha3_absorbed.d = sha3_absorbed;
+  assign hw2reg.debug_status.sha3_absorbed.d =
+    prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed) ? 1'b 1 : 1'b 0;
   assign hw2reg.debug_status.sha3_err.d = sha3_err_q;
 
   assign sha3_err_d =
