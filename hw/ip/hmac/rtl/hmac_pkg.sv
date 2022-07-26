@@ -88,6 +88,12 @@ package hmac_pkg;
 
   typedef enum logic [31:0] {
     NoError                    = 32'h 0000_0000,
+    // SwPushMsgWhenShaDisabled is not used in this version. The error code is
+    // guarded by the HW. HW drops the message write request if `sha_en` is
+    // off. eunchan@ left the error code to not corrupt the code sequence.
+    // Need to rename to DeprecatedSwPush...
+    //
+    // Issue #3022
     SwPushMsgWhenShaDisabled   = 32'h 0000_0001,
     SwHashStartWhenShaDisabled = 32'h 0000_0002,
     SwUpdateSecretKeyInProcess = 32'h 0000_0003,
