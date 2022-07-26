@@ -8,7 +8,7 @@ package(default_visibility = ["//visibility:public"])
 
 rust_proc_macro(
     name = "opentitantool_derive",
-    srcs = ["src/lib.rs"],
+    srcs = ["src/lib.rs", "src/command_dispatch.rs", "src/hjson_compound_deser.rs"],
     deps = [
         "//third_party/rust/crates:proc_macro2",
         "//third_party/rust/crates:proc_macro_error",

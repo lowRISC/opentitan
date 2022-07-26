@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use proc_macro2::TokenStream;
-use proc_macro_error::{abort, proc_macro_error};
-use quote::quote;
-use syn::{parse_macro_input, Data, DataEnum, DeriveInput, Fields, Ident, Variant};
+mod command_dispatch;
+mod hjson_compound_deser;
+
+use proc_macro_error::proc_macro_error;
 
 /// Derives the `CommandDispatch` trait for a NewType enum.
 ///
@@ -43,65 +43,43 @@ use syn::{parse_macro_input, Data, DataEnum, DeriveInput, Fields, Ident, Variant
 #[proc_macro_derive(CommandDispatch)]
 #[proc_macro_error]
 pub fn derive_command_dispatch(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-
-    match &input.data {
-        Data::Enum(e) => dispatch_enum(&input.ident, e).into(),
-        _ => abort!(
-            input.ident.span(),
-            "CommandDispatch is only implemented for enums"
-        ),
-    }
+    crate::command_dispatch::command_dispatch_impl(input)
 }
 
-fn dispatch_enum(name: &Ident, e: &DataEnum) -> TokenStream {
-    let arms = e
-        .variants
-        .iter()
-        .map(|variant| dispatch_variant(name, variant))
-        .collect::<Vec<_>>();
-
-    // We wrap the derived code inside an anonymous const block to give the
-    // `extern crate` references a local namespace that wont pollute the
-    // global namespace.
-    quote! {
-        const _: () = {
-            extern crate opentitanlib;
-            extern crate anyhow;
-            extern crate erased_serde;
-
-            impl opentitanlib::app::command::CommandDispatch for #name {
-                fn run(
-                    &self,
-                    context: &dyn std::any::Any,
-                    backend: &opentitanlib::app::TransportWrapper,
-                ) -> anyhow::Result<Option<Box<dyn erased_serde::Serialize>>> {
-                    match self {
-                        #(#arms),*
-                    }
-                }
-            }
-        };
-    }
-}
-
-fn dispatch_variant(name: &Ident, variant: &Variant) -> TokenStream {
-    let ident = &variant.ident;
-    let unnamed_len = match &variant.fields {
-        Fields::Unnamed(u) => u.unnamed.len(),
-        _ => abort!(
-            variant.ident.span(),
-            "CommandDispatch is only implemented for Newtype variants"
-        ),
-    };
-    if unnamed_len != 1 {
-        abort!(
-            variant.ident.span(),
-            "CommandDispatch is only implemented for Newtype variants"
-        );
-    }
-    quote! {
-        #name::#ident(ref __field) =>
-            opentitanlib::app::command::CommandDispatch::run(__field, context, backend)
-    }
+/// Derives the `HjsonCompoundDeser` trait for a struct.
+///
+/// Many HJSON config files non-standard ways of representing the data in certain fields. Hex
+/// constants, meta fields such as "<random>", and named constants all look like strings to serde,
+/// but they can represent entirely different data types. This macro exists to make the process of
+/// deserializing these HJSON objects into Rust structs more ergonomic.
+///
+/// When `#[derive(HjsonCompoundDeser)]` is declared on a struct definition it does the following:
+///   1. Creates a companion struct that wraps each field as an `HjsonField` type that holds the
+///      intermediate state for the field.
+///   2. 
+///
+/// ```
+/// #[derive(HjsonCompoundDeser)]
+/// struct MyConfigData {
+///     // A u32 that can be deserialized either from an HJSON number or parsed from a string.
+///     foo: u32,
+///     // A u32 that can be deserialized either from an HJSON number or parsed as a hex string.
+///     #[format("Hexidecimal")]
+///     bar: u32,
+///     // A regular HJSON string.
+///     baz: String,
+/// }
+///
+/// // This will produce a hidden companion struct that is serde deserializable.
+/// struct HjsonExpanded {
+///     foo: HjsonField<u32, FromContext>,
+///     bar: HjsonField<u32, Hexidecimal>,
+///     baz: HjsonField<String, FromContext>,
+/// }
+///
+/// ```
+#[proc_macro_derive(HjsonCompoundDeser, attributes(format))]
+#[proc_macro_error]
+pub fn derive_hjson_compound_deser(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    crate::hjson_compound_deser::derive_hjson_compound_deser_impl(input)
 }
