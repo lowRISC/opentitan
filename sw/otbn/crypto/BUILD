@@ -351,6 +351,27 @@ otbn_binary(
     ],
 )
 
+otbn_binary(
+    name = "p256_ecdsa_sca",
+    srcs = [
+        "p256_ecdsa_sca.s",
+    ],
+    deps = [
+        ":p256",
+    ],
+)
+
+otbn_binary(
+    name = "p384_ecdsa_sca",
+    srcs = [
+        "p384_ecdsa_sca.s",
+    ],
+    deps = [
+        ":p384_base",
+        ":p384_sign",
+    ],
+)
+
 otbn_library(
     name = "x25519",
     srcs = [
