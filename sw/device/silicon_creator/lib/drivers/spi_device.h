@@ -78,7 +78,8 @@ enum {
   /**
    * Size of the payload area in spi_device buffer in words.
    */
-  kSpiDevicePayloadAreaNumWords = 64,
+  kSpiDevicePayloadAreaNumWords =
+      kSpiDevicePayloadAreaNumBytes / sizeof(uint32_t),
   /**
    * Index of the WEL bit in flash status register.
    */
