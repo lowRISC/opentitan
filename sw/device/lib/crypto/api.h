@@ -53,7 +53,10 @@ typedef enum key_type {
 } key_type_t;
 
 /**
- * Enum to denote the AES key modes.
+ * Enum to specify the AES modes that use a key.
+ *
+ * This will be used in the `key_mode_t` struct to indicate the mode
+ * for which the provided key is intended for.
  *
  * Values are hardened.
  */
@@ -75,7 +78,10 @@ typedef enum aes_key_mode {
 } aes_key_mode_t;
 
 /**
- * Enum to denote the HMAC key modes.
+ * Enum to specify the HMAC modes that use a key.
+ *
+ * This will be used in the `key_mode_t` struct to indicate the mode
+ * for which the provided key is intended for.
  *
  * Values are hardened.
  */
@@ -85,7 +91,10 @@ typedef enum hmac_key_mode {
 } hmac_key_mode_t;
 
 /**
- * Enum to denote the KMAC key modes.
+ * Enum to specify the KMAC modes that use a key.
+ *
+ * This will be used in the `key_mode_t` struct to indicate the mode
+ * for which the provided key is intended for.
  *
  * Values are hardened.
  */
@@ -97,7 +106,10 @@ typedef enum kmac_key_mode {
 } kmac_key_mode_t;
 
 /**
- * Enum to denote the RSA key modes.
+ * Enum to specify the RSA modes that use a key.
+ *
+ * This will be used in the `key_mode_t` struct to indicate the mode
+ * for which the provided key is intended for.
  *
  * Values are hardened.
  */
@@ -109,7 +121,10 @@ typedef enum rsa_key_mode {
 } rsa_key_mode_t;
 
 /**
- * Enum to denote the ECC key modes.
+ * Enum to specify the ECC modes that use a key.
+ *
+ * This will be used in the `key_mode_t` struct to indicate the mode
+ * for which the provided key is intended for.
  *
  * Values are hardened.
  */
@@ -125,7 +140,10 @@ typedef enum ecc_key_mode {
 } ecc_key_mode_t;
 
 /**
- * Enum to denote the KDF key modes.
+ * Enum to specify the KDF modes that use a key.
+ *
+ * This will be used in the `key_mode_t` struct to indicate the mode
+ * for which the provided key is intended for.
  *
  * Values are hardened.
  */
@@ -137,10 +155,11 @@ typedef enum kdf_key_mode {
 } kdf_key_mode_t;
 
 /**
- * Enum for opentitan crypto modes using a key.
+ * Enum for opentitan crypto modes that use a key.
  *
- * Used to denote the crypto mode for which the key is intended. This
- * key_mode will be a parameter in the crypto_blinded_key_t struct.
+ * Denotes the crypto mode for which the provided key is to be used.
+ * This `key_mode_t` will be a parameter in the `crypto_blinded_key_t`
+ * and `crypto_unblinded_key_t` structs.
  *
  * Values are hardened.
  */
@@ -166,9 +185,9 @@ typedef enum key_mode {
   // Key is intended for KMAC256 mode.
   kKeyModeKmac256 = kKeyTypeKmac << 16 | kKmacKeyModeKmac256,
   // Key is intended for RSA signature RSASSA-PKCS mode.
-  kKeyModeRsaSign = kKeyTypeRsa << 16 | kRsaKeyModeSignPkcs,
+  kKeyModeRsaSignPkcs = kKeyTypeRsa << 16 | kRsaKeyModeSignPkcs,
   // Key is intended for RSA signature RSASSA-PSS mode.
-  kKeyModeRsaSign = kKeyTypeRsa << 16 | kRsaKeyModeSignPss,
+  kKeyModeRsaSignPss = kKeyTypeRsa << 16 | kRsaKeyModeSignPss,
   // Key is intended for ECDSA mode.
   kKeyModeEcdsa = kKeyTypeEcc << 16 | kEccKeyModeEcdsa,
   // Key is intended for ECDH mode.
@@ -307,7 +326,7 @@ typedef enum aes_padding {
 } aes_padding_t;
 
 /**
- * Enum to define Hashing mode.
+ * Enum to define supported hashing modes.
  *
  * Values are hardened.
  */
@@ -326,15 +345,23 @@ typedef enum hash_mode {
   kHashModeSha3_384 = 0x14f5,
   // SHA3-512 mode.
   kHashModeSha3_512 = 0x62cd,
-  // SHA3-Shake128 mode.
-  kHashModeSha3Shake128 = 0x2bb4,
-  // SHA3-Shake256 mode.
-  kHashModeSha3Shake256 = 0x4778,
-  // SHA3-cShake128 mode.
-  kHashModeSha3Cshake128 = 0x8f45,
-  // SHA3-cShake256 mode.
-  kHashModeSha3Cshake256 = 0x8c9e,
 } hash_mode_t;
+
+/**
+ * Enum to define the supported extendable-output functions.
+ *
+ * Values are hardened.
+ */
+typedef enum xof_mode {
+  // SHA3-Shake128 mode.
+  kXofModeSha3Shake128 = 0x2bb4,
+  // SHA3-Shake256 mode.
+  kXofModeSha3Shake256 = 0x4778,
+  // SHA3-cShake128 mode.
+  kXofModeSha3Cshake128 = 0x8f45,
+  // SHA3-cShake256 mode.
+  kXofModeSha3Cshake256 = 0x8c9e,
+} xof_mode_t;
 
 /**
  * Enum to define MAC mode.
@@ -455,19 +482,19 @@ typedef struct ecc_public_key {
  */
 typedef struct ecc_domain {
   // Prime P (modulus of coordinate finite field)
-  crypto_uint8_buf_t p;
+  crypto_const_uint8_buf_t p;
   // Coefficient a.
-  crypto_uint8_buf_t a;
+  crypto_const_uint8_buf_t a;
   // Coefficient b.
-  crypto_uint8_buf_t b;
+  crypto_const_uint8_buf_t b;
   // q (order of G).
-  crypto_uint8_buf_t q;
+  crypto_const_uint8_buf_t q;
   // Value of x coordinate of G (basepoint). Same length as p.
-  uint32_t *gx;
+  const uint32_t *gx;
   // Value of y coordinate of G (basepoint). Same length as p.
-  uint32_t *gy;
+  const uint32_t *gy;
   // Cofactor of the curve.
-  uint32_t cofactor;
+  const uint32_t cofactor;
   // Checksum value of the parameters.
   uint32_t checksum;
 } ecc_domain_t;
@@ -754,14 +781,14 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
                               crypto_uint8_buf_t *digest);
 
 /**
- * Performs the required hash-xof function on the input data.
+ * Performs the required extendable output function on the input data.
  *
  * The `function_name_string` is used by NIST to define functions
  * based on cSHAKE. When no function other than cSHAKE is desired; it
  * can be empty. The `customization_string` is used to define a
  * variant of the cSHAKE function. If no customization is desired it
  * can be empty. The `function_name_string` and `customization_string`
- * are ignored when the `hash_mode` is set to kHashModeSha3Shake128 or
+ * are ignored when the `xof_mode` is set to kHashModeSha3Shake128 or
  * kHashModeSha3Shake256.
  *
  * The caller should allocate space for the `digest` buffer,
@@ -770,31 +797,32 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
  * length and the output length does not match, an error message will
  * be returned.
  *
- * @param input_message Input message to be hashed
- * @param hash_mode Required hash mode for the digest
+ * @param input_message Input message for extendable output function
+ * @param hash_mode Required extendable output function
  * @param function_name_string NIST Function name string
  * @param customization_string Customization string for cSHAKE
- * @param required_output_len Requested digest length after hash
- * @param digest Output digest after hashing the input data
- * @return crypto_status_t Result of the hash-xof operation
+ * @param required_output_len Required output length, in bytes
+ * @param digest Output from the extendable output function
+ * @return crypto_status_t Result of the xof operation
  */
-crypto_status_t otcrypto_hash_xof(crypto_const_uint8_buf_t input_message,
-                                  hash_mode_t hash_mode,
-                                  crypto_uint8_buf_t function_name_string,
-                                  crypto_uint8_buf_t customization_string,
-                                  size_t required_output_len,
-                                  crypto_uint8_buf_t *digest);
+crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
+                             xof_mode_t xof_mode,
+                             crypto_uint8_buf_t function_name_string,
+                             crypto_uint8_buf_t customization_string,
+                             size_t required_output_len,
+                             crypto_uint8_buf_t *digest);
 
 /**
  * Performs the INIT operation for a cryptographic hash function.
  *
  * Initializes the generic hash context. The required hash mode is
- * selected through the `hash_mode` parameter. Populates the hash
- * context with the digest size, block size, hash update and hash
- * final APIs to be called based on the hash mode.
+ * selected through the `hash_mode` parameter. Only `kHashModeSha256`,
+ * `kHashModeSha384` and `kHashModeSha512` are supported. Other modes
+ * are not supported and an error would be returned.
  *
- * The structure of hash context and how it populates the required
- * fields based on the hash mode are internal to the specific hash
+ * Populates the hash context with the selected hash mode and its
+ * digest and block sizes. The structure of hash context and how it
+ * populates the required fields are internal to the specific hash
  * implementation.
  *
  * @param ctx Pointer to the generic hash context struct
@@ -865,7 +893,8 @@ crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
  * @param input_message Input message to be hashed
  * @param mac_mode Required operation to be performed (HMAC/KMAC)
  * @param customization_string Customization string for KMAC
- * @param required_output_len Requested output length from KMAC
+ * @param required_output_len Required output length from KMAC, in
+ * bytes
  * @param digest Output digest after hashing the input data
  * @return crypto_status_t The result of the KMAC128 operation
  */
@@ -888,9 +917,10 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
  * fields based on the HMAC mode are internal to the specific HMAC
  * implementation.
  *
- * The API supports only the `kMacModeHmacSha256`. Other modes are not
- * supported and an error message  would be returned. The interface is
- * designed to be generic to support other modes in the future.
+ * The HMAC streaming API supports only the `kMacModeHmacSha256` mode.
+ * Other modes are not supported and an error would be returned. The
+ * interface is designed to be generic to support other required modes
+ * in the future.
  *
  * @param ctx Pointer to the generic HMAC context struct
  * @param key Pointer to the blinded HMAC key struct
@@ -899,7 +929,7 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
  */
 crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
                                    const crypto_blinded_key_t *key,
-                                   hmac_mode_t hmac_mode);
+                                   mac_mode_t hmac_mode);
 
 /**
  * Performs the UPDATE operation for HMAC.
@@ -942,18 +972,14 @@ crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
  * Performs the RSA key generation.
  *
  * Computes RSA private key (d) and RSA public key exponent (e) and
- * modulus (n). The DRBG state is passed as an input parameter.
+ * modulus (n).
  *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
  * @param required_key_len Requested key length
  * @param rsa_public_key Pointer to RSA public exponent struct
  * @param rsa_private_key Pointer to RSA private exponent struct
  * @return crypto_status_t Result of the RSA key generation
  */
-crypto_status_t otcrypto_rsa_keygen(drbg_state_t *drbg_state,
-                                    crypto_uint8_buf_t additional_input,
-                                    rsa_key_size_t required_key_len,
+crypto_status_t otcrypto_rsa_keygen(rsa_key_size_t required_key_len,
                                     rsa_public_key_t *rsa_public_key,
                                     rsa_private_key_t *rsa_private_key);
 
@@ -973,7 +999,7 @@ crypto_status_t otcrypto_rsa_keygen(drbg_state_t *drbg_state,
  * @param signature Pointer to generated signature struct
  * @return crypto_status_t The result of the RSA sign generation
  */
-crypto_status_t otcrypto_rsa_sign(rsa_private_key_t *rsa_private_key,
+crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
                                   crypto_const_uint8_buf_t input_message,
                                   rsa_padding_t padding_mode,
                                   rsa_hash_t hash_mode,
@@ -994,7 +1020,7 @@ crypto_status_t otcrypto_rsa_sign(rsa_private_key_t *rsa_private_key,
  * verification (Pass/Fail)
  * @return crypto_status_t The status of the RSA verify operation
  */
-crypto_status_t otcrypto_rsa_verify(rsa_public_key_t *rsa_public_key,
+crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
                                     crypto_const_uint8_buf_t input_message,
                                     rsa_padding_t padding_mode,
                                     rsa_hash_t hash_mode,
@@ -1005,24 +1031,18 @@ crypto_status_t otcrypto_rsa_verify(rsa_public_key_t *rsa_public_key,
  * Performs the key generation for ECDSA operation.
  *
  * Computes private key (d) and public key (Q) keys for ECDSA
- * operation. DRBG state is passed as an input parameter.
+ * operation.
  *
  * The domain_parameter field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
  * and can be set to NULL.
  *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key length, in bits
  * @param elliptic_curve Pointer to the elliptic curve to be used
  * @param private_key Pointer to the blinded private key (d) struct
  * @param public_key Pointer to the unblinded public key (Q) struct
  * @return crypto_status_t Result of the ECDSA key generation
  */
-crypto_status_t otcrypto_ecdsa_keygen(drbg_state_t *drbg_state,
-                                      crypto_uint8_buf_t additional_input,
-                                      size_t required_key_len,
-                                      ecc_curve_t *elliptic_curve,
+crypto_status_t otcrypto_ecdsa_keygen(ecc_curve_t *elliptic_curve,
                                       crypto_blinded_key_t *private_key,
                                       ecc_public_key_t *public_key);
 
@@ -1039,10 +1059,33 @@ crypto_status_t otcrypto_ecdsa_keygen(drbg_state_t *drbg_state,
  * @param signature Pointer to the signature struct with (r,s) values
  * @return crypto_status_t Result of the ECDSA signature generation
  */
-crypto_status_t otcrypto_ecdsa_sign(crypto_blinded_key_t *private_key,
+crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
                                     crypto_const_uint8_buf_t input_message,
                                     ecc_curve_t *elliptic_curve,
                                     ecc_signature_t *signature);
+
+/**
+ * Performs the deterministic ECDSA digital signature generation.
+ *
+ * In the case of deterministic ECDSA, the random value ‘k’ for the
+ * signature generation is deterministically generated from the
+ * private key and the input message. Refer to RFC6979 for details.
+ *
+ * The domain_parameter field of the `elliptic_curve` is required
+ * only for a custom curve. For named curves this field is ignored
+ * and can be set to NULL.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct
+ * @param input_message Input message to be signed
+ * @param elliptic_curve Pointer to the elliptic curve to be used
+ * @param signature Pointer to the signature struct with (r,s) values
+ * @return crypto_status_t Result of the deterministic ECDSA signature
+ * generation
+ */
+crypto_status_t otcrypto_deterministic_ecdsa_sign(
+    const crypto_blinded_key_t *private_key,
+    crypto_const_uint8_buf_t input_message, ecc_curve_t *elliptic_curve,
+    ecc_signature_t *signature);
 
 /**
  * Performs the ECDSA digital signature verification.
@@ -1059,7 +1102,7 @@ crypto_status_t otcrypto_ecdsa_sign(crypto_blinded_key_t *private_key,
  * @return crypto_status_t Result of the ECDSA verification operation
  */
 crypto_status_t otcrypto_ecdsa_verify(
-    ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
+    const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
     ecc_signature_t *signature, ecc_curve_t *elliptic_curve,
     verification_status_t *verification_result);
 
@@ -1067,24 +1110,18 @@ crypto_status_t otcrypto_ecdsa_verify(
  * Performs the key generation for ECDH key agreement.
  *
  * Computes private key (d) and public key (Q) keys for ECDSA
- * operation. DRBG state is passed as an input parameter.
+ * operation.
  *
  * The domain_parameter field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
  * and can be set to NULL.
  *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key length, in bits
  * @param elliptic_curve Pointer to the elliptic curve to be used
  * @param private_key Pointer to the blinded private key (d) struct
  * @param public_key Pointer to the unblinded public key (Q) struct
  * @return crypto_status_t Result of the ECDH key generation
  */
-crypto_status_t otcrypto_ecdh_keygen(drbg_state_t *drbg_state,
-                                     crypto_uint8_buf_t additional_input,
-                                     size_t required_key_len,
-                                     ecc_curve_t *elliptic_curve,
+crypto_status_t otcrypto_ecdh_keygen(ecc_curve_t *elliptic_curve,
                                      crypto_blinded_key_t *private_key,
                                      ecc_public_key_t *public_key);
 
@@ -1101,8 +1138,8 @@ crypto_status_t otcrypto_ecdh_keygen(drbg_state_t *drbg_state,
  * @param shared_secret Pointer to generated blinded shared key struct
  * @return crypto_status_t Result of ECDH shared secret generation
  */
-crypto_status_t otcrypto_ecdh(crypto_blinded_key_t *private_key,
-                              ecc_public_key_t *public_key,
+crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
+                              const ecc_public_key_t *public_key,
                               ecc_curve_t *elliptic_curve,
                               crypto_blinded_key_t *shared_secret);
 
@@ -1110,21 +1147,15 @@ crypto_status_t otcrypto_ecdh(crypto_blinded_key_t *private_key,
  * Generates a new Ed25519 key pair.
  *
  * Computes the private exponent (d) and public key (Q) based on
- * Curve25519. The DRBG state is passed as an input parameter.
+ * Curve25519.
  *
  * No domain_parameter is needed and is automatically set for Ed25519.
  *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key len in bits (256 for Ed25519)
  * @param private_key Pointer to the blinded private key struct
  * @param public_key Pointer to the unblinded public key struct
  * @return crypto_status_t Result of the Ed25519 key generation
  */
-crypto_status_t otcrypto_ed25519_keygen(drbg_state_t *drbg_state,
-                                        crypto_uint8_buf_t additional_input,
-                                        size_t required_key_len,
-                                        crypto_blinded_key_t *private_key,
+crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
                                         crypto_unblinded_key_t *public_key);
 
 /**
@@ -1136,7 +1167,7 @@ crypto_status_t otcrypto_ed25519_keygen(drbg_state_t *drbg_state,
  * @param signature Pointer to the EdDSA signature with (r,s) values
  * @return crypto_status_t Result of the EdDSA signature generation
  */
-crypto_status_t otcrypto_ed25519_sign(crypto_blinded_key_t *private_key,
+crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
                                       crypto_const_uint8_buf_t input_message,
                                       eddsa_sign_mode_t sign_mode,
                                       ecc_signature_t *signature);
@@ -1153,29 +1184,23 @@ crypto_status_t otcrypto_ed25519_sign(crypto_blinded_key_t *private_key,
  * @return crypto_status_t Result of the EdDSA verification operation
  */
 crypto_status_t otcrypto_ed25519_verify(
-    crypto_unblinded_key_t *public_key, crypto_const_uint8_buf_t input_message,
-    eddsa_sign_mode_t sign_mode, ecc_signature_t *signature,
-    verification_status_t *verification_result);
+    const crypto_unblinded_key_t *public_key,
+    crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    ecc_signature_t *signature, verification_status_t *verification_result);
 
 /**
  * Generates a new key pair for X25519 key exchange.
  *
  * Computes the private scalar (d) and public key (Q) based on
- * Curve25519. The DRBG state is passed as an input parameter.
+ * Curve25519.
  *
  * No domain_parameter is needed and is automatically set for X25519.
  *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key len in bits (256 for Ed25519)
  * @param private_key Pointer to the blinded private key struct
  * @param public_key Pointer to the unblinded public key struct
  * @return crypto_status_t Result of the X25519 key generation
  */
-crypto_status_t otcrypto_x25519_keygen(drbg_state_t *drbg_state,
-                                       crypto_uint8_buf_t additional_input,
-                                       size_t required_key_len,
-                                       crypto_blinded_key_t *private_key,
+crypto_status_t otcrypto_x25519_keygen(crypto_blinded_key_t *private_key,
                                        crypto_unblinded_key_t *public_key);
 
 /**
@@ -1186,28 +1211,24 @@ crypto_status_t otcrypto_x25519_keygen(drbg_state_t *drbg_state,
  * @param shared_secret Pointer to shared secret key (u-coordinate)
  * @return crypto_status_t Result of the X25519 operation
  */
-crypto_status_t otcrypto_x25519(crypto_blinded_key_t *private_key,
-                                crypto_unblinded_key_t *public_key,
+crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
+                                const crypto_unblinded_key_t *public_key,
                                 crypto_blinded_key_t *shared_secret);
 
 /**
  * Starts the asynchronous RSA key generation function.
  *
  * Initializes OTBN and starts the OTBN routine to compute the RSA
- * private key (d), RSA public key exponent (e) and modulus (n). The
- * DRBG state is passed as an input parameter.
+ * private key (d), RSA public key exponent (e) and modulus (n).
  *
  * Returns `kCryptoStatusOK` if the operation was successfully
  * started, or`kCryptoStatusInternalError` if the operation cannot be
  * started.
  *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
  * @param required_key_len Requested key length in bits
  * @return crypto_status_t Result of async RSA keygen start operation
  */
 crypto_status_t otcrypto_rsa_keygen_async_start(
-    drbg_state_t *drbg_state, crypto_uint8_buf_t additional_input,
     rsa_key_size_t required_key_len);
 
 /**
@@ -1243,8 +1264,9 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
  * @return crypto_status_t Result of async RSA sign start operation
  */
 crypto_status_t otcrypto_rsa_sign_async_start(
-    rsa_private_key_t *rsa_private_key, crypto_const_uint8_buf_t input_message,
-    rsa_padding_t padding_mode, rsa_hash_t hash_mode);
+    const rsa_private_key_t *rsa_private_key,
+    crypto_const_uint8_buf_t input_message, rsa_padding_t padding_mode,
+    rsa_hash_t hash_mode);
 
 /**
  * Finalizes the asynchronous digital signature generation function.
@@ -1275,7 +1297,7 @@ crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_uint8_buf_t *signature);
  * @return crypto_status_t Result of async RSA verify start operation
  */
 crypto_status_t otcrypto_rsa_verify_async_start(
-    rsa_public_key_t *rsa_public_key, crypto_const_uint8_buf_t signature);
+    const rsa_public_key_t *rsa_public_key, crypto_const_uint8_buf_t signature);
 
 /**
  * Finalizes the asynchronous signature verification function.
@@ -1301,8 +1323,7 @@ crypto_status_t otcrypto_rsa_verify_async_finalize(
  * Starts the asynchronous key generation for ECDSA operation.
  *
  * Initializes OTBN and starts the OTBN routine to compute the private
- * key (d) and public key (Q) for ECDSA operation. DRBG state is
- * passed as an input parameter.
+ * key (d) and public key (Q) for ECDSA operation.
  *
  * The domain_parameter field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
@@ -1312,16 +1333,11 @@ crypto_status_t otcrypto_rsa_verify_async_finalize(
  * started, or`kCryptoStatusInternalError` if the operation cannot be
  * started.
  *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key length, in bits
  * @param elliptic_curve Pointer to the elliptic curve to be used
  * @return crypto_status_t Result of asynchronous ECDSA keygen start
  * operation.
  */
-crypto_status_t otcrypto_ecdsa_keygen_async_start(
-    drbg_state_t *drbg_state, crypto_uint8_buf_t additional_input,
-    size_t required_key_len, ecc_curve_t *elliptic_curve);
+crypto_status_t otcrypto_ecdsa_keygen_async_start(ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
@@ -1353,8 +1369,8 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
  * @return crypto_status_t Result of async ECDSA start operation
  */
 crypto_status_t otcrypto_ecdsa_sign_async_start(
-    crypto_blinded_key_t *private_key, crypto_const_uint8_buf_t input_message,
-    ecc_curve_t *elliptic_curve);
+    const crypto_blinded_key_t *private_key,
+    crypto_const_uint8_buf_t input_message, ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous ECDSA digital signature generation.
@@ -1367,6 +1383,41 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
  * @return crypto_status_t Result of async ECDSA finalize operation
  */
 crypto_status_t otcrypto_ecdsa_sign_async_finalize(ecc_signature_t *signature);
+
+/**
+ * Starts the asynchronous deterministic ECDSA digital signature generation.
+ *
+ * Initializes OTBN and starts the OTBN routine to compute the digital
+ * signature on the input message. The domain_parameter field of the
+ * `elliptic_curve` is required only for a custom curve. For named
+ * curves this field is ignored and can be set to NULL.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct
+ * @param input_message Input message to be signed
+ * @param elliptic_curve Pointer to the elliptic curve to be used
+ * @return crypto_status_t Result of async ECDSA start operation
+ */
+crypto_status_t otcrypto_deterministic_ecdsa_sign_async_start(
+    const crypto_blinded_key_t *private_key,
+    crypto_const_uint8_buf_t input_message, ecc_curve_t *elliptic_curve);
+
+/**
+ * Finalizes the asynchronous deterministic ECDSA digital signature generation.
+ *
+ * In the case of deterministic ECDSA, the random value ‘k’ for the
+ * signature generation is deterministically generated from the
+ * private key and the input message. Refer to RFC6979 for details.
+ *
+ * Returns `kCryptoStatusOK` and copies the signature if the OTBN
+ * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN is
+ * busy or `kCryptoStatusInternalError` if there is an error.
+ *
+ * @param signature Pointer to the signature struct with (r,s) values
+ * @return crypto_status_t Result of async deterministic ECDSA finalize
+ * operation
+ */
+crypto_status_t otcrypto_ecdsa_deterministic_sign_async_finalize(
+    ecc_signature_t *signature);
 
 /**
  * Starts the asynchronous ECDSA digital signature verification.
@@ -1383,7 +1434,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(ecc_signature_t *signature);
  * @return crypto_status_t Result of async ECDSA verify start function
  */
 crypto_status_t otcrypto_ecdsa_verify_async_start(
-    ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
+    const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
     ecc_signature_t *signature, ecc_curve_t *elliptic_curve);
 
 /**
@@ -1406,8 +1457,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
  * Starts the asynchronous key generation for ECDH operation.
  *
  * Initializes OTBN and starts the OTBN routine to compute the private
- * key (d) and public key (Q) for ECDH operation. DRBG state is
- * passed as an input parameter.
+ * key (d) and public key (Q) for ECDH operation.
  *
  * The domain_parameter field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
@@ -1417,16 +1467,11 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
  * started, or`kCryptoStatusInternalError` if the operation cannot be
  * started.
  *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key length, in bits
  * @param elliptic_curve Pointer to the elliptic curve to be used
  * @return crypto_status_t Result of asynchronous ECDH keygen start
  * operation.
  */
-crypto_status_t otcrypto_ecdh_keygen_async_start(
-    drbg_state_t *drbg_state, crypto_uint8_buf_t additional_input,
-    size_t required_key_len, ecc_curve_t *elliptic_curve);
+crypto_status_t otcrypto_ecdh_keygen_async_start(ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
@@ -1457,9 +1502,9 @@ crypto_status_t otcrypto_ecdh_keygen_async_finalize(
  * @param elliptic_curve Pointer to the elliptic curve to be used
  * @return crypto_status_t Result of async ECDH start operation
  */
-crypto_status_t otcrypto_ecdh_async_start(crypto_blinded_key_t *private_key,
-                                          ecc_public_key_t *public_key,
-                                          ecc_curve_t *elliptic_curve);
+crypto_status_t otcrypto_ecdh_async_start(
+    const crypto_blinded_key_t *private_key, const ecc_public_key_t *public_key,
+    ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous Elliptic Curve Diffie Hellman shared
@@ -1479,20 +1524,14 @@ crypto_status_t otcrypto_ecdh_async_finalize(
  * Starts the asynchronous key generation for Ed25519.
  *
  * Initializes OTBN and starts the OTBN routine to compute the private
- * exponent (d) and public key (Q) based on Curve25519. The DRBG state
- * is passed as an input parameter.
+ * exponent (d) and public key (Q) based on Curve25519.
  *
  * No domain_parameter is needed and is automatically set for X25519.
  *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key len in bits (256 for Ed25519)
  * @return crypto_status_t Result of asynchronous ed25519 keygen start
  * operation.
  */
-crypto_status_t otcrypto_ed25519_keygen_async_start(
-    drbg_state_t *drbg_state, crypto_uint8_buf_t additional_input,
-    size_t required_key_len);
+crypto_status_t otcrypto_ed25519_keygen_async_start();
 
 /**
  * Finalizes the asynchronous key generation for Ed25519.
@@ -1524,8 +1563,9 @@ crypto_status_t otcrypto_ed25519_keygen_async_finalize(
  * @return crypto_status_t Result of async Ed25519 start operation
  */
 crypto_status_t otcrypto_ed25519_sign_async_start(
-    crypto_blinded_key_t *private_key, crypto_const_uint8_buf_t input_message,
-    eddsa_sign_mode_t sign_mode, ecc_signature_t *signature);
+    const crypto_blinded_key_t *private_key,
+    crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    ecc_signature_t *signature);
 
 /**
  * Finalizes the asynchronous Ed25519 digital signature generation.
@@ -1556,8 +1596,9 @@ crypto_status_t otcrypto_ed25519_sign_async_finalize(
  * function
  */
 crypto_status_t otcrypto_ed25519_verify_async_start(
-    crypto_unblinded_key_t *public_key, crypto_const_uint8_buf_t input_message,
-    eddsa_sign_mode_t sign_mode, ecc_signature_t *signature);
+    const crypto_unblinded_key_t *public_key,
+    crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    ecc_signature_t *signature);
 
 /**
  * Finalizes the asynchronous Ed25519 digital signature verification.
@@ -1578,20 +1619,14 @@ crypto_status_t otcrypto_ed25519_verify_async_finalize(
  * Starts the asynchronous key generation for X25519.
  *
  * Initializes OTBN and starts the OTBN routine to compute the private
- * exponent (d) and public key (Q) based on Curve25519. The DRBG state
- * is passed as an input parameter.
+ * exponent (d) and public key (Q) based on Curve25519.
  *
  * No domain_parameter is needed and is automatically set for X25519.
  *
- * @param drbg_state Pointer to the DRBG working state
- * @param additional_input Pointer to the additional input for DRBG
- * @param required_key_len Requested key len in bits (256 for Ed25519)
  * @return crypto_status_t Result of asynchronous X25519 keygen start
  * operation.
  */
-crypto_status_t otcrypto_x25519_keygen_async_start(
-    drbg_state_t *drbg_state, crypto_uint8_buf_t additional_input,
-    size_t required_key_len);
+crypto_status_t otcrypto_x25519_keygen_async_start();
 
 /**
  * Finalizes the asynchronous key generation for X25519.
@@ -1622,8 +1657,9 @@ crypto_status_t otcrypto_x25519_keygen_async_finalize(
  * @param public_key Pointer to the public scalar from the sender
  * @return crypto_status_t Result of the async X25519 start operation
  */
-crypto_status_t otcrypto_x25519_async_start(crypto_blinded_key_t *private_key,
-                                            crypto_unblinded_key_t *public_key);
+crypto_status_t otcrypto_x25519_async_start(
+    const crypto_blinded_key_t *private_key,
+    const crypto_unblinded_key_t *public_key);
 
 /**
  * Finalizes the asynchronous X25519 Diffie Hellman shared secret
