@@ -89,5 +89,11 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_absorbed_ctrl_mubi
+      desc: "Verify the countermeasure(s) ABSORBED.CTRL.INTEGRITY"
+      milestone: V2S
+      tests: []
+    }
   ]
 }

@@ -200,6 +200,9 @@
     { name: "LOGIC.INTEGRITY"
       desc: "The reset net for the internal state register and critical nets around the output register are buried."
     }
+    { name: "ABSORBED.CTRL.MUBI"
+      desc: "`absorbed` signal is mubi4_t type to protect against FI attacks."
+    }
   ]
   regwidth: "32"
   registers: [

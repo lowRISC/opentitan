@@ -286,6 +286,7 @@ module sha3pad
 
 
   // Next logic and output logic ==============================================
+  // SEC_CM: ABSORBED.CTRL.MUBI
   prim_mubi_pkg::mubi4_t absorbed_d;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) absorbed_o <= prim_mubi_pkg::MuBi4False;
