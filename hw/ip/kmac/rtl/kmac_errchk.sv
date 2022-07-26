@@ -70,7 +70,7 @@ module kmac_errchk
   input app_active_i,
 
   // Status from SHA3 core
-  input sha3_absorbed_i,
+  input prim_mubi_pkg::mubi4_t sha3_absorbed_i,
   input keccak_done_i,
 
   // Life cycle
@@ -343,7 +343,7 @@ module kmac_errchk
       end
 
       StProcessing: begin
-        if (sha3_absorbed_i) begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed_i)) begin
           st_d = StAbsorbed;
         end
       end

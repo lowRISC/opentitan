@@ -48,8 +48,8 @@ module sha3
   input run_i,
   input done_i,    // see sha3pad for details
 
-  output logic absorbed_o,
-  output logic squeezing_o,
+  output prim_mubi_pkg::mubi4_t absorbed_o,
+  output logic                  squeezing_o,
 
   // Indicate of one block processed. KMAC main state tracks the progression
   // based on this signal.
@@ -102,7 +102,7 @@ module sha3
   // absorbed is a pulse signal that indicates sponge absorbing is done.
   // After this, sha3 core allows software to manually run until squeezing
   // is completed, which is the `done_i` pulse signal.
-  logic absorbed;
+  prim_mubi_pkg::mubi4_t absorbed;
 
   // `squeezing` is a status indicator that SHA3 core is in sponge squeezing
   // stage. In this stage, the state output is valid, and software can manually
@@ -154,7 +154,7 @@ module sha3
   // `absorbed` signal. When this signal goes out, the state is still in
   // `StAbsorb`. Next state is `StSqueeze`.
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) absorbed_o <= 1'b 0;
+    if (!rst_ni) absorbed_o <= prim_mubi_pkg::MuBi4False;
     else         absorbed_o <= absorbed;
   end
 
@@ -165,7 +165,9 @@ module sha3
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)        processing <= 1'b 0;
     else if (process_i) processing <= 1'b 1;
-    else if (absorbed)  processing <= 1'b 0;
+    else if (prim_mubi_pkg::mubi4_test_true_strict(absorbed)) begin
+      processing <= 1'b 0;
+    end
   end
 
   assign block_processed_o = keccak_complete;
@@ -222,7 +224,7 @@ module sha3
           st_d = StAbsorb_sparse;
 
           keccak_process = 1'b 1;
-        end else if (absorbed) begin
+        end else if (prim_mubi_pkg::mubi4_test_true_strict(absorbed)) begin
           st_d = StSqueeze_sparse;
         end else begin
           st_d = StAbsorb_sparse;

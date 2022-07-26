@@ -145,7 +145,8 @@ module kmac
 
   // SHA3 core control signals and its response.
   // Sequence: start --> process(multiple) --> get absorbed event --> {run -->} done
-  logic sha3_start, sha3_run, sha3_done, sha3_absorbed, unused_sha3_squeeze;
+  logic sha3_start, sha3_run, sha3_done, unused_sha3_squeeze;
+  prim_mubi_pkg::mubi4_t sha3_absorbed;
 
   // Indicate one block processed
   logic sha3_block_processed;
@@ -153,8 +154,9 @@ module kmac
   // EStatus for entropy
   logic entropy_in_keyblock;
 
-  // KeyMgr interface logic generates event_absorbed from sha3_absorbed.
+  // Application interface logic generates absorbed from sha3_absorbed.
   // It is active only if SW initiates the hashing engine.
+  prim_mubi_pkg::mubi4_t app_absorbed;
   logic event_absorbed;
 
   sha3_pkg::sha3_st_e sha3_fsm;
@@ -550,6 +552,9 @@ module kmac
   logic event_msgfifo_empty, msgfifo_empty_q;
 
   // Hash process absorbed interrupt
+  // Convert mubi4_t to logic to generate interrupts
+  assign event_absorbed = prim_mubi_pkg::mubi4_test_true_strict(app_absorbed);
+
   prim_intr_hw #(.Width(1)) intr_kmac_done (
     .clk_i,
     .rst_ni,
@@ -563,7 +568,9 @@ module kmac
     .intr_o                 (intr_kmac_done_o)
   );
 
-  `ASSERT(Sha3AbsorbedPulse_A, $rose(sha3_absorbed) |=> !sha3_absorbed)
+  `ASSERT(Sha3AbsorbedPulse_A,
+    $rose(prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed)) |=>
+      prim_mubi_pkg::mubi4_test_false_strict(sha3_absorbed))
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) msgfifo_empty_q <= 1'b1;
@@ -706,12 +713,12 @@ module kmac
 
       KmacMsgFeed: begin
         // If absorbed, move to Digest
-        if (sha3_absorbed && sha3_done) begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed) && sha3_done) begin
           // absorbed and done can be asserted at a cycle if Applications have
           // requested the hash operation. kmac_app FSM issues CmdDone command
           // if it receives absorbed signal.
           kmac_st_d = KmacIdle;
-        end else if (sha3_absorbed && !sha3_done) begin
+        end else if (prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed) && !sha3_done) begin
           kmac_st_d = KmacDigest;
         end else begin
           kmac_st_d = KmacMsgFeed;
@@ -984,7 +991,7 @@ module kmac
     .keymgr_key_en_i      (reg2hw.cfg_shadowed.sideload.q),
 
     .absorbed_i (sha3_absorbed), // from SHA3
-    .absorbed_o (event_absorbed), // to SW
+    .absorbed_o (app_absorbed),  // to SW
 
     .app_active_o(app_active),
 

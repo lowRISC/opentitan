@@ -10,6 +10,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:prim_dom_and_2share
       - lowrisc:prim:assert
+      - lowrisc:prim:mubi
       - lowrisc:ip:tlul
     files:
       - rtl/sha3_pkg.sv

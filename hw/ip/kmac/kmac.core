@@ -14,6 +14,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:count
       - lowrisc:prim:sparse_fsm
+      - lowrisc:prim:mubi
       - lowrisc:ip:tlul
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:sha3

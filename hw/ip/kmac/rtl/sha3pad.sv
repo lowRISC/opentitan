@@ -60,7 +60,7 @@ module sha3pad
   // Indication of the Keccak Sponge Absorbing is complete, it is time for SW to
   // control the Keccak-round if it needs more digest, or complete by asserting
   // `done_i`
-  output logic absorbed_o,
+  output prim_mubi_pkg::mubi4_t absorbed_o,
 
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
@@ -286,9 +286,9 @@ module sha3pad
 
 
   // Next logic and output logic ==============================================
-  logic absorbed_d;
+  prim_mubi_pkg::mubi4_t absorbed_d;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) absorbed_o <= 1'b 0;
+    if (!rst_ni) absorbed_o <= prim_mubi_pkg::MuBi4False;
     else         absorbed_o <= absorbed_d;
   end
 
@@ -307,7 +307,7 @@ module sha3pad
     en_msgbuf = 1'b 0;
     clr_msgbuf = 1'b 0;
 
-    absorbed_d = 1'b 0;
+    absorbed_d = prim_mubi_pkg::MuBi4False;
 
     sparse_fsm_error_o = 1'b 0;
 
@@ -464,7 +464,7 @@ module sha3pad
         if (keccak_complete_i) begin
           st_d = StPadIdle;
 
-          absorbed_d = 1'b 1;
+          absorbed_d = prim_mubi_pkg::MuBi4True;
         end else begin
           st_d = StPadFlush;
         end
@@ -745,7 +745,9 @@ module sha3pad
   `ASSUME(DonePulse_A, done_i |=> !done_i)
 
   // ASSERT output pulse signals: absorbed_o, keccak_run_o
-  `ASSERT(AbsorbedPulse_A, absorbed_o |=> !absorbed_o)
+  `ASSERT(AbsorbedPulse_A,
+    prim_mubi_pkg::mubi4_test_true_strict(absorbed_o) |=>
+      prim_mubi_pkg::mubi4_test_false_strict(absorbed_o))
   `ASSERT(KeccakRunPulse_A, keccak_run_o |=> !keccak_run_o)
 
   // start_i, done_i, process_i cannot set high at the same time
@@ -783,7 +785,7 @@ module sha3pad
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       done_valid <= 1'b 0;
-    end else if (absorbed_o) begin
+    end else if (prim_mubi_pkg::mubi4_test_true_strict(absorbed_o)) begin
       done_valid <= 1'b 1;
     end else if (done_i) begin
       done_valid <= 1'b 0;
