@@ -14,8 +14,24 @@ if {[info exists ::env(dv_root)]} {
   quit
 }
 
+# Dumping waves in specific hierarchies.
+#
+# By default, if wave dumping is enabled, all hierarchies of the top level testbench are dumped.
+# For large designs, this may slow down the simulation considerably. To bypass this and only enable
+# waves in specific hierarchies, set the dump_tb_top flag to 0 (i.e. uncomment the line below), and
+# specify the paths to dump on line 32.
+# set dump_tb_top 0
+
 source "${dv_root}/tools/common.tcl"
 source "${dv_root}/tools/waves.tcl"
+
+global waves
+global simulator
+global tb_top
+
+# Dumping waves in specific hierarchies (example):
+# wavedumpScope $waves $simulator tb.dut.foo.bar 12
+# wavedumpScope $waves $simulator tb.dut.baz 0
 
 # In GUI mode, let the user take control of running the simulation.
 global gui
