@@ -141,7 +141,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // then assigned to bit 18:17
   bit [1:0] tgt_pre[flash_dv_part_e][NumTgt];
 
+  // interrupt mode
+  bit       intr_mode = 0;
 
+  // interrupt mode buffer credit
+   int 	    rd_crd = 16;
+   int 	    wr_crd = 4;
+      
   `uvm_object_utils(flash_ctrl_env_cfg)
 
   `uvm_object_new

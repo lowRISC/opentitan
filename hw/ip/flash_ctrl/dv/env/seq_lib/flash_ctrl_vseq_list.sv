@@ -38,3 +38,5 @@
 `include "flash_ctrl_serr_counter_vseq.sv"
 `include "flash_ctrl_serr_address_vseq.sv"
 `include "flash_ctrl_derr_detect_vseq.sv"
+`include "flash_ctrl_intr_rd_vseq.sv"
+`include "flash_ctrl_intr_wr_vseq.sv"

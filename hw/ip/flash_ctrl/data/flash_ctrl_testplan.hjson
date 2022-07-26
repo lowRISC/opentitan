@@ -255,7 +255,7 @@
             Check behaviour of Interrupt Enable and Status Registers.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_intr_rd", "flash_ctrl_intr_wr"]
     }
     {
       name: invalid_op

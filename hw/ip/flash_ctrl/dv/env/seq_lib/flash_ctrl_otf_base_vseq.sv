@@ -253,10 +253,14 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         drop = check_info_part(flash_op, "prog_flash");
       end
 
-      flash_ctrl_start_op(flash_op);
-      flash_ctrl_write(flash_program_data, poll_fifo_status);
-      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-
+      if (cfg.intr_mode) begin
+        flash_ctrl_intr_write(flash_op, flash_program_data,
+                              i == (num-1));
+      end else begin
+        flash_ctrl_start_op(flash_op);
+        flash_ctrl_write(flash_program_data, poll_fifo_status);
+        wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+      end
       if (is_odd == 1) begin
         tmp_data = {32{1'b1}};
         flash_program_data.push_front(tmp_data);
@@ -421,9 +425,13 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         end
       end
 
-      flash_ctrl_start_op(flash_op);
-      flash_ctrl_read(flash_op.num_words, flash_read_data, poll_fifo_status);
-      wait_flash_op_done();
+      if (cfg.intr_mode) begin
+        flash_ctrl_intr_read(flash_op, flash_read_data);
+      end else begin
+        flash_ctrl_start_op(flash_op);
+        flash_ctrl_read(flash_op.num_words, flash_read_data, poll_fifo_status);
+        wait_flash_op_done();
+      end
       if (derr_is_set | cfg.ierr_created[0]) begin
         csr_rd_check(.ptr(ral.op_status.err), .compare_value(1));
         csr_rd_check(.ptr(ral.err_code.rd_err), .compare_value(1));

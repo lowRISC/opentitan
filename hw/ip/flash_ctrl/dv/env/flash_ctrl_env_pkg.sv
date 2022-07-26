@@ -314,7 +314,7 @@ package flash_ctrl_env_pkg;
     matrix[1] = flash_gen_matrix(matrix[0][FlashStagesPerCycle-1], 1'b0);
     `uvm_info("SCR_DBG", $sformatf("waddr: %x   op_a_i : %x     vector: %x",
               addr,  {addr_key[FlashKeySize-FlashAddrWidth-1:FlashKeySize-64], addr},
-              matrix[0][FlashStagesPerCycle-1]), UVM_HIGH)
+              matrix[0][FlashStagesPerCycle-1]), UVM_MEDIUM)
 
     // galois multiply.
     for (int j = 0; j < 2; j++) begin
@@ -326,7 +326,7 @@ package flash_ctrl_env_pkg;
       product[j] = mult_out;
     end
     product[1] = product[1] ^ product[0];
-    `uvm_info("SCR_DBG", $sformatf("prod1:%x   prod0:%x",product[1],product[0]), UVM_HIGH)
+    `uvm_info("SCR_DBG", $sformatf("prod1:%x   prod0:%x",product[1],product[0]), UVM_MEDIUM)
 
     return product[1];
   endfunction

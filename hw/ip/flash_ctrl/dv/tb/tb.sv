@@ -96,8 +96,22 @@ module tb;
   wire [1:0] flash_test_mode_a;
   assign (pull1, pull0) flash_test_mode_a = 2'h3;
 
+  `ifdef SLOW_FLASH
+  initial begin
+    $display("runs with SLOW_FLASH mode");
+  end
+   defparam dut.ModelOnlyReadLatency = 50;
+   defparam dut.ModelOnlyProgLatency = 500;   
+  `endif
+
+
   // dut
   flash_ctrl #(
+
+ //   .ModelOnlyReadLatency(`MODEL_ONLY_READ_LATENCY),
+ //   .ModelOnlyProgLatency(`MODEL_ONLY_PROG_LATENCY),
+ //   .ModelOnlyEraseLatency(`MODEL_ONLY_ERASE_LATENCY)
+
     .ProgFifoDepth(ProgFifoDepth),
     .RdFifoDepth(ReadFifoDepth)
   ) dut (

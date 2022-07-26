@@ -276,10 +276,10 @@ class flash_ctrl_scoreboard #(
             "intr_test": begin
             end
 
-            "op_status", "status", "erase_suspend", "err_code",
+            "op_status", "status", "erase_suspend",
+            "curr_fifo_lvl",  "err_code",
             "ecc_single_err_cnt", "ecc_single_err_addr_0",
             "ecc_single_err_addr_1": begin
-              // TODO: FIXME
               do_read_check = 1'b0;
             end
 
@@ -706,7 +706,7 @@ class flash_ctrl_scoreboard #(
                         {item.a_addr[AddrWidth-1:3],3'b0},
                         item.a_addr, ecc_err,
                         channel.name, ral_name
-                        ), UVM_MEDIUM)
+                        ), UVM_HIGH)
 
     if ((ral_name == cfg.flash_ral_name) && (get_flash_instr_type_err(item, channel))) return (1);
     else if (ecc_err) begin
