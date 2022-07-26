@@ -99,7 +99,7 @@
     {
       name: flash_ctrl_hw_sec_otp
       uvm_test_seq: flash_ctrl_hw_sec_otp_vseq
-      run_opts: ["+test_timeout_ns=300000000000"]
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
       reseed: 5
     }
     {
@@ -111,19 +111,31 @@
     {
       name: flash_ctrl_hw_rma
       uvm_test_seq: flash_ctrl_hw_rma_vseq
-      run_opts: ["+test_timeout_ns=300000000000"]
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
       reseed: 3
+    }
+    {
+      name: flash_ctrl_hw_rma_reset
+      uvm_test_seq: flash_ctrl_hw_rma_reset_vseq
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
+      reseed: 20
+    }
+    {
+      name: flash_ctrl_otp_reset
+      uvm_test_seq: flash_ctrl_otp_reset_vseq
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
+      reseed: 20
     }
     {
       name: flash_ctrl_host_ctrl_arb
       uvm_test_seq: flash_ctrl_host_ctrl_arb_vseq
-      run_opts: ["+zero_delays=1", "+test_timeout_ns=300000000000"]
+      run_opts: ["+zero_delays=1", "+test_timeout_ns=300_000_000_000"]
       reseed: 5
     }
     {
       name: flash_ctrl_mp_regions
       uvm_test_seq: flash_ctrl_mp_regions_vseq
-      run_opts: ["+multi_alert=1", "+test_timeout_ns=300000000000"]
+      run_opts: ["+multi_alert=1", "+test_timeout_ns=300_000_000_000"]
       reseed: 8
     }
     {
@@ -134,7 +146,7 @@
     {
       name: flash_ctrl_full_mem_access
       uvm_test_seq: flash_ctrl_full_mem_access_vseq
-      run_opts: ["+test_timeout_ns=300000000000"]
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
       reseed: 5
     }
     {
@@ -150,7 +162,7 @@
     {
       name: flash_ctrl_error_mp
       uvm_test_seq: flash_ctrl_error_mp_vseq
-      run_opts: ["+test_timeout_ns=300000000000"]
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
       reseed: 10
     }
     {

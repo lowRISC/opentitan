@@ -20,4 +20,12 @@ module flash_ctrl_bind;
     .d2h    (core_tl_o)
   );
 
+  bind flash_ctrl flash_ctrl_dv_if flash_ctrl_dv_if (
+    .clk_i,
+    .rst_ni,
+    .rd_buf_en (u_flash_hw_if.rd_buf_en_o),
+    .rma_req (u_flash_hw_if.rma_req_i),
+    .rma_state (u_flash_hw_if.rma_state_q),
+    .lcmgr_state (u_flash_hw_if.state_q)
+  );
 endmodule
