@@ -111,7 +111,7 @@
       name: sec_cm_ctrl_redun
       desc: "Verify the countermeasure(s) CTRL.REDUN."
       milestone: V2S
-      tests: []
+      tests: ["otbn_ctrl_redun"]
     }
     {
       name: sec_cm_pc_ctrl_flow_redun
