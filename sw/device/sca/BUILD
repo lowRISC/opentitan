@@ -37,3 +37,47 @@ opentitan_flash_binary(
         "//sw/device/sca/lib:simple_serial",
     ],
 )
+
+opentitan_flash_binary(
+    name = "ecc384_serial",
+    srcs = ["ecc384_serial.c"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:otbn",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_start",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/sca/lib:simple_serial",
+        "//sw/otbn/crypto:p384_ecdsa_sca",
+    ],
+)
+
+opentitan_flash_binary(
+    name = "ecc_serial",
+    srcs = ["ecc_serial.c"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:otbn",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_start",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/sca/lib:simple_serial",
+        "//sw/otbn/crypto:p256_ecdsa_sca",
+    ],
+)
