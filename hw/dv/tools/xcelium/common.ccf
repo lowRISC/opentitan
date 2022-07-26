@@ -33,9 +33,6 @@ set_statement_scoring
 // arrays , vectors, packed union, modport and generate blocks.
 set_toggle_scoring -sv_enum enable_mda -sv_struct_with_enum -sv_modport -sv_mda 16 -sv_mda_of_struct -sv_generate -sv_packed_union
 
-// Enables scoring of reset states and transitions for identified FSMs.
-set_fsm_reset_scoring
-
 // Enable toggle coverage only on ports.
 set_toggle_portsonly
 
