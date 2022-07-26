@@ -647,6 +647,8 @@ rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
   reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET);
   cmd->payload_byte_count =
       bitfield_field32_read(reg, SPI_DEVICE_UPLOAD_STATUS2_PAYLOAD_DEPTH_FIELD);
+  // `payload_byte_count` can be at most `kSpiDevicePayloadAreaNumBytes`.
+  HARDENED_CHECK_LE(cmd->payload_byte_count, kSpiDevicePayloadAreaNumBytes);
   uint32_t src =
       kBase + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
   char *dest = (char *)&cmd->payload;
