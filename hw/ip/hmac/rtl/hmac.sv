@@ -481,10 +481,9 @@ module hmac
   /////////////////////////
   // HMAC Error Handling //
   /////////////////////////
-  logic msg_push_sha_disabled, hash_start_sha_disabled, update_seckey_inprocess;
+  logic hash_start_sha_disabled, update_seckey_inprocess;
   logic hash_start_active;  // `reg_hash_start` set when hash already in active
   logic msg_push_not_allowed; // Message is received when `hash_start` isn't set
-  assign msg_push_sha_disabled = msg_write & ~sha_en;
   assign hash_start_sha_disabled = reg_hash_start & ~sha_en;
   assign hash_start_active = reg_hash_start & cfg_block;
   assign msg_push_not_allowed = msg_fifo_req & ~msg_allowed;
@@ -507,16 +506,12 @@ module hmac
   // It is recommended that the software reads ERR_CODE register when interrupt
   // is pending to avoid any race conditions.
   assign err_valid = ~reg2hw.intr_state.hmac_err.q &
-                   ( msg_push_sha_disabled | hash_start_sha_disabled
-                   | update_seckey_inprocess | hash_start_active
-                   | msg_push_not_allowed );
+                   ( hash_start_sha_disabled | update_seckey_inprocess
+                   | hash_start_active | msg_push_not_allowed );
 
   always_comb begin
     err_code = NoError;
     unique case (1'b1)
-      msg_push_sha_disabled: begin
-        err_code = SwPushMsgWhenShaDisabled;
-      end
       hash_start_sha_disabled: begin
         err_code = SwHashStartWhenShaDisabled;
       end
