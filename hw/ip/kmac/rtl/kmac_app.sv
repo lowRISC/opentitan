@@ -81,13 +81,13 @@ module kmac_app
   input kmac_cmd_e sw_cmd_i,
 
   // from SHA3
-  input absorbed_i,
+  input prim_mubi_pkg::mubi4_t absorbed_i,
 
   // to KMAC
   output kmac_cmd_e cmd_o,
 
   // to SW
-  output logic absorbed_o,
+  output prim_mubi_pkg::mubi4_t absorbed_o,
 
   // To status
   output logic app_active_o,
@@ -372,7 +372,7 @@ module kmac_app
     cmd_o = CmdNone;
 
     // Software output
-    absorbed_o = 1'b 0;
+    absorbed_o = prim_mubi_pkg::MuBi4False;
 
     // Error
     fsm_err = '{valid: 1'b 0, code: ErrNone, info: '0};
@@ -444,7 +444,7 @@ module kmac_app
       end
 
       StAppWait: begin
-        if (absorbed_i) begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(absorbed_i)) begin
           // Send digest to KeyMgr and complete the op
           st_d = StIdle;
           cmd_o = CmdDone;
@@ -658,7 +658,7 @@ module kmac_app
   always_comb begin
     app_digest_done = 1'b 0;
     app_digest = '{default:'0};
-    if (st == StAppWait && absorbed_i &&
+    if (st == StAppWait && prim_mubi_pkg::mubi4_test_true_strict(absorbed_i) &&
         lc_escalate_en_i == lc_ctrl_pkg::Off) begin
       // SHA3 engine has calculated the hash. Return the data to KeyMgr
       app_digest_done = 1'b 1;
