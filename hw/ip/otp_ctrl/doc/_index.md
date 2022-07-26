@@ -508,6 +508,12 @@ Note that it is the task of the receiving IP to synchronize these bits according
 For convenience, a valid bit is also available in that struct.
 The valid bit indicates that the HW_CFG partition has initialized.
 
+### Parameter and Memory Map Changes after D3/V3
+
+Note that all instantiation parameters can be changed without affecting D3/V3 status of the module.
+Similarly, it is permissible to change the contents (partition size, adding and removing items) of the `CREATOR_SW_CFG`, `OWNER_SW_CFG` and `HW_CFG` partitions without affecting D3 status.
+Note however that partition size changes may affect V3 coverage metrics, hence if the size any of the above three partitions is changed, V3 needs to be re-assessed.
+
 ## Design Details
 
 ### Block Diagram
