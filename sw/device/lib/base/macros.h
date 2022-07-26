@@ -45,6 +45,8 @@
  * A directive to force the compiler to inline a function.
  */
 #define OT_ALWAYS_INLINE __attribute__((always_inline)) inline
+// TODO Delete and use OT_NOINLINE if #13383 is merged before #13871.
+#define OT_NEVER_INLINE __attribute__((noinline))
 
 /**
  * The `restrict` keyword is C specific, so we provide a C++-portable wrapper

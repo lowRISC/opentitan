@@ -6,6 +6,11 @@ package(default_visibility = ["//visibility:public"])
 
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load(
+    "//rules:opentitan_test.bzl",
+    "cw310_params",
+    "opentitan_functest",
+)
 
 cc_library(
     name = "global_mock",
@@ -84,6 +89,24 @@ cc_library(
     copts = ["-fno-builtin"],
     deps = [
         ":macros",
+    ],
+)
+
+opentitan_functest(
+    name = "memory_perftest",
+    srcs = ["memory_perftest.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:test_rom",
+    ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    targets = ["cw310"],
+    deps = [
+        ":macros",
+        ":memory",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
