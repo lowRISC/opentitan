@@ -250,10 +250,24 @@ See the section on [Inter Signal Handling](#inter-signal-handling) below for det
 ### Security countermeasures {#countermeasures}
 
 If this IP block is considered security-critical, it will probably have design features that try to mitigate against attacks like fault injection or side channel analysis.
-These features can be loosely categorised and labelled with pairs of the form `ASSET.CM_TYPE`.
+These features can be loosely categorised and named with identifiers of the following form:
+
+```
+[UNIQUIFIER.]ASSET.CM_TYPE
+```
+
 Here, `ASSET` is the asset that is being protected.
 This might be secret information like a key, or it might be internal state like a processor's control flow.
 The countermeasure that is providing the protection is named with `CM_TYPE`.
+The `UNIQUIFIER` label is optional and allows to add a custom prefix to make the identifier unique or more concise.
+
+Below are a few examples for generic and more concise labels following this format:
+
+```
+LFSR.REDUN or MASKING_PRNG.LFSR.REDUN
+FSM.SPARSE or HASHING_INTERFACE.FSM.SPARSE
+INTERSIG.MUBI or ALERT.INTERSIG.MUBI
+```
 
 The following standardised assets are defined:
 
