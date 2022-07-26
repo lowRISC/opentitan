@@ -248,6 +248,11 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.fifo_rst), .value(reset));
   endtask : flash_ctrl_fifo_reset
 
+  // Configure intr_enable
+  virtual task flash_ctrl_intr_enable(bit[5:0] enable);
+    csr_wr(.ptr(ral.intr_enable), .value(enable));
+  endtask
+
   // Wait for flash_ctrl op to finish.
   virtual task wait_flash_op_done(
       bit clear_op_status = 1'b1, time timeout_ns = 10_000_000
@@ -340,7 +345,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Read data from flash, stopping whenever empty.
   // The flash op is assumed to have already commenced.
-  virtual task flash_ctrl_read(uint num_words, ref data_q_t data, bit poll_fifo_status);
+  virtual task flash_ctrl_read(uint num_words, ref data_q_t data, input bit poll_fifo_status);
     for (int i = 0; i < num_words; i++) begin
       // Check if rd fifo is empty. If yes, then wait for data to become available.
       // Note that this polling is not needed since the interface is backpressure enabled.
@@ -351,6 +356,167 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf("flash_ctrl_read: 0x%0h", data[i]), UVM_HIGH)
     end
   endtask : flash_ctrl_read
+
+  virtual task clear_intr_state(uvm_reg_data_t data);
+    csr_wr(.ptr(ral.intr_state), .value(data));
+  endtask
+
+  virtual task flash_ctrl_intr_read(flash_op_t flash_op, ref data_q_t rdata);
+    uvm_reg_data_t data;
+    bit[31:0] intr_st;
+    int rd_timeout_ns = 200000; // 100 us
+    int curr_rd, rd_idx = 0;
+
+    `uvm_info("flash_ctrl_intr_read", $sformatf("num_rd:%0d",
+                                                flash_op.num_words), UVM_MEDIUM)
+
+`ifdef SLOW_FLASH
+    `DV_SPINWAIT(wait(cfg.rd_crd - flash_op.num_words >= 0);,
+                 "wait for rd_crd timeout",
+                 rd_timeout_ns, "flash_ctrl_intr_read")
+    flash_ctrl_start_op(flash_op);
+    cfg.rd_crd -= flash_op.num_words;
+    while (rd_idx < flash_op.num_words) begin
+      // If read data comes slow, use FlashCtrlIntrRdLvl as non-empty
+      // and read out then clear this interrupt until
+      // read all 'flash_op.num_words'
+      `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrRdLvl] == 1 ||
+                        cfg.intr_vif.pins[FlashCtrlIntrRdFull] == 1 ||
+                        cfg.intr_vif.pins[FlashCtrlIntrOpDone] == 1);,
+                   "wait read intr timeout",
+                   rd_timeout_ns, "flash_ctrl_intr_read")
+      // read interrupt status reg
+      csr_rd(.ptr(ral.intr_state), .value(data));
+      intr_st = data;
+      clear_intr_state(data);
+      `uvm_info("intr_read", $sformatf("intr_state: %x", intr_st), UVM_MEDIUM)
+      if (intr_st[FlashCtrlIntrOpDone]) begin
+        csr_rd(.ptr(ral.curr_fifo_lvl.rd), .value(curr_rd));
+      end else if (intr_st[FlashCtrlIntrRdFull]) begin
+        curr_rd = 16; // fifo size is 16
+      end else if (intr_st[FlashCtrlIntrRdLvl]) begin
+        curr_rd = cfg.rd_lvl;
+      end
+      repeat(curr_rd) begin
+        mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(rdata[rd_idx++]));
+        cfg.rd_crd++;
+      end
+    end
+`else
+    flash_ctrl_start_op(flash_op);
+    while (rd_idx < flash_op.num_words) begin
+      if (rd_idx == 0) begin
+        `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrRdLvl] == 1);,
+                     "wait intr_rd_lvl timeout",
+                     rd_timeout_ns, "flash_ctrl_intr_read")
+      end else begin
+        `DV_SPINWAIT(wait((cfg.intr_vif.pins[FlashCtrlIntrRdFull] == 1 ||
+                           cfg.intr_vif.pins[FlashCtrlIntrOpDone] == 1));,
+                     "wait intr_rd_full or opdone timeout",
+                     rd_timeout_ns, "flash_ctrl_intr_read")
+
+      end
+      csr_rd(.ptr(ral.curr_fifo_lvl.rd), .value(curr_rd));
+      repeat(curr_rd) begin
+        mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(rdata[rd_idx++]));
+      end
+    end
+
+    data = 'h0;
+    data[FlashCtrlIntrRdLvl] = 1;
+    data[FlashCtrlIntrOpDone] = 1;
+    clear_intr_state(data);
+`endif
+  endtask // flash_ctrl_intr_read
+
+   virtual task flash_ctrl_intr_write(flash_op_t flash_op, data_q_t wdata);
+    int curr_wr;
+    int wr_cnt, wr_idx = 0;
+    uvm_reg_data_t data;
+    bit [31:0] intr_st;
+    bit       wait_done = 0;
+
+`ifdef SLOW_FLASH
+    int      prog_timeout_ns = 100000; // 100 us
+
+    `uvm_info("flash_ctrl_intr_write", $sformatf("num_wd: %0d  crd:%0d", flash_op.num_words,
+                                                 cfg.wr_crd), UVM_MEDIUM)
+
+    // Make sure prog_fifo is available before start program.
+    `DV_SPINWAIT(while(cfg.wr_crd == 0) begin
+                 csr_rd(.ptr(ral.curr_fifo_lvl.prog), .value(curr_wr));
+                 cfg.wr_crd = 4 - curr_wr;
+                 end,
+                 "wait for wr_crd timeout",
+                 prog_timeout_ns, "flash_ctrl_intr_write")
+
+    flash_ctrl_start_op(flash_op);
+
+    // Initially no interrupts are set. So we have to start writing
+    // data to fifo then wait for interrupt.
+    do begin
+      while (cfg.wr_crd > 0 && wr_idx < flash_op.num_words) begin
+        mem_wr(.ptr(ral.prog_fifo), .offset(0), .data(wdata[wr_idx++]));
+        cfg.wr_crd--;
+      end
+      `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrProgEmpty] == 1 ||
+                        cfg.intr_vif.pins[FlashCtrlIntrProgLvl] == 1 ||
+                        cfg.intr_vif.pins[FlashCtrlIntrOpDone] == 1);,
+                   "wait prog intr timeout",
+                   prog_timeout_ns, "flash_ctrl_intr_write")
+
+      csr_rd(.ptr(ral.intr_state), .value(data));
+      intr_st = data;
+      clear_intr_state(data);
+
+      if (intr_st[FlashCtrlIntrOpDone]) begin
+        // out of the loop
+        wait_done = 1;
+        wr_idx = flash_op.num_words;
+      end else if (intr_st[FlashCtrlIntrProgEmpty]) begin
+        cfg.wr_crd = 4; // fifo size is 4
+      end else if (intr_st[FlashCtrlIntrProgLvl]) begin
+        // fifo depth 4, intr level: 2
+        // Credit should be  depth - fifo level
+        cfg.wr_crd = 4 - cfg.wr_lvl;
+      end
+    end while (wr_idx < flash_op.num_words || wait_done == 0);
+`else
+    int prog_timeout_ns = 20000; // 20 us
+
+    csr_rd(.ptr(ral.curr_fifo_lvl.prog), .value(curr_wr));
+    `uvm_info("flash_ctrl_intr_write", $sformatf("num_wd:%0d curr_wr:%0d",
+                                                 flash_op.num_words,
+                                                 curr_wr), UVM_MEDIUM)
+    flash_ctrl_start_op(flash_op);
+
+    while (wr_idx < flash_op.num_words) begin
+      // ProgEmpty doesn't come up very beginning.
+      // Skip this for the first write.
+      if (curr_wr > 0) begin
+        `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrProgEmpty] == 1);,
+                     "wait intr_prog_empty timeout",
+                     prog_timeout_ns, "flash_ctrl_intr_write")
+      end
+      wr_cnt = 0;
+
+      while (wr_cnt < 4 && wr_idx < flash_op.num_words) begin
+        mem_wr(.ptr(ral.prog_fifo), .offset(0), .data(wdata[wr_idx++]));
+        wr_cnt++;
+      end
+
+      csr_rd(.ptr(ral.curr_fifo_lvl.prog), .value(curr_wr));
+      if (curr_wr > 0) clear_intr_state(FlashCtrlIntrProgEmpty);
+    end // while (wr_idx < flash_op.num_words)
+
+    `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrOpDone] == 1);,
+                 "wait intr_op_done timeout",
+                 prog_timeout_ns, "flash_ctrl_intr_write")
+    data = 'h0;
+    data[FlashCtrlIntrOpDone] = 1;
+    clear_intr_state(data);
+`endif
+  endtask // flash_ctrl_intr_write
 
   // Task to perform a direct Flash read at the specified location
   // Used timeout is to match the longest waiting timeout possible for the host, which will happen
@@ -1172,5 +1338,13 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       end
     endcase
   endfunction // validate_flash_info
+
+  function void set_otf_exp_alert(string str);
+    cfg.scb_h.exp_alert_ff[str].push_back(1);
+    cfg.scb_h.alert_chk_max_delay[str] = 2000;
+    `uvm_info("set_otf_exp_alert",
+              $sformatf("exp_alert_ff[%s] size: %0d",
+                        str, cfg.scb_h.exp_alert_ff[str].size()), UVM_MEDIUM)
+  endfunction // set_otf_exp_alert
 
 endclass : flash_ctrl_base_vseq

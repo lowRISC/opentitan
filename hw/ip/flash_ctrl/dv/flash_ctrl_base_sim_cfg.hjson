@@ -45,6 +45,14 @@
     }
   ]
 
+  build_modes: [
+    {
+      name: large_delay_mode
+      build_opts: ["+define+SLOW_FLASH"]
+    }
+  ]
+
+  large_delay_mode_vcs_cov_cfg_file: "{default_vcs_cov_cfg_file}"
   // Add additional tops for simulation.
   sim_tops: ["flash_ctrl_bind","flash_ctrl_cov_bind", "sec_cm_prim_onehot_check_bind"]
 
@@ -238,7 +246,6 @@
                  "+otf_num_rw=5", "+otf_num_hr=0"]
       reseed: 5
     }
-
     {
       name: flash_ctrl_read_word_sweep_derr
       uvm_test_seq: flash_ctrl_read_word_sweep_vseq
@@ -272,6 +279,20 @@
       uvm_test_seq: flash_ctrl_rw_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=4", "+ierr_pct=3",
                  "+bypass_alert_ready_to_end_check=1"]
+      reseed: 5
+    }
+    {
+      name: flash_ctrl_intr_rd
+      build_mode: large_delay_mode
+      uvm_test_seq: flash_ctrl_intr_rd_vseq
+      run_opts: ["+scb_otf_en=1"]
+      reseed: 5
+    }
+    {
+      name: flash_ctrl_intr_wr
+      build_mode: large_delay_mode
+      uvm_test_seq: flash_ctrl_intr_wr_vseq
+      run_opts: ["+scb_otf_en=1"]
       reseed: 5
     }
   ]

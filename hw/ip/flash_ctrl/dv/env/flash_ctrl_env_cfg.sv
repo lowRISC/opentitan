@@ -155,8 +155,18 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   int       otf_wr_pct = 1;
   int       otf_rd_pct = 1;
 
-  `uvm_object_utils(flash_ctrl_env_cfg)
+  // interrupt mode
+  bit       intr_mode = 0;
 
+  // interrupt mode buffer credit
+  int       rd_crd = 16;
+  int       wr_crd = 4;
+
+  // fifo level to trigger lvl interrupt
+  int       rd_lvl = 0;
+  int       wr_lvl = 0;
+
+  `uvm_object_utils(flash_ctrl_env_cfg)
   `uvm_object_new
 
   string flash_ral_name = "flash_ctrl_eflash_reg_block";

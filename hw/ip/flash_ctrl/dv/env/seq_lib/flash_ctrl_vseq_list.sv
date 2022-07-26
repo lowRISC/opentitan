@@ -40,3 +40,5 @@
 `include "flash_ctrl_derr_detect_vseq.sv"
 `include "flash_ctrl_hw_rma_reset_vseq.sv"
 `include "flash_ctrl_otp_reset_vseq.sv"
+`include "flash_ctrl_intr_rd_vseq.sv"
+`include "flash_ctrl_intr_wr_vseq.sv"
