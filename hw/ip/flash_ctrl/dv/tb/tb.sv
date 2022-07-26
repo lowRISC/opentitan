@@ -284,6 +284,8 @@ module tb;
                                        eflash_tl_if);
     uvm_config_db#(virtual flash_ctrl_if)::set(null, "*.env", "flash_ctrl_vif", flash_ctrl_if);
     uvm_config_db#(virtual flash_phy_prim_if)::set(null, "*.env.m_fpp_agent*", "vif", fpp_if);
+    uvm_config_db#(virtual flash_ctrl_dv_if)::set(null, "*.env", "flash_ctrl_dv_vif",
+                                                  dut.flash_ctrl_dv_if);
     $timeformat(-9, 1, " ns", 9);
     run_test();
   end

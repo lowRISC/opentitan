@@ -64,7 +64,7 @@
             the Flash.  After RMA entry, verify that the content of the flash is wiped out.
             '''
       milestone: V2
-      tests: ["flash_ctrl_hw_rma"]
+      tests: ["flash_ctrl_hw_rma", "flash_ctrl_hw_rma_reset"]
     }
     {
       name: host_controller_arb

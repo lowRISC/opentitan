@@ -30,7 +30,10 @@ class flash_ctrl_env #(
         )) begin
       `uvm_fatal(`gfn, "failed to get flash_ctrl_vif from uvm_config_db")
     end
-
+    if (!uvm_config_db#(virtual flash_ctrl_dv_if)::get(
+            this, "", "flash_ctrl_dv_vif", cfg.flash_ctrl_dv_vif)) begin
+      `uvm_fatal(`gfn, "failed to get flash_ctrl_dv_vif from uvm_config_db")
+    end
     // Retrieve the mem backdoor util instances.
     for (
         int i = 0, flash_dv_part_e part = part.first(); i < part.num(); i++, part = part.next()
