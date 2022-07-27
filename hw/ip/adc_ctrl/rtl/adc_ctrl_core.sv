@@ -117,8 +117,8 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
     assign match_pulse[k] = adc_ctrl_done && match[k];
 
    // Explicitly create assertions for all the matching conditions.
-   // These assertiosn are unwieldly and not suitable for expansion to more channels.
-   // They should be adjusetd eventually.
+   // These assertions are unwieldly and not suitable for expansion to more channels.
+   // They should be adjusted eventually.
    `ASSERT(MatchCheck00_A, !aon_filter_ctl[0][k].en & !aon_filter_ctl[1][k].en |->
            !match[k], clk_aon_i, !rst_aon_ni)
    `ASSERT(MatchCheck01_A, !aon_filter_ctl[0][k].en & aon_filter_ctl[1][k].en  |->
