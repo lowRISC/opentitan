@@ -5,8 +5,13 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_ibex.h"
-#include "sw/device/silicon_creator/lib/sigverify/sigverify_tests/sigverify_testvectors.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
+
+// The autogen rule that creates this header creates it in a directory named
+// after the rule, then manipulates the include path in the
+// cc_compilation_context to include that directory, so the compiler will find
+// the version of this file matching the Bazel rule under test.
+#include "sigverify_testvectors.h"
 
 // Index of the test vector currently under test
 static uint32_t test_index;
@@ -50,10 +55,13 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   rom_error_t result = kErrorOk;
 
+  // The definition of `RULE_NAME` comes from the autogen Bazel rule.
+  LOG_INFO("Starting mod_exp_ibex_functest:%s", RULE_NAME);
   for (uint32_t i = 0; i < SIGVERIFY_NUM_TESTS; i++) {
     LOG_INFO("Starting test vector %d of %d...", i + 1, SIGVERIFY_NUM_TESTS);
     test_index = i;
     EXECUTE_TEST(result, sigverify_mod_exp_ibex_test);
   }
+  LOG_INFO("Finished mod_exp_ibex_functest:%s", RULE_NAME);
   return result == kErrorOk;
 }

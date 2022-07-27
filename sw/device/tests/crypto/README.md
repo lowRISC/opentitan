@@ -7,6 +7,10 @@ cryptographic library. Tests come from a variety of sources, including:
 - Random tests
 - Coming soon: FIPS tests!
 
+The primary way of running crypto tests is to use the custom
+`autogen_cryptotest_...` Bazel rules, which create build targets specialized to
+different test sets.
+
 ## Setup
 
 Each algorithm has a C test file (ending in `_functest.c`) which reads test
@@ -31,8 +35,7 @@ For example, here's the setup for just one algorithm, RSA-3072 verify:
 ```
 tests/
   rsa_3072_verify_functest.c                 # Main test file
-  rsa_3072_verify_testvectors.h              # Test vectors (auto-generated)
-  rsa_3072_verify_set_testvectors.py         # Generates .h above
+  rsa_3072_verify_set_testvectors.py         # Generates header from HJSON
   rsa_3072_verify_gen_random_testvectors.py  # Generates random test vectors
   testvectors/
     rsa_3072_verify_hardcoded.hjson          # Limited set of hard-coded tests
@@ -41,7 +44,28 @@ tests/
     ...
 ```
 
-### Example Usage
+### Adding New Hardcoded Tests
+
+To add a new hardcoded test for some algorithm, simply edit the
+`testvectors/{algorithm}_hardcoded.hjson` file. Bazel rules based on the
+hardcoded tests will automatically pick up the changes.
+
+### Adding New External Tests
+
+If an external test data dependency such as wycheproof has been updated, there
+should be no action required here unless file names have changed. The build
+rules are designed to directly read external data from `sw/vendor` at build
+time.
+
+To add an entirely new test set, create a new folder under `testvectors/` and
+write a script that reads the external data and translates tests into the
+standardized HJSON format for that algorithm. Pass the script and input data to
+an `autogen_cryptotest_hjson_external` build target.
+
+### Example Direct Usage
+
+To run the tests locally and manually (as opposed to via Bazel), see the
+following examples.
 
 Set up RSA-3072 test to run hardcoded test vectors:
 ```
@@ -65,8 +89,8 @@ $ ./rsa_3072_verify_set_testvectors.py testvectors/custom_testvecs.hjson
 
 Set up RSA-3072 test to run all wycheproof test vectors:
 ```
-$ testvectors/wycheproof/rsa_3072_verify_parse_testvectors.py\ 
-  $REPO_TOP/sw/vendor/wycheproof/testvectors/rsa_signature_3072_sha256_test.json\ 
+$ testvectors/wycheproof/rsa_3072_verify_parse_testvectors.py\
+  $REPO_TOP/sw/vendor/wycheproof/testvectors/rsa_signature_3072_sha256_test.json\
   testvectors/rsa_3072_verify_wycheproof.hjson
 $ ./rsa_3072_verify_set_testvectors.py testvectors/rsa_3072_verify_wycheproof.hjson rsa_3072_verify_testvectors.h
 ```

@@ -6,6 +6,7 @@ load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
     "//rules:opentitan_test.bzl",
+    "cw310_params",
     "opentitan_functest",
     "verilator_params",
 )
@@ -15,11 +16,6 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "rsa_key",
     hdrs = ["rsa_key.h"],
-)
-
-cc_library(
-    name = "testvectors",
-    hdrs = ["sigverify_tests/sigverify_testvectors.h"],
 )
 
 dual_cc_library(
@@ -59,7 +55,7 @@ cc_test(
 )
 
 opentitan_functest(
-    name = "mod_exp_ibex_functest",
+    name = "mod_exp_ibex_functest_hardcoded",
     srcs = ["mod_exp_ibex_functest.c"],
     verilator = verilator_params(
         timeout = "long",
@@ -69,10 +65,26 @@ opentitan_functest(
     ),
     deps = [
         ":mod_exp_ibex",
-        ":testvectors",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
+    ],
+)
+
+opentitan_functest(
+    name = "mod_exp_ibex_functest_wycheproof",
+    srcs = ["mod_exp_ibex_functest.c"],
+    cw310 = cw310_params(
+        timeout = "long",
+    ),
+    targets = ["cw310"],  # Test set is too large to run in simulation
+    deps = [
+        ":mod_exp_ibex",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
     ],
 )
 
@@ -112,7 +124,7 @@ dual_cc_library(
 )
 
 opentitan_functest(
-    name = "mod_exp_otbn_functest",
+    name = "mod_exp_otbn_functest_hardcoded",
     srcs = ["mod_exp_otbn_functest.c"],
     verilator = verilator_params(
         timeout = "long",
@@ -122,10 +134,28 @@ opentitan_functest(
     ),
     deps = [
         ":mod_exp_otbn",
-        ":testvectors",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
+    ],
+)
+
+opentitan_functest(
+    name = "mod_exp_otbn_functest_wycheproof",
+    srcs = ["mod_exp_otbn_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+        tags = [
+            "manual",
+        ],
+    ),
+    deps = [
+        ":mod_exp_otbn",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
     ],
 )
 
@@ -201,7 +231,7 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "sigverify_dynamic_functest",
+    name = "sigverify_dynamic_functest_hardcoded",
     srcs = ["sigverify_dynamic_functest.c"],
     verilator = verilator_params(
         timeout = "long",
@@ -211,9 +241,25 @@ opentitan_functest(
     ),
     deps = [
         ":sigverify",
-        ":testvectors",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
+    ],
+)
+
+opentitan_functest(
+    name = "sigverify_dynamic_functest_wycheproof",
+    srcs = ["sigverify_dynamic_functest.c"],
+    cw310 = cw310_params(
+        timeout = "long",
+    ),
+    targets = ["cw310"],  # Test set is too large to run in simulation
+    deps = [
+        ":sigverify",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
     ],
 )

@@ -8,7 +8,12 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/crypto/ecdsa_p256_verify_testvectors.h"
+
+// The autogen rule that creates this header creates it in a directory named
+// after the rule, then manipulates the include path in the
+// cc_compilation_context to include that directory, so the compiler will find
+// the version of this file matching the Bazel rule under test.
+#include "ecdsa_p256_verify_testvectors.h"
 
 hmac_error_t compute_digest(size_t msg_len, const uint8_t *msg,
                             ecdsa_p256_message_digest_t *digest) {
@@ -66,6 +71,8 @@ bool test_main(void) {
   // Stays true only if all tests pass.
   bool result = true;
 
+  // The definition of `RULE_NAME` comes from the autogen Bazel rule.
+  LOG_INFO("Starting ecdsa_p256_verify_test:%s", RULE_NAME);
   for (uint32_t i = 0; i < kEcdsaP256VerifyNumTests; i++) {
     LOG_INFO("Starting ecdsa_p256_verify_test on test vector %d of %d...",
              i + 1, kEcdsaP256VerifyNumTests);
@@ -81,6 +88,7 @@ bool test_main(void) {
     }
     result &= local_result;
   }
+  LOG_INFO("Finished ecdsa_p256_verify_test:%s", RULE_NAME);
 
   return result;
 }

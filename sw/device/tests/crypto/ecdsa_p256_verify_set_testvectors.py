@@ -9,7 +9,6 @@ import sys
 
 import hjson
 from mako.template import Template
-from pathlib import Path
 
 '''
 Read in a JSON test vector file, convert the test vector to C constants, and
@@ -19,8 +18,8 @@ generate a header file with these test vectors.
 # Number of 32-bit words in a coordinate or scalar
 P256_NUMWORDS = int(256 / 32)
 
-# Template file name
-TEMPLATE = 'ecdsa_p256_verify_testvectors.h.tpl'
+# Default template file name
+DEFAULT_TEMPLATE = 'ecdsa_p256_verify_testvectors.h.tpl'
 
 # Default output file name
 DEFAULT_OUTFILE = 'ecdsa_p256_verify_testvectors.h'
@@ -43,6 +42,14 @@ def main() -> int:
                         metavar='FILE',
                         type=argparse.FileType('r'),
                         help='Read test vectors from this HJSON file.')
+    tpl_default = open(
+        os.path.join(os.path.dirname(__file__), DEFAULT_TEMPLATE), 'r')
+    parser.add_argument('--template',
+                        metavar='FILE',
+                        required=False,
+                        default=tpl_default,
+                        type=argparse.FileType('r'),
+                        help='Read header template from this file.')
     out_default = open(
         os.path.join(os.path.dirname(__file__), DEFAULT_OUTFILE), 'w')
     parser.add_argument('headerfile',
@@ -67,12 +74,11 @@ def main() -> int:
     for t in testvecs:
         t['msg_bytes'] = t['msg'].to_bytes(t['msg_len'], byteorder='big')
 
-    # Find the header template and output file in the script's directory
-    template = (Path(__file__).parent / TEMPLATE).read_text()
-
-    args.headerfile.write(Template(template).render(tests=testvecs))
+    args.headerfile.write(Template(args.template.read()).render(tests=testvecs))
     args.headerfile.close()
     out_default.close()
+    args.template.close()
+    tpl_default.close()
 
     return 0
 
