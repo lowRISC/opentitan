@@ -177,7 +177,13 @@ module hmac
   // Hold the configuration during the process
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      cfg_reg <= '{endian_swap: '{q: 1'b1, qe: 1'b0}, default:'0};
+      cfg_reg <= '{
+        endian_swap: '{
+          q: HMAC_CFG_ENDIAN_SWAP_RESVAL,
+          qe: 1'b0
+        },
+        default:'0
+      };
     end else if (!cfg_block && reg2hw.cfg.hmac_en.qe) begin
       cfg_reg <= reg2hw.cfg ;
     end
@@ -351,8 +357,8 @@ module hmac
   //    to be big-endian, [31:24] comes first. So, the data is reverted after
   //    prim_packer before the message fifo. here to reverse if not big-endian
   //    before pushing to the packer.
-  assign msg_fifo_wdata_endian = conv_endian(msg_fifo_wdata, ~endian_swap);
-  assign msg_fifo_wmask_endian = conv_endian(msg_fifo_wmask, ~endian_swap);
+  assign msg_fifo_wdata_endian = conv_endian(msg_fifo_wdata, endian_swap);
+  assign msg_fifo_wmask_endian = conv_endian(msg_fifo_wmask, endian_swap);
 
   prim_packer #(
     .InW      (32),

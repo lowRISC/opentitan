@@ -61,10 +61,10 @@ static dif_result_t dif_hmac_calculate_device_config_value(
   bool swap_message_endianness;
   switch (config.message_endianness) {
     case kDifHmacEndiannessBig:
-      swap_message_endianness = false;
+      swap_message_endianness = true;
       break;
     case kDifHmacEndiannessLittle:
-      swap_message_endianness = true;
+      swap_message_endianness = false;
       break;
     default:
       return kDifError;

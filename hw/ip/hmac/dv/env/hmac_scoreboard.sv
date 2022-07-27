@@ -63,8 +63,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           // do endian swap in the word according to the mask, then push to the msg queue
           foreach (item.a_mask[i]) begin
             if (item.a_mask[i]) begin
-              // endian_swap bit 0 operates at big endian data
-              msg = (ral.cfg.endian_swap.get_mirrored_value()) ? {bytes[i], msg} : {msg, bytes[i]};
+              // endian_swap bit 1 operates at big endian data
+              msg = (ral.cfg.endian_swap.get_mirrored_value()) ? {msg, bytes[i]} : {bytes[i], msg};
             end
           end
           foreach (msg[i]) msg_q.push_back(msg[i]);

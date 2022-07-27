@@ -24,8 +24,8 @@ void hmac_sha256_init(void) {
   uint32_t reg = 0;
   // Digest is little-endian by default.
   reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT, false);
-  // Enable endian swap since our inputs are little-endian.
-  reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, true);
+  // Message is little-endian by default.
+  reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, false);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, reg);

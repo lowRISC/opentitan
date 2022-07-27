@@ -36,7 +36,7 @@ TEST_F(Sha256InitTest, Initialize) {
   EXPECT_ABS_WRITE32(base_ + HMAC_CFG_REG_OFFSET,
                      {
                          {HMAC_CFG_DIGEST_SWAP_BIT, false},
-                         {HMAC_CFG_ENDIAN_SWAP_BIT, true},
+                         {HMAC_CFG_ENDIAN_SWAP_BIT, false},
                          {HMAC_CFG_SHA_EN_BIT, true},
                          {HMAC_CFG_HMAC_EN_BIT, false},
                      });

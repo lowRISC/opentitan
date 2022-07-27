@@ -32,7 +32,7 @@ class HmacTest : public testing::Test, public mock_mmio::MmioTest {
   struct ConfigRegister {
     bool hmac_enable = false;
     bool sha_enable = true;
-    bool msg_little_endian = true;
+    bool msg_big_endian = false;
     bool digest_big_endian = false;
   } config_reg_;
 
@@ -44,7 +44,7 @@ class HmacTest : public testing::Test, public mock_mmio::MmioTest {
         {
             {HMAC_CFG_HMAC_EN_BIT, config_reg_.hmac_enable},
             {HMAC_CFG_SHA_EN_BIT, config_reg_.sha_enable},
-            {HMAC_CFG_ENDIAN_SWAP_BIT, config_reg_.msg_little_endian},
+            {HMAC_CFG_ENDIAN_SWAP_BIT, config_reg_.msg_big_endian},
             {HMAC_CFG_DIGEST_SWAP_BIT, config_reg_.digest_big_endian},
         });
   }
@@ -81,7 +81,7 @@ constexpr std::array<uint8_t, 32> HmacMacTest::kKey;
 TEST_F(HmacMacTest, StartSuccess) { SuccessPath(); }
 
 TEST_F(HmacMacTest, StartMsgBigEndianSuccess) {
-  config_reg_.msg_little_endian = false;
+  config_reg_.msg_big_endian = true;
   transaction_.message_endianness = kDifHmacEndiannessBig;
 
   SuccessPath();
@@ -129,7 +129,7 @@ TEST_F(HmacSha256Test, StartSuccess) {
 }
 
 TEST_F(HmacSha256Test, StartMsgBigEndianSuccess) {
-  config_reg_.msg_little_endian = false;
+  config_reg_.msg_big_endian = true;
   transaction_.message_endianness = kDifHmacEndiannessBig;
 
   EXPECT_READ32(HMAC_CFG_REG_OFFSET, 0);
