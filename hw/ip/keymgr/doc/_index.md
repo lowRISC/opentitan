@@ -540,6 +540,10 @@ However, since these values are not hardened, they can be attacked.
 As such, software should be careful to not make critical system decisions based on these registers.
 They are meant generally for informational or debug purposes.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_keymgr.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/keymgr.hjson" "registers" >}}

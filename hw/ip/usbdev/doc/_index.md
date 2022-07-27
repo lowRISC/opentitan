@@ -351,11 +351,13 @@ The hardware will then send a STALL response to all IN/OUT transactions until th
 Receiving the **SETUP token clears the {{< regref "in_stall" >}} and {{< regref "out_stall" >}} registers** for that endpoint.
 If either a control endpoint's {{< regref "set_nak_out" >}} bit is set or software has cleared the {{< regref "rxenable_out" >}} bit before this transfer began, the hardware will send NAKs to any IN/OUT requests until the software has decided what action to take for the new SETUP request.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_usbdev.h" >}}
 
 ## Register Table
 
 {{< incGenFromIpDesc "../data/usbdev.hjson" "registers" >}}
-
 
 ## Application to FPGAs
 

@@ -238,6 +238,10 @@ Note that for the debug controller (DTS in USB-C specification) as a power sourc
 If the debug controller is acting as a power sink then the orientation cannot be known unless the debug controller supports the optional behavior of converting one of its pulldowns to an Ra (rather than Rp) to indicate CC2 (the CC that is not used for communication).
 This would not be detected by the filters since it happens later than connection detection and debounce in the USB-C protocol state machine, but could be detected by monitoring the current ADC value.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_adc_ctrl.h" >}}
+
 ## Registers
 
 {{< incGenFromIpDesc "../data/adc_ctrl.hjson" "registers" >}}

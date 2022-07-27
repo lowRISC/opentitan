@@ -792,6 +792,9 @@ Correctable ECC errors are by nature not fatal errors and do not stop operation.
 Instead, if the error is correctable, the flash controller fixes the issue and registers the last address where a single bit error was seen.
 See {{< regref "ECC_SINGLE_ERR_CNT" >}} and {{< regref "ECC_SINGLE_ERR_ADDR" >}}
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_flash_ctrl.h" >}}
 
 ## Register Table
 

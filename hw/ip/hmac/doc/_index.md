@@ -307,6 +307,10 @@ more data into {{< regref "MSG_FIFO" >}} until the interrupt is cleared and the 
 writes until the FIFO has space which will cause back-pressure on the
 interconnect.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_hmac.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/hmac.hjson" "registers" >}}

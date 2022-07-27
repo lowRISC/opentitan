@@ -114,7 +114,7 @@ If {{<regref"WKUP_COUNT">}} remains above the threshold after clearing the inter
 
 ## Device Interface Functions (DIFs)
 
-TODO
+{{< dif_listing "sw/device/lib/dif/dif_aon_timer.h" >}}
 
 ## Register Table
 

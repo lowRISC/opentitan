@@ -178,6 +178,10 @@ The `PipeLine` parameter can be used to configure the bus adapter pipelining.
 * Setting `PipeLine` to `1` introduces a pipelining FIFO between the core instruction/data interfaces and the bus.
   This setting increases the memory access latency, but improves timing.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_rv_core_ibex.h" >}}
+
 ## Register Table
 
 A number of memory-mapped registers are available to control Ibex-related functionality that's specific to OpenTitan.

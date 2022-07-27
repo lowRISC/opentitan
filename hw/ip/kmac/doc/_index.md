@@ -437,13 +437,13 @@ This version of KMAC/SHA3 HWIP _does not_ support the software context switching
 A context switching scheme would allow software to save the current hashing engine state and initiate a new high priority hashing operation.
 It could restore the previous hashing state later and continue the operation.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_kmac.h" >}}
+
 ## Registers
 
 {{< incGenFromIpDesc "../data/kmac.hjson" "registers" >}}
-
-
-
-
 
 [SHA3 specification, FIPS 202]: https://csrc.nist.gov/publications/detail/fips/202/final
 [NIST SP 800-185]: https://csrc.nist.gov/publications/detail/sp/800-185/final

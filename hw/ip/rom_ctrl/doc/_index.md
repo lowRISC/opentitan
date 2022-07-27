@@ -236,6 +236,10 @@ Unlike the rest of the contents of ROM, this isn't scrambled.
 As such, software can't read it through the standard ROM interface (which would try to unscramble it again, resulting in rubbish data that woud cause a failed ECC check).
 In case software needs access to this value, it can be read at {{< regref "EXP_DIGEST_0" >}} through {{< regref "EXP_DIGEST_7" >}}.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_rom_ctrl.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/rom_ctrl.hjson" "registers" >}}
