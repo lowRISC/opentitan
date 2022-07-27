@@ -104,9 +104,29 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
             (aon_filter_ctl[1][k].min_v <= chn1_val) && (chn1_val <= aon_filter_ctl[1][k].max_v) :
             (aon_filter_ctl[1][k].min_v >  chn1_val) || (chn1_val >  aon_filter_ctl[1][k].max_v);
 
-    assign match[k] = (chn0_match[k] & aon_filter_ctl[0][k].en) &
-                      (chn1_match[k] & aon_filter_ctl[1][k].en);
+    // If the filter on a paritcular channel is NOT enabled, it does not participate in the final
+    // match decision.  This means the match value should have no impact on the final result.
+    // For example, if channel 0's filter is enabled, but channel 1's is not, the match result
+    // is determined solely based on whether channel 0's filter shows a match.
+    // On the other hand, if all channel's filters are enabled, then a match is seen only when
+    // both filters match.
+    assign match[k] = |{aon_filter_ctl[0][k].en, aon_filter_ctl[1][k].en} &
+                      (!aon_filter_ctl[0][k].en | (chn0_match[k] & aon_filter_ctl[0][k].en)) &
+                      (!aon_filter_ctl[1][k].en | (chn1_match[k] & aon_filter_ctl[1][k].en)) ;
+
     assign match_pulse[k] = adc_ctrl_done && match[k];
+
+   // Explicitly create assertions for all the matching conditions.
+   // These assertiosn are unwieldly and not suitable for expansion to more channels.
+   // They should be adjusetd eventually.
+   `ASSERT(MatchCheck00_A, !aon_filter_ctl[0][k].en & !aon_filter_ctl[1][k].en |->
+           !match[k], clk_aon_i, !rst_aon_ni)
+   `ASSERT(MatchCheck01_A, !aon_filter_ctl[0][k].en & aon_filter_ctl[1][k].en  |->
+           match[k] == chn1_match[k], clk_aon_i, !rst_aon_ni)
+   `ASSERT(MatchCheck10_A, aon_filter_ctl[0][k].en & !aon_filter_ctl[1][k].en  |->
+           match[k] == chn0_match[k], clk_aon_i, !rst_aon_ni)
+   `ASSERT(MatchCheck11_A, aon_filter_ctl[0][k].en & aon_filter_ctl[1][k].en   |->
+           match[k] == (chn0_match[k] & chn1_match[k]), clk_aon_i, !rst_aon_ni)
   end
 
   // adc filter status

@@ -464,10 +464,15 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
           inside_range : ~inside_range;
 
       // Combine channel matches for this filter
-      filter_match = 1;
+      filter_match = 0;
       for (int channel_idx = 0; channel_idx < ADC_CTRL_CHANNELS; channel_idx++) begin
-        filter_match &= (m_chn_match[channel_idx][filter_idx] &
-            cfg.filter_cfg[channel_idx][filter_idx].en);
+        filter_match |= cfg.filter_cfg[channel_idx][filter_idx].en;
+      end
+
+      for (int channel_idx = 0; channel_idx < ADC_CTRL_CHANNELS; channel_idx++) begin
+        filter_match &= !cfg.filter_cfg[channel_idx][filter_idx].en |
+			 (m_chn_match[channel_idx][filter_idx] &
+			  cfg.filter_cfg[channel_idx][filter_idx].en);
       end
       m_match[filter_idx] = filter_match;
     end

@@ -100,7 +100,7 @@ module tb;
     .alert_tx_o        (alert_tx),
     .adc_o             (adc_o),
     .adc_i             (adc_i),
-    .intr_debug_cable_o(interrupts[ADC_CTRL_INTERRUPT_INDEX]),
+    .intr_debug_cable_o (interrupts[ADC_CTRL_INTERRUPT_INDEX]),
     .wkup_req_o        (wakeup_req)
   );
 
@@ -267,5 +267,3 @@ module tb;
   `DV_ASSERT_CTRL("ADC_CTRL_FSM_A_CTRL", dut.u_adc_ctrl_core.u_adc_ctrl_fsm)
 
 endmodule
-
-
