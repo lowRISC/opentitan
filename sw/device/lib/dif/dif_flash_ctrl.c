@@ -548,8 +548,6 @@ dif_result_t dif_flash_ctrl_get_error_codes(
           bitfield_bit32_read(code_reg, FLASH_CTRL_ERR_CODE_PROG_WIN_ERR_BIT),
       .prog_type_error =
           bitfield_bit32_read(code_reg, FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT),
-      .flash_phy_error = bitfield_bit32_read(
-          code_reg, FLASH_CTRL_ERR_CODE_FLASH_MACRO_ERR_BIT),
       .shadow_register_error =
           bitfield_bit32_read(code_reg, FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT),
   };
@@ -579,8 +577,6 @@ dif_result_t dif_flash_ctrl_clear_error_codes(
       code_reg, FLASH_CTRL_ERR_CODE_PROG_WIN_ERR_BIT, codes.prog_window_error);
   code_reg = bitfield_bit32_write(
       code_reg, FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT, codes.prog_type_error);
-  code_reg = bitfield_bit32_write(
-      code_reg, FLASH_CTRL_ERR_CODE_FLASH_MACRO_ERR_BIT, codes.flash_phy_error);
   code_reg = bitfield_bit32_write(code_reg, FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT,
                                   codes.shadow_register_error);
   mmio_region_write32(handle->dev.base_addr, FLASH_CTRL_ERR_CODE_REG_OFFSET,
@@ -1185,9 +1181,6 @@ dif_result_t dif_flash_ctrl_get_faults(const dif_flash_ctrl_state_t *handle,
       bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_PROG_WIN_ERR_BIT);
   faults.prog_type_error =
       bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_PROG_TYPE_ERR_BIT);
-  faults.flash_phy_error =
-      bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_FLASH_MACRO_ERR_BIT);
-
   reg = mmio_region_read32(handle->dev.base_addr,
                            FLASH_CTRL_STD_FAULT_STATUS_REG_OFFSET);
   faults.register_integrity_error =

@@ -195,7 +195,6 @@ static bool transaction_end_check_read_error(void) {
                        output.error_code.codes.read_error &
                        !output.error_code.codes.prog_window_error &
                        !output.error_code.codes.prog_type_error &
-                       !output.error_code.codes.flash_phy_error &
                        !output.error_code.codes.shadow_register_error;
   CHECK_DIF_OK(
       dif_flash_ctrl_clear_error_codes(&flash_state, output.error_code.codes));

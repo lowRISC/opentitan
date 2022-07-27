@@ -490,10 +490,6 @@ typedef struct dif_flash_ctrl_error_codes {
    */
   bool prog_type_error : 1;
   /**
-   * A flash access encountered a native flash PHY error.
-   */
-  bool flash_phy_error : 1;
-  /**
    * A shadow register encountered an update error.
    */
   bool shadow_register_error : 1;

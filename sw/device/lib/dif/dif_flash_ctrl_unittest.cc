@@ -389,7 +389,6 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
                     {FLASH_CTRL_ERR_CODE_RD_ERR_BIT, 0},
                     {FLASH_CTRL_ERR_CODE_PROG_WIN_ERR_BIT, 1},
                     {FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT, 0},
-                    {FLASH_CTRL_ERR_CODE_FLASH_MACRO_ERR_BIT, 1},
                     {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, 0},
                 });
   EXPECT_READ32(FLASH_CTRL_ERR_ADDR_REG_OFFSET, 0x12345678u);
@@ -402,7 +401,6 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
   EXPECT_EQ(output.error_code.codes.read_error, 0);
   EXPECT_EQ(output.error_code.codes.prog_window_error, 1);
   EXPECT_EQ(output.error_code.codes.prog_type_error, 0);
-  EXPECT_EQ(output.error_code.codes.flash_phy_error, 1);
   EXPECT_EQ(output.error_code.codes.shadow_register_error, 0);
 }
 
@@ -503,7 +501,6 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
                     {FLASH_CTRL_ERR_CODE_RD_ERR_BIT, 0},
                     {FLASH_CTRL_ERR_CODE_PROG_WIN_ERR_BIT, 1},
                     {FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT, 1},
-                    {FLASH_CTRL_ERR_CODE_FLASH_MACRO_ERR_BIT, 0},
                     {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, 1},
                 });
   EXPECT_READ32(FLASH_CTRL_ERR_ADDR_REG_OFFSET, 0x87654321u);
@@ -516,7 +513,6 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
   EXPECT_EQ(output.error_code.codes.read_error, 0);
   EXPECT_EQ(output.error_code.codes.prog_window_error, 1);
   EXPECT_EQ(output.error_code.codes.prog_type_error, 1);
-  EXPECT_EQ(output.error_code.codes.flash_phy_error, 0);
   EXPECT_EQ(output.error_code.codes.shadow_register_error, 1);
 }
 
@@ -722,7 +718,6 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_ERR_CODE_RD_ERR_BIT, 0},
                     {FLASH_CTRL_ERR_CODE_PROG_WIN_ERR_BIT, 0},
                     {FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT, 1},
-                    {FLASH_CTRL_ERR_CODE_FLASH_MACRO_ERR_BIT, 1},
                     {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, 1},
                 });
   EXPECT_READ32(FLASH_CTRL_ERR_ADDR_REG_OFFSET, 0x1effe0u);
@@ -731,7 +726,6 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
   EXPECT_EQ(error_value.codes.read_error, 0);
   EXPECT_EQ(error_value.codes.prog_window_error, 0);
   EXPECT_EQ(error_value.codes.prog_type_error, 1);
-  EXPECT_EQ(error_value.codes.flash_phy_error, 1);
   EXPECT_EQ(error_value.codes.shadow_register_error, 1);
   EXPECT_EQ(error_value.address, 0x1effe0u);
 
@@ -840,7 +834,6 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_FAULT_STATUS_RD_ERR_BIT, 0},
                     {FLASH_CTRL_FAULT_STATUS_PROG_WIN_ERR_BIT, 1},
                     {FLASH_CTRL_FAULT_STATUS_PROG_TYPE_ERR_BIT, 0},
-                    {FLASH_CTRL_FAULT_STATUS_FLASH_MACRO_ERR_BIT, 1},
                 });
   EXPECT_READ32(FLASH_CTRL_STD_FAULT_STATUS_REG_OFFSET,
                 {
@@ -854,7 +847,6 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
   EXPECT_EQ(faults.read_error, 0);
   EXPECT_EQ(faults.prog_window_error, 1);
   EXPECT_EQ(faults.prog_type_error, 0);
-  EXPECT_EQ(faults.flash_phy_error, 1);
   EXPECT_EQ(faults.register_integrity_error, 0);
   EXPECT_EQ(faults.phy_integrity_error, 1);
   EXPECT_EQ(faults.lifecycle_manager_error, 0);
