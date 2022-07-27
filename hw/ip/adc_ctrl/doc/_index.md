@@ -37,6 +37,7 @@ The block diagram shows a conceptual view of the ADC controller state machine an
 
 ![ADC_CTRL Block Diagram](adc_overview.svg "image_tooltip")
 
+
 ## Hardware Interface
 
 {{< incGenFromIpDesc "../data/adc_ctrl.hjson" "hwcfg" >}}
@@ -155,7 +156,7 @@ Once the ADC is ready to go, the controller then selects the channel it wishes t
 The controller holds this value until the ADC responds with `adc_i.data_valid` and `adc_i.data`.
 
 Since there is no request sample signal between the controller and the ADC, the ADC takes a new sample when `adc_o.channel_sel` is changed from 0 to a valid channel.
-To take a new sample then, the controller active sets `adc_o.channel_sel` to 0, before setting it to another valid channel.
+To take a new sample then, the controller actively sets `adc_o.channel_sel` to 0, before setting it to another valid channel.
 
 {{< wavejson >}}
 {
@@ -204,9 +205,15 @@ So it is expected that {{< regref "adc_lp_sample_ctl" >}} is configured and low 
 
 If the ADC wakeup is not required then the controller and ADC should both be disabled by clearing {{< regref "adc_en_ctl" >}} prior to the sleep being initiated.
 
-## Use for USB-C debug accessory detection.
+## Use Case
 
-Please see the following diagram for the regions of interest in debug cable detection.
+While the ADC controller is meant to be used generically, it can be configured to satisfy more complex use cases.
+As an illustrative example, the programmers guide uses the [Chrome OS Hardware Debug](https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/ccd.md) as an example of how the ADC controller can be used.
+
+The debug setup referred to uses a USB-C debug accessory.
+This insertion of this debug accessory into a system, can be detected by the ADC controller.
+
+The debug accessory voltage range of interest is shown in the diagram below:
 ![Debug Cable Regions](debug_cable_regions.svg "image_tooltip")
 
 The ADC can be used to detect debug cable connection / disconnection in the non-overlapping regions.
