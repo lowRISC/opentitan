@@ -40,7 +40,7 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         bit [TL_DW-1:0] intr_state_val;
         `uvm_info(`gfn, $sformatf("vector[%0d]: %0p", j, parsed_vectors[j]), UVM_HIGH)
         // wr init: SHA256 only. HMAC, endian swap, digest swap all disabled
-        hmac_init(.hmac_en(hmac_en), .endian_swap(1'b0), .digest_swap(1'b0));
+        hmac_init(.hmac_en(hmac_en), .endian_swap(1'b1), .digest_swap(1'b0));
 
         `uvm_info(`gtn, $sformatf("%s, starting seq %0d, msg size = %0d",
                                   vector_list[i], j, parsed_vectors[j].msg_length_byte),

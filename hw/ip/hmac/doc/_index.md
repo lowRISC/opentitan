@@ -100,9 +100,23 @@ contents). It is recommended this back-pressure is avoided by not writing to the
 memory-mapped message FIFO when it is full. To avoid doing so, software can
 read the {{< regref "STATUS.fifo_full" >}} register.
 
-The logic assumes the received message is big-endian. If it is little-endian,
-the software must set {{< regref "CFG.endian_swap" >}} to **1**.  The byte order of the digest
-registers, from {{< regref "DIGEST_0" >}} to {{< regref "DIGEST_7" >}} can be configured with {{< regref "CFG.digest_swap" >}}.
+The logic assumes the input message is little-endian.
+It converts the byte order of the word right before writing to SHA2 storage as SHA2 treats the incoming message as big-endian.
+If SW wants to convert the message byte order, SW should set {{< regref "CFG.endian_swap" >}} to **1**.
+The byte order of the digest registers, from {{< regref "DIGEST_0" >}} to {{< regref "DIGEST_7" >}} can be configured with {{< regref "CFG.digest_swap" >}}.
+
+See the table below:
+
+```
+Input Msg #0: 010203h
+Input Msg #1: 0405h
+```
+
+endian_swap     | 0         | 1
+----------------|-----------|-----------
+Push to SHA2 #0 | 03020105h | 01020304h
+Push to SHA2 #1 | 00000004h | 00000005h
+
 
 Small writes to {{< regref "MSG_FIFO" >}} are coalesced with into 32-bit words by the [packer logic]({{< relref "hw/ip/prim/doc/prim_packer" >}}).
 These words are fed into the internal message FIFO.

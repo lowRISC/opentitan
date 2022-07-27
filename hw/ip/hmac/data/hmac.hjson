@@ -81,17 +81,20 @@
           name: "endian_swap",
           desc: '''Endian swap.
 
-                If 0 then each individual multi-byte value, regardless of its
+                If 0, each value will be added to the message in little-endian
+                byte order. The value is written to MSG_FIFO same to the SW writes.
+
+                If 1, then each individual multi-byte value, regardless of its
                 alignment, written to !!MSG_FIFO will be added to the message
                 in big-endian byte order.
-                If 1, each value will be added to the message in little-endian
-                byte order.
+
                 A message written to !!MSG_FIFO one byte at a time will not be
                 affected by this setting.
+
                 From a hardware perspective byte swaps are performed on a TL-UL
                 word granularity.
                 ''',
-          resval: "1",
+          resval: "0",
         }
         { bits: "3",
           name: "digest_swap",
