@@ -51,8 +51,8 @@ def pick_wave_format(fmts):
 class SimCfg(FlowCfg):
     """Simulation configuration object
 
-    A simulation configuration class holds key information required for building a DV
-    regression framework.
+    A simulation configuration class holds key information required for building
+    a DV regression framework.
     """
 
     flow = 'sim'

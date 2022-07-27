@@ -426,6 +426,11 @@ def parse_args():
                         help=('The options for each build_mode in this list '
                               'are applied to all build and run targets.'))
 
+    buildg.add_argument("--build-timeout-mins",
+                        type=int,
+                        help=('Wall-clock timeout for builds in minutes: if '
+                              'the build takes longer it will be killed.'))
+
     disg.add_argument("--gui",
                       action='store_true',
                       help=('Run the flow in interactive mode instead of the '
@@ -473,6 +478,11 @@ def parse_args():
                       help=("Disable the default behaviour, where failing "
                             "tests are automatically rerun with waves "
                             "enabled."))
+
+    rung.add_argument("--run-timeout-mins",
+                      type=int,
+                      help=('Wall-clock timeout for runs in minutes: if '
+                            'the run takes longer it will be killed.'))
 
     rung.add_argument("--verbosity",
                       "-v",
