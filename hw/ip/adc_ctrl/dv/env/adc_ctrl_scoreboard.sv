@@ -55,7 +55,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   // In low power mode
   protected bit m_lp_mode = 0;
   // Debug cable index in interupt registers
-  protected int unsigned m_debug_cable_index;
+  protected int unsigned m_match_done_index;
 
   `uvm_component_utils(adc_ctrl_scoreboard)
 
@@ -78,7 +78,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    m_debug_cable_index = cfg.ral.intr_state.debug_cable.get_lsb_pos();
+    m_match_done_index = cfg.ral.intr_state.match_done.get_lsb_pos();
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -108,7 +108,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       m_interrupt = cfg.intr_vif.sample_pin(ADC_CTRL_INTERRUPT_INDEX);
       // Compare against expected every change of interrupt line
       if (cfg.en_scb) begin
-        intr_en = ral.intr_enable.debug_cable.get_mirrored_value();
+        intr_en = ral.intr_enable.match_done.get_mirrored_value();
         `uvm_info(`gfn, $sformatf(
                   "monitor_intr_proc: interrupt pin change m_interrupt=%b", m_interrupt),
                   UVM_MEDIUM)
@@ -225,19 +225,19 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        bit intr_en = ral.intr_enable.debug_cable.get_mirrored_value();
+        bit intr_en = ral.intr_enable.match_done.get_mirrored_value();
         do_read_check = 1;
         if (addr_phase_write) begin
           ->m_intr_state_wr_ev;
           // Implement W1C
-          m_expected_intr_state &= !get_field_val(cfg.ral.intr_state.debug_cable, item.a_data);
+          m_expected_intr_state &= !get_field_val(cfg.ral.intr_state.match_done, item.a_data);
         end
         if (addr_phase_read) begin
           `DV_CHECK(csr.predict(.value(m_expected_intr_state), .kind(UVM_PREDICT_READ)))
         end
         if (cfg.en_cov && data_phase_read) begin
-          cov.intr_cg.sample(m_debug_cable_index, intr_en, get_field_val(
-                             cfg.ral.intr_state.debug_cable, item.a_data));
+          cov.intr_cg.sample(m_match_done_index, intr_en, get_field_val(
+                             cfg.ral.intr_state.match_done, item.a_data));
         end
       end
       "intr_enable": begin
@@ -245,12 +245,12 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "intr_test": begin
         // Model intr_test functionality
-        bit intr_test_val = get_field_val(cfg.ral.intr_test.debug_cable, item.a_data);
-        bit intr_en = ral.intr_enable.debug_cable.get_mirrored_value();
+        bit intr_test_val = get_field_val(cfg.ral.intr_test.match_done, item.a_data);
+        bit intr_en = ral.intr_enable.match_done.get_mirrored_value();
         if (addr_phase_write) begin
           m_expected_intr_state |= intr_test_val;
           if (cfg.en_cov) begin
-            cov.intr_test_cg.sample(m_debug_cable_index, intr_test_val, intr_en,
+            cov.intr_test_cg.sample(m_match_done_index, intr_test_val, intr_en,
                                     m_expected_intr_state);
           end
         end
@@ -471,8 +471,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
       for (int channel_idx = 0; channel_idx < ADC_CTRL_CHANNELS; channel_idx++) begin
         filter_match &= !cfg.filter_cfg[channel_idx][filter_idx].en |
-			 (m_chn_match[channel_idx][filter_idx] &
-			  cfg.filter_cfg[channel_idx][filter_idx].en);
+                         (m_chn_match[channel_idx][filter_idx] &
+                          cfg.filter_cfg[channel_idx][filter_idx].en);
       end
       m_match[filter_idx] = filter_match;
     end

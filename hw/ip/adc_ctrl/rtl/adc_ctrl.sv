@@ -33,9 +33,8 @@ module adc_ctrl
   // .data_valid: Valid bit(pulse) for adc_d
   input  ast_pkg::adc_ast_rsp_t adc_i,
 
-  // Interrupt interface
-  // Debug cable is detected(attached or disconnected); raise the interrupt to CPU
-  output logic intr_debug_cable_o,
+  // Interrupt indicates a matching or measurement is done
+  output logic intr_match_done_o,
 
   // Pwrmgr interface
   // Debug cable is detected; wake up the chip in normal sleep and deep sleep mode
@@ -91,15 +90,15 @@ module adc_ctrl
     .adc_chn_val_o(hw2reg.adc_chn_val),
     .adc_intr_status_o(hw2reg.adc_intr_status),
     .aon_filter_status_o(hw2reg.filter_status),
-    .debug_cable_wakeup_o(wkup_req_o),
-    .intr_debug_cable_o(intr_debug_cable_o),
+    .wkup_req_o,
+    .intr_o(intr_match_done_o),
     .adc_i(adc_i),
     .adc_o(adc_o)
   );
 
   // All outputs should be known value after reset
-  `ASSERT_KNOWN(IntrDebugCableKnown, intr_debug_cable_o)
-  `ASSERT_KNOWN(WakeDebugCableKnown, wkup_req_o)
+  `ASSERT_KNOWN(IntrKnown, intr_match_done_o)
+  `ASSERT_KNOWN(WakeKnown, wkup_req_o)
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
   `ASSERT_KNOWN(AdcKnown_A, adc_o)

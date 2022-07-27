@@ -54,8 +54,8 @@ dif_result_t dif_adc_ctrl_alert_force(const dif_adc_ctrl_t *adc_ctrl,
 static bool adc_ctrl_get_irq_bit_index(dif_adc_ctrl_irq_t irq,
                                        bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifAdcCtrlIrqDebugCable:
-      *index_out = ADC_CTRL_INTR_COMMON_DEBUG_CABLE_BIT;
+    case kDifAdcCtrlIrqMatchDone:
+      *index_out = ADC_CTRL_INTR_COMMON_MATCH_DONE_BIT;
       break;
     default:
       return false;

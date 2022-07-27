@@ -13413,7 +13413,7 @@
       module_name: sysrst_ctrl_aon
     }
     {
-      name: adc_ctrl_aon_debug_cable
+      name: adc_ctrl_aon_match_done
       width: 1
       type: interrupt
       module_name: adc_ctrl_aon

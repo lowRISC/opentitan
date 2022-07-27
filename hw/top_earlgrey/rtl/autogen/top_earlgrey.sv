@@ -484,7 +484,7 @@ module top_earlgrey #(
   logic intr_usbdev_link_out_err;
   logic intr_pwrmgr_aon_wakeup;
   logic intr_sysrst_ctrl_aon_sysrst_ctrl;
-  logic intr_adc_ctrl_aon_debug_cable;
+  logic intr_adc_ctrl_aon_match_done;
   logic intr_aon_timer_aon_wkup_timer_expired;
   logic intr_aon_timer_aon_wdog_timer_bark;
   logic intr_sensor_ctrl_io_status_change;
@@ -1863,7 +1863,7 @@ module top_earlgrey #(
   ) u_adc_ctrl_aon (
 
       // Interrupt
-      .intr_debug_cable_o (intr_adc_ctrl_aon_debug_cable),
+      .intr_match_done_o (intr_adc_ctrl_aon_match_done),
       // [26]: fatal_fault
       .alert_tx_o  ( alert_tx[26:26] ),
       .alert_rx_i  ( alert_rx[26:26] ),
@@ -2638,7 +2638,7 @@ module top_earlgrey #(
       intr_sensor_ctrl_io_status_change, // IDs [160 +: 1]
       intr_aon_timer_aon_wdog_timer_bark, // IDs [159 +: 1]
       intr_aon_timer_aon_wkup_timer_expired, // IDs [158 +: 1]
-      intr_adc_ctrl_aon_debug_cable, // IDs [157 +: 1]
+      intr_adc_ctrl_aon_match_done, // IDs [157 +: 1]
       intr_sysrst_ctrl_aon_sysrst_ctrl, // IDs [156 +: 1]
       intr_pwrmgr_aon_wakeup, // IDs [155 +: 1]
       intr_usbdev_link_out_err, // IDs [154 +: 1]

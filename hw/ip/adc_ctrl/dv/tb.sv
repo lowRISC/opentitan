@@ -100,7 +100,7 @@ module tb;
     .alert_tx_o        (alert_tx),
     .adc_o             (adc_o),
     .adc_i             (adc_i),
-    .intr_debug_cable_o (interrupts[ADC_CTRL_INTERRUPT_INDEX]),
+    .intr_match_done_o (interrupts[ADC_CTRL_INTERRUPT_INDEX]),
     .wkup_req_o        (wakeup_req)
   );
 

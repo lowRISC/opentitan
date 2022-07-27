@@ -77,9 +77,9 @@ dif_result_t dif_adc_ctrl_alert_force(const dif_adc_ctrl_t *adc_ctrl,
  */
 typedef enum dif_adc_ctrl_irq {
   /**
-   * USB-C debug cable is attached or disconnected
+   * ADC match or measurement event done
    */
-  kDifAdcCtrlIrqDebugCable = 0,
+  kDifAdcCtrlIrqMatchDone = 0,
 } dif_adc_ctrl_irq_t;
 
 /**
