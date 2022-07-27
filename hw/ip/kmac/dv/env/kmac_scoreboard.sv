@@ -2117,6 +2117,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   prefix_val = `gmv(ral.prefix[1]);
                   function_name_6B[47:32] = prefix_val[15:0];
 
+                  void'(ral.cfg_regwen.predict(.value(0)));
+
                   if (kmac_en && function_name_6B != kmac_pkg::EncodedStringKMAC) begin
                     kmac_err.valid  = 1;
                     kmac_err.code   = kmac_pkg::ErrIncorrectFunctionName;
@@ -2186,6 +2188,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   // Flush all scoreboard state to prepare for the next hash operation
                   clear_state();
+
+                  void'(ral.cfg_regwen.predict(.value(1)));
 
                   // IDLE should go high one cycle after issuing Done cmd
                   //cfg.clk_rst_vif.wait_clks(1);
