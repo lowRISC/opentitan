@@ -19,7 +19,7 @@ generate a header file with these test vectors.
 RSA_3072_NUMWORDS = int(3072 / 32)
 
 # Template file name
-TEMPLATE = 'rsa_3072_verify_testvectors.h.tpl'
+DEFAULT_TEMPLATE = 'rsa_3072_verify_testvectors.h.tpl'
 
 # Default output file name
 DEFAULT_OUTFILE = 'rsa_3072_verify_testvectors.h'
@@ -43,6 +43,14 @@ def main() -> int:
                         metavar='FILE',
                         type=argparse.FileType('r'),
                         help='Read test vectors from this HJSON file.')
+    tpl_default = open(
+        os.path.join(os.path.dirname(__file__), DEFAULT_TEMPLATE), 'r')
+    parser.add_argument('--template',
+                        metavar='FILE',
+                        required=False,
+                        default=tpl_default,
+                        type=argparse.FileType('r'),
+                        help='Read header template from this file.')
     out_default = open(
         os.path.join(os.path.dirname(__file__), DEFAULT_OUTFILE), 'w')
     parser.add_argument('headerfile',
@@ -67,13 +75,12 @@ def main() -> int:
     for t in testvecs:
         t['msg_bytes'] = t['msg'].to_bytes(t['msg_len'], byteorder='big')
 
-    # Find the header template and output file in the script's directory
-    tpl = open(os.path.join(os.path.dirname(__file__), TEMPLATE))
-
-    args.headerfile.write(Template(tpl.read()).render(tests=testvecs))
+    tpl = Template(args.template.read())
+    args.headerfile.write(tpl.render(tests=testvecs))
     args.headerfile.close()
     out_default.close()
-    tpl.close()
+    args.template.close()
+    tpl_default.close()
 
     return 0
 

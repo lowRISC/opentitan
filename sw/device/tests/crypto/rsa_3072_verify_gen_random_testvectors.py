@@ -61,16 +61,16 @@ def main():
                         metavar='num',
                         type=int,
                         required=False,
+                        default=5,
                         help='Number of test vectors to generate per key '
-                        'generation (default=1). Increase for faster test '
-                        'generation.')
+                        'generation (default=5). Increase for faster test '
+                        'generation, and decrease for more coverage.')
     parser.add_argument('outfile',
                         metavar='FILE',
                         type=argparse.FileType('w'),
                         help='Write output to this file.')
 
     args = parser.parse_args()
-    print(args)
 
     random.seed()
     testvecs = []

@@ -8,7 +8,12 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/crypto/rsa_3072_verify_testvectors.h"
+
+// The autogen rule that creates this header creates it in a directory named
+// after the rule, then manipulates the include path in the
+// cc_compilation_context to include that directory, so the compiler will find
+// the version of this file matching the Bazel rule under test.
+#include "rsa_3072_verify_testvectors.h"
 
 bool rsa_3072_verify_test(const rsa_3072_verify_test_vector_t *testvec) {
   // Encode message
@@ -51,6 +56,8 @@ bool test_main(void) {
   // Stays true only if all tests pass.
   bool result = true;
 
+  // The definition of `RULE_NAME` comes from the autogen Bazel rule.
+  LOG_INFO("Starting rsa_3072_verify_test:%s", RULE_NAME);
   for (uint32_t i = 0; i < RSA_3072_VERIFY_NUM_TESTS; i++) {
     LOG_INFO("Starting rsa_3072_verify_test on test vector %d of %d...", i + 1,
              RSA_3072_VERIFY_NUM_TESTS);
@@ -73,6 +80,7 @@ bool test_main(void) {
     }
     result &= local_result;
   }
+  LOG_INFO("Finished rsa_3072_verify_test:%s", RULE_NAME);
 
   return result;
 }
