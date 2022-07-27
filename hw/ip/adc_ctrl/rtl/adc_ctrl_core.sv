@@ -20,8 +20,8 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   output adc_ctrl_hw2reg_filter_status_reg_t aon_filter_status_o,
 
   // interrupt and wakeup outputs
-  output debug_cable_wakeup_o,
-  output intr_debug_cable_o,
+  output wkup_req_o,
+  output intr_o,
 
   // adc interface
   input  ast_pkg::adc_ast_rsp_t adc_i,
@@ -135,8 +135,8 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
 
   // generate wakeup to external power manager if filter status
   // and wakeup enable are set.
-  assign debug_cable_wakeup_o = |(reg2hw_i.filter_status.q &
-                                  reg2hw_i.adc_wakeup_ctl.q);
+  assign wkup_req_o = |(reg2hw_i.filter_status.q &
+                      reg2hw_i.adc_wakeup_ctl.q);
 
   //instantiate the main state machine
   adc_ctrl_fsm u_adc_ctrl_fsm (
@@ -191,7 +191,7 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
     .intr_state_o,
     .adc_intr_status_i(reg2hw_i.adc_intr_status),
     .adc_intr_status_o,
-    .intr_debug_cable_o
+    .intr_o
   );
 
   // unused register inputs

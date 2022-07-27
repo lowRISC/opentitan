@@ -24,8 +24,8 @@
     }
   ],
   interrupt_list: [
-    { name: "debug_cable",
-      desc: "USB-C debug cable is attached or disconnected",
+    { name: "match_done",
+      desc: "ADC match or measurement event done",
     }
   ],
   alert_list: [
@@ -37,7 +37,7 @@
   ],
   wakeup_list: [
     { name: "wkup_req",
-      desc: "USB-C debug cable wakeup request",
+      desc: "ADC wakeup request",
     }
   ],
   param_list: [

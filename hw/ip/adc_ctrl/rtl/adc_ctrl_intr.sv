@@ -22,7 +22,7 @@ module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
   input  adc_ctrl_reg2hw_adc_intr_status_reg_t adc_intr_status_i,
   output adc_ctrl_hw2reg_adc_intr_status_reg_t adc_intr_status_o,
 
-  output intr_debug_cable_o
+  output intr_o
 );
 
 
@@ -96,7 +96,7 @@ module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
   assign adc_intr_status_o.filter_match.d = intr_events[7:0] | adc_intr_status_i.filter_match.q;
 
   logic unused_oneshot;
-  assign unused_oneshot = adc_intr_status_i.oneshot.q;   
+  assign unused_oneshot = adc_intr_status_i.oneshot.q;
   assign adc_intr_status_o.oneshot.d = 1'b1;
 
   // instantiate interrupt hardware primitive
@@ -110,7 +110,7 @@ module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
     .reg2hw_intr_state_q_i  (intr_state_i.q),
     .hw2reg_intr_state_de_o (intr_state_o.de),
     .hw2reg_intr_state_d_o  (intr_state_o.d),
-    .intr_o                 (intr_debug_cable_o)
+    .intr_o
   );
 
 endmodule

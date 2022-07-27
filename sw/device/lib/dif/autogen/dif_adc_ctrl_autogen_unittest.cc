@@ -91,13 +91,13 @@ TEST_F(IrqIsPendingTest, NullArgs) {
   bool is_pending;
 
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_is_pending(
-      nullptr, kDifAdcCtrlIrqDebugCable, &is_pending));
+      nullptr, kDifAdcCtrlIrqMatchDone, &is_pending));
 
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_is_pending(
-      &adc_ctrl_, kDifAdcCtrlIrqDebugCable, nullptr));
+      &adc_ctrl_, kDifAdcCtrlIrqMatchDone, nullptr));
 
   EXPECT_DIF_BADARG(
-      dif_adc_ctrl_irq_is_pending(nullptr, kDifAdcCtrlIrqDebugCable, nullptr));
+      dif_adc_ctrl_irq_is_pending(nullptr, kDifAdcCtrlIrqMatchDone, nullptr));
 }
 
 TEST_F(IrqIsPendingTest, BadIrq) {
@@ -113,9 +113,9 @@ TEST_F(IrqIsPendingTest, Success) {
   // Get the first IRQ state.
   irq_state = false;
   EXPECT_READ32(ADC_CTRL_INTR_STATE_REG_OFFSET,
-                {{ADC_CTRL_INTR_STATE_DEBUG_CABLE_BIT, true}});
-  EXPECT_DIF_OK(dif_adc_ctrl_irq_is_pending(
-      &adc_ctrl_, kDifAdcCtrlIrqDebugCable, &irq_state));
+                {{ADC_CTRL_INTR_STATE_MATCH_DONE_BIT, true}});
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_is_pending(&adc_ctrl_, kDifAdcCtrlIrqMatchDone,
+                                            &irq_state));
   EXPECT_TRUE(irq_state);
 }
 
@@ -136,7 +136,7 @@ class IrqAcknowledgeTest : public AdcCtrlTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {
   EXPECT_DIF_BADARG(
-      dif_adc_ctrl_irq_acknowledge(nullptr, kDifAdcCtrlIrqDebugCable));
+      dif_adc_ctrl_irq_acknowledge(nullptr, kDifAdcCtrlIrqMatchDone));
 }
 
 TEST_F(IrqAcknowledgeTest, BadIrq) {
@@ -147,15 +147,15 @@ TEST_F(IrqAcknowledgeTest, BadIrq) {
 TEST_F(IrqAcknowledgeTest, Success) {
   // Clear the first IRQ state.
   EXPECT_WRITE32(ADC_CTRL_INTR_STATE_REG_OFFSET,
-                 {{ADC_CTRL_INTR_STATE_DEBUG_CABLE_BIT, true}});
+                 {{ADC_CTRL_INTR_STATE_MATCH_DONE_BIT, true}});
   EXPECT_DIF_OK(
-      dif_adc_ctrl_irq_acknowledge(&adc_ctrl_, kDifAdcCtrlIrqDebugCable));
+      dif_adc_ctrl_irq_acknowledge(&adc_ctrl_, kDifAdcCtrlIrqMatchDone));
 }
 
 class IrqForceTest : public AdcCtrlTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_force(nullptr, kDifAdcCtrlIrqDebugCable));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_force(nullptr, kDifAdcCtrlIrqMatchDone));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
@@ -166,8 +166,8 @@ TEST_F(IrqForceTest, BadIrq) {
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(ADC_CTRL_INTR_TEST_REG_OFFSET,
-                 {{ADC_CTRL_INTR_TEST_DEBUG_CABLE_BIT, true}});
-  EXPECT_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_, kDifAdcCtrlIrqDebugCable));
+                 {{ADC_CTRL_INTR_TEST_MATCH_DONE_BIT, true}});
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_, kDifAdcCtrlIrqMatchDone));
 }
 
 class IrqGetEnabledTest : public AdcCtrlTest {};
@@ -176,13 +176,13 @@ TEST_F(IrqGetEnabledTest, NullArgs) {
   dif_toggle_t irq_state;
 
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_enabled(
-      nullptr, kDifAdcCtrlIrqDebugCable, &irq_state));
+      nullptr, kDifAdcCtrlIrqMatchDone, &irq_state));
 
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_enabled(
-      &adc_ctrl_, kDifAdcCtrlIrqDebugCable, nullptr));
+      &adc_ctrl_, kDifAdcCtrlIrqMatchDone, nullptr));
 
   EXPECT_DIF_BADARG(
-      dif_adc_ctrl_irq_get_enabled(nullptr, kDifAdcCtrlIrqDebugCable, nullptr));
+      dif_adc_ctrl_irq_get_enabled(nullptr, kDifAdcCtrlIrqMatchDone, nullptr));
 }
 
 TEST_F(IrqGetEnabledTest, BadIrq) {
@@ -198,9 +198,9 @@ TEST_F(IrqGetEnabledTest, Success) {
   // First IRQ is enabled.
   irq_state = kDifToggleDisabled;
   EXPECT_READ32(ADC_CTRL_INTR_ENABLE_REG_OFFSET,
-                {{ADC_CTRL_INTR_ENABLE_DEBUG_CABLE_BIT, true}});
+                {{ADC_CTRL_INTR_ENABLE_MATCH_DONE_BIT, true}});
   EXPECT_DIF_OK(dif_adc_ctrl_irq_get_enabled(
-      &adc_ctrl_, kDifAdcCtrlIrqDebugCable, &irq_state));
+      &adc_ctrl_, kDifAdcCtrlIrqMatchDone, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleEnabled);
 }
 
@@ -210,7 +210,7 @@ TEST_F(IrqSetEnabledTest, NullArgs) {
   dif_toggle_t irq_state = kDifToggleEnabled;
 
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_set_enabled(
-      nullptr, kDifAdcCtrlIrqDebugCable, irq_state));
+      nullptr, kDifAdcCtrlIrqMatchDone, irq_state));
 }
 
 TEST_F(IrqSetEnabledTest, BadIrq) {
@@ -226,9 +226,9 @@ TEST_F(IrqSetEnabledTest, Success) {
   // Enable first IRQ.
   irq_state = kDifToggleEnabled;
   EXPECT_MASK32(ADC_CTRL_INTR_ENABLE_REG_OFFSET,
-                {{ADC_CTRL_INTR_ENABLE_DEBUG_CABLE_BIT, 0x1, true}});
+                {{ADC_CTRL_INTR_ENABLE_MATCH_DONE_BIT, 0x1, true}});
   EXPECT_DIF_OK(dif_adc_ctrl_irq_set_enabled(
-      &adc_ctrl_, kDifAdcCtrlIrqDebugCable, irq_state));
+      &adc_ctrl_, kDifAdcCtrlIrqMatchDone, irq_state));
 }
 
 class IrqDisableAllTest : public AdcCtrlTest {};
