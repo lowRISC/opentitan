@@ -1793,14 +1793,6 @@
             '''
           },
           { bits: "6",
-            name: "flash_macro_err",
-            desc: '''
-              The flash access encountered a native flash macro error.
-              Please check the vendor specs for details of the error.
-              This is a synchronous error.
-            '''
-          },
-          { bits: "7",
             name: "update_err",
             desc: '''
               A shadow register encountered an update error.
