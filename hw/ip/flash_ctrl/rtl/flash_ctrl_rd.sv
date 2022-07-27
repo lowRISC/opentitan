@@ -30,7 +30,6 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   output logic             flash_ovfl_o,
   input [BusFullWidth-1:0] flash_data_i,
   input                    flash_done_i,
-  input                    flash_macro_err_i,
   input                    flash_rd_err_i,
   input                    flash_mp_err_i
 );
@@ -135,7 +134,6 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
         if (txn_done) begin
           op_err_d.mp_err = flash_mp_err_i;
           op_err_d.rd_err = flash_rd_err_i;
-          op_err_d.macro_err = flash_macro_err_i;
 
           data_wr_o = 1'b1;
 
@@ -166,7 +164,14 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   assign flash_ovfl_o = int_addr[BusAddrW];
   // if error, return "empty" data
   assign err_sel = data_wr_o & |op_err_o;
-  assign data_o = err_sel ? {BusFullWidth{1'b1}} : flash_data_i;
+
+  // When there is no error, return flash data directly.
+  // When the error is a read error specifically, also return flash data as the integrity is natively
+  // handled by the phy.
+  // All other errors do not result in an actual transaction to the flash, and therefore must use
+  // the locally available error value.
+  assign data_o = ~err_sel | (err_sel & op_err_o.rd_err) ? flash_data_i :
+                  prim_secded_pkg::prim_secded_inv_39_32_enc({BusWidth{1'b1}});
   assign op_err_o = op_err_q | op_err_d;
 
 

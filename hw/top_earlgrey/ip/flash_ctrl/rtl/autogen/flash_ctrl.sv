@@ -590,7 +590,6 @@ module flash_ctrl
     .flash_type_o   (flash_prog_type),
     .flash_done_i   (flash_prog_done),
     .flash_prog_intg_err_i (flash_phy_rsp.prog_intg_err),
-    .flash_macro_err_i(flash_phy_rsp.macro_err),
     .flash_mp_err_i (flash_mp_err)
   );
 
@@ -691,8 +690,7 @@ module flash_ctrl
     .flash_data_i   (flash_rd_data),
     .flash_done_i   (flash_rd_done),
     .flash_mp_err_i (flash_mp_err),
-    .flash_rd_err_i (flash_rd_err),
-    .flash_macro_err_i(flash_phy_rsp.macro_err)
+    .flash_rd_err_i (flash_rd_err)
   );
 
   // Erase handler does not consume fifo
@@ -712,8 +710,7 @@ module flash_ctrl
     .flash_addr_o   (erase_flash_addr),
     .flash_op_o     (erase_flash_type),
     .flash_done_i   (flash_erase_done),
-    .flash_mp_err_i (flash_mp_err),
-    .flash_macro_err_i(flash_phy_rsp.macro_err)
+    .flash_mp_err_i (flash_mp_err)
   );
 
   // Final muxing to flash macro module
@@ -1010,7 +1007,6 @@ module flash_ctrl
   assign hw2reg.err_code.prog_err.d         = 1'b1;
   assign hw2reg.err_code.prog_win_err.d     = 1'b1;
   assign hw2reg.err_code.prog_type_err.d    = 1'b1;
-  assign hw2reg.err_code.flash_macro_err.d  = 1'b1;
   assign hw2reg.err_code.update_err.d       = 1'b1;
   assign hw2reg.err_code.op_err.de          = sw_ctrl_err.invalid_op_err;
   assign hw2reg.err_code.mp_err.de          = sw_ctrl_err.mp_err;
@@ -1018,13 +1014,12 @@ module flash_ctrl
   assign hw2reg.err_code.prog_err.de        = sw_ctrl_err.prog_err;
   assign hw2reg.err_code.prog_win_err.de    = sw_ctrl_err.prog_win_err;
   assign hw2reg.err_code.prog_type_err.de   = sw_ctrl_err.prog_type_err;
-  assign hw2reg.err_code.flash_macro_err.de = sw_ctrl_err.macro_err;
   assign hw2reg.err_code.update_err.de      = update_err;
   assign hw2reg.err_addr.d                  = {ctrl_err_addr, {BusByteWidth{1'h0}}};
   assign hw2reg.err_addr.de                 = sw_ctrl_err.mp_err |
                                               sw_ctrl_err.rd_err |
-                                              sw_ctrl_err.prog_err |
-                                              sw_ctrl_err.macro_err;
+                                              sw_ctrl_err.prog_err;
+
 
   // all hardware interface errors are considered faults
   // There are two types of faults
@@ -1049,7 +1044,7 @@ module flash_ctrl
   assign hw2reg.fault_status.prog_err.de        = hw_err.prog_err;
   assign hw2reg.fault_status.prog_win_err.de    = hw_err.prog_win_err;
   assign hw2reg.fault_status.prog_type_err.de   = hw_err.prog_type_err;
-  assign hw2reg.fault_status.flash_macro_err.de = hw_err.macro_err;
+  assign hw2reg.fault_status.flash_macro_err.de = flash_phy_rsp.macro_err;
   assign hw2reg.fault_status.seed_err.de        = seed_err;
   assign hw2reg.fault_status.phy_relbl_err.de   = flash_phy_rsp.storage_relbl_err;
   assign hw2reg.fault_status.phy_storage_err.de = flash_phy_rsp.storage_intg_err;

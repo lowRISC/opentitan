@@ -550,7 +550,6 @@ package flash_ctrl_pkg;
     logic prog_err;
     logic prog_win_err;
     logic prog_type_err;
-    logic macro_err;
   } flash_ctrl_err_t;
 
   // interrupt bit positioning

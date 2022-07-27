@@ -20,8 +20,7 @@ module flash_ctrl_erase import flash_ctrl_pkg::*; (
   output logic [BusAddrW-1:0] flash_addr_o,
   output flash_erase_e        flash_op_o,
   input                       flash_done_i,
-  input                       flash_mp_err_i,
-  input                       flash_macro_err_i
+  input                       flash_mp_err_i
 );
 
   localparam int WordsBitWidth = $clog2(BusWordsPerPage);
@@ -48,7 +47,6 @@ module flash_ctrl_erase import flash_ctrl_pkg::*; (
     op_err_o = '0;
     op_err_o.oob_err = op_done_o & oob_err;
     op_err_o.mp_err = op_done_o & flash_mp_err_i;
-    op_err_o.macro_err = op_done_o & flash_macro_err_i;
   end
 
 

@@ -961,8 +961,6 @@ module flash_ctrl_core_reg_top (
   logic err_code_prog_win_err_wd;
   logic err_code_prog_type_err_qs;
   logic err_code_prog_type_err_wd;
-  logic err_code_flash_macro_err_qs;
-  logic err_code_flash_macro_err_wd;
   logic err_code_update_err_qs;
   logic err_code_update_err_wd;
   logic std_fault_status_reg_intg_err_qs;
@@ -10309,33 +10307,7 @@ module flash_ctrl_core_reg_top (
     .qs     (err_code_prog_type_err_qs)
   );
 
-  //   F[flash_macro_err]: 6:6
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_err_code_flash_macro_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (err_code_we),
-    .wd     (err_code_flash_macro_err_wd),
-
-    // from internal hardware
-    .de     (hw2reg.err_code.flash_macro_err.de),
-    .d      (hw2reg.err_code.flash_macro_err.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (err_code_flash_macro_err_qs)
-  );
-
-  //   F[update_err]: 7:7
+  //   F[update_err]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -12354,9 +12326,7 @@ module flash_ctrl_core_reg_top (
 
   assign err_code_prog_type_err_wd = reg_wdata[5];
 
-  assign err_code_flash_macro_err_wd = reg_wdata[6];
-
-  assign err_code_update_err_wd = reg_wdata[7];
+  assign err_code_update_err_wd = reg_wdata[6];
   assign ecc_single_err_cnt_we = addr_hit[98] & reg_we & !reg_error;
 
   assign ecc_single_err_cnt_ecc_single_err_cnt_0_wd = reg_wdata[7:0];
@@ -13126,8 +13096,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[3] = err_code_prog_err_qs;
         reg_rdata_next[4] = err_code_prog_win_err_qs;
         reg_rdata_next[5] = err_code_prog_type_err_qs;
-        reg_rdata_next[6] = err_code_flash_macro_err_qs;
-        reg_rdata_next[7] = err_code_update_err_qs;
+        reg_rdata_next[6] = err_code_update_err_qs;
       end
 
       addr_hit[95]: begin
