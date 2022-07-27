@@ -79,7 +79,7 @@ the manifest is 896 bytes.
     partition in OTP. Mapped to bit 9 of `selector_bits`.
 
 *   `life_cycle_state`: Device life cycle state compared against the state
-    reported by the life cycle controller. Mapped to bit 9 of `selector_bits`.
+    reported by the life cycle controller. Mapped to bit 10 of `selector_bits`.
 
 *   `modulus`:  Modulus of the signer's 3072-bit RSA public key.
 
