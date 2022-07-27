@@ -215,7 +215,7 @@ assign vcc_pok_h = vcc_pok;     // "Level Shifter"
 
 
 ////////////////////////////////////////
-// VCAON POK (Always ON)
+// VCAON POK POR (Always ON)
 ///////////////////////////////////////
 logic rst_poks_n, rst_poks_por_n, por_sync_n;
 logic vcaon_pok_por_src, vcaon_pok_por_lat, poks_por_ack, rglssm_vcmon, rglssm_brout;
@@ -262,10 +262,9 @@ assign ast_pwst_o.aon_pok = vcaon_pok_por_lat;
 assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_lat;
 
 
+////////////////////////////////////////
+// VCMAIN POK POR (Always ON)
 ///////////////////////////////////////
-// VCMAIN POK (Always ON)
-///////////////////////////////////////
-
 logic rglssm_vmppr, vcmain_pok_por_src;
 
 assign vcmain_pok_por_src = vcaon_pok_por_lat && vcmain_pok && !rglssm_vmppr;
@@ -679,24 +678,12 @@ ast_pkg::ast_dif_t ot3_alert_src;
 ast_pkg::ast_dif_t ot4_alert_src;
 ast_pkg::ast_dif_t ot5_alert_src;
 
-// Reset De-Assert Sync
-logic rst_ast_alert_da_n;
-
-prim_flop_2sync #(
-  .Width ( 1 ),
-  .ResetValue ( 1'b0 )
-) u_rst_ast_alert_da (
-  .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
-  .d_i ( 1'b1 ),
-  .q_o ( rst_ast_alert_da_n )
-);
 
 // Active Shield (AS)
 ///////////////////////////////////////
 ast_alert u_alert_as (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( as_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::AsSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::AsSel] ),
@@ -707,7 +694,7 @@ ast_alert u_alert_as (
 ///////////////////////////////////////
 ast_alert u_alert_cg (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( cg_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::CgSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::CgSel] ),
@@ -718,7 +705,7 @@ ast_alert u_alert_cg (
 ///////////////////////////////////////
 ast_alert u_alert_gd (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( gd_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::GdSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::GdSel] ),
@@ -729,7 +716,7 @@ ast_alert u_alert_gd (
 ///////////////////////////////////////
 ast_alert u_alert_ts_hi (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ts_alert_hi_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::TsHiSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::TsHiSel] ),
@@ -740,7 +727,7 @@ ast_alert u_alert_ts_hi (
 ///////////////////////////////////////
 ast_alert u_alert_ts_lo (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ts_alert_lo_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::TsLoSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::TsLoSel] ),
@@ -751,7 +738,7 @@ ast_alert u_alert_ts_lo (
 ///////////////////////////////////////
 ast_alert u_alert_fla (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( fla_alert_src_i ),  //TODO: Add enable
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::FlaSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::FlaSel] ),
@@ -773,7 +760,7 @@ ast_alert u_alert_otp (
 ///////////////////////////////////////
 ast_alert u_alert_ot0 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot0_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot0Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot0Sel] ),
@@ -784,7 +771,7 @@ ast_alert u_alert_ot0 (
 ///////////////////////////////////////
 ast_alert u_alert_ot1 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot1_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot1Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot1Sel] ),
@@ -795,7 +782,7 @@ ast_alert u_alert_ot1 (
 ///////////////////////////////////////
 ast_alert u_alert_ot2 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot2_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[Ot2Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[Ot2Sel] ),
@@ -806,7 +793,7 @@ ast_alert u_alert_ot2 (
 ///////////////////////////////////////
 ast_alert u_alert_ot3 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot3_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[Ot3Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[Ot3Sel] ),
@@ -817,7 +804,7 @@ ast_alert u_alert_ot3 (
 ///////////////////////////////////////
 ast_alert u_alert_ot4 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot4_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot4Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot4Sel] ),
@@ -828,22 +815,25 @@ ast_alert u_alert_ot4 (
 ///////////////////////////////////////
 ast_alert u_alert_ot5 (
   .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_da_n ),
+  .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot5_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot5Sel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot5Sel] ),
   .alert_req_o ( alert_req_o.alerts[ast_pkg::Ot5Sel] )
 ); // of u_alert_ot5
+
+// Alerts Open-Source Selection
+////////////////////////////////////////
 assign as_alert_src    = '{p: 1'b0, n: 1'b1};
 assign cg_alert_src    = '{p: 1'b0, n: 1'b1};
 assign gd_alert_src    = '{p: 1'b0, n: 1'b1};
+assign ts_alert_hi_src = '{p: 1'b0, n: 1'b1};
+assign ts_alert_lo_src = '{p: 1'b0, n: 1'b1};
+assign ot1_alert_src   = '{p: 1'b0, n: 1'b1};
 assign ot2_alert_src   = '{p: 1'b0, n: 1'b1};
 assign ot3_alert_src   = '{p: 1'b0, n: 1'b1};
 assign ot4_alert_src   = '{p: 1'b0, n: 1'b1};
 assign ot5_alert_src   = '{p: 1'b0, n: 1'b1};
-assign ts_alert_hi_src = '{p: 1'b0, n: 1'b1};
-assign ts_alert_lo_src = '{p: 1'b0, n: 1'b1};
-assign ot1_alert_src   = '{p: 1'b0, n: 1'b1};
 
 
 ///////////////////////////////////////
@@ -993,7 +983,7 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(EntropyRateKnownO_A, entropy_rate_o, clk_ast_es_i, rst_ast_es_ni)          // TODO
 `ASSERT_KNOWN(EntropyReeqKnownO_A, entropy_req_o, clk_ast_es_i,rst_ast_es_ni)            // TODO
 // Alerts
-`ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_da_n)
+`ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)
 // DPRAM/SPRAM
 `ASSERT_KNOWN(DpramRmfKnownO_A, dpram_rmf_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(DpramRmlKnownO_A, dpram_rml_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
@@ -1010,7 +1000,7 @@ assign ast2pad_t1_ao = 1'bz;
 
 // Alert assertions for reg_we onehot check
 `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehot_A,
-   u_reg, alert_req_o.alerts[ast_pkg::Ot0Sel].p, , , clk_ast_alert_i, rst_ast_alert_da_n)
+   u_reg, alert_req_o.alerts[ast_pkg::Ot0Sel].p, , , clk_ast_alert_i, rst_ast_alert_ni)
 
 
 /////////////////////

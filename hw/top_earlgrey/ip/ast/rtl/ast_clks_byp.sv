@@ -601,7 +601,7 @@ prim_mubi4_sender #(
   .clk_i ( clk_src_io_o ),
   .rst_ni ( rst_aon_ioda_n ),
   .mubi_i ( prim_mubi_pkg::mubi4_bool_to_mubi(all_clks_byp_en) ),
-  .mubi_o ( all_clk_byp_ack_o )
+  .mubi_o ( {all_clk_byp_ack_o} )
 );
 
 // IO Clock Bypass Acknowledge
@@ -632,7 +632,7 @@ prim_mubi4_sender #(
   .clk_i ( clk_src_io_o ),
   .rst_ni ( rst_aon_ioda_n ),
   .mubi_i ( prim_mubi_pkg::mubi4_bool_to_mubi(only_io_clk_byp_en) ),
-  .mubi_o ( io_clk_byp_ack_o )
+  .mubi_o ( {io_clk_byp_ack_o} )
 );
 
 // IO Clock Source is 48MHz
@@ -665,7 +665,7 @@ prim_mubi4_sender #(
   .clk_i ( clk_src_io_o ),
   .rst_ni ( rst_aon_ioda_n ),
   .mubi_i ( prim_mubi_pkg::mubi4_bool_to_mubi(io_clk_byp_is_48m) ),
-  .mubi_o ( clk_src_io_48m_o )
+  .mubi_o ( {clk_src_io_48m_o} )
 );
 
 
