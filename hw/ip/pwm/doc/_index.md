@@ -312,6 +312,10 @@ This step is necessary for changing the blink timing parameters
 4. Set {{< regref "BLINK_PARAM_0.Y_0" >}} to set the size of each step.
 5. In a single write, assert both {{< regref "PWM_PARAM_0.BLINK_EN_0" >}} and {{< regref "PWM_PARAM_0.HTBT_EN_0" >}}
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_pwm.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/pwm.hjson" "registers" >}}

@@ -951,6 +951,10 @@ To handle an interrupt of a particular class, software should execute the follow
 Note that testing interrupts by writing to the interrupt test registers does also trigger the internal interrupt timeout (if enabled), since the interrupt state is used as enable signal for the timer.
 However, alert accumulation will not be triggered by this testing mechanism.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_alert_handler.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/alert_handler.hjson" "registers" >}}

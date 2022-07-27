@@ -340,6 +340,10 @@ Software then simply needs to write in {{< regref "CPU_INFO_CTRL.INDEX" >}} whic
 
 # Programmers Guide
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_rstmgr.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "/hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson" "registers" >}}

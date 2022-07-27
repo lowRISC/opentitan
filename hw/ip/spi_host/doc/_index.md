@@ -1415,6 +1415,10 @@ In the event of an error the SPI_HOST IP can be reset under software control usi
    - Wait for both FIFOs to completely drain by polling {{< regref "STATUS.TXQD" >}} and {{< regref "STATUS.RXQD" >}} until they reach zero.
 3. Clear {{ < regref "CONTROL.SW_RST" >}}.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_spi_host.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/spi_host.hjson" "registers" >}}

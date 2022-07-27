@@ -317,6 +317,10 @@ Note, a `0` does not indicate clock is actually disabled, software can thus chec
 ## Peripheral Clock Controls
 To control peripheral clocks, directly change the bits in {{< regref "CLK_ENABLES" >}}.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_clkmgr.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "/hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson" "registers" >}}

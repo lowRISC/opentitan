@@ -394,6 +394,10 @@ The tables below summarize the pinout and pinmux connectivity for certain top-le
 
 {{< snippet "../../../top_earlgrey/ip/pinmux/doc/autogen/targets.md" >}}
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_pinmux.h" >}}
+
 ## Register Table
 
 The register description below matches the instance in the [Earl Grey top level

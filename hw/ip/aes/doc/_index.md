@@ -622,6 +622,9 @@ The code snippet below shows how to perform this task.
       (0x1 << AES_TRIGGER_DATA_OUT_CLEAR);
 ```
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_aes.h" >}}
 
 ## Register Table
 

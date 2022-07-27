@@ -260,6 +260,10 @@ void edn_init(unsigned int enable) {
 
 Need to alert the system of a FIFO overflow condition.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_edn.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/edn.hjson" "registers" >}}

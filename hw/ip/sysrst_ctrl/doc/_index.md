@@ -16,14 +16,14 @@ The IP block implements the following features:
 - Always-on: uses the always-on power and clock domain
 - EC reset pulse duration control and stretching
 - Keyboard and button combination (combo) triggered action
-- AC_present can trigger interrupt 
+- AC_present can trigger interrupt
 - Configuration registers can be set and locked until the next chip reset
 - Pin output override
 
 ## Description
 
 The `sysrst_ctrl` logic is very simple.
-It looks up the configuration registers to decide how long the EC reset pulse duration and how long the keyboard debounce timer should be. 
+It looks up the configuration registers to decide how long the EC reset pulse duration and how long the keyboard debounce timer should be.
 Also what actions to take (e.g. Interrupt, EC reset, OpenTitan reset request, disconnect the battery from the power tree).
 
 ## Compatibility
@@ -39,8 +39,8 @@ The first is the configuration and status registers, the second is the keyboard 
 
 The `sysrst_ctrl` has four input pins (`pwrb_in_i`, `key[0,1,2]_in_i`) with corresponding output pins (`pwrb_out`, `key[0,1,2]_out`).
 During normal operation the `sysrst_ctrl` will pass the pin information directly from the input pins to the output pins with optional inversion.
-Combinations of the inputs being active for a specified time can be detected and used to trigger actions. 
-The override logic allows the output to be overridden (i.e. not follow the corresponding input) based either on trigger or software settings. 
+Combinations of the inputs being active for a specified time can be detected and used to trigger actions.
+The override logic allows the output to be overridden (i.e. not follow the corresponding input) based either on trigger or software settings.
 This allows the security chip to take over the inputs for its own use without disturbing the main user.
 
 The `sysrst_ctrl` also controls two active-low open-drain I/Os named `flash_wp_l_i` / `flash_wp_l_o` and `ec_rst_l_i` / `ec_rst_l_o`.
@@ -86,11 +86,11 @@ Software should therefore read and clear the {{< regref WKUP_STATUS >}} register
 
 The following four combo actions can be triggered:
 
-- Drive the `bat_disable` output high until the next reset. 
+- Drive the `bat_disable` output high until the next reset.
 - Issue an interrupt to the processor via `intr_sysrst_ctrl_o`.
 - Assert `ec_rst_l_o` for the amount of cycles configured in {{< regref EC_RST_CTL >}}.
 - Issue a reset request via `aon_ot_rst_req_o` to the reset manager of the OpenTitan system. Note that once a reset request is issued, it will remain asserted until the next reset.
- 
+
 These actions can be configured via the {{< regref COM_OUT_CTL_0 >}} register for each of the combo blocks as described in the previous section.
 
 ### Hardwired reset stretching functionality
@@ -127,7 +127,7 @@ Software should therefore read and clear the {{< regref WKUP_STATUS >}} register
 ## Ultra-low-power Wakeup Feature
 
 Software can program the `sysrst_ctrl` block to detect certain specific signal transitions on the (possibly inverted) `ac_present_i`, `pwrb_in_i` and `lid_open_i` inputs.
-As opposed to the combo detection and general key interrupt features above, this is a fixed function feature with limited configurability. 
+As opposed to the combo detection and general key interrupt features above, this is a fixed function feature with limited configurability.
 In particular, the transitions that can be detected are fixed to the following:
 
 - A high level on the `ac_present_i` signal
@@ -191,8 +191,10 @@ Hence, the value of `flash_wp_l_o` defaults to logic 0 when it is not explicitly
 
 Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration]({{< relref "hw/ip/pinmux/doc/" >}}) before releasing `flash_wp_l_o`.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_sysrst_ctrl.h" >}}
+
 ## Registers
 
 {{< incGenFromIpDesc "../data/sysrst_ctrl.hjson" "registers" >}}
-
-

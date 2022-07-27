@@ -136,6 +136,10 @@ For example, to repeat a pattern 30, a value of 29 should written to the field {
 1. Finally to start the pattern, set the {{< regref "CTRL.ENABLE_CH0" >}}.
 To start both channel patterns at the same time, configure both channels then simulataneously assert both the {{< regref "CTRL.ENABLE_CH0" >}} and {{< regref "CTRL.ENABLE_CH1" >}} bits in the same register access.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_pattgen.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/pattgen.hjson" "registers" >}}

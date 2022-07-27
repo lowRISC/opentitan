@@ -227,6 +227,10 @@ Note that before (re-)requesting an updated SRAM key it is imperative to make su
 
 It should also be noted that data and address scrambling is never entirely disabled - even when the default scrambling key is used.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_sram_ctrl.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/sram_ctrl.hjson" "registers" >}}

@@ -550,6 +550,10 @@ void csrng_init(unsigned int enable) {
 }
 ```
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_csrng.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/csrng.hjson" "registers" >}}

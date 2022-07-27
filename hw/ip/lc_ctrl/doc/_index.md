@@ -678,6 +678,10 @@ Hence, step 8. cannot be carried out in case device SW is used to implement the 
 This behavior is however not of concern, since access to the transition interface via the CSRs is considered a convenience feature for bringup in the lab.
 It is expected that the JTAG TAP interface is used to access the life cycle transition interface in production settings.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_lc_ctrl.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/lc_ctrl.hjson" "registers" >}}

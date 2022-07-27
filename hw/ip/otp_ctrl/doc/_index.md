@@ -1004,10 +1004,13 @@ For the {{< regref "CREATOR_SW_CFG" >}} and {{< regref "OWNER_SW_CFG" >}} partit
 Note that any unrecoverable errors during the programming steps, or mismatches during the read-back and verification steps indicate that the device might be malfunctioning (possibly due to fabrication defects) and hence the device may have to be scrapped.
 This is however rare and should not happen after fabrication testing.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_otp_ctrl.h" >}}
+
 ## Register Table
 
 {{< incGenFromIpDesc "../data/otp_ctrl.hjson" "registers" >}}
-
 
 # Additional Notes
 
