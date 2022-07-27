@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import collections
+import datetime
 import logging as log
 import os
 import re
@@ -197,6 +198,7 @@ class Launcher:
 
         self.deploy.pre_launch()
         self._make_odir()
+        self.start_time = datetime.datetime.now()
 
     def _do_launch(self):
         """Launch the job."""

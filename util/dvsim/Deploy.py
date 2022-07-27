@@ -94,11 +94,11 @@ class Deploy():
         # command (through substitution vars) or other things such as pass /
         # fail patterns.
         self.mandatory_misc_attrs = {
-            "name": False,
             "build_mode": False,
-            "flow_makefile": False,
+            "dry_run": False,
             "exports": False,
-            "dry_run": False
+            "flow_makefile": False,
+            "name": False,
         }
 
     # Function to parse a dict and extract the mandatory cmd and misc attrs.
@@ -156,7 +156,7 @@ class Deploy():
         self.input_dirs = []
 
         # Directories touched by this job. These directories are marked
-        # becuase they are used by dependent jobs as input.
+        # because they are used by dependent jobs as input.
         self.output_dirs = [self.odir]
 
         # Pass and fail patterns.
@@ -222,8 +222,8 @@ class Deploy():
             if type(value) is bool:
                 value = int(value)
             if type(value) is str:
-                value = value.strip()
-            cmd += " {}={}".format(attr, shlex.quote(value))
+                value = shlex.quote(value.strip())
+            cmd += " {}={}".format(attr, value)
         return cmd
 
     def is_equivalent_job(self, item):
@@ -279,6 +279,10 @@ class Deploy():
 
         return "{}/{}.log".format(self.odir, self.target)
 
+    def get_timeout_mins(self):
+        """Returns the timeout in minutes."""
+        return 0
+
     def create_launcher(self):
         """Creates the launcher instance.
 
@@ -313,17 +317,18 @@ class CompileSim(Deploy):
             "sv_flist_gen_opts": False,
 
             # Build
-            "build_dir": False,
             "pre_build_cmds": False,
             "build_cmd": False,
+            "build_dir": False,
             "build_opts": False,
             "post_build_cmds": False,
         })
 
         self.mandatory_misc_attrs.update({
-            "cov_db_dir": False,
+            "build_fail_patterns": False,
             "build_pass_patterns": False,
-            "build_fail_patterns": False
+            "build_timeout_mins": False,
+            "cov_db_dir": False,
         })
 
     def _set_attrs(self):
@@ -341,10 +346,20 @@ class CompileSim(Deploy):
         self.pass_patterns = self.build_pass_patterns
         self.fail_patterns = self.build_fail_patterns
 
+        if self.sim_cfg.args.build_timeout_mins is not None:
+            self.build_timeout_mins = self.sim_cfg.args.build_timeout_mins
+        if self.build_timeout_mins:
+            log.log(VERBOSE, "Compile timeout for job \"%s\" is %d minutes",
+                    self.name, self.build_timeout_mins)
+
     def pre_launch(self):
         # Delete old coverage database directories before building again. We
         # need to do this because the build directory is not 'renewed'.
         rm_path(self.cov_db_dir)
+
+    def get_timeout_mins(self):
+        """Returns the timeout in minutes."""
+        return self.build_timeout_mins
 
 
 class CompileOneShot(Deploy):
@@ -369,11 +384,12 @@ class CompileOneShot(Deploy):
 
             # Build
             "build_dir": False,
-            "pre_build_cmds": False,
             "build_cmd": False,
             "build_opts": False,
-            "post_build_cmds": False,
             "build_log": False,
+            "build_timeout_mins": False,
+            "post_build_cmds": False,
+            "pre_build_cmds": False,
 
             # Report processing
             "report_cmd": False,
@@ -390,6 +406,16 @@ class CompileOneShot(Deploy):
         self.build_mode = self.name
         self.job_name += f"_{self.build_mode}"
         self.fail_patterns = self.build_fail_patterns
+
+        if self.sim_cfg.args.build_timeout_mins is not None:
+            self.build_timeout_mins = self.sim_cfg.args.build_timeout_mins
+        if self.build_timeout_mins:
+            log.log(VERBOSE, "Compile timeout for job \"%s\" is %d minutes",
+                    self.name, self.build_timeout_mins)
+
+    def get_timeout_mins(self):
+        """Returns the timeout in minutes."""
+        return self.build_timeout_mins
 
 
 class RunTest(Deploy):
@@ -433,11 +459,12 @@ class RunTest(Deploy):
         })
 
         self.mandatory_misc_attrs.update({
-            "run_dir_name": False,
             "cov_db_dir": False,
             "cov_db_test_dir": False,
+            "run_dir_name": False,
+            "run_fail_patterns": False,
             "run_pass_patterns": False,
-            "run_fail_patterns": False
+            "run_timeout_mins": False,
         })
 
     def _set_attrs(self):
@@ -457,6 +484,12 @@ class RunTest(Deploy):
         if not self.gui:
             self.pass_patterns = self.run_pass_patterns
             self.fail_patterns = self.run_fail_patterns
+
+        if self.sim_cfg.args.run_timeout_mins is not None:
+            self.run_timeout_mins = self.sim_cfg.args.run_timeout_mins
+        if self.run_timeout_mins:
+            log.log(VERBOSE, "Run timeout for job \"%s\" is %d minutes",
+                    self.name, self.run_timeout_mins)
 
     def pre_launch(self):
         self.launcher.renew_odir = True
@@ -478,6 +511,10 @@ class RunTest(Deploy):
                 seed = random.getrandbits(32)
                 RunTest.seeds.append(seed)
         return RunTest.seeds.pop(0)
+
+    def get_timeout_mins(self):
+        """Returns the timeout in minutes."""
+        return self.run_timeout_mins
 
 
 class CovUnr(Deploy):

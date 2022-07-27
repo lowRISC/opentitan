@@ -201,6 +201,8 @@ class LsfLauncher(Launcher):
             "-eo",
             "{}.%I.out".format(job_script)
         ]
+        if self.deploy.get_timeout_mins():
+            cmd += ["-c", self.deploy.get_timeout_mins()]
 
         if job_rusage:
             cmd += ["-R", job_rusage]
@@ -397,6 +399,7 @@ class LsfLauncher(Launcher):
         err_msg is the error message indicating the cause of failure.'''
 
         for job in LsfLauncher.jobs[cfg][job_name]:
-            job._post_finish("F", ErrorMessage(line_number=None,
-                                               message=err_msg,
-                                               context=[]))
+            job._post_finish(
+                'F', ErrorMessage(line_number=None,
+                                  message=err_msg,
+                                  context=[]))

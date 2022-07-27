@@ -168,7 +168,7 @@ class Scheduler:
         finally:
             signal(SIGINT, old_handler)
 
-        # Cleaup the status printer.
+        # Cleanup the status printer.
         self.status_printer.exit()
 
         # We got to the end without anything exploding. Return the results.

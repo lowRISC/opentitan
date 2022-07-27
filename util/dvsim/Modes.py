@@ -266,6 +266,7 @@ class BuildModes(Modes):
         self.post_build_cmds = []
         self.en_build_modes = []
         self.build_opts = []
+        self.build_timeout_mins = 60
         self.pre_run_cmds = []
         self.post_run_cmds = []
         self.run_opts = []
@@ -301,6 +302,7 @@ class RunModes(Modes):
         self.uvm_test = ""
         self.uvm_test_seq = ""
         self.build_mode = ""
+        self.run_timeout_mins = 60
         self.sw_images = []
         self.sw_build_device = ""
         self.sw_build_opts = []
