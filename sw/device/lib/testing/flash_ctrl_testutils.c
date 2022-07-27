@@ -47,9 +47,6 @@ bool flash_ctrl_testutils_wait_transaction_end(
         bitfield_bit32_write(error_reg, FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT,
                              codes.prog_type_error);
     error_reg =
-        bitfield_bit32_write(error_reg, FLASH_CTRL_ERR_CODE_FLASH_MACRO_ERR_BIT,
-                             codes.flash_phy_error);
-    error_reg =
         bitfield_bit32_write(error_reg, FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT,
                              codes.shadow_register_error);
     LOG_INFO("Transaction end error_codes = %08x", error_reg);
