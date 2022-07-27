@@ -7,6 +7,11 @@
 
 ${autogen_banner}
 
+/**
+ * @file
+ * @brief Default ISRs for each IP
+ */
+
 #include "sw/device/lib/dif/dif_rv_plic.h"
 % for ip in ips_with_difs:
   % if ip.irqs:
