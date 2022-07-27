@@ -37,12 +37,10 @@ function os_arch() {
 }
 
 function check_hash() {
-    local file target value
+    local file target
     file="$1"
     target="$(os_arch)"
-    value="$(sha256sum "${file}" | cut -f1 -d' ')"
-    local expect="${hashes[$target]}"
-    test "$value" == "$expect"
+    echo "${hashes[$target]}  $file" | sha256sum --check --quiet
 }
 
 function prepare() {
