@@ -115,6 +115,8 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       kmac_init(.keymgr_app_intf(en_app && (app_mode == AppKeymgr)));
       `uvm_info(`gfn, "kmac_init done", UVM_HIGH)
 
+      read_regwen_and_rand_write_locked_regs();
+
       if (cfg.enable_masking && kmac_err_type == kmac_pkg::ErrWaitTimerExpired &&
           entropy_mode == EntropyModeEdn) begin
         if (entropy_fetched == 0) check_err();
@@ -245,6 +247,8 @@ class kmac_smoke_vseq extends kmac_base_vseq;
         // issue Start cmd
         issue_cmd(CmdStart);
 
+        read_regwen_and_rand_write_locked_regs();
+
         // write the message into msgfifo
         `uvm_info(`gfn, $sformatf("msg: %0p", msg), UVM_HIGH)
         if (burst_write) begin
@@ -273,9 +277,12 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
         // issue Process cmd
         issue_cmd(CmdProcess);
+        read_regwen_and_rand_write_locked_regs();
 
         wait_for_kmac_done();
         kmac_done = 1;
+
+        read_regwen_and_rand_write_locked_regs();
       end
 
       // read out intr_state and status, scb will check

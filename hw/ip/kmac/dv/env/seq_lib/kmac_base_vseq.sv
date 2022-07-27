@@ -335,6 +335,15 @@ class kmac_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("KMAC INITIALIZATION INFO:\n%0s", convert2string()), UVM_HIGH)
   endtask
 
+  virtual task read_regwen_and_rand_write_locked_regs();
+    bit [TL_DW-1:0] data;
+    csr_rd(.ptr(ral.cfg_regwen), .value(data));
+    // Randomly write locked registers only if the cfg_regwen is locked.
+    if (data == 0) begin
+      csr_wr(.ptr(ral.entropy_period), .value($urandom_range(0, 32'hFFFF_FFFF)));
+    end
+  endtask
+
   // This task reads out the STATUS and INTR_STATE csrs so scb can check the status
   virtual task check_state();
     bit [TL_DW-1:0] data;
