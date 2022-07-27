@@ -221,6 +221,9 @@ void interrupt_service() {
 }
 ~~~~
 
+As a reference, default interrupt service routines are auto-generated for each
+IP, and are documented [here](/sw/apis/isr__testutils_8h.html).
+
 ## Device Interface Functions (DIFs)
 
 {{< dif_listing "sw/device/lib/dif/dif_rv_plic.h" >}}
