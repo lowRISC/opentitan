@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("//third_party/github:rules.bzl", "release")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -18,5 +19,13 @@ pkg_tar(
         "//sw/host/opentitantool:package",
     ],
     extension = "tar.xz",
+    tags = ["manual"],
+)
+
+release(
+    name = "release",
+    artifacts = {
+        ":opentitan": "Opentitan software and FPGA artifacts",
+    },
     tags = ["manual"],
 )
