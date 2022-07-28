@@ -291,6 +291,9 @@ def opentitan_functest(
             deps = deps,
             **kwargs
         )
+        add_flash_side_outputs = True
+    else:
+        add_flash_side_outputs = False
 
     all_tests = []
 
@@ -319,6 +322,12 @@ def opentitan_functest(
             flash = "{}_{}_bin".format(test_binary, target)
         if signed:
             flash += "_signed_{}".format(key)
+
+        # Reference all outputs of the test_binary target, so they are built.
+        test_binary_data = []
+        if add_flash_side_outputs:
+            test_binary_filegroup = "{}_{}_filegroup".format(test_binary, target)
+            test_binary_data.append(test_binary_filegroup)
 
         # If the (flash) test image is to be loaded via bootstrap in the DV
         # simulation environment, then we need to use a special VMEM image
@@ -415,7 +424,7 @@ def opentitan_functest(
                 flash,
                 rom,
                 otp,
-            ] + concat_data + sw_logs_db,
+            ] + test_binary_data + concat_data + sw_logs_db,
             env = env,
             **params
         )

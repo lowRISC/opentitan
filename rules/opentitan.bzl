@@ -610,9 +610,10 @@ def opentitan_flash_binary(
     targets = []
     for (device, dev_deps) in per_device_deps.items():
         devname = "{}_{}".format(name, device)
+        dev_targets = []
 
         # Generate ELF, Binary, Disassembly, and (maybe) sim_dv logs database
-        targets.extend(opentitan_binary(
+        dev_targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
             extract_sw_logs_db = device in ["sim_dv", "sim_verilator"],
@@ -625,7 +626,7 @@ def opentitan_flash_binary(
             for (key_name, key) in signing_keys.items():
                 # Sign the Binary.
                 signed_bin_name = "{}_bin_signed_{}".format(devname, key_name)
-                targets.append(":" + signed_bin_name)
+                dev_targets.append(":" + signed_bin_name)
                 sign_bin(
                     name = signed_bin_name,
                     bin = bin_name,
@@ -639,7 +640,7 @@ def opentitan_flash_binary(
                     devname,
                     key_name,
                 )
-                targets.append(":" + signed_vmem_name)
+                dev_targets.append(":" + signed_vmem_name)
                 bin_to_vmem(
                     name = signed_vmem_name,
                     bin = signed_bin_name,
@@ -652,7 +653,7 @@ def opentitan_flash_binary(
                     devname,
                     key_name,
                 )
-                targets.append(":" + scr_signed_vmem_name)
+                dev_targets.append(":" + scr_signed_vmem_name)
                 scramble_flash_vmem(
                     name = scr_signed_vmem_name,
                     vmem = signed_vmem_name,
@@ -661,7 +662,7 @@ def opentitan_flash_binary(
         else:
             # Generate a VMEM64 from the binary.
             vmem_name = "{}_vmem64".format(devname)
-            targets.append(":" + vmem_name)
+            dev_targets.append(":" + vmem_name)
             bin_to_vmem(
                 name = vmem_name,
                 bin = bin_name,
@@ -671,12 +672,18 @@ def opentitan_flash_binary(
 
             # Scramble VMEM64.
             scr_vmem_name = "{}_scr_vmem64".format(devname)
-            targets.append(":" + scr_vmem_name)
+            dev_targets.append(":" + scr_vmem_name)
             scramble_flash_vmem(
                 name = scr_vmem_name,
                 vmem = vmem_name,
                 platform = platform,
             )
+        dev_filegroup = devname + "_filegroup"
+        native.filegroup(
+            name = dev_filegroup,
+            srcs = dev_targets,
+        )
+        targets.append(dev_filegroup)
 
     native.filegroup(
         name = name,
