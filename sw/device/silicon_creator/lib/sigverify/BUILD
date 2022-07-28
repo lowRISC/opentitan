@@ -10,6 +10,7 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
+load("//rules:otbn.bzl", "otbn_insn_count_range")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -156,6 +157,30 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
+    ],
+)
+
+# This rule runs the instruction-counting script for OTBN and gets the expected
+# min/max instruction counts.
+otbn_insn_count_range(
+    name = "mod_exp_otbn_insn_count_range",
+    deps = [
+        "//sw/otbn/crypto:run_rsa_verify_3072_rr_modexp",
+    ],
+)
+
+# Check the OTBN instruction count in mod_exp_otbn.h
+sh_test(
+    name = "mod_exp_otbn_insn_count_check",
+    size = "small",
+    srcs = ["mod_exp_otbn_insn_count_check.sh"],
+    args = [
+        "$(location :mod_exp_otbn_insn_count_range)",
+        "$(location mod_exp_otbn.h)",
+    ],
+    data = [
+        "mod_exp_otbn.h",
+        ":mod_exp_otbn_insn_count_range",
     ],
 )
 

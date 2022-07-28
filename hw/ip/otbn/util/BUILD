@@ -49,3 +49,12 @@ py_binary(
         requirement("pyelftools"),
     ],
 )
+
+py_binary(
+    name = "get_instruction_count_range",
+    srcs = ["get_instruction_count_range.py"],
+    deps = [
+        "//hw/ip/otbn/util/shared:decode",
+        "//hw/ip/otbn/util/shared:instruction_count_range",
+    ],
+)

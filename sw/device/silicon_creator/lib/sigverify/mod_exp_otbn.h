@@ -16,14 +16,19 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Manually-calculated instruction count range.
+ * Possible range of instruction counts for modexp.
  *
- * The OTBN modexp implementation is not constant-time (which is okay because
- * it has no secret inputs). However, all valid control-flow paths should fall
- * within this range, which is calculated by changing the code to either take
- * all branches or skip them all.
+ * This range should represent the theoretical minimum/maximum instruction
+ * counts for any input to the program; if the instruction count recorded by
+ * OTBN is different, we will suspect a fault injection attack.
  *
- * IMPORTANT: This may need to be modified if the modexp routine is changed!
+ * The OTBN modexp implementation is not constant-time, but that is okay
+ * because it has no secret inputs and therefore can't leak secret information.
+ *
+ * IMPORTANT: This may need to be modified if the modexp routine is changed! If
+ * updating this value, please both use the automatic script
+ * (get_instruction_count_range.py) and also double-check by manually
+ * modifying the code to skip/take all branches.
  */
 enum {
   kModExpOtbnInsnCountMin = 181147,
