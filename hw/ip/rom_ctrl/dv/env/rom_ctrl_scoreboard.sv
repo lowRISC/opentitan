@@ -55,27 +55,27 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Read data sent to the kmac block and check it against memory data
   virtual function void check_kmac_data(const ref byte byte_data_q[$]);
-    int dword = 0;
+    int word = 0;
     int addr = 0;
     // Check that we received the expected amount of data
     `DV_CHECK_EQ(byte_data_q.size(), KMAC_DATA_SIZE, "Unexpected kmac data size")
-    // Read out the data 8 bytes at a time
-    while (dword < byte_data_q.size()) begin
-      bit [kmac_pkg::MsgWidth-1:0] exp, act;
-      bit [ROM_MEM_W-1:0]          mem_data;
+    // Read out the data 5 bytes at a time (one word is 39bit packed into 5 byte)
+    while (word < byte_data_q.size()) begin
+      bit [KMAC_DATA_WORD_SIZE*8-1:0] exp, act;
+      bit [ROM_MEM_W-1:0]             mem_data;
       mem_data = cfg.mem_bkdr_util_h.rom_encrypt_read32(
           addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b0);
-      exp = {{kmac_pkg::MsgWidth-ROM_MEM_W{1'b0}}, mem_data};
-      for (int i = 0; i < kmac_pkg::MsgWidth / 8; i++) begin
-        act[i*8+:8] = byte_data_q[dword+i];
+      exp = {{KMAC_DATA_WORD_SIZE*8-ROM_MEM_W{1'b0}}, mem_data};
+      for (int i = 0; i < KMAC_DATA_WORD_SIZE; i++) begin
+        act[i*8+:8] = byte_data_q[word+i];
       end
       // Check the data matches
       `DV_CHECK_EQ(act, exp, $sformatf("Unexpected data at addr: %0x", addr))
       // Check the address is within range
       `DV_CHECK_LT(addr, MAX_CHECK_ADDR,
           $sformatf("Check address out of range: %0x", addr))
-      addr  += (TL_DW / 8);
-      dword += (kmac_pkg::MsgWidth / 8);
+      addr += (TL_DW / 8);
+      word += KMAC_DATA_WORD_SIZE;
     end
   endfunction
 

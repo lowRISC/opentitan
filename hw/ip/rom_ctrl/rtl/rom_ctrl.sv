@@ -100,10 +100,31 @@ module rom_ctrl
     // The usual situation, with scrambling enabled. Collect up output signals for kmac and split up
     // the input struct into separate signals.
 
+    // Neglecting any first / last block effects, and assuming that ROM_CTRL can always fill the
+    // KMAC message FIFO while a KMAC round is running, the total processing time for a 32kB ROM is
+    // calculated as follows:
+    //
+    // (Padding Overhead) x (ROM Size) / (Block Size) x (Block Processing Time + KMAC Absorb Time)
+    //
+    // ROM_CTRL can only read out one 32 or 39 bit (with ECC) word per cycle, so if we were to zero
+    // pad this to align with the 64bit KMAC interface, the padding overhead would amount to 2x
+    // in this equation:
+    //
+    // 2 x 32 kByte / (1600 bit - 2x 256bit) x (96 cycles + (1600 bit - 2x 256bit) / 64bit)) =
+    // 2 x 32 x 1024 x 8bit / 1088bit x (96 cycles + 17 cycles) =
+    // 2 x 262144 bit / 1088 bit x 113 cycles =
+    // 2 x 27226.35 cycles
+    //
+    // Luckily, the KMAC interface allows to transmit data with a byte enable mask, and only the
+    // enabled bytes will be packed into the message FIFO. Assuming that the processing is the
+    // bottleneck, we can thus reduce the overhead of 2x in that equation to 1x or 5/8x if we only
+    // set 4 or 5 byte enables (4 for 32bit, 5 for 39bit)!
+    localparam int NumBytes = (DataWidth + 7) / 8;
+
     // SEC_CM: MEM.DIGEST
     assign kmac_data_o = '{valid: kmac_rom_vld,
                            data: kmac_rom_data,
-                           strb: '1,
+                           strb: kmac_pkg::MsgStrbW'({NumBytes{1'b1}}),
                            last: kmac_rom_last};
 
     assign kmac_rom_rdy = kmac_data_i.ready;
