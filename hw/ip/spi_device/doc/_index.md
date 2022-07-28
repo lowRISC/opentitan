@@ -441,8 +441,8 @@ SW may configure {{<regref "JEDEC_CC">}} CSR for HW to return proper CC.
 The *cc* field in {{<regref "JEDEC_CC">}} defines the return value, which is `0x7F` by default.
 *num_cc* defines how many times the HW to send CC byte before sending the JEDEC ID.
 
-The actual JEDEC ID consists of one byte device ID and two bytes manufacturer ID.
-The HW sends the device ID first, then `[7:0]` of manufacturer ID then `[15:8]` byte.
+The actual JEDEC ID consists of one byte manufacturer ID and two bytes device ID.
+The HW sends the manufacturer ID first, then `[7:0]` of the device ID then `[15:8]` byte.
 
 ### Serial Flash Discoverable Parameters (SFDP) Control
 
