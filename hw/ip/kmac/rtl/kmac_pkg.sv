@@ -275,8 +275,6 @@ package kmac_pkg;
     logic valid;
     logic [MsgWidth-1:0] data;
     logic [MsgStrbW-1:0] strb;
-    // last indicates the last beat of the data. strb can be partial only with
-    // last.
     logic last;
   } app_req_t;
 
