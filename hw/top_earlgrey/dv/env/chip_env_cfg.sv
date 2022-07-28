@@ -128,7 +128,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // Set up second RAL model for ROM memory and associated collateral
     if (use_jtag_dmi == 1) begin
       ral_model_names.push_back(rv_dm_rom_ral_name);
-      clk_freqs_mhz[rv_dm_rom_ral_name] = clk_freq_mhz;
     end
 
     super.initialize(csr_base_addr);
@@ -181,11 +180,18 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // Set external clock frequency.
     `DV_GET_ENUM_PLUSARG(ext_clk_type_e, ext_clk_type, ext_clk_type)
     case (ext_clk_type)
-      UseInternalClk: ; // clk_freq_mhz can be a random value
+      UseInternalClk:  begin
+        // if it's internal clk, the ext clk is only used in ast, the freq doesn't matter
+        randcase
+          1: clk_freq_mhz = 48;
+          1: clk_freq_mhz = 96;
+        endcase
+      end
       ExtClkLowSpeed:  clk_freq_mhz = 48;
       ExtClkHighSpeed: clk_freq_mhz = 96;
       default: `uvm_fatal(`gfn, $sformatf("Unexpected ext_clk_type: %s", ext_clk_type.name))
     endcase // case (ext_clk_type)
+    clk_freq_mhz.rand_mode(0);
 
     // ral_model_names = chip_reg_block // 1 entry
     if (use_jtag_dmi == 1) begin
