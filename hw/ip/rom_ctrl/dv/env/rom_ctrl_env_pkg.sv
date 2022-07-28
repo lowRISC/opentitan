@@ -34,8 +34,10 @@ package rom_ctrl_env_pkg;
   // KMAC's max digest size is larger than what is required, so declare the size here.
   parameter uint DIGEST_SIZE    = 256;
   parameter uint MAX_CHECK_ADDR = rom_ctrl_reg_pkg::ROM_CTRL_ROM_SIZE - (DIGEST_SIZE / 8);
-  // The data for each line in rom up to the digest is padded out to the kmac message width
-  parameter uint KMAC_DATA_SIZE = MAX_CHECK_ADDR / (TL_DW / 8) * (kmac_pkg::MsgWidth / 8);
+  // The data for each line in rom up to the digest padded to the next byte boundary
+  parameter uint KMAC_DATA_WORD_SIZE = (39 + 7) / 8;
+  parameter uint KMAC_DATA_NUM_WORDS = MAX_CHECK_ADDR / (TL_DW / 8);
+  parameter uint KMAC_DATA_SIZE = KMAC_DATA_NUM_WORDS * KMAC_DATA_WORD_SIZE;
   // The rom width in bits
   parameter uint ROM_MEM_W = 39;
 
