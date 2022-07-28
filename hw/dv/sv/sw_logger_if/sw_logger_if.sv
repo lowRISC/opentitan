@@ -107,10 +107,9 @@ interface sw_logger_if #(
     string sw_dir;
     string sw_basename;
     if (_ready) `dv_fatal("This function cannot be called after calling ready()")
-    sw_dir = str_utils_pkg::str_path_dirname(sw_image);
     sw_basename = str_utils_pkg::str_path_basename(.filename(sw_image), .drop_extn(1'b1));
-    sw_log_db_files[sw_basename] = {sw_dir, "/", sw_basename, ".logs.txt"};
-    sw_rodata_db_files[sw_basename] = {sw_dir, "/", sw_basename, ".rodata.txt"};
+    sw_log_db_files[sw_basename] = {sw_basename, ".logs.txt"};
+    sw_rodata_db_files[sw_basename] = {sw_basename, ".rodata.txt"};
   endfunction
 
   // signal to indicate that this monitor is good to go - all initializations are done
@@ -123,15 +122,17 @@ interface sw_logger_if #(
   /********************/
   initial begin
     wait(_ready);
-    if (parse_sw_log_file()) begin
-      if (write_sw_logs_to_file) begin
-        sw_logs_output_file = $sformatf("%m.log");
-        sw_logs_output_fd = $fopen(sw_logs_output_file, "w");
+    if (enable) begin
+      if (parse_sw_log_file()) begin
+        if (write_sw_logs_to_file) begin
+          sw_logs_output_file = $sformatf("%m.log");
+          sw_logs_output_fd = $fopen(sw_logs_output_file, "w");
+        end
+        fork
+          get_addr_data_from_bus();
+          construct_log_and_print();
+        join_none
       end
-      fork
-        get_addr_data_from_bus();
-        construct_log_and_print();
-      join_none
     end
   end
 
@@ -151,7 +152,9 @@ interface sw_logger_if #(
     foreach (sw_log_db_files[sw]) begin
       int fd;
       fd = $fopen(sw_log_db_files[sw], "r");
-      if (!fd) continue;
+      if (!fd) begin
+        `dv_fatal($sformatf("Failed to open sw log db file %s.", sw_log_db_files[sw]))
+      end
 
       while (!$feof(fd)) begin
         string        field;
