@@ -230,6 +230,27 @@ def _otbn_consttime_test_impl(ctx):
     runfiles = runfiles.merge(ctx.attr._checker[DefaultInfo].default_runfiles)
     return [DefaultInfo(runfiles = runfiles)]
 
+def _otbn_insn_count_range(ctx):
+    """This rule gets min/max possible instruction counts for an OTBN program.
+    """
+
+    # Extract the .elf file to check from the dependency list.
+    elf = [f for t in ctx.attr.deps for f in t[OutputGroupInfo].elf.to_list()]
+    if len(elf) != 1:
+        fail("Expected only one .elf file in dependencies, got: " + str(elf))
+    elf = elf[0]
+
+    # Command to run the counter script and extract the min/max values.
+    out = ctx.actions.declare_file(ctx.attr.name + ".txt")
+    ctx.actions.run_shell(
+        outputs = [out],
+        inputs = [ctx.file._counter, elf],
+        command = "{} {} > {}".format(ctx.file._counter.path, elf.path, out.path),
+    )
+
+    runfiles = ctx.runfiles(files = ([out]))
+    return [DefaultInfo(files = depset([out]), runfiles = runfiles)]
+
 otbn_library = rv_rule(
     implementation = _otbn_library,
     attrs = {
@@ -317,6 +338,17 @@ otbn_consttime_test = rule(
             default = "//hw/ip/otbn/util:check_const_time",
             executable = True,
             cfg = "exec",
+        ),
+    },
+)
+
+otbn_insn_count_range = rule(
+    implementation = _otbn_insn_count_range,
+    attrs = {
+        "deps": attr.label_list(providers = [OutputGroupInfo]),
+        "_counter": attr.label(
+            default = "//hw/ip/otbn/util:get_instruction_count_range.py",
+            allow_single_file = True,
         ),
     },
 )
