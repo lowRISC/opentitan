@@ -19,6 +19,10 @@ lowrisc_toolchain_repos()
 load("//third_party/lowrisc_toolchain:deps.bzl", "lowrisc_toolchain_deps")
 lowrisc_toolchain_deps()
 
+# Tools for release automation
+load("//third_party/github:repos.bzl", "github_tools_repos")
+github_tools_repos()
+
 # Go Toolchain
 load("//third_party/go:repos.bzl", "go_repos")
 go_repos()

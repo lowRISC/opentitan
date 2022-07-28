@@ -23,7 +23,7 @@ exclude_files = rule(
             doc = "Targets producing file outputs",
         ),
         "exclude_suffix": attr.string_list(
-            doc = "File suffixes to exlucude from the result",
+            doc = "File suffixes to exclude from the result",
         ),
     },
 )
