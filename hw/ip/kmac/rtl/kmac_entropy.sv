@@ -553,7 +553,7 @@ module kmac_entropy
           end else begin
             st_d = StRandReady;
           end
-        end else if ((mode_i == EntropyModeEdn) &&
+        end else if ((mode_q == EntropyModeEdn) &&
             (entropy_refresh_req_i || threshold_hit_q)) begin
           st_d = StRandEdn;
 
@@ -642,7 +642,7 @@ module kmac_entropy
 
         err_o = '{ valid: 1'b 1,
                    code: ErrIncorrectEntropyMode,
-                   info: 24'(mode_i)
+                   info: 24'(mode_q)
                  };
       end
 
