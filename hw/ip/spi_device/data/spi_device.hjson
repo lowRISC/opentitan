@@ -1318,8 +1318,8 @@
 
           In Generic mode, this buffer is used for RX/TX buffer.  In Flash &
           Passthrough mode, lower 2kB is for Read content emulating eFlash.
-          next 1kB is for Mailbox read/write buffer. The rest is 64B of
-          CmdFIFO, 64B of AddrFIFO, and 256B of payload FIFO.
+          next 1kB is for Mailbox read/write buffer. The rest is 256B SFDP
+          buffer, 32B of CmdFIFO, 32B of AddrFIFO, and 256B of payload FIFO.
           '''
       },
     },
