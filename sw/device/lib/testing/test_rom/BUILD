@@ -4,8 +4,10 @@
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_rom_binary")
 load("//rules:opentitan_test.bzl", "opentitan_functest")
+load("//rules:exclude_files.bzl", "exclude_files")
 load("//rules:autogen.bzl", "autogen_chip_info")
 load("//rules:linker.bzl", "ld_library")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -152,4 +154,20 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
+)
+
+exclude_files(
+    name = "pre_package",
+    srcs = [":test_rom"],
+    exclude_suffix = [
+        ".ll",
+        ".i",
+        ".s",
+    ],
+)
+
+pkg_files(
+    name = "package",
+    srcs = [":pre_package"],
+    prefix = "earlgrey/test_rom",
 )

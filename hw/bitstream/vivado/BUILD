@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 load("//rules:splice.bzl", "bitstream_splice")
 
@@ -110,4 +111,59 @@ fusesoc_build(
     systems = ["lowrisc:systems:chip_earlgrey_cw310_hyperdebug"],
     tags = ["manual"],
     target = "synth",
+)
+
+filegroup(
+    name = "fpga_cw310_test_rom_hyp",
+    srcs = [":fpga_cw310_hyperdebug"],
+    output_group = "bitstream",
+    tags = ["manual"],
+)
+
+filegroup(
+    name = "rom_mmi_hyp",
+    srcs = [":fpga_cw310_hyperdebug"],
+    output_group = "rom_mmi",
+    tags = ["manual"],
+)
+
+filegroup(
+    name = "otp_mmi_hyp",
+    srcs = [":fpga_cw310_hyperdebug"],
+    output_group = "otp_mmi",
+    tags = ["manual"],
+)
+
+# Packaging rules for bitstreams
+pkg_files(
+    name = "standard",
+    srcs = [
+        ":fpga_cw310_mask_rom",
+        ":fpga_cw310_mask_rom_otp_dev",
+        ":fpga_cw310_test_rom",
+        ":otp_mmi",
+        ":rom_mmi",
+    ],
+    prefix = "earlgrey/fpga_cw310/standard",
+    tags = ["manual"],
+)
+
+pkg_files(
+    name = "hyperdebug",
+    srcs = [
+        ":fpga_cw310_test_rom_hyp",
+        ":otp_mmi_hyp",
+        ":rom_mmi_hyp",
+    ],
+    prefix = "earlgrey/fpga_cw310/hyperdebug",
+    tags = ["manual"],
+)
+
+pkg_filegroup(
+    name = "package",
+    srcs = [
+        ":hyperdebug",
+        ":standard",
+    ],
+    tags = ["manual"],
 )

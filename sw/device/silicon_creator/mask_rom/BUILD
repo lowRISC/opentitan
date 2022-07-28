@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_rom_binary")
+load("//rules:exclude_files.bzl", "exclude_files")
 load("//rules:linker.bzl", "ld_library")
 load(
     "//rules:opentitan_test.bzl",
@@ -11,6 +12,7 @@ load(
     "verilator_params",
 )
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -393,4 +395,20 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
+)
+
+exclude_files(
+    name = "pre_package",
+    srcs = [":mask_rom"],
+    exclude_suffix = [
+        ".ll",
+        ".i",
+        ".s",
+    ],
+)
+
+pkg_files(
+    name = "package",
+    srcs = [":pre_package"],
+    prefix = "earlgrey/mask_rom",
 )

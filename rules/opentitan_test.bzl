@@ -113,7 +113,7 @@ def verilator_params(
         "--rcfile=",
         "--logging=info",
         "--interface=verilator",
-        "--verilator-bin=$(location @//hw:verilator)/sim-verilator/Vchip_sim_tb",
+        "--verilator-bin=$(location @//hw:verilator)",
         "--verilator-rom=$(location {rom})",
         "--verilator-flash=$(location {flash})",
         "--verilator-otp=$(location {otp})",
