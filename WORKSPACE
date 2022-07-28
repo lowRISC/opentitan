@@ -19,10 +19,6 @@ lowrisc_toolchain_repos()
 load("//third_party/lowrisc_toolchain:deps.bzl", "lowrisc_toolchain_deps")
 lowrisc_toolchain_deps()
 
-# C/C++ Library Dependencies
-load("//third_party/cc:repos.bzl", "cc_repos")
-cc_repos()
-
 # Go Toolchain
 load("//third_party/go:repos.bzl", "go_repos")
 go_repos()
@@ -36,6 +32,13 @@ load("//third_party/python:deps.bzl", "python_deps")
 python_deps()
 load("//third_party/python:pip.bzl", "pip_deps")
 pip_deps()
+
+# Google/Bazel dependencies.  This needs to be after Python initialization
+# so that our preferred python configuration takes precedence.
+load("//third_party/google:repos.bzl", "google_repos")
+google_repos()
+load("//third_party/google:deps.bzl", "google_deps")
+google_deps()
 
 # Rust Toolchain + crates.io Dependencies
 load("//third_party/rust:repos.bzl", "rust_repos")
