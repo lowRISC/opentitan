@@ -9,9 +9,6 @@ class spi_device_pass_all_vseq extends spi_device_pass_base_vseq;
 
   int write_flash_status_pct = 30;
   virtual task body();
-    bit [7:0] op;
-    uint payload_size;
-
     allow_addr_swap    = 1;
     allow_payload_swap = 1;
     allow_intercept    = 1;
@@ -23,11 +20,10 @@ class spi_device_pass_all_vseq extends spi_device_pass_base_vseq;
       for (int j = 0; j < 20; ++j) begin
         if ($urandom_range(0, 99) < write_flash_status_pct) random_write_flash_status();
 
-        op = get_rand_opcode();
-        `uvm_info(`gfn, $sformatf("Testing op_num %0d/20, op = 0x%0h", j, op), UVM_MEDIUM)
-        payload_size = get_rand_payload_size();
+        randomize_op_addr_size();
+        `uvm_info(`gfn, $sformatf("Testing op_num %0d/20, op = 0x%0h", j, opcode), UVM_MEDIUM)
 
-        spi_host_xfer_flash_item(op, payload_size);
+        spi_host_xfer_flash_item(opcode, payload_size, read_start_addr);
         cfg.clk_rst_vif.wait_clks(10);
       end
     end

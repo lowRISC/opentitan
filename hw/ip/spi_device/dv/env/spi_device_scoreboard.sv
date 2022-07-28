@@ -78,6 +78,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             if (is_status) check_internal_processed_read_status(item);
             if (is_jedec) check_internal_processed_read_jedec(item);
             if (is_sfdp) check_internal_processed_read_sfdp(item);
+            if (is_mbx_read) check_mbx_read(item);
             // TODO, support more
 
             // addr/data swap only occurs to passthrough, call handle_addr_payload_swap after
@@ -123,9 +124,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     is_sfdp = opcode == READ_SFDP;
     if (is_passthru) is_sfdp &= `gmv(ral.intercept_en.sfdp);
 
-    is_mbx_read = opcode inside {READ_NORMAL, READ_FAST, READ_DUAL,
-                             READ_QUAD, READ_DUALIO, READ_QUADIO} &&
-              `gmv(ral.cfg.mailbox_en);
+    is_mbx_read = opcode inside {READ_CMD_LIST} &&
+                  `gmv(ral.cfg.mailbox_en);
     if (is_passthru) is_mbx_read &= `gmv(ral.intercept_en.mbx);
 
     is_internal_processed = (is_status | is_jedec | is_sfdp | is_mbx_read) &&
@@ -201,22 +201,47 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   virtual function void check_internal_processed_read_sfdp(spi_item item);
     foreach (item.payload_q[i]) begin
       uvm_reg_addr_t addr, offset;
-      bit [1:0] addr_lsb_2bits;
 
       // address should be 3 bytes, only the last byte is used
       `DV_CHECK_EQ(item.address_q.size, 3)
       offset = (item.address_q[2] + i) % SFDP_SIZE;
 
       // get_normalized_addr makes it word-aligned, but we need byte offset
-      addr = offset + SFDP_START_ADDR;
-      addr_lsb_2bits = addr % 4;
-      addr = cfg.ral.get_normalized_addr(addr) + addr_lsb_2bits;
+      addr = get_converted_addr(offset + SFDP_START_ADDR);
 
       `DV_CHECK(spi_mem.addr_exists(addr))
       spi_mem.compare_byte(addr, item.payload_q[i]);
       `uvm_info(`gfn, $sformatf("compare sfdp idx %0d, act: 0x%0x, mem addr 0x%0x, exp: 0x%0x",
                 offset, item.payload_q[i], addr, spi_mem.read_byte(addr)), UVM_MEDIUM)
     end
+  endfunction
+
+
+  virtual function void check_mbx_read(spi_item item);
+    bit [31:0] start_addr;
+    bit [31:0] mbx_base_addr = get_mbx_base_addr(ral);
+    foreach (item.address_q[i]) begin
+      if (i > 0) start_addr = start_addr << 8;
+      start_addr[7:0] = item.address_q[i];
+    end
+    // TODO, handle addr across boundary later
+    if (start_addr < mbx_base_addr || start_addr > mbx_base_addr + MAILBOX_BUFFER_SIZE) return;
+
+    foreach (item.payload_q[i]) begin
+      bit [31:0] offset = (start_addr + i) % MAILBOX_BUFFER_SIZE + MAILBOX_START_ADDR;
+      bit [31:0] addr   = get_converted_addr(offset);
+
+      `DV_CHECK(spi_mem.addr_exists(addr))
+      spi_mem.compare_byte(addr, item.payload_q[i]);
+      `uvm_info(`gfn, $sformatf("compare mbx idx %0d, act: 0x%0x, mem addr 0x%0x, exp: 0x%0x",
+                i, item.payload_q[i], addr, spi_mem.read_byte(addr)), UVM_MEDIUM)
+    end
+  endfunction
+
+  // convert offset to the mem address that is used to find the locaiton in exp_mem
+  // lsb 2 bit will be kept
+  virtual function bit [31:0] get_converted_addr(bit [31:0] offset);
+    return cfg.ral.get_normalized_addr(offset) + offset[1:0];
   endfunction
 
   virtual function void handle_addr_payload_swap(spi_item item);
