@@ -9,7 +9,10 @@ class chip_rv_dm_ndm_reset_vseq extends chip_jtag_base_vseq;
 
   virtual task body();
     super.body();
-    wait(cfg.sw_logger_vif.printed_log == "wait for ndm reset");
+
+    `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "wait for ndm reset");,
+                 "Timedout waiting for ndm reset.")
+
     cfg.clk_rst_vif.wait_clks(10);
     debug_mode_en();
     cfg.clk_rst_vif.wait_clks(10);
