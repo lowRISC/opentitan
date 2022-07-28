@@ -203,6 +203,9 @@
     { name: "ABSORBED.CTRL.MUBI"
       desc: "`absorbed` signal is mubi4_t type to protect against FI attacks."
     }
+    { name: "SW_CMD.CTRL.SPARSE"
+      desc: "`sw_cmd` and related signals are sparse encoded to protect against FI attacks."
+    }
   ]
   regwidth: "32"
   registers: [

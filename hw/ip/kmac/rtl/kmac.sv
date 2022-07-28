@@ -266,8 +266,8 @@ module kmac
   // If SW initiates the KMAC/SHA3, kmac_cmd represents SW command,
   // if KeyMgr drives the data, kmac_cmd is controled in the state machine
   // in KeyMgr interface logic.
-  kmac_cmd_e sw_cmd, checked_sw_cmd, kmac_cmd, cmd_q;
-  logic      cmd_update;
+  kmac_cmd_s_e sw_cmd, checked_sw_cmd, kmac_cmd, cmd_q;
+  logic        cmd_update;
 
   // Entropy configurations
   logic [9:0]  wait_timer_prescaler;
@@ -330,9 +330,9 @@ module kmac
     logic [WidthCounter-1:0] count_d, count_q;
     logic                    counting_d, counting_q;
     logic                    cmd_buf_empty;
-    kmac_cmd_e               cmd_buf_q;
+    kmac_cmd_s_e             cmd_buf_q;
 
-    assign cmd_buf_empty = (cmd_buf_q == CmdNone);
+    assign cmd_buf_empty = (cmd_buf_q == CmdNoneS);
 
     // When seeing a write to the cmd register, we start counting. We stop counting once the
     // counter has expired and the command buffer is empty.
@@ -347,7 +347,7 @@ module kmac
     // The manual run command cannot be delayed. Software expects this to be triggered immediately
     // and will poll the status register to wait for the SHA3 engine to return back to the squeeze
     // state.
-    assign cmd_update = (cmd_q == CmdManualRun)                    ? 1'b1 :
+    assign cmd_update = (cmd_q == CmdManualRunS)                   ? 1'b1 :
                         (count_q == SecCmdDelay[WidthCounter-1:0]) ? 1'b1 : 1'b0;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -365,26 +365,26 @@ module kmac
     // sleep.
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        cmd_q     <= CmdNone;
-        cmd_buf_q <= CmdNone;
+        cmd_q     <= CmdNoneS;
+        cmd_buf_q <= CmdNoneS;
       end else begin
         if (reg2hw.cmd.cmd.qe && cmd_update) begin
           // New write & counter expired.
           cmd_q     <= cmd_buf_q;
-          cmd_buf_q <= kmac_cmd_e'(reg2hw.cmd.cmd.q);
+          cmd_buf_q <= kmac_cmd_logic2sparse(kmac_cmd_e'(reg2hw.cmd.cmd.q));
 
         end else if (reg2hw.cmd.cmd.qe) begin
           // New write.
           if (counting_q == 1'b0) begin
-            cmd_q     <= kmac_cmd_e'(reg2hw.cmd.cmd.q);
+            cmd_q     <= kmac_cmd_logic2sparse(kmac_cmd_e'(reg2hw.cmd.cmd.q));
           end else begin
-            cmd_buf_q <= kmac_cmd_e'(reg2hw.cmd.cmd.q);
+            cmd_buf_q <= kmac_cmd_logic2sparse(kmac_cmd_e'(reg2hw.cmd.cmd.q));
           end
 
         end else if (cmd_update) begin
           // Counter expired.
           cmd_q     <= cmd_buf_q;
-          cmd_buf_q <= CmdNone;
+          cmd_buf_q <= CmdNoneS;
         end
       end
     end
@@ -392,11 +392,11 @@ module kmac
   end else begin : gen_no_cmd_delay_buf
     // Directly forward signals from register IF.
     assign cmd_update = reg2hw.cmd.cmd.qe;
-    assign cmd_q      = kmac_cmd_e'(reg2hw.cmd.cmd.q);
+    assign cmd_q      = kmac_cmd_logic2sparse(kmac_cmd_e'(reg2hw.cmd.cmd.q));
   end
 
   // Command signals
-  assign sw_cmd = (cmd_update) ? cmd_q : CmdNone;
+  assign sw_cmd = (cmd_update) ? cmd_q : CmdNoneS;
   `ASSERT_KNOWN(KmacCmd_A, sw_cmd)
   always_comb begin
     sha3_start = 1'b 0;
@@ -405,23 +405,23 @@ module kmac
     reg2msgfifo_process = 1'b 0;
 
     unique case (kmac_cmd)
-      CmdStart: begin
+      CmdStartS: begin
         sha3_start = 1'b 1;
       end
 
-      CmdProcess: begin
+      CmdProcessS: begin
         reg2msgfifo_process = 1'b 1;
       end
 
-      CmdManualRun: begin
+      CmdManualRunS: begin
         sha3_run = 1'b 1;
       end
 
-      CmdDone: begin
+      CmdDoneS: begin
         sha3_done = 1'b 1;
       end
 
-      CmdNone: begin
+      CmdNoneS: begin
         // inactive state
       end
 
@@ -680,7 +680,7 @@ module kmac
 
     unique case (kmac_st)
       KmacIdle: begin
-        if (kmac_cmd == CmdStart) begin
+        if (kmac_cmd == CmdStartS) begin
           // If cSHAKE turned on
           if (sha3_pkg::CShake == app_sha3_mode) begin
             kmac_st_d = KmacPrefix;

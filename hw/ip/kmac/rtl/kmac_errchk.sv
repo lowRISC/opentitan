@@ -63,8 +63,8 @@ module kmac_errchk
   input        cfg_en_unsupported_modestrength_i,
 
   // SW commands: Only valid command is sent out to the rest of the modules
-  input  kmac_cmd_e sw_cmd_i,
-  output kmac_cmd_e sw_cmd_o,
+  input  kmac_cmd_s_e sw_cmd_i,
+  output kmac_cmd_s_e sw_cmd_o,
 
   // Status from KMAC_APP
   input app_active_i,
@@ -172,33 +172,33 @@ module kmac_errchk
     unique case (st)
       StIdle: begin
         // Allow Start command only
-        if (!(sw_cmd_i inside {CmdNone, CmdStart})) begin
+        if (!(sw_cmd_i inside {CmdNoneS, CmdStartS})) begin
           err_swsequence = 1'b 1;
         end
       end
 
       StMsgFeed: begin
         // Allow Process only
-        if (!(sw_cmd_i inside {CmdNone, CmdProcess})) begin
+        if (!(sw_cmd_i inside {CmdNoneS, CmdProcessS})) begin
           err_swsequence = 1'b 1;
         end
       end
 
       StProcessing: begin
-        if (sw_cmd_i != CmdNone) begin
+        if (sw_cmd_i != CmdNoneS) begin
           err_swsequence = 1'b 1;
         end
       end
 
       StAbsorbed: begin
         // Allow ManualRun and Done
-        if (!(sw_cmd_i inside {CmdNone, CmdManualRun, CmdDone})) begin
+        if (!(sw_cmd_i inside {CmdNoneS, CmdManualRunS, CmdDoneS})) begin
           err_swsequence = 1'b 1;
         end
       end
 
       StSqueezing: begin
-        if (sw_cmd_i != CmdNone) begin
+        if (sw_cmd_i != CmdNoneS) begin
           err_swsequence = 1'b 1;
         end
       end
@@ -222,7 +222,7 @@ module kmac_errchk
   // sw_cmd_o latch
   // To reduce the command path delay, sw_cmd is latched here
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)           sw_cmd_o <= CmdNone;
+    if (!rst_ni)           sw_cmd_o <= CmdNoneS;
     else if (!block_swcmd) sw_cmd_o <= sw_cmd_i;
   end
 
@@ -276,7 +276,7 @@ module kmac_errchk
                  info: {5'h0,
                         {err_swsequence, err_modestrength, err_prefix},
                         8'h 0,
-                        {1'b0, stL, sw_cmd_i}
+                        {1'b0, stL, kmac_cmd_sparse2logic(sw_cmd_i)}
                        }
                };
       end
@@ -312,7 +312,8 @@ module kmac_errchk
   assign error_o = err;
 
   // If below failed, revise err_swsequence error response info field.
-  `ASSERT_INIT(ExpectedStSwCmdBits_A, $bits(st) == StateWidth && $bits(sw_cmd_i) == 4)
+  `ASSERT_INIT(ExpectedStSwCmdBits_A, $bits(st) == StateWidth &&
+               $bits(kmac_cmd_sparse2logic(sw_cmd_i)) == 4)
 
   // If failed, revise err_modestrength error info field.
   `ASSERT_INIT(ExpectedModeStrengthBits_A,
@@ -329,7 +330,7 @@ module kmac_errchk
 
     unique case (st)
       StIdle: begin
-        if (!app_active_i && sw_cmd_i == CmdStart) begin
+        if (!app_active_i && sw_cmd_i == CmdStartS) begin
           // Proceed to the next state only when the SW issues the Start command
           // in a valid period.
           st_d = StMsgFeed;
@@ -337,7 +338,7 @@ module kmac_errchk
       end
 
       StMsgFeed: begin
-        if (sw_cmd_i == CmdProcess) begin
+        if (sw_cmd_i == CmdProcessS) begin
           st_d = StProcessing;
         end
       end
@@ -349,9 +350,9 @@ module kmac_errchk
       end
 
       StAbsorbed: begin
-        if (sw_cmd_i == CmdManualRun) begin
+        if (sw_cmd_i == CmdManualRunS) begin
           st_d = StSqueezing;
-        end else if (sw_cmd_i == CmdDone) begin
+        end else if (sw_cmd_i == CmdDoneS) begin
           st_d = StIdle;
         end
       end

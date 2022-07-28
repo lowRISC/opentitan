@@ -95,5 +95,11 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_sw_cmd_ctrl_sparse
+      desc: "Verify the countermeasure(s) SW_CMD.CTRL.INTEGRITY"
+      milestone: V2S
+      tests: []
+    }
   ]
 }
