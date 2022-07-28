@@ -78,13 +78,13 @@ module kmac_app
 
   // Commands
   // Command from software
-  input kmac_cmd_e sw_cmd_i,
+  input kmac_cmd_s_e sw_cmd_i,
 
   // from SHA3
   input prim_mubi_pkg::mubi4_t absorbed_i,
 
   // to KMAC
-  output kmac_cmd_e cmd_o,
+  output kmac_cmd_s_e cmd_o,
 
   // to SW
   output prim_mubi_pkg::mubi4_t absorbed_o,
@@ -369,7 +369,7 @@ module kmac_app
     clr_appid = 1'b 0;
 
     // Commands
-    cmd_o = CmdNone;
+    cmd_o = CmdNoneS;
 
     // Software output
     absorbed_o = prim_mubi_pkg::MuBi4False;
@@ -389,10 +389,10 @@ module kmac_app
 
           // choose app_id
           set_appid = 1'b 1;
-        end else if (sw_cmd_i == CmdStart) begin
+        end else if (sw_cmd_i == CmdStartS) begin
           st_d = StSw;
           // Software initiates the sequence
-          cmd_o = CmdStart;
+          cmd_o = CmdStartS;
         end else begin
           st_d = StIdle;
         end
@@ -411,7 +411,7 @@ module kmac_app
           st_d = StAppMsg;
 
           // App initiates the data
-          cmd_o = CmdStart;
+          cmd_o = CmdStartS;
         end
       end
 
@@ -439,7 +439,7 @@ module kmac_app
       end
 
       StAppProcess: begin
-        cmd_o = CmdProcess;
+        cmd_o = CmdProcessS;
         st_d = StAppWait;
       end
 
@@ -447,7 +447,7 @@ module kmac_app
         if (prim_mubi_pkg::mubi4_test_true_strict(absorbed_i)) begin
           // Send digest to KeyMgr and complete the op
           st_d = StIdle;
-          cmd_o = CmdDone;
+          cmd_o = CmdDoneS;
 
           clr_appid = 1'b 1;
         end else begin
@@ -461,7 +461,7 @@ module kmac_app
         cmd_o = sw_cmd_i;
         absorbed_o = absorbed_i;
 
-        if (sw_cmd_i == CmdDone) begin
+        if (sw_cmd_i == CmdDoneS) begin
           st_d = StIdle;
         end else begin
           st_d = StSw;
@@ -590,7 +590,7 @@ module kmac_app
         code: ErrSwPushedMsgFifo,
         info: 24'({8'h 00, 8'(st), 8'(mux_sel_buf_err_check)})
       };
-    end else if (app_active_o && sw_cmd_i != CmdNone) begin
+    end else if (app_active_o && sw_cmd_i != CmdNoneS) begin
       // If SW issues command except start
       mux_err = '{
         valid: 1'b 1,

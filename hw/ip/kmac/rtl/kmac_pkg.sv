@@ -79,6 +79,55 @@ package kmac_pkg;
     CmdDone      = 4'b 1000
   } kmac_cmd_e;
 
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
+  //      -s 1891656028 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (50.00%)
+  //  4: |||||||||||||||| (40.00%)
+  //  5: |||| (10.00%)
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 5
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 4
+  //
+  typedef enum logic [5:0] {
+    CmdNoneS      = 6'b001011,
+    CmdStartS     = 6'b011101,
+    CmdProcessS   = 6'b101110,
+    CmdManualRunS = 6'b110001,
+    CmdDoneS      = 6'b010110
+  } kmac_cmd_s_e;
+
+  function automatic kmac_cmd_e kmac_cmd_sparse2logic(kmac_cmd_s_e cmd_s);
+    unique case (cmd_s)
+      CmdNoneS      : return CmdNone;
+      CmdStartS     : return CmdStart;
+      CmdProcessS   : return CmdProcess;
+      CmdManualRunS : return CmdManualRun;
+      CmdDoneS      : return CmdDone;
+      default       : return CmdNone;
+    endcase
+  endfunction : kmac_cmd_sparse2logic
+
+  function automatic kmac_cmd_s_e kmac_cmd_logic2sparse(kmac_cmd_e cmd);
+    unique case (cmd)
+      CmdNone      : return CmdNoneS;
+      CmdStart     : return CmdStartS;
+      CmdProcess   : return CmdProcessS;
+      CmdManualRun : return CmdManualRunS;
+      CmdDone      : return CmdDoneS;
+      default      : return CmdNoneS;
+    endcase
+  endfunction : kmac_cmd_logic2sparse
+
   // Timer
   parameter int unsigned TimerPrescalerW = 10;
   parameter int unsigned EdnWaitTimerW   = 16;
