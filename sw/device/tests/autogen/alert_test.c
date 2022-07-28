@@ -30,7 +30,9 @@
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwm.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
+#include "sw/device/lib/dif/dif_rom_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/dif/dif_sensor_ctrl.h"
@@ -74,7 +76,9 @@ static dif_pattgen_t pattgen;
 static dif_pinmux_t pinmux_aon;
 static dif_pwm_t pwm_aon;
 static dif_pwrmgr_t pwrmgr_aon;
+static dif_rom_ctrl_t rom_ctrl;
 static dif_rstmgr_t rstmgr_aon;
+static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t rv_plic;
 static dif_rv_timer_t rv_timer;
 static dif_sensor_ctrl_t sensor_ctrl;
@@ -167,8 +171,14 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
 
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_rom_ctrl_init(base_addr, &rom_ctrl));
+
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_rstmgr_init(base_addr, &rstmgr_aon));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+  CHECK_DIF_OK(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &rv_plic));
@@ -615,12 +625,42 @@ static void trigger_alert_test(void) {
         &alert_handler, exp_alert));
   }
 
+  // Write rom_ctrl's alert_test reg and check alert_cause.
+  for (int i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_rom_ctrl_alert_force(&rom_ctrl, kDifRomCtrlAlertFatal + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopEarlgreyAlertIdRomCtrlFatal + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
   // Write rstmgr's alert_test reg and check alert_cause.
   for (int i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_rstmgr_alert_force(&rstmgr_aon, kDifRstmgrAlertFatalFault + i));
 
     // Verify that alert handler received it.
     exp_alert = kTopEarlgreyAlertIdRstmgrAonFatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write rv_core_ibex's alert_test reg and check alert_cause.
+  for (int i = 0; i < 4; ++i) {
+    CHECK_DIF_OK(dif_rv_core_ibex_alert_force(&rv_core_ibex, kDifRvCoreIbexAlertFatalSwErr + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopEarlgreyAlertIdRvCoreIbexFatalSwErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %0d!", exp_alert);

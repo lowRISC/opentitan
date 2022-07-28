@@ -124,8 +124,8 @@ class TopGenCTest(TopGenC):
             if inst_name not in self.top["alert_module"]:
                 continue
 
-            # TODO: remove when DIF is ready
-            if inst_name in ["rom_ctrl", "rv_core_ibex", "rv_dm"]:
+            # RV_DM module does not have DIF.
+            if inst_name == "rv_dm":
                 continue
 
             for item in self.top['module']:
