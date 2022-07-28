@@ -223,12 +223,27 @@ class spi_device_base_vseq extends cip_base_vseq #(
   endtask
 
   // transfer in command including opcode, address and payload
-  virtual task spi_host_xfer_flash_item(bit [7:0] op, uint payload_size);
+  // if byte_addr_q is empty, the host_seq will use a random addr
+  virtual task spi_host_xfer_flash_item(bit [7:0] op, uint payload_size,
+                                        bit [31:0] addr);
     spi_host_flash_seq m_spi_host_seq;
+    bit [7:0] byte_addr_q[$];
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+
+    if (op inside {READ_CMD_LIST} && cfg.spi_host_agent_cfg.is_opcode_supported(op)) begin
+      int addr_bytes = cfg.spi_host_agent_cfg.cmd_infos[op].addr_bytes;
+      if (addr_bytes > 0) begin
+        if (addr_bytes == 4) begin
+          byte_addr_q.push_back(addr[31:24]);
+        end
+        byte_addr_q = {byte_addr_q, addr[23:16], addr[15:8], addr[7:0]};
+      end
+    end
+
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
                                    opcode == op;
-                                   address_q.size() == 0;
+                                   address_q.size() == byte_addr_q.size();
+                                   foreach (byte_addr_q[i]) address_q[i] == byte_addr_q[i];
                                    payload_q.size() == payload_size;
                                    read_size == payload_size;)
     `uvm_send(m_spi_host_seq)

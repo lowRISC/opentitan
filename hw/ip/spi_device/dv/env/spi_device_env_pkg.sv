@@ -65,6 +65,15 @@ package spi_device_env_pkg;
     PayloadOut
   } payload_dir_e;
 
+
+  typedef enum int {
+    ReadAddrWithinMailbox,
+    ReadAddrCrossIntoMailbox,
+    ReadAddrCrossOutOfMailbox,
+    ReadAddrCrossAllMailbox,
+    ReadAddrOutsideMailbox
+  } read_addr_size_type_e;
+
   typedef struct packed {
     bit busy;
     bit WEL;
@@ -117,6 +126,8 @@ package spi_device_env_pkg;
   parameter bit[7:0] READ_DUALIO                 = 8'hBB;
   parameter bit[7:0] READ_QUADIO                 = 8'hEB;
 
+  parameter bit[7:0] READ_CMD_LIST[] = {READ_NORMAL, READ_FAST, READ_DUAL,
+                                        READ_QUAD, READ_DUALIO, READ_QUADIO};
   string msg_id = "spi_device_env_pkg";
 
   // functions
@@ -173,6 +184,11 @@ package spi_device_env_pkg;
   // Get TPM address for locality TODO expand to other HW regs
   function automatic bit[23:0] get_tpm_addr(bit[3:0] locality);
     return TPM_BASE_ADDR | (locality << 12) | TPM_HW_STS_OFFSET;
+  endfunction
+
+  // Get mailbox base addr, the first 10 bits are 0
+  function automatic bit[31:0] get_mbx_base_addr(spi_device_reg_block ral);
+    return `gmv(ral.mailbox_addr) >> 10 << 10;
   endfunction
 
   // return the index the cmd_filter for the input opcode

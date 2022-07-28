@@ -7,34 +7,36 @@
 class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
   `uvm_object_utils(spi_device_intercept_vseq)
   `uvm_object_new
-  bit [7:0] intercept_ops[$] = {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3,
-                                READ_JEDEC,
-                                READ_SFDP};
+  // TODO, enable all opcode later
+  bit [7:0] intercept_ops[$] = {//READ_STATUS_1, READ_STATUS_2, READ_STATUS_3,
+                                //READ_JEDEC,
+                                //READ_SFDP,
+                                READ_CMD_LIST};
+
+  rand bit use_intercept_op;
+  constraint opcode_c {
+    solve use_intercept_op before opcode;
+    if (use_intercept_op) {
+      opcode inside {intercept_ops};
+    } else {
+      opcode inside {valid_opcode_q} &&
+      !(opcode inside {intercept_ops});
+    }
+  }
+
+  constraint simple_mailbox_addr_c {
+    read_addr_size_type == ReadAddrWithinMailbox;
+  }
 
   virtual task pre_start();
     allow_intercept = 1;
     super.pre_start();
   endtask
 
-  virtual function bit [7:0] get_rand_opcode();
-    bit use_intercept_op = $urandom_range(0, 1);
-    bit [7:0] op;
-
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(op,
-        if (use_intercept_op) {
-          op inside {intercept_ops};
-        } else {
-          op inside {valid_opcode_q} &&
-          !(op inside {intercept_ops});
-        })
-    `uvm_info(`gfn, $sformatf("Sending op: 0x%0h, intercept: %0d", op, use_intercept_op),
-          UVM_MEDIUM)
-    return op;
-  endfunction
-
   // randomly set flash_status for every spi transaction
-  virtual task spi_host_xfer_flash_item(bit [7:0] op, uint payload_size);
+  virtual task spi_host_xfer_flash_item(bit [7:0] op, uint payload_size,
+                                        bit [31:0] addr);
     random_write_flash_status();
-    super.spi_host_xfer_flash_item(op, payload_size);
+    super.spi_host_xfer_flash_item(op, payload_size, addr);
   endtask
 endclass : spi_device_intercept_vseq

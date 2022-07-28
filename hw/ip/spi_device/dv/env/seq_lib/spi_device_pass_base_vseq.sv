@@ -16,9 +16,74 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   bit allow_intercept;
 
   bit [7:0] valid_opcode_q[$];
+  rand bit valid_op;
+  rand bit [7:0] opcode;
+  constraint opcode_c {
+    solve valid_op before opcode;
+    if (allow_use_invalid_opcode) {
+      valid_op dist {1 :/ 4, 0 :/ 1};
+    } else {
+      valid_op == 1;
+    }
+
+    if (valid_op && valid_opcode_q.size > 0) {
+      opcode inside {valid_opcode_q};
+    } else {
+      !(opcode inside {valid_opcode_q});
+    }
+  }
+  // the start addr and payload size matter to the read command
+  // for program or other cmd, addr and payload size don't matter,
+  // but we could still use this constraint for them
+  bit [31:0] mbx_start_addr;
+  bit [31:0] mbx_end_addr;
+  rand bit [31:0] read_start_addr;
+  rand bit [31:0] read_end_addr;
+  rand uint payload_size;
+  rand read_addr_size_type_e read_addr_size_type;
+
+  constraint payload_size_c {
+    payload_size dist {
+        [0:5]    :/ 2,
+        128      :/ 1,
+        256      :/ 2, // typical value for a flash page size
+        512      :/ 1,
+        [6:3000] :/ 1};
+  }
+
+  constraint read_addr_size_type_c {
+    read_start_addr + payload_size == read_end_addr;
+
+    if (read_addr_size_type == ReadAddrWithinMailbox) {
+      read_start_addr inside {[mbx_start_addr:mbx_end_addr]} &&
+      read_end_addr inside {[mbx_start_addr:mbx_end_addr]};
+    } else if (read_addr_size_type == ReadAddrCrossIntoMailbox) {
+      read_start_addr inside {[mbx_start_addr:mbx_end_addr]} && read_end_addr > mbx_end_addr;
+    } else if (read_addr_size_type == ReadAddrCrossOutOfMailbox) {
+      read_start_addr < mbx_start_addr && read_end_addr inside {[mbx_start_addr:mbx_end_addr]};
+    } else if (read_addr_size_type == ReadAddrCrossAllMailbox) {
+      read_start_addr < mbx_start_addr && read_end_addr > mbx_end_addr;
+    } else { // ReadAddrOutsideMailbox
+      // both start and end addr are less than mbx_start_addr
+      (read_start_addr < mbx_start_addr &&
+       (read_start_addr + payload_size) < mbx_start_addr) ||
+      // read end addr is bigger than mbx_end_addr. And not cross all 1s boundary, or
+      // read end addr is less than mbx_start_addr if crossing boundary
+      (read_start_addr > mbx_end_addr &&
+       (read_start_addr + payload_size <= {32{1'b1}} || read_end_addr < mbx_start_addr));
+    }
+  }
 
   `uvm_object_utils(spi_device_pass_base_vseq)
   `uvm_object_new
+
+  function void randomize_op_addr_size();
+    mbx_start_addr = get_mbx_base_addr(ral);
+    mbx_end_addr   = mbx_start_addr + MAILBOX_BUFFER_SIZE;
+
+    `DV_CHECK(this.randomize(opcode, valid_op,
+      read_start_addr, read_end_addr, payload_size, read_addr_size_type))
+  endfunction
 
   // Task for adding cmd info
   virtual task config_all_cmd_infos();
@@ -172,9 +237,18 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       // TODO, only support status intercept
       `DV_CHECK_RANDOMIZE_FATAL(ral.intercept_en.status)
       `DV_CHECK_RANDOMIZE_FATAL(ral.intercept_en.jedec)
-      ral.intercept_en.sfdp.set(1);
+      `DV_CHECK_RANDOMIZE_FATAL(ral.intercept_en.sfdp)
+      ral.intercept_en.mbx.set(1); // TODO, randomize it
       csr_update(ral.intercept_en);
     end
+
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.mailbox_addr.addr,
+        // the 4th byte needs to be 0 if the cmd only contains 3 bytes address
+        // constrain this byte 50% to be 0.
+        value[31:24] dist {0 :/ 1, [1:$] :/ 1};)
+    csr_update(ral.mailbox_addr);
+    ral.cfg.mailbox_en.set(1); // TODO, randomize it
+    csr_update(ral.cfg);
 
     // randomize jedec
     `DV_CHECK_RANDOMIZE_FATAL(ral.jedec_cc.cc)
@@ -289,37 +363,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     ral.cmd_info[idx].payload_swap_en.set(swap);
     csr_update(.csr(ral.cmd_info[idx]));
   endtask : add_cmd_info
-
-  virtual function bit [7:0] get_rand_opcode();
-    bit valid_op;
-    bit [7:0] op;
-
-    if (allow_use_invalid_opcode) begin
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(valid_op,
-            valid_op dist {1 :/ 4, 0 :/ 1};)
-    end else begin
-      valid_op = 1;
-    end
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(op,
-        if (valid_op) {
-          op inside {valid_opcode_q};
-        } else {
-          !(op inside {valid_opcode_q});
-        })
-    return op;
-  endfunction
-
-  function int get_rand_payload_size();
-    uint size;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(size,
-        size dist {
-           [0:5]    :/ 2,
-           128      :/ 1,
-           256      :/ 2, // typical value for a flash page size
-           512      :/ 1,
-           [6:1000] :/ 1};)
-    return size;
-  endfunction
 
   virtual task random_write_flash_status();
     `DV_CHECK_RANDOMIZE_FATAL(ral.flash_status)
