@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:autogen.bzl", "autogen_hjson_header", "otp_image")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -26,4 +27,13 @@ otp_image(
 filegroup(
     name = "all_files",
     srcs = glob(["**"]),
+)
+
+pkg_files(
+    name = "package",
+    srcs = [
+        ":img_dev",
+        ":img_rma",
+    ],
+    prefix = "earlgrey/otp",
 )

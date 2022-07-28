@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_flash_binary")
+load("//rules:exclude_files.bzl", "exclude_files")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 opentitan_flash_binary(
     name = "hello_world",
@@ -42,4 +44,20 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
     ],
+)
+
+exclude_files(
+    name = "pre_package",
+    srcs = [":hello_world"],
+    exclude_suffix = [
+        ".ll",
+        ".i",
+        ".s",
+    ],
+)
+
+pkg_files(
+    name = "package",
+    srcs = [":pre_package"],
+    prefix = "earlgrey/examples",
 )
