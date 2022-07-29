@@ -513,10 +513,58 @@
       default: "64",
       local: "true"
     },
+    { name: "OwnerSwCfgRomAlertDigestProdOffset",
+      desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD",
+      type: "int",
+      default: "1364",
+      local: "true"
+    },
+    { name: "OwnerSwCfgRomAlertDigestProdSize",
+      desc: "Size of OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "OwnerSwCfgRomAlertDigestProdEndOffset",
+      desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END",
+      type: "int",
+      default: "1368",
+      local: "true"
+    },
+    { name: "OwnerSwCfgRomAlertDigestProdEndSize",
+      desc: "Size of OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "OwnerSwCfgRomAlertDigestDevOffset",
+      desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV",
+      type: "int",
+      default: "1372",
+      local: "true"
+    },
+    { name: "OwnerSwCfgRomAlertDigestDevSize",
+      desc: "Size of OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "OwnerSwCfgRomAlertDigestRmaOffset",
+      desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
+      type: "int",
+      default: "1376",
+      local: "true"
+    },
+    { name: "OwnerSwCfgRomAlertDigestRmaSize",
+      desc: "Size of OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "RomWatchdogBiteThresholdCyclesOffset",
       desc: "Offset of ROM_WATCHDOG_BITE_THRESHOLD_CYCLES",
       type: "int",
-      default: "1364",
+      default: "1380",
       local: "true"
     },
     { name: "RomWatchdogBiteThresholdCyclesSize",
@@ -528,7 +576,7 @@
     { name: "RomKeymgrRomExtMeasEnOffset",
       desc: "Offset of ROM_KEYMGR_ROM_EXT_MEAS_EN",
       type: "int",
-      default: "1368",
+      default: "1384",
       local: "true"
     },
     { name: "RomKeymgrRomExtMeasEnSize",
@@ -540,7 +588,7 @@
     { name: "OwnerSwCfgManufStateOffset",
       desc: "Offset of OWNER_SW_CFG_MANUF_STATE",
       type: "int",
-      default: "1372",
+      default: "1388",
       local: "true"
     },
     { name: "OwnerSwCfgManufStateSize",

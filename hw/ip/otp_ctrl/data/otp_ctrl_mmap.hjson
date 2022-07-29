@@ -237,6 +237,22 @@
                     size: "64"
                 }
                 {
+                    name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD",
+                    size: "4",
+                }
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END",
+                    size: "4",
+                }
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV",
+                    size: "4",
+                }
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
+                    size: "4",
+                }
+                {
                     name: "ROM_WATCHDOG_BITE_THRESHOLD_CYCLES",
                     size: "4"
                 }

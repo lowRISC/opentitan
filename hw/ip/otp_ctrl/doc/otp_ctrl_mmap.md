@@ -34,9 +34,13 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |                ROM_ALERT_ACCUM_THRESH                 |     0x4F4      |     16     |
 |         |                |            |      32bit       |               ROM_ALERT_TIMEOUT_CYCLES                |     0x504      |     16     |
 |         |                |            |      32bit       |                ROM_ALERT_PHASE_CYCLES                 |     0x514      |     64     |
-|         |                |            |      32bit       |          ROM_WATCHDOG_BITE_THRESHOLD_CYCLES           |     0x554      |     4      |
-|         |                |            |      32bit       |              ROM_KEYMGR_ROM_EXT_MEAS_EN               |     0x558      |     4      |
-|         |                |            |      32bit       |               OWNER_SW_CFG_MANUF_STATE                |     0x55C      |     4      |
+|         |                |            |      32bit       |          OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD           |     0x554      |     4      |
+|         |                |            |      32bit       |        OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END         |     0x558      |     4      |
+|         |                |            |      32bit       |           OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV           |     0x55C      |     4      |
+|         |                |            |      32bit       |           OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA           |     0x560      |     4      |
+|         |                |            |      32bit       |          ROM_WATCHDOG_BITE_THRESHOLD_CYCLES           |     0x564      |     4      |
+|         |                |            |      32bit       |              ROM_KEYMGR_ROM_EXT_MEAS_EN               |     0x568      |     4      |
+|         |                |            |      32bit       |               OWNER_SW_CFG_MANUF_STATE                |     0x56C      |     4      |
 |         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x678      |     8      |
 |    3    |     HW_CFG     |     80     |      32bit       |                       DEVICE_ID                       |     0x680      |     32     |
 |         |                |            |      32bit       |                      MANUF_STATE                      |     0x6A0      |     32     |
