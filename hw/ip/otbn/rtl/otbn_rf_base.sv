@@ -220,4 +220,9 @@ module otbn_rf_base
   assign rf_err_o = (|rd_data_a_err & rd_en_a_i & ~pop_stack_a_err) |
                     (|rd_data_b_err & rd_en_b_i & ~pop_stack_b_err) |
                     spurious_we_err;
+
+  // Make sure we're not outputting X. This indicates that something went wrong during the initial
+  // secure wipe.
+  `ASSERT(OtbnRfBaseRdAKnown, rd_en_a_i && !pop_stack_a |-> !$isunknown(rd_data_a_raw_intg))
+  `ASSERT(OtbnRfBaseRdBKnown, rd_en_b_i && !pop_stack_b |-> !$isunknown(rd_data_b_raw_intg))
 endmodule

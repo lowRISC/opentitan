@@ -162,4 +162,9 @@ module otbn_rf_bignum
   assign rf_err_o = ((|rd_data_a_err) & rd_en_a_i) |
                     ((|rd_data_b_err) & rd_en_b_i) |
                     spurious_we_err;
+
+  // Make sure we're not outputting X. This indicates that something went wrong during the initial
+  // secure wipe.
+  `ASSERT(OtbnRfBignumRdAKnown, rd_en_a_i && !rd_en_a_mismatch |-> !$isunknown(rd_data_a_intg_o))
+  `ASSERT(OtbnRfBignumRdBKnown, rd_en_b_i && !rd_en_b_mismatch |-> !$isunknown(rd_data_b_intg_o))
 endmodule
