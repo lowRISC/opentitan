@@ -8,7 +8,8 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "edn_regs.h"  // Generated
+#include "edn_regs.h"          // Generated
+#include "entropy_src_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static void setup_entropy_src(void) {
@@ -23,7 +24,9 @@ static void setup_entropy_src(void) {
       .fips_enable = true,
       .route_to_firmware = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-  };
+      .health_test_threshold_scope = true,
+      .health_test_window_size =
+          (uint16_t)ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL};
   CHECK_DIF_OK(
       dif_entropy_src_configure(&entropy_src, config, kDifToggleEnabled));
 }
