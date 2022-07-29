@@ -1,5 +1,5 @@
 {
-  "includes": ["h1dx_devboard.json"],
+  "includes": ["/__builtin__/h1dx_devboard.json"],
   "interface": "ultradebug",
   "pins": [
     {

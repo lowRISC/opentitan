@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 use thiserror::Error;
 
-use crate::app::conf::ConfigurationFile;
+use crate::app::config::process_config_file;
 use crate::app::TransportWrapper;
 use crate::transport::hyperdebug::c2d2::C2d2Flavor;
 use crate::transport::hyperdebug::StandardFlavor;
@@ -55,27 +55,43 @@ pub struct BackendOpts {
 pub enum Error {
     #[error("Unknown interface {0}")]
     UnknownInterface(String),
-    #[error("Loading configuration file `{0}`: {1}")]
-    ConfReadError(PathBuf, anyhow::Error),
-    #[error("Parsing configuration file `{0}`: {1}")]
-    ConfParseError(PathBuf, anyhow::Error),
 }
 
 /// Creates the requested backend interface according to [`BackendOpts`].
 pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     let interface = args.interface.as_str();
-    let mut env = TransportWrapper::new(match interface {
-        "" => create_empty_transport(),
-        "proxy" => proxy::create(&args.proxy_opts),
-        "verilator" => verilator::create(&args.verilator_opts),
-        "ti50emulator" => ti50emulator::create(&args.ti50emulator_opts),
-        "ultradebug" => ultradebug::create(args),
-        "hyperdebug" => hyperdebug::create::<StandardFlavor>(args),
-        "c2d2" => hyperdebug::create::<C2d2Flavor>(args),
-        "cw310" => cw310::create(args),
-        _ => Err(Error::UnknownInterface(interface.to_string()).into()),
-    }?);
-    for conf_file in &args.conf {
+    let (backend, conf) = match interface {
+        "" => (create_empty_transport()?, None),
+        "proxy" => (proxy::create(&args.proxy_opts)?, None),
+        "verilator" => (
+            verilator::create(&args.verilator_opts)?,
+            Some(Path::new("/__builtin__/opentitan_verilator.json")),
+        ),
+        "ti50emulator" => (
+            ti50emulator::create(&args.ti50emulator_opts)?,
+            Some(Path::new("/__builtin__/opentitan_ti50emulator.json")),
+        ),
+        "ultradebug" => (
+            ultradebug::create(args)?,
+            Some(Path::new("/__builtin__/opentitan_ultradebug.json")),
+        ),
+        "hyperdebug" => (
+            hyperdebug::create::<StandardFlavor>(args)?,
+            Some(Path::new("/__builtin__/opentitan_verilator.json")),
+        ),
+        "c2d2" => (
+            hyperdebug::create::<C2d2Flavor>(args)?,
+            Some(Path::new("/__builtin__/h1dx_devboard.json")),
+        ),
+        "cw310" => (
+            cw310::create(args)?,
+            Some(Path::new("/__builtin__/opentitan_cw310.json")),
+        ),
+        _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
+    };
+    let mut env = TransportWrapper::new(backend);
+
+    for conf_file in args.conf.as_ref().map(PathBuf::as_ref).or(conf) {
         process_config_file(&mut env, conf_file)?
     }
     Ok(env)
@@ -83,19 +99,4 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
 
 pub fn create_empty_transport() -> Result<Box<dyn Transport>> {
     Ok(Box::new(EmptyTransport))
-}
-
-fn process_config_file(env: &mut TransportWrapper, conf_file: &Path) -> Result<()> {
-    log::debug!("Reading config file {:?}", conf_file);
-    let conf_data = std::fs::read_to_string(conf_file)
-        .map_err(|e| Error::ConfReadError(conf_file.to_path_buf(), e.into()))?;
-    let res: ConfigurationFile = serde_json::from_str(&conf_data)
-        .map_err(|e| Error::ConfParseError(conf_file.to_path_buf(), e.into()))?;
-
-    let subdir = conf_file.parent().unwrap_or_else(|| Path::new(""));
-    for included_conf_file in &res.includes {
-        let path = subdir.join(included_conf_file);
-        process_config_file(env, &path)?
-    }
-    env.add_configuration_file(res)
 }

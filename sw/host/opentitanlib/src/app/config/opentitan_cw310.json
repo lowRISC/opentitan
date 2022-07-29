@@ -1,5 +1,5 @@
 {
-  "includes": ["opentitan.json"],
+  "includes": ["/__builtin__/opentitan.json"],
   "interface": "cw310",
   "pins": [
     {

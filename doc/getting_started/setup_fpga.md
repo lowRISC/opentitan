@@ -190,11 +190,10 @@ Below, we describe how to accomplish this, and in doing so, we shed some light o
 
 #### Manually loading a bitstream onto the FPGA with `opentitantool`
 
-Note: The following examples assume that you have a `~/.config/opentitantool/config` with the proper `--interface` and `--conf` options.
+Note: The following examples assume that you have a `~/.config/opentitantool/config` with the proper `--interface` option.
 For the CW310, its contents would look like:
 ```
 --interface=cw310
---conf=<ABS_PATH_TO_YOUR_CLONE>/sw/host/opentitantool/config/opentitan_cw310.json
 ```
 
 To flash the bitstream onto the FPGA using `opentitantool`, use the following command:

@@ -6,11 +6,17 @@ load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "config",
+    srcs = glob(["src/app/config/*.json"]),
+)
+
 rust_library(
     name = "opentitanlib",
     srcs = [
         "src/app/command.rs",
-        "src/app/conf.rs",
+        "src/app/config/mod.rs",
+        "src/app/config/structs.rs",
         "src/app/mod.rs",
         "src/backend/cw310.rs",
         "src/backend/hyperdebug.rs",
@@ -103,6 +109,9 @@ rust_library(
         "src/util/rom_detect.rs",
         "src/util/usb.rs",
         "src/util/voltage.rs",
+    ],
+    compile_data = [
+        ":config",
     ],
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
