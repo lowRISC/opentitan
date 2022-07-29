@@ -254,6 +254,10 @@
                         "0x0", "0x0", "0x0", "0x0",
                         "0x0", "0x0", "0x0", "0x0",
                     ],
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
+                    value: "0xce5c49ce",
                 }
             ],
         }
