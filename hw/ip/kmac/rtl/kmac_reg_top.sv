@@ -258,7 +258,7 @@ module kmac_reg_top (
   logic cfg_shadowed_en_unsupported_modestrength_storage_err;
   logic cfg_shadowed_en_unsupported_modestrength_update_err;
   logic cmd_we;
-  logic [3:0] cmd_cmd_wd;
+  logic [5:0] cmd_cmd_wd;
   logic cmd_entropy_req_wd;
   logic cmd_hash_cnt_clr_wd;
   logic status_re;
@@ -1112,9 +1112,9 @@ module kmac_reg_top (
   logic cmd_qe;
   logic [2:0] cmd_flds_we;
   assign cmd_qe = &cmd_flds_we;
-  //   F[cmd]: 3:0
+  //   F[cmd]: 5:0
   prim_subreg_ext #(
-    .DW    (4)
+    .DW    (6)
   ) u_cmd_cmd (
     .re     (1'b0),
     .we     (cmd_we),
@@ -2884,7 +2884,7 @@ module kmac_reg_top (
   assign cfg_shadowed_en_unsupported_modestrength_wd = reg_wdata[26];
   assign cmd_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign cmd_cmd_wd = reg_wdata[3:0];
+  assign cmd_cmd_wd = reg_wdata[5:0];
 
   assign cmd_entropy_req_wd = reg_wdata[8];
 
@@ -3160,7 +3160,7 @@ module kmac_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[3:0] = '0;
+        reg_rdata_next[5:0] = '0;
         reg_rdata_next[8] = '0;
         reg_rdata_next[9] = '0;
       end

@@ -484,13 +484,14 @@
              // design assertion : process can be set only after start is set
              "excl:CsrAllTests:CsrExclWrite"]
       fields: [
-        { bits: "3:0"
+        { bits: "5:0"
           name: "cmd"
-          desc: '''Issue a command to the KMAC/SHA3 IP. To prevent sw from
-                writing multiple bits at once, the field is defined as enum.
+          desc: '''Issue a command to the KMAC/SHA3 IP. The command is sparse
+                encoded. To prevent sw from writing multiple commands at once,
+                the field is defined as enum.
                 '''
           enum: [
-            { value: "1"
+            { value: "29"
               name: "start"
               desc: '''If writes 1 into this field when KMAC/SHA3 is in idle,
                     KMAC/SHA3 begins its operation.
@@ -501,14 +502,14 @@
                     additionally it processes secret key block.
                     '''
             } // e: start
-            { value: "2"
+            { value: "46"
               name: "process"
               desc: '''If writes 1 into this field when KMAC/SHA3 began its
                     operation and received the entire message, it computes the
                     digest or signing.
                     '''
             } // e: process
-            { value: "4"
+            { value: "49"
               name: "run"
               desc: '''The `run` field is used in the sponge squeezing stage.
                     It triggers the keccak round logic to run full 24 rounds.
@@ -518,7 +519,7 @@
                     It only affects when the kmac/sha3 operation is completed.
                     '''
             } // e: run
-            { value: "8"
+            { value: "22"
               name: "done"
               desc: '''If writes 1 into this field when KMAC/SHA3 squeezing is
                     completed. KMAC/SHA3 hashing engine clears internal

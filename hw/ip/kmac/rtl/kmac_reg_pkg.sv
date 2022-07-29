@@ -123,7 +123,7 @@ package kmac_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  q;
+      logic [5:0]  q;
       logic        qe;
     } cmd;
     struct packed {
@@ -230,12 +230,12 @@ package kmac_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    kmac_reg2hw_intr_state_reg_t intr_state; // [1664:1662]
-    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1661:1659]
-    kmac_reg2hw_intr_test_reg_t intr_test; // [1658:1653]
-    kmac_reg2hw_alert_test_reg_t alert_test; // [1652:1649]
-    kmac_reg2hw_cfg_shadowed_reg_t cfg_shadowed; // [1648:1621]
-    kmac_reg2hw_cmd_reg_t cmd; // [1620:1612]
+    kmac_reg2hw_intr_state_reg_t intr_state; // [1666:1664]
+    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1663:1661]
+    kmac_reg2hw_intr_test_reg_t intr_test; // [1660:1655]
+    kmac_reg2hw_alert_test_reg_t alert_test; // [1654:1651]
+    kmac_reg2hw_cfg_shadowed_reg_t cfg_shadowed; // [1650:1623]
+    kmac_reg2hw_cmd_reg_t cmd; // [1622:1612]
     kmac_reg2hw_entropy_period_reg_t entropy_period; // [1611:1586]
     kmac_reg2hw_entropy_refresh_threshold_shadowed_reg_t
         entropy_refresh_threshold_shadowed; // [1585:1576]
