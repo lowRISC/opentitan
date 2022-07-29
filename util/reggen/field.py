@@ -4,7 +4,7 @@
 
 from typing import Dict, List, Optional
 
-from design.mubi.prim_mubi import is_width_valid, mubi_value_as_int  # type: ignore
+from design.mubi import prim_mubi # type: ignore
 
 from reggen.access import SWAccess, HWAccess
 from reggen.bits import Bits
@@ -166,12 +166,12 @@ class Field:
             chk_resval = check_bool(raw_resval, 'resval field for {}'.format(where))
 
             # Check mubi width is supported
-            if not is_width_valid(bits.width()):
+            if not prim_mubi.is_width_valid(bits.width()):
                 raise ValueError(f'mubi field for {name} does not support width '
                                  f'of {bits.width()}')
 
             # Get actual integer value based on mubi selection
-            raw_resval = mubi_value_as_int(chk_resval, bits.width())
+            raw_resval = prim_mubi.mubi_value_as_int(chk_resval, bits.width())
 
         if raw_resval is None:
             # The field doesn't define a reset value. Use bits from reg_resval
