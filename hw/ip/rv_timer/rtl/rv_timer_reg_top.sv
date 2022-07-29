@@ -126,6 +126,14 @@ module rv_timer_reg_top (
   logic ctrl_we;
   logic ctrl_qs;
   logic ctrl_wd;
+  logic intr_enable0_we;
+  logic intr_enable0_qs;
+  logic intr_enable0_wd;
+  logic intr_state0_we;
+  logic intr_state0_qs;
+  logic intr_state0_wd;
+  logic intr_test0_we;
+  logic intr_test0_wd;
   logic cfg0_we;
   logic [11:0] cfg0_prescale_qs;
   logic [11:0] cfg0_prescale_wd;
@@ -143,14 +151,6 @@ module rv_timer_reg_top (
   logic compare_upper0_0_we;
   logic [31:0] compare_upper0_0_qs;
   logic [31:0] compare_upper0_0_wd;
-  logic intr_enable0_we;
-  logic intr_enable0_qs;
-  logic intr_enable0_wd;
-  logic intr_state0_we;
-  logic intr_state0_qs;
-  logic intr_state0_wd;
-  logic intr_test0_we;
-  logic intr_test0_wd;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -199,6 +199,83 @@ module rv_timer_reg_top (
     // to register interface (read)
     .qs     (ctrl_qs)
   );
+
+
+  // Subregister 0 of Multireg intr_enable0
+  // R[intr_enable0]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_intr_enable0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable0_we),
+    .wd     (intr_enable0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable0[0].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_enable0_qs)
+  );
+
+
+  // Subregister 0 of Multireg intr_state0
+  // R[intr_state0]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_intr_state0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_state0_we),
+    .wd     (intr_state0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state0[0].de),
+    .d      (hw2reg.intr_state0[0].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state0[0].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_state0_qs)
+  );
+
+
+  // Subregister 0 of Multireg intr_test0
+  // R[intr_test0]: V(True)
+  logic intr_test0_qe;
+  logic [0:0] intr_test0_flds_we;
+  assign intr_test0_qe = &intr_test0_flds_we;
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test0 (
+    .re     (1'b0),
+    .we     (intr_test0_we),
+    .wd     (intr_test0_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (intr_test0_flds_we[0]),
+    .q      (reg2hw.intr_test0[0].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.intr_test0[0].qe = intr_test0_qe;
 
 
   // R[cfg0]: V(False)
@@ -387,97 +464,20 @@ module rv_timer_reg_top (
   assign reg2hw.compare_upper0_0.qe = compare_upper0_0_qe;
 
 
-  // Subregister 0 of Multireg intr_enable0
-  // R[intr_enable0]: V(False)
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_intr_enable0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (intr_enable0_we),
-    .wd     (intr_enable0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable0[0].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (intr_enable0_qs)
-  );
-
-
-  // Subregister 0 of Multireg intr_state0
-  // R[intr_state0]: V(False)
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_intr_state0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (intr_state0_we),
-    .wd     (intr_state0_wd),
-
-    // from internal hardware
-    .de     (hw2reg.intr_state0[0].de),
-    .d      (hw2reg.intr_state0[0].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state0[0].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (intr_state0_qs)
-  );
-
-
-  // Subregister 0 of Multireg intr_test0
-  // R[intr_test0]: V(True)
-  logic intr_test0_qe;
-  logic [0:0] intr_test0_flds_we;
-  assign intr_test0_qe = &intr_test0_flds_we;
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_intr_test0 (
-    .re     (1'b0),
-    .we     (intr_test0_we),
-    .wd     (intr_test0_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (intr_test0_flds_we[0]),
-    .q      (reg2hw.intr_test0[0].q),
-    .ds     (),
-    .qs     ()
-  );
-  assign reg2hw.intr_test0[0].qe = intr_test0_qe;
-
-
 
   logic [9:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == RV_TIMER_ALERT_TEST_OFFSET);
     addr_hit[1] = (reg_addr == RV_TIMER_CTRL_OFFSET);
-    addr_hit[2] = (reg_addr == RV_TIMER_CFG0_OFFSET);
-    addr_hit[3] = (reg_addr == RV_TIMER_TIMER_V_LOWER0_OFFSET);
-    addr_hit[4] = (reg_addr == RV_TIMER_TIMER_V_UPPER0_OFFSET);
-    addr_hit[5] = (reg_addr == RV_TIMER_COMPARE_LOWER0_0_OFFSET);
-    addr_hit[6] = (reg_addr == RV_TIMER_COMPARE_UPPER0_0_OFFSET);
-    addr_hit[7] = (reg_addr == RV_TIMER_INTR_ENABLE0_OFFSET);
-    addr_hit[8] = (reg_addr == RV_TIMER_INTR_STATE0_OFFSET);
-    addr_hit[9] = (reg_addr == RV_TIMER_INTR_TEST0_OFFSET);
+    addr_hit[2] = (reg_addr == RV_TIMER_INTR_ENABLE0_OFFSET);
+    addr_hit[3] = (reg_addr == RV_TIMER_INTR_STATE0_OFFSET);
+    addr_hit[4] = (reg_addr == RV_TIMER_INTR_TEST0_OFFSET);
+    addr_hit[5] = (reg_addr == RV_TIMER_CFG0_OFFSET);
+    addr_hit[6] = (reg_addr == RV_TIMER_TIMER_V_LOWER0_OFFSET);
+    addr_hit[7] = (reg_addr == RV_TIMER_TIMER_V_UPPER0_OFFSET);
+    addr_hit[8] = (reg_addr == RV_TIMER_COMPARE_LOWER0_0_OFFSET);
+    addr_hit[9] = (reg_addr == RV_TIMER_COMPARE_UPPER0_0_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -504,46 +504,46 @@ module rv_timer_reg_top (
   assign ctrl_we = addr_hit[1] & reg_we & !reg_error;
 
   assign ctrl_wd = reg_wdata[0];
-  assign cfg0_we = addr_hit[2] & reg_we & !reg_error;
+  assign intr_enable0_we = addr_hit[2] & reg_we & !reg_error;
+
+  assign intr_enable0_wd = reg_wdata[0];
+  assign intr_state0_we = addr_hit[3] & reg_we & !reg_error;
+
+  assign intr_state0_wd = reg_wdata[0];
+  assign intr_test0_we = addr_hit[4] & reg_we & !reg_error;
+
+  assign intr_test0_wd = reg_wdata[0];
+  assign cfg0_we = addr_hit[5] & reg_we & !reg_error;
 
   assign cfg0_prescale_wd = reg_wdata[11:0];
 
   assign cfg0_step_wd = reg_wdata[23:16];
-  assign timer_v_lower0_we = addr_hit[3] & reg_we & !reg_error;
+  assign timer_v_lower0_we = addr_hit[6] & reg_we & !reg_error;
 
   assign timer_v_lower0_wd = reg_wdata[31:0];
-  assign timer_v_upper0_we = addr_hit[4] & reg_we & !reg_error;
+  assign timer_v_upper0_we = addr_hit[7] & reg_we & !reg_error;
 
   assign timer_v_upper0_wd = reg_wdata[31:0];
-  assign compare_lower0_0_we = addr_hit[5] & reg_we & !reg_error;
+  assign compare_lower0_0_we = addr_hit[8] & reg_we & !reg_error;
 
   assign compare_lower0_0_wd = reg_wdata[31:0];
-  assign compare_upper0_0_we = addr_hit[6] & reg_we & !reg_error;
+  assign compare_upper0_0_we = addr_hit[9] & reg_we & !reg_error;
 
   assign compare_upper0_0_wd = reg_wdata[31:0];
-  assign intr_enable0_we = addr_hit[7] & reg_we & !reg_error;
-
-  assign intr_enable0_wd = reg_wdata[0];
-  assign intr_state0_we = addr_hit[8] & reg_we & !reg_error;
-
-  assign intr_state0_wd = reg_wdata[0];
-  assign intr_test0_we = addr_hit[9] & reg_we & !reg_error;
-
-  assign intr_test0_wd = reg_wdata[0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
     reg_we_check[0] = alert_test_we;
     reg_we_check[1] = ctrl_we;
-    reg_we_check[2] = cfg0_we;
-    reg_we_check[3] = timer_v_lower0_we;
-    reg_we_check[4] = timer_v_upper0_we;
-    reg_we_check[5] = compare_lower0_0_we;
-    reg_we_check[6] = compare_upper0_0_we;
-    reg_we_check[7] = intr_enable0_we;
-    reg_we_check[8] = intr_state0_we;
-    reg_we_check[9] = intr_test0_we;
+    reg_we_check[2] = intr_enable0_we;
+    reg_we_check[3] = intr_state0_we;
+    reg_we_check[4] = intr_test0_we;
+    reg_we_check[5] = cfg0_we;
+    reg_we_check[6] = timer_v_lower0_we;
+    reg_we_check[7] = timer_v_upper0_we;
+    reg_we_check[8] = compare_lower0_0_we;
+    reg_we_check[9] = compare_upper0_0_we;
   end
 
   // Read data return
@@ -559,36 +559,36 @@ module rv_timer_reg_top (
       end
 
       addr_hit[2]: begin
+        reg_rdata_next[0] = intr_enable0_qs;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[0] = intr_state0_qs;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[5]: begin
         reg_rdata_next[11:0] = cfg0_prescale_qs;
         reg_rdata_next[23:16] = cfg0_step_qs;
       end
 
-      addr_hit[3]: begin
+      addr_hit[6]: begin
         reg_rdata_next[31:0] = timer_v_lower0_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[7]: begin
         reg_rdata_next[31:0] = timer_v_upper0_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[8]: begin
         reg_rdata_next[31:0] = compare_lower0_0_qs;
       end
 
-      addr_hit[6]: begin
-        reg_rdata_next[31:0] = compare_upper0_0_qs;
-      end
-
-      addr_hit[7]: begin
-        reg_rdata_next[0] = intr_enable0_qs;
-      end
-
-      addr_hit[8]: begin
-        reg_rdata_next[0] = intr_state0_qs;
-      end
-
       addr_hit[9]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[31:0] = compare_upper0_0_qs;
       end
 
       default: begin

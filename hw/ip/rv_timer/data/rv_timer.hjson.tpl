@@ -43,6 +43,11 @@
     }
   ],
   no_auto_intr_regs: "true",
+  countermeasures: [
+    { name: "BUS.INTEGRITY"
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
   regwidth: "32",
   registers: [
     { multireg: {
@@ -62,6 +67,48 @@
     },
 % for i in range(harts):
     { skipto: "${"0x%x" % (256*(i+1))}" },
+    { multireg: {
+        name: "INTR_ENABLE${i}",
+        desc: "Interrupt Enable",
+        count: "N_TIMERS",
+        cname: "TIMER",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0", name: "IE", desc: "Interrupt Enable for timer" }
+        ]
+      }
+    }, // R: INTR_ENABLE${i}
+    { multireg: {
+        name: "INTR_STATE${i}",
+        desc: "Interrupt Status",
+        count: "N_TIMERS",
+        cname: "TIMER",
+        swaccess: "rw1c",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "0", name: "IS", desc: "Interrupt status for timer",
+            tags: [// intr_state csr is affected by writes to other csrs - skip write-check
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"] }
+        ],
+      }
+    }, // R: INTR_STATE${i}
+    { multireg: {
+        name: "INTR_TEST${i}",
+        desc: "Interrupt test register",
+        count: "N_TIMERS",
+        cname: "TIMER",
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwext: "true",
+        hwqe: "true",
+        fields: [
+          { bits: "0", name: "T", desc: "Interrupt test for timer",
+            tags: [// intr_test csr is WO which - it reads back 0s
+                   "excl:CsrNonInitTests:CsrExclWrite"] }
+        ]
+      }
+    }, // R: INTR_TEST${i}
     { name: "CFG${i}",
       desc: "Configuration for Hart ${i}",
       swaccess: "rw",
@@ -107,48 +154,6 @@
       ],
     },
 % endfor
-    { multireg: {
-        name: "INTR_ENABLE${i}",
-        desc: "Interrupt Enable",
-        count: "N_TIMERS",
-        cname: "TIMER",
-        swaccess: "rw",
-        hwaccess: "hro",
-        fields: [
-          { bits: "0", name: "IE", desc: "Interrupt Enable for timer" }
-        ]
-      }
-    },
-    { multireg: {
-        name: "INTR_STATE${i}",
-        desc: "Interrupt Status",
-        count: "N_TIMERS",
-        cname: "TIMER",
-        swaccess: "rw1c",
-        hwaccess: "hrw",
-        fields: [
-          { bits: "0", name: "IS", desc: "Interrupt status for timer",
-            tags: [// intr_state csr is affected by writes to other csrs - skip write-check
-                   "excl:CsrNonInitTests:CsrExclWriteCheck"] }
-        ],
-      }
-    },
-    { multireg: {
-        name: "INTR_TEST${i}",
-        desc: "Interrupt test register",
-        count: "N_TIMERS",
-        cname: "TIMER",
-        swaccess: "wo",
-        hwaccess: "hro",
-        hwext: "true",
-        hwqe: "true",
-        fields: [
-          { bits: "0", name: "T", desc: "Interrupt test for timer",
-            tags: [// intr_test csr is WO which - it reads back 0s
-                   "excl:CsrNonInitTests:CsrExclWrite"] }
-        ]
-      }
-    },
 % endfor
   ],
 }

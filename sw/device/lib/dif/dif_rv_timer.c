@@ -208,38 +208,6 @@ dif_result_t dif_rv_timer_arm(const dif_rv_timer_t *timer, uint32_t hart_id,
   return kDifOk;
 }
 
-/**
- * The number of comparators that the IP instantiation this library is compiled
- * against has. In other words, this tells us how far the statically known IRQ
- * register constants are from the start of the comparators, which influences
- * the computation in `irq_reg_for_hart()`.
- */
-static const ptrdiff_t kComparatorsInReggenHeader =
-    (RV_TIMER_INTR_ENABLE0_REG_OFFSET - RV_TIMER_COMPARE_LOWER0_0_REG_OFFSET) /
-    sizeof(uint64_t);
-
-/**
- * Computes the appropriate register for a particular interrupt register, given
- * a number of comparators.
- *
- * Currently, all IRQ registers are placed after the comparator registers,
- * so the register offsets given by HW are not useable. The offsets need to be
- * compensated for by a factor of `kComparatorsInReggenHeader` double-words..
- *
- * We also do not handle the case when comparator_count > 32, which would cause
- * multiple interrupt registers to be generated.
- */
-static ptrdiff_t irq_reg_for_hart(uint32_t hart_id, uint32_t comparators,
-                                  ptrdiff_t reg_offset) {
-  // Note that it is completely valid for this value to be negative: if this
-  // library is built for hardware with a large number of compartors, this value
-  // is necessarially negative when used with hardware with a small number of
-  // comparators.
-  ptrdiff_t extra_comparator_offset =
-      sizeof(uint64_t) * (comparators - kComparatorsInReggenHeader);
-  return reg_for_hart(hart_id, reg_offset) + extra_comparator_offset;
-}
-
 dif_result_t dif_rv_timer_reset(const dif_rv_timer_t *timer) {
   if (timer == NULL) {
     return kDifBadArg;
@@ -250,10 +218,10 @@ dif_result_t dif_rv_timer_reset(const dif_rv_timer_t *timer) {
 
   for (uint32_t hart_id = 0; hart_id < RV_TIMER_PARAM_N_HARTS; ++hart_id) {
     // Clear and disable all interrupts.
-    ptrdiff_t irq_status = irq_reg_for_hart(hart_id, RV_TIMER_PARAM_N_TIMERS,
-                                            RV_TIMER_INTR_STATE0_REG_OFFSET);
-    ptrdiff_t irq_enable = irq_reg_for_hart(hart_id, RV_TIMER_PARAM_N_TIMERS,
-                                            RV_TIMER_INTR_ENABLE0_REG_OFFSET);
+    ptrdiff_t irq_status =
+        reg_for_hart(hart_id, RV_TIMER_INTR_STATE0_REG_OFFSET);
+    ptrdiff_t irq_enable =
+        reg_for_hart(hart_id, RV_TIMER_INTR_ENABLE0_REG_OFFSET);
     mmio_region_write32(timer->base_addr, irq_enable, 0x0);
     mmio_region_write32(timer->base_addr, irq_status, UINT32_MAX);
 
