@@ -99,14 +99,6 @@ ptrdiff_t RegForHart(uint32_t hart, ptrdiff_t reg_offset) {
   return 0x100 * hart + reg_offset;
 }
 
-// Copy of `irq_reg_for_hart()` in the C translation unit under test.
-ptrdiff_t IrqRegForHart(uint32_t hart, uint32_t comparators,
-                        ptrdiff_t reg_offset) {
-  auto base = RegForHart(hart, reg_offset);
-  auto extra_comparator_offset = sizeof(uint64_t) * (comparators - 1);
-  return base + extra_comparator_offset;
-}
-
 constexpr uint32_t kAllOnes = std::numeric_limits<uint32_t>::max();
 
 class ResetTest : public TimerTest {};
@@ -115,9 +107,8 @@ TEST_F(ResetTest, Success) {
   EXPECT_WRITE32(RV_TIMER_CTRL_REG_OFFSET, 0x0);
 
   for (uint32_t hart_id = 0; hart_id < RV_TIMER_PARAM_N_HARTS; ++hart_id) {
-    EXPECT_WRITE32(IrqRegForHart(0, 1, RV_TIMER_INTR_ENABLE0_REG_OFFSET), 0x0);
-    EXPECT_WRITE32(IrqRegForHart(0, 1, RV_TIMER_INTR_STATE0_REG_OFFSET),
-                   kAllOnes);
+    EXPECT_WRITE32(RegForHart(0, RV_TIMER_INTR_ENABLE0_REG_OFFSET), 0x0);
+    EXPECT_WRITE32(RegForHart(0, RV_TIMER_INTR_STATE0_REG_OFFSET), kAllOnes);
 
     for (uint32_t comp_id = 0; comp_id < RV_TIMER_PARAM_N_TIMERS; ++comp_id) {
       EXPECT_WRITE32(RegForHart(0, RV_TIMER_COMPARE_UPPER0_0_REG_OFFSET),
