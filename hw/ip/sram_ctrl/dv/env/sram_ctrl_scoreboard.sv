@@ -114,7 +114,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   //       For the same reason, we cannot use the already-provided `predict_tl_err(...)`
   //       function of the cip_base_scoreboard, as the SRAM TLUL interface does not have
   //       any CSRs or uvm_mems.
-  virtual function bit get_sram_instr_type_err(tl_seq_item item, tl_channels_e channel);
+  virtual function bit get_sram_predict_tl_err(tl_seq_item item, tl_channels_e channel);
     bit is_tl_err;
     bit allow_ifetch;
     tlul_pkg::tl_a_user_t a_user       = tlul_pkg::tl_a_user_t'(item.a_user);
@@ -143,17 +143,20 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       is_tl_err = (allow_ifetch) ? (item.a_opcode != tlul_pkg::Get) : 1'b1;
     end
 
+    if (status_lc_esc) is_tl_err |= 1;
+
     if (channel == DataChannel && is_tl_err) begin
       `DV_CHECK_EQ(item.d_error, 1,
-          $sformatf("item_err: %0d, allow_ifetch : %0d, sram_ifetch: %0d, exec: %0d, debug_en: %0d",
-                    is_tl_err, allow_ifetch, sram_ifetch, csr_exec, hw_debug_en))
+          $sformatf({"item_err: %0d, allow_ifetch : %0d, sram_ifetch: %0d, exec: %0d, ",
+                     "debug_en: %0d, lc_esc %0d"},
+                    is_tl_err, allow_ifetch, sram_ifetch, csr_exec, hw_debug_en, status_lc_esc))
     end
 
     return is_tl_err;
   endfunction
 
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
-    if (ral_name == cfg.sram_ral_name && get_sram_instr_type_err(item, channel)) begin
+    if (ral_name == cfg.sram_ral_name && get_sram_predict_tl_err(item, channel)) begin
       return 1;
     end
     return super.predict_tl_err(item, channel, ral_name);
@@ -304,8 +307,10 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       `uvm_info(`gfn, "Got in_init", UVM_MEDIUM)
       // clear the init done signal
       exp_status[SramCtrlInitDone] = 0;
+      // add a small deblay as in_key_req changes at the same time as in_init.
+      #1;
       // initialization process only starts once the corresponding key request finishes
-      @(negedge in_key_req);
+      `DV_SPINWAIT(wait (in_key_req == 0);)
       // initialization process will randomize each line in the SRAM, one cycle each
       //
       // thus we just need to wait for a number of cycles equal to the total size
@@ -326,7 +331,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     forever begin
       // any non-off value is treated as true
       wait(cfg.lc_vif.lc_esc_en != lc_ctrl_pkg::Off);
-      `uvm_info(`gfn, "LC escalation request detected", UVM_HIGH)
+      `uvm_info(`gfn, "LC escalation request detected", UVM_MEDIUM)
 
       // clear exp_mem, scramble is changed due to escalation.
       exp_mem[cfg.sram_ral_name].init();
@@ -454,7 +459,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       #1;
 
       in_key_req = 0;
-      `uvm_info(`gfn, "dropped in_key_req", UVM_HIGH)
+      `uvm_info(`gfn, "dropped in_key_req", UVM_MEDIUM)
 
       // When KDI item is seen, update key, nonce
       {key, nonce, seed_valid} = item.d_data;
