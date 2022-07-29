@@ -70,15 +70,9 @@ package kmac_pkg;
 
   // kmac_cmd_e defines the possible command sets that software issues via
   // !!CMD register. This is mainly to limit the error scenario that SW writes
-  // multiple commands at once.
-  typedef enum logic [3:0] {
-    CmdNone      = 4'b 0000,
-    CmdStart     = 4'b 0001,
-    CmdProcess   = 4'b 0010,
-    CmdManualRun = 4'b 0100,
-    CmdDone      = 4'b 1000
-  } kmac_cmd_e;
-
+  // multiple commands at once. Additionally they are sparse encoded to harden
+  // against FI attacks
+  //
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
   //      -s 1891656028 --language=sv
@@ -99,34 +93,12 @@ package kmac_pkg;
   // Maximum Hamming weight: 4
   //
   typedef enum logic [5:0] {
-    CmdNoneS      = 6'b001011,
-    CmdStartS     = 6'b011101,
-    CmdProcessS   = 6'b101110,
-    CmdManualRunS = 6'b110001,
-    CmdDoneS      = 6'b010110
-  } kmac_cmd_s_e;
-
-  function automatic kmac_cmd_e kmac_cmd_sparse2logic(kmac_cmd_s_e cmd_s);
-    unique case (cmd_s)
-      CmdNoneS      : return CmdNone;
-      CmdStartS     : return CmdStart;
-      CmdProcessS   : return CmdProcess;
-      CmdManualRunS : return CmdManualRun;
-      CmdDoneS      : return CmdDone;
-      default       : return CmdNone;
-    endcase
-  endfunction : kmac_cmd_sparse2logic
-
-  function automatic kmac_cmd_s_e kmac_cmd_logic2sparse(kmac_cmd_e cmd);
-    unique case (cmd)
-      CmdNone      : return CmdNoneS;
-      CmdStart     : return CmdStartS;
-      CmdProcess   : return CmdProcessS;
-      CmdManualRun : return CmdManualRunS;
-      CmdDone      : return CmdDoneS;
-      default      : return CmdNoneS;
-    endcase
-  endfunction : kmac_cmd_logic2sparse
+    CmdNone      = 6'b001011, // dec 10
+    CmdStart     = 6'b011101, // dec 29
+    CmdProcess   = 6'b101110, // dec 46
+    CmdManualRun = 6'b110001, // dec 49
+    CmdDone      = 6'b010110  // dec 22
+  } kmac_cmd_e;
 
   // Timer
   parameter int unsigned TimerPrescalerW = 10;
