@@ -13,11 +13,11 @@ import warnings
 from datetime import datetime
 from typing import Any, Dict, Optional, Set, TextIO
 
-from .ip_block import IpBlock
-from .multi_register import MultiRegister
-from .params import LocalParam
-from .register import Register
-from .window import Window
+from reggen.ip_block import IpBlock
+from reggen.multi_register import MultiRegister
+from reggen.params import LocalParam
+from reggen.register import Register
+from reggen.window import Window
 
 REG_VISIBILITY = 'pub(crate)'
 FIELD_VISIBILITY = 'pub(crate)'

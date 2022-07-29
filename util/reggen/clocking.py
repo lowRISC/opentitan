@@ -5,9 +5,9 @@
 '''Code representing clocking or resets for an IP block'''
 
 from typing import Dict, List, Optional
-
-from .lib import check_keys, check_list, check_bool, check_optional_name
 import re
+
+from reggen.lib import check_keys, check_list, check_bool, check_optional_name
 
 
 class ClockingItem:

@@ -9,12 +9,12 @@ from typing import Optional, Set, TextIO
 
 import mistletoe as mk
 
-from .ip_block import IpBlock
-from .html_helpers import expand_paras, render_td
-from .multi_register import MultiRegister
-from .reg_block import RegBlock
-from .register import Register
-from .window import Window
+from reggen.ip_block import IpBlock
+from reggen.html_helpers import expand_paras, render_td
+from reggen.multi_register import MultiRegister
+from reggen.reg_block import RegBlock
+from reggen.register import Register
+from reggen.window import Window
 
 
 def genout(outfile: TextIO, msg: str) -> None:

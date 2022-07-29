@@ -7,17 +7,17 @@
 import re
 from typing import Callable, Dict, List, Optional, Sequence, Union
 
-from .alert import Alert
-from .access import SWAccess, HWAccess
-from .bus_interfaces import BusInterfaces
-from .clocking import Clocking, ClockingItem
-from .field import Field
-from .signal import Signal
-from .lib import check_int, check_list, check_str_dict, check_str
-from .multi_register import MultiRegister
-from .params import ReggenParams
-from .register import Register
-from .window import Window
+from reggen.alert import Alert
+from reggen.access import SWAccess, HWAccess
+from reggen.bus_interfaces import BusInterfaces
+from reggen.clocking import Clocking, ClockingItem
+from reggen.field import Field
+from reggen.signal import Signal
+from reggen.lib import check_int, check_list, check_str_dict, check_str
+from reggen.multi_register import MultiRegister
+from reggen.params import ReggenParams
+from reggen.register import Register
+from reggen.window import Window
 
 
 class RegBlock:

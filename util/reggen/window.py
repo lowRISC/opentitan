@@ -4,9 +4,9 @@
 
 from typing import Dict
 
-from .access import SWAccess
-from .lib import check_keys, check_str, check_bool, check_int
-from .params import ReggenParams
+from reggen.access import SWAccess
+from reggen.lib import check_keys, check_str, check_bool, check_int
+from reggen.params import ReggenParams
 
 
 REQUIRED_FIELDS = {

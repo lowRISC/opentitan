@@ -15,10 +15,10 @@ from mako import exceptions  # type: ignore
 from mako.lookup import TemplateLookup  # type: ignore
 from pkg_resources import resource_filename
 
-from .ip_block import IpBlock
-from .multi_register import MultiRegister
-from .register import Register
-from .window import Window
+from reggen.ip_block import IpBlock
+from reggen.multi_register import MultiRegister
+from reggen.register import Register
+from reggen.window import Window
 
 
 class DvBaseNames:

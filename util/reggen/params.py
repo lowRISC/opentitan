@@ -6,7 +6,7 @@ import re
 from collections.abc import MutableMapping
 from typing import Dict, Iterator, List, Optional, Tuple
 
-from .lib import check_keys, check_str, check_int, check_bool, check_list
+from reggen.lib import check_keys, check_str, check_int, check_bool, check_list
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the item"],

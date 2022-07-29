@@ -4,8 +4,8 @@
 
 from typing import Dict, Sequence
 
-from .bits import Bits
-from .lib import check_keys, check_name, check_str, check_int, check_list
+from reggen.bits import Bits
+from reggen.lib import check_keys, check_name, check_str, check_int, check_list
 
 
 class Signal:

@@ -5,7 +5,7 @@
 Generates the documentation for the register tool
 
 """
-from .access import SWACCESS_PERMITTED, HWACCESS_PERMITTED
+from reggen.access import SWACCESS_PERMITTED, HWACCESS_PERMITTED
 from reggen import (validate,
                     ip_block, enum_entry, field,
                     register, multi_register, window)

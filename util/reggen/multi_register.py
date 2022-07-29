@@ -5,12 +5,12 @@
 from typing import Dict, List
 
 from reggen import register
-from .clocking import Clocking
-from .field import Field
-from .lib import check_keys, check_str, check_name, check_bool
-from .params import ReggenParams
-from .reg_base import RegBase
-from .register import Register
+from reggen.clocking import Clocking
+from reggen.field import Field
+from reggen.lib import check_keys, check_str, check_name, check_bool
+from reggen.params import ReggenParams
+from reggen.reg_base import RegBase
+from reggen.register import Register
 
 REQUIRED_FIELDS = {
     'name': ['s', "base name of the registers"],
