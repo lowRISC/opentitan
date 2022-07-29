@@ -16,13 +16,8 @@ exports_files(glob([
     "*.h",
 ]))
 
-opentitan_functest(
+cc_library(
     name = "aes_entropy_test",
-    srcs = ["aes_entropy_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -34,6 +29,39 @@ opentitan_functest(
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
+)
+
+opentitan_functest(
+    name = "aes_entropy_test_creator",
+    srcs = ["aes_entropy_test.c"],
+    deps = [
+        ":aes_entropy_test",
+        "//sw/device/lib/testing/test_framework:ld_silicon_creator_stage",
+    ],
+    manifest = "//sw/device/lib/testing/test_framework:ottf_manifest_creator",
+    signed = True,
+)
+
+opentitan_functest(
+    name = "aes_entropy_test_owner",
+    srcs = ["aes_entropy_test.c"],
+    deps = [
+        ":aes_entropy_test",
+        "//sw/device/lib/testing/test_framework:ld_silicon_owner_stage",
+    ],
+    manifest = "//sw/device/lib/testing/test_framework:ottf_manifest_owner",
+    signed = True,
+)
+
+opentitan_functest(
+    name = "aes_entropy_test_rom",
+    srcs = ["aes_entropy_test.c"],
+    deps = [
+        ":aes_entropy_test",
+        "//sw/device/lib/testing/test_framework:ld_test_rom",
+    ],
+    manifest = "//sw/device/lib/testing/test_framework:ottf_manifest_test_rom",
+    signed = False,
 )
 
 opentitan_functest(
