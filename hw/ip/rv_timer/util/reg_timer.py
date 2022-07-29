@@ -36,7 +36,7 @@ def main():
     out = StringIO()
 
     reg_tpl = Template(args.input.read())
-    out.write(reg_tpl.render(harts=args.harts, timers=args.timers))
+    out.write(reg_tpl.render(harts=args.harts, timers=args.timers).rstrip())
 
     print(out.getvalue())
 
