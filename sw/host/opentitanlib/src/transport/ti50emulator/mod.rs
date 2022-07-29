@@ -78,12 +78,26 @@ impl Ti50Emulator {
 
     fn configure_devices(&self) -> Result<()> {
         let conf = self.inner.borrow().process.get_configurations()?;
-        for (name, state) in conf.gpio_config.iter() {
+        for (name, state) in conf.gpio.iter() {
             let gpio: Rc<dyn GpioPin> = Rc::new(Ti50GpioPin::open(self, name, state)?);
             self.inner
                 .borrow_mut()
                 .gpio_map
                 .insert(name.clone(), Rc::clone(&gpio));
+        }
+        for (name, path) in conf.uart.iter() {
+            let uart: Rc<dyn Uart> = Rc::new(Ti50Uart::open(self, path)?);
+            self.inner
+                .borrow_mut()
+                .uart_map
+                .insert(name.clone(), Rc::clone(&uart));
+        }
+        for (name, path) in conf.i2c.iter() {
+            let i2c: Rc<dyn Bus> = Rc::new(Ti50I2cBus::open(self, path)?);
+            self.inner
+                .borrow_mut()
+                .i2c_map
+                .insert(name.clone(), Rc::clone(&i2c));
         }
         Ok(())
     }
@@ -125,11 +139,7 @@ impl Inner {}
 impl Transport for Ti50Emulator {
     fn capabilities(&self) -> Result<Capabilities> {
         Ok(Capabilities::new(
-            Capability::UART
-                | Capability::GPIO
-                | Capability::SPI
-                | Capability::I2C
-                | Capability::EMULATOR,
+            Capability::UART | Capability::GPIO | Capability::I2C | Capability::EMULATOR,
         ))
     }
 
@@ -145,22 +155,18 @@ impl Transport for Ti50Emulator {
     // Returns one of existing I2C instance.
     fn i2c(&self, instance: &str) -> Result<Rc<dyn Bus>> {
         Ok(Rc::clone(
-            self.inner
-                .borrow_mut()
-                .i2c_map
-                .entry(instance.to_string())
-                .or_insert(Rc::new(Ti50I2cBus::open(self, instance)?)),
+            self.inner.borrow().i2c_map.get(instance).ok_or_else(|| {
+                TransportError::InvalidInstance(TransportInterfaceType::I2c, instance.to_string())
+            })?,
         ))
     }
 
     // Returns one of existing UART instance.
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         Ok(Rc::clone(
-            self.inner
-                .borrow_mut()
-                .uart_map
-                .entry(instance.to_string())
-                .or_insert(Rc::new(Ti50Uart::open(self, instance)?)),
+            self.inner.borrow().uart_map.get(instance).ok_or_else(|| {
+                TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
+            })?,
         ))
     }
 

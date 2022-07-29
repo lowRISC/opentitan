@@ -19,6 +19,7 @@ use anyhow::{bail, Context, Result};
 use log;
 use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;
+use serde::{Deserialize, Serialize};
 
 use crate::io::emu::{EmuError, EmuState, EmuValue, Emulator};
 use crate::transport::ti50emulator::gpio::GpioConfiguration;
@@ -30,8 +31,11 @@ const MAX_RETRY: usize = 5;
 const PATTERN: &[u8; 5] = b"READY";
 pub const EMULATOR_INVALID_ID: u64 = 0;
 
+#[derive(Serialize, Deserialize)]
 pub struct EmulatorConfig {
-    pub gpio_config: HashMap<String, GpioConfiguration>,
+    pub gpio: HashMap<String, GpioConfiguration>,
+    pub uart: HashMap<String, String>,
+    pub i2c: HashMap<String, String>,
 }
 
 pub struct EmulatorProcess {
@@ -93,7 +97,7 @@ impl EmulatorProcess {
         let args_list = vec![
             OsString::from("--path"),
             self.runtime_directory.clone().into_os_string(),
-            OsString::from("--get_configs"),
+            OsString::from("--gen_configs"),
         ];
 
         let exec: PathBuf = match self.current_args.get("exec") {
@@ -113,12 +117,11 @@ impl EmulatorProcess {
             .context("Could not spawn sub-process")?;
         if status.success() {
             log::info!("Ti50Emulator parsing configurations");
-            let file = File::open(self.runtime_directory.join("gpio_init_conf.json"))?;
+            let file = File::open(self.runtime_directory.join("he_conf.json"))
+                .context("Configuration file open error")?;
             let reader = BufReader::new(file);
-            let config = EmulatorConfig {
-                gpio_config: serde_json::from_reader(reader)
-                    .context("Configuration file parsing error")?,
-            };
+            let config: EmulatorConfig =
+                serde_json::from_reader(reader).context("Configuration parsing error")?;
             return Ok(config);
         } else {
             bail!(EmuError::RuntimeError(format!(
