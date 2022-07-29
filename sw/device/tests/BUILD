@@ -601,6 +601,7 @@ opentitan_functest(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:otbn",
         "//sw/device/lib/testing:aes_testutils",
