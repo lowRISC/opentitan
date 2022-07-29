@@ -11,7 +11,7 @@ from mako import exceptions  # type: ignore
 from mako.lookup import TemplateLookup  # type: ignore
 from pkg_resources import resource_filename
 
-from .ip_block import IpBlock
+from reggen.ip_block import IpBlock
 
 
 def gen_sec_cm_testplan(block: IpBlock, outdir: str) -> int:

@@ -11,11 +11,11 @@ from mako import exceptions  # type: ignore
 from mako.template import Template  # type: ignore
 from pkg_resources import resource_filename
 
-from .ip_block import IpBlock
-from .lib import check_int
-from .multi_register import MultiRegister
-from .reg_base import RegBase
-from .register import Register
+from reggen.ip_block import IpBlock
+from reggen.lib import check_int
+from reggen.multi_register import MultiRegister
+from reggen.reg_base import RegBase
+from reggen.register import Register
 
 
 def escape_name(name: str) -> str:

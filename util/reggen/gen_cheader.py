@@ -13,13 +13,13 @@ import warnings
 from typing import List, Optional, Set, TextIO
 
 
-from .field import Field
-from .ip_block import IpBlock
-from .params import LocalParam
-from .register import Register
-from .multi_register import MultiRegister
-from .signal import Signal
-from .window import Window
+from reggen.field import Field
+from reggen.ip_block import IpBlock
+from reggen.params import LocalParam
+from reggen.register import Register
+from reggen.multi_register import MultiRegister
+from reggen.signal import Signal
+from reggen.window import Window
 
 
 def genout(outfile: TextIO, msg: str) -> None:

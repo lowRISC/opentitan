@@ -8,15 +8,15 @@ from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 import hjson  # type: ignore
 
-from .alert import Alert
-from .bus_interfaces import BusInterfaces
-from .clocking import Clocking, ClockingItem
-from .inter_signal import InterSignal
-from .lib import (check_keys, check_name, check_int, check_bool, check_list)
-from .params import ReggenParams, LocalParam
-from .reg_block import RegBlock
-from .signal import Signal
-from .countermeasure import CounterMeasure
+from reggen.alert import Alert
+from reggen.bus_interfaces import BusInterfaces
+from reggen.clocking import Clocking, ClockingItem
+from reggen.inter_signal import InterSignal
+from reggen.lib import (check_keys, check_name, check_int, check_bool, check_list)
+from reggen.params import ReggenParams, LocalParam
+from reggen.reg_block import RegBlock
+from reggen.signal import Signal
+from reggen.countermeasure import CounterMeasure
 
 
 REQUIRED_ALIAS_FIELDS = {

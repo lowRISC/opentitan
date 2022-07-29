@@ -6,8 +6,8 @@
 
 from typing import Dict, List, Optional, Tuple
 
-from .inter_signal import InterSignal
-from .lib import check_list, check_keys, check_str, check_optional_str
+from reggen.inter_signal import InterSignal
+from reggen.lib import check_list, check_keys, check_str, check_optional_str
 
 
 class BusInterfaces:

@@ -4,13 +4,14 @@
 
 from typing import Dict, List, Optional
 
-from .access import SWAccess, HWAccess
-from .bits import Bits
-from .enum_entry import EnumEntry
-from .lib import (check_keys, check_str, check_name, check_bool,
-                  check_list, check_str_list, check_xint)
-from .params import ReggenParams
 from design.mubi.prim_mubi import is_width_valid, mubi_value_as_int  # type: ignore
+
+from reggen.access import SWAccess, HWAccess
+from reggen.bits import Bits
+from reggen.enum_entry import EnumEntry
+from reggen.lib import (check_keys, check_str, check_name, check_bool,
+                        check_list, check_str_list, check_xint)
+from reggen.params import ReggenParams
 
 REQUIRED_FIELDS = {
     'bits': ['b', "bit or bit range (msb:lsb)"]

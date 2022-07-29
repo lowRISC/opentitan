@@ -4,7 +4,7 @@
 
 from typing import List
 
-from .field import Field
+from reggen.field import Field
 
 
 class RegBase:

@@ -4,9 +4,9 @@
 
 from typing import Dict, List
 
-from .bits import Bits
-from .signal import Signal
-from .lib import check_keys, check_name, check_str, check_list
+from reggen.bits import Bits
+from reggen.signal import Signal
+from reggen.lib import check_keys, check_name, check_str, check_list
 
 
 class Alert(Signal):

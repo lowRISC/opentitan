@@ -6,8 +6,8 @@
 
 from typing import Tuple
 
-from .lib import check_str
-from .params import ReggenParams
+from reggen.lib import check_str
+from reggen.params import ReggenParams
 
 
 class Bits:

@@ -4,7 +4,7 @@
 
 from typing import Dict
 
-from .lib import check_keys, check_str, check_int
+from reggen.lib import check_keys, check_str, check_int
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the member of the enum"],

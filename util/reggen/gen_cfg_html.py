@@ -7,9 +7,9 @@ Generate HTML documentation from Block
 
 from typing import TextIO
 
-from .ip_block import IpBlock
-from .html_helpers import render_td
-from .signal import Signal
+from reggen.ip_block import IpBlock
+from reggen.html_helpers import render_td
+from reggen.signal import Signal
 
 
 def genout(outfile: TextIO, msg: str) -> None:

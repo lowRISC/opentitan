@@ -4,8 +4,8 @@
 
 from typing import Dict, Optional
 
-from .lib import (check_keys, check_name,
-                  check_str, check_optional_str, check_int)
+from reggen.lib import (check_keys, check_name,
+                        check_str, check_optional_str, check_int)
 
 
 class InterSignal:

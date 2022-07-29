@@ -6,7 +6,7 @@ import re
 import logging as log
 from typing import Dict, List, Sequence, Tuple
 
-from .lib import check_keys, check_str, check_list
+from reggen.lib import check_keys, check_str, check_list
 
 # The documentation of assets and cm_types can be found here
 # https://docs.opentitan.org/doc/rm/comportability_specification/#countermeasures

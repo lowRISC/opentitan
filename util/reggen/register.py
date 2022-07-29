@@ -4,13 +4,13 @@
 
 from typing import Dict, List, Optional
 
-from .access import SWAccess, HWAccess
-from .clocking import Clocking
-from .field import Field
-from .lib import (check_keys, check_str, check_name, check_bool,
-                  check_list, check_str_list, check_int)
-from .params import ReggenParams
-from .reg_base import RegBase
+from reggen.access import SWAccess, HWAccess
+from reggen.clocking import Clocking
+from reggen.field import Field
+from reggen.lib import (check_keys, check_str, check_name, check_bool,
+                        check_list, check_str_list, check_int)
+from reggen.params import ReggenParams
+from reggen.reg_base import RegBase
 
 import re
 
@@ -447,7 +447,7 @@ class Register(RegBase):
         if self.async_clk and self.is_hw_writable():
             return True
         else:
-            return self.needs_qe();
+            return self.needs_qe()
 
     def needs_re(self) -> bool:
         '''Return true if at least one field needs a read-enable
