@@ -25,6 +25,5 @@ filegroup(
     name = "test_resources",
     srcs = [
         ":bad_rom_ext_signature",
-        "//sw/host/opentitantool/config",
     ],
 )

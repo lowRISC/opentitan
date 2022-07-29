@@ -117,7 +117,6 @@ def verilator_params(
         "--rcfile=",
         "--logging=info",
         "--interface=verilator",
-        "--conf=sw/host/opentitantool/config/opentitan_verilator.json",
         "--verilator-bin=$(location @//hw:verilator)/sim-verilator/Vchip_sim_tb",
         "--verilator-rom=$(location {rom})",
         "--verilator-flash=$(location {flash})",
@@ -185,7 +184,6 @@ def cw310_params(
         "--rcfile=",
         "--logging=info",
         "--interface=cw310",
-        "--conf=sw/host/opentitantool/config/opentitan_cw310.json",
     ]
     required_data = [
         "@//sw/host/opentitantool:test_resources",

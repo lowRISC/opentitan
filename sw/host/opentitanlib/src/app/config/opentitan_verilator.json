@@ -1,6 +1,6 @@
 {
-  "includes": ["opentitan.json"],
-  "interface": "ti50emulator",
+  "includes": ["/__builtin__/opentitan.json"],
+  "interface": "verilator",
   "pins": [
   ],
   "uarts": [

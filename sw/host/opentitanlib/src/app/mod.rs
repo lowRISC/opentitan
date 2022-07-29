@@ -4,7 +4,7 @@
 
 //! Useful modules for OpenTitanTool application development.
 pub mod command;
-pub mod conf;
+pub mod config;
 
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
@@ -192,7 +192,7 @@ impl TransportWrapper {
     fn record_pin_conf(
         pin_map: &HashMap<String, String>,
         pin_conf_map: &mut HashMap<String, PinConfiguration>,
-        pin_conf: &conf::PinConfiguration,
+        pin_conf: &config::PinConfiguration,
     ) {
         if let Some(pin_mode) = pin_conf.mode {
             pin_conf_map
@@ -214,7 +214,7 @@ impl TransportWrapper {
         }
     }
 
-    pub fn add_configuration_file(&mut self, file: conf::ConfigurationFile) -> Result<()> {
+    pub fn add_configuration_file(&mut self, file: config::ConfigurationFile) -> Result<()> {
         // Merge content of configuration file into pin_map and other
         // members.
         for pin_conf in file.pins {
