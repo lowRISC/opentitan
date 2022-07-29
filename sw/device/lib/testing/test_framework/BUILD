@@ -4,6 +4,7 @@
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:linker.bzl", "ld_library")
+load("//rules:manifest.bzl", "CONST", "manifest")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -41,11 +42,38 @@ cc_library(
 )
 
 ld_library(
-    name = "linker_script",
-    script = "ottf.ld",
+    name = "ld_common",
+    fragments = ["ottf_common.ld"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
         "//sw/device:info_sections",
+        "//sw/device/silicon_creator/lib/base:static_critical_sections",
+    ],
+)
+
+ld_library(
+    name = "ld_test_rom",
+    script = "ottf_test_rom.ld",
+    deps = [
+        ":ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+    ],
+)
+
+ld_library(
+    name = "ld_silicon_creator_stage",
+    script = "ottf_silicon_creator_stage.ld",
+    deps = [
+        ":ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+    ],
+)
+
+ld_library(
+    name = "ld_silicon_owner_stage",
+    script = "ottf_silicon_owner_stage.ld",
+    deps = [
+        ":ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
     ],
 )
 
@@ -67,13 +95,12 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":linker_script",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crt",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/silicon_creator/lib:manifest_size",
+        "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )
 
@@ -109,6 +136,25 @@ alias(
     }),
 )
 
+
+manifest(
+    name = "ottf_manifest_creator",
+    address_translation = CONST.TRUE,
+    identifier = CONST.ROM_EXT,
+)
+
+manifest(
+    name = "ottf_manifest_owner",
+    address_translation = CONST.TRUE,
+    identifier = CONST.OWNER,
+)
+
+manifest(
+    name = "ottf_manifest_test_rom",
+    address_translation = CONST.FALSE,
+    identifier = CONST.ROM_EXT,
+)
+
 cc_library(
     name = "ottf_main",
     srcs = ["ottf_main.c"],
@@ -121,7 +167,6 @@ cc_library(
         ":ottf_start",
         ":ottf_test_config",
         ":status",
-        ":test_framework_manifest_def",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:uart",

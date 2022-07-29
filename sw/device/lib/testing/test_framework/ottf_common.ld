@@ -3,14 +3,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Linker script for OpenTitan OTTF-launched test binaries.
- *
- * Portions of this file are Ibex-specific.
- */
-
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
-
-/**
  * Reserving space at the top of the RAM for the stack.
  */
 _stack_size = 0x2000;
@@ -28,17 +20,17 @@ _dv_log_offset = 0x10000;
  * The start of the .text section relative to the beginning of the associated
  * slot for use in the manifest.
  */
-_manifest_code_start = _text_start - ORIGIN(eflash);
+_manifest_code_start = _text_start - _ottf_ext_start_address;
 /*
  * The end of the .text section relative to the beginning of the associated slot
  * for use in the manifest.
  */
-_manifest_code_end = _text_end - ORIGIN(eflash);
+_manifest_code_end = _text_end - _ottf_ext_start_address;
 /*
  * The location of the entry point relative to the beginning of the associated
  * slot for use in the manifest.
  */
-_manifest_entry_point = _ottf_start - ORIGIN(eflash);
+_manifest_entry_point = _ottf_start - _ottf_ext_start_address;
 
 OUTPUT_ARCH(riscv)
 
@@ -60,9 +52,9 @@ ENTRY(_ottf_start);
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
  */
 SECTIONS {
-  .manifest ORIGIN(eflash) : {
+  .manifest _ottf_ext_start_address : {
     KEEP(*(.manifest))
-  } > eflash
+  } > ottf_flash
 
   /**
    * Non-volatile Scratch area in flash.
@@ -73,7 +65,7 @@ SECTIONS {
   .non_volatile_scratch : ALIGN(2048){
     _non_volatile_scratch_start = .;
     KEEP(*(.non_volatile_scratch))
-  } > eflash
+  } > ottf_flash
 
   /**
    * Ibex interrupt vector. See 'ottf_start.S' for more information.
@@ -84,14 +76,14 @@ SECTIONS {
   .vectors : ALIGN (256){
     _text_start = .;
     *(.vectors)
-  } > eflash
+  } > ottf_flash
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > eflash
+  } > ottf_flash
 
   /**
    * For LLVM profiling. This contains a pointer to the runtime initialization
@@ -105,7 +97,7 @@ SECTIONS {
       *(.init_array.*)
       . = ALIGN(4);
       _init_array_end = .;
-  } > eflash
+  } > ottf_flash
 
   /**
    * Standard text section, containing program code.
@@ -123,7 +115,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > eflash
+  } > ottf_flash
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -141,7 +133,7 @@ SECTIONS {
     KEEP(*(__llvm_covfun))
     KEEP(*(__llvm_covmap))
     KEEP(*(__llvm_prf_names))
-  } > eflash
+  } > ottf_flash
 
   /**
    * "Intitial data" section, the initial values of the mutable data section
@@ -149,7 +141,7 @@ SECTIONS {
    */
   .idata : ALIGN(4) {
     _data_init_start = .;
-  } > eflash
+  } > ottf_flash
 
   /**
    * Standard mutable data section, at the bottom of RAM. This will be
