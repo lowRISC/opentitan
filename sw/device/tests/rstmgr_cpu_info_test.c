@@ -121,7 +121,7 @@ void ottf_exception_handler(void) {
 
   CHECK(flash_ctrl_testutils_write(&flash_ctrl, addr, 0, temp_dump,
                                    kDifFlashCtrlPartitionTypeData,
-                                   kCpuDumpSize) == 0);
+                                   kCpuDumpSize));
 
   for (int i = 0; i < kCpuDumpSize; ++i) {
     dif_rstmgr_cpu_info_dump_segment_t rdata = abs_mmio_read32(addr);

@@ -123,19 +123,19 @@ static void setup_scrambled_regions(void) {
 }
 
 static void erase_and_write_regions(void) {
-  CHECK(!flash_ctrl_testutils_erase_and_write_page(
+  CHECK(flash_ctrl_testutils_erase_and_write_page(
       &flash_state, region_addresses[kAddressBank0Page0Data], kPartitionId,
       kBank0Page0Data, kDifFlashCtrlPartitionTypeData, kNumTestWords));
-  CHECK(!flash_ctrl_testutils_erase_and_write_page(
+  CHECK(flash_ctrl_testutils_erase_and_write_page(
       &flash_state, region_addresses[kAddressBank1Page0Data], kPartitionId,
       kBank1Page0Data, kDifFlashCtrlPartitionTypeData, kNumTestWords));
-  CHECK(!flash_ctrl_testutils_erase_and_write_page(
+  CHECK(flash_ctrl_testutils_erase_and_write_page(
       &flash_state, region_addresses[kAddressCreatorSecret], kPartitionId,
       kCreatorSecretData, kDifFlashCtrlPartitionTypeInfo, kNumTestWords));
-  CHECK(!flash_ctrl_testutils_erase_and_write_page(
+  CHECK(flash_ctrl_testutils_erase_and_write_page(
       &flash_state, region_addresses[kAddressOwnerSecret], kPartitionId,
       kOwnerSecretData, kDifFlashCtrlPartitionTypeInfo, kNumTestWords));
-  CHECK(!flash_ctrl_testutils_erase_and_write_page(
+  CHECK(flash_ctrl_testutils_erase_and_write_page(
       &flash_state, region_addresses[kAddressIsoPart], kPartitionId,
       kIsoPartData, kDifFlashCtrlPartitionTypeInfo, kNumTestWords));
 }
@@ -151,29 +151,24 @@ static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
 static void check_readback_data_match(void) {
   uint32_t readback_data[kNumTestWords];
   CHECK(flash_ctrl_testutils_read(
-            &flash_state, region_addresses[kAddressBank0Page0Data],
-            kPartitionId, readback_data, kDifFlashCtrlPartitionTypeData,
-            kNumTestWords, 0) == 0);
+      &flash_state, region_addresses[kAddressBank0Page0Data], kPartitionId,
+      readback_data, kDifFlashCtrlPartitionTypeData, kNumTestWords, 0));
   CHECK_ARRAYS_EQ(readback_data, kBank0Page0Data, kNumTestWords);
   CHECK(flash_ctrl_testutils_read(
-            &flash_state, region_addresses[kAddressBank1Page0Data],
-            kPartitionId, readback_data, kDifFlashCtrlPartitionTypeData,
-            kNumTestWords, 0) == 0);
+      &flash_state, region_addresses[kAddressBank1Page0Data], kPartitionId,
+      readback_data, kDifFlashCtrlPartitionTypeData, kNumTestWords, 0));
   CHECK_ARRAYS_EQ(readback_data, kBank1Page0Data, kNumTestWords);
   CHECK(flash_ctrl_testutils_read(
-            &flash_state, region_addresses[kAddressCreatorSecret], kPartitionId,
-            readback_data, kDifFlashCtrlPartitionTypeInfo, kNumTestWords,
-            0) == 0);
+      &flash_state, region_addresses[kAddressCreatorSecret], kPartitionId,
+      readback_data, kDifFlashCtrlPartitionTypeInfo, kNumTestWords, 0));
   CHECK_ARRAYS_EQ(readback_data, kCreatorSecretData, kNumTestWords);
   CHECK(flash_ctrl_testutils_read(
-            &flash_state, region_addresses[kAddressOwnerSecret], kPartitionId,
-            readback_data, kDifFlashCtrlPartitionTypeInfo, kNumTestWords,
-            0) == 0);
+      &flash_state, region_addresses[kAddressOwnerSecret], kPartitionId,
+      readback_data, kDifFlashCtrlPartitionTypeInfo, kNumTestWords, 0));
   CHECK_ARRAYS_EQ(readback_data, kOwnerSecretData, kNumTestWords);
   CHECK(flash_ctrl_testutils_read(
-            &flash_state, region_addresses[kAddressIsoPart], kPartitionId,
-            readback_data, kDifFlashCtrlPartitionTypeInfo, kNumTestWords,
-            0) == 0);
+      &flash_state, region_addresses[kAddressIsoPart], kPartitionId,
+      readback_data, kDifFlashCtrlPartitionTypeInfo, kNumTestWords, 0));
   CHECK_ARRAYS_EQ(readback_data, kIsoPartData, kNumTestWords);
 
   read_and_check_host_if(kRegionBaseBank0Page0Index, kBank0Page0Data);

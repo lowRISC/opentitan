@@ -70,7 +70,6 @@ static bool incr_flash_cnt(uint32_t tested_idx) {
 
   // program the word into flash
   return flash_ctrl_testutils_write(&flash_ctrl, addr, 0, &val,
-
                                     kDifFlashCtrlPartitionTypeData, 1);
 };
 
@@ -136,7 +135,7 @@ bool test_main(void) {
                                              /*he_en*/ false);
 
   // Increment flash counter to know where we are
-  if (incr_flash_cnt(event_idx)) {
+  if (!incr_flash_cnt(event_idx)) {
     LOG_ERROR("Error when incrementing flash counter");
   }
 

@@ -108,13 +108,13 @@ static void write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
       flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId);
 
   CHECK(flash_ctrl_testutils_erase_and_write_page(
-            flash, address, kFlashInfoPartitionId, data,
-            kDifFlashCtrlPartitionTypeInfo, kSecretWordSize) == 0);
+      flash, address, kFlashInfoPartitionId, data,
+      kDifFlashCtrlPartitionTypeInfo, kSecretWordSize));
 
   uint32_t readback_data[kSecretWordSize];
   CHECK(flash_ctrl_testutils_read(flash, address, kFlashInfoPartitionId,
                                   readback_data, kDifFlashCtrlPartitionTypeInfo,
-                                  kSecretWordSize, 0) == 0);
+                                  kSecretWordSize, 0));
   CHECK_ARRAYS_EQ(data, readback_data, kSecretWordSize);
 }
 

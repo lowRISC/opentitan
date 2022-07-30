@@ -218,7 +218,7 @@ bool test_main(void) {
   test_event(event_idx, /*fatal*/ kDifToggleEnabled);
 
   // increment flash counter to know where we are
-  if (incr_flash_cnt(event_idx)) {
+  if (!incr_flash_cnt(event_idx)) {
     LOG_ERROR("Error when incrementing flash counter");
   }
 
