@@ -13,6 +13,7 @@ filesets:
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
       - lowrisc:ip:flash_ctrl_pkg
+      - lowrisc:ip:flash_ctrl_prim_reg_top
     files:
       - rtl/prim_generic_flash_bank.sv
       - rtl/prim_generic_flash.sv

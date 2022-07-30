@@ -1436,4 +1436,13 @@ module flash_ctrl
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])
+
+  `ifndef PRIM_DEFAULT_IMPL
+    `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
+  `endif
+  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
+    `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
+        u_eflash.u_flash.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[1])
+  end
+
 endmodule
