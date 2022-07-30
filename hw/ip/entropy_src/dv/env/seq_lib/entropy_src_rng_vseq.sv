@@ -54,16 +54,15 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     dly_to_access_alert_sts dist {
       0                   :/ 1,
       [1      :100]       :/ 5,
-      [101    :10_000]    :/ 3
+      [101    :10_000]    :/ 1
     };
   }
 
   constraint dly_to_insert_entropy_c {
     dly_to_insert_entropy dist {
-      0                   :/ 1,
-      [1      :100]       :/ 3,
-      [101    :1000]      :/ 2,
-      [1001   :10_000]    :/ 1
+      [1      :10]        :/ 3,
+      [11     :100]       :/ 2,
+      [101    :1000]      :/ 1
     };
   }
 
@@ -410,7 +409,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fw_ov_insert_per_seed);
         ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4True);
         csr_update(.csr(ral.fw_ov_sha3_start));
-        for(int i = 0; i < fw_ov_insert_per_seed; i++) begin
+        for (int i = 0; i < fw_ov_insert_per_seed; i++) begin
+          if (!do_background_procs) break;
           `DV_CHECK_STD_RANDOMIZE_FATAL(fw_ov_value);
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_insert_entropy);
           cfg.clk_rst_vif.wait_clks(dly_to_insert_entropy);
@@ -529,7 +529,10 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       delta = (sched_reconfig_time - $realtime());
       fork : isolation_fork
         fork
-          #(delta);
+          begin
+            #(delta);
+            `uvm_info(`gfn, $sformatf("Triggering reconfig after %0.2f ms", delta/1ms), UVM_HIGH)
+          end
           wait(!do_background_procs);
         join_any
         disable fork;
@@ -559,6 +562,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         bit regwen;
         // For use when doing random reconfigs
         entropy_src_dut_cfg altcfg;
+
+        do_background_procs = 1;
+        reset_needed = 0;
 
         // Explicitly enable the DUT
         enable_dut();

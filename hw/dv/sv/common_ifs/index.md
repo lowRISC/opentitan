@@ -84,3 +84,32 @@ The diagram below gives a schematic view of `pins_if`. The driver shown is
 replicated for each bit.
 
 ![Block diagram](pins_if.svg)
+
+### `entropy_subsys_fifo_exception_if`
+
+The IPs in the entropy subsystem (`entropy_src`, `CSRNG` and `EDN`) raise fatal alerts if they
+detect that data is lost in one of the intermediate FIFOS, either through:
+  - Write errors (Overflow) wvalid_i asserted when full
+  - Read errors  (Underflow) rready_i asserted when empty (i.e. rvalid_o == 0)
+  - State errors: Anomalous behavior rvalid_o deasserted (FIFO is not empty) when full
+
+Furthermore some instances of prim packer fifo's also raise recoverable alerts if firmware
+tries to write data to it when it is not ready.
+
+The events described above need not be treated as errors in general purpose designs.
+In many general designs where the fifo is capable of applying backpressure (stalling
+the read or write inputs) these do not have to be an error. One could in principal
+only signal an alert if it is observed that data was indeed lost (e.g., if `wvalid_i` is
+deasserted or data changes before `wready_o` is high).  However most of the entropy complex
+fifo stages do not respond to such backpressure, and thus the conditions above do
+indicate a loss of data.
+
+The entropy_subsys_fifo_exception_if.sv has pins that can map either to synchronous
+FIFOs or to packer fifos.  Though some interface ports will be unused in any case
+the interface parameter `IsPackerFifo` indicates which ports to use (True for
+packer FIFOs or False for synchronous FIFOs.
+
+The interface then generates error pulses in the `mon_cb` clocking block under
+the signal `mon_cb.error_pulses`, which has one line per possible error condition.
+The enumeration entropy_subsys_fifo_exception_pkg::fifo_exception_e lists the
+types of exceptions and provides the mapping to the corresponding error pulse line.
