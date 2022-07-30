@@ -90,34 +90,6 @@ OPTIONAL_FIELDS = {
     ]
 }
 
-# These attributes are crosschecked for equivalence by the aliasing mechanism.
-NON_ALIAS_REG_ATTRS = [
-    'async',
-    'swaccess',
-    'hwaccess',
-    'hwext',
-    'hwqe',
-    'hwre',
-    # TODO: we may want to allow the REGWEN name to be overridden. This needs
-    # some additional crosschecking mechanisms.
-    'regwen',
-    'shadowed',
-    'update_err_alert',
-    'storage_err_alert'
-]
-
-# These attributes can be overridden by the aliasing mechanism.
-ALIAS_REG_ATTRS = [
-    'name',
-    'desc',
-    'resval',
-    'tags',
-    # We also keep track of the alias_target when overriding attributes.
-    # This gives us a way to check whether a register has been overridden
-    # or not, and what the name of the original register was.
-    'alias_target'
-]
-
 
 class Register(RegBase):
     '''Code representing a register for reggen'''
@@ -625,9 +597,7 @@ class Register(RegBase):
         identical values.
         '''
         # Attributes to be crosschecked
-        # TODO: we may want to allow the REGWEN name to be overridden.
-        # This needs some additional crosschecking mechanisms.
-        attrs = ['async_name', 'async_clk', 'hwext', 'hwqe', 'hwre', 'regwen',
+        attrs = ['async_name', 'async_clk', 'hwext', 'hwqe', 'hwre',
                  'update_err_alert', 'storage_err_alert', 'shadowed']
         for attr in attrs:
             if getattr(self, attr) != getattr(alias_reg, attr):
@@ -641,6 +611,8 @@ class Register(RegBase):
         self.desc = alias_reg.desc
         self.resval = alias_reg.resval
         self.tags = alias_reg.tags
+        self.regwen = alias_reg.regwen
+
         # We also keep track of the alias_target when overriding attributes.
         # This gives us a way to check whether a register has been overridden
         # or not, and what the name of the original register was.
