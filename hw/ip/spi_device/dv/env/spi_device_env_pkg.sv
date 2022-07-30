@@ -65,7 +65,6 @@ package spi_device_env_pkg;
     PayloadOut
   } payload_dir_e;
 
-
   typedef enum int {
     ReadAddrWithinMailbox,
     ReadAddrCrossIntoMailbox,
@@ -125,6 +124,10 @@ package spi_device_env_pkg;
   parameter bit[7:0] READ_QUAD                   = 8'h6B;
   parameter bit[7:0] READ_DUALIO                 = 8'hBB;
   parameter bit[7:0] READ_QUADIO                 = 8'hEB;
+  parameter bit[7:0] WREN                        = 8'h06;
+  parameter bit[7:0] WRDI                        = 8'h04;
+  parameter bit[7:0] EN4B                        = 8'hB7;
+  parameter bit[7:0] EX4B                        = 8'hE9;
 
   parameter bit[7:0] READ_CMD_LIST[] = {READ_NORMAL, READ_FAST, READ_DUAL,
                                         READ_QUAD, READ_DUALIO, READ_QUADIO};

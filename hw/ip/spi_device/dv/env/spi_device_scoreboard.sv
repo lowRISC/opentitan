@@ -9,6 +9,16 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   localparam int NumInternalRecognizedCmd = 11;
 
+  typedef enum int {
+    NoInternalProcess,
+    InternalProcessStatus,
+    InternalProcessJedec,
+    InternalProcessSfdp,
+    InternalProcessMailbox,
+    // cmd like write enable/disable, enter/exit 4B addr
+    InternalProcessCfgCmd
+  } internal_process_cmd_e;
+
   // TLM fifos to pick up the packets
   uvm_tlm_analysis_fifo #(spi_item) upstream_spi_host_fifo;
   uvm_tlm_analysis_fifo #(spi_item) upstream_spi_device_fifo;
@@ -30,8 +40,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   local bit [31:0] rx_word_q[$];
 
   // for passthrough
-  spi_item spi_passthrough_upstream_q[$];
-  spi_item spi_passthrough_intercept_upstream_q[$];
+  spi_item spi_passthrough_downstream_q[$];
 
   flash_status_t flash_status_q[$];
 
@@ -73,30 +82,36 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         end
         FlashMode, PassthroughMode: begin
           `DV_CHECK_EQ(item.item_type, SpiFlashTrans)
+          // downstream item should be in the queue at the same time, add small delay
+          #1ps;
           if (is_internal_processed_cmd(item.opcode, is_status, is_jedec,
                                         is_sfdp, is_mbx_read)) begin
             if (is_status) check_internal_processed_read_status(item);
             if (is_jedec) check_internal_processed_read_jedec(item);
             if (is_sfdp) check_internal_processed_read_sfdp(item);
-            if (is_mbx_read) check_mbx_read(item);
+            if (is_mbx_read) begin
+              spi_item downstream_item;
+              if (is_opcode_passthrough(item.opcode)) begin
+                `DV_CHECK_EQ(spi_passthrough_downstream_q.size, 1)
+                downstream_item = spi_passthrough_downstream_q[0];
+              end
+              check_read_cmd_data(item, downstream_item);
+            end
             // TODO, support more
 
             // addr/data swap only occurs to passthrough, call handle_addr_payload_swap after
             // all internal processed cmds are done
             if (is_opcode_passthrough(item.opcode)) begin
-              handle_addr_payload_swap(item);
-              spi_passthrough_intercept_upstream_q.push_back(item);
+              compare_passthru_item(.upstream_item(item), .is_intercepted(1));
             end
           end else if (is_opcode_passthrough(item.opcode)) begin
-            handle_addr_payload_swap(item);
-            spi_passthrough_upstream_q.push_back(item);
+            compare_passthru_item(.upstream_item(item), .is_intercepted(0));
           end
+          latch_flash_status();
         end
         default: `uvm_fatal(`gfn, $sformatf("Unexpected mode: %0d", `gmv(ral.control.mode)))
       endcase
-
-      latch_flash_status();
-    end
+    end // forever
   endtask
 
   // update flash_status to the value of the last item
@@ -216,26 +231,54 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
   endfunction
 
-
-  virtual function void check_mbx_read(spi_item item);
-    bit [31:0] start_addr;
+  // check read return data again exp_mem or downstream item
+  virtual function void check_read_cmd_data(spi_item up_item, spi_item dn_item);
+    bit [31:0] start_addr, end_addr;
     bit [31:0] mbx_base_addr = get_mbx_base_addr(ral);
-    foreach (item.address_q[i]) begin
+    // TODO, sample this for coverage
+    read_addr_size_type_e read_addr_size_type;
+
+    foreach (up_item.address_q[i]) begin
       if (i > 0) start_addr = start_addr << 8;
-      start_addr[7:0] = item.address_q[i];
+      start_addr[7:0] = up_item.address_q[i];
     end
-    // TODO, handle addr across boundary later
-    if (start_addr < mbx_base_addr || start_addr > mbx_base_addr + MAILBOX_BUFFER_SIZE) return;
 
-    foreach (item.payload_q[i]) begin
-      bit [31:0] offset = (start_addr + i) % MAILBOX_BUFFER_SIZE + MAILBOX_START_ADDR;
-      bit [31:0] addr   = get_converted_addr(offset);
+    if (dn_item != null) `DV_CHECK_EQ(up_item.payload_q.size, dn_item.payload_q.size)
+    foreach (up_item.payload_q[i]) begin
+      bit [31:0] cur_addr = start_addr + i;
 
-      `DV_CHECK(spi_mem.addr_exists(addr))
-      spi_mem.compare_byte(addr, item.payload_q[i]);
-      `uvm_info(`gfn, $sformatf("compare mbx idx %0d, act: 0x%0x, mem addr 0x%0x, exp: 0x%0x",
-                i, item.payload_q[i], addr, spi_mem.read_byte(addr)), UVM_MEDIUM)
+      // out of mbx region
+      if ((cur_addr < mbx_base_addr) || (cur_addr >= mbx_base_addr + MAILBOX_BUFFER_SIZE)) begin
+        bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
+        string str;
+
+        if (is_passthru) begin // passthrough mode
+          if (dn_item != null) begin
+            str = $sformatf("compare mbx data with downstread item. idx %0d, up: 0x%0x, dn: 0x%0x",
+                            i, up_item.payload_q[i], dn_item.payload_q[i]);
+            `DV_CHECK_EQ(up_item.payload_q[i], dn_item.payload_q[i], str)
+          end else begin // cmd is filtered
+            str = $sformatf("compare mbx data. idx %0d, value 0x%0x != z",
+                            i, up_item.payload_q[i]);
+            `DV_CHECK_EQ(up_item.payload_q[i], 'dz, str)
+          end
+        end else begin // flash mode
+          // TODO, support later, let it fail
+          `DV_CHECK_EQ(0, 1)
+        end
+        `uvm_info(`gfn, str, UVM_MEDIUM)
+      end else begin // in mbx region
+        bit [31:0] offset = cur_addr % MAILBOX_BUFFER_SIZE + MAILBOX_START_ADDR;
+        bit [31:0] addr   = get_converted_addr(offset);
+
+        `DV_CHECK(spi_mem.addr_exists(addr))
+        spi_mem.compare_byte(addr, up_item.payload_q[i]);
+        `uvm_info(`gfn, $sformatf("compare mbx idx %0d, act: 0x%0x, mem addr 0x%0x, exp: 0x%0x",
+                  i, up_item.payload_q[i], addr, spi_mem.read_byte(addr)), UVM_MEDIUM)
+      end
     end
+
+    // TODO, sample read_addr_size_type for coverage
   endfunction
 
   // convert offset to the mem address that is used to find the locaiton in exp_mem
@@ -289,6 +332,29 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     return null;
   endfunction
 
+  virtual function void compare_passthru_item(spi_item upstream_item, bit is_intercepted);
+    spi_item downstream_item;
+
+    handle_addr_payload_swap(upstream_item);
+
+    `DV_CHECK_EQ(spi_passthrough_downstream_q.size, 1)
+    downstream_item = spi_passthrough_downstream_q.pop_front();
+
+    if (is_intercepted) begin
+      // compare opcode and address. data is ignored as data is checked in check_read_cmd_data
+      `DV_CHECK_EQ(upstream_item.opcode, downstream_item.opcode)
+      `DV_CHECK_EQ(upstream_item.address_q.size, downstream_item.address_q.size)
+      foreach (upstream_item.address_q[i]) begin
+        `DV_CHECK_EQ(upstream_item.address_q[i], downstream_item.address_q[i])
+      end
+    end else begin
+      if (!downstream_item.compare(upstream_item)) begin
+        `uvm_error(`gfn, $sformatf("Compare failed, downstream item:\n%s upstream item:\n%s",
+              downstream_item.sprint(), upstream_item.sprint()))
+      end
+    end
+  endfunction
+
   // extract spi items sent from device
   virtual task process_upstream_spi_device_fifo();
     spi_item item;
@@ -307,35 +373,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       `uvm_info(`gfn, $sformatf("downstream received spi item:\n%0s", downstream_item.sprint()),
                 UVM_MEDIUM)
       `DV_CHECK_EQ(`gmv(ral.control.mode), PassthroughMode)
-
-      // upstream item should be in the queue at the same time, add small delay
-      #1ps;
-      if (spi_passthrough_intercept_upstream_q.size > 0) begin
-        bit is_read_cmd; // this doesn't include state, jedec, sfdp
-        `DV_CHECK_EQ(spi_passthrough_intercept_upstream_q.size, 1)
-        `DV_CHECK_EQ(spi_passthrough_upstream_q.size, 0)
-
-        upstream_item = spi_passthrough_intercept_upstream_q.pop_front();
-
-        if (is_read_cmd) begin
-          // TODO, add this later
-        end else begin
-          // compare opcode and address. data is ignored
-          `DV_CHECK_EQ(upstream_item.opcode, downstream_item.opcode)
-          `DV_CHECK_EQ(upstream_item.address_q.size, downstream_item.address_q.size)
-          foreach (upstream_item.address_q[i]) begin
-            `DV_CHECK_EQ(upstream_item.address_q[i], downstream_item.address_q[i])
-          end
-        end
-      end else begin
-        `DV_CHECK_EQ(spi_passthrough_upstream_q.size, 1)
-
-        upstream_item = spi_passthrough_upstream_q.pop_front();
-        if (!downstream_item.compare(upstream_item)) begin
-          `uvm_error(`gfn, $sformatf("Compare failed, downstream item:\n%s upstream item:\n%s",
-                downstream_item.sprint(), upstream_item.sprint()))
-        end
-      end
+      `DV_CHECK_EQ(spi_passthrough_downstream_q.size, 0)
+      spi_passthrough_downstream_q.push_back(downstream_item);
     end
   endtask
 
@@ -557,8 +596,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     tx_word_q.delete();
     rx_word_q.delete();
-    spi_passthrough_upstream_q.delete();
-    spi_passthrough_intercept_upstream_q.delete();
+    spi_passthrough_downstream_q.delete();
     flash_status_q.delete();
   endfunction
 
@@ -569,7 +607,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, downstream_spi_host_fifo)
     `DV_CHECK_EQ(tx_word_q.size, 0)
     `DV_CHECK_EQ(rx_word_q.size, 0)
-    `DV_CHECK_EQ(spi_passthrough_upstream_q.size, 0)
+    `DV_CHECK_EQ(spi_passthrough_downstream_q.size, 0)
     `DV_CHECK_EQ(flash_status_q.size, 0)
   endfunction
 

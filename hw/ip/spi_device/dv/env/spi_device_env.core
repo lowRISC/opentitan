@@ -42,6 +42,7 @@ filesets:
       - seq_lib/spi_device_pass_cmd_filtering_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_pass_addr_payload_swap_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_intercept_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_device_mailbox_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_pass_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 

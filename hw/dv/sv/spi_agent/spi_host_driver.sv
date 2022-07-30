@@ -153,9 +153,9 @@ class spi_host_driver extends spi_driver;
 
     // align to DrivingEdge, if the item has more to send
     if (req.dummy_cycles > 0 || req.payload_q.size > 0 ) cfg.wait_sck_edge(DrivingEdge);
+    cfg.vif.sio <= 'dz;
 
     repeat (req.dummy_cycles) begin
-      //cfg.vif.sio <= 'dz;
       cfg.wait_sck_edge(DrivingEdge);
     end
     // drive data

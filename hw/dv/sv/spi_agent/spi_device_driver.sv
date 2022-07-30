@@ -69,7 +69,7 @@ class spi_device_driver extends spi_driver;
   virtual task send_flash_item(spi_item item);
     logic [3:0] sio_bits;
     bit         bits_q[$];
-    bit [7:0]   data[$] = {item.payload_q};
+    logic [7:0] data[$] = {item.payload_q};
 
     `uvm_info(`gfn, $sformatf("sending rx_item:\n%s", item.sprint()), UVM_MEDIUM)
 
