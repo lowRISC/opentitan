@@ -10,9 +10,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
   rand bit [7:0] lc_exit_token[TokenWidthByte];
   rand bit [7:0] lc_unlock_token[TokenWidthByte];
 
-  constraint num_trans_c {
-    num_trans inside {[1:2]};
-  }
+  constraint num_trans_c {num_trans inside {[1 : 2]};}
 
   // Reassign `select_jtag` variable to drive LC JTAG tap at start,
   // because LC_CTRL's TestLock state can only sample strap once at boot.
@@ -37,7 +35,6 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task body();
-    bit io_ext_clk_done = 1'b0;
     super.body();
 
     for (int trans_i = 1; trans_i <= num_trans; trans_i++) begin
@@ -67,34 +64,38 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       apply_reset();
 
       // Wait for SW to finish power on set up.
-      wait (cfg.sw_logger_vif.printed_log == "Start LC_CTRL transition test.");
+      wait(cfg.sw_logger_vif.printed_log == "Start LC_CTRL transition test.");
 
-      fork begin : isolation_fork
-        // Detect windows when the AST selects ext_clk to drive the io_clk, to verify the external
-        // clock, and not the io oscillator, is actually used for these lc_ctrl transitions.
-        fork begin
-          cfg.ast_ext_clk_vif.detect_io_active_window();
-          io_ext_clk_done = 1'b1;
-        end join_none
+      fork
+        begin : isolation_fork
+          bit external_clock_was_activated = 1'b0;
+          // Detect windows when the AST selects ext_clk to drive the io_clk, to verify the external
+          // clock, and not the io oscillator, is actually used for these lc_ctrl transitions.
+          fork
+            begin
+              cfg.ast_ext_clk_vif.span_external_clock_active_window();
+              external_clock_was_activated = 1'b1;
+            end
+          join_none
 
-        // Wait for LC_CTRL state trasition finish from TLUL interface.
-        wait_lc_status(LcTransitionSuccessful);
+          // Wait for LC_CTRL state transition finish from TLUL interface.
+          wait_lc_status(LcTransitionSuccessful);
 
-        // JTAG read out if LC_CTRL is configured to use external clock.
-        jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.transition_ctrl.get_offset(),
-                                            p_sequencer.jtag_sequencer_h,
-                                            ext_clock_en);
+          // JTAG read out if LC_CTRL is configured to use external clock.
+          jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.transition_ctrl.get_offset(),
+                                              p_sequencer.jtag_sequencer_h, ext_clock_en);
 
-        // LC_CTRL state transition requires a chip reset.
-        apply_reset();
-        `uvm_info(`gfn, "Second apply_reset done", UVM_MEDIUM)
+          // LC_CTRL state transition requires a chip reset.
+          apply_reset();
+          `uvm_info(`gfn, "Second apply_reset done", UVM_MEDIUM)
 
-        `DV_CHECK(io_ext_clk_done == ext_clock_en,
-                  $sformatf("External clock should be %0s", ext_clock_en ? "on" : "off"));
-        io_ext_clk_done = 1'b0;
+          `DV_CHECK(external_clock_was_activated == ext_clock_en, $sformatf(
+                    "External clock should be %0s", ext_clock_en ? "on" : "off"));
+          external_clock_was_activated = 1'b0;
 
-        disable fork;
-      end join
+          disable fork;
+        end
+      join
 
       // Wait for SW test finishes with a pass/fail status.
       wait (cfg.sw_test_status_vif.sw_test_status inside {SwTestStatusPassed,
