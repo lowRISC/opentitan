@@ -28,7 +28,7 @@ package flash_ctrl_reg_pkg;
 
   // Address widths within the block
   parameter int CoreAw = 9;
-  parameter int PrimAw = 1;
+  parameter int PrimAw = 7;
   parameter int MemAw = 1;
 
   ///////////////////////////////////////////////
@@ -1126,6 +1126,389 @@ package flash_ctrl_reg_pkg;
     4'b 0011, // index[104] FLASH_CTRL_FIFO_LVL
     4'b 0001, // index[105] FLASH_CTRL_FIFO_RST
     4'b 0011  // index[106] FLASH_CTRL_CURR_FIFO_LVL
+  };
+
+  ///////////////////////////////////////////////
+  // Typedefs for registers for prim interface //
+  ///////////////////////////////////////////////
+
+  typedef struct packed {
+    struct packed {
+      logic [7:0]  q;
+    } field0;
+    struct packed {
+      logic [4:0]  q;
+    } field1;
+  } flash_ctrl_reg2hw_csr1_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } field0;
+    struct packed {
+      logic        q;
+    } field1;
+    struct packed {
+      logic        q;
+    } field2;
+    struct packed {
+      logic        q;
+    } field3;
+    struct packed {
+      logic        q;
+    } field4;
+    struct packed {
+      logic        q;
+    } field5;
+    struct packed {
+      logic        q;
+    } field6;
+    struct packed {
+      logic        q;
+    } field7;
+  } flash_ctrl_reg2hw_csr2_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [3:0]  q;
+    } field0;
+    struct packed {
+      logic [3:0]  q;
+    } field1;
+    struct packed {
+      logic [2:0]  q;
+    } field2;
+    struct packed {
+      logic [2:0]  q;
+    } field3;
+    struct packed {
+      logic [2:0]  q;
+    } field4;
+    struct packed {
+      logic [2:0]  q;
+    } field5;
+    struct packed {
+      logic        q;
+    } field6;
+    struct packed {
+      logic [2:0]  q;
+    } field7;
+    struct packed {
+      logic [1:0]  q;
+    } field8;
+    struct packed {
+      logic [1:0]  q;
+    } field9;
+  } flash_ctrl_reg2hw_csr3_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [2:0]  q;
+    } field0;
+    struct packed {
+      logic [2:0]  q;
+    } field1;
+    struct packed {
+      logic [2:0]  q;
+    } field2;
+    struct packed {
+      logic [2:0]  q;
+    } field3;
+  } flash_ctrl_reg2hw_csr4_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [2:0]  q;
+    } field0;
+    struct packed {
+      logic [1:0]  q;
+    } field1;
+    struct packed {
+      logic [8:0]  q;
+    } field2;
+    struct packed {
+      logic [4:0]  q;
+    } field3;
+    struct packed {
+      logic [3:0]  q;
+    } field4;
+  } flash_ctrl_reg2hw_csr5_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [2:0]  q;
+    } field0;
+    struct packed {
+      logic [2:0]  q;
+    } field1;
+    struct packed {
+      logic [7:0]  q;
+    } field2;
+    struct packed {
+      logic [2:0]  q;
+    } field3;
+    struct packed {
+      logic [1:0]  q;
+    } field4;
+    struct packed {
+      logic [1:0]  q;
+    } field5;
+    struct packed {
+      logic [1:0]  q;
+    } field6;
+    struct packed {
+      logic        q;
+    } field7;
+    struct packed {
+      logic        q;
+    } field8;
+  } flash_ctrl_reg2hw_csr6_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [7:0]  q;
+    } field0;
+    struct packed {
+      logic [8:0]  q;
+    } field1;
+  } flash_ctrl_reg2hw_csr7_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } flash_ctrl_reg2hw_csr8_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } flash_ctrl_reg2hw_csr9_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } flash_ctrl_reg2hw_csr10_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } flash_ctrl_reg2hw_csr11_reg_t;
+
+  typedef struct packed {
+    logic [9:0] q;
+  } flash_ctrl_reg2hw_csr12_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [19:0] q;
+    } field0;
+    struct packed {
+      logic        q;
+    } field1;
+  } flash_ctrl_reg2hw_csr13_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [7:0]  q;
+    } field0;
+    struct packed {
+      logic        q;
+    } field1;
+  } flash_ctrl_reg2hw_csr14_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [7:0]  q;
+    } field0;
+    struct packed {
+      logic        q;
+    } field1;
+  } flash_ctrl_reg2hw_csr15_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [7:0]  q;
+    } field0;
+    struct packed {
+      logic        q;
+    } field1;
+  } flash_ctrl_reg2hw_csr16_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [7:0]  q;
+    } field0;
+    struct packed {
+      logic        q;
+    } field1;
+  } flash_ctrl_reg2hw_csr17_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } flash_ctrl_reg2hw_csr18_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } flash_ctrl_reg2hw_csr19_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } field0;
+    struct packed {
+      logic        q;
+    } field1;
+    struct packed {
+      logic        q;
+    } field2;
+  } flash_ctrl_reg2hw_csr20_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } field0;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field2;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field3;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field4;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field5;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field6;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field7;
+  } flash_ctrl_hw2reg_csr2_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } field0;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field2;
+  } flash_ctrl_hw2reg_csr20_reg_t;
+
+  // Register -> HW type for prim interface
+  typedef struct packed {
+    flash_ctrl_reg2hw_csr1_reg_t csr1; // [325:313]
+    flash_ctrl_reg2hw_csr2_reg_t csr2; // [312:305]
+    flash_ctrl_reg2hw_csr3_reg_t csr3; // [304:277]
+    flash_ctrl_reg2hw_csr4_reg_t csr4; // [276:265]
+    flash_ctrl_reg2hw_csr5_reg_t csr5; // [264:242]
+    flash_ctrl_reg2hw_csr6_reg_t csr6; // [241:217]
+    flash_ctrl_reg2hw_csr7_reg_t csr7; // [216:200]
+    flash_ctrl_reg2hw_csr8_reg_t csr8; // [199:168]
+    flash_ctrl_reg2hw_csr9_reg_t csr9; // [167:136]
+    flash_ctrl_reg2hw_csr10_reg_t csr10; // [135:104]
+    flash_ctrl_reg2hw_csr11_reg_t csr11; // [103:72]
+    flash_ctrl_reg2hw_csr12_reg_t csr12; // [71:62]
+    flash_ctrl_reg2hw_csr13_reg_t csr13; // [61:41]
+    flash_ctrl_reg2hw_csr14_reg_t csr14; // [40:32]
+    flash_ctrl_reg2hw_csr15_reg_t csr15; // [31:23]
+    flash_ctrl_reg2hw_csr16_reg_t csr16; // [22:14]
+    flash_ctrl_reg2hw_csr17_reg_t csr17; // [13:5]
+    flash_ctrl_reg2hw_csr18_reg_t csr18; // [4:4]
+    flash_ctrl_reg2hw_csr19_reg_t csr19; // [3:3]
+    flash_ctrl_reg2hw_csr20_reg_t csr20; // [2:0]
+  } flash_ctrl_prim_reg2hw_t;
+
+  // HW -> register type for prim interface
+  typedef struct packed {
+    flash_ctrl_hw2reg_csr2_reg_t csr2; // [21:6]
+    flash_ctrl_hw2reg_csr20_reg_t csr20; // [5:0]
+  } flash_ctrl_prim_hw2reg_t;
+
+  // Register offsets for prim interface
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR0_REGWEN_OFFSET = 7'h 0;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR1_OFFSET = 7'h 4;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR2_OFFSET = 7'h 8;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR3_OFFSET = 7'h c;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR4_OFFSET = 7'h 10;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR5_OFFSET = 7'h 14;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR6_OFFSET = 7'h 18;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR7_OFFSET = 7'h 1c;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR8_OFFSET = 7'h 20;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR9_OFFSET = 7'h 24;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR10_OFFSET = 7'h 28;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR11_OFFSET = 7'h 2c;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR12_OFFSET = 7'h 30;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR13_OFFSET = 7'h 34;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR14_OFFSET = 7'h 38;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR15_OFFSET = 7'h 3c;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR16_OFFSET = 7'h 40;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR17_OFFSET = 7'h 44;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR18_OFFSET = 7'h 48;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR19_OFFSET = 7'h 4c;
+  parameter logic [PrimAw-1:0] FLASH_CTRL_CSR20_OFFSET = 7'h 50;
+
+  // Register index for prim interface
+  typedef enum int {
+    FLASH_CTRL_CSR0_REGWEN,
+    FLASH_CTRL_CSR1,
+    FLASH_CTRL_CSR2,
+    FLASH_CTRL_CSR3,
+    FLASH_CTRL_CSR4,
+    FLASH_CTRL_CSR5,
+    FLASH_CTRL_CSR6,
+    FLASH_CTRL_CSR7,
+    FLASH_CTRL_CSR8,
+    FLASH_CTRL_CSR9,
+    FLASH_CTRL_CSR10,
+    FLASH_CTRL_CSR11,
+    FLASH_CTRL_CSR12,
+    FLASH_CTRL_CSR13,
+    FLASH_CTRL_CSR14,
+    FLASH_CTRL_CSR15,
+    FLASH_CTRL_CSR16,
+    FLASH_CTRL_CSR17,
+    FLASH_CTRL_CSR18,
+    FLASH_CTRL_CSR19,
+    FLASH_CTRL_CSR20
+  } flash_ctrl_prim_id_e;
+
+  // Register width information to check illegal writes for prim interface
+  parameter logic [3:0] FLASH_CTRL_PRIM_PERMIT [21] = '{
+    4'b 0001, // index[ 0] FLASH_CTRL_CSR0_REGWEN
+    4'b 0011, // index[ 1] FLASH_CTRL_CSR1
+    4'b 0001, // index[ 2] FLASH_CTRL_CSR2
+    4'b 1111, // index[ 3] FLASH_CTRL_CSR3
+    4'b 0011, // index[ 4] FLASH_CTRL_CSR4
+    4'b 0111, // index[ 5] FLASH_CTRL_CSR5
+    4'b 1111, // index[ 6] FLASH_CTRL_CSR6
+    4'b 0111, // index[ 7] FLASH_CTRL_CSR7
+    4'b 1111, // index[ 8] FLASH_CTRL_CSR8
+    4'b 1111, // index[ 9] FLASH_CTRL_CSR9
+    4'b 1111, // index[10] FLASH_CTRL_CSR10
+    4'b 1111, // index[11] FLASH_CTRL_CSR11
+    4'b 0011, // index[12] FLASH_CTRL_CSR12
+    4'b 0111, // index[13] FLASH_CTRL_CSR13
+    4'b 0011, // index[14] FLASH_CTRL_CSR14
+    4'b 0011, // index[15] FLASH_CTRL_CSR15
+    4'b 0011, // index[16] FLASH_CTRL_CSR16
+    4'b 0011, // index[17] FLASH_CTRL_CSR17
+    4'b 0001, // index[18] FLASH_CTRL_CSR18
+    4'b 0001, // index[19] FLASH_CTRL_CSR19
+    4'b 0001  // index[20] FLASH_CTRL_CSR20
   };
 
 endpackage

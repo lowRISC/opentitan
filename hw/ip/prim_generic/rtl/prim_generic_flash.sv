@@ -119,61 +119,26 @@ module prim_generic_flash #(
   assign unused_tms = tms_i;
   assign tdo_o = '0;
 
-  // fake memory used to emulate configuration
-  logic cfg_req;
-  logic cfg_we;
-  logic [CfgAddrWidth-1:0] cfg_addr;
-  logic [31:0] cfg_wdata;
-  logic cfg_rvalid;
-  logic [31:0] cfg_rdata;
+  ////////////////////////////////////
+  // TL-UL Test Interface Emulation //
+  ////////////////////////////////////
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      cfg_rvalid <= 1'b0;
-    end else begin
-      cfg_rvalid <= cfg_req & !cfg_we;
-    end
-  end
-
-  tlul_adapter_sram #(
-    .SramAw(CfgAddrWidth),
-    .SramDw(32),
-    .Outstanding(2),
-    .ErrOnWrite(0),
-    .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1)
-  ) u_cfg (
+  flash_ctrl_reg_pkg::flash_ctrl_prim_reg2hw_t reg2hw;
+  flash_ctrl_reg_pkg::flash_ctrl_prim_hw2reg_t hw2reg;
+  flash_ctrl_prim_reg_top u_reg_top (
     .clk_i,
     .rst_ni,
-    .tl_i,
-    .tl_o,
-    .en_ifetch_i(prim_mubi_pkg::MuBi4False),
-    .req_o(cfg_req),
-    .req_type_o(),
-    .gnt_i(1'b1),
-    .we_o(cfg_we),
-    .addr_o(cfg_addr),
-    .wdata_o(cfg_wdata),
-    .wmask_o(),
-    .intg_error_o(),
-    .rdata_i(cfg_rdata),
-    .rvalid_i(cfg_rvalid),
-    .rerror_i('0)
+    .tl_i      (tl_i),
+    .tl_o      (tl_o),
+    .reg2hw    (reg2hw),
+    .hw2reg    (hw2reg),
+    .intg_err_o(), // TODO: do we need to wire this up?
+    .devmode_i (1'b1)
   );
 
-  prim_ram_1p #(
-    .Width(32),
-    .Depth(CfgRegs)
-  ) u_cfg_ram (
-    .clk_i,
-    .req_i(cfg_req),
-    .write_i(cfg_we),
-    .addr_i(cfg_addr),
-    .wdata_i(cfg_wdata),
-    .wmask_i({32{1'b1}}),
-    .rdata_o(cfg_rdata),
-    .cfg_i('0)
-  );
+  logic unused_reg_sig;
+  assign unused_reg_sig = ^reg2hw;
+  assign hw2reg = '0;
 
   logic unused_bist_enable;
   assign unused_bist_enable = ^bist_enable_i;
