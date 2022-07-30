@@ -117,7 +117,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   endtask
 
   // TODO use  dv_utils_pkg::endian_swap_byte_arr() if possible
-  virtual function void swap_byte_order(ref bit [7:0] data[$]);
+  virtual function void swap_byte_order(ref logic [7:0] data[$]);
     bit [7:0] data_arr[];
     data_arr = data;
     `uvm_info(`gfn, $sformatf("\n  spi_agent_cfg, data_q_baseline: %p", data), UVM_DEBUG)

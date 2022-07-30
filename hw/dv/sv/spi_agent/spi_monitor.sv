@@ -220,7 +220,9 @@ class spi_monitor extends dv_base_monitor#(
               byte byte_data;
               sample_flash_one_byte_data(.num_lanes(item.num_lanes),
                                          .is_device_rsp(!item.write_command),
-                                         .data(byte_data));
+                                         .data(byte_data),
+                                         // data may be high-z, because the cmd is blocked
+                                         .check_data_not_z(0));
               item.payload_q.push_back(byte_data);
             end
           end: sample_thread
@@ -235,7 +237,8 @@ class spi_monitor extends dv_base_monitor#(
   endtask : collect_flash_trans
 
   virtual task sample_flash_one_byte_data(input int num_lanes, input bit is_device_rsp,
-                                          output bit[7:0] data);
+                                          output logic [7:0] data,
+                                          input bit check_data_not_z = 1);
     int which_bit = 8;
     for (int i = 0; i < 8; i += num_lanes) begin
       cfg.wait_sck_edge(SamplingEdge);
@@ -255,6 +258,14 @@ class spi_monitor extends dv_base_monitor#(
       endcase
     end
     `DV_CHECK_EQ(which_bit, 0)
+
+    if (cfg.en_monitor_checks) begin
+      foreach (data[i]) begin
+        `DV_CHECK_CASE_NE(data[i], 1'bx)
+        if (check_data_not_z) `DV_CHECK_CASE_NE(data[i], 1'bz)
+      end
+    end
+
     `uvm_info(`gfn, $sformatf("sampled one byte data for flash: 0x%0h", data), UVM_HIGH)
   endtask : sample_flash_one_byte_data
 

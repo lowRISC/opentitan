@@ -7,12 +7,12 @@ class spi_item extends uvm_sequence_item;
   // hold transaction type
   rand spi_trans_type_e item_type;
   // byte of data sent or received
-  rand bit [7:0] data[$];
+  rand logic [7:0] data[$];
   // start of transaction
   bit first_byte;
   // flash command constraints
   rand int read_size;
-  rand bit [7:0] payload_q[$];
+  rand logic [7:0] payload_q[$];
   rand bit write_command;
   rand bit [7:0] address_q[$];
   rand bit [7:0] opcode;

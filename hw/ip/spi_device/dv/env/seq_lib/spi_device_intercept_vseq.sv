@@ -7,10 +7,9 @@
 class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
   `uvm_object_utils(spi_device_intercept_vseq)
   `uvm_object_new
-  // TODO, enable all opcode later
-  bit [7:0] intercept_ops[$] = {//READ_STATUS_1, READ_STATUS_2, READ_STATUS_3,
-                                //READ_JEDEC,
-                                //READ_SFDP,
+  bit [7:0] intercept_ops[$] = {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3,
+                                READ_JEDEC,
+                                READ_SFDP,
                                 READ_CMD_LIST};
 
   rand bit use_intercept_op;
@@ -24,7 +23,7 @@ class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
     }
   }
 
-  constraint simple_mailbox_addr_c {
+  constraint mailbox_addr_size_c {
     read_addr_size_type == ReadAddrWithinMailbox;
   }
 
