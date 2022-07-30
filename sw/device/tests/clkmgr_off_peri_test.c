@@ -80,8 +80,8 @@ static void update_clock_to_test(uint32_t clock) {
   LOG_INFO("Writing clock %d to flash", clock);
   uint32_t val = abs_mmio_read32(addr) & (~(1 << clock));
   // program the word into flash
-  CHECK(!flash_ctrl_testutils_write(&flash_ctrl, addr, 0, &val,
-                                    kDifFlashCtrlPartitionTypeData, 1));
+  CHECK(flash_ctrl_testutils_write(&flash_ctrl, addr, 0, &val,
+                                   kDifFlashCtrlPartitionTypeData, 1));
 };
 
 static uint32_t get_hung_address(dif_clkmgr_gateable_clock_t clock) {
@@ -92,8 +92,8 @@ static uint32_t get_hung_address(dif_clkmgr_gateable_clock_t clock) {
 static void set_hung_address(dif_clkmgr_gateable_clock_t clock,
                              uint32_t value) {
   uint32_t addr = (uint32_t)(&hung_data_addr[clock]);
-  CHECK(!flash_ctrl_testutils_write(&flash_ctrl, addr, 0, &value,
-                                    kDifFlashCtrlPartitionTypeData, 1));
+  CHECK(flash_ctrl_testutils_write(&flash_ctrl, addr, 0, &value,
+                                   kDifFlashCtrlPartitionTypeData, 1));
   CHECK(get_hung_address(clock) == value, "Unexpected mismatch on read back");
   LOG_INFO("The expected hung address for clock %d is 0x%x at 0x%x", clock,
            value, addr);

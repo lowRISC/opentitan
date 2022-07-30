@@ -112,12 +112,12 @@ bool test_main(void) {
     // Erasing the page and writing data to it followed
     // by a read back and compare to sanity check basic operation.
     CHECK(flash_ctrl_testutils_erase_and_write_page(
-              &flash, address, kPartitionId, data,
-              kDifFlashCtrlPartitionTypeData, kNumWords) == 0);
+        &flash, address, kPartitionId, data, kDifFlashCtrlPartitionTypeData,
+        kNumWords));
     uint32_t readback_data[kNumWords];
     CHECK(flash_ctrl_testutils_read(
-              &flash, address, kPartitionId, readback_data,
-              kDifFlashCtrlPartitionTypeData, kNumWords, 0) == 0);
+        &flash, address, kPartitionId, readback_data,
+        kDifFlashCtrlPartitionTypeData, kNumWords, 0));
     CHECK_ARRAYS_EQ(data, readback_data, kNumWords);
 
     // Setting up low power hint and starting watchdog timer followed by
@@ -149,11 +149,11 @@ bool test_main(void) {
     CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralAonTimerAon);
     CHECK(irq_serviced == kDifAonTimerIrqWdogTimerBark);
 
-    CHECK(flash_ctrl_testutils_wait_transaction_end(&flash) == 0);
+    CHECK(flash_ctrl_testutils_wait_transaction_end(&flash));
 
     CHECK(flash_ctrl_testutils_read(
-              &flash, address, kPartitionId, readback_data,
-              kDifFlashCtrlPartitionTypeData, kNumWords, 0) == 0);
+        &flash, address, kPartitionId, readback_data,
+        kDifFlashCtrlPartitionTypeData, kNumWords, 0));
     uint32_t expected_data[kNumWords];
     memset(expected_data, 0xff, sizeof(expected_data));
     CHECK_ARRAYS_EQ(readback_data, expected_data, kNumWords);

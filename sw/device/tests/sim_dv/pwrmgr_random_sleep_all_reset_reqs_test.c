@@ -511,7 +511,7 @@ bool test_main(void) {
                                              /*he_en*/ false);
 
   // Increment flash counter to know where we are
-  if (incr_flash_cnt(event_idx)) {
+  if (!incr_flash_cnt(event_idx)) {
     LOG_ERROR("Error when incrementing flash counter");
   }
 
