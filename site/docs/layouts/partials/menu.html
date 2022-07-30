@@ -25,7 +25,7 @@
                     {{- replaceRE "/" "-" $noparent }}{{- .File.TranslationBaseName }}
                 {{- end }}
             </a>
-            {{- if and (ne $numberOfPages 0) (or (.IsDescendant $displayedNode) (.IsAncestor $displayedNode) (.InSection $displayedNode)) }}
+            {{- if (or (.IsDescendant $displayedNode) (.IsAncestor $displayedNode) (.InSection $displayedNode)) }}
                 <ul class="{{- if .IsAncestor $displayedNode}} ancestor{{- end }}
                     {{- if ne $numberOfPages 0 }} parent{{- end }}">
                     {{- $subElements := dict }}
