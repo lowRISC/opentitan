@@ -106,6 +106,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // Is cleared on Reset, or Disable, (stays cleared until enable)
   int expected_obsfifo_entries_since_last_intr  = 0;
 
+  // Signal to communicate that TL data has inserted into the FW_OV FIFO at an invalid time.
+  // The DUT ignores such inputs and raises an alert.  However in the interest of testing the
+  // response to the DUT to all the _ data that comes in, we mimic the DUT and ignore
+  // these data points once we notice one of these events.
+  bit ignore_fw_ov_data_pulse = 0;
+
+
   // Enabling, disabling and reset all have some effect in clearing the state of the DUT
   // Due to subleties in timing, the DUT resets the Observe FIFO with a unique delay
   typedef enum int {
@@ -139,6 +146,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       fork
         process_csrng();
         process_interrupts();
+        process_fifo_exceptions();
       join_none
     end
   endtask
@@ -1042,7 +1050,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "debug_status": begin
       end
       "recov_alert_sts": begin
-        do_read_check = 1'b0;
       end
       "err_code": begin
       end
@@ -1055,14 +1062,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
     endcase
 
-
     if (channel == AddrChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
         if (locked_reg_access) begin
           string msg = $sformatf("Attempt to write while locked: %s", csr.get_name());
           `uvm_info(`gfn, msg, UVM_FULL)
-          `uvm_info(`gfn, "SAMPLE_A", UVM_LOW)
           cov_vif.cg_sw_update_sample(
               csr.get_offset(),
               ral.sw_regupd.sw_regupd.get_mirrored_value(),
@@ -1152,7 +1157,19 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               // if the DUT is configured properly.
               if (dut_pipeline_enabled && is_fips_mode && fw_ov_insert && do_disable_sha) begin
                 `uvm_info(`gfn, "SHA3 disabled for FW_OV", UVM_HIGH)
-                package_and_release_entropy();
+                // SW _shouldn't_ turn off the SHA3 processing until the last data word
+                // has been processed.  However if it _does_, we should note an alert.
+                // We can also make an accurate prediction of the output (to pass our sims).
+                if(cfg.precon_fifo_vif.write_forbidden) begin
+                  // Process the entropy EXCEPT for the last stuck word
+                  // which we load into the next round.
+                  bit [SHACondWidth - 1:0] sha_temp;
+                  sha_temp = process_fifo_q.pop_back();
+                  package_and_release_entropy();
+                  process_fifo_q.push_back(sha_temp);
+                end else begin
+                  package_and_release_entropy();
+                end
               end
               fw_ov_sha_enabled = (start_mubi == MuBi4True);
               if (fw_ov_sha_enabled && fw_ov_insert) begin
@@ -1169,10 +1186,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   (cfg.otp_en_es_fw_over == MuBi8True) &&
                   (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
                   (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
-              msg = $sformatf("fw_ov_wr_data captured: 0x%08x", item.a_data);
-              `uvm_info(`gfn, msg, UVM_FULL)
 
-              if (dut_pipeline_enabled && fw_ov_entropy_insert) begin
+              if (ignore_fw_ov_data_pulse) begin
+                msg = $sformatf("fw_ov_wr_data dropped: 0x%08x", item.a_data);
+                `uvm_info(`gfn, msg, UVM_LOW)
+              end else begin
+                msg = $sformatf("fw_ov_wr_data captured: 0x%08x", item.a_data);
+                `uvm_info(`gfn, msg, UVM_FULL)
+              end
+
+              if (dut_pipeline_enabled && fw_ov_entropy_insert && !ignore_fw_ov_data_pulse) begin
                 msg = $sformatf("Inserting word 0x%08x into pipeline", item.a_data);
                 `uvm_info(`gfn, msg, UVM_MEDIUM)
                 // Add this TL-word to the running SHA word
@@ -1306,6 +1329,59 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
     end
+  endtask
+
+  task process_fifo_exceptions();
+    mubi4_t fw_ov_mubi, insert_mubi;
+    bit fw_ov_mode, fw_ov_insert;
+    int i;
+
+    fork
+      forever begin : precon_fifo
+
+        @(cfg.precon_fifo_vif.mon_cb);
+
+        fw_ov_mubi   = `gmv(ral.fw_ov_control.fw_ov_mode);
+        insert_mubi  = `gmv(ral.fw_ov_control.fw_ov_entropy_insert);
+        fw_ov_mode   = (cfg.otp_en_es_fw_read == MuBi8True) &&
+                       (fw_ov_mubi == MuBi4True);
+        fw_ov_insert = fw_ov_mode && (insert_mubi == MuBi4True);
+
+        // If we are not in FW_OV mode at this time, then this error event doesn't matter.
+        // (Such events seem to happen in normal HW-driven operation, but they do not
+        // reflect errors, as the HW chain has proper flow control)
+        if (!fw_ov_insert) continue;
+
+        for (i=0; i<N_FIFO_ERR_TYPES; i++) begin
+          if (cfg.precon_fifo_vif.mon_cb.error_pulses[i]) begin
+            `uvm_info(`gfn, $sformatf("PRECON_FIFO: ERROR_CODE %d\n", i), UVM_HIGH)
+            case (i)
+              FIFO_WRITE_ERR: begin
+                if (!under_alert_handshake["recov_alert"]) begin
+                  set_exp_alert("recov_alert");
+                end
+                // Make a single-clock pulse to tell the TL process that this error has been
+                // identified and the ongoing write should be ignored.
+                ignore_fw_ov_data_pulse = 1;
+                fork
+                  begin
+                    cfg.clk_rst_vif.wait_clks(1);
+                    // Clear the last pulse (unless there is another event right behind the last
+                    // one)
+                    if (!cfg.precon_fifo_vif.error_pulses[FIFO_WRITE_ERR]) begin
+                      ignore_fw_ov_data_pulse = 0;
+                    end
+                  end
+                join_none
+              end
+              default: begin
+                // ignore other types as this FIFO has proper HW flow control at the other end.
+              end
+            endcase
+          end
+        end
+      end : precon_fifo
+    join_none
   endtask
 
   function bit [FIPS_BUS_WIDTH - 1:0] get_fips_compliance(
@@ -1668,6 +1744,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     // Check to see whether a recov_alert should be expected
     if (seed_idx != 0 && csrng_seed == prev_csrng_seed) begin
+      `uvm_info(`gfn, "Repeated seed, expecting recov_alert", UVM_MEDIUM)
       set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
     end
 

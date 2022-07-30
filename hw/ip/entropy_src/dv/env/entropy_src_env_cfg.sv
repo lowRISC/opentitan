@@ -18,6 +18,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   virtual pins_if#(8)   otp_en_es_fw_read_vif;
   virtual pins_if#(8)   otp_en_es_fw_over_vif;
 
+
   // Configuration for DUT CSRs (held in a separate object for easy re-randomization)
   entropy_src_dut_cfg dut_cfg;
 
@@ -28,6 +29,9 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   // handle to the interrupt interface
   intr_vif interrupt_vif;
+  // Pointer to the preconditioning fifo exception interface.
+  // (For tracking errors during FW_OV mode)
+  virtual entropy_subsys_fifo_exception_if#(1) precon_fifo_vif;
 
   //
   // Variables for controlling test duration.  Depending on the test there are two options:
@@ -139,10 +143,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     dut_cfg = entropy_src_dut_cfg::type_id::create("dut_cfg");
 
     // create agent config objs
-    m_rng_agent_cfg   = push_pull_agent_cfg#(.HostDataWidth(RNG_BUS_WIDTH))::
-                        type_id::create("m_rng_agent_cfg");
-    m_csrng_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))::
-                        type_id::create("m_csrng_agent_cfg");
+    m_rng_agent_cfg       = push_pull_agent_cfg#(.HostDataWidth(RNG_BUS_WIDTH))::
+                            type_id::create("m_rng_agent_cfg");
+    m_csrng_agent_cfg     = push_pull_agent_cfg#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))::
+                            type_id::create("m_csrng_agent_cfg");
 
     // set num_interrupts & num_alerts
     begin

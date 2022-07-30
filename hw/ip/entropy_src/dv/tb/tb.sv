@@ -83,6 +83,9 @@ module tb;
   assign interrupts[ObserveFifoReady] = intr_observe_fifo_ready;
   assign interrupts[FatalErr]         = intr_fatal_err;
 
+  bind prim_packer_fifo : dut.u_entropy_src_core.u_prim_packer_fifo_precon
+    entropy_subsys_fifo_exception_if#(1) u_fifo_exc_if (.*);
+
   initial begin
     // Drive clk and rst_n from clk_if
     // Set interfaces in config_db
@@ -99,6 +102,8 @@ module tb;
     uvm_config_db#(virtual pins_if#(8))::set(null, "*.env", "otp_en_es_fw_over_vif",
         otp_en_es_fw_over_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual entropy_subsys_fifo_exception_if#(1))::set(null, "*.env",
+        "precon_fifo_vif", dut.u_entropy_src_core.u_prim_packer_fifo_precon.u_fifo_exc_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH)))::set
         (null, "*.env.m_rng_agent*", "vif", rng_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))::

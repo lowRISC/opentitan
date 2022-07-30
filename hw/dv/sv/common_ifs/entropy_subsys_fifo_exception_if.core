@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:entropy_subsys_fifo_exception_if"
+description: "DV interface for detecting FIFO exceptions, particularly in entropy subsystem IPs"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_lib
+    files:
+      - entropy_subsys_fifo_exception_pkg.sv
+      - entropy_subsys_fifo_exception_if.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
