@@ -253,6 +253,8 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
       .individually_accessible(0));
 
     dmihardreset.set_original_access("W1C");
+    // Writing 1 to this field will clear the dmi register, causing read-check mismatches.
+    csr_excl.add_excl(dmihardreset.get_full_name(), CsrExclWrite, CsrNonInitTests);
 
     zero1 = (dv_base_reg_field::type_id::create("zero1"));
     zero1.configure(
