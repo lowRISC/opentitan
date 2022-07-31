@@ -1129,6 +1129,12 @@
                 be set prior to writting the FW_OV_WR_DATA register. Once all data has been written,
                 this field should be set to kMultiBitBool4False. Once that happened, the SHA3 block will finish
                 processing and push the result into the ESFINAL FIFO.
+
+                Note that clearing this bit to kMultiBitBool4False while there is still unprocessed
+                entropy in the !!FW_OV_WR_DATA will start the SHA3 engine before data can be added
+                to the input message, and will also signal a recoverable alert in
+                !!RECOV_ALERT_STS.ES_FW_OV_DISABLE_ALERT.  To avoid this, check that
+                !!FW_OV_WR_FIFO_FULL is clear before setting this field to kMultiBitBool4False.
                 '''
           mubi: true,
           resval: false
@@ -1378,8 +1384,20 @@
           desc: '''
                 This bit is set when the packer FIFO has been written but was full at the time,
                 and in both FW_OV_MODE and FW_OV_ENTROPY_INSERT modes.
-                This alert would normally be the result of not monitoring the !!FW_OV_WR_FIFO_FULL register
-                before each write to the !!FW_OV_WR_DATA register.
+                This alert would normally be the result of not monitoring the !!FW_OV_WR_FIFO_FULL
+                register before each write to the !!FW_OV_WR_DATA register.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "16",
+          name: "ES_FW_OV_DISABLE_ALERT",
+          desc: '''
+                This bit is set when !!FW_OV_SHA3_START has been set to MuBi4 False, without
+                waiting for the FW_OV packer FIFO to clear.  The final entropy entry in the FIFO
+                will not be included in the SHA3 digest. (Rather it will be added to the
+                subsequent SHA3 digest.) To avoid this alert, monitor !!FW_OV_WR_FIFO_FULL before
+                clearing !!FW_OV_SHA3_START. This alert only applies when both FW_OV_MODE and
+                FW_OV_ENTROPY_INSERT are set to MuBi4True.
                 Writing a zero resets this status bit.
                 '''
         }
