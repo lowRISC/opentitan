@@ -82,6 +82,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       fw_ov_entropy_insert_pfa;
   logic       fw_ov_sha3_start_pfe;
   logic       fw_ov_sha3_start_pfa;
+  logic       fw_ov_sha3_start_pfa_q;
+  logic       fw_ov_sha3_disable_pulse;
   logic [ObserveFifoWidth-1:0] fw_ov_wr_data;
   logic       fw_ov_fifo_rd_pulse;
   logic       fw_ov_fifo_wr_pulse;
@@ -388,6 +390,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     sha3_state_vld;
   logic                     sha3_start;
   logic                     sha3_process;
+  logic                     sha3_msg_rdy_mask_d;
+  logic                     sha3_msg_rdy_mask_q;
+  logic                     sha3_msg_rdy_mask;
   logic                     sha3_block_processed;
   logic                     sha3_done;
   prim_mubi_pkg::mubi4_t    sha3_absorbed;
@@ -397,7 +402,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     cs_aes_halt_req;
   logic                     sha3_msg_rdy;
   logic [HalfRegWidth-1:0]  window_cntr;
-
 
   logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
   logic [PreCondWidth-1:0] msg_data[Sha3Share];
@@ -420,6 +424,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                      es_hw_regwen;
   logic                      recov_alert_state;
   logic                      es_fw_ov_wr_alert;
+  logic                      es_fw_ov_disable_alert;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_sha3_state;
@@ -436,36 +441,40 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        ht_esbus_vld_dly2_q, ht_esbus_vld_dly2_d;
   logic        ht_failed_q, ht_failed_d;
   logic        ht_done_pulse_q, ht_done_pulse_d;
-  logic                    sha3_msg_rdy_q, sha3_msg_rdy_d;
   logic                    sha3_err_q, sha3_err_d;
   logic        cs_aes_halt_q, cs_aes_halt_d;
   logic [63:0] es_rdata_capt_q, es_rdata_capt_d;
   logic        es_rdata_capt_vld_q, es_rdata_capt_vld_d;
 
-  always_ff @(posedge clk_i or negedge rst_ni)
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      ht_failed_q           <= '0;
-      ht_done_pulse_q       <= '0;
-      ht_esbus_dly_q        <= '0;
-      ht_esbus_vld_dly_q    <= '0;
-      ht_esbus_vld_dly2_q   <= '0;
-      sha3_msg_rdy_q        <= '0;
-      sha3_err_q            <= '0;
-      cs_aes_halt_q         <= '0;
-      es_rdata_capt_q       <= '0;
-      es_rdata_capt_vld_q   <= '0;
+      ht_failed_q            <= '0;
+      ht_done_pulse_q        <= '0;
+      ht_esbus_dly_q         <= '0;
+      ht_esbus_vld_dly_q     <= '0;
+      ht_esbus_vld_dly2_q    <= '0;
+      sha3_err_q             <= '0;
+      cs_aes_halt_q          <= '0;
+      es_rdata_capt_q        <= '0;
+      es_rdata_capt_vld_q    <= '0;
+      fw_ov_sha3_start_pfa_q <= '0;
+      sha3_msg_rdy_mask_q    <= '0;
     end else begin
-      ht_failed_q           <= ht_failed_d;
-      ht_done_pulse_q       <= ht_done_pulse_d;
-      ht_esbus_dly_q        <= ht_esbus_dly_d;
-      ht_esbus_vld_dly_q    <= ht_esbus_vld_dly_d;
-      ht_esbus_vld_dly2_q   <= ht_esbus_vld_dly2_d;
-      sha3_msg_rdy_q        <= sha3_msg_rdy_d;
-      sha3_err_q            <= sha3_err_d;
-      cs_aes_halt_q         <= cs_aes_halt_d;
-      es_rdata_capt_q       <= es_rdata_capt_d;
-      es_rdata_capt_vld_q   <= es_rdata_capt_vld_d;
+      ht_failed_q            <= ht_failed_d;
+      ht_done_pulse_q        <= ht_done_pulse_d;
+      ht_esbus_dly_q         <= ht_esbus_dly_d;
+      ht_esbus_vld_dly_q     <= ht_esbus_vld_dly_d;
+      ht_esbus_vld_dly2_q    <= ht_esbus_vld_dly2_d;
+      sha3_err_q             <= sha3_err_d;
+      cs_aes_halt_q          <= cs_aes_halt_d;
+      es_rdata_capt_q        <= es_rdata_capt_d;
+      es_rdata_capt_vld_q    <= es_rdata_capt_vld_d;
+      fw_ov_sha3_start_pfa_q <= fw_ov_sha3_start_pfa;
+      sha3_msg_rdy_mask_q    <= sha3_msg_rdy_mask_d;
     end
+  end
+
+  assign fw_ov_sha3_disable_pulse = fw_ov_sha3_start_pfa_q & ~fw_ov_sha3_start_pfa;
 
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi4_test_true_strict;
@@ -1999,7 +2008,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
          es_main_sm_alert ||
          es_bus_cmp_alert ||
          es_thresh_cfg_alert ||
-         es_fw_ov_wr_alert;
+         es_fw_ov_wr_alert ||
+         es_fw_ov_disable_alert;
 
   assign hw2reg.recov_alert_sts.es_main_sm_alert.de = es_main_sm_alert;
   assign hw2reg.recov_alert_sts.es_main_sm_alert.d  = es_main_sm_alert;
@@ -2012,6 +2022,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign hw2reg.recov_alert_sts.es_fw_ov_wr_alert.de = es_fw_ov_wr_alert;
   assign hw2reg.recov_alert_sts.es_fw_ov_wr_alert.d  = es_fw_ov_wr_alert;
+
+  assign hw2reg.recov_alert_sts.es_fw_ov_disable_alert.de = es_fw_ov_disable_alert;
+  assign hw2reg.recov_alert_sts.es_fw_ov_disable_alert.d  = es_fw_ov_disable_alert;
 
 
   // repcnt fail counter
@@ -2281,6 +2294,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_fw_ov_wr_alert = fw_ov_mode && fw_ov_mode_entropy_insert &&
          fw_ov_fifo_wr_pulse && fw_ov_wr_fifo_full;
 
+  assign es_fw_ov_disable_alert = fw_ov_mode && fw_ov_mode_entropy_insert &&
+         fw_ov_sha3_disable_pulse && fw_ov_wr_fifo_full;
+
   //--------------------------------------------
   // entropy conditioner
   //--------------------------------------------
@@ -2289,17 +2305,23 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // This block will take in 2048 (by default setting) bits to create 384 bits.
 
 
-  assign pfifo_cond_push = pfifo_precon_pop && !es_bypass_mode;
+  assign pfifo_cond_push = pfifo_precon_not_empty && !es_bypass_mode;
 
   assign pfifo_cond_wdata = pfifo_precon_rdata;
 
   assign msg_data[0] = pfifo_cond_wdata;
 
+  // The SHA3 block cannot take messages except between the
+  // start and process pulses (Even though in this time it still asserts ready)
+  assign sha3_msg_rdy_mask_d = sha3_start ? 1'b1 :
+                               sha3_process ? 1'b0 :
+                               sha3_msg_rdy_mask_q;
+
+  assign sha3_msg_rdy_mask = sha3_msg_rdy_mask_q & ~sha3_process;
+
   assign pfifo_cond_rdata = sha3_state[0][SeedLen-1:0];
   assign pfifo_cond_not_empty = sha3_state_vld;
-  assign sha3_msgfifo_ready = sha3_msg_rdy_q;
-
-  assign sha3_msg_rdy_d = es_enable_q_fo[26] && sha3_msg_rdy;
+  assign sha3_msgfifo_ready = es_enable_q_fo[26] & sha3_msg_rdy & sha3_msg_rdy_mask;
 
   // SHA3 hashing engine
   sha3 #(
