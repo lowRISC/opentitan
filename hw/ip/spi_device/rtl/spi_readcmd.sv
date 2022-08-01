@@ -126,7 +126,6 @@ module spi_readcmd
   // Interface: SPI to Parallel
   input               s2p_valid_i,
   input spi_byte_t    s2p_byte_i,
-  input [BitCntW-1:0] s2p_bitcnt_i,
 
   // Interface: Parallel to SPI
   // Should be latched to clk_out_i
@@ -200,9 +199,6 @@ module spi_readcmd
           main_st == MainAddress |-> (cmd_info_i.addr_mode != AddrDisabled)
           && cmd_info_i.payload_dir == PayloadOut
           && cmd_info_i.valid)
-
-  logic unused_s2p_bitcnt;
-  assign unused_s2p_bitcnt = ^s2p_bitcnt_i;
 
   /////////////////
   // Definitions //
