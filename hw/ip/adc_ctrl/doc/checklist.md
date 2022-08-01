@@ -102,17 +102,17 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only con
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES_D3][]     | Not Started |
-RTL           | [TODO_COMPLETE][]       | Not Started |
-Code Quality  | [LINT_COMPLETE][]       | Not Started |
-Code Quality  | [CDC_COMPLETE][]        | Not Started |
-Code Quality  | [RDC_COMPLETE][]        | Not Started |
-Review        | [REVIEW_RTL][]          | Not Started |
-Review        | [REVIEW_DELETED_FF][]   | Not Started |
-Review        | [REVIEW_SW_CHANGE][]    | Not Started |
-Review        | [REVIEW_SW_ERRATA][]    | Not Started |
-Review        | Reviewer(s)             | Not Started |
-Review        | Signoff date            | Not Started |
+Documentation | [NEW_FEATURES_D3][]     | Done        |
+RTL           | [TODO_COMPLETE][]       | Done        |
+Code Quality  | [LINT_COMPLETE][]       | Done        |
+Code Quality  | [CDC_COMPLETE][]        | Waived      | Done as part of top level CDC
+Code Quality  | [RDC_COMPLETE][]        | Waived      | Done as part of top level RDC
+Review        | [REVIEW_RTL][]          | Done        | by msfschaffner@
+Review        | [REVIEW_DELETED_FF][]   | Waived      | Done as part of top level
+Review        | [REVIEW_SW_CHANGE][]    | Done        | by timothytrippel@
+Review        | [REVIEW_SW_ERRATA][]    | Done        | by timothytrippel@
+Review        | Reviewer(s)             | Done        | msfschaffner@ timothytrippel@ weicaiyang@ tjaychen@
+Review        | Signoff date            | Done        | 2022-08-01
 
 [NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new_features_d3" >}}
 [TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo_complete" >}}
