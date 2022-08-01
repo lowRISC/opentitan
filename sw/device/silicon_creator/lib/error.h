@@ -99,6 +99,7 @@ enum module_ {
   X(kErrorOtbnSecWipeImemFailed,      ERROR_(4, kModuleOtbn, kInternal)), \
   X(kErrorOtbnSecWipeDmemFailed,      ERROR_(5, kModuleOtbn, kInternal)), \
   X(kErrorOtbnBadInsnCount,           ERROR_(6, kModuleOtbn, kInternal)), \
+  X(kErrorOtbnUnavailable,            ERROR_(7, kModuleOtbn, kInternal)), \
   \
   X(kErrorFlashCtrlDataRead,          ERROR_(1, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlInfoRead,          ERROR_(2, kModuleFlashCtrl, kInternal)), \
