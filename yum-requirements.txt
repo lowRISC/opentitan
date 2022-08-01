@@ -25,6 +25,7 @@ libelf-dev
 libftdi1-2
 libftdi1-dev
 libssl-dev
+libudev-devel
 libusb-1.0-0
 lsb-release
 make
