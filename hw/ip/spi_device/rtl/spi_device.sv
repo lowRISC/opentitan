@@ -1198,9 +1198,10 @@ module spi_device
     if (!rst_spi_n) intercept_en <= 1'b 0;
     else            intercept_en <= |intercept;
   end
-  // intercept_en shall not be de-asserted except reset
+  // intercept_en shall not be de-asserted except mailbox
   `ASSUME(InterceptLevel_M,
-    $rose(intercept_en) |=> $stable(intercept_en) until !rst_spi_n,
+    $rose(|{intercept.status, intercept.jedec, intercept.sfdp}) |=>
+      $stable(intercept_en) until !rst_spi_n,
     clk_spi_out_buf, !rst_spi_n)
 
   ////////////////////////////
