@@ -84,8 +84,13 @@ class IsBusyTest : public OtbnTest {};
 
 TEST_F(IsBusyTest, Success) {
   EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
 
-  EXPECT_EQ(otbn_is_busy(), true);
+  EXPECT_EQ(otbn_busy_wait_for_done(), kErrorOk);
 }
 
 class GetErrBitsTest : public OtbnTest {};

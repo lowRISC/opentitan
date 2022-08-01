@@ -59,6 +59,23 @@ static rom_error_t check_offset_len(uint32_t offset_bytes, size_t num_words,
   return kErrorOk;
 }
 
+rom_error_t otbn_busy_wait_for_done(void) {
+  uint32_t status = launder32(UINT32_MAX);
+  rom_error_t res = launder32(kErrorOk ^ status);
+  do {
+    status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
+  } while (launder32(status) != kOtbnStatusIdle &&
+           launder32(status) != kOtbnStatusLocked);
+  res ^= ~status;
+  if (launder32(res) == kErrorOk) {
+    HARDENED_CHECK_EQ(res, kErrorOk);
+    HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),
+                      kOtbnStatusIdle);
+    return res;
+  }
+  return kErrorOtbnUnavailable;
+}
+
 /**
  * Helper function for writing to OTBN's DMEM or IMEM.
  *
@@ -89,7 +106,6 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
  * This function blocks until OTBN is idle.
  *
  * @param cmd OTBN command.
- * @param exp_status Expected OTBN status after issuing the command.
  * @param error Error to return if operation fails.
  * @return Result of the operation.
  */
@@ -135,11 +151,6 @@ static rom_error_t otbn_cmd_run(otbn_cmd_t cmd, rom_error_t error) {
 rom_error_t otbn_execute(void) {
   otbn_set_ctrl_software_errs_fatal(true);
   return otbn_cmd_run(kOtbnCmdExecute, kErrorOtbnExecutionFailed);
-}
-
-bool otbn_is_busy(void) {
-  uint32_t status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
-  return status != kOtbnStatusIdle && status != kOtbnStatusLocked;
 }
 
 void otbn_err_bits_get(otbn_err_bits_t *err_bits) {

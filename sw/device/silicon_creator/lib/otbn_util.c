@@ -21,19 +21,6 @@ void otbn_init(otbn_t *ctx) {
   };
 }
 
-rom_error_t otbn_busy_wait_for_done(otbn_t *ctx) {
-  while (otbn_is_busy()) {
-  }
-
-  otbn_err_bits_t err_bits;
-  otbn_err_bits_get(&err_bits);
-  if (err_bits != kOtbnErrBitsNoError) {
-    ctx->error_bits = err_bits;
-    return kErrorOtbnExecutionFailed;
-  }
-  return kErrorOk;
-}
-
 /**
  * Checks if the OTBN application's IMEM and DMEM address parameters are valid.
  *
@@ -61,6 +48,9 @@ rom_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
   if (!check_app_address_ranges(&app)) {
     return kErrorOtbnInvalidArgument;
   }
+
+  // If OTBN is busy, wait for it to be done.
+  HARDENED_RETURN_IF_ERROR(otbn_busy_wait_for_done());
 
   const size_t imem_num_words = app.imem_end - app.imem_start;
   const size_t data_num_words = app.dmem_data_end - app.dmem_data_start;

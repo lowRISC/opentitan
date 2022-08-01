@@ -72,11 +72,13 @@ enum {
 rom_error_t otbn_execute(void);
 
 /**
- * Is OTBN busy executing an application?
+ * Blocks until OTBN is idle.
  *
- * @return OTBN is busy
+ * If OTBN is or becomes locked, an error will occur.
+ *
+ * @return Result of the operation.
  */
-bool otbn_is_busy(void);
+rom_error_t otbn_busy_wait_for_done(void);
 
 /**
  * OTBN Internal Errors
