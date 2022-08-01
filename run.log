@@ -1,0 +1,1067 @@
+Loaded plugins: fastestmirror, ovl
+Loading mirror speeds from cached hostfile
+Resolving Dependencies
+--> Running transaction check
+---> Package systemd-devel.x86_64 0:219-78.el7_9.5 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package              Arch          Version                  Repository    Size
+================================================================================
+Installing:
+ systemd-devel        x86_64        219-78.el7_9.5           local        216 k
+
+Transaction Summary
+================================================================================
+Install  1 Package
+
+Total download size: 216 k
+Installed size: 346 k
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : systemd-devel-219-78.el7_9.5.x86_64                          1/1 
+  Verifying  : systemd-devel-219-78.el7_9.5.x86_64                          1/1 
+
+Installed:
+  systemd-devel.x86_64 0:219-78.el7_9.5                                         
+
+Complete!
+[make]: pre_run
+mkdir -p /workspace/0.chip_sw_rstmgr_smoketest/out
+cd /workspace/0.chip_sw_rstmgr_smoketest/out && /workspace/mnt/repo_top/util/design/gen-otp-img.py        --img-cfg /workspace/mnt/repo_top/hw/ip/otp_ctrl/data/otp_ctrl_img_raw.hjson        --out /workspace/0.chip_sw_rstmgr_smoketest/out/otp_ctrl_img_raw.vmem        --quiet --img-seed 1 && /workspace/mnt/repo_top/util/design/gen-otp-img.py       --img-cfg /workspace/mnt/repo_top/hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson       --out /workspace/0.chip_sw_rstmgr_smoketest/out/otp_ctrl_img_dev.vmem       --quiet --img-seed 1 && /workspace/mnt/repo_top/util/design/gen-otp-img.py        --img-cfg /workspace/mnt/repo_top/hw/ip/otp_ctrl/data/otp_ctrl_img_rma.hjson        --out /workspace/0.chip_sw_rstmgr_smoketest/out/otp_ctrl_img_rma.vmem        --quiet --img-seed 1
+WARNING: Commandline override of img_seed with 1.
+WARNING: Commandline override of img_seed with 1.
+WARNING: Commandline override of img_seed with 1.
+[make]: sw_build
+# Loop through the list of sw_images and invoke Bazel on each.
+# `sw_images` is a space-separated list of tests to be built into an image.
+# Optionally, each item in the list can have additional metadata / flags using
+# the delimiter ':'. The format is as follows:
+# <Bazel label>:<index>:<flag1>:<flag2>
+#
+# If one delimiter is detected, then the full string is considered to be the
+# <Bazel label>. If two delimiters are detected, then it must be <Bazel label>
+# followed by <index>. The <flag> is considered optional.
+set -e; \
+for sw_image in //sw/device/tests:rstmgr_smoketest:1 //sw/device/lib/testing/test_rom:test_rom:0; do \
+	if [[ -z $sw_image ]]; then \
+		echo "ERROR: SW image \"$sw_image\" is malformed."; \
+		echo "Expected format: <Bazel label>:<index>:<optional-flags>."; \
+		exit 1; \
+	fi; \
+	prebuilt_path=`echo $sw_image | cut -d: -f 1`; \
+	bazel_label=`echo $sw_image | cut -d: -f 1-2`; \
+	bazel_target=`echo $sw_image | cut -d: -f 2`; \
+	index=`echo $sw_image | cut -d: -f 3`; \
+	flags=(`echo $sw_image | cut -d: -f 4- --output-delimiter " "`); \
+	cd /workspace/mnt/repo_top; \
+	if [[ ${flags[@]} =~ "prebuilt" ]]; then \
+		echo "SW image \"$bazel_label\" is prebuilt - copying sources."; \
+		cp /workspace/mnt/repo_top/${prebuilt_path} ${run_dir}/`basename ${prebuilt_path}`; \
+	else \
+		echo "Building SW image \"$bazel_label\"."; \
+		if [[ $index == "1" ]]; then \
+			bazel_label+="_sim_dv"; \
+		fi; \
+		bazel_opts=" --define DISABLE_VERILATOR_BUILD=true"; \
+		if [[ -z ${BAZEL_PYTHON_WHEELS_REPO} ]]; then \
+			echo "Building \"${bazel_label}\" on network connected machine."; \
+			bazel_cmd="./bazelisk.sh"; \
+		else \
+			echo "Building \"${bazel_label}\" on air-gapped machine."; \
+			bazel_opts+=" --distdir=${BAZEL_DISTDIR} --repository_cache=${BAZEL_CACHE}"; \
+			bazel_cmd="bazel"; \
+		fi; \
+		echo "Building with command: ${bazel_cmd} build ${bazel_opts} ${bazel_label}"; \
+		${bazel_cmd} build ${bazel_opts} ${bazel_label}; \
+		find -L $(${bazel_cmd} info output_path)/ \
+			-type f -name "${bazel_target}*" | \
+			xargs -I % sh -c 'cp -f % ${run_dir}/$(basename %)'; \
+	fi; \
+done;
+Building SW image "//sw/device/tests:rstmgr_smoketest".
+Building "//sw/device/tests:rstmgr_smoketest_sim_dv" on air-gapped machine.
+Building with command: bazel build  --define DISABLE_VERILATOR_BUILD=true --distdir=/workspace/mnt/bazel/bazel-distdir --repository_cache=/workspace/mnt/bazel/bazel-cache //sw/device/tests:rstmgr_smoketest_sim_dv
+Extracting Bazel installation...
+Starting local Bazel server and connecting to it...
+Loading: 
+Loading: 0 packages loaded
+Loading: 0 packages loaded
+Loading: 0 packages loaded
+Loading: 0 packages loaded
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (1 packages loaded)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (1 packages loaded, 0 targets configured)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (13 packages loaded, 34 targets configured)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (13 packages loaded, 34 targets configured)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (13 packages loaded, 34 targets configured)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (165 packages loaded, 5007 targets configured)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (174 packages loaded, 6235 targets configured)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (237 packages loaded, 13517 targets configured)
+WARNING: Failed to copy /workspace/mnt/bazel/bazel-distdir/java_tools-v11.6.zip to repository cache: java.io.IOException: /workspace/mnt/bazel/bazel-cache/content_addressable/sha256/a7ac5922ee01e8b8fcb546ffc264ef314d0a0c679328b7fa4c432e5f54a86067 (Read-only file system)
+WARNING: Failed to copy /workspace/mnt/bazel/bazel-distdir/java_tools_linux-v11.6.zip to repository cache: java.io.IOException: /workspace/mnt/bazel/bazel-cache/content_addressable/sha256/15da4f84a7d39cd179acf3035d9def638eea6ba89a0ed8f4e8a8e6e1d6c8e328 (Read-only file system)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (241 packages loaded, 13650 targets configured)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (242 packages loaded, 13782 targets configured)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (242 packages loaded, 13782 targets configured)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (242 packages loaded, 13782 targets configured)
+Analyzing: target //sw/device/tests:rstmgr_smoketest_sim_dv (242 packages loaded, 13782 targets configured)
+INFO: Analyzed target //sw/device/tests:rstmgr_smoketest_sim_dv (376 packages loaded, 18805 targets configured).
+INFO: Found 1 target...
+[0 / 28] [Prepa] Creating source manifest for //util/dvsim:dvsim ... (9 actions, 0 running)
+[119 / 316] Compiling sw/device/lib/dif/dif_base.c; 9s processwrapper-sandbox ... (54 actions, 48 running)
+[201 / 528] Action sw/device/lib/testing/test_rom/chip_info.h; 37s processwrapper-sandbox ... (43 actions running)
+[264 / 528] Action sw/device/lib/testing/test_rom/chip_info.h; 63s processwrapper-sandbox ... (47 actions running)
+INFO: From Running Cargo build script libftdi1_sys:
+Build Script Warning: Config for libftdi1 not found, falling back to default search path: `"pkg-config" "--libs" "--cflags" "libftdi1" "libftdi1 >= 1.4"` did not exit successfully: exit status: 1
+[339 / 528] Action hw/ip/sram_ctrl/data/sram_ctrl_regs.h; 92s processwrapper-sandbox ... (46 actions running)
+[421 / 528] Compiling Rust rlib object v0.29.0 (74 files); 36s processwrapper-sandbox ... (45 actions running)
+[490 / 528] Compiling Rust rlib syn v1.0.98 (90 files); 48s processwrapper-sandbox ... (4 actions running)
+[496 / 528] Compiling Rust rlib synstructure v0.12.6 (2 files); 22s processwrapper-sandbox ... (8 actions running)
+[522 / 528] Compiling Rust rlib toml v0.5.9 (13 files); 4s processwrapper-sandbox
+INFO: From Compiling Rust rlib opentitanlib (90 files):
+Warning: Could not find `Cargo.toml` in manifest dir: `/root/.cache/bazel/_bazel_jdonjdon/96f40d218badc03ed33c48f246ec2aa1/sandbox/processwrapper-sandbox/352/execroot/lowrisc_opentitan/sw/host/opentitanlib`.
+    => defaulting to `num_enum`
+Warning: Could not find `Cargo.toml` in manifest dir: `/root/.cache/bazel/_bazel_jdonjdon/96f40d218badc03ed33c48f246ec2aa1/sandbox/processwrapper-sandbox/352/execroot/lowrisc_opentitan/sw/host/opentitanlib`.
+    => defaulting to `num_enum`
+Warning: Could not find `Cargo.toml` in manifest dir: `/root/.cache/bazel/_bazel_jdonjdon/96f40d218badc03ed33c48f246ec2aa1/sandbox/processwrapper-sandbox/352/execroot/lowrisc_opentitan/sw/host/opentitanlib`.
+    => defaulting to `num_enum`
+Target //sw/device/tests:rstmgr_smoketest_sim_dv up-to-date:
+  bazel-bin/sw/device/tests/rstmgr_smoketest_sim_dv
+INFO: Elapsed time: 436.062s, Critical Path: 284.15s
+INFO: 528 processes: 175 internal, 353 processwrapper-sandbox.
+INFO: Build completed successfully, 528 total actions
+INFO: Build completed successfully, 528 total actions
+Building SW image "//sw/device/lib/testing/test_rom:test_rom".
+Building "//sw/device/lib/testing/test_rom:test_rom" on air-gapped machine.
+Building with command: bazel build  --define DISABLE_VERILATOR_BUILD=true --distdir=/workspace/mnt/bazel/bazel-distdir --repository_cache=/workspace/mnt/bazel/bazel-cache //sw/device/lib/testing/test_rom:test_rom
+Loading: 
+Loading: 0 packages loaded
+Analyzing: target //sw/device/lib/testing/test_rom:test_rom (0 packages loaded, 0 targets configured)
+Analyzing: target //sw/device/lib/testing/test_rom:test_rom (2 packages loaded, 2263 targets configured)
+INFO: Analyzed target //sw/device/lib/testing/test_rom:test_rom (2 packages loaded, 4021 targets configured).
+
+INFO: Found 1 target...
+[0 / 1] [Prepa] BazelWorkspaceStatusAction stable-status.txt
+[6 / 303] Preprocess sw/device/lib/dif/rstmgr_intf.dif_rstmgr_autogen.h.i; 1s processwrapper-sandbox ... (55 actions, 54 running)
+[9 / 303] Preprocess sw/device/lib/dif/rstmgr_intf.dif_rstmgr_autogen.h.i; 2s processwrapper-sandbox ... (55 actions, 54 running)
+[10 / 303] Preprocess sw/device/lib/dif/rstmgr_intf.dif_rstmgr_autogen.h.i; 3s processwrapper-sandbox ... (55 actions running)
+[10 / 303] Preprocess sw/device/lib/dif/rstmgr_intf.dif_rstmgr_autogen.h.i; 4s processwrapper-sandbox ... (55 actions running)
+[14 / 303] Preprocess sw/device/lib/dif/rstmgr_intf.dif_rstmgr_autogen.h.i; 6s processwrapper-sandbox ... (60 actions running)
+[14 / 303] Preprocess sw/device/lib/dif/rstmgr_intf.dif_rstmgr_autogen.h.i; 16s processwrapper-sandbox ... (60 actions running)
+[15 / 303] Preprocess sw/device/lib/dif/rstmgr_intf.dif_rstmgr_autogen.h.i; 19s processwrapper-sandbox ... (60 actions, 59 running)
+[25 / 303] Preprocess sw/device/lib/dif/rstmgr_intf.dif_rstmgr_autogen.h.i; 24s processwrapper-sandbox ... (59 actions, 58 running)
+[64 / 303] AsmOutput sw/device/lib/base/status.status.c.s; 27s processwrapper-sandbox ... (22 actions running)
+[66 / 303] Action sw/device/lib/testing/test_rom/chip_info.h; 32s processwrapper-sandbox ... (20 actions running)
+[79 / 303] Action hw/top_earlgrey/ip/flash_ctrl/data/autogen/flash_ctrl_regs.h; 38s processwrapper-sandbox ... (40 actions running)
+[91 / 303] Action hw/top_earlgrey/ip/flash_ctrl/data/autogen/flash_ctrl_regs.h; 46s processwrapper-sandbox ... (52 actions running)
+[101 / 303] Action hw/ip/csrng/data/csrng_regs.h; 54s processwrapper-sandbox ... (52 actions running)
+[159 / 303] Action hw/ip/hmac/data/hmac_regs.h; 47s processwrapper-sandbox ... (59 actions, 58 running)
+[174 / 303] AsmOutput sw/device/silicon_creator/lib/drivers/flash_ctrl_on_device_do_not_use_directly.flash_ctrl.c.s; 22s processwrapper-sandbox ... (60 actions running)
+[215 / 303] Preprocess sw/device/lib/dif/rv_core_ibex.dif_rv_core_ibex.c.i; 29s processwrapper-sandbox ... (56 actions running)
+[299 / 303] Action sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem; 3s processwrapper-sandbox ... (4 actions running)
+Target //sw/device/lib/testing/test_rom:test_rom up-to-date:
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/base.dif_base.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rstmgr_intf.dif_rstmgr_autogen.h.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/math_builtins.math_builtins.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/math.math.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/bitfield.bitfield.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/memory.memory.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/mmio_on_device_do_not_use_directly.mmio.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rstmgr.dif_rstmgr_autogen.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rstmgr.dif_rstmgr.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/hw/top_earlgrey/sw/autogen/top_earlgrey.top_earlgrey.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/abs_mmio_on_device_do_not_use_directly.abs_mmio.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/hardened.hardened.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/base/sec_mmio_on_device_do_not_use_directly.sec_mmio.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/otp_on_device_do_not_use_directly.otp.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/flash_ctrl_on_device_do_not_use_directly.flash_ctrl.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/ibex.ibex.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/hart_on_device_do_not_use_directly.hart.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/rstmgr_on_device_do_not_use_directly.rstmgr.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/lifecycle_on_device_do_not_use_directly.lifecycle.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/spi_device_on_device_do_not_use_directly.spi_device.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/mask_rom/bootstrap.bootstrap.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/epmp.epmp.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/manifest_on_device_do_not_use_directly.manifest.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/crt/crt.crt.S.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/clkmgr.dif_clkmgr_autogen.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/clkmgr.dif_clkmgr_autogen.h.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/clkmgr.dif_clkmgr.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/flash_ctrl.dif_flash_ctrl_autogen.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/flash_ctrl.dif_flash_ctrl_autogen.h.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/flash_ctrl.dif_flash_ctrl.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/flash_ctrl.dif_flash_ctrl.h.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/gpio.dif_gpio_autogen.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/gpio.dif_gpio_autogen.h.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/gpio.dif_gpio.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/hmac.dif_hmac_autogen.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/hmac.dif_hmac_autogen.h.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/hmac.dif_hmac.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/pinmux.dif_pinmux_autogen.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/pinmux.dif_pinmux_autogen.h.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/pinmux.dif_pinmux.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rv_core_ibex.dif_rv_core_ibex_autogen.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rv_core_ibex.dif_rv_core_ibex_autogen.h.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rv_core_ibex.dif_rv_core_ibex.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/spi_device.dif_spi_device_autogen.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/spi_device.dif_spi_device_autogen.h.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/spi_device.dif_spi_device.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/uart.dif_uart_autogen.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/uart.dif_uart_autogen.h.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/uart.dif_uart.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/status.status.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/print.print.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/log.log.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_framework/status.status.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/flash_ctrl_testutils.flash_ctrl_testutils.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/pinmux_testutils.pinmux_testutils.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/retention_sram.retention_sram.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_lib.test_rom.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_lib.test_rom_start.S.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/sim_verilator.device_sim_verilator.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/base.dif_base.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/math_builtins.math_builtins.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/math.math.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/bitfield.bitfield.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/memory.memory.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/mmio_on_device_do_not_use_directly.mmio.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rstmgr.dif_rstmgr_autogen.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rstmgr.dif_rstmgr.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/hw/top_earlgrey/sw/autogen/top_earlgrey.top_earlgrey.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/abs_mmio_on_device_do_not_use_directly.abs_mmio.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/hardened.hardened.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/base/sec_mmio_on_device_do_not_use_directly.sec_mmio.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/otp_on_device_do_not_use_directly.otp.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/flash_ctrl_on_device_do_not_use_directly.flash_ctrl.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/ibex.ibex.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/hart_on_device_do_not_use_directly.hart.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/rstmgr_on_device_do_not_use_directly.rstmgr.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/lifecycle_on_device_do_not_use_directly.lifecycle.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/spi_device_on_device_do_not_use_directly.spi_device.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/mask_rom/bootstrap.bootstrap.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/epmp.epmp.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/manifest_on_device_do_not_use_directly.manifest.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/clkmgr.dif_clkmgr_autogen.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/clkmgr.dif_clkmgr.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/flash_ctrl.dif_flash_ctrl_autogen.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/flash_ctrl.dif_flash_ctrl.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/gpio.dif_gpio_autogen.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/gpio.dif_gpio.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/hmac.dif_hmac_autogen.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/hmac.dif_hmac.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/pinmux.dif_pinmux_autogen.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/pinmux.dif_pinmux.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rv_core_ibex.dif_rv_core_ibex_autogen.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rv_core_ibex.dif_rv_core_ibex.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/spi_device.dif_spi_device_autogen.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/spi_device.dif_spi_device.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/uart.dif_uart_autogen.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/uart.dif_uart.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/status.status.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/print.print.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/log.log.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_framework/status.status.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/flash_ctrl_testutils.flash_ctrl_testutils.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/pinmux_testutils.pinmux_testutils.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/retention_sram.retention_sram.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_lib.test_rom.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/sim_verilator.device_sim_verilator.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/base.dif_base.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/math_builtins.math_builtins.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/math.math.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/bitfield.bitfield.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/memory.memory.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/mmio_on_device_do_not_use_directly.mmio.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rstmgr.dif_rstmgr_autogen.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rstmgr.dif_rstmgr.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/hw/top_earlgrey/sw/autogen/top_earlgrey.top_earlgrey.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/abs_mmio_on_device_do_not_use_directly.abs_mmio.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/hardened.hardened.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/base/sec_mmio_on_device_do_not_use_directly.sec_mmio.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/otp_on_device_do_not_use_directly.otp.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/flash_ctrl_on_device_do_not_use_directly.flash_ctrl.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/ibex.ibex.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/hart_on_device_do_not_use_directly.hart.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/rstmgr_on_device_do_not_use_directly.rstmgr.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/lifecycle_on_device_do_not_use_directly.lifecycle.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/spi_device_on_device_do_not_use_directly.spi_device.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/mask_rom/bootstrap.bootstrap.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/epmp.epmp.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/manifest_on_device_do_not_use_directly.manifest.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/clkmgr.dif_clkmgr_autogen.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/clkmgr.dif_clkmgr.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/flash_ctrl.dif_flash_ctrl_autogen.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/flash_ctrl.dif_flash_ctrl.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/gpio.dif_gpio_autogen.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/gpio.dif_gpio.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/hmac.dif_hmac_autogen.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/hmac.dif_hmac.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/pinmux.dif_pinmux_autogen.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/pinmux.dif_pinmux.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rv_core_ibex.dif_rv_core_ibex_autogen.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/rv_core_ibex.dif_rv_core_ibex.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/spi_device.dif_spi_device_autogen.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/spi_device.dif_spi_device.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/uart.dif_uart_autogen.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/dif/uart.dif_uart.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/base/status.status.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/print.print.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/runtime/log.log.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_framework/status.status.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/flash_ctrl_testutils.flash_ctrl_testutils.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/pinmux_testutils.pinmux_testutils.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/retention_sram.retention_sram.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_lib.test_rom.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/sim_verilator.device_sim_verilator.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.ldmap
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.elf
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.bin
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.elf.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.logs.txt
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.rodata.txt
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.32.vmem
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/sim_dv.device_sim_dv.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/sim_dv.device_sim_dv.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/sim_dv.device_sim_dv.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_dv.ldmap
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_dv.elf
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_dv.bin
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_dv.elf.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_dv.logs.txt
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_dv.rodata.txt
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_dv.32.vmem
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_sim_dv.scr.39.vmem
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/uart.uart.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/rom_print.rom_print.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/ibex.ibex.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/fpga_nexysvideo.device_fpga_nexysvideo.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/uart.uart.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/rom_print.rom_print.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/ibex.ibex.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/fpga_nexysvideo.device_fpga_nexysvideo.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/uart.uart.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/rom_print.rom_print.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/silicon_creator/lib/drivers/ibex.ibex.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/fpga_nexysvideo.device_fpga_nexysvideo.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.ldmap
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.elf
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.bin
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.elf.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.32.vmem
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.scr.39.vmem
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/fpga_cw310.device_fpga_cw310.c.i
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/fpga_cw310.device_fpga_cw310.c.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/arch/fpga_cw310.device_fpga_cw310.c.ll
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.ldmap
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.elf
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.bin
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.elf.s
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.32.vmem
+  bazel-out/k8-fastbuild-ST-97f470ee3b14/bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.scr.39.vmem
+INFO: Elapsed time: 121.741s, Critical Path: 100.82s
+INFO: 244 processes: 9 internal, 4 local, 231 processwrapper-sandbox.
+INFO: Build completed successfully, 244 total actions
+INFO: Build completed successfully, 244 total actions
+[make]: simulate
+cd /workspace/0.chip_sw_rstmgr_smoketest/out && /workspace/default/simv +sw_build_device=sim_dv +sw_images=rstmgr_smoketest:1,test_rom:0 +UVM_NO_RELNOTES +UVM_VERBOSITY=UVM_MEDIUM +prim_cdc_rand_delay_mode=disable -licqueue -ucli -do /workspace/mnt/repo_top/hw/dv/tools/sim.tcl +ntb_random_seed=1 -assert nopostproc +UVM_TESTNAME=chip_base_test +UVM_TEST_SEQ=chip_sw_base_vseq
+Chronologic VCS simulator copyright 1991-2021
+Contains Synopsys proprietary information.
+Compiler version S-2021.09-SP2-1_Full64; Runtime version S-2021.09-SP2-1_Full64;  Jul 28 10:08 2022
+ucli% # Copyright lowRISC contributors.
+ucli% # Licensed under the Apache License, Version 2.0, see LICENSE for details.
+ucli% # SPDX-License-Identifier: Apache-2.0
+ucli% # Common TCL script invoked at run-time by the simulator.
+ucli% # VCS syntax: -ucli -do <this file>
+ucli% # Xcelium syntax: -input <this file>
+ucli% set dv_root ""
+ucli% if {[info exists ::env(dv_root)]} {
+  set dv_root "$::env(dv_root)"
+} else {
+  puts "ERROR: Script run without dv_root environment variable."
+  quit
+}
+/workspace/mnt/repo_top/hw/dv
+ucli% # Dumping waves in specific hierarchies.
+ucli% #
+ucli% # By default, if wave dumping is enabled, all hierarchies of the top level testbench are dumped.
+ucli% # For large designs, this may slow down the simulation considerably. To bypass this and only enable
+ucli% # waves in specific hierarchies, set the dump_tb_top flag to 0 (i.e. uncomment the line below), and
+ucli% # specify the paths to dump on line 32.
+ucli% # set dump_tb_top 0
+ucli% source "${dv_root}/tools/common.tcl"
+ucli% source "${dv_root}/tools/waves.tcl"
+INFO: Setting "vpd_fid" to "0".
+INFO: Dumping waves in FSDB format to waves.fsdb.
+*Verdi* Loading libsscore_vcs202109.so
+FSDB Dumper for VCS, Release Verdi_S-2021.09-SP2-1, Linux x86_64/64bit, 04/11/2022
+(C) 1996 - 2022 by Synopsys, Inc.
+*Verdi* : Create FSDB file 'waves.fsdb'
+INFO: Setting "dump_tb_top" to "1".
+*Verdi* : Begin traversing the scope (tb), layer (0).
+*Verdi* : Enable +all dumping.
+*Verdi* : End of traversing.
+*Verdi* : Begin traversing the SVA assertions under scope (tb), layer (0).
+*Verdi* : End of traversing the SVA assertions.
+INFO: Dumping waves in scope "tb:0".
+ucli% global waves
+ucli% global simulator
+ucli% global tb_top
+ucli% # Dumping waves in specific hierarchies (example):
+ucli% # wavedumpScope $waves $simulator tb.dut.foo.bar 12
+ucli% # wavedumpScope $waves $simulator tb.dut.baz 0
+ucli% # In GUI mode, let the user take control of running the simulation.
+ucli% global gui
+ucli% if {$gui == 0} {
+  run
+  quit
+}
+Stopping new assertion attempts at time 0ps: level = 0 arg = dut.top_earlgrey.u_pinmux_aon.AonWkupReqKnownO_A (from inst tb (../src/lowrisc_dv_chip_sim_0.1/tb/tb.sv:391))
+UVM_INFO @ 0.000000 us: reporter [RNTST] Running test chip_base_test...
+UVM_INFO ../src/lowrisc_dv_chip_sim_0.1/tb/tb.sv(444) @ 0.000000 us: reporter [tb.sv] Creating mem_bkdr_util instance for flash 0 data
+UVM_INFO ../src/lowrisc_dv_mem_bkdr_util_0/mem_bkdr_util.sv(116) @ 0.000000 us: reporter [mem_bkdr_util[FlashBank0Data]] 
+path = tb.dut.top_earlgrey.u_flash_ctrl.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[0].u_prim_flash_bank.u_mem.gen_generic.u_impl_generic.mem
+depth = 65536
+width = 76
+err_detection_scheme = EccHamming_76_68
+data_width = 68
+byte_width = 8
+bytes_per_word = 8
+size_bytes = 0x80000
+addr_lsb = 3
+addr_width = 16
+byte_addr_width = 19
+max_errors = 76
+
+UVM_INFO ../src/lowrisc_dv_chip_sim_0.1/tb/tb.sv(453) @ 0.000000 us: reporter [tb.sv] Creating mem_bkdr_util instance for flash 0 info
+UVM_INFO ../src/lowrisc_dv_mem_bkdr_util_0/mem_bkdr_util.sv(116) @ 0.000000 us: reporter [mem_bkdr_util[FlashBank0Info]] 
+path = tb.dut.top_earlgrey.u_flash_ctrl.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[0].u_prim_flash_bank.gen_info_types[0].u_info_mem.gen_generic.u_impl_generic.mem
+depth = 2560
+width = 76
+err_detection_scheme = EccHamming_76_68
+data_width = 68
+byte_width = 8
+bytes_per_word = 8
+size_bytes = 0x5000
+addr_lsb = 3
+addr_width = 12
+byte_addr_width = 15
+max_errors = 76
+
+UVM_INFO ../src/lowrisc_dv_chip_sim_0.1/tb/tb.sv(462) @ 0.000000 us: reporter [tb.sv] Creating mem_bkdr_util instance for flash 1 data
+UVM_INFO ../src/lowrisc_dv_mem_bkdr_util_0/mem_bkdr_util.sv(116) @ 0.000000 us: reporter [mem_bkdr_util[FlashBank1Data]] 
+path = tb.dut.top_earlgrey.u_flash_ctrl.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[1].u_prim_flash_bank.u_mem.gen_generic.u_impl_generic.mem
+depth = 65536
+width = 76
+err_detection_scheme = EccHamming_76_68
+data_width = 68
+byte_width = 8
+bytes_per_word = 8
+size_bytes = 0x80000
+addr_lsb = 3
+addr_width = 16
+byte_addr_width = 19
+max_errors = 76
+
+UVM_INFO ../src/lowrisc_dv_chip_sim_0.1/tb/tb.sv(471) @ 0.000000 us: reporter [tb.sv] Creating mem_bkdr_util instance for flash 0 info
+UVM_INFO ../src/lowrisc_dv_mem_bkdr_util_0/mem_bkdr_util.sv(116) @ 0.000000 us: reporter [mem_bkdr_util[FlashBank1Info]] 
+path = tb.dut.top_earlgrey.u_flash_ctrl.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[1].u_prim_flash_bank.gen_info_types[0].u_info_mem.gen_generic.u_impl_generic.mem
+depth = 2560
+width = 76
+err_detection_scheme = EccHamming_76_68
+data_width = 68
+byte_width = 8
+bytes_per_word = 8
+size_bytes = 0x5000
+addr_lsb = 3
+addr_width = 12
+byte_addr_width = 15
+max_errors = 76
+
+UVM_INFO ../src/lowrisc_dv_chip_sim_0.1/tb/tb.sv(480) @ 0.000000 us: reporter [tb.sv] Creating mem_bkdr_util instance for OTP
+UVM_INFO ../src/lowrisc_dv_mem_bkdr_util_0/mem_bkdr_util.sv(116) @ 0.000000 us: reporter [mem_bkdr_util[Otp]] 
+path = tb.dut.top_earlgrey.u_otp_ctrl.u_otp.gen_generic.u_impl_generic.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic.mem
+depth = 1024
+width = 22
+err_detection_scheme = EccHamming_22_16
+data_width = 16
+byte_width = 8
+bytes_per_word = 2
+size_bytes = 0x800
+addr_lsb = 1
+addr_width = 10
+byte_addr_width = 11
+max_errors = 22
+
+UVM_INFO ../src/lowrisc_dv_chip_sim_0.1/tb/tb.sv(488) @ 0.000000 us: reporter [tb.sv] Creating mem_bkdr_util instance for RAM
+UVM_INFO ../src/lowrisc_dv_mem_bkdr_util_0/mem_bkdr_util.sv(116) @ 0.000000 us: reporter [mem_bkdr_util[RamMain0]] 
+path = tb.dut.top_earlgrey.u_sram_ctrl_main.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic.mem
+depth = 32768
+width = 39
+err_detection_scheme = EccInv_39_32
+data_width = 32
+byte_width = 8
+bytes_per_word = 4
+size_bytes = 0x20000
+addr_lsb = 2
+addr_width = 15
+byte_addr_width = 17
+max_errors = 39
+
+UVM_INFO ../src/lowrisc_dv_chip_sim_0.1/tb/tb.sv(496) @ 0.000000 us: reporter [tb.sv] Creating mem_bkdr_util instance for RAM RET
+UVM_INFO ../src/lowrisc_dv_mem_bkdr_util_0/mem_bkdr_util.sv(116) @ 0.000000 us: reporter [mem_bkdr_util[RamRet0]] 
+path = tb.dut.top_earlgrey.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic.mem
+depth = 1024
+width = 39
+err_detection_scheme = EccInv_39_32
+data_width = 32
+byte_width = 8
+bytes_per_word = 4
+size_bytes = 0x1000
+addr_lsb = 2
+addr_width = 10
+byte_addr_width = 12
+max_errors = 39
+
+UVM_INFO ../src/lowrisc_dv_chip_sim_0.1/tb/tb.sv(504) @ 0.000000 us: reporter [tb.sv] Creating mem_bkdr_util instance for ROM
+UVM_INFO ../src/lowrisc_dv_mem_bkdr_util_0/mem_bkdr_util.sv(116) @ 0.000000 us: reporter [mem_bkdr_util[Rom]] 
+path = tb.dut.top_earlgrey.u_rom_ctrl.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.gen_generic.u_impl_generic.mem
+depth = 8192
+width = 39
+err_detection_scheme = EccInv_39_32
+data_width = 32
+byte_width = 8
+bytes_per_word = 4
+size_bytes = 0x8000
+addr_lsb = 2
+addr_width = 13
+byte_addr_width = 15
+max_errors = 39
+
+UVM_INFO @   0.000000 us: (chip_env_cfg.sv:135) [cfg] ral_model_names: '{"chip_reg_block"} 
+
+Warning-[CNST-PPRW] Constraint randomize NULL object warning
+../src/lowrisc_dv_dv_lib_0/dv_base_test.sv, 41
+  Member object 'm_jtag_agent_cfg' was found to be NULL during randomization.
+  Please make sure all random variables/arrays/function calls being randomized
+  are allocated fully and properly.
+
+
+Warning-[CNST-PPRW] Constraint randomize NULL object warning
+../src/lowrisc_dv_dv_lib_0/dv_base_test.sv, 41
+  Member object 'jtag_dmi_ral' was found to be NULL during randomization.
+  Please make sure all random variables/arrays/function calls being randomized
+  are allocated fully and properly.
+
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: [TPREGR] Original object type 'alert_esc_base_monitor' already registered to produce 'alert_monitor'.  Replacing with override to produce type 'alert_monitor'.
+UVM_INFO @   0.000000 us: (dv_base_test.sv:97) uvm_test_top [uvm_test_top] Starting test sequence chip_sw_base_vseq
+UVM_INFO @   0.000000 us: (jtag_riscv_driver.sv:31) driver [driver] get_and_drive: STARTED
+UVM_INFO @   0.000000 us: (mem_bkdr_util.sv:522) [mem_bkdr_util[FlashBank0Info]] Set memory
+UVM_INFO @   0.000000 us: (mem_bkdr_util.sv:522) [mem_bkdr_util[FlashBank1Info]] Set memory
+UVM_INFO @   0.000000 us: (tb.sv:486) [mem_bkdr_util[Otp]] Loading mem from file:
+otp_ctrl_img_rma.vmem
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[0] with 0x1f135537 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[1] with 0xe6195fe3 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[2] with 0x37c0a29f via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[3] with 0x70a4a033 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[4] with 0x7d847112 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[5] with 0xaee90f9c via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[6] with 0x7f78182f via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[7] with 0x3c13b39 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[8] with 0x301ad7bd via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[9] with 0xbc68bbf9 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[10] with 0x55e76493 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[11] with 0x7cd0c278 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[12] with 0xa3ea46b9 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[13] with 0xb0111c67 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[14] with 0x673b3db1 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[15] with 0xb8980e40 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[16] with 0xcadd057c via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[17] with 0x78e6dd5b via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[18] with 0x74ceec4d via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[19] with 0xf491fa51 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[20] with 0x2ced27be via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[21] with 0xde7c7563 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[22] with 0xb4b04b13 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[23] with 0x125370d5 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[24] with 0x81e48043 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[25] with 0xc3a97b5 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[26] with 0x42de4f12 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[27] with 0xb1fd3166 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[28] with 0xfc5e0e2 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[29] with 0xfeeb6e88 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[30] with 0x997c2449 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[31] with 0xf74bd958 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[32] with 0x1db45fc0 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[33] with 0xdd6fa0ef via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[34] with 0xeddd9294 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[35] with 0x1a323300 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[36] with 0x7b4e79f2 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[37] with 0xb15cd808 via backdoor
+UVM_INFO @   0.000000 us: (chip_base_vseq.sv:188) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] OTP: Preloading creator_sw_cfg_ast_cfg_data[38] with 0x40144880 via backdoor
+UVM_INFO @   0.000000 us: (mem_bkdr_util.sv:531) [mem_bkdr_util[Rom]] Randomizing mem contents
+  0.000000 us: Illegal instruction (hart 0) at PC 0xxxxxxxxx: 0xxxxxxxxx
+  0.000000 us: Illegal instruction (hart 0) at PC 0xxxxxxxxx: 0xxxxxxxxx
+
+tb.dut.u_ast.u_sys_clk.u_sys_osc: System Clock Power-up Frequency: 50130338 Hz
+
+tb.dut.u_ast.u_usb_clk.u_usb_osc: USB Clock Power-up Frequency: 22421021 Hz
+tb.dut.u_ast.u_usb_clk.u_usb_osc: USB Clock Drift: -122 ps
+
+tb.dut.u_ast.u_aon_clk.u_aon_osc: AON Base Clock Power-up Frequency: 100847 Hz
+tb.dut.u_ast.u_aon_clk.u_aon_osc: AON 1.0xBase Clock Power-up Frequency: 100847 Hz
+
+tb.dut.u_ast.u_io_clk.u_io_osc: IO Clock Power-up Frequency: 50130338 Hz
+UVM_INFO @   1.065463 us: (chip_sw_base_vseq.sv:33) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] Started cpu_init
+UVM_INFO @   1.065463 us: (chip_sw_base_vseq.sv:51) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] Initializing RAM
+UVM_INFO @   1.065463 us: (chip_sw_base_vseq.sv:66) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] Initializing flash banks (data partition only)
+UVM_INFO @   1.065463 us: (mem_bkdr_util.sv:522) [mem_bkdr_util[FlashBank0Data]] Set memory
+UVM_INFO @   1.065463 us: (mem_bkdr_util.sv:522) [mem_bkdr_util[FlashBank1Data]] Set memory
+UVM_INFO @   1.065463 us: (mem_bkdr_util.sv:531) [mem_bkdr_util[RamRet0]] Randomizing mem contents
+UVM_INFO @   1.065463 us: (chip_sw_base_vseq.sv:77) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] Initializing ROM
+
+Warning-[STASKW_CO] Cannot open file
+../src/lowrisc_dv_sw_logger_if_0/sw_logger_if.sv, 153
+  The file 
+  'rstmgr_smoketest_prog_sim_dv/rstmgr_smoketest_prog_sim_dv.logs.txt' could 
+  not be opened. Not a directory.
+  Please ensure that the file exists with proper permissions.
+
+
+Warning-[STASKW_CO] Cannot open file
+../src/lowrisc_dv_sw_logger_if_0/sw_logger_if.sv, 153
+  The file 'test_rom_sim_dv/test_rom_sim_dv.logs.txt' could not be opened. Not
+  a directory.
+  Please ensure that the file exists with proper permissions.
+
+UVM_INFO @   1.065463 us: (tb.sv:510) [mem_bkdr_util[Rom]] Loading mem from file:
+test_rom_sim_dv.scr.39.vmem
+UVM_INFO @   1.065463 us: (tb.sv:451) [mem_bkdr_util[FlashBank0Data]] Loading mem from file:
+rstmgr_smoketest_prog_sim_dv.64.scr.vmem
+UVM_INFO @   1.065463 us: (chip_sw_base_vseq.sv:95) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] CPU_init done
+UVM_INFO @   5.555189 us: (chip_sw_base_vseq.sv:198) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] Waiting for the SW test to finish
+UVM_INFO @ 3012.646336 us: (sw_test_status_if.sv:51) [tb.u_sim_sram.u_sim_sram_if.u_sw_test_status_if] SW test transitioned to SwTestStatusInBootRom.
+UVM_INFO @ 3527.236336 us: (sw_test_status_if.sv:51) [tb.u_sim_sram.u_sim_sram_if.u_sw_test_status_if] SW test transitioned to SwTestStatusInTest.
+UVM_INFO @ 3531.756336 us: (sw_test_status_if.sv:51) [tb.u_sim_sram.u_sim_sram_if.u_sw_test_status_if] SW test transitioned to SwTestStatusPassed.
+UVM_INFO @ 3531.756336 us: (sw_test_status_if.sv:72) [tb.u_sim_sram.u_sim_sram_if.u_sw_test_status_if] ==== SW TEST PASSED ====
+UVM_INFO @ 3531.756336 us: (chip_sw_base_vseq.sv:214) uvm_test_top.env.virtual_sequencer [uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq] SW TEST PASSED!
+UVM_INFO @ 3531.756336 us: (dv_base_test.sv:101) uvm_test_top [uvm_test_top] Finished test sequence chip_sw_base_vseq
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_adc_ctrl_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_adc_ctrl_aon_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_adc_ctrl_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_adc_ctrl_aon_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_aes_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_aes_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_aes_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_aes_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_aes_recov_ctrl_update_err.monitor [uvm_test_top.env.m_alert_agent_aes_recov_ctrl_update_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_aes_recov_ctrl_update_err.monitor [uvm_test_top.env.m_alert_agent_aes_recov_ctrl_update_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_aon_timer_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_aon_timer_aon_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_aon_timer_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_aon_timer_aon_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_clkmgr_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_clkmgr_aon_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_clkmgr_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_clkmgr_aon_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_clkmgr_aon_recov_fault.monitor [uvm_test_top.env.m_alert_agent_clkmgr_aon_recov_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_clkmgr_aon_recov_fault.monitor [uvm_test_top.env.m_alert_agent_clkmgr_aon_recov_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_csrng_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_csrng_fatal_alert.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_csrng_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_csrng_fatal_alert.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_csrng_recov_alert.monitor [uvm_test_top.env.m_alert_agent_csrng_recov_alert.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_csrng_recov_alert.monitor [uvm_test_top.env.m_alert_agent_csrng_recov_alert.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_edn0_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_edn0_fatal_alert.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_edn0_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_edn0_fatal_alert.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_edn0_recov_alert.monitor [uvm_test_top.env.m_alert_agent_edn0_recov_alert.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_edn0_recov_alert.monitor [uvm_test_top.env.m_alert_agent_edn0_recov_alert.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_edn1_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_edn1_fatal_alert.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_edn1_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_edn1_fatal_alert.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_edn1_recov_alert.monitor [uvm_test_top.env.m_alert_agent_edn1_recov_alert.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_edn1_recov_alert.monitor [uvm_test_top.env.m_alert_agent_edn1_recov_alert.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_entropy_src_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_entropy_src_fatal_alert.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_entropy_src_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_entropy_src_fatal_alert.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_entropy_src_recov_alert.monitor [uvm_test_top.env.m_alert_agent_entropy_src_recov_alert.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_entropy_src_recov_alert.monitor [uvm_test_top.env.m_alert_agent_entropy_src_recov_alert.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_err.monitor [uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_err.monitor [uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_std_err.monitor [uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_std_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_std_err.monitor [uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_std_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_flash_ctrl_recov_err.monitor [uvm_test_top.env.m_alert_agent_flash_ctrl_recov_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_flash_ctrl_recov_err.monitor [uvm_test_top.env.m_alert_agent_flash_ctrl_recov_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_gpio_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_gpio_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_gpio_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_gpio_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_hmac_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_hmac_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_hmac_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_hmac_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_i2c0_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_i2c0_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_i2c0_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_i2c0_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_i2c1_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_i2c1_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_i2c1_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_i2c1_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_i2c2_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_i2c2_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_i2c2_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_i2c2_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_keymgr_fatal_fault_err.monitor [uvm_test_top.env.m_alert_agent_keymgr_fatal_fault_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_keymgr_fatal_fault_err.monitor [uvm_test_top.env.m_alert_agent_keymgr_fatal_fault_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_keymgr_recov_operation_err.monitor [uvm_test_top.env.m_alert_agent_keymgr_recov_operation_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_keymgr_recov_operation_err.monitor [uvm_test_top.env.m_alert_agent_keymgr_recov_operation_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_kmac_fatal_fault_err.monitor [uvm_test_top.env.m_alert_agent_kmac_fatal_fault_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_kmac_fatal_fault_err.monitor [uvm_test_top.env.m_alert_agent_kmac_fatal_fault_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_kmac_recov_operation_err.monitor [uvm_test_top.env.m_alert_agent_kmac_recov_operation_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_kmac_recov_operation_err.monitor [uvm_test_top.env.m_alert_agent_kmac_recov_operation_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_bus_integ_error.monitor [uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_bus_integ_error.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_bus_integ_error.monitor [uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_bus_integ_error.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_prog_error.monitor [uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_prog_error.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_prog_error.monitor [uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_prog_error.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_state_error.monitor [uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_state_error.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_state_error.monitor [uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_state_error.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_otbn_fatal.monitor [uvm_test_top.env.m_alert_agent_otbn_fatal.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_otbn_fatal.monitor [uvm_test_top.env.m_alert_agent_otbn_fatal.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_otbn_recov.monitor [uvm_test_top.env.m_alert_agent_otbn_recov.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_otbn_recov.monitor [uvm_test_top.env.m_alert_agent_otbn_recov.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_bus_integ_error.monitor [uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_bus_integ_error.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_bus_integ_error.monitor [uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_bus_integ_error.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_check_error.monitor [uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_check_error.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_check_error.monitor [uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_check_error.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_macro_error.monitor [uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_macro_error.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_macro_error.monitor [uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_macro_error.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_pattgen_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pattgen_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_pattgen_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pattgen_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_pinmux_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pinmux_aon_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_pinmux_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pinmux_aon_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_pwm_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pwm_aon_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_pwm_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pwm_aon_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_pwrmgr_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pwrmgr_aon_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_pwrmgr_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pwrmgr_aon_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_rom_ctrl_fatal.monitor [uvm_test_top.env.m_alert_agent_rom_ctrl_fatal.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_rom_ctrl_fatal.monitor [uvm_test_top.env.m_alert_agent_rom_ctrl_fatal.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_cnsty_fault.monitor [uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_cnsty_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_cnsty_fault.monitor [uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_cnsty_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_hw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_hw_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_hw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_hw_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_sw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_sw_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_sw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_sw_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_hw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_hw_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_hw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_hw_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_sw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_sw_err.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_sw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_sw_err.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_rv_dm_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rv_dm_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_rv_dm_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rv_dm_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_rv_plic_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rv_plic_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_rv_plic_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rv_plic_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_rv_timer_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rv_timer_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_rv_timer_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rv_timer_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_sensor_ctrl_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_sensor_ctrl_fatal_alert.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_sensor_ctrl_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_sensor_ctrl_fatal_alert.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_sensor_ctrl_recov_alert.monitor [uvm_test_top.env.m_alert_agent_sensor_ctrl_recov_alert.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_sensor_ctrl_recov_alert.monitor [uvm_test_top.env.m_alert_agent_sensor_ctrl_recov_alert.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_spi_device_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_spi_device_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_spi_device_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_spi_device_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_spi_host0_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_spi_host0_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_spi_host0_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_spi_host0_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_spi_host1_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_spi_host1_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_spi_host1_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_spi_host1_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_sram_ctrl_main_fatal_error.monitor [uvm_test_top.env.m_alert_agent_sram_ctrl_main_fatal_error.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_sram_ctrl_main_fatal_error.monitor [uvm_test_top.env.m_alert_agent_sram_ctrl_main_fatal_error.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_sram_ctrl_ret_aon_fatal_error.monitor [uvm_test_top.env.m_alert_agent_sram_ctrl_ret_aon_fatal_error.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_sram_ctrl_ret_aon_fatal_error.monitor [uvm_test_top.env.m_alert_agent_sram_ctrl_ret_aon_fatal_error.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_sysrst_ctrl_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_sysrst_ctrl_aon_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_sysrst_ctrl_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_sysrst_ctrl_aon_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_uart0_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart0_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_uart0_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart0_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_uart1_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart1_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_uart1_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart1_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_uart2_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart2_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_uart2_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart2_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_uart3_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart3_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_uart3_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart3_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_alert_agent_usbdev_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_usbdev_fatal_fault.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_alert_agent_usbdev_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_usbdev_fatal_fault.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_jtag_riscv_agent.m_jtag_agent.monitor [uvm_test_top.env.m_jtag_riscv_agent.m_jtag_agent.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_jtag_riscv_agent.m_jtag_agent.monitor [uvm_test_top.env.m_jtag_riscv_agent.m_jtag_agent.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_jtag_riscv_agent.monitor [uvm_test_top.env.m_jtag_riscv_agent.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_jtag_riscv_agent.monitor [uvm_test_top.env.m_jtag_riscv_agent.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_pwm_monitor0 [uvm_test_top.env.m_pwm_monitor0] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_pwm_monitor0 [uvm_test_top.env.m_pwm_monitor0] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_pwm_monitor1 [uvm_test_top.env.m_pwm_monitor1] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_pwm_monitor1 [uvm_test_top.env.m_pwm_monitor1] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_pwm_monitor2 [uvm_test_top.env.m_pwm_monitor2] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_pwm_monitor2 [uvm_test_top.env.m_pwm_monitor2] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_pwm_monitor3 [uvm_test_top.env.m_pwm_monitor3] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_pwm_monitor3 [uvm_test_top.env.m_pwm_monitor3] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_pwm_monitor4 [uvm_test_top.env.m_pwm_monitor4] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_pwm_monitor4 [uvm_test_top.env.m_pwm_monitor4] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_pwm_monitor5 [uvm_test_top.env.m_pwm_monitor5] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_pwm_monitor5 [uvm_test_top.env.m_pwm_monitor5] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_spi_agent.monitor [uvm_test_top.env.m_spi_agent.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_spi_agent.monitor [uvm_test_top.env.m_spi_agent.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_tl_agent_chip_reg_block.monitor [uvm_test_top.env.m_tl_agent_chip_reg_block.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_tl_agent_chip_reg_block.monitor [uvm_test_top.env.m_tl_agent_chip_reg_block.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_uart_agent0.monitor [uvm_test_top.env.m_uart_agent0.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_uart_agent0.monitor [uvm_test_top.env.m_uart_agent0.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_uart_agent1.monitor [uvm_test_top.env.m_uart_agent1.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_uart_agent1.monitor [uvm_test_top.env.m_uart_agent1.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_uart_agent2.monitor [uvm_test_top.env.m_uart_agent2.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_uart_agent2.monitor [uvm_test_top.env.m_uart_agent2.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:74) uvm_test_top.env.m_uart_agent3.monitor [uvm_test_top.env.m_uart_agent3.monitor] watchdog_ok_to_end: raising objection
+UVM_INFO @ 3533.756336 us: (dv_base_monitor.sv:81) uvm_test_top.env.m_uart_agent3.monitor [uvm_test_top.env.m_uart_agent3.monitor] watchdog_ok_to_end: starting the timer (count: 1)
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_adc_ctrl_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_adc_ctrl_aon_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_aes_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_aes_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_aes_recov_ctrl_update_err.monitor [uvm_test_top.env.m_alert_agent_aes_recov_ctrl_update_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_aon_timer_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_aon_timer_aon_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_clkmgr_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_clkmgr_aon_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_clkmgr_aon_recov_fault.monitor [uvm_test_top.env.m_alert_agent_clkmgr_aon_recov_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_csrng_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_csrng_fatal_alert.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_csrng_recov_alert.monitor [uvm_test_top.env.m_alert_agent_csrng_recov_alert.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_edn0_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_edn0_fatal_alert.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_edn0_recov_alert.monitor [uvm_test_top.env.m_alert_agent_edn0_recov_alert.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_edn1_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_edn1_fatal_alert.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_edn1_recov_alert.monitor [uvm_test_top.env.m_alert_agent_edn1_recov_alert.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_entropy_src_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_entropy_src_fatal_alert.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_entropy_src_recov_alert.monitor [uvm_test_top.env.m_alert_agent_entropy_src_recov_alert.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_err.monitor [uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_std_err.monitor [uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_std_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_flash_ctrl_recov_err.monitor [uvm_test_top.env.m_alert_agent_flash_ctrl_recov_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_gpio_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_gpio_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_hmac_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_hmac_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_i2c0_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_i2c0_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_i2c1_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_i2c1_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_i2c2_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_i2c2_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_keymgr_fatal_fault_err.monitor [uvm_test_top.env.m_alert_agent_keymgr_fatal_fault_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_keymgr_recov_operation_err.monitor [uvm_test_top.env.m_alert_agent_keymgr_recov_operation_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_kmac_fatal_fault_err.monitor [uvm_test_top.env.m_alert_agent_kmac_fatal_fault_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_kmac_recov_operation_err.monitor [uvm_test_top.env.m_alert_agent_kmac_recov_operation_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_bus_integ_error.monitor [uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_bus_integ_error.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_prog_error.monitor [uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_prog_error.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_state_error.monitor [uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_state_error.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_otbn_fatal.monitor [uvm_test_top.env.m_alert_agent_otbn_fatal.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_otbn_recov.monitor [uvm_test_top.env.m_alert_agent_otbn_recov.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_bus_integ_error.monitor [uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_bus_integ_error.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_check_error.monitor [uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_check_error.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_macro_error.monitor [uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_macro_error.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_pattgen_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pattgen_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_pinmux_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pinmux_aon_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_pwm_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pwm_aon_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_pwrmgr_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_pwrmgr_aon_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_rom_ctrl_fatal.monitor [uvm_test_top.env.m_alert_agent_rom_ctrl_fatal.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_cnsty_fault.monitor [uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_cnsty_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_hw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_hw_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_sw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_sw_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_hw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_hw_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_sw_err.monitor [uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_sw_err.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_rv_dm_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rv_dm_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_rv_plic_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rv_plic_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_rv_timer_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_rv_timer_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_sensor_ctrl_fatal_alert.monitor [uvm_test_top.env.m_alert_agent_sensor_ctrl_fatal_alert.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_sensor_ctrl_recov_alert.monitor [uvm_test_top.env.m_alert_agent_sensor_ctrl_recov_alert.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_spi_device_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_spi_device_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_spi_host0_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_spi_host0_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_spi_host1_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_spi_host1_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_sram_ctrl_main_fatal_error.monitor [uvm_test_top.env.m_alert_agent_sram_ctrl_main_fatal_error.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_sram_ctrl_ret_aon_fatal_error.monitor [uvm_test_top.env.m_alert_agent_sram_ctrl_ret_aon_fatal_error.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_sysrst_ctrl_aon_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_sysrst_ctrl_aon_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_uart0_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart0_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_uart1_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart1_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_uart2_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart2_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_uart3_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_uart3_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_alert_agent_usbdev_fatal_fault.monitor [uvm_test_top.env.m_alert_agent_usbdev_fatal_fault.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_jtag_riscv_agent.m_jtag_agent.monitor [uvm_test_top.env.m_jtag_riscv_agent.m_jtag_agent.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_jtag_riscv_agent.monitor [uvm_test_top.env.m_jtag_riscv_agent.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_pwm_monitor0 [uvm_test_top.env.m_pwm_monitor0] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_pwm_monitor1 [uvm_test_top.env.m_pwm_monitor1] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_pwm_monitor2 [uvm_test_top.env.m_pwm_monitor2] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_pwm_monitor3 [uvm_test_top.env.m_pwm_monitor3] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_pwm_monitor4 [uvm_test_top.env.m_pwm_monitor4] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_pwm_monitor5 [uvm_test_top.env.m_pwm_monitor5] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_spi_agent.monitor [uvm_test_top.env.m_spi_agent.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_tl_agent_chip_reg_block.monitor [uvm_test_top.env.m_tl_agent_chip_reg_block.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_uart_agent0.monitor [uvm_test_top.env.m_uart_agent0.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_uart_agent1.monitor [uvm_test_top.env.m_uart_agent1.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_uart_agent2.monitor [uvm_test_top.env.m_uart_agent2.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3534.756336 us: (dv_base_monitor.sv:99) uvm_test_top.env.m_uart_agent3.monitor [uvm_test_top.env.m_uart_agent3.monitor] watchdog_ok_to_end: dropping objection
+UVM_INFO @ 3536.756336 us: (uvm_report_catcher.svh:705) [UVM/REPORT/CATCHER] 
+--- UVM Report catcher Summary ---
+
+
+Number of demoted UVM_FATAL reports  :    0
+Number of demoted UVM_ERROR reports  :    0
+Number of demoted UVM_WARNING reports:    0
+Number of caught UVM_FATAL reports   :    0
+Number of caught UVM_ERROR reports   :    0
+Number of caught UVM_WARNING reports :    0
+
+UVM_INFO @ 3536.756336 us: (uvm_report_server.svh:904) [UVM/REPORT/SERVER] 
+--- UVM Report Summary ---
+
+Quit count :     0 of     1
+** Report counts by severity
+UVM_INFO :  366
+UVM_WARNING :    0
+UVM_ERROR :    0
+UVM_FATAL :    0
+** Report counts by id
+[RNTST]     1
+[TPREGR]    60
+[UVM/REPORT/CATCHER]     1
+[cfg]     1
+[driver]     1
+[mem_bkdr_util[FlashBank0Data]]     3
+[mem_bkdr_util[FlashBank0Info]]     2
+[mem_bkdr_util[FlashBank1Data]]     2
+[mem_bkdr_util[FlashBank1Info]]     2
+[mem_bkdr_util[Otp]]     2
+[mem_bkdr_util[RamMain0]]     1
+[mem_bkdr_util[RamRet0]]     2
+[mem_bkdr_util[Rom]]     3
+[tb.sv]     8
+[tb.u_sim_sram.u_sim_sram_if.u_sw_test_status_if]     4
+[uvm_test_top]     2
+[uvm_test_top.env.m_alert_agent_adc_ctrl_aon_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_aes_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_aes_recov_ctrl_update_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_aon_timer_aon_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_clkmgr_aon_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_clkmgr_aon_recov_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_csrng_fatal_alert.monitor]     3
+[uvm_test_top.env.m_alert_agent_csrng_recov_alert.monitor]     3
+[uvm_test_top.env.m_alert_agent_edn0_fatal_alert.monitor]     3
+[uvm_test_top.env.m_alert_agent_edn0_recov_alert.monitor]     3
+[uvm_test_top.env.m_alert_agent_edn1_fatal_alert.monitor]     3
+[uvm_test_top.env.m_alert_agent_edn1_recov_alert.monitor]     3
+[uvm_test_top.env.m_alert_agent_entropy_src_fatal_alert.monitor]     3
+[uvm_test_top.env.m_alert_agent_entropy_src_recov_alert.monitor]     3
+[uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_flash_ctrl_fatal_std_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_flash_ctrl_recov_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_gpio_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_hmac_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_i2c0_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_i2c1_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_i2c2_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_keymgr_fatal_fault_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_keymgr_recov_operation_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_kmac_fatal_fault_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_kmac_recov_operation_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_bus_integ_error.monitor]     3
+[uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_prog_error.monitor]     3
+[uvm_test_top.env.m_alert_agent_lc_ctrl_fatal_state_error.monitor]     3
+[uvm_test_top.env.m_alert_agent_otbn_fatal.monitor]     3
+[uvm_test_top.env.m_alert_agent_otbn_recov.monitor]     3
+[uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_bus_integ_error.monitor]     3
+[uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_check_error.monitor]     3
+[uvm_test_top.env.m_alert_agent_otp_ctrl_fatal_macro_error.monitor]     3
+[uvm_test_top.env.m_alert_agent_pattgen_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_pinmux_aon_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_pwm_aon_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_pwrmgr_aon_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_rom_ctrl_fatal.monitor]     3
+[uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_cnsty_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_rstmgr_aon_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_hw_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_rv_core_ibex_fatal_sw_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_hw_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_rv_core_ibex_recov_sw_err.monitor]     3
+[uvm_test_top.env.m_alert_agent_rv_dm_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_rv_plic_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_rv_timer_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_sensor_ctrl_fatal_alert.monitor]     3
+[uvm_test_top.env.m_alert_agent_sensor_ctrl_recov_alert.monitor]     3
+[uvm_test_top.env.m_alert_agent_spi_device_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_spi_host0_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_spi_host1_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_sram_ctrl_main_fatal_error.monitor]     3
+[uvm_test_top.env.m_alert_agent_sram_ctrl_ret_aon_fatal_error.monitor]     3
+[uvm_test_top.env.m_alert_agent_sysrst_ctrl_aon_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_uart0_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_uart1_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_uart2_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_uart3_fatal_fault.monitor]     3
+[uvm_test_top.env.m_alert_agent_usbdev_fatal_fault.monitor]     3
+[uvm_test_top.env.m_jtag_riscv_agent.m_jtag_agent.monitor]     3
+[uvm_test_top.env.m_jtag_riscv_agent.monitor]     3
+[uvm_test_top.env.m_pwm_monitor0]     3
+[uvm_test_top.env.m_pwm_monitor1]     3
+[uvm_test_top.env.m_pwm_monitor2]     3
+[uvm_test_top.env.m_pwm_monitor3]     3
+[uvm_test_top.env.m_pwm_monitor4]     3
+[uvm_test_top.env.m_pwm_monitor5]     3
+[uvm_test_top.env.m_spi_agent.monitor]     3
+[uvm_test_top.env.m_tl_agent_chip_reg_block.monitor]     3
+[uvm_test_top.env.m_uart_agent0.monitor]     3
+[uvm_test_top.env.m_uart_agent1.monitor]     3
+[uvm_test_top.env.m_uart_agent2.monitor]     3
+[uvm_test_top.env.m_uart_agent3.monitor]     3
+[uvm_test_top.env.virtual_sequencer.chip_sw_base_vseq]    46
+
+
+TEST PASSED CHECKS
+ _____         _                                  _ _ 
+|_   _|__  ___| |_   _ __   __ _ ___ ___  ___  __| | |
+  | |/ _ \/ __| __| | '_ \ / _` / __/ __|/ _ \/ _` | |
+  | |  __/\__ \ |_  | |_) | (_| \__ \__ \  __/ (_| |_|
+  |_|\___||___/\__| | .__/ \__,_|___/___/\___|\__,_(_)
+                    |_|                               
+
+$finish called from file "/workspace/mnt/vcs/etc/uvm-1.2/base/uvm_root.svh", line 527.
+$finish at simulation time 3536.756336 us
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 3536756336 ps
+CPU Time:    471.600 seconds;       Data structure size:  33.1Mb
+Thu Jul 28 10:14:11 2022
+[make]: post_run
+[make]: run_result
