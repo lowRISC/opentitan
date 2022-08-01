@@ -307,13 +307,19 @@
       name: alert_cnt_cg
       desc: '''
             Covers a range of values (1, 2, 3-6, 6-10, plus &gt; 10) for ALERT_THRESHOLD.
+            To be sampled when a HT alert fires.
             '''
     }
     {
       name: observe_fifo_thresh_cg
       desc: '''
-            Covers a range of values (1-64) for OBSERVE_FIFO_THRESH. Interrupts
-            and data must be observed for all values.
+            Covers a range of values (1-63) for OBSERVE_FIFO_THRESH. Coverage bins
+            include the lowest value (1), the highest value (63) and four bins in between.
+            Interrupts and data must be observed for all bins.  Thus this covergroup
+            should be sampled after an interrupt has fired and OBSERVE_FIFO_THRESH
+            words have been read from the FIFO.
+            Note: The value of 0 should never generate an interrupt, a constraint that
+            must be checked in the scoreboard.
             '''
     }
   ]

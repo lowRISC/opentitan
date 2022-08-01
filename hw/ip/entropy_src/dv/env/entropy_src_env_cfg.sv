@@ -25,6 +25,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   virtual entropy_src_assert_if entropy_src_assert_vif;
   // handle to entropy_src path interface
   virtual entropy_src_path_if   entropy_src_path_vif;
+
+  // handle to the interrupt interface
+  intr_vif interrupt_vif;
+
   //
   // Variables for controlling test duration.  Depending on the test there are two options:
   // fixed duration in time or total number of seeds.

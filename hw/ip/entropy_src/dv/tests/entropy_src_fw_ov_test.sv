@@ -39,7 +39,7 @@ class entropy_src_fw_ov_test extends entropy_src_base_test;
     cfg.otp_en_es_fw_over_pct               = 100;
 
     cfg.dut_cfg.type_bypass_pct             = 0;
-    cfg.dut_cfg.default_ht_thresholds_pct   = 100;
+    cfg.dut_cfg.default_ht_thresholds_pct   = 0;
 
     // Always read data from the Observe FIFO
     cfg.dut_cfg.fw_read_pct                 = 100;
