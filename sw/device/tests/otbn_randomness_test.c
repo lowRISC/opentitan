@@ -177,6 +177,10 @@ bool test_main(void) {
   // verify that the OTBN clk hint status within clkmgr reads 1 (OTBN is not
   // idle).
   CHECK(otbn_load_app(&otbn_ctx, kOtbnAppCfiTest) == kOtbnOk);
+
+  // Re-initialize EDN in auto mode.
+  entropy_testutils_auto_mode_init();
+
   CHECK(otbn_execute(&otbn_ctx) == kOtbnOk);
 
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
