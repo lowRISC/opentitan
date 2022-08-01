@@ -105,9 +105,10 @@ def vcs_cov_summary_table(buf):
 def get_job_runtime(log_text: List, tool: str) -> Tuple[float, str]:
     """Returns the job runtime (wall clock time) along with its units.
 
-    EDA tools indicate how long the job ran in terms of CPU time in the log file.
-    This method invokes the tool specific method which parses the log text and
-    returns the runtime as a floating point value followed by its units as a tuple.
+    EDA tools indicate how long the job ran in terms of CPU time in the log
+    file. This method invokes the tool specific method which parses the log
+    text and returns the runtime as a floating point value followed by its
+    units as a tuple.
 
     `log_text` is the job's log file contents as a list of lines.
     `tool` is the EDA tool used to run the job.
@@ -119,116 +120,104 @@ def get_job_runtime(log_text: List, tool: str) -> Tuple[float, str]:
     elif tool == 'vcs':
         return vcs_job_runtime(log_text)
     else:
-        raise NotImplementedError(f"{tool} is unsupported for job runtime extraction.")
+        raise NotImplementedError(f"{tool} is unsupported for job runtime "
+                                  "extraction.")
 
 
 def vcs_job_runtime(log_text: List) -> Tuple[float, str]:
-    """Capture and return the job_runtime along with its units from VCS simulator.
+    """Returns the VCS job runtime (wall clock time) along with its units.
 
-    Example of VCS job_runtime: 'CPU Time:      1.210 seconds;'
-    Raises SyntaxError exception if we find the specific line but fail to parse the
-    actual number with unit.
+    Search pattern example:
+    CPU time: 22.170 seconds to compile + .518 seconds to elab + 1.901 \
+        seconds to link
+    CPU Time:      0.610 seconds;       Data structure size:   1.6Mb
+
+    Returns the runtime, units as a tuple.
+    Raises RuntimeError exception if the search pattern is not found.
     """
-    # Reverse the log_text because the runtime is usually printed at the end of
-    # the file.
+    pattern = r"^CPU [tT]ime:\s*(\d+\.?\d*?)\s*(seconds|minutes|hours).*$"
     for line in reversed(log_text):
-        if "CPU Time" in line:
-            # Find pattern: CPU Time: "XXXX" seconds;.
-            m = re.search(r"(\d+\.\d+)", line)
-            if m:
-                return float(m.group(0)), "s"
-            else:
-                raise SyntaxError("Cannot find job runtime in line: " + line)
-    # We cannot find the job runtime summary line, could due to job killed,
-    # return the default value.
-    return 0, "s"
+        m = re.search(pattern, line)
+        if m:
+            return float(m.group(1)), m.group(2)[0]
+    raise RuntimeError("Job runtime not found in the log.")
 
 
 def xcelium_job_runtime(log_text: List) -> Tuple[float, str]:
-    """Capture and return the job_runtime along with its units from Xcelium simulator.
+    """Returns the Xcelium job runtime (wall clock time) along with its units.
 
-    Example of Xcelium job_runtime:
-      'TOOL: xrun(64) 21.09-s006: Exiting on Jul 22, 2022 at 13:38:48 PDT (total: 00:00:02)'
-    Raises SyntaxError exception if we find the specific line but fail to parse the
-    actual number with unit.
+    Search pattern example:
+    TOOL:	xrun(64)	21.09-s006: Exiting on Aug 01, 2022 at 00:21:18 PDT \
+        (total: 00:00:05)
+
+    Returns the runtime, units as a tuple.
+    Raises RuntimeError exception if the search pattern is not found.
     """
-    # Reverse the log_text because the runtime is usually printed at the end of
-    # the file.
+    pattern = (r"^TOOL:\s*xrun.*: Exiting on .*\(total:\s*(\d+):(\d+):(\d+)\)"
+               r"\s*$")
     for line in reversed(log_text):
-        if "total:" in line and "TOOL" in line:
-            # Find pattern: TOOL .. (total: "XX":"XX":"XX")
-            m = re.search(r"total:.*(\d+):(\d+):(\d+)", line)
-            if m:
-                # Convert time format: HR:MIN:SEC to seconds.
-                val = re.findall(r"\d+", m.group(0))
-                job_runtime = (int(val[0]) * 60 + int(val[1])) * 60 + int(val[2])
-                return job_runtime, "s"
-            else:
-                raise SyntaxError("Cannot find job runtime in line: " + line)
-    # We cannot find the job runtime summary line, could due to job killed,
-    # return the default value.
-    return 0, "s"
+        m = re.search(pattern, line)
+        if m:
+            t = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))
+            return t, "s"
+    raise RuntimeError("Job runtime not found in the log.")
 
 
 def get_simulated_time(log_text: List, tool: str) -> Tuple[float, str]:
-    """Returns the job simulated time along with its units.
+    """Returns the simulated time along with its units.
+
+    EDA tools indicate how long the design was simulated for in the log file.
     This method invokes the tool specific method which parses the log text and
-    returns the simulated time as a floating point value followed by its units as a tuple.
+    returns the simulated time as a floating point value followed by its
+    units (typically, pico|nano|micro|milliseconds) as a tuple.
+
     `log_text` is the job's log file contents as a list of lines.
     `tool` is the EDA tool used to run the job.
     Returns the simulated, units as a tuple.
     Raises NotImplementedError exception if the EDA tool is not supported.
     """
-
     if tool == 'xcelium':
         return xcelium_simulated_time(log_text)
     elif tool == 'vcs':
         return vcs_simulated_time(log_text)
     else:
-        raise NotImplementedError("{tool} is unsupported for run times extraction.")
+        raise NotImplementedError(f"{tool} is unsupported for simulated time "
+                                  "extraction.")
 
 
 def xcelium_simulated_time(log_text: List) -> Tuple[float, str]:
-    """Capture and return the simulated_time along with its units from Xcelium simulator.
+    """Returns the Xcelium simulated time along with its units.
 
-    Example of Xcelium simulated_time:
-      'Simulation complete via $finish(2) at time 43361308 PS + 58'
-    Raises SyntaxError exception if we find the specific line but fail to parse the
-    actual number with unit.
+    Search pattern example:
+    Simulation complete via $finish(2) at time 11724965 PS + 13
+
+    Returns the simulated time, units as a tuple.
+    Raises RuntimeError exception if the search pattern is not found.
     """
-
-    # Reverse the log_text because Xcelium does not print out the total
-    # simulation time in summary, so we parse the log in reversed order to get
-    # the last simulation timestamp.
+    pattern = r"^Simulation complete .* at time (\d+\.?\d*?)\s*(.?[sS]).*$"
     for line in reversed(log_text):
-        if "Simulation complete via" in line:
-            m = re.search(r"at time.*(\b\d+).+(\b[A-Z]+)", line)
-            if m:
-                return int(m.group(1)), m.group(2).lower()
-            else:
-                raise SyntaxError("Cannot find the simulation time in line: " + line)
-    # We cannot find the job simulated time summary line, could due to job killed,
-    # return the default value.
-    return 0, "s"
+        m = re.search(pattern, line)
+        if m:
+            return float(m.group(1)), m.group(2).lower()
+    raise RuntimeError("Simulated time not found in the log.")
 
 
 def vcs_simulated_time(log_text: List) -> Tuple[float, str]:
-    """Capture and return the simulated_time along with its units from VCS simulator.
+    """Returns the VCS simulated time along with its units.
 
-    Example of VCS simulated_time: '$finish at simulation time 522104678 ps'
-    Raises SyntaxError exception if we find the specific line but fail to parse the
-    actual number with unit.
+    Search pattern example:
+               V C S   S i m u l a t i o n   R e p o r t
+    Time: 12241752 ps
+
+    Returns the simulated time, units as a tuple.
+    Raises RuntimeError exception if the search pattern is not found.
     """
-
-    # Reverse the log_text because the simulation time is usually printed at the end of
-    # the file.
+    pattern = r"^Time:\s*(\d+\.?\d*?)\s*(.?[sS])\s*$"
+    next_line = ""
     for line in reversed(log_text):
-        if "finish at simulation time" in line:
-            m = re.search(r"(\d+).+(\b[a-z]+)", line)
+        if "V C S   S i m u l a t i o n   R e p o r t" in line:
+            m = re.search(pattern, next_line)
             if m:
-                return int(m.group(1)), m.group(2)
-            else:
-                raise SyntaxError("Cannot find the simulation time in line: " + line)
-    # We cannot find the job simulated time summary line, could due to job killed,
-    # return the default value.
-    return 0, "s"
+                return float(m.group(1)), m.group(2).lower()
+        next_line = line
+    raise RuntimeError("Simulated time not found in the log.")
