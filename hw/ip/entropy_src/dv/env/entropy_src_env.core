@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:ip:entropy_src_pkg
       - lowrisc:dv:ralgen
+      - lowrisc:dv:dv_utils
       - lowrisc:dv:cip_lib
       - lowrisc:dv:push_pull_agent
     files:

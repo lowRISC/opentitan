@@ -38,7 +38,7 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.otp_en_es_fw_over_pct       = 50;
 
     cfg.dut_cfg.type_bypass_pct             = 50;
-    cfg.dut_cfg.default_ht_thresholds_pct   = 100;
+    cfg.dut_cfg.default_ht_thresholds_pct   = 0;
 
     // Sometimes read data from the Observe FIFO (but always take entropy from RNG)
     cfg.dut_cfg.fw_read_pct                 = 50;

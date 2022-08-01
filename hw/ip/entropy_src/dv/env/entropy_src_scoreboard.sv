@@ -13,9 +13,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   `uvm_component_utils(entropy_src_scoreboard)
 
-  localparam int SHACondWidth = 64;
+  // TODO (Cleanup): Synchronize these parameters with the DUT's parameters
+  localparam int SHACondWidth     = 64;
+  localparam int ObserveFifoDepth = 64;
 
-  virtual entropy_src_cov_if cov_vif;
+  intr_vif                                     interrupt_vif;
+  virtual entropy_src_cov_if                   cov_vif;
 
   // used by collect_entropy to determine the FSMs phase
   int seed_idx             = 0;
@@ -81,6 +84,28 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH)))
       rng_fifo;
 
+  // Interrupt Management Variables
+
+  // To track interrupt events we need to identify interupts have
+  // been previously observed to be high.
+  //
+  // An interrupt that was previously high is ignored until
+  // it is observed to be high again.
+  //
+  // Interrupts go high when a new interrupt is observed
+  // Interrupts should go low when an interrupt is cleared
+  bit [NumEntropySrcIntr - 1:0] known_intr_state = '0;
+
+  bit [NumEntropySrcIntr - 1:0] intr_en_mask = '0;
+
+  // Indicates that the observe fifo should have data in it.
+  // Switches to OBSERVE_FIFO_THRESHOLD when:
+  //   A. A new observe fifo interrupt has been received.
+  //   B. The interrupt has been cleared, but it persists a cycle later.
+  // Decrements by one when the fifo is read.
+  // Is cleared on Reset, or Disable, (stays cleared until enable)
+  int expected_obsfifo_entries_since_last_intr  = 0;
+
   // Enabling, disabling and reset all have some effect in clearing the state of the DUT
   // Due to subleties in timing, the DUT resets the Observe FIFO with a unique delay
   typedef enum int {
@@ -113,6 +138,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     if (cfg.en_scb) begin
       fork
         process_csrng();
+        process_interrupts();
       join_none
     end
   endtask
@@ -594,7 +620,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         if(!fw_ov_insert && !threshold_alert_active) begin
           fmt = "New alert anticpated! Fail count (%01d) >= threshold (%01d)";
           threshold_alert_active = 1;
+          `DV_CHECK_FATAL(ral.recov_alert_sts.es_main_sm_alert.predict(1'b1));
           set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
+          // The DUT should either set the alert, or crash the sim.
+          // If we succeed, sample this alert_threshold as covered successfully.
+          cov_vif.cg_alert_cnt_sample(alert_threshold);
         end else begin
           fmt = "Alert already signalled:  Fail count (%01d) >= threshold (%01d)";
         end
@@ -802,6 +832,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     repcnt_symbol     = 0;
     max_repcnt        = 0;
     max_repcnt_symbol = 0;
+
+    // Clear interrupt state
+    known_intr_state                         = 0;
+    intr_en_mask                             = 0;
+
+    expected_obsfifo_entries_since_last_intr = 0;
+
     // After this event, all other inputs from the RNG interface will be discarded by the DUT
     // so we flush this queue to reflect the fact that the DUT will not be folding these into
     // outputs.
@@ -811,6 +848,49 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     `uvm_info(`gfn, $sformatf("%s Detected", rst_type.name), UVM_MEDIUM)
   endfunction
+
+  // Update our behavioral predictions based on new interrupts
+  // from_csr: 1 if the new information was observed from the intr_state register
+  //           0 if it was observed from the interrupt pins
+  function void handle_new_interrupts(bit [NumEntropySrcIntr - 1:0] new_events);
+    string msg;
+    if (new_events[ObserveFifoReady]) begin
+      bit [6:0] obs_fifo_threshold =
+          ral.observe_fifo_thresh.observe_fifo_thresh.get_mirrored_value();
+      bit valid_thresh = ((obs_fifo_threshold <= ObserveFifoDepth) && (obs_fifo_threshold != 0));
+      msg = $sformatf("No ObsFifo interrupts should be rec'd for threshold 0x%0h",
+                      obs_fifo_threshold);
+      `DV_CHECK_FATAL(valid_thresh, msg)
+      expected_obsfifo_entries_since_last_intr = int'(obs_fifo_threshold);
+      msg = $sformatf("Expecting at least 0x%0h new obsfifo entries",
+                      expected_obsfifo_entries_since_last_intr);
+      `uvm_info(`gfn, msg, UVM_FULL)
+    end
+    known_intr_state = known_intr_state | new_events;
+  endfunction
+
+  function void clear_interrupts(bit [NumEntropySrcIntr - 1:0] clear_mask);
+    known_intr_state &= ~clear_mask;
+    `uvm_info(`gfn, $sformatf("clear_mask: %01h", clear_mask), UVM_FULL)
+    `uvm_info(`gfn, $sformatf("known_data: %01h", known_intr_state), UVM_FULL)
+  endfunction
+
+  task process_interrupts();
+    entropy_src_intr_e i;
+    bit [NumEntropySrcIntr - 1:0] new_intrs;
+    `uvm_info(`gfn, "STARTING INTERRUPT SCOREBOARD LOOP", UVM_DEBUG)
+    forever begin
+      `uvm_info(`gfn, "WAITING FOR INTERRUPT", UVM_DEBUG)
+      @(interrupt_vif.pins);
+      new_intrs = interrupt_vif.pins & ~known_intr_state;
+      handle_new_interrupts(new_intrs);
+      for (i = 0; i < NumEntropySrcIntr; i++) begin
+        if (new_intrs[i]) begin
+          `uvm_info(`gfn, $sformatf("INTERRUPT RECEIVED: %0s", i.name), UVM_FULL)
+        end
+      end
+    end
+  endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
@@ -839,7 +919,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        // TODO
+        // We do not predict the interrupt_state, as there are two many
+        // asynchronous events.
+        // We also specially control the clearing of these bits
         do_read_check = 1'b0;
       end
       "intr_enable": begin
@@ -851,6 +933,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "sw_regupd": begin
       end
       "regwen": begin
+      end
+      "rev": begin
       end
       "module_enable": begin
       end
@@ -945,8 +1029,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
       "fw_ov_wr_data": begin
       end
+      "fw_ov_wr_fifo_full": begin
+      end
+      "fw_ov_rd_fifo_overflow": begin
+        // TODO, need to predict this.
+      end
       "observe_fifo_thresh": begin
         locked_reg_access = dut_reg_locked;
+      end
+      "observe_fifo_depth": begin
       end
       "debug_status": begin
       end
@@ -956,6 +1047,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "err_code": begin
       end
       "err_code_test": begin
+      end
+      "main_sm_state": begin
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
@@ -981,13 +1074,22 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
           // Special handling for registers with broader impacts
           case (csr.get_name())
+            "intr_state": begin
+              `uvm_info(`gfn, $sformatf("Attempting to clear bits: %01h", item.a_data), UVM_FULL)
+              clear_interrupts(item.a_data);
+              // If an interrupt condition persists, it will clear at the
+              // pins for one cycle before reasserting.
+              // Thus there is no need to confirm that it had been immediately reasserted.
+            end
+            "intr_enable": begin
+              intr_en_mask = item.a_data;
+            end
             "sw_regupd": begin
               bit disabled, sw_regupd;
               sw_regupd = ral.sw_regupd.sw_regupd.get_mirrored_value();
               disabled  = (ral.module_enable.module_enable.get_mirrored_value() != MuBi4True);
               `DV_CHECK_FATAL(ral.regwen.regwen.predict(.value(sw_regupd && disabled),
                                                         .kind(UVM_PREDICT_READ)));
-
             end
             "module_enable": begin
               string msg;
@@ -1152,28 +1254,54 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     // On reads, if do_read_check is set, then check mirrored_value against item.d_data
     if (!write && channel == DataChannel) begin
-      if (do_read_check) begin
-        case (csr.get_name())
-          "entropy_data": begin
-            // TODO(Enhancement): Ideally the scoreboard would have monitor access to the
-            // internal state of the entropy_data and observe FIFOs.  At this point however
-            // the environment can run satisfactorily by checking whether the FIFOs have
-            // been cleared in a disable event.
-            if (fifos_cleared) begin
-              `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
-            end else begin
-              process_entropy_data_csr_access(item, csr);
+      case (csr.get_name())
+        "intr_state": begin
+          // Though we do not predict the interrupt state we do stop here to process any
+          // new activity on any interrupt lines that happen to be disabled.
+          // (The enabled ones will be processed as soon as they are seen on the
+          // interrupt pins.)
+          bit [NumEntropySrcIntr - 1:0] new_events = '0;
+          bit [NumEntropySrcIntr - 1:0] to_handle = '0;
+          new_events = item.d_data & ~known_intr_state;
+          to_handle = new_events & ~intr_en_mask;
+          handle_new_interrupts(to_handle);
+        end
+        "entropy_data": begin
+          // TODO(Enhancement): Ideally the scoreboard would have monitor access to the
+          // internal state of the entropy_data and observe FIFOs.  At this point however
+          // the environment can run satisfactorily by checking whether the FIFOs have
+          // been cleared in a disable event.
+          if (fifos_cleared) begin
+            `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
+          end else begin
+            process_entropy_data_csr_access(item, csr);
+          end
+        end
+        "fw_ov_rd_data": begin
+          if (fifos_cleared) begin
+            `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
+          end else begin
+            process_observe_fifo_csr_access(item, csr);
+            // Assume (for now) that there is no underflow
+            // (We are not tracking it at this time, and so an underflow
+            // will kill the simulation.)
+            expected_obsfifo_entries_since_last_intr--;
+            if (expected_obsfifo_entries_since_last_intr == 0) begin
+              // We have successfully received an interrupt and
+              // read OBSERVE_FIFO_THRESH entries from the fifo.
+              // We can mark this value of OBSERVE_FIFO_THRESH
+              // as successful
+              bit [6:0] obs_fifo_threshold =
+                  ral.observe_fifo_thresh.observe_fifo_thresh.get_mirrored_value();
+              cov_vif.cg_observe_fifo_threshold_sample(obs_fifo_threshold);
             end
           end
-          "fw_ov_rd_data": begin
-            if (fifos_cleared) begin
-              `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
-            end else begin
-              process_observe_fifo_csr_access(item, csr);
-            end
-          end
-        endcase
+        end
+        default: begin
+        end
+      endcase
 
+      if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
@@ -1611,7 +1739,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
           observe_fifo_words++;
           match_found = 1;
-          cov_vif.cg_observe_fifo_sample(
+          cov_vif.cg_observe_fifo_event_sample(
               ral.conf.fips_enable.get_mirrored_value(),
               ral.conf.threshold_scope.get_mirrored_value(),
               ral.conf.rng_bit_enable.get_mirrored_value(),

@@ -58,6 +58,10 @@ class entropy_src_env extends cip_base_env #(
          cfg.entropy_src_path_vif)) begin
       `uvm_fatal(`gfn, "failed to get entropy_src_path_vif from uvm_config_db")
     end
+    if (!uvm_config_db#(intr_vif)::get(this, "", "intr_vif",
+         cfg.interrupt_vif)) begin
+      `uvm_fatal(`gfn, "failed to get entropy_src_path_vif from uvm_config_db")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -65,6 +69,8 @@ class entropy_src_env extends cip_base_env #(
 
     m_rng_agent.monitor.analysis_port.connect(scoreboard.rng_fifo.analysis_export);
     m_csrng_agent.monitor.analysis_port.connect(scoreboard.csrng_fifo.analysis_export);
+
+    scoreboard.interrupt_vif = cfg.interrupt_vif;
 
     virtual_sequencer.csrng_sequencer_h = m_csrng_agent.sequencer;
     virtual_sequencer.rng_sequencer_h   = m_rng_agent.sequencer;
