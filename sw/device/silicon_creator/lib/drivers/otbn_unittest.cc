@@ -46,6 +46,11 @@ class OtbnTest : public mask_rom_test::MaskRomTest {
                        });
 
     EXPECT_ABS_READ32(base_ + OTBN_ERR_BITS_REG_OFFSET, err_bits);
+    EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
+
+    if (err_bits == kOtbnErrBitsNoError) {
+      EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
+    }
   }
 
   uint32_t base_ = TOP_EARLGREY_OTBN_BASE_ADDR;

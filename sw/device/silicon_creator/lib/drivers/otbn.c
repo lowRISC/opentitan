@@ -118,8 +118,15 @@ static rom_error_t otbn_cmd_run(otbn_cmd_t cmd, rom_error_t error) {
   otbn_err_bits_get(&err_bits);
   res ^= err_bits;
 
-  if (launder32(res) == kErrorOk) {
+  // Status should be kOtbnStatusIdle; OTBN can also issue a done interrupt
+  // when transitioning to the "locked" state, so it is important to check
+  // the status here.
+  uint32_t status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
+
+  if (launder32(res) == kErrorOk && launder32(status) == kOtbnStatusIdle) {
     HARDENED_CHECK_EQ(res, kErrorOk);
+    HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),
+                      kOtbnStatusIdle);
     return res;
   }
   return error;
