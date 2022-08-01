@@ -16,7 +16,6 @@ module spi_s2p
   // to following logic
   output logic               data_valid_o,
   output spi_byte_t          data_o,
-  output logic [BitCntW-1:0] bitcnt_o, // up to 256B payload
 
   // Configuration
   input                             order_i,
@@ -37,7 +36,6 @@ module spi_s2p
   typedef logic [BitCntW-1:0] bitcount_t;
 
   count_t cnt;
-  bitcount_t bitcnt;
 
   spi_byte_t data_d, data_q;
 
@@ -72,21 +70,6 @@ module spi_s2p
   // send un-latched data
   assign data_o = data_d;
 
-  // total bit count
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      bitcnt <= '0;
-    end else begin
-      unique case (io_mode_i)
-        SingleIO: bitcnt <= bitcnt + bitcount_t'('h1);
-        DualIO:   bitcnt <= bitcnt + bitcount_t'('h2);
-        QuadIO:   bitcnt <= bitcnt + bitcount_t'('h4);
-        default:  bitcnt <= bitcnt;
-      endcase
-    end
-  end
-  assign bitcnt_o = bitcnt;
-
   // Bitcount in a byte
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -120,9 +103,5 @@ module spi_s2p
   // Right after reset (CSb assert), the io_mode_i shall be Single IO
   // to decode SPI Opcode.
   `ASSERT(IoModeDefault_A, $rose(rst_ni) |-> io_mode_i == SingleIO, clk_i, 0)
-
-  // Bitcnd shall not exceed 2**12
-  `ASSERT(BitcountOverflow_A, bitcnt != '1)
-
 
 endmodule

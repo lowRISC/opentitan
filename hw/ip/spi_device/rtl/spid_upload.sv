@@ -87,7 +87,6 @@ module spid_upload
   // Interface: SPI to Parallel
   input               s2p_valid_i,
   input spi_byte_t    s2p_byte_i,
-  input [BitCntW-1:0] s2p_bitcnt_i,
 
   // Interface: Parallel to SPI
   // Not used in spid_upload
@@ -227,9 +226,6 @@ module spid_upload
 
 
   // unused
-  logic unused_s2p_bitcnt;
-  assign unused_s2p_bitcnt = ^s2p_bitcnt_i;
-
   logic unused_cmdinfo_idx;
   assign unused_cmdinfo_idx = ^cmd_info_idx_i;
 

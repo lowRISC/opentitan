@@ -251,7 +251,6 @@ module spi_device
   io_mode_e           sub_iomode[IoModeEnd];
   logic               s2p_data_valid;
   spi_byte_t          s2p_data;
-  logic [BitCntW-1:0] s2p_bitcnt;
 
   logic        p2s_valid;
   spi_byte_t   p2s_data;
@@ -1216,7 +1215,6 @@ module spi_device
 
     .data_valid_o (s2p_data_valid),
     .data_o       (s2p_data      ),
-    .bitcnt_o     (s2p_bitcnt    ),
 
     // Config (changed dynamically)
     .order_i      (rxorder),
@@ -1361,7 +1359,6 @@ module spi_device
     // S2P
     .s2p_valid_i   (s2p_data_valid),
     .s2p_byte_i    (s2p_data),
-    .s2p_bitcnt_i  (s2p_bitcnt),
 
     // P2S
     .p2s_valid_o   (sub_p2s_valid [IoModeReadCmd]),
@@ -1527,7 +1524,6 @@ module spi_device
     // Interface: SPI to Parallel
     .s2p_valid_i  (s2p_data_valid),
     .s2p_byte_i   (s2p_data),
-    .s2p_bitcnt_i (s2p_bitcnt),
 
     // Interface: Parallel to SPI
     .p2s_valid_o (sub_p2s_valid[IoModeUpload]),
