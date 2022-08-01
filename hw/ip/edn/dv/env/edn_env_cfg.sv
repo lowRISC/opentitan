@@ -104,6 +104,9 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
         get(null, "*.env" , "edn_assert_vif", edn_assert_vif)) begin
       `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO ASSERT IF"))
     end
+
+    // only support 1 outstanding TL item
+    m_tl_agent_cfg.max_outstanding_req = 1;
   endfunction
 
   virtual function string convert2string();
