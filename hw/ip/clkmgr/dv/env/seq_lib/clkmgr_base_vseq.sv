@@ -108,7 +108,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     if (common_seq_type inside {"shadow_reg_errors", "shadow_reg_errors_with_csr_rw"}) begin
       expect_fatal_alerts = 1;
     end
-
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -117,13 +116,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   virtual task dut_shutdown();
     // check for pending clkmgr operations and wait for them to complete
-  endtask
-
-  task start_aon_clk();
-    // This makes it so the aon clock starts without waiting for its reset,
-    // and we won't need to call apply_reset for it.
-    #1ps;
-    cfg.aon_clk_rst_vif.drive_rst_pin(1'b0);
   endtask
 
   // This turns on the actual input clocks, as the pwrmgr would.
@@ -390,37 +382,66 @@ class clkmgr_base_vseq extends cip_base_vseq #(
                ))
   endfunction
 
+  // Returns the maximum clock period across non-aon clocks.
+  local function int maximum_clock_period();
+    int clk_periods_q[$] = {
+      cfg.aon_clk_rst_vif.clk_period_ps,
+      cfg.io_clk_rst_vif.clk_period_ps * 4,
+      cfg.main_clk_rst_vif.clk_period_ps,
+      cfg.usb_clk_rst_vif.clk_period_ps
+    };
+    return max(clk_periods_q);
+  endfunction
+    
+  // This is tricky, and we choose to handle it all here, not in "super":
+  // - there are no multiple clk_rst_vifs,
+  // - it would be too complicated to coordinate reset durations with super.
+  // For hard resets we also reset cfg.por_io_clk_rst_vif, and its reset is shorter than
+  // that of all others.
   virtual task apply_reset(string kind = "HARD");
-    fork
-      super.apply_reset(kind);
-      if (kind == "HARD")
-        fork
+    if (kind == "HARD") apply_reset_concurrently();
+    else fork
+//    int max_period_ps = maximum_clock_period();
+//    fork
+//      super.apply_reset(kind);
+//      if (kind == "HARD") cfg.por_io_clk_rst_vif.drive_rst_pin(0);
+
+//        fork
           cfg.aon_clk_rst_vif.apply_reset();
           cfg.main_clk_rst_vif.apply_reset();
           cfg.io_clk_rst_vif.apply_reset();
           cfg.usb_clk_rst_vif.apply_reset();
         join
-    join
+//    join
     initialize_on_start();
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
     int clk_periods_q[$] = {
       reset_duration_ps,
-      cfg.main_clk_rst_vif.clk_period_ps,
+      cfg.aon_clk_rst_vif.clk_period_ps,
       cfg.io_clk_rst_vif.clk_period_ps,
+      cfg.main_clk_rst_vif.clk_period_ps,
       cfg.usb_clk_rst_vif.clk_period_ps
     };
-    reset_duration_ps = max(clk_periods_q);
+     // Extra factor of 8 since we are using rst_io_n for io_div2 and io_div4 resets.
+    reset_duration_ps = max(clk_periods_q) * 2;
 
-    cfg.main_clk_rst_vif.drive_rst_pin(0);
+    cfg.por_io_clk_rst_vif.drive_rst_pin(0);
+    cfg.aon_clk_rst_vif.drive_rst_pin(0);
     cfg.io_clk_rst_vif.drive_rst_pin(0);
+    cfg.main_clk_rst_vif.drive_rst_pin(0);
     cfg.usb_clk_rst_vif.drive_rst_pin(0);
 
-    super.apply_resets_concurrently(reset_duration_ps);
+    #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
+    cfg.por_io_clk_rst_vif.drive_rst_pin(1);
 
-    cfg.main_clk_rst_vif.drive_rst_pin(1);
+//    super.apply_resets_concurrently(reset_duration_ps);
+
+    #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
+    cfg.aon_clk_rst_vif.drive_rst_pin(1);
     cfg.io_clk_rst_vif.drive_rst_pin(1);
+    cfg.main_clk_rst_vif.drive_rst_pin(1);
     cfg.usb_clk_rst_vif.drive_rst_pin(1);
     initialize_on_start();
   endtask

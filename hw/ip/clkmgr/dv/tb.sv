@@ -40,6 +40,11 @@ module tb;
     .clk  (clk_aon),
     .rst_n(rst_aon_n)
   );
+  clk_rst_if por_io_clk_rst_if (
+    .clk  (),
+    .rst_n(rst_por_io_n)
+  );
+
 
   // This is yet to be connected.
   wire devmode;
@@ -56,6 +61,7 @@ module tb;
     .clk_main(clk_main),
     .rst_io_n(rst_io_n),
     .rst_main_n(rst_main_n),
+    .rst_por_io_n(rst_por_io_n),
     .rst_usb_n(rst_usb_n)
   );
 
@@ -82,6 +88,9 @@ module tb;
     .rst_main_ni(rst_main_n),
     .clk_io_i   (clk_io),
     .rst_io_ni  (rst_io_n),
+    // Setting as above...
+    .rst_io_div2_ni(rst_io_n),
+    .rst_io_div4_ni(rst_io_n),
     .clk_usb_i  (clk_usb),
     .rst_usb_ni (rst_usb_n),
     .clk_aon_i  (clk_aon),
@@ -100,6 +109,7 @@ module tb;
     .rst_root_io_div4_ni(rst_io_n),
     .rst_root_main_ni(rst_main_n),
     .rst_root_usb_ni(rst_usb_n),
+    .rst_por_io_ni(rst_por_io_n),
 
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),
