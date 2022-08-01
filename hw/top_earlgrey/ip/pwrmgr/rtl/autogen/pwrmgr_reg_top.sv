@@ -9,6 +9,8 @@
 module pwrmgr_reg_top (
   input clk_i,
   input rst_ni,
+  input clk_lc_i,
+  input rst_lc_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
@@ -67,8 +69,8 @@ module pwrmgr_reg_top (
   );
 
   logic err_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_lc_i or negedge rst_lc_ni) begin
+    if (!rst_lc_ni) begin
       err_q <= '0;
     end else if (intg_err || reg_we_err) begin
       err_q <= 1'b1;
@@ -196,6 +198,8 @@ module pwrmgr_reg_top (
   logic fault_status_reg_intg_err_qs;
   logic fault_status_esc_timeout_qs;
   logic fault_status_main_pd_glitch_qs;
+  // Define register CDC handling.
+  // CDC handling is done on a per-reg instead of per-field boundary.
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1110,8 +1114,9 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fault_status_reg_intg_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_lc_i),
+    .rst_ni  (rst_lc_ni),
 
     // from register interface
     .we     (1'b0),
@@ -1136,8 +1141,9 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fault_status_esc_timeout (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_lc_i),
+    .rst_ni  (rst_lc_ni),
 
     // from register interface
     .we     (1'b0),
@@ -1162,8 +1168,9 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fault_status_main_pd_glitch (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_lc_i),
+    .rst_ni  (rst_lc_ni),
 
     // from register interface
     .we     (1'b0),

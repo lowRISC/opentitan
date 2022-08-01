@@ -241,8 +241,21 @@ module ${mod_name} (
   );
 
   logic err_q;
+<%
+  clk_lc_found = False;
+  for clock in rb.clocks.values():
+    if clock.clock == "clk_lc_i":
+      clk_lc_found = True;
+    endif
+  endfor
+%>\
+% if clk_lc_found:
+  always_ff @(posedge clk_lc_i or negedge rst_lc_ni) begin
+    if (!rst_lc_ni) begin
+% else:
   always_ff @(posedge ${reg_clk_expr} or negedge ${reg_rst_expr}) begin
     if (!${reg_rst_expr}) begin
+% endif    
       err_q <= '0;
     end else if (intg_err || reg_we_err) begin
       err_q <= 1'b1;
@@ -978,8 +991,14 @@ ${bits.msb}\
     .SwAccess(prim_subreg_pkg::SwAccess${field.swaccess.value[1].name.upper()}),
     .RESVAL  (${resval_expr})
   ) u_${finst_name} (
+      % if reg.sync_clk:
+    // sync clock and reset required for this register
+    .clk_i   (${reg.sync_clk.clock}),
+    .rst_ni  (${reg.sync_clk.reset}),
+      % else:
     .clk_i   (${clk_expr}),
     .rst_ni  (${rst_expr}),
+      % endif
       % if reg.shadowed and not reg.hwext:
     .rst_shadowed_ni (rst_shadowed_ni),
       % endif

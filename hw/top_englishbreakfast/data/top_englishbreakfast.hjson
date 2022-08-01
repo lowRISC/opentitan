@@ -233,11 +233,11 @@
     },
     { name: "pwrmgr_aon",
       type: "pwrmgr",
-      clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon", clk_esc_i: "io_div4"},
+      clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon", clk_lc_i: "io_div4"},
       clock_group: "powerup",
       reset_connections: {
         rst_ni: "por_io_div4",
-        rst_esc_ni: "lc_io_div4",
+        rst_lc_ni: "lc_io_div4",
         rst_main_ni: "por_aon",
         rst_slow_ni: "por_aon"
       },
@@ -248,10 +248,10 @@
     },
     { name: "rstmgr_aon",
       type: "rstmgr",
-      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
+      clock_srcs: {clk_i: "io_div4", clk_por_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
                    clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io_div4"},
+      reset_connections: {rst_ni: "lc_io_div4", rst_por_ni: "por_io_div4"},
       domain: ["Aon"],
       base_addr: "0x40410000",
       param_decl: {

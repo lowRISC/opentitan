@@ -77,8 +77,8 @@ module tb;
     .clk_slow_i (clk_slow),
     .rst_slow_ni(rst_slow_n),
     .rst_main_ni(pwrmgr_if.rst_main_n),
-    .clk_esc_i  (clk_esc),
-    .rst_esc_ni (rst_esc_n),
+    .clk_lc_i  (clk_esc),
+    .rst_lc_ni (rst_esc_n),
 
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),

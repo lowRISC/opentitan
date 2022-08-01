@@ -82,13 +82,15 @@ module tb;
   // This is consistent with rstmgr being the only source of resets.
   rstmgr dut (
     .clk_i        (clk),
-    .rst_ni       (rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_ni       (rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
     .clk_aon_i    (clk_aon),
     .clk_io_div4_i(clk_io_div4),
     .clk_main_i   (clk_main),
     .clk_io_i     (clk_io),
     .clk_io_div2_i(clk_io_div2),
     .clk_usb_i    (clk_usb),
+    .clk_por_i    (clk),
+    .rst_por_ni   (rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
 
     .tl_i      (tl_if.h2d),
     .tl_o      (tl_if.d2h),

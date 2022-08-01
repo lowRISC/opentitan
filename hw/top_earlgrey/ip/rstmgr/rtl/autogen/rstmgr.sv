@@ -32,6 +32,8 @@ module rstmgr
   input clk_io_i,
   input clk_io_div2_i,
   input clk_usb_i,
+  input clk_por_i,
+  input rst_por_ni,
 
   // POR input
   input [PowerDomains-1:0] por_n_i,
@@ -148,6 +150,22 @@ module rstmgr
   end
   assign resets_o.rst_por_aon_n = rst_por_aon_n;
 
+  logic clk_por;
+  logic rst_por_n;
+  prim_clock_buf #(
+    .NoFpgaBuf(1'b1)
+  ) u_por_clk_buf (
+    .clk_i(clk_por_i),
+    .clk_o(clk_por)
+  );
+
+  prim_clock_buf #(
+    .NoFpgaBuf(1'b1)
+  ) u_por_rst_buf (
+    .clk_i(rst_por_ni),
+    .clk_o(rst_por_n)
+  );
+
   ////////////////////////////////////////////////////
   // Register Interface                             //
   ////////////////////////////////////////////////////
@@ -161,6 +179,8 @@ module rstmgr
   rstmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
+    .clk_por_i  (clk_por),
+    .rst_por_ni (rst_por_n),
     .tl_i,
     .tl_o,
     .reg2hw,
@@ -187,20 +207,18 @@ module rstmgr
   assign hw2reg.err_code.reset_consistency_err.d  = 1'b1;
   assign hw2reg.err_code.reset_consistency_err.de = |cnsty_chk_errs ||
                                                     |shadow_cnsty_chk_errs;
-
+  assign hw2reg.err_code.fsm_err.d  = 1'b1;
+  assign hw2reg.err_code.fsm_err.de = |fsm_errs || |shadow_fsm_errs;
   ////////////////////////////////////////////////////
   // Alerts                                         //
   ////////////////////////////////////////////////////
   logic [NumAlerts-1:0] alert_test, alerts;
 
   // All of these are fatal alerts
-  assign alerts[0] = reg_intg_err ||
-                     |fsm_errs ||
-                     |shadow_fsm_errs;
+  assign alerts[0] = reg2hw.err_code.reg_intg_err.q |
+                     |reg2hw.err_code.fsm_err.q;
 
-  assign alerts[1] = |cnsty_chk_errs ||
-                     |shadow_cnsty_chk_errs;
-
+  assign alerts[1] = reg2hw.err_code.reset_consistency_err.q;
 
   assign alert_test = {
     reg2hw.alert_test.fatal_cnsty_fault.q & reg2hw.alert_test.fatal_cnsty_fault.qe,
@@ -261,15 +279,15 @@ module rstmgr
     .NumCopies(1),
     .AsyncOn(0)
   ) u_ctrl_scanmode_sync (
-    .clk_i,
-    .rst_ni,
+    .clk_i (clk_por),
+    .rst_ni (rst_por_n),
     .mubi_i(scanmode_i),
     .mubi_o(rst_ctrl_scanmode)
   );
 
   // lc reset sources
   rstmgr_ctrl u_lc_src (
-    .clk_i,
+    .clk_i (clk_por),
     .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(rst_ctrl_scanmode[0])),
     .scan_rst_ni,
     .rst_req_i(pwr_i.rst_lc_req),
@@ -279,7 +297,7 @@ module rstmgr
 
   // sys reset sources
   rstmgr_ctrl u_sys_src (
-    .clk_i,
+    .clk_i (clk_por),
     .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(rst_ctrl_scanmode[0])),
     .scan_rst_ni,
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
@@ -404,7 +422,7 @@ module rstmgr
   // Power Domains: ['Aon']
   // Shadowed: False
   rstmgr_leaf_rst #(
-    .SecCheck(0),
+    .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
   ) u_daon_por_io_div4 (
@@ -421,6 +439,12 @@ module rstmgr
     .fsm_err_o(fsm_errs[3][DomainAonSel])
   );
 
+  if (SecCheck) begin : gen_daon_por_io_div4_assert
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+    DAonPorIoDiv4FsmCheck_A,
+    u_daon_por_io_div4.gen_rst_chk.u_rst_chk.u_state_regs,
+    alert_tx_o[0])
+  end
   assign resets_o.rst_por_io_div4_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[3][Domain0Sel] = '0;
   assign fsm_errs[3][Domain0Sel] = '0;
@@ -622,7 +646,7 @@ module rstmgr
   // Power Domains: ['0', 'Aon']
   // Shadowed: True
   rstmgr_leaf_rst #(
-    .SecCheck(SecCheck),
+    .SecCheck(0),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
   ) u_daon_lc_io_div4 (
@@ -639,14 +663,8 @@ module rstmgr
     .fsm_err_o(fsm_errs[9][DomainAonSel])
   );
 
-  if (SecCheck) begin : gen_daon_lc_io_div4_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    DAonLcIoDiv4FsmCheck_A,
-    u_daon_lc_io_div4.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
-  end
   rstmgr_leaf_rst #(
-    .SecCheck(SecCheck),
+    .SecCheck(0),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
   ) u_d0_lc_io_div4 (
@@ -663,14 +681,8 @@ module rstmgr
     .fsm_err_o(fsm_errs[9][Domain0Sel])
   );
 
-  if (SecCheck) begin : gen_d0_lc_io_div4_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0LcIoDiv4FsmCheck_A,
-    u_d0_lc_io_div4.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
-  end
   rstmgr_leaf_rst #(
-    .SecCheck(SecCheck),
+    .SecCheck(0),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
   ) u_daon_lc_io_div4_shadowed (
@@ -687,14 +699,8 @@ module rstmgr
     .fsm_err_o(shadow_fsm_errs[9][DomainAonSel])
   );
 
-  if (SecCheck) begin : gen_daon_lc_io_div4_shadowed_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    DAonLcIoDiv4ShadowedFsmCheck_A,
-    u_daon_lc_io_div4_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
-  end
   rstmgr_leaf_rst #(
-    .SecCheck(SecCheck),
+    .SecCheck(0),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
   ) u_d0_lc_io_div4_shadowed (
@@ -711,12 +717,6 @@ module rstmgr
     .fsm_err_o(shadow_fsm_errs[9][Domain0Sel])
   );
 
-  if (SecCheck) begin : gen_d0_lc_io_div4_shadowed_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0LcIoDiv4ShadowedFsmCheck_A,
-    u_d0_lc_io_div4_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
-  end
 
   // Generating resets for lc_usb
   // Power Domains: ['Aon']
@@ -1337,8 +1337,8 @@ module rstmgr
   rstmgr_crash_info #(
     .CrashDumpWidth($bits(alert_pkg::alert_crashdump_t))
   ) u_alert_info (
-    .clk_i,
-    .rst_ni,
+    .clk_i(clk_por_i),
+    .rst_ni(rst_por_ni),
     .dump_i(alert_dump_i),
     .dump_capture_i(dump_capture & reg2hw.alert_info_ctrl.en.q),
     .slot_sel_i(reg2hw.alert_info_ctrl.index.q),
@@ -1349,8 +1349,8 @@ module rstmgr
   rstmgr_crash_info #(
     .CrashDumpWidth($bits(rv_core_ibex_pkg::cpu_crash_dump_t))
   ) u_cpu_info (
-    .clk_i,
-    .rst_ni,
+    .clk_i(clk_por_i),
+    .rst_ni(rst_por_ni),
     .dump_i(cpu_dump_i),
     .dump_capture_i(dump_capture & reg2hw.cpu_info_ctrl.en.q),
     .slot_sel_i(reg2hw.cpu_info_ctrl.index.q),
