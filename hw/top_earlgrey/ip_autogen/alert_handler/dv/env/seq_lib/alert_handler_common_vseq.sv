@@ -60,7 +60,11 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
 
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
     if (!uvm_re_match("tb.dut.u_ping_timer.*", if_proxy.path)) begin
-      // TODO:  check local alert regarding ping timeout triggered.
+      bit val;
+      csr_rd(.ptr(ral.loc_alert_cause[LocalAlertPingFail]), .value(val));
+      `DV_CHECK_EQ(val, 1, "local alert ping fail mismatch")
+      csr_rd(.ptr(ral.loc_alert_cause[LocalEscPingFail]), .value(val));
+      `DV_CHECK_EQ(val, 1, "local escalation ping fail mismatch")
     end else begin
       foreach (cfg.esc_device_cfg[i]) begin
         `DV_CHECK_EQ(cfg.esc_device_cfg[i].vif.esc_tx.esc_p, 1,
@@ -69,14 +73,27 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
     end
   endtask
 
+  virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy);
+    if (!uvm_re_match("tb.dut.u_ping_timer.*", if_proxy.path)) begin
+      // Enable ping timer to get ping counter error
+      csr_wr(ral.ping_timer_en_shadowed, 1);
+
+      // Enable loc_alerts
+      foreach (ral.loc_alert_en_shadowed[i]) csr_wr(ral.loc_alert_en_shadowed[i], 1);
+    end
+    super.sec_cm_inject_fault(if_proxy);
+  endtask : sec_cm_inject_fault
+
   virtual task pre_run_sec_cm_fi_vseq();
     // Disable prim_sparse_fsm assertions.
     $assertoff(0, "tb.dut.gen_classes[0].u_esc_timer.CheckEn_A");
     $assertoff(0, "tb.dut.gen_classes[1].u_esc_timer.CheckEn_A");
     $assertoff(0, "tb.dut.gen_classes[2].u_esc_timer.CheckEn_A");
     $assertoff(0, "tb.dut.gen_classes[3].u_esc_timer.CheckEn_A");
-    // Enable ping timer to get ping counter error
-    csr_wr(ral.ping_timer_en_shadowed, 1);
+
+    // Because the assertion contains `=>` statement.
+    // Wait one clock cycle until the assertions are fully disabled.
+    cfg.clk_rst_vif.wait_clks(1);
   endtask : pre_run_sec_cm_fi_vseq
 
   virtual task post_run_sec_cm_fi_vseq();
