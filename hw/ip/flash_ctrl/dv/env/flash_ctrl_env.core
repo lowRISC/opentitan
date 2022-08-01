@@ -22,6 +22,7 @@ filesets:
       - flash_mem_bkdr_util.sv: {is_include_file: true}
       - flash_mem_addr_attrs.sv: {is_include_file: true}
       - flash_otf_item.sv: {is_include_file: true}
+      - flash_otf_read_entry.sv: {is_include_file: true}
       - flash_ctrl_seq_cfg.sv: {is_include_file: true}
       - flash_ctrl_env_cfg.sv: {is_include_file: true}
       - flash_ctrl_env_cov.sv: {is_include_file: true}

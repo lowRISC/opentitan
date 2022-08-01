@@ -86,7 +86,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       if (my_region.en != MuBi4True) my_region = default_region_cfg;
     end
     `uvm_info("get_region", $sformatf("page:%0d --> region:%0d",
-                                      page, cfg.p2r_map[page]), UVM_MEDIUM)
+                                      page, cfg.p2r_map[page]), UVM_HIGH)
     return my_region;
   endfunction // get_region
 

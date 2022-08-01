@@ -706,7 +706,7 @@ class flash_ctrl_scoreboard #(
                         {item.a_addr[AddrWidth-1:3],3'b0},
                         item.a_addr, ecc_err,
                         channel.name, ral_name
-                        ), UVM_MEDIUM)
+                        ), UVM_HIGH)
 
     if ((ral_name == cfg.flash_ral_name) && (get_flash_instr_type_err(item, channel))) return (1);
     else if (ecc_err) begin

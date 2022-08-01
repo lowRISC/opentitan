@@ -31,9 +31,24 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     end
   endfunction
 
+  task clear_fifos();
+    flash_otf_item dummy1;
+    flash_phy_prim_item dummy2;
+
+    foreach (eg_exp_ctrl_fifo[i]) begin
+      while (eg_exp_ctrl_fifo[i].used() > 0) eg_exp_ctrl_fifo[i].get(dummy1);
+      while (eg_exp_host_fifo[i].used() > 0) eg_exp_host_fifo[i].get(dummy1);
+      while (eg_rtl_ctrl_fifo[i].used() > 0) eg_rtl_ctrl_fifo[i].get(dummy1);
+      while (eg_rtl_host_fifo[i].used() > 0) eg_rtl_host_fifo[i].get(dummy1);
+      while (eg_rtl_fifo[i].used() > 0) eg_rtl_fifo[i].get(dummy2);
+      while (rd_cmd_fifo[i].used() > 0) rd_cmd_fifo[i].get(dummy2);
+    end
+  endtask
+
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     uvm_config_db#(flash_ctrl_env_cfg)::get(this, "", "cfg", cfg);
+    cfg.otf_scb_h = this;
   endfunction // connect_phase
 
   task run_phase(uvm_phase phase);
@@ -117,10 +132,10 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     if (cfg.ecc_mode > FlashSerrTestMode && obs.derr == 1) begin
       err_addr = {obs.cmd.addr[31:3],3'h0};
       // check expected derr
-      if (cfg.derr_addr_tbl.exists(err_addr)) begin
+      if (cfg.derr_addr_tbl[err_addr].exists(FlashPartData)) begin
         `uvm_info("process_eg_host",
                   $sformatf("expected double bit error 0x%x", err_addr), UVM_MEDIUM)
-      end else if (cfg.ierr_addr_tbl.exists(err_addr)) begin
+      end else if (cfg.ierr_addr_tbl[err_addr].exists(FlashPartData)) begin
         `uvm_info("process_eg_host",
                   $sformatf("expected icv error 0x%x", err_addr), UVM_MEDIUM)
       end else begin
@@ -205,10 +220,10 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
       send.err_addr[OTFBankId] = bank;
 
       // check expected derr
-      if (cfg.derr_addr_tbl.exists(send.err_addr)) begin
+      if (cfg.derr_addr_tbl[send.err_addr].exists(exp.cmd.partition)) begin
         `uvm_info("process_read",
                   $sformatf("expected double bit error 0x%x", send.err_addr), UVM_MEDIUM)
-      end else if (cfg.ierr_addr_tbl.exists(send.err_addr)) begin
+      end else if (cfg.ierr_addr_tbl[send.err_addr].exists(exp.cmd.partition)) begin
         `uvm_info("process_read",
                   $sformatf("expected icv error 0x%x", send.err_addr), UVM_MEDIUM)
       end else begin
@@ -293,10 +308,11 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
   task process_rcmd(flash_phy_prim_item item, int bank);
     addr_t serr_addr;
+    flash_dv_part_e part = get_part_name(item.req);
     if (cfg.ecc_mode == FlashSerrTestMode) begin
       serr_addr = item.req.addr << 3;
       serr_addr[OTFBankId] = bank;
-      if (cfg.serr_addr_tbl.exists(serr_addr)) begin
+      if (cfg.serr_addr_tbl[serr_addr].exists(part)) begin
         cfg.inc_serr_cnt(bank);
         cfg.serr_addr[bank] = serr_addr;
       end

@@ -23,11 +23,18 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    foreach(eg_rtl_port[i]) begin
+    foreach (eg_rtl_port[i]) begin
       eg_rtl_port[i] = new($sformatf("eg_rtl_port[%0d]", i), this);
       rd_cmd_port[i] = new($sformatf("rd_cmd_port[%0d]", i), this);
     end
   endfunction
+
+  task reset_task;
+    forever begin
+      @(negedge cfg.vif.rst_n);
+      foreach (write_buffer[i]) write_buffer[i] = '{};
+    end
+  endtask // reset_task
 
   task run_phase(uvm_phase phase);
     if (cfg.scb_otf_en) begin
@@ -36,6 +43,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
       fork
         super.run_phase(phase);
         monitor_core();
+        reset_task();
       join_none
     end
   endtask
