@@ -61,3 +61,10 @@ otbn_binary(
         "randomness.s",
     ],
 )
+
+otbn_binary(
+    name = "dmemset",
+    srcs = [
+        "dmemset.s",
+    ],
+)

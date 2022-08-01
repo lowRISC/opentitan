@@ -931,13 +931,15 @@ opentitan_functest(
         tags = ["broken"],
     ),
     deps = [
+        "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:otbn",
+        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/otbn/code-snippets:randomness",
+        "//sw/otbn/code-snippets:dmemset",
     ],
 )
 
