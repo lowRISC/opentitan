@@ -185,7 +185,48 @@ def _otbn_sim_test(ctx):
     # The simulator and .elf file must be added to runfiles in order to be
     # visible to the test at runtime.
     runfiles = ctx.runfiles(files = (ctx.files.srcs + [elf, ctx.file._simulator]))
-    return [DefaultInfo(runfiles = runfiles, executable = script_file)]
+    return [
+        DefaultInfo(runfiles = runfiles, executable = script_file),
+        providers[1],
+    ]
+
+def _otbn_consttime_test_impl(ctx):
+    """This rule checks if a program or subroutine is constant-time.
+
+    There are some limitations to this check; see the Python script's
+    documentation for details. In particular, the check may not be able to
+    determine that a program runs in constant-time when in fact it does.
+    However, if the check passes, the program should always run in constant
+    time; that is, the check can produce false negatives but never false
+    positives.
+
+    This rule expects one dependency of an otbn_binary or otbn_sim_test type,
+    which should provide exactly one `.elf` file.
+    """
+
+    # Extract the output .elf file from the output group.
+    elf = [f for t in ctx.attr.deps for f in t[OutputGroupInfo].elf.to_list()]
+    if len(elf) != 1:
+        fail("Expected only one .elf file in dependencies, got: " + str(elf))
+    elf = elf[0]
+
+    # Write a very simple script that runs the checker.
+    script_content = "{} {} --verbose".format(ctx.executable._checker.short_path, elf.short_path)
+    if ctx.attr.subroutine:
+        script_content += " --subroutine {}".format(ctx.attr.subroutine)
+    if ctx.attr.secrets:
+        script_content += " --secrets {}".format(" ".join(ctx.attr.secrets))
+    ctx.actions.write(
+        output = ctx.outputs.executable,
+        content = script_content,
+    )
+
+    # The .elf file must be added to runfiles in order to be visible to the
+    # test at runtime. In addition, we need to add all the runfiles from the
+    # checker script itself (e.g. the Python runtime and dependencies).
+    runfiles = ctx.runfiles(files = [elf])
+    runfiles = runfiles.merge(ctx.attr._checker[DefaultInfo].default_runfiles)
+    return [DefaultInfo(runfiles = runfiles)]
 
 otbn_library = rv_rule(
     implementation = _otbn_library,
@@ -259,4 +300,20 @@ otbn_sim_test = rv_rule(
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
     incompatible_use_toolchain_transition = True,
+)
+
+otbn_consttime_test = rule(
+    implementation = _otbn_consttime_test_impl,
+    test = True,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True),
+        "deps": attr.label_list(providers = [OutputGroupInfo]),
+        "subroutine": attr.string(),
+        "secrets": attr.string_list(),
+        "_checker": attr.label(
+            default = "//hw/ip/otbn/util:check_const_time",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
 )

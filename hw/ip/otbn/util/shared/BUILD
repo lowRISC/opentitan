@@ -17,6 +17,52 @@ py_library(
 )
 
 py_library(
+    name = "cache",
+    srcs = ["cache.py"],
+)
+
+py_library(
+    name = "check",
+    srcs = ["check.py"],
+)
+
+py_library(
+    name = "constants",
+    srcs = ["constants.py"],
+    deps = [
+        ":insn_yaml",
+        ":operand",
+    ],
+)
+
+py_library(
+    name = "control_flow",
+    srcs = ["control_flow.py"],
+    deps = [
+        ":decode",
+        ":insn_yaml",
+        ":section",
+    ],
+)
+
+py_library(
+    name = "decode",
+    srcs = ["decode.py"],
+    deps = [
+        ":elf",
+        ":insn_yaml",
+    ],
+)
+
+py_library(
+    name = "elf",
+    srcs = ["elf.py"],
+    deps = [
+        ":mem_layout",
+    ],
+)
+
+py_library(
     name = "encoding",
     srcs = ["encoding.py"],
     deps = [
@@ -46,6 +92,20 @@ py_library(
 )
 
 py_library(
+    name = "information_flow_analysis",
+    srcs = ["information_flow_analysis.py"],
+    deps = [
+        ":cache",
+        ":constants",
+        ":control_flow",
+        ":decode",
+        ":information_flow",
+        ":insn_yaml",
+        "//util/serialize:parse_helpers",
+    ],
+)
+
+py_library(
     name = "insn_yaml",
     srcs = ["insn_yaml.py"],
     deps = [
@@ -56,6 +116,15 @@ py_library(
         ":operand",
         ":syntax",
         "//util/serialize:parse_helpers",
+    ],
+)
+
+py_library(
+    name = "instruction_count_range",
+    srcs = ["instruction_count_range.py"],
+    deps = [
+        ":control_flow",
+        ":decode",
     ],
 )
 
@@ -93,6 +162,15 @@ py_library(
     deps = [
         "//util/reggen:ip_block",
         "//util/reggen:reg_block",
+    ],
+)
+
+py_library(
+    name = "section",
+    srcs = ["section.py"],
+    deps = [
+        ":decode",
+        ":insn_yaml",
     ],
 )
 

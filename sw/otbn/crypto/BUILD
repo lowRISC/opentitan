@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:otbn.bzl", "otbn_binary", "otbn_library", "otbn_sim_test")
+load("//rules:otbn.bzl", "otbn_binary", "otbn_consttime_test", "otbn_library", "otbn_sim_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -21,6 +21,14 @@ otbn_sim_test(
     deps = [
         ":ed25519",
         ":field25519",
+    ],
+)
+
+otbn_consttime_test(
+    name = "ed25519_ext_add_consttime",
+    subroutine = "ext_add",
+    deps = [
+        ":ed25519_ext_add_test",
     ],
 )
 
@@ -58,6 +66,30 @@ otbn_sim_test(
     ],
 )
 
+otbn_consttime_test(
+    name = "field25519_fe_inv_consttime",
+    subroutine = "fe_inv",
+    deps = [
+        ":field25519_test",
+    ],
+)
+
+otbn_consttime_test(
+    name = "field25519_fe_mul_consttime",
+    subroutine = "fe_mul",
+    deps = [
+        ":field25519_test",
+    ],
+)
+
+otbn_consttime_test(
+    name = "field25519_fe_square_consttime",
+    subroutine = "fe_square",
+    deps = [
+        ":field25519_test",
+    ],
+)
+
 otbn_library(
     name = "modexp",
     srcs = [
@@ -91,6 +123,52 @@ otbn_binary(
         ":p256",
     ],
 )
+
+otbn_consttime_test(
+    name = "p256_base_mult_consttime",
+    subroutine = "p256_base_mult",
+    deps = [
+        ":p256_ecdsa",
+    ],
+)
+
+otbn_consttime_test(
+    name = "p256_isoncurve_consttime",
+    subroutine = "p256_isoncurve",
+    deps = [
+        ":p256_ecdsa",
+    ],
+)
+
+otbn_consttime_test(
+    name = "p256_proj_add_consttime",
+    subroutine = "proj_add",
+    deps = [
+        ":p256_ecdsa",
+    ],
+)
+
+otbn_consttime_test(
+    name = "p256_scalar_mult_consttime",
+    subroutine = "p256_scalar_mult",
+    deps = [
+        ":p256_ecdsa",
+    ],
+)
+
+# TODO: Add more fine-grained DMEM tracing to the constant-time checker. This
+# test fails because p256_sign branches based on some non-secret values from
+# DMEM. However, since there are also secret values in DMEM, it's not safe to
+# mark DMEM non-secret, and the constant-time checker doesn't currently have
+# the ability to track different DMEM regions separately.
+#
+# otbn_consttime_test(
+#   name = "p256_sign_consttime",
+#   deps = [
+#       ":p256_ecdsa"
+#   ],
+#   subroutine = "p256_sign",
+# )
 
 otbn_binary(
     name = "p256_ecdsa_sign_test",
@@ -225,6 +303,66 @@ otbn_binary(
     deps = [
         ":p384_base",
         ":p384_sign",
+    ],
+)
+
+otbn_consttime_test(
+    name = "p384_base_mult_consttime",
+    subroutine = "p384_base_mult",
+    deps = [
+        ":p384_ecdsa_sign_test",
+    ],
+)
+
+otbn_consttime_test(
+    name = "p384_mulmod_p_consttime",
+    subroutine = "p384_mulmod_p",
+    deps = [
+        ":p384_ecdsa_sign_test",
+    ],
+)
+
+otbn_consttime_test(
+    name = "p384_mulmod_n_consttime",
+    subroutine = "p384_mulmod_n",
+    deps = [
+        ":p384_ecdsa_sign_test",
+    ],
+)
+
+# TODO: Add more fine-grained DMEM tracing to the constant-time checker. This
+# test fails because p384_sign branches based on some non-secret values from
+# DMEM. However, since there are also secret values in DMEM, it's not safe to
+# mark DMEM non-secret, and the constant-time checker doesn't currently have
+# the ability to track different DMEM regions separately.
+#
+# otbn_consttime_test(
+#   name = "p384_sign_consttime",
+#   deps = [
+#       ":p384_ecdsa_sign_test"
+#   ],
+#   subroutine = "p384_sign",
+# )
+
+# TODO: Add an argument to the constant-time checker script that accepts
+# "required constant registers". This test fails because the subroutine
+# requires some registers (indirect references) to be constant at the start,
+# and without this information the constant-time checker cannot construct the
+# information-flow graph.
+#
+# otbn_consttime_test(
+#   name = "p384_proj_add_consttime",
+#   deps = [
+#       ":p384_ecdsa_sign_test"
+#   ],
+#   subroutine = "proj_add_p384",
+# )
+
+otbn_consttime_test(
+    name = "scalar_mult_p384_consttime",
+    subroutine = "scalar_mult_p384",
+    deps = [
+        ":p384_ecdsa_sign_test",
     ],
 )
 
@@ -398,5 +536,13 @@ otbn_sim_test(
     deps = [
         ":field25519",
         ":x25519",
+    ],
+)
+
+otbn_consttime_test(
+    name = "x25519_consttime",
+    subroutine = "X25519",
+    deps = [
+        ":x25519_test",
     ],
 )

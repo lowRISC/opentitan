@@ -37,3 +37,15 @@ py_binary(
         "//hw/ip/otbn/util/shared:toolchain",
     ],
 )
+
+py_binary(
+    name = "check_const_time",
+    srcs = ["check_const_time.py"],
+    deps = [
+        "//hw/ip/otbn/util/shared:check",
+        "//hw/ip/otbn/util/shared:control_flow",
+        "//hw/ip/otbn/util/shared:decode",
+        "//hw/ip/otbn/util/shared:information_flow_analysis",
+        requirement("pyelftools"),
+    ],
+)
