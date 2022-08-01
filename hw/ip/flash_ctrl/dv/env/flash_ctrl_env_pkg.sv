@@ -247,6 +247,14 @@ package flash_ctrl_env_pkg;
     bit [flash_ctrl_pkg::BusAddrByteW-2:0] otf_addr;
   } flash_op_t;
 
+  // Address combined with region
+  // Need for error injection.
+  typedef struct packed {
+    bit          bank;
+    addr_t addr;
+    flash_dv_part_e part;
+  } rd_cache_t;
+
   parameter uint ALL_ZEROS = 32'h0000_0000;
   parameter uint ALL_ONES = 32'hffff_ffff;
 
@@ -422,10 +430,38 @@ package flash_ctrl_env_pkg;
     end
   endfunction // flash_otf_print_data64
 
+  function automatic flash_dv_part_e get_part_name(flash_phy_pkg::flash_phy_prim_flash_req_t req);
+    flash_dv_part_e part;
+
+    if (req.part == 0) return FlashPartData;
+    else begin
+      case(req.info_sel)
+        0: begin
+          return FlashPartInfo;
+        end
+        1: begin
+          return FlashPartInfo1;
+        end
+        2: begin
+          return FlashPartInfo2;
+        end
+        default: begin
+          `uvm_error("get_partition_name", $sformatf("part:%0d info_sel:%0d doesn't exist",
+                                                     req.part, req.info_sel))
+        end
+      endcase
+    end
+
+    `uvm_error("get_partition_name", $sformatf("part:%0d info_sel:%0d doesn't exist",
+                                               req.part, req.info_sel))
+    return FlashPartData;
+  endfunction // get_part_name
+
   // package sources
   `include "flash_mem_bkdr_util.sv"
   `include "flash_mem_addr_attrs.sv"
   `include "flash_otf_item.sv"
+  `include "flash_otf_read_entry.sv"
   `include "flash_ctrl_seq_cfg.sv"
   `include "flash_ctrl_env_cfg.sv"
   `include "flash_ctrl_env_cov.sv"

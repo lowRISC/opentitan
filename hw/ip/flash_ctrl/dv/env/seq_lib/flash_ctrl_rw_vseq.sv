@@ -22,6 +22,10 @@ class flash_ctrl_rw_vseq extends flash_ctrl_otf_base_vseq;
             num = $urandom_range(1, 32);
           end else begin
             num = $urandom_range(1, InfoTypeSize[rand_op.partition >> 1]);
+            // Max transfer size of info is 512Byte.
+            if (num * fractions > 128) begin
+              num = 128 / fractions;
+            end
           end
           randcase
             1:prog_flash(ctrl, bank, num);
