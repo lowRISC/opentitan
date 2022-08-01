@@ -37,6 +37,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
   virtual task body();
     super.body();
 
+    `uvm_info(`gfn, $sformatf("Will run for %d iterations", num_trans), UVM_MEDIUM)
     for (int trans_i = 1; trans_i <= num_trans; trans_i++) begin
       // sw_symbol_backdoor_overwrite takes an array as the input.
       bit [7:0] trans_i_array[] = {trans_i};
@@ -44,6 +45,8 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       sw_symbol_backdoor_overwrite("kTestIterationCount", trans_i_array);
 
       if (trans_i > 1) begin
+        `uvm_info(`gfn, $sformatf("Applying reset and otp override for trans %d", trans_i),
+                  UVM_MEDIUM)
         apply_reset();
         backdoor_override_otp();
       end
@@ -61,10 +64,12 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       jtag_lc_state_transition(DecLcStTestLocked1, DecLcStTestUnlocked2, {<<8{lc_unlock_token}});
 
       // LC state transition requires a chip reset.
+      `uvm_info(`gfn, $sformatf("Applying reset after lc transition for trans %d", trans_i),
+                UVM_MEDIUM)
       apply_reset();
 
       // Wait for SW to finish power on set up.
-      `DV_WAIT(cfg.sw_logger_vif.printed_log == "Start LC_CTRL transition test.")
+      `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for LC transtition done and reboot.")
 
       fork
         begin : isolation_fork
@@ -73,6 +78,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
           // clock, and not the io oscillator, is actually used for these lc_ctrl transitions.
           fork
             begin
+              `uvm_info(`gfn, "Start detection of ext_clk active window", UVM_MEDIUM)
               cfg.ast_ext_clk_vif.span_external_clock_active_window();
               external_clock_was_activated = 1'b1;
             end
@@ -98,8 +104,8 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       join
 
       // Wait for SW test finishes with a pass/fail status.
-      `DV_WAIT(cfg.sw_test_status_vif.sw_test_status inside {SwTestStatusPassed,
-                                                          SwTestStatusFailed})
+      `DV_WAIT(
+          cfg.sw_test_status_vif.sw_test_status inside {SwTestStatusPassed, SwTestStatusFailed})
       `uvm_info(`gfn, $sformatf("Sequence %0d/%0d finished!", trans_i, num_trans), UVM_LOW)
     end
   endtask
