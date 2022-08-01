@@ -23,7 +23,7 @@
  * @param[in] w31: all-zero.
  * @param[out] [w20:w18]: c, result, max. length 768 bit.
  *
- * Clobbered registers: TODO
+ * Clobbered registers: w18 to w20
  * Clobbered flag groups: FG0
  */
 mul384:

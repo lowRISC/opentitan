@@ -5,7 +5,6 @@
 
 import argparse
 import sys
-from typing import Dict, List, Optional, Set, Tuple
 
 from shared.check import CheckResult
 from shared.control_flow import program_control_graph, subroutine_control_graph
@@ -76,6 +75,9 @@ def main() -> int:
 
     if args.verbose or out.has_errors() or out.has_warnings():
         print(out.report())
+
+    if out.has_errors() or out.has_warnings():
+        return 1
 
     return 0
 
