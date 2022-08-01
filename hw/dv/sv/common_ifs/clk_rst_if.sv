@@ -249,9 +249,9 @@ interface clk_rst_if #(
   // apply reset with specified scheme
   // TODO make this enum?
   // rst_n_scheme
-  // 0 - fullly synchronous reset - it is asserted and deasserted on clock edges
-  // 1 - async assert, sync dessert (default)
-  // 2 - async assert, async dessert
+  // 0 - fully synchronous reset - it is asserted and deasserted on clock edges
+  // 1 - async assert, sync deassert (default)
+  // 2 - async assert, async deassert
   // 3 - clk gated when reset asserted
   // Note: for power on reset, please ensure pre_reset_dly_clks is set to 0
   // TODO #2338 issue workaround - $urandom call moved from default argument value to function body
