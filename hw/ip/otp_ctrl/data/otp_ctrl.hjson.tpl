@@ -31,7 +31,7 @@
   scan_en: "true",    // Enable `scan_en_i` port
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "core" }
-    { protocol: "tlul", direction: "device", name: "prim" }
+    { protocol: "tlul", direction: "device", name: "prim", hier_path: "u_otp.gen_generic.u_impl_generic.u_reg_top" }
   ],
 
   available_output_list: [
@@ -864,7 +864,7 @@
         hwaccess: "hro",
         regwen:   "CHECK_REGWEN",
         tags: [ // Do not write to this automatically, as it may trigger fatal alert, and cause
-                // escalation. TODO: check with designer if the trigger escalation part is intended.
+                // escalation.
                 "excl:CsrAllTests:CsrExclWrite"],
         fields: [
           { bits: "31:0",
@@ -1034,10 +1034,6 @@
         hwaccess: "hro",
         hwext:    "false",
         hwqe:     "false",
-        // TODO: remove this tag once chip-level sims support alias registers.
-        tags: [
-          "excl:CsrAllTests:CsrExclAll"
-        ]
         fields: [
           { bits: "0",
             name: "field0",
@@ -1072,10 +1068,6 @@
         hwaccess: "hro",
         hwext:    "false",
         hwqe:     "false",
-        // TODO: remove this tag once chip-level sims support alias registers.
-        tags: [
-          "excl:CsrAllTests:CsrExclAll"
-        ]
         fields: [
           { bits: "6:0",
             name: "field0",
@@ -1110,10 +1102,6 @@
         hwaccess: "hro",
         hwext:    "false",
         hwqe:     "false",
-        // TODO: remove this tag once chip-level sims support alias registers.
-        tags: [
-          "excl:CsrAllTests:CsrExclAll"
-        ]
         fields: [
           { bits: "0",
             name: "field0",
@@ -1128,10 +1116,6 @@
         hwaccess: "hrw",
         hwext:    "false",
         hwqe:     "false",
-        // TODO: remove this tag once chip-level sims support alias registers.
-        tags: [
-          "excl:CsrAllTests:CsrExclAll"
-        ]
         fields: [
          { bits: "2:0",
             name: "field0",
@@ -1195,10 +1179,6 @@
         hwaccess: "hro",
         hwext:    "false",
         hwqe:     "false",
-        // TODO: remove this tag once chip-level sims support alias registers.
-        tags: [
-          "excl:CsrAllTests:CsrExclAll"
-        ]
         fields: [
           { bits: "9:0",
             name: "field0",
@@ -1228,10 +1208,6 @@
         hwaccess: "hrw",
         hwext:    "false",
         hwqe:     "false",
-        // TODO: remove this tag once chip-level sims support alias registers.
-        tags: [
-          "excl:CsrAllTests:CsrExclAll"
-        ]
         fields: [
          { bits: "5:0",
             name: "field0",
@@ -1283,10 +1259,6 @@
         hwaccess: "hro",
         hwext:    "false",
         hwqe:     "false",
-        // TODO: remove this tag once chip-level sims support alias registers.
-        tags: [
-          "excl:CsrAllTests:CsrExclAll"
-        ]
         fields: [
           { bits: "9:0",
             name: "field0",
@@ -1318,10 +1290,6 @@
         hwaccess: "hrw",
         hwext:    "false",
         hwqe:     "false",
-        // TODO: remove this tag once chip-level sims support alias registers.
-        tags: [
-          "excl:CsrAllTests:CsrExclAll"
-        ]
         fields: [
          { bits: "5:0",
            name: "field0",
