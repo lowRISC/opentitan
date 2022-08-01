@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import datetime
 import logging as log
 import pprint
 import random
@@ -294,6 +295,8 @@ class Deploy():
                 log_text, self.sim_cfg.tool)
         except NotImplementedError:
             log.debug("Using dvsim default runtime due to unsupported tool: " + self.sim_cfg.tool)
+            self.job_runtime.time = \
+                (datetime.datetime.now() - self.launcher.start_time).total_seconds()
         except SyntaxError:
             log.debug("Parsing job runtime has syntax error with " + self.sim_cfg.tool)
 
