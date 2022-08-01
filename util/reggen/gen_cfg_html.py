@@ -85,6 +85,46 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
     else:
         genout(outfile, "<p><i>Peripheral Pins for Chip IO: none</i></p>\n")
 
+    # Inter-Module Signals
+    if not cfgs.inter_signals:
+        genout(outfile, "<p><em>Inter-Module Signals: none</em></p>\n")
+    else:
+        genout(outfile, "<p><em>Inter-Module Signals:</em> <a href=\"/doc/rm/comportability_specification/#inter-signal-handling\">Reference</a></p>\n")
+
+        genout(outfile,
+               "<table class=\"cfgtable\">\n" +
+               "  <caption>Inter-Module Signals</caption>\n" +
+               "  <thead>\n" +
+               "    <tr>\n" +
+               "      <th>Port Name</th>\n" +
+               "      <th>Package::Struct</th>\n" +
+               "      <th>Type</th>\n" +
+               "      <th>Act</th>\n" +
+               "      <th>Width</th>\n" +
+               "    </tr>\n" +
+               "  </thead>\n" +
+               "  <tbody>\n")
+
+        for ims in cfgs.inter_signals:
+            name = ims.name
+            pkg_struct = ims.package + "::" + ims.struct if ims.package is not None else ims.struct
+            sig_type = ims.signal_type
+            act = ims.act
+            width = str(ims.width) if ims.width is not None else "1"
+            genout(outfile,
+                   "    <tr>\n" +
+                   "      <td>" + name + "</td>\n" +
+                   "      <td>" + pkg_struct + "</td>\n" +
+                   "      <td>" + sig_type+ "</td>\n" +
+                   "      <td>" + act + "</td>\n" +
+                   "      <td>" + width + "</td>\n" +
+                   "    </tr>\n")
+            continue
+
+        genout(outfile,
+               "  </tbody>\n" +
+               "</table>\n")
+
     if not cfgs.interrupts:
         genout(outfile, "<p><i>Interrupts: none</i></p>\n")
     else:
