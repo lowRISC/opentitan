@@ -222,6 +222,15 @@ class RegBlock:
             assert isinstance(clk, ClockingItem)
             self.clocks[name] = clk
 
+    def _validate_sync(self, name: Optional[str], clk: object) -> None:
+        '''Check for sync definition consistency
+        '''
+        # If there is a synchronous clock defined, then the clock must be a
+        # valid clocking item
+        if name:
+            assert isinstance(clk, ClockingItem)
+            self.clocks[name] = clk
+
     def _handle_register(self,
                          where: str,
                          body: object,
@@ -235,6 +244,7 @@ class RegBlock:
                                 is_alias)
 
         self._validate_async(reg.async_name, reg.async_clk)
+        self._validate_sync(reg.sync_name, reg.sync_clk)
 
         self.add_register(reg)
 
@@ -307,6 +317,7 @@ class RegBlock:
 
         # validate async schemes
         self._validate_async(mr.async_name, mr.async_clk)
+        self._validate_sync(mr.sync_name, mr.sync_clk)
 
         for reg in mr.regs:
             lname = reg.name.lower()
@@ -478,6 +489,8 @@ class RegBlock:
                        reg_desc,
                        async_name="",
                        async_clk=None,
+                       sync_name="",
+                       sync_clk=None,
                        hwext=is_testreg,
                        hwqe=is_testreg,
                        hwre=False,

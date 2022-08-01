@@ -67,6 +67,18 @@ package rstmgr_reg_pkg;
   } rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+    } reg_intg_err;
+    struct packed {
+      logic        q;
+    } reset_consistency_err;
+    struct packed {
+      logic        q;
+    } fsm_err;
+  } rstmgr_reg2hw_err_code_reg_t;
+
+  typedef struct packed {
     logic [3:0]  d;
     logic        de;
   } rstmgr_hw2reg_reset_req_reg_t;
@@ -129,29 +141,34 @@ package rstmgr_reg_pkg;
       logic        d;
       logic        de;
     } reset_consistency_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fsm_err;
   } rstmgr_hw2reg_err_code_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    rstmgr_reg2hw_alert_test_reg_t alert_test; // [30:27]
-    rstmgr_reg2hw_reset_req_reg_t reset_req; // [26:23]
-    rstmgr_reg2hw_reset_info_reg_t reset_info; // [22:18]
-    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [17:13]
-    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [12:8]
-    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [7:0] sw_rst_ctrl_n; // [7:0]
+    rstmgr_reg2hw_alert_test_reg_t alert_test; // [33:30]
+    rstmgr_reg2hw_reset_req_reg_t reset_req; // [29:26]
+    rstmgr_reg2hw_reset_info_reg_t reset_info; // [25:21]
+    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [20:16]
+    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [15:11]
+    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [7:0] sw_rst_ctrl_n; // [10:3]
+    rstmgr_reg2hw_err_code_reg_t err_code; // [2:0]
   } rstmgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    rstmgr_hw2reg_reset_req_reg_t reset_req; // [95:91]
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [90:80]
-    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [79:78]
-    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [77:74]
-    rstmgr_hw2reg_alert_info_reg_t alert_info; // [73:42]
-    rstmgr_hw2reg_cpu_info_ctrl_reg_t cpu_info_ctrl; // [41:40]
-    rstmgr_hw2reg_cpu_info_attr_reg_t cpu_info_attr; // [39:36]
-    rstmgr_hw2reg_cpu_info_reg_t cpu_info; // [35:4]
-    rstmgr_hw2reg_err_code_reg_t err_code; // [3:0]
+    rstmgr_hw2reg_reset_req_reg_t reset_req; // [97:93]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [92:82]
+    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [81:80]
+    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [79:76]
+    rstmgr_hw2reg_alert_info_reg_t alert_info; // [75:44]
+    rstmgr_hw2reg_cpu_info_ctrl_reg_t cpu_info_ctrl; // [43:42]
+    rstmgr_hw2reg_cpu_info_attr_reg_t cpu_info_attr; // [41:38]
+    rstmgr_hw2reg_cpu_info_reg_t cpu_info; // [37:6]
+    rstmgr_hw2reg_err_code_reg_t err_code; // [5:0]
   } rstmgr_hw2reg_t;
 
   // Register offsets

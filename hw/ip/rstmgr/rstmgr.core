@@ -15,6 +15,7 @@ filesets:
       - lowrisc:prim:esc
       - lowrisc:prim:lc_sync
       - lowrisc:prim:mubi
+      - lowrisc:prim:clock_buf
       - lowrisc:prim:sparse_fsm
       - "fileset_ip     ? (lowrisc:ip:rstmgr_pkg)"
       - "fileset_top    ? (lowrisc:systems:rstmgr_pkg)"

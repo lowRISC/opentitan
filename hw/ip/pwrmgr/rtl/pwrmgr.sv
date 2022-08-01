@@ -19,8 +19,8 @@ module pwrmgr
   input rst_slow_ni,
   input rst_ni,
   input rst_main_ni,
-  input clk_esc_i,
-  input rst_esc_ni,
+  input clk_lc_i,
+  input rst_lc_ni,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -88,20 +88,20 @@ module pwrmgr
   ///  escalation detections
   ////////////////////////////
 
-  logic clk_esc;
-  logic rst_esc_n;
+  logic clk_lc;
+  logic rst_lc_n;
   prim_clock_buf #(
     .NoFpgaBuf(1'b1)
   ) u_esc_clk_buf (
-    .clk_i(clk_esc_i),
-    .clk_o(clk_esc)
+    .clk_i(clk_lc_i),
+    .clk_o(clk_lc)
   );
 
   prim_clock_buf #(
     .NoFpgaBuf(1'b1)
   ) u_esc_rst_buf (
-    .clk_i(rst_esc_ni),
-    .clk_o(rst_esc_n)
+    .clk_i(rst_lc_ni),
+    .clk_o(rst_lc_n)
   );
 
   logic esc_rst_req_d, esc_rst_req_q;
@@ -109,15 +109,15 @@ module pwrmgr
     .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
     .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
   ) u_esc_rx (
-    .clk_i(clk_esc),
-    .rst_ni(rst_esc_n),
+    .clk_i(clk_lc),
+    .rst_ni(rst_lc_n),
     .esc_req_o(esc_rst_req_d),
     .esc_rx_o(esc_rst_rx_o),
     .esc_tx_i(esc_rst_tx_i)
   );
 
-  always_ff @(posedge clk_esc or negedge rst_esc_n) begin
-    if (!rst_esc_n) begin
+  always_ff @(posedge clk_lc or negedge rst_lc_n) begin
+    if (!rst_lc_n) begin
       esc_rst_req_q <= '0;
     end else if (esc_rst_req_d) begin
       // once latched, do not clear until reset
@@ -131,8 +131,8 @@ module pwrmgr
   prim_clock_timeout #(
     .TimeOutCnt(EscTimeOutCnt)
   ) u_esc_timeout (
-    .clk_chk_i(clk_esc),
-    .rst_chk_ni(rst_esc_n),
+    .clk_chk_i(clk_lc),
+    .rst_chk_ni(rst_lc_n),
     .clk_i,
     .rst_ni,
     // if any ip clock enable is turned on, then the escalation
@@ -242,6 +242,8 @@ module pwrmgr
   pwrmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
+    .clk_lc_i  (clk_lc  ),
+    .rst_lc_ni (rst_lc_n),
     .tl_i,
     .tl_o,
     .reg2hw,
@@ -599,11 +601,11 @@ module pwrmgr
   `ASSERT_KNOWN(IntrKnownO_A,      intr_wakeup_o    )
 
   // EscTimeOutCnt also sets the required clock ratios between escalator and local clock
-  // Ie, clk_esc cannot be so slow that the timeout count is reached
+  // Ie, clk_lc cannot be so slow that the timeout count is reached
   `ifdef INC_ASSERT
   logic [31:0] cnt;
-  always_ff @(posedge clk_i or negedge clk_esc_i or negedge rst_ni) begin
-    if (!rst_ni || !clk_esc_i) begin
+  always_ff @(posedge clk_i or negedge clk_lc_i or negedge rst_ni) begin
+    if (!rst_ni || !clk_lc_i) begin
       cnt <= '0;
     end else begin
       cnt <= cnt + 1'b1;

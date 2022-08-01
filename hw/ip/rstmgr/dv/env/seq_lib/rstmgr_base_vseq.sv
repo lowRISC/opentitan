@@ -266,6 +266,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   virtual protected task clear_alert_and_cpu_info();
     set_alert_and_cpu_info_for_capture('0, '0);
     send_sw_reset(MuBi4True);
+    cfg.io_div4_clk_rst_vif.wait_clks(20);  // # of lc reset cycles measured from waveform
     check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(0));
   endtask
 

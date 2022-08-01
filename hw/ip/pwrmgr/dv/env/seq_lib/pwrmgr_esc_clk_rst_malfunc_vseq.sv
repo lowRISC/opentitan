@@ -33,8 +33,8 @@ class pwrmgr_esc_clk_rst_malfunc_vseq extends pwrmgr_base_vseq;
     int delay = $urandom_range(10, 30);
     string path;
     randcase
-      1: path = "tb.dut.rst_esc_ni";
-      1: path = "tb.dut.clk_esc_i";
+      1: path = "tb.dut.rst_lc_ni";
+      1: path = "tb.dut.clk_lc_i";
     endcase // randcase
 
     `DV_CHECK(uvm_hdl_force(path, 0))
@@ -44,9 +44,9 @@ class pwrmgr_esc_clk_rst_malfunc_vseq extends pwrmgr_base_vseq;
   task clear_noise();
     int delay = $urandom_range(1, 5);
     string path;
-    path = "tb.dut.rst_esc_ni";
+    path = "tb.dut.rst_lc_ni";
     `DV_CHECK(uvm_hdl_release(path))
-    path = "tb.dut.clk_esc_i";
+    path = "tb.dut.clk_lc_i";
     `DV_CHECK(uvm_hdl_release(path))
     #(delay * 100ns);
   endtask // clear_noise

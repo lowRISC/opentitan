@@ -81,6 +81,9 @@ class MultiRegister(RegBase):
         self.async_name = self.reg.async_name
         self.async_clk = self.reg.async_clk
 
+        self.sync_name = self.reg.sync_name
+        self.sync_clk = self.reg.sync_clk
+
         self.cname = check_name(rd['cname'],
                                 'cname field of multireg {}'
                                 .format(self.reg.name))
@@ -198,7 +201,8 @@ class MultiRegister(RegBase):
         attributes like 'name', 'desc', 'resval' and 'tags'.
         '''
         # Attributes to be crosschecked
-        attrs = ['async_name', 'async_clk', 'count', 'regwen_multi', 'compact']
+        attrs = ['async_name', 'async_clk', 'sync_name', 'sync_clk', 'count',
+                 'regwen_multi', 'compact']
         for attr in attrs:
             if getattr(self, attr) != getattr(alias_reg, attr):
                 raise ValueError('Value mismatch for attribute {} between '

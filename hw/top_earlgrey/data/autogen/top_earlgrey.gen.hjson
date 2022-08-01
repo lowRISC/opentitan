@@ -2632,7 +2632,7 @@
       {
         clk_i: io_div4
         clk_slow_i: aon
-        clk_esc_i:
+        clk_lc_i:
         {
           clock: io_div4
           group: secure
@@ -2650,7 +2650,7 @@
           name: por_aon
           domain: "0"
         }
-        rst_esc_ni:
+        rst_lc_ni:
         {
           name: lc_io_div4
           domain: "0"
@@ -2671,7 +2671,7 @@
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_slow_i: clkmgr_aon_clocks.clk_aon_powerup
-        clk_esc_i: clkmgr_aon_clocks.clk_io_div4_secure
+        clk_lc_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       param_decl: {}
       param_list: []
@@ -2935,7 +2935,12 @@
       type: rstmgr
       clock_srcs:
       {
-        clk_i: io_div4
+        clk_i:
+        {
+          clock: io_div4
+          group: secure
+        }
+        clk_por_i: io_div4
         clk_aon_i: aon
         clk_main_i: main
         clk_io_i: io
@@ -2948,6 +2953,11 @@
       {
         rst_ni:
         {
+          name: lc_io_div4
+          domain: "0"
+        }
+        rst_por_ni:
+        {
           name: por_io_div4
           domain: Aon
         }
@@ -2955,11 +2965,13 @@
       domain:
       [
         Aon
+        "0"
       ]
       attr: templated
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
+        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
+        clk_por_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
         clk_main_i: clkmgr_aon_clocks.clk_main_powerup
         clk_io_i: clkmgr_aon_clocks.clk_io_powerup
@@ -13884,8 +13896,8 @@
       type: alert
       async: "1"
       module_name: rstmgr_aon
-      lpg_name: powerup_por_io_div4_Aon
-      lpg_idx: 10
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 6
     }
     {
       name: rstmgr_aon_fatal_cnsty_fault
@@ -13893,8 +13905,8 @@
       type: alert
       async: "1"
       module_name: rstmgr_aon
-      lpg_name: powerup_por_io_div4_Aon
-      lpg_idx: 10
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 6
     }
     {
       name: clkmgr_aon_recov_fault

@@ -351,7 +351,7 @@
       clock_srcs: {
         clk_i: "io_div4",
         clk_slow_i: "aon",
-        clk_esc_i: {
+        clk_lc_i: {
           clock: "io_div4",
           group: "secure"
         }
@@ -365,7 +365,7 @@
           name: "por_aon",
           domain: "0"
         },
-        rst_esc_ni: {
+        rst_lc_ni: {
           name: "lc_io_div4",
           domain: "0"
         },
@@ -381,11 +381,26 @@
     },
     { name: "rstmgr_aon",
       type: "rstmgr",
-      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
-                   clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"},
+      clock_srcs: {
+        clk_i: {
+          clock: "io_div4",
+          group: "secure"
+        },
+        clk_por_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
+        clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"
+      },
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io_div4"}
-      domain: ["Aon"],
+      reset_connections: {
+        rst_ni: {
+          name: "lc_io_div4",
+          domain: "0"
+        },
+        rst_por_ni: {
+          name: "por_io_div4",
+          domain: "Aon"
+        },
+      }
+      domain: ["Aon", "0"],
       base_addr: "0x40410000",
       attr: "templated",
     },

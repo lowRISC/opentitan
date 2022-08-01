@@ -6,8 +6,8 @@
 module pwrmgr_sec_cm_checker_assert (
   input clk_i,
   input rst_ni,
-  input clk_esc_i,
-  input rst_esc_ni,
+  input clk_lc_i,
+  input rst_lc_ni,
   input rst_main_ni,
   input clk_slow_i,
   input rst_slow_ni,
@@ -31,7 +31,7 @@ module pwrmgr_sec_cm_checker_assert (
   bit   slow_reset_or_disable;
 
   always_comb reset_or_disable = !rst_ni || disable_sva;
-  always_comb esc_reset_or_disable = !rst_esc_ni || disable_sva;
+  always_comb esc_reset_or_disable = !rst_lc_ni || disable_sva;
   always_comb slow_reset_or_disable = !rst_slow_ni || disable_sva;
 
   function automatic bit fsm_state_is_valid(pwrmgr_pkg::fast_pwr_state_e state);
@@ -109,7 +109,7 @@ module pwrmgr_sec_cm_checker_assert (
 // if esc_rst_req is set, pwr_rst_o.rstreqs[ResetEscIdx] should be asserted.
   `ASSERT(RstreqChkGlbesc_A,
           $rose(slow_esc_rst_req) ##1 slow_esc_rst_req |->
-          ##[0:2] (pwr_rst_o.rstreqs[pwrmgr_pkg::ResetEscIdx] | !rst_esc_ni),
+          ##[0:2] (pwr_rst_o.rstreqs[pwrmgr_pkg::ResetEscIdx] | !rst_lc_ni),
           clk_i, reset_or_disable)
 
 // sec_cm_main_pd_rst_local_esc

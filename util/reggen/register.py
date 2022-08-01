@@ -35,6 +35,11 @@ OPTIONAL_FIELDS = {
         "clock domain before use.  The value shown here "
         "should correspond to one of the module's clocks."
     ],
+    'sync': [
+        's',
+        "indicates the register needs to be on another clock/reset domain."
+        "The value shown here should correspond to one of the module's clocks."
+    ],
     'swaccess': [
         's',
         "software access permission to use for "
@@ -100,6 +105,8 @@ class Register(RegBase):
                  desc: str,
                  async_name: str,
                  async_clk: object,
+                 sync_name: str,
+                 sync_clk: object,
                  hwext: bool,
                  hwqe: bool,
                  hwre: bool,
@@ -116,6 +123,8 @@ class Register(RegBase):
         self.desc = desc
         self.async_name = async_name
         self.async_clk = async_clk
+        self.sync_name = sync_name
+        self.sync_clk = sync_clk
         self.hwext = hwext
         self.hwqe = hwqe
         self.hwre = hwre
@@ -272,6 +281,21 @@ class Register(RegBase):
             else:
                 async_clk = clocks.get_by_clock(async_name)
 
+        sync_name = check_str(rd.get('sync', ''), 'different sync clock for {} register'
+                              .format(name))
+        sync_clk = None
+
+        if sync_name:
+            valid_clocks = clocks.clock_signals()
+            if sync_name not in valid_clocks:
+                raise ValueError('sync clock {} defined for {} does not exist '
+                                 'in valid module clocks {}.'
+                                 .format(sync_name,
+                                         name,
+                                         valid_clocks))
+            else:
+                sync_clk = clocks.get_by_clock(sync_name)
+
         swaccess = SWAccess('{} register'.format(name),
                             rd.get('swaccess', 'none'))
         hwaccess = HWAccess('{} register'.format(name),
@@ -360,7 +384,8 @@ class Register(RegBase):
                                            .format(name))
 
         return Register(offset, name, alias_target, desc, async_name,
-                        async_clk, hwext, hwqe, hwre, regwen,
+                        async_clk, sync_name, sync_clk,
+                        hwext, hwqe, hwre, regwen,
                         tags, resval, shadowed, fields,
                         update_err_alert, storage_err_alert)
 
@@ -510,6 +535,7 @@ class Register(RegBase):
 
         return Register(offset, new_name, new_alias_target, self.desc,
                         self.async_name, self.async_clk,
+                        self.sync_name, self.sync_clk,
                         self.hwext, self.hwqe, self.hwre, new_regwen,
                         self.tags, new_resval, self.shadowed, new_fields,
                         self.update_err_alert, self.storage_err_alert)

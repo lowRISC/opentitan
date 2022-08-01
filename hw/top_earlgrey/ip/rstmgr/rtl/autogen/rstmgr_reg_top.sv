@@ -9,6 +9,8 @@
 module rstmgr_reg_top (
   input clk_i,
   input rst_ni,
+  input clk_por_i,
+  input rst_por_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
@@ -215,6 +217,10 @@ module rstmgr_reg_top (
   logic err_code_reg_intg_err_wd;
   logic err_code_reset_consistency_err_qs;
   logic err_code_reset_consistency_err_wd;
+  logic err_code_fsm_err_qs;
+  logic err_code_fsm_err_wd;
+  // Define register CDC handling.
+  // CDC handling is done on a per-reg instead of per-field boundary.
 
   // Register instances
   // R[alert_test]: V(True)
@@ -288,8 +294,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h1)
   ) u_reset_info_por (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (reset_info_we),
@@ -314,8 +321,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_low_power_exit (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (reset_info_we),
@@ -340,8 +348,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_ndm_reset (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (reset_info_we),
@@ -366,8 +375,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_sw_reset (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (reset_info_we),
@@ -392,8 +402,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (4'h0)
   ) u_reset_info_hw_req (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (reset_info_we),
@@ -450,8 +461,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_alert_info_ctrl_en (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (alert_info_ctrl_gated_we),
@@ -476,8 +488,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_alert_info_ctrl_index (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (alert_info_ctrl_gated_we),
@@ -566,8 +579,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_cpu_info_ctrl_en (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (cpu_info_ctrl_gated_we),
@@ -592,8 +606,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_cpu_info_ctrl_index (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (cpu_info_ctrl_gated_we),
@@ -1137,7 +1152,7 @@ module rstmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.err_code.reg_intg_err.q),
     .ds     (),
 
     // to register interface (read)
@@ -1163,11 +1178,37 @@ module rstmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.err_code.reset_consistency_err.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (err_code_reset_consistency_err_qs)
+  );
+
+  //   F[fsm_err]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_err_code_fsm_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (err_code_we),
+    .wd     (err_code_fsm_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.fsm_err.de),
+    .d      (hw2reg.err_code.fsm_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.err_code.fsm_err.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (err_code_fsm_err_qs)
   );
 
 
@@ -1334,6 +1375,8 @@ module rstmgr_reg_top (
 
   assign err_code_reset_consistency_err_wd = reg_wdata[1];
 
+  assign err_code_fsm_err_wd = reg_wdata[2];
+
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
@@ -1489,6 +1532,7 @@ module rstmgr_reg_top (
       addr_hit[27]: begin
         reg_rdata_next[0] = err_code_reg_intg_err_qs;
         reg_rdata_next[1] = err_code_reset_consistency_err_qs;
+        reg_rdata_next[2] = err_code_fsm_err_qs;
       end
 
       default: begin

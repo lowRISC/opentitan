@@ -16,8 +16,9 @@
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
 % for clk in reset_obj.get_clocks():
-    {clock: "clk_${clk}_i"}
+    {clock: "clk_${clk}_i"},
 % endfor
+    {clock: "clk_por_i", reset: "rst_por_ni"},
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
@@ -209,6 +210,7 @@
             ''',
       swaccess: "rw1c",
       hwaccess: "hwo",
+      sync: "clk_por_i",
       fields: [
         { bits: "0",
           hwaccess: "none",
@@ -279,6 +281,7 @@
             ''',
       swaccess: "rw",
       hwaccess: "hro",
+      sync: "clk_por_i",
       regwen: "${dump_src.upper()}_REGWEN",
       fields: [
         { bits: "0",
@@ -307,6 +310,7 @@
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
+      sync: "clk_por_i",
       hwext: "true",
       fields: [
         { bits: "IdxWidth-1:0",
@@ -332,6 +336,7 @@
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
+      sync: "clk_por_i",
       hwext: "true",
       fields: [
         { bits: "31:0",
@@ -404,7 +409,7 @@
         A bit vector of all the errors that have occurred in reset manager
       ''',
       swaccess: "rw1c",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
       fields: [
         { bits: "0",
           name: "REG_INTG_ERR",
@@ -418,6 +423,14 @@
           name: "RESET_CONSISTENCY_ERR",
           desc: '''
             A inconsistent parent / child reset was observed.
+          '''
+          resval: "0"
+        },
+
+        { bits: "2",
+          name: "FSM_ERR",
+          desc: '''
+            Sparsely encoded fsm error.
           '''
           resval: "0"
         },

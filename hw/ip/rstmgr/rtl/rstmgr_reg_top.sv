@@ -9,6 +9,8 @@
 module rstmgr_reg_top (
   input clk_i,
   input rst_ni,
+  input clk_por_i,
+  input rst_por_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
@@ -150,6 +152,8 @@ module rstmgr_reg_top (
   logic sw_rst_ctrl_n_val_0_wd;
   logic sw_rst_ctrl_n_val_1_qs;
   logic sw_rst_ctrl_n_val_1_wd;
+  // Define register CDC handling.
+  // CDC handling is done on a per-reg instead of per-field boundary.
 
   // Register instances
   // R[reset_info]: V(False)
@@ -159,8 +163,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h1)
   ) u_reset_info_por (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (reset_info_we),
@@ -185,8 +190,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_low_power_exit (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (reset_info_we),
@@ -211,8 +217,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_ndm_reset (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (reset_info_we),
@@ -237,8 +244,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_hw_req (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (reset_info_we),
@@ -265,8 +273,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_alert_info_ctrl_en (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (alert_info_ctrl_we),
@@ -291,8 +300,9 @@ module rstmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_alert_info_ctrl_index (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    // sync clock and reset required for this register
+    .clk_i   (clk_por_i),
+    .rst_ni  (rst_por_ni),
 
     // from register interface
     .we     (alert_info_ctrl_we),
