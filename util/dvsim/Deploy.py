@@ -7,12 +7,13 @@ import pprint
 import random
 import shlex
 from pathlib import Path
-
-from LauncherFactory import get_launcher
-from sim_utils import get_cov_summary_table, get_job_runtime, get_simulated_time
-from tabulate import tabulate
-from Testplan import JobTime
 from typing import List
+
+from JobTime import JobTime
+from LauncherFactory import get_launcher
+from sim_utils import (get_cov_summary_table, get_job_runtime,
+                       get_simulated_time)
+from tabulate import tabulate
 from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards,
                    rm_path, subst_wildcards)
 
@@ -23,7 +24,7 @@ class Deploy():
     """
 
     # Indicate the target for each sub-class.
-    target = None
+    target = "none"
 
     # List of variable names that are to be treated as "list of commands".
     # This tells '_construct_cmd' that these vars are lists that need to
@@ -78,6 +79,7 @@ class Deploy():
         # Launcher instance created later using create_launcher() method.
         self.launcher = None
 
+        # Job's wall clock time (a.k.a CPU time, or runtime).
         self.job_runtime = JobTime()
 
     def _define_attrs(self):
@@ -287,15 +289,28 @@ class Deploy():
         """Returns the timeout in minutes."""
         return 0
 
-    def extract_runtimes(self, log_text: List):
-        """Input the logfile in lines and extract the job_runtime."""
+    def extract_info_from_log(self, log_text: List):
+        """Extracts information pertaining to the job from its log.
+
+        This method parses the log text after the job has completed, for the
+        extraction of information pertaining to the job's performance. This
+        base class method extracts the job's runtime (i.e. the wall clock time)
+        as reported by the tool. The tool reported runtime is the most accurate
+        since it is devoid of the delays incurred due to infrastructure and
+        setup overhead.
+
+        The extended classes may override this method to extract other pieces
+        of information from the log.
+
+        `log_text` is the job's log file contents as a list of lines.
+        """
         try:
-            self.job_runtime.time, self.job_runtime.unit = get_job_runtime(
-                log_text, self.sim_cfg.tool)
-        except NotImplementedError:
-            log.debug("Using dvsim default runtime due to unsupported tool: " + self.sim_cfg.tool)
-        except SyntaxError:
-            log.debug("Parsing job runtime has syntax error with " + self.sim_cfg.tool)
+            time, unit = get_job_runtime(log_text, self.sim_cfg.tool)
+            self.job_runtime.set(time, unit)
+        except RuntimeError as e:
+            log.warning(f"{self.full_name}: {e} Using dvsim-maintained "
+                        "job_runtime instead.")
+            self.job_runtime.set(self.launcher.job_runtime_secs, "s")
 
     def create_launcher(self):
         """Creates the launcher instance.
@@ -531,16 +546,14 @@ class RunTest(Deploy):
         """Returns the timeout in minutes."""
         return self.run_timeout_mins
 
-    def extract_runtimes(self, log_text: List):
-        """Input the logfile in lines and extract the job_runtime and simulated_time."""
-        super().extract_runtimes(log_text)
+    def extract_info_from_log(self, log_text: List):
+        """Extracts the time the design was simulated for, from the log."""
+        super().extract_info_from_log(log_text)
         try:
-            self.simulated_time.time, self.simulated_time.unit = get_simulated_time(
-                log_text, self.sim_cfg.tool)
-        except NotImplementedError:
-            log.debug("Parsing simulated time with unsupported tool: " + self.sim_cfg.tool)
-        except SyntaxError:
-            log.debug("Parsing job simulated time has syntax error with " + self.sim_cfg.tool)
+            time, unit = get_simulated_time(log_text, self.sim_cfg.tool)
+            self.simulated_time.set(time, unit)
+        except RuntimeError as e:
+            log.debug(f"{self.full_name}: {e}")
 
 
 class CovUnr(Deploy):

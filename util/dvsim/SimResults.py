@@ -74,6 +74,7 @@ class SimResults:
     self.buckets contains a dictionary accessed by the failure signature,
     holding all failing tests with the same signature.
     '''
+
     def __init__(self, items, results):
         self.table = []
         self.buckets = collections.defaultdict(list)
@@ -84,7 +85,7 @@ class SimResults:
     def _add_item(self, item, results):
         '''Recursively add a single item to the table of results'''
         status = results[item]
-        if status == "F":
+        if status in ["F", "K"]:
             bucket = self._bucketize(item.launcher.fail_msg.message)
             self.buckets[bucket].append(
                 (item, item.launcher.fail_msg.line_number,
@@ -98,17 +99,21 @@ class SimResults:
         '''Add an entry to table for item'''
         row = self._name_to_row.get(item.name)
         if row is None:
-            row = Result(item.name)
+            row = Result(item.name,
+                         job_runtime=item.job_runtime,
+                         simulated_time=item.simulated_time)
             self.table.append(row)
             self._name_to_row[item.name] = row
+
+        else:
+            # Record the max job_runtime of all reseeds.
+            if item.job_runtime > row.job_runtime:
+                row.job_runtime = item.job_runtime
+                row.simulated_time = item.simulated_time
 
         if status == 'P':
             row.passing += 1
         row.total += 1
-
-        if item.job_runtime.time > row.job_runtime.time:
-            row.job_runtime = item.job_runtime
-            row.simulated_time = item.simulated_time
 
     def _bucketize(self, fail_msg):
         bucket = fail_msg

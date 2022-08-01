@@ -14,6 +14,7 @@ from utils import VERBOSE, clean_odirs, mk_symlink, rm_path
 
 
 class LauncherError(Exception):
+
     def __init__(self, msg):
         self.msg = msg
 
@@ -64,6 +65,18 @@ class Launcher:
     # Flag indicating the workspace preparation steps are complete.
     workspace_prepared = False
     workspace_prepared_for_cfg = set()
+
+    # Jobs that are not run when one of their dependent jobs fail are
+    # considered killed. All non-passing jobs are required to have an
+    # an associated fail_msg attribute (an object of class ErrorMessage)
+    # reflecting the appropriate message. This class attribute thus serves
+    # as a catch-all for all those jobs that are not even run. If a job
+    # instance runs and fails, the fail_msg attribute is overridden by
+    # the instance with the correct message in _post_finish().
+    fail_msg = ErrorMessage(
+        line_number=None,
+        message="Job killed most likely because its dependent job failed.",
+        context=[])
 
     @staticmethod
     def set_pyvenv(project):
@@ -151,6 +164,9 @@ class Launcher:
         # create a new one.
         self.renew_odir = False
 
+        # The actual job runtime computed by dvsim, in seconds.
+        self.job_runtime_secs = 0
+
     def _make_odir(self):
         """Create the output directory."""
 
@@ -232,6 +248,7 @@ class Launcher:
         after the job finishes. err_msg is an instance of the named tuple
         ErrorMessage.
         """
+
         def _find_patterns(patterns, line):
             """Helper function that returns the pattern if any of the given
             patterns is found, else None."""
@@ -268,14 +285,17 @@ class Launcher:
                 context=[],
             )
 
-        self.deploy.extract_runtimes(lines)
+        # Since the log file is already opened and read to assess the job's
+        # status, use this opportunity to also extract other pieces of
+        # information.
+        self.deploy.extract_info_from_log(lines)
 
         if chk_failed or chk_passed:
             for cnt, line in enumerate(lines):
                 if chk_failed:
                     if _find_patterns(self.deploy.fail_patterns, line):
                         # If failed, then nothing else to do. Just return.
-                        # Privide some extra lines for context.
+                        # Provide some extra lines for context.
                         return "F", ErrorMessage(line_number=cnt + 1,
                                                  message=line.strip(),
                                                  context=lines[cnt:cnt + 5])
