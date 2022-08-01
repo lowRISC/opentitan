@@ -440,6 +440,9 @@
         }
 % endfor
       ]
+      // the CLK_HINT_STATUS register is read-only and cannot be checked.
+      // This register's value depends on the IDLE inputs, so cannot be predicted.
+      tags: ["excl:CsrNonInitTests:CsrExclCheck:CsrExclCheck"]
     },
 
     { name: "MEASURE_CTRL_REGWEN",
