@@ -13,7 +13,7 @@ _BASE_PARAMS = {
     "data": [],
     "local": True,
     "otp": "@//hw/ip/otp_ctrl/data:img_rma",
-    "rom": "@//sw/device/lib/testing/test_rom:test_rom_{}_scr_vmem",
+    "rom": "@//sw/device/lib/testing/test_rom",
     "tags": [],
     "test_runner": "@//util:opentitan_functest_runner.sh",
     "timeout": "moderate",  # 5 minutes
@@ -29,7 +29,7 @@ def dv_params(
         data = _BASE_PARAMS["data"],
         local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
-        rom = _BASE_PARAMS["rom"].format("sim_dv"),
+        rom = _BASE_PARAMS["rom"],
         tags = _BASE_PARAMS["tags"],
         timeout = _BASE_PARAMS["timeout"],
         test_runner = "@//util:dvsim_test_runner.sh",
@@ -88,7 +88,7 @@ def verilator_params(
         exit_failure = _BASE_PARAMS["exit_failure"],
         local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
-        rom = _BASE_PARAMS["rom"].format("sim_verilator"),
+        rom = _BASE_PARAMS["rom"],
         tags = _BASE_PARAMS["tags"] + ["cpu:4"],
         timeout = _BASE_PARAMS["timeout"],
         test_runner = _BASE_PARAMS["test_runner"],
@@ -152,7 +152,6 @@ def cw310_params(
         exit_failure = _BASE_PARAMS["exit_failure"],
         local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
-        rom = _BASE_PARAMS["rom"].format("fpga_cw310"),
         tags = _BASE_PARAMS["tags"],
         test_runner = _BASE_PARAMS["test_runner"],
         # CW310-specific Parameters
@@ -171,9 +170,13 @@ def cw310_params(
         @param data: Data dependencies of the test.
         @param local: Whether the test should be run locally without sandboxing.
         @param otp: The OTP image to use.
-        @param rom: The ROM image to use.
         @param tags: The test tags to apply to the test rule.
         @param timeout: The timeout to apply to the test rule.
+        @param bitstream: The bitstream to load into the FPGA (this specifies
+                          the ROM image that is also used, since the ROM is
+                          baked into the bitstream).
+        @param rom_kind: The ROM type (test or mask) that is baked into the
+                         bitstream that is loaded into the FPGA.
     """
     required_args = [
         "--rcfile=",
@@ -194,7 +197,6 @@ def cw310_params(
         exit_failure = exit_failure,
         local = local,
         otp = otp,
-        rom = rom,
         tags = required_tags + tags,
         test_runner = test_runner,
         timeout = timeout,
@@ -320,21 +322,44 @@ def opentitan_functest(
         ########################################################################
         # Retrieve device-side test components.
         ########################################################################
+        # Set ROM image.
+        # Note: FPGA targets will not specify a ROM image as the ROM imaged is
+        # specified via the `bitstream` parameter (since the ROM is baked into
+        # the bitstream).
+        rom = params.pop("rom", None)
+        if rom:
+            if test_in_rom:
+                rom_filegroup = "{}_rom_prog_{}".format(name, target)
+                rom = "{}_scr_vmem".format(rom_filegroup)
+            else:
+                rom_label = Label(rom)
+                rom_filegroup = "@{}//{}:{}_{}".format(
+                    rom_label.workspace_name,
+                    rom_label.package,
+                    rom_label.name,
+                    target,
+                )
+                rom = "{}_scr_vmem".format(rom_filegroup)
+            target_data.append(rom)
+            target_data.append(rom_filegroup)
+
         # Set flash image.
         if target in ["sim_dv", "sim_verilator"]:
-            flash = "{}_{}_scr_vmem64".format(test_binary, target)
+            flash = "{}_{}_scr_vmem64".format(ot_flash_binary, target)
         else:
-            flash = "{}_{}_bin".format(test_binary, target)
+            flash = "{}_{}_bin".format(ot_flash_binary, target)
         if signed:
             flash += "_signed_{}".format(key)
-        target_data.append(flash)
-        target_data.append("{}_{}".format(test_binary, target))
 
-        # Set ROM image.
-        rom = params.pop("rom")
+        # If test is to be run in ROM we load the same image into flash as a
+        # as a placeholder (since execution will never reach flash). Moreover,
+        # there is no need to update the data dependencies list as the ROM
+        # targets were already added above.
         if test_in_rom:
-            rom = "{}_rom_prog_{}_scr_vmem".format(name, target)
-        target_data.append(rom)
+            flash = rom
+        else:
+            target_data.append(flash)
+            target_data.append("{}_{}".format(ot_flash_binary, target))
 
         # Set OTP image.
         otp = params.pop("otp")
@@ -381,8 +406,8 @@ def opentitan_functest(
             "rom": rom,
             "otp": otp,
             "dvsim_config": dvsim_config,
-            "rom_kind": rom_kind,
             "bitstream": bitstream,
+            "rom_kind": rom_kind,
         }
         format_dict.update(exit_strings_kwargs)
         target_args = [a.format(**format_dict) for a in target_args]
