@@ -253,6 +253,10 @@ TEST_F(FlashCtrlTest, SetProgPermissions) {
       .normal_prog_type = 0,
       .repair_prog_type = 1,
   };
+
+  EXPECT_READ32(FLASH_CTRL_CTRL_REGWEN_REG_OFFSET,
+                {{FLASH_CTRL_CTRL_REGWEN_EN_BIT, 1}});
+
   EXPECT_WRITE32(FLASH_CTRL_PROG_TYPE_EN_REG_OFFSET,
                  {
                      {FLASH_CTRL_PROG_TYPE_EN_NORMAL_BIT, 1},
@@ -272,6 +276,10 @@ TEST_F(FlashCtrlTest, SetProgPermissions) {
 
   prog_caps.normal_prog_type = 1;
   prog_caps.repair_prog_type = 0;
+
+  EXPECT_READ32(FLASH_CTRL_CTRL_REGWEN_REG_OFFSET,
+                {{FLASH_CTRL_CTRL_REGWEN_EN_BIT, 1}});
+
   EXPECT_WRITE32(FLASH_CTRL_PROG_TYPE_EN_REG_OFFSET,
                  {
                      {FLASH_CTRL_PROG_TYPE_EN_NORMAL_BIT, 0},

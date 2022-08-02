@@ -1772,6 +1772,9 @@ module flash_ctrl_core_reg_top (
 
 
   // R[addr]: V(False)
+  // Create REGWEN-gated WE signal
+  logic addr_gated_we;
+  assign addr_gated_we = addr_we & ctrl_regwen_qs;
   prim_subreg #(
     .DW      (20),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1781,7 +1784,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (addr_we),
+    .we     (addr_gated_we),
     .wd     (addr_wd),
 
     // from internal hardware
@@ -1799,6 +1802,9 @@ module flash_ctrl_core_reg_top (
 
 
   // R[prog_type_en]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prog_type_en_gated_we;
+  assign prog_type_en_gated_we = prog_type_en_we & ctrl_regwen_qs;
   //   F[normal]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1809,7 +1815,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prog_type_en_we),
+    .we     (prog_type_en_gated_we),
     .wd     (prog_type_en_normal_wd),
 
     // from internal hardware
@@ -1835,7 +1841,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prog_type_en_we),
+    .we     (prog_type_en_gated_we),
     .wd     (prog_type_en_repair_wd),
 
     // from internal hardware
@@ -12362,8 +12368,8 @@ module flash_ctrl_core_reg_top (
     reg_we_check[6] = init_we;
     reg_we_check[7] = 1'b0;
     reg_we_check[8] = control_gated_we;
-    reg_we_check[9] = addr_we;
-    reg_we_check[10] = prog_type_en_we;
+    reg_we_check[9] = addr_gated_we;
+    reg_we_check[10] = prog_type_en_gated_we;
     reg_we_check[11] = erase_suspend_we;
     reg_we_check[12] = region_cfg_regwen_0_we;
     reg_we_check[13] = region_cfg_regwen_1_we;

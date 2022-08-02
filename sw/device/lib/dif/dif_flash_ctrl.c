@@ -273,6 +273,7 @@ dif_result_t dif_flash_ctrl_get_allowed_prog_types(
   if (handle == NULL || allowed_types_out == NULL) {
     return kDifBadArg;
   }
+
   uint32_t reg = mmio_region_read32(handle->dev.base_addr,
                                     FLASH_CTRL_PROG_TYPE_EN_REG_OFFSET);
   dif_flash_ctrl_prog_capabilities_t allowed_types = {
@@ -292,6 +293,13 @@ dif_result_t dif_flash_ctrl_disallow_prog_types(
   if (handle == NULL) {
     return kDifBadArg;
   }
+
+  uint32_t ctrl_regwen = mmio_region_read32(handle->dev.base_addr,
+                                            FLASH_CTRL_CTRL_REGWEN_REG_OFFSET);
+  if (!bitfield_bit32_read(ctrl_regwen, FLASH_CTRL_CTRL_REGWEN_EN_BIT)) {
+    return kDifUnavailable;
+  }
+
   uint32_t reg = 0;
   reg = bitfield_bit32_write(reg, FLASH_CTRL_PROG_TYPE_EN_NORMAL_BIT,
                              !types_to_disallow.normal_prog_type);

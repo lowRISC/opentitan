@@ -731,6 +731,7 @@
         desc: "Address for flash operation",
         swaccess: "rw",
         hwaccess: "hro",
+        regwen: "CTRL_REGWEN",
         resval: "0",
         fields: [
           { bits: "${total_byte_width-1}:0",
@@ -758,6 +759,7 @@
       // Program type
       { name: "PROG_TYPE_EN",
         desc: "Enable different program types",
+        regwen: "CTRL_REGWEN",
         swaccess: "rw0c",
         hwaccess: "hro",
         fields: [
