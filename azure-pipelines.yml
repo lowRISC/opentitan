@@ -35,12 +35,27 @@ pr:
     - "*"
 
 jobs:
-- job: lint
-  displayName: Quality (quick lint)
-  # Run code quality checks (quick lint)
+- job: checkout
+  displayName: Checkout repository
   pool:
     vmImage: ubuntu-18.04
   steps:
+  - checkout: self
+    path: opentitan-repo
+  - bash: |
+      tar -C $(Pipeline.Workspace)/opentitan-repo -czf $(Pipeline.Workspace)/opentitan-repo.tar.gz .
+    displayName: Pack up repository
+  - publish: $(Pipeline.Workspace)/opentitan-repo.tar.gz
+    artifact: opentitan-repo
+    displayName: Upload repository
+- job: lint
+  displayName: Quality (quick lint)
+  # Run code quality checks (quick lint)
+  dependsOn: checkout
+  pool:
+    vmImage: ubuntu-18.04
+  steps:
+  - template: ci/checkout-template.yml
   - bash: |
       sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
     displayName: Uninstall Clang
@@ -103,9 +118,11 @@ jobs:
 - job: download_bazel_dependencies
   displayName: Prefetch Bazel deps
   # Download Bazel fetched dependencies
+  dependsOn: checkout
   pool:
     vmImage: ubuntu-18.04
   steps:
+  - template: ci/checkout-template.yml
   - bash: |
       set -x -e
       util/prep-bazel-airgapped-build.sh || {
@@ -127,6 +144,7 @@ jobs:
   pool:
     vmImage: ubuntu-18.04
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - bash: ci/scripts/check-generated.sh
     displayName: Check Generated
@@ -157,6 +175,7 @@ jobs:
     - name: bazelCacheGcpKeyPath
       value: ''
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - task: DownloadSecureFile@1
     condition: eq(variables['Build.SourceBranchName'], 'master')
@@ -202,6 +221,7 @@ jobs:
   pool:
     vmImage: ubuntu-18.04
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - bash: |
       . util/build_consts.sh
@@ -232,6 +252,7 @@ jobs:
   pool:
     vmImage: ubuntu-18.04
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - bash: |
       python3 --version
@@ -253,6 +274,7 @@ jobs:
   timeoutInMinutes: 120
   dependsOn: lint
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - task: DownloadSecureFile@1
     condition: eq(variables['Build.SourceBranchName'], 'master')
@@ -293,6 +315,7 @@ jobs:
     vmImage: ubuntu-18.04
   dependsOn: chip_englishbreakfast_verilator
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
@@ -321,6 +344,7 @@ jobs:
     vmImage: ubuntu-18.04
   timeoutInMinutes: 10
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - bash: |
       set -x
@@ -356,6 +380,7 @@ jobs:
   pool: ci-public
   timeoutInMinutes: 180
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
@@ -393,6 +418,7 @@ jobs:
   pool: ci-public
   timeoutInMinutes: 10
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
@@ -439,6 +465,7 @@ jobs:
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
@@ -464,6 +491,7 @@ jobs:
     - chip_earlgrey_cw310_splice_rom
     - sw_build
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
@@ -486,6 +514,7 @@ jobs:
     - chip_earlgrey_cw310
   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   steps:
+  - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
@@ -525,6 +554,7 @@ jobs:
   dependsOn:
     - lint
   steps:
+  - template: ci/checkout-template.yml
   - task: Docker@2
     displayName: Build Developer Utility Container
     inputs:
