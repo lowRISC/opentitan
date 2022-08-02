@@ -164,6 +164,7 @@ virtual task tl_instr_type_err(string ral_name);
     bit [BUS_DW-1:0] data;
     mubi4_t          instr_type;
 
+    if (cfg.under_reset) return;
     `DV_CHECK_STD_RANDOMIZE_FATAL(addr);
     `DV_CHECK_STD_RANDOMIZE_FATAL(data);
 
