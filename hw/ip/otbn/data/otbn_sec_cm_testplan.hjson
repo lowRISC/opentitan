@@ -69,7 +69,7 @@
       name: sec_cm_scramble_key_sideload
       desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
       milestone: V2S
-      tests: []
+      tests: ["otbn_single"]
     }
     {
       name: sec_cm_scramble_ctrl_fsm_local_esc
@@ -217,13 +217,13 @@
       name: sec_cm_write_mem_integrity
       desc: "Verify the countermeasure(s) WRITE.MEM.INTEGRITY."
       milestone: V2S
-      tests: []
+      tests: ["otbn_multi"]
     }
     {
       name: sec_cm_ctrl_flow_count
       desc: "Verify the countermeasure(s) CTRL_FLOW.COUNT."
       milestone: V2S
-      tests: []
+      tests: ["otbn_single"]
     }
     {
       name: sec_cm_ctrl_flow_sca
