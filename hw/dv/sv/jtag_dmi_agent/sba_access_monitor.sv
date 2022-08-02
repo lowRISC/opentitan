@@ -111,6 +111,10 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
     end
   endtask
 
+  // Predict what is expected to happen if one of the SBA registers is read.
+  //
+  // If the sbcs register is read, and sbbusy bit drops on a pending write, we consider the
+  // transaction to have completed - we write the predicted SBA transaction to the analysis port.
   virtual protected function void process_sba_csr_read(uvm_reg csr, jtag_dmi_item dmi_item);
     case (csr.get_name())
       "sbcs": begin
@@ -118,22 +122,37 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
         uvm_reg_data_t sbbusyerror  = get_field_val(jtag_dmi_ral.sbcs.sbbusyerror, dmi_item.rdata);
         uvm_reg_data_t sberror      = get_field_val(jtag_dmi_ral.sbcs.sberror, dmi_item.rdata);
 
-        // We should have predicted an SBA access if sbbusy got set.
-        if (sbbusy) `DV_CHECK(sba_req_q.size(), "sbbusy indicated, but no SBA access was predicted")
+        // We should have predicted an SBA access if any of the status bits got set.
+        if (sbbusy || sbbusyerror) begin
+          `DV_CHECK(sba_req_q.size(),
+                    $sformatf({"One of these bits is set, but no SBA access was predicted: ",
+                               "sbbusy=%0b, sbbusyerror=%0b"}, sbbusy, sbbusyerror))
+        end
 
-        // Check if our error predictions were correct.
+        // Check if we correctly predicted busy error.
         `DV_CHECK_EQ(sbbusyerror, jtag_dmi_ral.sbcs.sbbusyerror.get_mirrored_value())
-        `DV_CHECK_EQ(sberror, jtag_dmi_ral.sbcs.sberror.get_mirrored_value())
+        if (sbbusyerror) sba_req_q[0].is_busy_err = 1'b1;
+
+        // Check if we correctly predicted the malformed SBA access request errors.
+        //
+        // We can only predict SbaErrBadAlignment and SbaErrBadSize errors. For the externally
+        // indicated errors SbaErrTimeout, SbaErrBadAddr and SbaErrOther, we pass the actually seen
+        // sberror to the sba_access_item that is written to the analysis port. The external entity
+        // reading from this port is expected to verify the correctness of these errors.
+        if (sberror inside {SbaErrNone, SbaErrBadAlignment, SbaErrBadSize}) begin
+          `DV_CHECK_EQ(sberror, jtag_dmi_ral.sbcs.sberror.get_mirrored_value())
+        end
 
         if (sba_req_q.size() > 0) begin
+          if (sberror) sba_req_q[0].is_err = sba_access_err_e'(sberror);
           if (!sbbusy) begin
-            predict_autoincr_sba_addr();
-            if (sba_req_q[0].bus_op == BusOpWrite) begin
-              // Mark the write access as complete if sbbusy deasserted.
+            // Write the predicted SBA transaction to the analysis port when sbbusy de-asserts in
+            // the following scenarios - a bus write, a bus read when readondata is set.
+            if (sba_req_q[0].bus_op == BusOpWrite ||
+                (sba_req_q[0].bus_op == BusOpRead && `gmv(jtag_dmi_ral.sbcs.sbreadondata))) begin
               ITEM_T tr = sba_req_q.pop_front();
-              tr.is_err = SbaErrNone;
-              tr.is_busy_err = 0;
               analysis_port.write(tr);
+              predict_autoincr_sba_addr();
             end
           end
         end
@@ -146,12 +165,18 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
         if (sba_req_q.size() > 0) begin
           // If SBA read access completed, then return the data read from this register. We count on
           // stimulus to have read the sbcs register before to ensure the access actually completed.
+          // The external scoreboard is expected to verify the correctness of externally indicated
+          // errors SbaErrTimeout, SbaErrBadAddr and SbaErrOther, when the stimulus reads the sbcs
+          // register during a pending SBA read transaction.
+          //
+          // The stimulus (in sba_access_utils_pkg::sba_access()) terminates SBA access on sbdata0
+          // read when readonaddr is set and readondata is not set. If readondata is set, then
+          // accesses terminate at sbcs read. The monitor bases its predictions on this behavior.
           if (sba_req_q[0].bus_op == BusOpRead &&
-              !jtag_dmi_ral.sbcs.sbbusy.get_mirrored_value()) begin
+              !jtag_dmi_ral.sbcs.sbbusy.get_mirrored_value() &&
+              (`gmv(jtag_dmi_ral.sbcs.sbreadonaddr) && !`gmv(jtag_dmi_ral.sbcs.sbreadondata))) begin
             ITEM_T tr = sba_req_q.pop_front();
-            tr.rdata = dmi_item.rdata;
-            tr.is_err = SbaErrNone;
-            tr.is_busy_err = 0;
+            tr.rdata[0] = dmi_item.rdata;
             analysis_port.write(tr);
           end
         end
@@ -167,6 +192,7 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
     endcase
   endfunction
 
+  // Predict what is expected to happen if one of the SBA registers is written.
   virtual protected function void process_sba_csr_write(uvm_reg csr);
     case (csr.get_name())
       "sbcs": begin
@@ -253,9 +279,12 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
     item.is_err = SbaErrNone;
     item.is_busy_err = 0;
     item.timed_out = 0;
-    if (bus_op == BusOpWrite) item.wdata = data;
-
-    `DV_CHECK_EQ(sba_req_q.size(), 0)
+    if (bus_op == BusOpWrite) item.wdata[0] = data;
+    `uvm_info(`gfn, $sformatf("Predicted new SBA req: %0s",
+                              item.sprint(uvm_default_line_printer)), UVM_MEDIUM)
+    `DV_CHECK_EQ(sba_req_q.size(), 0,
+                 $sformatf("Predicted new SBA req before previous req %0s was popped.",
+                           sba_req_q[$].sprint(uvm_default_line_printer)))
     sba_req_q.push_back(item);
     req_analysis_port.write(item);
     void'(jtag_dmi_ral.sbcs.sbbusy.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));

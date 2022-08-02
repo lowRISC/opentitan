@@ -177,7 +177,13 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       sba_access_fifo.get(item);
       `uvm_info(`gfn, $sformatf("Received SBA access item:\n%0s",
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
-      compare_sba_access(item, sba_tl_access_q.pop_front());
+      if (sba_tl_access_q.size() > 0) begin
+        compare_sba_access(item, sba_tl_access_q.pop_front());
+      end else begin
+        `uvm_error(`gfn, $sformatf({"Received predicted SBA access but no transaction was seen on ",
+                                    "the SBA TL host interface: %0s"},
+                                   item.sprint(uvm_default_line_printer)))
+      end
     end
   endtask
 
@@ -229,7 +235,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       // SBA system shifts the read data based on transfer size. The higher order bits that are
       // don't care are left alone. The RISCV debug spec does not mandate that they be masked.
       data = sba_tl_item.d_data >> shift;
-      `DV_CHECK_EQ(sba_item.rdata, data, msg)
+      `DV_CHECK_EQ(sba_item.rdata[0], data, msg)
       // TLUL adapter host does full word reads with all byte lanes enabled.
       `DV_CHECK_EQ(sba_tl_item.a_mask, '1, msg)
     end else begin
@@ -248,13 +254,17 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
         word_mask[i*8 +: 8] = 8'hff;
         byte_mask[i] = 1'b1;
       end
-      data = (sba_item.wdata & word_mask) << shift;
+      data = (sba_item.wdata[0] & word_mask) << shift;
       `DV_CHECK_EQ(data, sba_tl_item.a_data, msg)
       byte_mask <<= sba_item.addr[BUS_SZW-1:0];
       `DV_CHECK_EQ(byte_mask, sba_tl_item.a_mask, msg)
     end
-    // The d_chan may have intg errors and response error (d_error = 1). None of those reflect back
-    // in the SBA interface.
+    // d_chan intg error is reported as "other" error and takes precedence over transaction error.
+    if (!sba_tl_item.is_d_chan_intg_ok(.throw_error(0))) begin
+      `DV_CHECK_EQ(sba_item.is_err, sba_access_utils_pkg::SbaErrOther)
+    end else if (sba_tl_item.d_error) begin
+      `DV_CHECK_EQ(sba_item.is_err, sba_access_utils_pkg::SbaErrBadAddr)
+    end
     `DV_CHECK_EQ(sba_tl_item.a_source, 0, msg)
   endfunction
 
@@ -336,6 +346,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
+    sba_tl_access_q.delete();
     jtag_non_dmi_dtm_fifo.flush();
     jtag_non_sba_dmi_fifo.flush();
     tl_sba_a_chan_fifo.flush();

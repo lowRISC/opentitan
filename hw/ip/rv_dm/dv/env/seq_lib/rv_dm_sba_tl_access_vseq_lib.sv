@@ -24,22 +24,17 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
 
   rand int num_times;
   rand sba_access_item req;
-  rand bit bad_access;
-  rand bit autoincr;
-  rand uint autoincr_length;
-
-  constraint autoincr_length_c {
-    autoincr_length dist { [0:24] :/ 4, [25:50] :/ 4, [51:200] :/ 2};
-  }
+  rand bit bad_req;
+  rand uint autoincrement;
 
   // Base class only does legal accesses.
-  constraint bad_access_c {
-    bad_access == 0;
+  constraint bad_req_c {
+    bad_req == 0;
   }
 
   // Base class only does single accesses.
-  constraint autoincr_c {
-    autoincr == 0;
+  constraint autoincrement_c {
+    autoincrement == 0;
   }
 
   // To generate reads to the same addr followed by previous writes.
@@ -60,14 +55,14 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
     max_rsp_delay inside {[min_rsp_delay:min_rsp_delay+100]};
   }
 
+  // Base class does not set d_error=1 on SBA TL responses.
   constraint d_error_pct_c {
-    d_error_pct inside {[0:100]};
-    d_error_pct dist { 0 :/ 6, [1:20] :/ 2, [21:99] :/ 1, 100 :/ 1};
+    d_error_pct == 0;
   }
 
+  // Base class does not inject TL intg error on SBA TL responses.
   constraint d_chan_intg_err_pct_c {
-    d_chan_intg_err_pct inside {[0:100]};
-    d_chan_intg_err_pct dist { 0 :/ 7, [1:20] :/ 2, [21:100] :/ 1};
+    d_chan_intg_err_pct == 0;
   }
 
   // TODO: Randomize these controls every num_times iteration.
@@ -114,62 +109,21 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
       num_trans.rand_mode(0);
       for (int j = 1; j <= num_trans; j++) begin
         req = sba_access_item::type_id::create("req");
-        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(autoincr)
-        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(bad_access)
+        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(autoincrement)
+        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(bad_req)
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(read_addr_after_write)
         randomize_req(req);
         `uvm_info(`gfn, $sformatf("Starting transaction %0d/%0d: %0s",
                                   j, num_trans, req.sprint(uvm_default_line_printer)), UVM_MEDIUM)
         sba_access(.jtag_dmi_ral(jtag_dmi_ral), .cfg(cfg.m_jtag_agent_cfg), .req(req));
-        `DV_CHECK(!req.is_busy_err)
         `DV_CHECK(!req.timed_out)
-
-        if (bad_access) begin
-          `DV_CHECK(req.is_err)
-          continue;
+        `DV_CHECK(!req.is_busy_err)
+        if (bad_req) begin
+          `DV_CHECK(req.is_err inside {SbaErrBadAlignment, SbaErrBadSize})
         end
-
-        if (autoincr) begin
-          logic [BUS_DW-1:0] rwdata;
-          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(autoincr_length)
-          if (req.bus_op == BusOpWrite) begin
-            repeat (autoincr_length) begin
-              logic is_busy;
-              `DV_CHECK_STD_RANDOMIZE_FATAL(rwdata)
-              if (!cfg.m_jtag_agent_cfg.in_reset) begin
-                csr_wr(.ptr(jtag_dmi_ral.sbdata0), .value(rwdata), .predict(1));
-              end
-              sba_access_busy_wait_wrap(req);
-              if (!$urandom_range(0, 3)) begin  //25%
-                csr_rd(.ptr(jtag_dmi_ral.sbaddress0), .value(rwdata));
-              end
-            end
-          end else begin
-            if (req.readondata) begin
-              sba_access_busy_wait_wrap(req);
-              repeat (autoincr_length) begin
-                logic is_busy;
-                if (!cfg.m_jtag_agent_cfg.in_reset) begin
-                  csr_rd(.ptr(jtag_dmi_ral.sbdata0), .value(rwdata));
-                end
-                sba_access_busy_wait_wrap(req);
-                if (!$urandom_range(0, 3)) begin  //25%
-                  csr_rd(.ptr(jtag_dmi_ral.sbaddress0), .value(rwdata));
-                end
-              end
-            end
-          end
-        end
-
-        // If readondata is set, then the read on sbdata0 performed by sba_access invocation
-        // above will trigger another SBA read. So we set readondata to 0 and do a busywait.
-        if (req.bus_op == BusOpRead && req.readondata) begin
-          bit is_busy;
-          uvm_reg_data_t rwdata = jtag_dmi_ral.sbcs.get_mirrored_value();
-          rwdata = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sbreadondata, rwdata, 0);
-          csr_wr(.ptr(jtag_dmi_ral.sbcs), .value(rwdata), .predict(1));
-          sba_access_busy_wait_wrap(req);
-          csr_rd(.ptr(jtag_dmi_ral.sbdata0), .value(rwdata));
+        if (req.is_err == SbaErrOther) begin
+          // Reset the DUT to clear the intg error.
+          dut_init();
         end
       end
       sba_tl_device_seq_stop();
@@ -178,10 +132,9 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
 
   // Randomizes legal, valid requests.
   virtual function void randomize_req(sba_access_item req);
-    req.disable_rsp_randomization();
+    req.autoincrement = autoincrement;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-        autoincrement == local::autoincr;
-        if (bad_access) {
+        if (bad_req) {
           // Create unsupported size or unaligned address error cases.
           (size > SbaAccessSize32b) || ((addr % (1 << size)) != 0);
         } else {
@@ -202,45 +155,54 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
     bus_op_prev = req.bus_op;
     addr_prev = req.addr;
     size_prev = req.size;
-    // Since we override the addr, size & bus_op, the original bad_access value may need to be
+    // Since we override the addr, size & bus_op, the original bad_req value may need to be
     // updated.
-    bad_access = (req.size > SbaAccessSize32b) || ((req.addr % (1 << req.size)) != 0);
+    bad_req = (req.size > SbaAccessSize32b) || ((req.addr % (1 << req.size)) != 0);
   endfunction
-
-  // Wrapper task for busy wait.
-  task sba_access_busy_wait_wrap(sba_access_item req);
-    logic is_busy;
-    sba_access_busy_wait(jtag_dmi_ral, cfg.m_jtag_agent_cfg, req, is_busy);
-    `DV_CHECK(!req.is_err)
-    `DV_CHECK(!req.is_busy_err)
-    `DV_CHECK(!req.timed_out)
-  endtask
 
 endclass
 
 // Drive random traffic out the SBA TL interface with more weightage on accesses that will result
-// in sberror begin flagged.
+// in sberror begin flagged, either due to a bad request or a bad response via d_error / d_chan
+// intg err.
 class rv_dm_bad_sba_tl_access_vseq extends rv_dm_sba_tl_access_vseq;
   `uvm_object_utils(rv_dm_bad_sba_tl_access_vseq)
   `uvm_object_new
 
-  constraint bad_access_c {
-    bad_access dist {0 :/ 3, 1 :/ 7};
+  constraint bad_req_c {
+    bad_req dist {0 :/ 6, 1 :/ 4};
+  }
+
+  constraint d_error_pct_c {
+    d_error_pct dist { 0 :/ 1, [1:20] :/ 3, [21:99] :/ 5, 100 :/ 1 };
+  }
+
+  constraint d_chan_intg_err_pct_c {
+    d_chan_intg_err_pct dist { 0 :/ 2, [1:20] :/ 3, [21:99] :/ 4, 100 :/ 1 };
   }
 
 endclass
 
-// Enable address autoincrements on reads and writes. Also ocassionally send bad accesses.
+// Enable address autoincrements on reads and writes. Also ocassionally send bad requests and
+// responses.
 class rv_dm_autoincr_sba_tl_access_vseq extends rv_dm_sba_tl_access_vseq;
   `uvm_object_utils(rv_dm_autoincr_sba_tl_access_vseq)
   `uvm_object_new
 
-  constraint bad_access_c {
-    bad_access dist {0 :/ 7, 1 :/ 3};
+  constraint bad_req_c {
+    bad_req dist {0 :/ 7, 1 :/ 3};
   }
 
-  constraint autoincr_c {
-    autoincr dist {0 :/ 4, 1 :/ 6};
+  constraint d_error_pct_c {
+    d_error_pct dist { 0 :/ 1, [1:20] :/ 3, [21:99] :/ 5, 100 :/ 1 };
+  }
+
+  constraint d_chan_intg_err_pct_c {
+    d_chan_intg_err_pct dist { 0 :/ 3, [1:20] :/ 3, [21:99] :/ 3, 100 :/ 1 };
+  }
+
+  constraint autoincrement_c {
+    autoincrement dist { 0 :/ 4, [1:24] :/ 2, [25:50] :/ 2, [51:200] :/ 2};
   }
 
 endclass
