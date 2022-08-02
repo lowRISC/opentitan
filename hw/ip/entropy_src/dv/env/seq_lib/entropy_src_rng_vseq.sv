@@ -12,6 +12,10 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH) m_csrng_pull_seq;
   entropy_src_base_rng_seq                                              m_rng_push_seq;
 
+  // Tracks the number of CSRNG seeds seen by the m_csrng_pull_seq
+  // just before enabling.
+  int csrng_pull_seq_seed_offset = 0;
+
   rand uint dly_to_access_intr;
   rand uint dly_to_access_alert_sts;
   rand uint dly_to_insert_entropy;
@@ -84,9 +88,15 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   `uvm_object_new
 
-  task enable_dut();
-    `uvm_info(`gfn, "CSR Thread: Enabling DUT", UVM_MEDIUM)
-    csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4True));
+  virtual task enable_dut();
+    // Before restarting, get the current seed count
+    // of the csrng_pull seq, so that we can identify when the
+    // next seed has been obtained
+    if (`gmv(ral.module_enable.module_enable) != MuBi4True) begin
+      csrng_pull_seq_seed_offset = m_csrng_pull_seq.items_processed;
+      do_reenable = 0;
+    end
+    super.enable_dut();
   endtask
 
   virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg, bit do_disable=1'b0);
@@ -155,9 +165,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     // Create rng host sequence
     m_rng_push_seq = entropy_src_base_rng_seq::type_id::create("m_rng_push_seq");
-
     m_rng_push_seq.hard_mtbf = cfg.hard_mtbf;
     m_rng_push_seq.soft_mtbf = cfg.soft_mtbf;
+
+    m_csrng_pull_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
+        type_id::create("m_csrng_pull_seq");
+
 
     super.pre_start();
   endtask
@@ -299,7 +312,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     `uvm_info(`gfn, "Stopping CSRNG seq", UVM_LOW)
     m_csrng_pull_seq.stop(.hard(1));
-    //p_sequencer.csrng_sequencer_h.stop_sequences();
     `uvm_info(`gfn, "Stopping CSRNG sequencer", UVM_LOW)
     m_csrng_pull_seq.wait_for_sequence_state(UVM_FINISHED);
     `uvm_info(`gfn, "Stopping RNG seq", UVM_LOW)
@@ -357,8 +369,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // (Since we are frequently interrupting the CSRNG sequence mid-item, it
     // seems to often not like to be restarted, and the old one will often just
     // stay in the UVM_FINISHED state, so we create a new sequence item each time)
-    m_csrng_pull_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
-        type_id::create("m_csrng_pull_seq");
 
     fork
       // Thread 1 of 2: run the RNG push sequencer
@@ -471,7 +481,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       fork : isolation_fork
         fork
           begin
-            m_csrng_pull_seq.wait_for_items_processed(1);
+            m_csrng_pull_seq.wait_for_items_processed(csrng_pull_seq_seed_offset + 1);
             // Notify the interrtupt/CSR access thread after the single boot mode seed has been
             // received
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut)
@@ -571,23 +581,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         //
         // Resetting and/or reconfiguring before the next loop.
         //
-        // The CSRNG agent is often an important part of DUT reinitialization it tells us when
-        // it is safe to reconfigure the entropy source from BOOT mode into CONTINUOUS mode.
-        // That said, regardless of whether we resetting we should turn off the CSRNG/RNG
-        // sequences.
-        //
-        // Meanwhile, this shutdown of the CSRNG agent is even more important, as
-        // the CSRNG monitor can cause things to hang or give spurious fatal errors
-        // if the monitor is reset without stopping the sequence first.
-        // (TODO: Examine this more closely & file an issue)
-        //
-
-        `uvm_info(`gfn, "Shutting down push_pull seqs", UVM_LOW)
-        shutdown_indefinite_seqs();
 
         if (reset_needed) begin
-          `uvm_info(`gfn, "SEQs SHUTDOWN applying hard reset", UVM_MEDIUM)
-          apply_reset(.kind("HARD"));
+          apply_reset(.kind("HARD_DUT_ONLY"));
           post_apply_reset(.reset_kind("HARD"));
           wait(cfg.under_reset == 0);
         end
@@ -597,6 +593,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         altcfg=cfg.dut_cfg;
         `DV_CHECK_RANDOMIZE_FATAL(altcfg)
         entropy_src_init(altcfg);
+
+        do_reenable = 0;
+
         // Capture the current DUT settings in cfg.dut_cfg
         // This presents the results of the update
         // to the scoreboard for review.
@@ -611,18 +610,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         // Now we can clear the reset flag.
         reset_needed = 0;
         // Also, don't schedule a reinit yet (for BOOT-to-Continuous mode switching)
-        do_reenable = 0;
 
-        // We start the CSRNG sequence _here_ (and not earlier as) it needs
-        // to know the current configuration for whether or not the DUT is
-        // in boot mode.
-        //
-        // Ideally, however, we would like to start it before reconfiguring
-        // the DUT for checking issues with order of bring-up etc.
-        // Running the restart after the DUT has been configured is not the
-        // most stressful test.
-        `uvm_info(`gfn, "RESTARTING RNG/CSRNG SEQS", UVM_MEDIUM)
-        start_indefinite_seqs();
       end
     join
 
