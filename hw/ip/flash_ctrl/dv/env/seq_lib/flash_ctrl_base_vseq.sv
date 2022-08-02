@@ -700,10 +700,22 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         // Compare
         if (cfg.seq_cfg.check_mem_post_tran) begin
 
-          if (cmp == 0) begin
+          if (cmp == ReadCheckNorm) begin
             `uvm_info(`gfn, "Read : Compare Backdoor with Frontdoor", UVM_MEDIUM)
             cfg.flash_mem_bkdr_read_check(flash_op,
                                           flash_op_rdata);  // Compare Backdoor with Frontdoor
+          end else if (cmp == ReadCheckErased) begin
+            `uvm_info(`gfn, "Read : Compare Backdoor with Erased Status", UVM_MEDIUM)
+            match_cnt = 0;
+            foreach (flash_op_rdata[i]) begin
+              if (flash_op_rdata[i] === '1) begin
+                // Data Match - Unexpected, but theoretically possible
+                // Theoretically if locations are all '1 then
+                // RMA Erase Worked but RMA Program did not
+                `uvm_info(`gfn, "Read : Data Match (Erased), EXPECTED", UVM_MEDIUM)
+                match_cnt++;
+              end
+            end
           end else begin
             `uvm_info(`gfn, "Read : Compare Backdoor with Erased Status", UVM_MEDIUM)
             match_cnt = 0;
@@ -802,7 +814,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
       `uvm_info(`gfn, $sformatf("Write Cycle : %0d, flash_addr = 0x%0x", cycle, flash_addr),
                 UVM_MEDIUM)
-
       csr_wr(.ptr(ral.addr), .value(flash_addr));
 
       reg_data = '0;
@@ -907,9 +918,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
       // Read from FIFO
       for (int i = 0; i < FIFO_DEPTH; i++) begin
-        mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(data[idx++]));
+        mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(data[idx]));
+        idx++;
       end
-
       flash_addr += FIFO_DEPTH * 4;
 
     end

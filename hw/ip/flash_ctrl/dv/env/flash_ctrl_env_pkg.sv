@@ -132,6 +132,12 @@ package flash_ctrl_env_pkg;
   parameter uint FlashUpdateErr   = 7;
 
   // types
+  typedef enum bit [1:0] {
+    ReadCheckNorm = 0,
+    ReadCheckExplicit = 1,
+    ReadCheckErased = 2
+  } read_check_e;
+
   typedef enum int {
     FlashCtrlIntrProgEmpty = 0,
     FlashCtrlIntrProgLvl   = 1,
