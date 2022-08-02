@@ -11,6 +11,7 @@
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/passthru_mem_intg_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson",
                      "otbn_sec_cm_testplan.hjson"]
   testpoints: [
     {

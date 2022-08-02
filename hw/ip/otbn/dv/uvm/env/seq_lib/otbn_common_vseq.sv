@@ -131,6 +131,13 @@ class otbn_common_vseq extends otbn_base_vseq;
       $assertoff(0, "tb.MatchingStatus_A");
       $assertoff(0, "tb.dut.u_otbn_core.u_otbn_start_stop_control.StartStopStateValid_A");
     end
+    if (if_proxy.sec_cm_type == SecCmPrimCount) begin
+      cfg.model_agent_cfg.vif.otbn_disable_stack_check();
+      $assertoff(0, "tb.dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack\
+               .next_stack_top_idx_correct");
+      $assertoff(0, "tb.dut.u_otbn_core.u_otbn_rf_base.u_call_stack.next_stack_top_idx_correct");
+    end
+
   endfunction: sec_cm_fi_ctrl_svas
 
   virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy);

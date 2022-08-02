@@ -70,4 +70,6 @@ import "DPI-C" function int otbn_model_send_err_escalation(chandle model, bit [3
 
 import "DPI-C" function int otbn_model_initial_secure_wipe(chandle model);
 
+import "DPI-C" function int otbn_disable_stack_check(chandle model);
+
 `endif // SYNTHESIS

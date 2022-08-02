@@ -157,7 +157,7 @@
       name: sec_cm_stack_wr_ptr_ctr_redun
       desc: "Verify the countermeasure(s) STACK_WR_PTR.CTR.REDUN."
       milestone: V2S
-      tests: []
+      tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_rf_bignum_data_reg_sw_integrity
@@ -175,7 +175,7 @@
       name: sec_cm_loop_stack_ctr_redun
       desc: "Verify the countermeasure(s) LOOP_STACK.CTR.REDUN."
       milestone: V2S
-      tests: []
+      tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_loop_stack_addr_integrity
