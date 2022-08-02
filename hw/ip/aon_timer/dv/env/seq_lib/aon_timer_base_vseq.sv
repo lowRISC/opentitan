@@ -62,6 +62,9 @@ class aon_timer_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Disabling AON Timer. Writing 0 to WKUP_CTRL and WDOG_CTRL", UVM_HIGH)
     csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b0);
     csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b0);
+
+    // Wait to settle registers on AON timer domain
+    cfg.aon_clk_rst_vif.wait_clks(5);
   endtask
 
   // setup basic aon_timer features
