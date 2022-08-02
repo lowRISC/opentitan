@@ -10,6 +10,8 @@ filesets:
     depend:
       - lowrisc:prim:util
       - lowrisc:prim:assert
+      # TODO: remove then #13337 is resolved.
+      - lowrisc:prim:prim_pkg
     files:
       - rtl/prim_onehot_check.sv
     file_type: systemVerilogSource

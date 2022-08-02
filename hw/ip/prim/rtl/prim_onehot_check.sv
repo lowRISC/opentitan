@@ -138,8 +138,8 @@ module prim_onehot_check #(
   end
 
   // This logic that will be assign to one, when user adds macro
-  // ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
-  // is used in design without adding this assertion check.
+  // ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT to check the error with alert, in case that
+  // prim_onehot_check is used in design without adding this assertion check.
   `ifdef INC_ASSERT
   `ifndef PRIM_DEFAULT_IMPL
     `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
@@ -147,7 +147,7 @@ module prim_onehot_check #(
   parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
 
   logic unused_assert_connected;
-  // TODO, only check generic for now. The path of this prim in other Impl may differ
+  // TODO(#13337): only check generic for now. The path of this prim in other Impl may differ
   if (Impl == prim_pkg::ImplGeneric) begin : gen_generic
     `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
   end
