@@ -224,6 +224,12 @@ module prim_reg_cdc_arb #(
     assign src_ack_o = src_req & (id_q == SelSwReq);
     assign src_update_o = src_req & (id_q == SelHwReq);
 
+    `ifdef INC_ASSERT
+     // once hardware makes an update request, we must eventually see an update pulse
+     `ASSERT(ReqTimeout_A, $rose(id_q == SelHwReq) |-> strong(##[0:$] src_update_o),
+             clk_src_i, !rst_src_ni)
+    `endif
+
   end else begin : gen_passthru
     // when there is no possibility of conflicting HW transactions,
     // we can assume that dst_qs_i will only ever take on the value
