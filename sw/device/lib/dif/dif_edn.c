@@ -229,24 +229,13 @@ dif_result_t dif_edn_instantiate(
   if (edn == NULL) {
     return kDifBadArg;
   }
-  dif_csrng_seed_material_t *seed_material_ptr;
-  dif_csrng_seed_material_t seed_material2;
-  if (seed_material == NULL) {
-    // Caller provided no seed material; simply pass the NULL pointer on.
-    seed_material_ptr = NULL;
-  } else {
-    // Caller provided seed material; copy it to the stack and pass a pointer
-    // to that.
-    memcpy(&seed_material2, seed_material, sizeof(seed_material2));
-    seed_material_ptr = &seed_material2;
-  }
   return csrng_send_app_cmd(
       edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
       (csrng_app_cmd_t){
           .id = kCsrngAppCmdInstantiate,
           .entropy_src_enable =
               (dif_csrng_entropy_src_toggle_t)entropy_src_enable,
-          .seed_material = seed_material_ptr,
+          .seed_material = (const dif_csrng_seed_material_t *)seed_material,
       });
 }
 

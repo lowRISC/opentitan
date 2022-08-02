@@ -24,6 +24,13 @@ dif_result_t csrng_send_app_cmd(mmio_region_t base_addr, ptrdiff_t offset,
     return kDifBadArg;
   }
 
+  // Ensure the `seed_material` array is word-aligned, so it can be loaded to a
+  // CPU register with natively aligned loads.
+  if (cmd.seed_material != NULL &&
+      misalignment32_of((uintptr_t)cmd.seed_material->seed_material) != 0) {
+    return kDifBadArg;
+  }
+
   // Build and write application command header.
   uint32_t reg = bitfield_field32_write(0, kAppCmdFieldCmdId, cmd.id);
   reg = bitfield_field32_write(reg, kAppCmdFieldCmdLen, cmd_len);

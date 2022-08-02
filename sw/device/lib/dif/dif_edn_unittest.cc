@@ -276,6 +276,13 @@ TEST_F(CommandTest, InstantiateBadArgs) {
   EXPECT_DIF_BADARG(dif_edn_instantiate(nullptr, kDifEdnEntropySrcToggleDisable,
                                         &seed_material_));
 
+  // Unaligned `seed_material` pointer.
+  dif_edn_seed_material_t *corrupt_seed_material_ptr =
+      reinterpret_cast<dif_edn_seed_material_t *>(
+          reinterpret_cast<uintptr_t>(&seed_material_) + 3);
+  EXPECT_DIF_BADARG(dif_edn_instantiate(&edn_, kDifEdnEntropySrcToggleDisable,
+                                        corrupt_seed_material_ptr));
+
   // Failed overflow check.
   seed_material_.len = 16;
   EXPECT_DIF_BADARG(dif_edn_instantiate(&edn_, kDifEdnEntropySrcToggleDisable,
