@@ -337,20 +337,33 @@ cc_library(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "crc32",
-    srcs = ["crc32.c"],
-    hdrs = ["crc32.h"],
-    deps = [
-        "//sw/device/lib/base:memory",
-    ],
+    srcs = dual_inputs(
+        device = ["crc32.c"],
+        host = ["mock_crc32.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_crc32.h"],
+        shared = ["crc32.h"],
+    ),
+    deps = dual_inputs(
+        host = [
+            "//sw/device/lib/base:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/lib/base:memory",
+        ],
+    ),
 )
 
 cc_test(
     name = "crc32_unittest",
     srcs = ["crc32_unittest.cc"],
     deps = [
-        ":crc32",
+        dual_cc_device_library_of(":crc32"),
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
