@@ -476,11 +476,13 @@ int OtbnModel::check() const {
     return -1;
   }
 
-  try {
-    good &= check_call_stack(*iss);
-  } catch (const std::exception &err) {
-    std::cerr << "Failed to check call stack: " << err.what() << "\n";
-    return -1;
+  if (stack_check_enabled_) {
+    try {
+      good &= check_call_stack(*iss);
+    } catch (const std::exception &err) {
+      std::cerr << "Failed to check call stack: " << err.what() << "\n";
+      return -1;
+    }
   }
 
   return good ? 1 : 0;
@@ -556,6 +558,11 @@ int OtbnModel::set_software_errs_fatal(unsigned char new_val) {
 
 int OtbnModel::set_no_sec_wipe_chk() {
   OtbnTraceChecker::get().set_no_sec_wipe_chk();
+  return 0;
+}
+
+int OtbnModel::disable_stack_check() {
+  stack_check_enabled_ = false;
   return 0;
 }
 
@@ -1004,6 +1011,11 @@ int otbn_model_set_software_errs_fatal(OtbnModel *model,
 int otbn_set_no_sec_wipe_chk(OtbnModel *model) {
   assert(model);
   return model->set_no_sec_wipe_chk();
+}
+
+int otbn_disable_stack_check(OtbnModel *model) {
+  assert(model);
+  return model->disable_stack_check();
 }
 
 int otbn_model_step_crc(OtbnModel *model, svBitVecVal *item /* bit [47:0] */,

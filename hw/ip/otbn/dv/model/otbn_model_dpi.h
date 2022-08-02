@@ -116,6 +116,9 @@ int otbn_model_set_software_errs_fatal(OtbnModel *model, unsigned char new_val);
 // random data to all registers before wiping them with zeroes.
 int otbn_set_no_sec_wipe_chk(OtbnModel *model);
 
+// Disable stack integrity checks
+int otbn_disable_stack_check(OtbnModel *model);
+
 // Step the CRC calculation for item
 //
 // state is an inout parameter and should be updated in-place. This is

@@ -54,7 +54,8 @@ name:
                    "{tool}_memutil_dpi_scrambled_build_opts"]
 
   // Add additional tops for simulation.
-  sim_tops: ["otbn_bind", "sec_cm_prim_sparse_fsm_flop_bind", "sec_cm_prim_onehot_check_bind"]
+  sim_tops: ["otbn_bind", "sec_cm_prim_sparse_fsm_flop_bind", "sec_cm_prim_onehot_check_bind",
+             "sec_cm_prim_count_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

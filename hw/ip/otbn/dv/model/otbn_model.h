@@ -122,6 +122,9 @@ class OtbnModel {
   // Trigger initial secure wipe.
   int initial_secure_wipe();
 
+  // Disable stack integrity checks
+  int disable_stack_check();
+
  private:
   // Constructs an ISS wrapper if necessary. If something goes wrong, this
   // function prints a message and then returns null. If ensure is true, it
@@ -158,6 +161,8 @@ class OtbnModel {
 
   OtbnMemUtil mem_util_;
   std::string design_scope_;
+
+  bool stack_check_enabled_ = true;
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_H_
