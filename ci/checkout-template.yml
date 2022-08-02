@@ -1,0 +1,27 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# This template downloads the version of the repository checked out in the first
+# pipeline job.
+# This ensures that every pipeline job runs on the same version of the
+# repository instead of having Azure perform the checkout each time. More
+# information can be found in #13993.
+
+# The first job in the pipeline must use the default Azure checkout job to
+# fetch the repository. It creates opentitan-repo.tar.gz and uploads it as an
+# artifact. This template downloads the repo into
+# $(Pipeline.Workspace)/opentitan-repo. The files are locaed in
+# $(Pipeline.Workspace)/opentitan-repo/opentitan-repo.tar.gz. This is untarred
+# into the working directory.
+
+steps:
+  - checkout: none # Suppress the default checkout action
+  - download: current
+    artifact: opentitan-repo
+    displayName: Download repository
+  - bash: |
+      tar -xf $(Pipeline.Workspace)/opentitan-repo/opentitan-repo.tar.gz --no-same-owner
+      # --no-same-owner is required since Azure runs this command as root which
+      # preserves ownership. Git will complain about this.
+    displayName: Unpack repository
