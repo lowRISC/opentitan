@@ -141,7 +141,7 @@ package kmac_env_pkg;
 
 
   typedef enum int {
-    KmacCmdIdx = 3,
+    KmacCmdIdx = 5,
     KmacEntropyReqIdx = 8,
     KmacHashCntClrIdx = 9
   } kmac_cmd_idx_e;
