@@ -169,21 +169,4 @@ module prim_reg_cdc #(
   // If busy goes high, we must eventually see an ack
   `ASSERT(HungHandShake_A, $rose(src_req) |-> strong(##[0:$] src_ack), clk_src_i, !rst_src_ni)
 
-  `ifdef INC_ASSERT
-    logic async_flag;
-    always_ff @(posedge clk_dst_i or negedge rst_dst_ni or posedge src_update) begin
-      if (!rst_src_ni) begin
-        async_flag <= '0;
-      end else if (src_update) begin
-        async_flag <= '0;
-      end else if (dst_update_i) begin
-        async_flag <= 1'b1;
-      end
-    end
-
-   // once hardware makes an update request, we must eventually see an update pulse
-   `ASSERT(ReqTimeout_A, $rose(async_flag) |-> strong(##[0:$] src_update), clk_src_i, !rst_src_ni)
-  `endif
-
-
 endmodule // prim_subreg_cdc
