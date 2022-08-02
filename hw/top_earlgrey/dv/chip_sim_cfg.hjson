@@ -348,20 +348,6 @@
                  "+ext_clk_type=ExtClkLowSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
       reseed: 5
     }
-    // usually, uart core clock should be 24 Mhz, same as the div_4_clock, regardless using ext_clk
-    // or not.
-    // This test uses the high speed ext clk 96 Mhz, but only enable div2, so that it runs at
-    // 48Mhz, so that we know ext_clk is actually used. But this test may not work in gate-sim, as
-    // div_4_clock is too fast and it may cause some timing issue
-    {
-      name: chip_sw_uart_tx_rx_alt_clk_fast_ip_clk
-      uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
-      sw_images: ["//sw/device/tests/sim_dv:uart_tx_rx_test:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=80_000_000", "+calibrate_usb_clk=1",
-                 "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
-      reseed: 5
-    }
     {
       name: chip_sw_spi_device_tx_rx
       uvm_test_seq: chip_sw_spi_tx_rx_vseq
