@@ -30,10 +30,14 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task dut_init(string reset_kind = "HARD");
+  task pre_start();
     cfg.otp_en_es_fw_read_vif.drive(.val(cfg.otp_en_es_fw_read));
     cfg.otp_en_es_fw_over_vif.drive(.val(cfg.otp_en_es_fw_over));
 
+    super.pre_start();
+  endtask;
+
+  virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
 
     if (do_entropy_src_init) entropy_src_init();
@@ -69,8 +73,11 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   virtual task apply_reset(string kind = "HARD");
     if (kind == "CSRNG_ONLY") begin
       cfg.csrng_rst_vif.apply_reset();
+    end else if (kind == "HARD_DUT_ONLY") begin
+      super.apply_reset("HARD");
     end else begin
       super.apply_reset(kind);
+      cfg.csrng_rst_vif.apply_reset();
     end
   endtask
 
@@ -91,6 +98,14 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     super.dut_shutdown();
   endtask
+
+  // Abstract the method of enabling the dut, to potentially allow for
+  // callbacks to be applied in the derived classes
+  virtual task enable_dut();
+    `uvm_info(`gfn, "CSR Thread: Enabling DUT", UVM_MEDIUM)
+    csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4True));
+  endtask
+
 
   // setup basic entropy_src features
   //
@@ -150,8 +165,15 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     #50us;
 
     // Module_enables (should be done last)
-    ral.module_enable.set(newcfg.module_enable);
-    csr_update(.csr(ral.module_enable));
+    if(newcfg.module_enable == MuBi4True) begin
+      // Use the enable method to invoke any callbacks.
+      enable_dut();
+    end else begin
+      // Explicitly write the non-true (False or invalid) enable value
+      // to the module_enable register.
+      ral.module_enable.set(newcfg.module_enable);
+      csr_update(.csr(ral.module_enable));
+    end
 
     #50us;
 
@@ -286,7 +308,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.adaptp_lo_thresholds.bypass_thresh.set(bypass_thresh);
     csr_update(.csr(ral.adaptp_lo_thresholds));
     // Turn on module_enable
-    csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4True));
+    enable_dut();
     // Set rng_val
     for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
       rng_val = (i % 16 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :
@@ -301,7 +323,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.bucket_thresholds.bypass_thresh.set(bypass_thresh);
     csr_update(.csr(ral.bucket_thresholds));
     // Turn on module_enable
-    csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4True));
+    enable_dut();
     // Set rng_val
     for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
       rng_val = (i % 2 == 0 ? 5 : 10);
@@ -318,7 +340,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.markov_lo_thresholds.bypass_thresh.set(bypass_thresh);
     csr_update(.csr(ral.markov_lo_thresholds));
     // Turn on module_enable
-    csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4True));
+    enable_dut();
     // Set rng_val
     for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
       rng_val = (i % 2 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :

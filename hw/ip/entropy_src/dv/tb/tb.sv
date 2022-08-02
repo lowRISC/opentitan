@@ -36,9 +36,9 @@ module tb;
   pins_if#(8) otp_en_es_fw_over_if(otp_en_es_fw_over);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   push_pull_if#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))
-      rng_if(.clk(clk), .rst_n(rst_n));
+      rng_if(.clk(clk), .rst_n(csrng_rst_n));
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
-      csrng_if(.clk(clk), .rst_n(rst_n & csrng_rst_n));
+      csrng_if(.clk(clk), .rst_n(csrng_rst_n));
   entropy_src_path_if entropy_src_path_if (.entropy_src_hw_if_i(entropy_src_hw_if_i));
   entropy_src_assert_if entropy_src_assert_if (.entropy_src_hw_if_i(entropy_src_hw_if_i));
 
