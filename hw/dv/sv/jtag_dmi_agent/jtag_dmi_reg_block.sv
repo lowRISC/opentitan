@@ -949,6 +949,23 @@ class jtag_dmi_reg_haltsum3 extends dv_base_reg;
   endfunction : build
 endclass : jtag_dmi_reg_haltsum3
 
+class jtag_dmi_reg_field_sbcs_sberror extends dv_base_reg_field;
+  `uvm_object_utils(jtag_dmi_reg_field_sbcs_sberror)
+
+  function new(string name = "jtag_dmi_reg_field_sbcs_sberror");
+    super.new(name);
+  endfunction: new
+
+  // Field is cleared when written to 1 exactly.
+  virtual function uvm_reg_data_t XpredictX(uvm_reg_data_t cur_val,
+                                            uvm_reg_data_t wr_val,
+                                            uvm_reg_map map);
+    if (get_access(map) == "W1C" && wr_val == 1) return 0;
+    else return super.XpredictX(cur_val, wr_val, map);
+  endfunction
+
+endclass
+
 class jtag_dmi_reg_sbcs extends dv_base_reg;
   // fields
   rand dv_base_reg_field sbaccess8;
@@ -957,7 +974,7 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
   rand dv_base_reg_field sbaccess64;
   rand dv_base_reg_field sbaccess128;
   rand dv_base_reg_field sbasize;
-  rand dv_base_reg_field sberror;
+  rand jtag_dmi_reg_field_sbcs_sberror sberror;
   rand dv_base_reg_field sbreadondata;
   rand dv_base_reg_field sbautoincrement;
   rand dv_base_reg_field sbaccess;
@@ -1067,7 +1084,7 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
 
     sbasize.set_original_access("RO");
 
-    sberror = (dv_base_reg_field::
+    sberror = (jtag_dmi_reg_field_sbcs_sberror::
                type_id::create("sberror"));
     sberror.configure(
       .parent(this),
