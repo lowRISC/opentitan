@@ -69,6 +69,8 @@ class aon_timer_jump_vseq extends aon_timer_base_vseq;
               $sformatf("\n\t Writing random COUNT value of %d to WDOG", wdog_count),
               UVM_HIGH)
 
+    cfg.aon_clk_rst_vif.wait_clks(1);
+
     `uvm_info(`gfn, "Enabling AON Timer. Writing 1 to WKUP_CTRL and WDOG_CTRL", UVM_HIGH)
     csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b1);
     csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b1);
