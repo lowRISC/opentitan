@@ -72,8 +72,7 @@
               ext_clk_freq / 4 or ext_clk_freq / 2.
             '''
       milestone: V1
-      tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed",
-              "chip_sw_uart_tx_rx_alt_clk_fast_ip_clk"]
+      tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
     }
 
     // GPIO (pre-verified IP) integration tests:
