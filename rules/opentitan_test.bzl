@@ -211,7 +211,7 @@ def opentitan_functest(
         args = [],
         data = [],
         test_in_rom = False,
-        test_binary = None,
+        ot_flash_binary = None,
         signed = False,
         test_harness = "@//sw/host/opentitantool",
         key = "test_key_0",
@@ -234,12 +234,11 @@ def opentitan_functest(
       @param data: Extra data dependencies (in addition to those defined in the
                    target-specific parameter dictionary) needed while executing
                    the test.
-      @param ottf: Default dependencies for OTTF tests. Set to empty list if
-                   your test doesn't use the OTTF.
       @param test_in_rom: Whether to run the test from ROM, runs from flash by
                           default.
-      @param test_binary: Use the named binary as the test program rather than
-                          building one from srcs/deps.
+      @param ot_flash_binary: Use the named `opentitan_flash_binary` as the
+                              flash image for the test rather than building one
+                              from srcs/deps.
       @param signed: Whether to sign the test image. Unsigned by default.
       @param test_harness: The binary on the host side that runs the test.
       @param key: Which signed test image (by key) to use.
@@ -263,22 +262,22 @@ def opentitan_functest(
 
     # Handle the special case were the test is run at the ROM stage.
     if test_in_rom:
-        if test_binary:
-            fail("Tests that run in ROM stage cannot use pre-built test binary.")
+        if ot_flash_binary:
+            fail("Tests that run in ROM stage cannot use pre-built flash binary.")
         if "cw310" in targets:
             fail("Tests that run in ROM stage cannot run on FPGA.")
-        test_binary = name + "_rom_prog"
+        ot_flash_binary = name + "_rom_prog"
         opentitan_rom_binary(
-            name = test_binary,
+            name = ot_flash_binary,
             deps = deps,
             **kwargs
         )
 
     # Generate SW artifacts for the tests.
-    if not test_binary:
-        test_binary = name + "_prog"
+    if not ot_flash_binary:
+        ot_flash_binary = name + "_prog"
         opentitan_flash_binary(
-            name = test_binary,
+            name = ot_flash_binary,
             output_signed = signed,
             deps = deps,
             **kwargs

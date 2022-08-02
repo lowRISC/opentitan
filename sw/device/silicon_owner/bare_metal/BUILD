@@ -118,6 +118,16 @@ genrule(
     tools = ["//sw/host/opentitantool"],
 )
 
+filegroup(
+    name = "rom_ext_virt_a_owner_virt_a_fpga_cw310",
+    srcs = [":rom_ext_virt_a_owner_virt_a"],
+)
+
+filegroup(
+    name = "rom_ext_virt_a_owner_virt_a",
+    srcs = ["rom_ext_virt_a_owner_virt_a_fpga_cw310.test_key_0.signed.bin"],
+)
+
 BOOT_SUCCESS_MSG = "Bare metal PASS!"
 
 BOOT_FAILURE_MSG = "BFV:[0-9a-f]{8}"
@@ -129,7 +139,7 @@ opentitan_functest(
         exit_failure = BOOT_FAILURE_MSG,
         exit_success = BOOT_SUCCESS_MSG,
     ),
+    ot_flash_binary = ":rom_ext_virt_a_owner_virt_a",
     signed = True,
     targets = ["cw310"],
-    test_binary = ":rom_ext_virt_a_owner_virt_a",
 )

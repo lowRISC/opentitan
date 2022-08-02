@@ -5,7 +5,7 @@
 load("//rules:manifest.bzl", "CONST", "manifest")
 load("//rules:opentitan.bzl", "opentitan_flash_binary")
 load("//rules:linker.bzl", "ld_library")
-load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest")
 
 package(default_visibility = ["//visibility:public"])
@@ -199,9 +199,9 @@ opentitan_functest(
         exit_failure = BOOT_FAILURE_MSG,
         exit_success = BOOT_SUCCESS_MSG,
     ),
+    ot_flash_binary = ":slot_a",
     signed = True,
     targets = ["cw310"],
-    test_binary = ":slot_a",
 )
 
 # TODO(#13511): Add a positive test for slot_b.
@@ -213,7 +213,7 @@ opentitan_functest(
         exit_failure = BOOT_FAILURE_MSG,
         exit_success = BOOT_SUCCESS_MSG,
     ),
+    ot_flash_binary = ":virtual_addr",
     signed = True,
     targets = ["cw310"],
-    test_binary = ":virtual_addr",
 )
