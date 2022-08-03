@@ -443,7 +443,9 @@ class Tests(RunModes):
                 processed_build_modes.append(test.build_mode.name)
             test.pre_run_cmds.extend(global_pre_run_cmds)
             test.post_run_cmds.extend(global_post_run_cmds)
-            test.run_opts.extend(global_run_opts)
+            for opt in global_run_opts:
+                if opt not in test.run_opts:
+                    test.run_opts.append(opt)
             test.sw_images.extend(global_sw_images)
             test.sw_build_opts.extend(global_sw_build_opts)
 
