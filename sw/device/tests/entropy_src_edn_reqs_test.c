@@ -209,13 +209,10 @@ static void alert_handler_test(entropy_src_test_context_t *ctx) {
 void test_initialize(entropy_src_test_context_t *ctx) {
   LOG_INFO("%s", __func__);
 
+  entropy_testutils_boot_mode_init();
+
   mmio_region_t addr =
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
-  CHECK_DIF_OK(dif_entropy_src_init(addr, &ctx->entropy_src));
-
-  entropy_testutils_auto_mode_init();
-  entropy_testutils_wait_for_state(&ctx->entropy_src,
-                                   kDifEntropySrcMainFsmStateContHTRunning);
 
   addr = mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(addr, &ctx->ibex));
@@ -241,6 +238,8 @@ void test_initialize(entropy_src_test_context_t *ctx) {
   addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(addr, &ctx->alert_handler));
   alert_handler_configure(ctx);
+
+  entropy_testutils_auto_mode_init();
 }
 
 /**
