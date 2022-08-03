@@ -236,7 +236,7 @@
             Secret Partitions retain their values through a Reset Cycle.
             '''
       milestone: V2
-      tests: ["flash_ctrl_hw_sec_otp"]
+      tests: ["flash_ctrl_hw_sec_otp", "flash_ctrl_otp_reset"]
     }
     {
       name: isolation_partition
@@ -276,18 +276,18 @@
       tests: ["flash_ctrl_mid_op_rst"]
     }
     {
-      name: ecc
+      name: double_bit_err
       desc: '''
-            Randomly enable ECC for a randomly selected set of pages. Randomly corrupt a single bit
-            in the memory that is about to be read and ensure that the ECC works - the corrupted
-            bit should be fixed. Corrupt randomly either the data or the ECC bits. Randomly corrupt
-            2 bits in the same word and ensure that the read results in error. Ensure that pages
-            with ECC not enabled reads back corrupted data without any errors. Verify both types,
-            pre-scramble ECC(integrity ECC, 4-bits) and post-scramble ECC(reliability ECC, 8-bits).
-	    Test status and control ECC bits.
+            Run read / write test and inject double bit error randomly for read transactions --
+            both direct and controller read.
+            Check op_status.err and err_code.rd_err are asserted for ctrl read and
+            tlul response error for host read.
+            Check fatal alert is asserted for reliability ecc errors (double bits) and
+            integrity ECC errors.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_read_word_sweep_derr", "flash_ctrl_ro_derr",
+              "flash_ctrl_rw_derr", "flash_ctrl_derr_detect", "flash_ctrl_integrity"]
     }
     {
       name: single_bit_err

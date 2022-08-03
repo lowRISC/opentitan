@@ -149,6 +149,12 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // for these addresses.
   flash_otf_read_entry otf_read_entry;
 
+  // OTF Sequence parameters
+  int       otf_num_rw = 250;
+  int       otf_num_hr = 2500;
+  int       otf_wr_pct = 1;
+  int       otf_rd_pct = 1;
+
   `uvm_object_utils(flash_ctrl_env_cfg)
 
   `uvm_object_new
@@ -719,7 +725,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     end
 
     return idx;
-  endfunction // get_err_idx
+  endfunction // get_serr_idx
 
   // Increase single bit error count.
   function void inc_serr_cnt(int bank, bit dis = 0);
