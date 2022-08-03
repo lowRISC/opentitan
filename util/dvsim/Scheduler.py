@@ -12,7 +12,7 @@ from Timer import Timer
 from utils import VERBOSE
 
 
-# Sum of lenghts of all lists in the given dict.
+# Sum of lengths of all lists in the given dict.
 def sum_dict_lists(d):
     '''Given a dict whose key values are lists, return sum of lengths of
     thoese lists.'''
