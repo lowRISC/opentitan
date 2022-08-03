@@ -31,9 +31,18 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
     usb_ip_clk_en == 1;
   }
 
+  // The clock that will be disabled.
+  clk_mesr_e clk_mesr_timeout;
+
   // This waits a number of AON cycles so that the timeout can get detected.
   task wait_before_read_recov_err_code();
     cfg.aon_clk_rst_vif.wait_clks(CyclesToGetOneMeasurement);
+  endtask
+
+  // Get things back in normal order.
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    super.apply_resets_concurrently(reset_duration_ps);
+    if (cause_timeout) disturb_measured_clock(.clk(clk_mesr_timeout), .enable(1'b1));
   endtask
 
   task body();
@@ -57,7 +66,6 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
       clkmgr_recov_err_t actual_recov_err = '{default: '0};
       logic [ClkMesrUsb:0] expected_recov_timeout_err = '0;
       bit expect_alert = 0;
-      clk_mesr_e clk_mesr_timeout;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, "New round", UVM_MEDIUM)
 
@@ -100,7 +108,7 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
       if (actual_recov_err.measures) begin
         report_recov_error_mismatch("measurement", recov_bits_t'(0), actual_recov_err.measures);
       end
-      if (actual_recov_err.timeouts != expected_recov_timeout_err) begin
+      if (!cfg.under_reset && actual_recov_err.timeouts != expected_recov_timeout_err) begin
         report_recov_error_mismatch("timeout", expected_recov_timeout_err,
                                     actual_recov_err.timeouts);
       end
@@ -110,7 +118,9 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
       // And check that the alert count increased if there was a timeout.
       current_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
       if (cause_timeout) begin
-        `DV_CHECK_NE(current_alert_count, prior_alert_count, "expected some alerts to fire")
+        if (!cfg.under_reset) begin
+          `DV_CHECK_NE(current_alert_count, prior_alert_count, "expected some alerts to fire")
+        end
       end else begin
         `DV_CHECK_EQ(current_alert_count, prior_alert_count, "expected no alerts to fire")
       end

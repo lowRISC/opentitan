@@ -35,6 +35,21 @@ class clkmgr_env extends cip_base_env #(
         )) begin
       `uvm_fatal(`gfn, "failed to get aon_clk_rst_vif from uvm_config_db")
     end
+    if (!uvm_config_db#(virtual clk_rst_if)::get(
+            this, "", "root_io_clk_rst_vif", cfg.root_io_clk_rst_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get root_io_clk_rst_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual clk_rst_if)::get(
+            this, "", "root_main_clk_rst_vif", cfg.root_main_clk_rst_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get root_main_clk_rst_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual clk_rst_if)::get(
+            this, "", "root_usb_clk_rst_vif", cfg.root_usb_clk_rst_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get root_usb_clk_rst_vif from uvm_config_db")
+    end
     if (!uvm_config_db#(virtual clkmgr_if)::get(this, "", "clkmgr_vif", cfg.clkmgr_vif)) begin
       `uvm_fatal(`gfn, "failed to get clkmgr_vif from uvm_config_db")
     end

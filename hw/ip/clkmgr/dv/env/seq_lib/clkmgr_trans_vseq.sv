@@ -52,26 +52,28 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
       // Extra wait because of synchronizers plus counters.
       cfg.clk_rst_vif.wait_clks(IDLE_SYNC_CYCLES);
       // We expect the status to be determined by hints and idle, ignoring scanmode.
-      csr_rd(.ptr(ral.clk_hints_status), .value(value));
-
       bool_idle = mubi_hintables_to_hintables(idle);
-      `DV_CHECK_EQ(value, initial_hints | ~bool_idle, $sformatf(
-                   "Busy units have status high: hints=0x%x, idle=0x%x", initial_hints, bool_idle))
+      value = initial_hints | ~bool_idle;
+      csr_rd_check(.ptr(ral.clk_hints_status), .compare_value(value),
+                   .err_msg($sformatf("Busy units have status high: hints=0x%x, idle=0x%x",
+                                      initial_hints, bool_idle)));
 
       // Setting all idle should make hint_status match hints.
       `uvm_info(`gfn, "Setting all units idle", UVM_MEDIUM)
       cfg.clkmgr_vif.update_idle({NUM_TRANS{MuBi4True}});
       cfg.clk_rst_vif.wait_clks(IDLE_SYNC_CYCLES);
 
-      csr_rd(.ptr(ral.clk_hints_status), .value(value));
-      `DV_CHECK_EQ(value, initial_hints, "All idle: expect status matches hints")
+      csr_rd_check(.ptr(ral.clk_hints_status), .compare_value(initial_hints),
+                   .err_msg("All idle: expect status matches hints"));
 
       // Now set all hints, and the status should also be all ones.
-      csr_wr(.ptr(ral.clk_hints), .value('1));
+      value = '1;
+      csr_wr(.ptr(ral.clk_hints), .value(value));
       cfg.clk_rst_vif.wait_clks(IDLE_SYNC_CYCLES);
-      csr_rd(.ptr(ral.clk_hints_status), .value(value));
       // We expect all units to be on.
-      `DV_CHECK_EQ(value, '1, "All idle and all hints high: units status should be high")
+      csr_rd_check(.ptr(ral.clk_hints_status), .compare_value(value),
+                   .err_msg("All idle and all hints high: units status should be high"));
+
       // Set hints to the reset value for stress tests.
       csr_wr(.ptr(ral.clk_hints), .value(ral.clk_hints.get_reset()));
     end
