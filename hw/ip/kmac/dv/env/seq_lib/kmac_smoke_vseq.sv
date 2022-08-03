@@ -277,7 +277,6 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
         // issue Process cmd
         issue_cmd(CmdProcess);
-        read_regwen_and_rand_write_locked_regs();
 
         wait_for_kmac_done();
         kmac_done = 1;
