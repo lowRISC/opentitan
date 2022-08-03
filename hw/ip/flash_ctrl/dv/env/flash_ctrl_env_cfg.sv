@@ -801,6 +801,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       end else if (ecc_mode == FlashIerrTestMode) begin
         randcase
           ierr_pct: begin
+            if (derr_otd.exists(rd_entry)) continue;
             if (ierr_addr_tbl[addr_cp].exists(partition)) begin
               ierr_created[caller] = 1;
             end else if (!otf_read_entry.hash.exists(rd_entry)) begin
@@ -872,6 +873,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       end else if (ecc_mode == FlashIerrTestMode) begin
         randcase
           ierr_pct: begin
+            if (derr_otd.exists(rd_entry)) return;
             if (ierr_addr_tbl[addr_cp].exists(partition)) begin
               ierr_created[caller] = 1;
             end else if (!otf_read_entry.hash.exists(rd_entry)) begin

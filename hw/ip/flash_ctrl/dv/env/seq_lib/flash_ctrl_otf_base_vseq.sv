@@ -592,8 +592,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) derr = 1;
       end
       cfg.otf_read_entry.insert(rd_entry, flash_op);
-      `uvm_info("direct_read", $sformatf("%0d:%0d exec: 0x%x   derr:%0d",
-                                          dbg, i, tl_addr, derr), UVM_MEDIUM)
+      `uvm_info("direct_read", $sformatf("%0d:%0d bank:%0d exec: 0x%x   derr:%0d",
+                                          dbg, i, bank, tl_addr, derr), UVM_MEDIUM)
       if (cfg.ecc_mode > FlashSerrTestMode) begin
         if (derr & cfg.scb_h.do_alert_check) begin
           cfg.scb_h.exp_alert["fatal_err"] = 1;
