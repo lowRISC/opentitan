@@ -149,6 +149,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // for these addresses.
   flash_otf_read_entry otf_read_entry;
 
+  // interrupt mode
+  bit       intr_mode = 0;
+
+  // interrupt mode buffer credit
+  int       rd_crd = 16;
+  int       wr_crd = 4;
+
   `uvm_object_utils(flash_ctrl_env_cfg)
 
   `uvm_object_new
