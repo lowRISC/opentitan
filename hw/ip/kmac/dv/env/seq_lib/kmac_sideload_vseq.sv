@@ -15,7 +15,7 @@ class kmac_sideload_vseq extends kmac_long_msg_and_output_vseq;
   }
 
   constraint en_sideload_c {
-    en_sideload == 1;
+    reg_en_sideload == 1;
   }
 
 endclass

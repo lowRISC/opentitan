@@ -33,9 +33,6 @@ class kmac_app_vseq extends kmac_sideload_vseq;
     if (en_app) {
       if (app_mode == AppKeymgr) {
         kmac_en == 1;
-        // Only enable sideload interface, but does not necessarily need to set
-        // cfg_shadowed.sideload to 1.
-        en_sideload == 1;
       } else {
         kmac_en == 0;
       }

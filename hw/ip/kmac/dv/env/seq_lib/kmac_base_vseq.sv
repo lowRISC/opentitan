@@ -54,8 +54,8 @@ class kmac_base_vseq extends cip_base_vseq #(
   // does not control whether the cfg.sideload field is set.
   rand bit provide_sideload_key;
 
-  // Controls whether to actually enable sideloading functionality
-  rand bit en_sideload;
+  // Controls whether to actually enable sideloading functionality via cfg_shadowed register.
+  rand bit reg_en_sideload;
 
   // entropy mode
   rand kmac_pkg::entropy_mode_e entropy_mode = EntropyModeSw;
@@ -171,7 +171,7 @@ class kmac_base_vseq extends cip_base_vseq #(
   }
 
   constraint key_len_c {
-    (en_sideload) -> key_len == Key256;
+    (reg_en_sideload) -> key_len == Key256;
   }
 
   constraint entropy_mode_c {
@@ -319,17 +319,14 @@ class kmac_base_vseq extends cip_base_vseq #(
     ral.cfg_shadowed.msg_mask.set(msg_mask);
     ral.cfg_shadowed.err_processed.set(1'b0);
     ral.cfg_shadowed.en_unsupported_modestrength.set(en_unsupported_modestrength);
-    // It is not required to set up sideload bit when keymgr app interface is requesting a hash
-    // operation, because it will always use sideload key regardless of the cfg settings.
-    if (keymgr_app_intf) ral.cfg_shadowed.sideload.set($urandom_range(0, 1));
-    else                 ral.cfg_shadowed.sideload.set(en_sideload);
+    ral.cfg_shadowed.sideload.set(reg_en_sideload);
 
     csr_update(.csr(ral.cfg_shadowed));
 
     // setup KEY_LEN csr
     // The key length will be override to 256 bits if design uses keymgr app interface or the
     // sideload is enabled.
-    if (!en_sideload || $urandom_range(0, 1)) csr_wr(.ptr(ral.key_len), .value(key_len));
+    if (!reg_en_sideload || $urandom_range(0, 1)) csr_wr(.ptr(ral.key_len), .value(key_len));
 
     // print debug info
     `uvm_info(`gfn, $sformatf("KMAC INITIALIZATION INFO:\n%0s", convert2string()), UVM_HIGH)
@@ -412,7 +409,7 @@ class kmac_base_vseq extends cip_base_vseq #(
             $sformatf("output_len %0d\n", output_len),
             $sformatf("msg_endian: %0b\n", msg_endian),
             $sformatf("state_endian: %0b\n", state_endian),
-            $sformatf("en_sideload: %0b\n", en_sideload),
+            $sformatf("en_sideload: %0b\n", reg_en_sideload),
             $sformatf("provide_sideload_key: %0b\n", provide_sideload_key),
             $sformatf("fname_arr: %0p\n", fname_arr),
             $sformatf("fname: %0s\n", str_utils_pkg::bytes_to_str(fname_arr)),

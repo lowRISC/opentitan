@@ -61,7 +61,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
   }
 
   constraint en_sideload_c {
-    en_sideload == 0;
+    reg_en_sideload == 0;
   }
 
   constraint entropy_ready_c {
@@ -112,7 +112,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
 
-      kmac_init(.keymgr_app_intf(en_app && (app_mode == AppKeymgr)));
+      kmac_init(.keymgr_app_intf(is_keymgr_app()));
       `uvm_info(`gfn, "kmac_init done", UVM_HIGH)
 
       read_regwen_and_rand_write_locked_regs();
@@ -132,15 +132,16 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       set_prefix();
 
+      // provide a random sideloaded key
+      if (require_sideload_key()) begin
+        `uvm_create_on(sideload_seq, p_sequencer.key_sideload_sequencer_h);
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(sideload_seq,
+                                       sideload_key.valid ==
+                                       (kmac_err_type != kmac_pkg::ErrKeyNotValid);)
+        `uvm_send(sideload_seq)
+      end
+
       if (kmac_en) begin
-        // provide a random sideloaded key
-        if (en_sideload || provide_sideload_key) begin
-          `uvm_create_on(sideload_seq, p_sequencer.key_sideload_sequencer_h);
-          `DV_CHECK_RANDOMIZE_WITH_FATAL(sideload_seq,
-                                         sideload_key.valid ==
-                                         (kmac_err_type != kmac_pkg::ErrKeyNotValid);)
-          `uvm_send(sideload_seq)
-        end
         // write the SW key to the CSRs
         if (!en_app) begin
           write_key_shares();
@@ -318,7 +319,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       end
 
       // Drop the sideloaded key if it was provided to the DUT.
-      if (kmac_en && (en_sideload || provide_sideload_key)) begin
+      if (require_sideload_key()) begin
         `uvm_info(`gfn, "dropping sideload key", UVM_HIGH)
         `DV_CHECK_RANDOMIZE_WITH_FATAL(sideload_seq,
                                        sideload_key.valid == 0;)
@@ -329,4 +330,13 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
   endtask : body
 
+  virtual function bit require_sideload_key();
+    return kmac_en && (reg_en_sideload || provide_sideload_key || is_keymgr_app());
+  endfunction
+
+  // If application interface is enabled and selected to AppKeymgr, then it is a keymgr app
+  // interface request.
+  virtual function bit is_keymgr_app();
+    return en_app && (app_mode == AppKeymgr);
+  endfunction
 endclass : kmac_smoke_vseq
