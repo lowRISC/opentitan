@@ -350,10 +350,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             // we need to choose the correct application interface
             if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
               app_mode = AppKeymgr;
+              strength = sha3_pkg::L256;
             end else if (`KMAC_APP_VALID_TRANS(AppLc)) begin
               app_mode = AppLc;
+              strength = sha3_pkg::L128;
             end else if (`KMAC_APP_VALID_TRANS(AppRom)) begin
               app_mode = AppRom;
+              strength = sha3_pkg::L256;
             end
 
             // sample sideload-related coverage
