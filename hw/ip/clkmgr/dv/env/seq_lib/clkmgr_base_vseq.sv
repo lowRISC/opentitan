@@ -392,62 +392,63 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     };
     return max(clk_periods_q);
   endfunction
-    
+
   // This is tricky, and we choose to handle it all here, not in "super":
   // - there are no multiple clk_rst_vifs,
   // - it would be too complicated to coordinate reset durations with super.
-  // For hard resets we also reset cfg.por_io_clk_rst_vif, and its reset is shorter than
+  // For hard resets we also reset the cfg.root*_clk_rst_vif, and its reset is shorter than
   // that of all others.
-  virtual task apply_reset(string kind = "HARD");
-    if (kind == "HARD") apply_reset_concurrently();
-    else fork
-//    int max_period_ps = maximum_clock_period();
-//    fork
-//      super.apply_reset(kind);
-//      if (kind == "HARD") cfg.por_io_clk_rst_vif.drive_rst_pin(0);
-
-//        fork
-          cfg.aon_clk_rst_vif.apply_reset();
-          cfg.main_clk_rst_vif.apply_reset();
-          cfg.io_clk_rst_vif.apply_reset();
-          cfg.usb_clk_rst_vif.apply_reset();
-        join
-//    join
-    initialize_on_start();
-  endtask
-
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
     int clk_periods_q[$] = {
       reset_duration_ps,
       cfg.aon_clk_rst_vif.clk_period_ps,
-      cfg.io_clk_rst_vif.clk_period_ps,
+      cfg.io_clk_rst_vif.clk_period_ps * 4,
       cfg.main_clk_rst_vif.clk_period_ps,
       cfg.usb_clk_rst_vif.clk_period_ps
     };
-     // Extra factor of 8 since we are using rst_io_n for io_div2 and io_div4 resets.
-    reset_duration_ps = max(clk_periods_q) * 2;
+    reset_duration_ps = max(clk_periods_q);
 
-    cfg.por_io_clk_rst_vif.drive_rst_pin(0);
+    `uvm_info(`gfn, "In apply_resets_concurrently", UVM_MEDIUM)
+    cfg.root_io_clk_rst_vif.drive_rst_pin(0);
+    cfg.root_main_clk_rst_vif.drive_rst_pin(0);
+    cfg.root_usb_clk_rst_vif.drive_rst_pin(0);
     cfg.aon_clk_rst_vif.drive_rst_pin(0);
+    cfg.clk_rst_vif.drive_rst_pin(0);
     cfg.io_clk_rst_vif.drive_rst_pin(0);
     cfg.main_clk_rst_vif.drive_rst_pin(0);
     cfg.usb_clk_rst_vif.drive_rst_pin(0);
 
     #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
-    cfg.por_io_clk_rst_vif.drive_rst_pin(1);
-
-//    super.apply_resets_concurrently(reset_duration_ps);
+    cfg.root_io_clk_rst_vif.drive_rst_pin(1);
+    cfg.root_main_clk_rst_vif.drive_rst_pin(1);
+    cfg.root_usb_clk_rst_vif.drive_rst_pin(1);
+    `uvm_info(`gfn, "apply_resets_concurrently releases POR", UVM_MEDIUM)
 
     #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
     cfg.aon_clk_rst_vif.drive_rst_pin(1);
+    cfg.clk_rst_vif.drive_rst_pin(1);
     cfg.io_clk_rst_vif.drive_rst_pin(1);
     cfg.main_clk_rst_vif.drive_rst_pin(1);
     cfg.usb_clk_rst_vif.drive_rst_pin(1);
-    initialize_on_start();
+    `uvm_info(`gfn, "apply_resets_concurrently releases other resets", UVM_MEDIUM)
+  endtask
+
+  virtual task apply_reset(string kind = "HARD");
+    if (kind == "HARD") apply_resets_concurrently();
+    else begin
+      fork
+        cfg.clk_rst_vif.apply_reset();
+        cfg.aon_clk_rst_vif.apply_reset();
+        cfg.main_clk_rst_vif.apply_reset();
+        cfg.io_clk_rst_vif.apply_reset();
+        cfg.usb_clk_rst_vif.apply_reset();
+      join
+    end
   endtask
 
   task post_apply_reset(string reset_kind = "HARD");
     super.post_apply_reset(reset_kind);
+    initialize_on_start();
     cfg.io_clk_rst_vif.wait_clks(POST_APPLY_RESET_CYCLES);
   endtask
 

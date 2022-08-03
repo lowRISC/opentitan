@@ -17,11 +17,12 @@
     end : isolation_fork \
   join
 
-class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
-                      type CFG_T               = cip_base_env_cfg,
-                      type COV_T               = cip_base_env_cov,
-                      type VIRTUAL_SEQUENCER_T = cip_base_virtual_sequencer)
-                      extends dv_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T);
+class cip_base_vseq #(
+  type RAL_T               = dv_base_reg_block,
+  type CFG_T               = cip_base_env_cfg,
+  type COV_T               = cip_base_env_cov,
+  type VIRTUAL_SEQUENCER_T = cip_base_virtual_sequencer
+) extends dv_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T);
   `uvm_object_new
   // knobs to disable post_start clear interrupt routine
   bit do_clear_all_interrupts = 1'b1;
@@ -44,7 +45,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // address mask struct
   typedef struct packed {
-    bit [BUS_AW-1:0]  addr;
+    bit [BUS_AW-1:0] addr;
     bit [BUS_DBW-1:0] mask;
   } addr_mask_t;
 
@@ -64,10 +65,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   rand uint rand_reset_delay;
   constraint rand_reset_delay_c {
     rand_reset_delay dist {
-        [1         :1000]       :/ 1,
-        [1001      :100_000]    :/ 2,
-        [100_001   :1_000_000]  :/ 6,
-        [1_000_001 :5_000_000]  :/ 1
+      [1 : 1000]              :/ 1,
+      [1001 : 100_000]        :/ 2,
+      [100_001 : 1_000_000]   :/ 6,
+      [1_000_001 : 5_000_000] :/ 1
     };
   }
 
@@ -76,13 +77,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   rand uint csr_access_abort_pct;
   constraint csr_access_abort_pct_c {
     csr_access_abort_pct dist {
-      0      :/ 50,
-      [1:99] :/ 40,
-      100    :/ 10
+      0        :/ 50,
+      [1 : 99] :/ 40,
+      100      :/ 10
     };
   }
 
-  `uvm_object_param_utils_begin(cip_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T))
+  `uvm_object_param_utils_begin(cip_base_vseq#(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T))
     `uvm_field_string(common_seq_type, UVM_DEFAULT)
   `uvm_object_utils_end
 
@@ -96,7 +97,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     // Wait for alert init done, then start the sequence.
     foreach (cfg.list_of_alerts[i]) begin
       if (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].is_active) begin
-        wait (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].alert_init_done == 1);
+        wait(cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].alert_init_done == 1);
       end
     end
 
@@ -316,7 +317,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       csr_name = {csr_name, suffix};
     end
     // check within scope first, if supplied
-    if (scope != null)  begin
+    if (scope != null) begin
       get_interrupt_csr = scope.get_dv_base_reg_by_name(csr_name);
     end else begin
       get_interrupt_csr = ral.get_dv_base_reg_by_name(csr_name);
@@ -665,6 +666,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // override this task from {block}_common_vseq if needed
   virtual task rand_reset_eor_clean_up();
   endtask
+
   // Run the given sequence and possibly a TL errors vseq (if do_tl_err is set). Suddenly inject a
   // reset after at most reset_delay_bound cycles. When we come out of reset, check all CSR values
   // to ensure they are the documented reset values.

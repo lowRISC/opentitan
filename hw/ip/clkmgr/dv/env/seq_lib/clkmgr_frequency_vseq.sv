@@ -166,7 +166,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       csr_rd(.ptr(ral.recov_err_code), .value(actual_recov_err));
       `uvm_info(`gfn, $sformatf("Expected recov err register=0x%x", expected_recov_meas_err),
                 UVM_MEDIUM)
-      if (actual_recov_err.measures != expected_recov_meas_err) begin
+      if (!cfg.under_reset && actual_recov_err.measures != expected_recov_meas_err) begin
         report_recov_error_mismatch("measurement", expected_recov_meas_err,
                                     actual_recov_err.measures);
       end
@@ -180,7 +180,9 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       // Check alerts.
       current_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
       if (expect_alert) begin
-        `DV_CHECK_NE(current_alert_count, prior_alert_count, "expected some alerts to fire")
+        if (!cfg.under_reset) begin
+          `DV_CHECK_NE(current_alert_count, prior_alert_count, "expected some alerts to fire")
+        end
       end else begin
         `DV_CHECK_EQ(current_alert_count, prior_alert_count, "expected no alerts to fire")
       end

@@ -80,8 +80,7 @@ class clkmgr_common_vseq extends clkmgr_base_vseq;
 
   // Override shadow_reg_errors task
   // to cover shadow regs under clock div2, div4
-  task shadow_reg_errors_check_fatal_alert_nonblocking(dv_base_reg shadowed_csr,
-                                                       string alert_name);
+  task shadow_reg_errors_check_fatal_alert_nonblocking(dv_base_reg shadowed_csr, string alert_name);
     skid_check_fatal_alert_nonblocking(alert_name);
   endtask
 endclass
