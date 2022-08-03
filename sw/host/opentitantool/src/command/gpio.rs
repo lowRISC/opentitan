@@ -122,9 +122,49 @@ impl CommandDispatch for GpioSetPullMode {
     }
 }
 
+#[derive(Debug, StructOpt)]
+/// Apply a configuration-named pin strapping
+pub struct GpioApplyStrapping {
+    #[structopt(name = "NAME", help = "The pin strapping to apply")]
+    pub name: String,
+}
+
+impl CommandDispatch for GpioApplyStrapping {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Serialize>>> {
+        transport.capabilities()?.request(Capability::GPIO).ok()?;
+        transport.apply_pin_strapping(&self.name)?;
+        Ok(None)
+    }
+}
+
+#[derive(Debug, StructOpt)]
+/// Remove a configuration-named pin strapping
+pub struct GpioRemoveStrapping {
+    #[structopt(name = "NAME", help = "The pin strapping to release")]
+    pub name: String,
+}
+
+impl CommandDispatch for GpioRemoveStrapping {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Serialize>>> {
+        transport.capabilities()?.request(Capability::GPIO).ok()?;
+        transport.remove_pin_strapping(&self.name)?;
+        Ok(None)
+    }
+}
+
 /// Commands for manipulating GPIO pins.
 #[derive(Debug, StructOpt, CommandDispatch)]
 pub enum GpioCommand {
+    Apply(GpioApplyStrapping),
+    Remove(GpioRemoveStrapping),
     Read(GpioRead),
     Write(GpioWrite),
     SetMode(GpioSetMode),
