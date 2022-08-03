@@ -97,6 +97,25 @@ static inline rom_error_t rom_irq_error(void) {
 }
 
 /**
+ * Prints a status message indicating that the ROM is entering bootstrap mode.
+ */
+static void rom_bootstrap_message(void) {
+  uart_putchar('b');
+  uart_putchar('o');
+  uart_putchar('o');
+  uart_putchar('t');
+  uart_putchar('s');
+  uart_putchar('t');
+  uart_putchar('r');
+  uart_putchar('a');
+  uart_putchar('p');
+  uart_putchar(':');
+  uart_putchar('1');
+  uart_putchar('\r');
+  uart_putchar('\n');
+}
+
+/**
  * Performs once-per-boot initialization of ROM modules and peripherals.
  */
 static rom_error_t rom_init(void) {
@@ -428,6 +447,7 @@ void rom_main(void) {
   hardened_bool_t bootstrap_req = bootstrap_requested();
   if (launder32(bootstrap_req) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(bootstrap_req, kHardenedBoolTrue);
+    rom_bootstrap_message();
     watchdog_disable();
     shutdown_finalize(bootstrap());
   }
