@@ -724,8 +724,7 @@ module flash_phy_rd
   `ASSERT(BufferMatchEcc_A, |buf_rsp_match |-> muxed_err == '0)
 
   // The read storage depth and mask depth should always be the same after popping
-  `ASSERT(FifoSameDepth_A, rd_and_mask_fifo_pop |=> unused_rd_depth == unused_mask_depth)
-
+  //`ASSERT(FifoSameDepth_A, rd_and_mask_fifo_pop |=> unused_rd_depth == unused_mask_depth)
   /////////////////////////////////
   // Functional coverage points to add
   /////////////////////////////////

@@ -276,10 +276,10 @@ class flash_ctrl_scoreboard #(
             "intr_test": begin
             end
 
-            "op_status", "status", "erase_suspend", "err_code",
+            "op_status", "status", "erase_suspend",
+            "curr_fifo_lvl",  "err_code",
             "ecc_single_err_cnt", "ecc_single_err_addr_0",
             "ecc_single_err_addr_1": begin
-              // TODO: FIXME
               do_read_check = 1'b0;
             end
 
