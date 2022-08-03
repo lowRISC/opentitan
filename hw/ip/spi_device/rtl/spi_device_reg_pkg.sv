@@ -10,6 +10,8 @@ package spi_device_reg_pkg;
   parameter int unsigned SramDepth = 1024;
   parameter int unsigned NumCmdInfo = 24;
   parameter int unsigned NumLocality = 5;
+  parameter int unsigned TpmWrFifoPtrW = 3;
+  parameter int unsigned TpmRdFifoPtrW = 3;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
