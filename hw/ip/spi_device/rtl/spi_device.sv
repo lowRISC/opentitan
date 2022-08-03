@@ -326,10 +326,10 @@ module spi_device
   logic flash_sck_readbuf_watermark, flash_sck_readbuf_flip;
 
   // TPM ===============================================================
-  localparam int unsigned TpmWrFifoDepth  = 4; // 4B
-  localparam int unsigned TpmRdFifoDepth  = 4; // 4B
-  localparam int unsigned TpmWrFifoPtrW     = $clog2(TpmWrFifoDepth+1);
-  localparam int unsigned TpmRdFifoPtrW     = $clog2(TpmRdFifoDepth+1);
+  localparam int unsigned TpmWrFifoDepth  = 64; // 64B
+  localparam int unsigned TpmRdFifoDepth  = 4;  // 4B
+  localparam int unsigned TpmWrFifoPtrW   = $clog2(TpmWrFifoDepth+1);
+  localparam int unsigned TpmRdFifoPtrW   = $clog2(TpmRdFifoDepth+1);
   `ASSERT_INIT(TpmWrPtrMatch_A,
     TpmWrFifoPtrW == spi_device_reg_pkg::TpmWrFifoPtrW)
   `ASSERT_INIT(TpmRdPtrMatch_A,

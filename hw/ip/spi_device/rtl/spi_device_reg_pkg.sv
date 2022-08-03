@@ -10,7 +10,7 @@ package spi_device_reg_pkg;
   parameter int unsigned SramDepth = 1024;
   parameter int unsigned NumCmdInfo = 24;
   parameter int unsigned NumLocality = 5;
-  parameter int unsigned TpmWrFifoPtrW = 3;
+  parameter int unsigned TpmWrFifoPtrW = 7;
   parameter int unsigned TpmRdFifoPtrW = 3;
   parameter int NumAlerts = 1;
 
@@ -654,7 +654,7 @@ package spi_device_reg_pkg;
       logic        de;
     } rdfifo_depth;
     struct packed {
-      logic [2:0]  d;
+      logic [6:0]  d;
       logic        de;
     } wrfifo_depth;
   } spi_device_hw2reg_tpm_status_reg_t;
@@ -719,20 +719,20 @@ package spi_device_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    spi_device_hw2reg_intr_state_reg_t intr_state; // [279:256]
-    spi_device_hw2reg_cfg_reg_t cfg; // [255:254]
-    spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [253:238]
-    spi_device_hw2reg_status_reg_t status; // [237:232]
-    spi_device_hw2reg_rxf_ptr_reg_t rxf_ptr; // [231:215]
-    spi_device_hw2reg_txf_ptr_reg_t txf_ptr; // [214:198]
-    spi_device_hw2reg_last_read_addr_reg_t last_read_addr; // [197:166]
-    spi_device_hw2reg_flash_status_reg_t flash_status; // [165:142]
-    spi_device_hw2reg_upload_status_reg_t upload_status; // [141:126]
-    spi_device_hw2reg_upload_status2_reg_t upload_status2; // [125:107]
-    spi_device_hw2reg_upload_cmdfifo_reg_t upload_cmdfifo; // [106:99]
-    spi_device_hw2reg_upload_addrfifo_reg_t upload_addrfifo; // [98:67]
-    spi_device_hw2reg_tpm_cap_reg_t tpm_cap; // [66:52]
-    spi_device_hw2reg_tpm_status_reg_t tpm_status; // [51:40]
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [283:260]
+    spi_device_hw2reg_cfg_reg_t cfg; // [259:258]
+    spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [257:242]
+    spi_device_hw2reg_status_reg_t status; // [241:236]
+    spi_device_hw2reg_rxf_ptr_reg_t rxf_ptr; // [235:219]
+    spi_device_hw2reg_txf_ptr_reg_t txf_ptr; // [218:202]
+    spi_device_hw2reg_last_read_addr_reg_t last_read_addr; // [201:170]
+    spi_device_hw2reg_flash_status_reg_t flash_status; // [169:146]
+    spi_device_hw2reg_upload_status_reg_t upload_status; // [145:130]
+    spi_device_hw2reg_upload_status2_reg_t upload_status2; // [129:111]
+    spi_device_hw2reg_upload_cmdfifo_reg_t upload_cmdfifo; // [110:103]
+    spi_device_hw2reg_upload_addrfifo_reg_t upload_addrfifo; // [102:71]
+    spi_device_hw2reg_tpm_cap_reg_t tpm_cap; // [70:56]
+    spi_device_hw2reg_tpm_status_reg_t tpm_status; // [55:40]
     spi_device_hw2reg_tpm_cmd_addr_reg_t tpm_cmd_addr; // [39:8]
     spi_device_hw2reg_tpm_write_fifo_reg_t tpm_write_fifo; // [7:0]
   } spi_device_hw2reg_t;
@@ -1003,7 +1003,7 @@ package spi_device_reg_pkg;
     4'b 1111, // index[63] SPI_DEVICE_CMD_INFO_WRDI
     4'b 0111, // index[64] SPI_DEVICE_TPM_CAP
     4'b 0001, // index[65] SPI_DEVICE_TPM_CFG
-    4'b 0011, // index[66] SPI_DEVICE_TPM_STATUS
+    4'b 0111, // index[66] SPI_DEVICE_TPM_STATUS
     4'b 1111, // index[67] SPI_DEVICE_TPM_ACCESS_0
     4'b 0001, // index[68] SPI_DEVICE_TPM_ACCESS_1
     4'b 1111, // index[69] SPI_DEVICE_TPM_STS

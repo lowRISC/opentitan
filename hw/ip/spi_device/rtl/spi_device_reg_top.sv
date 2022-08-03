@@ -1511,7 +1511,7 @@ module spi_device_reg_top (
   logic tpm_status_cmdaddr_notempty_qs;
   logic tpm_status_rdfifo_notempty_qs;
   logic [2:0] tpm_status_rdfifo_depth_qs;
-  logic [2:0] tpm_status_wrfifo_depth_qs;
+  logic [6:0] tpm_status_wrfifo_depth_qs;
   logic tpm_access_0_we;
   logic [7:0] tpm_access_0_access_0_qs;
   logic [7:0] tpm_access_0_access_0_wd;
@@ -18453,7 +18453,7 @@ module spi_device_reg_top (
     .qs     (tpm_status_rdfifo_notempty_qs)
   );
 
-  //   F[rdfifo_depth]: 6:4
+  //   F[rdfifo_depth]: 10:8
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -18479,11 +18479,11 @@ module spi_device_reg_top (
     .qs     (tpm_status_rdfifo_depth_qs)
   );
 
-  //   F[wrfifo_depth]: 10:8
+  //   F[wrfifo_depth]: 22:16
   prim_subreg #(
-    .DW      (3),
+    .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (3'h0)
+    .RESVAL  (7'h0)
   ) u_tpm_status_wrfifo_depth (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21412,8 +21412,8 @@ module spi_device_reg_top (
       addr_hit[66]: begin
         reg_rdata_next[0] = tpm_status_cmdaddr_notempty_qs;
         reg_rdata_next[1] = tpm_status_rdfifo_notempty_qs;
-        reg_rdata_next[6:4] = tpm_status_rdfifo_depth_qs;
-        reg_rdata_next[10:8] = tpm_status_wrfifo_depth_qs;
+        reg_rdata_next[10:8] = tpm_status_rdfifo_depth_qs;
+        reg_rdata_next[22:16] = tpm_status_wrfifo_depth_qs;
       end
 
       addr_hit[67]: begin
