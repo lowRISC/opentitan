@@ -223,8 +223,9 @@ module rv_dm
   );
 
   tlul_adapter_host #(
+    .MAX_REQS(1),
     .EnableDataIntgGen(1),
-    .MAX_REQS(1)
+    .EnableRspDataIntgCheck(1)
   ) tl_adapter_host_sba (
     .clk_i,
     .rst_ni,

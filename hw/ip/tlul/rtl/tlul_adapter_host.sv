@@ -26,7 +26,8 @@ module tlul_adapter_host
   import prim_mubi_pkg::mubi4_t;
 #(
   parameter int unsigned MAX_REQS = 2,
-  parameter bit EnableDataIntgGen = 0
+  parameter bit EnableDataIntgGen = 0,
+  parameter bit EnableRspDataIntgCheck = 0
 ) (
   input clk_i,
   input rst_ni,
@@ -118,7 +119,9 @@ module tlul_adapter_host
   assign rdata_intg_o = tl_i.d_user.data_intg;
 
   logic intg_err;
-  tlul_rsp_intg_chk u_rsp_chk (
+  tlul_rsp_intg_chk #(
+    .EnableRspDataIntgCheck(EnableRspDataIntgCheck)
+  ) u_rsp_chk (
     .tl_i,
     .err_o(intg_err)
   );
