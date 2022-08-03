@@ -109,7 +109,7 @@
     { name:    "TpmWrFifoPtrW"
       desc:    "TPM WrFIFO Pointer Bit Width. clog2(Depth(4+1))"
       type:    "int unsigned"
-      default: "3"
+      default: "7"
       local:   "true"
     } // p: TpmWrFifoPtrW
     { name:    "TpmRdFifoPtrW"
@@ -1149,11 +1149,11 @@
           name: "rdfifo_notempty"
           desc: "If 1, the TPM_READ_FIFO still has pending data."
         } // f: rdfifo_notempty
-        { bits: "3+TpmRdFifoPtrW:4"
+        { bits: "7+TpmRdFifoPtrW:8"
           name: "rdfifo_depth"
           desc: "This field represents the current read FIFO depth"
         } // f: rdfifo_depth
-        { bits: "7+TpmWrFifoPtrW:8"
+        { bits: "15+TpmWrFifoPtrW:16"
           name: "wrfifo_depth"
           desc: "This field represents the current write FIFO depth."
         } // f: wrfifo_depth
