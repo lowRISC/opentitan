@@ -77,7 +77,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     return (int'(addr[OTFBankId:11]));
   endfunction // addr2page
 
-  function flash_mp_region_cfg_t get_region(int page);
+  function flash_mp_region_cfg_t get_region(int page, bit dis = 1);
     flash_mp_region_cfg_t my_region;
     if (cfg.p2r_map[page] == 8) begin
       my_region = default_region_cfg;
@@ -85,8 +85,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       my_region = cfg.mp_regions[cfg.p2r_map[page]];
       if (my_region.en != MuBi4True) my_region = default_region_cfg;
     end
-    `uvm_info("get_region", $sformatf("page:%0d --> region:%0d",
-                                      page, cfg.p2r_map[page]), UVM_HIGH)
+    if (dis) begin
+      `uvm_info("get_region", $sformatf("page:%0d --> region:%0d",
+                                        page, cfg.p2r_map[page]), UVM_MEDIUM)
+    end
     return my_region;
   endfunction // get_region
 
@@ -138,6 +140,11 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     callback_vseq.apply_reset_callback();
   endtask : apply_reset
 
+  task post_apply_reset(string reset_kind = "HARD");
+    super.post_apply_reset(reset_kind);
+    // Polling init wip is done
+    csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
+  endtask
   // Configure the memory protection regions.
   virtual task flash_ctrl_mp_region_cfg(uint index,
                                         flash_mp_region_cfg_t region_cfg = default_region_cfg);
@@ -364,13 +371,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   virtual task flash_ctrl_intr_read(flash_op_t flash_op, ref data_q_t rdata);
     uvm_reg_data_t data;
     bit[31:0] intr_st;
-    int rd_timeout_ns = 200000; // 100 us
-    int curr_rd, rd_idx = 0;
+    int       rd_timeout_ns = 200000; // 200 us
+    int       curr_rd, rd_idx = 0;
 
     `uvm_info("flash_ctrl_intr_read", $sformatf("num_rd:%0d",
                                                 flash_op.num_words), UVM_MEDIUM)
 
-`ifdef SLOW_FLASH
     `DV_SPINWAIT(wait(cfg.rd_crd - flash_op.num_words >= 0);,
                  "wait for rd_crd timeout",
                  rd_timeout_ns, "flash_ctrl_intr_read")
@@ -402,46 +408,18 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         cfg.rd_crd++;
       end
     end
-`else
-    flash_ctrl_start_op(flash_op);
-    while (rd_idx < flash_op.num_words) begin
-      if (rd_idx == 0) begin
-        `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrRdLvl] == 1);,
-                     "wait intr_rd_lvl timeout",
-                     rd_timeout_ns, "flash_ctrl_intr_read")
-      end else begin
-        `DV_SPINWAIT(wait((cfg.intr_vif.pins[FlashCtrlIntrRdFull] == 1 ||
-                           cfg.intr_vif.pins[FlashCtrlIntrOpDone] == 1));,
-                     "wait intr_rd_full or opdone timeout",
-                     rd_timeout_ns, "flash_ctrl_intr_read")
-
-      end
-      csr_rd(.ptr(ral.curr_fifo_lvl.rd), .value(curr_rd));
-      repeat(curr_rd) begin
-        mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(rdata[rd_idx++]));
-      end
-    end
-
-    data = 'h0;
-    data[FlashCtrlIntrRdLvl] = 1;
-    data[FlashCtrlIntrOpDone] = 1;
-    clear_intr_state(data);
-`endif
   endtask // flash_ctrl_intr_read
 
-   virtual task flash_ctrl_intr_write(flash_op_t flash_op, data_q_t wdata);
+  virtual task flash_ctrl_intr_write(flash_op_t flash_op, data_q_t wdata);
     int curr_wr;
     int wr_cnt, wr_idx = 0;
     uvm_reg_data_t data;
     bit [31:0] intr_st;
-    bit       wait_done = 0;
-
-`ifdef SLOW_FLASH
-    int      prog_timeout_ns = 100000; // 100 us
+    bit        wait_done = 0;
+    int        prog_timeout_ns = 100000; // 100 us
 
     `uvm_info("flash_ctrl_intr_write", $sformatf("num_wd: %0d  crd:%0d", flash_op.num_words,
                                                  cfg.wr_crd), UVM_MEDIUM)
-
     // Make sure prog_fifo is available before start program.
     `DV_SPINWAIT(while(cfg.wr_crd == 0) begin
                  csr_rd(.ptr(ral.curr_fifo_lvl.prog), .value(curr_wr));
@@ -481,41 +459,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         cfg.wr_crd = 4 - cfg.wr_lvl;
       end
     end while (wr_idx < flash_op.num_words || wait_done == 0);
-`else
-    int prog_timeout_ns = 20000; // 20 us
-
-    csr_rd(.ptr(ral.curr_fifo_lvl.prog), .value(curr_wr));
-    `uvm_info("flash_ctrl_intr_write", $sformatf("num_wd:%0d curr_wr:%0d",
-                                                 flash_op.num_words,
-                                                 curr_wr), UVM_MEDIUM)
-    flash_ctrl_start_op(flash_op);
-
-    while (wr_idx < flash_op.num_words) begin
-      // ProgEmpty doesn't come up very beginning.
-      // Skip this for the first write.
-      if (curr_wr > 0) begin
-        `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrProgEmpty] == 1);,
-                     "wait intr_prog_empty timeout",
-                     prog_timeout_ns, "flash_ctrl_intr_write")
-      end
-      wr_cnt = 0;
-
-      while (wr_cnt < 4 && wr_idx < flash_op.num_words) begin
-        mem_wr(.ptr(ral.prog_fifo), .offset(0), .data(wdata[wr_idx++]));
-        wr_cnt++;
-      end
-
-      csr_rd(.ptr(ral.curr_fifo_lvl.prog), .value(curr_wr));
-      if (curr_wr > 0) clear_intr_state(FlashCtrlIntrProgEmpty);
-    end // while (wr_idx < flash_op.num_words)
-
-    `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrOpDone] == 1);,
-                 "wait intr_op_done timeout",
-                 prog_timeout_ns, "flash_ctrl_intr_write")
-    data = 'h0;
-    data[FlashCtrlIntrOpDone] = 1;
-    clear_intr_state(data);
-`endif
   endtask // flash_ctrl_intr_write
 
   // Task to perform a direct Flash read at the specified location
@@ -1293,6 +1236,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // return 1 : illegal transaction
   // return 0 : legal transaction
   function bit validate_flash_op(flash_op_t flash_op, flash_mp_region_cfg_t my_region);
+    if (my_region.en != MuBi4True) return 1;
     case(flash_op.op)
       FlashOpRead:begin
         return (my_region.read_en != MuBi4True);

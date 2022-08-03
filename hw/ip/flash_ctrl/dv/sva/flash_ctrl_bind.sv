@@ -26,6 +26,8 @@ module flash_ctrl_bind;
     .rd_buf_en (u_flash_hw_if.rd_buf_en_o),
     .rma_req (u_flash_hw_if.rma_req_i),
     .rma_state (u_flash_hw_if.rma_state_q),
+    .prog_state0 (u_eflash.gen_flash_cores[0].u_core.gen_prog_data.u_prog.state_q),
+    .prog_state1 (u_eflash.gen_flash_cores[1].u_core.gen_prog_data.u_prog.state_q),
     .lcmgr_state (u_flash_hw_if.state_q)
   );
 endmodule

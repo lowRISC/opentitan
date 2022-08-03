@@ -60,6 +60,10 @@ module tb;
     .clk  (clk),
     .rst_n(rst_n)
   );
+  tl_if prim_tl_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
   flash_ctrl_if flash_ctrl_if ();
   flash_phy_prim_if fpp_if (
     .clk  (clk),
@@ -125,8 +129,8 @@ module tb;
     // various tlul interfaces
     .core_tl_i(tl_if.h2d),
     .core_tl_o(tl_if.d2h),
-    .prim_tl_i('0),
-    .prim_tl_o(),
+    .prim_tl_i(prim_tl_if.h2d),
+    .prim_tl_o(prim_tl_if.d2h),
     .mem_tl_i (eflash_tl_if.h2d),
     .mem_tl_o (eflash_tl_if.d2h),
 
@@ -289,6 +293,9 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
                                             "clk_rst_vif_flash_ctrl_eflash_reg_block", clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
+                                            "clk_rst_vif_flash_ctrl_prim_reg_block", clk_rst_if);
+
     uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif",
                                                  rst_shadowed_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
@@ -297,6 +304,9 @@ module tb;
                                        tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_eflash_reg_block*", "vif",
                                        eflash_tl_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_prim_reg_block*", "vif",
+                                       prim_tl_if);
+
     uvm_config_db#(virtual flash_ctrl_if)::set(null, "*.env", "flash_ctrl_vif", flash_ctrl_if);
     uvm_config_db#(virtual flash_phy_prim_if)::set(null, "*.env.m_fpp_agent*", "vif", fpp_if);
     uvm_config_db#(virtual flash_ctrl_dv_if)::set(null, "*.env", "flash_ctrl_dv_vif",

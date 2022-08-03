@@ -215,8 +215,7 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
       cfg.flash_mem_bkdr_write(.flash_op(flash_op_prog_win), .scheme(FlashMemInitSet));
 
       // Model Expected Response (Error Expected / Pass)
-      cfg.scb_h.exp_alert["recov_err"] = exp_alert;
-      cfg.scb_h.alert_chk_max_delay["recov_err"] = 1000; // cycles
+      if (exp_alert) set_otf_exp_alert("recov_err");
 
       // FLASH PROGRAM
       flash_ctrl_start_op(flash_op_prog_win);
@@ -229,7 +228,6 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
 
       // Check Alert Status
       check_exp_alert_status(exp_alert, "prog_win_err", flash_op, flash_op_data);
-      cfg.scb_h.exp_alert["recov_err"] = 0;
 
     end
 

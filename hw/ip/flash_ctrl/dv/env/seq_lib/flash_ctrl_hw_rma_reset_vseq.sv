@@ -4,12 +4,16 @@
 
 // Run rma request event with random resets
 class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
-// Observed wait time for each state:
-// DVStRmaPageSel   : 0.120 us
-// DVStRmaErase     : 0.140 us
-// DVStRmaEraseWait : 6.065 us
-// DVStRmaWordSel   : 6.088 us
 
+// Observed wait time for each state:
+// DVStRmaPageSel    : 0.120 us
+// DVStRmaErase      : 0.140 us
+// DVStRmaEraseWait  : 6.065 us
+// DVStRmaWordSel    : 6.088 us
+// DVStRmaProgram    : 2.776 us
+// DVStRmaProgramWait: 2.797 us
+// DVStRmaRdVerify   : 3.464 us
+// RMA : 108 msec
   typedef enum {DVStRmaPageSel     = 0,
                 DVStRmaErase       = 1,
                 DVStRmaEraseWait   = 2,
@@ -31,23 +35,25 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
 
   task body();
     logic [RmaSeedWidth-1:0] rma_seed;
-    int                      state_wait_timeout_ns = 500000; // 500 us
+    int                      state_wait_timeout_ns = 500_000; // 500 us
     bit                      rma_done = 0;
-
+    bit                      flash_dis = 0;
     // INITIALIZE FLASH REGIONS
     init_data_part();
     init_info_part();
+    flash_dis = $urandom();
+
     fork begin
       // SEND RMA REQUEST (Erases the Flash and Writes Random Data To All Partitions)
       fork
         begin
-          `uvm_info("Test", "RMA REQUEST", UVM_LOW)
+          `uvm_info("Test", $sformatf("RMA REQUEST flash_dis:%0d", flash_dis), UVM_LOW)
           rma_seed = $urandom;  // Random RMA Seed
           send_rma_req(rma_seed);
           rma_done = 1;
         end
         begin
-          reset_state_index_e reset_state_index = $urandom_range(DVStRmaPageSel, DVStRmaWordSel);
+          reset_state_index_e reset_state_index = $urandom_range(DVStRmaPageSel, DVStRmaRdVerify);
           // Assert reset during RMA state transition
           `uvm_info("Test", $sformatf("Reset index: %s", reset_state_index.name), UVM_LOW)
           `DV_SPINWAIT(wait(cfg.flash_ctrl_dv_vif.rma_state == dv2rma_st(reset_state_index));,
@@ -56,7 +62,15 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
           // Give more cycles for long stages
           // to trigger reset in the middle of the state.
           if (reset_state_index inside {StRmaRdVerify, StRmaErase}) cfg.clk_rst_vif.wait_clks(10);
-          `uvm_info(`gfn, "RESET", UVM_LOW)
+
+          if (flash_dis) begin
+            `uvm_info("Test", "set disable_flash", UVM_MEDIUM)
+            cfg.scb_h.do_alert_check = 0;
+            update_assert(.enable(0));
+            csr_wr(.ptr(ral.dis), .value(get_rand_mubi4_val(.f_weight(0))));
+            cfg.clk_rst_vif.wait_clks(10);
+          end
+          `uvm_info("Test", "RESET", UVM_LOW)
           lc_ctrl_if_rst();  // Restore lc_ctrl_if to Reset Values
           cfg.seq_cfg.disable_flash_init = 1;  // Disable Flash Random Initialisation
           apply_reset();
@@ -73,6 +87,7 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
     if (rma_done == 0) begin
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
+      update_assert(.enable(1));
       // INITIALIZE FLASH REGIONS
       init_data_part();
       init_info_part();
@@ -84,10 +99,9 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
       // CHECK HOST SOFTWARE HAS NO ACCESS TO THE FLASH
       // Attempt to Read from FLASH Controller
       do_flash_ctrl_access_check();
-    end
+    end // if (rma_done == 0)
   endtask
 
-  // Convert dv enum 'continuous' state to rtl 'sparse' state.
   function rma_state_e dv2rma_st(reset_state_index_e idx);
     case (idx)
       DVStRmaPageSel: return StRmaPageSel;
@@ -102,4 +116,14 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
       end
     endcase
   endfunction // dv2rma_st
+
+  function void update_assert(bit enable);
+    if (enable) begin
+      $asserton(0, "tb.dut.u_flash_mp.NoReqWhenErr_A");
+      $asserton(0, "tb.dut.u_flash_hw_if.u_addr_sync_reqack.SyncReqAckHoldReq");
+    end else begin
+      $assertoff(0, "tb.dut.u_flash_mp.NoReqWhenErr_A");
+      $assertoff(0, "tb.dut.u_flash_hw_if.u_addr_sync_reqack.SyncReqAckHoldReq");
+    end
+  endfunction // update_assert
 endclass // flash_ctrl_hw_rma_reset_vseq

@@ -223,9 +223,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
     // Iteration Loop
     num_iter = 200;
-    for (int iter = 0; iter < num_iter; iter++)
-    begin
-
+    for (int iter = 0; iter < num_iter; iter++) begin
       `uvm_info(`gfn, $sformatf("Iteration : %0d : %0d", iter+1, num_iter), UVM_LOW)
 
       // Randomize the Members of the Class
@@ -246,15 +244,14 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
       end
 
       // Model Expected Response (Error Expected / Pass)
-      cfg.scb_h.exp_alert["recov_err"] = exp_alert;
-      cfg.scb_h.alert_chk_max_delay["recov_err"] = 1000; // cycles
+      if (exp_alert) set_otf_exp_alert("recov_err");
 
       // Do FLASH Operation
-      unique case (flash_op.op)
+      case (flash_op.op)
 
         // ERASE
         flash_ctrl_pkg::FlashOpErase : begin
-          `uvm_info(`gfn, "Flash : ERASE", UVM_LOW)
+          `uvm_info(`gfn, $sformatf("Flash : ERASE exp_alert:%0d", exp_alert), UVM_LOW)
           flash_ctrl_start_op(flash_op);
           wait_flash_op_done(.clear_op_status(0), .timeout_ns(cfg.seq_cfg.erase_timeout_ns));
           if (exp_alert == MP_PASS)
@@ -265,20 +262,20 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
         // PROGRAM
         flash_ctrl_pkg::FlashOpProgram : begin
-          `uvm_info(`gfn, "Flash : PROGRAM", UVM_LOW)
-           exp_data = cfg.calculate_expected_data(flash_op, flash_op_data);
-           flash_ctrl_start_op(flash_op);
-           flash_ctrl_write(flash_op_data, poll_fifo_status);
-           wait_flash_op_done(.clear_op_status(0), .timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-           if (exp_alert == MP_PASS)
-             cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
-           else
-             prog_err_cnt++;
+          `uvm_info(`gfn, $sformatf("Flash : PROGRAM exp_alert:%0d", exp_alert), UVM_LOW)
+          exp_data = cfg.calculate_expected_data(flash_op, flash_op_data);
+          flash_ctrl_start_op(flash_op);
+          flash_ctrl_write(flash_op_data, poll_fifo_status);
+          wait_flash_op_done(.clear_op_status(0), .timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+          if (exp_alert == MP_PASS)
+            cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+          else
+            prog_err_cnt++;
         end
 
         // READ
         flash_ctrl_pkg::FlashOpRead : begin
-          `uvm_info(`gfn, "Flash : READ", UVM_LOW)
+          `uvm_info(`gfn, $sformatf("Flash : READ exp_alert:%0d", exp_alert), UVM_LOW)
           flash_op_data.delete();
           flash_ctrl_start_op(flash_op);
           flash_ctrl_read(flash_op.num_words, flash_op_data, poll_fifo_status);
@@ -298,13 +295,10 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
       // Check Alert Status
       check_exp_alert_status(exp_alert, "mp_err", flash_op, flash_op_data);
-      cfg.scb_h.exp_alert["recov_err"] = 0;
-
     end
 
     // Final Statistics for Information
     display_test_stats();
-
   endtask : body
 
   // Task to initialize the Flash Access (Enable All Regions)
