@@ -29,8 +29,8 @@ opentitan_transition = transition(
 
 def rv_rule(**kwargs):
     """
-    A wraper over rule() for painlessly creating rules that trigger the opentitan
-    transition.
+    A wrapper over rule() for painlessly creating rules that trigger the
+    opentitan transition.
     """
 
     attrs = kwargs.pop("attrs", {})
