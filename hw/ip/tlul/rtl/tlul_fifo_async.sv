@@ -25,7 +25,11 @@ module tlul_fifo_async #(
   // Put everything on the request side into one FIFO
   localparam int unsigned REQFIFO_WIDTH = $bits(tlul_pkg::tl_h2d_t)-2;
 
-  prim_fifo_async #(.Width(REQFIFO_WIDTH), .Depth(ReqDepth)) reqfifo (
+  prim_fifo_async #(
+    .Width(REQFIFO_WIDTH),
+    .Depth(ReqDepth),
+    .OutputZeroIfInvalid(1)
+  ) reqfifo (
     .clk_wr_i      (clk_h_i),
     .rst_wr_ni     (rst_h_ni),
     .clk_rd_i      (clk_d_i),
@@ -58,7 +62,11 @@ module tlul_fifo_async #(
 
   localparam int unsigned RSPFIFO_WIDTH = $bits(tlul_pkg::tl_d2h_t) -2;
 
-  prim_fifo_async #(.Width(RSPFIFO_WIDTH), .Depth(RspDepth)) rspfifo (
+  prim_fifo_async #(
+    .Width(RSPFIFO_WIDTH),
+    .Depth(RspDepth),
+    .OutputZeroIfInvalid(1)
+  ) rspfifo (
     .clk_wr_i      (clk_d_i),
     .rst_wr_ni     (rst_d_ni),
     .clk_rd_i      (clk_h_i),
