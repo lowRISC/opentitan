@@ -326,8 +326,14 @@ module spi_device
   logic flash_sck_readbuf_watermark, flash_sck_readbuf_flip;
 
   // TPM ===============================================================
-  localparam int unsigned TpmFifoDepth    = 4; // 4B
-  localparam int unsigned TpmFifoPtrW     = $clog2(TpmFifoDepth+1);
+  localparam int unsigned TpmWrFifoDepth  = 4; // 4B
+  localparam int unsigned TpmRdFifoDepth  = 4; // 4B
+  localparam int unsigned TpmWrFifoPtrW     = $clog2(TpmWrFifoDepth+1);
+  localparam int unsigned TpmRdFifoPtrW     = $clog2(TpmRdFifoDepth+1);
+  `ASSERT_INIT(TpmWrPtrMatch_A,
+    TpmWrFifoPtrW == spi_device_reg_pkg::TpmWrFifoPtrW)
+  `ASSERT_INIT(TpmRdPtrMatch_A,
+    TpmRdFifoPtrW == spi_device_reg_pkg::TpmRdFifoPtrW)
 
   // pulse signal to set once from tpm_status_cmdaddr_notempty
   logic intr_tpm_cmdaddr_notempty;
@@ -362,8 +368,8 @@ module spi_device
 
   // TPM_STATUS
   logic tpm_status_cmdaddr_notempty, tpm_status_rdfifo_notempty;
-  logic [TpmFifoPtrW-1:0] tpm_status_rdfifo_depth;
-  logic [TpmFifoPtrW-1:0] tpm_status_wrfifo_depth;
+  logic [TpmRdFifoPtrW-1:0] tpm_status_rdfifo_depth;
+  logic [TpmWrFifoPtrW-1:0] tpm_status_wrfifo_depth;
 
   // TPM ---------------------------------------------------------------
 
@@ -1691,8 +1697,8 @@ module spi_device
   // Instance of spi_tpm
   spi_tpm #(
     // CmdAddrFifoDepth
-    .WrFifoDepth (TpmFifoDepth),
-    .RdFifoDepth (TpmFifoDepth),
+    .WrFifoDepth (TpmWrFifoDepth),
+    .RdFifoDepth (TpmRdFifoDepth),
     .EnLocality  (1)
   ) u_spi_tpm (
     .clk_in_i  (clk_spi_in_buf ),

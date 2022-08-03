@@ -106,6 +106,18 @@
       default: "5"
       local:   "true"
     } // p: NumLocality
+    { name:    "TpmWrFifoPtrW"
+      desc:    "TPM WrFIFO Pointer Bit Width. clog2(Depth(4+1))"
+      type:    "int unsigned"
+      default: "3"
+      local:   "true"
+    } // p: TpmWrFifoPtrW
+    { name:    "TpmRdFifoPtrW"
+      desc:    "TPM RdFIFO Pointer Bit Width. clog2(Depth(4+1))"
+      type:    "int unsigned"
+      default: "3"
+      local:   "true"
+    } // p: TpmRdFifoPtrW
   ],
   inter_signal_list: [
     { struct:  "ram_2p_cfg",
@@ -1137,11 +1149,11 @@
           name: "rdfifo_notempty"
           desc: "If 1, the TPM_READ_FIFO still has pending data."
         } // f: rdfifo_notempty
-        { bits: "6:4"
+        { bits: "3+TpmRdFifoPtrW:4"
           name: "rdfifo_depth"
           desc: "This field represents the current read FIFO depth"
         } // f: rdfifo_depth
-        { bits: "10:8"
+        { bits: "7+TpmWrFifoPtrW:8"
           name: "wrfifo_depth"
           desc: "This field represents the current write FIFO depth."
         } // f: wrfifo_depth
