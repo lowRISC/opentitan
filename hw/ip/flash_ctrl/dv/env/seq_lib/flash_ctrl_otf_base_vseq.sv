@@ -28,11 +28,24 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
   // Permission to access special partition
   rand bit [2:0] allow_spec_info_acc;
+  rand bit       all_entry_en;
+
+  // scramble and ecc config mode
+  rand otf_cfg_mode_e scr_ecc_cfg;
 
   rand flash_mp_region_cfg_t rand_regions[MpRegions];
+  rand flash_bank_mp_info_page_cfg_t rand_info[NumBanks][InfoTypes][$];
 
+  constraint all_ent_c {
+    solve all_entry_en before rand_regions, rand_info;
+    all_entry_en dist { 1 := 1, 0 := 4};
+  }
+  constraint scr_ecc_c {
+    scr_ecc_cfg dist { OTFCfgRand := 5, OTFCfgTrue := 4};
+  }
   constraint rand_regions_c {
     foreach (rand_regions[i]) {
+      if (all_entry_en) rand_regions[i].en == MuBi4True;
       rand_regions[i].start_page dist {
         0                       := 1,
         [1 : FlashNumPages - 2] :/ 8,
@@ -40,6 +53,19 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       };
       rand_regions[i].num_pages inside {[1 : FlashNumPages - rand_regions[i].start_page]};
       rand_regions[i].num_pages <= 32;
+      rand_regions[i].scramble_en dist { MuBi4True := 4, MuBi4False := 1};
+      rand_regions[i].ecc_en dist { MuBi4True := 4, MuBi4False := 1};
+    }
+  }
+  constraint rand_info_c {
+    foreach (rand_info[i, j]) {
+      rand_info[i][j].size() == InfoTypeSize[j];
+      foreach (rand_info[i][j][k]) {
+        if (all_entry_en) rand_info[i][j][k].en == MuBi4True;
+        rand_info[i][j][k].en dist { MuBi4True := 4, MuBi4False :=1};
+        rand_info[i][j][k].scramble_en dist { MuBi4True := 4, MuBi4False :=1};
+        rand_info[i][j][k].ecc_en dist { MuBi4True := 4, MuBi4False :=1};
+      }
     }
   }
   constraint ctrl_num_c {
@@ -86,7 +112,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     if (cfg.ecc_mode > FlashEccDisabled) begin
       foreach (cfg.tgt_pre[partition]) begin
         cfg.tgt_pre[partition].shuffle();
-        `uvm_info("reset_flash",
+        `uvm_info("cfg_summary",
                   $sformatf("prefix:%s:rd:%2b dr:%2b wr:%2b",
                             partition.name, cfg.tgt_pre[partition][TgtRd],
                             cfg.tgt_pre[partition][TgtDr], cfg.tgt_pre[partition][TgtWr]),
@@ -95,10 +121,12 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       flash_init = FlashMemInitEccMode;
     end else begin
       flash_init = FlashMemInitRandomize;
-    end
-    `uvm_info("reset_flash",
-              $sformatf("flash_init:%s ecc_mode %0d allow_spec_info_acc:%3b",
-                        flash_init.name, cfg.ecc_mode, allow_spec_info_acc), UVM_MEDIUM)
+    end // else: !if(cfg.ecc_mode > FlashEccDisabled)
+    init_p2r_map();
+    `uvm_info("cfg_summary",
+              $sformatf("flash_init:%s ecc_mode %0d allow_spec_info_acc:%3b scr_ecc_cfg:%s",
+                        flash_init.name, cfg.ecc_mode, allow_spec_info_acc, scr_ecc_cfg.name),
+              UVM_MEDIUM)
 
     configure_otf_mode();
     super.pre_start();
@@ -108,16 +136,26 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     end
 
     // Need additional flash update after key init is done
-    if (cfg.ecc_mode > FlashEccDisabled) begin
-      flash_otf_region_cfg(.scr_en(MuBi4True), .ecc_en(MuBi4True));
-      flash_otf_mem_read_zone_init();
-      if (cfg.ecc_mode > FlashSerrTestMode) begin
-        cfg.scb_h.do_alert_check = 0;
+    case (cfg.ecc_mode)
+      FlashEccDisabled: begin
+        // In this mode, write and read are not separated.
+        // When write and read happen at the same address,
+        // unexpected ecc error can be created.
+        flash_otf_region_cfg();
       end
-    end else begin
-      flash_otf_region_cfg(.scr_en(MuBi4True));
+      FlashEccEnabled: begin
+        flash_otf_region_cfg(.scr_mode(scr_ecc_cfg), .ecc_mode(scr_ecc_cfg));
+        flash_otf_mem_read_zone_init();
+      end
+      default: begin
+        flash_otf_region_cfg(.scr_mode(scr_ecc_cfg), .ecc_mode(OTFCfgTrue));
+        flash_otf_mem_read_zone_init();
+      end
+    endcase // case (cfg.ecc_mode)
+    if (cfg.ecc_mode > FlashSerrTestMode) begin
+      cfg.scb_h.do_alert_check = 0;
     end
-    update_p2r_map(cfg.mp_regions);
+
     cfg.allow_spec_info_acc = allow_spec_info_acc;
     update_partition_access(cfg.allow_spec_info_acc);
     // Polling init wip is done
@@ -279,19 +317,22 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       flash_op.addr = flash_op.otf_addr;
       // Bank : bit[19]
       flash_op.addr[TL_AW-1:OTFBankId] = bank;
-      page = addr2page(flash_op.addr);
 
       if (flash_op.partition == FlashPartData) begin
+        page = addr2page(flash_op.addr);
         my_region = get_region(page);
-        drop = validate_flash_op(flash_op, my_region);
-        if (drop) begin
-          `uvm_info("prog_flash", $sformatf("op:%s is not allowed in the region:%p",
-                                            flash_op.op.name, my_region), UVM_MEDIUM)
-          set_otf_exp_alert("recov_err");
-        end
       end else begin
+        // for region, use per bank page number
+        page = addr2page(flash_op.otf_addr);
         my_region = get_region_from_info(cfg.mp_info[bank][flash_op.partition>>1][page]);
         drop = check_info_part(flash_op, "prog_flash");
+      end
+
+      drop |= validate_flash_op(flash_op, my_region);
+      if (drop) begin
+        `uvm_info("prog_flash", $sformatf("op:%s is not allowed in this region %p",
+                                          flash_op.op.name, my_region), UVM_MEDIUM)
+        set_otf_exp_alert("recov_err");
       end
 
       if (cfg.intr_mode) begin
@@ -316,9 +357,11 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         tmp_data = {32{1'b1}};
         flash_program_data.push_back(tmp_data);
       end
-      `uvm_info("prog_flash",$sformatf("addr:%x part:%s num:%0d wd:%0d  odd:%0d tail:%0d",
-                                       flash_op.otf_addr, flash_op.partition.name, num,
-                                       wd, is_odd, tail), UVM_MEDIUM)
+      `uvm_info("prog_flash",$sformatf({"bank:%0d addr:%x otf_addr:%x part:%s",
+                                        " page:%0d num:%0d wd:%0d  odd:%0d tail:%0d"},
+                                        bank, flash_op.addr, flash_op.otf_addr,
+                                        flash_op.partition.name, page, num,
+                                        wd, is_odd, tail), UVM_MEDIUM)
       if (drop) begin
         `uvm_info("prog_flash", "skip sb path due to err", UVM_MEDIUM)
       end else begin
@@ -412,47 +455,64 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       flash_op.addr = flash_op.otf_addr;
       flash_op.addr[TL_AW-1:OTFBankId] = bank;
       rd_entry.bank = bank;
+      is_odd = flash_op.addr[2];
+      size = (flash_op.num_words + is_odd) / 2;
+      tail = (flash_op.num_words + is_odd) % 2;
+      tmp_addr = flash_op.addr;
+      flash_op.addr[2:0] = 0;
 
+      // Per Qword loop
       `uvm_create_obj(flash_otf_item, exp_item)
-      page = addr2page(flash_op.addr);
+      for (int i = 0; i < size; i++) begin
+        if  (flash_op.partition == FlashPartData) begin
+          page = addr2page(flash_op.addr);
+          my_region = get_region(page);
+        end else begin
+          page = addr2page(flash_op.otf_addr);
+          my_region = get_region_from_info(cfg.mp_info[bank][flash_op.partition>>1][page]);
+          drop |= check_info_part(flash_op, "read_flash");
+        end
+        drop |= validate_flash_op(flash_op, my_region);
+        flash_op.addr += 8;
+        flash_op.otf_addr += 8;
+        exp_item.ctrl_rd_region_q.push_back(my_region);
+      end // for (int i = 0; i < size; i++)
+      if (tail) begin
+        if  (flash_op.partition == FlashPartData) begin
+          page = addr2page(flash_op.addr);
+          my_region = get_region(page);
+        end else begin
+          page = addr2page(flash_op.otf_addr);
+          my_region = get_region_from_info(cfg.mp_info[bank][flash_op.partition>>1][page]);
+          drop |= check_info_part(flash_op, "read_flash");
+        end
+        drop |= validate_flash_op(flash_op, my_region);
+        exp_item.ctrl_rd_region_q.push_back(my_region);
+      end
+      flash_op.addr = tmp_addr;
+      // Bank id truncaded by otf_addr size
+      flash_op.otf_addr = tmp_addr;
+      // recalculate page and region based on start address
+      // for the debug print
+      if  (flash_op.partition == FlashPartData) begin
+        page = addr2page(flash_op.addr);
+        my_region = get_region(page);
+      end else begin
+        page = addr2page(flash_op.otf_addr);
+        my_region = get_region_from_info(cfg.mp_info[bank][flash_op.partition>>1][page]);
+      end
+      if (drop) begin
+        `uvm_info("read_flash", $sformatf("op:%s is not allowed in the region:%p",
+                                          flash_op.op.name, my_region), UVM_MEDIUM)
+        set_otf_exp_alert("recov_err");
+      end
       `uvm_info("read_flash",
                 $sformatf({"bank:%0d page:%0d otf_addr:0x%0h,",
                            " part:%s size:%0d x %0d x 4B start_addr:%x  end_addr:%x"},
                           bank, page, flash_op.otf_addr,
                           flash_op.partition.name, num, wd, start_addr, end_addr),
                 UVM_MEDIUM)
-      if (flash_op.partition == FlashPartData) begin
-        is_odd = flash_op.addr[2];
-        size = (flash_op.num_words + is_odd) / 2;
-        tail = (flash_op.num_words + is_odd) % 2;
-        tmp_addr = flash_op.addr;
-        flash_op.addr[2:0] = 0;
-        for (int i = 0; i < size; i++) begin
-          page = addr2page(flash_op.addr);
-          my_region = get_region(page);
-          drop |= validate_flash_op(flash_op, my_region);
-          flash_op.addr += 8;
-        end
-        if (tail) begin
-          page = addr2page(flash_op.addr);
-          my_region = get_region(page);
-          drop |= validate_flash_op(flash_op, my_region);
-        end
-        if (drop) begin
-          `uvm_info("read_flash", $sformatf("op:%s is not allowed in the region:%p",
-                                            flash_op.op.name, my_region), UVM_MEDIUM)
-          set_otf_exp_alert("recov_err");
-        end
-        flash_op.addr = tmp_addr;
-        page = addr2page(flash_op.addr);
-        my_region = get_region(page);
-      end else begin
-        my_region = get_region_from_info(cfg.mp_info[bank][flash_op.partition>>1][page]);
-        drop = check_info_part(flash_op, "read_flash");
-      end
 
-      exp_item.page = page;
-      exp_item.region = my_region;
       exp_item.cmd = flash_op;
       // per bank address is used for decryption in sbx
       exp_item.start_addr = flash_op.otf_addr;
@@ -559,7 +619,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       tl_addr[OTFHostId] = 1;
       overflow = end_addr[OTFHostId];
     end
-
+    `uvm_info("direct_read", $sformatf("addr: %x end_addr: %x overflow:% x",
+                                       addr, end_addr, overflow), UVM_HIGH)
     rd_entry.bank = bank;
     tl_addr[OTFBankId] = bank;
     if (overflow) begin
@@ -578,15 +639,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       if (cfg.ecc_mode > FlashEccDisabled) tl_addr[18:17] = cfg.tgt_pre[FlashPartData][TgtDr];
 
       `uvm_create_obj(flash_otf_item, exp_item)
-      page = addr2page(tl_addr[OTFBankId-1:0]);
+      page = addr2page(tl_addr[OTFBankId:0]);
       my_region = get_region(page);
       flash_op.op = FlashOpRead;
-      drop = validate_flash_op(flash_op, my_region);
-      if (drop) begin
-        `uvm_info("direct_read", $sformatf("op:%s is not allowed in the region:%p",
-                                           flash_op.op.name, my_region), UVM_MEDIUM)
-        set_otf_exp_alert("recov_err");
-      end
 
       exp_item.page = page;
       exp_item.region = my_region;
@@ -629,7 +684,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) derr = 1;
       end
       cfg.otf_read_entry.insert(rd_entry, flash_op);
-      `uvm_info("direct_read", $sformatf("%0d:%0d bank:%0d exec: 0x%x   derr:%0d",
+      `uvm_info("direct_read", $sformatf("%0d:%0d bank:%0d exec: 0x%x derr:%0d",
                                           dbg, i, bank, tl_addr, derr), UVM_MEDIUM)
       if (cfg.ecc_mode > FlashSerrTestMode) begin
         if (derr & cfg.scb_h.do_alert_check) begin
@@ -666,18 +721,19 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     flash_otf_item item;
     int page;
     `uvm_create_obj(flash_otf_item, item)
-    addr[OTFBankId] = bank;
-    page = addr2page(addr);
     item.dq.push_back($urandom());
     item.dq.push_back($urandom());
-    item.page = page;
     if (part == FlashPartData) begin
-      item.region = get_region(page);
+      addr[OTFBankId] = bank;
+      page = addr2page(addr);
+      item.region = get_region(page, 0);
+      // back to per bank addr
+      addr[OTFBankId] = 0;
     end else begin
+      page = addr2page(addr);
       item.region = get_region_from_info(cfg.mp_info[bank][part>>1][page]);
     end
-    // back to per bank addr
-    addr[OTFBankId] = 0;
+    item.page = page;
     item.scramble(otp_addr_key, otp_data_key, addr, 0);
     cfg.mem_bkdr_util_h[part][bank].write(addr, item.fq[0]);
   endfunction // update_otf_mem_read_zone
@@ -686,14 +742,15 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   function void flash_otf_mem_read_zone_init();
     // 8byte aligned
     addr_t st_addr, ed_addr;
-
+    flash_dv_part_e part;
     // read tgt region     : cfg.tgt_pre[0]
     // direct rd tgt region: cfg.tgt_pre[1]
-    foreach (cfg.tgt_pre[partition]) begin
-      for (int j = TgtRd; j <= TgtDr; j++) begin
+    part = part.first;
+    do begin
+      for (flash_tgt_prefix_e j = TgtRd; j <= TgtDr; j++) begin
         st_addr = 'h0;
-        if (partition == FlashPartData) begin
-          st_addr[18:17] = cfg.tgt_pre[partition][j];
+        if (part == FlashPartData) begin
+          st_addr[18:17] = cfg.tgt_pre[part][j];
           // I think this should be
           // 64 * 256 * 8 -1 (= 0x1_FFFF)
           // to maxout a quater of 1 bank
@@ -702,34 +759,34 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
           // data partition 2 banks
           for (int i = 0; i < 2; i++) begin
             for (addr_t addr = st_addr; addr <= ed_addr; addr += 8) begin
-              update_otf_mem_read_zone(partition, i, addr);
+              update_otf_mem_read_zone(part, i, addr);
             end
             `uvm_info("flash_otf_init",
-                      $sformatf("partition:%s pre%0d st:%x ed:%x",
-                                partition.name, j, st_addr, ed_addr), UVM_MEDIUM)
+                      $sformatf("part:%s pre:%s bank:%0d st:%x ed:%x",
+                                part.name, j.name, i, st_addr, ed_addr), UVM_MEDIUM)
           end
-        end else begin // if (partition == FlashPartData)
-          // While data partition can be divided by pages, info partition
+        end else begin // if (part == FlashPartData)
+          // While data part can be divided by pages, info part
           // need finer resolution due to number of pages in each info
           // is relatively small.
-          // So every page in info partition will be divided into 4 parts.
-          st_addr[10:9] = cfg.tgt_pre[partition][j];
-          for (int k = 0; k < InfoTypeSize[partition>>1]; k++) begin
+          // So every page in info part will be divided into 4 parts.
+          st_addr[10:9] = cfg.tgt_pre[part][j];
+          for (int k = 0; k < InfoTypeSize[part>>1]; k++) begin
             st_addr[DVPageMSB:DVPageLSB] = k; // page
             ed_addr = st_addr + 511; // 0x1FF
             for (int i = 0; i < 2; i++) begin
               for (addr_t addr = st_addr; addr <= ed_addr; addr += 8) begin
-                update_otf_mem_read_zone(partition, i, addr);
+                update_otf_mem_read_zone(part, i, addr);
               end
             end
             `uvm_info("flash_otf_init",
-                      $sformatf("partition:%s pre%0d page:%0d st:%x ed:%x",
-                                partition.name, j, k, st_addr, ed_addr), UVM_MEDIUM)
+                      $sformatf("part:%s pre%0d page:%0d st:%x ed:%x",
+                                part.name, j, k, st_addr, ed_addr), UVM_MEDIUM)
           end
         end
-
-      end
-    end
+      end // for (int j = TgtRd; j <= TgtDr; j++)
+      part = part.next;
+    end while (part != part.first);
   endfunction // flash_otf_init
 
   // Send direct host read to both bankds 'host_num' times.
@@ -770,30 +827,46 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
   // Populate cfg.mp_info with default_info_page_cfg except scr, ecc.
   // Then program each info region.
-  task flash_ctrl_default_info_cfg(mubi4_t scr_en = MuBi4False,
-                                   mubi4_t ecc_en = MuBi4False);
+  task flash_ctrl_default_info_cfg(otf_cfg_mode_e scr_mode = OTFCfgFalse,
+                                   otf_cfg_mode_e ecc_mode = OTFCfgFalse);
+    mubi4_t scr_en, ecc_en;
+    // If scr/ecc mode is random,
+    // follow rand_info_c
+    scr_en = get_mubi_val(scr_mode);
+    ecc_en = get_mubi_val(ecc_mode);
+
     foreach (cfg.mp_info[i, j, k]) begin
-           cfg.mp_info[i][j][k] = default_info_page_cfg;
-           cfg.mp_info[i][j][k].scramble_en = scr_en;
-           cfg.mp_info[i][j][k].ecc_en = ecc_en;
-           flash_ctrl_mp_info_page_cfg(i, j, k, cfg.mp_info[i][j][k]);
+      if (cfg.ecc_mode == FlashEccDisabled) cfg.mp_info[i][j][k] = default_info_page_cfg;
+      else cfg.mp_info[i][j][k] = rand_info[i][j][k];
+      if (scr_mode != OTFCfgRand) cfg.mp_info[i][j][k].scramble_en = scr_en;
+      if (ecc_mode != OTFCfgRand) cfg.mp_info[i][j][k].ecc_en = ecc_en;
+      flash_ctrl_mp_info_page_cfg(i, j, k, cfg.mp_info[i][j][k]);
+      `uvm_info("otf_info_cfg", $sformatf("bank:type:page:[%0d][%0d][%0d] = %p",
+                                          i, j, k, cfg.mp_info[i][j][k]), UVM_MEDIUM)
     end
   endtask // flash_ctrl_info_cfg
 
-  task flash_otf_region_cfg(mubi4_t scr_en = MuBi4False,
-                            mubi4_t ecc_en = MuBi4False);
+  task flash_otf_region_cfg(otf_cfg_mode_e scr_mode = OTFCfgFalse,
+                            otf_cfg_mode_e ecc_mode = OTFCfgFalse);
+    mubi4_t scr_en, ecc_en;
+    // If scr/ecc mode is random,
+    // follow rand_regions_c
+    scr_en = get_mubi_val(scr_mode);
+    ecc_en = get_mubi_val(ecc_mode);
 
     flash_ctrl_default_region_cfg(,,,scr_en, ecc_en);
-    flash_ctrl_default_info_cfg(scr_en, ecc_en);
-
     foreach (cfg.mp_regions[i]) begin
       cfg.mp_regions[i] = rand_regions[i];
-      cfg.mp_regions[i].scramble_en = scr_en;
-      cfg.mp_regions[i].ecc_en = ecc_en;
+      // use default region in FlashEccDisabled mode.
+      if (cfg.ecc_mode == FlashEccDisabled) cfg.mp_regions[i].en = MuBi4False;
+      if (scr_mode != OTFCfgRand) cfg.mp_regions[i].scramble_en = scr_en;
+      if (ecc_mode != OTFCfgRand) cfg.mp_regions[i].ecc_en = ecc_en;
       flash_ctrl_mp_region_cfg(i, cfg.mp_regions[i]);
       `uvm_info("otf_region_cfg", $sformatf("region[%0d] = %p", i, cfg.mp_regions[i]), UVM_MEDIUM)
     end
     `uvm_info("otf_region_cfg", $sformatf("default = %p", default_region_cfg), UVM_MEDIUM)
+    flash_ctrl_default_info_cfg(scr_mode, ecc_mode);
+    update_p2r_map(cfg.mp_regions);
   endtask
 
   function flash_mp_region_cfg_t get_region_from_info(flash_bank_mp_info_page_cfg_t info);
@@ -857,4 +930,16 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     end
     return drop;
   endfunction // check_part_info
+
+  function mubi4_t get_mubi_val(otf_cfg_mode_e mode);
+    case (mode)
+      OTFCfgRand: begin
+        // return true or false with 1:1 ratio
+        return get_rand_mubi4_val(.other_weight(0));
+      end
+      OTFCfgTrue: return MuBi4True;
+      default: return MuBi4False;
+    endcase
+  endfunction // get_mubi_val
+
 endclass // flash_ctrl_otf_base_vseq

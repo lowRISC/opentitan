@@ -325,8 +325,10 @@ class flash_ctrl_host_ctrl_arb_vseq extends flash_ctrl_base_vseq;
             // immediately transitions into RMA and clears the read fifos.
             // Thus, even if the read completed correctly, the data likely cannot
             // be read out in time.
+            // This is no longer valid after #14244.
+            // Leave this comment for sometime until a new update become matured.
             if (op_cnt == apply_rma) begin
-              flash_op.num_words = flash_op.num_words / 2;
+              flash_op.num_words = flash_op.num_words;
               cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
             end else begin
               cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);

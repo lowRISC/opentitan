@@ -184,7 +184,8 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   //   - Compare read data.
   task process_read(flash_otf_item exp, int bank);
     flash_otf_item send;
-    addr_t err_addr;
+    addr_t err_addr, cp_addr;
+    int page;
     int col_sz = exp.fq.size;
     `uvm_info("process_read", $sformatf("bank:%0d colsz:%0d ffsz:%0d",
                                         bank, col_sz, eg_rtl_fifo[bank].used()), UVM_MEDIUM)
@@ -197,6 +198,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     send.start_addr = exp.start_addr;
     cfg.flash_mem_otf_read(send.cmd, send.fq);
     send.print("exp_read: enc_data");
+    if (cfg.ecc_mode > FlashSerrTestMode) send.skip_err_chk = 1;
 
     if (exp.cmd.addr[2]) begin
       send.head_pad = 1;
@@ -206,10 +208,12 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
       send.cmd.num_words++;
       send.tail_pad = 1;
     end
-    send.mem_addr = exp.start_addr >> 3;
-    send.region = exp.region;
 
-    if (cfg.ecc_mode > FlashSerrTestMode) send.skip_err_chk = 1;
+    // Read descramble has to be done Qword by Qword because
+    // Each Qword can be in different region.
+    send.mem_addr = exp.start_addr >> 3;
+    send.ctrl_rd_region_q = exp.ctrl_rd_region_q;
+
     send.descramble(exp.addr_key, exp.data_key);
     send.print("exp_read: raw_data");
     `dv_info($sformatf("RDATA size: %d x 8B bank:%0d sent_cnt:%0d",
@@ -217,18 +221,21 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
              UVM_MEDIUM, "process_read")
 
     if (cfg.ecc_mode > FlashSerrTestMode && send.derr == 1) begin
-      send.err_addr[OTFBankId] = bank;
+      foreach(send.eaddr_q[i]) begin
+        err_addr = send.eaddr_q[i];
+        err_addr[OTFBankId] = bank;
 
-      // check expected derr
-      if (cfg.derr_addr_tbl[send.err_addr].exists(exp.cmd.partition)) begin
-        `uvm_info("process_read",
-                  $sformatf("expected double bit error 0x%x", send.err_addr), UVM_MEDIUM)
-      end else if (cfg.ierr_addr_tbl[send.err_addr].exists(exp.cmd.partition)) begin
-        `uvm_info("process_read",
-                  $sformatf("expected icv error 0x%x", send.err_addr), UVM_MEDIUM)
-      end else begin
-        `uvm_error("process_read",
-                   $sformatf("unexpected double bit error 0x%x", send.err_addr))
+        // check expected derr
+        if (cfg.derr_addr_tbl[err_addr].exists(exp.cmd.partition)) begin
+          `uvm_info("process_read",
+                    $sformatf("expected double bit error 0x%x", err_addr), UVM_MEDIUM)
+        end else if (cfg.ierr_addr_tbl[err_addr].exists(exp.cmd.partition)) begin
+          `uvm_info("process_read",
+                    $sformatf("expected icv error 0x%x", err_addr), UVM_MEDIUM)
+        end else begin
+          `uvm_error("process_read",
+                     $sformatf("unexpected double bit error 0x%x", err_addr))
+        end
       end
     end else begin
       compare_data(send.raw_fq, exp.fq, bank, "rdata");

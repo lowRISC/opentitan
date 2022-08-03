@@ -9,6 +9,8 @@ interface flash_ctrl_dv_if (
   input logic rd_buf_en,
   input lc_tx_t rma_req,
   input rma_state_e rma_state,
+  input logic [10:0] prog_state0,
+  input logic [10:0] prog_state1,
   input logic [10:0] lcmgr_state
 );
 

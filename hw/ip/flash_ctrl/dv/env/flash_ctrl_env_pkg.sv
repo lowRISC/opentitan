@@ -15,10 +15,13 @@ package flash_ctrl_env_pkg;
   import flash_ctrl_pkg::*;
   import flash_ctrl_core_ral_pkg::*;
   import flash_ctrl_eflash_ral_pkg::*;
+  import flash_ctrl_prim_ral_pkg::*;
   import mem_bkdr_util_pkg::*;
   import prim_mubi_pkg::*;
   import lc_ctrl_pkg::*;
   import flash_phy_prim_agent_pkg::*;
+  import sec_cm_pkg::*;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -133,8 +136,14 @@ package flash_ctrl_env_pkg;
 
   // types
   typedef enum bit [1:0] {
+    OTFCfgTrue,
+    OTFCfgFalse,
+    OTFCfgRand
+  } otf_cfg_mode_e;
+
+  typedef enum {
     ReadCheckNorm = 0,
-    ReadCheckExplicit = 1,
+    ReadCheckRand = 1,
     ReadCheckErased = 2
   } read_check_e;
 

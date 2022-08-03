@@ -42,3 +42,4 @@
 `include "flash_ctrl_otp_reset_vseq.sv"
 `include "flash_ctrl_intr_rd_vseq.sv"
 `include "flash_ctrl_intr_wr_vseq.sv"
+`include "flash_ctrl_prog_reset_vseq.sv"

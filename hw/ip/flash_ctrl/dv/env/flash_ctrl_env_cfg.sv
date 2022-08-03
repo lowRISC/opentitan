@@ -23,6 +23,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   virtual flash_ctrl_if flash_ctrl_vif;
   virtual flash_ctrl_dv_if flash_ctrl_dv_vif;
   virtual clk_rst_if clk_rst_vif_flash_ctrl_eflash_reg_block;
+  virtual clk_rst_if clk_rst_vif_flash_ctrl_prim_reg_block;
 
   // knobs
   // ral.status[init_wip] status is set for the very first clock cycle right out of reset.
@@ -172,16 +173,19 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   string flash_ral_name = "flash_ctrl_eflash_reg_block";
 
   virtual function void initialize(addr_t csr_base_addr = '1);
+    string prim_ral_name = "flash_ctrl_prim_reg_block";
+
     list_of_alerts = flash_ctrl_env_pkg::LIST_OF_ALERTS;
     has_shadowed_regs = 1;
     tl_intg_alert_name = "fatal_std_err";
-
+    sec_cm_alert_name = tl_intg_alert_name;
     // Set up second RAL model for Flash memory
     ral_model_names.push_back(flash_ral_name);
+    ral_model_names.push_back(prim_ral_name);
 
     // both RAL models use same clock frequency
     clk_freqs_mhz[flash_ral_name] = clk_freq_mhz;
-
+    clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
     super.initialize(csr_base_addr);
 
     tl_intg_alert_fields[ral.std_fault_status.reg_intg_err] = 1;

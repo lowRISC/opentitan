@@ -46,6 +46,7 @@ class flash_ctrl_scoreboard #(
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_a_chan_fifo;
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_d_chan_fifo;
 
+  bit skip_read_check = 0;
   // utility function to word-align an input TL address
   function addr_t word_align_addr(addr_t addr);
     return {addr[TL_AW-1:2], 2'b00};
@@ -154,6 +155,7 @@ class flash_ctrl_scoreboard #(
     flash_op_t     flash_op_cov;
     bit            erase_req;
 
+    if (skip_read_check) do_read_check = 0;
     // if access was to a valid csr, get the csr handle
     if ((is_mem_addr(
             item, ral_name
@@ -277,7 +279,7 @@ class flash_ctrl_scoreboard #(
             end
 
             "op_status", "status", "erase_suspend",
-            "curr_fifo_lvl",  "err_code",
+            "curr_fifo_lvl",  "err_code", "debug_state",
             "ecc_single_err_cnt", "ecc_single_err_addr_0",
             "ecc_single_err_addr_1": begin
               do_read_check = 1'b0;
