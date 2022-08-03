@@ -156,10 +156,6 @@ static void init_kmac_for_keymgr(void) {
       .msg_mask = true,
   };
   CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
-  for (size_t i = 0; i < kKmacPrefixSize; ++i) {
-    mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR),
-                        KMAC_PREFIX_0_REG_OFFSET + i * 4, kKmacPrefix[i]);
-  }
 }
 
 static void check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
