@@ -15,9 +15,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // Double bit err is created
   bit        global_derr_is_set = 0;
 
-  // Number of controller transactions
+  // Number of controller transactions per a single task
   // Min: 1 Max:32
   rand int  ctrl_num;
+  rand int  ctrl_info_num;
   rand bit  is_addr_odd;
   rand int  fractions;
 
@@ -41,10 +42,19 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       rand_regions[i].num_pages <= 32;
     }
   }
-
-  constraint ctrl_num_c { ctrl_num dist { CTRL_TRANS_MIN := 2, [2:31] :/ 1, CTRL_TRANS_MAX := 2}; }
-  constraint fractions_c { fractions dist { [1:4] := 4, [5:16] := 1}; }
+  constraint ctrl_num_c {
+    ctrl_num dist { CTRL_TRANS_MIN := 2, [2:31] :/ 1, CTRL_TRANS_MAX := 2};
+  }
+  constraint fractions_c {
+    fractions dist { [1:4] := 4, [5:15] := 1, 16 := 1};
+  }
+  constraint ctrl_info_num_c {
+    solve rand_op before ctrl_info_num;
+    ctrl_info_num inside {[1 : InfoTypeSize[rand_op.partition >> 1]]};
+    if (cfg.ecc_mode > FlashEccDisabled) ctrl_info_num * fractions <= 128;
+  }
   constraint rand_op_c {
+    solve fractions before rand_op.addr;
     solve flash_program_data before rand_op;
     solve rand_op.partition before rand_op.prog_sel, rand_op.addr;
     solve rand_op.addr before rand_op.otf_addr;
@@ -52,6 +62,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     rand_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo2] :/ 1};
     rand_op.addr[TL_AW-1:BusAddrByteW] == 'h0;
     rand_op.addr[1:0] == 'h0;
+    // If address starts from 0x4 and full prog_win size access(16),
+    // transaction creates prog_win error.
+    // To prevent that, make full size access always start from address[2:0] == 0.
+    if (fractions == 16) rand_op.addr[2] == 0;
     if (rand_op.partition != FlashPartData) {
       rand_op.addr inside {[0:InfoTypeBytes[rand_op.partition>>1]-1]};
       rand_op.prog_sel == 1;
@@ -109,6 +123,15 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     // Polling init wip is done
     csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
     cfg.m_fpp_agent_cfg.mon_start = 1;
+    `uvm_info("pre_start", "TEST PARAM SUMMARY", UVM_MEDIUM)
+    `uvm_info("pre_start", " ** sequence param", UVM_MEDIUM)
+    `uvm_info("pre_start", $sformatf({"  otf_num_rw:%0d otf_num_hr:%0d",
+                                      " otf_wr_pct:%0d otf_rd_pct:%0d"},
+                                     cfg.otf_num_rw,
+                                     cfg.otf_num_hr,
+                                     cfg.otf_wr_pct,
+                                     cfg.otf_rd_pct), UVM_MEDIUM)
+
   endtask
 
   // On the fly scoreboard mode
@@ -702,7 +725,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
     host.otf_addr[OTFHostId-2:0] = $urandom();
     host.otf_addr[1:0] = 'h0;
-    host.otf_addr[2] = 1;
     if (num >= 0) host_num = num;
     else host_num = $urandom_range(1,128);
     host_bank = $urandom_range(0,1);

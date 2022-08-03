@@ -177,9 +177,9 @@
     }
     {
       name: flash_ctrl_wo
-      uvm_test_seq: flash_ctrl_wo_vseq
-      run_opts: ["+scb_otf_en=1"]
-      reseed: 5
+      uvm_test_seq: flash_ctrl_rw_vseq
+      run_opts: ["+scb_otf_en=1", "+otf_num_rw=100", "+otf_num_hr=0", "+otf_rd_pct=1"]
+      reseed: 20
     }
     {
       name: flash_ctrl_write_word_sweep
@@ -188,88 +188,22 @@
       reseed: 1
     }
     {
-      name: flash_ctrl_write_rand_word
-      uvm_test_seq: flash_ctrl_write_rnd_wd_vseq
-      run_opts: ["+scb_otf_en=1"]
-      reseed: 5
-    }
-    {
       name: flash_ctrl_read_word_sweep
       uvm_test_seq: flash_ctrl_read_word_sweep_vseq
       run_opts: ["+scb_otf_en=1"]
       reseed: 1
     }
     {
-      name: flash_ctrl_read_rand_word
-      uvm_test_seq: flash_ctrl_read_rnd_wd_vseq
-      run_opts: ["+scb_otf_en=1"]
-      reseed: 5
-    }
-    {
       name: flash_ctrl_ro
-      uvm_test_seq: flash_ctrl_ro_vseq
-      run_opts: ["+scb_otf_en=1"]
-      reseed: 10
+      uvm_test_seq: flash_ctrl_rw_vseq
+      run_opts: ["+scb_otf_en=1", "+otf_num_rw=100", "+otf_num_hr=1000", "+otf_wr_pct=0"]
+      reseed: 20
     }
     {
       name: flash_ctrl_rw
       uvm_test_seq: flash_ctrl_rw_vseq
       run_opts: ["+scb_otf_en=1"]
-      reseed: 10
-    }
-    {
-      name: flash_ctrl_rw_rand_word
-      uvm_test_seq: flash_ctrl_rw_rnd_wd_vseq
-      run_opts: ["+scb_otf_en=1"]
-      reseed: 10
-    }
-    {
-      name: flash_ctrl_wo_ecc
-      uvm_test_seq: flash_ctrl_wo_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=1"]
-      reseed: 5
-    }
-    {
-      name: flash_ctrl_write_word_sweep_ecc
-      uvm_test_seq: flash_ctrl_write_word_sweep_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=1"]
-      reseed: 1
-    }
-    {
-      name: flash_ctrl_write_rand_word_ecc
-      uvm_test_seq: flash_ctrl_write_rnd_wd_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=1"]
-      reseed: 5
-    }
-    {
-      name: flash_ctrl_read_word_sweep_ecc
-      uvm_test_seq: flash_ctrl_read_word_sweep_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=1"]
-      reseed: 1
-    }
-    {
-      name: flash_ctrl_read_rand_word_ecc
-      uvm_test_seq: flash_ctrl_read_rnd_wd_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=1"]
-      reseed: 5
-    }
-    {
-      name: flash_ctrl_ro_ecc
-      uvm_test_seq: flash_ctrl_ro_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=1"]
-      reseed: 10
-    }
-    {
-      name: flash_ctrl_rw_ecc
-      uvm_test_seq: flash_ctrl_rw_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=1"]
-      reseed: 10
-    }
-    {
-      name: flash_ctrl_rw_rand_word_ecc
-      uvm_test_seq: flash_ctrl_rw_rnd_wd_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=1"]
-      reseed: 10
+      reseed: 20
     }
     {
       name: flash_ctrl_read_word_sweep_serr
@@ -278,15 +212,10 @@
       reseed: 5
     }
     {
-      name: flash_ctrl_read_rand_word_serr
-      uvm_test_seq: flash_ctrl_read_rnd_wd_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=3"]
-      reseed: 5
-    }
-    {
       name: flash_ctrl_ro_serr
-      uvm_test_seq: flash_ctrl_ro_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=3"]
+      uvm_test_seq: flash_ctrl_rw_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=3",
+                 "+otf_num_rw=100", "+otf_num_hr=1000", "+otf_wr_pct=0"]
       reseed: 10
     }
     {
@@ -296,21 +225,17 @@
       reseed: 10
     }
     {
-      name: flash_ctrl_rw_rand_word_serr
-      uvm_test_seq: flash_ctrl_rw_rnd_wd_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=3"]
-      reseed: 10
-    }
-    {
       name: flash_ctrl_serr_counter
       uvm_test_seq: flash_ctrl_serr_counter_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=1"]
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=1",
+                 "+otf_num_rw=50", "+otf_num_hr=5"]
       reseed: 5
     }
     {
       name: flash_ctrl_serr_address
       uvm_test_seq: flash_ctrl_serr_address_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=1"]
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=1",
+                 "+otf_num_rw=5", "+otf_num_hr=0"]
       reseed: 5
     }
 
@@ -322,29 +247,16 @@
       reseed: 5
     }
     {
-      name: flash_ctrl_read_rand_word_derr
-      uvm_test_seq: flash_ctrl_read_rnd_wd_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=3",
-                 "+bypass_alert_ready_to_end_check=1"]
-      reseed: 5
-    }
-    {
       name: flash_ctrl_ro_derr
-      uvm_test_seq: flash_ctrl_ro_vseq
+      uvm_test_seq: flash_ctrl_rw_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=3",
+                 "+otf_num_rw=100", "+otf_num_hr=1000", "+otf_wr_pct=0",
                  "+bypass_alert_ready_to_end_check=1"]
       reseed: 10
     }
     {
       name: flash_ctrl_rw_derr
       uvm_test_seq: flash_ctrl_rw_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=3",
-                 "+bypass_alert_ready_to_end_check=1"]
-      reseed: 10
-    }
-    {
-      name: flash_ctrl_rw_rand_word_derr
-      uvm_test_seq: flash_ctrl_rw_rnd_wd_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=3",
                  "+bypass_alert_ready_to_end_check=1"]
       reseed: 10
@@ -357,7 +269,7 @@
     }
     {
       name: flash_ctrl_integrity
-      uvm_test_seq: flash_ctrl_rw_rnd_wd_vseq
+      uvm_test_seq: flash_ctrl_rw_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=4", "+ierr_pct=3",
                  "+bypass_alert_ready_to_end_check=1"]
       reseed: 5
