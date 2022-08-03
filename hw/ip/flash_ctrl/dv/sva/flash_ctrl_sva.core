@@ -13,7 +13,6 @@ filesets:
       - lowrisc:fpv:csr_assert_gen
     files:
       - flash_ctrl_bind.sv
-      - flash_ctrl_dv_if.sv
     file_type: systemVerilogSource
 
   files_formal:
