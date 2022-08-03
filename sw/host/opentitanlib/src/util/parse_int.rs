@@ -22,7 +22,7 @@ pub enum ParseIntError {
 /// A leading `+` or `-` is permitted.  Any string parsed by `strtol(3)` or `strtoul(3)`
 /// will be parsed successfully.
 pub trait ParseInt: Sized {
-    type FromStrRadixErr: Into<ParseIntError>;
+    type FromStrRadixErr: Into<ParseIntError> + std::error::Error + Send + Sync + 'static;
 
     fn from_str_radix(src: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr>;
 
