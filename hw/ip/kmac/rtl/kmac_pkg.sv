@@ -188,8 +188,12 @@ package kmac_pkg;
   } app_mode_e;
 
   // Predefined encoded_string
-  parameter logic [15:0] EncodedStringEmpty = 16'h 0001;
-  parameter logic [47:0] EncodedStringKMAC = 48'h 4341_4D4B_2001;
+  parameter logic [15:0] EncodedStringEmpty   = 16'h                     0001;
+  parameter logic [47:0] EncodedStringKMAC    = 48'h           4341_4D4B_2001;
+  // encoded_string("LC_CTRL")
+  parameter logic [71:0] EncodedStringLcCtrl  = 72'h   4c_5254_435f_434C_3801;
+  // encoded_string("ROM_CTRL")
+  parameter logic [79:0] EncodedStringRomCtrl = 80'h 4c52_5443_5f4d_4f52_4001;
   parameter int unsigned NSPrefixW = sha3_pkg::NSRegisterSize*8;
 
   typedef struct packed {
@@ -213,8 +217,9 @@ package kmac_pkg;
     '{
       Mode:       AppKMAC, // KeyMgr uses KMAC operation
       Strength:   sha3_pkg::L256,
-      PrefixMode: 1'b 0,   // Use CSR for prefix
-      Prefix:     '0       // Not used in CSR prefix mode
+      PrefixMode: 1'b 1,   // Use prefix parameter
+      // {fname: encoded_string("KMAC"), custom_str: encoded_string("")}
+      Prefix:     NSPrefixW'({EncodedStringEmpty, EncodedStringKMAC})
     },
 
     // LC_CTRL
@@ -223,7 +228,7 @@ package kmac_pkg;
       Strength:   sha3_pkg::L128,
       PrefixMode: 1'b 1,     // Use prefix parameter
       // {fname: encode_string(""), custom_str: encode_string("LC_CTRL")}
-      Prefix: NSPrefixW'(88'h 4c_5254_435f_434C_3801_0001)
+      Prefix: NSPrefixW'({EncodedStringLcCtrl, EncodedStringEmpty})
     },
 
     // ROM_CTRL
@@ -232,7 +237,7 @@ package kmac_pkg;
       Strength:   sha3_pkg::L256,
       PrefixMode: 1'b 1,     // Use prefix parameter
       // {fname: encode_string(""), custom_str: encode_string("ROM_CTRL")}
-      Prefix: NSPrefixW'(96'h 4c52_5443_5f4d_4f52_4001_0001)
+      Prefix: NSPrefixW'({EncodedStringRomCtrl, EncodedStringEmpty})
     }
   };
 
