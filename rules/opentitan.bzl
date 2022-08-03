@@ -46,7 +46,12 @@ def _obj_transform_impl(ctx):
     cc_toolchain = find_cc_toolchain(ctx).cc
     outputs = []
     for src in ctx.files.srcs:
-        binary = ctx.actions.declare_file("{}.{}".format(src.basename, ctx.attr.suffix))
+        binary = ctx.actions.declare_file(
+            "{}.{}".format(
+                src.basename.replace("." + src.extension, ""),
+                ctx.attr.suffix,
+            ),
+        )
         outputs.append(binary)
         ctx.actions.run(
             outputs = [binary],
@@ -280,7 +285,11 @@ def _elf_to_disassembly_impl(ctx):
     cc_toolchain = find_cc_toolchain(ctx).cc
     outputs = []
     for src in ctx.files.srcs:
-        disassembly = ctx.actions.declare_file("{}.elf.s".format(src.basename))
+        disassembly = ctx.actions.declare_file(
+            "{}.dis".format(
+                src.basename.replace("." + src.extension, ""),
+            ),
+        )
         outputs.append(disassembly)
         ctx.actions.run_shell(
             tools = [ctx.file._cleanup_script],
@@ -548,7 +557,7 @@ def opentitan_binary(
     deps = kwargs.pop("deps", [])
     targets = []
 
-    native_binary_name = "{}_{}".format(name, "cc_binary")
+    native_binary_name = "{}.elf".format(name)
     native.cc_binary(
         name = native_binary_name,
         deps = deps,
@@ -586,16 +595,6 @@ def opentitan_binary(
         target = native_binary_name,
     )
 
-    elf_name = "{}_{}".format(name, "elf")
-    targets.append(":" + elf_name)
-    obj_transform(
-        name = elf_name,
-        srcs = [native_binary_name],
-        format = "elf32-little",
-        suffix = "elf",
-        platform = platform,
-    )
-
     bin_name = "{}_{}".format(name, "bin")
     targets.append(":" + bin_name)
     obj_transform(
@@ -618,7 +617,7 @@ def opentitan_binary(
         targets.append(":" + logs_db_name)
         gen_sim_dv_logs_db(
             name = logs_db_name,
-            srcs = [elf_name],
+            srcs = [native_binary_name],
             platform = platform,
         )
 
@@ -664,7 +663,7 @@ def opentitan_rom_binary(
             extract_sw_logs_db = device in ["sim_dv", "sim_verilator"],
             **kwargs
         ))
-        elf_name = "{}_{}".format(devname, "elf")
+        elf_name = "{}.{}".format(devname, "elf")
         bin_name = "{}_{}".format(devname, "bin")
 
         # Generate Un-scrambled ROM VMEM
