@@ -41,9 +41,10 @@ module spi_tpm
 
   localparam int unsigned ActiveLocalityBitPos = 5, // Access[5]
 
-  localparam int unsigned CmdAddrSize  = 32, // Cmd 8bit + Addr 24bit
-  localparam int unsigned FifoRegSize  = 12, // lower 12bit excluding locality
-  localparam int unsigned DataFifoSize = $bits(spi_byte_t),
+  localparam int unsigned CmdAddrSize    = 32, // Cmd 8bit + Addr 24bit
+  localparam int unsigned FifoRegSize    = 12, // lower 12bit excluding locality
+  localparam int unsigned WrDataFifoSize = $bits(spi_byte_t),
+  localparam int unsigned RdDataFifoSize = $bits(spi_byte_t),
 
   // TPM_CAP related constants.
   //  - Revision: the number visible in TPM_CAP CSR. Need to update the
@@ -107,13 +108,13 @@ module spi_tpm
   output logic [CmdAddrSize-1:0] sys_cmdaddr_rdata_o,
   input                          sys_cmdaddr_rready_i,
 
-  output logic                    sys_wrfifo_rvalid_o,
-  output logic [DataFifoSize-1:0] sys_wrfifo_rdata_o,
-  input                           sys_wrfifo_rready_i,
+  output logic                      sys_wrfifo_rvalid_o,
+  output logic [WrDataFifoSize-1:0] sys_wrfifo_rdata_o,
+  input                             sys_wrfifo_rready_i,
 
-  input                     sys_rdfifo_wvalid_i,
-  input  [DataFifoSize-1:0] sys_rdfifo_wdata_i,
-  output logic              sys_rdfifo_wready_o,
+  input                       sys_rdfifo_wvalid_i,
+  input  [RdDataFifoSize-1:0] sys_rdfifo_wdata_i,
+  output logic                sys_rdfifo_wready_o,
 
   // TPM_STATUS
   output logic                  sys_cmdaddr_notempty_o,
@@ -359,16 +360,16 @@ module spi_tpm
   // (sys_cmdaddr_rdepth > 0)
   assign sys_cmdaddr_notempty_o = |sys_cmdaddr_rdepth;
 
-  logic                    sck_wrfifo_wvalid, sck_wrfifo_wready;
-  logic [DataFifoSize-1:0] sck_wrfifo_wdata;
-  logic [WrFifoPtrW-1:0]   sys_wrfifo_rdepth, sck_wrfifo_wdepth;
+  logic                      sck_wrfifo_wvalid, sck_wrfifo_wready;
+  logic [WrDataFifoSize-1:0] sck_wrfifo_wdata;
+  logic [WrFifoPtrW-1:0]     sys_wrfifo_rdepth, sck_wrfifo_wdepth;
 
   assign sys_wrfifo_depth_o = sys_wrfifo_rdepth;
 
   // Read FIFO uses inverted SCK (clk_out_i)
-  logic                    isck_rdfifo_rvalid, isck_rdfifo_rready;
-  logic [DataFifoSize-1:0] isck_rdfifo_rdata;
-  logic [RdFifoPtrW-1:0]   sys_rdfifo_wdepth, isck_rdfifo_rdepth;
+  logic                      isck_rdfifo_rvalid, isck_rdfifo_rready;
+  logic [RdDataFifoSize-1:0] isck_rdfifo_rdata;
+  logic [RdFifoPtrW-1:0]     sys_rdfifo_wdepth, isck_rdfifo_rdepth;
 
   assign sys_rdfifo_depth_o    = sys_rdfifo_wdepth;
   assign sys_rdfifo_notempty_o = |sys_rdfifo_wdepth;
@@ -1130,7 +1131,7 @@ module spi_tpm
   );
 
   prim_fifo_async #(
-    .Width (DataFifoSize),
+    .Width (WrDataFifoSize),
     .Depth (WrFifoDepth),
     .OutputZeroIfEmpty (1'b 1)
   ) u_wrfifo (
@@ -1154,7 +1155,7 @@ module spi_tpm
   // transaction is completed (CSb deasserted).  So, everytime CSb is
   // deasserted --> rst_n asserted. So, reset the read FIFO.
   prim_fifo_async #(
-    .Width (DataFifoSize),
+    .Width (RdDataFifoSize),
     .Depth (RdFifoDepth),
     .OutputZeroIfEmpty (1'b 1)
   ) u_rdfifo (
