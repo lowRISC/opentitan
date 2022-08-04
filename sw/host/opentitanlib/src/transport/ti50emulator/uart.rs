@@ -5,7 +5,7 @@
 use anyhow::{Context, Result};
 
 use std::cell::{Cell, RefCell, RefMut};
-use std::io::{Read, Write};
+use std::io::{ErrorKind, Read, Write};
 use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -44,7 +44,7 @@ impl Ti50Uart {
         let mut socket = self.socket.borrow_mut();
         let id = self.inner.borrow_mut().process.get_id();
         if self.last_id.get() != id {
-            *socket = Some(UnixStream::connect(&self.path)?);
+            *socket = Some(UnixStream::connect(&self.path).context("UART reconect error")?);
             self.last_id.set(id);
         }
         Ok(())
@@ -104,8 +104,20 @@ impl Uart for Ti50Uart {
         match self.get_state()? {
             EmuState::On => {
                 let mut socket = self.get_socket()?;
-                socket.set_read_timeout(Some(timeout))?;
-                return Ok(socket.read(buf).context("UART read error")?);
+                socket
+                    .set_read_timeout(Some(timeout))
+                    .context("Set timeoout")?;
+                match socket.read(buf) {
+                    Ok(n) => {
+                        return Ok(n);
+                    }
+                    Err(error) => match error.kind() {
+                        ErrorKind::TimedOut | ErrorKind::WouldBlock => return Ok(0),
+                        _ => {
+                            return Err(error).context("UART read error?");
+                        }
+                    },
+                }
             }
             EmuState::Off => Ok(0),
             state => Err(UartError::GenericError(format!(
@@ -123,11 +135,10 @@ impl Uart for Ti50Uart {
                 self.get_socket()?.write(buf).context("UART read error")?;
                 Ok(())
             }
-            state => Err(UartError::GenericError(format!(
-                "Operation not supported in Emulator state: {}",
-                state
-            ))
-            .into()),
+            state => {
+                log::warn!("Ignoring write when DUT is state: {}", state);
+                Ok(())
+            }
         }
     }
 
