@@ -1815,9 +1815,9 @@ TEST_F(TpmTest, CommandAndData) {
                     {SPI_DEVICE_TPM_STATUS_RDFIFO_DEPTH_OFFSET, 1},
                     {SPI_DEVICE_TPM_STATUS_WRFIFO_DEPTH_OFFSET, 4},
                 });
-  for (int i = 0; i < 3; i++) {
-    EXPECT_WRITE32(SPI_DEVICE_TPM_READ_FIFO_REG_OFFSET, data[i]);
-  }
+  EXPECT_WRITE32(SPI_DEVICE_TPM_READ_FIFO_REG_OFFSET,
+                 (data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0]);
+
   EXPECT_DIF_OK(dif_spi_device_tpm_write_data(&spi_, /*length=*/3, data));
 
   EXPECT_READ32(SPI_DEVICE_TPM_STATUS_REG_OFFSET,
