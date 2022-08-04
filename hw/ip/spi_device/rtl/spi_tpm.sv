@@ -41,13 +41,14 @@ module spi_tpm
 
   localparam int unsigned ActiveLocalityBitPos = 5, // Access[5]
 
+  localparam int unsigned NumBits        = $bits(spi_byte_t),
   localparam int unsigned CmdAddrSize    = 32, // Cmd 8bit + Addr 24bit
   localparam int unsigned FifoRegSize    = 12, // lower 12bit excluding locality
-  localparam int unsigned WrDataFifoSize = $bits(spi_byte_t),
-  localparam int unsigned RdDataFifoSize = $bits(spi_byte_t),
+  localparam int unsigned WrDataFifoSize = NumBits,
+  localparam int unsigned RdDataFifoSize = NumBits,
 
   // Read FIFO byte_offset calculation
-  localparam int unsigned RdFifoNumBytes = RdDataFifoSize / $bits(spi_byte_t),
+  localparam int unsigned RdFifoNumBytes = RdDataFifoSize / NumBits,
   localparam int unsigned RdFifoOffsetW  = prim_util_pkg::vbits(RdFifoNumBytes),
 
   // TPM_CAP related constants.
@@ -376,9 +377,10 @@ module spi_tpm
   logic [RdFifoPtrW-1:0]        sys_rdfifo_wdepth, isck_rdfifo_rdepth;
 
   logic [RdFifoOffsetW-1:0]     isck_rdfifo_idx;
+  logic                         isck_rd_byte_sent;
 
   // If NumBytes != 1, then the logic selects a byte from isck_rdfifo_rdata
-  logic [$bits(spi_byte_t)-1:0] isck_sel_rdata;
+  logic [NumBits-1:0] isck_sel_rdata;
 
   // Assume the NumBytes is power of two
   `ASSERT_INIT(RdFifoNumBytesPoT_A,
@@ -918,11 +920,11 @@ module spi_tpm
 
   // Read FIFO data selection and FIFO ready
   // rvalid -> rready is OK not the opposit direction (rready -> rvalid)
-
+  assign isck_rd_byte_sent = isck_rdfifo_rvalid
+                             && isck_p2s_sent
+                             && (isck_data_sel == SelRdFifo);
   if (RdFifoNumBytes == 1) begin : g_rdfifo_1_to_1
-    assign isck_rdfifo_rready = isck_rdfifo_rvalid
-                              && isck_p2s_sent
-                              && (isck_data_sel == SelRdFifo);
+    assign isck_rdfifo_rready = isck_rd_byte_sent;
 
     assign isck_sel_rdata = isck_rdfifo_rdata;
 
@@ -930,7 +932,20 @@ module spi_tpm
     assign unused_rdfifo_idx = isck_rdfifo_idx;
     assign isck_rdfifo_idx = 1'b 0;
   end else begin : g_rdfifo_n_to_1
-    `ASSERT_INIT(NotSupportedRdFifoWidth_A, 0)
+    // Select RdFIFO RDATA
+    assign isck_sel_rdata = isck_rdfifo_rdata[NumBits*isck_rdfifo_idx+:NumBits];
+
+    // Index Increase
+    always_ff @(posedge clk_out_i or negedge rst_n) begin
+      if (!rst_n) begin
+        isck_rdfifo_idx <= '0;
+      end else if (isck_rd_byte_sent) begin
+        isck_rdfifo_idx <= isck_rdfifo_idx + 1'b 1;
+      end
+    end
+
+    // Only when isck_rdfifo_idx reached end byte, pop the FIFO entry
+    assign isck_rdfifo_rready = isck_rd_byte_sent && (&isck_rdfifo_idx);
 
   end
 
