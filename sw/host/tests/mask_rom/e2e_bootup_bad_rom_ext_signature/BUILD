@@ -7,7 +7,7 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 package(default_visibility = ["//visibility:public"])
 
 rust_binary(
-    name = "bad_rom_ext_signature",
+    name = "e2e_bootup_bad_rom_ext_signature",
     srcs = [
         "src/main.rs",
     ],
@@ -18,12 +18,5 @@ rust_binary(
         "//third_party/rust/crates:regex",
         "//third_party/rust/crates:structopt",
         "//third_party/rust/crates:tempfile",
-    ],
-)
-
-filegroup(
-    name = "test_resources",
-    srcs = [
-        ":bad_rom_ext_signature",
     ],
 )
