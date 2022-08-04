@@ -1,7 +1,9 @@
 use proc_macro2::TokenStream;
 use proc_macro_error::abort;
 use quote::quote;
-use syn::{parse_macro_input, Meta, Data, Lit, Ident, NestedMeta, Field, DataStruct, Type, DeriveInput};
+use syn::{
+    parse_macro_input, Data, DataStruct, DeriveInput, Field, Ident, Lit, Meta, NestedMeta, Type,
+};
 
 pub fn derive_hjson_compound_deser_impl(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -46,14 +48,56 @@ fn dispatch_struct(s: &DataStruct, name: &Ident) -> TokenStream {
                 #(#packed_fields),*
             }
 
-            impl HjsonCompoundDeser for #name {
-                fn from_str(s: &str, backend: &mut DeserBackend) -> anyhow::Result<#name> {
-                    let expanded: HjsonExpanded = deser_hjson::from_str(s)?;
+            impl HjsonUnpack<#name> for HjsonExpanded {
+                fn unpack_value(&self, backend: &mut DeserBackend) -> anyhow::Result<#name> {
                     Ok(#name {
-                        #(#unpacked_fields: expanded.#unpacked_fields.unpack_value(backend)?),*
+                        #(#unpacked_fields: self.#unpacked_fields.unpack_value(backend)?),*
                     })
                 }
             }
+
+            impl HjsonCompoundDeser for #name {
+                fn from_str(s: &str, backend: &mut DeserBackend) -> anyhow::Result<#name> {
+                    let expanded: HjsonExpanded = deser_hjson::from_str(s)?;
+                    expanded.unpack_value(backend)
+                }
+            }
+
+            impl<'de, F: HjsonFormatter<#name>> Deserialize<'de> for HjsonField<#name, F> {
+                fn deserialize<D>(deserializer: D) -> Result<HjsonField<#name, F>, D::Error>
+                    where
+                D: Deserializer<'de>,
+                {
+                    struct Visitor;
+                    impl<'a> de::Visitor<'a> for Visitor {
+                        type Value = HjsonExpanded;
+
+                        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                            formatter.write_fmt(format_args!("a value parsable to {}", type_name::<#name>()))
+                        }
+
+                        fn visit_newtype_struct<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+                        where
+                            D: Deserializer<'a>,
+                        {
+                            HjsonExpanded::deserialize(deserializer)
+                        }
+
+                    }
+                    Ok(HjsonField::<#name, F> {
+                        val: HjsonFieldType::Nested(
+                                 Box::new(
+                                     deserializer.deserialize_newtype_struct(
+                                         stringify!{#name},
+                                         Visitor {})?
+                                     )
+                                 ),
+                        formatter: Default::default(),
+                    })
+                }
+            }
+            unparsable_from_context!(#name);
+            unparsable_from_context!(HjsonExpanded);
         };
     }
 }
@@ -65,6 +109,8 @@ fn pack_field(field: &Field) -> TokenStream {
     let ty = &field.ty;
     // The formatter, if any, that will be used in post-deserialization parsing.
     let formatter = field.attrs.iter().find(|a| a.path.is_ident("format"));
+    // A marker to indicate nested structs.
+    let nested = field.attrs.iter().find(|a| a.path.is_ident("nested"));
 
     // Extract the formatter type from #[formatter("my::formatter::Path")].
     let format_trait = if let Some(formatter) = formatter {
@@ -75,23 +121,27 @@ fn pack_field(field: &Field) -> TokenStream {
         match meta {
             Meta::List(meta) => {
                 if meta.nested.len() != 1 {
-                    abort!(meta, "expected a single argument, got {}", meta.nested.len());
+                    abort!(
+                        meta,
+                        "expected a single argument, got {}",
+                        meta.nested.len()
+                    );
                 }
                 match meta.nested.first().unwrap() {
                     NestedMeta::Lit(Lit::Str(lit)) => {
                         let format_ty: Type = lit.parse().unwrap();
-                        quote!{ crate::util::hjson::HjsonField<#ty, #format_ty> }
-                    },
+                        quote! { crate::util::hjson::HjsonField<#ty, #format_ty> }
+                    }
                     bad => abort!(bad, "expected string literal"),
                 }
-            },
+            }
             bad => abort!(bad, "unrecognized attribute"),
         }
     } else {
         // Fields that don't specify a formatter are parsed contextually. For example, "0xABCD"
         // for String fields will be left as a string, where for u32 fields it will be parsed as a
         // hex value, "1234" will get parsed as a decimal value, ect.
-        quote!{ crate::util::hjson::HjsonField<#ty, FromContext> }
+        quote! { crate::util::hjson::HjsonField<#ty, FromContext> }
     };
 
     quote! {
