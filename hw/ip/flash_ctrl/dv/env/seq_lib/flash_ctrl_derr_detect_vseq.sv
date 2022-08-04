@@ -35,7 +35,7 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
     cfg.m_tl_agent_cfgs["flash_ctrl_eflash_reg_block"].check_tl_errs = 0;
 
     ctrl.partition = FlashPartData;
-    otf_tb_clean_up();
+//    otf_tb_clean_up();
     cfg.clk_rst_vif.wait_clks(5);
 
     fork
@@ -74,5 +74,6 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
                    error, "SEQ")
     end
     `uvm_info("SEQ", $sformatf("seqend derr_created: %p", cfg.derr_created), UVM_LOW)
+    otf_tb_clean_up();
   endtask // body
 endclass // flash_ctrl_serr_address_vseq

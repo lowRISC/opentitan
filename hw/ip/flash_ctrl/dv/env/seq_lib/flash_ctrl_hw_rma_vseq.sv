@@ -248,7 +248,7 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
     flash_op_t flash_op;
     data_q_t   data;
     bit        result;
-
+    int        read_to_value_ns = 100000; // 100us
     `uvm_info(`gfn, "Attempting to READ from Flash", UVM_INFO)
 
     // Attempt to Read from FLASH, No Access Expected after RMA
@@ -288,7 +288,7 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
     flash_ctrl_start_op(flash_op);
 
     // Timeout Expected
-    wait_flash_op_done_expect_timeout(.timeout_ns(cfg.seq_cfg.read_timeout_ns), .result(result));
+    wait_flash_op_done_expect_timeout(.timeout_ns(read_to_value_ns), .result(result));
 
     // Expect a Timeout
     if (result == 1)

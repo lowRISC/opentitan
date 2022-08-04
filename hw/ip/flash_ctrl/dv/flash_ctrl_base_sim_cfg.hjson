@@ -32,7 +32,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"],
 
-  en_build_modes: ["{tool}_crypto_dpi_prince_build_opts", "large_delay_mode"]
+  en_build_modes: ["{tool}_crypto_dpi_prince_build_opts"]
   // Flash references pwrmgr directly, need to reference the top version
   overrides: [
     {
@@ -52,7 +52,9 @@
     }
   ]
 
-  // Add additional tops for simulation.
+  large_delay_mode_vcs_cov_cfg_file: "{default_vcs_cov_cfg_file}"
+
+// Add additional tops for simulation.
   sim_tops: ["flash_ctrl_bind","flash_ctrl_cov_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Flash Ctrl coverage exclusion.
@@ -370,14 +372,14 @@
     }
     {
       name: flash_ctrl_intr_rd
-      build_mode: large_delay_mode
+      build_mode: "large_delay_mode"
       uvm_test_seq: flash_ctrl_intr_rd_vseq
       run_opts: ["+scb_otf_en=1"]
       reseed: 5
     }
     {
       name: flash_ctrl_intr_wr
-      build_mode: large_delay_mode
+      build_mode: "large_delay_mode"
       uvm_test_seq: flash_ctrl_intr_wr_vseq
       run_opts: ["+scb_otf_en=1"]
       reseed: 5

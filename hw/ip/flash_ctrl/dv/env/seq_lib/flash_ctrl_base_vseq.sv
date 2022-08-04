@@ -363,7 +363,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task flash_ctrl_intr_read(flash_op_t flash_op, ref data_q_t rdata);
     uvm_reg_data_t data;
-    int rd_timeout_ns = 10000; // 10 us
+    int rd_timeout_ns = 20000; // 10 us
     int curr_rd, rd_idx = 0;
 
     `uvm_info("flash_ctrl_intr_read", $sformatf("num_rd:%0d",
@@ -397,11 +397,11 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
           mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(rdata[rd_idx++]));
           cfg.rd_crd++;
         end
+        data[FlashCtrlIntrOpDone] = 1;
       end
       data = 'h0;
       data[FlashCtrlIntrRdLvl] = 1;
       data[FlashCtrlIntrRdFull] = 1;
-      data[FlashCtrlIntrOpDone] = 1;
       clear_intr_state(data);
     end
 `else

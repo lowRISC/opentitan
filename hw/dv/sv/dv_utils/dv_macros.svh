@@ -555,3 +555,9 @@
 `ifndef DV_MAX2
   `define DV_MAX2(a, b) ((a) > (b) ? (a) : (b))
 `endif
+
+`ifndef JDBG
+  `define JDBG(x) \
+  $write($sformatf("%t:JDBG:",$time));\
+  $display($sformatf x);
+`endif
