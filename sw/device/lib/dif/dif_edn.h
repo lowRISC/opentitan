@@ -331,9 +331,9 @@ dif_result_t dif_edn_instantiate(
 /**
  * Reseeds CSRNG instance.
  *
- * When `seed_material.seed_material_len` is set to 0, only the entropy source
- * seed is used to reseed the instance, otherwise it will be XOR'ed with the
- * entropy source.
+ * When `seed_material` is `NULL` or `seed_material.seed_material_len` is set
+ * to 0, only the entropy source seed is used to reseed the instance. Otherwise
+ * it will be XOR'ed with the entropy source.
  *
  * @param edn An EDN handle.
  * @param seed_material Reseed parameters.
