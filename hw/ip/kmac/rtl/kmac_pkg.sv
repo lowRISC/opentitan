@@ -93,7 +93,10 @@ package kmac_pkg;
   // Maximum Hamming weight: 4
   //
   typedef enum logic [5:0] {
-    CmdNone      = 6'b001011, // dec 10
+    //CmdNone      = 6'b001011, // dec 10
+    // CmdNone is manually set to all zero by design!
+    // The minimum Hamming distance is still 3
+    CmdNone      = 6'b000000, // dec  0
     CmdStart     = 6'b011101, // dec 29
     CmdProcess   = 6'b101110, // dec 46
     CmdManualRun = 6'b110001, // dec 49
