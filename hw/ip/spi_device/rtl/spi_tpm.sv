@@ -46,6 +46,10 @@ module spi_tpm
   localparam int unsigned WrDataFifoSize = $bits(spi_byte_t),
   localparam int unsigned RdDataFifoSize = $bits(spi_byte_t),
 
+  // Read FIFO byte_offset calculation
+  localparam int unsigned RdFifoNumBytes = RdDataFifoSize / $bits(spi_byte_t),
+  localparam int unsigned RdFifoOffsetW  = prim_util_pkg::vbits(RdFifoNumBytes),
+
   // TPM_CAP related constants.
   //  - Revision: the number visible in TPM_CAP CSR. Need to update the
   //    revision when the SW interface is revised.
@@ -367,9 +371,18 @@ module spi_tpm
   assign sys_wrfifo_depth_o = sys_wrfifo_rdepth;
 
   // Read FIFO uses inverted SCK (clk_out_i)
-  logic                      isck_rdfifo_rvalid, isck_rdfifo_rready;
-  logic [RdDataFifoSize-1:0] isck_rdfifo_rdata;
-  logic [RdFifoPtrW-1:0]     sys_rdfifo_wdepth, isck_rdfifo_rdepth;
+  logic                         isck_rdfifo_rvalid, isck_rdfifo_rready;
+  logic [RdDataFifoSize-1:0]    isck_rdfifo_rdata;
+  logic [RdFifoPtrW-1:0]        sys_rdfifo_wdepth, isck_rdfifo_rdepth;
+
+  logic [RdFifoOffsetW-1:0]     isck_rdfifo_idx;
+
+  // If NumBytes != 1, then the logic selects a byte from isck_rdfifo_rdata
+  logic [$bits(spi_byte_t)-1:0] isck_sel_rdata;
+
+  // Assume the NumBytes is power of two
+  `ASSERT_INIT(RdFifoNumBytesPoT_A,
+    (2**RdFifoOffsetW == RdFifoNumBytes) || (RdFifoNumBytes == 1))
 
   assign sys_rdfifo_depth_o    = sys_rdfifo_wdepth;
   assign sys_rdfifo_notempty_o = |sys_rdfifo_wdepth;
@@ -768,7 +781,7 @@ module spi_tpm
       end
 
       SelRdFifo: begin
-        isck_p2s_data = isck_rdfifo_rdata;
+        isck_p2s_data = isck_sel_rdata;
       end
 
       default: begin
@@ -902,11 +915,24 @@ module spi_tpm
   assign isck_miso    = isck_p2s_data[isck_p2s_bitcnt];
   assign isck_miso_en = isck_p2s_valid;
 
-  // rvalid -> rready is OK not the opposit direction (rready -> rvalid)
-  assign isck_rdfifo_rready = isck_rdfifo_rvalid
-                            && isck_p2s_sent
-                            && (isck_data_sel == SelRdFifo);
 
+  // Read FIFO data selection and FIFO ready
+  // rvalid -> rready is OK not the opposit direction (rready -> rvalid)
+
+  if (RdFifoNumBytes == 1) begin : g_rdfifo_1_to_1
+    assign isck_rdfifo_rready = isck_rdfifo_rvalid
+                              && isck_p2s_sent
+                              && (isck_data_sel == SelRdFifo);
+
+    assign isck_sel_rdata = isck_rdfifo_rdata;
+
+    logic  unused_rdfifo_idx;
+    assign unused_rdfifo_idx = isck_rdfifo_idx;
+    assign isck_rdfifo_idx = 1'b 0;
+  end else begin : g_rdfifo_n_to_1
+    `ASSERT_INIT(NotSupportedRdFifoWidth_A, 0)
+
+  end
 
   ///////////////////
   // State Machine //
