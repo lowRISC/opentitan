@@ -78,6 +78,8 @@ opentitan_functest(
     cw310 = cw310_params(
         timeout = "long",
     ),
+    # Temporarily disable this test because it takes too long.
+    tags = ["broken"],
     targets = ["cw310"],  # Test set is too large to run in simulation
     deps = [
         ":mod_exp_ibex",
@@ -144,6 +146,8 @@ opentitan_functest(
 opentitan_functest(
     name = "mod_exp_otbn_functest_wycheproof",
     srcs = ["mod_exp_otbn_functest.c"],
+    # Temporarily disable this test because it takes too long.
+    tags = ["broken"],
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -254,6 +258,8 @@ opentitan_functest(
     cw310 = cw310_params(
         timeout = "long",
     ),
+    # Temporarily disable this test because it takes too long.
+    tags = ["broken"],
     targets = ["cw310"],  # Test set is too large to run in simulation
     deps = [
         ":sigverify",

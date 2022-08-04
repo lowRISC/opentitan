@@ -65,6 +65,8 @@ autogen_cryptotest_header(
 opentitan_functest(
     name = "rsa_3072_verify_functest_wycheproof",
     srcs = ["rsa_3072_verify_functest.c"],
+    # Temporarily disable this test because it takes too long.
+    tags = ["broken"],
     verilator = verilator_params(
         timeout = "long",
     ),
