@@ -69,7 +69,7 @@ opentitan_flash_binary(
     name = "bare_metal_example_slot_a",
     srcs = ["bare_metal_start.S"],
     manifest = ":manifest_standard",
-    output_signed = True,
+    signed = True,
     deps = [
         ":bare_metal_example",
         ":ld_slot_a",
@@ -82,7 +82,7 @@ opentitan_flash_binary(
     name = "bare_metal_example_slot_b",
     srcs = ["bare_metal_start.S"],
     manifest = ":manifest_standard",
-    output_signed = True,
+    signed = True,
     deps = [
         ":bare_metal_example",
         ":ld_slot_b",
@@ -95,7 +95,7 @@ opentitan_flash_binary(
     name = "bare_metal_example_virtual_addr",
     srcs = ["bare_metal_start.S"],
     manifest = ":manifest_virtual",
-    output_signed = True,
+    signed = True,
     deps = [
         ":bare_metal_example",
         ":ld_virtual_addr",
