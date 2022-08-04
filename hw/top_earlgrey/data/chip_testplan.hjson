@@ -1925,12 +1925,14 @@
       name: chip_sw_entropy_src_fuse_en_fw_read
       desc: '''Verify the fuse input entropy_src.
 
-            - Initialize the OTP with this fuse bit set to 1.
-            - Perform an entropy request operation.
+            - Initialize the OTP with the `HW_CFG.EN_ENTROPY_SRC_FW_READ` fuse bit set to enabled in the
+              `uvm_test_seq`.
+            - Read and verify the OTP `HW_CFG.EN_ENTROPY_SRC_FW_READ` against the previous step expectation.
             - Read the entropy_data_fifo via SW; verify that it reads valid values.
-            - Reset the chip, but this time, initialize the OTP with this fuse bit set to 0.
-            - Perform an entropy request operation.
-            - Read the internal state via SW; verify that it reads all zeros this time.
+            - Reset the chip, but this time, initialize the OTP with with the `HW_CFG.EN_ENTROPY_SRC_FW_READ`
+              fuse bit set to disable.
+            - Read and verify the OTP `HW_CFG.EN_ENTROPY_SRC_FW_READ` against the previous step expectation.
+            - Read the internal state via SW; verify that the entropy valid bit is zero.
             '''
       milestone: V2
       tests: []
