@@ -348,7 +348,8 @@ dif_result_t dif_edn_reseed(const dif_edn_t *edn,
  *
  * This function is similar to `dif_edn_reseed()`, except:
  *
- * - Only `seed_material.seed_material` is used in the update operation.
+ * - Only `seed_material.seed_material` (which can be empty) is used in the
+ *   update operation; i.e., the entropy source input is disabled.
  * - The update operation does not reset the internal CSRNG reseed
  *   counter.
  *

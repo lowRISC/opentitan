@@ -255,7 +255,7 @@ dif_result_t dif_edn_reseed(const dif_edn_t *edn,
 
 dif_result_t dif_edn_update(const dif_edn_t *edn,
                             const dif_edn_seed_material_t *seed_material) {
-  if (edn == NULL || seed_material == NULL) {
+  if (edn == NULL) {
     return kDifBadArg;
   }
   return csrng_send_app_cmd(
