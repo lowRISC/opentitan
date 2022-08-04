@@ -29,7 +29,7 @@ enum {
 };
 
 OT_SECTION(".data.sram_function_test")
-OT_NOINLINE()
+OT_NOINLINE
 static void sram_function_test(void) {
   uint32_t pc = 0;
   asm("auipc %[pc], 0;" : [pc] "=r"(pc));
