@@ -91,29 +91,29 @@ static inline void fill_buf_one_then_zeroes(uint8_t *buf, size_t len) {
   buf[0] = 1;
 }
 
-OT_NEVER_INLINE void test_memcpy(uint8_t *buf1, uint8_t *buf2, size_t len) {
+OT_NOINLINE void test_memcpy(uint8_t *buf1, uint8_t *buf2, size_t len) {
   memcpy(buf1, buf2, len);
 }
 
-OT_NEVER_INLINE void test_memset(uint8_t *buf1, uint8_t *buf2, size_t len) {
+OT_NOINLINE void test_memset(uint8_t *buf1, uint8_t *buf2, size_t len) {
   const int value = buf2[0];
   memset(buf1, value, len);
 }
 
-OT_NEVER_INLINE void test_memcmp(uint8_t *buf1, uint8_t *buf2, size_t len) {
+OT_NOINLINE void test_memcmp(uint8_t *buf1, uint8_t *buf2, size_t len) {
   memcmp(buf1, buf2, len);
 }
 
-OT_NEVER_INLINE void test_memrcmp(uint8_t *buf1, uint8_t *buf2, size_t len) {
+OT_NOINLINE void test_memrcmp(uint8_t *buf1, uint8_t *buf2, size_t len) {
   memrcmp(buf1, buf2, len);
 }
 
-OT_NEVER_INLINE void test_memchr(uint8_t *buf1, uint8_t *buf2, size_t len) {
+OT_NOINLINE void test_memchr(uint8_t *buf1, uint8_t *buf2, size_t len) {
   const uint8_t value = buf1[len - 1];
   memchr(buf1, value, len);
 }
 
-OT_NEVER_INLINE void test_memrchr(uint8_t *buf1, uint8_t *buf2, size_t len) {
+OT_NOINLINE void test_memrchr(uint8_t *buf1, uint8_t *buf2, size_t len) {
   const uint8_t value = buf1[0];
   memrchr(buf1, value, len);
 }
