@@ -266,7 +266,7 @@ class LsfLauncher(Launcher):
                         line_number=None,
                         message="ERROR: Failed to open {}\n{}.".format(
                             self.bsub_out, e),
-                        context=[]))
+                        context=[e]))
                 return "F"
 
         # Now that the job has completed, we need to determine its status.
@@ -303,7 +303,7 @@ class LsfLauncher(Launcher):
             if self.bsub_out_err_msg:
                 err_msg = ErrorMessage(line_number=None,
                                        message=self.bsub_out_err_msg,
-                                       context=[])
+                                       context=[self.bsub_out_err_msg])
             self._post_finish(status, err_msg)
             return status
 
@@ -402,4 +402,4 @@ class LsfLauncher(Launcher):
             job._post_finish(
                 'F', ErrorMessage(line_number=None,
                                   message=err_msg,
-                                  context=[]))
+                                  context=[err_msg]))

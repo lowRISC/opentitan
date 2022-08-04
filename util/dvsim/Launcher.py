@@ -345,7 +345,7 @@ class Launcher:
                 status = "F"
                 err_msg = ErrorMessage(line_number=None,
                                        message=f"{e}",
-                                       context=[])
+                                       context=[f"{e}"])
 
         self.status = status
         if self.status != "P":

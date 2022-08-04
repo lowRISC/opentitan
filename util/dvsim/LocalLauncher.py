@@ -95,7 +95,7 @@ class LocalLauncher(Launcher):
                     'K',
                     ErrorMessage(line_number=None,
                                  message=timeout_message,
-                                 context=[]))
+                                 context=[timeout_message]))
                 return 'K'
 
             return 'D'
