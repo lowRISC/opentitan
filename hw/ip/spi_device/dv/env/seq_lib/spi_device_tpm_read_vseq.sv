@@ -44,7 +44,17 @@ class spi_device_tpm_read_vseq extends spi_device_tpm_base_vseq;
           check_tpm_cmd_addr(tpm_cmd, tpm_addr);
           // Upon receiving read command, set read fifo contents
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(read_fifo_data, read_fifo_data.size() == 4;)
-          foreach (read_fifo_data[i]) csr_wr(.ptr(ral.tpm_read_fifo), .value(read_fifo_data[i]));
+          for (int i = 0 ; i < read_fifo_data.size() ; i += 4) begin
+            automatic logic [31:0] rdfifo_wdata;
+            for (int j = 0 ; j < 4 ; j++) begin
+              if (i+j < read_fifo_data.size()) begin
+                rdfifo_wdata[8*j+:8] = read_fifo_data[i+j];
+              end else begin
+                rdfifo_wdata[8*j+:8] = 8'h 0;
+              end
+            end
+            csr_wr(.ptr(ral.tpm_read_fifo), .value(rdfifo_wdata));
+          end
         end // Write Read Fifo Thread
         begin
           // poll START and collect data
