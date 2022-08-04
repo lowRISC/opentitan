@@ -467,7 +467,7 @@ Toggle coverage of the ports of the DUT and all pre-verified sub-modules have in
 
 ### SIM_FUNCTIONAL_COVERAGE_V2
 
-Functional coverage has reached 70%.
+Functional coverage has reached 90%.
 
 ### FPV_CODE_COVERAGE_V2
 
