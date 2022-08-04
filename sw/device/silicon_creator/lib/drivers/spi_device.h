@@ -36,8 +36,10 @@ enum {
   kSpiDeviceJedecManufId = 0xef,
   /**
    * LSB of the 2-byte device ID.
+   *
+   * Density is expressed as log2(flash size in bytes).
    */
-  kSpiDeviceJedecDensity = 0x0a,
+  kSpiDeviceJedecDensity = 20,
   /**
    * Size of the JEDEC Basic Flash Parameter Table (BFPT) in words.
    */
