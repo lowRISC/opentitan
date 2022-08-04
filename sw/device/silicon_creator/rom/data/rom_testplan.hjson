@@ -129,6 +129,7 @@
 
             - Apply bootstrap pin strapping.
             - Reset the chip.
+            - Verify that the chip reports `bootstrap:1` over the UART.
             - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]

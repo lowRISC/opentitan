@@ -125,6 +125,31 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "e2e_bootstrap_entry",
+    srcs = ["empty_test.c"],
+    cw310 = cw310_params(
+        args = [
+            "--rom-kind=rom",
+            "--bitstream=\"$(location //hw/bitstream:rom)\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+        data = [
+            "//hw/bitstream:rom",
+        ],
+    ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    # We don't want the `empty_test` to run, but we _also_ don't want some
+    # leftover flash image from a previous test to run.  So, bootstrap an
+    # unsigned image to force a boot failure.
+    signed = False,
+    targets = ["cw310"],
+    test_harness = "//sw/host/tests/rom/e2e_bootstrap_entry",
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "e2e_chip_specific_startup",
     srcs = ["chip_specific_startup.c"],
     args = [],
