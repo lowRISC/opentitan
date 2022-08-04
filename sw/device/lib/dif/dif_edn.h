@@ -315,8 +315,8 @@ dif_result_t dif_edn_get_main_state_machine(const dif_edn_t *edn,
  * `seed_material` is used as specified in NIST SP 800-90Ar1 section
  * 10.2.1.3.1.
  *
- * `seed_material` can be NULL, in which case CSRNG will use a zero
- * vector instead.
+ * See the description of `dif_edn_reseed()` for information on the
+ * `entropy_src_enable` and `seed_material` arguments.
  *
  * @param edn An EDN handle.
  * @param entropy_src_enable Entropy source input enable.
@@ -331,16 +331,29 @@ dif_result_t dif_edn_instantiate(
 /**
  * Reseeds CSRNG instance.
  *
- * When `seed_material` is `NULL` or `seed_material.seed_material_len` is set
- * to 0, only the entropy source seed is used to reseed the instance. Otherwise
- * it will be XOR'ed with the entropy source.
+ * This operation has two main parameters: whether the entropy source is enabled
+ * and a pointer to seed material.  The following table shows the resulting seed
+ * used by the CSRNG.
+ *
+ * | entropy source | seed material |            seed used by CSRNG            |
+ * |----------------|---------------|------------------------------------------|
+ * | disabled       | empty         | zero seed                                |
+ * | disabled       | provided      | only seed material                       |
+ * | enabled        | empty         | only entropy source                      |
+ * | enabled        | provided      | entropy source XOR'ed with seed material |
+ *
+ * When `seed_material` is `NULL` or `seed_material.seed_material_len` is `0`,
+ * the seed material is considered empty for the table above.  Otherwise, it is
+ * provided.
  *
  * @param edn An EDN handle.
+ * @param entropy_src_enable Entropy source input enable.
  * @param seed_material Reseed parameters.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_edn_reseed(const dif_edn_t *edn,
+                            dif_edn_entropy_src_toggle_t entropy_src_enable,
                             const dif_edn_seed_material_t *seed_material);
 
 /**

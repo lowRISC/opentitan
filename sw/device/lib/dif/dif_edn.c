@@ -240,6 +240,7 @@ dif_result_t dif_edn_instantiate(
 }
 
 dif_result_t dif_edn_reseed(const dif_edn_t *edn,
+                            dif_edn_entropy_src_toggle_t entropy_src_enable,
                             const dif_edn_seed_material_t *seed_material) {
   if (edn == NULL) {
     return kDifBadArg;
@@ -248,6 +249,8 @@ dif_result_t dif_edn_reseed(const dif_edn_t *edn,
       edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
       (csrng_app_cmd_t){
           .id = kCsrngAppCmdReseed,
+          .entropy_src_enable =
+              (dif_csrng_entropy_src_toggle_t)entropy_src_enable,
           .seed_material = (const dif_csrng_seed_material_t *)seed_material,
       });
 }
