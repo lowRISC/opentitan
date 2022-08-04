@@ -19,6 +19,22 @@
 
 #include "sw/device/lib/base/macros.h"
 
+// When compiling unit tests on the host machine, we must mangle the names of
+// OpenTitan's memory functions to avoid conflicting with the libc variants. For
+// instance, without name mangling, the compiler may complain that `memcpy()`
+// has a different exception specifier than the variant declared in <string.h>.
+// (The <string.h> include is unavoidable because it's pulled in by GoogleTest.)
+//
+// Separately, ASan segfaults during initialization when it calls our
+// user-defined memory functions. Prefixing the troublesome functions works
+// around this ASan bug, enabling us to run the unit tests with ASan enabled.
+// See https://github.com/lowRISC/opentitan/issues/13826.
+#ifdef OT_PLATFORM_RV32
+#define OT_PREFIX_IF_NOT_RV32(name) name
+#else
+#define OT_PREFIX_IF_NOT_RV32(name) ot_##name
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -159,7 +175,8 @@ inline void write_64(uint64_t value, void *ptr) {
  * @param len the number of bytes to copy.
  * @return the value of `dest`.
  */
-void *memcpy(void *OT_RESTRICT dest, const void *OT_RESTRICT src, size_t len);
+void *OT_PREFIX_IF_NOT_RV32(memcpy)(void *OT_RESTRICT dest,
+                                    const void *OT_RESTRICT src, size_t len);
 
 /**
  * Set a region of memory to a particular byte value.
@@ -174,7 +191,7 @@ void *memcpy(void *OT_RESTRICT dest, const void *OT_RESTRICT src, size_t len);
  * @param len the number of bytes to write.
  * @return the value of `dest`.
  */
-void *memset(void *dest, int value, size_t len);
+void *OT_PREFIX_IF_NOT_RV32(memset)(void *dest, int value, size_t len);
 
 /**
  * Compare two (potentially overlapping) regions of memory for byte-wise
@@ -192,7 +209,7 @@ void *memset(void *dest, int value, size_t len);
  * contingencies of `lhs == rhs`, `lhs > rhs`, and `lhs < rhs` (as buffers, not
  * pointers), respectively.
  */
-int memcmp(const void *lhs, const void *rhs, size_t len);
+int OT_PREFIX_IF_NOT_RV32(memcmp)(const void *lhs, const void *rhs, size_t len);
 
 /**
  * Compare two (potentially overlapping) regions of memory for reverse
@@ -208,7 +225,8 @@ int memcmp(const void *lhs, const void *rhs, size_t len);
  * contingencies of `lhs == rhs`, `lhs > rhs`, and `lhs < rhs` (as buffers, not
  * pointers), respectively.
  */
-int memrcmp(const void *lhs, const void *rhs, size_t len);
+int OT_PREFIX_IF_NOT_RV32(memrcmp)(const void *lhs, const void *rhs,
+                                   size_t len);
 
 /**
  * Search a region of memory for the first occurence of a particular byte value.
@@ -226,7 +244,7 @@ int memrcmp(const void *lhs, const void *rhs, size_t len);
  * @param len the length of the region, in bytes.
  * @return a pointer to the found value, or NULL.
  */
-void *memchr(const void *ptr, int value, size_t len);
+void *OT_PREFIX_IF_NOT_RV32(memchr)(const void *ptr, int value, size_t len);
 
 /**
  * Search a region of memory for the last occurence of a particular byte value.
@@ -239,10 +257,12 @@ void *memchr(const void *ptr, int value, size_t len);
  * @param len the length of the region, in bytes.
  * @return a pointer to the found value, or NULL.
  */
-void *memrchr(const void *ptr, int value, size_t len);
+void *OT_PREFIX_IF_NOT_RV32(memrchr)(const void *ptr, int value, size_t len);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
+
+#undef OT_PREFIX_IF_NOT_RV32
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_

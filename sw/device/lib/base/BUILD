@@ -113,6 +113,15 @@ opentitan_functest(
     ],
 )
 
+cc_test(
+    name = "memory_unittest",
+    srcs = ["memory_unittest.cc"],
+    deps = [
+        ":memory",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "hardened",
     srcs = ["hardened.c"],

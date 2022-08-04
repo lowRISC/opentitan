@@ -6,11 +6,18 @@
 
 #include "sw/device/lib/base/macros.h"
 
+#ifdef OT_PLATFORM_RV32
+#define OT_PREFIX_IF_NOT_RV32(name) name
+#else
+#define OT_PREFIX_IF_NOT_RV32(name) ot_##name
+#endif
+
 // The symbols below are all provided by the host libc. To avoid linker clashes,
 // they are all marked as `OT_WEAK`.
 
 OT_WEAK
-void *memcpy(void *restrict dest, const void *restrict src, size_t len) {
+void *OT_PREFIX_IF_NOT_RV32(memcpy)(void *restrict dest,
+                                    const void *restrict src, size_t len) {
   uint8_t *dest8 = (uint8_t *)dest;
   uint8_t *src8 = (uint8_t *)src;
   for (size_t i = 0; i < len; ++i) {
@@ -20,7 +27,7 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t len) {
 }
 
 OT_WEAK
-void *memset(void *dest, int value, size_t len) {
+void *OT_PREFIX_IF_NOT_RV32(memset)(void *dest, int value, size_t len) {
   uint8_t *dest8 = (uint8_t *)dest;
   uint8_t value8 = (uint8_t)value;
   for (size_t i = 0; i < len; ++i) {
@@ -36,7 +43,8 @@ enum {
 };
 
 OT_WEAK
-int memcmp(const void *lhs, const void *rhs, size_t len) {
+int OT_PREFIX_IF_NOT_RV32(memcmp)(const void *lhs, const void *rhs,
+                                  size_t len) {
   const uint8_t *lhs8 = (uint8_t *)lhs;
   const uint8_t *rhs8 = (uint8_t *)rhs;
   for (size_t i = 0; i < len; ++i) {
@@ -50,7 +58,8 @@ int memcmp(const void *lhs, const void *rhs, size_t len) {
 }
 
 OT_WEAK
-int memrcmp(const void *lhs, const void *rhs, size_t len) {
+int OT_PREFIX_IF_NOT_RV32(memrcmp)(const void *lhs, const void *rhs,
+                                   size_t len) {
   const uint8_t *lhs8 = (uint8_t *)lhs;
   const uint8_t *rhs8 = (uint8_t *)rhs;
   size_t j;
@@ -66,7 +75,7 @@ int memrcmp(const void *lhs, const void *rhs, size_t len) {
 }
 
 OT_WEAK
-void *memchr(const void *ptr, int value, size_t len) {
+void *OT_PREFIX_IF_NOT_RV32(memchr)(const void *ptr, int value, size_t len) {
   uint8_t *ptr8 = (uint8_t *)ptr;
   uint8_t value8 = (uint8_t)value;
   for (size_t i = 0; i < len; ++i) {
@@ -78,7 +87,7 @@ void *memchr(const void *ptr, int value, size_t len) {
 }
 
 OT_WEAK
-void *memrchr(const void *ptr, int value, size_t len) {
+void *OT_PREFIX_IF_NOT_RV32(memrchr)(const void *ptr, int value, size_t len) {
   uint8_t *ptr8 = (uint8_t *)ptr;
   uint8_t value8 = (uint8_t)value;
   for (size_t i = 0; i < len; ++i) {
@@ -98,3 +107,5 @@ extern uint32_t read_32(const void *);
 extern void write_32(uint32_t, void *);
 extern uint64_t read_64(const void *);
 extern void write_64(uint64_t, void *);
+
+#undef OT_PREFIX_IF_NOT_RV32
