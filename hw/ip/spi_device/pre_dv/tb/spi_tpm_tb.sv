@@ -51,6 +51,7 @@ module spi_tpm_tb;
   localparam int unsigned CmdAddrFifoDepth = 2;
   localparam int unsigned WrFifoDepth      = 64;
   localparam int unsigned RdFifoDepth      = 4;
+  localparam int unsigned RdFifoWidth      = 8;
 
   localparam bit EnLocality = 1;
 
@@ -107,6 +108,7 @@ module spi_tpm_tb;
     .CmdAddrFifoDepth (CmdAddrFifoDepth),
     .WrFifoDepth      (WrFifoDepth     ),
     .RdFifoDepth      (RdFifoDepth     ),
+    .RdDataFifoSize   (RdFifoWidth     ),
     .EnLocality       (EnLocality      )
   ) dut (
     .clk_in_i  (gated_sck),
