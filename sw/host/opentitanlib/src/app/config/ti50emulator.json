@@ -1,12 +1,11 @@
 {
-  "includes": ["/__builtin__/opentitan.json"],
   "interface": "ti50emulator",
   "pins": [
   ],
   "uarts": [
     {
       "name": "console",
-      "alias_of": "0"
+      "alias_of": "GSC"
     }
   ]
 }

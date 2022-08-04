@@ -61,9 +61,9 @@ lazy_static! {
     static ref BUILTINS: HashMap<&'static str, &'static str> = collection! {
         "/__builtin__/h1dx_devboard.json" => include_str!("h1dx_devboard.json"),
         "/__builtin__/h1dx_devboard_ultradebug.json" => include_str!("h1dx_devboard_ultradebug.json"),
+        "/__builtin__/ti50emulator.json" => include_str!("ti50emulator.json"),
         "/__builtin__/opentitan_cw310.json" => include_str!("opentitan_cw310.json"),
         "/__builtin__/opentitan.json" => include_str!("opentitan.json"),
-        "/__builtin__/opentitan_ti50emulator.json" => include_str!("opentitan_ti50emulator.json"),
         "/__builtin__/opentitan_ultradebug.json" => include_str!("opentitan_ultradebug.json"),
         "/__builtin__/opentitan_verilator.json" => include_str!("opentitan_verilator.json"),
     };
