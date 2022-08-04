@@ -2060,7 +2060,7 @@
             X'ref'ed with each IP test that requsts entropy from EDN.
             '''
       milestone: V2
-      tests: ['chip_sw_edn_entropy_reqs_test']
+      tests: ['chip_sw_edn_entropy_reqs']
     }
 
     // KEYMGR (pre-verified IP) integration tests:
