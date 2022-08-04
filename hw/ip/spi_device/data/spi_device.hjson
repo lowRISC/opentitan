@@ -118,6 +118,11 @@
       default: "3"
       local:   "true"
     } // p: TpmRdFifoPtrW
+    { name:    "TpmRdFifoWidth"
+      desc:    "TPM Read FIFO Data Width. (TpmRdFifoWidth/8) shall be power of two"
+      type:    "int unsigned"
+      default: "32"
+    } // p: TpmRdFifoWidth
   ],
   inter_signal_list: [
     { struct:  "ram_2p_cfg",
@@ -1292,7 +1297,7 @@
       hwqe: "true"
       hwext: "true"
       fields: [
-        { bits: "7:0"
+        { bits: "TpmRdFifoWidth-1:0"
           name: "value"
           desc: "write port of the read FIFO"
         }

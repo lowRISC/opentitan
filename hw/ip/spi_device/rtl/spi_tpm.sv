@@ -13,8 +13,9 @@ module spi_tpm
 
   // Max Write/Read buffer size to support is 64B in TPM spec.
   // But more than 4B is for future use. So, 4B is recommended.
-  parameter int unsigned WrFifoDepth   = 4,
-  parameter int unsigned RdFifoDepth   = 4,
+  parameter int unsigned WrFifoDepth    = 4,
+  parameter int unsigned RdFifoDepth    = 4,
+  parameter int unsigned RdDataFifoSize = 32,
 
   // Locality determines the number of TPM_ACCESS registers.
   // Other HW managed registers are shared across the locality.
@@ -45,7 +46,6 @@ module spi_tpm
   localparam int unsigned CmdAddrSize    = 32, // Cmd 8bit + Addr 24bit
   localparam int unsigned FifoRegSize    = 12, // lower 12bit excluding locality
   localparam int unsigned WrDataFifoSize = NumBits,
-  localparam int unsigned RdDataFifoSize = NumBits,
 
   // Read FIFO byte_offset calculation
   localparam int unsigned RdFifoNumBytes = RdDataFifoSize / NumBits,

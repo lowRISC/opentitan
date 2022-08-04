@@ -1551,7 +1551,7 @@ module spi_device_reg_top (
   logic [23:0] tpm_cmd_addr_addr_qs;
   logic [7:0] tpm_cmd_addr_cmd_qs;
   logic tpm_read_fifo_we;
-  logic [7:0] tpm_read_fifo_wd;
+  logic [31:0] tpm_read_fifo_wd;
   logic tpm_write_fifo_re;
   logic [7:0] tpm_write_fifo_qs;
 
@@ -18899,7 +18899,7 @@ module spi_device_reg_top (
   logic [0:0] tpm_read_fifo_flds_we;
   assign tpm_read_fifo_qe = &tpm_read_fifo_flds_we;
   prim_subreg_ext #(
-    .DW    (8)
+    .DW    (32)
   ) u_tpm_read_fifo (
     .re     (1'b0),
     .we     (tpm_read_fifo_we),
@@ -20468,7 +20468,7 @@ module spi_device_reg_top (
   assign tpm_cmd_addr_re = addr_hit[76] & reg_re & !reg_error;
   assign tpm_read_fifo_we = addr_hit[77] & reg_we & !reg_error;
 
-  assign tpm_read_fifo_wd = reg_wdata[7:0];
+  assign tpm_read_fifo_wd = reg_wdata[31:0];
   assign tpm_write_fifo_re = addr_hit[78] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
@@ -21462,7 +21462,7 @@ module spi_device_reg_top (
       end
 
       addr_hit[77]: begin
-        reg_rdata_next[7:0] = '0;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[78]: begin
