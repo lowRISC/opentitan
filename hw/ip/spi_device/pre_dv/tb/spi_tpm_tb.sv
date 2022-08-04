@@ -49,13 +49,15 @@ module spi_tpm_tb;
   assign sck_en = ~tif.csb;
 
   localparam int unsigned CmdAddrFifoDepth = 2;
-  localparam int unsigned FifoDepth        = 4;
+  localparam int unsigned WrFifoDepth      = 64;
+  localparam int unsigned RdFifoDepth      = 4;
 
   localparam bit EnLocality = 1;
 
   // Derived
   localparam int unsigned CmdAddrPtrW = $clog2(CmdAddrFifoDepth+1);
-  localparam int unsigned FifoPtrW    = $clog2(FifoDepth+1);
+  localparam int unsigned WrFifoPtrW  = $clog2(WrFifoDepth+1);
+  localparam int unsigned RdFifoPtrW  = $clog2(RdFifoDepth+1);
   localparam int unsigned CmdAddrSize = 32;
   localparam int unsigned FifoRegSize = 12; // fifo addr
 
@@ -98,12 +100,13 @@ module spi_tpm_tb;
 
   // status
   logic cmdaddr_notempty;
-  logic [FifoPtrW-1:0] rdfifo_depth, wrfifo_depth;
+  logic [WrFifoPtrW-1:0] wrfifo_depth;
+  logic [RdFifoPtrW-1:0] rdfifo_depth;
 
   spi_tpm #(
     .CmdAddrFifoDepth (CmdAddrFifoDepth),
-    .WrFifoDepth      (FifoDepth       ),
-    .RdFifoDepth      (FifoDepth       ),
+    .WrFifoDepth      (WrFifoDepth     ),
+    .RdFifoDepth      (RdFifoDepth     ),
     .EnLocality       (EnLocality      )
   ) dut (
     .clk_in_i  (gated_sck),
@@ -113,7 +116,7 @@ module spi_tpm_tb;
     .sys_rst_ni (rst_n),
 
     .scan_rst_ni ( 1'b 1 ),
-    .scanmode_i  (lc_ctrl_pkg::Off),
+    .scanmode_i  (prim_mubi_pkg::MuBi4False),
 
     .csb_i     (tif.csb     ),
     .mosi_i    (tif.mosi    ),
@@ -175,7 +178,7 @@ module spi_tpm_tb;
       host();
       sw();
       begin
-        #20us
+        #40us
         $display("TEST TIMED OUT!!");
         $finish();
       end
@@ -227,6 +230,18 @@ module spi_tpm_tb;
     tpm_write(24'h D4_0110, 4, data);
 
     sck_clk.wait_clks(10);
+
+    // Maximum Payload Transfer
+    data.delete();
+    repeat(64) begin
+      data.push_back($urandom_range(255));
+    end
+
+    tpm_write(24'h D4_0110, 64, data);
+
+    sck_clk.wait_clks(600);
+
+    $display("Host transactions has ended.");
 
   endtask : host
 
@@ -317,8 +332,9 @@ module spi_tpm_tb;
     @(sck_clk.cbn);
 
     // Send (pop from wdata and send a byte)
-    for (int i = wdata.size() -1 ; i >= 0 ; i--) begin
-      tpm_sendbyte(wdata.pop_front());
+    foreach(wdata[i]) begin
+      tpm_sendbyte(wdata[i]);
+      $display("Byte (%2d): %2xh", i, wdata[i]);
     end
 
     tpm_stop();
@@ -393,22 +409,23 @@ module spi_tpm_tb;
 
       case (cmd[31])
         1'b 0: begin : write
-          $display("TPM Write command process");
+          $display("TPM Write command process: Xfer Size (%d)", xfer_size);
           // pop from write fifo
           do begin
             wrfifo_read(wrfifo_rvalid, wrfifo_rready, wrfifo_rdata, data);
             xfer_size = xfer_size - 1;
-          end while (xfer_size == '0);
+            $display("TPM Write Data: %2x", data);
+          end while (xfer_size != '0);
         end
 
         1'b 1: begin : read
           // Prepare random data up to xfer_size
-          $display("TPM Read command process");
+          $display("TPM Read command process: Xfer Size (%d)", xfer_size);
           do begin
-            data = $urandom(256);
+            data = $urandom_range(255);
             rdfifo_write(rdfifo_wvalid, rdfifo_wready, rdfifo_wdata, data);
             xfer_size = xfer_size - 1;
-          end while (xfer_size == '0);
+          end while (xfer_size != '0);
         end
       endcase
     end
@@ -434,7 +451,7 @@ module spi_tpm_tb;
     const ref logic [7:0] rdata,
     output    logic [7:0] data
   );
-    @(posedge clk && rvalid);
+    @(posedge clk iff rvalid);
     data   = rdata;
     rready = 1'b 1;
 
@@ -450,7 +467,7 @@ module spi_tpm_tb;
   );
     wvalid = 1'b 1;
     wdata  = data;
-    @(posedge clk && wready);
+    @(posedge clk iff wready);
     wvalid = 1'b 0;
   endtask : rdfifo_write
   // SW --------------------------------------------------------------
