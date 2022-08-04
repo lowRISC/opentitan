@@ -69,7 +69,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         ),
         "ti50emulator" => (
             ti50emulator::create(&args.ti50emulator_opts)?,
-            Some(Path::new("/__builtin__/opentitan_ti50emulator.json")),
+            Some(Path::new("/__builtin__/ti50emulator.json")),
         ),
         "ultradebug" => (
             ultradebug::create(args)?,
