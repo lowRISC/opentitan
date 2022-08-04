@@ -452,6 +452,24 @@
     }
 
     /////////////////////////
+    // TODO: JTAG         //
+    /////////////////////////
+    {
+      name: flash_jtag
+      desc: "Verify jtag interface is connected to flash_phy_req interface."
+      milestone: V2
+      tests: []
+      tags: ["conn"]
+    }
+    {
+      name: lc_jtag_trst
+      desc: "Verify jtag rst pin is connected to lc_ctrl interface."
+      milestone: V2
+      tests: []
+      tags: ["conn"]
+    }
+
+    /////////////////////////
     // lc_escalate_en.csv  //
     /////////////////////////
     {
@@ -514,8 +532,51 @@
     // TODO: EDN           //
     /////////////////////////
     {
-      name: edn_clk_rst_
-      desc: "Check EDN's clock and reset connects correctly to other IPs."
+      name: edn_clk_rst
+      desc: "Verify EDN's clock and reset connects correctly to other IPs."
+      milestone: V2
+      tests: []
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // TODO: LC_CTRL       //
+    /////////////////////////
+    {
+      name: lc_keymgr_en
+      desc: "Verify LC_CTRL's lc_ctrl_lc_keymgr_en is connects correctly to keymgr."
+      milestone: V2
+      tests: []
+      tags: ["conn"]
+    }
+    {
+      name: flash_lc_nvm_debug_en
+      desc: "Verify lc_ctrl's lc_nvm_debug_en is connected correctly to flash_ctrl."
+      milestone: V2
+      tests: []
+      tags: ["conn"]
+    }
+    {
+      name: lc_ctrl_scanmode
+      desc: "Verify the connectivity of scanmode to LC ctrl."
+      milestone: V2
+      tests: []
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // TODO: OTP_CTRL       //
+    /////////////////////////
+    {
+      name: otp_ctrl_external_voltage
+      desc: "Verify the connectivity of the external voltage signal to OTP ctrl."
+      milestone: V2
+      tests: []
+      tags: ["conn"]
+    }
+    {
+      name: otp_ctrl_scan
+      desc: "Verify the connectivity of the scan signals to OTP ctrl."
       milestone: V2
       tests: []
       tags: ["conn"]

@@ -193,17 +193,6 @@
     }
 
     {
-      name: chip_conn_spi_device_ast
-      desc: '''Verify the connectivity between spi_device and AST on scanmode and mbist
-
-            This could be done through the connectivity test with FPV
-            '''
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
-
-    {
       name: chip_sw_spi_device_pass_through_collision
       desc: '''Verify the collisions on driving spi_host is handled properly
 
@@ -642,18 +631,6 @@
       tests: ["chip_sw_pwrmgr_smoketest"]
     }
     {
-      name: chip_conn_aon_timer_clks_resets
-      desc: '''Verify that the correct clocks and resets are connected to the AON timer.
-
-            - The chip_aon_timer_deep_sleep_wakeup achieves this goal.
-            - Verify via connectivity assertion checks, the right clocks and resets from clkmgr and
-              rstmgr are connected to AON timer.
-            '''
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
-    {
       name: chip_sw_aon_timer_wdog_bark_irq
       desc: '''Verify the watchdog bark reception in normal state.
 
@@ -798,7 +775,7 @@
       tests: ["chip_sw_clkmgr_off_peri"]
     }
     {
-      name: chip_conn_clkmgr_div
+      name: chip_sw_clkmgr_div
       desc: '''Verify clk division logic is working correctly.
 
             The IP level checks the divided clocks via SVA, and these are also bound at chip level.
@@ -809,7 +786,6 @@
       tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast",
               "chip_sw_clkmgr_external_clk_src_for_sw_slow",
               "chip_sw_clkmgr_external_clk_src_for_lc"]
-      tags: ["conn"]
     }
     {
       name: chip_sw_clkmgr_external_clk_src_for_lc
@@ -1388,14 +1364,6 @@
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma"]
     }
     {
-      name: chip_sw_lc_ctrl_jtag_trst
-      desc: '''Verify the JTAG test reset input connection to LC ctrl.
-
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
       name: chip_sw_lc_ctrl_otp_hw_cfg
       desc: '''Verify the device_ID and ID_state CSRs
 
@@ -1502,24 +1470,6 @@
             '''
       milestone: V2
       tests: []
-    }
-    {
-      name: chip_conn_lc_ctrl_scanmode
-      desc: '''Verify the connectivity of scanmode to LC ctrl.
-
-            '''
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
-    {
-      name: chip_conn_ctrl_scanmode_reset
-      desc: '''Verify the connectivity of scanmode reset to LC ctrl.
-
-            '''
-      milestone: V2
-      tests: []
-      tags: ["conn"]
     }
 
     // SYSRST_CTRL (pre-verified IP) integration tests:
@@ -2185,16 +2135,6 @@
       tests: ["chip_sw_otbn_randomness"]
     }
     {
-      name: chip_conn_otbn_ast_ram_cfg
-      desc: '''Verify that the ram_cfg signal from AST is connected to OTBN.
-
-            - In open source, this is verified by a simple connectivity assertion check.
-            '''
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
-    {
       name: chip_sw_otbn_mem_scramble
       desc: '''Verify the OTBN can receive keys from the OTP to scramble the OTBN imem and dmem.
 
@@ -2221,16 +2161,6 @@
             '''
       milestone: V2
       tests: ["chip_sw_rom_ctrl_integrity_check"]
-    }
-    {
-      name: chip_conn_rom_ctrl_ast_rom_cfg
-      desc: '''Verify that the rom_cfg signal from AST is connected to ROM ctrl.
-
-            - In open source, this is verified by a simple connectivity assertion check.
-            '''
-      milestone: V2
-      tests: []
-      tags: ["conn"]
     }
     {
       name: chip_sw_rom_ctrl_integrity_check
@@ -2425,28 +2355,6 @@
       milestone: V2
       tests: []
     }
-    {
-      name: chip_conn_otp_ctrl_external_voltage
-      desc: '''Verify the connectivity of the external voltage signal to OTP ctrl.
-
-            Details TBD.
-            TODO; This signal is not connected in the design yet.
-            '''
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
-    {
-      name: chip_conn_otp_ctrl_scan
-      desc: '''Verify the connectivity of the scan signals to OTP ctrl.
-
-            Details TBD.
-            TODO; This signal is not connected in the design yet.
-            '''
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
 
     // FLASH (pre-verified IP) integration tests:
     {
@@ -2501,19 +2409,6 @@
             '''
       milestone: V2
       tests: ["chip_sw_flash_rma_unlocked"]
-    }
-    {
-      name: chip_conn_flash_jtag
-      desc: '''
-            Verify that the JTAG interface for the closed source flash macro is connected from chip
-            IOs.
-
-            In open source, this JTAG interface is null-terminated, so we can only verify this
-            through a connectivity test.
-            '''
-      milestone: V2
-      tests: []
-      tags: ["conn"]
     }
     {
       name: chip_sw_flash_scramble
@@ -2643,24 +2538,6 @@
       tests: []
     }
     {
-      name: chip_conn_flash_ast
-      desc: '''Verify the connectivity of AST / top level signals.
-
-            - From AST to flash ctrl:
-               flash_power_ready_h_i, flash_power_down_h_i, flash_bist_enable_i, scanmode_i,
-               scan_en_i, scan_rst_ni.
-
-            - From top level (chip IOs):
-                flash_test_mode_a_io, flash_test_voltage_h_io.
-
-            - From flash ctrl to AST:
-                flash_alert_o.
-            '''
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
-    {
       name: chip_sw_flash_ctrl_clock_freqs
       desc: '''Verify flash program and erase operations over the ctrl over a range of clock freqs.
 
@@ -2670,16 +2547,6 @@
             '''
       milestone: V2
       tests: ["chip_sw_flash_ctrl_clock_freqs"]
-    }
-    {
-      name: chip_conn_flash_lc_nvm_debug_en
-      desc: '''Verify that the lc_nvm_debug_en signal from LC ctrl is connected to the flash ctrl.
-
-            - Use connectivity test in the open source, since this signal is not used..
-            '''
-      milestone: V2
-      tests: []
-      tags: ["conn"]
     }
 
     ////////////////////////
