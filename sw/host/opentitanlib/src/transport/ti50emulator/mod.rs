@@ -79,25 +79,26 @@ impl Ti50Emulator {
     fn configure_devices(&self) -> Result<()> {
         let conf = self.inner.borrow().process.get_configurations()?;
         for (name, state) in conf.gpio.iter() {
-            let gpio: Rc<dyn GpioPin> = Rc::new(Ti50GpioPin::open(self, name, state)?);
+            let path = format!("gpio{}", name);
+            let gpio: Rc<dyn GpioPin> = Rc::new(Ti50GpioPin::open(self, &path, state)?);
             self.inner
                 .borrow_mut()
                 .gpio_map
-                .insert(name.clone(), Rc::clone(&gpio));
+                .insert(name.to_uppercase(), Rc::clone(&gpio));
         }
         for (name, path) in conf.uart.iter() {
             let uart: Rc<dyn Uart> = Rc::new(Ti50Uart::open(self, path)?);
             self.inner
                 .borrow_mut()
                 .uart_map
-                .insert(name.clone(), Rc::clone(&uart));
+                .insert(name.to_uppercase(), Rc::clone(&uart));
         }
         for (name, path) in conf.i2c.iter() {
             let i2c: Rc<dyn Bus> = Rc::new(Ti50I2cBus::open(self, path)?);
             self.inner
                 .borrow_mut()
                 .i2c_map
-                .insert(name.clone(), Rc::clone(&i2c));
+                .insert(name.to_uppercase(), Rc::clone(&i2c));
         }
         Ok(())
     }
