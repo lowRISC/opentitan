@@ -278,7 +278,7 @@ def opentitan_functest(
         ot_flash_binary = name + "_prog"
         opentitan_flash_binary(
             name = ot_flash_binary,
-            output_signed = signed,
+            signed = signed,
             deps = deps,
             **kwargs
         )

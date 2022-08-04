@@ -726,7 +726,7 @@ def opentitan_flash_binary(
         signing_keys = {
             "test_key_0": "@//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
         },
-        output_signed = False,
+        signed = False,
         manifest = None,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for flash.
@@ -740,7 +740,7 @@ def opentitan_flash_binary(
       @param name: The name of this rule.
       @param platform: The target platform for the artifacts.
       @param signing_keys: The signing keys for to sign each BIN file with.
-      @param output_signed: Whether or not to emit signed binary/VMEM files.
+      @param signed: Whether or not to emit signed binary/VMEM files.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
     Emits rules:
       For each device in per_device_deps entry:
@@ -782,7 +782,7 @@ def opentitan_flash_binary(
         bin_name = "{}_{}".format(devname, "bin")
 
         # Sign BIN (if required) and generate scrambled VMEM images.
-        if output_signed:
+        if signed:
             for (key_name, key) in signing_keys.items():
                 # Sign the Binary.
                 signed_bin_name = "{}_bin_signed_{}".format(devname, key_name)
@@ -819,25 +819,25 @@ def opentitan_flash_binary(
                     vmem = signed_vmem_name,
                     platform = platform,
                 )
-        else:
-            # Generate a VMEM64 from the binary.
-            vmem_name = "{}_vmem64".format(devname)
-            dev_targets.append(":" + vmem_name)
-            bin_to_vmem(
-                name = vmem_name,
-                bin = bin_name,
-                platform = platform,
-                word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
-            )
 
-            # Scramble VMEM64.
-            scr_vmem_name = "{}_scr_vmem64".format(devname)
-            dev_targets.append(":" + scr_vmem_name)
-            scramble_flash_vmem(
-                name = scr_vmem_name,
-                vmem = vmem_name,
-                platform = platform,
-            )
+        # Generate a VMEM64 from the binary.
+        vmem_name = "{}_vmem64".format(devname)
+        dev_targets.append(":" + vmem_name)
+        bin_to_vmem(
+            name = vmem_name,
+            bin = bin_name,
+            platform = platform,
+            word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
+        )
+
+        # Scramble VMEM64.
+        scr_vmem_name = "{}_scr_vmem64".format(devname)
+        dev_targets.append(":" + scr_vmem_name)
+        scramble_flash_vmem(
+            name = scr_vmem_name,
+            vmem = vmem_name,
+            platform = platform,
+        )
 
         # Create a filegroup with just the current device's targets.
         native.filegroup(

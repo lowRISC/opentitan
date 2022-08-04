@@ -153,7 +153,7 @@ opentitan_flash_binary(
     name = "slot_a",
     srcs = ["rom_ext_start.S"],
     manifest = ":manifest_standard",
-    output_signed = True,
+    signed = True,
     deps = [
         ":ld_slot_a",
         ":rom_ext",
@@ -166,7 +166,7 @@ opentitan_flash_binary(
     name = "slot_b",
     srcs = ["rom_ext_start.S"],
     manifest = ":manifest_standard",
-    output_signed = True,
+    signed = True,
     deps = [
         ":ld_slot_b",
         ":rom_ext",
@@ -179,7 +179,7 @@ opentitan_flash_binary(
     name = "virtual_addr",
     srcs = ["rom_ext_start.S"],
     manifest = ":manifest_virtual",
-    output_signed = True,
+    signed = True,
     deps = [
         ":ld_virtual_addr",
         ":rom_ext",
