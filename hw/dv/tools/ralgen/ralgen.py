@@ -62,8 +62,9 @@ def main():
         if hjson_path:
             args += ["--hjson-path", root_dir / hjson_path]
         if alias_hjson:
+            args += ["--alias-files"]
             for alias in alias_hjson:
-                args += ["--alias-files", root_dir / alias]
+                args += [root_dir / alias]
     if dv_base_names:
         args += ["--dv-base-names"] + dv_base_names
 
