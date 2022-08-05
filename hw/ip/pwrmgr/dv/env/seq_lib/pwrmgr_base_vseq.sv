@@ -143,6 +143,13 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   task post_apply_reset(string reset_kind = "HARD");
     super.post_apply_reset(reset_kind);
+    if (reset_kind == "HARD") begin
+      // Undo any pending resets.
+      cfg.pwrmgr_vif.rst_main_n = 1'b1;
+      cfg.pwrmgr_vif.update_resets(0);
+      clear_escalation_reset();
+    end
+
     `uvm_info(`gfn, "waiting for fast active after applying reset", UVM_MEDIUM)
 
     // There is tb lock up case
