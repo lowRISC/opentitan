@@ -65,6 +65,12 @@ ifneq (${sw_images},)
 	# If one delimiter is detected, then the full string is considered to be the
 	# <Bazel label>. If two delimiters are detected, then it must be <Bazel label>
 	# followed by <index>. The <flag> is considered optional.
+	#
+	# After the images are built, we use `bazel cquery ...` to locate the built
+	# software artifacts so they can be copied to the test bench run directory.
+	# We only copy device SW images, and do not copy host-side artifacts (like
+	# opentitantool) that are also dependencies of the Bazel test target that
+	# encode the software image targets.
 	set -e; \
 	for sw_image in ${sw_images}; do \
 		if [[ -z $$sw_image ]]; then \
@@ -73,7 +79,7 @@ ifneq (${sw_images},)
 			exit 1; \
 		fi; \
 		prebuilt_path=`echo $$sw_image | cut -d: -f 1`; \
-		bazel_label=`echo $$sw_image | cut -d: -f 1-2`; \
+		bazel_label="`echo $$sw_image | cut -d: -f 1-2`_$${sw_build_device}"; \
 		bazel_target=`echo $$sw_image | cut -d: -f 2`; \
 		index=`echo $$sw_image | cut -d: -f 3`; \
 		flags=(`echo $$sw_image | cut -d: -f 4- --output-delimiter " "`); \
@@ -83,9 +89,6 @@ ifneq (${sw_images},)
 			cp ${proj_root}/$${prebuilt_path} $${run_dir}/`basename $${prebuilt_path}`; \
 		else \
 			echo "Building SW image \"$$bazel_label\"."; \
-			if [[ $$index == "1" ]]; then \
-				bazel_label+="_sim_dv"; \
-			fi; \
 			bazel_opts="${sw_build_opts} --define DISABLE_VERILATOR_BUILD=true"; \
 			if [[ -z $${BAZEL_PYTHON_WHEELS_REPO} ]]; then \
 				echo "Building \"$${bazel_label}\" on network connected machine."; \
@@ -97,9 +100,24 @@ ifneq (${sw_images},)
 			fi; \
 			echo "Building with command: $${bazel_cmd} build $${bazel_opts} $${bazel_label}"; \
 			$${bazel_cmd} build $${bazel_opts} $${bazel_label}; \
-			find -L $$($${bazel_cmd} info output_path)/ \
-				-type f -name "$${bazel_target}*" | \
-				xargs -I % sh -c 'cp -f % $${run_dir}/$$(basename %)'; \
+			for dep in $$($${bazel_cmd} cquery "labels(data, $${bazel_label})" \
+				--ui_event_filters=-info \
+				--noshow_progress \
+				--output=starlark); do \
+				if [[ $$dep != //hw* ]] && [[ $$dep != //util* ]] && [[ $$dep != //sw/host* ]]; then \
+					for artifact in $$($${bazel_cmd} cquery $${dep} \
+						--ui_event_filters=-info \
+						--noshow_progress \
+						--output=starlark \
+						--starlark:expr="\"\\n\".join([f.path for f in target.files.to_list()])"); do \
+						cp -f $${artifact} $${run_dir}/$$(basename $${artifact}); \
+						if [[ $$artifact == *.bin ]]; then \
+							cp -f "$${artifact%.bin}.elf" \
+								$${run_dir}/$$(basename "$${artifact%.bin}.elf"); \
+						fi; \
+					done; \
+				fi; \
+			done; \
 		fi; \
 	done;
 endif
