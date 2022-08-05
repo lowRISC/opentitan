@@ -96,7 +96,7 @@ Indicative RAM sizes for common configurations are given in the table below:
 If ICacheScramble parameter is enabled, all RAM primitives are replaced with scrambling RAM primitive.
 For more information about how scrambling works internally (see :file:`vendor/lowrisc_ip/ip/prim/doc/prim_ram_1p_scr.md`).
 Interface for receiving scrambling key follows req / ack protocol.
-Ibex first requests a new ephemeral key by asserting the request (``scramble_req_o``) and when a fresh valid key is indicated by ``scramble_key_valid_i``, it deasserts the request. 
+Ibex first requests a new ephemeral key by asserting the request (``scramble_req_o``) and when a fresh valid key is indicated by ``scramble_key_valid_i``, it deasserts the request.
 Note that in current implementation, it is assumed req/ack protocol is synchronized before arriving to Ibex top level.
 
 Sub Unit Description

@@ -41,6 +41,11 @@ class ibex_rvfi_monitor extends uvm_monitor;
       trans_collected.debug_req = vif.monitor_cb.ext_debug_req;
       trans_collected.mcycle    = vif.monitor_cb.ext_mcycle;
 
+      for (int i=0; i < 10; i++) begin
+       trans_collected.mhpmcounters[i]  = vif.monitor_cb.ext_mhpmcounters[i];
+       trans_collected.mhpmcountersh[i] = vif.monitor_cb.ext_mhpmcountersh[i];
+      end
+
       `uvm_info(get_full_name(), $sformatf("Seen instruction:\n%s", trans_collected.sprint()),
         UVM_HIGH)
 

@@ -18,6 +18,7 @@ interface core_ibex_dut_probe_if(input logic clk);
   logic                    alert_major_bus;
   logic                    debug_req;
   ibex_pkg::priv_lvl_e     priv_mode;
+  ibex_pkg::ctrl_fsm_e     ctrl_fsm_cs;
 
   clocking dut_cb @(posedge clk);
     output fetch_enable;
@@ -34,6 +35,7 @@ interface core_ibex_dut_probe_if(input logic clk);
     input alert_major_internal;
     input alert_major_bus;
     input priv_mode;
+    input ctrl_fsm_cs;
   endclocking
 
   initial begin

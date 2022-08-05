@@ -658,11 +658,11 @@ module ibex_controller #(
 
         csr_save_cause_o = 1'b1;
         if (trigger_match_i) begin
-          debug_cause_o = DBG_CAUSE_TRIGGER;
-        end else if (debug_single_step_i) begin
-          debug_cause_o = DBG_CAUSE_STEP;
+          debug_cause_o = DBG_CAUSE_TRIGGER;     // (priority 4)
+        end else if (debug_req_i) begin
+          debug_cause_o = DBG_CAUSE_HALTREQ;     // (priority 1)
         end else begin
-          debug_cause_o = DBG_CAUSE_HALTREQ;
+          debug_cause_o = DBG_CAUSE_STEP;        // (priority 0, lowest)
         end
 
         // enter debug mode
@@ -815,9 +815,14 @@ module ibex_controller #(
         // Leave all other signals as is to ensure CSRs and PC get set as if
         // core was entering exception handler, entry to debug mode will then
         // see the appropriate state and setup dpc correctly.
+
         // If an EBREAK instruction is causing us to enter debug mode on the
         // same cycle as a debug_req or single step, honor the EBREAK and
-        // proceed to DBG_TAKEN_ID.
+        // proceed to DBG_TAKEN_ID, as it has the highest priority.
+        // [Debug Spec v1.0.0-STABLE, p.53]
+        // cause==EBREAK    -> prio 3 (highest)
+        // cause==debug_req -> prio 2
+        // cause==step      -> prio 1 (lowest)
         if (enter_debug_mode_prio_q && !(ebrk_insn_prio && ebreak_into_debug)) begin
           ctrl_fsm_ns = DBG_TAKEN_IF;
         end
@@ -895,6 +900,7 @@ module ibex_controller #(
       (ctrl_fsm_cs != DBG_TAKEN_ID) & (ctrl_fsm_ns == DBG_TAKEN_ID))
   `DV_FCOV_SIGNAL(logic, pipe_flush, (ctrl_fsm_cs != FLUSH) & (ctrl_fsm_ns == FLUSH))
   `DV_FCOV_SIGNAL(logic, debug_req, debug_req_i & ~debug_mode_q)
+  `DV_FCOV_SIGNAL(logic, debug_single_step_taken, do_single_step_d & ~do_single_step_q)
 
   ////////////////
   // Assertions //

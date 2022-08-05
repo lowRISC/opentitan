@@ -124,6 +124,13 @@ module ibex_top_tracing import ibex_pkg::*; #(
   logic        rvfi_ext_debug_req;
   logic [63:0] rvfi_ext_mcycle;
 
+  logic [31:0] rvfi_ext_mhpmcounters [10];
+  logic [31:0] rvfi_ext_mhpmcountersh [10];
+
+  logic [31:0] unused_perf_regs [10];
+  logic [31:0] unused_perf_regsh [10];
+
+
   logic [31:0] unused_rvfi_ext_mip;
   logic        unused_rvfi_ext_nmi;
   logic        unused_rvfi_ext_debug_req;
@@ -135,6 +142,8 @@ module ibex_top_tracing import ibex_pkg::*; #(
   assign unused_rvfi_ext_nmi = rvfi_ext_nmi;
   assign unused_rvfi_ext_debug_req = rvfi_ext_debug_req;
   assign unused_rvfi_ext_mcycle = rvfi_ext_mcycle;
+  assign unused_perf_regs = rvfi_ext_mhpmcounters;
+  assign unused_perf_regsh = rvfi_ext_mhpmcountersh;
 
   ibex_top #(
     .PMPEnable        ( PMPEnable        ),
@@ -232,6 +241,8 @@ module ibex_top_tracing import ibex_pkg::*; #(
     .rvfi_ext_nmi,
     .rvfi_ext_debug_req,
     .rvfi_ext_mcycle,
+    .rvfi_ext_mhpmcounters,
+    .rvfi_ext_mhpmcountersh,
 
     .fetch_enable_i,
     .alert_minor_o,

@@ -120,6 +120,8 @@ module ibex_top import ibex_pkg::*; #(
   output logic                         rvfi_ext_nmi,
   output logic                         rvfi_ext_debug_req,
   output logic [63:0]                  rvfi_ext_mcycle,
+  output logic [31:0]                  rvfi_ext_mhpmcounters [10],
+  output logic [31:0]                  rvfi_ext_mhpmcountersh [10],
 `endif
 
   // CPU Control Signals
@@ -364,6 +366,8 @@ module ibex_top import ibex_pkg::*; #(
     .rvfi_ext_nmi,
     .rvfi_ext_debug_req,
     .rvfi_ext_mcycle,
+    .rvfi_ext_mhpmcounters,
+    .rvfi_ext_mhpmcountersh,
 `endif
 
     .fetch_enable_i        (fetch_enable_buf),
@@ -1041,7 +1045,78 @@ module ibex_top import ibex_pkg::*; #(
 
   `ASSERT_KNOWN(IbexDataGntX, data_gnt_i)
   `ASSERT_KNOWN(IbexDataRValidX, data_rvalid_i)
-  `ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i, data_err_i}, data_rvalid_i)
+  `ifdef INC_ASSERT
+    // Ibex can have a maximum of 2 accesses outstanding on the DSide. This is because it does not
+    // speculative data accesses so the only requests that can be in flight must relate to a single
+    // ongoing load or store instruction. Due to unaligned access support a single load or store can
+    // generate 2 accesses.
+    localparam int unsigned MaxOutstandingDSideAccesses = 2;
+
+    typedef struct packed {
+      logic valid;
+      logic is_read;
+    } pending_access_t;
+
+    pending_access_t pending_dside_accesses_q[MaxOutstandingDSideAccesses];
+    pending_access_t pending_dside_accesses_d[MaxOutstandingDSideAccesses];
+    pending_access_t pending_dside_accesses_shifted[MaxOutstandingDSideAccesses];
+
+    for (genvar i = 0; i < MaxOutstandingDSideAccesses; i++) begin : g_dside_tracker
+      always_ff @(posedge clk or negedge rst_ni) begin
+        if (!rst_ni) begin
+          pending_dside_accesses_q[i] <= '0;
+        end else begin
+          pending_dside_accesses_q[i] <= pending_dside_accesses_d[i];
+        end
+      end
+
+      always_comb begin
+        pending_dside_accesses_shifted[i] = pending_dside_accesses_q[i];
+
+        if (data_rvalid_i) begin
+          if (i != MaxOutstandingDSideAccesses - 1) begin
+            pending_dside_accesses_shifted[i] = pending_dside_accesses_q[i + 1];
+          end else begin
+            pending_dside_accesses_shifted[i] = '0;
+          end
+        end
+      end
+
+      always_comb begin
+        pending_dside_accesses_d[i] = pending_dside_accesses_shifted[i];
+
+        if (data_req_o && data_gnt_i) begin
+          if (i == 0 && !pending_dside_accesses_shifted[i].valid) begin
+            pending_dside_accesses_d[i].valid = 1'b1;
+            pending_dside_accesses_d[i].is_read = ~data_we_o;
+          end else if (pending_dside_accesses_shifted[i - 1].valid &
+                       !pending_dside_accesses_shifted[i].valid) begin
+            pending_dside_accesses_d[i].valid = 1'b1;
+            pending_dside_accesses_d[i].is_read = ~data_we_o;
+          end
+        end
+      end
+    end
+
+    // We should never start a new data request if we've already got the maximum outstanding. We can
+    // start a new request in the same cycle an old one ends, in which case we'll see all pending
+    // accesses valid but one will be ending this cycle so the empty slot can be immediately used by
+    // the new request.
+    `ASSERT(MaxOutstandingDSideAccessesCorrect,
+        data_req_o |->
+        ~pending_dside_accesses_d[MaxOutstandingDSideAccesses-1].valid | data_rvalid_i)
+
+    // Should only see a request response if we're expecting one
+    `ASSERT(PendingAccessTrackingCorrect, data_rvalid_i |-> pending_dside_accesses_q[0])
+
+    // data_rdata_i and data_rdata_intg_i are only relevant to reads. Check neither are X on
+    // a response to a read.
+    `ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i},
+        data_rvalid_i & pending_dside_accesses_q[0].is_read)
+
+    // data_err_i relevant to both reads and writes. Check it isn't X on any response.
+    `ASSERT_KNOWN_IF(IbexDataRErrPayloadX, data_err_i, data_rvalid_i)
+  `endif
 
   `ASSERT_KNOWN(IbexIrqX, {irq_software_i, irq_timer_i, irq_external_i, irq_fast_i, irq_nm_i})
 

@@ -491,9 +491,13 @@ class core_ibex_directed_test extends core_ibex_debug_intr_basic_test;
   // Illegal instruction checker
   virtual task check_illegal_insn(string exception_msg);
     check_next_core_status(HANDLING_EXCEPTION, "Core did not jump to vectored exception handler", 1000);
-    check_priv_mode(PRIV_LVL_M);
     check_next_core_status(ILLEGAL_INSTR_EXCEPTION, exception_msg, 1000);
     check_mcause(1'b0, ExcCauseIllegalInsn);
+    // Ibex will wait to change the privilege mode until it is allowed to FLUSH. This happens because
+    // we are blocking the current instruction until the instruction from WB stage is ready.
+    wait (dut_vif.dut_cb.ctrl_fsm_cs == FLUSH);
+    clk_vif.wait_clks(2);
+    check_priv_mode(PRIV_LVL_M);
     wait_ret("mret", 1500);
   endtask
 
@@ -1418,5 +1422,66 @@ class core_ibex_fetch_en_chk_test extends core_ibex_directed_test;
       end
     join_any
   endtask
+
+endclass
+
+// Stimulate a combination of traps/debug requests
+// - exceptions are inserted through the instruction generator cfg (testlist.yaml)
+// - interrupts/debug requests are inserted through testbench stimulus
+class core_ibex_assorted_traps_interrupts_debug_test extends core_ibex_directed_test;
+
+   debug_new_seq debug_new_seq_h;
+   irq_new_seq irq_new_seq_h;
+
+   `uvm_component_utils(core_ibex_assorted_traps_interrupts_debug_test)
+   `uvm_component_new
+
+   virtual task send_stimulus();
+     `DV_CHECK_FATAL(cfg.require_signature_addr, "+require_signature_addr=1 is mandatory for this test.")
+
+     irq_new_seq_h = irq_new_seq::type_id::create("irq_new_seq_h", this);
+     debug_new_seq_h = debug_new_seq::type_id::create("debug_new_seq_h", this);
+
+     irq_new_seq_h.iteration_modes = InfiniteRuns;
+     irq_new_seq_h.stimulus_delay_cycles_min = 500; // Interval between requests
+     irq_new_seq_h.stimulus_delay_cycles_max = 2000;
+     irq_new_seq_h.zero_delay_pct = 10;
+     debug_new_seq_h.iteration_modes = MultipleRuns;
+     debug_new_seq_h.iteration_cnt_max = 10; // Limit this or the test will never end. (end = ecall)
+     debug_new_seq_h.pulse_length_cycles_min = 3000;   // Length of debug request pulse
+     debug_new_seq_h.pulse_length_cycles_max = 5000;
+     debug_new_seq_h.stimulus_delay_cycles_min = 5000; // Interval between requests
+     debug_new_seq_h.stimulus_delay_cycles_max = 8000;
+     debug_new_seq_h.zero_delay_pct = 0;
+
+     `uvm_info(`gfn, "Running test:->core_ibex_assorted_traps_interrupts_debug_test", UVM_LOW)
+     // Fork and never-join the different stimulus generators.
+     // Irq and Debug-Request generators should run independently to each other,
+     // and continue running until the end of the test binary.
+     fork
+       begin
+          // Calls body() in core_ibex_vseq.sv
+          // This starts the memory interface sequences
+          // (It also configures sequences enabled by plusargs, but they're not used here)
+          vseq.start(env.vseqr);
+       end
+       begin
+         // Wait for the hart to initialize
+         wait_for_core_setup();
+         // Wait for a little bit to guarantee that the core has started executing <main>
+         // before starting to generate stimulus for the core.
+         clk_vif.wait_clks(50);
+         // Now start the independent stimulus generators
+         fork
+           begin
+             debug_new_seq_h.start(env.vseqr.irq_seqr);
+           end
+           begin
+             irq_new_seq_h.start(env.vseqr.irq_seqr);
+           end
+         join_none
+       end
+     join_any
+   endtask
 
 endclass

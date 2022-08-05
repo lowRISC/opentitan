@@ -88,10 +88,16 @@ class SpikeCosim : public simif_t, public Cosim {
   bool backdoor_read_mem(uint32_t addr, size_t len, uint8_t *data_out) override;
   bool step(uint32_t write_reg, uint32_t write_reg_data, uint32_t pc,
             bool sync_trap) override;
+
+  bool check_retired_instr(uint32_t write_reg, uint32_t write_reg_data,
+                           uint32_t pc);
+  bool check_sync_trap(uint32_t write_reg, uint32_t pc,
+                       uint32_t initial_spike_pc);
   void set_mip(uint32_t mip) override;
   void set_nmi(bool nmi) override;
   void set_debug_req(bool debug_req) override;
   void set_mcycle(uint64_t mcycle) override;
+  void set_csr(const int csr_num, const uint32_t new_val) override;
   void notify_dside_access(const DSideAccessInfo &access_info) override;
   // The spike co-simulator assumes iside and dside accesses within a step are
   // disjoint. If both access the same address within a step memory faults may

@@ -555,6 +555,40 @@ module ibex_load_store_unit #(
   //////////
   // FCOV //
   //////////
+`ifndef DV_FCOV_DISABLE
+  // Set when awaiting the response for the second half of a misaligned access
+  logic fcov_mis_2_en_d, fcov_mis_2_en_q;
+
+  // fcov_mis_rvalid_1: Set when the response is received to the first half of a misaligned access,
+  // fcov_mis_rvalid_2: Set when response is received for the second half
+  logic fcov_mis_rvalid_1, fcov_mis_rvalid_2;
+
+  // Set when the first half of a misaligned access saw a bus errror
+  logic fcov_mis_bus_err_1_d, fcov_mis_bus_err_1_q;
+
+  assign fcov_mis_rvalid_1 = ls_fsm_cs inside {WAIT_RVALID_MIS, WAIT_RVALID_MIS_GNTS_DONE} &&
+                                data_rvalid_i;
+
+  assign fcov_mis_rvalid_2 = ls_fsm_cs inside {IDLE} && fcov_mis_2_en_q && data_rvalid_i;
+
+  assign fcov_mis_2_en_d = fcov_mis_rvalid_2 ? 1'b0            :  // clr
+                           fcov_mis_rvalid_1 ? 1'b1            :  // set
+                                               fcov_mis_2_en_q ;
+
+  assign fcov_mis_bus_err_1_d = fcov_mis_rvalid_2                   ? 1'b0                 : // clr
+                                fcov_mis_rvalid_1 && data_bus_err_i ? 1'b1                 : // set
+                                                                      fcov_mis_bus_err_1_q ;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      fcov_mis_2_en_q <= 1'b0;
+      fcov_mis_bus_err_1_q <= 1'b0;
+    end else begin
+      fcov_mis_2_en_q <= fcov_mis_2_en_d;
+      fcov_mis_bus_err_1_q <= fcov_mis_bus_err_1_d;
+    end
+  end
+`endif
 
   `DV_FCOV_SIGNAL(logic, ls_error_exception, (load_err_o | store_err_o) & ~pmp_err_q)
   `DV_FCOV_SIGNAL(logic, ls_pmp_exception, (load_err_o | store_err_o) & pmp_err_q)

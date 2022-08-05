@@ -237,19 +237,19 @@ class riscv_compressed_instr extends riscv_instr;
       C_LQ:
         binary = $sformatf("%4h", {get_func3(), imm[5:4], imm[8],
                                    get_c_gpr(rs1), imm[7:6], get_c_gpr(rd), get_c_opcode()});
-      C_FLD, C_LD:
+      C_LD:
         binary = $sformatf("%4h", {get_func3(), imm[5:3], get_c_gpr(rs1),
                                    imm[7:6], get_c_gpr(rd), get_c_opcode()});
-      C_LW, C_FLW:
+      C_LW:
         binary = $sformatf("%4h", {get_func3(), imm[5:3], get_c_gpr(rs1),
                                    imm[2], imm[6], get_c_gpr(rd), get_c_opcode()});
       C_SQ:
         binary = $sformatf("%4h", {get_func3(), imm[5:4], imm[8],
                                    get_c_gpr(rs1), imm[7:6], get_c_gpr(rs2), get_c_opcode()});
-      C_FSD, C_SD:
+      C_SD:
         binary = $sformatf("%4h", {get_func3(), imm[5:3], get_c_gpr(rs1),
                                    imm[7:6], get_c_gpr(rs2), get_c_opcode()});
-      C_SW, C_FSW:
+      C_SW:
         binary = $sformatf("%4h", {get_func3(), imm[5:3], get_c_gpr(rs1),
                                    imm[2], imm[6], get_c_gpr(rs2), get_c_opcode()});
       C_NOP, C_ADDI, C_LI, C_ADDIW:
@@ -301,11 +301,11 @@ class riscv_compressed_instr extends riscv_instr;
         binary = $sformatf("%4h", {get_func3(), imm[5], rd, imm[4:0], get_c_opcode()});
       C_SLLI64:
         binary = $sformatf("%4h", {get_func3(), 1'b0, rd, 5'b0, get_c_opcode()});
-      C_FLDSP, C_LDSP:
+      C_LDSP:
         binary = $sformatf("%4h", {get_func3(), imm[5], rd, imm[4:3], imm[8:6], get_c_opcode()});
       C_LQSP:
         binary = $sformatf("%4h", {get_func3(), imm[5], rd, imm[4], imm[9:6], get_c_opcode()});
-      C_LWSP, C_FLWSP:
+      C_LWSP:
         binary = $sformatf("%4h", {get_func3(), imm[5], rd, imm[4:2], imm[7:6], get_c_opcode()});
       C_JR:
         binary = $sformatf("%4h", {get_func3(), 1'b0, rs1, 5'b0, get_c_opcode()});
@@ -317,11 +317,11 @@ class riscv_compressed_instr extends riscv_instr;
         binary = $sformatf("%4h", {get_func3(), 1'b1, 10'b0, get_c_opcode()});
       C_ADD:
         binary = $sformatf("%4h", {get_func3(), 1'b1, rd, rs2, get_c_opcode()});
-      C_FSDSP, C_SDSP:
+      C_SDSP:
         binary = $sformatf("%4h", {get_func3(), imm[5:3], imm[8:6], rs2, get_c_opcode()});
       C_SQSP:
         binary = $sformatf("%4h", {get_func3(), imm[5:4], imm[9:6], rs2, get_c_opcode()});
-      C_SWSP, C_FSWSP:
+      C_SWSP:
         binary = $sformatf("%4h", {get_func3(), imm[5:2], imm[7:6], rs2, get_c_opcode()});
       default : `uvm_fatal(`gfn, $sformatf("Unsupported instruction %0s", instr_name.name()))
     endcase
@@ -331,15 +331,15 @@ class riscv_compressed_instr extends riscv_instr;
   // Get opcode for compressed instruction
   virtual function bit [1:0] get_c_opcode();
     case (instr_name) inside
-      C_ADDI4SPN, C_FLD, C_FLD, C_LQ, C_LW, C_FLW,
-      C_LD, C_FSD, C_SQ, C_SW, C_FSW, C_SD            : get_c_opcode = 2'b00;
+      C_ADDI4SPN, C_LQ, C_LW,
+      C_LD, C_SQ, C_SW, C_SD                          : get_c_opcode = 2'b00;
       C_NOP, C_ADDI, C_JAL, C_ADDIW, C_LI, C_ADDI16SP,
       C_LUI, C_SRLI, C_SRLI64, C_SRAI, C_SRAI64,
       C_ANDI, C_SUB, C_XOR, C_OR, C_AND, C_SUBW,
       C_ADDW, C_J, C_BEQZ, C_BNEZ                     : get_c_opcode = 2'b01;
-      C_SLLI, C_SLLI64, C_FLDSP, C_LQSP, C_LWSP,
-      C_FLWSP, C_LDSP, C_JR, C_MV, C_EBREAK, C_JALR,
-      C_ADD, C_FSDSP, C_SQSP, C_SWSP, C_FSWSP, C_SDSP : get_c_opcode = 2'b10;
+      C_SLLI, C_SLLI64, C_LQSP, C_LWSP,
+      C_LDSP, C_JR, C_MV, C_EBREAK, C_JALR,
+      C_ADD, C_SQSP, C_SWSP, C_SDSP                   : get_c_opcode = 2'b10;
       default : `uvm_fatal(`gfn, $sformatf("Unsupported instruction %0s", instr_name.name()))
     endcase
   endfunction : get_c_opcode
@@ -347,15 +347,11 @@ class riscv_compressed_instr extends riscv_instr;
   virtual function bit [2:0] get_func3();
     case (instr_name) inside
       C_ADDI4SPN : get_func3 = 3'b000;
-      C_FLD      : get_func3 = 3'b001;
       C_LQ       : get_func3 = 3'b001;
       C_LW       : get_func3 = 3'b010;
-      C_FLW      : get_func3 = 3'b011;
       C_LD       : get_func3 = 3'b011;
-      C_FSD      : get_func3 = 3'b101;
       C_SQ       : get_func3 = 3'b101;
       C_SW       : get_func3 = 3'b110;
-      C_FSW      : get_func3 = 3'b111;
       C_SD       : get_func3 = 3'b111;
       C_NOP      : get_func3 = 3'b000;
       C_ADDI     : get_func3 = 3'b000;
@@ -380,20 +376,16 @@ class riscv_compressed_instr extends riscv_instr;
       C_BNEZ     : get_func3 = 3'b111;
       C_SLLI     : get_func3 = 3'b000;
       C_SLLI64   : get_func3 = 3'b000;
-      C_FLDSP    : get_func3 = 3'b001;
       C_LQSP     : get_func3 = 3'b001;
       C_LWSP     : get_func3 = 3'b010;
-      C_FLWSP    : get_func3 = 3'b011;
       C_LDSP     : get_func3 = 3'b011;
       C_JR       : get_func3 = 3'b100;
       C_MV       : get_func3 = 3'b100;
       C_EBREAK   : get_func3 = 3'b100;
       C_JALR     : get_func3 = 3'b100;
       C_ADD      : get_func3 = 3'b100;
-      C_FSDSP    : get_func3 = 3'b101;
       C_SQSP     : get_func3 = 3'b101;
       C_SWSP     : get_func3 = 3'b110;
-      C_FSWSP    : get_func3 = 3'b111;
       C_SDSP     : get_func3 = 3'b111;
       default : `uvm_fatal(`gfn, $sformatf("Unsupported instruction %0s", instr_name.name()))
     endcase

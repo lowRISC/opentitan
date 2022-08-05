@@ -127,76 +127,157 @@ bool SpikeCosim::backdoor_read_mem(uint32_t addr, size_t len,
   return bus.load(addr, len, data_out);
 }
 
-bool SpikeCosim::step(uint32_t write_reg, uint32_t write_reg_data, uint32_t pc,
+// When we call processor->step(), spike advances to the next pc IFF a trap does
+// not occur. If a trap does occur, state.last_inst_pc is set to PC_INVALID, and
+// we need to call step() again to actually execute the first instruction of the
+// trap handler.
+// This sentinel value PC_INVALID of state.last_inst_pc allows the cosimulation
+// testbench to detect when spike is in this transient state, where we have
+// attempted to step but have taken a trap instead and not actually executed
+// another instruction.
+//
+// The flow of spike goes something like this...
+// - Start of processor_t::step()
+//   Set state.last_inst_pc to PC_INVALID. This is only set back to a
+//   non-sentinel valid pc if the processor is able to completely execute the
+//   next instruction. It is set back to a valid pc at the end of
+//   execute_insn().
+// - When calling execute_insn(), we try/except the fetch.func(), which
+//   eventually calls one of the templated instructions in insn_template.cc.
+//   These functions return the npc. From fetch.func(), we expect to catch
+//   the exceptions (wait_for_interrupt_t, mem_trap_t&), which don't finish
+//   executing the insn, but do result in printing to the log and re-throwing
+//   the exception to be caught up one level by the step() function.
+// - In step(), while trying to execute an instruction (down either the
+//   fast/slow paths), we can catch an exception (trap_t&, triggers::matched_t&,
+//   wait_for_interrupt_t), which means the pc never gets advanced. The pc only
+//   gets advanced right at the end of the main paths if nothing goes awry (In
+//   the macro advance_pc()).
+//   The state.last_inst_pc also remains with the sentinel value PC_INVALID.
+// - If we catch a trap_t&, then the take_trap() fn updates the state of the
+//   processor, and when we call step() again we start executing in the new
+//   context of the trap (trap andler, new MSTATUS, debug rom, etc. etc.)
+bool SpikeCosim::step(uint32_t write_reg, uint32_t write_reg_data,
+                      uint32_t pc,
                       bool sync_trap) {
   assert(write_reg < 32);
 
-  uint32_t initial_pc = (processor->get_state()->pc & 0xffffffff);
-  bool initial_pc_match = initial_pc == pc;
+  // The DUT has just produced an RVFI item
+  // (parameters of this func is the data in the RVFI item).
 
-  // Execute the next instruction
+  uint32_t initial_spike_pc;
+  bool pending_sync_exception = false;
+
+  // Before stepping Spike, record the current spike pc.
+  // (If the current step causes a synchronous trap, it will be
+  //  recorded against the current pc)
+  initial_spike_pc = (processor->get_state()->pc & 0xffffffff);
   processor->step(1);
 
+  // ISS
+  // - If encountered an async trap,
+  //    - PC_INVALID == true
+  //    - step again to execute 1st instr of handler
+  // - If encountered a sync trap,
+  //    - PC_INVALID == true
+  //    - current state is that of the trapping instruction
+  //    - step again to execute 1st instr of handler
+  // - If encountering a sync trap, immediately upon trying to jump to a async
+  //      trap handler, (the reverse is not possible, as async traps are
+  //      disabled upon entering a handler)
+  //    - PC_INVALID == true
+  //    - current state is that of the trapping instruction
+  // DUT
+  // - If the dut encounters an async trap (which can be thought of as occuring
+  //   between instructions), an rvfi_item will be generated for the the first
+  //   retired instruction of the trap handler.
+  // - If the dut encounters a sync trap, an rvfi_item will be generated for the
+  //   trapping instruction, with sync_trap == True. (The trapping instruction
+  //   is presented on the RVFI but was not retired.)
+
   if (processor->get_state()->last_inst_pc == PC_INVALID) {
-    if (processor->get_state()->mcause->read() & 0x80000000) {
-      // Interrupt occurred, step again to execute first instruction of
-      // interrupt
-      processor->step(1);
-      // TODO: Deal with exception on first instruction of interrupt
-      assert(processor->get_state()->last_inst_pc != PC_INVALID);
+    if (!(processor->get_state()->mcause->read() & 0x80000000) ||
+        processor->get_state()->debug_mode) { // (Async-Traps are disabled in debug mode)
+      // Spike encountered a synchronous trap
+      pending_sync_exception = true;
+
     } else {
-      // Otherwise a synchronous trap has occurred, check the DUT reported a
-      // synchronous trap at the same point
+      // Spike encountered an asynchronous trap.
+
+      // Step to the first instruction of the ISR.
+      initial_spike_pc = (processor->get_state()->pc & 0xffffffff);
+      processor->step(1);
+
+      if (processor->get_state()->last_inst_pc == PC_INVALID) {
+        // If we see PC_INVALID here, the first instr of the ISR must cause an
+        // exception, as interrupts are now disabled.
+        pending_sync_exception = true;
+      }
+    }
+
+    // If spike has advanced to be at a synchronous trap, now check that it
+    // matches the reported dut behaviour.
+    if (pending_sync_exception) {
       if (!sync_trap) {
         std::stringstream err_str;
-        err_str << "Synchronous trap was expected at ISS PC: " << std::hex
-                << processor->get_state()->pc
-                << " but DUT didn't report one at PC " << pc;
+        err_str << "Synchronous trap was expected at ISS PC: "
+                << std::hex << processor->get_state()->pc
+                << " but the DUT didn't report one at PC " << pc;
         errors.emplace_back(err_str.str());
-
         return false;
       }
 
-      if (!initial_pc_match) {
-        std::stringstream err_str;
-        err_str << "PC mismatch at synchronous trap, DUT: " << std::hex << pc
-                << " expected: " << std::hex << initial_pc;
-        errors.emplace_back(err_str.str());
-
+      if (!check_sync_trap(write_reg, pc, initial_spike_pc)) {
         return false;
       }
-
-      if (write_reg != 0) {
-        std::stringstream err_str;
-        err_str << "Synchronous trap occurred at PC: " << std::hex << pc
-                << "but DUT wrote to register: x" << std::dec << write_reg;
-        errors.emplace_back(err_str.str());
-
-        return false;
-      }
-
-      // Errors may have been generated outside of step() (e.g. in
-      // check_mem_access()), return false if there are any.
-      return errors.size() == 0;
+      // This is all the checking possible when consider a
+      // synchronously-trapping instruction that never retired.
+      return true;
     }
   }
 
-  // Check PC of executed instruction matches the expected PC
-  // TODO: Confirm details of why spike sign extends PC, something to do with
-  // 32-bit address as 64-bit address must be sign extended?
-  if ((processor->get_state()->last_inst_pc & 0xffffffff) != pc) {
-    std::stringstream err_str;
-    err_str << "PC mismatch, DUT: " << std::hex << pc
-            << " expected: " << std::hex
-            << processor->get_state()->last_inst_pc;
-    errors.emplace_back(err_str.str());
-
-    return false;
-  }
+  // We reached a retired instruction, so check spike and the dut behaved
+  // consistently.
 
   if (!sync_trap && pc_is_mret(pc) && nmi_mode) {
     // Do handling for recoverable NMI
     leave_nmi_mode();
+  }
+
+  if (pending_iside_error) {
+    std::stringstream err_str;
+    err_str << "DUT generated an iside error for address: "
+            << std::hex << pending_iside_err_addr
+            << " but the ISS didn't produce one";
+    errors.emplace_back(err_str.str());
+    return false;
+  }
+  pending_iside_error = false;
+
+  if (!check_retired_instr(write_reg, write_reg_data, pc)) {
+    return false;
+  }
+
+  // Only increment insn_cnt and return true if there are no errors
+  insn_cnt++;
+  return true;
+}
+
+bool SpikeCosim::check_retired_instr(uint32_t write_reg, uint32_t write_reg_data,
+                                     uint32_t dut_pc) {
+  // Check the retired instruction and all of its side-effects match those from
+  // the DUT
+
+  // Check PC of executed instruction matches the expected PC
+  // TODO: Confirm details of why spike sign extends PC, something to do with
+  // 32-bit address as 64-bit address must be sign extended?
+  if ((processor->get_state()->last_inst_pc & 0xffffffff) != dut_pc) {
+    std::stringstream err_str;
+    err_str << "PC mismatch, DUT retired : " << std::hex << dut_pc
+            << " , but the ISS retired: "
+            << std::hex << processor->get_state()->last_inst_pc;
+    errors.emplace_back(err_str.str());
+    return false;
   }
 
   // Check register writes from executed instruction match what is expected
@@ -236,30 +317,51 @@ bool SpikeCosim::step(uint32_t write_reg, uint32_t write_reg_data, uint32_t pc,
     err_str << "DUT wrote register x" << write_reg
             << " but a write was not expected" << std::endl;
     errors.emplace_back(err_str.str());
-
     return false;
   }
 
-  if (pending_iside_error) {
+  // Errors may have been generated outside of step()
+  // (e.g. in check_mem_access()).
+  if (errors.size() != 0) {
+    return false;
+  }
+
+  return true;
+}
+
+bool SpikeCosim::check_sync_trap(uint32_t write_reg,
+                                 uint32_t dut_pc, uint32_t initial_spike_pc) {
+  // Check if an synchronously-trapping instruction matches
+  // between Spike and the DUT.
+
+  // Check that both spike and DUT trapped on the same pc
+  if (initial_spike_pc != dut_pc) {
     std::stringstream err_str;
-    err_str << "DUT generated an iside error for address: " << std::hex
-            << pending_iside_err_addr << " but the ISS didn't produce one";
+    err_str << "PC mismatch at synchronous trap, DUT at pc: "
+            << std::hex << dut_pc
+            << "while ISS pc is at : "
+            << std::hex << initial_spike_pc;
     errors.emplace_back(err_str.str());
-
     return false;
   }
 
-  pending_iside_error = false;
+  // A sync trap should not have any side-effects, as the instruction appears on
+  // the DUT RVFI but is not actually retired.
+  if (write_reg != 0) {
+    std::stringstream err_str;
+    err_str << "Synchronous trap occurred at PC: " << std::hex << dut_pc
+            << "but DUT wrote to register: x" << std::dec << write_reg;
+    errors.emplace_back(err_str.str());
+    return false;
+  }
 
   // Errors may have been generated outside of step() (e.g. in
-  // check_mem_access()). Only increment insn_cnt and return true if there are
-  // no errors
-  if (errors.size() == 0) {
-    insn_cnt++;
-    return true;
+  // check_mem_access()), return false if there are any.
+  if (errors.size() != 0) {
+    return false;
   }
 
-  return false;
+  return true;
 }
 
 bool SpikeCosim::check_gpr_write(const commit_log_reg_t::value_type &reg_change,
@@ -364,6 +466,16 @@ void SpikeCosim::set_mcycle(uint64_t mcycle) {
   // access and avoid that decrement but backdoor access isn't part of the
   // public CSR interface.
   processor->get_state()->mcycle->write(mcycle + 1);
+}
+
+void SpikeCosim::set_csr(const int csr_num, const uint32_t new_val) {
+  // Note that this is tested with ibex-cosim-v0.3 version of Spike. 'set_csr'
+  // method might have a hardwired zero for mhpmcounterX registers.
+#ifdef OLD_SPIKE
+  processor->set_csr(csr_num, new_val);
+#else
+  processor->put_csr(csr_num, new_val);
+#endif
 }
 
 void SpikeCosim::notify_dside_access(const DSideAccessInfo &access_info) {

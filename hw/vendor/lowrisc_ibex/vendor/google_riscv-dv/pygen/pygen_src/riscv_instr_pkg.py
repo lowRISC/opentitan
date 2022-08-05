@@ -1180,9 +1180,9 @@ class jalr_riscv_reg_t(IntEnum):
 
 # ePMP machine security configuration
 class mseccfg_reg_t(IntEnum):
-    rlb = 1b1
-    mmwp = 1b0
-    mml = 1b0
+    rlb = 0b1
+    mmwp = 0b0
+    mml = 0b0
 
 
 # PMP address matching mode

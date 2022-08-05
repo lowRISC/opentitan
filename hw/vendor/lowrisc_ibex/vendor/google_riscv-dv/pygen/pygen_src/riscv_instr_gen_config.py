@@ -475,9 +475,6 @@ class riscv_instr_gen_config:
         logging.info("min_stack_len_per_program value = {}"
                      .format(self.min_stack_len_per_program))
         self.check_setting()  # check if the setting is legal
-        # WFI is not supported in umode
-        if self.init_privileged_mode == privileged_mode_t.USER_MODE:
-            self.no_wfi = 1
 
     def check_setting(self):
         support_64b = 0

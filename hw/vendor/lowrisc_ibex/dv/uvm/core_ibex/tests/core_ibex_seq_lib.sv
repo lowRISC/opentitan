@@ -36,6 +36,10 @@ class core_base_seq #(type REQ = uvm_sequence_item) extends uvm_sequence#(REQ);
     end
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
     clk_vif.wait_clks(delay);
+
+    // Loop around until 'stop_seq' is set to 1 externally, or "num_of_iterations" times,
+    // whichever is longer.
+    // Send a request() each time with a randomized interval between items.
     `uvm_info(get_full_name(), "Starting sequence...", UVM_LOW)
     if (!is_started) is_started = 1'b1;
     while (!stop_seq) begin
@@ -98,17 +102,16 @@ class irq_raise_seq extends irq_base_seq;
   bit no_fast;
 
   virtual function void randomize_item(irq_seq_item irq);
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(irq, num_of_interrupt > 1;
-                                        if (no_nmi) {
-                                          irq_nm == 0;
-                                        }
-                                        if (no_fast) {
-                                          irq_fast == '0;
-                                        })
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(irq,
+      // with {"CONSTRAINTS"}
+      num_of_interrupt > 1;
+      no_nmi  -> irq_nm   ==  0;
+      no_fast -> irq_fast == '0;)
   endfunction
 
 endclass
 
+// Irq sequence that raises a single interrupt input signal
 class irq_raise_single_seq extends irq_base_seq;
 
   `uvm_object_utils(irq_raise_single_seq)
@@ -118,25 +121,26 @@ class irq_raise_single_seq extends irq_base_seq;
   bit no_fast;
 
   virtual function void randomize_item(irq_seq_item irq);
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(irq, num_of_interrupt == 1;
-                                        if (no_nmi) {
-                                          irq_nm == 0;
-                                        }
-                                        if (no_fast) {
-                                          irq_fast == '0;
-                                        })
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(irq,
+      // with {"CONSTRAINTS"}
+      num_of_interrupt == 1;
+      no_nmi  -> irq_nm   ==  0;
+      no_fast -> irq_fast == '0;)
   endfunction
 
 endclass
 
+// Irq sequence that ONLY raises the nmi signal
 class irq_raise_nmi_seq extends irq_base_seq;
 
   `uvm_object_utils(irq_raise_nmi_seq)
   `uvm_object_new
 
   virtual function void randomize_item(irq_seq_item irq);
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(irq, num_of_interrupt == 1;
-                                        irq_nm == 1;)
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(irq,
+      // with {"CONSTRAINTS"}
+      num_of_interrupt == 1;
+      irq_nm           == 1;)
   endfunction
 
 endclass

@@ -292,42 +292,91 @@ class riscv_pmp_cfg extends uvm_object;
   // Since either 4 (in rv32) or 8 (in rv64) PMP configuration registers fit into one physical
   // CSR, this function waits until it has reached this maximum to write to the physical CSR to
   // save some extraneous instructions from being performed.
+  //
+  // The general flow of this function:
+  // - Set address of region 0 before setting MSECCFG
+  // - If  MML, initially set MSECCFG to MML=0, MMWP=0, RLB=1
+  // - If  MML, set the config of region 0 to LXWR=1100 and TOR
+  // - If MMWP, set the config of region 0 to LXWR=0100 and TOR
+  // - If MML or MMWP, set requested MSECCFG with RLB hardcoded to 1
+  // - Don't override region 0 config if `+pmp_region_0` is passed
+  // - Set default region 0 config in MML mode to shared execute
+  // - Set all other addresses and configs
+  // - Set requested MSECCFG (including RLB)
   function void gen_pmp_instr(riscv_reg_t scratch_reg[2], ref string instr[$]);
     bit [XLEN - 1 : 0] pmp_word;
     bit [XLEN - 1 : 0] cfg_bitmask;
     bit [7 : 0] cfg_byte;
     int pmp_id;
+    string arg_value;
+
+    // Load the address of the <main> section into pmpaddr0.
+    // This needs to be done before setting MSECCFG in the case of MML or MMWP.
+    instr.push_back($sformatf("la x%0d, main", scratch_reg[0]));
+    instr.push_back($sformatf("srli x%0d, x%0d, 2", scratch_reg[0], scratch_reg[0]));
+    instr.push_back($sformatf("csrw 0x%0x, x%0d", base_pmp_addr, scratch_reg[0]));
+    `uvm_info(`gfn, "Loaded the address of <main> section into pmpaddr0", UVM_LOW)
+
     if (riscv_instr_pkg::support_epmp) begin
-      `uvm_info(`gfn, $sformatf("MSECCFG: MML %0x, MMWP %0x, RLB %0x", mseccfg.mml,
-          mseccfg.mmwp, mseccfg.rlb), UVM_LOW)
-      cfg_byte = {mseccfg.rlb, mseccfg.mmwp, mseccfg.mml};
+      // In case of MML or MMWP we need to set region 0 to executable before setting MSECCFG.
+      if (mseccfg.mml == 1 || mseccfg.mmwp == 1) begin
+        if (mseccfg.mml == 1) begin
+          // Writing MSECCFG with RLB set to 1 to stop the config with L enabled from locking
+          // everything before configuration is done.
+          `uvm_info(`gfn, $sformatf("MSECCFG: MML 0, MMWP 0, RLB 1"), UVM_LOW)
+          cfg_byte = {1'b1, 1'b0, 1'b0};
+          instr.push_back($sformatf("csrwi 0x%0x, %0d", MSECCFG, cfg_byte));
+          // This configuration needs to be executable in M-mode both before and after writing to
+          // MSECCFG. It will deny execution for U-Mode, but this is necessary because RWX=111 in
+          // MML means read only, and RW=01 is not allowed before MML is enabled.
+          cfg_byte = {1'b1, pmp_cfg[0].zero, TOR, 1'b1, 1'b0, 1'b0};
+        end else begin
+          // We must set pmp region 0 to executable before enabling MMWP. RW=00 to be consistend
+          // with MML configuration as much as possible.
+          cfg_byte = {1'b0, pmp_cfg[0].zero, TOR, 1'b1, 1'b0, 1'b0};
+        end
+        // Enable the selected config on region 0.
+        `uvm_info(`gfn, $sformatf("temporary pmp_word: 0x%0x", cfg_byte), UVM_DEBUG)
+        instr.push_back($sformatf("li x%0d, 0x%0x", scratch_reg[0], cfg_byte));
+        instr.push_back($sformatf("csrw 0x%0x, x%0d", base_pmpcfg_addr, scratch_reg[0]));
+      end
+      // Writing MSECCFG with RLB still set to 1 otherwise we cannot complete configuration.
+      `uvm_info(`gfn, $sformatf("MSECCFG: MML %0x, MMWP %0x, RLB 1", mseccfg.mml, mseccfg.mmwp),
+                UVM_LOW)
+      cfg_byte = {1'b1, mseccfg.mmwp, mseccfg.mml};
       instr.push_back($sformatf("csrwi 0x%0x, %0d", MSECCFG, cfg_byte));
     end
+
     foreach (pmp_cfg[i]) begin
-      // TODO(udinator) condense this calculations if possible
       pmp_id = i / cfg_per_csr;
-      if (i == 0) begin
-        cfg_byte = {1'b0, pmp_cfg[i].zero, TOR, 1'b1, 1'b1, 1'b1};
+      // In case an argument is give, we want to allow the test writer to change region 0 to
+      // anything they like even if it means that a trap occurs on the next instruction. If no
+      // argument is given, we should set region 0 to have a configuration with execute enabled.
+      if (i == 0 && !inst.get_arg_value("+pmp_region_0=", arg_value)) begin
+        if(riscv_instr_pkg::support_epmp && mseccfg.mml) begin
+          // This value is different from above (M-mode execute only) because we need region 0 to
+          // be executable in both M-mode and U-mode, since RISCV-DV switches privledge before
+          // <main> but after <pmp_setup>. We choose not to use the shared code region that also
+          // allows read in M-mode because that is inconsitente with the execute-only in other
+          // modes.
+          cfg_byte = {1'b1, pmp_cfg[i].zero, TOR, 1'b0, 1'b1, 1'b0}; // Shared execute only.
+        end else begin
+          cfg_byte = {1'b0, pmp_cfg[i].zero, TOR, 1'b1, 1'b0, 1'b0}; // Execute only to match MML.
+        end
       end else begin
         cfg_byte = {pmp_cfg[i].l, pmp_cfg[i].zero, pmp_cfg[i].a,
-                    pmp_cfg[i].x, pmp_cfg[i].w, pmp_cfg[i].r};
+                    pmp_cfg[i].x, pmp_cfg[i].w,    pmp_cfg[i].r};
       end
       `uvm_info(`gfn, $sformatf("cfg_byte: 0x%0x", cfg_byte), UVM_DEBUG)
-      // First write to the appropriate pmpaddr CSR
+      // First write to the appropriate pmpaddr CSR.
       cfg_bitmask = cfg_byte << ((i % cfg_per_csr) * 8);
       `uvm_info(`gfn, $sformatf("cfg_bitmask: 0x%0x", cfg_bitmask), UVM_DEBUG)
       pmp_word = pmp_word | cfg_bitmask;
       `uvm_info(`gfn, $sformatf("pmp_word: 0x%0x", pmp_word), UVM_DEBUG)
       cfg_bitmask = 0;
-      if (i == 0) begin
-        // load the address of the <main> section into pmpaddr0
-        instr.push_back($sformatf("la x%0d, main", scratch_reg[0]));
-        instr.push_back($sformatf("srli x%0d, x%0d, 2", scratch_reg[0], scratch_reg[0]));
-        instr.push_back($sformatf("csrw 0x%0x, x%0d", base_pmp_addr + i, scratch_reg[0]));
-        `uvm_info(`gfn, "Loaded the address of <main> section into pmpaddr0", UVM_LOW)
-      end else begin
+      if (i != 0) begin
         // If an actual address has been set from the command line, use this address,
-        // otherwise use the default offset+<main> address
+        // otherwise use the default offset+<main> address.
         //
         // TODO(udinator) - The practice of passing in a max offset from the command line
         //  is somewhat unintuitive, and is just an initial step. Eventually a max address
@@ -343,33 +392,36 @@ class riscv_pmp_cfg extends uvm_object;
                     $sformatf("Address 0x%0x loaded into pmpaddr[%d] CSR", base_pmp_addr + i, i),
                     UVM_LOW);
         end else begin
-          // Add the offset to the base address to get the other pmpaddr values
+          // Add the offset to the base address to get the other pmpaddr values.
           instr.push_back($sformatf("la x%0d, main", scratch_reg[0]));
           instr.push_back($sformatf("li x%0d, 0x%0x", scratch_reg[1], pmp_cfg[i].offset));
           instr.push_back($sformatf("add x%0d, x%0d, x%0d",
                                     scratch_reg[0], scratch_reg[0], scratch_reg[1]));
           instr.push_back($sformatf("srli x%0d, x%0d, 2", scratch_reg[0], scratch_reg[0]));
           instr.push_back($sformatf("csrw 0x%0x, x%0d", base_pmp_addr + i, scratch_reg[0]));
-          `uvm_info(`gfn, $sformatf("Offset of pmp_addr_%d from pmpaddr0: 0x%0x",
-                                    i, pmp_cfg[i].offset), UVM_LOW)
+          `uvm_info(`gfn, $sformatf("Offset of pmp_addr_%d from pmpaddr0: 0x%0x", i,
+                    pmp_cfg[i].offset), UVM_LOW)
         end
       end
       // Now, check if we have to write to the appropriate pmpcfg CSR.
-        // Short circuit if we reach the end of the list
+      // Short circuit if we reach the end of the list.
       if (i == pmp_cfg.size() - 1) begin
         instr.push_back($sformatf("li x%0d, 0x%0x", scratch_reg[0], pmp_word));
-        instr.push_back($sformatf("csrw 0x%0x, x%0d",
-                                  base_pmpcfg_addr + pmp_id,
-                                  scratch_reg[0]));
-        return;
+        instr.push_back($sformatf("csrw 0x%0x, x%0d", base_pmpcfg_addr + pmp_id, scratch_reg[0]));
+        break;
       end else if ((i + 1) % cfg_per_csr == 0) begin
-        // if we've filled up pmp_word, write to the corresponding CSR
+        // If we've filled up pmp_word, write to the corresponding CSR.
         instr.push_back($sformatf("li x%0d, 0x%0x", scratch_reg[0], pmp_word));
-        instr.push_back($sformatf("csrw 0x%0x, x%0d",
-                                  base_pmpcfg_addr + pmp_id,
-                                  scratch_reg[0]));
+        instr.push_back($sformatf("csrw 0x%0x, x%0d", base_pmpcfg_addr + pmp_id, scratch_reg[0]));
         pmp_word = 0;
       end
+    end
+    // Unsetting RLB if that was requested.
+    if (riscv_instr_pkg::support_epmp && !mseccfg.rlb) begin
+      `uvm_info(`gfn, $sformatf("MSECCFG: MML %0x, MMWP %0x, RLB %0x", mseccfg.mml, mseccfg.mmwp,
+                mseccfg.rlb), UVM_LOW)
+      cfg_byte = {mseccfg.rlb, mseccfg.mmwp, mseccfg.mml};
+      instr.push_back($sformatf("csrwi 0x%0x, %0d", MSECCFG, cfg_byte));
     end
   endfunction
 
