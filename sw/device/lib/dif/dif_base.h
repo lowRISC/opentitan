@@ -15,6 +15,10 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
 
+#define USING_INTERNAL_STATUS
+#include "sw/device/lib/base/internal/status.h"
+#undef USING_INTERNAL_STATUS
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -43,44 +47,44 @@ typedef enum dif_result {
   /**
    * Indicates that the operation succeeded.
    */
-  kDifOk = 0,
+  kDifOk = kOk,
   /**
    * Indicates some unspecified failure.
    */
-  kDifError = 1,
+  kDifError = kInternal,
   /**
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
    * When this value is returned, no hardware operations occurred.
    */
-  kDifBadArg = 2,
+  kDifBadArg = kInvalidArgument,
   /**
    * The operation failed because writes to a required register are
    * disabled.
    */
-  kDifLocked = 3,
+  kDifLocked = kFailedPrecondition,
   /**
    * The operation failed because the IP is processing an operation, and will
    * finish in some amount of time. A function that returns this error may be
    * retried at any time, and is guaranteed to have not produced any side
    * effects.
    */
-  kDifUnavailable = 4,
+  kDifUnavailable = kUnavailable,
   /**
    * Indicates that the Ip's FIFO (if it has one or more of) is full.
    */
-  kDifIpFifoFull = 5,
+  kDifIpFifoFull = kResourceExhausted,
   /**
    * Indicates that the attempted operation would attempt a read/write to an
    * address that would go out of range.
    */
-  kDifOutOfRange = 6,
+  kDifOutOfRange = kOutOfRange,
   /**
    * Indicates that the attempted operation would attempt a read/write to an
    * address that is not aligned.
    */
-  kDifUnaligned = 7,
+  kDifUnaligned = kUnimplemented,
 } dif_result_t;
 
 /**

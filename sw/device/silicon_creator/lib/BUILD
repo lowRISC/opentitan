@@ -109,9 +109,9 @@ cc_library(
     name = "error",
     hdrs = ["error.h"],
     deps = [
-        "//sw/device/lib/base:absl_status",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base/internal:status",
     ],
 )
 
