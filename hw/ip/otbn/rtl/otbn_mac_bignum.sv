@@ -95,8 +95,8 @@ module otbn_mac_bignum
   // assertions are not visible to EDA tools working with the synthesizable subset of the code
   // (e.g., Verilator), they cause lint errors in some of those tools.  Prevent these errors by
   // assigning the reset signal to a signal that is okay to be unused.
-  logic _unused_ok;
-  assign _unused_ok = &(rst_ni);
+  logic unused_ok;
+  assign unused_ok = ^(rst_ni);
 
   assign mul_res = mul_op_a * mul_op_b;
 

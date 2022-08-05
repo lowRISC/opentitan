@@ -314,17 +314,15 @@ module otbn_start_stop_control
     end
   end
 
-  logic [MuBi4Width-1:0] wipe_after_urnd_refresh_q_raw;
-  prim_flop #(
-    .Width      (MuBi4Width),
-    .ResetValue (MuBi4False)
+  prim_mubi4_sender #(
+    .AsyncOn(1),
+    .ResetValue(MuBi4False)
   ) u_wipe_after_urnd_refresh_flop (
     .clk_i,
     .rst_ni,
-    .d_i (wipe_after_urnd_refresh_d),
-    .q_o (wipe_after_urnd_refresh_q_raw)
+    .mubi_i(wipe_after_urnd_refresh_d),
+    .mubi_o(wipe_after_urnd_refresh_q)
   );
-  assign wipe_after_urnd_refresh_q = mubi4_t'(wipe_after_urnd_refresh_q_raw);
 
   assign sec_wipe_addr_o = addr_cnt_q;
 
