@@ -19,17 +19,20 @@ def _ujson_rust(ctx):
     rustfmt_files = ctx.attr._rustfmt.data_runfiles.files.to_list()
     rustfmt = [f for f in rustfmt_files if f.basename == "rustfmt"][0]
 
+    defines = ["-D{}".format(d) for d in ctx.attr.defines]
+
     # The pipeline for generating rust code from a ujson header file:
     # 1. Preprocess the file with RUST_PREPROCESSOR_EMIT
     # 2. Grep out all the preprocessor noise (which starts with `#`).
     # 3. Substitute all `rust_attr` for `#`, thus creating rust attributes.
     # 4. Format it with `rustfmt` so it looks nice and can be inspected.
     command = """
-        {preprocessor} -nostdinc -I. -DRUST_PREPROCESSOR_EMIT=1 -DNOSTDINC=1 $@ \
+        {preprocessor} -nostdinc -I. -DRUST_PREPROCESSOR_EMIT=1 -DNOSTDINC=1 {defines} $@ \
         | grep -v '#' \
         | sed -e "s/rust_attr/#/g" \
         | {rustfmt} > {module}""".format(
         preprocessor = cc_toolchain.preprocessor_executable,
+        defines = " ".join(defines),
         module = module.path,
         rustfmt = rustfmt.path,
     )
@@ -51,6 +54,9 @@ ujson_rust = rule(
         "srcs": attr.label_list(
             providers = [CcInfo],
             doc = "ujson cc_library targets to generate Rust for",
+        ),
+        "defines": attr.string_list(
+            doc = "C preprocessor defines",
         ),
         "ujson_lib": attr.label(
             default = "//sw/device/lib/ujson",

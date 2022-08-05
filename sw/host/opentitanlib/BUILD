@@ -3,8 +3,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("//rules:ujson.bzl", "ujson_rust")
 
 package(default_visibility = ["//visibility:public"])
+
+ujson_rust(
+    name = "e2e_command",
+    srcs = ["//sw/device/silicon_creator/rom/e2e/json:command"],
+    defines = ["opentitanlib=crate"],
+)
 
 filegroup(
     name = "config",
@@ -59,6 +66,7 @@ rust_library(
         "src/spiflash/mod.rs",
         "src/spiflash/sfdp.rs",
         "src/test_utils/bootstrap.rs",
+        "src/test_utils/e2e_command.rs",
         "src/test_utils/init.rs",
         "src/test_utils/load_bitstream.rs",
         "src/test_utils/mod.rs",
@@ -114,10 +122,14 @@ rust_library(
     ],
     compile_data = [
         ":config",
+        ":e2e_command",
     ],
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
+    rustc_env = {
+        "e2e_command": "$(location :e2e_command)",
+    },
     deps = [
         "//third_party/rust/crates:anyhow",
         "//third_party/rust/crates:bitflags",

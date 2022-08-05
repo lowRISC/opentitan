@@ -2,9 +2,5 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-pub mod bootstrap;
-pub mod e2e_command;
-pub mod init;
-pub mod load_bitstream;
-pub mod rpc;
-pub mod status;
+#define UJSON_SERDE_IMPL
+#include "sw/device/silicon_creator/rom/e2e/json/command.h"
