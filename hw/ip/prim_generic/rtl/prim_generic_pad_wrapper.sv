@@ -38,6 +38,7 @@ module prim_generic_pad_wrapper
                          attr_i.drive_strength[3:1],
                          attr_i.od_en,
                          attr_i.schmitt_en,
+                         attr_i.keep_en,
                          scanmode_i,
                          pok_i};
 
@@ -80,14 +81,13 @@ module prim_generic_pad_wrapper
     assign (pull0, pull1)     inout_io = (oe && !attr_i.drive_strength[0]) ? out : 1'bz;
     // pullup / pulldown termination
     assign (weak0, weak1)     inout_io = attr_i.pull_en ? attr_i.pull_select : 1'bz;
-    // fake trireg emulation
-    assign (weak0, weak1)     inout_io = (attr_i.keep_en) ? inout_io : 1'bz;
   `endif
   end else if (PadType == AnalogIn0 || PadType == AnalogIn1) begin : gen_analog
 
     logic unused_ana_sigs;
     assign unused_ana_sigs = ^{attr_i, out_i, oe_i, ie_i};
 
+    assign inout_io = 1'bz; // explicitly make this tristate to avoid lint errors.
     assign in_o = inout_io;
     assign in_raw_o = inout_io;
 
