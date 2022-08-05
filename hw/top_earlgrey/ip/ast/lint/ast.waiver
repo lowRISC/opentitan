@@ -25,7 +25,11 @@ waive -rules IFDEF_CODE -location {aon_osc.sv io_osc.sv sys_osc.sv usb_osc.sv} \
       -comment {This ifdef statement is fine as it is part of the FPGA/Verilator clock bypass mechanism.}
 
 waive -rules IFDEF_CODE -location {aon_osc.sv io_osc.sv sys_osc.sv usb_osc.sv} \
-      -regexp {Assignment to 'en_osc_re' contained within `else block at} \
+      -regexp {Assignment to 'en_osc_re' contained within} \
+      -comment {This ifdef statement is fine as it is part of the FPGA/Verilator clock bypass mechanism.}
+
+waive -rules IFDEF_CODE -location {aon_osc.sv} \
+      -regexp {Assignment to 'clk' contained within} \
       -comment {This ifdef statement is fine as it is part of the FPGA/Verilator clock bypass mechanism.}
 
 waive -rules CLOCK_EDGE -location {aon_osc.sv io_osc.sv sys_osc.sv usb_osc.sv} \
@@ -243,3 +247,7 @@ waive -rules Z_USE -location {ast.sv} \
 waive -rules MULTI_RESET -location {rglts_pdm_3p3v.sv} \
       -msg {Found 2 asynchronous resets for this block: 'vcc_pok_rst_h_n', 'vcc_pok_set_h'} \
       -comment {This code is only a model and hence this is allowed.}
+
+waive -rules NOT_READ -location {aon_osc.sv io_osc.sv sys_osc.sv usb_osc.sv} \
+      -msg {Signal 'en_osc' is not read from in module} \
+      -comment {Signal 'en_osc' is not read when SYNTHESIS is defined, and AST_BYPASS_CLK is not defined.}
