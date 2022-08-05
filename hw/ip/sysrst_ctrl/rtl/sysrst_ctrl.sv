@@ -337,11 +337,8 @@ module sysrst_ctrl
     if(~rst_aon_ni) begin
       aon_intr_req <= 1'b0;
     end else begin
-      if (aon_intr_ack) begin
-        aon_intr_req <= 1'b0;
-      end else begin
-        aon_intr_req <= aon_intr_req || aon_intr_event_pulse;
-      end
+      // A new interrupt event has priority over the acknowledge pulse.
+      aon_intr_req <= (aon_intr_req && !aon_intr_ack) || aon_intr_event_pulse;
     end
   end
 
