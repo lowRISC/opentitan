@@ -2137,10 +2137,14 @@
       name: chip_sw_otbn_mem_scramble
       desc: '''Verify the OTBN can receive keys from the OTP to scramble the OTBN imem and dmem.
 
+            - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
+              done by the test_rom startup code).
             - Have OTBN fetch a new key and nonce from the OTP_CTRL.
             - Write and read-check OTBN and IMEM for consistency.
             - Fetch a new key from the OTP_CTRL and ensure that previous contents in the IMEM and
               DMEM cannot be read anymore.
+            - Verify the validity of EDN's output to OTP_CTRL via assertions
+              (unique, non-zero data).
             '''
       milestone: V2
       tests: ["chip_sw_otbn_mem_scramble"]
@@ -2179,11 +2183,15 @@
       name: chip_sw_sram_scrambled_access
       desc: '''Verify scrambled memory accesses to both main and retention SRAMs.
 
+            - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
+              done by the test_rom startup code).
             - Trigger both SRAMs to fetch a new key and nonce from the OTP_CTRL
             - Drive the CPU to perform random accesses to both RAMs and verify these operations
               complete successfully by using the backdoor interface
-            - Fetch a new key from the OTP_CTRL and ensure that the previous contents cannot be read
-              anymore.
+            - Fetch a new key from the OTP_CTRL and ensure that the previous contents cannot be
+              read anymore.
+            - Verify the validity of EDN's output to OTP_CTRL via assertions
+              (unique, non-zero data).
             '''
       milestone: V2
       tests: ["chip_sw_sram_ctrl_ret_scrambled_access",
@@ -2273,10 +2281,15 @@
             - Verify the correctness of keys provided to SRAM ctrl (main & ret), flash ctrl, keymgr,
               (note that keymgr does not have handshake), and OTBN.
 
-            X-ref'ed with IP tests that consume these signals.
+            X-ref'ed with the following IP tests that consume these signals:
+            - chip_sw_sram_scrambled_access
+            - chip_sw_flash_scramble
+            - chip_sw_keymgr_key_derivation
+            - chip_sw_otbn_mem_scramble
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_sram_ctrl_ret_scrambled_access", "chip_sw_flash_init",
+              "chip_sw_keymgr_key_derivation", "chip_sw_otbn_mem_scramble"]
     }
     {
       name: chip_sw_otp_ctrl_entropy
@@ -2286,7 +2299,8 @@
             to receive some entropy bits before the keys for SRAM ctrl and OTBN are computed.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_sram_ctrl_ret_scrambled_access", "chip_sw_flash_init",
+              "chip_sw_keymgr_key_derivation", "chip_sw_otbn_mem_scramble"]
     }
     {
       name: chip_sw_otp_ctrl_program
