@@ -176,7 +176,7 @@ For example:
 - Some libc macros, like `static_assert`, may not be present in C++.
 - Character literals type as `char` in C++ but `int` in C.
 
-Such files must be explictly marked with `extern` guards like the following, starting after the file's `#include`s.
+Such files must be explicitly marked with `extern` guards like the following, starting after the file's `#include`s.
 ```
 #ifdef __cplusplus
 extern "C" {
@@ -245,7 +245,7 @@ This feature is fairly mature in both compilers, though it varies from the C11 v
   - It can only be used with structs and unions, not arrays.
   - Members must be initialized in declaration order.
 
-Because it is especially useful with types declared for C, we allow designatued initializers whenever the type is a plain-old-data type, and:
+As it is especially useful with types declared for C, we allow designated initializers whenever the type is a plain-old-data type, and:
   - All members are public.
   - It has no non-trivial constructors.
   - It has no `virtual` members.
@@ -254,7 +254,7 @@ Furthermore, designated initializers do not play well with type deduction and ov
 As such, they are forbidden in the following contexts:
 - Do not call overloaded functions with a designated initializer: `overloaded({ .foo = 0 })`.
   Instead, disambiguate with syntax like `T var = { .foo = 0 }; overloaded(var);`.
-- Do not use designated initializers in any place where they would be used for type defuction.
+- Do not use designated initializers in any place where they would be used for type deduction.
   This includes `auto`, such as `auto var = { .foo = 0 };`, and a templated argument in a template function.
 
 It is recommended to only use designated initializers with types which use C-style declarations.
@@ -413,8 +413,8 @@ __attribute__((section(".crt"))) void _crt(void);
 
 ### Nonstandard Compiler Builtins
 
-In order to avoid a total reliance on one single compiler, any nonstandard compiler builtins (also known as intrinsics) should be used via a single canonical definition.
-This ensures changes to add compatibilty for other compilers are less invasive, as we already have a function to include a full implementation within.
+In order to avoid a total reliance on a single compiler, any nonstandard compiler builtins (also known as intrinsics) should be used via a single canonical definition.
+This ensures changes that add compatibility for other compilers are less invasive, as we already have a function that includes a full implementation.
 
 All nonstandard builtins should be supported by both GCC and Clang.
 Compiler builtin usage is complex, and it is recommended that a compiler engineer reviews any code that adds new builtins.
