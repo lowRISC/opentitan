@@ -166,20 +166,6 @@ TEST_F(FlashCtrlTest, NullArgs) {
   EXPECT_DIF_BADARG(
       dif_flash_ctrl_get_ecc_errors(&dif_flash_ctrl_, 0, nullptr));
 
-  dif_flash_ctrl_phy_config_t phy_config_arg{};
-  EXPECT_DIF_BADARG(
-      dif_flash_ctrl_set_phy_configuration(nullptr, phy_config_arg));
-  EXPECT_DIF_BADARG(
-      dif_flash_ctrl_get_phy_configuration(nullptr, &phy_config_arg));
-  EXPECT_DIF_BADARG(
-      dif_flash_ctrl_get_phy_configuration(&dif_flash_ctrl_, nullptr));
-
-  EXPECT_DIF_BADARG(dif_flash_ctrl_lock_phy_configuration(nullptr));
-  EXPECT_DIF_BADARG(
-      dif_flash_ctrl_phy_configuration_is_locked(nullptr, &bool_arg));
-  EXPECT_DIF_BADARG(
-      dif_flash_ctrl_phy_configuration_is_locked(&dif_flash_ctrl_, nullptr));
-
   dif_flash_ctrl_phy_status_t phy_status_arg{};
   EXPECT_DIF_BADARG(dif_flash_ctrl_get_phy_status(nullptr, &phy_status_arg));
   EXPECT_DIF_BADARG(dif_flash_ctrl_get_phy_status(&dif_flash_ctrl_, nullptr));
