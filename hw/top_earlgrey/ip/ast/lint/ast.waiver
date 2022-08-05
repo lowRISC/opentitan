@@ -4,6 +4,10 @@
 #
 # waiver file for ast
 
+waive -rules CONST_FF -location {ast_clks_byp.sv} \
+      -msg {Flip-flop 'sw_clk_byp_en' is driven by constant one} \
+      -comment {This flip flop is supposed to change to 1 on the first clock cycle and remain there afterwards.}
+
 waive -rules IFDEF_CODE -location {ast.sv} \
       -msg {Assignment to 'ast2pad_t0_ao' contained within `else block at ast.sv} \
       -comment {This ifdef statement is used for analog simulations and is OK.}
@@ -28,6 +32,10 @@ waive -rules CLOCK_EDGE -location {aon_osc.sv io_osc.sv sys_osc.sv usb_osc.sv} \
       -msg {Falling edge of clock 'clk' used here, should use rising edge} \
       -comment {This negedge trigger is done on purpose.}
 
+waive -rules CLOCK_EDGE -location {ast_clks_byp.sv} \
+      -msg {Falling edge of clock 'clk_ast_ext_scn' used here, should use rising edge} \
+      -comment {This negedge trigger is done on purpose.}
+
 waive -rules CLOCK_DRIVER -location {ast.sv} \
       -regexp {'clk_src_(aon|io|sys)' is driven by instance 'u_ast_clks_byp' of module 'ast_clks_byp', and used as a clock 'clk_i' at} \
       -comment {This is clock generation logic, hence it needs to drive this clock signal.}
@@ -49,8 +57,16 @@ waive -rules CLOCK_DRIVER -location {ast_clks_byp.sv} \
       -comment {This is clock generation logic, hence it needs to drive this clock signal.}
 
 waive -rules CLOCK_MUX -location {ast_clks_byp.sv} \
-      -regexp {Clock '(clk_ext_scn|clk_src_ext_usb|clk_ext_aon)' is driven by a multiplexer here, used as a clock} \
+      -regexp {Clock '(clk_ast_ext_scn|clk_ext_scn|clk_src_ext_usb|clk_ext_aon)' is driven by a multiplexer here, used as a clock} \
       -comment {This is clock generation logic, hence it needs to drive this clock signal.}
+
+waive -rules CLOCK_MUX -location {ast.sv} \
+      -regexp {Clock 'clk_aon_n' is driven by a multiplexer here, used as a clock} \
+      -comment {This clock inverter has a DFT mux.}
+
+waive -rules CLOCK_MUX -location {rglts_pdm_3p3v.sv} \
+      -regexp {Clock 'clk_src_aon_h_n' is driven by a multiplexer here, used as a clock at } \
+      -comment {This signal has a DFT mux.}
 
 waive -rules CLOCK_USE -location {gfr_clk_mux2.sv} \
       -regexp {('clk_ext'|'clk_osc') is used for some other purpose, and as clock ('clk_ext_i'|'clk_osc_i') at gfr_clk_mux2.sv} \
@@ -81,7 +97,7 @@ waive -rules RESET_DRIVER -location {rng.sv} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_DRIVER -location {ast.sv} \
-      -regexp {('vcaon_pok_h'|'por_rst_n'|'vcmain_pok_por') is driven here, and used as an asynchronous reset} \
+      -regexp {'(vcaon_pok_h|por_rst_n|vcmain_pok_por|vcmain_pok_por_src)' is driven here, and used as an asynchronous reset} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_DRIVER -location {ast.sv} \
@@ -124,6 +140,10 @@ waive -rules RESET_DRIVER -location {ast_clks_byp.sv} \
       -regexp {'rst_aon_n_(ioda|exda)' is driven by instance 'u_rst_aon_n_(ioda|exda)_sync' of module} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
+waive -rules RESET_DRIVER -location {ast_clks_byp.sv} \
+      -regexp {'rst_sw_clk_byp_en' is driven here, and used as an asynchronous reset 'rst_sw_ckbpe_n'} \
+      -comment {This is reset generation logic, hence it needs to drive this reset signal.}
+
 waive -rules RESET_DRIVER -location {ast.sv} \
       -regexp {'(vcc_pok|rst_poks_n|rst_poks_por_n|vcaon_pok_por_lat)' is driven here, and used as an asynchronous reset} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
@@ -133,7 +153,15 @@ waive -rules RESET_DRIVER -location {ast.sv} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_DRIVER -location {rglts_pdm_3p3v.sv} \
-      -regexp {'(vcc_pok_rst_h_n|vcc_pok_set_h|vcc_pok_str_h.*)' is driven here, and used as an asynchronous reset} \
+      -regexp {'(vcc_pok_rst_h_n|vcc_pok_set_h|vcc_pok_str_.*|)' is driven here, and used as an asynchronous reset} \
+      -comment {This is reset generation logic, hence reset muxes are allowed.}
+
+waive -rules RESET_DRIVER -location {ast.sv} \
+      -regexp {'(vcaon_pok|vcaon_pok_h)' is driven by instance 'u_rglts_pdm_3p3v'} \
+      -comment {This is reset generation logic, hence reset muxes are allowed.}
+
+waive -rules RESET_DRIVER -location {ast.sv} \
+      -regexp {'(vcaon_pok_1p1_h_o|vcaon_pok_h_o)' driven in module 'rglts_pdm_3p3v'} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_MUX -location {aon_clk.sv io_clk.sv sys_clk.sv usb_clk.sv} \
@@ -149,7 +177,7 @@ waive -rules RESET_MUX -location {rng.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_MUX -location {ast_clks_byp.sv} \
-      -regexp {Asynchronous reset '(rst_aon_n|rst_aon_exda_n|rst_aon_ioda_n)' is driven by a multiplexer here, used as a reset} \
+      -regexp {Asynchronous reset '(rst_aon_n|rst_aon_exda_n|rst_aon_ioda_n|rst_sw_ckbpe_n)' is driven by a multiplexer here, used as a reset} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_MUX -location {ast_pulse_sync.sv} \
@@ -165,7 +193,7 @@ waive -rules RESET_USE -location {ast.sv} \
       -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
 
 waive -rules RESET_USE -location {ast.sv} \
-      -msg {'vcmain_pok_por' is connected to 'rglts_pdm_3p3v' port 'vcmain_pok_por_h_i', and used as an asynchronous reset or set} \
+      -regexp {'(vcmain_pok_por|vcmain_pok_por_src)' is connected to 'rglts_pdm_3p3v' port 'vcmain_pok_por_h_i', and used as an asynchronous reset or set} \
       -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
 
 waive -rules RESET_USE -location {ast.sv} \
