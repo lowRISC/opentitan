@@ -185,7 +185,7 @@ The process will be refined by the Technical Committee as necessary.
 ## Indicating Stages and Making Transitions
 
 Stages are indicated via a text file checked into the GitHub and thus transitions can be reviewed through the standard pull request process.
-Transitions for Design and Verification stages are _self-nominated_ in the sense that the design or verification owner can modify the text file and submit a pull request (PR) to transition the stage.
+Transitions for Design and Verification stages are _self-nominated_ in the sense that the design or verification maintainer can modify the text file and submit a pull request (PR) to transition the stage.
 In this manner other reviewers can challenge the transition in the standard pull request review process.
 These transitions should be done in their own PR (i.e. not interspersed with other changes), and the PR summary and commit message should give any necessary detail on how the transition criteria have been met, as well as any other notes useful for a reviewer.
 
@@ -244,7 +244,7 @@ They are converted to complete URLs in the generated dashboard.
 The _Version_ of a design element indicates its progress towards its _final feature set for expected product_.
 Typically all designs are expected to simply be in 1.0 version, but there are reasons for exceptions.
 Designs which have a specification that defines an _intermediate goal_ are indicated as < 1.0 version.
-There are many times where this is useful: when the intermediate goal is a beneficial subset of functionality to enable other development; when the final feature set is not known but a sufficient set is ready for development; when the final feature set is postponed until a future date, but owners are keen to get the design started; etc.
+There are many times where this is useful: when the intermediate goal is a beneficial subset of functionality to enable other development; when the final feature set is not known but a sufficient set is ready for development; when the final feature set is postponed until a future date, but maintainers are keen to get the design started; etc.
 In essence, the sub-1.0 designation indicates that it is understood that the stage metrics are temporary pending a final feature set.
 Rarely will a sub-1.0 design be taken past Feature Complete and Testing Complete stages.
 An exception is a proof of concept to show what a sign-off process looks like for a design that has modifications expected in the future.
