@@ -309,7 +309,7 @@ module prim_fifo_async_sram_adapter #(
   end : g_unused_rdata
 
   // read clock domain rdata storage
-  logic store;
+  logic store_en;
 
   // Karnough Map (r_sram_rvalid_i):
   // rfifo_ack   | 0 | 1 |
@@ -318,13 +318,13 @@ module prim_fifo_async_sram_adapter #(
   //           1 | 0 | 1 |
   //
   // stored = s.r.v && XNOR(stored, rptr_inc)
-  assign store = r_sram_rvalid_i && !(stored ^ rfifo_ack);
+  assign store_en = r_sram_rvalid_i && !(stored ^ rfifo_ack);
 
   always_ff @(posedge clk_rd_i or negedge rst_rd_ni) begin
     if (!rst_rd_ni) begin
       stored <= 1'b 0;
       rdata_q <= Width'(0);
-    end else if (store) begin
+    end else if (store_en) begin
       stored <= 1'b 1;
       rdata_q <= rdata_d;
     end else if (!r_sram_rvalid_i && rfifo_ack) begin

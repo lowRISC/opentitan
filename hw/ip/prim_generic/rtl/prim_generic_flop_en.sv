@@ -24,7 +24,7 @@ module prim_generic_flop_en #(
       .in_i(en_i),
       .out_o(en)
     );
-  end else begin : gen_en
+  end else begin : gen_en_no_sec_buf
     assign en = en_i;
   end
 

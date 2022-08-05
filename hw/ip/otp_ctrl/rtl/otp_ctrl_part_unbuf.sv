@@ -117,8 +117,8 @@ module otp_ctrl_part_unbuf
   } state_e;
 
   typedef enum logic {
-    DigestAddr = 1'b0,
-    DataAddr = 1'b1
+    DigestAddrSel = 1'b0,
+    DataAddrSel = 1'b1
   } addr_sel_e;
 
   state_e state_d, state_q;
@@ -151,7 +151,7 @@ module otp_ctrl_part_unbuf
 
     // OTP signals
     otp_req_o   = 1'b0;
-    otp_addr_sel = DigestAddr;
+    otp_addr_sel = DigestAddrSel;
 
     // TL-UL signals
     tlul_gnt_o      = 1'b0;
@@ -234,7 +234,7 @@ module otp_ctrl_part_unbuf
             {1'b0, tlul_addr_q, 2'b00} < PartEnd &&
              mubi8_test_false_strict(access_o.read_lock)) begin
           otp_req_o = 1'b1;
-          otp_addr_sel = DataAddr;
+          otp_addr_sel = DataAddrSel;
           if (otp_gnt_i) begin
             state_d = ReadWaitSt;
           end
@@ -332,7 +332,7 @@ module otp_ctrl_part_unbuf
   // Note that OTP works on halfword (16bit) addresses, hence need to
   // shift the addresses appropriately.
   logic [OtpByteAddrWidth-1:0] addr_calc;
-  assign addr_calc = (otp_addr_sel == DigestAddr) ? DigestOffset : {tlul_addr_q, 2'b00};
+  assign addr_calc = (otp_addr_sel == DigestAddrSel) ? DigestOffset : {tlul_addr_q, 2'b00};
   assign otp_addr_o = addr_calc[OtpByteAddrWidth-1:OtpAddrShift];
 
   if (OtpAddrShift > 0) begin : gen_unused
@@ -341,7 +341,7 @@ module otp_ctrl_part_unbuf
   end
 
   // Request 32bit except in case of the digest.
-  assign otp_size_o = (otp_addr_sel == DigestAddr) ?
+  assign otp_size_o = (otp_addr_sel == DigestAddrSel) ?
                       OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1)) :
                       OtpSizeWidth'(unsigned'(32 / OtpWidth - 1));
 
