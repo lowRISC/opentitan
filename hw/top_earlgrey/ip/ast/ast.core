@@ -107,7 +107,6 @@ targets:
     default_tool: verilator
     parameters:
       - SYNTHESIS=true
-      - AST_BYPASS_CLK=true
     tools:
       verilator:
         mode: lint-only
