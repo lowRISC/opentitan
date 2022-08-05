@@ -1073,7 +1073,9 @@ module csrng_core import csrng_pkg::*; #(
   // sm to process all instantiation requests
   // SEC_CM: MAIN_SM.CTR.LOCAL_ESC
   // SEC_CM: MAIN_SM.FSM.SPARSE
-  csrng_main_sm#(StateWidth) u_csrng_main_sm (
+  csrng_main_sm #(
+    .StateWidth(StateWidth)
+  ) u_csrng_main_sm (
     .clk_i                  (clk_i),
     .rst_ni                 (rst_ni),
     .enable_i               (cs_enable_fo[36]),
