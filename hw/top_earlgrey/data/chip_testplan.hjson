@@ -1777,7 +1777,7 @@
               digest.
             '''
       milestone: V2
-      tests: ["chip_sw_hmac_idle"]
+      tests: ["chip_sw_hmac_enc_idle"]
     }
 
     // KMAC pre-verified IP) integration tests:
