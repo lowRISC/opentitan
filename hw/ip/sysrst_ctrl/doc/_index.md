@@ -53,17 +53,6 @@ This output is always asserted when the `sysrst_ctrl` block is reset and remains
 
 {{< incGenFromIpDesc "../data/sysrst_ctrl.hjson" "hwcfg" >}}
 
-### Signals
-
-The table below lists the `sysrst_ctrl` intermodule signals.
-
-Signal                                 | Direction | Type    | Description
----------------------------------------|-----------|---------|---------------
-`aon_ot_wkup_req_o`                    | `output`  | `logic` |  OpenTitan wake request signal to `pwrmgr` (running on AON clock).
-`aon_ot_rst_req_o`                     | `output`  | `logic` |  OpenTitan reset request to `rstmgr` (running on AON clock).
-`intr_sysrst_ctrl_o`                   | `output`  | `logic` |  Interrupt request to PLIC (running on bus clock).
-
-
 ## Combo detection
 
 Software can program the `sysrst_ctrl` block to detect certain button combos and for how long they have to be asserted until they trigger a programmable action.
@@ -79,7 +68,7 @@ Once the above configuration is active, `sysrst_ctrl` will start the timer when 
 Once the timing condition is met (10 seconds), `sysrst_ctrl` will assert `ec_rst_l_o`, the interrupt request and set the interrupt status register {{< regref COMBO_INTR_STATUS >}} to indicate the interrupt cause.
 The software interrupt handler should then read the {{< regref COMBO_INTR_STATUS >}} register and clear the interrupt via the {{< regref INTR_STATE >}} register.
 
-Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `aon_ot_wkup_req_o`.
+Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `wkup_req_o`.
 Software should therefore read and clear the {{< regref WKUP_STATUS >}} register as well.
 
 ### Combo actions
@@ -87,9 +76,9 @@ Software should therefore read and clear the {{< regref WKUP_STATUS >}} register
 The following four combo actions can be triggered:
 
 - Drive the `bat_disable` output high until the next reset.
-- Issue an interrupt to the processor via `intr_sysrst_ctrl_o`.
+- Issue an interrupt to the processor via `intr_event_detected_o`.
 - Assert `ec_rst_l_o` for the amount of cycles configured in {{< regref EC_RST_CTL >}}.
-- Issue a reset request via `aon_ot_rst_req_o` to the reset manager of the OpenTitan system. Note that once a reset request is issued, it will remain asserted until the next reset.
+- Issue a reset request via `rst_req_o` to the reset manager of the OpenTitan system. Note that once a reset request is issued, it will remain asserted until the next reset.
 
 These actions can be configured via the {{< regref COM_OUT_CTL_0 >}} register for each of the combo blocks as described in the previous section.
 
@@ -121,7 +110,7 @@ Likewise, when the power button is released, `pwrb_in_i` goes from logic 0 to lo
 When `sysrst_ctrl` detects a transition (H->L or L->H) as specified in {{< regref KEY_INTR_CTL >}} and it meets the debounce requirement in {{< regref KEY_INTR_DEBOUNCE_CTL >}}, `sysrst_ctrl` sets the {{< regref KEY_INTR_STATUS >}} register to indicate the interrupt cause and send out a consolidated interrupt to the PLIC.
 The software interrupt handler should then read the {{< regref KEY_INTR_STATUS >}} register and clear the interrupt via the {{< regref INTR_STATE >}} register.
 
-Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `aon_ot_wkup_req_o`.
+Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `wkup_req_o`.
 Software should therefore read and clear the {{< regref WKUP_STATUS >}} register as well.
 
 ## Ultra-low-power Wakeup Feature
@@ -145,7 +134,7 @@ Once the above configuration is active, `sysrst_ctrl` will start the timer when 
 Once the timing condition is met, `sysrst_ctrl` will assert `z3_wakeup` output signal, the interrupt request and set the interrupt status register {{< regref ULP_STATUS >}} to indicate the interrupt cause.
 The software interrupt handler should then read the {{< regref ULP_STATUS >}} register and clear the interrupt via the {{< regref INTR_STATE >}} register.
 
-Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `aon_ot_wkup_req_o`.
+Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `wkup_req_o`.
 Software should therefore read and clear the {{< regref WKUP_STATUS >}} register as well.
 
 Also note that the detection status is sticky.
