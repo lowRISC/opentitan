@@ -652,7 +652,7 @@ module otbn
   // Blank bus read data interface during core operation to avoid leaking DMEM data through the bus
   // unintentionally. Also blank when OTBN is returning a dummy response (responding to an illegal
   // bus access) and when OTBN is locked.
-  assign dmem_rdata_bus_en_d = ~(busy_execute_d | start_d) & ~imem_dummy_response_d & ~locking;
+  assign dmem_rdata_bus_en_d = ~(busy_execute_d | start_d) & ~dmem_dummy_response_d & ~locking;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
