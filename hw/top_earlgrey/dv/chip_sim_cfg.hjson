@@ -278,6 +278,12 @@
       en_run_modes: ["sw_test_mode_common"]
     }
     {
+      name: chip_sw_example_manufacturer
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["@manufacturer_test_hooks//:example_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_sleep_pwm_pulses
       uvm_test_seq: chip_sw_pwm_pulses_vseq
       sw_images: ["//sw/device/tests:sleep_pwm_pulses_test:1"]

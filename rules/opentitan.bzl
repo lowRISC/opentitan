@@ -556,6 +556,7 @@ def opentitan_binary(
     ]
     deps = kwargs.pop("deps", [])
     targets = []
+    side_targets = []
 
     native_binary_name = "{}.elf".format(name)
     native.cc_binary(
@@ -568,28 +569,28 @@ def opentitan_binary(
     )
 
     preproc_name = "{}_{}".format(name, "preproc")
-    targets.append(preproc_name)
+    side_targets.append(preproc_name)
     rv_preprocess(
         name = preproc_name,
         target = native_binary_name,
     )
 
     asm_name = "{}_{}".format(name, "asm")
-    targets.append(asm_name)
+    side_targets.append(asm_name)
     rv_asm(
         name = asm_name,
         target = native_binary_name,
     )
 
     ll_name = "{}_{}".format(name, "ll")
-    targets.append(ll_name)
+    side_targets.append(ll_name)
     rv_llvm_ir(
         name = ll_name,
         target = native_binary_name,
     )
 
     map_name = "{}_{}".format(name, "map")
-    targets.append(map_name)
+    side_targets.append(map_name)
     rv_relink_with_linkmap(
         name = map_name,
         target = native_binary_name,
@@ -620,6 +621,12 @@ def opentitan_binary(
             srcs = [native_binary_name],
             platform = platform,
         )
+
+    # Create a filegroup with just the sides targets.
+    native.filegroup(
+        name = name + "_side_targets",
+        srcs = side_targets,
+    )
 
     return targets
 
