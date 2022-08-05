@@ -14,7 +14,6 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -47,9 +46,6 @@ rom_error_t alert_no_escalate_test(void) {
   LOG_INFO("Configure class B alerts");
   RETURN_IF_ERROR(alert_class_configure(kAlertClassB, &config));
 
-  sec_mmio_check_values(/*rnd_offset=*/0);
-  sec_mmio_check_counters(/*expected_check_count=*/1);
-
   LOG_INFO("Generate alert via test regs");
   abs_mmio_write32(kOtpCoreBase + OTP_CTRL_ALERT_TEST_REG_OFFSET, 1);
   uint32_t count =
@@ -73,9 +69,6 @@ rom_error_t alert_escalate_test(void) {
   LOG_INFO("Configure class A alerts");
   RETURN_IF_ERROR(alert_class_configure(kAlertClassA, &config));
 
-  sec_mmio_check_values(/*rnd_offset=*/0);
-  sec_mmio_check_counters(/*expected_check_count=*/3);
-
   LOG_INFO("Generate alert via test regs");
   abs_mmio_write32(kFlashBase + FLASH_CTRL_ALERT_TEST_REG_OFFSET,
                    1u << FLASH_CTRL_ALERT_TEST_FATAL_ERR_BIT);
@@ -95,7 +88,6 @@ bool test_main(void) {
   rstmgr_testutils_reason_clear();
 
   if (bitfield_bit32_read(reason, kRstmgrReasonPowerOn)) {
-    sec_mmio_init();
     EXECUTE_TEST(result, alert_no_escalate_test);
     EXECUTE_TEST(result, alert_escalate_test);
     LOG_ERROR("Test failure: should have reset before this line.");
