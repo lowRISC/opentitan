@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_ABSL_STATUS_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_ABSL_STATUS_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_INTERNAL_ABSL_STATUS_H_
+#define OPENTITAN_SW_DEVICE_LIB_BASE_INTERNAL_ABSL_STATUS_H_
 
 #ifndef USING_ABSL_STATUS
 #error \
@@ -231,4 +231,4 @@ typedef enum absl_status_code {
 }
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_ABSL_STATUS_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_INTERNAL_ABSL_STATUS_H_

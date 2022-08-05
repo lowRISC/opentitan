@@ -8,13 +8,15 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/dif/dif_base.h"
 
-#define USING_ABSL_STATUS
-#include "sw/device/lib/base/absl_status.h"
-#undef USING_ABSL_STATUS
+#define USING_INTERNAL_STATUS
+#include "sw/device/lib/base/internal/status.h"
+#undef USING_INTERNAL_STATUS
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,42 +51,61 @@ extern "C" {
  * The module identifier value is interpreted as three 5-bit fields
  * representing the characters [0x40..0x5F] (e.g. [@ABC ... _]).
  */
-
-#define STATUS_FIELD_CODE ((bitfield_field32_t){.mask = 0x1f, .index = 0})
-#define STATUS_FIELD_ARG ((bitfield_field32_t){.mask = 0x7ff, .index = 5})
-#define STATUS_FIELD_MODULE_ID \
-  ((bitfield_field32_t){.mask = 0x7fff, .index = 16})
-#define STATUS_BIT_ERROR 31
 typedef struct status {
   int32_t value;
 } status_t;
 
-// Uses a GCC statement-expr to embed conrtol-flow inside an expression.
-#define TRY(expr_)            \
-  ({                          \
-    status_t status_ = expr_; \
-    if (status_.value < 0) {  \
-      return status_;         \
-    }                         \
-    status_.value;            \
+/**
+ * Converts a value into a status_t.
+ *
+ * This macro uses the GCC/clang `__builtin_types_compatible_p` extension to
+ * detect the type of the input expression and apply the appropriate
+ * conversion.  Once a more thorough refactoring of the DIFs is done, this
+ * can be eliminated.
+ *
+ * @param expr_ Either a `status_t` or `dif_result_t`.
+ * @return The `status_t` representation of the input.
+ */
+#define INTO_STATUS(expr_)                                                     \
+  ({                                                                           \
+    typeof(expr_) ex_ = (expr_);                                               \
+    static_assert(__builtin_types_compatible_p(typeof(ex_), status_t) ||       \
+                      __builtin_types_compatible_p(typeof(ex_), dif_result_t), \
+                  "Expressions passed to INTO_STATUS() must be of type "       \
+                  "`status_t`, or `dif_result_t`");                            \
+    status_t status_;                                                          \
+    if (__builtin_types_compatible_p(typeof(ex_), status_t)) {                 \
+      memcpy(&status_, &ex_, sizeof(status_));                                 \
+    } else if (__builtin_types_compatible_p(typeof(ex_), dif_result_t)) {      \
+      absl_status_t code;                                                      \
+      memcpy(&code, &ex_, sizeof(code));                                       \
+      status_ = status_create(code, kStatusModuleId, __FILE__,                 \
+                              code == kOk ? 0 : __LINE__);                     \
+    }                                                                          \
+    status_;                                                                   \
+  })
+
+/**
+ * Evaluates a status_t for Ok or Error status, returning the Ok value.
+ *
+ * This macro is like the `try!` macro (or now `?` operator) in Rust:
+ * It evaluates to the contained OK value or it immediately returns from
+ * the enclosing function with the error value.
+ *
+ * @param expr_ An expression that can be converted to a `status_t`.
+ * @return The enclosed OK value.
+ */
+#define TRY(expr_)                         \
+  ({                                       \
+    status_t status_ = INTO_STATUS(expr_); \
+    if (status_.value < 0) {               \
+      return status_;                      \
+    }                                      \
+    status_.value;                         \
   })
 
 // This global constant is available to all modules and is the constant zero.
-extern const uint32_t status_module_id;
-// clang-format off
-#define ASCII_5BIT(v) ( \
-    /*uppercase characters*/  (v) >= '@' && (v) <= '_' ? (v) - '@' \
-    /*lower cvt upper*/     : (v) >= '`' && (v) <= 'z' ? (v) - '`' \
-    /*else cvt underscore*/ : '_' - '@'                            \
-  )
-// clang-format on
-
-#define MAKE_MODULE_ID(a, b, c) \
-  (ASCII_5BIT(a) << 16) | (ASCII_5BIT(b) << 21) | (ASCII_5BIT(c) << 26)
-// A module that uses DECLARE_MODULE_ID shadows the global constant value with
-// its own local value.
-#define DECLARE_MODULE_ID(a, b, c) \
-  static uint32_t status_module_id = MAKE_MODULE_ID(a, b, c)
+extern const uint32_t kStatusModuleId;
 
 // Operations on status codes:
 /**
@@ -138,7 +159,7 @@ OT_ALWAYS_INLINE absl_status_t status_err(status_t s) {
   ({                                                      \
     static_assert(OT_VA_ARGS_COUNT(_, __VA_ARGS__) <= 2,  \
                   "status macros take 0 or 1 arguments"); \
-    status_create(s_, status_module_id, __FILE__,         \
+    status_create(s_, kStatusModuleId, __FILE__,          \
                   OT_GET_LAST_ARG(__VA_ARGS__));          \
   })
 

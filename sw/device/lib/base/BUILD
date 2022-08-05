@@ -18,11 +18,6 @@ cc_library(
 )
 
 cc_library(
-    name = "absl_status",
-    hdrs = ["absl_status.h"],
-)
-
-cc_library(
     name = "stdasm",
     hdrs = ["stdasm.h"],
 )
@@ -100,6 +95,10 @@ opentitan_functest(
     srcs = ["memory_perftest.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:test_rom",
+        tags = [
+            "flaky",
+            "manual",
+        ],
     ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     targets = ["cw310"],
@@ -281,9 +280,10 @@ cc_library(
     srcs = ["status.c"],
     hdrs = ["status.h"],
     deps = [
-        ":absl_status",
         ":bitfield",
         ":macros",
+        "//sw/device/lib/base/internal:status",
+        "//sw/device/lib/dif:base",
     ],
 )
 

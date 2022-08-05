@@ -11,6 +11,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:multibits",
+        "//sw/device/lib/base/internal:status",
     ],
 )
 
