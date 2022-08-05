@@ -46,9 +46,6 @@ module prim_generic_flash #(
   input  devmode_i
 );
 
-  localparam int CfgRegs = 21;
-  localparam int CfgAddrWidth = $clog2(CfgRegs);
-
   logic unused_devmode;
   assign unused_devmode = devmode_i;
 
