@@ -493,8 +493,8 @@
           enum: [
             { value: "29"
               name: "start"
-              desc: '''If writes 1 into this field when KMAC/SHA3 is in idle,
-                    KMAC/SHA3 begins its operation.
+              desc: '''Writing 6'b011101 or dec 29 into this field when KMAC/SHA3
+                    is in idle, KMAC/SHA3 begins its operation.
 
                     If the mode is cSHAKE, before receiving the message, the
                     hashing logic processes Function name string N and
@@ -504,9 +504,9 @@
             } // e: start
             { value: "46"
               name: "process"
-              desc: '''If writes 1 into this field when KMAC/SHA3 began its
-                    operation and received the entire message, it computes the
-                    digest or signing.
+              desc: '''Writing 6'b101110 or dec 46 into this field when KMAC/SHA3
+                    began its operation and received the entire message, it
+                    computes the digest or signing.
                     '''
             } // e: process
             { value: "49"
@@ -521,8 +521,8 @@
             } // e: run
             { value: "22"
               name: "done"
-              desc: '''If writes 1 into this field when KMAC/SHA3 squeezing is
-                    completed. KMAC/SHA3 hashing engine clears internal
+              desc: '''Writing 6'b010110 or dec 22 into this field when KMAC/SHA3
+                    squeezing is completed, KMAC/SHA3 hashing engine clears internal
                     variables and goes back to Idle state for next command.
                     '''
             } // e: done
