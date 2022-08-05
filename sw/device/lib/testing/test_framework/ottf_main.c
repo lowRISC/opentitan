@@ -71,6 +71,8 @@ static void test_wrapper(void *task_parameters) {
   report_test_status(result);
 }
 
+dif_uart_t *ottf_console(void) { return &uart0; }
+
 void _ottf_main(void) {
   test_status_set(kTestStatusInTest);
 

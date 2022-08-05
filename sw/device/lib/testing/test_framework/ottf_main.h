@@ -9,6 +9,7 @@
 
 // This private header is included here so that OTTF users can include a single
 // header in their test application (the `ottf_main.h` header).
+#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
@@ -28,6 +29,11 @@
  * @return success or failure of the test as boolean.
  */
 extern bool test_main(void);
+
+/**
+ * Returns the UART that is the console device.
+ */
+dif_uart_t *ottf_console(void);
 
 /**
  * TODO: add description
