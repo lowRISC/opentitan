@@ -7,14 +7,11 @@
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
+#include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -30,36 +27,17 @@ static const uint32_t kPlainText[] = {
     0xffeeddcc,
 };
 static dif_keymgr_t keymgr;
+static dif_kmac_t kmac;
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static void keymgr_initialize(void) {
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
-  CHECK_DIF_OK(dif_keymgr_init(base_addr, &keymgr));
-
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset);
-
-  keymgr_testutils_advance_state(&keymgr, NULL);
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateInitialized);
-  LOG_INFO("Keymgr entered Init State");
-
-  keymgr_testutils_advance_state(&keymgr, &kCreatorParams);
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey);
-  LOG_INFO("Keymgr entered CreatorRootKey State");
-
-  keymgr_testutils_generate_identity(&keymgr);
-  LOG_INFO("Keymgr generated identity at CreatorRootKey State");
+  // Initialize keymgr and advance to CreatorRootKey state.
+  keymgr_testutils_startup(&keymgr, &kmac);
 
   keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams);
   keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerIntermediateKey);
   LOG_INFO("Keymgr entered OwnerIntKey State");
-
-  keymgr_testutils_generate_identity(&keymgr);
-  LOG_INFO("Keymgr generated identity at OwnerIntKey State");
-
-  keymgr_testutils_generate_versioned_key(&keymgr, kKeyVersionedParams);
-  LOG_INFO("Keymgr generated SW output at OwnerIntKey State");
 
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestAes;
@@ -143,42 +121,11 @@ void aes_test(void) {
 }
 
 bool test_main(void) {
-  dif_rstmgr_t rstmgr;
-  dif_rstmgr_reset_info_bitfield_t info;
+  // Configure the keymgr to generate an AES key.
+  keymgr_initialize();
 
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  info = rstmgr_testutils_reason_get();
+  // Run the AES test.
+  aes_test();
 
-  // POR reset.
-  if (info == kDifRstmgrResetInfoPor) {
-    LOG_INFO("Powered up for the first time, program flash");
-
-    keymgr_testutils_init_flash();
-
-    // Lock otp secret partition.
-    dif_otp_ctrl_t otp;
-    CHECK_DIF_OK(dif_otp_ctrl_init(
-        mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
-    otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2, 0);
-
-    // Reboot device.
-    rstmgr_testutils_reason_clear();
-    CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
-
-    // Wait here until device reset.
-    wait_for_interrupt();
-
-  } else if (info == kDifRstmgrResetInfoSw) {
-    LOG_INFO(
-        "Powered up for the second time, actuate keymgr and perform aes test.");
-
-    // Configure the keymgr to generate an aes key.
-    keymgr_initialize();
-
-    aes_test();
-    return true;
-  }
-
-  return false;
+  return true;
 }
