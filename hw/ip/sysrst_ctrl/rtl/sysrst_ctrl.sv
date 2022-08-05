@@ -25,9 +25,9 @@ module sysrst_ctrl
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // Wake, reset and interrupt requests
-  output logic wkup_req_o,  // OT wake to pwrmgr
-  output logic aon_sysrst_ctrl_rst_req_o,  // OT reset to rstmgr
-  output logic intr_sysrst_ctrl_o,  // sysrst_ctrl interrupt to PLIC
+  output logic wkup_req_o,  // OT wake to pwrmgr, on AON clock
+  output logic rst_req_o,  // OT reset to rstmgr, on AON clock
+  output logic intr_event_detected_o,  // event interrupt to PLIC, on bus clock
 
   // IOs
   input cio_ac_present_i,  // AC power is present
@@ -247,7 +247,7 @@ module sysrst_ctrl
     // Output signals on AON clock
     .sysrst_ctrl_combo_intr_o(aon_sysrst_ctrl_combo_intr),
     .bat_disable_hw_o(aon_bat_disable_hw),
-    .rst_req_o(aon_sysrst_ctrl_rst_req_o),
+    .rst_req_o(rst_req_o),
     .ec_rst_l_hw_o(aon_ec_rst_l_hw)
   );
 
@@ -374,7 +374,7 @@ module sysrst_ctrl
     .reg2hw_intr_state_q_i (reg2hw.intr_state.q),
     .hw2reg_intr_state_de_o(hw2reg.intr_state.de),
     .hw2reg_intr_state_d_o (hw2reg.intr_state.d),
-    .intr_o                (intr_sysrst_ctrl_o)
+    .intr_o                (intr_event_detected_o)
   );
 
   ////////////////
@@ -382,9 +382,9 @@ module sysrst_ctrl
   ////////////////
 
   // All outputs should be known value after reset
-  `ASSERT_KNOWN(IntrSysRstCtrlOKnown_A, intr_sysrst_ctrl_o)
+  `ASSERT_KNOWN(IntrEventOKnown_A, intr_event_detected_o)
   `ASSERT_KNOWN(OTWkOKnown_A, wkup_req_o)
-  `ASSERT_KNOWN(OTRstOKnown_A, aon_sysrst_ctrl_rst_req_o)
+  `ASSERT_KNOWN(OTRstOKnown_A, rst_req_o)
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertKnown_A, alert_tx_o)

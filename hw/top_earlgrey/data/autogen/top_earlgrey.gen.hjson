@@ -3464,7 +3464,7 @@
           index: 0
         }
         {
-          name: aon_sysrst_ctrl_rst_req
+          name: rst_req
           struct: logic
           type: uni
           act: req
@@ -8067,7 +8067,7 @@
       ]
       pwrmgr_aon.rstreqs:
       [
-        sysrst_ctrl_aon.aon_sysrst_ctrl_rst_req
+        sysrst_ctrl_aon.rst_req
         aon_timer_aon.aon_timer_rst_req
       ]
       main.tl_rv_core_ibex__corei:
@@ -12617,7 +12617,7 @@
   reset_requests:
   [
     {
-      name: aon_sysrst_ctrl_rst_req
+      name: rst_req
       width: "1"
       module: sysrst_ctrl_aon
     }
@@ -13407,7 +13407,7 @@
       module_name: pwrmgr_aon
     }
     {
-      name: sysrst_ctrl_aon_sysrst_ctrl
+      name: sysrst_ctrl_aon_event_detected
       width: 1
       type: interrupt
       module_name: sysrst_ctrl_aon
@@ -16253,7 +16253,7 @@
         index: 0
       }
       {
-        name: aon_sysrst_ctrl_rst_req
+        name: rst_req
         struct: logic
         type: uni
         act: req

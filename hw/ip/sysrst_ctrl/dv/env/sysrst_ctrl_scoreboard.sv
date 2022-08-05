@@ -93,19 +93,19 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        bit intr_en = ral.intr_enable.sysrst_ctrl.get_mirrored_value();
+        bit intr_en = ral.intr_enable.event_detected.get_mirrored_value();
         m_interrupt = cfg.intr_vif.sample_pin(IntrSysrstCtrl);
         do_read_check = 1'b0;
         if (addr_phase_write) begin
           // Implement W1C
-          m_expected_intr_state &= !get_field_val(cfg.ral.intr_state.sysrst_ctrl, item.a_data);
+          m_expected_intr_state &= !get_field_val(cfg.ral.intr_state.event_detected, item.a_data);
         end
         if (addr_phase_read) begin
           `DV_CHECK(csr.predict(.value(m_expected_intr_state), .kind(UVM_PREDICT_READ)))
         end
         if (cfg.en_cov && data_phase_read) begin
           cov.intr_cg.sample(IntrSysrstCtrl, intr_en, get_field_val(
-                             cfg.ral.intr_state.sysrst_ctrl, item.a_data));
+                             cfg.ral.intr_state.event_detected, item.a_data));
           // Sample interrupt pin coverage for interrupt pins
           cov.intr_pins_cg.sample(IntrSysrstCtrl, m_interrupt);
         end
@@ -114,8 +114,8 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
         // FIXME
       end
       "intr_test": begin
-        bit intr_test_val = get_field_val(cfg.ral.intr_test.sysrst_ctrl, item.a_data);
-        bit intr_en = ral.intr_enable.sysrst_ctrl.get_mirrored_value();
+        bit intr_test_val = get_field_val(cfg.ral.intr_test.event_detected, item.a_data);
+        bit intr_en = ral.intr_enable.event_detected.get_mirrored_value();
         if (addr_phase_write) begin
           m_expected_intr_state |= intr_test_val;
           if (cfg.en_cov) begin

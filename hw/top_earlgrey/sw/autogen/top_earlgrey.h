@@ -1171,7 +1171,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdUsbdevPowered = 153, /**< usbdev_powered */
   kTopEarlgreyPlicIrqIdUsbdevLinkOutErr = 154, /**< usbdev_link_out_err */
   kTopEarlgreyPlicIrqIdPwrmgrAonWakeup = 155, /**< pwrmgr_aon_wakeup */
-  kTopEarlgreyPlicIrqIdSysrstCtrlAonSysrstCtrl = 156, /**< sysrst_ctrl_aon_sysrst_ctrl */
+  kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected = 156, /**< sysrst_ctrl_aon_event_detected */
   kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone = 157, /**< adc_ctrl_aon_match_done */
   kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired = 158, /**< aon_timer_aon_wkup_timer_expired */
   kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark = 159, /**< aon_timer_aon_wdog_timer_bark */
@@ -1657,7 +1657,7 @@ typedef enum top_earlgrey_reset_manager_sw_resets {
  * Power Manager Reset Request Signals
  */
 typedef enum top_earlgrey_power_manager_reset_requests {
-  kTopEarlgreyPowerManagerResetRequestsSysrstCtrlAonAonSysrstCtrlRstReq = 0, /**<  */
+  kTopEarlgreyPowerManagerResetRequestsSysrstCtrlAonRstReq = 0, /**<  */
   kTopEarlgreyPowerManagerResetRequestsAonTimerAonAonTimerRstReq = 1, /**<  */
   kTopEarlgreyPowerManagerResetRequestsLast = 1, /**< \internal Last valid pwrmgr reset_request signal */
 } top_earlgrey_power_manager_reset_requests_t;

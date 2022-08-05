@@ -10,8 +10,8 @@
     { protocol: "tlul", direction: "device" }
   ],
   interrupt_list: [
-    { name: "sysrst_ctrl",
-      desc: "common interrupt triggered by combo or keyboard actions",
+    { name: "event_detected",
+      desc: "Common interrupt triggered by combo or keyboard events.",
     }
   ],
   alert_list: [
@@ -23,12 +23,12 @@
   ],
   wakeup_list: [
     { name: "wkup_req",
-      desc: "user directed wakeup",
+      desc: "OpenTitan wake request signal to `pwrmgr` (running on AON clock).",
     }
   ],
   reset_request_list: [
-    { name: "aon_sysrst_ctrl_rst_req",
-      desc: "user directed reset"
+    { name: "rst_req",
+      desc: "OpenTitan reset request to `rstmgr` (running on AON clock)."
     },
   ],
   param_list: [
@@ -79,7 +79,7 @@
       type:    "uni",
       width:   "1"
     }
-    { name:    "aon_sysrst_ctrl_rst_req",
+    { name:    "rst_req",
       package: "",
       struct:  "logic",
       act:     "req"

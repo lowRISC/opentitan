@@ -23,7 +23,8 @@ interface sysrst_ctrl_if (
   logic key2_out;
   logic pwrb_out;
   logic z3_wakeup;
-  logic sysrst_ctrl_rst_req;
+  logic rst_req;
+  logic wkup_req;
 
   logic [6:0] sysrst_ctrl_inputs;
 

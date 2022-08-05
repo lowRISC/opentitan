@@ -78,9 +78,9 @@ dif_result_t dif_sysrst_ctrl_alert_force(const dif_sysrst_ctrl_t *sysrst_ctrl,
  */
 typedef enum dif_sysrst_ctrl_irq {
   /**
-   * Common interrupt triggered by combo or keyboard actions
+   * Common interrupt triggered by combo or keyboard events.
    */
-  kDifSysrstCtrlIrqSysrstCtrl = 0,
+  kDifSysrstCtrlIrqEventDetected = 0,
 } dif_sysrst_ctrl_irq_t;
 
 /**

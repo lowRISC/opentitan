@@ -250,11 +250,11 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       end
 
       // If reset req trigger action is set then check if there is a event
-      // on aon_sysrst_ctrl_rst_req_o pin
+      // on aon_rst_req_o pin
       if (rst_act_triggered) begin
-        `DV_CHECK_EQ(cfg.vif.sysrst_ctrl_rst_req, 1);
+        `DV_CHECK_EQ(cfg.vif.rst_req, 1);
       end else begin
-        `DV_CHECK_EQ(cfg.vif.sysrst_ctrl_rst_req, 0);
+        `DV_CHECK_EQ(cfg.vif.rst_req, 0);
       end
 
       if (bat_act_triggered || rst_act_triggered) begin
