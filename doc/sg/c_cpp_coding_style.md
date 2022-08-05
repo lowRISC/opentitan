@@ -138,7 +138,7 @@ You must not dereference a symbol that has non-address value.
 
 ### Public function (API) documentation
 
-***It is recommended to document public functions, classes, methods, and data structures in the header file with a Doxygen-style comment.***
+***It is recommended to document public functions, classes, Methods, and data structures in the header file with a Doxygen-style comment.***
 
 The first line of the comment is the summary, followed by a new line, and an optional longer description.
 Input arguments and return arguments can be documented with `@param` and `@return` if they are not self-explanatory from the name.
@@ -259,6 +259,27 @@ As such, they are forbidden in the following contexts:
 
 It is recommended to only use designated initializers with types which use C-style declarations.
 
+### Naming
+**Structs, Classes and Methods**
+As stated by the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html#Type_Names), the names of Structs, Classes and Methods must be in `CamelCase` format.
+
+**Variable and Class Members Naming**
+As stated by the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html#Variable_Names), the names of variables (including function parameters) and data members must be in `lower_snake_case` format. Data members of Classes (but not Structs) additionally have trailing underscores, unless the variable represents a constant that should follow the [rule](#function-enum-struct-and-typedef-naming).
+
+For example:
+```cpp
+// in animal.cpp
+public Class AnimalInfo{
+  ...
+private:
+  uint32_t number_of_paws_;
+  std::string name_;
+public:
+  static constexpr uint32_t kMaxNumOfPaws=100;
+
+  void SetAnimalName(std::string new_name);
+};
+```
 ## C Style Guide
 
 The [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) targets C++, but it can also be used for C code with minor adjustments.
