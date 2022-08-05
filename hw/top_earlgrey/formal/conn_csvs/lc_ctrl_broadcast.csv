@@ -16,3 +16,9 @@ CONNECTION, LC_ESCALATE_EN_FLASH,     top_earlgrey.u_lc_ctrl, lc_escalate_en_o, 
 CONNECTION, LC_ESCALATE_EN_AES,       top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_aes,               lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_KMAC,      top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_kmac,              lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_OTBN,      top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_otbn,              lc_escalate_en_i
+
+# Verify that lc_ctrl's lc_keymgr_en_o signal is correctly connected to keymgr.
+CONNECTION, LC_KEYMGR_EN_KEYMGR, top_earlgrey.u_lc_ctrl, lc_keymgr_en_o, top_earlgrey.u_keymgr, lc_keymgr_en_i
+
+# Verify that lc_ctrl's lc_nvm_debug_en_o signal is correctly connected to flash_ctrl.
+CONNECTION, LC_NVM_DEBUG_EN_FLASH_CTRL, top_earlgrey.u_lc_ctrl, lc_nvm_debug_en_o, top_earlgrey.u_flash_ctrl, lc_nvm_debug_en_i
