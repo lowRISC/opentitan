@@ -633,6 +633,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           // The DUT should either set the alert, or crash the sim.
           // If we succeed, sample this alert_threshold as covered successfully.
           cov_vif.cg_alert_cnt_sample(alert_threshold);
+        end else if (!fw_ov_insert) begin
+          fmt = "Alerts suppressed:  Fail count (%01d) >= threshold (%01d)";
         end else begin
           fmt = "Alert already signalled:  Fail count (%01d) >= threshold (%01d)";
         end

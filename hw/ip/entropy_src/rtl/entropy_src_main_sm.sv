@@ -252,7 +252,13 @@ module entropy_src_main_sm #(
       end
       Sha3Process: begin
         cs_aes_halt_req_o = 1'b1;
-        rst_alert_cntr_o = 1'b1;
+        // The SHA control is asynchronous from the HT's in FW_OV mode
+        // breaking some of the timing assumptions associated with this
+        // alert clear pulse.  This makes predicting the alert count registers
+        // harder, and even though the alerts are surpressed in this mode
+        // the counters are still scoreboarded, so we supress this clear
+        // pulse in FW_OV insert mode.
+        rst_alert_cntr_o = ~fw_ov_ent_insert_i;
         sha3_process_o = 1'b1;
         state_d = Sha3Valid;
       end
