@@ -156,8 +156,24 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:kmac_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
+    name = "kmac_testutils",
+    srcs = ["kmac_testutils.c"],
+    hdrs = ["kmac_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )

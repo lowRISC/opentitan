@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_
 
 #include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_kmac.h"
 
 /**
  * Versioned key parameters for testing.
@@ -47,9 +48,31 @@ static const dif_keymgr_state_params_t kOwnerIntParams = {
 };
 
 /**
- * Initialize flash for key manager operation.
+ * Programs flash, restarts, and advances keymgr to CreatorRootKey state.
+ *
+ * This procedure essentially gets the keymgr into the first state where it can
+ * be used for tests. Tests should call it before anything else, like below:
+ *
+ * void test_main(void) {
+ *   // Set up and advance to CreatorRootKey state.
+ *   dif_keymgr_t keymgr;
+ *   dif_kmac_t kmac;
+ *   keymgr_testutils_startup(&keymgr, &kmac);
+ *
+ *   // Remainder of test; optionally advance to OwnerIntKey state, generate
+ *   // keys and identities.
+ *   ...
+ * }
+ *
+ * Because the key manager uses KMAC, this procedure also initializes and
+ * configures KMAC. Software should not rely on the configuration here and
+ * should reconfigure KMAC if needed. The purpose of configuring KMAC in this
+ * procedure is so that the key manager will not use KMAC with the default
+ * entropy settings.
+ *
+ * @param keymgr A key manager handle.
  */
-void keymgr_testutils_init_flash(void);
+void keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac);
 
 /**
  * Issues a keymgr advance operation and wait for it to complete

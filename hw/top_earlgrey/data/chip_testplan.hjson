@@ -2118,7 +2118,7 @@
             X-ref'ed with chip_kmac_app_keymgr test.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_keymgr_sideload_kmac"]
     }
     {
       name: chip_sw_keymgr_sideload_aes
