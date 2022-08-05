@@ -65,6 +65,33 @@
     }
 
     /////////////////////////
+    // ast_scanmode.csv    //
+    /////////////////////////
+    {
+      name: scanmode_connections
+      desc: '''Verify the connectivity of scanmode to the following IPs:
+            - clkmgr
+            - flash_ctrl
+            - lc_ctrl
+            - otp_ctrl
+            - padring
+            - pinmux
+            - rstmgr
+            - rv_core_ibex
+            - rv_dm
+            - spi_device
+            - xbar_main
+            - xbar_peri
+            '''
+      milestone: V2
+      tests: ["ast_scanmode_padring", "ast_scanmode_clkmgr", "ast_scanmode_flash_ctrl",
+              "ast_scanmode_lc_ctrl", "ast_scanmode_otp_ctrl", "ast_scanmode_pinmux",
+              "ast_scanmode_rstmgr", "ast_scanmode_rv_core_ibex", "ast_scanmode_rv_dm",
+              "ast_scanmode_spi_device", "ast_scanmode_xbar_main", "ast_scanmode_xbar_peri"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
     // clkmgr_ast.csv      //
     /////////////////////////
     {
@@ -452,26 +479,41 @@
     }
 
     /////////////////////////
-    // TODO: JTAG         //
+    // jtag.csv            //
     /////////////////////////
     {
       name: flash_jtag
       desc: "Verify jtag interface is connected to flash_phy_req interface."
       milestone: V2
-      tests: []
+      tests: ["pinmux_flash_ctrl_tck", "pinmux_flash_ctrl_tms", "pinmux_flash_ctrl_tdi",
+              "pinmux_flash_ctrl_tdo", "pinmux_flash_ctrl_tdo_en"]
       tags: ["conn"]
     }
     {
       name: lc_jtag_trst
       desc: "Verify jtag rst pin is connected to lc_ctrl interface."
       milestone: V2
-      tests: []
+      tests: ["pinmux_lc_ctrl_jtag_req", "pinmux_lc_ctrl_jtag_rsp"]
       tags: ["conn"]
     }
 
-    /////////////////////////
-    // lc_escalate_en.csv  //
-    /////////////////////////
+    //////////////////////////
+    // lc_ctrl_broadcast.sv //
+    //////////////////////////
+    {
+      name: lc_keymgr_en
+      desc: "Verify LC_CTRL's lc_ctrl_lc_keymgr_en is connects correctly to keymgr."
+      milestone: V2
+      tests: ["lc_keymgr_en_keymgr"]
+      tags: ["conn"]
+    }
+    {
+      name: lc_nvm_debug_en
+      desc: "Verify lc_ctrl's lc_nvm_debug_en is connected correctly to flash_ctrl."
+      milestone: V2
+      tests: ["lc_nvm_debug_en_flash_ctrl"]
+      tags: ["conn"]
+    }
     {
       name: lc_escalate_en
       desc: '''Verify lc_ctrl's `lc_escalate_en_o` is connected to the following blocks'
@@ -528,41 +570,6 @@
       tests: ["rstmgr_rst_sys_src_n"]
       tags: ["conn"]
     }
-    /////////////////////////
-    // TODO: EDN           //
-    /////////////////////////
-    {
-      name: edn_clk_rst
-      desc: "Verify EDN's clock and reset connects correctly to other IPs."
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
-
-    /////////////////////////
-    // TODO: LC_CTRL       //
-    /////////////////////////
-    {
-      name: lc_keymgr_en
-      desc: "Verify LC_CTRL's lc_ctrl_lc_keymgr_en is connects correctly to keymgr."
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
-    {
-      name: flash_lc_nvm_debug_en
-      desc: "Verify lc_ctrl's lc_nvm_debug_en is connected correctly to flash_ctrl."
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
-    {
-      name: lc_ctrl_scanmode
-      desc: "Verify the connectivity of scanmode to LC ctrl."
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
 
     /////////////////////////
     // TODO: OTP_CTRL       //
@@ -570,13 +577,6 @@
     {
       name: otp_ctrl_external_voltage
       desc: "Verify the connectivity of the external voltage signal to OTP ctrl."
-      milestone: V2
-      tests: []
-      tags: ["conn"]
-    }
-    {
-      name: otp_ctrl_scan
-      desc: "Verify the connectivity of the scan signals to OTP ctrl."
       milestone: V2
       tests: []
       tags: ["conn"]

@@ -1,0 +1,22 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# Verify the scanmode connectivities.
+CONNECTION, AST_SCANMODE_PADRING,      u_ast, dft_scan_md_o, u_padring,                   scanmode_i
+CONNECTION, AST_SCANMODE_CLKMGR,       u_ast, dft_scan_md_o, top_earlgrey.u_clkmgr_aon,   scanmode_i
+CONNECTION, AST_SCANMODE_FLASH_CTRL,   u_ast, dft_scan_md_o, top_earlgrey.u_flash_ctrl,   scanmode_i
+CONNECTION, AST_SCANMODE_LC_CTRL,      u_ast, dft_scan_md_o, top_earlgrey.u_lc_ctrl,      scanmode_i
+CONNECTION, AST_SCANMODE_OTP_CTRL,     u_ast, dft_scan_md_o, top_earlgrey.u_otp_ctrl,     scanmode_i
+CONNECTION, AST_SCANMODE_PINMUX,       u_ast, dft_scan_md_o, top_earlgrey.u_pinmux_aon,   scanmode_i
+CONNECTION, AST_SCANMODE_RSTMGR,       u_ast, dft_scan_md_o, top_earlgrey.u_rstmgr_aon,   scanmode_i
+CONNECTION, AST_SCANMODE_RV_CORE_IBEX, u_ast, dft_scan_md_o, top_earlgrey.u_rv_core_ibex, scanmode_i
+CONNECTION, AST_SCANMODE_RV_DM,        u_ast, dft_scan_md_o, top_earlgrey.u_rv_dm,        scanmode_i
+CONNECTION, AST_SCANMODE_SPI_DEVICE,   u_ast, dft_scan_md_o, top_earlgrey.u_spi_device,   scanmode_i
+CONNECTION, AST_SCANMODE_XBAR_MAIN,    u_ast, dft_scan_md_o, top_earlgrey.u_xbar_main,    scanmode_i
+CONNECTION, AST_SCANMODE_XBAR_PERI,    u_ast, dft_scan_md_o, top_earlgrey.u_xbar_peri,    scanmode_i
