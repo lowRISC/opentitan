@@ -633,18 +633,18 @@ module keymgr_ctrl
   // Current working state provided for software read
   // Certain states are collapsed for simplicity
   keymgr_working_state_e last_working_st;
-  logic state_update;
+  logic update_en;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       last_working_st <= StReset;
-    end else if (state_update) begin
+    end else if (update_en) begin
       last_working_st <= working_state_o;
     end
   end
 
   always_comb begin
-    state_update = 1'b1;
+    update_en = 1'b1;
     working_state_o = StInvalid;
 
     unique case (state_q)
@@ -667,7 +667,7 @@ module keymgr_ctrl
         working_state_o = StDisabled;
 
       StCtrlWipe: begin
-        state_update = 1'b0;
+        update_en = 1'b0;
         working_state_o = last_working_st;
       end
 

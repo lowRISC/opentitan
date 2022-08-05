@@ -119,7 +119,7 @@ module kmac_app
   // Digest width is same to the key width `keymgr_pkg::KeyWidth`.
   localparam int KeyMgrKeyW = $bits(keymgr_key_i.key[0]);
 
-  localparam key_len_e KeyLen [5] = '{Key128, Key192, Key256, Key384, Key512};
+  localparam key_len_e KeyLengths [5] = '{Key128, Key192, Key256, Key384, Key512};
 
   localparam int SelKeySize = (AppKeyW == 128) ? 0 :
                               (AppKeyW == 192) ? 1 :
@@ -131,7 +131,7 @@ module kmac_app
                               (AppDigestW == 256) ? 2 :
                               (AppDigestW == 384) ? 3 :
                               (AppDigestW == 512) ? 4 : 0 ;
-  localparam key_len_e SideloadedKey = KeyLen[SelKeySize];
+  localparam key_len_e SideloadedKey = KeyLengths[SelKeySize];
 
   // Define right_encode(outlen) value here
   // Look at kmac_pkg::key_len_e for the kinds of key size

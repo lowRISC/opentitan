@@ -48,7 +48,7 @@ module gpio
     prim_filter_ctr #(
       .AsyncOn(GpioAsyncOn),
       .CntWidth(CntWidth)
-    ) filter (
+    ) u_filter (
       .clk_i,
       .rst_ni,
       .enable_i(reg2hw.ctrl_en_input_filter.q[i]),

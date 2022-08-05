@@ -67,7 +67,7 @@ module prim_xoshiro256pp #(
                      (xoshiro_en_i && lockup) ? DefaultSeed        :
                      (xoshiro_en_i)           ? next_xoshiro_state : xoshiro_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_state
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_reg_state
     if (!rst_ni) begin
       xoshiro_q <= DefaultSeed;
     end else begin
