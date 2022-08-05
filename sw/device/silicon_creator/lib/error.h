@@ -8,9 +8,9 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 
-#define USING_ABSL_STATUS
-#include "sw/device/lib/base/absl_status.h"
-#undef USING_ABSL_STATUS
+#define USING_INTERNAL_STATUS
+#include "sw/device/lib/base/internal/status.h"
+#undef USING_INTERNAL_STATUS
 
 #ifdef __cplusplus
 extern "C" {
