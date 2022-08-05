@@ -5,4 +5,5 @@
 pub mod bootstrap;
 pub mod init;
 pub mod load_bitstream;
+pub mod rpc;
 pub mod status;

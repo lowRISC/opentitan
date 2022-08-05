@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use regex::{Captures, Regex};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::os::unix::io::AsRawFd;
 use std::time::{Duration, Instant, SystemTime};
 
-use crate::io::uart::Uart;
+use crate::io::uart::{Uart, UartError};
 use crate::util::file;
 
 #[derive(Default)]
@@ -180,6 +180,25 @@ impl UartConsole {
                 .map(|rx| rx.captures(&self.buffer))
                 .flatten(),
             _ => None,
+        }
+    }
+
+    pub fn wait_for(uart: &dyn Uart, rx: &str, timeout: Duration) -> Result<String> {
+        let mut console = UartConsole {
+            timeout: Some(timeout),
+            exit_success: Some(Regex::new(rx)?),
+            ..Default::default()
+        };
+        let mut stdout = std::io::stdout();
+        let result = console.interact(uart, None, Some(&mut stdout))?;
+        match result {
+            ExitStatus::ExitSuccess => {
+                let cap = console.captures(ExitStatus::ExitSuccess).expect("capture");
+                let s = cap.get(0).expect("capture group").as_str().to_owned();
+                Ok(s)
+            }
+            ExitStatus::Timeout => Err(UartError::GenericError("Timed Out".into()).into()),
+            _ => Err(anyhow!("Impossible result: {:?}", result)),
         }
     }
 }
