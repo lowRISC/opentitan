@@ -100,3 +100,31 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_functest(
+    name = "e2e_chip_specific_startup",
+    srcs = ["chip_specific_startup.c"],
+    args = [],
+    cw310 = cw310_params(
+        args = [
+            "--bitstream=\"$(location //hw/bitstream:rom)\"",
+            "--rom-kind=rom",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+        bitstream = "//hw/bitstream:rom",
+    ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    signed = True,
+    targets = ["cw310"],
+    test_harness = "//sw/host/tests/rom/e2e_chip_specific_startup",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:sram_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/silicon_creator/rom/e2e/json:chip_specific_startup",
+        "//sw/device/silicon_creator/rom/e2e/json:command",
+    ],
+)
