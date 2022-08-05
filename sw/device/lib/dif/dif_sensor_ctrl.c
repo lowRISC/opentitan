@@ -34,7 +34,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_lock_cfg(const dif_sensor_ctrl_t *sensor_ctrl) {
   if (sensor_ctrl == NULL) {
     return kDifBadArg;
-  };
+  }
 
   mmio_region_write32(sensor_ctrl->base_addr, SENSOR_CTRL_CFG_REGWEN_REG_OFFSET,
                       0);
