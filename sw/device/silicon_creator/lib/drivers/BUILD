@@ -48,7 +48,6 @@ dual_cc_library(
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:memory",
             "//sw/device/lib/base:mmio",
-            "//sw/device/silicon_creator/lib/base:sec_mmio",
             "//sw/device/silicon_creator/lib:crc32",
             "//sw/device/silicon_creator/lib:error",
         ],
@@ -84,7 +83,6 @@ opentitan_functest(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:test_main",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
 
