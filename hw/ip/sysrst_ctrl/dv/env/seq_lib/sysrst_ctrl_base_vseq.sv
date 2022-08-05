@@ -74,7 +74,7 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
   // setup basic sysrst_ctrl features
   virtual task sysrst_ctrl_init();
     // A place holder to add any basic feature or initialization in future
-    ral.intr_enable.sysrst_ctrl.set(en_intr);
+    ral.intr_enable.event_detected.set(en_intr);
     csr_update(ral.intr_enable);
   endtask
 

@@ -483,7 +483,7 @@ module top_earlgrey #(
   logic intr_usbdev_powered;
   logic intr_usbdev_link_out_err;
   logic intr_pwrmgr_aon_wakeup;
-  logic intr_sysrst_ctrl_aon_sysrst_ctrl;
+  logic intr_sysrst_ctrl_aon_event_detected;
   logic intr_adc_ctrl_aon_match_done;
   logic intr_aon_timer_aon_wkup_timer_expired;
   logic intr_aon_timer_aon_wdog_timer_bark;
@@ -1841,14 +1841,14 @@ module top_earlgrey #(
       .cio_flash_wp_l_en_o  (cio_sysrst_ctrl_aon_flash_wp_l_en_d2p),
 
       // Interrupt
-      .intr_sysrst_ctrl_o (intr_sysrst_ctrl_aon_sysrst_ctrl),
+      .intr_event_detected_o (intr_sysrst_ctrl_aon_event_detected),
       // [25]: fatal_fault
       .alert_tx_o  ( alert_tx[25:25] ),
       .alert_rx_i  ( alert_rx[25:25] ),
 
       // Inter-module signals
       .wkup_req_o(pwrmgr_aon_wakeups[0]),
-      .aon_sysrst_ctrl_rst_req_o(pwrmgr_aon_rstreqs[0]),
+      .rst_req_o(pwrmgr_aon_rstreqs[0]),
       .tl_i(sysrst_ctrl_aon_tl_req),
       .tl_o(sysrst_ctrl_aon_tl_rsp),
 
@@ -2639,7 +2639,7 @@ module top_earlgrey #(
       intr_aon_timer_aon_wdog_timer_bark, // IDs [159 +: 1]
       intr_aon_timer_aon_wkup_timer_expired, // IDs [158 +: 1]
       intr_adc_ctrl_aon_match_done, // IDs [157 +: 1]
-      intr_sysrst_ctrl_aon_sysrst_ctrl, // IDs [156 +: 1]
+      intr_sysrst_ctrl_aon_event_detected, // IDs [156 +: 1]
       intr_pwrmgr_aon_wakeup, // IDs [155 +: 1]
       intr_usbdev_link_out_err, // IDs [154 +: 1]
       intr_usbdev_powered, // IDs [153 +: 1]

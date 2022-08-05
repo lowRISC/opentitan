@@ -91,13 +91,13 @@ TEST_F(IrqIsPendingTest, NullArgs) {
   bool is_pending;
 
   EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_is_pending(
-      nullptr, kDifSysrstCtrlIrqSysrstCtrl, &is_pending));
+      nullptr, kDifSysrstCtrlIrqEventDetected, &is_pending));
 
   EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_is_pending(
-      &sysrst_ctrl_, kDifSysrstCtrlIrqSysrstCtrl, nullptr));
+      &sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected, nullptr));
 
   EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_is_pending(
-      nullptr, kDifSysrstCtrlIrqSysrstCtrl, nullptr));
+      nullptr, kDifSysrstCtrlIrqEventDetected, nullptr));
 }
 
 TEST_F(IrqIsPendingTest, BadIrq) {
@@ -113,9 +113,9 @@ TEST_F(IrqIsPendingTest, Success) {
   // Get the first IRQ state.
   irq_state = false;
   EXPECT_READ32(SYSRST_CTRL_INTR_STATE_REG_OFFSET,
-                {{SYSRST_CTRL_INTR_STATE_SYSRST_CTRL_BIT, true}});
+                {{SYSRST_CTRL_INTR_STATE_EVENT_DETECTED_BIT, true}});
   EXPECT_DIF_OK(dif_sysrst_ctrl_irq_is_pending(
-      &sysrst_ctrl_, kDifSysrstCtrlIrqSysrstCtrl, &irq_state));
+      &sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected, &irq_state));
   EXPECT_TRUE(irq_state);
 }
 
@@ -136,7 +136,7 @@ class IrqAcknowledgeTest : public SysrstCtrlTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {
   EXPECT_DIF_BADARG(
-      dif_sysrst_ctrl_irq_acknowledge(nullptr, kDifSysrstCtrlIrqSysrstCtrl));
+      dif_sysrst_ctrl_irq_acknowledge(nullptr, kDifSysrstCtrlIrqEventDetected));
 }
 
 TEST_F(IrqAcknowledgeTest, BadIrq) {
@@ -147,16 +147,16 @@ TEST_F(IrqAcknowledgeTest, BadIrq) {
 TEST_F(IrqAcknowledgeTest, Success) {
   // Clear the first IRQ state.
   EXPECT_WRITE32(SYSRST_CTRL_INTR_STATE_REG_OFFSET,
-                 {{SYSRST_CTRL_INTR_STATE_SYSRST_CTRL_BIT, true}});
-  EXPECT_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl_,
-                                                kDifSysrstCtrlIrqSysrstCtrl));
+                 {{SYSRST_CTRL_INTR_STATE_EVENT_DETECTED_BIT, true}});
+  EXPECT_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(
+      &sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected));
 }
 
 class IrqForceTest : public SysrstCtrlTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
   EXPECT_DIF_BADARG(
-      dif_sysrst_ctrl_irq_force(nullptr, kDifSysrstCtrlIrqSysrstCtrl));
+      dif_sysrst_ctrl_irq_force(nullptr, kDifSysrstCtrlIrqEventDetected));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
@@ -167,9 +167,9 @@ TEST_F(IrqForceTest, BadIrq) {
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(SYSRST_CTRL_INTR_TEST_REG_OFFSET,
-                 {{SYSRST_CTRL_INTR_TEST_SYSRST_CTRL_BIT, true}});
+                 {{SYSRST_CTRL_INTR_TEST_EVENT_DETECTED_BIT, true}});
   EXPECT_DIF_OK(
-      dif_sysrst_ctrl_irq_force(&sysrst_ctrl_, kDifSysrstCtrlIrqSysrstCtrl));
+      dif_sysrst_ctrl_irq_force(&sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected));
 }
 
 class IrqGetEnabledTest : public SysrstCtrlTest {};
@@ -178,13 +178,13 @@ TEST_F(IrqGetEnabledTest, NullArgs) {
   dif_toggle_t irq_state;
 
   EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_get_enabled(
-      nullptr, kDifSysrstCtrlIrqSysrstCtrl, &irq_state));
+      nullptr, kDifSysrstCtrlIrqEventDetected, &irq_state));
 
   EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_get_enabled(
-      &sysrst_ctrl_, kDifSysrstCtrlIrqSysrstCtrl, nullptr));
+      &sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected, nullptr));
 
   EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_get_enabled(
-      nullptr, kDifSysrstCtrlIrqSysrstCtrl, nullptr));
+      nullptr, kDifSysrstCtrlIrqEventDetected, nullptr));
 }
 
 TEST_F(IrqGetEnabledTest, BadIrq) {
@@ -200,9 +200,9 @@ TEST_F(IrqGetEnabledTest, Success) {
   // First IRQ is enabled.
   irq_state = kDifToggleDisabled;
   EXPECT_READ32(SYSRST_CTRL_INTR_ENABLE_REG_OFFSET,
-                {{SYSRST_CTRL_INTR_ENABLE_SYSRST_CTRL_BIT, true}});
+                {{SYSRST_CTRL_INTR_ENABLE_EVENT_DETECTED_BIT, true}});
   EXPECT_DIF_OK(dif_sysrst_ctrl_irq_get_enabled(
-      &sysrst_ctrl_, kDifSysrstCtrlIrqSysrstCtrl, &irq_state));
+      &sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleEnabled);
 }
 
@@ -212,7 +212,7 @@ TEST_F(IrqSetEnabledTest, NullArgs) {
   dif_toggle_t irq_state = kDifToggleEnabled;
 
   EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_set_enabled(
-      nullptr, kDifSysrstCtrlIrqSysrstCtrl, irq_state));
+      nullptr, kDifSysrstCtrlIrqEventDetected, irq_state));
 }
 
 TEST_F(IrqSetEnabledTest, BadIrq) {
@@ -228,9 +228,9 @@ TEST_F(IrqSetEnabledTest, Success) {
   // Enable first IRQ.
   irq_state = kDifToggleEnabled;
   EXPECT_MASK32(SYSRST_CTRL_INTR_ENABLE_REG_OFFSET,
-                {{SYSRST_CTRL_INTR_ENABLE_SYSRST_CTRL_BIT, 0x1, true}});
+                {{SYSRST_CTRL_INTR_ENABLE_EVENT_DETECTED_BIT, 0x1, true}});
   EXPECT_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(
-      &sysrst_ctrl_, kDifSysrstCtrlIrqSysrstCtrl, irq_state));
+      &sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected, irq_state));
 }
 
 class IrqDisableAllTest : public SysrstCtrlTest {};

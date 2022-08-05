@@ -644,7 +644,7 @@ void ottf_external_isr(void) {
     case kTopEarlgreyPlicPeripheralSysrstCtrlAon: {
       dif_sysrst_ctrl_irq_t irq = (dif_sysrst_ctrl_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSysrstCtrlAonSysrstCtrl);
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
       CHECK(irq == sysrst_ctrl_irq_expected,
             "Incorrect sysrst_ctrl_aon IRQ triggered: exp = %d, obs = %d",
             sysrst_ctrl_irq_expected, irq);
@@ -1342,8 +1342,8 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralSysrstCtrlAon;
-  for (dif_sysrst_ctrl_irq_t irq = kDifSysrstCtrlIrqSysrstCtrl;
-       irq <= kDifSysrstCtrlIrqSysrstCtrl; ++irq) {
+  for (dif_sysrst_ctrl_irq_t irq = kDifSysrstCtrlIrqEventDetected;
+       irq <= kDifSysrstCtrlIrqEventDetected; ++irq) {
     sysrst_ctrl_irq_expected = irq;
     LOG_INFO("Triggering sysrst_ctrl_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq));

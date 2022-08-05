@@ -54,8 +54,8 @@ dif_result_t dif_sysrst_ctrl_alert_force(const dif_sysrst_ctrl_t *sysrst_ctrl,
 static bool sysrst_ctrl_get_irq_bit_index(dif_sysrst_ctrl_irq_t irq,
                                           bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifSysrstCtrlIrqSysrstCtrl:
-      *index_out = SYSRST_CTRL_INTR_COMMON_SYSRST_CTRL_BIT;
+    case kDifSysrstCtrlIrqEventDetected:
+      *index_out = SYSRST_CTRL_INTR_COMMON_EVENT_DETECTED_BIT;
       break;
     default:
       return false;
