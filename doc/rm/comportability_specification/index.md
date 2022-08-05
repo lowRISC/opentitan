@@ -629,7 +629,7 @@ Every alert of a peripheral has one field bit inside the `ALERT_TEST` register, 
 Internal events are sent active-high to a piece of IP within the peripheral called the `prim_alert_sender`.
 One `prim_alert_sender` must be instantiated per distinct alert event, and the `IsFatal` parameter of the alert sender must be set to 1 for fatal alerts (this causes the alert sender to latch the alert until the next system reset).
 
-It is up to the peripheral owner to determine what are distinct alert events;
+It is up to the peripheral maintainer to determine what are distinct alert events;
 multiple ones can be bundled depending upon the distinction required within the module (i.e.  high priority threat vs. low level threat).
 As a general guideline, it is recommended that each peripheral bundles alert sources into one or two distinct alerts, for example one fatal and one recoverable alert.
 This helps to keep the total number of alerts (and their physical impact) low at the system level.
