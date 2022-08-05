@@ -1,0 +1,15 @@
+--- riscv_core_setting.sv.default	2022-07-15 12:35:52.670143953 +0100
++++ riscv_core_setting.sv.small	2022-07-15 12:38:04.071391739 +0100
+@@ -63,10 +63,10 @@
+ int max_interrupt_vector_num = 32;
+ 
+ // Physical memory protection support
+-bit support_pmp = 1;
++bit support_pmp = 0;
+ 
+ // Enhanced physical memory protection support
+-bit support_epmp = 1;
++bit support_epmp = 0;
+ 
+ // Debug mode support
+ bit support_debug_mode = 1;

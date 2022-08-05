@@ -133,6 +133,26 @@ class FusesocOpts:
 
         return ' '.join(fusesoc_cmd)
 
+class QueryOpts:
+    def setup_args(self, arg_subparser):
+        output_argparser = arg_subparser.add_parser(
+            'query_fields', help=('Query config fields'))
+        output_argparser.add_argument(
+            'fields', type=str, nargs='+',
+            help='Which fields to query the value of')
+
+        output_argparser.set_defaults(output_fn=self.output)
+
+    def output(self, config, args):
+        query_result = []
+        for fld in args.fields:
+            if fld in config.params:
+                val = config.params[fld]
+                query_result.append(f'{fld}={val}')
+            else:
+                query_result.append(f'{fld} not found in config')
+
+        return '\n'.join(query_result)
 
 class SimOpts:
     def __init__(self, cmd_name, description, param_set_fn, define_set_fn,
@@ -234,6 +254,7 @@ def parse_config(config_name, config_filename):
 def main():
     outputters = [
         FusesocOpts(),
+        QueryOpts(),
         SimOpts('vcs_opts', 'VCS compile',
                 lambda p, v: ['-pvalue+' + p + '=' + v],
                 lambda d, v: ['+define+' + d + '=' + v], '.'),

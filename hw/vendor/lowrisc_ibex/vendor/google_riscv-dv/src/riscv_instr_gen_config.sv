@@ -705,10 +705,6 @@ class riscv_instr_gen_config extends uvm_object;
     min_stack_len_per_program = 2 * (XLEN/8);
     // Check if the setting is legal
     check_setting();
-    // WFI is not supported in umode
-    if (init_privileged_mode == USER_MODE) begin
-      no_wfi = 1'b1;
-    end
   endfunction
 
   virtual function void check_setting();

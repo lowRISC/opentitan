@@ -13,6 +13,9 @@ class ibex_rvfi_seq_item extends uvm_sequence_item;
   bit        debug_req;
   bit [63:0] mcycle;
 
+  bit [31:0] mhpmcounters  [10];
+  bit [31:0] mhpmcountersh [10];
+
   `uvm_object_utils_begin(ibex_rvfi_seq_item)
     `uvm_field_int (trap, UVM_DEFAULT)
     `uvm_field_int (pc, UVM_DEFAULT)
@@ -23,6 +26,8 @@ class ibex_rvfi_seq_item extends uvm_sequence_item;
     `uvm_field_int (nmi, UVM_DEFAULT)
     `uvm_field_int (debug_req, UVM_DEFAULT)
     `uvm_field_int (mcycle, UVM_DEFAULT)
+    `uvm_field_sarray_int (mhpmcounters, UVM_DEFAULT)
+    `uvm_field_sarray_int (mhpmcountersh, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

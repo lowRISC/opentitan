@@ -41,6 +41,13 @@ void riscv_cosim_set_mcycle(Cosim *cosim, svBitVecVal *mcycle) {
   cosim->set_mcycle(mcycle_full);
 }
 
+void riscv_cosim_set_csr(Cosim *cosim, const int csr_id,
+                         const svBitVecVal *csr_val) {
+  assert(cosim);
+
+  cosim->set_csr(csr_id, (uint32_t)csr_val[0]);
+}
+
 void riscv_cosim_notify_dside_access(Cosim *cosim, svBit store,
                                      svBitVecVal *addr, svBitVecVal *data,
                                      svBitVecVal *be, svBit error,

@@ -185,7 +185,7 @@ class core_ibex_base_test extends uvm_test;
   virtual task wait_for_test_done();
     fork
       begin
-        wait (dut_vif.ecall === 1'b1);
+        wait (dut_vif.dut_cb.ecall === 1'b1);
         vseq.stop();
         `uvm_info(`gfn, "ECALL instruction is detected, test done", UVM_LOW)
         fork
@@ -210,11 +210,16 @@ class core_ibex_base_test extends uvm_test;
   virtual task wait_for_mem_txn(input bit[ibex_mem_intf_agent_pkg::ADDR_WIDTH-1:0] ref_addr,
                                 input signature_type_t ref_type);
     ibex_mem_intf_seq_item mem_txn;
+    `uvm_info(`gfn, $sformatf("Awaiting riscv-dv handshake at 0x%0h, Type : %0s",
+                              ref_addr, ref_type), UVM_HIGH)
     forever begin
       // The first write to this address is guaranteed to contain the signature type in bits [7:0]
       item_collected_port.get(mem_txn);
-      if (mem_txn.addr == ref_addr && mem_txn.data[7:0] === ref_type &&
+      if (mem_txn.addr       == ref_addr &&
+          mem_txn.data[7:0] === ref_type &&
           mem_txn.read_write == WRITE) begin
+        `uvm_info(`gfn, $sformatf("riscv-dv handshake received at 0x%0h, Type : %0s",
+                                  ref_addr, ref_type), UVM_HIGH)
         signature_data = mem_txn.data;
         case (ref_type)
           // The very first write to the signature address in every test is guaranteed to be a write

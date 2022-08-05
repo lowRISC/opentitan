@@ -10,7 +10,6 @@ module core_ibex_tb_top;
   import core_ibex_test_pkg::*;
 
   wire clk;
-  wire scramble_req;
   wire rst_n;
 
   clk_rst_if     ibex_clk_if(.clk(clk), .rst_n(rst_n));
@@ -69,6 +68,20 @@ module core_ibex_tb_top;
   parameter bit ICacheScramble            = 1'b0;
   parameter bit DbgTriggerEn              = 1'b0;
 
+  // Scrambling interface instantiation
+  logic [ibex_pkg::SCRAMBLE_KEY_W-1:0]   scramble_key;
+  logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] scramble_nonce;
+
+  // Initiate push pull interface for connection between Ibex and a scrambling key provider.
+  push_pull_if #(
+    .DeviceDataWidth(ibex_pkg::SCRAMBLE_NONCE_W + ibex_pkg::SCRAMBLE_KEY_W)
+  ) scrambling_key_if (
+    .clk(clk),
+    .rst_n(rst_n)
+  );
+
+  // key and nonce are driven by push_pull Device interface
+  assign {scramble_key, scramble_nonce} = scrambling_key_if.d_data;
 
   ibex_top_tracing #(
     .DmHaltAddr       (32'h`BOOT_ADDR + 'h0 ),
@@ -128,10 +141,10 @@ module core_ibex_tb_top;
     .irq_fast_i             (irq_vif.irq_fast           ),
     .irq_nm_i               (irq_vif.irq_nm             ),
 
-    .scramble_key_valid_i   ('0                         ),
-    .scramble_key_i         ('0                         ),
-    .scramble_nonce_i       ('0                         ),
-    .scramble_req_o         (                           ),
+    .scramble_key_valid_i   (scrambling_key_if.ack      ),
+    .scramble_key_i         (scramble_key               ),
+    .scramble_nonce_i       (scramble_nonce             ),
+    .scramble_req_o         (scrambling_key_if.req      ),
 
     .debug_req_i            (dut_if.debug_req           ),
     .crash_dump_o           (                           ),
@@ -156,30 +169,32 @@ module core_ibex_tb_top;
   assign instr_mem_vif.be    = 0;
   assign instr_mem_vif.wdata = 0;
   // RVFI interface connections
-  assign rvfi_if.reset         = ~rst_n;
-  assign rvfi_if.valid         = dut.rvfi_valid;
-  assign rvfi_if.order         = dut.rvfi_order;
-  assign rvfi_if.insn          = dut.rvfi_insn;
-  assign rvfi_if.trap          = dut.rvfi_trap;
-  assign rvfi_if.intr          = dut.rvfi_intr;
-  assign rvfi_if.mode          = dut.rvfi_mode;
-  assign rvfi_if.ixl           = dut.rvfi_ixl;
-  assign rvfi_if.rs1_addr      = dut.rvfi_rs1_addr;
-  assign rvfi_if.rs2_addr      = dut.rvfi_rs2_addr;
-  assign rvfi_if.rs1_rdata     = dut.rvfi_rs1_rdata;
-  assign rvfi_if.rs2_rdata     = dut.rvfi_rs2_rdata;
-  assign rvfi_if.rd_addr       = dut.rvfi_rd_addr;
-  assign rvfi_if.rd_wdata      = dut.rvfi_rd_wdata;
-  assign rvfi_if.pc_rdata      = dut.rvfi_pc_rdata;
-  assign rvfi_if_pc_wdata      = dut.rvfi_pc_wdata;
-  assign rvfi_if.mem_addr      = dut.rvfi_mem_addr;
-  assign rvfi_if.mem_rmask     = dut.rvfi_mem_rmask;
-  assign rvfi_if.mem_rdata     = dut.rvfi_mem_rdata;
-  assign rvfi_if.mem_wdata     = dut.rvfi_mem_wdata;
-  assign rvfi_if.ext_mip       = dut.rvfi_ext_mip;
-  assign rvfi_if.ext_nmi       = dut.rvfi_ext_nmi;
-  assign rvfi_if.ext_debug_req = dut.rvfi_ext_debug_req;
-  assign rvfi_if.ext_mcycle    = dut.rvfi_ext_mcycle;
+  assign rvfi_if.reset             = ~rst_n;
+  assign rvfi_if.valid             = dut.rvfi_valid;
+  assign rvfi_if.order             = dut.rvfi_order;
+  assign rvfi_if.insn              = dut.rvfi_insn;
+  assign rvfi_if.trap              = dut.rvfi_trap;
+  assign rvfi_if.intr              = dut.rvfi_intr;
+  assign rvfi_if.mode              = dut.rvfi_mode;
+  assign rvfi_if.ixl               = dut.rvfi_ixl;
+  assign rvfi_if.rs1_addr          = dut.rvfi_rs1_addr;
+  assign rvfi_if.rs2_addr          = dut.rvfi_rs2_addr;
+  assign rvfi_if.rs1_rdata         = dut.rvfi_rs1_rdata;
+  assign rvfi_if.rs2_rdata         = dut.rvfi_rs2_rdata;
+  assign rvfi_if.rd_addr           = dut.rvfi_rd_addr;
+  assign rvfi_if.rd_wdata          = dut.rvfi_rd_wdata;
+  assign rvfi_if.pc_rdata          = dut.rvfi_pc_rdata;
+  assign rvfi_if_pc_wdata          = dut.rvfi_pc_wdata;
+  assign rvfi_if.mem_addr          = dut.rvfi_mem_addr;
+  assign rvfi_if.mem_rmask         = dut.rvfi_mem_rmask;
+  assign rvfi_if.mem_rdata         = dut.rvfi_mem_rdata;
+  assign rvfi_if.mem_wdata         = dut.rvfi_mem_wdata;
+  assign rvfi_if.ext_mip           = dut.rvfi_ext_mip;
+  assign rvfi_if.ext_nmi           = dut.rvfi_ext_nmi;
+  assign rvfi_if.ext_debug_req     = dut.rvfi_ext_debug_req;
+  assign rvfi_if.ext_mcycle        = dut.rvfi_ext_mcycle;
+  assign rvfi_if.ext_mhpmcounters  = dut.rvfi_ext_mhpmcounters;
+  assign rvfi_if.ext_mhpmcountersh = dut.rvfi_ext_mhpmcountersh;
   // Irq interface connections
   assign irq_vif.reset = ~rst_n;
   // Dut_if interface connections
@@ -191,6 +206,7 @@ module core_ibex_tb_top;
   assign dut_if.mret          = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.mret_insn;
   assign dut_if.reset         = ~rst_n;
   assign dut_if.priv_mode     = dut.u_ibex_top.u_ibex_core.priv_mode_id;
+  assign dut_if.ctrl_fsm_cs   = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.ctrl_fsm_cs;
   // Instruction monitor connections
   assign instr_monitor_if.reset        = ~rst_n;
   assign instr_monitor_if.valid_id     = dut.u_ibex_top.u_ibex_core.id_stage_i.instr_valid_i;
@@ -263,7 +279,10 @@ module core_ibex_tb_top;
     uvm_config_db#(virtual ibex_mem_intf)::set(null, "*instr_if_response*", "vif", instr_mem_vif);
     uvm_config_db#(virtual irq_if)::set(null, "*", "vif", irq_vif);
     uvm_config_db#(virtual core_ibex_ifetch_if)::set(null, "*", "ifetch_if", ifetch_if);
-    uvm_config_db#(virtual core_ibex_ifetch_pmp_if)::set(null, "*", "ifetch_pmp_if", ifetch_pmp_if);
+    uvm_config_db#(virtual core_ibex_ifetch_pmp_if)::set(null, "*", "ifetch_pmp_if",
+                   ifetch_pmp_if);
+    uvm_config_db#(scrambling_key_vif)::set(
+      null, "*.env.scrambling_key_agent*", "vif", scrambling_key_if);
 
     // Expose ISA config parameters to UVM DB
     uvm_config_db#(bit)::set(null, "*", "RV32E", RV32E);
@@ -273,4 +292,9 @@ module core_ibex_tb_top;
     run_test();
   end
 
+  // Disable the assertion for onhot check in case WrenCheck (set by SecureIbex) is enabled.
+  if (SecureIbex) begin : gen_disable_onehot_check
+    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_wren_check.u_prim_onehot_check.
+          unused_assert_connected = 1;
+  end
 endmodule

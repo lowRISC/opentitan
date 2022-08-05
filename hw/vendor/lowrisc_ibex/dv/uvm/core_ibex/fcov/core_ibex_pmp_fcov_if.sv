@@ -416,6 +416,8 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
     logic pmp_current_priv_req_err;
     assign pmp_current_priv_req_err =
       g_pmp.pmp_i.access_fault_check(csr_pmp_mseccfg.mmwp,
+                                     csr_pmp_mseccfg.mml,
+                                     g_pmp.pmp_i.pmp_req_type_i[PMP_D],
                                      g_pmp.pmp_i.region_match_all[PMP_D],
                                      cs_registers_i.priv_mode_id_o,
                                      current_priv_perm_check);
@@ -608,8 +610,8 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
                               iff (pmp_iside_boundary_cross);
 
       misaligned_lsu_access_cross: cross misaligned_pmp_err_last,
-                                         load_store_unit_i.fcov_ls_mis_pmp_err_2
-                                     iff (pmp_dside_boundary_cross);
+                                         load_store_unit_i.fcov_ls_mis_pmp_err_2,
+                                         pmp_dside_boundary_cross;
 
     endgroup
 

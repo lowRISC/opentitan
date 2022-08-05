@@ -502,7 +502,7 @@ module ibex_id_stage #(
   );
 
   /////////////////////////////////
-  // CSR-related pipline flushes //
+  // CSR-related pipeline flushes //
   /////////////////////////////////
   always_comb begin : csr_pipeline_flushes
     csr_pipe_flush = 1'b0;
@@ -511,10 +511,14 @@ module ibex_id_stage #(
     // - When enabling interrupts, pending IRQs become visible to the controller only during
     //   the next cycle. If during that cycle the core disables interrupts again, it does not
     //   see any pending IRQs and consequently does not start to handle interrupts.
+    // - When modifying any PMP CSR, PMP check of the next instruction might get invalidated.
+    //   Hence, a pipeline flush is needed to instantiate another PMP check with the updated CSRs.
     // - When modifying debug CSRs - TODO: Check if this is really needed
     if (csr_op_en_o == 1'b1 && (csr_op_o == CSR_OP_WRITE || csr_op_o == CSR_OP_SET)) begin
-      if (csr_num_e'(instr_rdata_i[31:20]) == CSR_MSTATUS   ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_MIE) begin
+      if (csr_num_e'(instr_rdata_i[31:20]) == CSR_MSTATUS ||
+          csr_num_e'(instr_rdata_i[31:20]) == CSR_MIE     ||
+          // To catch all PMPCFG/PMPADDR registers, get the shared top most 7 bits.
+          instr_rdata_i[31:25] == 7'h1D) begin
         csr_pipe_flush = 1'b1;
       end
     end else if (csr_op_en_o == 1'b1 && csr_op_o != CSR_OP_READ) begin

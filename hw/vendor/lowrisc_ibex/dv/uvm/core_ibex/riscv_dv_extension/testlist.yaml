@@ -226,6 +226,7 @@
     +no_csr_instr=1
     +no_fence=1
     +no_wfi=0
+    +set_mstatus_tw=0
     +randomize_csr=1
     +num_of_sub_program=0
   rtl_test: core_ibex_debug_wfi_test
@@ -326,6 +327,7 @@
     +require_signature_addr=1
     +gen_debug_section=1
     +enable_interrupt=1
+    +enable_timer_irq=1
     +randomize_csr=1
     +no_csr_instr=1
     +no_fence=1
@@ -346,6 +348,7 @@
     +require_signature_addr=1
     +gen_debug_section=1
     +enable_interrupt=1
+    +enable_timer_irq=1
     +randomize_csr=1
     +no_csr_instr=1
     +no_fence=1
@@ -357,6 +360,30 @@
   compare_opts:
     compare_final_value_only: 1
 
+- test: riscv_assorted_traps_interrupts_debug_test
+  description: >
+    Send assorted, intermixed stimulus to test trap-handling and recovery
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +instr_cnt=20000
+    +enable_unaligned_load_store=1
+    +no_wfi=1
+    +enable_misaligned_instr=1
+    +illegal_instr_ratio=5
+    +enable_interrupt=1
+    +enable_timer_irq=1
+    +gen_debug_section=1
+    +randomize_csr=1
+    +no_csr_instr=1
+    +no_directed_instr=1
+    +num_of_sub_program=5
+    +num_debug_sub_program=5
+  rtl_test: core_ibex_assorted_traps_interrupts_debug_test
+  sim_opts: >
+    +require_signature_addr=1
+
 - test: riscv_single_interrupt_test
   description: >
     Random instruction test with complete interrupt handling
@@ -366,6 +393,7 @@
     +instr_cnt=10000
     +require_signature_addr=1
     +enable_interrupt=1
+    +enable_timer_irq=1
     +randomize_csr=1
   rtl_test: core_ibex_debug_intr_basic_test
   sim_opts: >
@@ -383,6 +411,7 @@
     +instr_cnt=10000
     +require_signature_addr=1
     +enable_interrupt=1
+    +enable_timer_irq=1
     +randomize_csr=1
   rtl_test: core_ibex_debug_intr_basic_test
   sim_opts: >
@@ -400,6 +429,7 @@
     +instr_cnt=10000
     +require_signature_addr=1
     +enable_interrupt=1
+    +enable_timer_irq=1
     +enable_nested_interrupt=1
     +randomize_csr=1
     +no_csr_instr=1
@@ -448,7 +478,9 @@
     +instr_cnt=6000
     +require_signature_addr=1
     +enable_interrupt=1
+    +enable_timer_irq=1
     +randomize_csr=1
+    +set_mstatus_tw=0
     +no_wfi=0
   rtl_test: core_ibex_irq_wfi_test
   sim_opts: >
@@ -465,6 +497,7 @@
   gen_opts: >
     +require_signature_addr=1
     +enable_interrupt=1
+    +enable_timer_irq=1
     +randomize_csr=1
     +enable_dummy_csr_write=1
     +boot_mode=m
@@ -484,6 +517,7 @@
   sim_opts: >
     +disable_cosim=1
   no_post_compare: true
+  ignore_cosim_log: true
 
 - test: riscv_unaligned_load_store_test
   description: >
@@ -644,6 +678,7 @@
     +set_mstatus_mprv=1
     +pmp_max_offset=00024000
     +enable_write_pmp_csr=1
+    +mseccfg=MML:0,MMWP:0,RLB:0
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
@@ -660,22 +695,23 @@
     +instr_cnt=6000
     +set_mstatus_mprv=1
     +pmp_max_offset=00024000
-    +pmp_region_1=X:0,W:0,R:0
-    +pmp_region_2=X:0,W:0,R:0
-    +pmp_region_3=X:0,W:0,R:0
-    +pmp_region_4=X:0,W:0,R:0
-    +pmp_region_5=X:0,W:0,R:0
-    +pmp_region_6=X:0,W:0,R:0
-    +pmp_region_7=X:0,W:0,R:0
-    +pmp_region_8=X:0,W:0,R:0
-    +pmp_region_9=X:0,W:0,R:0
-    +pmp_region_10=X:0,W:0,R:0
-    +pmp_region_11=X:0,W:0,R:0
-    +pmp_region_12=X:0,W:0,R:0
-    +pmp_region_13=X:0,W:0,R:0
-    +pmp_region_14=X:0,W:0,R:0
-    +pmp_region_15=X:0,W:0,R:0
+    +pmp_region_1=L:1,X:0,W:0,R:0
+    +pmp_region_2=L:1,X:0,W:0,R:0
+    +pmp_region_3=L:1,X:0,W:0,R:0
+    +pmp_region_4=L:1,X:0,W:0,R:0
+    +pmp_region_5=L:1,X:0,W:0,R:0
+    +pmp_region_6=L:1,X:0,W:0,R:0
+    +pmp_region_7=L:1,X:0,W:0,R:0
+    +pmp_region_8=L:1,X:0,W:0,R:0
+    +pmp_region_9=L:1,X:0,W:0,R:0
+    +pmp_region_10=L:1,X:0,W:0,R:0
+    +pmp_region_11=L:1,X:0,W:0,R:0
+    +pmp_region_12=L:1,X:0,W:0,R:0
+    +pmp_region_13=L:1,X:0,W:0,R:0
+    +pmp_region_14=L:1,X:0,W:0,R:0
+    +pmp_region_15=L:1,X:0,W:0,R:0
     +enable_write_pmp_csr=1
+    +mseccfg=MML:0,MMWP:0,RLB:0
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
@@ -693,28 +729,180 @@
     +pmp_max_offset=00024000
     +enable_write_pmp_csr=1
     +directed_instr_0=riscv_load_store_rand_addr_instr_stream,50
+    +mseccfg=MML:0,MMWP:0,RLB:0
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
 
-    # TODO(udinator) this test is failing with arbitrary timeouts, need to fix this.
-    #- test: riscv_pmp_full_random_test
-    #  desc: >
-    #    Completely randomize the boot mode, mstatus.mprv, and all PMP configuration,
-    #    and allow PMP regions to overlap.
-    #    A large number of iterations will be required since this introduces a huge
-    #    state space of configurations.
-    #  iterations: 100
-    #  gen_test: riscv_rand_instr_test
-    #  gen_opts: >
-    #    +instr_cnt=6000
-    #    +pmp_max_offset=00024000
-    #    +pmp_randomize=1
-    #    +pmp_allow_addr_overlap=1
-    #    +enable_write_pmp_csr=1
-    #  rtl_test: core_ibex_base_test
-    #  rtl_params:
-    #    PMPEnable: 1
+- test: riscv_pmp_full_random_test
+  desc: >
+    Completely randomize the boot mode, mstatus.mprv, and all PMP configuration,
+    and allow PMP regions to overlap.
+    A large number of iterations will be required since this introduces a huge
+    state space of configurations.
+  iterations: 100
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +pmp_max_offset=00024000
+    +set_mstatus_mprv=1
+    +pmp_randomize=1
+    +pmp_allow_addr_overlap=1
+    +enable_write_pmp_csr=1
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    PMPEnable: 1
+
+- test: riscv_epmp_mml_test
+  desc: >
+    An enhanced PMP machine mode lockdown test - initialization and main
+    regions are set to execute only in both M and U modes. All other regions
+    are set to read/write only. Exceptions when reading/writing code or
+    executing data. Randomize mstatus.mprv.
+  iterations: 3
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +set_mstatus_mprv=1
+    +pmp_max_offset=00024000
+    +pmp_region_0=L:1,X:0,W:1,R:0
+    +pmp_region_1=L:1,X:0,W:1,R:0
+    +pmp_region_2=L:0,X:1,W:1,R:0
+    +pmp_region_3=L:0,X:1,W:1,R:0
+    +pmp_region_4=L:0,X:1,W:1,R:0
+    +pmp_region_5=L:0,X:1,W:1,R:0
+    +pmp_region_6=L:0,X:1,W:1,R:0
+    +pmp_region_7=L:0,X:1,W:1,R:0
+    +pmp_region_8=L:0,X:1,W:1,R:0
+    +pmp_region_9=L:0,X:1,W:1,R:0
+    +pmp_region_10=L:0,X:1,W:1,R:0
+    +pmp_region_11=L:0,X:1,W:1,R:0
+    +pmp_region_12=L:0,X:1,W:1,R:0
+    +pmp_region_13=L:0,X:1,W:1,R:0
+    +pmp_region_14=L:0,X:1,W:1,R:0
+    +pmp_region_15=L:0,X:1,W:1,R:0
+    +enable_write_pmp_csr=1
+    +mseccfg=MML:1,MMWP:0,RLB:0
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    PMPEnable: 1
+
+- test: riscv_epmp_mml_execute_only_test
+  desc: >
+    An enhanced PMP machine mode lockdown test - all PMP regions are set to
+    execute only. Exception is expected on any store or load. Randomize
+    mstatus.mprv.
+  iterations: 3
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +set_mstatus_mprv=1
+    +pmp_max_offset=00024000
+    +pmp_region_0=L:1,X:0,W:1,R:0
+    +pmp_region_1=L:1,X:0,W:1,R:0
+    +pmp_region_2=L:1,X:0,W:1,R:0
+    +pmp_region_3=L:1,X:0,W:1,R:0
+    +pmp_region_4=L:1,X:0,W:1,R:0
+    +pmp_region_5=L:1,X:0,W:1,R:0
+    +pmp_region_6=L:1,X:0,W:1,R:0
+    +pmp_region_7=L:1,X:0,W:1,R:0
+    +pmp_region_8=L:1,X:0,W:1,R:0
+    +pmp_region_9=L:1,X:0,W:1,R:0
+    +pmp_region_10=L:1,X:0,W:1,R:0
+    +pmp_region_11=L:1,X:0,W:1,R:0
+    +pmp_region_12=L:1,X:0,W:1,R:0
+    +pmp_region_13=L:1,X:0,W:1,R:0
+    +pmp_region_14=L:1,X:0,W:1,R:0
+    +pmp_region_15=L:1,X:0,W:1,R:0
+    +enable_write_pmp_csr=1
+    +mseccfg=MML:1,MMWP:0,RLB:0
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    PMPEnable: 1
+
+- test: riscv_epmp_mml_read_only_test
+  desc: >
+    An enhanced PMP machine mode lockdown test - all PMP regions are set to
+    shared read only. Exception is expected right after enabling MML. Randomize
+    mstatus.mprv.
+  iterations: 3
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +set_mstatus_mprv=1
+    +pmp_max_offset=00024000
+    +pmp_region_0=L:1,X:1,W:1,R:1
+    +pmp_region_1=L:1,X:1,W:1,R:1
+    +pmp_region_2=L:1,X:1,W:1,R:1
+    +pmp_region_3=L:1,X:1,W:1,R:1
+    +pmp_region_4=L:1,X:1,W:1,R:1
+    +pmp_region_5=L:1,X:1,W:1,R:1
+    +pmp_region_6=L:1,X:1,W:1,R:1
+    +pmp_region_7=L:1,X:1,W:1,R:1
+    +pmp_region_8=L:1,X:1,W:1,R:1
+    +pmp_region_9=L:1,X:1,W:1,R:1
+    +pmp_region_10=L:1,X:1,W:1,R:1
+    +pmp_region_11=L:1,X:1,W:1,R:1
+    +pmp_region_12=L:1,X:1,W:1,R:1
+    +pmp_region_13=L:1,X:1,W:1,R:1
+    +pmp_region_14=L:1,X:1,W:1,R:1
+    +pmp_region_15=L:1,X:1,W:1,R:1
+    +enable_write_pmp_csr=1
+    +mseccfg=MML:1,MMWP:0,RLB:0
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    PMPEnable: 1
+
+- test: riscv_epmp_mmwp_test
+  desc: >
+    An enhanced PMP machine mode whitelist policy - all PMP regions will be
+    configured to default setting, enabling all forms of accesses, expect that
+    an exception when machine mode access memory not in PMP. Randomize
+    mstatus.mprv.
+  iterations: 3
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +set_mstatus_mprv=1
+    +pmp_max_offset=00024000
+    +enable_write_pmp_csr=1
+    +mseccfg=MML:0,MMWP:1,RLB:0
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    PMPEnable: 1
+
+- test: riscv_epmp_rlb_test
+  desc: >
+    An enhanced PMP rule lock bypass - all PMP regions are locked and enable
+    all forms of accesses, expect that no exception will be thrown even when
+    trying to change locked entries. Randomize mstatus.mprv.
+  iterations: 3
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +set_mstatus_mprv=1
+    +pmp_max_offset=00024000
+    +pmp_region_0=L:1,X:1,W:1,R:1
+    +pmp_region_1=L:1,X:1,W:1,R:1
+    +pmp_region_2=L:1,X:1,W:1,R:1
+    +pmp_region_3=L:1,X:1,W:1,R:1
+    +pmp_region_4=L:1,X:1,W:1,R:1
+    +pmp_region_5=L:1,X:1,W:1,R:1
+    +pmp_region_6=L:1,X:1,W:1,R:1
+    +pmp_region_7=L:1,X:1,W:1,R:1
+    +pmp_region_8=L:1,X:1,W:1,R:1
+    +pmp_region_9=L:1,X:1,W:1,R:1
+    +pmp_region_10=L:1,X:1,W:1,R:1
+    +pmp_region_11=L:1,X:1,W:1,R:1
+    +pmp_region_12=L:1,X:1,W:1,R:1
+    +pmp_region_13=L:1,X:1,W:1,R:1
+    +pmp_region_14=L:1,X:1,W:1,R:1
+    +pmp_region_15=L:1,X:1,W:1,R:1
+    +enable_write_pmp_csr=1
+    +mseccfg=MML:0,MMWP:0,RLB:1
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    PMPEnable: 1
 
   # Disable cosim for bitmanip tests for now as Ibex implements a different
   # version of the spec compared to the Spike version used for the cosim.

@@ -286,25 +286,27 @@
       msb: 31
       lsb: 1
 
-# MCAUSE
-- csr: mcause
-  description: >
-    Indicates trap cause
-  address: 0x342
-  privilege_mode: M
-  rv32:
-    - field_name: Interrupt
-      description: >
-        Indicates if trap caused by interrupt
-      type: WARL
-      reset_val: 0
-      msb: 31
-      lsb: 31
-    - field_name: Exception Code
-      type: WLRL
-      reset_val: 0
-      msb: 4
-      lsb: 0
+# TODO: Add support for WARL fields to CSR test generator allowing this CSR to
+# be tested.
+## MCAUSE
+#- csr: mcause
+#  description: >
+#    Indicates trap cause
+#  address: 0x342
+#  privilege_mode: M
+#  rv32:
+#    - field_name: Interrupt
+#      description: >
+#        Indicates if trap caused by interrupt
+#      type: WARL
+#      reset_val: 0
+#      msb: 31
+#      lsb: 31
+#    - field_name: Exception Code
+#      type: WLRL
+#      reset_val: 0
+#      msb: 4
+#      lsb: 0
 
 # MTVAL
 - csr: mtval
@@ -358,6 +360,20 @@
   address: 0x7C0
   privilege_mode: M
   rv32:
+    - field_name: double_fault_seen
+      description: >
+        A synchronous exception was observed when the sync_exc_seen field was set
+      type: RW
+      reset_val: 0
+      msb: 7
+      lsb: 7
+    - field_name: sync_exc_seen
+      description: >
+        A synchronous exception has been observed
+      type: RW
+      reset_val: 0
+      msb: 6
+      lsb: 6
     - field_name: dumm_instr_mask
       description: >
         Mask to control frequency of dummy instruction insertion

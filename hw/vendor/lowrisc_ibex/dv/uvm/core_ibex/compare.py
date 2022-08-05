@@ -117,7 +117,7 @@ def compare_test_run(test: TestEntry,
             '[FAILED]: Log processing failed: {}'.format(e)
         return TestRunResult(**kv_data)
 
-    if en_cosim:
+    if en_cosim and not test.get('ignore_cosim_log', False):
         # Process the cosim logfile to check for errors
         kv_data['cosim_trace'] = cosim_trace
         kv_data['cosim_trace_csv'] = cosim_trace + '.csv'

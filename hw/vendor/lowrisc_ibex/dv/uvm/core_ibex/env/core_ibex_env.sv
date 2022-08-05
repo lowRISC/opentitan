@@ -15,6 +15,7 @@ class core_ibex_env extends uvm_env;
 `endif
   core_ibex_vseqr                vseqr;
   core_ibex_env_cfg              cfg;
+  scrambling_key_agent           scrambling_key_agent_h;
 
   `uvm_component_utils(core_ibex_env)
   `uvm_component_new
@@ -38,6 +39,12 @@ class core_ibex_env extends uvm_env;
       cosim_agent = null;
     end
 `endif
+
+    scrambling_key_agent_h = scrambling_key_agent::type_id::create("scrambling_key_agent_h", this);
+    uvm_config_db#(scrambling_key_agent_cfg)::set(this, "scrambling_key_agent_h", "cfg",
+                                                  cfg.scrambling_key_cfg);
+    cfg.scrambling_key_cfg.agent_type = push_pull_agent_pkg::PullAgent;
+    cfg.scrambling_key_cfg.if_mode = dv_utils_pkg::Device;
     // Create virtual sequencer
     vseqr = core_ibex_vseqr::type_id::create("vseqr", this);
   endfunction : build_phase

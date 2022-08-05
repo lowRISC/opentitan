@@ -3,9 +3,6 @@
 Coverage Plan
 =============
 
-.. note::
-  Work to implement the functional coverage described in this plan is on-going and the plan itself is not yet complete.
-
 .. todo::
   Branch prediction hasn't yet been considered, this will add more coverage points and alter some others
 
@@ -20,6 +17,12 @@ Architectural coverage is not Ibex specific. It can be determined directly from 
 
 Microarchitectural coverage will probe the Ibex RTL directly and is described here.
 There is some inevitable overlap between architectural and microarchitectural coverage but we aim to minimise it.
+
+Coverage Implementation
+-----------------------
+All coverpoints and cross coverage defined below is associated with a name ``cp_name``.
+This is the name of the coverpoint or cross that implements the described coverage.
+Coverage is implemented in two files; :file:`dv/uvm/core_ibex/fcov/core_ibex_pmp_fcov_if.sv` for PMP related coverage and :file:`dv/uvm/core_ibex/fcov/core_ibex_fcov_if.sv` for everything else.
 
 Microarchitectural Events and Behaviour
 ---------------------------------------
@@ -158,9 +161,10 @@ Some instructions will behave differently depending upon the state of the proces
     * ``tdata3``
 
 * Loads/stores with ``mstatus.mprv`` set and unset.
-  Covered by ````mprv_effect_cross``
+  Covered by ``mprv_effect_cross``
 * EBreak behaviour in U/M mode with different ``dcsr.ebreakm`` / ``dcsr.ebreaku`` settings.
   Covered by ``priv_mode_instr_cross``
+* ``cp_single_step_instr`` - Single step over every instruction category
 
 Pipeline State
 ^^^^^^^^^^^^^^
@@ -202,9 +206,13 @@ Furthermore they can all occur together and must be appropriately prioritised (c
 * Exception from instruction fetch error (covered by the **FetchError** instruction category).
 * ``pmp_iside_mode_cross`` - Exception from instruction PMP violation.
 * Exception from illegal instruction (covered by the illegal instruction categories).
-* Exception from memory fetch error.
+* ``cp_ls_error_exception`` - Exception from memory fetch error.
 * ``pmp_dside_mode_cross`` - Exception from memory access PMP violation.
-* Unaligned access cases (both accesses saw error, first or second only saw error, or neither saw error) for both kinds of memory exceptions.
+* Unaligned memory access
+
+  * ``misaligned_insn_bus_err_cross``, ``misaligned_data_bus_err_cross`` - Cover all error and no error scenarios for memory fetch error; first access saw error, second
+    access saw error, neither access saw error
+
 * Interrupt raised/taken.
 
   * ``cp_interrupt_taken`` - Interrupt raised/taken for each available interrupt line.
@@ -212,24 +220,25 @@ Furthermore they can all occur together and must be appropriately prioritised (c
     This is done by using ``cp_nmi_taken`` coverpoint in the crosses.
   * ``interrupt_taken_instr_cross`` - Interrupt raised/taken the first cycle an instruction is in ID/EX or some other cycle the instruction is in ID/EX.
 
-* External debug request.
-* Instruction executed when debug single step enabled.
-* Instruction matches hardware trigger point.
+* ``cp_debug_req`` - External debug request.
+* ``cp_single_step_taken`` - Instruction executed when debug single step enabled.
+* ``cp_insn_trigger_enter_debug`` - Instruction matches hardware trigger point.
 
-  * Instruction matching trigger point causes exception
+  * ``cp_insn_trigger_exception`` - Instruction matching trigger point causes exception
 
-* Ibex operating in debug mode.
+* ``cp_debug_mode`` - Ibex operating in debug mode.
 * ``irq_wfi_cross``, ``debug_wfi_cross`` - Debug and Interrupt whilst sleeping with WFI
 
   * Cover with global interrupts enabled and disabled
   * Cover with specific interrupt enabled and disabled (Should exit sleep when
     interrupt is enabled but global interrupts set to disabled, should continue
     sleeping when both are disabled).
-    Continuing to sleep in the case explained above is covered by ``cp_irq_continue_sleep``
+    Continuing to sleep in the case explained above is covered by ``cp_irq_continue_sleep``, otherwise the behaviour is captured in ``irq_wfi_cross``
 
 * Debug and interrupt occurring whilst entering WFI
 
   * Covering period between WFI entering ID/EX stage and going into sleep
+    Covered by bin ``enter_sleep`` of ``cp_controller_fsm_sleep`` that is used by ``irq_wfi_cross`` and ``debug_wfi_cross``.
 
 * ``cp_double_fault`` - Double fault
 
@@ -250,10 +259,10 @@ PMP
 
   * ``misaligned_lsu_access_cross`` - All combinations of unaligned access split across a boundary, both halves pass, neither pass, just the first passes, just the second passes.
 
-    * ``pmp_instr_edge_cross`` - Two possible boundary splits; across a 32-bit boundary within a region or a boundary between PMP regions.
+    * Two possible boundary splits; across a 32-bit boundary within a region or a boundary between PMP regions.
 
   * ``cp_pmp_iside_region_override``, ``cp_pmp_iside2_region_override``, ``cp_pmp_dside_region_override`` - Higher priority entry allows access that lower priority entry prevents.
-  * Compressed instruction access (16-bit) passes PMP but 32-bit access at same address crosses PMP region boundary.
+  * ``pmp_instr_edge_cross`` - Compressed instruction access (16-bit) passes PMP but 32-bit access at same address crosses PMP region boundary.
 
 * Each field of mssecfg enabled/disabled with relevant functionality tested.
 

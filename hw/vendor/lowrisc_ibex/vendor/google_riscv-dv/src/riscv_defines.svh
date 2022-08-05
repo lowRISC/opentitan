@@ -87,7 +87,7 @@
 
 // Floating point compressed instruction
 `define DEFINE_FC_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
-  class riscv_``instr_n``_instr extends riscv_compressed_instr;  \
+  class riscv_``instr_n``_instr extends riscv_floating_point_instr;  \
     `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
 
 // Vector arithmetic instruction

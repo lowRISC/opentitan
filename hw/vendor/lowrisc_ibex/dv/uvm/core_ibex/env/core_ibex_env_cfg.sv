@@ -4,16 +4,17 @@
 
 class core_ibex_env_cfg extends uvm_object;
 
-  bit       enable_irq_single_seq;
-  bit       enable_irq_multiple_seq;
-  bit       enable_irq_nmi_seq;
-  bit       enable_nested_irq;
-  bit       enable_debug_seq;
-  bit       disable_cosim;
-  bit[31:0] max_interval;
-  bit       require_signature_addr;
-  string    signature_addr_str;
-  bit[31:0] signature_addr;
+  bit                           enable_irq_single_seq;
+  bit                           enable_irq_multiple_seq;
+  bit                           enable_irq_nmi_seq;
+  bit                           enable_nested_irq;
+  bit                           enable_debug_seq;
+  bit                           disable_cosim;
+  bit[31:0]                     max_interval;
+  bit                           require_signature_addr;
+  string                        signature_addr_str;
+  bit[31:0]                     signature_addr;
+  rand scrambling_key_agent_cfg scrambling_key_cfg;
 
   `uvm_object_utils_begin(core_ibex_env_cfg)
     `uvm_field_int(enable_irq_single_seq,   UVM_DEFAULT)
@@ -25,6 +26,7 @@ class core_ibex_env_cfg extends uvm_object;
     `uvm_field_int(max_interval, UVM_DEFAULT)
     `uvm_field_int(require_signature_addr, UVM_DEFAULT)
     `uvm_field_int(signature_addr, UVM_DEFAULT)
+    `uvm_field_object(scrambling_key_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
 
   function new(string name = "");
@@ -39,6 +41,7 @@ class core_ibex_env_cfg extends uvm_object;
     void'($value$plusargs("require_signature_addr=%0d", require_signature_addr));
     void'($value$plusargs("signature_addr=%s", signature_addr_str));
     signature_addr = signature_addr_str.atohex();
+    scrambling_key_cfg = scrambling_key_agent_cfg::type_id::create("scrambling_key_cfg");
   endfunction
 
 endclass

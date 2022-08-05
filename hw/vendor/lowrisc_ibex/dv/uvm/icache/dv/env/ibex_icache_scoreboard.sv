@@ -427,7 +427,7 @@ class ibex_icache_scoreboard
     bit [BusWidth-1:0] rdata;
 
     bit [31:0]         seed;
-    int unsigned       mem_err_shift;      
+    int unsigned       mem_err_shift;
 
     bus_shift = $clog2(BusWidth / 8);
     addr_lo = (address >> bus_shift) << bus_shift;

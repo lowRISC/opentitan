@@ -198,7 +198,7 @@ module tb #(
   end
 
 
-  // Initiate push pull interface for the OTP<->OTBN connections
+  // Initiate push pull interface for connection between Icache and a scrambling key provider.
   push_pull_if #(
     .DeviceDataWidth(194)
   ) scrambling_key_if (

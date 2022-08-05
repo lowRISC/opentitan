@@ -70,6 +70,7 @@ def main() -> int:
                 '--test', testname,
                 '--start_seed', str(seed),
                 '--iterations', '1',
+                '--end_signature_addr', args.end_signature_addr,
                 '--sim_opts', sim_opts_str,
                 '--debug', orig_list])
 

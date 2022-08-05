@@ -110,6 +110,10 @@ class Cosim {
   // A full 64-bit value is provided setting both the mcycle and mcycleh CSRs.
   virtual void set_mcycle(uint64_t mcycle) = 0;
 
+  // Set the value of a CSR. This is used when it is needed to have direct
+  // communication between DUT and Spike (e.g. Performance counters).
+  virtual void set_csr(const int csr_num, const uint32_t new_val) = 0;
+
   // Tell the co-simulation model about observed transactions on the dside
   // memory interface of the DUT. Accesses are notified once the response to a
   // transaction is seen.

@@ -200,5 +200,5 @@
       +enable_ibex_fcov=1
     wave_opts: >
       -input @"database -open <sim_dir>/waves -shm -default"
-      -input @"probe -create core_ibex_tb_top -all -depth all -variables"
+      -input @"probe -create core_ibex_tb_top -all -memories -depth all"
       -input @"run"

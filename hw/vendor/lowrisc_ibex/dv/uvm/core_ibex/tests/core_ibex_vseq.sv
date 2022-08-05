@@ -8,8 +8,8 @@
 
 class core_ibex_vseq extends uvm_sequence;
 
-  ibex_mem_intf_response_seq                       instr_intf_seq;
-  ibex_mem_intf_response_seq                       data_intf_seq;
+  ibex_mem_intf_response_seq                    instr_intf_seq;
+  ibex_mem_intf_response_seq                    data_intf_seq;
   mem_model_pkg::mem_model                      mem;
   irq_raise_seq                                 irq_raise_seq_h;
   irq_raise_single_seq                          irq_raise_single_seq_h;
@@ -29,6 +29,16 @@ class core_ibex_vseq extends uvm_sequence;
     data_intf_seq  = ibex_mem_intf_response_seq::type_id::create("data_intf_seq");
     data_intf_seq.is_dmem_seq = 1'b1;
   endfunction
+
+  // Start the memory-model sequences, which run forever() loops to respond to bus events
+  virtual task pre_body();
+    instr_intf_seq.m_mem = mem;
+    data_intf_seq.m_mem  = mem;
+    fork
+       instr_intf_seq.start(p_sequencer.instr_if_seqr);
+       data_intf_seq.start(p_sequencer.data_if_seqr);
+    join_none
+  endtask // pre_body
 
   virtual task body();
     if (cfg.enable_irq_single_seq) begin
@@ -70,12 +80,6 @@ class core_ibex_vseq extends uvm_sequence;
       debug_seq_single_h.interval.rand_mode(0);
       debug_seq_single_h.interval = 0;
     end
-    instr_intf_seq.m_mem = mem;
-    data_intf_seq.m_mem  = mem;
-    fork
-      instr_intf_seq.start(p_sequencer.instr_if_seqr);
-      data_intf_seq.start(p_sequencer.data_if_seqr);
-    join_none
   endtask
 
   virtual task stop();

@@ -24,6 +24,7 @@ import subprocess
 import time
 import yaml
 import logging
+import signal
 
 from datetime import date
 
@@ -107,6 +108,7 @@ def run_cmd(cmd, timeout_s=999, exit_on_error=1, check_return_code=True,
                               shell=True,
                               executable='/bin/bash',
                               universal_newlines=True,
+                              start_new_session=True,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError:
@@ -120,7 +122,10 @@ def run_cmd(cmd, timeout_s=999, exit_on_error=1, check_return_code=True,
     except subprocess.TimeoutExpired:
         logging.error("Timeout[{}s]: {}".format(timeout_s, cmd))
         output = ""
-        ps.kill()
+        try:
+            os.killpg(os.getpgid(ps.pid), signal.SIGTERM)
+        except AttributeError: #killpg not available on windows
+            ps.kill()
     rc = ps.returncode
     if rc and check_return_code and rc > 0:
         logging.info(output)
@@ -153,6 +158,7 @@ def run_parallel_cmd(cmd_list, timeout_s=999, exit_on_error=0,
                               shell=True,
                               executable='/bin/bash',
                               universal_newlines=True,
+                              start_new_session=True,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT)
         children.append(ps)
@@ -166,7 +172,10 @@ def run_parallel_cmd(cmd_list, timeout_s=999, exit_on_error=0,
             sys.exit(130)
         except subprocess.TimeoutExpired:
             logging.error("Timeout[{}s]: {}".format(timeout_s, cmd))
-            children[i].kill()
+            try:
+                os.killpg(os.getpgid(children[i].pid), signal.SIGTERM)
+            except AttributeError: #killpg not available on windows
+                children[i].kill()
         rc = children[i].returncode
         if rc and check_return_code and rc > 0:
             logging.info(output)
