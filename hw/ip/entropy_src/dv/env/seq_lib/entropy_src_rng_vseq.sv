@@ -60,6 +60,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   constraint dly_to_insert_entropy_c {
     dly_to_insert_entropy dist {
+      0                   :/ 1,
       [1      :10]        :/ 3,
       [11     :100]       :/ 2,
       [101    :1000]      :/ 1

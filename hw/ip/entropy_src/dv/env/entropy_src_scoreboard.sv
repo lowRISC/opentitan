@@ -1158,7 +1158,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               // Disabling the fw_ov_sha3_start field triggers the conditioner, but only
               // if the DUT is configured properly.
               if (dut_pipeline_enabled && is_fips_mode && fw_ov_insert && do_disable_sha) begin
-                `uvm_info(`gfn, "SHA3 disabled for FW_OV", UVM_HIGH)
+                `uvm_info(`gfn, "SHA3 disabled for FW_OV", UVM_FULL)
                 // SW _shouldn't_ turn off the SHA3 processing until the last data word
                 // has been processed.  However if it _does_, we should note an alert.
                 // We can also make an accurate prediction of the output (to pass our sims).
@@ -1169,6 +1169,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   sha_temp = process_fifo_q.pop_back();
                   package_and_release_entropy();
                   process_fifo_q.push_back(sha_temp);
+                  `uvm_info(`gfn, "SHA3 disabled while data pending, expecting alert", UVM_MEDIUM)
+                  set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
                 end else begin
                   package_and_release_entropy();
                 end
