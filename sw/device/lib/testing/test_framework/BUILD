@@ -207,6 +207,18 @@ cc_library(
 )
 
 cc_library(
+    name = "ujson_ottf",
+    srcs = ["ujson_ottf.c"],
+    hdrs = ["ujson_ottf.h"],
+    deps = [
+        ":ottf_main",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/ujson",
+    ],
+)
+
+cc_library(
     name = "freertos_config",
     hdrs = ["FreeRTOSConfig.h"],
     # FreeRTOS sources don't follow our project's include-path standard,
