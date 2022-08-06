@@ -88,12 +88,12 @@ static inline rom_error_t rom_irq_error(void) {
   // indicates whether the cause is an exception (0) or external interrupt (1),
   // and the 5 least significant bits indicate which exception/interrupt.
   //
-  // Preserve the MSB and shift the 7 LSBs into the upper byte.
-  // (we preserve 7 instead of 5 because the verilog hardcodes the unused bits
-  // as zero and those would be the next bits used should the number of
-  // interrupt causes increase).
-  mcause = (mcause & 0x80000000) | ((mcause & 0x7f) << 24);
-  return kErrorInterrupt + mcause;
+  // Preserve the MSB and shift it down to the lowest byte.  Preserve the
+  // the 7 LSBs into the lower byte. (we preserve 7 instead of 5 because the
+  // verilog hardcodes the unused bits as zero and those would be the next bits
+  // used should the number of interrupt causes increase).
+  mcause = ((mcause & 0x80000000) >> 24) | (mcause & 0x7f);
+  return bitfield_field32_write(kErrorInterrupt, ROM_ERROR_FIELD_ERROR, mcause);
 }
 
 /**

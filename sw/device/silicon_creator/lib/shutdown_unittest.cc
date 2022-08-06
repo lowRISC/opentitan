@@ -7,6 +7,7 @@
 #include <array>
 
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/global_mock.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
@@ -577,12 +578,20 @@ TEST(ShutdownModule, RedactErrors) {
   EXPECT_EQ(shutdown_redact(kErrorOk, kShutdownErrorRedactModule), 0);
   EXPECT_EQ(shutdown_redact(kErrorOk, kShutdownErrorRedactAll), 0);
 
+  uint32_t redact_none = (uint32_t)kErrorUartBadBaudRate;
+  // RedactError zeroes out the ERROR field.
+  uint32_t redact_error =
+      bitfield_field32_write(redact_none, ROM_ERROR_FIELD_ERROR, 0);
+  // RedactModule zeroes out the MODULE field and the ERROR field.
+  uint32_t redact_module =
+      bitfield_field32_write(redact_error, ROM_ERROR_FIELD_MODULE, 0);
+
   EXPECT_EQ(shutdown_redact(kErrorUartBadBaudRate, kShutdownErrorRedactNone),
-            0x02554103);
+            redact_none);
   EXPECT_EQ(shutdown_redact(kErrorUartBadBaudRate, kShutdownErrorRedactError),
-            0x00554103);
+            redact_error);
   EXPECT_EQ(shutdown_redact(kErrorUartBadBaudRate, kShutdownErrorRedactModule),
-            0x00000003);
+            redact_module);
   EXPECT_EQ(shutdown_redact(kErrorUartBadBaudRate, kShutdownErrorRedactAll),
             0xFFFFFFFF);
 }

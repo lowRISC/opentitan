@@ -22,50 +22,50 @@ extern "C" {
  * Choose a two-letter identifier for each module and encode the module
  * identifier the concatenated ASCII representation of those letters.
  */
-#define MODULE_CODE(ch0_, ch1_) ((ch0_) << 8 | (ch1_))
 enum module_ {
   // clang-format off
   kModuleUnknown = 0,
-  kModuleAlertHandler = MODULE_CODE('A', 'H'),
-  kModuleUart =         MODULE_CODE('U', 'A'),
-  kModuleSigverify =    MODULE_CODE('S', 'V'),
-  kModuleKeymgr =       MODULE_CODE('K', 'M'),
-  kModuleManifest =     MODULE_CODE('M', 'A'),
-  kModuleRom =          MODULE_CODE('M', 'R'),
-  kModuleInterrupt =    MODULE_CODE('I', 'R'),
-  kModuleEpmp =         MODULE_CODE('E', 'P'),
-  kModuleOtp =          MODULE_CODE('O', 'P'),
-  kModuleOtbn =         MODULE_CODE('B', 'N'),
-  kModuleFlashCtrl =    MODULE_CODE('F', 'C'),
-  kModuleSecMmio =      MODULE_CODE('I', 'O'),
-  kModuleBootPolicy =   MODULE_CODE('B', 'P'),
-  kModuleRetSram =      MODULE_CODE('R', 'S'),
-  kModuleBootstrap =    MODULE_CODE('B', 'S'),
-  kModuleLog =          MODULE_CODE('L', 'G'),
-  kModuleBootData =     MODULE_CODE('B', 'D'),
-  kModuleShutdown =     MODULE_CODE('S', 'D'),
-  kModuleSpiDevice =    MODULE_CODE('S', 'P'),
-  kModuleAst =          MODULE_CODE('A', 'S'),
+  kModuleAlertHandler = MAKE_MODULE_ID('A', 'H', '_'),
+  kModuleUart =         MAKE_MODULE_ID('U', 'A', '_'),
+  kModuleSigverify =    MAKE_MODULE_ID('S', 'V', '_'),
+  kModuleKeymgr =       MAKE_MODULE_ID('K', 'M', '_'),
+  kModuleManifest =     MAKE_MODULE_ID('M', 'A', '_'),
+  kModuleRom =          MAKE_MODULE_ID('M', 'R', '_'),
+  kModuleInterrupt =    MAKE_MODULE_ID('I', 'R', '_'),
+  kModuleEpmp =         MAKE_MODULE_ID('E', 'P', '_'),
+  kModuleOtp =          MAKE_MODULE_ID('O', 'P', '_'),
+  kModuleOtbn =         MAKE_MODULE_ID('B', 'N', '_'),
+  kModuleFlashCtrl =    MAKE_MODULE_ID('F', 'C', '_'),
+  kModuleSecMmio =      MAKE_MODULE_ID('I', 'O', '_'),
+  kModuleBootPolicy =   MAKE_MODULE_ID('B', 'P', '_'),
+  kModuleRetSram =      MAKE_MODULE_ID('R', 'S', '_'),
+  kModuleBootstrap =    MAKE_MODULE_ID('B', 'S', '_'),
+  kModuleLog =          MAKE_MODULE_ID('L', 'G', '_'),
+  kModuleBootData =     MAKE_MODULE_ID('B', 'D', '_'),
+  kModuleShutdown =     MAKE_MODULE_ID('S', 'D', '_'),
+  kModuleSpiDevice =    MAKE_MODULE_ID('S', 'P', '_'),
+  kModuleAst =          MAKE_MODULE_ID('A', 'S', '_'),
   // clang-format on
 };
 
 /**
  * Field definitions for the different fields of the error word.
  */
-#define ROM_ERROR_FIELD_ERROR ((bitfield_field32_t){.mask = 0xFF, .index = 24})
-#define ROM_ERROR_FIELD_MODULE \
-  ((bitfield_field32_t){.mask = 0xFFFF, .index = 8})
-#define ROM_ERROR_FIELD_STATUS ((bitfield_field32_t){.mask = 0xFF, .index = 0})
+#define ROM_ERROR_FIELD_ERROR STATUS_FIELD_ARG
+#define ROM_ERROR_FIELD_MODULE STATUS_FIELD_MODULE_ID
+#define ROM_ERROR_FIELD_STATUS STATUS_FIELD_CODE
 
 /**
- * Helper macro for building up error codes.
+ * Helper macro for building up error codes.  This macro builds up error codes
+ * which are bit-compatible with `status_t`.
+ *
  * @param status_ An appropriate general status code from absl_staus.h.
  * @param module_ The module identifier which produces this error.
  * @param error_ The unique error id in that module.  Error ids must not
  *               repeat within a module.
  */
 #define ERROR_(error_, module_, status_) \
-  ((error_ << 24) | (module_ << 8) | (status_))
+  (0x80000000 | module_ | (error_ << 5) | status_)
 
 // clang-format off
 // Use an X-macro to facilitate writing unit tests.
