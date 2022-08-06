@@ -427,6 +427,102 @@ interface entropy_src_cov_if
 
   endgroup : win_ht_cg
 
+  // rng_select: Ranges from 0 to RNG_BUS_WIDTH, where
+  //             a value in the range of 0 through RNG_BUS_WIDTH - 1
+  //             corresponds to a particular line and a value of
+  //             RNG_BUS_WIDTH means all lines.
+  //             TODO: Update other CG's to use this convention.
+  covergroup cont_ht_cg with function sample(health_test_e test_type,
+                                             bit fips_mode,
+                                             int rng_select,
+                                             bit [15:0] score,
+                                             bit fail);
+    option.name         = "cont_ht_cg";
+    option.per_instance = 1;
+
+    cp_type : coverpoint test_type {
+      bins types[] = {repcnt_ht, repcnts_ht};
+    }
+
+    // Check to see that the thresholds for both boot mode and
+    // continuous mode have been tested.
+    cp_fips_mode : coverpoint fips_mode;
+
+    cp_fail : coverpoint fail;
+
+    cp_rng_select : coverpoint rng_select {
+      bins vals[] = { [ 0 : RNG_BUS_WIDTH ] };
+    }
+
+    // Don't test threshold, test what HT scores have been observed
+    // which is more slightly interesting than which thresholds have
+    // been applied, as it indicates what range of input RNG values
+    // have been seen.
+    //
+    // The NIST guidelines recommend thresholds that are not so loose
+    // that they give false positives less often than once every 2^(40)
+    // bits, though they do permit false positive rates in the range of 2^(-20) - 2^(-40)
+    // are acceptable.
+    //
+    // For ideal RNG inputs and this range corrensponds to events in the
+    // "medhigh" bin below for the single-line repcnt test, or the "low"
+    // bin for the repcnts (4-bit symbol) test.
+    //
+    cp_score : coverpoint score {
+       bins very_low = { [ 1 : 5 ] };
+       bins low      = { [ 6 : 10 ] };
+       bins medlow   = { [ 11 : 20 ] };
+       bins medhigh  = { [ 21 : 40 ] };
+       bins high     = { [ 41 : 16'hffff ] };
+    }
+
+    // Two way crosses
+    cr_type_mode : cross cp_type, cp_fips_mode;
+
+    cr_type_fail : cross cp_type, cp_fail;
+
+    cr_type_rngsel : cross cp_type, cp_rng_select;
+
+    cr_type_score : cross cp_type, cp_score;
+
+    cr_mode_fail : cross cp_fips_mode, cp_fail;
+
+    cr_mode_rngsel : cross cp_fips_mode, cp_rng_select;
+
+    cr_mode_score : cross cp_fips_mode, cp_score;
+
+    cr_fail_rngsel : cross cp_fail, cp_rng_select;
+
+    cr_fail_score : cross cp_fail, cp_score;
+
+    cr_rngsel_score : cross cp_rng_select, cp_score;
+
+    // Three way crosses
+    cr_type_mode_fail : cross cp_type, cp_fips_mode, cp_fail;
+
+    cr_type_mode_rngsel : cross cp_type, cp_fips_mode, cp_rng_select;
+
+    cr_type_mode_score : cross cp_type, cp_fips_mode, cp_score;
+
+    cr_type_fail_rngsel : cross cp_type, cp_fail, cp_rng_select;
+
+    cr_type_fail_score : cross cp_type, cp_fail, cp_score;
+
+    cr_type_rngsel_score : cross cp_type, cp_rng_select, cp_score;
+
+    cr_mode_fail_rngsel : cross cp_fips_mode, cp_fail, cp_rng_select;
+
+    cr_mode_fail_score : cross cp_fips_mode, cp_fail, cp_score;
+
+    cr_mode_rngsel_score : cross cp_fips_mode, cp_rng_select, cp_score;
+
+    cr_fail_rngsel_score : cross cp_fail, cp_rng_select, cp_score;
+
+    // All bin cross
+    cr_all : cross cp_type, cp_fips_mode, cp_fail, cp_rng_select, cp_score;
+
+  endgroup : cont_ht_cg
+
   // "Deep" covergroup definition to confirm that the threshold performance has been
   // properly tested for a practical range of thresholds for all windowed tests.
   //
@@ -459,8 +555,6 @@ interface entropy_src_cov_if
     return unsigned'($rtoi($floor(sigma/sigma_res)));
   endfunction
 
-  // TODO: Add bin to check which threshold we are looking at?
-
   covergroup win_ht_deep_threshold_cg()
       with function sample(health_test_e test_type,
                            which_ht_e hi_lo,
@@ -488,10 +582,6 @@ interface entropy_src_cov_if
 
     cp_fail : coverpoint fail;
 
-    // TODO CP for alert count
-    // TODO Ignore bins for thresholds when tests are not applied
-    //      (i.e. in open threshold configuration or FW Override modes)
-
     cp_threshold : coverpoint sigma_to_int(sigma) {
       // Very frequent false positive rates 1 in 6 for single-sided test
       // (good for testing frequent alert scenarios)
@@ -516,8 +606,6 @@ interface entropy_src_cov_if
     }
 
   endgroup : win_ht_deep_threshold_cg
-
-  // TODO: Covergroup for non-windowed tests.
 
   covergroup alert_cnt_cg with function sample(bit [15:0] threshold);
 
@@ -555,6 +643,7 @@ interface entropy_src_cov_if
   `DV_FCOV_INSTANTIATE_CG(csrng_hw_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(observe_fifo_event_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(sw_update_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(cont_ht_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(win_ht_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(win_ht_deep_threshold_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(alert_cnt_cg, en_full_cov)
@@ -642,6 +731,15 @@ interface entropy_src_cov_if
     msg = $sformatf(fmt, offset, sw_regupd, module_enable);
     `uvm_info("", msg, UVM_LOW)
     sw_update_cg_inst.sample(offset, sw_regupd, module_enable);
+
+  endfunction
+
+  function automatic void cg_cont_ht_sample(health_test_e test_type,
+                                            bit fips_mode,
+                                            int rng_select,
+                                            bit [15:0] score,
+                                            bit fail);
+    cont_ht_cg_inst.sample(test_type, fips_mode, rng_select, score, fail);
 
   endfunction
 

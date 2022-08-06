@@ -454,7 +454,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     // TODO (Priority 3): This use of the dut_cfg depends very much on the vseq being employed.
     sigma_applied = !cfg.dut_cfg.default_ht_thresholds;
 
-    return !fw_insert && !sigma_applied;
+    return !fw_insert && sigma_applied;
 
   endfunction
 
@@ -569,6 +569,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   function bit evaluate_repcnt_test(bit fips_mode);
     int value;
     bit fail;
+    int rng_select;
+    bit rng_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
+
+    rng_select = rng_en ? int'(`gmv(ral.conf.rng_bit_sel)) : RNG_BUS_WIDTH;
 
     value = max_repcnt;
 
@@ -576,18 +580,30 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     fail = check_threshold("repcnt", fips_mode, value);
 
+    if (ht_is_active()) begin
+      cov_vif.cg_cont_ht_sample(repcnt_ht, fips_mode, rng_select, value, fail);
+    end
+
     return fail;
   endfunction
 
   function bit evaluate_repcnt_symbol_test(bit fips_mode);
     int value;
     bit fail;
+    int rng_select;
+    bit rng_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
+
+    rng_select = rng_en ? int'(`gmv(ral.conf.rng_bit_sel)) : RNG_BUS_WIDTH;
 
     value = max_repcnt_symbol;
 
     update_watermark("repcnts", fips_mode, value);
 
     fail = check_threshold("repcnts", fips_mode, value);
+
+    if (ht_is_active()) begin
+      cov_vif.cg_cont_ht_sample(repcnts_ht, fips_mode, rng_select, value, fail);
+    end
 
     return fail;
   endfunction
@@ -605,8 +621,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     string        fmt;
     int           any_fail_count_regval;
     int           alert_threshold;
-
-
 
     failcnt_fatal += evaluate_repcnt_test(fips_mode);
     failcnt_fatal += evaluate_repcnt_symbol_test(fips_mode);
