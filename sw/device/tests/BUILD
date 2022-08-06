@@ -1301,7 +1301,7 @@ opentitan_functest(
     srcs = ["sram_ctrl_execution_test.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/examples/sram_program:sram_program_ar",
+        "//sw/device/examples/sram_program",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:log",

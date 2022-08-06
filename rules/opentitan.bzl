@@ -864,77 +864,47 @@ def opentitan_flash_binary(
 
 def opentitan_ram_binary(
         name,
+        archive_symbol_prefix,
         platform = OPENTITAN_PLATFORM,
-        per_device_deps = PER_DEVICE_DEPS,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for RAM.
 
-    This macro is mostly a wrapper around the `opentitan_binary` macro, which
-    itself is a wrapper around `cc_binary`, but also creates artifacts for each
-    of the keys in `per_device_deps`. The actual artifacts created are an ELF
-    file, a BIN file, an archive file for embedding the program in functional
-    tests, disassembly, a sim_dv logs database, and a VMEM file. Each of these
-    output targets performs a bazel transition to the RV32I toolchain to build
-    the target under the correct compiler.
+    This macro is mostly a wrapper around the `opentitan_binary` macro, but also
+    creates artifacts for each of the keys in `PER_DEVICE_DEPS`. The actual
+    artifacts created are outputs of the rules emitted by the `opentitan_binary`
+    macro and those listed below.
     Args:
       @param name: The name of this rule.
       @param platform: The target platform for the artifacts.
-      @param per_device_deps: The deps for each of the hardware target.
-      @param extract_sw_logs_db: Whether to extract SW logs database for DV sim.
+      @param archive_symbol_prefix: Prefix used to rename symbols in the binary.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
     Emits rules:
       For each device in per_device_deps entry:
-        cc_binary                 named: <name>_<device>
-        obj_transform             named: <name>_<device>_bin
-        bin_to_archive            named: <name>_<device>_ar
-        elf_to_dissassembly       named: <name>_<device>_dis
-        bin_to_rom_vmem           named: <name>_<device>_vmem
-      For the sim_dv device:
-        gen_sim_dv_logs_db        named: <name>_sim_dv_logs
-      filegroup named: <name>
-          with all the generated rules
+        rules emitted by `opentitan_binary` named: see `opentitan_binary` macro
+      bin_to_archive named: <name>
     """
 
     deps = kwargs.pop("deps", [])
     hdrs = kwargs.pop("hdrs", [])
-    archive_symbol_prefix = kwargs.pop("archive_symbol_prefix")
-    targets = []
     binaries = []
-    for (device, dev_deps) in per_device_deps.items():
+    for (device, dev_deps) in PER_DEVICE_DEPS.items():
         devname = "{}_{}".format(name, device)
 
-        # Generate ELF, binary and disassembly.
-        targets.extend(opentitan_binary(
+        # Generate the binary.
+        opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
             extract_sw_logs_db = False,
             **kwargs
-        ))
+        )
         bin_name = "{}_{}".format(devname, "bin")
         binaries.append(":" + bin_name)
 
-        # Generate the VMEM file.
-        vmem_name = "{}_{}".format(devname, "vmem")
-        targets.append(":" + vmem_name)
-        bin_to_vmem(
-            name = vmem_name,
-            bin = bin_name,
-            platform = platform,
-            word_size = 32,
-        )
-
     # Generate the archive file.
-    archive_name = "{}_{}".format(name, "ar")
-    targets.append(":" + archive_name)
     bin_to_archive(
-        name = archive_name,
+        name = name,
         hdrs = hdrs,
         binaries = binaries,
-        devices = per_device_deps.keys(),
+        devices = PER_DEVICE_DEPS.keys(),
         archive_symbol_prefix = archive_symbol_prefix,
-    )
-
-    native.filegroup(
-        name = name,
-        srcs = targets,
     )
