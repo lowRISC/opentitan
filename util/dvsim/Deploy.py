@@ -605,11 +605,15 @@ class CovMerge(Deploy):
 
     def __init__(self, run_items, sim_cfg):
         # Construct the cov_db_dirs right away from the run_items. This is a
-        # special variable used in the HJson.
+        # special variable used in the HJson. The coverage associated with
+        # the primary build mode needs to be first in the list.
         self.cov_db_dirs = []
         for run in run_items:
             if run.cov_db_dir not in self.cov_db_dirs:
-                self.cov_db_dirs.append(run.cov_db_dir)
+                if sim_cfg.primary_build_mode == run.build_mode:
+                    self.cov_db_dirs.insert(0, run.cov_db_dir)
+                else:
+                    self.cov_db_dirs.append(run.cov_db_dir)
 
         # Early lookup the cov_merge_db_dir, which is a mandatory misc
         # attribute anyway. We need it to compute additional cov db dirs.

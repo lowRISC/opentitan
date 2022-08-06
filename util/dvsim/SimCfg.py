@@ -205,6 +205,14 @@ class SimCfg(FlowCfg):
             if not hasattr(self, "build_mode"):
                 self.build_mode = 'default'
 
+            # Set the primary build mode. The coverage associated to this build
+            # is the main coverage. Some tools need this information. This is
+            # of significance only when there are multiple builds. If there is
+            # only one build, and its not the primary_build_mode, then we
+            # update the primary_build_mode to match what is built.
+            if not hasattr(self, "primary_build_mode"):
+                self.primary_build_mode = self.build_mode
+
             # Create objects from raw dicts - build_modes, sim_modes, run_modes,
             # tests and regressions, only if not a primary cfg obj
             self._create_objects()
@@ -329,6 +337,7 @@ class SimCfg(FlowCfg):
         style patterns. This method finds regressions and tests that match
         these patterns.
         '''
+
         def _match_items(items: list, patterns: list):
             hits = []
             matched = set()
@@ -453,6 +462,11 @@ class SimCfg(FlowCfg):
             is_unique = True
             for build in self.builds:
                 if build.is_equivalent_job(new_build):
+                    # Discard `new_build` since it is equivalent to build. If
+                    # `new_build` is the same as `primary_build_mode`, update
+                    # `primary_build_mode` to match `build`.
+                    if new_build.name == self.primary_build_mode:
+                        self.primary_build_mode = build.name
                     new_build = build
                     is_unique = False
                     break
@@ -460,6 +474,18 @@ class SimCfg(FlowCfg):
             if is_unique:
                 self.builds.append(new_build)
             build_map[build_mode_obj] = new_build
+
+        # If there is only one build, set primary_build_mode to it.
+        if len(self.builds) == 1:
+            self.primary_build_mode = self.builds[0].name
+
+        # Check self.primary_build_mode is set correctly.
+        build_mode_names = set(b.name for b in self.builds)
+        if self.primary_build_mode not in build_mode_names:
+            log.error(f"\"primary_build_mode: {self.primary_build_mode}\" "
+                      f"in {self.name} cfg is invalid. Please pick from "
+                      f"{build_mode_names}.")
+            sys.exit(1)
 
         # Update all tests to use the updated (uniquified) build modes.
         for test in self.run_list:
@@ -540,6 +566,7 @@ class SimCfg(FlowCfg):
         is enabled, then the summary coverage report is also generated. The final
         result is in markdown format.
         '''
+
         def indent_by(level):
             return " " * (4 * level)
 
