@@ -107,7 +107,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       csr_update(.csr(ral.module_enable));
     end
 
-    // TODO: RepCnt and RepCntS thresholds
     // TODO: Separate sigmas for bypass and FIPS operation
     // TODO: cfg for threshold_rec per_line arguments
 

@@ -17,9 +17,12 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.dut_cfg.bypass_window_size          = 384;
     cfg.dut_cfg.boot_mode_retry_limit       = 10;
     cfg.sim_duration                = 20ms;
-    cfg.hard_mtbf                   = 100s;
+    // On average two hard failures per simulation
+    cfg.hard_mtbf                   = 10ms;
     cfg.mean_rand_reconfig_time     = 1ms;
-    cfg.mean_rand_csr_alert_time    = 10ms;
+    // The random alerts only need to happen frequently enough to
+    // close coverage
+    cfg.mean_rand_csr_alert_time    = 500ms;
     cfg.soft_mtbf                   = 7500us;
 
     // Apply standards ranging from strict to relaxed
