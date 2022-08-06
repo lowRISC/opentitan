@@ -169,6 +169,8 @@
                      "-grade index testfile",
                      // Use simple ratio of total covered bins over total bins across cps & crs,
                      "-group ratio",
+                     // Follow LRM naming conventions for array bins.
+                     "-group lrm_bin_name",
                      // Compute overall coverage for per-instance covergroups individually rather
                      // than cumulatively.
                      "-group instcov_for_score",
@@ -279,10 +281,15 @@
                    "-cm_line contassign",
                    // Dump toggle coverage on mdas, array of structs and on ports only
                    "-cm_tgl mda+structarr+portsonly",
+                   // Report condition coverage within tasks, functions and for loops.
+                   "-cm_cond for+tf",
                    // Ignore initial blocks for coverage
                    "-cm_report noinitial",
-                   // Filter unreachable/statically constant blocks
-                   "-cm_noconst",
+                   // Filter unreachable/statically constant blocks. seqnoconst does a more
+                   // sophisticated analysis including NBA / assignment with delays.
+                   "-cm_seqnoconst",
+                   // Creates a constfile.txt indicating a list of detected constants.
+                   "-diag noconst"
                    // Don't count coverage that's coming from zero-time glitches
                    "-cm_glitch 0",
                    // Ignore warnings about not applying cm_glitch to path and FSM
