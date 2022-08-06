@@ -147,8 +147,6 @@ module sysrst_ctrl_detect
         if (trigger_event && cfg_enable_i) begin
           state_d = DebounceSt;
           cnt_en = 1'b1;
-        end else begin
-          cnt_clr = 1'b1;
         end
       end
       ////////////////////////////////////////////
@@ -201,7 +199,6 @@ module sysrst_ctrl_detect
       // At this point we have detected the event
       // and monitor whether the signal remains stable.
       StableSt: begin
-        cnt_clr = 1'b1;
         // Go back to idle if either the trigger level is not active anymore, or if the detector is
         // disabled. Note that if the detector is sticky, it has to be explicitly disabled in order
         // to go back to the idle state.
