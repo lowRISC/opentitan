@@ -74,6 +74,12 @@ class entropy_src_dut_cfg extends uvm_object;
   // Randomized real values: to be managed in post_randomize
   // Controlled by the knobs <test>_sigma_max, <test>_sigma_min
   real              adaptp_sigma, markov_sigma, bucket_sigma;
+
+  // Thresholds for repcnt repcnts
+  rand bit [15:0]   repcnt_thresh_bypass, repcnt_thresh_fips,
+                    repcnts_thresh_bypass, repcnts_thresh_fips;
+
+  // Bit to leave thresholds at default values (effectively disabling HTs)
   rand int          default_ht_thresholds;
 
   rand invalid_mubi_e   which_invalid_mubi;
@@ -129,6 +135,46 @@ class entropy_src_dut_cfg extends uvm_object;
   constraint ht_threshold_scope_c {ht_threshold_scope dist {
       prim_mubi_pkg::MuBi4True  :/ ht_threshold_scope_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - ht_threshold_scope_pct)};}
+
+  // Bins arranged according to likelihood of false positive for the REPCNT test
+  // 6-10: > 1 in 1024 chance of a false positive (fairly likely, great for abusive tests)
+  // 10-20: > 1 in 2^20 false positive chance. (More rare, and overly conservative thresholding
+  //        even by NIST SP800-90B standards)
+  // 20-40: Typical acceptable range of NIST thresholds assuming a near-ideal RNG source
+  //        (false positive rate > 1 in 2^40)
+  // > 40:  Threshold is weaker than NIST standards (unless there is some known statistical defect
+  //        in the RNG source which means that the false positive rate is still > 1 in 2^40)
+  //
+  // The last bin captures this most relaxed
+  constraint repcnt_thresh_bypass_c {repcnt_thresh_bypass dist {
+      [6  : 10] :/ 1,
+      [11 : 20] :/ 1,
+      [21 : 40] :/ 1,
+      41        :/ 1};}
+
+  constraint repcnt_thresh_fips_c {repcnt_thresh_fips dist {
+      [6  : 10] :/ 1,
+      [11 : 20] :/ 1,
+      [21 : 40] :/ 1,
+      41        :/ 1};}
+
+  // Make the bin sizes for the repcnts test 1/4 as small as the corresponding repcnt bins sizes,
+  // since the likelihood of coincidental
+  // failure is comparable to that of gathering 4x more data with the repcnt
+  // test.
+  //
+  // As with the repcnt test, the highest bin would (for an assumed ideal RNG noice source
+  constraint repcnts_thresh_bypass_c {repcnts_thresh_bypass dist {
+      [2  :  3] :/ 1,
+      [4  :  5] :/ 1,
+      [6  : 10] :/ 1,
+      11       :/ 1};}
+
+  constraint repcnts_thresh_fips_c {repcnts_thresh_fips dist {
+      [2  :  3] :/ 1,
+      [4  :  5] :/ 1,
+      [6  : 10] :/ 1,
+      [11 : 80] :/ 1};}
 
   constraint default_ht_thresholds_c {default_ht_thresholds dist {
       1 :/ default_ht_thresholds_pct,
