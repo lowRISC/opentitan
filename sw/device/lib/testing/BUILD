@@ -152,9 +152,12 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
